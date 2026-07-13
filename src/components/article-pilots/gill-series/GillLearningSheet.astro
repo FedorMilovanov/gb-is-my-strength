@@ -10,15 +10,16 @@
  * handle, focus-trap and scroll-lock from initTocPopups() in
  * floating-cluster-controller.js — this file only owns tab-panel content.
  */
-import { GILL_PAGE_DATA, type GillSeriesPageId } from './gillSeriesData';
 import { GILL_LEARNING_QUIZ } from './gillLearningData';
+import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props {
-  pageId: GillSeriesPageId;
+  pageId: string;
+  config?: SeriesConfig;
 }
 
-const { pageId } = Astro.props as Props;
-const page = GILL_PAGE_DATA[pageId];
+const { pageId, config = GILL_SERIES } = Astro.props as Props;
+const page = config.pages[pageId];
 // «Обучение · Часть III» context label, reusing the same part naming the
 // bottom bar and Part TOC already show — matches the reference's inline
 // part-context header instead of a generic static title.

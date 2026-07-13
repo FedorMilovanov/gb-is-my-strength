@@ -30,14 +30,15 @@
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import MobileChromeShell from '../_shared/MobileChromeShell.astro';
-import { GILL_PAGE_DATA, type GillSeriesPageId } from './gillSeriesData';
+import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props {
-  pageId: GillSeriesPageId;
+  pageId: string;
+  config?: SeriesConfig;
 }
 
-const { pageId } = Astro.props as Props;
-const page = GILL_PAGE_DATA[pageId];
+const { pageId, config = GILL_SERIES } = Astro.props as Props;
+const page = config.pages[pageId];
 ---
 <MobileChromeShell
   engine="series"

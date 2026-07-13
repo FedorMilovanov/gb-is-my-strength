@@ -4,7 +4,7 @@ import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
-import { GILL_PAGE_DATA, GILL_SERIES_ITEMS, type GillSeriesPageId } from './gillSeriesData';
+import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 // Leather bookmark treatment for the two label rows (kind: 'label'):
 //   «Введение» → lily ornament, warm leather;  «Справочник» → book ornament,
@@ -17,11 +17,13 @@ const leatherFor = (id: string) =>
       : null;
 
 interface Props {
-  pageId: GillSeriesPageId;
+  pageId: string;
+  config?: SeriesConfig;
 }
 
-const { pageId } = Astro.props;
-const page = GILL_PAGE_DATA[pageId];
+const { pageId, config = GILL_SERIES } = Astro.props;
+const page = config.pages[pageId];
+const seriesItems = config.items;
 
 // Assign each submenu row to a collapsible group: every top-level (H2) row
 // opens a new group; the H3 rows beneath it inherit that group index. The rail
@@ -43,20 +45,20 @@ const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { gr
 // progress bar + the part TOC), with the remaining parts flowing below it.
 // The pilot did this client-side (display:none + node moves); the Astro rail
 // renders the same result server-side.
-const currentIdx = GILL_SERIES_ITEMS.findIndex((item) => item.id === pageId);
-const partsBefore = GILL_SERIES_ITEMS.slice(0, Math.max(0, currentIdx));
-const partsAfter = currentIdx >= 0 ? GILL_SERIES_ITEMS.slice(currentIdx + 1) : [];
+const currentIdx = seriesItems.findIndex((item) => item.id === pageId);
+const partsBefore = seriesItems.slice(0, Math.max(0, currentIdx));
+const partsAfter = currentIdx >= 0 ? seriesItems.slice(currentIdx + 1) : [];
 // Введение/Справочник — «label»-пункты серии (mark.kind==="label"), не
 // пронумерованные части. Two bugs fixed here together:
 //  1. "Часть 1 из 5" for Введение — forbidden wording (audit:
 //     premium-controls-rollout-audit.js), the intro isn't "part 1" in any
 //     reader sense. Labels show their own mark value instead.
 //  2. Numbered parts must count ONLY themselves (I/II/III), not the 5-item
-//     raw array — a naive currentIdx+1 over GILL_SERIES_ITEMS.length made
+//     raw array — a naive currentIdx+1 over seriesItems.length made
 //     Part II read as "Часть 3 из 5" (index 2 in the 5-item list, off by
 //     the 2 label entries) instead of the correct "Часть 2 из 3".
-const currentItem = currentIdx >= 0 ? GILL_SERIES_ITEMS[currentIdx] : null;
-const romanItems = GILL_SERIES_ITEMS.filter((item) => item.mark.kind === 'roman');
+const currentItem = currentIdx >= 0 ? seriesItems[currentIdx] : null;
+const romanItems = seriesItems.filter((item) => item.mark.kind === 'roman');
 const romanIdx = romanItems.findIndex((item) => item.id === pageId);
 const partNumber = romanIdx >= 0 ? romanIdx + 1 : 1;
 const seriesMeta = currentItem && currentItem.mark.kind === 'label'
