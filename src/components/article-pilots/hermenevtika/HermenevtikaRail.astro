@@ -67,6 +67,12 @@ const { eyebrow, title, backHref } = Astro.props;
     <button class="hrail-bottom-btn" type="button" data-fc-action="search" aria-label="Поиск и разделы сайта">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
     </button>
+    <!-- Настройки чтения (десктоп): лист HermenevtikaReaderSettings уже есть и
+         слушает 'hm:open-settings' — на десктопе не было триггера (та же
+         регрессия, что чинилась у Гилла: лист без входа). Даём кнопку-шестерёнку. -->
+    <button class="hrail-bottom-btn" id="hrailSettingsBtn" type="button" aria-label="Настройки чтения" aria-haspopup="dialog" data-tip="Настройки">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></svg>
+    </button>
     <button class="hrail-bottom-btn" id="hrailShare" data-action="share" data-tip="Поделиться" type="button" aria-label="Поделиться">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" /></svg>
     </button>
@@ -187,6 +193,17 @@ const { eyebrow, title, backHref } = Astro.props;
 
 <script>
   function initHermenevtikaRail(){
+    // Десктопная шестерёнка «Настройки чтения» — тот же лист
+    // HermenevtikaReaderSettings, что открывается с мобильного #hmSettingsBtn
+    // (через событие 'hm:open-settings'). Независимо от наличия TOC.
+    const railSettingsBtn = document.getElementById('hrailSettingsBtn');
+    if (railSettingsBtn && !railSettingsBtn.dataset.bound) {
+      railSettingsBtn.dataset.bound = '1';
+      railSettingsBtn.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('hm:open-settings'));
+      });
+    }
+
     const toc = document.getElementById('hrailToc');
     const countEl = document.getElementById('hrailCount');
     if(!toc) return;

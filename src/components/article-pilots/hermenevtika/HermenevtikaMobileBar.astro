@@ -315,7 +315,10 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
   .hmsheet-action-btn.gb-save.is-saved svg{fill:#b8724f;stroke:#b8724f}
   html.dark .hmsheet-action-btn.gb-save.is-saved{color:#e0a89c;background:rgba(224,168,156,.12);border-color:rgba(224,168,156,.32)}
 
-  @media(min-width:1200px){ .hmsheet{display:none !important} }
+  /* На десктопе прячем мобильные листы бара, КРОМЕ листа настроек чтения
+     (.hmsettings): его теперь открывает шестерёнка в HermenevtikaRail
+     (#hrailSettingsBtn). Раньше это !important гасил и настройки на десктопе. */
+  @media(min-width:1200px){ .hmsheet:not(.hmsettings){display:none !important} }
 </style>
 
 <script>
