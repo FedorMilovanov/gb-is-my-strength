@@ -547,20 +547,20 @@ function checkCached(){
 caches.open(CACHE).then(function(c){return c.keys()}).then(function(keys){
 var cached=keys.length>3;
 btn.classList.toggle("gbs2-offline--done",cached);
-btn.textContent=cached?"✓ Офлайн":"↓ Сохранить";
+btn.textContent=cached?"✓":"↓";
 btn.setAttribute("aria-label",cached?"Серия доступна офлайн":"Сохранить серию для чтения без интернета");
 })}
 checkCached();
 
 btn.addEventListener("click",function(){
 if(btn.classList.contains("gbs2-offline--done"))return;
-btn.textContent="⏳…";btn.disabled=true;
+btn.textContent="⏳";btn.disabled=true;
 fetch("/data/series.json").then(function(r){return r.json()}).then(function(data){
 var s=data[seriesKey];if(!s||!s.parts)throw new Error("no series");
 var urls=[];var base=s.baseUrl||"/articles/";
 s.parts.forEach(function(p){if(p.status==="published")urls.push(base+p.slug+"/")});
 return caches.open(CACHE).then(function(c){return Promise.all(urls.map(function(u){return c.add(u).catch(function(){})}))})
-}).then(function(){checkCached();btn.disabled=false}).catch(function(){btn.textContent="Ошибка";btn.disabled=false;setTimeout(checkCached,2000)})
+}).then(function(){checkCached();btn.disabled=false}).catch(function(){btn.textContent="✗";btn.setAttribute("aria-label","Не удалось сохранить, попробуйте снова");btn.disabled=false;setTimeout(checkCached,2000)})
 });
 }();
 ;!function(){"use strict";
@@ -669,6 +669,7 @@ obs.observe(el);
 ;!function(){"use strict";
 /* Rail thumbnails: inject roman numeral into gradient circles */
 document.querySelectorAll(".gbs2-thumb").forEach(function(t){
+if(t.classList.contains("gbs2-noimg"))return;
 if(t.querySelector(".gbs2-thumb-num"))return;
 var pn=t.parentElement&&t.parentElement.querySelector(".gbs2-pn");
 if(!pn)return;
