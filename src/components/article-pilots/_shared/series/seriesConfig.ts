@@ -23,6 +23,12 @@ import {
 export type SeriesMark = GillSeriesMark;
 export type SeriesPartTocItem = GillPartTocItem;
 
+export interface SeriesItemRibbon {
+  word: string;
+  ornament: 'lily' | 'book';
+  variant?: 'default' | 'reference';
+}
+
 export interface SeriesItem {
   id: string;
   mark: SeriesMark;
@@ -30,6 +36,10 @@ export interface SeriesItem {
   shortTitle: string;
   href: string;
   readingTime: string;
+  /** Leather-bookmark treatment for label rows (kind: 'label'). When absent,
+   *  a series' own Rail component may fall back to its own hardcoded lookup
+   *  (e.g. Gill's `leatherFor`) to stay byte-identical to its pre-engine render. */
+  ribbon?: SeriesItemRibbon;
 }
 
 export interface SeriesPageChromeData {
