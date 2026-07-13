@@ -290,12 +290,22 @@ function renderSheet(route, opts) {
       for (let i = stopIdx[s]; i < stopIdx[s + 1]; i++) {
         const a = routePts[i], b = routePts[i + 1];
         const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-        if (!best || len > best.len) best = { a, b, len };
+        if (!best || len > best.len) best = { a, b, len, i };
       }
       if (!best || best.len < 90) continue; // короткие перегоны не помечаем
-      const dx = best.b[0] - best.a[0], dy = best.b[1] - best.a[1];
-      const mx = best.a[0] + dx * 0.52, my = best.a[1] + dy * 0.52;
-      const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+      // точка и касательная НА КРИВОЙ (midpoint хорды при сильной кривизне
+      // Catmull-Rom отходит от нити на десятки юнитов — шеврон висел в пустоте).
+      // Контрольные точки Безье сегмента — та же формула, что в catmullRom().
+      const i0 = best.i, p0 = routePts[Math.max(0, i0 - 1)], p1 = routePts[i0],
+        p2 = routePts[i0 + 1], p3 = routePts[Math.min(routePts.length - 1, i0 + 2)];
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      // B(t)/B'(t) при t=.5
+      const mx = (p1[0] + 3 * c1[0] + 3 * c2[0] + p2[0]) / 8;
+      const my = (p1[1] + 3 * c1[1] + 3 * c2[1] + p2[1]) / 8;
+      const tx = (-3 * p1[0] - 3 * c1[0] + 3 * c2[0] + 3 * p2[0]) / 4;
+      const ty = (-3 * p1[1] - 3 * c1[1] + 3 * c2[1] + 3 * p2[1]) / 4;
+      const ang = Math.atan2(ty, tx) * 180 / Math.PI;
       routeArrows.push(`<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(${mx.toFixed(1)},${my.toFixed(1)}) rotate(${ang.toFixed(1)})" class="route-arrow"/>`);
     }
   }

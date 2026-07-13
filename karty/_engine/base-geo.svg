@@ -257,7 +257,7 @@
   <!-- Арнон (вади Муджиб) — восточный приток Мёртвого моря -->
   <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".45" stroke-linecap="round" class="lbl-z2"
     d="M702,842 C690,841 676,839 662,838"/>
-  <text class="sea-label lbl-z2" x="688" y="840" font-size="4.4" letter-spacing=".12em" transform="rotate(-3 688 840)" fill="#4a80a0" opacity=".5">АРНОН</text>
+  <text class="sea-label lbl-z2" x="694" y="846" font-size="4.4" letter-spacing=".12em" transform="rotate(-3 694 846)" fill="#4a80a0" opacity=".5">АРНОН</text>
   <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
   <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
   <text class="sea-label lbl-z2" x="664" y="639" font-size="3.2" letter-spacing=".08em" fill="#4a80a0" opacity=".75">Хула</text>
