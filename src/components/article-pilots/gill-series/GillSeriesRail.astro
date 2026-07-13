@@ -102,7 +102,7 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
   <div class="gbs2-rmid" id="gbsRailMid">
     {partsBefore.length > 0 && (
       <nav class="gbs-rail-list" aria-label="Предыдущие части серии">
-        {partsBefore.map((item) => { const leather = item.mark.kind === 'label' ? leatherFor(item.id) : null; return (
+        {partsBefore.map((item) => { const leather = item.ribbon ?? (item.mark.kind === 'label' ? leatherFor(item.id) : null); return (
           <a class="gbs-rail-card" href={item.href}>
             {leather
               ? <GillLeatherRibbon word={leather.word} ornament={leather.ornament} variant={leather.variant} className="gbs-rail-card__num" />
@@ -156,7 +156,7 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
 
     {partsAfter.length > 0 && (
       <nav class="gbs-rail-list gbs-rail-list--after" aria-label="Следующие части серии">
-        {partsAfter.map((item) => { const leather = item.mark.kind === 'label' ? leatherFor(item.id) : null; return (
+        {partsAfter.map((item) => { const leather = item.ribbon ?? (item.mark.kind === 'label' ? leatherFor(item.id) : null); return (
           <a class="gbs-rail-card" href={item.href}>
             {leather
               ? <GillLeatherRibbon word={leather.word} ornament={leather.ornament} variant={leather.variant} className="gbs-rail-card__num" />
