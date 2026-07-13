@@ -75,6 +75,11 @@ export interface SeriesConfig {
   seriesTitleFull: string;
   /** Куда ведёт «Назад» рельса. */
   railBackHref: string;
+  /** Необязательный визуальный «характер» серии. Ставится как
+   *  data-series-theme на .gbs2-world и body; CSS-тема (напр.
+   *  css/series-samizdat.css) переопределяет токены движка и добавляет
+   *  атмосферу. Отсутствует у Гилла/Сердца = дефолтный вид. */
+  theme?: string;
   /** Пул CBM-теста «Обучение»; пустой массив = вкладка «Тест» скрыта. */
   quiz: SeriesQuizItem[];
   /** Родительская крошка между «Главная» и текущей частью. */
