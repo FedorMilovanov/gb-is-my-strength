@@ -442,9 +442,8 @@ mm.addEventListener('pointerdown',ev=>{ev.stopPropagation();mmDrag=true;mmPanTo(
 window.addEventListener('pointermove',ev=>{if(mmDrag)mmPanTo(ev);});
 window.addEventListener('pointerup',()=>{mmDrag=false;});
 // плавный перелёт вида к точке (для поиска/связей)
-const REDUCED_MOTION=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function tweenVp(tx,ty,tk){
-  if(REDUCED_MOTION){vp.x=tx;vp.y=ty;vp.k=tk;applyVp();return;}
+  if(reduceMotion){vp.x=tx;vp.y=ty;vp.k=tk;applyVp();return;}
   const x0=vp.x,y0=vp.y,k0=vp.k;let t=0;(function st(){t+=0.11;const e=t>=1?1:1-Math.pow(1-t,3);vp.x=x0+(tx-x0)*e;vp.y=y0+(ty-y0)*e;vp.k=k0+(tk-k0)*e;applyVp();if(t<1)requestAnimationFrame(st);})();}
 function flyTo(n,zoom){const sr=svg.getBoundingClientRect();const k=zoom?Math.max(vp.k,1.35):vp.k;tweenVp(sr.width/2-n.x*k,sr.height/2-n.y*k,k);}
 
@@ -629,8 +628,9 @@ function selectNode(id){selected=id;refresh();const n=byId.get(id);
   <div class="rel">${rel}</div>`;
   document.querySelectorAll('.rel a').forEach(a=>a.addEventListener('click',()=>{const t=byId.get(a.dataset.id);selectNode(a.dataset.id);flash(a.dataset.id);flyTo(t,false);}));
   if(isMobile())openSheet(asideR);
+  try{history.replaceState(null,'','#'+encodeURIComponent(id));}catch(_){}  // deep-link: ссылкой можно поделиться
 }
-function flash(id){if(REDUCED_MOTION)return;const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
+function flash(id){if(reduceMotion)return;const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
 
 // ---- families legend ----
 const famsEl=document.getElementById('fams');
@@ -658,7 +658,7 @@ function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init
 bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
 bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
 bindToggle('tg-labels',showLabels,v=>{showLabels=v;refresh();});
-document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;focusConf=null;selected=null;searchHits=new Set();searchActive=false;searchOrder=[];searchIdx=-1;q.value='';searchHint.classList.remove('show');document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();if(isMobile())closeSheets();});
+document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;focusConf=null;selected=null;searchHits=new Set();searchActive=false;searchOrder=[];searchIdx=-1;q.value='';searchHint.classList.remove('show');document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}fit();refresh();if(isMobile())closeSheets();});
 document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
 
 // ---- мобильные шторки (боковые панели прячутся под экран, а не исчезают совсем) ----
@@ -686,6 +686,9 @@ document.getElementById('stat').textContent = NATIONS
 if(!reduceMotion){for(const n of nodes){const a=Math.random()*6.283,d=90+Math.random()*120;n.x=n.homeX+Math.cos(a)*d;n.y=n.homeY+Math.sin(a)*d;}}
 window.addEventListener('resize',fit);
 fit();refresh();loop();
+// deep-link: если в URL есть #узел — подлететь к нему после первой раскладки
+if(location.hash.length>1){try{const id=decodeURIComponent(location.hash.slice(1));const n=byId.get(id);
+  if(n){setTimeout(()=>{selectNode(id);flyTo(n,true);},reduceMotion?0:600);}}catch(_){}}
 </script>
 
 </body>
