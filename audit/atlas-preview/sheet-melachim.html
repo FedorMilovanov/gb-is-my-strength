@@ -12,6 +12,9 @@
   .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .frame-inner{stroke-width:.5;opacity:.35}
+  .frame-orn use{opacity:.5}
+  svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
@@ -190,7 +193,9 @@
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
+  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
   .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
@@ -392,6 +397,14 @@
       <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
     </g>
     <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"/>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"/>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"/>
+    </g>
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
@@ -927,7 +940,12 @@
 
   <g class="cartouche">
     <rect x="410.4" y="554.4666666666666" width="174.4" height="37.266666666666666" rx="3.466666666666667" class="plate cart-plate"/>
-    <rect x="412.56666666666666" y="556.6333333333333" width="170.0" height="32.93333333333334" rx="2.6" class="cart-inner"/>
+    <rect x="412.6" y="556.6" width="170.0" height="32.9" rx="2.6" class="cart-inner"/>
+    <rect x="413.6" y="557.7" width="167.9" height="30.8" rx="1.9500000000000002" class="cart-inner2"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(413.9,557.9) scale(0.433) rotate(0 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(574.8,557.9) scale(0.433) rotate(90 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(574.8,581.8) scale(0.433) rotate(180 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(413.9,581.8) scale(0.433) rotate(270 8 8)"/>
     <text x="419.06666666666666" y="564.4333333333333" class="cart-over" font-size="4.116666666666667">БИБЛЕЙСКИЙ АТЛАС</text>
     <text x="419.06666666666666" y="576.1333333333333" class="cart-title" font-size="10.833333333333334">Царства Израиля и Иуды</text>
     <text x="419.06666666666666" y="585.6666666666666" class="cart-sub" font-size="4.983333333333333">1-2 Царств · 1-2 Паралипоменон · ~1050–586 гг. до н.э.</text>
@@ -968,6 +986,13 @@
 <rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 <g class="graticule" aria-hidden="true"><line x1="501.0" y1="550.1" x2="501.0" y2="553.2" class="grat"/><text x="501.0" y="557.5" text-anchor="middle" class="grat-t" font-size="3.47">34°</text><line x1="601.0" y1="550.1" x2="601.0" y2="551.9" class="grat"/><line x1="701.0" y1="550.1" x2="701.0" y2="553.2" class="grat"/><text x="701.0" y="557.5" text-anchor="middle" class="grat-t" font-size="3.47">36°</text><line x1="801.0" y1="550.1" x2="801.0" y2="551.9" class="grat"/><line x1="901.0" y1="550.1" x2="901.0" y2="553.2" class="grat"/><text x="901.0" y="557.5" text-anchor="middle" class="grat-t" font-size="3.47">38°</text><line x1="403.5" y1="773.6" x2="406.5" y2="773.6" class="grat"/><text x="407.8" y="774.8" text-anchor="start" class="grat-t" font-size="3.47">32°</text><line x1="916.5" y1="773.6" x2="913.5" y2="773.6" class="grat"/><text x="912.2" y="774.8" text-anchor="end" class="grat-t" font-size="3.47">32°</text><line x1="403.5" y1="653.6" x2="405.2" y2="653.6" class="grat"/><line x1="916.5" y1="653.6" x2="914.8" y2="653.6" class="grat"/></g>
 <rect x="403.46666666666664" y="550.1333333333333" width="513.0666666666667" height="339.73333333333335" class="frame"/>
+<rect x="405.2" y="551.8666666666667" width="509.6" height="336.2666666666667" class="frame frame-inner"/>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(406.1,552.7) scale(0.650) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(903.5,552.7) scale(0.650) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(903.5,876.9) scale(0.650) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(406.1,876.9) scale(0.650) rotate(270 8 8)"/>
+</g>
 </svg>
   <div class="stage-strip">
     <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Саул — первый царь<i>40 ЛЕТ ПРАВЛЕНИЯ</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Давид — царь воин<i>40 ЛЕТ · ИЕРУСАЛИМ</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Соломон — строитель<i>40 ЛЕТ · ХРАМ</i></span></div><div class="st" data-stage="3" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Разделённое царство<i>ИЗРАИЛЬ · 20 ЦАРЕЙ</i></span></div><div class="st" data-stage="4" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Иудея одна<i>ЕЗЕКИЯ · ИОСИЯ · ПАДЕНИЕ</i></span></div><div class="st" data-stage="5" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#3f6a8a"></span><span class="st-body"><b>VI</b> · Плен и возвращение<i>70 ЛЕТ · КИР · ЗОРОВАВЕЛЬ</i></span></div>

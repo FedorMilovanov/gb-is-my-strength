@@ -12,6 +12,9 @@
   .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .frame-inner{stroke-width:.5;opacity:.35}
+  .frame-orn use{opacity:.5}
+  svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
@@ -190,7 +193,9 @@
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
+  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
   .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
@@ -392,6 +397,14 @@
       <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
     </g>
     <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"/>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"/>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"/>
+    </g>
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
@@ -621,7 +634,12 @@ Z"/>
 
   <g class="cartouche">
     <rect x="115.6" y="53.36666666666663" width="739.6" height="127.56666666666668" rx="11.866666666666667" class="plate cart-plate"/>
-    <rect x="123.01666666666667" y="60.783333333333296" width="724.8" height="112.73333333333333" rx="8.9" class="cart-inner"/>
+    <rect x="123.0" y="60.8" width="724.8" height="112.7" rx="8.9" class="cart-inner"/>
+    <rect x="126.7" y="64.5" width="717.3" height="105.3" rx="6.675000000000001" class="cart-inner2"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(127.5,65.2) scale(1.483) rotate(0 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(821.1,65.2) scale(1.483) rotate(90 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(821.1,146.8) scale(1.483) rotate(180 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(127.5,146.8) scale(1.483) rotate(270 8 8)"/>
     <text x="145.26666666666665" y="87.48333333333329" class="cart-over" font-size="14.091666666666667">БИБЛЕЙСКИЙ АТЛАС</text>
     <text x="145.26666666666665" y="127.5333333333333" class="cart-title" font-size="37.083333333333336">Миссионерские путешествия Павла</text>
     <text x="145.26666666666665" y="160.16666666666663" class="cart-sub" font-size="17.058333333333334">Деяния 13–28 · 45–60 гг. н.э.</text>
@@ -662,6 +680,13 @@ Z"/>
 <rect x="80" y="26.66666666666663" width="1780" height="1186.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 <g class="graticule" aria-hidden="true"><line x1="170.0" y1="38.5" x2="170.0" y2="48.9" class="grat"/><text x="170.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">12°</text><line x1="235.0" y1="38.5" x2="235.0" y2="44.5" class="grat"/><line x1="300.0" y1="38.5" x2="300.0" y2="44.5" class="grat"/><line x1="365.0" y1="38.5" x2="365.0" y2="44.5" class="grat"/><line x1="430.0" y1="38.5" x2="430.0" y2="48.9" class="grat"/><text x="430.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">16°</text><line x1="495.0" y1="38.5" x2="495.0" y2="44.5" class="grat"/><line x1="560.0" y1="38.5" x2="560.0" y2="44.5" class="grat"/><line x1="625.0" y1="38.5" x2="625.0" y2="44.5" class="grat"/><line x1="690.0" y1="38.5" x2="690.0" y2="48.9" class="grat"/><text x="690.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">20°</text><line x1="755.0" y1="38.5" x2="755.0" y2="44.5" class="grat"/><line x1="820.0" y1="38.5" x2="820.0" y2="44.5" class="grat"/><line x1="885.0" y1="38.5" x2="885.0" y2="44.5" class="grat"/><line x1="950.0" y1="38.5" x2="950.0" y2="48.9" class="grat"/><text x="950.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">24°</text><line x1="1015.0" y1="38.5" x2="1015.0" y2="44.5" class="grat"/><line x1="1080.0" y1="38.5" x2="1080.0" y2="44.5" class="grat"/><line x1="1145.0" y1="38.5" x2="1145.0" y2="44.5" class="grat"/><line x1="1210.0" y1="38.5" x2="1210.0" y2="48.9" class="grat"/><text x="1210.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">28°</text><line x1="1275.0" y1="38.5" x2="1275.0" y2="44.5" class="grat"/><line x1="1340.0" y1="38.5" x2="1340.0" y2="44.5" class="grat"/><line x1="1405.0" y1="38.5" x2="1405.0" y2="44.5" class="grat"/><line x1="1470.0" y1="38.5" x2="1470.0" y2="48.9" class="grat"/><text x="1470.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">32°</text><line x1="1535.0" y1="38.5" x2="1535.0" y2="44.5" class="grat"/><line x1="1600.0" y1="38.5" x2="1600.0" y2="44.5" class="grat"/><line x1="1665.0" y1="38.5" x2="1665.0" y2="44.5" class="grat"/><line x1="1730.0" y1="38.5" x2="1730.0" y2="48.9" class="grat"/><text x="1730.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">36°</text><line x1="1795.0" y1="38.5" x2="1795.0" y2="44.5" class="grat"/><line x1="91.9" y1="1104.0" x2="97.8" y2="1104.0" class="grat"/><line x1="1848.1" y1="1104.0" x2="1842.2" y2="1104.0" class="grat"/><line x1="91.9" y1="1022.0" x2="102.3" y2="1022.0" class="grat"/><text x="106.7" y="1026.2" text-anchor="start" class="grat-t" font-size="11.87">32°</text><line x1="1848.1" y1="1022.0" x2="1837.8" y2="1022.0" class="grat"/><text x="1833.3" y="1026.2" text-anchor="end" class="grat-t" font-size="11.87">32°</text><line x1="91.9" y1="940.0" x2="97.8" y2="940.0" class="grat"/><line x1="1848.1" y1="940.0" x2="1842.2" y2="940.0" class="grat"/><line x1="91.9" y1="858.0" x2="102.3" y2="858.0" class="grat"/><text x="106.7" y="862.2" text-anchor="start" class="grat-t" font-size="11.87">34°</text><line x1="1848.1" y1="858.0" x2="1837.8" y2="858.0" class="grat"/><text x="1833.3" y="862.2" text-anchor="end" class="grat-t" font-size="11.87">34°</text><line x1="91.9" y1="776.0" x2="97.8" y2="776.0" class="grat"/><line x1="1848.1" y1="776.0" x2="1842.2" y2="776.0" class="grat"/><line x1="91.9" y1="694.0" x2="102.3" y2="694.0" class="grat"/><text x="106.7" y="698.2" text-anchor="start" class="grat-t" font-size="11.87">36°</text><line x1="1848.1" y1="694.0" x2="1837.8" y2="694.0" class="grat"/><text x="1833.3" y="698.2" text-anchor="end" class="grat-t" font-size="11.87">36°</text><line x1="91.9" y1="612.0" x2="97.8" y2="612.0" class="grat"/><line x1="1848.1" y1="612.0" x2="1842.2" y2="612.0" class="grat"/><line x1="91.9" y1="530.0" x2="102.3" y2="530.0" class="grat"/><text x="106.7" y="534.2" text-anchor="start" class="grat-t" font-size="11.87">38°</text><line x1="1848.1" y1="530.0" x2="1837.8" y2="530.0" class="grat"/><text x="1833.3" y="534.2" text-anchor="end" class="grat-t" font-size="11.87">38°</text><line x1="91.9" y1="448.0" x2="97.8" y2="448.0" class="grat"/><line x1="1848.1" y1="448.0" x2="1842.2" y2="448.0" class="grat"/><line x1="91.9" y1="366.0" x2="102.3" y2="366.0" class="grat"/><text x="106.7" y="370.2" text-anchor="start" class="grat-t" font-size="11.87">40°</text><line x1="1848.1" y1="366.0" x2="1837.8" y2="366.0" class="grat"/><text x="1833.3" y="370.2" text-anchor="end" class="grat-t" font-size="11.87">40°</text><line x1="91.9" y1="284.0" x2="97.8" y2="284.0" class="grat"/><line x1="1848.1" y1="284.0" x2="1842.2" y2="284.0" class="grat"/><line x1="91.9" y1="202.0" x2="102.3" y2="202.0" class="grat"/><text x="106.7" y="206.2" text-anchor="start" class="grat-t" font-size="11.87">42°</text><line x1="1848.1" y1="202.0" x2="1837.8" y2="202.0" class="grat"/><text x="1833.3" y="206.2" text-anchor="end" class="grat-t" font-size="11.87">42°</text><line x1="91.9" y1="120.0" x2="97.8" y2="120.0" class="grat"/><line x1="1848.1" y1="120.0" x2="1842.2" y2="120.0" class="grat"/></g>
 <rect x="91.86666666666667" y="38.533333333333296" width="1756.2666666666667" height="1162.9333333333334" class="frame"/>
+<rect x="97.8" y="44.466666666666626" width="1744.4" height="1151.0666666666668" class="frame frame-inner"/>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(100.8,47.4) scale(2.225) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1803.6,47.4) scale(2.225) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1803.6,1157.0) scale(2.225) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(100.8,1157.0) scale(2.225) rotate(270 8 8)"/>
+</g>
 </svg>
   <div class="stage-strip">
     <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Первое путешествие<i>45–48 гг. н.э.</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Второе путешествие<i>49–52 гг. н.э.</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Третье + путь в Рим<i>53–60 гг. н.э.</i></span></div>

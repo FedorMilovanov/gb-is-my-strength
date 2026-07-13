@@ -12,6 +12,9 @@
   .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .frame-inner{stroke-width:.5;opacity:.35}
+  .frame-orn use{opacity:.5}
+  svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
@@ -190,7 +193,9 @@
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
+  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
   .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
@@ -392,6 +397,14 @@
       <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
     </g>
     <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"/>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"/>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"/>
+    </g>
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
@@ -927,7 +940,12 @@
 
   <g class="cartouche">
     <rect x="36" y="446.1666666666667" width="433.3" height="93.16666666666666" rx="8.666666666666666" class="plate cart-plate"/>
-    <rect x="41.416666666666664" y="451.58333333333337" width="422.5" height="82.33333333333333" rx="6.5" class="cart-inner"/>
+    <rect x="41.4" y="451.6" width="422.5" height="82.3" rx="6.5" class="cart-inner"/>
+    <rect x="44.1" y="454.3" width="417.1" height="76.9" rx="4.875" class="cart-inner2"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(44.7,454.8) scale(1.083) rotate(0 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(444.4,454.8) scale(1.083) rotate(90 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(444.4,514.4) scale(1.083) rotate(180 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(44.7,514.4) scale(1.083) rotate(270 8 8)"/>
     <text x="57.666666666666664" y="471.08333333333337" class="cart-over" font-size="10.291666666666666">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ II</text>
     <text x="57.666666666666664" y="500.33333333333337" class="cart-title" font-size="27.083333333333332">Исход из Египта</text>
     <text x="57.666666666666664" y="524.1666666666667" class="cart-sub" font-size="12.458333333333332">Исход · Числа 33 · Пустыня Синай</text>
@@ -968,6 +986,13 @@
 <rect x="10" y="426.6666666666667" width="1300" height="866.6666666666666" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 <g class="graticule" aria-hidden="true"><line x1="101.0" y1="435.3" x2="101.0" y2="442.9" class="grat"/><text x="101.0" y="453.8" text-anchor="middle" class="grat-t" font-size="8.67">30°</text><line x1="201.0" y1="435.3" x2="201.0" y2="439.7" class="grat"/><line x1="301.0" y1="435.3" x2="301.0" y2="442.9" class="grat"/><text x="301.0" y="453.8" text-anchor="middle" class="grat-t" font-size="8.67">32°</text><line x1="401.0" y1="435.3" x2="401.0" y2="439.7" class="grat"/><line x1="501.0" y1="435.3" x2="501.0" y2="442.9" class="grat"/><text x="501.0" y="453.8" text-anchor="middle" class="grat-t" font-size="8.67">34°</text><line x1="601.0" y1="435.3" x2="601.0" y2="439.7" class="grat"/><line x1="701.0" y1="435.3" x2="701.0" y2="442.9" class="grat"/><text x="701.0" y="453.8" text-anchor="middle" class="grat-t" font-size="8.67">36°</text><line x1="801.0" y1="435.3" x2="801.0" y2="439.7" class="grat"/><line x1="901.0" y1="435.3" x2="901.0" y2="442.9" class="grat"/><text x="901.0" y="453.8" text-anchor="middle" class="grat-t" font-size="8.67">38°</text><line x1="1001.0" y1="435.3" x2="1001.0" y2="439.7" class="grat"/><line x1="1101.0" y1="435.3" x2="1101.0" y2="442.9" class="grat"/><text x="1101.0" y="453.8" text-anchor="middle" class="grat-t" font-size="8.67">40°</text><line x1="1201.0" y1="435.3" x2="1201.0" y2="439.7" class="grat"/><line x1="18.7" y1="893.6" x2="23.0" y2="893.6" class="grat"/><line x1="1301.3" y1="893.6" x2="1297.0" y2="893.6" class="grat"/><line x1="18.7" y1="773.6" x2="26.2" y2="773.6" class="grat"/><text x="29.5" y="776.6" text-anchor="start" class="grat-t" font-size="8.67">32°</text><line x1="1301.3" y1="773.6" x2="1293.8" y2="773.6" class="grat"/><text x="1290.5" y="776.6" text-anchor="end" class="grat-t" font-size="8.67">32°</text><line x1="18.7" y1="653.6" x2="23.0" y2="653.6" class="grat"/><line x1="1301.3" y1="653.6" x2="1297.0" y2="653.6" class="grat"/><line x1="18.7" y1="533.6" x2="26.2" y2="533.6" class="grat"/><text x="29.5" y="536.6" text-anchor="start" class="grat-t" font-size="8.67">34°</text><line x1="1301.3" y1="533.6" x2="1293.8" y2="533.6" class="grat"/><text x="1290.5" y="536.6" text-anchor="end" class="grat-t" font-size="8.67">34°</text></g>
 <rect x="18.666666666666664" y="435.33333333333337" width="1282.6666666666667" height="849.3333333333333" class="frame"/>
+<rect x="23" y="439.6666666666667" width="1274" height="840.6666666666666" class="frame frame-inner"/>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(25.2,441.8) scale(1.625) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1268.8,441.8) scale(1.625) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1268.8,1252.2) scale(1.625) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(25.2,1252.2) scale(1.625) rotate(270 8 8)"/>
+</g>
 </svg>
   <div class="stage-strip">
     <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Выход из Египта<i>ДЕНЬ ПЕРВЫЙ · ПАСХА</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Переправа через море<i>ТРЕТЬЯ СТОЯНКА · ЧУДО</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Путь к Синаю<i>6 НЕДЕЛЬ · МАРА · ЭЛИМ</i></span></div><div class="st" data-stage="3" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Синайский завет<i>~1 ГОД У ГОРЫ</i></span></div><div class="st" data-stage="4" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Странствия 40 лет<i>40 ЛЕТ · ЦЕЛОЕ ПОКОЛЕНИЕ</i></span></div><div class="st" data-stage="5" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#3f6a8a"></span><span class="st-body"><b>VI</b> · Подход к Ханаану<i>КОНЕЦ СТРАНСТВИЙ · НЕВО</i></span></div>

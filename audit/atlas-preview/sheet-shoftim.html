@@ -12,6 +12,9 @@
   .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .frame-inner{stroke-width:.5;opacity:.35}
+  .frame-orn use{opacity:.5}
+  svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
@@ -190,7 +193,9 @@
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
+  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
   .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
@@ -392,6 +397,14 @@
       <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
     </g>
     <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"/>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"/>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"/>
+    </g>
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
@@ -927,7 +940,12 @@
 
   <g class="cartouche">
     <rect x="192" y="369.8333333333333" width="366.7" height="78.83333333333333" rx="7.333333333333333" class="plate cart-plate"/>
-    <rect x="196.58333333333334" y="374.41666666666663" width="357.5" height="69.66666666666666" rx="5.5" class="cart-inner"/>
+    <rect x="196.6" y="374.4" width="357.5" height="69.7" rx="5.5" class="cart-inner"/>
+    <rect x="198.9" y="376.7" width="352.9" height="65.1" rx="4.125" class="cart-inner2"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(199.3,377.2) scale(0.917) rotate(0 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(537.6,377.2) scale(0.917) rotate(90 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(537.6,427.6) scale(0.917) rotate(180 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(199.3,427.6) scale(0.917) rotate(270 8 8)"/>
     <text x="210.33333333333331" y="390.91666666666663" class="cart-over" font-size="8.708333333333332">БИБЛЕЙСКИЙ АТЛАС</text>
     <text x="210.33333333333331" y="415.66666666666663" class="cart-title" font-size="22.916666666666664">Эпоха Судей</text>
     <text x="210.33333333333331" y="435.8333333333333" class="cart-sub" font-size="10.541666666666666">Книга Судей · ~1380–1050 гг. до н.э.</text>
@@ -968,6 +986,13 @@
 <rect x="170" y="353.3333333333333" width="1100" height="733.3333333333334" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 <g class="graticule" aria-hidden="true"><line x1="301.0" y1="360.7" x2="301.0" y2="367.1" class="grat"/><text x="301.0" y="376.3" text-anchor="middle" class="grat-t" font-size="7.33">32°</text><line x1="401.0" y1="360.7" x2="401.0" y2="364.3" class="grat"/><line x1="501.0" y1="360.7" x2="501.0" y2="367.1" class="grat"/><text x="501.0" y="376.3" text-anchor="middle" class="grat-t" font-size="7.33">34°</text><line x1="601.0" y1="360.7" x2="601.0" y2="364.3" class="grat"/><line x1="701.0" y1="360.7" x2="701.0" y2="367.1" class="grat"/><text x="701.0" y="376.3" text-anchor="middle" class="grat-t" font-size="7.33">36°</text><line x1="801.0" y1="360.7" x2="801.0" y2="364.3" class="grat"/><line x1="901.0" y1="360.7" x2="901.0" y2="367.1" class="grat"/><text x="901.0" y="376.3" text-anchor="middle" class="grat-t" font-size="7.33">38°</text><line x1="1001.0" y1="360.7" x2="1001.0" y2="364.3" class="grat"/><line x1="1101.0" y1="360.7" x2="1101.0" y2="367.1" class="grat"/><text x="1101.0" y="376.3" text-anchor="middle" class="grat-t" font-size="7.33">40°</text><line x1="1201.0" y1="360.7" x2="1201.0" y2="364.3" class="grat"/><line x1="177.3" y1="893.6" x2="181.0" y2="893.6" class="grat"/><line x1="1262.7" y1="893.6" x2="1259.0" y2="893.6" class="grat"/><line x1="177.3" y1="773.6" x2="183.8" y2="773.6" class="grat"/><text x="186.5" y="776.2" text-anchor="start" class="grat-t" font-size="7.33">32°</text><line x1="1262.7" y1="773.6" x2="1256.3" y2="773.6" class="grat"/><text x="1253.5" y="776.2" text-anchor="end" class="grat-t" font-size="7.33">32°</text><line x1="177.3" y1="653.6" x2="181.0" y2="653.6" class="grat"/><line x1="1262.7" y1="653.6" x2="1259.0" y2="653.6" class="grat"/><line x1="177.3" y1="533.6" x2="183.8" y2="533.6" class="grat"/><text x="186.5" y="536.2" text-anchor="start" class="grat-t" font-size="7.33">34°</text><line x1="1262.7" y1="533.6" x2="1256.3" y2="533.6" class="grat"/><text x="1253.5" y="536.2" text-anchor="end" class="grat-t" font-size="7.33">34°</text><line x1="177.3" y1="413.6" x2="181.0" y2="413.6" class="grat"/><line x1="1262.7" y1="413.6" x2="1259.0" y2="413.6" class="grat"/></g>
 <rect x="177.33333333333334" y="360.66666666666663" width="1085.3333333333333" height="718.6666666666667" class="frame"/>
+<rect x="181" y="364.3333333333333" width="1078" height="711.3333333333334" class="frame frame-inner"/>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(182.8,366.2) scale(1.375) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1235.2,366.2) scale(1.375) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1235.2,1051.8) scale(1.375) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(182.8,1051.8) scale(1.375) rotate(270 8 8)"/>
+</g>
 </svg>
   <div class="stage-strip">
     <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Ранние судьи<i>ГОФОНИИЛ · АОД · САМЕГАР</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Девора и Варак<i>ПЕСНЬ ДЕВОРЫ · АСОР · КИССОН</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Гедеон<i>300 ВОИНОВ · МАДИАНИТЯНЕ</i></span></div><div class="st" data-stage="3" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Иеффай<i>ГАЛААД · АММОНИТЯНЕ</i></span></div><div class="st" data-stage="4" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Самсон<i>ФИЛИСТИМЛЯНЕ · ДАЛИДА</i></span></div><div class="st" data-stage="5" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#3f6a8a"></span><span class="st-body"><b>VI</b> · Крах Силоа<i>ИЛИЙ · САМУИЛ · КОВЧЕГ</i></span></div>
