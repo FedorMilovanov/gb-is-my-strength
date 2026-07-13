@@ -4615,3 +4615,50 @@ html.dark #partTocOverlay .gbat-fbtn--cont{color:#e5bd85;box-shadow:inset 0 1px 
 @media (prefers-reduced-motion:reduce){
   #partTocOverlay .gbat-subs,#partTocOverlay .gbat-sub,#partTocOverlay .gbat-chev{transition:none!important}
 }
+
+/* =========================================================
+   HERM CORNER CANON (порт 8f5b87a с lane, 2026-07-13):
+   бейдж скорости на Play флоатера — тот же DOM/JS-хук, что
+   .gbs-rail-spdbadge Гилла, но БЕЗ [data-gill-v16]-скоупа:
+   цвета страницы, не кожа/золото Гилла.
+   ========================================================= */
+.gb-ember-playwrap { position: relative; display: grid; place-items: center; }
+.gb-floater .gbs-rail-spdbadge {
+  position: absolute; right: -7px; bottom: -6px; z-index: 3;
+  min-width: 18px; height: 14px; padding: 2.2px 3px 0;
+  display: grid; place-items: center; border-radius: 999px;
+  background: var(--color-text, #1a1a1a); color: var(--color-canvas, #fdfcf9);
+  font: 800 8px/1 "Source Sans 3", system-ui, sans-serif; text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .28); pointer-events: none;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+html.dark .gb-floater .gbs-rail-spdbadge {
+  background: var(--color-text, #f5ede0); color: var(--color-canvas, #171411);
+}
+.gb-floater .gbs-rail-spdbadge.is-bump {
+  animation: gbs-rail-spdbadge-bump .4s var(--gb-ease-spring, cubic-bezier(.34, 1.56, .64, 1));
+}
+
+/* Гилл, десктоп: лист настроек — поповер от триггера (низ-лево rail),
+   не центр-модалка с гашением экрана (порт 8f5b87a). */
+@media (min-width: 64em) {
+  [data-gill-v16] .gill-settings-overlay {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 0 0 16px clamp(16px, 2.4vw, 40px);
+  }
+  [data-gill-v16] .gill-settings-overlay .gill-settings-sheet {
+    width: 320px;
+    border-radius: 18px;
+    box-shadow: 0 20px 56px rgba(10, 6, 2, .38), 0 2px 10px rgba(10, 6, 2, .18);
+    transform-origin: bottom left;
+    transform: translateY(12px) scale(.96);
+  }
+  [data-gill-v16] .gill-settings-overlay.is-open .gill-settings-sheet {
+    transform: translateY(0) scale(1);
+  }
+  [data-gill-v16] .gill-settings-overlay .toc-sheet__handle { display: none; }
+}

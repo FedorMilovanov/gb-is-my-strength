@@ -3,21 +3,32 @@
  * SingleArticleCluster — одиночный вертикальный кластер для standalone статей.
  * Точная реализация gb-floater из референса gb-floating-cluster-probe-v16.html.
  *
- * Структура (сверху вниз):
+ * Структура (сверху вниз), одинаковая для ОБОИХ вариантов (owner: "должно
+ * быть как в Гилле, справа сверху PLAY, а не в левом меню... стандарт Гилла
+ * с адаптацией цветовой только, SVG значки и расположение Гилла" —
+ * MOBILE_CHROME_ENGINE_UNIFICATION_2026-07-12, часть PR-5):
  *   1. Theme toggle (gb-icon gb-theme-toggle)
- *   2. Search (gb-icon)         — variant="article" only
- *   3. PlayEmber (gb-ember)     — variant="article" only
- *   4. Save (gb-save)           — variant="article" only
+ *   2. Search (gb-icon)
+ *   3. PlayEmber (gb-ember) + постоянный бейдж скорости (.gbs-rail-spdbadge —
+ *      тот же класс и тот же generic-хук в initPlayExpand(), что у Gill
+ *      desktop; CSS здесь НЕ gill-scoped, красится в цвет страницы, не в
+ *      кожу/золото Gill — единственная адаптация)
+ *   4. Save (gb-save)
+ *
+ * Раньше variant="hermeneutics" исключал 2-4 и держал их в
+ * HermenevtikaRail's собственном верхнем баре — эта развилка отменена
+ * owner'ом явно: Play должен быть в углу, как у Гилла, не в левом рейле.
+ * Оглавление статьи (Hermenevtika TOC) остаётся СВОИМ — это трогает только
+ * кластер, не TOC-колонку HermenevtikaRail.
  *
  * Positioning:
  *   - default: position:fixed, top:max(20px,...), right:max(20px,...)
- *   - variant="hermeneutics": same fixed, but top/right override
- *     copies old .theme-toggle geometry (top:clamp(24,3.5vw,44)-4; right:8.5vw)
- *     so day/night SVG sits exactly on the breadcrumb visual level
- *     (owner spec: replace old control, preserve its anchor). Search/Play/Save
- *     are DROPPED for this variant — they live in HermenevtikaRail's own top
- *     bar instead (owner: Play blooming here over the article read as buggy;
- *     the rail's version blooms up within its own 270px column instead).
+ *   - variant="hermeneutics": same fixed, but top/right override copies the
+ *     historical .theme-toggle geometry — СОВПАДАЕТ с формулой, которую уже
+ *     использует Gill's .gbs-theme-corner (floating-cluster.css: "те же
+ *     точные top/right, что канон уже использует для breadcrumb-level
+ *     themetoggle... DO NOT invent calc formulas"), так что позиционирование
+ *     менять не нужно — уже "как у Гилла".
  *
  * На мобильных (≤899px): нижняя центрированная горизонтальная пилюля
  */
@@ -77,30 +88,33 @@ const {
     </span>
   </button>
 
-  {variant !== 'hermeneutics' && (
-    <Fragment>
-      <!-- 2. Search -->
-      <button
-        type="button"
-        class="gb-icon"
-        id="gbFcSearch"
-        data-fc-action="search"
-        aria-label="Поиск"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" />
-          <path d="M21 21l-4.3-4.3" />
-        </svg>
-      </button>
+  <!-- 2. Search -->
+  <button
+    type="button"
+    class="gb-icon"
+    id="gbFcSearch"
+    data-fc-action="search"
+    aria-label="Поиск"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+    </svg>
+  </button>
 
-      <!-- 3. Play — the tested PlayEmber ring circle, same as every other single
-           article. -->
-      <PlayEmber audioState={audioState} progress={progress} />
+  <!-- 3. Play — canonical bloom-pill panel (initPlayExpand), same as Gill
+       desktop corner. Wrapped span + .gbs-rail-spdbadge give a persistent
+       speed indicator via the SAME generic hook Gill's badge uses
+       (ember.parentNode.querySelector('.gbs-rail-spdbadge') in
+       floating-cluster-controller.js) — CSS for it here is unscoped, so it
+       inherits the page's own day/night tokens instead of Gill's palette. -->
+  <span class="gb-ember-playwrap">
+    <PlayEmber audioState={audioState} progress={progress} />
+    <span class="gbs-rail-spdbadge" aria-hidden="true">1×</span>
+  </span>
 
-      <!-- 4. Save — NO halo (gb-save, not gb-icon) -->
-      <SaveButton />
-    </Fragment>
-  )}
+  <!-- 4. Save — NO halo (gb-save, not gb-icon) -->
+  <SaveButton />
   <!-- Hermeneutics: Search/Play/Save moved into HermenevtikaRail's own top
        bar (search pill → Play → Save, blooms UP not over the article) — this
        floater is theme-toggle only there now, at its unchanged breadcrumb-level
