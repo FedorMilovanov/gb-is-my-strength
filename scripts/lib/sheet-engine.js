@@ -274,17 +274,30 @@ function renderSheet(route, opts) {
   }
   const routePath = catmullRom(routePts);
 
-  // Направление движения (AV-022): шеврон на середине достаточно длинных
-  // перегонов между станами, ориентированный по ходу пути. Экранный размер
-  // держим через non-scaling-stroke (класс .route-arrow) — не растёт с зумом.
+  // Направление движения (AV-022): ОДИН шеврон на перегон между станами —
+  // на самом длинном сегменте фактической полилинии этого перегона (с учётом
+  // via-опор, иначе стрелка прямой «город→город» ложится в море). Больше
+  // одного шеврона на перегон — визуальный шум. Экранный размер держит
+  // non-scaling-stroke (.route-arrow).
   const routeArrows = [];
-  for (let i = 0; i < routeStops.length - 1; i++) {
-    const a = [routeStops[i].x, routeStops[i].y], b = [routeStops[i + 1].x, routeStops[i + 1].y];
-    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
-    if (len < 60) continue; // короткие перегоны не помечаем
-    const mx = a[0] + dx * 0.52, my = a[1] + dy * 0.52;
-    const ang = Math.atan2(dy, dx) * 180 / Math.PI;
-    routeArrows.push(`<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(${mx.toFixed(1)},${my.toFixed(1)}) rotate(${ang.toFixed(1)})" class="route-arrow"/>`);
+  {
+    // границы перегонов в routePts: индексы точек-станов
+    const stopIdx = [];
+    let k2 = 0;
+    for (const p of routeStops) { stopIdx.push(k2); k2 += 1 + (viaMap[p.id] ? viaMap[p.id].length : 0); }
+    for (let s = 0; s < stopIdx.length - 1; s++) {
+      let best = null;
+      for (let i = stopIdx[s]; i < stopIdx[s + 1]; i++) {
+        const a = routePts[i], b = routePts[i + 1];
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (!best || len > best.len) best = { a, b, len };
+      }
+      if (!best || best.len < 90) continue; // короткие перегоны не помечаем
+      const dx = best.b[0] - best.a[0], dy = best.b[1] - best.a[1];
+      const mx = best.a[0] + dx * 0.52, my = best.a[1] + dy * 0.52;
+      const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+      routeArrows.push(`<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(${mx.toFixed(1)},${my.toFixed(1)}) rotate(${ang.toFixed(1)})" class="route-arrow"/>`);
+    }
   }
 
   const seenStage = new Set(), milestones = [], milestoneIds = new Set();
@@ -730,6 +743,8 @@ function sheetCss() {
   .g9{position:absolute;right:10px;top:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
   /* компактный HUD зума: экранная шкала + север (фурнитура листа на зуме скрыта) */
   .zoom-hud{position:absolute;left:14px;bottom:14px;z-index:20;display:flex;align-items:center;gap:9px;font:600 11px/1 Georgia,serif;color:#6b5216;background:rgba(246,241,231,.92);border:1px solid rgba(138,106,31,.4);border-radius:8px;padding:7px 11px;box-shadow:0 2px 8px rgba(90,70,30,.18);pointer-events:none}
+  /* display:flex выше перебивает UA-стиль [hidden] — возвращаем скрытие явно */
+  .zoom-hud[hidden]{display:none}
   .zoom-hud .zh-bar{display:inline-block;height:5px;background:#4a3f28;border:1px solid #6b5216;border-radius:1px}
   .zoom-hud .zh-north{letter-spacing:.05em}
   /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
