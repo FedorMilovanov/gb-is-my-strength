@@ -94,7 +94,8 @@
   /* подписи: тонкий мягкий ореол (круглые стыки — без «шипов» на засечках), никакой рамки-наклейки */
   .node text{font-family:Georgia,serif;fill:var(--ink);paint-order:stroke;stroke:var(--paper0);stroke-width:1.7px;stroke-linejoin:round;stroke-linecap:round;stroke-opacity:.82;pointer-events:none;transition:fill .16s,letter-spacing .16s}
   .node text.lbl-big{stroke-width:2.1px;letter-spacing:.15px}
-  .node text.lbl-sub{fill:var(--gold);stroke-width:1.8px;letter-spacing:.55px}
+  .node text.lbl-sub{fill:var(--gold);stroke-width:1.8px;letter-spacing:.55px;transition:opacity .25s}
+  #svg.far .lbl-sub{opacity:0}
   .node .lbl-leaf{opacity:0;transition:opacity .18s,fill .16s;font-size:9.5px;stroke-width:1.5px}
   .node.show .lbl-leaf{opacity:1}
   /* микро-интерактив: при наведении подпись «оживает» — чуть темнее и чуть разрежённее */
@@ -315,7 +316,8 @@ for(const n of nodes){ if(n.family&&n.family!=='spine'){ if(!famNodes.has(n.fami
 const svg=document.getElementById('svg');
 const vpG=document.getElementById('viewport');
 let vp={x:0,y:0,k:1};
-function applyVp(){vpG.setAttribute('transform',`translate(${vp.x} ${vp.y}) scale(${vp.k})`);}
+function applyVp(){vpG.setAttribute('transform',`translate(${vp.x} ${vp.y}) scale(${vp.k})`);
+  svg.classList.toggle('far',vp.k<0.6);} // зум-детализация: на отдалении даты-подписи прячутся (не шумят)
 function fit(){
   const r=svg.getBoundingClientRect();
   let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
