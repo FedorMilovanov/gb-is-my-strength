@@ -114,10 +114,18 @@ body[data-series-theme="samizdat"] .mobile-bottom-bar{ position:relative; z-inde
   border-top:2px solid currentColor; border-bottom:2px solid currentColor;
   padding:6px 0; display:inline-block;
 }
+/* Кинетический знак (номер части в статье / гигантское «ЕХБ» на хабе) —
+   чернильный ВОДЯНОЙ ЗНАК газетной плиты: полупрозрачная заливка + фиолетовый
+   контур, чтобы не спорить с текстом и читаться как оттиск. */
 [data-series-theme="samizdat"] .gbs2-kinetic{
   font-family:'Playfair Display',Georgia,serif; font-weight:900;
-  color:var(--gbs2-accent);
-  -webkit-text-stroke:0; text-shadow:0 1px 0 rgba(91,58,134,.25), 2px 3px 6px rgba(40,26,60,.14);
+  color:rgba(91,58,134,.15);
+  -webkit-text-stroke:1px rgba(122,92,172,.42);
+  text-shadow:none;
+}
+html.dark [data-series-theme="samizdat"] .gbs2-kinetic{
+  color:rgba(184,155,232,.13);
+  -webkit-text-stroke:1px rgba(184,155,232,.36);
 }
 [data-series-theme="samizdat"] .gbs2-head h1{
   font-family:'Playfair Display',Georgia,serif;
