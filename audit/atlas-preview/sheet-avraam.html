@@ -144,7 +144,10 @@
   .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
   .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
   .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
-  .rose .rose-diag{fill:none;stroke:#8a6a1f;stroke-width:.7;opacity:.5}
+  .rose .rose-ring{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.5}
+  .rose .rose-ticks path{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.55}
+  .rose .rose-sec{fill:rgba(138,106,31,.16);stroke:#8a6a1f;stroke-width:.4;opacity:.75}
+  .rose .rose-shade{fill:rgba(107,82,22,.45);stroke:none}
   .rose .rose-hub{fill:#8a6a1f;stroke:none;opacity:.7}
   .graticule{transition:opacity .35s}
   svg.zoomed .graticule{opacity:0}
@@ -1010,8 +1013,11 @@
     <g transform="translate(1792,104)">
       <circle r="45" class="plate"/>
       <g class="rose">
+        <circle r="37.5" class="rose-ring"/>
+        <g class="rose-ticks"><path d="M0,-37.5 v4.800000000000001" transform="rotate(0)"/><path d="M0,-37.5 v2.7" transform="rotate(22.5)"/><path d="M0,-37.5 v2.7" transform="rotate(45)"/><path d="M0,-37.5 v2.7" transform="rotate(67.5)"/><path d="M0,-37.5 v4.800000000000001" transform="rotate(90)"/><path d="M0,-37.5 v2.7" transform="rotate(112.5)"/><path d="M0,-37.5 v2.7" transform="rotate(135)"/><path d="M0,-37.5 v2.7" transform="rotate(157.5)"/><path d="M0,-37.5 v4.800000000000001" transform="rotate(180)"/><path d="M0,-37.5 v2.7" transform="rotate(202.5)"/><path d="M0,-37.5 v2.7" transform="rotate(225)"/><path d="M0,-37.5 v2.7" transform="rotate(247.5)"/><path d="M0,-37.5 v4.800000000000001" transform="rotate(270)"/><path d="M0,-37.5 v2.7" transform="rotate(292.5)"/><path d="M0,-37.5 v2.7" transform="rotate(315)"/><path d="M0,-37.5 v2.7" transform="rotate(337.5)"/></g>
+        <path d="M0,-22.5 L3,-3 L22.5,0 L3,3 L0,22.5 L-3,3 L-22.5,0 L-3,-3 Z" transform="rotate(45)" class="rose-sec"/>
         <path d="M0,-33 L4.5,-4.5 L33,0 L4.5,4.5 L0,33 L-4.5,4.5 L-33,0 L-4.5,-4.5 Z"/>
-        <path d="M16.5,-16.5 L3.9000000000000004,-1.7999999999999998 M16.5,16.5 L1.7999999999999998,3.9000000000000004 M-16.5,16.5 L-3.9000000000000004,1.7999999999999998 M-16.5,-16.5 L-1.7999999999999998,-3.9000000000000004" class="rose-diag"/>
+        <path d="M0,-33 L4.5,-4.5 L0,0 Z M33,0 L4.5,4.5 L0,0 Z M0,33 L-4.5,4.5 L0,0 Z M-33,0 L-4.5,-4.5 L0,0 Z" class="rose-shade"/>
         <circle r="3.1500000000000004" class="rose-hub"/>
       </g>
       <path d="M0,-33 L4.5,-4.5 L0,-9 L-4.5,-4.5 Z" class="north"/>
