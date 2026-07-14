@@ -439,7 +439,7 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
     document.getElementById('hmSheetShareBtn')?.addEventListener('click', share);
 
     // Шестерёнка «Настройки чтения» — открывает отдельный лист
-    // (HermenevtikaReaderSettings слушает это событие). Перед открытием гасим
+    // (ReaderSettings слушает это событие). Перед открытием гасим
     // TOC-лист, чтобы одновременно был открыт ровно один лист.
     document.getElementById('hmSettingsBtn')?.addEventListener('click', () => {
       closeSheet();
