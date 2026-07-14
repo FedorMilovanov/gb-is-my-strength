@@ -465,7 +465,7 @@ function validateJS() {
 }
 
 function walkHtmlFiles(dir, out = []) {
-  const skip = new Set(['.git', 'node_modules', '.arena', '.cache', 'dist', 'build', 'coverage', 'out', 'target', '_app']);
+  const skip = new Set(['.git', 'node_modules', '.arena', '.cache', 'dist', 'build', 'coverage', 'out', 'target', '_app', 'scripts']);
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (skip.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
