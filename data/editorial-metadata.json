@@ -6,7 +6,7 @@
     "approvedRecordsRequireProjectionConvergence": true,
     "technicalCommitsMayChangeEditorialDates": false
   },
-  "sourceCommit": "e6793627942fd3ab4355e6230538a4a49ca352a6",
+  "sourceCommit": "236fab6dd2b58d32246a67366abbdb78d4fbbe35",
   "records": {
     "/articles/20-antisovetov-pastoru/": {
       "route": "/articles/20-antisovetov-pastoru/",
@@ -30,6 +30,30 @@
         "searchModifiedAt": "2026-05-21T20:09:05.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
         "rssPublishedAt": "2026-06-13T21:00:00.000Z"
+      }
+    },
+    "/articles/chto-bibliya-nazyvaet-serdcem/": {
+      "route": "/articles/chto-bibliya-nazyvaet-serdcem/",
+      "canonical": "https://gospod-bog.ru/articles/chto-bibliya-nazyvaet-serdcem/",
+      "title": "Библейская кардиология: что Библия называет сердцем | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/chto-bibliya-nazyvaet-serdcem/ChtoBibliyaPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": null,
+        "searchModifiedAt": null,
+        "sitemapLastmod": null,
+        "rssPublishedAt": null
       }
     },
     "/articles/dzhon-gill-chast-1-chelovek/": {
@@ -101,6 +125,30 @@
         "searchPublishedAt": "2026-05-25T21:00:00.000Z",
         "searchModifiedAt": "2026-06-09T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
+        "rssPublishedAt": "2026-06-13T21:00:00.000Z"
+      }
+    },
+    "/articles/dzhon-gill-chast-4-ekzeget/": {
+      "route": "/articles/dzhon-gill-chast-4-ekzeget/",
+      "canonical": "https://gospod-bog.ru/articles/dzhon-gill-chast-4-ekzeget/",
+      "title": "Джон Гилл (1697–1771). Часть III: Экзегет — экзегеза, полемика, отвержение",
+      "metadataSource": "src/components/article-pilots/gill-part4/GillPart4PageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-06-13T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-09T09:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-09T09:00:00.000Z",
+        "metaModifiedAt": "2026-07-09T09:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-09T09:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-09T09:00:00.000Z",
+        "searchPublishedAt": "2026-07-08T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-08T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-09T09:00:00.000Z",
         "rssPublishedAt": "2026-06-13T21:00:00.000Z"
       }
     },
@@ -224,10 +272,34 @@
         "rssPublishedAt": "2026-06-13T21:00:00.000Z"
       }
     },
+    "/articles/novoe-serdce/": {
+      "route": "/articles/novoe-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/novoe-serdce/",
+      "title": "Новое сердце: как Бог меняет то, что мы не смогли исправить | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/novoe-serdce/NovoeSerdcePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": null,
+        "searchModifiedAt": null,
+        "sitemapLastmod": null,
+        "rssPublishedAt": null
+      }
+    },
     "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
       "route": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
       "canonical": "https://gospod-bog.ru/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
-      "title": "Римлянам 7: верующий или неверующий? | Господь Бог — Сила Моя",
+      "title": "Римлянам 7: верующий, неверующий или человек под законом? | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/rimlyanam7/Rimlyanam7PageHead.astro",
       "contentType": "article",
       "editorialPublishedAt": "2026-06-13T21:00:00.000Z",
@@ -246,6 +318,54 @@
         "searchModifiedAt": "2026-06-03T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
         "rssPublishedAt": "2026-06-13T21:00:00.000Z"
+      }
+    },
+    "/articles/serdce-i-duh/": {
+      "route": "/articles/serdce-i-duh/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-i-duh/",
+      "title": "Сердце и Дух: как Бог живёт в том, что Сам оживил | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-iduh/SerdceIDuhPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": null,
+        "searchModifiedAt": null,
+        "sitemapLastmod": null,
+        "rssPublishedAt": null
+      }
+    },
+    "/articles/serdce-spravochnik/": {
+      "route": "/articles/serdce-spravochnik/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-spravochnik/",
+      "title": "Сердце: библейский справочник | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-spravochnik/SerdceSpravochnikPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": null,
+        "searchModifiedAt": null,
+        "sitemapLastmod": null,
+        "rssPublishedAt": null
       }
     },
     "/baptisty-rossii/dva-sezda-1884/": {

@@ -124,7 +124,7 @@
     "content:parity": "node scripts/check-mdx-html-parity.js",
     "sources:hygiene": "node scripts/sources-hygiene.js",
     "article:qa": "node scripts/article-qa.js",
-    "css:layer:validate": "node scripts/css-layer-validator.js css/site.css --ceiling=202",
+    "css:layer:validate": "node scripts/css-layer-validator.js css/site.css --ceiling=200",
     "route:taxonomy": "npm run native:runtime:audit",
     "native:runtime:audit": "node scripts/native-runtime-taxonomy-audit.js",
     "native:runtime:audit:strict": "node scripts/native-runtime-taxonomy-audit.js --strict",

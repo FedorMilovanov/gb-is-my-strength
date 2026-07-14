@@ -41,7 +41,8 @@ const ALLOWED_CSS = new Set([
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
   'css/sw-toast.css',
-  'css/nagornaya-mobile-toc.css'
+  'css/nagornaya-mobile-toc.css',
+  'css/series-samizdat.css'
 ]);
 
 const REQUIRED_EXTRA_CSS = new Set([
@@ -59,6 +60,7 @@ const ALLOWED_JS = new Set([
   'js/glossary.js',
   'js/bookmark-engine.js',
   'js/nagornaya-mobile-toc.js',
+  'js/nagornaya-bar-extras.js',
   'js/sw-register.js',
   'js/floating-cluster-controller.js',
   'js/vosk-tts-core.js',
@@ -310,7 +312,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
     { file: 'css/site.css',                 ceil: IMPORTANT_CEIL, goal: IMPORTANT_GOAL },
     { file: 'css/floating-cluster.css',     ceil: 524,            goal: 100 },
     { file: 'css/mobile-hotfix.css',        ceil: 142,            goal: 0 },
-    { file: 'css/nagornaya-mobile-toc.css', ceil: 135,            goal: 50 },
+    { file: 'css/nagornaya-mobile-toc.css', ceil: 134,            goal: 50 },
+    { file: 'css/series-samizdat.css',      ceil: 12,             goal: 0 },
   ];
   for (const { file, ceil, goal } of RATCHETS) {
     const f = path.join(ROOT, file);
@@ -1243,7 +1246,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     { name: '#themeFloat',      why: 'PLAN-04 P5 — replaced by .gb-fc-theme' },
     { name: '#gbSearchFloat',   why: 'PLAN-04 P5 — replaced by .gb-fc-search' },
   ];
-  const all = walk(ROOT).filter(f => /\.(html|css|js)$/.test(f) && !/[\\/]scripts[\\/]/.test(f));
+  const all = walk(ROOT).filter(f => /\.(astro|html|css|js)$/.test(f) && !/[\\/]scripts[\\/]/.test(f));
   const offenders = [];
   for (const f of all) {
     const txt = fs.readFileSync(f, 'utf8');
@@ -1513,7 +1516,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Tooltip footnotes legitimately reference http://web.archive.org/web/…/http://…
 //   so we whitelist that exact pattern.
 (function mixedProtocolGuard() {
-  const files = walk(ROOT).filter(f => /\.(html|css|js|json|xml)$/i.test(f));
+  const files = walk(ROOT).filter(f => /\.(astro|html|css|js|json|xml)$/i.test(f));
   const offenders = [];
   for (const f of files) {
     const txt = fs.readFileSync(f, 'utf8');
@@ -3444,7 +3447,7 @@ const JS_SIZE_FLOORS = {
   }
   // see which are used in HTML class= attributes or JS string literals
   const used = new Set();
-  for (const f of walk(ROOT).filter(x => /\.(html|js|css)$/.test(x))) {
+  for (const f of walk(ROOT).filter(x => /\.(astro|html|js|css)$/.test(x))) {
     const txt = fs.readFileSync(f, 'utf8');
     // class="x y z"  /  class='x y z'
     for (const m of txt.matchAll(/class\s*=\s*["']([^"']+)["']/g)) {
@@ -3701,7 +3704,7 @@ const JS_SIZE_FLOORS = {
 //   pattern). Modern best practice = absolute https://, or root-relative /path.
 //   Protocol-relative breaks file:// previews and bare-curl tests.
 (function protocolRelativeLinkGuard() {
-  const files = walk(ROOT).filter(f => /\.(html|css|js)$/.test(f) && !f.includes('/.git/'));
+  const files = walk(ROOT).filter(f => /\.(astro|html|css|js)$/.test(f) && !f.includes('/.git/'));
   const offenders = [];
   for (const f of files) {
     const txt = fs.readFileSync(f, 'utf8');
@@ -3969,7 +3972,7 @@ const JS_SIZE_FLOORS = {
   const KEEP_SUFFIX = /(?:-original|--keep)\./i;
   // build text-content map ONCE
   const texts = [];
-  for (const f of walk(ROOT).filter(x => /\.(html|css|js|json|xml|md|txt)$/.test(x) && !x.includes('/audit/'))) {
+  for (const f of walk(ROOT).filter(x => /\.(astro|html|css|js|json|xml|md|txt)$/.test(x) && !x.includes('/audit/'))) {
     try { texts.push(fs.readFileSync(f, 'utf8')); } catch {}
   }
   const imgDir = path.join(ROOT, 'images');
