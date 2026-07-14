@@ -1,6 +1,6 @@
 ---
 /**
- * HermenevtikaReaderSettings — премиум-лист «Настройки чтения» для мобильной
+ * ReaderSettings — премиум-лист «Настройки чтения» для мобильной
  * (<64em) обвязки Hermenevtika, по стандарту Gill v5 (тема День/Сепия/Ночь,
  * размер текста, межстрочный интервал, ширина колонки).
  *
@@ -67,6 +67,30 @@
 </div>
 
 <style>
+  /* Скелет листа-«шторки» (.hmsheet*) — САМОДОСТАТОЧНО здесь, чтобы лист не
+     зависел от HermenevtikaMobileBar (раньше эти стили жили только там, и на
+     страницах без бара, напр. kod-da-vinchi, панель оставалась position:static
+     и уезжала за рельс). Значения 1-в-1 с прежним баром. */
+  .hmsheet-backdrop{position:fixed;inset:0;background:rgba(20,10,8,.42);z-index:var(--z-overlay,2500)}
+  .hmsheet-panel{position:fixed;left:0;right:0;bottom:0;z-index:var(--z-overlay-high,3000);
+    max-height:80vh;display:flex;flex-direction:column;border-radius:20px 20px 0 0;
+    padding:8px 18px calc(14px + env(safe-area-inset-bottom,0px));
+    background:#fbf3ea;box-shadow:0 -20px 50px -10px rgba(0,0,0,.35);
+    transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  .hmsheet.is-open .hmsheet-panel{transform:translateY(0)}
+  :global(html.dark) .hmsheet-panel{background:#1c0e14;box-shadow:0 -20px 50px -10px rgba(0,0,0,.6)}
+  .hmsheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,.15);margin:0 auto 8px}
+  :global(html.dark) .hmsheet-handle{background:rgba(255,255,255,.15)}
+  .hmsheet-head{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:8px}
+  .hmsheet-title{font-family:var(--f-serif,Lora,Georgia,serif);font-weight:700;font-size:16px;color:#2a1814}
+  :global(html.dark) .hmsheet-title{color:#f2e9e6}
+  .hmsheet-subtitle{font-size:11px;color:rgba(42,24,20,.55);margin-top:2px}
+  :global(html.dark) .hmsheet-subtitle{color:rgba(255,255,255,.5)}
+  .hmsheet-close{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:0;
+    background:rgba(122,46,46,.08);color:#7a2e2e;cursor:pointer;flex-shrink:0}
+  :global(html.dark) .hmsheet-close{background:rgba(224,160,150,.1);color:#e0a89c}
+  .hmsheet-close svg{width:15px;height:15px}
+
   /* Лист доступен на ВСЕХ ширинах: на мобиле его открывает шестерёнка в баре,
      на десктопе — шестерёнка в HermenevtikaRail (#hrailSettingsBtn). Раньше
      стили и открытие были заперты под @media(max-width:1199px), из-за чего на
@@ -114,37 +138,37 @@
     /* --- Applied reader vars on Hermenevtika's #content only (глобально:
        элементы вне этого компонента; маркер [data-hm-reader] не даёт правилам
        протечь на другие страницы с id="content", включая Gill). --- */
-    :global(#content[data-hm-reader]) { --hm-article-line: 1.6; --hm-article-measure: 43rem; }
-    :global(#content[data-hm-reader] .article-body) { line-height: var(--hm-article-line); }
-    :global(#content[data-hm-reader] .article-body > *) { max-width: var(--hm-article-measure); margin-left: auto; margin-right: auto; }
+    :global([data-reader-root]) { --hm-article-line: 1.6; --hm-article-measure: 43rem; }
+    :global([data-reader-root] .article-body) { line-height: var(--hm-article-line); }
+    :global([data-reader-root] .article-body > *) { max-width: var(--hm-article-measure); margin-left: auto; margin-right: auto; }
 
     /* --- Scoped sepia (mobile only), отчётливая тёплая бумага — не трогает
        html.dark/site theme; заметно контрастнее дефолтного кремового. --- */
-    :global(#content[data-hm-reader-theme="sepia"]),
-    :global(#content[data-hm-reader-theme="sepia"] .article-main),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body) { background: #ece0c6 !important; }
-    :global(#content[data-hm-reader-theme="sepia"] .article-body),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body p),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body li),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body td) { color: #4a3820 !important; }
-    :global(#content[data-hm-reader-theme="sepia"] .article-body h1),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body h2),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body h3),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body h4),
-    :global(#content[data-hm-reader-theme="sepia"] .article-body strong) { color: #3a2712 !important; }
+    :global([data-reader-root][data-hm-reader-theme="sepia"]),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-main),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body) { background: #ece0c6 !important; }
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body p),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body li),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body td) { color: #4a3820 !important; }
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body h1),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body h2),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body h3),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body h4),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body strong) { color: #3a2712 !important; }
     /* Внутристатейные карточки (Коротко/автор/примечание переводчика) не должны
        «пробивать» белым по сепии — тёплая слоновая кость поверх бумаги #ece0c6. */
-    :global(#content[data-hm-reader-theme="sepia"] .summary-card),
-    :global(#content[data-hm-reader-theme="sepia"] .author-card),
-    :global(#content[data-hm-reader-theme="sepia"] .original-author-card),
-    :global(#content[data-hm-reader-theme="sepia"] .translation-note) {
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .summary-card),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .author-card),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .original-author-card),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .translation-note) {
       background: #f3ead4 !important; border-color: rgba(74,56,32,.18) !important;
     }
-    :global(#content[data-hm-reader-theme="sepia"] .summary-card__head),
-    :global(#content[data-hm-reader-theme="sepia"] .summary-card__item + .summary-card__item) {
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .summary-card__head),
+    :global([data-reader-root][data-hm-reader-theme="sepia"] .summary-card__item + .summary-card__item) {
       border-color: rgba(74,56,32,.14) !important;
     }
-    :global(html:has(#content[data-hm-reader-theme="sepia"]) body) { background: #ece0c6; }
+    :global(html:has([data-reader-root][data-hm-reader-theme="sepia"]) body) { background: #ece0c6; }
   }
 
   /* ДЕСКТОП: не полноширинный bottom-sheet, а компактный поповер снизу-слева —
@@ -170,10 +194,10 @@
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
   const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '50rem' };
 
-  function initHmReaderSettings() {
+  function initReaderSettings() {
     const sheet = document.getElementById('hmSettings');
     if (!sheet) return;
-    const content = document.getElementById('content');
+    const content = document.querySelector('[data-reader-root]') as HTMLElement | null;
     const backdrop = document.getElementById('hmSettingsBackdrop');
     const closeBtn = document.getElementById('hmSettingsClose');
 
@@ -294,6 +318,6 @@
     } catch (_) {}
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHmReaderSettings, { once: true });
-  else initHmReaderSettings();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initReaderSettings, { once: true });
+  else initReaderSettings();
 </script>

@@ -2,7 +2,7 @@
 import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
 import HermenevtikaRail from './HermenevtikaRail.astro';
 import HermenevtikaMobileBar from './HermenevtikaMobileBar.astro';
-import HermenevtikaReaderSettings from './HermenevtikaReaderSettings.astro';
+import ReaderSettings from '../_shared/ReaderSettings.astro';
 ---
 
 <!-- Owner rollback: the premium-SVG cluster (theme/search/PlayEmber/save) is
@@ -18,8 +18,8 @@ import HermenevtikaReaderSettings from './HermenevtikaReaderSettings.astro';
      palette. -->
 <HermenevtikaRail eyebrow="Герменевтика" title="Оценка христоцентричной герменевтики" backHref="../../" />
 <HermenevtikaMobileBar title="Оценка христоцентричной герменевтики" backHref="../../" readingMinutes={50} />
-<HermenevtikaReaderSettings />
-<main class="article-main article-main--hrail" id="content" data-hm-reader>
+<ReaderSettings />
+<main class="article-main article-main--hrail" id="content" data-hm-reader data-reader-root>
 <nav aria-label="Хлебные крошки" class="breadcrumb">
 <ol class="breadcrumb__list">
 <li class="breadcrumb__item">

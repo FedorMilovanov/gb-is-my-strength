@@ -4567,88 +4567,16 @@ html.dark [data-gill-v16] .mobile-top-bar {
 }
 
 /* =========================================================
-   Одиночная статья (kod-da-vinchi): тот же GillReaderSettingsSheet, но корень
-   применения — [data-reader-root] на <main> (не серия-мир [data-gill-v16]).
-   ⚙ живёт в правом верхнем угловом кластере, поэтому поповер якорим ТУДА
-   (top-right), а не в низ-лево, как у серия-рельса. Сепия перекрашивает
-   читальную поверхность через переопределение site-токенов (--color-*),
-   которые и потребляет обычная статья.
-   ========================================================= */
-@media (min-width: 64em) {
-  /* Оверлей у одиночной статьи открывается display:block (флекс-раскладка из
-     [data-gill-v16] сюда не достаёт) — форсируем flex, иначе align/justify
-     игнорируются и панель падает в левый-верх по потоку. Позицию (снизу-слева,
-     под ⚙ читательского рельса) даёт общий блок .gill-settings-overlay выше;
-     здесь только включаем flex и снимаем затемнение. */
-  body:has([data-reader-root]) .gill-settings-overlay.is-open {
-    display: flex; position: fixed; inset: 0;
-    align-items: flex-end; justify-content: flex-start;
-    /* всплывает от ⚙ рельса (низ-лево) вверх, приподнят над нижним тулбаром
-       рельса; как поповер Герменевтики — перекрывает нижнюю часть рельса.
-       z-index выше рельса (z-sticky 1000), иначе поповер уходит ЗА рельс. */
-    padding: 0 0 88px clamp(16px, 2.4vw, 40px);
-    background: transparent;
-    z-index: var(--z-overlay-high, 3000);
-  }
-  body:has([data-reader-root]) .gill-settings-overlay .gill-settings-sheet {
-    transform-origin: bottom left;
-  }
-  /* Шапка листа у одиночной статьи (у серий её стилизует [data-gill-v16];
-     здесь его нет, поэтому h3 наследовал гигантский статейный сериф, а
-     «Чтение»/× разъезжались). Приводим к тому же компактному виду, что у Гилла. */
-  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__head {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 12px; padding: 14px 16px 8px;
-  }
-  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__handle { display: none; }
-  body:has([data-reader-root]) .gill-settings-overlay .head-copy .lab {
-    font: 900 10px/1 "Source Sans 3", system-ui, sans-serif;
-    text-transform: uppercase; letter-spacing: .14em;
-    color: var(--gb-text-muted, #6a6a6a); margin-bottom: 4px;
-  }
-  body:has([data-reader-root]) .gill-settings-overlay .head-copy h3 {
-    margin: 0; font: 600 18px/1.15 Georgia, "Times New Roman", serif;
-    color: var(--gb-text, #1a1a18);
-  }
-  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__head .gb-icon {
-    width: 32px; height: 32px; flex-shrink: 0; display: grid; place-items: center;
-    border: 0; border-radius: 50%; background: rgba(0, 0, 0, .05); color: inherit; cursor: pointer;
-  }
-  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__head .gb-icon svg {
-    width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;
-  }
-  /* «Свободный»/«Обычная» не должны переноситься в две строки. */
-  body:has([data-reader-root]) .gill-settings-overlay .reader-setting-btn { white-space: nowrap; }
-}
-/* Межстрочный интервал одиночной статьи (лист пишет --gbs2-article-line). */
-[data-reader-root] .article-body { line-height: var(--gbs2-article-line, 1.7); }
-/* Сепия на одиночной: переопределяем site-палитру на тёплую бумагу. */
-[data-reader-root][data-gill-reader-theme="sepia"] {
-  --color-canvas: #f3ead4;
-  --color-surface: #f8f0dc;
-  --color-surface-muted: #e9dcc0;
-  --color-surface-alt: #efe3c8;
-  --color-text: #493823;
-  --color-text-primary: #3a2712;
-  --color-text-secondary: #6a5638;
-  --color-text-muted: #776348;
-  --color-border: #d8c49e;
-  --color-border-strong: #bea778;
-  background: #f3ead4;
-}
-[data-reader-root][data-gill-reader-theme="sepia"] .article-body,
-[data-reader-root][data-gill-reader-theme="sepia"] .article-body p,
-[data-reader-root][data-gill-reader-theme="sepia"] .article-body li {
-  color: #493823;
-}
-html:has([data-reader-root][data-gill-reader-theme="sepia"]) body { background: #f3ead4; }
-
-/* kod-da-vinchi с читательским рельсом (ReaderRail): на десктопе сдвигаем
+   Одиночная статья с читательским рельсом (kod-da-vinchi). Лист настроек и
+   сепия — ОБЩИЙ ReaderSettings ([data-reader-root]), тот же, что у Герменевтики
+   (НЕ Gill-лист серий). Здесь — только раскладка: на десктопе сдвигаем
    центрированную .page-wrap вправо, чтобы очистить фикс-рельс (аналог
    .article-main--hrail у Герменевтики), и прячем угловую ⚙ — там настройки
-   открывает ⚙ рельса (на мобиле рельс скрыт, работает угловая ⚙). */
+   открывает ⚙ рельса (на мобиле рельс скрыт, работает угловая ⚙).
+   ========================================================= */
 @media (min-width: 1200px) {
   body:has(.hrail) .page-wrap { margin-left: max((100vw - min(820px, 92vw)) / 2, 334px); margin-right: auto; }
+  body:has(.hrail) #gbFcSettings { display: none; }
 }
 
 /* =========================================================
