@@ -11,7 +11,7 @@ interface Props {
   title: string;
   backHref: string;
   toc: ReaderRailTocItem[];
-  /** 'hm' → CustomEvent('hm:open-settings') (HermenevtikaReaderSettings);
+  /** 'hm' → CustomEvent('hm:open-settings') (ReaderSettings);
    *  'gill' → data-gill-settings-open (GillReaderSettingsSheet). */
   settingsTrigger?: 'hm' | 'gill';
   tocLabel?: string;
@@ -52,7 +52,7 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
     </button>
     <!-- Настройки чтения. 'hm' → id=hrailSettingsBtn, шлём CustomEvent
-         'hm:open-settings' (HermenevtikaReaderSettings). 'gill' →
+         'hm:open-settings' (ReaderSettings). 'gill' →
          data-gill-settings-open, контроллер сам открывает GillReaderSettingsSheet. -->
     <button class="hrail-bottom-btn" type="button" aria-label="Настройки чтения" aria-haspopup="dialog" data-tip="Настройки"
       id={settingsTrigger === 'hm' ? 'hrailSettingsBtn' : undefined}
@@ -181,7 +181,7 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
 <script>
   function initReaderRail(){
     // Десктопная шестерёнка «Настройки чтения» — тот же лист
-    // HermenevtikaReaderSettings, что открывается с мобильного #hmSettingsBtn
+    // ReaderSettings, что открывается с мобильного #hmSettingsBtn
     // (через событие 'hm:open-settings'). Независимо от наличия TOC.
     const railSettingsBtn = document.getElementById('hrailSettingsBtn');
     if (railSettingsBtn && !railSettingsBtn.dataset.bound) {
