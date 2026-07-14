@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gospod-bog.ru/schemas/atlas/period.schema.json",
+  "title": "Atlas Period — историческая эпоха Библейского Атласа",
+  "description": "ATLAS-CONTRACT §7. Эпохи — глобальная ось времени Атласа: шкала хаба, фильтры, полосы синхронной шкалы «цари↔пророки↔империи», связь с era-тегами движка. Годы — целые, отрицательные = до н.э. (астрономической нумерации нет: -931 означает 931 г. до н.э.).",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "start",
+    "end"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "object",
+      "required": [
+        "ru"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "ru": {
+          "type": "string",
+          "minLength": 1
+        },
+        "short": {
+          "type": "string",
+          "description": "Короткая подпись для шкалы"
+        }
+      }
+    },
+    "start": {
+      "type": "integer",
+      "description": "Год начала (отрицательный = до н.э.)"
+    },
+    "end": {
+      "type": "integer",
+      "description": "Год конца (отрицательный = до н.э.)"
+    },
+    "approx": {
+      "type": "boolean",
+      "description": "true = границы условны (датировки дискуссионны)"
+    },
+    "engineEra": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "iron",
+        "roman",
+        "byzantine"
+      ],
+      "description": "Связь с era-тегами существующего движка/base-geo (AGENTS §12.1)"
+    },
+    "colorToken": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$",
+      "description": "Цвет эпохи. Токены bronze/iron/roman/byzantine зафиксированы MAPS-DESIGN-CONTRACT; новые — draft до дизайн-системы KA-6"
+    },
+    "colorStatus": {
+      "type": "string",
+      "enum": [
+        "contract",
+        "draft",
+        "validated"
+      ],
+      "description": "contract = закреплён DESIGN-CONTRACT; validated = прошёл dataviz-валидацию (текст AA 7:1+, CVD смежных пар ≥8 с подписями внутри чипов), ждёт owner-закрепления в KA-6; draft = предварительный"
+    },
+    "maps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Слаги карт этой эпохи"
+    },
+    "keyEvents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "1-4 опорных события для шкалы"
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

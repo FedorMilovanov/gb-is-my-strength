@@ -1,0 +1,52 @@
+{
+  "id": "lydda",
+  "names": {
+    "ru": "Лидда",
+    "he": "לֹד"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 591,
+      "y": 780
+    }
+  },
+  "maps": [
+    {
+      "slug": "early-church",
+      "localId": "lydda"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "lod",
+    "wikidata": "Q207540"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Lod",
+      "lat": 31.95,
+      "lng": 34.9,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: lod → lod",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.95,
+    "lng": 34.9
+  },
+  "bibleRefs": [
+    "1 Chr 8:12",
+    "Ezra 2:33",
+    "Neh 7:37",
+    "Neh 11:35",
+    "Acts 9:32"
+  ],
+  "rank": 3
+}

@@ -1,0 +1,27 @@
+{
+  "id": "modiin",
+  "names": {
+    "ru": "Модиин",
+    "he": "מוֹדִיעִין"
+  },
+  "type": "town",
+  "placements": {
+    "levant": {
+      "x": 605,
+      "y": 782
+    }
+  },
+  "maps": [
+    {
+      "slug": "maccabim",
+      "localId": "modiin"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: 1 Макк — вне протестантского канона OpenBible; координаты из академических источников | geo: Умм эль-Умдан (кандидат древнего Модиина у совр. Модиина) (manualGeo, уровень B)",
+  "geo": {
+    "lat": 31.9308,
+    "lng": 35.0184
+  },
+  "rank": 3
+}

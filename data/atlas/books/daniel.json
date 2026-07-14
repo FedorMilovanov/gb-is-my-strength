@@ -1,0 +1,11 @@
+{
+  "id": "daniel",
+  "title": {
+    "ru": "Даниил",
+    "abbr": "Дан"
+  },
+  "testament": "ot",
+  "section": "major-prophets",
+  "order": 27,
+  "chapters": 12
+}

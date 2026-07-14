@@ -1,0 +1,14 @@
+{
+  "id": "2thessalonians",
+  "title": {
+    "ru": "2 Фессалоникийцам",
+    "abbr": "2 Фес"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 53,
+  "chapters": 3,
+  "maps": [
+    "pavel"
+  ]
+}

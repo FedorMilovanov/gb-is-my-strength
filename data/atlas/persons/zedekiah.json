@@ -1,0 +1,21 @@
+{
+  "id": "zedekiah",
+  "names": {
+    "ru": "Седекия"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -597,
+    "end": -586,
+    "note": "падение Иерусалима 586"
+  },
+  "periodIds": [
+    "judah-alone",
+    "exile"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "davidic"
+  }
+}

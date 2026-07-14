@@ -1,0 +1,14 @@
+{
+  "id": "ruth",
+  "title": {
+    "ru": "Руфь",
+    "abbr": "Руфь"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 8,
+  "chapters": 4,
+  "maps": [
+    "shoftim"
+  ]
+}

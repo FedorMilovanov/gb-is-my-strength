@@ -1,0 +1,20 @@
+{
+  "id": "amaziah",
+  "names": {
+    "ru": "Амасия"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -796,
+    "end": -767
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "mixed",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "uzziah"
+  }
+}

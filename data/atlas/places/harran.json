@@ -1,0 +1,52 @@
+{
+  "id": "harran",
+  "names": {
+    "ru": "Харран",
+    "he": "חָרָן"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 1003,
+      "y": 194
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "harran"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "haran",
+    "wikidata": "Q199547"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Harran",
+      "lat": 36.864444,
+      "lng": 39.032778,
+      "score": 922,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: haran → harran",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 36.864444,
+    "lng": 39.032778
+  },
+  "bibleRefs": [
+    "Gen 11:31",
+    "Gen 11:32",
+    "Gen 12:4",
+    "Gen 12:5",
+    "Gen 27:43"
+  ],
+  "rank": 1
+}

@@ -1,0 +1,52 @@
+{
+  "id": "bethany",
+  "names": {
+    "ru": "Вифания",
+    "he": "בֵּית עַנְיָה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 628,
+      "y": 802
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "bethany"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "bethany-1",
+    "wikidata": "Q831190"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Al Eizariya",
+      "lat": 31.771661,
+      "lng": 35.255903,
+      "score": 889,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-1 → al-eizariya",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.771661,
+    "lng": 35.255903
+  },
+  "bibleRefs": [
+    "Matt 21:17",
+    "Matt 26:6",
+    "Mark 11:1",
+    "Mark 11:11",
+    "Mark 11:12"
+  ],
+  "rank": 3
+}

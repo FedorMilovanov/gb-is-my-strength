@@ -1,0 +1,91 @@
+{
+  "id": "marah",
+  "names": {
+    "ru": "Мара",
+    "he": "מָרָה"
+  },
+  "type": "sea",
+  "placements": {
+    "levant": {
+      "x": 450,
+      "y": 1010
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "marah"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "marah",
+    "wikidata": "Q2554928"
+  },
+  "identifications": [
+    {
+      "status": "candidate",
+      "label": "Ain Hawarah",
+      "lat": 29.34604,
+      "lng": 32.94284,
+      "score": 384,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: marah → ain-hawarah",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Bir Mara",
+      "lat": 29.96667,
+      "lng": 32.7,
+      "score": 125,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: marah → bir-mara",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Uyun Musa",
+      "lat": 29.876944,
+      "lng": 32.658333,
+      "score": 106,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: marah → uyun-musa",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Bitter Lakes",
+      "lat": 30.338333,
+      "lng": 32.377778,
+      "score": 18,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: marah → bitter-lakes",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 29.34604,
+    "lng": 32.94284
+  },
+  "bibleRefs": [
+    "Ex 15:23",
+    "Ex 15:25",
+    "Ex 15:27",
+    "Num 33:8",
+    "Num 33:9"
+  ],
+  "rank": 2
+}

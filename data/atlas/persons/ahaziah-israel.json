@@ -1,0 +1,20 @@
+{
+  "id": "ahaziah-israel",
+  "names": {
+    "ru": "Охозия Израильский"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -853,
+    "end": -852
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "omride",
+    "successor": "joram-israel"
+  }
+}

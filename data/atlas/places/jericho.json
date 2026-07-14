@@ -1,0 +1,53 @@
+{
+  "id": "jericho",
+  "names": {
+    "ru": "Иерихон",
+    "he": "יְרִיחוֹ"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 645,
+      "y": 789
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "jericho"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "jericho-1",
+    "wikidata": "Q5687"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tell es Sultan",
+      "lat": 31.871719,
+      "lng": 35.444564,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: jericho-1 → tell-es-sultan",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.871719,
+    "lng": 35.444564
+  },
+  "bibleRefs": [
+    "Num 22:1",
+    "Num 26:3",
+    "Num 26:63",
+    "Num 31:12",
+    "Num 33:48"
+  ],
+  "notes": "split: jericho-nt — ВЗ Иерихон = Тель эс-Султан (jericho-1, OpenBible score 1000); НЗ Иерихон = иродианский Тулуль Абу эль-Алаик (jericho-2, score 1000), ~2 км южнее. Разные x/y в shvatim и yeshua оказались НЕ дефектом, а корректным различием двух телей — раздельные канонические места, связка через notes",
+  "rank": 1
+}

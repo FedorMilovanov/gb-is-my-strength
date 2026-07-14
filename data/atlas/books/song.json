@@ -1,0 +1,11 @@
+{
+  "id": "song",
+  "title": {
+    "ru": "Песнь песней",
+    "abbr": "Песн"
+  },
+  "testament": "ot",
+  "section": "poetry",
+  "order": 22,
+  "chapters": 8
+}

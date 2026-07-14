@@ -1,0 +1,18 @@
+{
+  "id": "ezra-return",
+  "title": {
+    "ru": "Возвращение Ездры"
+  },
+  "kind": "return",
+  "year": -458,
+  "placeIds": [
+    "jerusalem"
+  ],
+  "personIds": [
+    "artaxerxes1"
+  ],
+  "periodId": "persian",
+  "bibleRefs": [
+    "Езд 7"
+  ]
+}

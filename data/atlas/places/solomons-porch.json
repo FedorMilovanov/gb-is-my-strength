@@ -1,0 +1,53 @@
+{
+  "id": "solomons-porch",
+  "names": {
+    "ru": "Притвор Соломонов",
+    "he": "אוּלָם שְׁלֹמֹה"
+  },
+  "type": "sanctuary",
+  "placements": {
+    "levant": {
+      "x": 624,
+      "y": 800
+    }
+  },
+  "maps": [
+    {
+      "slug": "early-church",
+      "localId": "solomons_porch"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "jerusalem",
+    "wikidata": "Q1218"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Jerusalem",
+      "lat": 31.776667,
+      "lng": 35.234167,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: jerusalem → jerusalem",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.776667,
+    "lng": 35.234167
+  },
+  "bibleRefs": [
+    "Josh 10:1",
+    "Josh 10:2",
+    "Josh 10:3",
+    "Josh 10:5",
+    "Josh 10:23"
+  ],
+  "parentId": "jerusalem-temple",
+  "rank": 3
+}

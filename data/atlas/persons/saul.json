@@ -1,0 +1,18 @@
+{
+  "id": "saul",
+  "names": {
+    "ru": "Саул"
+  },
+  "role": "king",
+  "realm": "united",
+  "reign": {
+    "start": -1050,
+    "end": -1010,
+    "note": "традиц. 40 лет (Деян 13:21)"
+  },
+  "periodIds": [
+    "judges",
+    "united-kingdom"
+  ],
+  "assessment": "mixed"
+}

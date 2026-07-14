@@ -1,0 +1,18 @@
+{
+  "id": "tibni",
+  "names": {
+    "ru": "Фамний"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -885,
+    "end": -880,
+    "coregency": true,
+    "note": "параллельное правление: половина народа за Фамния, половина за Амврия (3 Цар 16:21-22)"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil"
+}

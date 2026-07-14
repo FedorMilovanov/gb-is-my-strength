@@ -1,0 +1,21 @@
+{
+  "id": "pekah",
+  "names": {
+    "ru": "Факей"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -752,
+    "end": -732,
+    "coregency": true,
+    "note": "соперничество с Менаимом (Тиле)"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "successor": "hoshea"
+  }
+}

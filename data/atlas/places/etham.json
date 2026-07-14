@@ -1,0 +1,129 @@
+{
+  "id": "etham",
+  "names": {
+    "ru": "Ефам",
+    "he": "אֵתָם"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 330,
+      "y": 940
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "etham"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "etham",
+    "wikidata": "Q5402858"
+  },
+  "identifications": [
+    {
+      "status": "alternative",
+      "label": "Tell Abu Sefeh",
+      "lat": 30.861009,
+      "lng": 32.352252,
+      "score": 135,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: etham → tell-abu-sefeh",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tell er Retaba",
+      "lat": 30.5475,
+      "lng": 31.963611,
+      "score": 72,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: etham → tell-er-retaba",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Al Qantarah",
+      "lat": 30.85,
+      "lng": 32.316667,
+      "score": 52,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: etham → al-qantarah",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tell el Maskhuta",
+      "lat": 30.5527,
+      "lng": 32.099,
+      "score": 30,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: etham → tell-el-maskhuta",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tel Habuwa",
+      "lat": 30.9352,
+      "lng": 32.3669,
+      "score": 18,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: etham → tel-habuwa",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Ain Shams",
+      "lat": 30.129444,
+      "lng": 31.3075,
+      "score": 3,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: etham → ain-shams",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Ismailia",
+      "lat": 30.583333,
+      "lng": 32.266667,
+      "score": -3,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: etham → ismailia",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 30.861009,
+    "lng": 32.352252
+  },
+  "bibleRefs": [
+    "Ex 13:20",
+    "Num 33:6",
+    "Num 33:7",
+    "Num 33:8"
+  ],
+  "rank": 3
+}

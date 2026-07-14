@@ -1,0 +1,17 @@
+{
+  "id": "athaliah",
+  "names": {
+    "ru": "Гофолия"
+  },
+  "role": "queen",
+  "realm": "judah",
+  "reign": {
+    "start": -841,
+    "end": -835,
+    "note": "узурпаторша, дочь Ахава"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil"
+}

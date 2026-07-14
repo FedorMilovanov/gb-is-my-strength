@@ -1,0 +1,25 @@
+{
+  "id": "roman-herodian",
+  "title": {
+    "ru": "Римско-иродианская эпоха",
+    "short": "Ироды и НЗ"
+  },
+  "start": -63,
+  "end": 70,
+  "engineEra": "roman",
+  "colorToken": "#c7a5ff",
+  "colorStatus": "contract",
+  "maps": [
+    "yeshua",
+    "early-church",
+    "pavel"
+  ],
+  "keyEvents": [
+    "Помпей в Иерусалиме 63",
+    "Рождество",
+    "Распятие и Воскресение",
+    "Пятидесятница",
+    "Миссии Павла"
+  ],
+  "note": "Будущая карта «Мир Ирода» (KA-9) живёт здесь"
+}

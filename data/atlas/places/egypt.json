@@ -1,0 +1,52 @@
+{
+  "id": "egypt",
+  "names": {
+    "ru": "Египет",
+    "he": "מִצְרַיִם"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 235,
+      "y": 940
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "egypt"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "egypt",
+    "wikidata": "Q11768"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Ain Shams",
+      "lat": 30.129444,
+      "lng": 31.3075,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: egypt → ain-shams",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 30.129444,
+    "lng": 31.3075
+  },
+  "bibleRefs": [
+    "Gen 12:10",
+    "Gen 12:11",
+    "Gen 12:14",
+    "Gen 13:1",
+    "Gen 13:10"
+  ],
+  "rank": 1
+}

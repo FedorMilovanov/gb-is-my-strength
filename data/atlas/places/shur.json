@@ -1,0 +1,80 @@
+{
+  "id": "shur",
+  "names": {
+    "ru": "Пустыня Сур",
+    "he": "מִדְבַּר שׁוּר"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 400,
+      "y": 940
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "shur"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "shur",
+    "wikidata": "Q7505200"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Ar Ruwaysat",
+      "lat": 30.493333,
+      "lng": 32.956667,
+      "accuracyMeters": 5000,
+      "score": 554,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: shur → ar-ruwaysat",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Wadi as Sakriyat",
+      "lat": 29.955833,
+      "lng": 32.8725,
+      "score": 92,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: shur → wadi-as-sakriyat",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tel Sharuhen",
+      "lat": 31.281944,
+      "lng": 34.4825,
+      "score": 59,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: shur → tel-sharuhen",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 30.493333,
+    "lng": 32.956667,
+    "accuracyMeters": 5000
+  },
+  "bibleRefs": [
+    "Gen 16:7",
+    "Gen 20:1",
+    "Gen 25:18",
+    "Ex 15:22",
+    "1 Sam 15:7"
+  ],
+  "rank": 3
+}

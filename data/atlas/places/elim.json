@@ -1,0 +1,90 @@
+{
+  "id": "elim",
+  "names": {
+    "ru": "Елим",
+    "he": "אֵילִם"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 485,
+      "y": 1040
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "elim"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "elim",
+    "wikidata": "Q629659"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Wadi Gharandal",
+      "lat": 29.254722,
+      "lng": 32.915833,
+      "score": 533,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: elim → wadi-gharandal",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Uyun Musa",
+      "lat": 29.876944,
+      "lng": 32.658333,
+      "score": 88,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: elim → uyun-musa",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Wadi ar Raynah",
+      "lat": 29.866111,
+      "lng": 32.748056,
+      "score": 14,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: elim → wadi-ar-raynah",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "El Tor",
+      "lat": 28.24168,
+      "lng": 33.6222,
+      "score": 14,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: elim → el-tor",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 29.254722,
+    "lng": 32.915833
+  },
+  "bibleRefs": [
+    "Ex 15:27",
+    "Ex 16:1",
+    "Num 33:9",
+    "Num 33:10"
+  ],
+  "rank": 3
+}

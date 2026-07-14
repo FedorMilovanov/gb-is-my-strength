@@ -1,0 +1,11 @@
+{
+  "id": "esther",
+  "title": {
+    "ru": "Есфирь",
+    "abbr": "Есф"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 17,
+  "chapters": 10
+}

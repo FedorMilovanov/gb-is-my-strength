@@ -1,0 +1,154 @@
+{
+  "$comment": "Экспертные решения выверки канонического реестра (KA-2c). Применяются scripts/atlas-promote-places.js поверх places-draft.json при генерации data/atlas/places/*.json. Каждое решение аргументировано в notes; спорные вопросы локализации — в Research/«БИБЛЕЙСКИЙ АТЛАС». idRenames: канонические id — только латиница (паттерн схемы); кириллические ключи суб-локаций экстрактора переименовываются при промоуте (Красные ворота = Beautiful Gate Деян 3:2; Вифавара = Bethany beyond Jordan Ин 1:28).",
+  "confirmedMerges": {
+    "antioch": "Антиохия-на-Оронте: одно место в 3 картах (maccabim/early-church/pavel)",
+    "damascus": "Дамаск: avraam + early-church",
+    "dan": "Тель-Дан (Лаиш/Дан): avraam + shvatim + melachim",
+    "ephesus": "Эфес: pavel + revelation — один город",
+    "hazor": "Тель-Хацор: shvatim + shoftim + melachim",
+    "hebron": "Хеврон: melachim + shoftim (+ влитый дубль hebron_shoftim)",
+    "jerusalem": "Иерусалим: pavel + melachim + maccabim — канонический placement по melachim (ВЗ-центр); карты выравниваются при возврате на витрину (гейты G1/G5)",
+    "jerusalem--горница": "Горница Тайной вечери и Пятидесятницы (Сионская): yeshua + early-church — одна традиция, суб-локация Иерусалима",
+    "megiddo": "Тель-Мегиддо: shoftim + melachim",
+    "samaria": "Себастия/Шомрон: melachim + maccabim + early-church",
+    "shechem": "Тель-Балата (Сихем): avraam + melachim",
+    "bethel": "Вефиль (Бейтин): avraam + melachim. У Авраама точка стоит восточнее города — это стан «между Вефилем и Гаем» (Быт 12:8); канонический placement = город (melachim), нюанс стана — в подписи карты avraam при её выравнивании",
+    "kadesh-barnea": "Кадеш-Варни (Эйн эль-Кудейрат): avraam «Кадеш» (Быт 14:7 Эн-Мишпат; 16:14) + ishod «Кадеш-Барнеа» — одно место, дубль подтверждён одинаковым sameAs/geo; P0-досье в Research"
+  },
+  "mergeInto": {
+    "hebron-shoftim": "hebron",
+    "kadesh": "kadesh-barnea"
+  },
+  "splits": [
+    {
+      "from": "jericho",
+      "keepFor": [
+        {
+          "slug": "shvatim",
+          "localId": "jericho"
+        }
+      ],
+      "newId": "jericho-nt",
+      "moveMaps": [
+        {
+          "slug": "yeshua",
+          "localId": "jericho"
+        }
+      ],
+      "nameRu": "Иерихон новозаветный",
+      "sameAsOpenbible": "jericho-2",
+      "note": "ВЗ Иерихон = Тель эс-Султан (jericho-1, OpenBible score 1000); НЗ Иерихон = иродианский Тулуль Абу эль-Алаик (jericho-2, score 1000), ~2 км южнее. Разные x/y в shvatim и yeshua оказались НЕ дефектом, а корректным различием двух телей — раздельные канонические места, связка через notes"
+    }
+  ],
+  "typeOverrides": {
+    "asher": "region",
+    "benjamin": "region",
+    "ephraim": "region",
+    "gad": "region",
+    "issachar": "region",
+    "judah": "region",
+    "manasseh-e": "region",
+    "manasseh-n": "region",
+    "naphtali": "region",
+    "reuben": "region",
+    "simeon": "region",
+    "zebulun": "region",
+    "masada": "structure",
+    "modiin": "town",
+    "mount-beatitudes": "mountain",
+    "urfa": "city",
+    "gaza-road": "road",
+    "jerusalem--горница": "structure",
+    "jerusalem-temple--храм": "sanctuary",
+    "temple-early--красные-ворота": "sanctuary",
+    "solomons-porch": "sanctuary",
+    "tomb--воскресение": "structure",
+    "hammam": "city",
+    "syria-aram": "region",
+    "sea-galilee": "lake",
+    "plains-moab": "camp",
+    "sinai--гора-хорив": "mountain",
+    "salem--гора-мория": "city"
+  },
+  "parentOverrides": {
+    "solomons-porch": "jerusalem-temple--храм",
+    "temple-early--красные-ворота": "jerusalem-temple--храм",
+    "jerusalem-temple--храм": "jerusalem",
+    "jerusalem--горница": "jerusalem",
+    "tomb--воскресение": "jerusalem"
+  },
+  "autoConfirmRule": "needsReview снимается автоматически, если место живёт в ОДНОЙ карте И заматчено с OpenBible точным совпадением id==url_slug (низкий риск ошибочной канонизации). Все прочие требуют строки в confirmedMerges или остаются needsReview:true.",
+  "idRenames": {
+    "athens--ареопаг": "athens-areopagus",
+    "jerusalem--горница": "jerusalem-upper-room",
+    "jerusalem-temple--храм": "jerusalem-temple",
+    "temple-early--красные-ворота": "temple-beautiful-gate",
+    "tomb--воскресение": "resurrection-tomb",
+    "mount-ebal--благословение-и-проклятие": "mount-ebal",
+    "hebron--мамре": "mamre",
+    "salem--гора-мория": "salem-moriah",
+    "sinai--гора-хорив": "mount-sinai",
+    "cyprus--саламин": "salamis",
+    "jordan-baptism--крещение": "bethany-beyond-jordan"
+  },
+  "curatedConfirm": {
+    "$comment": "Курируемые мэппинги openbible-mapping.json выверены экспертно по стихам записей OpenBible (KA-2b, см. notes мэппинга). Правило: needsReview снимается у мест с curated-мэппингом, ОДНОЙ картой и заполненным geo — кроме исключений ниже, где решение содержательно шаткое и ждёт досье Research.",
+    "exceptions": {
+      "hammam": "идентификация с Содомом — громкая, но оспариваемая (северная теория); ждёт GEO-DOSSIER",
+      "urfa": "запись-кандидат северной теории Ура; судьба записи решается при выравнивании карты avraam",
+      "syria-aram": "региональная привязка царства к точке-маркеру — проверить при возврате melachim",
+      "gaza-road": "объект-дорога с точкой-мэппингом на Газу — проверить представление при возврате early-church",
+      "salem-moriah": "двойная привязка Шалем/Мория — ждёт решения по city-jerusalem",
+      "plains-moab": "стан 'равнины Моава' = Аве-Ситтим — интерпретация станов Числ 33, проверить в досье Исхода",
+      "mount-sinai": "P0-досье в Research (крупнейшая дискуссия локализации)",
+      "kadesh-barnea": "P0-досье в Research (Эйн эль-Кудейрат vs Петра; хронология крепости X в. vs дата Исхода)"
+    },
+    "noMatchConfirmedTypes": [
+      "asher",
+      "benjamin",
+      "ephraim",
+      "gad",
+      "issachar",
+      "judah",
+      "manasseh-e",
+      "manasseh-n",
+      "naphtali",
+      "reuben",
+      "simeon",
+      "zebulun"
+    ],
+    "noMatchConfirmedNote": "территории 12 колен: тип region подтверждён, геометрия уделов появится в KA-6 (собственная генерализация по академическим атласам); needsReview снимается — записи структурно полны для своей роли"
+  },
+  "manualGeo": {
+    "$comment": "Координаты для мест вне OpenBible (вне протестантского канона / традиционные / архе-сайты). Источник — общеизвестные (Wikidata/академические публикации), уровень B; уточняются в досье.",
+    "hammam": {
+      "lat": 31.8397,
+      "lng": 35.6744,
+      "note": "Tall el-Hammam, Иордания (раскопки Collins)"
+    },
+    "masada": {
+      "lat": 31.3156,
+      "lng": 35.3536,
+      "note": "Масада (Иосиф Флавий; ЮНЕСКО)"
+    },
+    "modiin": {
+      "lat": 31.9308,
+      "lng": 35.0184,
+      "note": "Умм эль-Умдан (кандидат древнего Модиина у совр. Модиина)"
+    },
+    "mount-beatitudes": {
+      "lat": 32.882,
+      "lng": 35.5556,
+      "note": "Гора Блаженств (традиционная, над Табхой)"
+    },
+    "urfa": {
+      "lat": 37.1578,
+      "lng": 38.7919,
+      "note": "Шанлыурфа, Турция"
+    }
+  },
+  "dossierConfirmed": {
+    "$comment": "needsReview снят на основании готового GEO-DOSSIER (Research/БИБЛЕЙСКИЙ АТЛАС), когда решение досье НЕ меняет данные записи. Owner может вернуть review, удалив запись отсюда.",
+    "mount-beatitudes": "GEO-DOSSIER-mount-beatitudes.md — точка остаётся на традиционном хребте над Табхой, статус candidate/traditional; Евангелия гору не называют (Мф 5:1 / Лк 6:17 — терраса на склоне)"
+  }
+}

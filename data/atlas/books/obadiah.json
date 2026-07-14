@@ -1,0 +1,11 @@
+{
+  "id": "obadiah",
+  "title": {
+    "ru": "Авдий",
+    "abbr": "Авд"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 31,
+  "chapters": 1
+}

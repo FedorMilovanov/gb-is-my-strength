@@ -1,0 +1,52 @@
+{
+  "id": "kir-haraseth",
+  "names": {
+    "ru": "Кир-Харешет",
+    "he": "קִיר חֲרֶשֶׂת"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 671,
+      "y": 872
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "kir_haraseth"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "kir-hareseth",
+    "wikidata": "Q3782348"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Kerak",
+      "lat": 31.180556,
+      "lng": 35.701389,
+      "score": 805,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: kir-hareseth → kerak",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.180556,
+    "lng": 35.701389
+  },
+  "bibleRefs": [
+    "2 Kgs 3:25",
+    "Isa 16:7",
+    "Isa 16:11",
+    "Jer 48:31",
+    "Jer 48:36"
+  ],
+  "rank": 3
+}

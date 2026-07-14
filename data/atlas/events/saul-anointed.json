@@ -1,0 +1,20 @@
+{
+  "id": "saul-anointed",
+  "title": {
+    "ru": "Помазание Саула"
+  },
+  "kind": "coronation",
+  "year": -1050,
+  "approx": true,
+  "placeIds": [
+    "mizpah-judah"
+  ],
+  "personIds": [
+    "saul",
+    "samuel"
+  ],
+  "periodId": "united-kingdom",
+  "bibleRefs": [
+    "1 Цар 10"
+  ]
+}
