@@ -1,0 +1,14 @@
+{
+  "_readme": "Редакционные пометки рёбер поверх TIPNR: match по from+to(+kind), set — присваиваемые поля.",
+  "annotations": [
+    {
+      "from": "joseph--mat-1-16",
+      "to": "jesus--isa-7-14",
+      "kind": "parent",
+      "set": {
+        "legal": true
+      },
+      "note": "Иосиф — обручник: юридическая (не кровная) линия Мф 1; кровная — через Марию (Лк 3). См. GENEALOGY-DEEP-ANALYSIS §5."
+    }
+  ]
+}
