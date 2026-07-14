@@ -17,6 +17,7 @@ const ASSETS = [
   'css/command-palette.css',
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
+  'css/series-samizdat.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
@@ -32,6 +33,7 @@ const ASSETS = [
   'js/search.js',
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',
+  'js/nagornaya-bar-extras.js',
   'js/glossary.js',
   'js/floating-cluster-controller.js',
 ];
