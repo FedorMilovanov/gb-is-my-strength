@@ -462,13 +462,16 @@
       .trim();
   }
 
-  function getArticleText() {
-    // Соберём читательский текст: только параграфы внутри <article>
+  function collectArticleBlocks() {
+    // Соберём читательский текст: только параграфы внутри <article>.
+    // Возвращаем ПАРЫ {el, text} — тот же текст озвучки, но с DOM-узлами,
+    // чтобы follow-скролл (см. READING FOLLOW ниже) мог вести читателя
+    // по странице синхронно с озвучкой.
     var article = qs('article.article-body') ||
                   qs('article') ||
                   qs('main[data-pagefind-body]') ||
                   qs('main');
-    if (!article) return '';
+    if (!article) return [];
     var blocks = article.querySelectorAll('p, h2, h3, li');
     var out = [];
     Array.prototype.forEach.call(blocks, function (el) {
@@ -479,9 +482,68 @@
                      '.reading-list-section, [hidden], [data-pagefind-ignore], ' +
                      '[lang="en"], [lang^="en-"]')) return;
       var t = readableRuText(el);
-      if (t.length > 0) out.push(t);
+      if (t.length > 0) out.push({ el: el, text: t });
     });
-    return out.join('. ');
+    return out;
+  }
+
+  function getArticleText() {
+    return collectArticleBlocks().map(function (b) { return b.text; }).join('. ');
+  }
+
+  /* =====================================================
+     READING FOLLOW — плавный автоскролл за озвучкой.
+     Просьба владельца: «скроллится вниз текст потихоньку от нажатия PLAY».
+     Блоки статьи получают символьные диапазоны в общем TTS-тексте
+     (join('. ') → +2 символа между блоками); на каждом продвижении озвучки
+     ищем текущий блок и мягко центрируем его. Ручной скролл читателя
+     (wheel/touch/клавиши — НЕ наш собственный smooth-scroll) приостанавливает
+     follow на 20 секунд, потом ведение возобновляется само.
+     ===================================================== */
+  var followState = { map: [], lastEl: null, suspendUntil: 0, active: false, bound: false };
+
+  function buildFollowMap() {
+    var blocks = collectArticleBlocks();
+    var map = [];
+    var offset = 0;
+    for (var i = 0; i < blocks.length; i++) {
+      var len = blocks[i].text.length;
+      map.push({ el: blocks[i].el, start: offset, end: offset + len });
+      offset += len + 2; // '. ' между блоками
+    }
+    followState.map = map;
+    followState.lastEl = null;
+  }
+
+  function suspendFollow() { followState.suspendUntil = Date.now() + 20000; }
+
+  function bindFollowSuspend() {
+    if (followState.bound) return;
+    followState.bound = true;
+    // Только реальные жесты пользователя: наш scrollIntoView их не порождает.
+    addCleanListener(window, 'wheel', suspendFollow, { passive: true });
+    addCleanListener(window, 'touchmove', suspendFollow, { passive: true });
+    addCleanListener(window, 'keydown', function (e) {
+      var k = e.key;
+      if (k === 'ArrowUp' || k === 'ArrowDown' || k === 'PageUp' ||
+          k === 'PageDown' || k === 'Home' || k === 'End' || k === ' ') suspendFollow();
+    });
+  }
+
+  function followReading(charOffset) {
+    if (!followState.active || !followState.map.length) return;
+    if (Date.now() < followState.suspendUntil) return;
+    var cur = null;
+    for (var i = 0; i < followState.map.length; i++) {
+      if (charOffset < followState.map[i].end) { cur = followState.map[i]; break; }
+    }
+    if (!cur || cur.el === followState.lastEl) return;
+    followState.lastEl = cur.el;
+    var reduce = false;
+    try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+    try {
+      cur.el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    } catch (_) { cur.el.scrollIntoView(); }
   }
 
   function splitTtsChunks(text) {
@@ -529,10 +591,13 @@
     var runId = ttsState.runId;
     if (ttsState.chunkIdx >= ttsState.chunks.length) {
       ttsState.utterance = null;
+      followState.active = false;
+      mediaSessionSet('none');
       setEmberState('complete');
       return;
     }
     var chunk = ttsState.chunks[ttsState.chunkIdx];
+    followReading(ttsState.spokenChars);
 
     function onChunkEnd() {
       // cancel() may still fire a synthetic end. Ignore that,
@@ -575,6 +640,7 @@
         var done = ttsState.spokenChars + Math.min(ev.charIndex, chunk.length);
         var pctNow = Math.min(1, done / ttsState.totalChars);
         qsa('.gb-ember').forEach(function (btn) { btn.style.setProperty('--p', String(pctNow)); });
+        followReading(done);
       }
     };
     u.onend = onChunkEnd;
@@ -616,6 +682,12 @@
       // фиксируем, но воспроизведение не стартуем — resumeTts() подхватит.
       if (ttsState.paused) return;
       setEmberState('playing');
+      buildFollowMap();
+      bindFollowSuspend();
+      followState.active = true;
+      followState.suspendUntil = 0;
+      mediaSessionMeta();
+      mediaSessionSet('playing');
       speakNextChunk();
     });
   }
@@ -628,6 +700,8 @@
     ttsState.suppressEnd = true;
     cancelActiveEngine();
     ttsState.utterance = null;
+    followState.active = false;
+    mediaSessionSet('paused');
     setEmberState('paused');
   }
 
@@ -636,6 +710,9 @@
     ttsState.paused = false;
     ttsState.suppressEnd = false;
     ttsState.runId += 1;
+    followState.active = true;
+    followState.suspendUntil = 0;
+    mediaSessionSet('playing');
     setEmberState('playing');
     // Restart from saved chunk position (neither engine supports real resume)
     speakNextChunk();
@@ -651,8 +728,105 @@
     ttsState.chunkIdx = 0;
     ttsState.spokenChars = 0;
     ttsState.engine = null;
+    followState.active = false;
+    mediaSessionSet('none');
     setEmberState('idle');
     qsa('.gb-ember').forEach(function (btn) { btn.style.setProperty('--p', '0'); });
+  }
+
+  /* =====================================================
+     MEDIA SESSION — фоновая озвучка с системными контролами.
+     Просьба владельца: PLAY должен жить при свёрнутой вкладке/выключенном
+     экране, с красивой обложкой в шторке/на локскрине.
+
+     Как это работает:
+     - Web Speech в фоновой вкладке троттлится браузером; чтобы вкладка
+       считалась «звучащей» (и не засыпала), на время озвучки играет
+       ЯКОРЬ — крошечный зацикленный WAV чистой цифровой тишины
+       (blob:, т.к. CSP страниц разрешает media-src 'self' blob:).
+       Он же даёт браузеру право показать медиа-уведомление.
+     - navigator.mediaSession получает метаданные страницы (заголовок,
+       серия, обложка og:image + фирменный SVG /images/tts-artwork.svg)
+       и обработчики: play/pause/stop + перемотка по chunk'ам (±).
+     - Vosk-ветка играет реальные <audio> — якорь ей не мешает
+       (тишина), а метаданные/обработчики те же.
+     Закрытая вкладка озвучку не переживает — это предел веб-платформы
+     (нужен бы серверный аудиофайл + SW; текст синтезируется на клиенте).
+     ===================================================== */
+  var msAnchor = null;
+
+  function silentWavUrl() {
+    // 0.4с тишины, mono 8kHz 16bit — 6.4KB нулей; собирается на лету.
+    var samples = 3200, data = 44 + samples * 2;
+    var buf = new ArrayBuffer(data), v = new DataView(buf);
+    function str(off, s) { for (var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
+    str(0, 'RIFF'); v.setUint32(4, data - 8, true); str(8, 'WAVE');
+    str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+    v.setUint16(22, 1, true); v.setUint32(24, 8000, true);
+    v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    str(36, 'data'); v.setUint32(40, samples * 2, true);
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  }
+
+  function ensureAnchor() {
+    if (msAnchor) return msAnchor;
+    try {
+      msAnchor = document.createElement('audio');
+      msAnchor.src = silentWavUrl();
+      msAnchor.loop = true;
+      msAnchor.volume = 0.01; // не muted: muted-аудио не удерживает вкладку «звучащей»
+      msAnchor.setAttribute('playsinline', '');
+      msAnchor.style.display = 'none';
+      document.body.appendChild(msAnchor);
+    } catch (_) { msAnchor = null; }
+    return msAnchor;
+  }
+
+  function skipChunk(delta) {
+    if (!ttsState.chunks.length) return;
+    var next = Math.max(0, Math.min(ttsState.chunks.length - 1, ttsState.chunkIdx + delta));
+    ttsState.runId += 1;
+    ttsState.suppressEnd = true;
+    cancelActiveEngine();
+    ttsState.utterance = null;
+    ttsState.chunkIdx = next;
+    var spoken = 0;
+    for (var i = 0; i < next; i++) spoken += ttsState.chunks[i].length;
+    ttsState.spokenChars = spoken;
+    updateProgress();
+    if (!ttsState.paused) { ttsState.suppressEnd = false; speakNextChunk(); }
+  }
+
+  function mediaSessionMeta() {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      var h1 = qs('article h1, main h1, h1');
+      var title = (h1 && h1.textContent.trim()) || document.title;
+      var seriesLab = qs('.gbs-rail .gbs-series-title, .toc-head-txt .lab');
+      var album = (seriesLab && seriesLab.textContent.trim()) || 'Господь Бог — Сила Моя';
+      var art = [{ src: '/images/tts-artwork.svg', sizes: 'any', type: 'image/svg+xml' }];
+      var og = qs('meta[property="og:image"]');
+      if (og && og.content) art.unshift({ src: og.content, sizes: '1200x630', type: 'image/webp' });
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: title, artist: 'Господь Бог — Сила Моя', album: album, artwork: art,
+      });
+      navigator.mediaSession.setActionHandler('play', function () { handlePlayClick(null); });
+      navigator.mediaSession.setActionHandler('pause', function () { pauseTts(); mediaSessionSet('paused'); });
+      navigator.mediaSession.setActionHandler('stop', function () { stopTts(); });
+      navigator.mediaSession.setActionHandler('seekbackward', function () { skipChunk(-1); });
+      navigator.mediaSession.setActionHandler('seekforward', function () { skipChunk(1); });
+    } catch (_) {}
+  }
+
+  function mediaSessionSet(state) {
+    var a = state === 'playing' ? ensureAnchor() : msAnchor;
+    if (a) {
+      if (state === 'playing') { try { a.play().catch(function () {}); } catch (_) {} }
+      else { try { a.pause(); } catch (_) {} }
+    }
+    if ('mediaSession' in navigator) {
+      try { navigator.mediaSession.playbackState = state === 'none' ? 'none' : state; } catch (_) {}
+    }
   }
 
   // Применяем новую скорость на лету при выборе из Speed panel
