@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-06-29",
+  "updated": "2026-07-14",
   "description": "Build-time strangler ownership manifest — Gill v16 sanitary refresh 2026-06-29. Production GitHub Pages serves Astro/strangler `dist/` artifact (deploy.yml path: dist). owner:\"astro\" means output is generated from `src/pages/**` and must NOT be overwritten by copy-legacy-to-dist.js. visualMode is declared separately via route contracts / visual-route-contracts manifest, NOT inferred from status. `status:\"production-dist\"` = route is allowed in production dist after gates (may be native Astro, shared chrome, shadow-wrap, or built-app – check visualMode / routeProfile). `status:\"shadow-dist\"` = full-document shadow awaiting owner review. `status:\"shadow-pilot\"` = partial parity / native Astro without owner visual sign-off. Legacy note about \"all landing/series/catalog pages use full-document shadow-wrap\" is HISTORICAL (pre-2026-06-25) — current main includes: Native Astro pages (/ , /about/, /articles/, /biografii/, …), Gill v16 shared chrome (`data-gill-v16`, GillSeriesChrome), Nagornaya native (9 routes), Baptist GBS2 routes, maps strict-native-app (/karty/avraam/, /karty/ishod/) and holding pages. Route visual mode: see `data/visual-route-contracts.json` / `migration/page-ownership.json` + route profiles. copy-legacy-to-dist.js must skip astro-owned routes — verified.",
   "routes": {
     "/": {
@@ -122,12 +122,6 @@
       "source": "src/pages/biografii/index.astro",
       "risk": 2,
       "status": "production-dist"
-    },
-    "/dev/astro-test/": {
-      "owner": "astro-noindex",
-      "source": "src/pages/dev/astro-test.astro",
-      "risk": 1,
-      "status": "build-only"
     },
     "/hard-texts/": {
       "owner": "astro",
@@ -355,6 +349,114 @@
       "owner": "astro",
       "source": "src/pages/izbrannoe/index.astro",
       "risk": 1,
+      "status": "production-dist"
+    },
+    "/articles/skrytye-idoly-serdca/": {
+      "owner": "astro",
+      "source": "src/pages/articles/skrytye-idoly-serdca/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/religioznoe-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/religioznoe-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/sovest-vnutrenniy-sud/": {
+      "owner": "astro",
+      "source": "src/pages/articles/sovest-vnutrenniy-sud/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/myslennaya-zhizn-serdca/": {
+      "owner": "astro",
+      "source": "src/pages/articles/myslennaya-zhizn-serdca/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/starye-dorozhki-serdca/": {
+      "owner": "astro",
+      "source": "src/pages/articles/starye-dorozhki-serdca/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-yazyk/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-yazyk/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-telo/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-telo/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-sokrovishche/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-sokrovishche/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/tma-na-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/tma-na-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-pod-skorbyu/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-pod-skorbyu/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/kak-menyaetsya-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/kak-menyaetsya-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-iskushenie/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-iskushenie/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/kak-hranit-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/kak-hranit-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/strah-bozhij-rabskij-ili-synovnij/": {
+      "owner": "astro",
+      "source": "src/pages/articles/strah-bozhij-rabskij-ili-synovnij/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/svoboda-vo-hriste/": {
+      "owner": "astro",
+      "source": "src/pages/articles/svoboda-vo-hriste/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-ne-v-odinochku/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-ne-v-odinochku/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-hrista-k-nemoshchnym/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-hrista-k-nemoshchnym/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/osvobozhdennoe-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/osvobozhdennoe-serdce/index.astro",
+      "risk": 2,
       "status": "production-dist"
     }
   }
