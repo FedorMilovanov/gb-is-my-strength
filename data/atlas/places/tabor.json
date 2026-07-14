@@ -1,0 +1,54 @@
+{
+  "id": "tabor",
+  "names": {
+    "ru": "Фавор",
+    "he": "תָּבוֹר"
+  },
+  "type": "mountain",
+  "placements": {
+    "levant": {
+      "x": 640,
+      "y": 691
+    }
+  },
+  "maps": [
+    {
+      "slug": "shoftim",
+      "localId": "tabor"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "mount-tabor",
+    "wikidata": "Q193785"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Jebel et Tur",
+      "lat": 32.68625,
+      "lng": 35.392917,
+      "accuracyMeters": 5000,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-tabor → jebel-et-tur",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.68625,
+    "lng": 35.392917,
+    "accuracyMeters": 5000
+  },
+  "bibleRefs": [
+    "Josh 19:22",
+    "Judg 4:6",
+    "Judg 4:12",
+    "Judg 4:14",
+    "Judg 5:13"
+  ],
+  "rank": 2
+}

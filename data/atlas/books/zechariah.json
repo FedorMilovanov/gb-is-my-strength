@@ -1,0 +1,14 @@
+{
+  "id": "zechariah",
+  "title": {
+    "ru": "Захария",
+    "abbr": "Зах"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 38,
+  "chapters": 14,
+  "maps": [
+    "melachim"
+  ]
+}

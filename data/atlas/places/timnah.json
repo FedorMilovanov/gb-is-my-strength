@@ -1,0 +1,65 @@
+{
+  "id": "timnah",
+  "names": {
+    "ru": "Фимнафа",
+    "he": "תִּמְנָתָה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 592,
+      "y": 799
+    }
+  },
+  "maps": [
+    {
+      "slug": "shoftim",
+      "localId": "timnah"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "timnah-1",
+    "wikidata": "Q2916736"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Tel Batash",
+      "lat": 31.784831,
+      "lng": 34.910297,
+      "score": 836,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: timnah-1 → tel-batash",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Horbat Timna",
+      "lat": 31.743041,
+      "lng": 34.935419,
+      "score": -98,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: timnah-1 → horbat-timna",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.784831,
+    "lng": 34.910297
+  },
+  "bibleRefs": [
+    "Josh 15:10",
+    "Josh 19:43",
+    "Judg 14:1",
+    "Judg 14:2",
+    "Judg 14:5"
+  ],
+  "rank": 3
+}

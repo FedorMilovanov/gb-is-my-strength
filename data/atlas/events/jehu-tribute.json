@@ -1,0 +1,14 @@
+{
+  "id": "jehu-tribute",
+  "title": {
+    "ru": "Дань Ииуя Салманасару III"
+  },
+  "kind": "other",
+  "year": -841,
+  "personIds": [
+    "jehu",
+    "shalmaneser3"
+  ],
+  "periodId": "divided-kingdom",
+  "extraBiblical": "Чёрный обелиск: единственное изображение израильского царя"
+}

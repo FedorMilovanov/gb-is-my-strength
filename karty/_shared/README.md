@@ -157,12 +157,18 @@ engine.destroy()              // remove event listeners, stop tour
 
 ---
 
-## 5. Current state (2026-06-15)
+## 5. Current state (2026-07-10)
 
-| Map | route.json | Places | Stages | Stories | Status |
-|-----|-----------|--------|--------|---------|--------|
-| avraam | karty/avraam/route.json | 19 | 8 | 5 | Shadow pilot (Astro) |
-| ishod | karty/ishod/route.json | 11 | 6 | 4 | In development |
+Полный live-инвентарь всех карт: `node scripts/atlas-inventory.js` → `data/atlas-inventory-baseline.json` + `reports/atlas-inventory.md`
+(единственный источник счётчиков — таблицу здесь больше не дублируем, см. Single-Writer-Per-Fact).
+
+Сводка на 2026-07-10: **10 карт** с route.json (133 места, 47 этапов, 52 истории, 84 научных
+варианта). Production-режим всех `/karty/*` маршрутов — Astro (`page-ownership.json`):
+avraam и ishod = strict-native-app на `MapEngine.createMap()`, остальные 8 = holding pages
+(`temporary-placeholder`) до прохождения гейтов публикации.
+
+Контракты Атласа (архетипы, координатные семейства, словарь уверенности, гейты G1–G9):
+**`docs/ATLAS-CONTRACT-2026-07-10.md`** — читать перед любой работой с картами.
 
 ---
 

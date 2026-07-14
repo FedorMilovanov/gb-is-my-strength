@@ -1,0 +1,106 @@
+{
+  "id": "sodom",
+  "names": {
+    "ru": "Содом и Гоморра",
+    "he": "סְדֹם וַעֲמֹרָה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 653,
+      "y": 874
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "sodom"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "sodom"
+  },
+  "identifications": [
+    {
+      "status": "candidate",
+      "label": "south of the Lisan",
+      "lat": 31.20849,
+      "lng": 35.449223,
+      "accuracyMeters": 25000,
+      "score": 250,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: sodom → south-of-the-lisan",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Bab edh Dhra",
+      "lat": 31.248729,
+      "lng": 35.523005,
+      "score": 135,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: sodom → bab-edh-dhra",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "north of the Dead Sea",
+      "lat": 31.795,
+      "lng": 35.595278,
+      "accuracyMeters": 25000,
+      "score": 115,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: sodom → north-of-the-dead-sea",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tall el Hammam",
+      "lat": 31.84018,
+      "lng": 35.67368,
+      "score": 30,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: sodom → tall-el-hammam",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Numeira",
+      "lat": 31.129757,
+      "lng": 35.529368,
+      "score": -24,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: sodom → numeira",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.20849,
+    "lng": 35.449223,
+    "accuracyMeters": 25000
+  },
+  "bibleRefs": [
+    "Gen 10:19",
+    "Gen 13:10",
+    "Gen 13:12",
+    "Gen 13:13",
+    "Gen 14:2"
+  ],
+  "rank": 3
+}

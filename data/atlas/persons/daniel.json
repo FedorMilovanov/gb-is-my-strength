@@ -1,0 +1,25 @@
+{
+  "id": "daniel",
+  "names": {
+    "ru": "Даниил"
+  },
+  "role": "prophet",
+  "realm": "babylon",
+  "ministry": {
+    "start": -605,
+    "end": -536,
+    "approx": true,
+    "note": "от депортации 605 до 3-го года Кира"
+  },
+  "periodIds": [
+    "judah-alone",
+    "exile",
+    "persian"
+  ],
+  "bookIds": [
+    "daniel"
+  ],
+  "placeIds": [
+    "babylon"
+  ]
+}

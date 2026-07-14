@@ -1,0 +1,52 @@
+{
+  "id": "joppa",
+  "names": {
+    "ru": "Иоппия",
+    "he": "יָפוֹ"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 576,
+      "y": 767
+    }
+  },
+  "maps": [
+    {
+      "slug": "early-church",
+      "localId": "joppa"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "joppa",
+    "wikidata": "Q180294"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Jaffa",
+      "lat": 32.054481,
+      "lng": 34.753039,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: joppa → jaffa",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.054481,
+    "lng": 34.753039
+  },
+  "bibleRefs": [
+    "Josh 19:46",
+    "2 Chr 2:16",
+    "Ezra 3:7",
+    "Jonah 1:3",
+    "Acts 9:36"
+  ],
+  "rank": 3
+}

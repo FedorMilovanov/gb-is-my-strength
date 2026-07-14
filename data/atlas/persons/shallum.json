@@ -1,0 +1,20 @@
+{
+  "id": "shallum",
+  "names": {
+    "ru": "Селлум"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -752,
+    "end": -752,
+    "note": "1 месяц"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "successor": "menahem"
+  }
+}

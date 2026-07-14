@@ -1,0 +1,22 @@
+{
+  "id": "elijah",
+  "names": {
+    "ru": "Илия"
+  },
+  "role": "prophet",
+  "realm": "israel",
+  "ministry": {
+    "start": -870,
+    "end": -848,
+    "approx": true,
+    "note": "Кармил ~857; вознесение"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "placeIds": [
+    "carmel",
+    "mount-sinai",
+    "jezreel"
+  ]
+}

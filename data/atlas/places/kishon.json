@@ -1,0 +1,65 @@
+{
+  "id": "kishon",
+  "names": {
+    "ru": "Поток Киссон",
+    "he": "קִישׁוֹן"
+  },
+  "type": "river",
+  "placements": {
+    "levant": {
+      "x": 612,
+      "y": 697
+    }
+  },
+  "maps": [
+    {
+      "slug": "shoftim",
+      "localId": "kishon"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "kishon",
+    "wikidata": "Q1743701"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Kishon River",
+      "lat": 32.816667,
+      "lng": 35.033333,
+      "score": 854,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: kishon → kishon-river",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Nahal Tabor",
+      "lat": 32.652383,
+      "lng": 35.463181,
+      "score": 69,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: kishon → nahal-tabor",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.816667,
+    "lng": 35.033333
+  },
+  "bibleRefs": [
+    "Judg 4:7",
+    "Judg 4:13",
+    "Judg 5:21",
+    "1 Kgs 18:40",
+    "Ps 83:9"
+  ],
+  "rank": 3
+}

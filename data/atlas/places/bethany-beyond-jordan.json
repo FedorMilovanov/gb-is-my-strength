@@ -1,0 +1,140 @@
+{
+  "id": "bethany-beyond-jordan",
+  "names": {
+    "ru": "Вифавара · Крещение",
+    "he": "בֵּית עֲבָרָה"
+  },
+  "type": "region",
+  "notes": "SUB-LOCATION: проверить parentId | parent-candidate: jordan-baptism (записи нет — место самостоятельное)",
+  "placements": {
+    "levant": {
+      "x": 656,
+      "y": 793
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "jordan_baptism"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "bethany-2",
+    "wikidata": "Q2617848"
+  },
+  "identifications": [
+    {
+      "status": "candidate",
+      "label": "Al Maghtas",
+      "lat": 31.837109,
+      "lng": 35.550301,
+      "score": 320,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → al-maghtas",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Raphana",
+      "lat": 32.852034,
+      "lng": 36.19934,
+      "score": 192,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → raphana",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Al Eizariya",
+      "lat": 31.771661,
+      "lng": 35.255903,
+      "score": 67,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → al-eizariya",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Khirbet Batneh",
+      "lat": 32.010571,
+      "lng": 35.710739,
+      "score": 13,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → khirbet-batneh",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tall Bleibel",
+      "lat": 31.909106,
+      "lng": 35.63872,
+      "score": 12,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → tall-bleibel",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tall Nimrin",
+      "lat": 31.90094,
+      "lng": 35.624546,
+      "score": 6,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → tall-nimrin",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Wadi al Fara",
+      "lat": 32.1,
+      "lng": 35.52,
+      "score": 3,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → wadi-al-fara",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Makhadhet Abarah",
+      "lat": 32.531763,
+      "lng": 35.559259,
+      "score": -3,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethany-2 → makhadhet-abarah",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.837109,
+    "lng": 35.550301
+  },
+  "bibleRefs": [
+    "John 1:28"
+  ],
+  "rank": 3
+}

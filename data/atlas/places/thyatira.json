@@ -1,0 +1,52 @@
+{
+  "id": "thyatira",
+  "names": {
+    "ru": "Фиатира",
+    "he": "Θυάτειρα"
+  },
+  "type": "city",
+  "placements": {
+    "mediterranean": {
+      "x": 1199,
+      "y": 454
+    }
+  },
+  "maps": [
+    {
+      "slug": "revelation",
+      "localId": "thyatira"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "thyatira",
+    "wikidata": "Q1135603"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Akhisar",
+      "lat": 38.92021,
+      "lng": 27.83655,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: thyatira → akhisar",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 38.92021,
+    "lng": 27.83655
+  },
+  "bibleRefs": [
+    "Acts 16:14",
+    "Rev 1:11",
+    "Rev 2:18",
+    "Rev 2:24"
+  ],
+  "rank": 3,
+  "notes": "координаты семи церквей разнесены по реальной дуге зап. Анатолии (Ф2-Ц2, G2-фикс revelation; было — пятачок 40×70)"
+}

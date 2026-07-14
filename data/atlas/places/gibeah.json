@@ -1,0 +1,64 @@
+{
+  "id": "gibeah",
+  "names": {
+    "ru": "Гива",
+    "he": "גִּבְעָה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 624,
+      "y": 795
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "gibeah"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "gibeah-1"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Tel el Ful",
+      "lat": 31.823113,
+      "lng": 35.230718,
+      "score": 669,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gibeah-1 → tel-el-ful",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jaba",
+      "lat": 31.8575,
+      "lng": 35.261111,
+      "score": 70,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gibeah-1 → jaba",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.823113,
+    "lng": 35.230718
+  },
+  "bibleRefs": [
+    "Judg 19:12",
+    "Judg 19:13",
+    "Judg 19:14",
+    "Judg 19:15",
+    "Judg 19:16"
+  ],
+  "rank": 3
+}

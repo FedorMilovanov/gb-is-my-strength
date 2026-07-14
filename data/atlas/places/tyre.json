@@ -1,0 +1,52 @@
+{
+  "id": "tyre",
+  "names": {
+    "ru": "Тир",
+    "he": "צוֹר"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 621,
+      "y": 621
+    }
+  },
+  "maps": [
+    {
+      "slug": "maccabim",
+      "localId": "tyre"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "tyre",
+    "wikidata": "Q82070"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tyre",
+      "lat": 33.270833,
+      "lng": 35.196111,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: tyre → tyre",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 33.270833,
+    "lng": 35.196111
+  },
+  "bibleRefs": [
+    "Josh 19:29",
+    "2 Sam 5:11",
+    "2 Sam 24:7",
+    "1 Kgs 5:1",
+    "1 Kgs 7:13"
+  ],
+  "rank": 1
+}

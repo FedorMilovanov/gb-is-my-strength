@@ -1,0 +1,21 @@
+{
+  "id": "zechariah-israel",
+  "names": {
+    "ru": "Захария Израильский"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -753,
+    "end": -752,
+    "note": "6 месяцев — конец дома Ииуя"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "jehu",
+    "successor": "shallum"
+  }
+}

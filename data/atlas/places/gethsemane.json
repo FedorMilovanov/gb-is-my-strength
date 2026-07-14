@@ -1,0 +1,49 @@
+{
+  "id": "gethsemane",
+  "names": {
+    "ru": "Гефсимания",
+    "he": "גַּת שְׁמָנִים"
+  },
+  "type": "garden",
+  "placements": {
+    "levant": {
+      "x": 626,
+      "y": 798
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "gethsemane"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "gethsemane",
+    "wikidata": "Q205333"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Gethsemane",
+      "lat": 31.779419,
+      "lng": 35.239425,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gethsemane → gethsemane",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.779419,
+    "lng": 35.239425
+  },
+  "bibleRefs": [
+    "Matt 26:36",
+    "Mark 14:32"
+  ],
+  "rank": 3
+}

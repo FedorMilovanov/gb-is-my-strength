@@ -1,0 +1,20 @@
+{
+  "id": "shalmaneser5",
+  "names": {
+    "ru": "Салманасар V"
+  },
+  "role": "emperor",
+  "realm": "assyria",
+  "reign": {
+    "start": -727,
+    "end": -722,
+    "note": "осада Самарии"
+  },
+  "periodIds": [
+    "divided-kingdom",
+    "judah-alone"
+  ],
+  "bibleRefs": [
+    "4 Цар 17:3-6"
+  ]
+}

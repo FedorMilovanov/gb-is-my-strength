@@ -1,0 +1,20 @@
+{
+  "id": "judah-alone",
+  "title": {
+    "ru": "Иудея под тенью империй",
+    "short": "Иудея одна"
+  },
+  "start": -722,
+  "end": -586,
+  "engineEra": "iron",
+  "colorToken": "#9fc0dd",
+  "colorStatus": "contract",
+  "maps": [
+    "melachim"
+  ],
+  "keyEvents": [
+    "Езекия и Санхерив 701",
+    "Реформа Иосии",
+    "Падение Иерусалима 586"
+  ]
+}

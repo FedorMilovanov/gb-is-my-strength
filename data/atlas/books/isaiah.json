@@ -1,0 +1,14 @@
+{
+  "id": "isaiah",
+  "title": {
+    "ru": "Исаия",
+    "abbr": "Ис"
+  },
+  "testament": "ot",
+  "section": "major-prophets",
+  "order": 23,
+  "chapters": 66,
+  "maps": [
+    "melachim"
+  ]
+}

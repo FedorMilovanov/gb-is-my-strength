@@ -1,0 +1,52 @@
+{
+  "id": "jezreel",
+  "names": {
+    "ru": "Изреель",
+    "he": "יִזְרְעֶאל"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 634,
+      "y": 707
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "jezreel"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "jezreel-2",
+    "wikidata": "Q2914898"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Tel Yizre’el",
+      "lat": 32.557853,
+      "lng": 35.327953,
+      "score": 806,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: jezreel-2 → tel-yizreel",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.557853,
+    "lng": 35.327953
+  },
+  "bibleRefs": [
+    "Josh 19:18",
+    "1 Sam 29:1",
+    "1 Sam 29:11",
+    "2 Sam 2:9",
+    "2 Sam 4:4"
+  ],
+  "rank": 3
+}

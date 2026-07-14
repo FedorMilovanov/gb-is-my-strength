@@ -1,0 +1,104 @@
+{
+  "id": "ai",
+  "names": {
+    "ru": "Гай",
+    "he": "הָעָי"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 627,
+      "y": 784
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "ai"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "ai-1",
+    "wikidata": "Q403166"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Et Tell",
+      "lat": 31.916944,
+      "lng": 35.261111,
+      "score": 522,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ai-1 → et-tell",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Khirbet el Maqatir",
+      "lat": 31.91476,
+      "lng": 35.2496,
+      "score": 75,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ai-1 → khirbet-el-maqatir",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Khirbet Nisieh",
+      "lat": 31.897515,
+      "lng": 35.228619,
+      "score": 28,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ai-1 → khirbet-nisieh",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Khirbet Haiyan",
+      "lat": 31.905169,
+      "lng": 35.270379,
+      "score": 9,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ai-1 → khirbet-haiyan",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Khirbet Ibn Baraq",
+      "lat": 31.9125,
+      "lng": 35.2464,
+      "score": 9,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ai-1 → khirbet-ibn-baraq",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.916944,
+    "lng": 35.261111
+  },
+  "bibleRefs": [
+    "Gen 12:8",
+    "Gen 13:3",
+    "Josh 7:2",
+    "Josh 7:3",
+    "Josh 7:4"
+  ],
+  "rank": 3
+}

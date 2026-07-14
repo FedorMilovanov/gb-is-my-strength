@@ -1,0 +1,19 @@
+{
+  "id": "pekahiah",
+  "names": {
+    "ru": "Факия"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -742,
+    "end": -740
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "successor": "pekah"
+  }
+}

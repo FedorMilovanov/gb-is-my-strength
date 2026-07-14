@@ -1,0 +1,50 @@
+{
+  "id": "philadelphia",
+  "names": {
+    "ru": "Филадельфия",
+    "he": "Φιλαδέλφεια"
+  },
+  "type": "city",
+  "placements": {
+    "mediterranean": {
+      "x": 1244,
+      "y": 501
+    }
+  },
+  "maps": [
+    {
+      "slug": "revelation",
+      "localId": "philadelphia"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "philadelphia",
+    "wikidata": "Q138280"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Alaşehir",
+      "lat": 38.35,
+      "lng": 28.516667,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: philadelphia → alasehir",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 38.35,
+    "lng": 28.516667
+  },
+  "bibleRefs": [
+    "Rev 1:11",
+    "Rev 3:7"
+  ],
+  "rank": 3,
+  "notes": "координаты семи церквей разнесены по реальной дуге зап. Анатолии (Ф2-Ц2, G2-фикс revelation; было — пятачок 40×70)"
+}

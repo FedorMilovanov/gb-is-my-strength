@@ -1,0 +1,11 @@
+{
+  "id": "hebrews",
+  "title": {
+    "ru": "К Евреям",
+    "abbr": "Евр"
+  },
+  "testament": "nt",
+  "section": "general",
+  "order": 58,
+  "chapters": 13
+}

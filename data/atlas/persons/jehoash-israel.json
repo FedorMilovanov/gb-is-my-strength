@@ -1,0 +1,20 @@
+{
+  "id": "jehoash-israel",
+  "names": {
+    "ru": "Иоас Израильский"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -798,
+    "end": -782
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "jehu",
+    "successor": "jeroboam2"
+  }
+}

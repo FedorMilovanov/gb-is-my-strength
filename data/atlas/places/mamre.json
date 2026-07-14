@@ -1,0 +1,80 @@
+{
+  "id": "mamre",
+  "names": {
+    "ru": "Хеврон · Мамре",
+    "he": "חֶבְרוֹן · אֵלֹנֵי מַמְרֵא"
+  },
+  "type": "city",
+  "parentId": "hebron",
+  "notes": "SUB-LOCATION: проверить parentId",
+  "placements": {
+    "levant": {
+      "x": 610,
+      "y": 829
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "hebron"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "mamre",
+    "wikidata": "Q2143048"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Ramat el Khalil",
+      "lat": 31.556536,
+      "lng": 35.105336,
+      "score": 667,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mamre → ramat-el-khalil",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Ain Sebta",
+      "lat": 31.536,
+      "lng": 35.0856,
+      "score": 34,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mamre → ain-sebta",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Khirbet Nimreh",
+      "lat": 31.53502,
+      "lng": 35.10203,
+      "score": 20,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mamre → khirbet-nimreh",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.556536,
+    "lng": 35.105336
+  },
+  "bibleRefs": [
+    "Gen 23:17",
+    "Gen 23:19",
+    "Gen 25:9",
+    "Gen 35:27",
+    "Gen 49:30"
+  ],
+  "rank": 3
+}

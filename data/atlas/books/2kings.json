@@ -1,0 +1,14 @@
+{
+  "id": "2kings",
+  "title": {
+    "ru": "4 Царств",
+    "abbr": "4 Цар"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 12,
+  "chapters": 25,
+  "maps": [
+    "melachim"
+  ]
+}

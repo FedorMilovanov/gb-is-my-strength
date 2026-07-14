@@ -1,0 +1,23 @@
+{
+  "id": "carmel-contest",
+  "title": {
+    "ru": "Состязание на Кармиле"
+  },
+  "kind": "miracle",
+  "year": -857,
+  "approx": true,
+  "placeIds": [
+    "carmel"
+  ],
+  "personIds": [
+    "elijah",
+    "ahab"
+  ],
+  "periodId": "divided-kingdom",
+  "bibleRefs": [
+    "3 Цар 18"
+  ],
+  "maps": [
+    "melachim"
+  ]
+}

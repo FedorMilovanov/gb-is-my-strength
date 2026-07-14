@@ -1437,8 +1437,6 @@ html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104
   }
 }
 
-/* ============================================================
-
 /* ---- Global .gbs-rail-foot: compact 32px controls for ALL Gill rail footers ----
    (VR-07 fix: previously scoped under [data-gill-v16] which only exists on context page.
    Reference: space-between row, no boxed background, 32px baseline for all controls) */
@@ -1456,6 +1454,8 @@ html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104
 .gbs-rail-foot .gb-save svg { width: 17px; height: 17px; }
 .gbs-rail-foot .gbs-rail-foot__btn { width: 32px; height: 32px; display: grid; place-items: center; }
 .gbs-rail-foot .gbs-rail-foot__btn svg { width: 17px; height: 17px; }
+
+/* ============================================================
    v15: MOBILE PREVIEW — Save REMOVED from bottom-bar
    Bottom-bar now has: TOC + section + dots + % + theme + search + play
    ============================================================ */
@@ -2214,6 +2214,7 @@ html.dark [data-gill-v16] .toc-part-item__progress {
 
 /* =========================================================
    Standalone article floater — position matching legacy .theme-toggle
+   ========================================================= */
 
 /* =========================================================
    Play Ember — Luxury Speed Expand

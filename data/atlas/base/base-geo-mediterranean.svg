@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1900 1430" aria-label="Базовая карта Средиземноморья: семейство mediterranean">
+<!--
+  base-geo-mediterranean.svg — подложка семейства mediterranean (KA-6 первый заход, Ф2-Ц2).
+  Сетка: x = 40 + (lon − 10)·65 ;  y = 120 + (43 − lat)·82  (1 ед. ≈ 1,37 км по широте).
+  Дефы (landG, seaG, seaPattern, desertG, fertileG, mountainHatch, mtG…) — У ПОТРЕБИТЕЛЯ
+  (инлайн-дефы сборки/страницы), как и у base-geo.svg Леванта: «краски у потребителя».
+  Контуры побережий — художественная развёртка по опорным точкам сетки (не строгая проекция).
+-->
+<!-- ═══ МОРЕ (фон листа) ═══ -->
+<rect x="0" y="0" width="1900" height="1430" fill="url(#seaG)"/>
+<rect x="0" y="0" width="1900" height="1430" fill="url(#seaPattern)" opacity=".32"/>
+
+<!-- ═══ СУША · Балканы и Греция (Иллирик → Ахайя → Фракия) ═══ -->
+<path fill="url(#landG)" stroke="#2e4d6b" stroke-width="1.4" stroke-linejoin="round" d="
+M645,120
+C650,166 654,213 654,259
+C666,304 678,348 690,391
+C707,410 725,429 742,448
+C755,466 768,484 781,501
+C813,503 846,504 872,505
+L877,538
+C845,549 810,558 778,571
+C790,593 802,615 814,637
+C827,645 840,653 853,661
+C866,660 879,658 892,657
+C894,632 895,607 895,583
+C889,568 883,553 877,538
+C879,527 881,516 883,510
+C899,517 916,524 932,531
+C939,540 945,550 952,559
+C951,545 950,532 950,518
+C929,500 908,482 887,467
+C884,466 881,465 879,464
+C888,450 896,437 905,423
+C897,387 889,350 881,314
+C888,323 895,331 901,340
+C915,345 928,349 942,354
+C953,332 964,310 976,289
+C1015,304 1054,318 1093,333
+C1097,337 1101,341 1105,345
+C1164,319 1223,294 1282,268
+C1285,219 1288,170 1290,120
+Z"/>
+<!-- ═══ СУША · Италия (сапог) и Сицилия ═══ -->
+<path fill="url(#landG)" stroke="#2e4d6b" stroke-width="1.4" stroke-linejoin="round" d="
+M235,120
+C224,150 212,181 201,211
+C208,227 215,243 222,259
+C253,272 285,285 316,298
+C327,302 339,307 350,311
+C369,357 388,402 407,448
+C407,477 406,507 406,536
+C427,523 448,510 469,497
+C478,448 486,399 495,350
+C515,338 535,326 556,314
+C565,337 574,360 583,383
+C549,383 516,382 482,259
+C463,245 443,232 424,218
+C383,199 341,180 300,161
+C283,147 265,133 248,120
+Z"/>
+<path fill="url(#landG)" stroke="#2e4d6b" stroke-width="1.3" stroke-linejoin="round" d="
+M401,514 C393,545 388,576 383,607 C366,617 350,627 333,637
+C288,607 243,576 198,546 C218,537 238,528 258,520 C298,517 361,512 401,514 Z"/>
+<!-- Мелит (Мальта) — кораблекрушение Деян 27–28 -->
+<ellipse cx="326" cy="702" rx="14" ry="8" fill="url(#landG)" stroke="#2e4d6b" stroke-width="1"/>
+
+<!-- ═══ СУША · Анатолия · Левант · Египет · Ливия (единый массив вокруг восточного бассейна) ═══ -->
+<path fill="url(#landG)" stroke="#2e4d6b" stroke-width="1.4" stroke-linejoin="round" d="
+M1300,120
+C1294,169 1288,219 1282,268
+C1223,294 1164,319 1105,345
+C1100,364 1096,384 1091,403
+C1112,414 1133,426 1154,437
+C1154,457 1154,476 1154,496
+C1158,509 1162,522 1167,535
+C1165,546 1163,558 1162,569
+C1163,586 1164,603 1165,620
+C1166,626 1168,632 1169,637
+C1211,649 1253,662 1295,674
+C1325,657 1356,641 1386,624
+C1447,639 1507,654 1568,669
+C1610,663 1655,650 1690,637
+C1706,633 1720,632 1728,640
+C1734,648 1734,658 1729,668
+C1726,676 1724,683 1725,690
+C1723,723 1721,755 1720,788
+C1710,823 1699,859 1689,894
+C1685,902 1681,910 1677,918
+C1675,928 1672,938 1670,947
+C1666,958 1662,969 1658,981
+C1655,993 1652,1006 1649,1018
+C1643,1032 1637,1047 1631,1061
+C1599,1073 1567,1084 1535,1096
+C1525,1097 1516,1098 1506,1099
+C1483,1088 1461,1078 1438,1067
+C1414,1067 1390,1067 1366,1067
+C1356,1074 1345,1081 1335,1088
+C1293,1091 1252,1093 1210,1096
+C1074,1045 938,995 801,944
+C764,965 727,985 690,1006
+C636,1033 582,1061 528,1088
+C485,1055 441,1022 398,989
+C348,976 298,962 248,949
+C179,932 109,916 40,899
+L40,1430 L1900,1430 L1900,120
+Z"/>
+
+<!-- ═══ ОСТРОВА ═══ -->
+<!-- Крит -->
+<path fill="url(#landG)" stroke="#2e4d6b" stroke-width="1.2" stroke-linejoin="round"
+  d="M924,735 C943,736 963,737 982,739 C1021,746 1061,753 1100,760 C1068,767 1035,773 1002,780 C975,770 948,761 921,751 Z"/>
+<!-- Кипр (с пальцем Карпасии на северо-восток) -->
+<path fill="url(#landG)" stroke="#2e4d6b" stroke-width="1.2" stroke-linejoin="round"
+  d="M1496,797 C1500,780 1510,764 1526,754 C1548,744 1572,740 1592,742 C1608,737 1625,729 1639,723 C1634,733 1620,742 1604,750 C1600,757 1598,764 1594,770 C1588,780 1578,787 1566,790 C1543,795 1518,798 1496,797 Z"/>
+<!-- Родос -->
+<ellipse cx="1217" cy="665" rx="18" ry="9" transform="rotate(28 1217 665)" fill="url(#landG)" stroke="#2e4d6b" stroke-width="1"/>
+<!-- ПАТМОС — остров Откровения -->
+<ellipse cx="1116" cy="587" rx="7" ry="5" transform="rotate(-15 1116 587)" fill="url(#landG)" stroke="#3a5c80" stroke-width="1.2"/>
+<!-- Киклады -->
+<ellipse cx="1048" cy="608" rx="8" ry="4" fill="url(#landG)" stroke="#2e4d6b" stroke-width=".8" opacity=".9"/>
+<ellipse cx="1025" cy="608" rx="6" ry="4" fill="url(#landG)" stroke="#2e4d6b" stroke-width=".8" opacity=".9"/>
+<ellipse cx="1035" cy="575" rx="5" ry="3.5" fill="url(#landG)" stroke="#2e4d6b" stroke-width=".8" opacity=".9"/>
+<ellipse cx="1041" cy="661" rx="5" ry="4" fill="url(#landG)" stroke="#2e4d6b" stroke-width=".8" opacity=".9"/>
+<!-- Лесбос · Хиос · Самос (вдоль берега Асии) -->
+<ellipse cx="1100" cy="432" rx="13" ry="7" transform="rotate(-12 1100 432)" fill="url(#landG)" stroke="#2e4d6b" stroke-width=".9"/>
+<ellipse cx="1087" cy="497" rx="7" ry="10" fill="url(#landG)" stroke="#2e4d6b" stroke-width=".9"/>
+<ellipse cx="1129" cy="551" rx="10" ry="5" transform="rotate(8 1129 551)" fill="url(#landG)" stroke="#2e4d6b" stroke-width=".9"/>
+<!-- Эвбея -->
+<path fill="url(#landG)" stroke="#2e4d6b" stroke-width="1" d="M950,505 C963,489 976,474 989,462 C996,470 1002,478 1009,486 C990,497 970,508 951,519 Z" opacity=".95"/>
+
+<!-- ═══ ЗЕЛЕНЬ И ПУСТЫНЯ (акценты) ═══ -->
+<ellipse cx="1462" cy="1120" rx="120" ry="70" fill="url(#fertileG)"/>
+<ellipse cx="1690" cy="960" rx="46" ry="140" fill="url(#fertileG)" opacity=".8"/>
+<ellipse cx="930" cy="420" rx="150" ry="120" fill="url(#fertileG)" opacity=".5"/>
+<ellipse cx="330" cy="300" rx="120" ry="160" fill="url(#fertileG)" opacity=".5"/>
+<ellipse cx="1000" cy="1200" rx="480" ry="200" fill="url(#desertG)"/>
+<ellipse cx="1700" cy="1250" rx="260" ry="160" fill="url(#desertG)"/>
+<ellipse cx="1000" cy="1210" rx="420" ry="170" fill="url(#desertStipple)" opacity=".6"/>
+
+<!-- ═══ ГОРЫ (Тавр · Олимп · Апеннины) ═══ -->
+<ellipse cx="1470" cy="620" rx="150" ry="22" transform="rotate(-4 1470 620)" fill="url(#mountainHatch)"/>
+<ellipse cx="1590" cy="655" rx="90" ry="16" transform="rotate(8 1590 655)" fill="url(#mountainHatch)"/>
+<ellipse cx="890" cy="385" rx="24" ry="14" fill="url(#mountainHatch)"/>
+<ellipse cx="330" cy="300" rx="20" ry="90" transform="rotate(24 330 300)" fill="url(#mountainHatch)" opacity=".8"/>
+<ellipse cx="1725" cy="850" rx="14" ry="90" fill="url(#mountainHatch)" opacity=".7"/>
+
+<!-- ═══ РЕКИ ═══ -->
+<g fill="none" stroke="#2d4a66" stroke-width="2">
+  <path d="M1462,1430 C1458,1345 1464,1262 1460,1180 C1459,1146 1452,1112 1438,1078" stroke-width="2.6"/>
+  <path d="M1438,1078 C1414,1071 1390,1069 1366,1067" stroke-width="1.6"/>
+  <path d="M1438,1078 C1461,1074 1483,1088 1506,1097" stroke-width="1.6"/>
+  <path d="M1770,806 C1758,768 1744,730 1725,692" stroke-width="1.8"/>
+  <path d="M250,152 C232,171 214,191 196,222" stroke-width="1.5"/>
+</g>
+
+<!-- ═══ ЯРЛЫКИ МОРЕЙ ═══ -->
+<g font-family="Georgia, 'Times New Roman', serif" fill="#4a80a0" text-anchor="middle" letter-spacing=".35em" opacity=".85">
+  <text class="sea-label" x="950" y="880" font-size="26">ВЕЛИКОЕ&#160;&#160;МОРЕ</text>
+  <text class="sea-label" x="950" y="912" font-size="13" letter-spacing=".2em" opacity=".7">MARE&#160;INTERNUM</text>
+  <text class="sea-label" x="1008" y="505" font-size="15" transform="rotate(-52 1008 505)" letter-spacing=".22em">ЭГЕЙСКОЕ&#160;МОРЕ</text>
+  <text class="sea-label" x="520" y="255" font-size="12" transform="rotate(-38 520 255)" letter-spacing=".2em" opacity=".7">АДРИАТИКА</text>
+  <text class="sea-label" x="620" y="560" font-size="12" letter-spacing=".2em" opacity=".65">ИОНИЧЕСКОЕ&#160;МОРЕ</text>
+</g>
+
+<!-- ═══ ЯРЛЫКИ ЗЕМЕЛЬ ═══ -->
+<g font-family="Georgia, 'Times New Roman', serif" fill="#8b7d5a" text-anchor="middle" letter-spacing=".28em" opacity=".8">
+  <text class="region-label" x="350" y="330" font-size="15" transform="rotate(56 350 330)">ИТАЛИЯ</text>
+  <text class="region-label" x="920" y="255" font-size="14">МАКЕДОНИЯ</text>
+  <text class="region-label" x="850" y="600" font-size="13">АХАЙЯ</text>
+  <text class="region-label" x="1255" y="465" font-size="15">АСИЯ</text>
+  <text class="region-label" x="1500" y="490" font-size="13">ГАЛАТИЯ</text>
+  <text class="region-label" x="1620" y="610" font-size="12">КИЛИКИЯ</text>
+  <text class="region-label" x="1800" y="760" font-size="13">СИРИЯ</text>
+  <text class="region-label" x="1735" y="1010" font-size="11">ИУДЕЯ</text>
+  <text class="region-label" x="1400" y="1170" font-size="15">ЕГИПЕТ</text>
+  <text class="region-label" x="700" y="1110" font-size="14" opacity=".7">ЛИВИЯ</text>
+  <text class="region-label" x="1010" y="770" font-size="10" letter-spacing=".2em">КРИТ</text>
+  <text class="region-label" x="1560" y="775" font-size="10" letter-spacing=".2em">КИПР</text>
+  <text class="region-label" x="1116" y="605" font-size="9" fill="#c8b078" letter-spacing=".18em">ПАТМОС</text>
+  <text class="region-label" x="326" y="722" font-size="9" letter-spacing=".15em">МЕЛИТ</text>
+  <text class="region-label" x="1217" y="683" font-size="9" letter-spacing=".15em" opacity=".7">РОДОС</text>
+</g>
+</svg>

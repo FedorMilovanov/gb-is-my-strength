@@ -1,0 +1,52 @@
+{
+  "id": "shiloh",
+  "names": {
+    "ru": "Силом",
+    "he": "שִׁילֹה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 630,
+      "y": 767
+    }
+  },
+  "maps": [
+    {
+      "slug": "shoftim",
+      "localId": "shiloh"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "shiloh",
+    "wikidata": "Q985542"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Khirbet Seilun",
+      "lat": 32.055703,
+      "lng": 35.289536,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: shiloh → khirbet-seilun",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.055703,
+    "lng": 35.289536
+  },
+  "bibleRefs": [
+    "Gen 49:10",
+    "Josh 18:1",
+    "Josh 18:8",
+    "Josh 18:9",
+    "Josh 18:10"
+  ],
+  "rank": 3
+}

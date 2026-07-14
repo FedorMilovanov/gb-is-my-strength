@@ -1,0 +1,26 @@
+{
+  "id": "jeremiah",
+  "names": {
+    "ru": "Иеремия"
+  },
+  "role": "prophet",
+  "realm": "judah",
+  "ministry": {
+    "start": -627,
+    "end": -580,
+    "approx": true,
+    "note": "призван в 13-й год Иосии (Иер 1:2)"
+  },
+  "periodIds": [
+    "judah-alone",
+    "exile"
+  ],
+  "bookIds": [
+    "jeremiah",
+    "lamentations"
+  ],
+  "placeIds": [
+    "jerusalem",
+    "mizpah-judah"
+  ]
+}

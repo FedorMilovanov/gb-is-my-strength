@@ -1,0 +1,21 @@
+{
+  "id": "jotham",
+  "names": {
+    "ru": "Иофам"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -750,
+    "end": -732,
+    "coregency": true
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "good",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "ahaz"
+  }
+}

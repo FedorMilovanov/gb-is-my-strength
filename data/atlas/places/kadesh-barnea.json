@@ -1,0 +1,73 @@
+{
+  "id": "kadesh-barnea",
+  "names": {
+    "ru": "Кадеш-Барнеа",
+    "he": "קָדֵשׁ בַּרְנֵעַ",
+    "variants": [
+      "Кадеш (Кадеш-Барнеа)"
+    ]
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 542,
+      "y": 934
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "kadesh_barnea"
+    },
+    {
+      "slug": "avraam",
+      "localId": "kadesh"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "kadesh-barnea",
+    "wikidata": "Q954599"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Ain el Qudeirat",
+      "lat": 30.648333,
+      "lng": 34.422222,
+      "score": 864,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: kadesh-barnea → ain-el-qudeirat",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Ein Qedeis",
+      "lat": 30.583378,
+      "lng": 34.484081,
+      "score": -92,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: kadesh-barnea → ein-qedeis",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 30.648333,
+    "lng": 34.422222
+  },
+  "bibleRefs": [
+    "Gen 14:7",
+    "Gen 16:14",
+    "Gen 20:1",
+    "Num 13:26",
+    "Num 20:1"
+  ],
+  "notes": "review-hold: P0-досье в Research (Эйн эль-Кудейрат vs Петра; хронология крепости X в. vs дата Исхода) | review: Кадеш-Варни (Эйн эль-Кудейрат): avraam «Кадеш» (Быт 14:7 Эн-Мишпат; 16:14) + ishod «Кадеш-Барнеа» — одно место, дубль подтверждён одинаковым sameAs/geo; P0-досье в Research",
+  "rank": 2
+}

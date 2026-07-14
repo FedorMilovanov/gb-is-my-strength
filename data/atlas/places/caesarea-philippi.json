@@ -1,0 +1,49 @@
+{
+  "id": "caesarea-philippi",
+  "names": {
+    "ru": "Кесария Филиппова",
+    "he": "קֵיסָרִיָּה פִילִיפּוֹס"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 670,
+      "y": 624
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "caesarea_philippi"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "caesarea-philippi",
+    "wikidata": "Q2484244"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Banias",
+      "lat": 33.246111,
+      "lng": 35.693333,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: caesarea-philippi → banias",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 33.246111,
+    "lng": 35.693333
+  },
+  "bibleRefs": [
+    "Matt 16:13",
+    "Mark 8:27"
+  ],
+  "rank": 3
+}

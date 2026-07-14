@@ -1,0 +1,14 @@
+{
+  "id": "colossians",
+  "title": {
+    "ru": "К Колоссянам",
+    "abbr": "Кол"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 51,
+  "chapters": 4,
+  "maps": [
+    "pavel"
+  ]
+}

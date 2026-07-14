@@ -1,0 +1,22 @@
+{
+  "id": "persian",
+  "title": {
+    "ru": "Персидская эпоха",
+    "short": "Персия"
+  },
+  "start": -538,
+  "end": -332,
+  "engineEra": "iron",
+  "colorToken": "#ddb28a",
+  "colorStatus": "validated",
+  "maps": [
+    "melachim"
+  ],
+  "keyEvents": [
+    "Указ Кира 538",
+    "Второй Храм 516",
+    "Ездра и Неемия",
+    "Есфирь"
+  ],
+  "note": "DN-6 «Персидский мир» | цвет validated 2026-07-11: dataviz-прогон — текст #2b2418 контраст ≥7:1 (AAA), CVD смежных пар хронологической ленты ≥10 (protan worst, WARN-band легален: подписи всегда внутри чипов)"
+}
