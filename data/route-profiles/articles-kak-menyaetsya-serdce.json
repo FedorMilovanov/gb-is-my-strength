@@ -1,0 +1,26 @@
+{
+  "route": "/articles/kak-menyaetsya-serdce/",
+  "profiledAt": "2026-07-14",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "kak-menyaetsya-serdce",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/kak-menyaetsya-serdce/index.astro",
+  "risk": 2,
+  "sourceContractVersion": 1,
+  "contentSourceMode": "astro-native-entry",
+  "renderSource": "src/pages/articles/kak-menyaetsya-serdce/index.astro",
+  "metadataSourceMode": "astro-head-import",
+  "hasMDX": false,
+  "mdxStatus": "reference-only",
+  "mdxPath": "src/content/articles/kak-menyaetsya-serdce.mdx",
+  "legacyStatus": "absent",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null,
+  "scope": "excluded-semantic-lane",
+  "migrationMode": "strict-native"
+}

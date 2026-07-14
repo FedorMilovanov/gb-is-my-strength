@@ -1,0 +1,26 @@
+{
+  "route": "/articles/serdce-hrista-k-nemoshchnym/",
+  "profiledAt": "2026-07-14",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "serdce-hrista-k-nemoshchnym",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/serdce-hrista-k-nemoshchnym/index.astro",
+  "risk": 2,
+  "sourceContractVersion": 1,
+  "contentSourceMode": "astro-native-entry",
+  "renderSource": "src/pages/articles/serdce-hrista-k-nemoshchnym/index.astro",
+  "metadataSourceMode": "astro-head-import",
+  "hasMDX": false,
+  "mdxStatus": "reference-only",
+  "mdxPath": "src/content/articles/serdce-hrista-k-nemoshchnym.mdx",
+  "legacyStatus": "absent",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null,
+  "scope": "excluded-semantic-lane",
+  "migrationMode": "strict-native"
+}
