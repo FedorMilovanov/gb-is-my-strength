@@ -1,0 +1,23 @@
+{
+  "id": "gaza-road",
+  "names": {
+    "ru": "Дорога в Газу",
+    "he": "דֶּרֶךְ עַזָּה"
+  },
+  "type": "road",
+  "placements": {
+    "levant": {
+      "x": 550,
+      "y": 830
+    }
+  },
+  "maps": [
+    {
+      "slug": "early-church",
+      "localId": "gaza_road"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: объект-дорога (Деян 8:26), не тождественен месту gaza; конечная точка — в notes, sameAs не ставится | review-hold: объект-дорога с точкой-мэппингом на Газу — проверить представление при возврате early-church",
+  "rank": 3
+}

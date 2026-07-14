@@ -1,0 +1,684 @@
+<style>
+  :root{
+    --paper0:#f6eedb; --paper1:#f0e5cb; --paperEdge:#e6d8b8;
+    --ink:#3c3120; --inkSoft:#6e5c3d; --inkFaint:#9c8862;
+    --gold:#b8933f; --goldHi:#e6c877; --goldGlow:#f0d488;
+    --panel:#efe6ce; --panelEdge:#dccdaa; --card:#fdf9ef; --cardEdge:#c8a961;
+    --spineGold:#c9a227; --tether:#c9a227;
+    --shadow:rgba(74,54,22,.26); --nameHi:#140d02;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper0:#241c11; --paper1:#1b140b; --paperEdge:#100b06;
+      --ink:#efe3c6; --inkSoft:#cbb891; --inkFaint:#94815d;
+      --gold:#d4af5f; --goldHi:#f2d789; --goldGlow:#f4dc94;
+      --panel:#1c150c; --panelEdge:#3a2e19; --card:#2f2617; --cardEdge:#836a34;
+      --spineGold:#e6c877; --tether:#e6c877;
+      --shadow:rgba(0,0,0,.5); --nameHi:#fff7e6;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="light"]{
+    --paper0:#f6eedb; --paper1:#f0e5cb; --paperEdge:#e6d8b8;
+    --ink:#3c3120; --inkSoft:#6e5c3d; --inkFaint:#9c8862;
+    --gold:#b8933f; --goldHi:#e6c877; --goldGlow:#f0d488;
+    --panel:#efe6ce; --panelEdge:#dccdaa; --card:#fdf9ef; --cardEdge:#c8a961;
+    --spineGold:#c9a227; --tether:#c9a227; --shadow:rgba(74,54,22,.26); --nameHi:#140d02; color-scheme:light;
+  }
+  :root[data-theme="dark"]{
+    --paper0:#241c11; --paper1:#1b140b; --paperEdge:#100b06;
+    --ink:#efe3c6; --inkSoft:#cbb891; --inkFaint:#94815d;
+    --gold:#d4af5f; --goldHi:#f2d789; --goldGlow:#f4dc94;
+    --panel:#1c150c; --panelEdge:#3a2e19; --card:#2f2617; --cardEdge:#836a34;
+    --spineGold:#e6c877; --tether:#e6c877; --shadow:rgba(0,0,0,.5); --nameHi:#fff7e6; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:Georgia,'Times New Roman',serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% 0%, var(--paper0), var(--paper1) 55%, var(--paperEdge));
+    overflow:hidden;
+  }
+  #app{display:grid;grid-template-columns:250px 1fr 280px;grid-template-rows:auto 1fr auto;height:100vh}
+  /* header */
+  header{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid var(--panelEdge);background:linear-gradient(var(--paper0),transparent)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .emblem{width:38px;height:38px;border-radius:50%;border:1.6px solid var(--gold);display:grid;place-items:center;background:var(--card);box-shadow:0 2px 6px var(--shadow);color:var(--gold);font-size:20px}
+  .brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.3px}
+  .brand p{margin:0;font-size:11px;font-style:italic;color:var(--gold)}
+  .search{flex:1;max-width:360px;margin:0 auto;position:relative}
+  .search input{width:100%;padding:8px 14px 8px 34px;border-radius:16px;border:1px solid var(--panelEdge);background:var(--card);color:var(--ink);font-family:inherit;font-size:13px;font-style:italic}
+  .search input:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .btn:focus-visible,.fam:focus-visible,.cv:focus-visible,.sw-tg:focus-visible,.sheet-close:focus-visible,.mob-fab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .search svg{position:absolute;left:11px;top:9px;width:15px;height:15px;stroke:var(--inkFaint);fill:none}
+  .search-hint{position:absolute;left:0;right:0;top:100%;margin-top:6px;text-align:center;font-size:11.5px;color:#b5643f;opacity:0;transition:opacity .15s;pointer-events:none}
+  .search-hint.show{opacity:1}
+  .tools{display:flex;align-items:center;gap:8px}
+  .btn{padding:6px 12px;border-radius:14px;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);font-family:inherit;font-size:12px;cursor:pointer}
+  .btn:hover{border-color:var(--gold);color:var(--gold)}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+  /* panels */
+  aside{overflow-y:auto;padding:16px 14px;background:var(--panel);font-size:13px}
+  aside.left{border-right:1px solid var(--panelEdge)}
+  aside.right{border-left:1px solid var(--panelEdge)}
+  .lab{font-size:10.5px;letter-spacing:1.6px;color:var(--inkFaint);margin:2px 0 10px;text-transform:uppercase}
+  .fam{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent;user-select:none}
+  .fam:hover{background:color-mix(in srgb,var(--gold) 10%,transparent)}
+  .fam.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
+  .fam .sw{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.15) inset}
+  .fam .nm{flex:1;color:var(--ink)}
+  .fam .ct{font-size:10.5px;color:var(--inkFaint);font-variant-numeric:tabular-nums}
+  .toggles{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+  .tg{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--inkSoft)}
+  .sw-tg{width:38px;height:20px;border-radius:11px;border:1px solid var(--panelEdge);background:var(--card);position:relative;cursor:pointer;flex:none}
+  .sw-tg::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--gold);transition:transform .16s}
+  .sw-tg[aria-pressed="true"]::after{transform:translateX(18px)}
+  /* graph */
+  main{position:relative;overflow:hidden}
+  #svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  #svg.grabbing{cursor:grabbing}
+  .edge{fill:none;stroke-linecap:round}
+  .node{cursor:pointer}
+  .node circle{stroke:var(--paper0);transition:stroke-width .12s}
+  /* подписи: тонкий мягкий ореол (круглые стыки — без «шипов» на засечках), никакой рамки-наклейки */
+  .node text{font-family:Georgia,serif;fill:var(--ink);paint-order:stroke;stroke:var(--paper0);stroke-width:1.7px;stroke-linejoin:round;stroke-linecap:round;stroke-opacity:.82;pointer-events:none;transition:fill .16s,letter-spacing .16s}
+  .node text.lbl-big{stroke-width:2.1px;letter-spacing:.15px}
+  .node text.lbl-sub{fill:var(--gold);stroke-width:1.8px;letter-spacing:.55px;transition:opacity .25s}
+  #svg.far .lbl-sub{opacity:0}
+  .node .lbl-leaf{opacity:0;transition:opacity .18s,fill .16s;font-size:9.5px;stroke-width:1.5px}
+  .node.show .lbl-leaf{opacity:1}
+  /* микро-интерактив: при наведении подпись «оживает» — чуть темнее и чуть разрежённее */
+  .node.hl text.lbl-big{fill:var(--nameHi);letter-spacing:.5px}
+  .node.hl .lbl-leaf{fill:var(--nameHi)}
+  .node.hl text.lbl-sub{fill:var(--gold)}
+  #tether{stroke:var(--tether);stroke-width:1.2;stroke-dasharray:2 4;opacity:0;stroke-linecap:round}
+  .dim{opacity:.12;transition:opacity .25s}
+  .undim{transition:opacity .25s}
+  #tooltip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--gold);border-radius:9px;padding:7px 11px;font-size:12px;box-shadow:0 4px 14px var(--shadow);opacity:0;transition:opacity .12s;max-width:220px;z-index:5}
+  #tooltip .t-heb{font-family:'Times New Roman',serif;color:var(--gold);font-size:16px}
+  #tooltip .t-tr{color:var(--inkSoft);font-size:11px;font-style:italic}
+  #tooltip .t-mean{color:var(--ink);font-size:12.5px;margin-top:3px}
+  #tooltip .t-mean b{color:var(--gold);font-weight:600}
+  #tooltip .t-id{color:var(--inkSoft);font-size:11.5px;margin-top:2px}
+  #tooltip .t-ref{color:var(--inkFaint);font-size:10.5px;margin-top:2px}
+  #tooltip .t-ov{color:#8f6bc4;font-size:10.5px;margin-top:3px}
+  /* minimap */
+  #minimap{position:absolute;right:14px;bottom:14px;width:196px;height:150px;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--panelEdge);border-radius:10px;box-shadow:0 4px 14px var(--shadow);overflow:hidden;cursor:crosshair;z-index:4}
+  #minimap .mm-lab{position:absolute;left:8px;top:5px;font-size:8.5px;letter-spacing:1.2px;color:var(--inkFaint);text-transform:uppercase;pointer-events:none}
+  #mm{width:100%;height:100%;display:block}
+  #mm-view{fill:color-mix(in srgb,var(--gold) 15%,transparent);stroke:var(--gold);stroke-width:1.4;rx:2}
+  /* details */
+  .details .card{background:var(--card);border:1px solid var(--cardEdge);border-radius:12px;padding:14px;box-shadow:0 3px 10px var(--shadow)}
+  .details .dn{font-size:22px;font-weight:700;margin:0}
+  .details .dheb{font-family:'Times New Roman',serif;color:var(--gold);font-size:20px;margin-left:6px}
+  .details .dtr{color:var(--inkSoft);font-size:13px;font-style:italic;margin:2px 0}
+  .details .dmean{color:var(--ink);font-size:14px;line-height:1.45;margin:8px 0 4px;padding:8px 11px;background:color-mix(in srgb,var(--gold) 9%,transparent);border-left:2px solid var(--gold);border-radius:0 7px 7px 0}
+  .details .dmean .k{display:block;font-size:9.5px;letter-spacing:1.4px;color:var(--inkFaint);text-transform:uppercase;margin-bottom:2px}
+  .details .did{color:var(--inkSoft);font-size:12.5px;margin:6px 0}
+  .details .did b{color:var(--gold);font-weight:600}
+  .details .dfore{font-size:11.5px;color:var(--inkSoft);margin:2px 0 8px}
+  .details .dfore b{color:var(--ink)}
+  .details .dconf{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.3px;padding:3px 9px;border-radius:11px;margin:2px 0}
+  .details .dconf.certain{color:#4f7a4a;border:1px solid #4f7a4a;background:color-mix(in srgb,#4f7a4a 12%,transparent)}
+  .details .dconf.probable{color:var(--gold);border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}
+  .details .dconf.disputed{color:#b5643f;border:1px dashed #b5643f;background:color-mix(in srgb,#b5643f 9%,transparent)}
+  .details .dconf.obscure{color:var(--inkFaint);border:1px dotted var(--inkFaint)}
+  .details .dregion{font-size:12px;color:var(--inkSoft);margin:7px 0}
+  .details .dspravka{font-size:12.5px;line-height:1.52;color:var(--ink);margin:8px 0}
+  .details .dsrc{font-size:10px;color:var(--inkFaint);margin:6px 0;letter-spacing:.2px}
+  .details .dmyth{font-size:11.5px;line-height:1.45;color:var(--ink);margin:9px 0;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,#b5643f 13%,transparent);border-left:2px solid #b5643f}
+  .details .dmyth b{color:#b5643f}
+  .details .doverlap{font-size:11.5px;line-height:1.45;color:var(--ink);margin:9px 0;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,#6d4b9a 11%,transparent);border-left:2px solid #6d4b9a}
+  .details .doverlap h4{margin:0 0 5px;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:#6d4b9a}
+  .details .doverlap .dmyth{margin:8px 0 2px;padding:7px 9px}
+  .details .dref{color:var(--inkFaint);font-size:12px;margin:6px 0 10px}
+  /* значок «имя встречается ещё раз» на узле народа */
+  .node .ovbadge{fill:#6d4b9a;stroke:var(--paper0);stroke-width:1.4px}
+  .node .ovbadge-g{opacity:.82;transition:opacity .16s}
+  .node:hover .ovbadge-g,.node.hl .ovbadge-g{opacity:1}
+  /* coverage tracker (режим народов) — кликабельно: подсветить узлы этой достоверности */
+  #coverage{margin-top:16px;font-size:11.5px;color:var(--inkSoft)}
+  #coverage .cv{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent;user-select:none;margin:0 -8px}
+  #coverage .cv:hover{background:color-mix(in srgb,var(--gold) 10%,transparent)}
+  #coverage .cv.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
+  #coverage .cv i{width:10px;height:10px;border-radius:3px;flex:none;font-style:normal}
+  #coverage .cv b{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .fbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:11px;border:1px solid currentColor}
+  .rel h3{font-size:10.5px;letter-spacing:1.4px;color:var(--inkFaint);text-transform:uppercase;margin:16px 0 8px}
+  .rel a{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:7px;color:var(--ink);text-decoration:none;font-size:12.5px;cursor:pointer}
+  .rel a:hover{background:color-mix(in srgb,var(--gold) 12%,transparent)}
+  .rel a .d{width:8px;height:8px;border-radius:50%;flex:none}
+  .empty{color:var(--inkFaint);font-style:italic;font-size:12.5px;line-height:1.6;padding:8px 4px}
+  /* footer */
+  footer{grid-column:1/-1;display:flex;justify-content:space-between;gap:16px;padding:9px 20px;border-top:1px solid var(--panelEdge);font-size:11.5px;color:var(--inkFaint)}
+  footer b{color:var(--inkSoft);font-weight:600}
+  /* мобильные шторки (bottom sheet) для панелей семейств/узла — вместо полного скрытия */
+  .sheet-close{display:none}
+  .mob-fab{display:none}
+  #scrim{display:none}
+  @media (max-width:900px){
+    #app{grid-template-columns:1fr}
+    aside{
+      position:fixed;left:0;right:0;bottom:0;z-index:22;max-height:72vh;
+      border-radius:16px 16px 0 0;box-shadow:0 -10px 30px var(--shadow);
+      transform:translateY(104%);transition:transform .26s ease;
+      border-left:1px solid var(--panelEdge)!important;border-right:1px solid var(--panelEdge)!important;
+    }
+    aside.sheet-open{transform:translateY(0)}
+    .sheet-close{display:flex;position:sticky;float:right;top:0;margin:-4px -4px 6px auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+    .mob-fab{display:flex;position:absolute;left:14px;bottom:14px;z-index:15;align-items:center;gap:6px;padding:10px 18px;border-radius:20px;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);font-family:inherit;font-size:12.5px;box-shadow:0 4px 14px var(--shadow);cursor:pointer}
+    #scrim{display:block;position:fixed;inset:0;background:rgba(20,14,4,.38);opacity:0;pointer-events:none;transition:opacity .22s;z-index:21}
+    #scrim.show{opacity:1;pointer-events:auto}
+    #minimap{width:132px;height:100px}
+    #minimap .mm-lab{display:none}
+    footer{padding:8px 14px;font-size:10.5px}
+    footer .hint{display:none}
+  }
+</style>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="emblem">☩</div>
+      <div><h1>Живое древо</h1><p>Генеалогия Спасителя · интерактив</p></div>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" stroke-width="1.6"/><line x1="15" y1="15" x2="20" y2="20" stroke-width="1.6"/></svg>
+      <input id="q" type="text" placeholder="Найти имя…" autocomplete="off" aria-label="Поиск имени">
+      <div class="search-hint" id="searchHint"></div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="reset">Собрать всё</button>
+      <button class="btn" id="theme" aria-label="Тема">☾</button>
+    </div>
+  </header>
+
+  <aside class="left">
+    <button class="sheet-close" type="button" aria-label="Закрыть">✕</button>
+    <div class="lab">Семейства</div>
+    <div id="fams"></div>
+    <div class="toggles">
+      <div class="tg"><span>Облака семейств</span><span class="sw-tg" id="tg-hulls" role="button" aria-pressed="true" tabindex="0"></span></div>
+      <div class="tg"><span>Показывать связи</span><span class="sw-tg" id="tg-edges" role="button" aria-pressed="true" tabindex="0"></span></div>
+      <div class="tg"><span>Подписи листьев</span><span class="sw-tg" id="tg-labels" role="button" aria-pressed="false" tabindex="0"></span></div>
+    </div>
+    <div id="coverage"></div>
+  </aside>
+
+  <main>
+    <svg id="svg"><defs id="icon-defs"></defs><defs>
+      <radialGradient id="nodeSheen" cx="36%" cy="28%" r="78%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+        <stop offset="34%" stop-color="#ffffff" stop-opacity="0.14"/>
+        <stop offset="68%" stop-color="#000000" stop-opacity="0.02"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.26"/>
+      </radialGradient>
+      <radialGradient id="nodeGlint" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="christGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fff2cf" stop-opacity="0.4"/>
+        <stop offset="22%" stop-color="#f9e4a8" stop-opacity="0.26"/>
+        <stop offset="46%" stop-color="#f0d488" stop-opacity="0.12"/>
+        <stop offset="68%" stop-color="#f0d488" stop-opacity="0.05"/>
+        <stop offset="86%" stop-color="#f0d488" stop-opacity="0.014"/>
+        <stop offset="100%" stop-color="#f0d488" stop-opacity="0"/>
+      </radialGradient>
+      <!-- стеклянный (не глянцевый) шар: светящееся тёплое ядро, к кромке — настоящая прозрачность (сквозь стекло видно фон/линии) -->
+      <radialGradient id="christGlass" cx="38%" cy="32%" r="88%">
+        <stop offset="0%" stop-color="#fffef9" stop-opacity="1"/>
+        <stop offset="16%" stop-color="#fbe9ae" stop-opacity="0.97"/>
+        <stop offset="36%" stop-color="#f0d073" stop-opacity="0.87"/>
+        <stop offset="58%" stop-color="#dcb352" stop-opacity="0.74"/>
+        <stop offset="78%" stop-color="#c89a3f" stop-opacity="0.58"/>
+        <stop offset="92%" stop-color="#b98a38" stop-opacity="0.44"/>
+        <stop offset="100%" stop-color="#a97c33" stop-opacity="0.32"/>
+      </radialGradient>
+      <!-- мягкая объёмная кромка вместо жёсткого чёрного контура -->
+      <radialGradient id="christEdge" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#7a5410" stop-opacity="0"/>
+        <stop offset="72%" stop-color="#7a5410" stop-opacity="0"/>
+        <stop offset="92%" stop-color="#6b4a12" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#5c3f10" stop-opacity="0.30"/>
+      </radialGradient>
+      <!-- мягкий стеклянный блик (не резкий зеркальный) -->
+      <radialGradient id="christSpecular" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fffdf6" stop-opacity="0.62"/>
+        <stop offset="55%" stop-color="#fffdf6" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#fffdf6" stop-opacity="0"/>
+      </radialGradient>
+      <!-- нижний рефлекс: свет проходит сквозь стекло на противоположный край (деликатно, не «пятном») -->
+      <radialGradient id="christRim" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fff0c2" stop-opacity="0.38"/>
+        <stop offset="60%" stop-color="#ffedb2" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#ffe9a4" stop-opacity="0"/>
+      </radialGradient>
+    </defs><g id="viewport">
+      <g id="g-hulls"></g>
+      <g id="g-edges"></g>
+      <line id="tether"></line>
+      <g id="g-nodes"></g>
+    </g></svg>
+    <div id="tooltip"></div>
+    <div id="minimap"><span class="mm-lab">Карта</span><svg id="mm" viewBox="0 0 196 150"><g id="mm-nodes"></g><rect id="mm-view" x="0" y="0" width="10" height="10"></rect></svg></div>
+    <button id="mob-fams" class="mob-fab" type="button">Семейства</button>
+  </main>
+
+  <aside class="right details">
+    <button class="sheet-close" type="button" aria-label="Закрыть">✕</button>
+    <div class="lab">Узел</div>
+    <div id="detail"><div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.<br><br>Кликните семейство слева — оно подсветится, остальные померкнут.</div></div>
+  </aside>
+  <div id="scrim"></div>
+
+  <footer>
+    <span class="hint">Перетащите узел — <b>вернётся пружиной</b> · колесо / двойной клик — зум · тащить фон — сдвиг · клик по семейству — подсветка · Esc — сброс</span>
+    <span id="stat"></span>
+  </footer>
+</div>
+
+<script>
+const GRAPH = /*__GRAPH__*/;
+const SVGNS="http://www.w3.org/2000/svg";
+const CONF={certain:'отождествление достоверно',probable:'вероятное отождествление',disputed:'спорно — мнения расходятся',obscure:'малоизвестно — данных мало'};
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---- state ----
+const nodes = GRAPH.nodes.map(n=>({...n, vx:0, vy:0, drag:false}));
+const byId = new Map(nodes.map(n=>[n.id,n]));
+const edges = GRAPH.edges.map(e=>({...e, a:byId.get(e.a), b:byId.get(e.b)})).filter(e=>e.a&&e.b);
+const neighbors = new Map(nodes.map(n=>[n.id,new Set()]));
+for(const e of edges){neighbors.get(e.a.id).add(e.b.id);neighbors.get(e.b.id).add(e.a.id);}
+// направленные связи (родитель→ребёнок) из реальных рёбер — для панели «родословие»
+const parentsOf=new Map(nodes.map(n=>[n.id,new Set()])), childrenOf=new Map(nodes.map(n=>[n.id,new Set()]));
+for(const e of edges){if(e.kind==='leaf'||e.kind==='spine'){childrenOf.get(e.a.id).add(e.b.id);parentsOf.get(e.b.id).add(e.a.id);}}
+const famColor = new Map(GRAPH.families.map(f=>[f.id,f.color]));
+const famName = new Map(GRAPH.families.map(f=>[f.id,f.ru]));
+const NATIONS = GRAPH.mode==='nations';
+let focusFam=null, focusConf=null, selected=null, hovered=null, showEdges=true, showLabels=NATIONS, showHulls=true, searchHits=new Set(), searchActive=false;
+// узлы по семьям (для цветных облаков-кластеров, как на референсе карты)
+const famNodes=new Map();
+for(const n of nodes){ if(n.family&&n.family!=='spine'){ if(!famNodes.has(n.family))famNodes.set(n.family,[]); famNodes.get(n.family).push(n); } }
+
+// ---- viewport (pan/zoom) ----
+const svg=document.getElementById('svg');
+const vpG=document.getElementById('viewport');
+let vp={x:0,y:0,k:1};
+function applyVp(){vpG.setAttribute('transform',`translate(${vp.x} ${vp.y}) scale(${vp.k})`);
+  svg.classList.toggle('far',vp.k<0.6);} // зум-детализация: на отдалении даты-подписи прячутся (не шумят)
+function fit(){
+  const r=svg.getBoundingClientRect();
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  for(const n of nodes){minX=Math.min(minX,n.homeX-n.r);minY=Math.min(minY,n.homeY-n.r);maxX=Math.max(maxX,n.homeX+n.r);maxY=Math.max(maxY,n.homeY+n.r);}
+  const gw=maxX-minX, gh=maxY-minY, pad=60;
+  vp.k=Math.min((r.width-pad*2)/gw,(r.height-pad*2)/gh);
+  vp.x=r.width/2 - (minX+gw/2)*vp.k;
+  vp.y=r.height/2 - (minY+gh/2)*vp.k;
+  applyVp();
+}
+function toGraph(ev){const r=svg.getBoundingClientRect();return{x:(ev.clientX-r.left-vp.x)/vp.k,y:(ev.clientY-r.top-vp.y)/vp.k};}
+
+// ---- build DOM ----
+const gEdges=document.getElementById('g-edges');
+const gNodes=document.getElementById('g-nodes');
+const tether=document.getElementById('tether');
+document.getElementById('icon-defs').innerHTML = GRAPH.iconDefs || '';
+const mk=(t,a)=>{const el=document.createElementNS(SVGNS,t);for(const k in a)el.setAttribute(k,a[k]);return el;};
+const noStroke=el=>{el.style.stroke='none';return el;};   // перебить CSS-контур .node circle
+// крест Спасителя: тонкий, тёмный, чистый латинский крест внутри стекла
+// (скруглённые концы + едва заметный светлый рефлекс снизу — «гравировка в стекле»)
+function messiahCross(r){
+  const g=mk('g',{'pointer-events':'none'});
+  const top=-0.58*r, bot=0.60*r, left=-0.30*r, right=0.30*r, cy=-0.20*r;
+  const w=Math.max(2.2, r*0.072);
+  const seg=(dx,dy,col,ww,op)=>{const gg=mk('g',{});
+    gg.appendChild(mk('line',{x1:dx.toFixed(2),y1:(top+dy).toFixed(2),x2:dx.toFixed(2),y2:(bot+dy).toFixed(2),stroke:col,'stroke-width':ww,'stroke-linecap':'round','stroke-opacity':op}));
+    gg.appendChild(mk('line',{x1:(left+dx).toFixed(2),y1:(cy+dy).toFixed(2),x2:(right+dx).toFixed(2),y2:(cy+dy).toFixed(2),stroke:col,'stroke-width':ww,'stroke-linecap':'round','stroke-opacity':op}));
+    return gg;};
+  g.appendChild(seg(0.5,0.9,'#fff4d8',w*0.85,0.4));  // светлый рефлекс снизу-справа
+  g.appendChild(seg(0,0,'#241708',w,0.92));          // тонкий тёмный крест
+  return g;
+}
+// ---- цветные облака-кластеры семейств (выпуклая оболочка + сглаживание) ----
+const gHulls=document.getElementById('g-hulls');
+const hullEls=new Map();
+for(const [fid] of famNodes){const p=mk('path',{fill:famColor.get(fid),stroke:famColor.get(fid),'stroke-width':1.4,'stroke-opacity':0.16,'stroke-linejoin':'round','pointer-events':'none'});p.style.opacity=0.07;p.style.transition='opacity .25s';gHulls.appendChild(p);hullEls.set(fid,p);}
+function convexHull(ps){ if(ps.length<3)return ps.slice();
+  const P=ps.slice().sort((a,b)=>a.x-b.x||a.y-b.y);const cr=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
+  const lo=[];for(const p of P){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+  const up=[];for(let i=P.length-1;i>=0;i--){const p=P[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}
+  lo.pop();up.pop();return lo.concat(up); }
+function hullPath(arr){
+  const ps=arr.map(n=>({x:n.x,y:n.y,r:n.r}));const h=convexHull(ps);if(h.length<3)return '';
+  const cx=h.reduce((s,p)=>s+p.x,0)/h.length,cy=h.reduce((s,p)=>s+p.y,0)/h.length;
+  const ex=h.map(p=>{const dx=p.x-cx,dy=p.y-cy,d=Math.hypot(dx,dy)||1,pad=p.r+18;return{x:p.x+dx/d*pad,y:p.y+dy/d*pad};});
+  const m0={x:(ex[0].x+ex[ex.length-1].x)/2,y:(ex[0].y+ex[ex.length-1].y)/2};
+  let d=`M ${m0.x.toFixed(1)} ${m0.y.toFixed(1)}`;
+  for(let i=0;i<ex.length;i++){const cur=ex[i],nx=ex[(i+1)%ex.length];d+=` Q ${cur.x.toFixed(1)} ${cur.y.toFixed(1)} ${((cur.x+nx.x)/2).toFixed(1)} ${((cur.y+nx.y)/2).toFixed(1)}`;}
+  return d+' Z';
+}
+const edgeEls=edges.map(e=>{const p=document.createElementNS(SVGNS,'path');p.setAttribute('class','edge');p.setAttribute('stroke',e.color||'#c9a227');p.setAttribute('stroke-width',e.kind==='spine'?3:e.kind==='family'?1.7:1.1);p.setAttribute('opacity',e.kind==='spine'?.85:.5);e.el=p;gEdges.appendChild(p);return p;});
+for(const n of nodes){
+  const g=document.createElementNS(SVGNS,'g');g.setAttribute('class','node');g.dataset.id=n.id;
+  const big=(n.kind!=='leaf');
+  if(n.messiah){
+    // мягкое рассеянное сияние — один слой, без кольца, без венца лучей, без контура
+    g.appendChild(noStroke(mk('circle',{r:n.r+56,fill:'url(#christGlow)','pointer-events':'none'})));
+  }
+  else if(n.kind==='spine'){g.appendChild(noStroke(mk('circle',{r:n.r+7,fill:'var(--goldGlow)',opacity:0.15})));}
+  // медальон: круг-основа (у Христа — стеклянный 3D-шар, без жёсткого чёрного контура)
+  const c=mk('circle',{r:n.r,fill:n.messiah?'url(#christGlass)':(n.kind==='spine'?'var(--spineGold)':n.color),'stroke-width':n.kind==='leaf'?1.2:2});
+  if(n.messiah)c.style.stroke='none';
+  // достоверность отождествления (режим народов): спорное — пунктир, малоизвестное — бледнее
+  if(n.kind==='leaf'&&n.confidence){if(n.confidence==='disputed'){c.setAttribute('stroke','#b5643f');c.setAttribute('stroke-dasharray','2.2 1.8');c.setAttribute('stroke-width',1.4);}if(n.confidence==='obscure'){c.setAttribute('fill-opacity','0.4');}}
+  n.circle=c;g.appendChild(c);
+  if(n.overlap){
+    // «народы смешались»: имя встречается ещё раз в другой линии — маленький значок-ссылка
+    const bx=n.r*0.7,by=-n.r*0.7,br=Math.max(2.8,n.r*0.32);
+    const bg=mk('g',{'class':'ovbadge-g'});
+    bg.appendChild(mk('circle',{cx:bx,cy:by,r:br,'class':'ovbadge'}));
+    g.appendChild(bg);
+  }
+  if(big){
+    if(n.messiah){
+      // стекло: мягкая объёмная кромка (вместо контура) + рассеянный блик + деликатный
+      // глинт + нижний рефлекс (свет сквозь стекло). Всё мягко — стеклянно, не глянцево.
+      g.appendChild(noStroke(mk('circle',{r:n.r,fill:'url(#christEdge)','pointer-events':'none'})));
+      g.appendChild(mk('ellipse',{cx:0,cy:0,rx:n.r*0.986,ry:n.r*0.986,fill:'none',stroke:'#fff6da','stroke-width':Math.max(0.8,n.r*0.03),'stroke-opacity':0.3,'pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.26,cy:-n.r*0.32,rx:n.r*0.58,ry:n.r*0.44,fill:'url(#christSpecular)','pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.2,cy:-n.r*0.44,rx:n.r*0.1,ry:n.r*0.06,fill:'#fffdf6',opacity:0.55,'pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:n.r*0.3,cy:n.r*0.42,rx:n.r*0.46,ry:n.r*0.26,fill:'url(#christRim)','pointer-events':'none'}));
+    } else {
+      // блик-подсветка сверху (объём) + чёткий маленький глинт (clearcoat) + тонкий край медальона
+      g.appendChild(noStroke(mk('circle',{r:n.r,fill:'url(#nodeSheen)','pointer-events':'none'})));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.34,cy:-n.r*0.4,rx:n.r*0.16,ry:n.r*0.1,fill:'url(#nodeGlint)','pointer-events':'none'}));
+      g.appendChild(mk('circle',{r:n.r-3.4,fill:'none',stroke:n.kind==='spine'?'rgba(58,42,14,.42)':'rgba(255,250,236,.5)','stroke-width':1,'pointer-events':'none'}));
+    }
+    // эмблема внутри «шара»: у Христа — объёмный крест, у прочих — SVG-иконка
+    if(n.messiah){g.appendChild(messiahCross(n.r));}
+    else if(n.icon){const s=n.r*(n.kind==='spine'?1.32:1.42);const u=mk('use',{href:'#ic-'+n.icon,x:-s/2,y:-s/2,width:s,height:s});u.setAttributeNS('http://www.w3.org/1999/xlink','href','#ic-'+n.icon);u.style.color=(n.kind==='spine'?'#3a2a0e':'#fbf4e2');u.style.pointerEvents='none';g.appendChild(u);}
+  }
+  if(big){
+    // без рамки-капсулы: читаемость даёт увеличенный «ореол» обводки текста (paint-order:stroke)
+    const t=mk('text',{'class':'lbl-big','text-anchor':'middle',dy:n.r+15,'font-size':n.kind==='spine'?14:11.5,'font-weight':n.kind==='spine'?'700':'600'});t.textContent=n.ru;g.appendChild(t);
+    if(n.kind==='spine'&&n.bc){const s=mk('text',{'class':'lbl-big lbl-sub','text-anchor':'middle',dy:n.r+29,'font-size':9.5,fill:'var(--gold)'});s.textContent=n.bc;g.appendChild(s);}
+  }
+  else{const t=mk('text',{'class':'lbl-leaf','text-anchor':'middle',dy:n.r+11});t.textContent=n.ru;g.appendChild(t);}
+  n.g=g;gNodes.appendChild(g);
+}
+
+// ---- minimap (карта-навигатор, как в референсе-атласе) ----
+const mm=document.getElementById('mm'), mmNodes=document.getElementById('mm-nodes'), mmView=document.getElementById('mm-view');
+const MMW=196, MMH=150, mmPad=10; let mmScale=1, mmOx=0, mmOy=0, mmDrag=false;
+(function mmSetup(){
+  const b=GRAPH.bbox, w=b.maxX-b.minX, h=b.maxY-b.minY;
+  mmScale=Math.min((MMW-mmPad*2)/w,(MMH-mmPad*2)/h);
+  mmOx=mmPad-b.minX*mmScale+((MMW-mmPad*2)-w*mmScale)/2;
+  mmOy=mmPad-b.minY*mmScale+((MMH-mmPad*2)-h*mmScale)/2;
+  for(const n of nodes){const c=mk('circle',{r:n.kind==='spine'?1.9:n.kind==='hub'?1.4:0.85,fill:n.kind==='spine'?'var(--spineGold)':n.color});n.mmDot=c;mmNodes.appendChild(c);}
+})();
+function mmUpdate(){
+  for(const n of nodes){if(!n.mmDot)continue;n.mmDot.setAttribute('cx',(n.x*mmScale+mmOx).toFixed(1));n.mmDot.setAttribute('cy',(n.y*mmScale+mmOy).toFixed(1));}
+  const r=svg.getBoundingClientRect();
+  const x0=(-vp.x)/vp.k*mmScale+mmOx, y0=(-vp.y)/vp.k*mmScale+mmOy;
+  const x1=(r.width-vp.x)/vp.k*mmScale+mmOx, y1=(r.height-vp.y)/vp.k*mmScale+mmOy;
+  mmView.setAttribute('x',x0.toFixed(1));mmView.setAttribute('y',y0.toFixed(1));
+  mmView.setAttribute('width',Math.max(4,x1-x0).toFixed(1));mmView.setAttribute('height',Math.max(4,y1-y0).toFixed(1));
+}
+function mmPanTo(ev){const r=mm.getBoundingClientRect();const mx=(ev.clientX-r.left)/r.width*MMW,my=(ev.clientY-r.top)/r.height*MMH;const wx=(mx-mmOx)/mmScale,wy=(my-mmOy)/mmScale;const sr=svg.getBoundingClientRect();vp.x=sr.width/2-wx*vp.k;vp.y=sr.height/2-wy*vp.k;applyVp();}
+mm.addEventListener('pointerdown',ev=>{ev.stopPropagation();mmDrag=true;mmPanTo(ev);});
+window.addEventListener('pointermove',ev=>{if(mmDrag)mmPanTo(ev);});
+window.addEventListener('pointerup',()=>{mmDrag=false;});
+// плавный перелёт вида к точке (для поиска/связей)
+function tweenVp(tx,ty,tk){
+  if(reduceMotion){vp.x=tx;vp.y=ty;vp.k=tk;applyVp();return;}
+  const x0=vp.x,y0=vp.y,k0=vp.k;let t=0;(function st(){t+=0.11;const e=t>=1?1:1-Math.pow(1-t,3);vp.x=x0+(tx-x0)*e;vp.y=y0+(ty-y0)*e;vp.k=k0+(tk-k0)*e;applyVp();if(t<1)requestAnimationFrame(st);})();}
+function flyTo(n,zoom){const sr=svg.getBoundingClientRect();const k=zoom?Math.max(vp.k,1.35):vp.k;tweenVp(sr.width/2-n.x*k,sr.height/2-n.y*k,k);}
+
+// ---- physics ----
+// режим народов — аккуратная дендрограмма: сильнее держим «дом», слабее расталкивание
+const kHome=NATIONS?0.05:0.021, kEdge=NATIONS?0.002:0.006, damping=0.86, repel=NATIONS?0.16:1.0;
+function step(){
+  // forces
+  for(const n of nodes){ if(n.drag)continue; n.vx+=(n.homeX-n.x)*kHome; n.vy+=(n.homeY-n.y)*kHome; }
+  for(const e of edges){
+    const a=e.a,b=e.b; const dx=b.x-a.x,dy=b.y-a.y; const d=Math.hypot(dx,dy)||1;
+    const rest=Math.hypot(b.homeX-a.homeX,b.homeY-a.homeY);
+    const f=(d-rest)*kEdge; const fx=dx/d*f, fy=dy/d*f;
+    if(!a.drag){a.vx+=fx;a.vy+=fy;} if(!b.drag){b.vx-=fx;b.vy-=fy;}
+  }
+  // soft repulsion to reduce overlap (only between reasonably close)
+  for(let i=0;i<nodes.length;i++){const a=nodes[i];for(let j=i+1;j<nodes.length;j++){const b=nodes[j];
+    const dx=b.x-a.x,dy=b.y-a.y;const d2=dx*dx+dy*dy;const min=a.r+b.r+13;
+    if(d2<min*min&&d2>0.01){const d=Math.sqrt(d2);const f=(min-d)/d*0.17*repel;const fx=dx*f,fy=dy*f;
+      if(!a.drag){a.vx-=fx;a.vy-=fy;}if(!b.drag){b.vx+=fx;b.vy+=fy;}}}}
+  for(const n of nodes){ if(n.drag)continue; n.vx*=damping; n.vy*=damping; n.x+=n.vx; n.y+=n.vy; }
+}
+function render(){
+  if(showHulls)for(const [fid,el] of hullEls){el.setAttribute('d',hullPath(famNodes.get(fid)));}
+  for(const e of edges){const a=e.a,b=e.b;const dx=b.x-a.x,dy=b.y-a.y;const d=Math.hypot(dx,dy)||1;const ux=dx/d,uy=dy/d;
+    // концы линии — на КРОМКЕ шаров, а не в центре (с защитой от инверсии при близких узлах)
+    const oa=Math.min(a.r+1.5,d*0.42),ob=Math.min(b.r+1.5,d*0.42);
+    const ax=a.x+ux*oa,ay=a.y+uy*oa,bx=b.x-ux*ob,by=b.y-uy*ob;
+    const mx=(ax+bx)/2,my=(ay+by)/2,nx=-(by-ay),ny=(bx-ax),l=Math.hypot(nx,ny)||1,sag=Math.min(20,Math.hypot(bx-ax,by-ay)*0.07);
+    e.el.setAttribute('d',`M${ax.toFixed(1)} ${ay.toFixed(1)} Q ${(mx+nx/l*sag).toFixed(1)} ${(my+ny/l*sag).toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`);}
+  for(const n of nodes){n.g.setAttribute('transform',`translate(${n.x} ${n.y})`);}
+  if(dragNode){tether.setAttribute('x1',dragNode.homeX);tether.setAttribute('y1',dragNode.homeY);tether.setAttribute('x2',dragNode.x);tether.setAttribute('y2',dragNode.y);}
+  mmUpdate();
+}
+let settle=0;
+function loop(){step();render();requestAnimationFrame(loop);}
+
+// ---- highlighting ----
+function refresh(){
+  const anyFocus=focusFam||focusConf||hovered||selected||searchActive;
+  for(const n of nodes){
+    let bright=true;
+    if(focusFam) bright=(n.family===focusFam);
+    else if(focusConf) bright=(n.confidence===focusConf);
+    else if(hovered){const h=byId.get(hovered);bright=(n.id===hovered||neighbors.get(hovered).has(n.id)||n.family===h.family);}
+    else if(searchActive){bright=searchHits.has(n.id);}
+    else if(selected){bright=(n.id===selected||neighbors.get(selected).has(n.id));}
+    n.g.classList.toggle('dim',!!anyFocus&&!bright);
+    n.g.classList.toggle('show',showLabels|| (n.kind==='leaf'&&(!anyFocus?false:bright)));
+    n.g.classList.toggle('hl', n.id===hovered||n.id===selected);
+    if(n.circle&&!n.messiah)n.circle.setAttribute('stroke-width', n.id===selected?3.2 : n.kind==='leaf'?1.2:2);
+  }
+  for(const e of edges){
+    let bright=true;
+    if(focusFam) bright=(e.a.family===focusFam&&e.b.family===focusFam)||(e.color===famColor.get(focusFam));
+    else if(focusConf) bright=(e.b.confidence===focusConf);
+    else if(hovered) bright=(e.a.id===hovered||e.b.id===hovered);
+    else if(selected) bright=(e.a.id===selected||e.b.id===selected);
+    else if(searchActive) bright=false;
+    e.el.style.opacity = showEdges ? ((focusFam||focusConf||hovered||selected||searchActive)&&!bright?0.06:(e.kind==='spine'?.85:.5)) : 0;
+  }
+  const hHov=hovered?byId.get(hovered):null, hSel=selected?byId.get(selected):null;
+  for(const [fid,el] of hullEls){
+    let op=0.07;
+    if(!showHulls) op=0;
+    else if(focusFam) op=(fid===focusFam)?0.18:0.018;
+    else if(focusConf) op=0.03;
+    else if(hHov) op=(hHov.family===fid)?0.14:0.04;
+    else if(hSel) op=(hSel.family===fid)?0.12:0.055;
+    else if(searchActive) op=0.03;
+    el.style.opacity=op;
+  }
+}
+
+// ---- interaction ----
+let dragNode=null, panning=false, panStart=null;
+// пинч-зум на касаниях: два активных указателя → масштаб вокруг их середины
+const activePtrs=new Map(); let pinch=null;
+svg.addEventListener('pointerdown',ev=>{
+  activePtrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(activePtrs.size===2){
+    if(dragNode){dragNode.drag=false;dragNode=null;tether.style.opacity=0;}
+    panning=false;svg.classList.remove('grabbing');hideTip();
+    const [a,b]=[...activePtrs.values()];const r=svg.getBoundingClientRect();
+    const mx=(a.x+b.x)/2-r.left,my=(a.y+b.y)/2-r.top;
+    pinch={d0:Math.hypot(a.x-b.x,a.y-b.y)||1,k0:vp.k,gx:(mx-vp.x)/vp.k,gy:(my-vp.y)/vp.k};
+    return;
+  }
+  const g=ev.target.closest('.node');
+  if(g){const n=byId.get(g.dataset.id);dragNode=n;n.drag=true;try{svg.setPointerCapture(ev.pointerId);}catch(_){}
+    const p=toGraph(ev);dragNode._ox=n.x-p.x;dragNode._oy=n.y-p.y;tether.style.opacity=.7;selectNode(n.id);
+  } else {panning=true;panStart={x:ev.clientX-vp.x,y:ev.clientY-vp.y};svg.classList.add('grabbing');}
+});
+svg.addEventListener('pointermove',ev=>{
+  if(activePtrs.has(ev.pointerId))activePtrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(pinch&&activePtrs.size>=2){
+    const [a,b]=[...activePtrs.values()];const r=svg.getBoundingClientRect();
+    const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
+    const mx=(a.x+b.x)/2-r.left,my=(a.y+b.y)/2-r.top;
+    vp.k=Math.max(.3,Math.min(3,pinch.k0*d/pinch.d0));
+    vp.x=mx-pinch.gx*vp.k;vp.y=my-pinch.gy*vp.k;applyVp();
+    return;
+  }
+  if(dragNode){const p=toGraph(ev);const tx=p.x+dragNode._ox,ty=p.y+dragNode._oy;dragNode.x+=(tx-dragNode.x)*0.5;dragNode.y+=(ty-dragNode.y)*0.5;dragNode.vx=0;dragNode.vy=0;}
+  else if(panning){vp.x=ev.clientX-panStart.x;vp.y=ev.clientY-panStart.y;applyVp();}
+  else{const g=ev.target.closest('.node');const id=g?g.dataset.id:null;if(id!==hovered){hovered=id;refresh();}if(id){showTip(byId.get(id),ev);}else hideTip();}
+});
+function endDrag(ev){
+  if(ev&&ev.pointerId!==undefined)activePtrs.delete(ev.pointerId);
+  if(activePtrs.size<2)pinch=null;
+  if(dragNode){dragNode.drag=false;dragNode=null;tether.style.opacity=0;}
+  if(panning&&!activePtrs.size){panning=false;svg.classList.remove('grabbing');}
+}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('pointerleave',()=>{if(hovered){hovered=null;refresh();hideTip();}});
+svg.addEventListener('wheel',ev=>{ev.preventDefault();const r=svg.getBoundingClientRect();const sx=ev.clientX-r.left,sy=ev.clientY-r.top;const gx=(sx-vp.x)/vp.k,gy=(sy-vp.y)/vp.k;const f=ev.deltaY<0?1.12:1/1.12;vp.k=Math.max(.3,Math.min(3,vp.k*f));vp.x=sx-gx*vp.k;vp.y=sy-gy*vp.k;applyVp();},{passive:false});
+// двойной клик: по узлу — подлететь к нему; по фону — плавный зум вокруг курсора
+svg.addEventListener('dblclick',ev=>{ev.preventDefault();
+  const g=ev.target.closest('.node');
+  if(g){flyTo(byId.get(g.dataset.id),true);return;}
+  const r=svg.getBoundingClientRect();const sx=ev.clientX-r.left,sy=ev.clientY-r.top;
+  const gx=(sx-vp.x)/vp.k,gy=(sy-vp.y)/vp.k;const k=Math.min(3,vp.k*1.5);
+  tweenVp(sx-gx*k,sy-gy*k,k);});
+// Escape — мягкий сброс: снять фильтры/поиск/выделение (без пересборки раскладки)
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  selected=null;focusFam=null;focusConf=null;searchActive=false;searchHits=new Set();searchOrder=[];searchIdx=-1;
+  q.value='';searchHint.classList.remove('show');if(document.activeElement===q)q.blur();
+  document.querySelectorAll('.fam,.cv').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+  closeSheets();refresh();});
+
+// ---- tooltip ----
+const tip=document.getElementById('tooltip');
+function showTip(n,ev){
+  tip.innerHTML=`<div><b>${n.ru}</b>${n.heb?` <span class="t-heb">${n.heb}</span>`:''}</div>`
+    +(n.translit?`<div class="t-tr">${n.translit}</div>`:'')
+    +(n.meaning?`<div class="t-mean">значит: <b>«${n.meaning}»</b></div>`:'')
+    +(n.ident?`<div class="t-id">это ${n.ident}</div>`:'')
+    +(n.ref?`<div class="t-ref">${n.ref}${n.am?' · '+n.am:''}</div>`:'')
+    +(n.overlap?`<div class="t-ov">⇄ имя встречается ещё раз в другой линии</div>`:'');
+  // позиция с переворотом у краёв: тултип не должен вылезать за сцену
+  const r=svg.getBoundingClientRect();
+  let lx=ev.clientX-r.left+14, ly=ev.clientY-r.top+14;
+  const tw=tip.offsetWidth, th=tip.offsetHeight;
+  if(lx+tw>r.width-8)lx=ev.clientX-r.left-14-tw;
+  if(ly+th>r.height-8)ly=ev.clientY-r.top-14-th;
+  tip.style.left=Math.max(8,lx)+'px';tip.style.top=Math.max(8,ly)+'px';tip.style.opacity=1;}
+function hideTip(){tip.style.opacity=0;}
+
+// ---- details ----
+const relLink=r=>`<a data-id="${r.id}"><span class="d" style="background:${r.kind==='spine'?'var(--spineGold)':r.color}"></span>${r.ru}<span style="margin-left:auto;color:var(--inkFaint);font-size:10.5px">${r.ref||''}</span></a>`;
+function selectNode(id){selected=id;refresh();const n=byId.get(id);
+  const par=[...parentsOf.get(id)].map(i=>byId.get(i)).filter(x=>x&&x.kind!=='hub');
+  const chi=[...childrenOf.get(id)].map(i=>byId.get(i)).filter(Boolean);
+  const up=n.kind==='spine'?'Выше по линии':'Родитель', dn=n.kind==='spine'?'Ниже по линии':(n.kind==='hub'?'В роду':'Дети');
+  const ov=n.overlap?(GRAPH.overlaps||[]).find(o=>o.id===n.overlap):null;
+  const ovPeers=ov?ov.members.filter(m=>m.id!==n.id):[];
+  const rel=(par.length||chi.length||ovPeers.length)
+    ? `${par.length?`<h3>${up}</h3>${par.map(relLink).join('')}`:''}${chi.length?`<h3>${dn} (${chi.length})</h3>${chi.map(relLink).join('')}`:''}${ovPeers.length?`<h3>Та же линия имени</h3>${ovPeers.map(relLink).join('')}`:''}`
+    : `<p class="empty" style="padding:6px 4px">Прямых связей в этой выборке нет.</p>`;
+  document.getElementById('detail').innerHTML=`<div class="card">
+    <div class="dn">${n.ru}${n.heb?`<span class="dheb">${n.heb}</span>`:''}</div>
+    ${n.translit?`<div class="dtr">${n.translit}</div>`:''}
+    ${n.meaning?`<div class="dmean"><span class="k">Что значит имя</span>«${n.meaning}»</div>`:''}
+    ${n.forefather&&n.forefather.length?`<div class="dfore">Родоначальник: <b>${n.forefather.join(' › ')}</b></div>`:''}
+    ${n.ident?`<div class="did">Отождествление: <b>${n.ident}</b></div>`:''}
+    ${n.confidence?`<div class="dconf ${n.confidence}">${CONF[n.confidence]||n.confidence}</div>`:''}
+    ${n.region?`<div class="dregion">Где жили: ${n.region}</div>`:''}
+    ${n.spravka?`<div class="dspravka">${n.spravka}</div>`:''}
+    ${n.mythWatch?`<div class="dmyth"><b>Не путать с мифом:</b> ${n.mythWatch}</div>`:''}
+    ${n.sources&&n.sources.length?`<div class="dsrc">Источники: ${n.sources.join(' · ')}</div>`:''}
+    ${ov?`<div class="doverlap"><h4>Народы смешались</h4><b>${ov.title}</b>
+      ${ov.confidence?`<div class="dconf ${ov.confidence}" style="margin:5px 0">${CONF[ov.confidence]||ov.confidence}</div>`:''}
+      <div style="margin:6px 0">${ov.note}</div>
+      ${ov.mythWatch?`<div class="dmyth"><b>Не путать с мифом:</b> ${ov.mythWatch}</div>`:''}
+      ${ov.sources&&ov.sources.length?`<div class="dsrc">Источники: ${ov.sources.join(' · ')}</div>`:''}
+    </div>`:''}
+    <div class="dref">${n.ref||''}${n.am?' · '+n.am:''}</div>
+    <span class="fbadge" style="color:${n.kind==='spine'?'var(--spineGold)':n.color}">${famName.get(n.family)||'хребет'}</span>
+  </div>
+  <div class="rel">${rel}</div>`;
+  document.querySelectorAll('.rel a').forEach(a=>a.addEventListener('click',()=>{const t=byId.get(a.dataset.id);selectNode(a.dataset.id);flash(a.dataset.id);flyTo(t,false);}));
+  if(isMobile())openSheet(asideR);
+  try{history.replaceState(null,'','#'+encodeURIComponent(id));}catch(_){}  // deep-link: ссылкой можно поделиться
+}
+function flash(id){if(reduceMotion)return;const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
+
+// ---- families legend ----
+const famsEl=document.getElementById('fams');
+for(const f of GRAPH.families){const d=document.createElement('div');d.className='fam';d.dataset.fam=f.id;
+  d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('aria-pressed','false');
+  d.innerHTML=`<span class="sw" style="background:${f.color}"></span><span class="nm">${f.ru}</span>${f.count?`<span class="ct">${f.count}</span>`:''}`;
+  const act=()=>{focusFam=(focusFam===f.id)?null:f.id;focusConf=null;document.querySelectorAll('.fam').forEach(x=>{const on=x.dataset.fam===focusFam;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});document.querySelectorAll('.cv').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});refresh();if(isMobile())setTimeout(closeSheets,260);};
+  d.addEventListener('click',act);
+  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
+  famsEl.appendChild(d);}
+
+// ---- search ----
+const q=document.getElementById('q'), searchHint=document.getElementById('searchHint');
+if(NATIONS)q.placeholder='Найти народ…';
+let searchOrder=[], searchIdx=-1;
+q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();searchOrder=[];searchIdx=-1;searchActive=!!v;if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v)){searchHits.add(n.id);searchOrder.push(n.id);}}
+  searchHint.classList.toggle('show', searchActive&&!searchOrder.length);
+  searchHint.textContent=searchActive&&!searchOrder.length?`Ничего не найдено: «${q.value.trim()}»`:'';
+  refresh();});
+// Enter — перелёт к найденному; повторный Enter — к следующему совпадению по кругу
+q.addEventListener('keydown',e=>{if(e.key!=='Enter'||!searchOrder.length)return;e.preventDefault();searchIdx=(searchIdx+1)%searchOrder.length;const n=byId.get(searchOrder[searchIdx]);selectNode(n.id);flyTo(n,true);});
+
+// ---- toggles / buttons ----
+function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init;el.setAttribute('aria-pressed',on);const set=()=>{on=!on;el.setAttribute('aria-pressed',on);fn(on);};el.addEventListener('click',set);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();set();}});}
+bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
+bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
+bindToggle('tg-labels',showLabels,v=>{showLabels=v;refresh();});
+document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;focusConf=null;selected=null;searchHits=new Set();searchActive=false;searchOrder=[];searchIdx=-1;q.value='';searchHint.classList.remove('show');document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}fit();refresh();if(isMobile())closeSheets();});
+document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
+
+// ---- мобильные шторки (боковые панели прячутся под экран, а не исчезают совсем) ----
+const isMobile=()=>matchMedia('(max-width:900px)').matches;
+const scrimEl=document.getElementById('scrim'), asideL=document.querySelector('aside.left'), asideR=document.querySelector('aside.right');
+function openSheet(a){a.classList.add('sheet-open');scrimEl.classList.add('show');}
+function closeSheets(){asideL.classList.remove('sheet-open');asideR.classList.remove('sheet-open');scrimEl.classList.remove('show');}
+scrimEl.addEventListener('click',closeSheets);
+document.querySelectorAll('.sheet-close').forEach(b=>b.addEventListener('click',closeSheets));
+document.getElementById('mob-fams').addEventListener('click',()=>openSheet(asideL));
+
+// ---- coverage tracker (что исследовано — режим народов): клик подсвечивает узлы этой достоверности ----
+if(GRAPH.coverage){const cv=GRAPH.coverage;const rows=[['certain','#4f7a4a','достоверно'],['probable','var(--gold)','вероятно'],['disputed','#b5643f','спорно'],['obscure','var(--inkFaint)','мало данных']];
+  const covEl=document.getElementById('coverage');
+  covEl.innerHTML='<div class="lab" style="margin-bottom:8px">Что исследовано · клик — показать на карте</div>'+rows.map(([k,c,l])=>`<div class="cv" data-conf="${k}" role="button" tabindex="0" aria-pressed="false"><i style="background:${c}"></i>${l}<b>${cv[k]||0}</b></div>`).join('');
+  covEl.querySelectorAll('.cv').forEach(el=>{const act=()=>{focusConf=(focusConf===el.dataset.conf)?null:el.dataset.conf;focusFam=null;document.querySelectorAll('.fam').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});covEl.querySelectorAll('.cv').forEach(x=>{const on=x.dataset.conf===focusConf;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});refresh();if(isMobile())setTimeout(closeSheets,260);};
+    el.addEventListener('click',act);
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});});}
+
+// ---- start ----
+document.getElementById('stat').textContent = NATIONS
+  ? `Таблица народов · Быт 10 · ${GRAPH.counts.nations} народов · структура достоверна, отождествления честно размечены`
+  : `${nodes.length} узлов · ${GRAPH.families.length} семейств · демо-выборка из 3056 имён`;
+// scatter-in on load for a premium settle (unless reduced motion)
+if(!reduceMotion){for(const n of nodes){const a=Math.random()*6.283,d=90+Math.random()*120;n.x=n.homeX+Math.cos(a)*d;n.y=n.homeY+Math.sin(a)*d;}}
+window.addEventListener('resize',fit);
+fit();refresh();loop();
+// deep-link: если в URL есть #узел — подлететь к нему после первой раскладки
+if(location.hash.length>1){try{const id=decodeURIComponent(location.hash.slice(1));const n=byId.get(id);
+  if(n){setTimeout(()=>{selectNode(id);flyTo(n,true);},reduceMotion?0:600);}}catch(_){}}
+</script>

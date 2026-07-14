@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gospod-bog.ru/schemas/atlas/book.schema.json",
+  "title": "Atlas Book — книга Библии",
+  "description": "ATLAS-CONTRACT §7. Ось «по книгам» хаба Атласа и связка пророк→книга→карты. Канон протестантский, 66 книг, синодальные названия.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "testament",
+    "section",
+    "order"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "object",
+      "required": [
+        "ru"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "ru": {
+          "type": "string"
+        },
+        "abbr": {
+          "type": "string",
+          "description": "Синодальное сокращение (Быт, 3 Цар)"
+        }
+      }
+    },
+    "testament": {
+      "type": "string",
+      "enum": [
+        "ot",
+        "nt"
+      ]
+    },
+    "section": {
+      "type": "string",
+      "enum": [
+        "law",
+        "history",
+        "poetry",
+        "major-prophets",
+        "minor-prophets",
+        "gospels",
+        "acts",
+        "pauline",
+        "general",
+        "revelation"
+      ]
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 66
+    },
+    "chapters": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "maps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Карты, покрывающие книгу"
+    },
+    "periodIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

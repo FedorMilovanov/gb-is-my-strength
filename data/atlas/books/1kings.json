@@ -1,0 +1,14 @@
+{
+  "id": "1kings",
+  "title": {
+    "ru": "3 Царств",
+    "abbr": "3 Цар"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 11,
+  "chapters": 22,
+  "maps": [
+    "melachim"
+  ]
+}

@@ -126,6 +126,24 @@ const stale = fs.readdirSync(path.join(ROOT, baptDir))
 check('Контент: счётчики Баптистов = канон движка (9 частей, нет «из 10»)',
   stale.length === 0, 'устаревшие счётчики в: ' + stale.join(', '));
 
+/* ---------- CSS: структурная целостность (AST, не только скобки) ---------- */
+// Регрессия AUDIT-CSS-FLOATCLUSTER-COMMENT-CORRUPTION (arena 2026-07-14):
+// незакрытый баннер-комментарий превращал следующий rule в мусорный селектор
+// и молча глотал 19 деклараций .mobile-bottom-bar. Скобочный валидатор это
+// не видит — проверяем настоящим парсером + балансом комментариев.
+try {
+  const csstree = require('css-tree');
+  for (const f of ['css/site.css', 'css/floating-cluster.css', 'css/mobile-hotfix.css',
+                   'css/series-samizdat.css', 'css/nagornaya-mobile-toc.css', 'css/home.css']) {
+    const txt = read(f);
+    const errs = [];
+    csstree.parse(txt, { onParseError: (e) => errs.push(e.message) });
+    check('CSS AST: ' + f + ' парсится без ошибок', errs.length === 0, errs.slice(0, 2).join(' | '));
+  }
+} catch (e) {
+  check('CSS AST: css-tree доступен', false, e.message);
+}
+
 /* ---------- артефакты ---------- */
 check('SVG-обложка медиа-шторки images/tts-artwork.svg',
   fs.existsSync(path.join(ROOT, 'images/tts-artwork.svg')));

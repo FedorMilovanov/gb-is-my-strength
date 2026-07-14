@@ -1,0 +1,52 @@
+{
+  "id": "jericho-nt",
+  "names": {
+    "ru": "Иерихон новозаветный"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 645,
+      "y": 791
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "jericho"
+    }
+  ],
+  "notes": "ВЗ Иерихон = Тель эс-Султан (jericho-1, OpenBible score 1000); НЗ Иерихон = иродианский Тулуль Абу эль-Алаик (jericho-2, score 1000), ~2 км южнее. Разные x/y в shvatim и yeshua оказались НЕ дефектом, а корректным различием двух телей — раздельные канонические места, связка через notes",
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "jericho-2",
+    "wikidata": "Q5687"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tell el Alayiq",
+      "lat": 31.851872,
+      "lng": 35.436238,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: jericho-2 → tell-el-alayiq",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.851872,
+    "lng": 35.436238
+  },
+  "bibleRefs": [
+    "Matt 20:29",
+    "Mark 10:46",
+    "Luke 10:30",
+    "Luke 18:35",
+    "Luke 19:1"
+  ],
+  "rank": 3
+}

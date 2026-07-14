@@ -1,0 +1,18 @@
+{
+  "id": "hoshea",
+  "names": {
+    "ru": "Осия Израильский"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -732,
+    "end": -722,
+    "note": "падение Самарии 722"
+  },
+  "periodIds": [
+    "divided-kingdom",
+    "judah-alone"
+  ],
+  "assessment": "evil"
+}

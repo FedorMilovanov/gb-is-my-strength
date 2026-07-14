@@ -1,0 +1,65 @@
+{
+  "id": "capernaum",
+  "names": {
+    "ru": "Капернаум",
+    "he": "כְּפַר נַחוּם"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 654,
+      "y": 665
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "capernaum"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "capernaum",
+    "wikidata": "Q59174"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Tell Hum",
+      "lat": 32.881111,
+      "lng": 35.575,
+      "score": 842,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: capernaum → tell-hum",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Khirbet Minyeh",
+      "lat": 32.864722,
+      "lng": 35.536111,
+      "score": -18,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: capernaum → khirbet-minyeh",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.881111,
+    "lng": 35.575
+  },
+  "bibleRefs": [
+    "Matt 4:13",
+    "Matt 8:5",
+    "Matt 11:23",
+    "Matt 17:24",
+    "Mark 1:21"
+  ],
+  "rank": 3
+}

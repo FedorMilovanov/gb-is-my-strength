@@ -1,0 +1,19 @@
+{
+  "id": "hellenistic",
+  "title": {
+    "ru": "Эллинистическая эпоха",
+    "short": "Эллинизм"
+  },
+  "start": -332,
+  "end": -167,
+  "engineEra": "roman",
+  "colorToken": "#abd0d6",
+  "colorStatus": "validated",
+  "maps": [],
+  "keyEvents": [
+    "Александр в Леванте 332",
+    "Диадохи",
+    "Селевкиды против Птолемеев"
+  ],
+  "note": "DN-3, DN-4, DN-5; engineEra roman = ближайший имеющийся era-тег base-geo (греко-римская генерализация) | цвет validated 2026-07-11: dataviz-прогон — текст #2b2418 контраст ≥7:1 (AAA), CVD смежных пар хронологической ленты ≥10 (protan worst, WARN-band легален: подписи всегда внутри чипов)"
+}

@@ -1,0 +1,58 @@
+{
+  "id": "jerusalem-upper-room",
+  "names": {
+    "ru": "Иерусалим · Горница",
+    "he": "הָעֲלִיָּה"
+  },
+  "type": "structure",
+  "parentId": "jerusalem",
+  "notes": "SUB-LOCATION: проверить parentId | review: Горница Тайной вечери и Пятидесятницы (Сионская): yeshua + early-church — одна традиция, суб-локация Иерусалима",
+  "placements": {
+    "levant": {
+      "x": 623,
+      "y": 800
+    }
+  },
+  "maps": [
+    {
+      "slug": "early-church",
+      "localId": "jerusalem_upper"
+    },
+    {
+      "slug": "yeshua",
+      "localId": "jerusalem_passion"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "jerusalem",
+    "wikidata": "Q1218"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Jerusalem",
+      "lat": 31.776667,
+      "lng": 35.234167,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: jerusalem → jerusalem",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.776667,
+    "lng": 35.234167
+  },
+  "bibleRefs": [
+    "Josh 10:1",
+    "Josh 10:2",
+    "Josh 10:3",
+    "Josh 10:5",
+    "Josh 10:23"
+  ],
+  "rank": 2
+}

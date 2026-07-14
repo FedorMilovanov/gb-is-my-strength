@@ -1,0 +1,14 @@
+{
+  "id": "amos",
+  "title": {
+    "ru": "Амос",
+    "abbr": "Ам"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 30,
+  "chapters": 9,
+  "maps": [
+    "melachim"
+  ]
+}

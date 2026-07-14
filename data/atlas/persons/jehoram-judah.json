@@ -1,0 +1,21 @@
+{
+  "id": "jehoram-judah",
+  "names": {
+    "ru": "Иорам Иудейский"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -853,
+    "end": -841,
+    "coregency": true
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "ahaziah-judah"
+  }
+}

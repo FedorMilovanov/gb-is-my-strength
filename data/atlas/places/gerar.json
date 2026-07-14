@@ -1,0 +1,91 @@
+{
+  "id": "gerar",
+  "names": {
+    "ru": "Герар",
+    "he": "גְּרָר"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 561,
+      "y": 847
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "gerar"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "gerar",
+    "wikidata": "Q1510126"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Tel Haror",
+      "lat": 31.3821,
+      "lng": 34.6065,
+      "score": 694,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gerar → tel-haror",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tell esh Sharia",
+      "lat": 31.3912,
+      "lng": 34.6816,
+      "score": 35,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gerar → tell-esh-sharia",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tell Tuweiyil",
+      "lat": 31.183861,
+      "lng": 34.567048,
+      "score": 12,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gerar → tell-tuweiyil",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Tell Jemmeh",
+      "lat": 31.38724,
+      "lng": 34.44506,
+      "score": -86,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gerar → tell-jemmeh",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.3821,
+    "lng": 34.6065
+  },
+  "bibleRefs": [
+    "Gen 10:19",
+    "Gen 20:1",
+    "Gen 20:2",
+    "Gen 26:1",
+    "Gen 26:6"
+  ],
+  "rank": 3
+}

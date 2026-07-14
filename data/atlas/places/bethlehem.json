@@ -1,0 +1,52 @@
+{
+  "id": "bethlehem",
+  "names": {
+    "ru": "Вифлеем",
+    "he": "בֵּית לֶחֶם"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 622,
+      "y": 809
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "bethlehem"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "bethlehem-1",
+    "wikidata": "Q5776"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Bethlehem",
+      "lat": 31.704306,
+      "lng": 35.207639,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: bethlehem-1 → bethlehem",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.704306,
+    "lng": 35.207639
+  },
+  "bibleRefs": [
+    "Gen 35:19",
+    "Gen 48:7",
+    "Judg 17:7",
+    "Judg 17:8",
+    "Judg 17:9"
+  ],
+  "rank": 3
+}

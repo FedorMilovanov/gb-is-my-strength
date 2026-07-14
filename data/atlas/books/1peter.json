@@ -1,0 +1,11 @@
+{
+  "id": "1peter",
+  "title": {
+    "ru": "1 Петра",
+    "abbr": "1 Пет"
+  },
+  "testament": "nt",
+  "section": "general",
+  "order": 60,
+  "chapters": 5
+}

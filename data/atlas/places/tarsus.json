@@ -1,0 +1,52 @@
+{
+  "id": "tarsus",
+  "names": {
+    "ru": "Тарс",
+    "he": "טַרְסוֹס"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 590,
+      "y": 184
+    }
+  },
+  "maps": [
+    {
+      "slug": "early-church",
+      "localId": "tarsus"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "tarsus",
+    "wikidata": "Q134287"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tarsus",
+      "lat": 36.913028,
+      "lng": 34.892056,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: tarsus → tarsus",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 36.913028,
+    "lng": 34.892056
+  },
+  "bibleRefs": [
+    "Acts 9:11",
+    "Acts 9:30",
+    "Acts 11:25",
+    "Acts 21:39",
+    "Acts 22:3"
+  ],
+  "rank": 3
+}

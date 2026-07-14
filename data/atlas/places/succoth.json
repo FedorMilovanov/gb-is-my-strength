@@ -1,0 +1,90 @@
+{
+  "id": "succoth",
+  "names": {
+    "ru": "Сокхоф",
+    "he": "סֻכּוֹת"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 280,
+      "y": 920
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "succoth"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "succoth-2"
+  },
+  "identifications": [
+    {
+      "status": "alternative",
+      "label": "Tell el Maskhuta",
+      "lat": 30.5527,
+      "lng": 32.099,
+      "score": 206,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: succoth-2 → tell-el-maskhuta",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jabal Maryam",
+      "lat": 30.5467,
+      "lng": 32.3042,
+      "accuracyMeters": 5000,
+      "score": 39,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: succoth-2 → jabal-maryam",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tell er Retaba",
+      "lat": 30.5475,
+      "lng": 31.963611,
+      "score": 18,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: succoth-2 → tell-er-retaba",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Ain Shams",
+      "lat": 30.129444,
+      "lng": 31.3075,
+      "score": 0,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: succoth-2 → ain-shams",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 30.5527,
+    "lng": 32.099
+  },
+  "bibleRefs": [
+    "Ex 12:37",
+    "Ex 13:20",
+    "Num 33:5",
+    "Num 33:6"
+  ],
+  "rank": 3
+}

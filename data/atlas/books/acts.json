@@ -1,0 +1,15 @@
+{
+  "id": "acts",
+  "title": {
+    "ru": "Деяния",
+    "abbr": "Деян"
+  },
+  "testament": "nt",
+  "section": "acts",
+  "order": 44,
+  "chapters": 28,
+  "maps": [
+    "early-church",
+    "pavel"
+  ]
+}

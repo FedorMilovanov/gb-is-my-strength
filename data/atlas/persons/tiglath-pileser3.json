@@ -1,0 +1,20 @@
+{
+  "id": "tiglath-pileser3",
+  "names": {
+    "ru": "Тиглатпаласар III"
+  },
+  "role": "emperor",
+  "realm": "assyria",
+  "reign": {
+    "start": -745,
+    "end": -727,
+    "note": "Фул; депортации Галилеи и Заиорданья 734–732"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "bibleRefs": [
+    "4 Цар 15:19",
+    "4 Цар 15:29"
+  ]
+}

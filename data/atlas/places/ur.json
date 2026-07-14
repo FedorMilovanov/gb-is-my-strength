@@ -1,0 +1,99 @@
+{
+  "id": "ur",
+  "names": {
+    "ru": "Ур Халдейский",
+    "he": "אוּר כַּשְׂדִּים"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 1710,
+      "y": 897
+    },
+    "urheimat": {
+      "x": 1093,
+      "y": 1235
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "ur"
+    },
+    {
+      "slug": "nachalo",
+      "localId": "ur"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "ur-1",
+    "wikidata": "Q5373099"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Tell el Muqayyar",
+      "lat": 30.962222,
+      "lng": 46.104444,
+      "score": 703,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ur-1 → tell-el-muqayyar",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Urfa",
+      "lat": 37.147778,
+      "lng": 38.784444,
+      "score": 53,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ur-1 → urfa",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Bayburt",
+      "lat": 40.254639,
+      "lng": 40.226,
+      "score": 22,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ur-1 → bayburt",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Urartu",
+      "lat": 39.702761,
+      "lng": 44.300381,
+      "accuracyMeters": 25000,
+      "score": 12,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ur-1 → urartu",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 30.962222,
+    "lng": 46.104444
+  },
+  "bibleRefs": [
+    "Gen 11:28",
+    "Gen 11:31",
+    "Gen 15:7",
+    "Neh 9:7"
+  ],
+  "rank": 1
+}

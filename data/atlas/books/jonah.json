@@ -1,0 +1,11 @@
+{
+  "id": "jonah",
+  "title": {
+    "ru": "Иона",
+    "abbr": "Ион"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 32,
+  "chapters": 4
+}

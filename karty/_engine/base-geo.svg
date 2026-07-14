@@ -14,17 +14,18 @@
 <!-- ============ TERRAIN ============ -->
 <g id="terrain" data-layer="base-geo">
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"/>
-  <!-- Terrain texture overlay для глубины рельефа -->
-  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".3" filter="url(#terrainTex)"/>
+  <!-- (удалён мёртвый rect с filter=url(#terrainTex): фильтр нигде не
+       определён, элемент по SVG-спеке не рендерился — broken reference) -->
 
   <!-- deserts / fertile tints -->
   <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"/>
   <ellipse cx="470" cy="1130" rx="260" ry="220" fill="url(#desertG)"/>
   <ellipse cx="560" cy="930" rx="170" ry="110" fill="url(#desertG)"/>
-  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)"/>
+  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)" filter="url(#soft)"/>
   <ellipse cx="640" cy="700" rx="110" ry="240" fill="url(#fertileG)"/>
   <ellipse cx="220" cy="930" rx="120" ry="120" fill="url(#fertileG)"/>
-  <path fill="url(#fertileG)" d="M226,1014 C196,964 168,916 142,868 L304,860 C280,912 252,964 226,1014 Z"/>
+  <!-- зелень дельты: веер от вершины (226,1004) К МОРЮ, по контуру рукавов -->
+  <path fill="url(#fertileG)" d="M226,1008 C202,958 174,910 148,862 L290,854 C262,908 240,958 226,1008 Z"/>
 
   <!-- mountain ridges (decorative) -->
   <g stroke="#6b6248" stroke-width="2" fill="none" opacity=".14" filter="url(#soft)">
@@ -36,14 +37,18 @@
     <path d="M652,758 Q646,800 640,845"/>
   </g>
 
-  <!-- Ливанские горы / Антиливан (северный Ханаан) -->
-  <g opacity=".22" filter="url(#soft)">
+  <!-- Ливанские горы / Антиливан — гряда гравюрных вершин вдоль хребта -->
+  <g opacity=".28" filter="url(#soft)">
     <path fill="url(#mtG)" d="M590,500 C610,480 630,460 655,448 C670,440 690,435 710,432 C730,429 750,430 760,435 C748,450 730,460 710,468 C688,478 660,488 635,500 C618,508 602,515 590,520 Z"/>
     <path stroke="#8b7d5a" stroke-width="1.5" fill="none" opacity=".7" d="M600,502 Q618,492 636,484 Q660,474 685,468 Q710,462 730,458"/>
-    <!-- Отдельные пики (снег на вершинах) -->
-    <path d="M640,462 L644,453 L648,462 Z" fill="rgba(230,225,215,.15)" stroke="#a09070" stroke-width=".8"/>
-    <path d="M670,446 L675,435 L680,446 Z" fill="rgba(230,225,215,.18)" stroke="#a09070" stroke-width=".8"/>
-    <path d="M700,437 L705,425 L710,437 Z" fill="rgba(240,235,225,.2)" stroke="#b0a080" stroke-width=".9"/>
+  </g>
+  <g opacity=".5">
+    <use href="#hill" x="604" y="486" width="14" height="8"/>
+    <use href="#peak-snow" x="626" y="464" width="17" height="13"/>
+    <use href="#peak" x="650" y="452" width="15" height="11"/>
+    <use href="#peak-snow" x="672" y="438" width="18" height="14"/>
+    <use href="#peak" x="698" y="430" width="15" height="11"/>
+    <use href="#hill" x="722" y="432" width="14" height="8"/>
   </g>
   <!-- Ливан label -->
   <text class="region-label lbl-z1" x="665" y="428" font-size="5.5" fill="#a09070" opacity=".5" letter-spacing=".2em" transform="rotate(-5 665 428)">ЛИВАН · לְבָנוֹן</text>
@@ -56,17 +61,13 @@
   <!-- Треугольный контур п-ова Синай -->
   <path fill="url(#sinaiG)" opacity=".9"
     d="M424,1012 C450,1015 475,1020 490,1032 C510,1048 520,1075 530,1110 C540,1145 548,1175 555,1200 C562,1175 570,1145 580,1112 C590,1078 600,1050 618,1035 C630,1025 648,1015 665,1012"/>
-  <!-- Гранитные горы Синая (юг) — более детальные -->
-  <g opacity=".22" filter="url(#soft)">
-    <!-- Хребет Ум-Шаумер (высший пик 2587м) -->
-    <path d="M510,1205 L528,1162 L546,1205 Z" fill="rgba(110,82,44,.45)" stroke="#9a7845" stroke-width="1.1"/>
-    <!-- Хорив/Синай (Моисей) -->
-    <path d="M550,1195 L572,1148 L594,1195 Z" fill="rgba(125,92,50,.5)" stroke="#a08040" stroke-width="1.2"/>
-    <!-- Снежная шапка Синая -->
-    <path d="M562,1155 L572,1148 L582,1155 Z" fill="rgba(240,235,225,.2)" stroke="rgba(240,235,225,.3)" stroke-width=".7"/>
-    <!-- Боковой хребет -->
-    <path d="M535,1215 L550,1180 L565,1215 Z" fill="rgba(100,78,40,.35)" stroke="#9a7845" stroke-width=".9"/>
-    <path d="M578,1208 L594,1175 L610,1208 Z" fill="rgba(105,80,42,.35)" stroke="#9a7845" stroke-width=".9"/>
+  <!-- Гранитные горы Синая (юг) — гряда гравюрных вершин; Хорив крупнее -->
+  <g opacity=".5">
+    <use href="#hill" x="500" y="1188" width="20" height="12"/>
+    <use href="#peak" x="522" y="1168" width="24" height="19"/>
+    <use href="#peak" x="550" y="1148" width="32" height="25"/>
+    <use href="#peak" x="586" y="1166" width="24" height="19"/>
+    <use href="#hill" x="608" y="1188" width="20" height="12"/>
   </g>
   <!-- Негев / Иудейская пустыня -->
   <ellipse cx="580" cy="920" rx="90" ry="60" fill="url(#negevG)" opacity=".8"/>
@@ -114,12 +115,14 @@
 <path fill="url(#seaPattern)" opacity=".45"
   d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
   <!-- Cyprus с морскими волнами вокруг -->
-  <ellipse cx="432" cy="400" rx="80" ry="40" transform="rotate(-8 432 400)" 
+  <ellipse cx="432" cy="394" rx="76" ry="26" transform="rotate(-7 432 394)"
     fill="url(#seaG)" opacity=".3" filter="url(#waterRipple)"/>
+  <!-- Кипр: узнаваемый силуэт — тело с горами Троодос на З, залив Морфу,
+       хребет Кирения на С и длинный «палец» полуострова Карпас на СВ -->
   <path fill="url(#landG)" stroke="#3a4150" stroke-width="1.2" opacity=".9"
-    d="M352,409 C358,398 374,390 396,387 C420,384 444,387 460,393 C468,396 474,396 482,392 C492,386 502,379 510,374 C513,372 515,375 512,379 C504,389 492,398 480,403 C470,408 458,411 446,413 C424,417 396,417 376,414 C364,412 354,413 352,409 Z"/>
+    d="M368,396 C366,390 372,385 382,383 C394,381 404,382 412,381 C418,380 424,381 430,383 C438,385 444,384 452,384 C460,384 468,385 474,384 C482,382 490,379 497,377 C500,376 502,377 501,379 C499,382 494,386 488,389 C482,392 476,393 470,395 C464,397 459,400 452,403 C444,406 434,409 424,410 C412,411 400,410 390,407 C380,404 370,401 368,396 Z"/>
   <!-- Кипр иврит -->
-  <text x="432" y="408" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">כִּתִּים · Κύπρος</text>
+  <text x="416" y="404" font-size="3.6" fill="#8d949f" text-anchor="middle" opacity=".45" class="lbl-z1">כִּתִּים · Κύπρος</text>
 
   <!-- Red Sea -->
   <g filter="url(#waterRipple)">
@@ -128,22 +131,11 @@
 </g>
 <!-- Паттерн волн на Красном море -->
 <path fill="url(#seaPattern)" opacity=".3" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
-  <!-- Nile delta hint -->
-  <!-- Нил с waterRipple -->
-  <g filter="url(#waterRipple)" opacity=".65">
-    <!-- Нил — основное русло -->
-    <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#2d4a66" stroke-width="4" stroke-linecap="round"/>
-    <!-- Дельта — пять рукавов -->
-    <path d="M230,972 C215,985 198,995 178,1002" fill="none" stroke="#2d4a66" stroke-width="2.2" stroke-linecap="round" opacity=".75"/>
-    <path d="M230,972 C240,982 258,992 272,998" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".7"/>
-    <path d="M230,972 C228,990 226,1005 224,1015" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".65"/>
-    <path d="M230,972 C222,984 212,994 200,1002" fill="none" stroke="#2d4a66" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>
-    <path d="M230,972 C245,986 260,998 278,1004" fill="none" stroke="#2d4a66" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
-    <!-- Нил — лёгкий glow -->
-    <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#4a80a8" stroke-width="8" stroke-linecap="round" opacity=".08" filter="url(#soft)"/>
-    <text class="region-label lbl-z1" x="184" y="890" font-size="6" fill="#7fa7c4" opacity=".55" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
-    <text class="region-label lbl-z2" x="184" y="900" font-size="5" fill="#7fa7c4" opacity=".45" letter-spacing=".1em">יְאוֹר · Нил</text>
-  </g>
+  <!-- Нил живёт ОДНОЙ системой в группе рек ниже (русло с юга + веер рукавов
+       к морю). Здесь остаются только подписи дельты: второй параллельный Нил
+       с waterRipple дублировал легаси-русло и дал «сдвоенную линию» -->
+  <text class="region-label lbl-z1" x="176" y="932" font-size="6" fill="#7fa7c4" opacity=".55" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
+  <text class="region-label lbl-z2" x="176" y="942" font-size="5" fill="#7fa7c4" opacity=".45" letter-spacing=".1em">יְאוֹר · Нил</text>
   
 
   <!-- Persian Gulf -->
@@ -151,11 +143,16 @@
 
   <!-- Dead Sea -->
   <!-- Мёртвое море -->
-<g filter="url(#waterRipple)" opacity=".85">
-<path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876 C639,866 637,854 635,840 C634,820 636,804 640,797 C642,793 644,793 646,795 Z"/>
-<!-- соляной берег Мёртвого моря -->
+<g opacity=".9">
+<!-- Мёртвое море: широкий северный бассейн → перешеек у п-ова Лисан (восток)
+     → меньший южный бассейн. Иордан входит с севера (~647,794). Асимметрия:
+     западный берег ровнее, восточный даёт клин Лисана внутрь. -->
+<path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M647,794 C653,796 659,802 661,814 C663,826 662,838 660,848 C659,854 655,858 651,860 C648,861 645,862 644,864 C643,866 644,868 646,869 C652,871 657,875 658,881 C658,887 655,891 649,892 C643,893 639,888 638,882 C637,875 638,869 640,865 C641,862 640,860 638,858 C636,855 635,851 635,846 C633,832 633,816 637,804 C639,797 643,792 647,794 Z"/>
+<!-- полуостров Лисан — светлый язык с востока, сужающий (но не рвущий) пролив -->
+<path fill="url(#desertG)" opacity=".6" d="M661,850 C657,853 652,857 649,860 C653,861 658,859 661,856 C662,854 662,851 661,850 Z"/>
+<!-- соляной берег (южный мелкий бассейн) -->
 <path fill="none" stroke="rgba(200,210,180,.22)" stroke-width="2.5" stroke-dasharray="1.5 3" stroke-linecap="round"
-  d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876"/>
+  d="M649,861 C654,863 658,868 659,875 C660,882 657,889 650,891 C644,892 640,887 639,880"/>
 </g>
 <!-- соляная текстура Мёртвого моря -->
 <g opacity=".18" pointer-events="none">
@@ -163,13 +160,14 @@
   <circle cx="645" cy="855" r=".8" fill="#c8d4a0"/><circle cx="650" cy="865" r=".6" fill="#c8d4a0"/>
   <circle cx="656" cy="852" r=".7" fill="#c8d4a0"/><circle cx="642" cy="842" r=".6" fill="#c8d4a0"/>
 </g>
-  <!-- Sea of Galilee -->
-  <g filter="url(#waterRipple)" opacity=".9">
-<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
+  <!-- Sea of Galilee (Кинерет) — грушевидный контур: шире на С, уже на Ю,
+       наклон СВ-ЮЗ; Иордан входит сверху (~657,664), выходит снизу (~654,691) -->
+  <g opacity=".9">
+<path fill="#10263a" stroke="#2e4d6b" stroke-width=".9" d="M657,664 C662.5,665 667,670.2 668,677 C668.8,683.2 664.8,689.2 659.4,691.8 C655.8,693.3 652.5,692.1 650.5,689.6 C647.7,685.9 646.8,680.4 647.9,675.4 C649,669.6 652.7,664.5 657,664 Z"/>
 <!-- отражение на Кинерете -->
-<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="url(#seaPattern)" opacity=".4"/>
+<path fill="url(#seaPattern)" opacity=".4" d="M657,664 C662.5,665 667,670.2 668,677 C668.8,683.2 664.8,689.2 659.4,691.8 C655.8,693.3 652.5,692.1 650.5,689.6 C647.7,685.9 646.8,680.4 647.9,675.4 C649,669.6 652.7,664.5 657,664 Z"/>
 <!-- блик -->
-<ellipse cx="655" cy="672" rx="3" ry="5" transform="rotate(-20 655 672)" fill="rgba(180,210,240,.08)"/>
+<ellipse cx="654" cy="672" rx="2.6" ry="4.2" transform="rotate(-20 654 672)" fill="rgba(180,210,240,.08)"/>
 </g>
 
   <!-- rivers -->
@@ -178,19 +176,22 @@
     d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893"/>
   <g fill="none" stroke="#2d4a66" stroke-width="3" opacity=".95" stroke-linecap="round">
     <path d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893 C1760,912 1820,928 1868,938 C1884,944 1896,950 1906,958"/>
-    <path d="M1205,-10 C1230,100 1300,180 1410,256 C1470,310 1520,400 1550,476 C1548,530 1542,575 1540,619 C1600,700 1680,780 1750,833 C1800,870 1845,900 1872,922 C1884,930 1894,938 1902,948"/>
+    <path d="M1205,-10 C1230,100 1300,180 1410,256 C1470,310 1520,400 1550,476 C1560,542 1582,604 1620,670 C1662,744 1712,800 1750,833 C1800,870 1845,900 1872,922 C1884,930 1894,938 1902,948"/>
   </g>
   <g fill="none" stroke="#2d4a66" stroke-width="2" opacity=".8" stroke-linecap="round">
     <path d="M1003,194 C1000,250 998,310 1002,362 C1008,404 1040,444 1093,470"/>
     <path d="M1108,140 C1100,230 1110,330 1140,405 C1160,460 1196,530 1238,578"/>
-    <path d="M665,625 C660,645 658,656 657,667"/>
+    <!-- Иордан: единая нить в стандалон-блоке ниже -->
     <!-- Река Кишон (вдоль Изреельской долины к морю) -->
     <path d="M613,706 C595,712 575,720 555,728 C535,736 510,738 490,735 C468,730 445,720 420,710" fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
-    <path d="M657,689 C650,720 662,755 655,797"/>
+    
     <path d="M232,1830 C226,1690 234,1550 230,1430 C220,1330 232,1200 226,1100 C222,1050 224,1020 226,1004"/>
+    <!-- Дельта: пять рукавов веером К МОРЮ от вершины (226,1004), асимметрично -->
     <path d="M226,1004 C214,972 198,938 182,908 C172,890 158,872 144,858" stroke-width="1.7"/>
-    <path d="M226,1004 C234,968 246,932 260,900 C268,884 278,868 288,850" stroke-width="1.7"/>
+    <path d="M226,1004 C218,966 205,925 188,880" stroke-width="1.2" opacity=".55"/>
     <path d="M226,1004 C224,960 222,910 220,852" stroke-width="1.4" opacity=".7"/>
+    <path d="M226,1004 C231,963 241,919 254,876" stroke-width="1.2" opacity=".5"/>
+    <path d="M226,1004 C234,968 246,932 260,900 C268,884 278,868 288,850" stroke-width="1.7"/>
   </g>
 
   <!-- sea & region labels -->
@@ -212,7 +213,7 @@
   <!-- Суэцкий залив (западная ветвь) -->
   <text class="sea-label lbl-z2" x="460" y="1110" font-size="5.5" transform="rotate(22 460 1110)" fill="#7fa7c4" opacity=".4" letter-spacing=".15em">ЗАЛИВ СУЭЦ</text>
   <!-- Эцион-Гевер / Элат — порт у Акабского залива -->
-  <g class="lbl-z2" transform="translate(730,1070)" opacity=".45">
+  <g class="lbl-z2" transform="translate(668,1040)" opacity=".5">
     <circle r="2.5" fill="rgba(10,13,20,.8)" stroke="#7fa7c4" stroke-width=".8"/>
     <text x="6" y="4" font-size="4" fill="#7fa7c4" letter-spacing=".08em">ЭЦИОН-ГЕВЕР · עֶצְיֹן גֶּבֶר</text>
   </g>
@@ -222,27 +223,57 @@
     </g>
     <!-- Персидский залив — coastal texture -->
     <path fill="url(#seaPattern)" opacity=".25" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
-    <text class="sea-label" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
+    <text class="sea-label" x="1826" y="1002" font-size="11" transform="rotate(60 1826 1002)" letter-spacing=".22em">ЗАЛИВ</text>
   <text class="sea-label lbl-z1" x="1870" y="1035" font-size="6" transform="rotate(60 1870 1035)" letter-spacing=".12em" opacity=".6">הַיָּם הַמִּזְרָחִי · Вост. море</text>
     <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
-    <text class="sea-label lbl-z2" x="650" y="856" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 650 856)" fill="#4a80a0" opacity=".45">−430 м · низшая точка Земли</text>
+    <text class="sea-label lbl-z2" x="640" y="858" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 640 858)" fill="#4a80a0" opacity=".4">−430 м · низшая точка Земли</text>
 
     <text class="sea-label lbl-z2" x="668" y="670" font-size="4" letter-spacing=".14em" transform="rotate(60 668 670)">КИНЕРЕТ</text>
   <!-- Ярмук (приток Иордана) -->
   <path fill="none" stroke="#2d4a66" stroke-width="1.2" opacity=".5" stroke-linecap="round"
-    d="M700,640 C685,648 672,656 664,662" class="lbl-z2"/>
-  <!-- зелёная зона у Кинерета -->
-  <ellipse cx="658" cy="655" rx="18" ry="10" fill="rgba(58,90,45,.12)" class="lbl-z1"/>
+    d="M702,690 C688,692 672,695 654,697" class="lbl-z2"/>
+  <!-- равнина Геннисарет — фон у СЗ берега; сдвинута от воды (была
+       наложена на овал Кинерета сплошным пятном без подписи — читалась
+       как необъяснённый "ореол") -->
+  <ellipse cx="645" cy="662" rx="7" ry="5" transform="rotate(-24 645 662)" fill="rgba(58,90,45,.10)" class="lbl-z1"/>
+  <text class="sea-label lbl-z2" x="638" y="663" font-size="2.6" letter-spacing=".06em" fill="#5a7a45" opacity=".6" transform="rotate(-24 638 663)">равнина Геннисарет</text>
   <!-- Река Аббана/Барада (Дамаск) — оазис Гута -->
   <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".4" stroke-linecap="round" class="lbl-z2"
     d="M731,594 C714,590 695,588 675,590 C655,593 638,598 620,610"/>
   <text class="sea-label lbl-z2" x="685" y="583" font-size="4" fill="#4a80a0" opacity=".4" letter-spacing=".1em">АББАНА · אֲמָנָה</text>
-  <!-- Иордан — стрелка течения (С→Ю) -->
-  <path class="lbl-z2" d="M648,710 L644,720 L652,720 Z" fill="#4a80a0" opacity=".35"/>
-  <!-- Евфрат — стрелка течения -->
-  <path class="lbl-z2" d="M1296,618 L1290,628 L1298,628 Z" fill="#4a80a0" opacity=".3"/>
-  <!-- Нил — стрелка течения (С→Ю зеркально = С) -->
-  <path class="lbl-z2" d="M222,950 L218,960 L226,960 Z" fill="#4a80a0" opacity=".35"/>
+  <!-- Фарпар — вторая река Дамаска (4Цар 5:12), южнее Аббаны -->
+  <path fill="none" stroke="#2d4a66" stroke-width=".9" opacity=".35" stroke-linecap="round" class="lbl-z2"
+    d="M729,602 C713,601 697,603 683,608 C671,612 660,618 650,626"/>
+  <text class="sea-label lbl-z2" x="694" y="612" font-size="3.4" fill="#4a80a0" opacity=".38" letter-spacing=".08em">ФАРПАР</text>
+  <!-- Вади Бесор — крупнейшее вади западного Негева (район Герара) -->
+  <path fill="none" stroke="#2d4a66" stroke-width=".8" opacity=".3" stroke-linecap="round" stroke-dasharray="3 3" class="lbl-z2"
+    d="M584,846 C568,850 550,856 534,860 C524,862 514,864 506,864"/>
+  <text class="sea-label lbl-z2" x="536" y="855" font-size="3.2" fill="#7a93a8" opacity=".45" letter-spacing=".08em" transform="rotate(-8 536 855)">вади Бесор</text>
+  <!-- Верхний Иордан: Дан/Хермон → Мером → Кинерет (единая нить озёр) -->
+  <!-- Верхний Иордан: Дан/Хермон → воды Мерома (Хула) → Кинерет (сев. вершина) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.7" opacity=".78" stroke-linecap="round"
+    d="M668,620 C664,626 661,631 659,636 C658,637 657,638 656,638"/>
+  <path fill="none" stroke="#2d4a66" stroke-width="1.8" opacity=".78" stroke-linecap="round"
+    d="M655,646 C655,651 656,656 657,660 C657,662 657,663 657,664"/>
+  <!-- Иордан: Кинерет → Мёртвое море — выраженные меандры Гхора (не вертикаль) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round"
+    d="M654,692 C650,700 657,708 654,717 C650,726 657,735 652,744 C648,753 655,762 650,771 C646,779 650,786 648,791 C647,792 647,793 647,794"/>
+  <!-- Иавок (вади Зарка) — Быт 32: переправа Иакова, Пенуэл -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.1" opacity=".5" stroke-linecap="round" class="lbl-z2"
+    d="M712,748 C698,753 678,759 664,762 C660,763 656,763 651,763"/>
+  <text class="sea-label lbl-z2" x="676" y="754" font-size="4.6" letter-spacing=".12em" transform="rotate(-14 676 754)" fill="#4a80a0" opacity=".55">ИАВОК</text>
+  <!-- Арнон (вади Муджиб) — восточный приток Мёртвого моря -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".45" stroke-linecap="round" class="lbl-z2"
+    d="M702,842 C690,841 676,839 662,838"/>
+  <text class="sea-label lbl-z2" x="694" y="846" font-size="4.4" letter-spacing=".12em" transform="rotate(-3 694 846)" fill="#4a80a0" opacity=".5">АРНОН</text>
+  <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
+  <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
+  <text class="sea-label lbl-z2" x="664" y="639" font-size="3.2" letter-spacing=".08em" fill="#4a80a0" opacity=".75">Хула</text>
+  <!-- стрелки течения рек — тонкие шевроны (были сплошные треугольники,
+       читались как маркеры/горы, а не как направление потока) -->
+  <path class="lbl-z2" d="M649,714 L653,720 L651,720 M645,714 L649,720" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+  <path class="lbl-z2" d="M1291,622 L1296,628 L1294,628 M1287,622 L1292,628" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+  <path class="lbl-z2" d="M219,954 L223,960 L221,960 M215,954 L219,960" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
   <!-- Иордан -->
   <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
   <!-- Евфрат -->
@@ -254,10 +285,7 @@
     <text class="region-label lbl-z1" x="1350" y="290" font-size="9" fill="#cdbd95" opacity=".35" letter-spacing=".2em" transform="rotate(22 1350 290)">АССИРИЯ</text>
     <text class="region-label lbl-z1" x="1400" y="860" font-size="9" fill="#cdbd95" opacity=".3" letter-spacing=".2em">ВАВИЛОНИЯ</text>
   <!-- Каркемиш — важный узел на пути из Месопотамии в Харран -->
-<g class="lbl-z2" transform="translate(900,126)" opacity=".4">
-  <circle r="3" fill="rgba(10,13,20,.7)" stroke="#9c7c43" stroke-width=".9"/>
-  <text x="6" y="4" font-size="4" fill="#9c7843" letter-spacing=".06em">КАРКЕМИШ · כַּרְכְּמִישׁ</text>
-</g>
+
 <!-- Алеппо (Халпе) — торговый центр Сирии -->
 <g class="lbl-z2" transform="translate(830,280)" opacity=".35">
   <circle r="2.5" fill="rgba(10,13,20,.7)" stroke="#9c7c43" stroke-width=".7"/>
@@ -278,22 +306,24 @@
 <!-- Плодородный полумесяц (label) -->
   <text class="region-label lbl-z1" x="870" y="255" font-size="8" fill="#7fa780" opacity=".45" letter-spacing=".2em" transform="rotate(15 870 255)">ПЛОДОРОДНЫЙ ПОЛУМЕСЯЦ</text>
   <!-- Истоки Евфрата и Тигра (Анатолия) -->
-  <text class="region-label lbl-z2" x="900" y="130" font-size="5" fill="#4a80a0" opacity=".4" letter-spacing=".12em">исток Евфрата</text>
-  <text class="region-label lbl-z2" x="1450" y="145" font-size="5" fill="#4a80a0" opacity=".4" letter-spacing=".12em">исток Тигра</text>
-    <text class="region-he" x="1235" y="430" font-size="15" transform="rotate(22 1235 430)">אֲרַם נַהֲרַיִם</text>
+  
+  
+    <text class="region-he" x="1222" y="468" font-size="15" transform="rotate(22 1222 468)">אֲרַם נַהֲרַיִם</text>
     <text class="region-label" font-size="13" letter-spacing=".48em"><textPath href="#canaanRidge" startOffset="6%">Х&#160;А&#160;Н&#160;А&#160;А&#160;Н</textPath></text>
     <!-- Декоративная рамка-bounding box Ханаана -->
     <rect x="575" y="580" width="115" height="310" rx="8"
       fill="none" stroke="rgba(232,200,121,.06)" stroke-width="1.5"
       stroke-dasharray="4 6" class="lbl-z1" pointer-events="none"/>
     <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
-    <text class="region-label" x="120" y="1040" font-size="20">ЕГИПЕТ</text>
+    <!-- макро-подпись СТРАНЫ — в глубине ЮЗ суши, вдали от точки-стана
+         «Египет» у дельты (иначе оба «Египта» стоят рядом = дубль) -->
+    <text class="region-label" x="105" y="1108" font-size="20">ЕГИПЕТ</text>
     <!-- Раамсес (Тель эд-Даба/Авар) — будущая карта Исхода -->
     <g class="lbl-z2" transform="translate(210,880)" opacity=".3">
       <circle r="2" fill="rgba(10,13,20,.7)" stroke="#c8a060" stroke-width=".7"/>
       <text x="5" y="4" font-size="4" fill="#c8a060" letter-spacing=".06em">РААМСЕС</text>
     </g>
-    <text class="region-he" x="135" y="1066" font-size="13">מִצְרַיִם</text>
+    <text class="region-he" x="120" y="1134" font-size="13">מִצְרַיִם</text>
     <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
     <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
     <text class="region-label lbl-z2" x="602" y="815" font-size="4.5" fill="#9aa2ae" opacity=".4" letter-spacing=".12em">ВИФЛЕЕМ · בֵּית לֶחֶם</text>
@@ -310,7 +340,7 @@
     <!-- Пустыня Аравии — stipple pattern -->
 <ellipse cx="1250" cy="1050" rx="380" ry="280" fill="url(#desertStipple)" opacity=".7"/>
 <text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
-    <text class="region-label" x="378" y="412" font-size="10" letter-spacing=".25em" opacity=".35">КИПР</text>
+    <text class="region-label" x="416" y="396" font-size="9" letter-spacing=".2em" opacity=".4" text-anchor="middle">КИПР</text>
   </g>
 
   <!-- ============ ANCIENT TRADE ROUTES ============ -->
@@ -318,6 +348,17 @@
 <g class="lbl-z1" opacity=".15">
   <ellipse cx="710" cy="790" rx="30" ry="50" fill="url(#mountainHatch)" transform="rotate(10 710 790)"/>
   <ellipse cx="720" cy="900" rx="25" ry="40" fill="url(#mountainHatch)" transform="rotate(5 720 900)"/>
+</g>
+<!-- Гряды Заиорданья: Галаад (С) → Моав (центр) → Едом/Сеир (Ю) -->
+<g class="lbl-z1" opacity=".42">
+  <use href="#hill" x="700" y="742" width="13" height="8"/>
+  <use href="#peak" x="712" y="762" width="12" height="9"/>
+  <use href="#hill" x="704" y="786" width="13" height="8"/>
+  <use href="#peak" x="714" y="810" width="12" height="9"/>
+  <use href="#hill" x="706" y="838" width="13" height="8"/>
+  <use href="#peak" x="716" y="866" width="13" height="10"/>
+  <use href="#hill" x="708" y="894" width="13" height="8"/>
+  <use href="#peak" x="716" y="920" width="12" height="9"/>
 </g>
 <g id="tradeRoutes" opacity=".5">
     <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
@@ -356,13 +397,13 @@
   <g id="mountains" opacity=".55">
     <!-- Гевал (Эйвал) — 940 м, к северу от Сихема -->
     <g class="lbl-z1">
-      <path d="M618,730 L624,716 L628,718 L632,716 L638,730 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <use href="#peak" x="617" y="716" width="22" height="15"/>
       <text x="628" y="712" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕВАЛ</text>
       <text x="628" y="708" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">עֵיבָל · 940 м</text>
     </g>
     <!-- Геризим (Гризим) — 881 м, к югу от Сихема -->
     <g class="lbl-z1">
-      <path d="M618,770 L624,756 L628,758 L632,756 L638,770 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <use href="#peak" x="617" y="756" width="22" height="15"/>
       <text x="628" y="776" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
       <text x="628" y="780" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">גְּרִזִּים · 881 м</text>
     </g>
@@ -372,16 +413,14 @@
 
 <!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
 <!-- Горный хребет Ханаана (Иудейские горы) — более выразительный -->
-<g opacity=".22" filter="url(#soft)">
-  <!-- Кармил -->
-  <path d="M580,716 L585,706 L590,716 Z" fill="rgba(100,90,60,.5)" stroke="#8b7d5a" stroke-width="1"/>
+<g opacity=".5">
+  <!-- Кармил — прибрежная гряда -->
+  <use href="#hill" x="576" y="707" width="18" height="10"/>
   <text x="580" y="702" font-size="3.5" fill="#8b7d5a" text-anchor="middle" opacity=".6" class="lbl-z1">הַכַּרְמֶל</text>
   <!-- Хребет Самарии -->
-  <path d="M615,735 L618,726 L621,735 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
-  <path d="M622,730 L625,721 L628,730 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <use href="#hill" x="612" y="726" width="14" height="8"/>
   <!-- Иудейские горы -->
-  <path d="M610,808 L614,799 L618,808 Z" fill="rgba(100,90,60,.45)" stroke="#8b7d5a" stroke-width=".9"/>
-  <path d="M618,800 L622,791 L626,800 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <use href="#hill" x="608" y="799" width="15" height="9"/>
 </g>
 <!-- Оронт (Сирия) — река севернее Дамаска -->
 <path fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"
@@ -390,18 +429,14 @@
 <!-- Лион-подобный изгиб Средиземного -->
 <!-- Небольшой остров Родос -->
 <!-- Лесбос -->
-<ellipse cx="355" cy="290" rx="8" ry="5" transform="rotate(-15 355 290)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".7" opacity=".6" class="lbl-z2"/>
+
 <!-- Хиос -->
-<ellipse cx="360" cy="320" rx="4" ry="9" transform="rotate(-10 360 320)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".7" opacity=".6" class="lbl-z2"/>
+
 <!-- Родос -->
-<ellipse cx="395" cy="368" rx="5" ry="10" transform="rotate(20 395 368)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".7" class="lbl-z1"/>
-<text x="395" y="365" font-size="3.5" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">Ρόδος</text>
+
+
 <!-- Крит (обозначение) -->
-<ellipse cx="212" cy="462" rx="22" ry="7" transform="rotate(-8 212 462)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".6"/>
+<path d="M190,463 C194,459 202,458 212,459 C223,459 231,460 235,463 C236,465 232,467 226,467 C215,468 203,468 196,467 C192,466 188,465 190,463 Z" fill="url(#landG)" stroke="#3a4150" stroke-width=".9" opacity=".9"/>
 <text x="212" y="460" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">КРИТ · כָּפְתּוֹר</text>
 <!-- Западная граница known world -->
 <g class="lbl-z2" opacity=".2">
@@ -420,13 +455,18 @@
   <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
 </g>
 <!-- Хермон — гора у Дана -->
-<g class="lbl-z1" transform="translate(668,594)" opacity=".4">
-  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.12)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
-  <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
-  <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
+<g class="lbl-z1" opacity=".62">
+  <!-- Хермон — высочайшая вершина региона (2814 м), крупный снежный пик -->
+  <use href="#peak-snow" x="652" y="576" width="32" height="30"/>
+  <text x="668" y="611" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
+  <text x="668" y="616" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
 </g>
 <!-- ============ DEBATE: spor o Sodome ============ -->
 <g id="debate" style="display:none">
+  <text x="668" y="785" font-size="4.2" fill="#8fd0c5" style="letter-spacing:.06em">киккар виден (~40 км)</text>
+  <text x="668" y="791" font-size="3" fill="#6fb3a8" opacity=".8">аргумент С. Коллинза за Талл эль-Хаммам</text>
+  <text x="655" y="842" font-size="4.2" fill="#e08a96" style="letter-spacing:.06em">южная котловина не видна (~60 км, за рельефом)</text>
+  <text x="655" y="848" font-size="3" fill="#cf5b6b" opacity=".85">контраргумент: Быт 13 «географически размыта» (У. Раст)</text>
   <!-- sight line Bethel -> Tall el-Hammam (visible) -->
   <path d="M624,782 L662,790" fill="none" stroke="#6fb3a8" stroke-width="1.6" stroke-dasharray="1 0" opacity=".9" vector-effect="non-scaling-stroke"/>
   <circle cx="624" cy="782" r="2" fill="#6fb3a8"/><circle cx="624" cy="782" r="4.5" fill="none" stroke="#6fb3a8" stroke-width=".7" opacity=".6"/>
@@ -436,10 +476,10 @@
     <line x1="-2.6" y1="-2.6" x2="2.6" y2="2.6" stroke="#cf5b6b" stroke-width="1.1"/>
     <line x1="-2.6" y1="2.6" x2="2.6" y2="-2.6" stroke="#cf5b6b" stroke-width="1.1"/>
   </g>
-  <text x="668" y="785" font-size="4.2" fill="#8fd0c5" style="letter-spacing:.06em">киккар виден (~40 км)</text>
-  <text x="668" y="791" font-size="3" fill="#6fb3a8" opacity=".8">аргумент С. Коллинза за Талл эль-Хаммам</text>
-  <text x="655" y="842" font-size="4.2" fill="#e08a96" style="letter-spacing:.06em">южная котловина не видна (~60 км, за рельефом)</text>
-  <text x="655" y="848" font-size="3" fill="#cf5b6b" opacity=".85">контраргумент: Быт 13 «географически размыта» (У. Раст)</text>
+  
+  
+  
+  
   <text x="619" y="776" font-size="4.2" fill="#8fd0c5" text-anchor="end" style="letter-spacing:.06em">точка обзора Лота · Быт 13:10</text>
 </g>
 </svg>

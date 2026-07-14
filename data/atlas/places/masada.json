@@ -1,0 +1,27 @@
+{
+  "id": "masada",
+  "names": {
+    "ru": "Масада",
+    "he": "מְצָדָה"
+  },
+  "type": "structure",
+  "placements": {
+    "levant": {
+      "x": 636,
+      "y": 856
+    }
+  },
+  "maps": [
+    {
+      "slug": "maccabim",
+      "localId": "masada"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: вне протестантского канона (Иосиф Флавий); координаты добавить из Pleiades/Wikidata в KA-2 | geo: Масада (Иосиф Флавий; ЮНЕСКО) (manualGeo, уровень B)",
+  "geo": {
+    "lat": 31.3156,
+    "lng": 35.3536
+  },
+  "rank": 3
+}

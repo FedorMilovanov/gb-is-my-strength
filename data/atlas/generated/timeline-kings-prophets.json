@@ -1,0 +1,899 @@
+{
+  "$comment": "ГЕНЕРИРУЕТСЯ scripts/atlas-build-timeline.js из data/atlas/{persons,periods,events,books} — не править руками. Хронология консервативная библейская (ATLAS-CONTRACT §2-бис), разделённое царство — даты Тиле.",
+  "range": {
+    "start": -1075,
+    "end": -400
+  },
+  "periods": [
+    {
+      "id": "judges",
+      "label": "Судьи",
+      "start": -1075,
+      "end": -1050,
+      "color": "#9fc0dd",
+      "colorStatus": "contract"
+    },
+    {
+      "id": "united-kingdom",
+      "label": "Саул–Соломон",
+      "start": -1050,
+      "end": -931,
+      "color": "#9fc0dd",
+      "colorStatus": "contract"
+    },
+    {
+      "id": "divided-kingdom",
+      "label": "Израиль и Иудея",
+      "start": -931,
+      "end": -722,
+      "color": "#9fc0dd",
+      "colorStatus": "contract"
+    },
+    {
+      "id": "judah-alone",
+      "label": "Иудея одна",
+      "start": -722,
+      "end": -586,
+      "color": "#9fc0dd",
+      "colorStatus": "contract"
+    },
+    {
+      "id": "exile",
+      "label": "Плен",
+      "start": -586,
+      "end": -538,
+      "color": "#c9a6bd",
+      "colorStatus": "validated"
+    },
+    {
+      "id": "persian",
+      "label": "Персия",
+      "start": -538,
+      "end": -400,
+      "color": "#ddb28a",
+      "colorStatus": "validated"
+    }
+  ],
+  "lanes": {
+    "united": [
+      {
+        "id": "saul",
+        "label": "Саул",
+        "start": -1050,
+        "end": -1010,
+        "assessment": "mixed"
+      },
+      {
+        "id": "david",
+        "label": "Давид",
+        "start": -1010,
+        "end": -970,
+        "assessment": "good",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "solomon",
+        "label": "Соломон",
+        "start": -970,
+        "end": -931,
+        "assessment": "mixed",
+        "dynasty": "davidic"
+      }
+    ],
+    "israel": [
+      {
+        "id": "jeroboam1",
+        "label": "Иеровоам I",
+        "start": -931,
+        "end": -910,
+        "assessment": "evil"
+      },
+      {
+        "id": "nadab",
+        "label": "Нават",
+        "start": -910,
+        "end": -909,
+        "assessment": "evil"
+      },
+      {
+        "id": "baasha",
+        "label": "Вааса",
+        "start": -909,
+        "end": -886,
+        "assessment": "evil"
+      },
+      {
+        "id": "elah",
+        "label": "Ила",
+        "start": -886,
+        "end": -885,
+        "assessment": "evil"
+      },
+      {
+        "id": "zimri",
+        "label": "Замврий",
+        "start": -885,
+        "end": -885,
+        "assessment": "evil"
+      },
+      {
+        "id": "tibni",
+        "label": "Фамний",
+        "start": -885,
+        "end": -880,
+        "assessment": "evil",
+        "coregency": true
+      },
+      {
+        "id": "omri",
+        "label": "Амврий",
+        "start": -885,
+        "end": -874,
+        "assessment": "evil",
+        "dynasty": "omride",
+        "coregency": true
+      },
+      {
+        "id": "ahab",
+        "label": "Ахав",
+        "start": -874,
+        "end": -853,
+        "assessment": "evil",
+        "dynasty": "omride"
+      },
+      {
+        "id": "ahaziah-israel",
+        "label": "Охозия Израильский",
+        "start": -853,
+        "end": -852,
+        "assessment": "evil",
+        "dynasty": "omride"
+      },
+      {
+        "id": "joram-israel",
+        "label": "Иорам Израильский",
+        "start": -852,
+        "end": -841,
+        "assessment": "evil",
+        "dynasty": "omride"
+      },
+      {
+        "id": "jehu",
+        "label": "Ииуй",
+        "start": -841,
+        "end": -814,
+        "assessment": "mixed",
+        "dynasty": "jehu"
+      },
+      {
+        "id": "jehoahaz-israel",
+        "label": "Иоахаз Израильский",
+        "start": -814,
+        "end": -798,
+        "assessment": "evil",
+        "dynasty": "jehu"
+      },
+      {
+        "id": "jehoash-israel",
+        "label": "Иоас Израильский",
+        "start": -798,
+        "end": -782,
+        "assessment": "evil",
+        "dynasty": "jehu"
+      },
+      {
+        "id": "jeroboam2",
+        "label": "Иеровоам II",
+        "start": -793,
+        "end": -753,
+        "assessment": "evil",
+        "dynasty": "jehu",
+        "coregency": true
+      },
+      {
+        "id": "zechariah-israel",
+        "label": "Захария Израильский",
+        "start": -753,
+        "end": -752,
+        "assessment": "evil",
+        "dynasty": "jehu"
+      },
+      {
+        "id": "shallum",
+        "label": "Селлум",
+        "start": -752,
+        "end": -752,
+        "assessment": "evil"
+      },
+      {
+        "id": "menahem",
+        "label": "Менаим",
+        "start": -752,
+        "end": -742,
+        "assessment": "evil"
+      },
+      {
+        "id": "pekah",
+        "label": "Факей",
+        "start": -752,
+        "end": -732,
+        "assessment": "evil",
+        "coregency": true
+      },
+      {
+        "id": "pekahiah",
+        "label": "Факия",
+        "start": -742,
+        "end": -740,
+        "assessment": "evil"
+      },
+      {
+        "id": "hoshea",
+        "label": "Осия Израильский",
+        "start": -732,
+        "end": -722,
+        "assessment": "evil"
+      }
+    ],
+    "judah": [
+      {
+        "id": "rehoboam",
+        "label": "Ровоам",
+        "start": -931,
+        "end": -913,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "abijah",
+        "label": "Авия",
+        "start": -913,
+        "end": -911,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "asa",
+        "label": "Аса",
+        "start": -911,
+        "end": -870,
+        "assessment": "good",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "jehoshaphat",
+        "label": "Иосафат",
+        "start": -872,
+        "end": -848,
+        "assessment": "good",
+        "dynasty": "davidic",
+        "coregency": true
+      },
+      {
+        "id": "jehoram-judah",
+        "label": "Иорам Иудейский",
+        "start": -853,
+        "end": -841,
+        "assessment": "evil",
+        "dynasty": "davidic",
+        "coregency": true
+      },
+      {
+        "id": "ahaziah-judah",
+        "label": "Охозия Иудейский",
+        "start": -841,
+        "end": -841,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "athaliah",
+        "label": "Гофолия",
+        "start": -841,
+        "end": -835,
+        "assessment": "evil"
+      },
+      {
+        "id": "joash-judah",
+        "label": "Иоас Иудейский",
+        "start": -835,
+        "end": -796,
+        "assessment": "mixed",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "amaziah",
+        "label": "Амасия",
+        "start": -796,
+        "end": -767,
+        "assessment": "mixed",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "uzziah",
+        "label": "Озия",
+        "start": -792,
+        "end": -740,
+        "assessment": "good",
+        "dynasty": "davidic",
+        "coregency": true
+      },
+      {
+        "id": "jotham",
+        "label": "Иофам",
+        "start": -750,
+        "end": -732,
+        "assessment": "good",
+        "dynasty": "davidic",
+        "coregency": true
+      },
+      {
+        "id": "ahaz",
+        "label": "Ахаз",
+        "start": -735,
+        "end": -715,
+        "assessment": "evil",
+        "dynasty": "davidic",
+        "coregency": true
+      },
+      {
+        "id": "hezekiah",
+        "label": "Езекия",
+        "start": -715,
+        "end": -686,
+        "assessment": "good",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "manasseh",
+        "label": "Манассия",
+        "start": -697,
+        "end": -642,
+        "assessment": "evil",
+        "dynasty": "davidic",
+        "coregency": true
+      },
+      {
+        "id": "amon",
+        "label": "Амон",
+        "start": -642,
+        "end": -640,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "josiah",
+        "label": "Иосия",
+        "start": -640,
+        "end": -609,
+        "assessment": "good",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "jehoahaz-judah",
+        "label": "Иоахаз Иудейский",
+        "start": -609,
+        "end": -609,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "jehoiakim",
+        "label": "Иоаким",
+        "start": -609,
+        "end": -598,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "jehoiachin",
+        "label": "Иехония",
+        "start": -598,
+        "end": -597,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      },
+      {
+        "id": "zedekiah",
+        "label": "Седекия",
+        "start": -597,
+        "end": -586,
+        "assessment": "evil",
+        "dynasty": "davidic"
+      }
+    ],
+    "prophets-north": [
+      {
+        "id": "elijah",
+        "label": "Илия",
+        "start": -870,
+        "end": -848
+      },
+      {
+        "id": "elisha",
+        "label": "Елисей",
+        "start": -848,
+        "end": -797
+      },
+      {
+        "id": "jonah",
+        "label": "Иона",
+        "start": -790,
+        "end": -750,
+        "bookAbbrs": [
+          "Ион"
+        ]
+      },
+      {
+        "id": "amos",
+        "label": "Амос",
+        "start": -765,
+        "end": -750,
+        "bookAbbrs": [
+          "Ам"
+        ]
+      },
+      {
+        "id": "hosea",
+        "label": "Осия",
+        "start": -755,
+        "end": -715,
+        "bookAbbrs": [
+          "Ос"
+        ]
+      }
+    ],
+    "prophets-south": [
+      {
+        "id": "samuel",
+        "label": "Самуил",
+        "start": -1075,
+        "end": -1017
+      },
+      {
+        "id": "nathan",
+        "label": "Нафан",
+        "start": -1005,
+        "end": -965
+      },
+      {
+        "id": "joel",
+        "label": "Иоиль",
+        "start": -835,
+        "end": -796,
+        "bookAbbrs": [
+          "Иоил"
+        ]
+      },
+      {
+        "id": "isaiah",
+        "label": "Исаия",
+        "start": -740,
+        "end": -681,
+        "bookAbbrs": [
+          "Ис"
+        ]
+      },
+      {
+        "id": "micah",
+        "label": "Михей",
+        "start": -735,
+        "end": -700,
+        "bookAbbrs": [
+          "Мих"
+        ]
+      },
+      {
+        "id": "nahum",
+        "label": "Наум",
+        "start": -660,
+        "end": -630,
+        "bookAbbrs": [
+          "Наум"
+        ]
+      },
+      {
+        "id": "zephaniah",
+        "label": "Софония",
+        "start": -635,
+        "end": -625,
+        "bookAbbrs": [
+          "Соф"
+        ]
+      },
+      {
+        "id": "jeremiah",
+        "label": "Иеремия",
+        "start": -627,
+        "end": -580,
+        "bookAbbrs": [
+          "Иер",
+          "Плач"
+        ]
+      },
+      {
+        "id": "huldah",
+        "label": "Олдама",
+        "start": -622,
+        "end": -622
+      },
+      {
+        "id": "habakkuk",
+        "label": "Аввакум",
+        "start": -609,
+        "end": -598,
+        "bookAbbrs": [
+          "Авв"
+        ]
+      },
+      {
+        "id": "obadiah-prophet",
+        "label": "Авдий",
+        "start": -586,
+        "end": -583,
+        "bookAbbrs": [
+          "Авд"
+        ]
+      }
+    ],
+    "prophets-exile": [
+      {
+        "id": "daniel",
+        "label": "Даниил",
+        "start": -605,
+        "end": -536,
+        "bookAbbrs": [
+          "Дан"
+        ]
+      },
+      {
+        "id": "ezekiel",
+        "label": "Иезекииль",
+        "start": -593,
+        "end": -571,
+        "bookAbbrs": [
+          "Иез"
+        ]
+      },
+      {
+        "id": "haggai",
+        "label": "Аггей",
+        "start": -520,
+        "end": -520,
+        "bookAbbrs": [
+          "Агг"
+        ]
+      },
+      {
+        "id": "zechariah-prophet",
+        "label": "Захария",
+        "start": -520,
+        "end": -480,
+        "bookAbbrs": [
+          "Зах"
+        ]
+      },
+      {
+        "id": "malachi",
+        "label": "Малахия",
+        "start": -435,
+        "end": -415,
+        "bookAbbrs": [
+          "Мал"
+        ]
+      }
+    ],
+    "empires": [
+      {
+        "id": "shalmaneser3",
+        "label": "Салманасар III",
+        "start": -859,
+        "end": -824,
+        "realm": "assyria"
+      },
+      {
+        "id": "tiglath-pileser3",
+        "label": "Тиглатпаласар III",
+        "start": -745,
+        "end": -727,
+        "realm": "assyria"
+      },
+      {
+        "id": "shalmaneser5",
+        "label": "Салманасар V",
+        "start": -727,
+        "end": -722,
+        "realm": "assyria"
+      },
+      {
+        "id": "sargon2",
+        "label": "Саргон II",
+        "start": -722,
+        "end": -705,
+        "realm": "assyria"
+      },
+      {
+        "id": "sennacherib",
+        "label": "Синаххериб",
+        "start": -705,
+        "end": -681,
+        "realm": "assyria"
+      },
+      {
+        "id": "esarhaddon",
+        "label": "Асархаддон",
+        "start": -681,
+        "end": -669,
+        "realm": "assyria"
+      },
+      {
+        "id": "ashurbanipal",
+        "label": "Ашшурбанапал",
+        "start": -669,
+        "end": -631,
+        "realm": "assyria"
+      },
+      {
+        "id": "nebuchadnezzar2",
+        "label": "Навуходоносор",
+        "labelFull": "Навуходоносор II",
+        "start": -605,
+        "end": -562,
+        "realm": "babylon"
+      },
+      {
+        "id": "belshazzar",
+        "label": "Валтасар",
+        "start": -553,
+        "end": -539,
+        "realm": "babylon"
+      },
+      {
+        "id": "cyrus2",
+        "label": "Кир II Великий",
+        "start": -539,
+        "end": -530,
+        "realm": "persia"
+      },
+      {
+        "id": "darius1",
+        "label": "Дарий I",
+        "start": -522,
+        "end": -486,
+        "realm": "persia"
+      },
+      {
+        "id": "xerxes1",
+        "label": "Ксеркс I",
+        "start": -486,
+        "end": -465,
+        "realm": "persia"
+      },
+      {
+        "id": "artaxerxes1",
+        "label": "Артаксеркс I",
+        "start": -465,
+        "end": -424,
+        "realm": "persia"
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "saul-anointed",
+      "label": "Помазание Саула",
+      "year": -1050,
+      "kind": "coronation",
+      "approx": true,
+      "placeIds": [
+        "mizpah-judah"
+      ]
+    },
+    {
+      "id": "gilboa-battle",
+      "label": "Битва при Гелвуе",
+      "year": -1010,
+      "kind": "battle",
+      "approx": true
+    },
+    {
+      "id": "david-jerusalem",
+      "label": "Давид берёт Иерусалим",
+      "year": -1003,
+      "kind": "founding",
+      "approx": true,
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "ark-to-jerusalem",
+      "label": "Перенесение ковчега в Иерусалим",
+      "year": -1000,
+      "kind": "dedication",
+      "approx": true,
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "temple-dedication",
+      "label": "Освящение Храма Соломона",
+      "year": -959,
+      "kind": "dedication",
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "kingdom-split",
+      "label": "Раскол царства",
+      "year": -931,
+      "kind": "founding",
+      "placeIds": [
+        "shechem"
+      ]
+    },
+    {
+      "id": "carmel-contest",
+      "label": "Состязание на Кармиле",
+      "year": -857,
+      "kind": "miracle",
+      "approx": true,
+      "placeIds": [
+        "carmel"
+      ]
+    },
+    {
+      "id": "qarqar",
+      "label": "Битва при Каркаре",
+      "year": -853,
+      "kind": "battle",
+      "extraBiblical": true
+    },
+    {
+      "id": "jehu-tribute",
+      "label": "Дань Ииуя Салманасару III",
+      "year": -841,
+      "kind": "other",
+      "extraBiblical": true
+    },
+    {
+      "id": "samaria-fall",
+      "label": "Падение Самарии",
+      "year": -722,
+      "kind": "siege",
+      "extraBiblical": true,
+      "placeIds": [
+        "samaria"
+      ]
+    },
+    {
+      "id": "jerusalem-delivered",
+      "label": "Избавление Иерусалима от Синаххериба",
+      "year": -701,
+      "kind": "miracle",
+      "extraBiblical": true,
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "lachish-siege",
+      "label": "Взятие Лахиса Синаххерибом",
+      "year": -701,
+      "kind": "siege",
+      "extraBiblical": true,
+      "placeIds": [
+        "lachish"
+      ]
+    },
+    {
+      "id": "josiah-reform",
+      "label": "Реформа Иосии",
+      "year": -622,
+      "kind": "reform",
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "carchemish",
+      "label": "Битва при Кархемише",
+      "year": -605,
+      "kind": "battle",
+      "extraBiblical": true
+    },
+    {
+      "id": "deportation-605",
+      "label": "Первая депортация (Даниил)",
+      "year": -605,
+      "kind": "deportation",
+      "placeIds": [
+        "jerusalem",
+        "babylon"
+      ]
+    },
+    {
+      "id": "deportation-597",
+      "label": "Вторая депортация (Иехония, Иезекииль)",
+      "year": -597,
+      "kind": "deportation",
+      "extraBiblical": true,
+      "placeIds": [
+        "jerusalem",
+        "babylon"
+      ]
+    },
+    {
+      "id": "jerusalem-fall",
+      "label": "Падение Иерусалима и разрушение Храма",
+      "year": -586,
+      "kind": "destruction",
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "belshazzar-feast",
+      "label": "Пир Валтасара и падение Вавилона",
+      "year": -539,
+      "kind": "destruction",
+      "extraBiblical": true,
+      "placeIds": [
+        "babylon"
+      ]
+    },
+    {
+      "id": "cyrus-decree",
+      "label": "Указ Кира о возвращении",
+      "year": -538,
+      "kind": "return",
+      "extraBiblical": true,
+      "placeIds": [
+        "jerusalem",
+        "babylon"
+      ]
+    },
+    {
+      "id": "temple2-dedication",
+      "label": "Освящение Второго Храма",
+      "year": -516,
+      "kind": "dedication",
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "purim",
+      "label": "События Есфири (Пурим)",
+      "year": -473,
+      "kind": "other",
+      "approx": true
+    },
+    {
+      "id": "ezra-return",
+      "label": "Возвращение Ездры",
+      "year": -458,
+      "kind": "return",
+      "placeIds": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "nehemiah-walls",
+      "label": "Неемия восстанавливает стены",
+      "year": -445,
+      "kind": "founding",
+      "placeIds": [
+        "jerusalem"
+      ]
+    }
+  ],
+  "stats": {
+    "kings": 43,
+    "prophets": 21,
+    "emperors": 13,
+    "events": 23
+  }
+}

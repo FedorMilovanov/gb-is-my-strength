@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Библейский Атлас — предпросмотр оболочки (KA-4 preview)</title>
+<style>
+  :root{--ink:#2b2418;--ink2:#6b5f49;--ink3:#95886c;--blue:#1e3a63;--blue2:#2d4f80;--gold:#b98a2f;--gold2:#d9b36a;
+    --parch:#f6f1e7;--parch2:#efe7d4;--card:#fcf9f1;--line:#ddd0b4;--line2:#e9dfc8;
+    --serif:Georgia,'Iowan Old Style','Palatino Linotype','Book Antiqua','Times New Roman',serif;
+    --sans:'Segoe UI',system-ui,-apple-system,sans-serif}
+  *{box-sizing:border-box;margin:0}
+  html{scroll-behavior:smooth}
+  body{background:
+      radial-gradient(1100px 500px at 85% -140px, rgba(217,179,106,.16), transparent 62%),
+      radial-gradient(900px 420px at -80px 22%, rgba(30,58,99,.07), transparent 60%),
+      var(--parch);
+    color:var(--ink);font:15.5px/1.58 var(--serif);-webkit-font-smoothing:antialiased}
+  /* бумажное зерно: инлайн-SVG шум, едва заметный — печатное ощущение */
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .22 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:30px 22px 64px}
+  ::selection{background:rgba(217,179,106,.45)}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
+
+  /* ── Hero ── */
+  header.hero{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:linear-gradient(160deg,#fbf7ec 0%,#f3ebd8 58%,#eee2c8 100%);
+    box-shadow:0 1px 0 #fff inset,0 14px 34px -22px rgba(74,58,24,.45);
+    padding:32px 36px 26px;margin-bottom:26px}
+  header.hero::after{content:"";position:absolute;inset:8px;border:1px solid rgba(185,138,47,.30);border-radius:11px;pointer-events:none}
+  header.hero::before{content:"";position:absolute;inset:11px;border:1px solid rgba(185,138,47,.14);border-radius:9px;pointer-events:none}
+  .hero-corner{position:absolute;font-size:11px;color:var(--gold2);pointer-events:none;line-height:1}
+  .hero-corner.tl{top:14px;left:16px}.hero-corner.tr{top:14px;right:16px}
+  .hero-corner.bl{bottom:13px;left:16px}.hero-corner.br{bottom:13px;right:16px}
+  .hero-compass{position:absolute;right:26px;top:50%;transform:translateY(-50%);width:168px;height:168px;opacity:.55;pointer-events:none}
+  .hero-compass svg{width:100%;height:100%}
+  .kicker{font:600 11px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+  .h1row{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:9px 0 3px}
+  h1{font:700 42px/1.04 var(--serif);color:var(--blue);letter-spacing:.005em;
+    text-shadow:0 1px 0 rgba(255,255,255,.7)}
+  .he{font-size:20px;color:var(--gold);direction:rtl;letter-spacing:.12em}
+  .sub{color:var(--ink2);font-style:italic;max-width:620px}
+  .epigraph{margin-top:10px;max-width:560px;font:italic 13.5px/1.6 var(--serif);color:#8a7a58}
+  .epigraph b{font-style:normal;font-weight:600;color:var(--gold);letter-spacing:.04em}
+  .hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;font:600 11px/1 var(--sans)}
+  .hm{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.66);border:1px solid var(--line);
+    border-radius:999px;padding:7px 12px;color:var(--ink2);transition:transform .15s, box-shadow .15s}
+  .hm:hover{transform:translateY(-1px);box-shadow:0 4px 10px -6px rgba(74,58,24,.45)}
+  .hm .ic{width:13px;height:13px;color:var(--gold)}
+  .hm b{color:var(--blue);font-weight:700}
+  .hm.warn{background:#f6e7de;border-color:#dcb9a4;color:#8a4a2e}
+
+  /* ── Tabs: сегментный контрол ── */
+  nav.tabs{display:inline-flex;gap:3px;margin:0 0 22px;flex-wrap:wrap;padding:4px;
+    background:var(--parch2);border:1px solid var(--line);border-radius:13px;
+    box-shadow:inset 0 1.5px 4px rgba(74,58,24,.12), 0 1px 0 rgba(255,255,255,.7)}
+  .tab{position:relative;display:inline-flex;align-items:center;gap:8px;font:600 13.5px/1 var(--sans);letter-spacing:.01em;
+    padding:11px 16px;border:1px solid transparent;background:none;color:var(--ink2);cursor:pointer;border-radius:9px;
+    transition:color .15s, background .15s, box-shadow .15s}
+  .tab:hover{color:var(--ink);background:rgba(255,255,255,.55)}
+  .tab:active{transform:translateY(1px)}
+  .tab[aria-selected="true"]{color:var(--blue);background:var(--card);border-color:var(--line);
+    box-shadow:0 2px 6px -3px rgba(74,58,24,.4), 0 1px 0 #fff inset}
+  .tab[aria-selected="true"]::after{content:"";position:absolute;left:14px;right:14px;bottom:4.5px;height:2px;
+    border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold) 22%,var(--gold) 78%,transparent)}
+  .tab-n{font:700 9.5px/1 var(--sans);color:var(--gold);background:rgba(185,138,47,.12);
+    border:1px solid rgba(185,138,47,.35);border-radius:999px;padding:3px 6px;margin-left:1px}
+  .tab[aria-selected="true"] .tab-n{background:rgba(185,138,47,.16)}
+  .ic{display:inline-flex;width:17px;height:17px;flex:none}
+  .ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  section.pane{display:none}section.pane.on{display:block}
+
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin:6px 0 4px}
+  h2{color:var(--blue);font:700 24px/1.2 var(--serif);letter-spacing:.005em}
+  .sec-orn{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);position:relative}
+  .sec-orn::before{content:"✦";position:absolute;left:0;top:-9px;color:var(--gold2);font-size:10px;background:transparent;padding-right:6px}
+  .lead{color:var(--ink2);margin:2px 0 16px;max-width:780px}
+
+  /* ── Timeline ── */
+  .tl-frame{border:1px solid var(--line);border-radius:14px;background:var(--card);
+    box-shadow:0 1px 0 #fff inset,0 10px 26px -20px rgba(74,58,24,.4);overflow:hidden}
+  .tl-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+  .tl-flex{display:flex;width:max-content}
+  .tl-labels{position:sticky;left:0;z-index:3;flex:none;width:150px;height:515px;
+    background:linear-gradient(90deg,var(--card) 78%,rgba(252,249,241,0))}
+  .tl-lab{position:absolute;left:0;width:142px;display:flex;align-items:center;justify-content:flex-end;text-align:right;
+    padding-right:12px;font:600 11.5px/1.15 system-ui,sans-serif;color:var(--ink2)}
+  .tl-lab.era{color:var(--gold);letter-spacing:.06em;text-transform:uppercase;font-size:10.5px}
+  .tl-lab.group{justify-content:flex-start;padding-left:6px;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;font-size:10px}
+  .tl-lab.group::before{content:"✦";font-size:8px;margin-right:6px;color:var(--gold2)}
+  .tl-lab.axis{font:italic 600 11px/1 var(--serif);color:#a59772}
+  .band{fill:rgba(30,58,99,.035)}
+  .group-line{stroke:rgba(185,138,47,.35);stroke-width:1;stroke-dasharray:1 5;stroke-linecap:round}
+  .chip-text{font:700 11.5px/1 var(--serif);fill:#2b2418;letter-spacing:.05em;pointer-events:none}
+  .chip-text-sm{font-size:9.5px;letter-spacing:.01em}
+  .era-pill{stroke:rgba(120,95,40,.4);stroke-width:1;filter:none}
+  .era-hl{fill:rgba(185,138,47,.10);stroke:rgba(185,138,47,.4);stroke-width:1;stroke-dasharray:2 3;transition:opacity .18s}
+  .grid{stroke:#e9dfc6;stroke-width:1}
+  .grid-minor{stroke:#d9cca8;stroke-width:1}
+  .xhair{stroke:rgba(30,58,99,.45);stroke-width:1;stroke-dasharray:3 3;pointer-events:none}
+  .axis-year,.axis-era{font:600 10px/1 var(--sans);fill:#a59772}
+  .axis-year.century{font-weight:700;font-size:11px;fill:#8a7a58}
+  .seg{fill:url(#gSeg);stroke:#c6b384;stroke-width:1}
+  .seg,.prophet-seg,.emp-seg{filter:drop-shadow(0 1px .6px rgba(74,58,24,.26))}
+  .event-mark,.event-star{filter:drop-shadow(0 1px 1px rgba(74,58,24,.4))}
+  .seg.coreg{fill:url(#pCoreg);stroke-dasharray:3.5 2.5}
+  .seg-text{font:600 11px/1 var(--sans);fill:var(--ink);dominant-baseline:middle;pointer-events:none}
+  .prophet-seg{fill:url(#gProph);stroke:#a4bcd4;stroke-width:1;stroke-dasharray:3.2 2.2}
+  .prophet-seg.writing{stroke:#7d9cbe;stroke-width:1.2;stroke-dasharray:none}
+  .prophet-text{font:600 10.5px/1 var(--sans);fill:#1e3a63;dominant-baseline:middle;pointer-events:none}
+  .emp-seg{fill:url(#gEmp);stroke:#c39d8b;stroke-width:1}
+  .realm-caption{font:700 10px/1 system-ui,sans-serif;fill:#96604a;letter-spacing:.14em;text-transform:uppercase}
+  .realm-sep{stroke:#d6bcae;stroke-width:1;stroke-dasharray:2 3}
+  .event-mark{fill:#2d4f80;stroke:#fcf9f1;stroke-width:1.6}
+  .event-star{fill:#c99a3a;stroke:#fcf9f1;stroke-width:1.4}
+  g[data-tip]{cursor:default}
+  g[data-tip]:hover .seg,g[data-tip]:hover .prophet-seg,g[data-tip]:hover .emp-seg{stroke:var(--blue);stroke-width:1.7;filter:brightness(1.03)}
+  g[data-tip]:hover .event-mark,g[data-tip]:hover .event-star{transform:scale(1.3);transform-box:fill-box;transform-origin:center}
+  g[data-tip]:hover .era-pill{stroke:var(--blue);stroke-width:1.5}
+
+  #tip{position:fixed;display:none;max-width:340px;background:#2a2415;color:#f3ecd9;font:12.5px/1.5 var(--sans);
+    padding:10px 13px;border-radius:9px;pointer-events:none;z-index:9;box-shadow:0 6px 20px rgba(30,26,14,.4);border:1px solid #4a3f24}
+  #tip b{display:block;font:700 13.5px/1.3 var(--serif);color:#ecd9a8;margin-bottom:3px}
+  #yearchip{position:fixed;display:none;background:var(--blue);color:#f2ead8;font:700 11.5px/1 var(--sans);
+    letter-spacing:.04em;padding:6px 10px;border-radius:999px;pointer-events:none;z-index:8;
+    box-shadow:0 4px 12px -4px rgba(30,58,99,.6)}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font:12px/1 system-ui,sans-serif;color:var(--ink2);margin:14px 4px 4px}
+  .legend span{display:inline-flex;align-items:center}
+  .legend b{display:inline-block;width:12px;height:12px;border-radius:3.5px;margin-right:7px}
+  details.tbl{margin-top:16px;font:13px/1.5 var(--sans)}
+  details.tbl summary{cursor:pointer;color:var(--blue);font-weight:600;padding:4px 0}
+  .tbl-scroll{overflow-x:auto;max-width:100%} /* закрытый details в новых Chromium сохраняет боксы содержимого — таблица не должна распирать страницу */
+  table{border-collapse:collapse;margin-top:10px;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+  td,th{border-bottom:1px solid var(--line2);padding:6px 12px;text-align:left}
+  th{font:600 11.5px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;background:var(--parch2);color:var(--ink2)}
+  tr:last-child td{border-bottom:0}
+
+  /* ── Books ── */
+  .book-sec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;
+    box-shadow:0 1px 0 #fff inset}
+  .book-sec-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .book-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;flex:none;
+    font:700 11px/1 var(--serif);color:var(--gold);border:1px solid var(--gold2);border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, #fffdf4, #f4ead2);box-shadow:0 1px 3px -1px rgba(185,138,47,.5)}
+  .book-sec h4{font:600 12.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+  .book-cov{margin-left:auto;font:600 10.5px/1 var(--sans);color:var(--gold);letter-spacing:.04em}
+  .book-bar{height:3px;border-radius:2px;background:var(--line2);margin:-4px 0 12px;overflow:hidden}
+  .book-bar i{display:block;height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{position:relative;font:600 12.5px/1 var(--sans);background:#fff;border:1px solid var(--line);border-radius:9px;
+    padding:8px 11px;color:var(--ink2);cursor:default;transition:border-color .15s, box-shadow .15s, transform .15s;
+    text-decoration:none;display:inline-block}
+  a.chip{cursor:pointer}
+  .chip:hover{border-color:var(--blue);box-shadow:0 3px 9px -4px rgba(30,58,99,.45);transform:translateY(-1px)}
+  .chip.has-map{border-color:var(--gold2);color:var(--ink);background:linear-gradient(180deg,#fffdf6,#faf3e2);
+    box-shadow:0 1px 4px -2px rgba(185,138,47,.5)}
+  .chip sup{font:700 8.5px/1 var(--sans);color:var(--gold);margin-left:3px;top:-4px;position:relative}
+
+  /* ── Themes ── */
+  .themes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .theme-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px 16px;
+    box-shadow:0 1px 0 #fff inset,0 8px 20px -18px rgba(74,58,24,.5);transition:transform .18s, box-shadow .18s}
+  .theme-card:hover{transform:translateY(-2px);box-shadow:0 1px 0 #fff inset,0 14px 26px -18px rgba(74,58,24,.55)}
+  .theme-medal{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin-bottom:12px;
+    border:1px solid var(--gold2);border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, #fffdf4, #f2e7cd);box-shadow:0 2px 6px -3px rgba(185,138,47,.6), 0 1px 0 #fff inset}
+  .theme-card:hover .theme-medal{box-shadow:0 3px 9px -3px rgba(185,138,47,.75), 0 1px 0 #fff inset}
+  .theme-ic{width:22px;height:22px;color:var(--gold)}
+  .theme-card h4{color:var(--blue);font:700 17.5px/1.25 var(--serif);margin-bottom:6px}
+  .theme-now{font:13.5px/1.55 var(--sans);color:var(--ink)}
+  .theme-now.theme-empty{color:var(--ink3);font-style:italic}
+  .theme-thumbs{display:flex;flex-wrap:wrap;gap:8px}
+  .thumb{position:relative;width:118px;height:64px;border-radius:9px;overflow:hidden;background-size:cover;background-position:center;
+    border:1px solid var(--line);box-shadow:0 3px 10px -6px rgba(74,58,24,.6);transition:transform .18s, box-shadow .18s;flex:none}
+  .thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,rgba(24,20,10,.78))}
+  .thumb span{position:absolute;left:7px;right:6px;bottom:5px;z-index:1;font:600 9.5px/1.25 var(--sans);color:#f2ead8;
+    letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+  .thumb:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 6px 14px -6px rgba(74,58,24,.75);border-color:var(--gold2)}
+  .thumb:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .plan-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .plan-chip{font:600 11px/1 var(--sans);color:var(--ink3);border:1px dashed var(--line);border-radius:999px;
+    padding:5px 9px;background:rgba(255,255,255,.4)}
+
+  /* ── Map cards ── */
+  .maps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(264px,1fr));gap:16px}
+  .map-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
+    box-shadow:0 1px 0 #fff inset,0 10px 24px -20px rgba(74,58,24,.5);transition:transform .18s, box-shadow .18s;
+    text-decoration:none;color:inherit}
+  .map-card:hover{transform:translateY(-3px);box-shadow:0 1px 0 #fff inset,0 18px 32px -20px rgba(74,58,24,.55)}
+  .map-card:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  .map-hero{position:relative;aspect-ratio:16/9;background:var(--parch2);overflow:hidden}
+  .map-hero img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.001);transition:transform .45s cubic-bezier(.2,.6,.25,1)}
+  .map-card:hover .map-hero img{transform:scale(1.055)}
+  .hero-shade{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg, rgba(30,26,14,.16) 0%, transparent 26%, transparent 70%, rgba(30,26,14,.18) 100%)}
+  .map-hero-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    border-bottom:3px solid color-mix(in srgb, var(--tone) 65%, #8a6a1f);
+    background:
+      radial-gradient(120% 100% at 18% -10%, color-mix(in srgb, var(--tone) 36%, #f6efdc) 0%, transparent 58%),
+      radial-gradient(140% 120% at 100% 115%, color-mix(in srgb, var(--tone) 28%, #cfbb8e) 0%, transparent 62%),
+      linear-gradient(150deg, #f3ead6 0%, #e7dabb 60%, #ddcda6 100%)}
+  .map-hero-ph::before{content:"";position:absolute;inset:0;mix-blend-mode:multiply;
+    background:repeating-linear-gradient(115deg, rgba(120,95,40,.045) 0 1px, transparent 1px 7px)}
+  .map-hero-ph::after{content:"";position:absolute;inset:8px;border:1px solid rgba(120,95,40,.3);border-radius:8px}
+  .hero-ic{width:44px;height:44px;color:#a9822f;opacity:.8;filter:drop-shadow(0 1px 0 rgba(255,255,255,.55))}
+  .hero-ic svg{stroke-width:1.2}
+  .map-status{position:absolute;top:10px;right:10px;font:700 10px/1 system-ui,sans-serif;letter-spacing:.05em;border-radius:999px;padding:5px 10px;backdrop-filter:blur(3px)}
+  .map-status.live{background:rgba(227,239,230,.92);color:#15803d;border:1px solid #a9cdb4}
+  .map-status.hold{background:rgba(243,234,216,.92);color:#8a6a1f;border:1px solid #d9c391}
+  .map-status.semi{background:rgba(232,236,243,.92);color:#1e3a63;border:1px solid #b3c0d6}
+  .map-body{padding:14px 16px 13px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .map-body h4{color:var(--blue);font:700 17px/1.25 var(--serif)}
+  .map-era{font:italic 12px/1.4 var(--serif);color:var(--ink3)}
+  .map-meta{display:flex;flex-wrap:wrap;gap:4px 12px;font:12px/1.5 var(--sans);color:var(--ink2)}
+  .map-meta .mm{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+  .map-meta .ic{width:12.5px;height:12.5px;color:var(--gold)}
+  .map-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid var(--line2)}
+  .map-slug{font:10.5px/1 ui-monospace,monospace;color:var(--ink3)}
+  .btn-go{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--sans);color:var(--gold);
+    border:1px solid var(--gold2);border-radius:999px;padding:7px 13px;background:rgba(255,255,255,.5);
+    transition:background .16s, color .16s, border-color .16s, box-shadow .16s}
+  .btn-go .arr{transition:transform .16s}
+  .map-card:active .btn-go{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(122,92,26,.35)}
+  .map-card:hover .btn-go{background:linear-gradient(180deg,#f7ecd2,#efdfb9);color:#7a5c1a;border-color:var(--gold);
+    box-shadow:0 3px 8px -4px rgba(185,138,47,.7)}
+  .map-card:hover .btn-go .arr{transform:translateX(3px)}
+
+  .sub-head{display:flex;align-items:baseline;gap:14px;margin:30px 0 12px}
+  .sub-head h3{font:700 16px/1.2 var(--serif);color:var(--ink2);letter-spacing:.02em}
+  .ghost-grid{gap:12px}
+  .ghost-card{display:flex;align-items:center;gap:12px;border:1.5px dashed var(--line);border-radius:12px;
+    padding:14px 16px;background:rgba(252,249,241,.55);color:var(--ink3)}
+  .ghost-card h4{font:600 13.5px/1.3 var(--serif);color:var(--ink2);flex:1}
+  .ghost-ic{width:20px;height:20px;color:#c0ab7c;flex:none}
+  .ghost-wave{font:700 9.5px/1 var(--sans);letter-spacing:.08em;color:var(--gold);border:1px solid var(--gold2);
+    border-radius:999px;padding:4px 8px;background:rgba(185,138,47,.07)}
+
+  .note{font:12px/1.55 var(--sans);color:var(--ink3);margin-top:12px}
+
+  /* ── Мини-карта Леванта ── */
+  .geo-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 2px 10px}
+  .geo-cap{font:600 10.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+  .geo-search{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+    border-radius:999px;padding:7px 14px;box-shadow:inset 0 1px 3px rgba(74,58,24,.09)}
+  .geo-search .ic{width:14px;height:14px;color:var(--gold)}
+  .geo-search input{border:0;background:none;outline:none;font:600 13px/1 var(--sans);color:var(--ink);width:230px}
+  .geo-search input::placeholder{color:var(--ink3);font-weight:500}
+  .geo-search:focus-within{border-color:var(--gold2);box-shadow:inset 0 1px 3px rgba(74,58,24,.09), 0 0 0 3px rgba(185,138,47,.16)}
+  #geo-n{font:700 10.5px/1 var(--sans);color:var(--gold);min-width:52px;text-align:right}
+  .geo-frame{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#eae2cd;
+    box-shadow:0 1px 0 #fff inset,0 10px 26px -20px rgba(74,58,24,.4)}
+  .geo-frame::after{content:"";position:absolute;inset:7px;border:1px solid rgba(120,95,40,.28);border-radius:9px;pointer-events:none}
+  .geo-svg{width:100%;height:auto;display:block}
+  .geo-dot,.geo-lab{transition:opacity .18s}
+  .geo-dot[data-href]{cursor:pointer}
+  .geo-dot[data-href]:focus-visible circle{stroke:var(--blue);stroke-width:2.6}
+  .geo-dot.dim{opacity:.12}
+  .geo-lab.dim{opacity:.15}
+  .geo-lab{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;pointer-events:none;
+    paint-order:stroke;stroke:rgba(242,234,216,.88);stroke-width:2.6px;stroke-linejoin:round}
+  .lab-r1{font-weight:700;letter-spacing:.02em}
+  .lab-r3{fill:#4a3f2c}
+  .leader-line{stroke:rgba(90,74,40,.55);stroke-width:.9;pointer-events:none}
+  .route-line{fill:none;stroke:#a2683c;stroke-width:2.4;stroke-dasharray:7 4;stroke-linecap:round;opacity:.75}
+  .route-lab{font:italic 700 11px Georgia,serif;fill:#8a5a30;letter-spacing:.22em;opacity:.9;
+    paint-order:stroke;stroke:rgba(242,234,216,.8);stroke-width:2.4px}
+  .cluster-ring{stroke:#1e3a63;stroke-width:1.6;stroke-dasharray:3 2.4}
+  .geo-cluster{cursor:pointer}
+  .cluster-badge{font:700 11px Georgia,serif;fill:#1e3a63;paint-order:stroke;stroke:rgba(242,234,216,.9);stroke-width:2.4px}
+  /* Типографика подложки: серифные картографические подписи (CSS перекрывает презентационные атрибуты base-geo) */
+  .geo-svg .sea-label{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;fill:#5f8bab;letter-spacing:.42em;opacity:.75}
+  .geo-svg .region-label{font-family:Georgia,"Times New Roman",serif;font-weight:700;fill:#8a7a52;letter-spacing:.3em;opacity:.62}
+  .geo-svg .region-he{font-family:Georgia,serif;fill:#93a7b8;opacity:.5}
+  .geo-svg .lbl-z2{opacity:.45}
+  /* Светлая тема вод: прод-заливка Мёртвого/Кинерета #10263a почти чёрная на пергаменте */
+  .geo-svg [fill="#10263a"]{fill:#8fb7cb}
+  .geo-svg [stroke="#2e4d6b"]{stroke:#6f97ae}
+  .geo-svg [stroke="#2d4a66"]{stroke:#6f97ae}
+  .dot-sure,.dot-disputed{filter:url(#dotShadow)}
+  .geo-dot.hit circle{stroke:var(--blue);stroke-width:2.6;filter:drop-shadow(0 0 6px rgba(30,58,99,.55))}
+  .furn-plate{fill:rgba(246,241,231,.82);stroke:rgba(120,95,40,.35);stroke-width:1}
+  .sb-dark{fill:#3a3020;stroke:#3a3020}
+  .sb-light{fill:#f6f1e7;stroke:#3a3020;stroke-width:1.4}
+  .sb-t{font:600 17px/1 var(--sans);fill:#5c4d33}
+  .north-arr{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
+  .north-t{font:700 20px/1 var(--serif);fill:#6b5216}
+  .dot-sure{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.1}
+  .dot-disputed{fill:#d9b36a;stroke:#8a6a1f;stroke-width:1.2}
+  .dot-weak{fill:rgba(246,241,231,.35);stroke:#1e3a63;stroke-width:1.2;stroke-dasharray:2.2 1.7}
+  .dot-plain{fill:#7d8ba1;stroke:#f6f1e7;stroke-width:1}
+  .dot-region{fill:rgba(150,96,74,.07);stroke:#96604a;stroke-width:1.2;stroke-dasharray:3 2}
+  .geo-svg g[data-tip]:hover circle,.geo-svg g[data-tip]:hover rect{stroke:var(--blue);stroke-width:2;transform:scale(1.25);transform-box:fill-box;transform-origin:center}
+  .geo-legend{margin-top:14px}
+  .geo-legend b{border:0}
+  footer{margin-top:42px;padding-top:0;font:12px/1.7 var(--sans);color:var(--ink3)}
+  .foot-orn{display:flex;align-items:center;gap:12px;margin-bottom:14px;color:var(--gold2)}
+  .foot-orn::before,.foot-orn::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line))}
+  .foot-orn::after{background:linear-gradient(90deg,var(--line),transparent)}
+  footer code{font-family:ui-monospace,monospace;background:var(--parch2);padding:1px 5px;border-radius:4px}
+  .foot-stamp{margin-top:8px;font:italic 11.5px/1.6 var(--serif);color:#a59772}
+
+  @media (max-width:720px){
+    .wrap{padding:18px 13px 44px}
+    h1{font-size:29px}.he{font-size:15px}.hero-compass{display:none}
+    header.hero{padding:20px 18px 18px}
+    .kicker{letter-spacing:.15em;font-size:10px}
+    .epigraph{font-size:12.5px}
+    .hm{padding:6px 10px;font-size:10px}
+    .tab{padding:10px 10px;font-size:12.5px;gap:6px}.tab-n{display:none}
+    h2{font-size:20px}
+    .tl-labels{width:112px}.tl-lab{width:106px;font-size:10.5px}
+    .geo-bar{gap:8px}.geo-search{flex:1}.geo-search input{width:100%;min-width:0}
+    .geo-frame{overflow-x:auto}
+    .geo-svg{min-width:920px} /* печатный лист листается пальцем, кегли читаемы */
+    .maps-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  }
+  @media print{
+    body{background:#fff}body::before{display:none}
+    nav.tabs,#tip,#yearchip,.geo-search{display:none!important}
+    section.pane{display:block!important;page-break-after:always}
+    .tl-scroll{overflow:visible}
+    header.hero{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="hero-corner tl">❧</span><span class="hero-corner tr">❧</span>
+    <span class="hero-corner bl">❧</span><span class="hero-corner br">❧</span>
+    <div class="hero-compass"><svg viewBox="0 0 100 100" fill="none" stroke="#a98a4e" stroke-width="1">
+      <circle cx="50" cy="50" r="47"/>
+      <circle cx="50" cy="50" r="43.5" stroke-dasharray="1 2.03" stroke-width="2.6" opacity=".75"/>
+      <circle cx="50" cy="50" r="39"/><circle cx="50" cy="50" r="3" fill="#a98a4e" stroke="none"/>
+      <path d="M50 6 L53.6 46.4 L50 50 L46.4 46.4 Z" fill="#b98a2f" fill-opacity=".55"/>
+      <path d="M50 94 L53.6 53.6 L50 50 L46.4 53.6 Z M6 50 L46.4 46.4 L50 50 L46.4 53.6 Z M94 50 L53.6 46.4 L50 50 L53.6 53.6 Z"/>
+      <path d="M26 26 L46.8 46.8 M74 26 L53.2 46.8 M26 74 L46.8 53.2 M74 74 L53.2 53.2" opacity=".65"/>
+      <path d="M50 13v5M50 82v5M13 50h5M82 50h5" stroke-width="1.4"/>
+      <text x="50" y="4.5" text-anchor="middle" font-size="7.5" fill="#a98a4e" stroke="none" font-family="Georgia,serif">С</text>
+      <text x="50" y="99.7" text-anchor="middle" font-size="7" fill="#a98a4e" stroke="none" font-family="Georgia,serif">Ю</text>
+      <text x="1" y="52.6" font-size="7" fill="#a98a4e" stroke="none" font-family="Georgia,serif">З</text>
+      <text x="95.5" y="52.6" font-size="7" fill="#a98a4e" stroke="none" font-family="Georgia,serif">В</text>
+    </svg></div>
+    <div class="kicker">Господь Бог — Сила Моя · предпросмотр оболочки</div>
+    <div class="h1row"><h1>Библейский Атлас</h1><span class="he">אַטְלָס הַמִּקְרָא</span></div>
+    <div class="sub">Исследуйте события Писания через географию, хронологию и археологию — честно там, где данные спорны.</div>
+    <div class="epigraph">«Встань, пройди по земле сей в долготу и в широту её: ибо Я тебе дам её» <b>· Быт 13:17</b></div>
+    <div class="hero-meta">
+      <span class="hm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17.5h16M4.5 16l-1-8 4.8 3.4L12 5.5l3.7 5.9L20.5 8l-1 8z"/></svg></span><b>43</b> царя</span>
+      <span class="hm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h11a2 2 0 012 2v0a2 2 0 01-2 2H7"/><path d="M7 4.5a2 2 0 00-2 2v11a2 2 0 002 2h9.5a2.5 2.5 0 002.5-2.5V8.5"/><path d="M8.5 10.5h6M8.5 14h6"/></svg></span><b>21</b> пророк</span>
+      <span class="hm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.3 3.9 5.2 3.9 8.5s-1.3 6.2-3.9 8.5c-2.6-2.3-3.9-5.2-3.9-8.5s1.3-6.2 3.9-8.5z"/></svg></span><b>13</b> императоров</span>
+      <span class="hm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l1.8 5.4 5.7.1-4.6 3.4 1.7 5.5-4.6-3.3-4.6 3.3 1.7-5.5-4.6-3.4 5.7-.1z"/></svg></span><b>23</b> события</span>
+      <span class="hm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2z"/><path d="M9 4.5v13M15 6.5v13"/></svg></span><b>10</b> карт</span>
+      <span class="hm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span><b>114</b> мест</span>
+      <span class="hm warn">KA-4 preview · не production</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Оси Атласа">
+    <button class="tab" role="tab" aria-selected="true" data-pane="time" tabindex="0"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.2"/></svg></span>По времени</button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="books" tabindex="-1"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>По книгам</button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="themes" tabindex="-1"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l8 4.5-8 4.5-8-4.5z"/><path d="M4 12.5l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg></span>По темам</button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="maps" tabindex="-1"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2z"/><path d="M9 4.5v13M15 6.5v13"/></svg></span>Карты<span class="tab-n">10</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="places" tabindex="-1"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2.2 5-5 2.2 2.2-5z"/></svg></span>Места<span class="tab-n">47</span></button>
+  </nav>
+
+  <section class="pane on" id="pane-time">
+    <div class="sec-head"><h2>Цари · Пророки · Империи</h2><div class="sec-orn"></div></div>
+    <p class="lead">Синхронная шкала из реестров Атласа: наведите курсор на эпоху, правление или событие. Консервативная библейская хронология — ранний Исход 1446 г.; разделённое царство — согласованные даты Тиле.</p>
+    <div class="tl-frame"><div class="tl-scroll"><div class="tl-flex">
+      <div class="tl-labels"><div class="tl-lab era" style="top:10px;height:30px">Эпоха</div><div class="tl-lab group" style="top:52px;height:16px">Престолы</div><div class="tl-lab " style="top:72px;height:32px">Единое царство</div><div class="tl-lab " style="top:109px;height:32px">Израиль · север</div><div class="tl-lab " style="top:146px;height:32px">Иудея · юг</div><div class="tl-lab group" style="top:189px;height:16px">Пророки</div><div class="tl-lab " style="top:209px;height:69px">Север</div><div class="tl-lab " style="top:283px;height:45px">Юг</div><div class="tl-lab " style="top:333px;height:45px">Плен и возвращение</div><div class="tl-lab group" style="top:389px;height:16px">Империи</div><div class="tl-lab " style="top:409px;height:28px">Ассирия → Персия</div><div class="tl-lab group" style="top:443px;height:16px">События</div><div class="tl-lab " style="top:463px;height:26px">Вехи</div><div class="tl-lab axis" style="top:495px;height:18px">годы до Р.Х.</div></div>
+      <svg id="tl" width="1322.5" height="515" viewBox="0 0 1322.5 515" role="img" aria-label="Синхронная шкала: эпохи, цари, пророки, империи и события; подробности — в подсказках и в таблице ниже"><defs><linearGradient id="gSeg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f1e0"/><stop offset="1" stop-color="#eadfc2"/></linearGradient><linearGradient id="gProph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef4f9"/><stop offset="1" stop-color="#d9e6f0"/></linearGradient><linearGradient id="gEmp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4e7e0"/><stop offset="1" stop-color="#e6cfc4"/></linearGradient><pattern id="pCoreg" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#f4eedc"/><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(185,138,47,.4)" stroke-width="1.6"/></pattern></defs><rect x="14" y="107" width="1282.5" height="34" class="band"/><rect x="14" y="281" width="1282.5" height="49" class="band"/><line x1="14" y1="486" x2="14" y2="492" class="grid-minor"/><line x1="61.5" y1="6" x2="61.5" y2="489" class="grid"/><text x="61.5" y="505" text-anchor="middle" class="axis-year">1050</text><line x1="109" y1="486" x2="109" y2="492" class="grid-minor"/><line x1="156.5" y1="6" x2="156.5" y2="489" class="grid"/><text x="156.5" y="505" text-anchor="middle" class="axis-year century">1000</text><line x1="204" y1="486" x2="204" y2="492" class="grid-minor"/><line x1="251.5" y1="6" x2="251.5" y2="489" class="grid"/><text x="251.5" y="505" text-anchor="middle" class="axis-year">950</text><line x1="299" y1="486" x2="299" y2="492" class="grid-minor"/><line x1="346.5" y1="6" x2="346.5" y2="489" class="grid"/><text x="346.5" y="505" text-anchor="middle" class="axis-year century">900</text><line x1="394" y1="486" x2="394" y2="492" class="grid-minor"/><line x1="441.5" y1="6" x2="441.5" y2="489" class="grid"/><text x="441.5" y="505" text-anchor="middle" class="axis-year">850</text><line x1="489" y1="486" x2="489" y2="492" class="grid-minor"/><line x1="536.5" y1="6" x2="536.5" y2="489" class="grid"/><text x="536.5" y="505" text-anchor="middle" class="axis-year century">800</text><line x1="584" y1="486" x2="584" y2="492" class="grid-minor"/><line x1="631.5" y1="6" x2="631.5" y2="489" class="grid"/><text x="631.5" y="505" text-anchor="middle" class="axis-year">750</text><line x1="679" y1="486" x2="679" y2="492" class="grid-minor"/><line x1="726.5" y1="6" x2="726.5" y2="489" class="grid"/><text x="726.5" y="505" text-anchor="middle" class="axis-year century">700</text><line x1="774" y1="486" x2="774" y2="492" class="grid-minor"/><line x1="821.5" y1="6" x2="821.5" y2="489" class="grid"/><text x="821.5" y="505" text-anchor="middle" class="axis-year">650</text><line x1="869" y1="486" x2="869" y2="492" class="grid-minor"/><line x1="916.5" y1="6" x2="916.5" y2="489" class="grid"/><text x="916.5" y="505" text-anchor="middle" class="axis-year century">600</text><line x1="964" y1="486" x2="964" y2="492" class="grid-minor"/><line x1="1011.5" y1="6" x2="1011.5" y2="489" class="grid"/><text x="1011.5" y="505" text-anchor="middle" class="axis-year">550</text><line x1="1059" y1="486" x2="1059" y2="492" class="grid-minor"/><line x1="1106.5" y1="6" x2="1106.5" y2="489" class="grid"/><text x="1106.5" y="505" text-anchor="middle" class="axis-year century">500</text><line x1="1154" y1="486" x2="1154" y2="492" class="grid-minor"/><line x1="1201.5" y1="6" x2="1201.5" y2="489" class="grid"/><text x="1201.5" y="505" text-anchor="middle" class="axis-year">450</text><line x1="1249" y1="486" x2="1249" y2="492" class="grid-minor"/><line x1="1296.5" y1="6" x2="1296.5" y2="489" class="grid"/><text x="1296.5" y="505" text-anchor="middle" class="axis-year century">400</text><rect id="era-hl" x="0" y="4" width="0" height="487" class="era-hl" opacity="0"/><g class="era-chip" data-x1="14" data-x2="61.5" data-tip-t="Судьи" data-tip="1075 до Р.Х. — 1050 до Р.Х."><rect x="15" y="11" width="43.5" height="28" rx="14" fill="#9fc0dd" class="era-pill"/><rect x="19" y="13.5" width="35.5" height="10.37037037037037" rx="5.6" fill="rgba(255,255,255,.32)" pointer-events="none"/><text x="37.75" y="28.5" text-anchor="middle" class="chip-text chip-text-sm">Судьи</text></g><g class="era-chip" data-x1="61.5" data-x2="287.59999999999997" data-tip-t="Саул–Соломон" data-tip="1050 до Р.Х. — 931 до Р.Х."><rect x="62.5" y="11" width="222.09999999999997" height="28" rx="14" fill="#9fc0dd" class="era-pill"/><rect x="66.5" y="13.5" width="214.09999999999997" height="10.37037037037037" rx="5.6" fill="rgba(255,255,255,.32)" pointer-events="none"/><text x="174.54999999999998" y="29" text-anchor="middle" class="chip-text">Саул–Соломон</text></g><g class="era-chip" data-x1="287.59999999999997" data-x2="684.6999999999999" data-tip-t="Израиль и Иудея" data-tip="931 до Р.Х. — 722 до Р.Х."><rect x="288.59999999999997" y="11" width="393.09999999999997" height="28" rx="14" fill="#9fc0dd" class="era-pill"/><rect x="292.59999999999997" y="13.5" width="385.09999999999997" height="10.37037037037037" rx="5.6" fill="rgba(255,255,255,.32)" pointer-events="none"/><text x="486.15" y="29" text-anchor="middle" class="chip-text">Израиль и Иудея</text></g><g class="era-chip" data-x1="684.6999999999999" data-x2="943.0999999999999" data-tip-t="Иудея одна" data-tip="722 до Р.Х. — 586 до Р.Х."><rect x="685.6999999999999" y="11" width="254.39999999999998" height="28" rx="14" fill="#9fc0dd" class="era-pill"/><rect x="689.6999999999999" y="13.5" width="246.39999999999998" height="10.37037037037037" rx="5.6" fill="rgba(255,255,255,.32)" pointer-events="none"/><text x="813.8999999999999" y="29" text-anchor="middle" class="chip-text">Иудея одна</text></g><g class="era-chip" data-x1="943.0999999999999" data-x2="1034.3" data-tip-t="Плен" data-tip="586 до Р.Х. — 538 до Р.Х."><rect x="944.0999999999999" y="11" width="87.20000000000005" height="28" rx="14" fill="#c9a6bd" class="era-pill"/><rect x="948.0999999999999" y="13.5" width="79.20000000000005" height="10.37037037037037" rx="5.6" fill="rgba(255,255,255,.32)" pointer-events="none"/><text x="988.6999999999999" y="29" text-anchor="middle" class="chip-text">Плен</text></g><g class="era-chip" data-x1="1034.3" data-x2="1296.5" data-tip-t="Персия" data-tip="538 до Р.Х. — 400 до Р.Х."><rect x="1035.3" y="11" width="258.20000000000005" height="28" rx="14" fill="#ddb28a" class="era-pill"/><rect x="1039.3" y="13.5" width="250.20000000000005" height="10.37037037037037" rx="5.6" fill="rgba(255,255,255,.32)" pointer-events="none"/><text x="1165.4" y="29" text-anchor="middle" class="chip-text">Персия</text></g><line x1="14" y1="64" x2="1296.5" y2="64" class="group-line"/><g data-tip-t="Саул" data-tip="1050 до Р.Х. — 1010 до Р.Х. · смешанная оценка"><rect x="61.5" y="72" width="73.5" height="25" rx="5" class="seg"/><rect x="63" y="94" width="70.5" height="3" rx="1.5" fill="#a16207" opacity=".9"/></g><g data-tip-t="Давид" data-tip="1010 до Р.Х. — 970 до Р.Х. · добрый царь («делал угодное») · династия: davidic"><rect x="137.5" y="72" width="73.5" height="25" rx="5" class="seg"/><rect x="139" y="94" width="70.5" height="3" rx="1.5" fill="#15803d" opacity=".9"/></g><g data-tip-t="Соломон" data-tip="970 до Р.Х. — 931 до Р.Х. · смешанная оценка · династия: davidic"><rect x="213.5" y="72" width="71.59999999999997" height="25" rx="5" class="seg"/><rect x="215" y="94" width="68.59999999999997" height="3" rx="1.5" fill="#a16207" opacity=".9"/></g><text x="99.5" y="87.5" text-anchor="middle" class="seg-text">Саул</text><text x="175.5" y="87.5" text-anchor="middle" class="seg-text">Давид</text><text x="250.54999999999998" y="87.5" text-anchor="middle" class="seg-text">Соломон</text><g data-tip-t="Иеровоам I" data-tip="931 до Р.Х. — 910 до Р.Х. · злой царь («делал неугодное»)"><rect x="287.59999999999997" y="109" width="37.400000000000034" height="25" rx="5" class="seg"/><rect x="289.09999999999997" y="131" width="34.400000000000034" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Нават" data-tip="910 до Р.Х. — 909 до Р.Х. · злой царь («делал неугодное»)"><rect x="327.5" y="109" width="2" height="25" rx="5" class="seg"/><rect x="329" y="131" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Вааса" data-tip="909 до Р.Х. — 886 до Р.Х. · злой царь («делал неугодное»)"><rect x="329.4" y="109" width="41.19999999999999" height="25" rx="5" class="seg"/><rect x="330.9" y="131" width="38.19999999999999" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Ила" data-tip="886 до Р.Х. — 885 до Р.Х. · злой царь («делал неугодное»)"><rect x="373.09999999999997" y="109" width="2" height="25" rx="5" class="seg"/><rect x="374.59999999999997" y="131" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Замврий" data-tip="885 до Р.Х. — 885 до Р.Х. · злой царь («делал неугодное»)"><rect x="375" y="109" width="2" height="25" rx="5" class="seg"/><rect x="376.5" y="131" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Фамний" data-tip="885 до Р.Х. — 880 до Р.Х. · злой царь («делал неугодное») · сорегентство / параллельное правление"><rect x="375" y="109" width="7" height="25" rx="5" class="seg coreg"/><rect x="376.5" y="131" width="4" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Амврий" data-tip="885 до Р.Х. — 874 до Р.Х. · злой царь («делал неугодное») · династия: omride · сорегентство / параллельное правление"><rect x="375" y="109" width="18.399999999999977" height="25" rx="5" class="seg coreg"/><rect x="376.5" y="131" width="15.399999999999977" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Ахав" data-tip="874 до Р.Х. — 853 до Р.Х. · злой царь («делал неугодное») · династия: omride"><rect x="395.9" y="109" width="37.39999999999998" height="25" rx="5" class="seg"/><rect x="397.4" y="131" width="34.39999999999998" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Охозия Израильский" data-tip="853 до Р.Х. — 852 до Р.Х. · злой царь («делал неугодное») · династия: omride"><rect x="435.79999999999995" y="109" width="2" height="25" rx="5" class="seg"/><rect x="437.29999999999995" y="131" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Иорам Израильский" data-tip="852 до Р.Х. — 841 до Р.Х. · злой царь («делал неугодное») · династия: omride"><rect x="437.7" y="109" width="18.399999999999977" height="25" rx="5" class="seg"/><rect x="439.2" y="131" width="15.399999999999977" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Ииуй" data-tip="841 до Р.Х. — 814 до Р.Х. · смешанная оценка · династия: jehu"><rect x="458.59999999999997" y="109" width="48.80000000000001" height="25" rx="5" class="seg"/><rect x="460.09999999999997" y="131" width="45.80000000000001" height="3" rx="1.5" fill="#a16207" opacity=".9"/></g><g data-tip-t="Иоахаз Израильский" data-tip="814 до Р.Х. — 798 до Р.Х. · злой царь («делал неугодное») · династия: jehu"><rect x="509.9" y="109" width="27.899999999999977" height="25" rx="5" class="seg"/><rect x="511.4" y="131" width="24.899999999999977" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Иоас Израильский" data-tip="798 до Р.Х. — 782 до Р.Х. · злой царь («делал неугодное») · династия: jehu"><rect x="540.3" y="109" width="27.899999999999977" height="25" rx="5" class="seg"/><rect x="541.8" y="131" width="24.899999999999977" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Иеровоам II" data-tip="793 до Р.Х. — 753 до Р.Х. · злой царь («делал неугодное») · династия: jehu · сорегентство / параллельное правление"><rect x="549.8" y="109" width="73.5" height="25" rx="5" class="seg coreg"/><rect x="551.3" y="131" width="70.5" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Захария Израильский" data-tip="753 до Р.Х. — 752 до Р.Х. · злой царь («делал неугодное») · династия: jehu"><rect x="625.8" y="109" width="2" height="25" rx="5" class="seg"/><rect x="627.3" y="131" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Селлум" data-tip="752 до Р.Х. — 752 до Р.Х. · злой царь («делал неугодное»)"><rect x="627.6999999999999" y="109" width="2" height="25" rx="5" class="seg"/><rect x="629.1999999999999" y="131" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Менаим" data-tip="752 до Р.Х. — 742 до Р.Х. · злой царь («делал неугодное»)"><rect x="627.6999999999999" y="109" width="16.5" height="25" rx="5" class="seg"/><rect x="629.1999999999999" y="131" width="13.5" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Факей" data-tip="752 до Р.Х. — 732 до Р.Х. · злой царь («делал неугодное») · сорегентство / параллельное правление"><rect x="627.6999999999999" y="109" width="35.5" height="25" rx="5" class="seg coreg"/><rect x="629.1999999999999" y="131" width="32.5" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Факия" data-tip="742 до Р.Х. — 740 до Р.Х. · злой царь («делал неугодное»)"><rect x="646.6999999999999" y="109" width="2" height="25" rx="5" class="seg"/><rect x="648.1999999999999" y="131" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Осия Израильский" data-tip="732 до Р.Х. — 722 до Р.Х. · злой царь («делал неугодное»)"><rect x="665.6999999999999" y="109" width="16.5" height="25" rx="5" class="seg"/><rect x="667.1999999999999" y="131" width="13.5" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><text x="351.25" y="124.5" text-anchor="middle" class="seg-text">Вааса</text><text x="415.84999999999997" y="124.5" text-anchor="middle" class="seg-text">Ахав</text><text x="484.25" y="124.5" text-anchor="middle" class="seg-text">Ииуй</text><g data-tip-t="Ровоам" data-tip="931 до Р.Х. — 913 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="287.59999999999997" y="146" width="31.700000000000045" height="25" rx="5" class="seg"/><rect x="289.09999999999997" y="168" width="28.700000000000045" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Авия" data-tip="913 до Р.Х. — 911 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="321.8" y="146" width="2" height="25" rx="5" class="seg"/><rect x="323.3" y="168" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Аса" data-tip="911 до Р.Х. — 870 до Р.Х. · добрый царь («делал угодное») · династия: davidic"><rect x="325.59999999999997" y="146" width="75.40000000000003" height="25" rx="5" class="seg"/><rect x="327.09999999999997" y="168" width="72.40000000000003" height="3" rx="1.5" fill="#15803d" opacity=".9"/></g><g data-tip-t="Иосафат" data-tip="872 до Р.Х. — 848 до Р.Х. · добрый царь («делал угодное») · династия: davidic · сорегентство / параллельное правление"><rect x="399.7" y="146" width="43.099999999999966" height="25" rx="5" class="seg coreg"/><rect x="401.2" y="168" width="40.099999999999966" height="3" rx="1.5" fill="#15803d" opacity=".9"/></g><g data-tip-t="Иорам Иудейский" data-tip="853 до Р.Х. — 841 до Р.Х. · злой царь («делал неугодное») · династия: davidic · сорегентство / параллельное правление"><rect x="435.79999999999995" y="146" width="20.30000000000001" height="25" rx="5" class="seg coreg"/><rect x="437.29999999999995" y="168" width="17.30000000000001" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Охозия Иудейский" data-tip="841 до Р.Х. — 841 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="458.59999999999997" y="146" width="2" height="25" rx="5" class="seg"/><rect x="460.09999999999997" y="168" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Гофолия" data-tip="841 до Р.Х. — 835 до Р.Х. · злой царь («делал неугодное»)"><rect x="458.59999999999997" y="146" width="8.900000000000034" height="25" rx="5" class="seg"/><rect x="460.09999999999997" y="168" width="5.900000000000034" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Иоас Иудейский" data-tip="835 до Р.Х. — 796 до Р.Х. · смешанная оценка · династия: davidic"><rect x="470" y="146" width="71.60000000000002" height="25" rx="5" class="seg"/><rect x="471.5" y="168" width="68.60000000000002" height="3" rx="1.5" fill="#a16207" opacity=".9"/></g><g data-tip-t="Амасия" data-tip="796 до Р.Х. — 767 до Р.Х. · смешанная оценка · династия: davidic"><rect x="544.1" y="146" width="52.59999999999991" height="25" rx="5" class="seg"/><rect x="545.6" y="168" width="49.59999999999991" height="3" rx="1.5" fill="#a16207" opacity=".9"/></g><g data-tip-t="Озия" data-tip="792 до Р.Х. — 740 до Р.Х. · добрый царь («делал угодное») · династия: davidic · сорегентство / параллельное правление"><rect x="551.6999999999999" y="146" width="96.30000000000007" height="25" rx="5" class="seg coreg"/><rect x="553.1999999999999" y="168" width="93.30000000000007" height="3" rx="1.5" fill="#15803d" opacity=".9"/></g><g data-tip-t="Иофам" data-tip="750 до Р.Х. — 732 до Р.Х. · добрый царь («делал угодное») · династия: davidic · сорегентство / параллельное правление"><rect x="631.5" y="146" width="31.699999999999932" height="25" rx="5" class="seg coreg"/><rect x="633" y="168" width="28.699999999999932" height="3" rx="1.5" fill="#15803d" opacity=".9"/></g><g data-tip-t="Ахаз" data-tip="735 до Р.Х. — 715 до Р.Х. · злой царь («делал неугодное») · династия: davidic · сорегентство / параллельное правление"><rect x="660" y="146" width="35.5" height="25" rx="5" class="seg coreg"/><rect x="661.5" y="168" width="32.5" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Езекия" data-tip="715 до Р.Х. — 686 до Р.Х. · добрый царь («делал угодное») · династия: davidic"><rect x="698" y="146" width="52.59999999999991" height="25" rx="5" class="seg"/><rect x="699.5" y="168" width="49.59999999999991" height="3" rx="1.5" fill="#15803d" opacity=".9"/></g><g data-tip-t="Манассия" data-tip="697 до Р.Х. — 642 до Р.Х. · злой царь («делал неугодное») · династия: davidic · сорегентство / параллельное правление"><rect x="732.1999999999999" y="146" width="102" height="25" rx="5" class="seg coreg"/><rect x="733.6999999999999" y="168" width="99" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Амон" data-tip="642 до Р.Х. — 640 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="836.6999999999999" y="146" width="2" height="25" rx="5" class="seg"/><rect x="838.1999999999999" y="168" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Иосия" data-tip="640 до Р.Х. — 609 до Р.Х. · добрый царь («делал угодное») · династия: davidic"><rect x="840.5" y="146" width="56.39999999999998" height="25" rx="5" class="seg"/><rect x="842" y="168" width="53.39999999999998" height="3" rx="1.5" fill="#15803d" opacity=".9"/></g><g data-tip-t="Иоахаз Иудейский" data-tip="609 до Р.Х. — 609 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="899.4" y="146" width="2" height="25" rx="5" class="seg"/><rect x="900.9" y="168" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Иоаким" data-tip="609 до Р.Х. — 598 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="899.4" y="146" width="18.399999999999977" height="25" rx="5" class="seg"/><rect x="900.9" y="168" width="15.399999999999977" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Иехония" data-tip="598 до Р.Х. — 597 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="920.3" y="146" width="2" height="25" rx="5" class="seg"/><rect x="921.8" y="168" width="2" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><g data-tip-t="Седекия" data-tip="597 до Р.Х. — 586 до Р.Х. · злой царь («делал неугодное») · династия: davidic"><rect x="922.1999999999999" y="146" width="18.399999999999977" height="25" rx="5" class="seg"/><rect x="923.6999999999999" y="168" width="15.399999999999977" height="3" rx="1.5" fill="#b91c1c" opacity=".9"/></g><text x="362.65" y="161.5" text-anchor="middle" class="seg-text">Аса</text><text x="571.65" y="161.5" text-anchor="middle" class="seg-text">Амасия</text><text x="617.65" y="161.5" text-anchor="middle" class="seg-text">Озия</text><text x="679" y="161.5" text-anchor="middle" class="seg-text">Ахаз</text><text x="725.55" y="161.5" text-anchor="middle" class="seg-text">Езекия</text><text x="784.7499999999999" y="161.5" text-anchor="middle" class="seg-text">Манассия</text><text x="869.95" y="161.5" text-anchor="middle" class="seg-text">Иосия</text><line x1="14" y1="201" x2="1296.5" y2="201" class="group-line"/><g data-tip-t="Илия" data-tip="служение ~870 до Р.Х. — 848 до Р.Х. · устный пророк"><rect x="403.5" y="209" width="39.299999999999955" height="18" rx="9" class="prophet-seg"/><text x="424.4" y="222" text-anchor="middle" class="prophet-text">Илия</text></g><g data-tip-t="Елисей" data-tip="служение ~848 до Р.Х. — 797 до Р.Х. · устный пророк"><rect x="445.29999999999995" y="233" width="94.39999999999998" height="18" rx="9" class="prophet-seg"/><text x="493.74999999999994" y="246" text-anchor="middle" class="prophet-text">Елисей</text></g><g data-tip-t="Иона" data-tip="служение ~790 до Р.Х. — 750 до Р.Х. · книга: Ион"><rect x="555.5" y="209" width="73.5" height="18" rx="9" class="prophet-seg writing"/><text x="593.5" y="222" text-anchor="middle" class="prophet-text">Иона</text></g><g data-tip-t="Амос" data-tip="служение ~765 до Р.Х. — 750 до Р.Х. · книга: Ам"><rect x="603" y="233" width="26" height="18" rx="9" class="prophet-seg writing"/></g><g data-tip-t="Осия" data-tip="служение ~755 до Р.Х. — 715 до Р.Х. · книга: Ос"><rect x="622" y="257" width="73.5" height="18" rx="9" class="prophet-seg writing"/><text x="660" y="270" text-anchor="middle" class="prophet-text">Осия</text></g><g data-tip-t="Самуил" data-tip="служение ~1075 до Р.Х. — 1017 до Р.Х. · устный пророк"><rect x="14" y="283" width="107.69999999999999" height="18" rx="9" class="prophet-seg"/><text x="69.1" y="296" text-anchor="middle" class="prophet-text">Самуил</text></g><g data-tip-t="Нафан" data-tip="служение ~1005 до Р.Х. — 965 до Р.Х. · устный пророк"><rect x="147" y="283" width="73.5" height="18" rx="9" class="prophet-seg"/><text x="185" y="296" text-anchor="middle" class="prophet-text">Нафан</text></g><g data-tip-t="Иоиль" data-tip="служение ~835 до Р.Х. — 796 до Р.Х. · книга: Иоил"><rect x="470" y="283" width="71.60000000000002" height="18" rx="9" class="prophet-seg writing"/><text x="507.05" y="296" text-anchor="middle" class="prophet-text">Иоиль</text></g><g data-tip-t="Исаия" data-tip="служение ~740 до Р.Х. — 681 до Р.Х. · книга: Ис"><rect x="650.5" y="283" width="109.59999999999991" height="18" rx="9" class="prophet-seg writing"/><text x="706.55" y="296" text-anchor="middle" class="prophet-text">Исаия</text></g><g data-tip-t="Михей" data-tip="служение ~735 до Р.Х. — 700 до Р.Х. · книга: Мих"><rect x="660" y="307" width="64" height="18" rx="9" class="prophet-seg writing"/><text x="693.25" y="320" text-anchor="middle" class="prophet-text">Михей</text></g><g data-tip-t="Наум" data-tip="служение ~660 до Р.Х. — 630 до Р.Х. · книга: Наум"><rect x="802.5" y="283" width="54.5" height="18" rx="9" class="prophet-seg writing"/><text x="831" y="296" text-anchor="middle" class="prophet-text">Наум</text></g><g data-tip-t="Софония" data-tip="служение ~635 до Р.Х. — 625 до Р.Х. · книга: Соф"><rect x="850" y="307" width="16.5" height="18" rx="9" class="prophet-seg writing"/></g><g data-tip-t="Иеремия" data-tip="служение ~627 до Р.Х. — 580 до Р.Х. · книга: Иер, Плач"><rect x="865.1999999999999" y="283" width="86.80000000000007" height="18" rx="9" class="prophet-seg writing"/><text x="909.8499999999999" y="296" text-anchor="middle" class="prophet-text">Иеремия</text></g><g data-tip-t="Олдама" data-tip="служение ~622 до Р.Х. — 622 до Р.Х. · устный пророк"><rect x="874.6999999999999" y="307" width="3" height="18" rx="9" class="prophet-seg"/></g><g data-tip-t="Аввакум" data-tip="служение ~609 до Р.Х. — 598 до Р.Х. · книга: Авв"><rect x="899.4" y="307" width="18.399999999999977" height="18" rx="9" class="prophet-seg writing"/></g><g data-tip-t="Авдий" data-tip="служение ~586 до Р.Х. — 583 до Р.Х. · книга: Авд"><rect x="943.0999999999999" y="307" width="3.2000000000000455" height="18" rx="9" class="prophet-seg writing"/></g><g data-tip-t="Даниил" data-tip="служение ~605 до Р.Х. — 536 до Р.Х. · книга: Дан"><rect x="907" y="333" width="128.5999999999999" height="18" rx="9" class="prophet-seg writing"/><text x="972.55" y="346" text-anchor="middle" class="prophet-text">Даниил</text></g><g data-tip-t="Иезекииль" data-tip="служение ~593 до Р.Х. — 571 до Р.Х. · книга: Иез"><rect x="929.8" y="357" width="39.299999999999955" height="18" rx="9" class="prophet-seg writing"/></g><g data-tip-t="Аггей" data-tip="служение ~520 до Р.Х. — 520 до Р.Х. · книга: Агг"><rect x="1068.5" y="333" width="3" height="18" rx="9" class="prophet-seg writing"/></g><g data-tip-t="Захария" data-tip="служение ~520 до Р.Х. — 480 до Р.Х. · книга: Зах"><rect x="1068.5" y="357" width="73.5" height="18" rx="9" class="prophet-seg writing"/><text x="1106.5" y="370" text-anchor="middle" class="prophet-text">Захария</text></g><g data-tip-t="Малахия" data-tip="служение ~435 до Р.Х. — 415 до Р.Х. · книга: Мал"><rect x="1230" y="333" width="35.5" height="18" rx="9" class="prophet-seg writing"/></g><line x1="14" y1="401" x2="1296.5" y2="401" class="group-line"/><text x="426.4" y="405" class="realm-caption">Ассирия</text><g data-tip-t="Салманасар III" data-tip="Ассирия · 859 до Р.Х. — 824 до Р.Х."><rect x="424.4" y="409" width="64" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Тиглатпаласар III" data-tip="Ассирия · 745 до Р.Х. — 727 до Р.Х."><rect x="641" y="409" width="31.699999999999932" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Салманасар V" data-tip="Ассирия · 727 до Р.Х. — 722 до Р.Х."><rect x="675.1999999999999" y="409" width="7" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Саргон II" data-tip="Ассирия · 722 до Р.Х. — 705 до Р.Х."><rect x="684.6999999999999" y="409" width="29.800000000000068" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Синаххериб" data-tip="Ассирия · 705 до Р.Х. — 681 до Р.Х."><rect x="717" y="409" width="43.09999999999991" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Асархаддон" data-tip="Ассирия · 681 до Р.Х. — 669 до Р.Х."><rect x="762.5999999999999" y="409" width="20.300000000000068" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Ашшурбанапал" data-tip="Ассирия · 669 до Р.Х. — 631 до Р.Х."><rect x="785.4" y="409" width="69.69999999999993" height="22" rx="5" class="emp-seg"/></g><text x="909" y="405" class="realm-caption">Вавилон</text><line x1="905.5" y1="395" x2="905.5" y2="435" class="realm-sep"/><g data-tip-t="Навуходоносор II" data-tip="Вавилон · 605 до Р.Х. — 562 до Р.Х."><rect x="907" y="409" width="79.19999999999993" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Валтасар" data-tip="Вавилон · 553 до Р.Х. — 539 до Р.Х."><rect x="1005.8" y="409" width="24.100000000000136" height="22" rx="5" class="emp-seg"/></g><text x="1034.4" y="405" class="realm-caption">Персия</text><line x1="1030.9" y1="395" x2="1030.9" y2="435" class="realm-sep"/><g data-tip-t="Кир II Великий" data-tip="Персия · 539 до Р.Х. — 530 до Р.Х."><rect x="1032.4" y="409" width="14.599999999999909" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Дарий I" data-tip="Персия · 522 до Р.Х. — 486 до Р.Х."><rect x="1064.7" y="409" width="65.89999999999986" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Ксеркс I" data-tip="Персия · 486 до Р.Х. — 465 до Р.Х."><rect x="1133.1" y="409" width="37.40000000000009" height="22" rx="5" class="emp-seg"/></g><g data-tip-t="Артаксеркс I" data-tip="Персия · 465 до Р.Х. — 424 до Р.Х."><rect x="1173" y="409" width="75.39999999999986" height="22" rx="5" class="emp-seg"/></g><text x="457.65" y="424" text-anchor="middle" class="seg-text">Салманасар III</text><text x="947.8499999999999" y="424" text-anchor="middle" class="seg-text">Навуходоносор</text><text x="1098.9" y="424" text-anchor="middle" class="seg-text">Дарий I</text><line x1="14" y1="455" x2="1296.5" y2="455" class="group-line"/><g data-tip-t="Помазание Саула" data-tip="~1050 до Р.Х."><path d="M61.5,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Битва при Гелвуе" data-tip="~1010 до Р.Х."><path d="M137.5,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Давид берёт Иерусалим" data-tip="~1003 до Р.Х."><path d="M150.79999999999998,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Перенесение ковчега в Иерусалим" data-tip="~1000 до Р.Х."><path d="M156.5,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Освящение Храма Соломона" data-tip="959 до Р.Х."><path d="M234.39999999999998,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Раскол царства" data-tip="931 до Р.Х."><path d="M287.59999999999997,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Состязание на Кармиле" data-tip="~857 до Р.Х."><path d="M428.2,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Битва при Каркаре" data-tip="853 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M435.79999999999995,465 L438.19999999999993,470.6 L443.79999999999995,473 L438.19999999999993,475.4 L435.79999999999995,481 L433.4,475.4 L427.79999999999995,473 L433.4,470.6 Z" class="event-star"/></g><g data-tip-t="Дань Ииуя Салманасару III" data-tip="841 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M458.59999999999997,465 L460.99999999999994,470.6 L466.59999999999997,473 L460.99999999999994,475.4 L458.59999999999997,481 L456.2,475.4 L450.59999999999997,473 L456.2,470.6 Z" class="event-star"/></g><g data-tip-t="Падение Самарии" data-tip="722 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M684.6999999999999,465 L687.0999999999999,470.6 L692.6999999999999,473 L687.0999999999999,475.4 L684.6999999999999,481 L682.3,475.4 L676.6999999999999,473 L682.3,470.6 Z" class="event-star"/></g><g data-tip-t="Избавление Иерусалима от Синаххериба" data-tip="701 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M724.6,465 L727,470.6 L732.6,473 L727,475.4 L724.6,481 L722.2,475.4 L716.6,473 L722.2,470.6 Z" class="event-star"/></g><g data-tip-t="Взятие Лахиса Синаххерибом" data-tip="701 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M724.6,465 L727,470.6 L732.6,473 L727,475.4 L724.6,481 L722.2,475.4 L716.6,473 L722.2,470.6 Z" class="event-star"/></g><g data-tip-t="Реформа Иосии" data-tip="622 до Р.Х."><path d="M874.6999999999999,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Битва при Кархемише" data-tip="605 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M907,465 L909.4,470.6 L915,473 L909.4,475.4 L907,481 L904.6,475.4 L899,473 L904.6,470.6 Z" class="event-star"/></g><g data-tip-t="Первая депортация (Даниил)" data-tip="605 до Р.Х."><path d="M907,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Вторая депортация (Иехония, Иезекииль)" data-tip="597 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M922.1999999999999,465 L924.5999999999999,470.6 L930.1999999999999,473 L924.5999999999999,475.4 L922.1999999999999,481 L919.8,475.4 L914.1999999999999,473 L919.8,470.6 Z" class="event-star"/></g><g data-tip-t="Падение Иерусалима и разрушение Храма" data-tip="586 до Р.Х."><path d="M943.0999999999999,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Пир Валтасара и падение Вавилона" data-tip="539 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M1032.4,465 L1034.8000000000002,470.6 L1040.4,473 L1034.8000000000002,475.4 L1032.4,481 L1030,475.4 L1024.4,473 L1030,470.6 Z" class="event-star"/></g><g data-tip-t="Указ Кира о возвращении" data-tip="538 до Р.Х. · ✦ есть внебиблейское свидетельство (см. реестр событий)"><path d="M1034.3,465 L1036.7,470.6 L1042.3,473 L1036.7,475.4 L1034.3,481 L1031.8999999999999,475.4 L1026.3,473 L1031.8999999999999,470.6 Z" class="event-star"/></g><g data-tip-t="Освящение Второго Храма" data-tip="516 до Р.Х."><path d="M1076.1,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="События Есфири (Пурим)" data-tip="~473 до Р.Х."><path d="M1157.8,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Возвращение Ездры" data-tip="458 до Р.Х."><path d="M1186.3,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><g data-tip-t="Неемия восстанавливает стены" data-tip="445 до Р.Х."><path d="M1211,466.5 l5.5,6.5 l-5.5,6.5 l-5.5,-6.5 z" class="event-mark"/></g><line id="xhair" x1="0" y1="6" x2="0" y2="489" class="xhair" opacity="0"/></svg>
+    </div></div></div>
+    <div class="legend">
+      <span><b style="background:#15803d"></b>добрый царь</span>
+      <span><b style="background:#b91c1c"></b>злой царь</span>
+      <span><b style="background:#a16207"></b>смешанная оценка</span>
+      <span><b style="background:#2d4f80"></b>событие</span>
+      <span><b style="background:#c99a3a;border-radius:50%"></b>✦ внебиблейское свидетельство</span>
+      <span><b style="background:repeating-linear-gradient(45deg,#f4eedc 0 2px,rgba(185,138,47,.5) 2px 3px);border:1px dashed #c6b384"></b>сорегентство</span>
+      <span><b style="background:#eef4f9;border:1.5px solid #7d9cbe"></b>пишущий пророк</span>
+      <span><b style="background:#eef4f9;border:1.5px dashed #a4bcd4"></b>устный пророк</span>
+    </div>
+    <details class="tbl"><summary>Данные шкалы таблицей — 43 правителей</summary>
+      <div class="tbl-scroll"><table><thead><tr><th>Престол</th><th>Правитель</th><th>Годы</th><th>Библейская оценка</th></tr></thead><tbody><tr><td>Единое царство</td><td>Саул</td><td>1050 до Р.Х. — 1010 до Р.Х.</td><td>смешанная оценка</td></tr><tr><td>Единое царство</td><td>Давид</td><td>1010 до Р.Х. — 970 до Р.Х.</td><td>добрый царь («делал угодное»)</td></tr><tr><td>Единое царство</td><td>Соломон</td><td>970 до Р.Х. — 931 до Р.Х.</td><td>смешанная оценка</td></tr><tr><td>Израиль</td><td>Иеровоам I</td><td>931 до Р.Х. — 910 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Нават</td><td>910 до Р.Х. — 909 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Вааса</td><td>909 до Р.Х. — 886 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Ила</td><td>886 до Р.Х. — 885 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Замврий</td><td>885 до Р.Х. — 885 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Фамний</td><td>885 до Р.Х. — 880 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Амврий</td><td>885 до Р.Х. — 874 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Ахав</td><td>874 до Р.Х. — 853 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Охозия Израильский</td><td>853 до Р.Х. — 852 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Иорам Израильский</td><td>852 до Р.Х. — 841 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Ииуй</td><td>841 до Р.Х. — 814 до Р.Х.</td><td>смешанная оценка</td></tr><tr><td>Израиль</td><td>Иоахаз Израильский</td><td>814 до Р.Х. — 798 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Иоас Израильский</td><td>798 до Р.Х. — 782 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Иеровоам II</td><td>793 до Р.Х. — 753 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Захария Израильский</td><td>753 до Р.Х. — 752 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Селлум</td><td>752 до Р.Х. — 752 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Менаим</td><td>752 до Р.Х. — 742 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Факей</td><td>752 до Р.Х. — 732 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Факия</td><td>742 до Р.Х. — 740 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Израиль</td><td>Осия Израильский</td><td>732 до Р.Х. — 722 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Ровоам</td><td>931 до Р.Х. — 913 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Авия</td><td>913 до Р.Х. — 911 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Аса</td><td>911 до Р.Х. — 870 до Р.Х.</td><td>добрый царь («делал угодное»)</td></tr><tr><td>Иудея</td><td>Иосафат</td><td>872 до Р.Х. — 848 до Р.Х.</td><td>добрый царь («делал угодное»)</td></tr><tr><td>Иудея</td><td>Иорам Иудейский</td><td>853 до Р.Х. — 841 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Охозия Иудейский</td><td>841 до Р.Х. — 841 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Гофолия</td><td>841 до Р.Х. — 835 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Иоас Иудейский</td><td>835 до Р.Х. — 796 до Р.Х.</td><td>смешанная оценка</td></tr><tr><td>Иудея</td><td>Амасия</td><td>796 до Р.Х. — 767 до Р.Х.</td><td>смешанная оценка</td></tr><tr><td>Иудея</td><td>Озия</td><td>792 до Р.Х. — 740 до Р.Х.</td><td>добрый царь («делал угодное»)</td></tr><tr><td>Иудея</td><td>Иофам</td><td>750 до Р.Х. — 732 до Р.Х.</td><td>добрый царь («делал угодное»)</td></tr><tr><td>Иудея</td><td>Ахаз</td><td>735 до Р.Х. — 715 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Езекия</td><td>715 до Р.Х. — 686 до Р.Х.</td><td>добрый царь («делал угодное»)</td></tr><tr><td>Иудея</td><td>Манассия</td><td>697 до Р.Х. — 642 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Амон</td><td>642 до Р.Х. — 640 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Иосия</td><td>640 до Р.Х. — 609 до Р.Х.</td><td>добрый царь («делал угодное»)</td></tr><tr><td>Иудея</td><td>Иоахаз Иудейский</td><td>609 до Р.Х. — 609 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Иоаким</td><td>609 до Р.Х. — 598 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Иехония</td><td>598 до Р.Х. — 597 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr><tr><td>Иудея</td><td>Седекия</td><td>597 до Р.Х. — 586 до Р.Х.</td><td>злой царь («делал неугодное»)</td></tr></tbody></table></div>
+    </details>
+  </section>
+
+  <section class="pane" id="pane-books">
+    <div class="sec-head"><h2>Вход по книгам Писания</h2><div class="sec-orn"></div></div>
+    <p class="lead">66 книг канона. Золотые карточки — книга уже покрыта картой Атласа; наведите курсор, чтобы увидеть какой.</p>
+    <div class="book-sec"><div class="book-sec-head"><span class="book-num">I</span><h4>Закон · Тора</h4><span class="book-cov">4 из 5 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:80%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/avraam/" data-tip-t="Бытие" data-tip="50 гл. · карты: avraam · клик — открыть">Быт<sup>1</sup></a><a class="chip has-map" href="../../karty/ishod/" data-tip-t="Исход" data-tip="40 гл. · карты: ishod · клик — открыть">Исх<sup>1</sup></a><span class="chip" tabindex="0" data-tip-t="Левит" data-tip="27 гл. · карт пока нет">Лев</span><a class="chip has-map" href="../../karty/ishod/" data-tip-t="Числа" data-tip="36 гл. · карты: ishod · клик — открыть">Числ<sup>1</sup></a><a class="chip has-map" href="../../karty/ishod/" data-tip-t="Второзаконие" data-tip="34 гл. · карты: ishod · клик — открыть">Втор<sup>1</sup></a></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">II</span><h4>Исторические книги</h4><span class="book-cov">11 из 12 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:92%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/shvatim/" data-tip-t="Иисус Навин" data-tip="24 гл. · карты: shvatim · клик — открыть">Нав<sup>1</sup></a><a class="chip has-map" href="../../karty/shoftim/" data-tip-t="Судьи" data-tip="21 гл. · карты: shoftim · клик — открыть">Суд<sup>1</sup></a><a class="chip has-map" href="../../karty/shoftim/" data-tip-t="Руфь" data-tip="4 гл. · карты: shoftim · клик — открыть">Руфь<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="1 Царств" data-tip="31 гл. · карты: melachim · клик — открыть">1 Цар<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="2 Царств" data-tip="24 гл. · карты: melachim · клик — открыть">2 Цар<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="3 Царств" data-tip="22 гл. · карты: melachim · клик — открыть">3 Цар<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="4 Царств" data-tip="25 гл. · карты: melachim · клик — открыть">4 Цар<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="1 Паралипоменон" data-tip="29 гл. · карты: melachim · клик — открыть">1 Пар<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="2 Паралипоменон" data-tip="36 гл. · карты: melachim · клик — открыть">2 Пар<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Ездра" data-tip="10 гл. · карты: melachim · клик — открыть">Езд<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Неемия" data-tip="13 гл. · карты: melachim · клик — открыть">Неем<sup>1</sup></a><span class="chip" tabindex="0" data-tip-t="Есфирь" data-tip="10 гл. · карт пока нет">Есф</span></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">III</span><h4>Учительные</h4><span class="book-cov"></span></div><div class="chips"><span class="chip" tabindex="0" data-tip-t="Иов" data-tip="42 гл. · карт пока нет">Иов</span><span class="chip" tabindex="0" data-tip-t="Псалтирь" data-tip="150 гл. · карт пока нет">Пс</span><span class="chip" tabindex="0" data-tip-t="Притчи" data-tip="31 гл. · карт пока нет">Притч</span><span class="chip" tabindex="0" data-tip-t="Екклесиаст" data-tip="12 гл. · карт пока нет">Еккл</span><span class="chip" tabindex="0" data-tip-t="Песнь песней" data-tip="8 гл. · карт пока нет">Песн</span></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">IV</span><h4>Большие пророки</h4><span class="book-cov">3 из 5 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:60%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Исаия" data-tip="66 гл. · карты: melachim · клик — открыть">Ис<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Иеремия" data-tip="52 гл. · карты: melachim · клик — открыть">Иер<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Плач Иеремии" data-tip="5 гл. · карты: melachim · клик — открыть">Плач<sup>1</sup></a><span class="chip" tabindex="0" data-tip-t="Иезекииль" data-tip="48 гл. · карт пока нет">Иез</span><span class="chip" tabindex="0" data-tip-t="Даниил" data-tip="12 гл. · карт пока нет">Дан</span></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">V</span><h4>Малые пророки</h4><span class="book-cov">7 из 12 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:58%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Осия" data-tip="14 гл. · карты: melachim · клик — открыть">Ос<sup>1</sup></a><span class="chip" tabindex="0" data-tip-t="Иоиль" data-tip="3 гл. · карт пока нет">Иоил</span><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Амос" data-tip="9 гл. · карты: melachim · клик — открыть">Ам<sup>1</sup></a><span class="chip" tabindex="0" data-tip-t="Авдий" data-tip="1 гл. · карт пока нет">Авд</span><span class="chip" tabindex="0" data-tip-t="Иона" data-tip="4 гл. · карт пока нет">Ион</span><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Михей" data-tip="7 гл. · карты: melachim · клик — открыть">Мих<sup>1</sup></a><span class="chip" tabindex="0" data-tip-t="Наум" data-tip="3 гл. · карт пока нет">Наум</span><span class="chip" tabindex="0" data-tip-t="Аввакум" data-tip="3 гл. · карт пока нет">Авв</span><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Софония" data-tip="3 гл. · карты: melachim · клик — открыть">Соф<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Аггей" data-tip="2 гл. · карты: melachim · клик — открыть">Агг<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Захария" data-tip="14 гл. · карты: melachim · клик — открыть">Зах<sup>1</sup></a><a class="chip has-map" href="../../karty/melachim/" data-tip-t="Малахия" data-tip="4 гл. · карты: melachim · клик — открыть">Мал<sup>1</sup></a></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">VI</span><h4>Евангелия</h4><span class="book-cov">4 из 4 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:100%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/yeshua/" data-tip-t="От Матфея" data-tip="28 гл. · карты: yeshua · клик — открыть">Мф<sup>1</sup></a><a class="chip has-map" href="../../karty/yeshua/" data-tip-t="От Марка" data-tip="16 гл. · карты: yeshua · клик — открыть">Мк<sup>1</sup></a><a class="chip has-map" href="../../karty/yeshua/" data-tip-t="От Луки" data-tip="24 гл. · карты: yeshua · клик — открыть">Лк<sup>1</sup></a><a class="chip has-map" href="../../karty/yeshua/" data-tip-t="От Иоанна" data-tip="21 гл. · карты: yeshua · клик — открыть">Ин<sup>1</sup></a></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">VII</span><h4>Деяния апостолов</h4><span class="book-cov">1 из 1 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:100%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/early-church/" data-tip-t="Деяния" data-tip="28 гл. · карты: early-church, pavel · клик — открыть">Деян<sup>2</sup></a></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">VIII</span><h4>Послания Павла</h4><span class="book-cov">13 из 13 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:100%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/pavel/" data-tip-t="К Римлянам" data-tip="16 гл. · карты: pavel · клик — открыть">Рим<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="1 Коринфянам" data-tip="16 гл. · карты: pavel · клик — открыть">1 Кор<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="2 Коринфянам" data-tip="13 гл. · карты: pavel · клик — открыть">2 Кор<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="К Галатам" data-tip="6 гл. · карты: pavel · клик — открыть">Гал<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="К Ефесянам" data-tip="6 гл. · карты: pavel · клик — открыть">Еф<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="К Филиппийцам" data-tip="4 гл. · карты: pavel · клик — открыть">Флп<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="К Колоссянам" data-tip="4 гл. · карты: pavel · клик — открыть">Кол<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="1 Фессалоникийцам" data-tip="5 гл. · карты: pavel · клик — открыть">1 Фес<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="2 Фессалоникийцам" data-tip="3 гл. · карты: pavel · клик — открыть">2 Фес<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="1 Тимофею" data-tip="6 гл. · карты: pavel · клик — открыть">1 Тим<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="2 Тимофею" data-tip="4 гл. · карты: pavel · клик — открыть">2 Тим<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="К Титу" data-tip="3 гл. · карты: pavel · клик — открыть">Тит<sup>1</sup></a><a class="chip has-map" href="../../karty/pavel/" data-tip-t="К Филимону" data-tip="1 гл. · карты: pavel · клик — открыть">Флм<sup>1</sup></a></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">IX</span><h4>Соборные послания</h4><span class="book-cov"></span></div><div class="chips"><span class="chip" tabindex="0" data-tip-t="К Евреям" data-tip="13 гл. · карт пока нет">Евр</span><span class="chip" tabindex="0" data-tip-t="Иакова" data-tip="5 гл. · карт пока нет">Иак</span><span class="chip" tabindex="0" data-tip-t="1 Петра" data-tip="5 гл. · карт пока нет">1 Пет</span><span class="chip" tabindex="0" data-tip-t="2 Петра" data-tip="3 гл. · карт пока нет">2 Пет</span><span class="chip" tabindex="0" data-tip-t="1 Иоанна" data-tip="5 гл. · карт пока нет">1 Ин</span><span class="chip" tabindex="0" data-tip-t="2 Иоанна" data-tip="1 гл. · карт пока нет">2 Ин</span><span class="chip" tabindex="0" data-tip-t="3 Иоанна" data-tip="1 гл. · карт пока нет">3 Ин</span><span class="chip" tabindex="0" data-tip-t="Иуды" data-tip="1 гл. · карт пока нет">Иуд</span></div></div><div class="book-sec"><div class="book-sec-head"><span class="book-num">X</span><h4>Откровение</h4><span class="book-cov">1 из 1 с картами</span></div><div class="book-bar" aria-hidden="true"><i style="width:100%"></i></div><div class="chips"><a class="chip has-map" href="../../karty/revelation/" data-tip-t="Откровение" data-tip="22 гл. · карты: revelation · клик — открыть">Откр<sup>1</sup></a></div></div>
+  </section>
+
+  <section class="pane" id="pane-themes">
+    <div class="sec-head"><h2>Вход по темам</h2><div class="sec-orn"></div></div>
+    <p class="lead">Шесть архетипов карт Атласа — от маршрутов патриархов до планов городов.</p>
+    <div class="themes-grid"><div class="theme-card"><span class="theme-medal"><span class="ic theme-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span></span><h4>Маршруты и путешествия</h4><div class="theme-thumbs"><a class="thumb" href="../../karty/avraam/" title="Путь Авраама" style="background-image:url('../../images/atlas-avraam-scene-600w.webp')"><span>Путь Авраама</span></a><a class="thumb" href="../../karty/ishod/" title="Исход" style="background-image:url('../../images/atlas-ishod-scene-600w.webp')"><span>Исход</span></a><a class="thumb" href="../../karty/pavel/" title="Путешествия Павла" style="background-image:url('../../images/atlas-pavel-scene-600w.webp')"><span>Путешествия Павла</span></a><a class="thumb" href="../../karty/yeshua/" title="Жизнь Иисуса" style="background-image:url('../../images/atlas-yeshua-scene-600w.webp')"><span>Жизнь Иисуса</span></a></div><div class="plan-chips"><span class="plan-chip">Давид</span><span class="plan-chip">Иаков и Иосиф</span><span class="plan-chip">Илия и Елисей</span></div></div><div class="theme-card"><span class="theme-medal"><span class="ic theme-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17.5h16M4.5 16l-1-8 4.8 3.4L12 5.5l3.7 5.9L20.5 8l-1 8z"/></svg></span></span><h4>Царства и границы</h4><div class="theme-thumbs"><a class="thumb" href="../../karty/melachim/" title="Царства Израиля и Иудеи" style="background-image:url('../../images/atlas-melachim-scene-600w.webp')"><span>Царства Израиля и Иудеи</span></a><a class="thumb" href="../../karty/shoftim/" title="Эпоха Судей" style="background-image:url('../../images/atlas-shoftim-scene-600w.webp')"><span>Эпоха Судей</span></a><a class="thumb" href="../../karty/maccabim/" title="Маккавеи" style="background-image:url('../../images/atlas-maccabim-scene-600w.webp')"><span>Маккавеи</span></a></div><div class="plan-chips"><span class="plan-chip">Четыре царства Даниила</span><span class="plan-chip">Мир Ирода</span></div></div><div class="theme-card"><span class="theme-medal"><span class="ic theme-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6.5l4.5-2 5 2.5 4.5-1.5v12l-4.5 2-5-2.5-4.5 1.5z"/></svg></span></span><h4>Территории и уделы</h4><div class="theme-thumbs"><a class="thumb" href="../../karty/shvatim/" title="12 колен Израиля" style="background-image:url('../../images/atlas-shvatim-scene-600w.webp')"><span>12 колен Израиля</span></a></div><div class="plan-chips"><span class="plan-chip">Таблица народов</span></div></div><div class="theme-card"><span class="theme-medal"><span class="ic theme-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5V9.8L8 7v12.5M8 12h4V7.8L16 5v14.5M16 10h4v9.5M2.5 19.5h19"/></svg></span></span><h4>Планы городов</h4><p class="theme-now theme-empty">карт пока нет — направление открывается каталогом</p><div class="plan-chips"><span class="plan-chip">Иерусалим по эпохам</span><span class="plan-chip">Вавилон Даниила</span></div></div><div class="theme-card"><span class="theme-medal"><span class="ic theme-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="11" cy="16" r="2"/><path d="M3.5 20.5h17"/></svg></span></span><h4>Тематические слои</h4><div class="theme-thumbs"><a class="thumb" href="../../karty/revelation/" title="7 церквей Откровения" style="background-image:url('../../images/atlas-revelation-scene-600w.webp')"><span>7 церквей Откровения</span></a><a class="thumb" href="../../karty/early-church/" title="Ранняя Церковь" style="background-image:url('../../images/atlas-early-church-scene-600w.webp')"><span>Ранняя Церковь</span></a></div><div class="plan-chips"><span class="plan-chip">Пророчества о народах</span></div></div><div class="theme-card"><span class="theme-medal"><span class="ic theme-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2.2 5-5 2.2 2.2-5z"/></svg></span></span><h4>Обзор и вход</h4><p class="theme-now theme-empty">карт пока нет — направление открывается каталогом</p><div class="plan-chips"><span class="plan-chip">Земля Библии</span><span class="plan-chip">Хронология</span><span class="plan-chip">Сравнение эпох</span></div></div></div><p class="note">Обложки-миниатюры — живые карты (клик — открыть); пунктирные чипы — целевой каталог §9, волны KA-6…KA-9.</p>
+  </section>
+
+  <section class="pane" id="pane-maps">
+    <div class="sec-head"><h2>Карты Атласа</h2><div class="sec-orn"></div></div>
+    <p class="lead">Живой инвентарь: счётчики — из базовой линии контент-паритета (гейт G6).</p>
+    <div class="maps-grid"><a class="map-card" href="../../karty/avraam/"><div class="map-hero"><img src="../../images/atlas-avraam-scene-600w.webp"
+         srcset="../../images/atlas-avraam-scene-600w.webp 600w, ../../images/atlas-avraam-scene-900w.webp 900w, ../../images/atlas-avraam-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status live">на витрине</span></div><div class="map-body"><h4>Путь Авраама</h4><div class="map-era">бронзовый век · эпоха патриархов</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>19 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>8 этапов</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>5 историй</span></div><div class="map-foot"><span class="map-slug">/karty/avraam/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/ishod/"><div class="map-hero"><img src="../../images/atlas-ishod-scene-600w.webp"
+         srcset="../../images/atlas-ishod-scene-600w.webp 600w, ../../images/atlas-ishod-scene-900w.webp 900w, ../../images/atlas-ishod-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status semi">production · вне витрины</span></div><div class="map-body"><h4>Исход из Египта</h4><div class="map-era">поздняя бронза · Исход и завоевание</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>11 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>6 этапов</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>4 истории</span></div><div class="map-foot"><span class="map-slug">/karty/ishod/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/early-church/"><div class="map-hero"><img src="../../images/atlas-early-church-scene-600w.webp"
+         srcset="../../images/atlas-early-church-scene-600w.webp 600w, ../../images/atlas-early-church-scene-900w.webp 900w, ../../images/atlas-early-church-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>Ранняя Церковь · Деяния 1–12</h4><div class="map-era">римская эпоха · Новый Завет</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>11 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>4 этапа</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>5 историй</span></div><div class="map-foot"><span class="map-slug">/karty/early-church/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/maccabim/"><div class="map-hero"><img src="../../images/atlas-maccabim-scene-600w.webp"
+         srcset="../../images/atlas-maccabim-scene-600w.webp 600w, ../../images/atlas-maccabim-scene-900w.webp 900w, ../../images/atlas-maccabim-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>Межзаветный период · Маккавеи</h4><div class="map-era">эллинизм · междузаветье</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>12 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>5 этапов</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>6 историй</span></div><div class="map-foot"><span class="map-slug">/karty/maccabim/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/melachim/"><div class="map-hero"><img src="../../images/atlas-melachim-scene-600w.webp"
+         srcset="../../images/atlas-melachim-scene-600w.webp 600w, ../../images/atlas-melachim-scene-900w.webp 900w, ../../images/atlas-melachim-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>Царства Израиля и Иуды</h4><div class="map-era">железный век · эпоха царств</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>17 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>6 этапов</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>7 историй</span></div><div class="map-foot"><span class="map-slug">/karty/melachim/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/pavel/"><div class="map-hero"><img src="../../images/atlas-pavel-scene-600w.webp"
+         srcset="../../images/atlas-pavel-scene-600w.webp 600w, ../../images/atlas-pavel-scene-900w.webp 900w, ../../images/atlas-pavel-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>Миссионерские путешествия Павла</h4><div class="map-era">римская эпоха · Новый Завет</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>10 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>3 этапа</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>4 истории</span></div><div class="map-foot"><span class="map-slug">/karty/pavel/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/revelation/"><div class="map-hero"><img src="../../images/atlas-revelation-scene-600w.webp"
+         srcset="../../images/atlas-revelation-scene-600w.webp 600w, ../../images/atlas-revelation-scene-900w.webp 900w, ../../images/atlas-revelation-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>7 Церквей Откровения</h4><div class="map-era">римская эпоха · Новый Завет</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>7 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>1 этап</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>5 историй</span></div><div class="map-foot"><span class="map-slug">/karty/revelation/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/shoftim/"><div class="map-hero"><img src="../../images/atlas-shoftim-scene-600w.webp"
+         srcset="../../images/atlas-shoftim-scene-600w.webp 600w, ../../images/atlas-shoftim-scene-900w.webp 900w, ../../images/atlas-shoftim-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>Эпоха Судей</h4><div class="map-era">железный век · эпоха царств</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>12 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>6 этапов</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>6 историй</span></div><div class="map-foot"><span class="map-slug">/karty/shoftim/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/shvatim/"><div class="map-hero"><img src="../../images/atlas-shvatim-scene-600w.webp"
+         srcset="../../images/atlas-shvatim-scene-600w.webp 600w, ../../images/atlas-shvatim-scene-900w.webp 900w, ../../images/atlas-shvatim-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>12 Колен Израиля</h4><div class="map-era">поздняя бронза · Исход и завоевание</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>18 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>3 этапа</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>5 историй</span></div><div class="map-foot"><span class="map-slug">/karty/shvatim/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a><a class="map-card" href="../../karty/yeshua/"><div class="map-hero"><img src="../../images/atlas-yeshua-scene-600w.webp"
+         srcset="../../images/atlas-yeshua-scene-600w.webp 600w, ../../images/atlas-yeshua-scene-900w.webp 900w, ../../images/atlas-yeshua-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async"><span class="hero-shade" aria-hidden="true"></span><span class="map-status hold">на аудите</span></div><div class="map-body"><h4>Жизнь Иисуса Христа</h4><div class="map-era">римская эпоха · Новый Завет</div><div class="map-meta"><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span>15 мест</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span>5 этапов</span><span class="mm"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.3 8.5 4.3 12 5.8c3.5-1.5 6-1.5 8-.3V18c-2-1.2-4.5-1.2-8 .3-3.5-1.5-6-1.5-8-.3z"/><path d="M12 5.8V18.3"/></svg></span>5 историй</span></div><div class="map-foot"><span class="map-slug">/karty/yeshua/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a></div><p class="note">Hero-зоны карточек готовы под обложки-сцены (images/atlas-&lt;slug&gt;-scene-600w.webp, VISUAL-DIRECTION §8.2): файл появится — карточка подхватит его при перегенерации автоматически.</p><div class="sub-head"><h3>Целевой каталог · появится волнами KA-6…KA-9</h3><div class="sec-orn"></div></div><div class="maps-grid ghost-grid"><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2.2 5-5 2.2 2.2-5z"/></svg></span><h4>Земля Библии · обзор</h4><span class="ghost-wave">KA-6</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5V9.8L8 7v12.5M8 12h4V7.8L16 5v14.5M16 10h4v9.5M2.5 19.5h19"/></svg></span><h4>Иерусалим по эпохам</h4><span class="ghost-wave">KA-6</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span><h4>Царство Давида</h4><span class="ghost-wave">KA-7</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span><h4>Илия и Елисей</h4><span class="ghost-wave">KA-7</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17.5h16M4.5 16l-1-8 4.8 3.4L12 5.5l3.7 5.9L20.5 8l-1 8z"/></svg></span><h4>Четыре царства Даниила</h4><span class="ghost-wave">KA-8</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5V9.8L8 7v12.5M8 12h4V7.8L16 5v14.5M16 10h4v9.5M2.5 19.5h19"/></svg></span><h4>Вавилон Даниила · план</h4><span class="ghost-wave">KA-8</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="11" cy="16" r="2"/><path d="M3.5 20.5h17"/></svg></span><h4>Пророчества о народах</h4><span class="ghost-wave">KA-8</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17.5h16M4.5 16l-1-8 4.8 3.4L12 5.5l3.7 5.9L20.5 8l-1 8z"/></svg></span><h4>Мир Ирода</h4><span class="ghost-wave">KA-9</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6.5l4.5-2 5 2.5 4.5-1.5v12l-4.5 2-5-2.5-4.5 1.5z"/></svg></span><h4>Таблица народов</h4><span class="ghost-wave">KA-9</span></article><article class="ghost-card"><span class="ic ghost-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8 16.5C11 14 9 10.5 12.5 9c2-.9 3-1.4 3.8-1.6" stroke-dasharray="3 2.6"/></svg></span><h4>Иаков и Иосиф</h4><span class="ghost-wave">KA-9</span></article></div>
+  </section>
+
+  <section class="pane" id="pane-places">
+    <div class="sec-head"><h2>Места Атласа · Левант</h2><div class="sec-orn"></div></div>
+    <p class="lead">Канонический реестр мест на реальной подложке движка. Фирменная честность §3: точка показывает не только «где», но и «насколько уверенно мы это знаем».</p>
+    <div class="geo-bar"><span class="geo-cap">семейство levant · 1900×1430 · 1 ед. ≈ 0,92 км</span><span class="geo-search"><span class="ic " aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.4-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span><input id="geo-q" type="search" placeholder="Найти место…" autocomplete="off" aria-label="Поиск места на мини-карте"><span id="geo-n" aria-live="polite"></span></span></div><div class="geo-frame"><svg viewBox="0 0 1900 1430" class="geo-svg" role="img" aria-label="Мини-карта Леванта: места реестра Атласа со статусами уверенности локализаций"><defs>
+  <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f0e7cf"/><stop offset=".45" stop-color="#e8dcbc"/><stop offset="1" stop-color="#dfd1a9"/>
+  </linearGradient>
+  <linearGradient id="richLandG" x1="0" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#ece1c2"/><stop offset=".5" stop-color="#e5d8b4"/><stop offset="1" stop-color="#decfa6"/>
+  </linearGradient>
+  <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#cfe0e9"/><stop offset="1" stop-color="#b4cedd"/>
+  </linearGradient>
+  <pattern id="seaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#7fa7c4" stroke-width=".6" opacity=".38"/>
+    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#7fa7c4" stroke-width=".5" opacity=".26"/>
+  </pattern>
+  <radialGradient id="fertileG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#6b8f4a" stop-opacity=".26"/><stop offset="1" stop-color="#6b8f4a" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="jordanG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#4f7a3f" stop-opacity=".3"/><stop offset="1" stop-color="#4f7a3f" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="desertG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#c09a55" stop-opacity=".2"/><stop offset="1" stop-color="#c09a55" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="negevG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#b08050" stop-opacity=".16"/><stop offset="1" stop-color="#b08050" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sinaiG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#a07040" stop-opacity=".18"/><stop offset="1" stop-color="#a07040" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="mtG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
+  </linearGradient>
+  <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+  </pattern>
+  <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
+    <circle cx="9" cy="9" r=".5" fill="#9c7c43" opacity=".3"/>
+    <circle cx="6" cy="1" r=".4" fill="#b08050" opacity=".25"/>
+  </pattern>
+  <filter id="terrainTex" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".4 .35" numOctaves="4" seed="12" result="noise"/>
+    <feColorMatrix in="noise" type="matrix" values="0 0 0 0 .54  0 0 0 0 .42  0 0 0 0 .12  0 0 0 .05 0" result="tinted"/>
+    <feComposite in="SourceGraphic" in2="tinted" operator="over"/>
+  </filter>
+  <filter id="waterRipple" x="-10%" y="-10%" width="120%" height="120%">
+    <feGaussianBlur stdDeviation=".8"/>
+  </filter>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".78" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#7a5c26" stop-opacity=".26"/>
+  </radialGradient>
+  <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
+    <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+</defs>
+<defs>
+  <!-- Все фильтры и градиенты из основного файла -->
+  <!-- Импортируются в конкретную карту через <use> или inline -->
+</defs>
+<!-- ============ TERRAIN ============ -->
+<g id="terrain" data-layer="base-geo">
+  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"/>
+  <!-- Terrain texture overlay для глубины рельефа -->
+  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".3" filter="url(#terrainTex)"/>
+
+  <!-- deserts / fertile tints -->
+  <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"/>
+  <ellipse cx="470" cy="1130" rx="260" ry="220" fill="url(#desertG)"/>
+  <ellipse cx="560" cy="930" rx="170" ry="110" fill="url(#desertG)"/>
+  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)"/>
+  <ellipse cx="640" cy="700" rx="110" ry="240" fill="url(#fertileG)"/>
+  <ellipse cx="220" cy="930" rx="120" ry="120" fill="url(#fertileG)"/>
+  <path fill="url(#fertileG)" d="M226,1014 C196,964 168,916 142,868 L304,860 C280,912 252,964 226,1014 Z"/>
+
+  <!-- mountain ridges (decorative) -->
+  <g stroke="#6b6248" stroke-width="2" fill="none" opacity=".14" filter="url(#soft)">
+    <path d="M120,160 Q300,110 470,150 Q620,180 760,150 Q900,118 1060,160"/>
+    <path d="M180,205 Q330,165 480,195 Q640,225 800,196"/>
+    <path d="M1430,110 Q1530,210 1610,310 Q1700,430 1790,560 Q1840,640 1880,720"/>
+    <path d="M1500,90 Q1600,190 1680,300 Q1770,430 1860,560"/>
+    <path d="M668,520 Q676,560 670,600"/>
+    <path d="M652,758 Q646,800 640,845"/>
+  </g>
+
+  <!-- Ливанские горы / Антиливан (северный Ханаан) -->
+  <g opacity=".22" filter="url(#soft)">
+    <path fill="url(#mtG)" d="M590,500 C610,480 630,460 655,448 C670,440 690,435 710,432 C730,429 750,430 760,435 C748,450 730,460 710,468 C688,478 660,488 635,500 C618,508 602,515 590,520 Z"/>
+    <path stroke="#8b7d5a" stroke-width="1.5" fill="none" opacity=".7" d="M600,502 Q618,492 636,484 Q660,474 685,468 Q710,462 730,458"/>
+    <!-- Отдельные пики (снег на вершинах) -->
+    <path d="M640,462 L644,453 L648,462 Z" fill="rgba(230,225,215,.15)" stroke="#a09070" stroke-width=".8"/>
+    <path d="M670,446 L675,435 L680,446 Z" fill="rgba(230,225,215,.18)" stroke="#a09070" stroke-width=".8"/>
+    <path d="M700,437 L705,425 L710,437 Z" fill="rgba(240,235,225,.2)" stroke="#b0a080" stroke-width=".9"/>
+  </g>
+  <!-- Ливан label -->
+  <text class="region-label lbl-z1" x="665" y="428" font-size="5.5" fill="#a09070" opacity=".5" letter-spacing=".2em" transform="rotate(-5 665 428)">ЛИВАН · לְבָנוֹן</text>
+  <!-- Иудейские горы / Самария — хребтовая полоса -->
+  <g opacity=".12" filter="url(#soft)">
+    <path fill="url(#mtG)" d="M597,690 C608,670 618,650 625,630 C630,618 632,608 630,598 C622,606 614,618 607,632 C600,648 596,668 597,690 Z"/>
+    <path fill="url(#mtG)" d="M598,780 C606,760 612,740 615,722 C610,730 604,744 599,760 C596,772 595,784 598,780 Z"/>
+  </g>
+  <!-- Синайский полуостров — тёплый силуэт + хребты -->
+  <!-- Треугольный контур п-ова Синай -->
+  <path fill="url(#sinaiG)" opacity=".9"
+    d="M424,1012 C450,1015 475,1020 490,1032 C510,1048 520,1075 530,1110 C540,1145 548,1175 555,1200 C562,1175 570,1145 580,1112 C590,1078 600,1050 618,1035 C630,1025 648,1015 665,1012"/>
+  <!-- Гранитные горы Синая (юг) — более детальные -->
+  <g opacity=".22" filter="url(#soft)">
+    <!-- Хребет Ум-Шаумер (высший пик 2587м) -->
+    <path d="M510,1205 L528,1162 L546,1205 Z" fill="rgba(110,82,44,.45)" stroke="#9a7845" stroke-width="1.1"/>
+    <!-- Хорив/Синай (Моисей) -->
+    <path d="M550,1195 L572,1148 L594,1195 Z" fill="rgba(125,92,50,.5)" stroke="#a08040" stroke-width="1.2"/>
+    <!-- Снежная шапка Синая -->
+    <path d="M562,1155 L572,1148 L582,1155 Z" fill="rgba(240,235,225,.2)" stroke="rgba(240,235,225,.3)" stroke-width=".7"/>
+    <!-- Боковой хребет -->
+    <path d="M535,1215 L550,1180 L565,1215 Z" fill="rgba(100,78,40,.35)" stroke="#9a7845" stroke-width=".9"/>
+    <path d="M578,1208 L594,1175 L610,1208 Z" fill="rgba(105,80,42,.35)" stroke="#9a7845" stroke-width=".9"/>
+  </g>
+  <!-- Негев / Иудейская пустыня -->
+  <ellipse cx="580" cy="920" rx="90" ry="60" fill="url(#negevG)" opacity=".8"/>
+  <!-- Вади Арава (Долина Иорданского разлома, S) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".3" stroke-linecap="round" stroke-dasharray="3 4" class="lbl-z2"
+    d="M650,895 C648,940 645,990 640,1040 C636,1080 630,1110 622,1130"/>
+  <!-- Перевал/проход Беэр-Шева (в Синай) — маршрут Авраама -->
+  <text class="lbl-z2" x="535" y="958" font-size="4" fill="#9aa2ae" opacity=".45" letter-spacing=".12em">перевал → Египет</text>
+  <!-- Иорданская долина — зелёная полоса (Быт 13:10 — «как сад Господень») -->
+  <path fill="url(#jordanG)" opacity=".8"
+    d="M660,615 C657,640 654,675 652,705 C650,738 648,768 646,798 C640,768 638,738 638,705 C640,675 644,640 648,615 Z"/>
+  <!-- Заливные луга Иордана — более широкие у Мёртвого -->
+  <path fill="url(#jordanG)" opacity=".4"
+    d="M665,740 C660,760 655,780 652,800 C648,820 645,840 643,855 C638,840 636,820 638,800 C640,780 644,760 650,740 Z"/>
+  <!-- Аравийская пустыня — паттерн дюн -->
+  <g opacity=".09">
+    <!-- ряды дюн -->
+    <path fill="none" stroke="#9c7c43" stroke-width="1.5" stroke-linecap="round"
+      d="M1060,1040 Q1090,1025 1120,1040 Q1150,1055 1180,1040"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.5" stroke-linecap="round"
+      d="M1100,1080 Q1130,1065 1160,1080 Q1190,1095 1220,1080"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.3" stroke-linecap="round"
+      d="M1200,1040 Q1230,1028 1260,1040 Q1290,1052 1320,1040"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.3" stroke-linecap="round"
+      d="M1150,1110 Q1180,1098 1210,1110 Q1240,1122 1270,1110"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.2" stroke-linecap="round" opacity=".7"
+      d="M1280,1078 Q1310,1066 1340,1078"/>
+    <!-- точки-акценты -->
+    <circle cx="1100" cy="1050" r="2" fill="#9c7c43"/><circle cx="1250" cy="1060" r="1.8" fill="#9c7c43"/>
+    <circle cx="1320" cy="1100" r="2" fill="#9c7c43"/><circle cx="1060" cy="1090" r="1.5" fill="#9c7c43"/>
+  </g>
+  <!-- Туман на краях карты (глубина) -->
+  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#edgeFog)" pointer-events="none"/>
+
+  <!-- Mediterranean -->
+  <!-- Mediterranean с анимированным водным эффектом (feDisplacementMap) -->
+<g filter="url(#waterRipple)">
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".4"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
+</g>
+<!-- Прибрежная зона Средиземноморья (мелководье) -->
+<path fill="rgba(13,40,70,.3)" opacity=".5"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,280 690,295 680,320 C660,280 630,260 590,256 C550,252 510,256 470,262 C420,268 360,272 290,272 C200,272 80,268 -400,270 Z" pointer-events="none"/>
+<!-- Паттерн волн Средиземного моря -->
+<path fill="url(#seaPattern)" opacity=".45"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
+  <!-- Cyprus с морскими волнами вокруг -->
+  <ellipse cx="432" cy="400" rx="80" ry="40" transform="rotate(-8 432 400)" 
+    fill="url(#seaG)" opacity=".3" filter="url(#waterRipple)"/>
+  <path fill="url(#landG)" stroke="#3a4150" stroke-width="1.2" opacity=".9"
+    d="M352,409 C358,398 374,390 396,387 C420,384 444,387 460,393 C468,396 474,396 482,392 C492,386 502,379 510,374 C513,372 515,375 512,379 C504,389 492,398 480,403 C470,408 458,411 446,413 C424,417 396,417 376,414 C364,412 354,413 352,409 Z"/>
+  <!-- Кипр иврит -->
+  <text x="432" y="408" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">כִּתִּים · Κύπρος</text>
+
+  <!-- Red Sea -->
+  <g filter="url(#waterRipple)">
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45"
+  d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
+</g>
+<!-- Паттерн волн на Красном море -->
+<path fill="url(#seaPattern)" opacity=".3" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
+  <!-- Nile delta hint -->
+  <!-- Нил с waterRipple -->
+  <g filter="url(#waterRipple)" opacity=".65">
+    <!-- Нил — основное русло -->
+    <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#2d4a66" stroke-width="4" stroke-linecap="round"/>
+    <!-- Дельта — пять рукавов -->
+    <path d="M230,972 C215,985 198,995 178,1002" fill="none" stroke="#2d4a66" stroke-width="2.2" stroke-linecap="round" opacity=".75"/>
+    <path d="M230,972 C240,982 258,992 272,998" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    <path d="M230,972 C228,990 226,1005 224,1015" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".65"/>
+    <path d="M230,972 C222,984 212,994 200,1002" fill="none" stroke="#2d4a66" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>
+    <path d="M230,972 C245,986 260,998 278,1004" fill="none" stroke="#2d4a66" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+    <!-- Нил — лёгкий glow -->
+    <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#4a80a8" stroke-width="8" stroke-linecap="round" opacity=".08" filter="url(#soft)"/>
+    <text class="region-label lbl-z1" x="184" y="890" font-size="6" fill="#7fa7c4" opacity=".55" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
+    <text class="region-label lbl-z2" x="184" y="900" font-size="5" fill="#7fa7c4" opacity=".45" letter-spacing=".1em">יְאוֹר · Нил</text>
+  </g>
+  
+
+  <!-- Persian Gulf -->
+  <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
+
+  <!-- Dead Sea -->
+  <!-- Мёртвое море -->
+<g filter="url(#waterRipple)" opacity=".85">
+<path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876 C639,866 637,854 635,840 C634,820 636,804 640,797 C642,793 644,793 646,795 Z"/>
+<!-- соляной берег Мёртвого моря -->
+<path fill="none" stroke="rgba(200,210,180,.22)" stroke-width="2.5" stroke-dasharray="1.5 3" stroke-linecap="round"
+  d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876"/>
+</g>
+<!-- соляная текстура Мёртвого моря -->
+<g opacity=".18" pointer-events="none">
+  <circle cx="648" cy="835" r=".8" fill="#c8d4a0"/><circle cx="652" cy="845" r=".6" fill="#c8d4a0"/>
+  <circle cx="645" cy="855" r=".8" fill="#c8d4a0"/><circle cx="650" cy="865" r=".6" fill="#c8d4a0"/>
+  <circle cx="656" cy="852" r=".7" fill="#c8d4a0"/><circle cx="642" cy="842" r=".6" fill="#c8d4a0"/>
+</g>
+  <!-- Sea of Galilee -->
+  <g filter="url(#waterRipple)" opacity=".9">
+<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
+<!-- отражение на Кинерете -->
+<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="url(#seaPattern)" opacity=".4"/>
+<!-- блик -->
+<ellipse cx="655" cy="672" rx="3" ry="5" transform="rotate(-20 655 672)" fill="rgba(180,210,240,.08)"/>
+</g>
+
+  <!-- rivers -->
+  <!-- Euphrates highlight -->
+  <path fill="none" stroke="#4a80a8" stroke-width="5" opacity=".12" stroke-linecap="round" filter="url(#soft)"
+    d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893"/>
+  <g fill="none" stroke="#2d4a66" stroke-width="3" opacity=".95" stroke-linecap="round">
+    <path d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893 C1760,912 1820,928 1868,938 C1884,944 1896,950 1906,958"/>
+    <path d="M1205,-10 C1230,100 1300,180 1410,256 C1470,310 1520,400 1550,476 C1548,530 1542,575 1540,619 C1600,700 1680,780 1750,833 C1800,870 1845,900 1872,922 C1884,930 1894,938 1902,948"/>
+  </g>
+  <g fill="none" stroke="#2d4a66" stroke-width="2" opacity=".8" stroke-linecap="round">
+    <path d="M1003,194 C1000,250 998,310 1002,362 C1008,404 1040,444 1093,470"/>
+    <path d="M1108,140 C1100,230 1110,330 1140,405 C1160,460 1196,530 1238,578"/>
+    <path d="M665,625 C660,645 658,656 657,667"/>
+    <!-- Река Кишон (вдоль Изреельской долины к морю) -->
+    <path d="M613,706 C603,712 595,720 588,728" fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+    <path d="M657,689 C650,720 662,755 655,797"/>
+    <path d="M232,1830 C226,1690 234,1550 230,1430 C220,1330 232,1200 226,1100 C222,1050 224,1020 226,1004"/>
+    <path d="M226,1004 C214,972 198,938 182,908 C172,890 158,872 144,858" stroke-width="1.7"/>
+    <path d="M226,1004 C234,968 246,932 260,900 C268,884 278,868 288,850" stroke-width="1.7"/>
+    <path d="M226,1004 C224,960 222,910 220,852" stroke-width="1.4" opacity=".7"/>
+  </g>
+
+  <!-- sea & region labels -->
+  <g>
+    <!-- Волны Средиземного моря (декоративные) -->
+<g opacity=".08" pointer-events="none">
+  <path d="M100,350 Q130,340 160,350 Q190,360 220,350 Q250,340 280,350" fill="none" stroke="#4a80a0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M150,400 Q180,390 210,400 Q240,410 270,400 Q300,390 330,400" fill="none" stroke="#4a80a0" stroke-width="1.3" stroke-linecap="round"/>
+  <path d="M80,450 Q110,440 140,450 Q170,460 200,450 Q230,440 260,450" fill="none" stroke="#4a80a0" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M200,480 Q230,470 260,480 Q290,490 320,480 Q350,470 380,480" fill="none" stroke="#4a80a0" stroke-width="1" stroke-linecap="round"/>
+  <path d="M100,530 Q150,518 200,530 Q250,542 300,530 Q350,518 400,530" fill="none" stroke="#4a80a0" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M50,580 Q100,568 150,580 Q200,592 250,580" fill="none" stroke="#4a80a0" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+</g>
+<text class="sea-label" x="300" y="555" font-size="26" transform="rotate(-8 300 555)">ВЕЛИКОЕ&#160;&#160;МОРЕ</text>
+    <text class="region-he" x="330" y="588" font-size="15" opacity=".4" fill="#7fa7c4">הַיָּם הַגָּדוֹל</text>
+    <text class="sea-label" x="676" y="1330" font-size="15" transform="rotate(38 676 1330)">КРАСНОЕ&#160;МОРЕ</text>
+    <text class="sea-label lbl-z1" x="650" y="1310" font-size="6.5" transform="rotate(38 650 1310)" fill="#7fa7c4" opacity=".45" letter-spacing=".14em">יַם-סוּף</text>
+  <text class="sea-label lbl-z1" x="702" y="1248" font-size="7" transform="rotate(38 702 1248)" letter-spacing=".18em">ЗАЛИВ АКАБА · יָם סוּף</text>
+  <!-- Суэцкий залив (западная ветвь) -->
+  <text class="sea-label lbl-z2" x="460" y="1110" font-size="5.5" transform="rotate(22 460 1110)" fill="#7fa7c4" opacity=".4" letter-spacing=".15em">ЗАЛИВ СУЭЦ</text>
+  <!-- Эцион-Гевер / Элат — порт у Акабского залива -->
+  <g class="lbl-z2" transform="translate(730,1070)" opacity=".45">
+    <circle r="2.5" fill="rgba(10,13,20,.8)" stroke="#7fa7c4" stroke-width=".8"/>
+    <text x="6" y="4" font-size="4" fill="#7fa7c4" letter-spacing=".08em">ЭЦИОН-ГЕВЕР · עֶצְיֹן גֶּבֶר</text>
+  </g>
+    <!-- Персидский залив — с водой -->
+    <g filter="url(#waterRipple)">
+    <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
+    </g>
+    <!-- Персидский залив — coastal texture -->
+    <path fill="url(#seaPattern)" opacity=".25" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
+    <text class="sea-label" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
+  <text class="sea-label lbl-z1" x="1870" y="1035" font-size="6" transform="rotate(60 1870 1035)" letter-spacing=".12em" opacity=".6">הַיָּם הַמִּזְרָחִי · Вост. море</text>
+    <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
+    <text class="sea-label lbl-z2" x="650" y="856" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 650 856)" fill="#4a80a0" opacity=".45">−430 м · низшая точка Земли</text>
+
+    <text class="sea-label lbl-z2" x="668" y="670" font-size="4" letter-spacing=".14em" transform="rotate(60 668 670)">КИНЕРЕТ</text>
+  <!-- Ярмук (приток Иордана) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.2" opacity=".5" stroke-linecap="round"
+    d="M700,640 C685,648 672,656 664,662" class="lbl-z2"/>
+  <!-- зелёная зона у Кинерета -->
+  <ellipse cx="658" cy="655" rx="18" ry="10" fill="rgba(58,90,45,.12)" class="lbl-z1"/>
+  <!-- Река Аббана/Барада (Дамаск) — оазис Гута -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".4" stroke-linecap="round" class="lbl-z2"
+    d="M731,594 C714,590 695,588 675,590 C655,593 638,598 620,610"/>
+  <text class="sea-label lbl-z2" x="685" y="583" font-size="4" fill="#4a80a0" opacity=".4" letter-spacing=".1em">АББАНА · אֲמָנָה</text>
+  <!-- Иордан — стрелка течения (С→Ю) -->
+  <path class="lbl-z2" d="M648,710 L644,720 L652,720 Z" fill="#4a80a0" opacity=".35"/>
+  <!-- Евфрат — стрелка течения -->
+  <path class="lbl-z2" d="M1296,618 L1290,628 L1298,628 Z" fill="#4a80a0" opacity=".3"/>
+  <!-- Нил — стрелка течения (С→Ю зеркально = С) -->
+  <path class="lbl-z2" d="M222,950 L218,960 L226,960 Z" fill="#4a80a0" opacity=".35"/>
+  <!-- Иордан -->
+  <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
+  <!-- Евфрат -->
+  <text class="region-label lbl-z1" x="1180" y="350" font-size="7" fill="#4a80a0" opacity=".5" letter-spacing=".18em" transform="rotate(22 1180 350)">ЕВФРАТ · פְּרָת</text>
+  <!-- Тигр -->
+  <text class="region-label lbl-z1" x="1440" y="310" font-size="7" fill="#4a80a0" opacity=".5" letter-spacing=".15em" transform="rotate(40 1440 310)">ТИГР · חִדֶּקֶל</text>
+    <text class="region-label" x="1150" y="395" font-size="25" transform="rotate(22 1150 395)">МЕСОПОТАМИЯ</text>
+    <!-- Ассирия (север) и Вавилония (юг) подписи lbl-z1 -->
+    <text class="region-label lbl-z1" x="1350" y="290" font-size="9" fill="#cdbd95" opacity=".35" letter-spacing=".2em" transform="rotate(22 1350 290)">АССИРИЯ</text>
+    <text class="region-label lbl-z1" x="1400" y="860" font-size="9" fill="#cdbd95" opacity=".3" letter-spacing=".2em">ВАВИЛОНИЯ</text>
+  <!-- Каркемиш — важный узел на пути из Месопотамии в Харран -->
+<g class="lbl-z2" transform="translate(900,126)" opacity=".4">
+  <circle r="3" fill="rgba(10,13,20,.7)" stroke="#9c7c43" stroke-width=".9"/>
+  <text x="6" y="4" font-size="4" fill="#9c7843" letter-spacing=".06em">КАРКЕМИШ · כַּרְכְּמִישׁ</text>
+</g>
+<!-- Алеппо (Халпе) — торговый центр Сирии -->
+<g class="lbl-z2" transform="translate(830,280)" opacity=".35">
+  <circle r="2.5" fill="rgba(10,13,20,.7)" stroke="#9c7c43" stroke-width=".7"/>
+  <text x="5" y="3.5" font-size="3.8" fill="#9c7843" letter-spacing=".06em">АЛЕППО · חָלֶב</text>
+</g>
+<!-- Горный хребет Анатолии (Тавр) — северная граница карты -->
+<g opacity=".16" filter="url(#soft)">
+  <path d="M120,90 Q200,50 320,80 Q440,110 560,75 Q680,40 800,65 Q880,80 950,60"
+    fill="rgba(100,90,70,.3)" stroke="#7a6a4a" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M120,110 Q200,75 320,100 Q440,130 560,95 Q680,60 800,85 Q880,100 950,80"
+    fill="none" stroke="#6a5a3a" stroke-width="1.2" stroke-linejoin="round" opacity=".7"/>
+</g>
+<!-- Загрос (восток карты) -->
+<g opacity=".14" filter="url(#soft)">
+  <path d="M1700,100 Q1750,200 1790,320 Q1820,420 1830,540 Q1840,620 1845,700"
+    fill="rgba(90,80,60,.3)" stroke="#7a6a4a" stroke-width="3" stroke-linejoin="round"/>
+</g>
+<!-- Плодородный полумесяц (label) -->
+  <text class="region-label lbl-z1" x="870" y="255" font-size="8" fill="#7fa780" opacity=".45" letter-spacing=".2em" transform="rotate(15 870 255)">ПЛОДОРОДНЫЙ ПОЛУМЕСЯЦ</text>
+  <!-- Истоки Евфрата и Тигра (Анатолия) -->
+  <text class="region-label lbl-z2" x="900" y="130" font-size="5" fill="#4a80a0" opacity=".4" letter-spacing=".12em">исток Евфрата</text>
+  <text class="region-label lbl-z2" x="1450" y="145" font-size="5" fill="#4a80a0" opacity=".4" letter-spacing=".12em">исток Тигра</text>
+    <text class="region-he" x="1235" y="430" font-size="15" transform="rotate(22 1235 430)">אֲרַם נַהֲרַיִם</text>
+    <text class="region-label" font-size="13" letter-spacing=".48em"><textPath href="#canaanRidge" startOffset="6%">Х&#160;А&#160;Н&#160;А&#160;А&#160;Н</textPath></text>
+    <!-- Декоративная рамка-bounding box Ханаана -->
+    <rect x="575" y="580" width="115" height="310" rx="8"
+      fill="none" stroke="rgba(232,200,121,.06)" stroke-width="1.5"
+      stroke-dasharray="4 6" class="lbl-z1" pointer-events="none"/>
+    <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
+    <text class="region-label" x="120" y="1040" font-size="20">ЕГИПЕТ</text>
+    <!-- Раамсес (Тель эд-Даба/Авар) — будущая карта Исхода -->
+    <g class="lbl-z2" transform="translate(210,880)" opacity=".3">
+      <circle r="2" fill="rgba(10,13,20,.7)" stroke="#c8a060" stroke-width=".7"/>
+      <text x="5" y="4" font-size="4" fill="#c8a060" letter-spacing=".06em">РААМСЕС</text>
+    </g>
+    <text class="region-he" x="135" y="1066" font-size="13">מִצְרַיִם</text>
+    <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
+    <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
+    <text class="region-label lbl-z2" x="602" y="815" font-size="4.5" fill="#9aa2ae" opacity=".4" letter-spacing=".12em">ВИФЛЕЕМ · בֵּית לֶחֶם</text>
+    <text class="region-label" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>
+    <!-- Горы Едома (Сеир) — к юго-востоку -->
+    <text class="region-label lbl-z2" x="736" y="950" font-size="6" fill="#8b7d5a" opacity=".38" letter-spacing=".18em" transform="rotate(90 736 950)">ЕДОМ · שֵׂעִיר</text>
+    <!-- Горы Моава (восток Мёртвого моря) -->
+    <text class="region-label lbl-z1" x="708" y="876" font-size="8" fill="#8b7d5a" opacity=".45" letter-spacing=".2em" transform="rotate(90 708 876)">МОАВ</text>
+    <text class="region-label lbl-z2" x="714" y="876" font-size="4.5" fill="#8b7d5a" opacity=".35" letter-spacing=".1em" transform="rotate(90 714 876)">מוֹאָב</text>
+    <!-- Галаад (север Заиорданья) -->
+    <text class="region-label lbl-z2" x="698" y="740" font-size="6" fill="#8b7d5a" opacity=".35" letter-spacing=".15em" transform="rotate(88 698 740)">ГАЛААД · גִּלְעָד</text>
+    <text class="region-he" x="555" y="924" font-size="10">נֶגֶב</text>
+    <text class="region-label" x="938" y="262" font-size="12" letter-spacing=".2em">ПАДАН-АРАМ</text> <!-- era: bronze -->
+    <!-- Пустыня Аравии — stipple pattern -->
+<ellipse cx="1250" cy="1050" rx="380" ry="280" fill="url(#desertStipple)" opacity=".7"/>
+<text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
+    <text class="region-label" x="378" y="412" font-size="10" letter-spacing=".25em" opacity=".35">КИПР</text>
+  </g>
+
+  <!-- ============ ANCIENT TRADE ROUTES ============ -->
+  <!-- Горы Заиорданья (Галаад, Едом) — hatch texture -->
+<g class="lbl-z1" opacity=".15">
+  <ellipse cx="710" cy="790" rx="30" ry="50" fill="url(#mountainHatch)" transform="rotate(10 710 790)"/>
+  <ellipse cx="720" cy="900" rx="25" ry="40" fill="url(#mountainHatch)" transform="rotate(5 720 900)"/>
+</g>
+<g id="tradeRoutes" opacity=".5">
+    <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
+    <path id="viaMarisPath" fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
+      d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C630,690 645,668 658,648 C680,630 710,610 731,594">
+  <animate attributeName="stroke-dashoffset" values="0;-28" dur="3s" repeatCount="indefinite"/>
+</path>
+    <text class="region-label lbl-z1" x="440" y="785" font-size="7" fill="#7fa7c4" opacity=".7" letter-spacing=".22em" transform="rotate(-26 420 790)">VIA MARIS · דֶּרֶךְ הַיָּם</text>
+    <!-- Стрелка Via Maris (направление движения) -->
+    <path class="lbl-z2" d="M560,750 L570,742 M570,742 L562,736" fill="none" stroke="#7fa7c4" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+
+    <!-- King's Highway / Царская дорога — Эцион-Гевер → Мёртвое море (вост.) → Дамаск -->
+    <path fill="none" stroke="#c4a07f" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
+      d="M730,1060 C720,990 712,940 705,890 C700,860 696,830 694,800 C692,760 694,720 700,680 C710,650 720,620 731,594">
+  <animate attributeName="stroke-dashoffset" values="0;28" dur="4s" repeatCount="indefinite"/>
+</path>
+    <text class="region-label lbl-z1" x="710" y="870" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
+
+    <!-- Way of Shur / Дорога Сура — Египет (Дельта) → Беэр-Шева → Ханаан -->
+    <path fill="none" stroke="#a0c47f" stroke-width="2.2" stroke-dasharray="6 5" stroke-linecap="round" opacity=".65"
+      d="M260,918 C320,910 380,900 440,890 C490,878 530,865 561,847 C570,855 578,860 584,864"/>
+
+    <!-- Way of the Patriarchs / Дорога патриархов — хребтовая дорога Сихем → Беэр-Шева -->
+    <path fill="none" stroke="#cdbd95" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" opacity=".55"
+      d="M628,748 C626,758 625,768 624,782 C624,788 623,794 623,800 C620,810 616,820 610,829 C602,840 594,852 584,864"/>
+    <text class="region-label lbl-z1" x="604" y="808" font-size="5.5" fill="#cdbd95" opacity=".6" letter-spacing=".12em" transform="rotate(-78 604 808)">ДОРОГА ПАТРИАРХОВ</text>
+    <text class="region-label lbl-z1" x="370" y="878" font-size="6.5" fill="#a0c47f" opacity=".7" letter-spacing=".2em" transform="rotate(-7 370 878)">ДОРОГА СУРА · דֶּרֶךְ שׁוּר</text>
+  </g>
+
+  <!-- ============ MOUNTAINS NEAR SHECHEM ============ -->
+  <!-- Горный hatch texture под Гевалом -->
+  <g class="lbl-z1" opacity=".3">
+    <ellipse cx="628" cy="740" rx="18" ry="10" fill="url(#mountainHatch)"/>
+    <ellipse cx="628" cy="762" rx="18" ry="10" fill="url(#mountainHatch)"/>
+  </g>
+  <g id="mountains" opacity=".55">
+    <!-- Гевал (Эйвал) — 940 м, к северу от Сихема -->
+    <g class="lbl-z1">
+      <path d="M618,730 L624,716 L628,718 L632,716 L638,730 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <text x="628" y="712" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕВАЛ</text>
+      <text x="628" y="708" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">עֵיבָל · 940 м</text>
+    </g>
+    <!-- Геризим (Гризим) — 881 м, к югу от Сихема -->
+    <g class="lbl-z1">
+      <path d="M618,770 L624,756 L628,758 L632,756 L638,770 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <text x="628" y="776" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+      <text x="628" y="780" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">גְּרִזִּים · 881 м</text>
+    </g>
+  </g>
+
+</g>
+
+<!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
+<!-- Горный хребет Ханаана (Иудейские горы) — более выразительный -->
+<g opacity=".22" filter="url(#soft)">
+  <!-- Кармил -->
+  <path d="M580,716 L585,706 L590,716 Z" fill="rgba(100,90,60,.5)" stroke="#8b7d5a" stroke-width="1"/>
+  <text x="580" y="702" font-size="3.5" fill="#8b7d5a" text-anchor="middle" opacity=".6" class="lbl-z1">הַכַּרְמֶל</text>
+  <!-- Хребет Самарии -->
+  <path d="M615,735 L618,726 L621,735 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <path d="M622,730 L625,721 L628,730 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <!-- Иудейские горы -->
+  <path d="M610,808 L614,799 L618,808 Z" fill="rgba(100,90,60,.45)" stroke="#8b7d5a" stroke-width=".9"/>
+  <path d="M618,800 L622,791 L626,800 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+</g>
+<!-- Оронт (Сирия) — река севернее Дамаска -->
+<path fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"
+  d="M800,120 C790,160 782,200 778,240 C774,280 772,310 775,340 C778,370 782,390 785,410"/>
+<text class="sea-label lbl-z1" x="770" y="270" font-size="4.5" fill="#4a80a0" opacity=".45" letter-spacing=".1em" transform="rotate(-82 770 270)">ОРОНТ</text>
+<!-- Лион-подобный изгиб Средиземного -->
+<!-- Небольшой остров Родос -->
+<!-- Лесбос -->
+<ellipse cx="355" cy="290" rx="8" ry="5" transform="rotate(-15 355 290)"
+  fill="url(#landG)" stroke="#3a4150" stroke-width=".7" opacity=".6" class="lbl-z2"/>
+<!-- Хиос -->
+<ellipse cx="360" cy="320" rx="4" ry="9" transform="rotate(-10 360 320)"
+  fill="url(#landG)" stroke="#3a4150" stroke-width=".7" opacity=".6" class="lbl-z2"/>
+<!-- Родос -->
+<ellipse cx="395" cy="368" rx="5" ry="10" transform="rotate(20 395 368)"
+  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".7" class="lbl-z1"/>
+<text x="395" y="365" font-size="3.5" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">Ρόδος</text>
+<!-- Крит (обозначение) -->
+<ellipse cx="212" cy="462" rx="22" ry="7" transform="rotate(-8 212 462)"
+  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".6"/>
+<text x="212" y="460" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">КРИТ · כָּפְתּוֹר</text>
+<!-- Западная граница known world -->
+<g class="lbl-z2" opacity=".2">
+  <text x="-200" y="450" font-size="9" fill="#6c737e" transform="rotate(-90 -200 450)" letter-spacing=".2em">← НЕ ИЗВЕСТНО</text>
+</g>
+
+<!-- ============ SINAI MOUNTAIN SYMBOL ============ -->
+<g id="sinaiPeak" class="lbl-z1" transform="translate(588,1120)" opacity=".5">
+  <!-- силуэт горы Синай -->
+  <path d="M-24,18 L-9,-10 L0,-24 L9,-10 L24,18 Z" fill="rgba(140,100,50,.18)" stroke="#9c7840" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- снежная шапка -->
+  <path d="M-5,-13 L0,-24 L5,-13 Z" fill="rgba(240,235,225,.18)" stroke="rgba(240,235,225,.3)" stroke-width=".6"/>
+  <!-- световой блик -->
+  <path d="M-9,-10 L0,-24 L-2,-10 Z" fill="rgba(240,235,225,.06)"/>
+  <text x="0" y="26" text-anchor="middle" font-size="5" fill="#a08040" letter-spacing=".15em">СИНАЙ</text>
+  <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
+</g>
+<!-- Хермон — гора у Дана -->
+<g class="lbl-z1" transform="translate(668,594)" opacity=".4">
+  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.12)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
+  <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
+  <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
+</g>
+<!-- ============ DEBATE: spor o Sodome ============ -->
+<g id="debate" style="display:none">
+  <!-- sight line Bethel -> Tall el-Hammam (visible) -->
+  <path d="M624,782 L662,790" fill="none" stroke="#6fb3a8" stroke-width="1.6" stroke-dasharray="1 0" opacity=".9" vector-effect="non-scaling-stroke"/>
+  <circle cx="624" cy="782" r="2" fill="#6fb3a8"/><circle cx="624" cy="782" r="4.5" fill="none" stroke="#6fb3a8" stroke-width=".7" opacity=".6"/>
+  <!-- sight line Bethel -> Bab edh-Dhra (blocked) -->
+  <path d="M624,782 C640,815 655,848 666,876" fill="none" stroke="#6fb3a8" stroke-width="1.3" stroke-dasharray="3 5" opacity=".5" vector-effect="non-scaling-stroke"/>
+  <g transform="translate(650,838)">
+    <line x1="-2.6" y1="-2.6" x2="2.6" y2="2.6" stroke="#cf5b6b" stroke-width="1.1"/>
+    <line x1="-2.6" y1="2.6" x2="2.6" y2="-2.6" stroke="#cf5b6b" stroke-width="1.1"/>
+  </g>
+  <text x="668" y="785" font-size="4.2" fill="#8fd0c5" style="letter-spacing:.06em">киккар виден (~40 км)</text>
+  <text x="668" y="791" font-size="3" fill="#6fb3a8" opacity=".8">аргумент С. Коллинза за Талл эль-Хаммам</text>
+  <text x="655" y="842" font-size="4.2" fill="#e08a96" style="letter-spacing:.06em">южная котловина не видна (~60 км, за рельефом)</text>
+  <text x="655" y="848" font-size="3" fill="#cf5b6b" opacity=".85">контраргумент: Быт 13 «географически размыта» (У. Раст)</text>
+  <text x="619" y="776" font-size="4.2" fill="#8fd0c5" text-anchor="end" style="letter-spacing:.06em">точка обзора Лота · Быт 13:10</text>
+</g>
+<path id="rt-kings-highway" d="M760,1008 L671,872 L668,872 L676,806 L694,768 L731,594" class="route-line"/><text class="route-lab" dy="-4"><textPath href="#rt-kings-highway" startOffset="38%">Царская дорога</textPath></text><path id="rt-ridge-route" d="M584,864 L610,829 L622,809 L623,800 L624,782 L630,767 L628,748" class="route-line"/><text class="route-lab" dy="-4"><textPath href="#rt-ridge-route" startOffset="50%">Дорога патриархов</textPath></text><path id="rt-via-maris" d="M250,876 L547,833 L596,745 L619,703 L658,651 L731,594" class="route-line"/><text class="route-lab" dy="-4"><textPath href="#rt-via-maris" startOffset="50%">Приморский путь</textPath></text><g data-tip-t="Антиохия Сирийская" data-tip="город · ранг 1 · уверенная локализация · карты: early-church, maccabim, pavel" class="geo-dot" data-name="антиохия сирийская антиохия сирийская антиохия" data-href="../../karty/early-church/" tabindex="0" role="link" aria-label="Антиохия Сирийская — открыть карту"><circle cx="718" cy="266" r="6.5" class="dot-sure"/></g><g data-tip-t="Вавилон" data-tip="город · ранг 1 · уверенная локализация · карты: melachim" class="geo-dot" data-name="вавилон" data-href="../../karty/melachim/" tabindex="0" role="link" aria-label="Вавилон — открыть карту"><circle cx="1543" cy="708" r="6.5" class="dot-sure"/></g><g data-tip-t="Беэр-Шева" data-tip="город · ранг 1 · СПОРНАЯ локализация — есть варианты (2 кандидата) · карты: avraam" class="geo-dot" data-name="беэр-шева" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Беэр-Шева — открыть карту"><circle cx="584" cy="864" r="6.5" class="dot-disputed"/></g><g data-tip-t="Бет-Эль и Гай" data-tip="город · ранг 1 · уверенная локализация · карты: avraam, melachim" class="geo-dot" data-name="бет-эль и гай бет-эль и гай вефиль" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Бет-Эль и Гай — открыть карту"><circle cx="624" cy="782" r="6.5" class="dot-sure"/></g><g data-tip-t="Дамаск" data-tip="город · ранг 1 · уверенная локализация · карты: avraam, early-church" class="geo-dot" data-name="дамаск" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Дамаск — открыть карту"><circle cx="731" cy="594" r="6.5" class="dot-sure"/></g><g data-tip-t="Дан (Лаиш)" data-tip="город · ранг 1 · уверенная локализация · карты: avraam, melachim, shvatim" class="geo-dot" data-name="дан (лаиш) дан (лаиш) дан" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Дан (Лаиш) — открыть карту"><circle cx="665" cy="625" r="6.5" class="dot-sure"/></g><g data-tip-t="Газа" data-tip="город · ранг 1 · уверенная локализация · карты: shoftim" class="geo-dot" data-name="газа" data-href="../../karty/shoftim/" tabindex="0" role="link" aria-label="Газа — открыть карту"><circle cx="547" cy="833" r="6.5" class="dot-sure"/></g><g data-tip-t="Харран" data-tip="город · ранг 1 · уверенная локализация · карты: avraam" class="geo-dot" data-name="харран" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Харран — открыть карту"><circle cx="1003" cy="194" r="6.5" class="dot-sure"/></g><g data-tip-t="Хеврон" data-tip="город · ранг 1 · уверенная локализация · карты: melachim, shoftim" class="geo-dot" data-name="хеврон хеврон (судьи)" data-href="../../karty/melachim/" tabindex="0" role="link" aria-label="Хеврон — открыть карту"><circle cx="610" cy="829" r="6.5" class="dot-sure"/></g><g data-tip-t="Иерихон" data-tip="город · ранг 1 · уверенная локализация · карты: shvatim" class="geo-dot" data-name="иерихон" data-href="../../karty/shvatim/" tabindex="0" role="link" aria-label="Иерихон — открыть карту"><circle cx="645" cy="789" r="6.5" class="dot-sure"/></g><g data-tip-t="Иерусалим" data-tip="город · ранг 1 · уверенная локализация · карты: maccabim, melachim, pavel" class="geo-dot" data-name="иерусалим" data-href="../../karty/maccabim/" tabindex="0" role="link" aria-label="Иерусалим — открыть карту"><circle cx="623" cy="800" r="6.5" class="dot-sure"/></g><g data-tip-t="Мегиддо" data-tip="город · ранг 1 · уверенная локализация · карты: melachim, shoftim" class="geo-dot" data-name="мегиддо" data-href="../../karty/melachim/" tabindex="0" role="link" aria-label="Мегиддо — открыть карту"><circle cx="619" cy="703" r="6.5" class="dot-sure"/></g><g data-tip-t="Самария" data-tip="город · ранг 1 · уверенная локализация · карты: early-church, maccabim, melachim" class="geo-dot" data-name="самария" data-href="../../karty/early-church/" tabindex="0" role="link" aria-label="Самария — открыть карту"><circle cx="621" cy="740" r="6.5" class="dot-sure"/></g><g data-tip-t="Сихем" data-tip="город · ранг 1 · уверенная локализация · карты: avraam, melachim" class="geo-dot" data-name="сихем" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Сихем — открыть карту"><circle cx="628" cy="748" r="6.5" class="dot-sure"/></g><g data-tip-t="Тир" data-tip="город · ранг 1 · уверенная локализация · карты: maccabim" class="geo-dot" data-name="тир" data-href="../../karty/maccabim/" tabindex="0" role="link" aria-label="Тир — открыть карту"><circle cx="621" cy="621" r="6.5" class="dot-sure"/></g><g data-tip-t="Гора Ор" data-tip="гора · ранг 2 · СПОРНАЯ локализация — есть варианты (2 кандидата) · карты: ishod" class="geo-dot" data-name="гора ор" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Гора Ор — открыть карту"><path d="M616,976 L622,966 L628,976 Z" class="dot-disputed"/></g><g data-tip-t="Кармил" data-tip="гора · ранг 2 · уверенная локализация · карты: melachim" class="geo-dot" data-name="кармил" data-href="../../karty/melachim/" tabindex="0" role="link" aria-label="Кармил — открыть карту"><path d="M604,697 L610,687 L616,697 Z" class="dot-sure"/></g><g data-tip-t="Асор" data-tip="город · ранг 2 · уверенная локализация · карты: melachim, shoftim, shvatim" class="geo-dot" data-name="асор" data-href="../../karty/melachim/" tabindex="0" role="link" aria-label="Асор — открыть карту"><circle cx="658" cy="651" r="5.0" class="dot-sure"/></g><g data-tip-t="Кадеш-Барнеа" data-tip="город · ранг 2 · уверенная локализация · карты: ishod, avraam" class="geo-dot" data-name="кадеш-барнеа кадеш (кадеш-барнеа)" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Кадеш-Барнеа — открыть карту"><circle cx="542" cy="934" r="5.0" class="dot-sure"/></g><g data-tip-t="Мара" data-tip="море · ранг 2 · СПОРНАЯ локализация — есть варианты (3 кандидата) · карты: ishod" class="geo-dot" data-name="мара" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Мара — открыть карту"><circle cx="450" cy="1010" r="5.0" class="dot-disputed"/></g><g data-tip-t="Гора Блаженств" data-tip="гора · ранг 2 · позиция реестра (без внешней идентификации) · карты: yeshua" class="geo-dot" data-name="гора блаженств" data-href="../../karty/yeshua/" tabindex="0" role="link" aria-label="Гора Блаженств — открыть карту"><path d="M644,666 L650,656 L656,666 Z" class="dot-plain"/></g><g data-tip-t="Синай · гора Хорив" data-tip="гора · ранг 2 · СПОРНАЯ локализация — есть варианты (2 кандидата) · карты: ishod" class="geo-dot" data-name="синай · гора хорив" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Синай · гора Хорив — открыть карту"><path d="M554,1284 L560,1274 L566,1284 Z" class="dot-disputed"/></g><g data-tip-t="Пи-Гахироф" data-tip="гора · ранг 2 · слабая/традиционная локализация · карты: ishod" class="geo-dot" data-name="пи-гахироф" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Пи-Гахироф — открыть карту"><path d="M354,974 L360,964 L366,974 Z" class="dot-weak"/></g><g data-tip-t="Галилейское море" data-tip="озеро · ранг 2 · уверенная локализация · карты: yeshua" class="geo-dot" data-name="галилейское море" data-href="../../karty/yeshua/" tabindex="0" role="link" aria-label="Галилейское море — открыть карту"><circle cx="658" cy="678" r="5.0" class="dot-sure"/></g><g data-tip-t="Фавор" data-tip="гора · ранг 2 · уверенная локализация · карты: shoftim" class="geo-dot" data-name="фавор" data-href="../../karty/shoftim/" tabindex="0" role="link" aria-label="Фавор — открыть карту"><path d="M634,695 L640,685 L646,695 Z" class="dot-sure"/></g><g data-tip-t="Александрия" data-tip="город · ранг 3 · уверенная локализация · карты: maccabim" class="geo-dot" data-name="александрия" data-href="../../karty/maccabim/" tabindex="0" role="link" aria-label="Александрия — открыть карту"><circle cx="91" cy="872" r="3.8" class="dot-sure"/></g><g data-tip-t="Кесария Приморская" data-tip="город · ранг 3 · уверенная локализация · карты: early-church" class="geo-dot" data-name="кесария приморская" data-href="../../karty/early-church/" tabindex="0" role="link" aria-label="Кесария Приморская — открыть карту"><circle cx="590" cy="714" r="3.8" class="dot-sure"/></g><g data-tip-t="Кесария Филиппова" data-tip="город · ранг 3 · уверенная локализация · карты: yeshua" class="geo-dot" data-name="кесария филиппова" data-href="../../karty/yeshua/" tabindex="0" role="link" aria-label="Кесария Филиппова — открыть карту"><circle cx="670" cy="624" r="3.8" class="dot-sure"/></g><g data-tip-t="Капернаум" data-tip="город · ранг 3 · уверенная локализация · карты: yeshua" class="geo-dot" data-name="капернаум" data-href="../../karty/yeshua/" tabindex="0" role="link" aria-label="Капернаум — открыть карту"><circle cx="654" cy="665" r="3.8" class="dot-sure"/></g><g data-tip-t="Елим" data-tip="город · ранг 3 · уверенная локализация · карты: ishod" class="geo-dot" data-name="елим" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Елим — открыть карту"><circle cx="485" cy="1040" r="3.8" class="dot-sure"/></g><g data-tip-t="Ефам" data-tip="город · ранг 3 · слабая/традиционная локализация · карты: ishod" class="geo-dot" data-name="ефам" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Ефам — открыть карту"><circle cx="330" cy="940" r="3.8" class="dot-weak"/></g><g data-tip-t="Дорога в Газу" data-tip="дорога · ранг 3 · позиция реестра (без внешней идентификации) · карты: early-church" class="geo-dot" data-name="дорога в газу" data-href="../../karty/early-church/" tabindex="0" role="link" aria-label="Дорога в Газу — открыть карту"><circle cx="550" cy="830" r="3.8" class="dot-plain"/></g><g data-tip-t="Герар" data-tip="город · ранг 3 · уверенная локализация · карты: avraam" class="geo-dot" data-name="герар" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Герар — открыть карту"><circle cx="561" cy="847" r="3.8" class="dot-sure"/></g><g data-tip-t="Гераса" data-tip="город · ранг 3 · уверенная локализация · карты: maccabim" class="geo-dot" data-name="гераса" data-href="../../karty/maccabim/" tabindex="0" role="link" aria-label="Гераса — открыть карту"><circle cx="690" cy="741" r="3.8" class="dot-sure"/></g><g data-tip-t="Талл эль-Хаммам" data-tip="город · ранг 3 · позиция реестра (без внешней идентификации) · карты: avraam" class="geo-dot" data-name="талл эль-хаммам" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Талл эль-Хаммам — открыть карту"><circle cx="667" cy="818" r="3.8" class="dot-plain"/></g><g data-tip-t="Иоппия" data-tip="город · ранг 3 · уверенная локализация · карты: early-church" class="geo-dot" data-name="иоппия" data-href="../../karty/early-church/" tabindex="0" role="link" aria-label="Иоппия — открыть карту"><circle cx="576" cy="767" r="3.8" class="dot-sure"/></g><g data-tip-t="Кир-Харешет" data-tip="город · ранг 3 · уверенная локализация · карты: melachim" class="geo-dot" data-name="кир-харешет" data-href="../../karty/melachim/" tabindex="0" role="link" aria-label="Кир-Харешет — открыть карту"><circle cx="671" cy="872" r="3.8" class="dot-sure"/></g><g data-tip-t="Беэр-лахай-рои" data-tip="источник · ранг 3 · СПОРНАЯ локализация — есть варианты · карты: avraam" class="geo-dot" data-name="беэр-лахай-рои" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Беэр-лахай-рои — открыть карту"><circle cx="534" cy="931" r="3.0" class="dot-disputed"/><circle cx="534" cy="931" r="1.3" fill="#fcf9f1" pointer-events="none"/></g><g data-tip-t="Массифа Галаадская" data-tip="город · ранг 3 · слабая/традиционная локализация · карты: shoftim" class="geo-dot" data-name="массифа галаадская" data-href="../../karty/shoftim/" tabindex="0" role="link" aria-label="Массифа Галаадская — открыть карту"><circle cx="679" cy="759" r="3.8" class="dot-weak"/></g><g data-tip-t="Раамсес" data-tip="город · ранг 3 · уверенная локализация · карты: ishod" class="geo-dot" data-name="раамсес" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Раамсес — открыть карту"><circle cx="210" cy="880" r="3.8" class="dot-sure"/></g><g data-tip-t="Рефидим" data-tip="стан · ранг 3 · СПОРНАЯ локализация — есть варианты (2 кандидата) · карты: ishod" class="geo-dot" data-name="рефидим" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Рефидим — открыть карту"><circle cx="535" cy="1165" r="3.8" class="dot-disputed"/></g><g data-tip-t="Силом" data-tip="город · ранг 3 · уверенная локализация · карты: shoftim" class="geo-dot" data-name="силом" data-href="../../karty/shoftim/" tabindex="0" role="link" aria-label="Силом — открыть карту"><circle cx="630" cy="767" r="3.8" class="dot-sure"/></g><g data-tip-t="Содом и Гоморра" data-tip="город · ранг 3 · СПОРНАЯ локализация — есть варианты (3 кандидата) · карты: avraam" class="geo-dot" data-name="содом и гоморра" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Содом и Гоморра — открыть карту"><circle cx="653" cy="874" r="3.8" class="dot-disputed"/></g><g data-tip-t="Сокхоф" data-tip="город · ранг 3 · слабая/традиционная локализация · карты: ishod" class="geo-dot" data-name="сокхоф" data-href="../../karty/ishod/" tabindex="0" role="link" aria-label="Сокхоф — открыть карту"><circle cx="280" cy="920" r="3.8" class="dot-weak"/></g><g data-tip-t="Тарс" data-tip="город · ранг 3 · уверенная локализация · карты: early-church" class="geo-dot" data-name="тарс" data-href="../../karty/early-church/" tabindex="0" role="link" aria-label="Тарс — открыть карту"><circle cx="590" cy="184" r="3.8" class="dot-sure"/></g><g data-tip-t="Урфа (Шанлыурфа)" data-tip="город · ранг 3 · позиция реестра (без внешней идентификации) · карты: avraam" class="geo-dot" data-name="урфа (шанлыурфа)" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Урфа (Шанлыурфа) — открыть карту"><circle cx="979" cy="159" r="3.8" class="dot-plain"/></g><g data-tip-t="Цоар" data-tip="город · ранг 3 · СПОРНАЯ локализация — есть варианты (2 кандидата) · карты: avraam" class="geo-dot" data-name="цоар" data-href="../../karty/avraam/" tabindex="0" role="link" aria-label="Цоар — открыть карту"><circle cx="650" cy="889" r="3.8" class="dot-disputed"/></g><g class="geo-dot geo-cluster" data-name="иерусалим кластер" data-href="../../karty/yeshua/" tabindex="0" role="link" data-tip-t="Иерусалим и окрестности" data-tip="⊕14 мест: Гай, Беф-Орон, Вифания, Вифлеем, Еммаус, Гефсимания, Гива, Гаваон, Голгофа, Иерихон новозаветный, Массифа, Модиин, Шалем · гора Мория, Долина Сорек · городской план — KA-6"><circle cx="623" cy="800" r="10.5" fill="none" class="cluster-ring"/><text x="636" y="792" class="cluster-badge">⊕14</text></g><text x="727.5" y="276.0" font-size="22" class="geo-lab lab-r1" data-name="антиохия сирийская">Антиохия Сирийская</text><line x1="665" y1="625" x2="416.06000000000006" y2="599.8" class="leader-line"/><text x="279.7" y="609.8" font-size="22" class="geo-lab lab-r1" data-name="дан (лаиш)">Дан (Лаиш)</text><line x1="623" y1="800" x2="395.884" y2="774.8" class="leader-line"/><text x="273.1" y="784.8" font-size="22" class="geo-lab lab-r1" data-name="иерусалим">Иерусалим</text><text x="516.0" y="750.0" font-size="22" class="geo-lab lab-r1" data-name="самария">Самария</text><line x1="624" y1="782" x2="314.52799999999996" y2="705.8399999999999" class="leader-line"/><text x="137.2" y="715.8" font-size="22" class="geo-lab lab-r1" data-name="бет-эль и гай">Бет-Эль и Гай</text><text x="740.5" y="604.0" font-size="22" class="geo-lab lab-r1" data-name="дамаск">Дамаск</text><line x1="610" y1="829" x2="448.3559999999999" y2="803.8" class="leader-line"/><text x="366.5" y="813.8" font-size="22" class="geo-lab lab-r1" data-name="хеврон">Хеврон</text><line x1="619" y1="703" x2="435.532" y2="677.8" class="leader-line"/><text x="340.1" y="687.8" font-size="22" class="geo-lab lab-r1" data-name="мегиддо">Мегиддо</text><line x1="628" y1="748" x2="488.1799999999999" y2="722.8" class="leader-line"/><text x="420.0" y="732.8" font-size="22" class="geo-lab lab-r1" data-name="сихем">Сихем</text><text x="1552.5" y="718.0" font-size="22" class="geo-lab lab-r1" data-name="вавилон">Вавилон</text><text x="453.6" y="893.6" font-size="22" class="geo-lab lab-r1" data-name="беэр-шева">Беэр-Шева</text><text x="482.9" y="843.0" font-size="22" class="geo-lab lab-r1" data-name="газа">Газа</text><text x="1012.5" y="204.0" font-size="22" class="geo-lab lab-r1" data-name="харран">Харран</text><line x1="645" y1="789" x2="485.83600000000007" y2="766.6" class="leader-line"/><text x="405.5" y="774.9" font-size="18.5" class="geo-lab lab-r1" data-name="иерихон">Иерихон</text><text x="570.6" y="631.0" font-size="22" class="geo-lab lab-r1" data-name="тир">Тир</text><text x="666.0" y="659.3" font-size="18.5" class="geo-lab lab-r2" data-name="асор">Асор</text><text x="550.0" y="942.3" font-size="18.5" class="geo-lab lab-r2" data-name="кадеш-барнеа">Кадеш-Барнеа</text><text x="630.0" y="980.3" font-size="18.5" class="geo-lab lab-r2" data-name="гора ор">Гора Ор</text><text x="533.2" y="701.3" font-size="18.5" class="geo-lab lab-r2" data-name="кармил">Кармил</text><text x="458.0" y="1018.3" font-size="18.5" class="geo-lab lab-r2" data-name="мара">Мара</text><text x="481.4" y="670.3" font-size="18.5" class="geo-lab lab-r2" data-name="гора блаженств">Гора Блаженств</text><text x="568.0" y="1288.3" font-size="18.5" class="geo-lab lab-r2" data-name="синай · гора хорив">Синай · гора Хорив</text><text x="368.0" y="978.3" font-size="18.5" class="geo-lab lab-r2" data-name="пи-гахироф">Пи-Гахироф</text><line x1="658" y1="678" x2="337.5680000000001" y2="655.6" class="leader-line"/><text x="154.0" y="663.9" font-size="18.5" class="geo-lab lab-r2" data-name="галилейское море">Галилейское море</text><line x1="640" y1="691" x2="525.6" y2="625.3100000000001" class="leader-line"/><text x="468.3" y="633.6" font-size="18.5" class="geo-lab lab-r2" data-name="фавор">Фавор</text><text x="96.4" y="864.6" font-size="18.5" class="geo-lab lab-r3" data-name="александрия">Александрия</text><line x1="590" y1="714" x2="239.51999999999973" y2="744.3940000000001" class="leader-line"/><text x="33.1" y="752.6" font-size="18.5" class="geo-lab lab-r3" data-name="кесария приморская">Кесария Приморская</text><line x1="670" y1="624" x2="690.1440000000001" y2="560.8059999999998" class="leader-line"/><text x="690.1" y="569.1" font-size="18.5" class="geo-lab lab-r3" data-name="кесария филиппова">Кесария Филиппова</text><line x1="654" y1="665" x2="465.1520000000001" y2="642.6" class="leader-line"/><text x="361.9" y="650.9" font-size="18.5" class="geo-lab lab-r3" data-name="капернаум">Капернаум</text><text x="491.8" y="1048.3" font-size="18.5" class="geo-lab lab-r3" data-name="елим">Елим</text><text x="336.8" y="948.3" font-size="18.5" class="geo-lab lab-r3" data-name="ефам">Ефам</text><line x1="550" y1="830" x2="287.744" y2="807.6" class="leader-line"/><text x="138.6" y="815.9" font-size="18.5" class="geo-lab lab-r3" data-name="дорога в газу">Дорога в Газу</text><line x1="561" y1="847" x2="449.0959999999998" y2="877.3940000000001" class="leader-line"/><text x="391.7" y="885.6" font-size="18.5" class="geo-lab lab-r3" data-name="герар">Герар</text><text x="696.8" y="749.3" font-size="18.5" class="geo-lab lab-r3" data-name="гераса">Гераса</text><text x="673.8" y="826.3" font-size="18.5" class="geo-lab lab-r3" data-name="талл эль-хаммам">Талл эль-Хаммам</text><text x="500.4" y="775.3" font-size="18.5" class="geo-lab lab-r3" data-name="иоппия">Иоппия</text><text x="677.8" y="880.3" font-size="18.5" class="geo-lab lab-r3" data-name="кир-харешет">Кир-Харешет</text><text x="368.0" y="923.6" font-size="18.5" class="geo-lab lab-r3" data-name="беэр-лахай-рои">Беэр-лахай-рои</text><text x="684.4" y="782.9" font-size="18.5" class="geo-lab lab-r3" data-name="массифа галаадская">Массифа Галаадская</text><text x="122.9" y="888.3" font-size="18.5" class="geo-lab lab-r3" data-name="раамсес">Раамсес</text><text x="541.8" y="1173.3" font-size="18.5" class="geo-lab lab-r3" data-name="рефидим">Рефидим</text><line x1="630" y1="767" x2="518.0959999999998" y2="797.3940000000001" class="leader-line"/><text x="460.7" y="805.6" font-size="18.5" class="geo-lab lab-r3" data-name="силом">Силом</text><line x1="653" y1="874" x2="673.1440000000001" y2="904.3940000000001" class="leader-line"/><text x="673.1" y="912.6" font-size="18.5" class="geo-lab lab-r3" data-name="содом и гоморра">Содом и Гоморра</text><text x="204.4" y="928.3" font-size="18.5" class="geo-lab lab-r3" data-name="сокхоф">Сокхоф</text><text x="596.8" y="192.3" font-size="18.5" class="geo-lab lab-r3" data-name="тарс">Тарс</text><text x="985.8" y="167.3" font-size="18.5" class="geo-lab lab-r3" data-name="урфа (шанлыурфа)">Урфа (Шанлыурфа)</text><text x="597.3" y="897.3" font-size="18.5" class="geo-lab lab-r3" data-name="цоар">Цоар</text><g class="geo-furn" aria-hidden="true"><rect x="1169" y="1338" width="402.0869565217391" height="60" rx="8" class="furn-plate"/><rect x="1185" y="1372" width="108.69565217391303" height="10" class="sb-dark"/><rect x="1293.695652173913" y="1372" width="108.69565217391303" height="10" class="sb-light"/><rect x="1402.391304347826" y="1372" width="108.69565217391303" height="10" class="sb-dark"/><text x="1185" y="1362" class="sb-t">0</text><text x="1293.695652173913" y="1362" text-anchor="middle" class="sb-t">100</text><text x="1402.391304347826" y="1362" text-anchor="middle" class="sb-t">200</text><text x="1511.086956521739" y="1362" text-anchor="end" class="sb-t">300 км</text><g transform="translate(1818,108)"><circle r="40" class="furn-plate" cx="0" cy="8"/><path d="M0,-22 L8,14 L0,7 L-8,14 Z" class="north-arr"/><text x="0" y="36" text-anchor="middle" class="north-t">С</text></g></g></svg></div><div class="legend geo-legend"><span><b style="background:#1e3a63;border-radius:50%"></b> уверенная — 31</span><span><b style="background:#d9b36a;border:1.5px solid #8a6a1f;border-radius:50%"></b> спорная — 8</span><span><b style="background:transparent;border:1.5px dashed #1e3a63;border-radius:50%"></b> слабая / традиционная — 4</span><span><b style="background:#7d8ba1;border-radius:50%"></b> позиция реестра — 4</span></div><p class="note">В кадре 47 мест семейства levant (размер точки — число карт с местом; наведите курсор — статус и карты). Честно за кадром: 18 регионов (уделы колен и т.п.) появятся ПОЛИГОНАМИ в KA-6 — точкой их не изображаем; 7 суб-локаций (Горница, Гефсимания…) — на городских планах; 14 средиземноморских мест (Павел, семь церквей) — в семействе mediterranean со своей подложкой. Подложка — художественная развёртка base-geo.svg (не строгая проекция; линейка масштаба — приближение).</p>
+  </section>
+
+  <footer>
+    <div class="foot-orn">✦</div>
+    Прототип оболочки Атласа: данные — <code>data/atlas/**</code>, генератор — <code>scripts/atlas-build-shell-preview.js</code>.
+    Идентификации мест и веса уверенности частично производны от OpenBible.info Bible Geocoding Data (CC BY 4.0).
+    Хронология — позиция сайта (ATLAS-CONTRACT §2-бис). Цвета эпох — draft-токены до дизайн-системы KA-6.
+    <div class="foot-stamp">Сборка предпросмотра · 11.07.2026 · ветка claude/website-map-audit-ik3ypo · «Господь Бог — сила моя» (Авв 3:19)</div>
+  </footer>
+</div>
+<div id="tip" role="tooltip"></div>
+<div id="yearchip"></div>
+<script>
+(function(){
+  var tabs=Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  function selectTab(t){
+    tabs.forEach(function(x){x.setAttribute('aria-selected','false');x.tabIndex=-1});
+    document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on')});
+    t.setAttribute('aria-selected','true');t.tabIndex=0;
+    document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+    if(history.replaceState) history.replaceState(null,'','#'+t.dataset.pane);
+  }
+  tabs.forEach(function(t){t.addEventListener('click',function(){selectTab(t)})});
+  // клавиатура: ←/→ по вкладкам (roving tabindex)
+  document.querySelector('nav.tabs').addEventListener('keydown',function(e){
+    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
+    var i=tabs.findIndex(function(t){return t.getAttribute('aria-selected')==='true'});
+    var n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];
+    selectTab(n);n.focus();e.preventDefault();
+  });
+  var tip=document.getElementById('tip');
+  document.addEventListener('mousemove',function(e){
+    var g=e.target.closest('[data-tip]'); if(!g){tip.style.display='none';return}
+    var t=g.getAttribute('data-tip-t');
+    tip.innerHTML=(t?'<b></b>':'')+'';
+    if(t){tip.querySelector('b').textContent=t}
+    tip.appendChild(document.createTextNode(g.getAttribute('data-tip')||''));
+    tip.style.display='block';
+    var x=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-10);
+    var y=Math.min(e.clientY+16,window.innerHeight-tip.offsetHeight-10);
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  });
+  document.addEventListener('mouseleave',function(){tip.style.display='none'});
+  // Подсветка диапазона эпохи на всей шкале
+  var hl=document.getElementById('era-hl');
+  document.querySelectorAll('.era-chip').forEach(function(c){
+    c.addEventListener('mouseenter',function(){
+      var x1=+c.dataset.x1, x2=+c.dataset.x2;
+      hl.setAttribute('x',x1); hl.setAttribute('width',Math.max(x2-x1-2,2)); hl.setAttribute('opacity','1');
+    });
+    c.addEventListener('mouseleave',function(){hl.setAttribute('opacity','0')});
+  });
+  // Перекрестье года: вертикаль + плавающий чип «N до Р.Х.»
+  var tl=document.getElementById('tl'), xh=document.getElementById('xhair'), yc=document.getElementById('yearchip');
+  var R0=-1075, PXY=1.9, PADL=14, XMAX=1296.5;
+  if(tl){
+    tl.addEventListener('mousemove',function(e){
+      var pt=tl.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+      var p=pt.matrixTransform(tl.getScreenCTM().inverse());
+      if(p.x<PADL||p.x>XMAX){xh.setAttribute('opacity','0');yc.style.display='none';return}
+      var yr=Math.round(R0+(p.x-PADL)/PXY);
+      xh.setAttribute('x1',p.x);xh.setAttribute('x2',p.x);xh.setAttribute('opacity','1');
+      yc.textContent=(yr<0?(-yr)+' до Р.Х.':yr+' по Р.Х.');
+      yc.style.display='block';
+      yc.style.left=Math.min(e.clientX+12,window.innerWidth-yc.offsetWidth-8)+'px';
+      yc.style.top=Math.max(e.clientY-34,8)+'px';
+    });
+    tl.addEventListener('mouseleave',function(){xh.setAttribute('opacity','0');yc.style.display='none'});
+  }
+  // Клик/Enter по точке мини-карты — открыть первую карту места
+  document.querySelectorAll('.geo-dot[data-href]').forEach(function(d){
+    d.addEventListener('click',function(){location.href=d.getAttribute('data-href')});
+    d.addEventListener('keydown',function(e){if(e.key==='Enter'){location.href=d.getAttribute('data-href')}});
+  });
+  // Поиск по мини-карте: подсветка совпадений, затемнение остальных
+  var q=document.getElementById('geo-q'), n=document.getElementById('geo-n');
+  if(q){
+    var dots=Array.prototype.slice.call(document.querySelectorAll('.geo-dot,.geo-lab[data-name]'));
+    q.addEventListener('input',function(){
+      var v=q.value.trim().toLowerCase().replace(/ё/g,'е');
+      if(!v){dots.forEach(function(d){d.classList.remove('dim','hit')});n.textContent='';return}
+      var hits=0;
+      dots.forEach(function(d){
+        var ok=d.getAttribute('data-name').indexOf(v)!==-1;
+        d.classList.toggle('hit',ok);d.classList.toggle('dim',!ok);
+        if(ok&&d.classList.contains('geo-dot'))hits++;
+      });
+      n.textContent=hits?('найдено: '+hits):'не найдено';
+    });
+  }
+  // deep-link вкладки: #books / #themes / #maps / #places
+  var h=(location.hash||'').replace('#','');
+  if(h){var t0=document.querySelector('.tab[data-pane="'+h+'"]'); if(t0) selectTab(t0);}
+})();
+</script>
+</body>
+</html>

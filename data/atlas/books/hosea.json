@@ -1,0 +1,14 @@
+{
+  "id": "hosea",
+  "title": {
+    "ru": "Осия",
+    "abbr": "Ос"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 28,
+  "chapters": 14,
+  "maps": [
+    "melachim"
+  ]
+}

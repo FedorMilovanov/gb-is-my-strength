@@ -1,0 +1,21 @@
+{
+  "id": "divided-kingdom",
+  "title": {
+    "ru": "Разделённое царство",
+    "short": "Израиль и Иудея"
+  },
+  "start": -931,
+  "end": -722,
+  "engineEra": "iron",
+  "colorToken": "#9fc0dd",
+  "colorStatus": "contract",
+  "maps": [
+    "melachim"
+  ],
+  "keyEvents": [
+    "Раскол при Ровоаме",
+    "Илия и Ахав",
+    "Падение Самарии 722"
+  ],
+  "note": "Ось цикла «Цари и пророки» (KA-7)"
+}

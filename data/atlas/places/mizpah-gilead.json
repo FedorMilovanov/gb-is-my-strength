@@ -1,0 +1,91 @@
+{
+  "id": "mizpah-gilead",
+  "names": {
+    "ru": "Массифа Галаадская",
+    "he": "הַמִּצְפָּה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 679,
+      "y": 759
+    }
+  },
+  "maps": [
+    {
+      "slug": "shoftim",
+      "localId": "mizpah_gilead"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "mizpah-1",
+    "wikidata": "Q6884729"
+  },
+  "identifications": [
+    {
+      "status": "alternative",
+      "label": "Jel‘ad",
+      "lat": 32.118511,
+      "lng": 35.77702,
+      "score": 171,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mizpah-1 → jelad",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tall er Rumeith",
+      "lat": 32.499852,
+      "lng": 36.014988,
+      "score": 80,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mizpah-1 → tall-er-rumeith",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Khirbet er Rasuni",
+      "lat": 32.131192,
+      "lng": 35.761295,
+      "score": 76,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mizpah-1 → khirbet-er-rasuni",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Suf",
+      "lat": 32.31372,
+      "lng": 35.83713,
+      "score": 26,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mizpah-1 → suf",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.118511,
+    "lng": 35.77702
+  },
+  "bibleRefs": [
+    "Judg 10:17",
+    "Judg 11:11",
+    "Judg 11:29",
+    "Judg 11:34",
+    "Hos 5:1"
+  ],
+  "rank": 3
+}

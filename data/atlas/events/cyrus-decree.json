@@ -1,0 +1,24 @@
+{
+  "id": "cyrus-decree",
+  "title": {
+    "ru": "Указ Кира о возвращении"
+  },
+  "kind": "return",
+  "year": -538,
+  "placeIds": [
+    "jerusalem",
+    "babylon"
+  ],
+  "personIds": [
+    "cyrus2"
+  ],
+  "periodId": "persian",
+  "bibleRefs": [
+    "Езд 1:1-4",
+    "Ис 44:28"
+  ],
+  "maps": [
+    "melachim"
+  ],
+  "extraBiblical": "цилиндр Кира — политика возвращения святынь"
+}

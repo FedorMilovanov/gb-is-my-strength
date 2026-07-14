@@ -1,0 +1,64 @@
+{
+  "id": "babylon",
+  "names": {
+    "ru": "Вавилон",
+    "he": "בָּבֶל"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 1543,
+      "y": 708
+    },
+    "urheimat": {
+      "x": 875,
+      "y": 1030
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "babylon"
+    },
+    {
+      "slug": "nachalo",
+      "localId": "babylon"
+    },
+    {
+      "slug": "avraam",
+      "localId": "babylon"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "babylon-1",
+    "wikidata": "Q5684"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Babylon",
+      "lat": 32.543333,
+      "lng": 44.422222,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: babylon-1 → babylon",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.543333,
+    "lng": 44.422222
+  },
+  "bibleRefs": [
+    "2 Kgs 17:24",
+    "2 Kgs 17:30",
+    "2 Kgs 20:12",
+    "2 Kgs 20:14",
+    "2 Kgs 20:17"
+  ],
+  "rank": 1
+}

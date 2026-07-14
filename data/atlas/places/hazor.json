@@ -1,0 +1,61 @@
+{
+  "id": "hazor",
+  "names": {
+    "ru": "Асор",
+    "he": "חָצוֹר"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 658,
+      "y": 651
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "hazor_kings"
+    },
+    {
+      "slug": "shoftim",
+      "localId": "hazor"
+    },
+    {
+      "slug": "shvatim",
+      "localId": "hazor_conquest"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "hazor-1",
+    "wikidata": "Q740138"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tel Hazor",
+      "lat": 33.018333,
+      "lng": 35.569167,
+      "score": 928,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: hazor-1 → tel-hazor",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 33.018333,
+    "lng": 35.569167
+  },
+  "bibleRefs": [
+    "Josh 11:1",
+    "Josh 11:10",
+    "Josh 11:11",
+    "Josh 11:13",
+    "Josh 12:19"
+  ],
+  "notes": "review: Тель-Хацор: shvatim + shoftim + melachim | гео-фикс 2026-07-11: placements.levant был (740,500) — выброс из route.json melachim (точка в Сирии, севернее Дамаска); поставлен по реальной географии Тель-Хацора (север Кинерета); синхронизировать x/y в karty/melachim/route.json при KA-5-волне карты",
+  "rank": 2
+}

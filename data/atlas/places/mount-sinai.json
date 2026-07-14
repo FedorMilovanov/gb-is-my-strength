@@ -1,0 +1,237 @@
+{
+  "id": "mount-sinai",
+  "names": {
+    "ru": "Синай · гора Хорив",
+    "he": "הַר סִינַי · חֹרֵב"
+  },
+  "type": "mountain",
+  "notes": "SUB-LOCATION: проверить parentId | parent-candidate: sinai (записи нет — место самостоятельное)",
+  "placements": {
+    "levant": {
+      "x": 560,
+      "y": 1280
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "sinai"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "mount-sinai",
+    "wikidata": "Q377485"
+  },
+  "identifications": [
+    {
+      "status": "candidate",
+      "label": "Jebel Musa",
+      "lat": 28.539722,
+      "lng": 33.973333,
+      "accuracyMeters": 5000,
+      "score": 465,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jebel-musa",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Har Karkom",
+      "lat": 30.283333,
+      "lng": 34.75,
+      "accuracyMeters": 5000,
+      "score": 103,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → har-karkom",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jebel Sin Bishar",
+      "lat": 29.671,
+      "lng": 32.961,
+      "accuracyMeters": 5000,
+      "score": 89,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jebel-sin-bishar",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Ras es Safsafeh",
+      "lat": 28.555556,
+      "lng": 33.967222,
+      "accuracyMeters": 5000,
+      "score": 55,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → ras-es-safsafeh",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jebel Serbal",
+      "lat": 28.646389,
+      "lng": 33.651667,
+      "accuracyMeters": 5000,
+      "score": 54,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jebel-serbal",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jebel Katherina",
+      "lat": 28.510833,
+      "lng": 33.955278,
+      "accuracyMeters": 5000,
+      "score": 28,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jebel-katherina",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jebel Hashem el Tarif",
+      "lat": 29.669217,
+      "lng": 34.633411,
+      "accuracyMeters": 5000,
+      "score": 20,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jebel-hashem-el-tarif",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jebel Halal",
+      "lat": 30.653056,
+      "lng": 34.028889,
+      "accuracyMeters": 5000,
+      "score": 12,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jebel-halal",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jebel Yeleq",
+      "lat": 30.351111,
+      "lng": 33.523056,
+      "accuracyMeters": 5000,
+      "score": 5,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jebel-yeleq",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jabal al Magharah",
+      "lat": 30.702222,
+      "lng": 33.376667,
+      "accuracyMeters": 5000,
+      "score": 5,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jabal-al-magharah",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Har ‘Arif",
+      "lat": 30.4265,
+      "lng": 34.7334,
+      "accuracyMeters": 5000,
+      "score": 5,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → har-arif",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Jabal al Lawz",
+      "lat": 28.654167,
+      "lng": 35.305833,
+      "accuracyMeters": 5000,
+      "score": 4,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jabal-al-lawz",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Al Manifa",
+      "lat": 28.3405,
+      "lng": 35.2925,
+      "accuracyMeters": 5000,
+      "score": -7,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → al-manifa",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Jabal Harb",
+      "lat": 27.9607,
+      "lng": 35.6572,
+      "accuracyMeters": 5000,
+      "score": -24,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: mount-sinai → jabal-harb",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 28.539722,
+    "lng": 33.973333,
+    "accuracyMeters": 5000
+  },
+  "bibleRefs": [
+    "Ex 16:1",
+    "Ex 19:2",
+    "Ex 19:11",
+    "Ex 19:18",
+    "Ex 19:20"
+  ],
+  "rank": 2
+}

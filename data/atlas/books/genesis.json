@@ -1,0 +1,14 @@
+{
+  "id": "genesis",
+  "title": {
+    "ru": "Бытие",
+    "abbr": "Быт"
+  },
+  "testament": "ot",
+  "section": "law",
+  "order": 1,
+  "chapters": 50,
+  "maps": [
+    "avraam"
+  ]
+}

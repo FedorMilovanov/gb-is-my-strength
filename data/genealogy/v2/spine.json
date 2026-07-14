@@ -1,0 +1,388 @@
+{
+ "_status": "phase1-draft: золотой мессианский хребет (Христос→Адам), L0-persistent якоря",
+ "reachedRoot": true,
+ "length": 76,
+ "missingAnchors": [],
+ "chain": [
+  {
+   "id": "jesus--isa-7-14",
+   "key": "Jesus@Isa.7.14",
+   "ru": "Иисус Христос"
+  },
+  {
+   "id": "mary--mat-1-16",
+   "key": "Mary@Mat.1.16",
+   "ru": "Мария"
+  },
+  {
+   "id": "heli--luk-3-23",
+   "key": "Heli@Luk.3.23",
+   "ru": "Илий"
+  },
+  {
+   "id": "matthat--luk-3-24",
+   "key": "Matthat@Luk.3.24",
+   "ru": "Матфат"
+  },
+  {
+   "id": "levi--luk-3-24",
+   "key": "Levi@Luk.3.24",
+   "ru": "Левий (Лк)"
+  },
+  {
+   "id": "melchi--luk-3-24",
+   "key": "Melchi@Luk.3.24",
+   "ru": "Мелхий (Лк)"
+  },
+  {
+   "id": "jannai--luk-3-24",
+   "key": "Jannai@Luk.3.24",
+   "ru": "Ианнай (Лк)"
+  },
+  {
+   "id": "joseph--luk-3-24",
+   "key": "Joseph@Luk.3.24",
+   "ru": "Иосиф (Лк)"
+  },
+  {
+   "id": "mattathias--luk-3-25",
+   "key": "Mattathias@Luk.3.25",
+   "ru": "Маттафия (Лк)"
+  },
+  {
+   "id": "amos--luk-3-25",
+   "key": "Amos@Luk.3.25",
+   "ru": "Амос (Лк)"
+  },
+  {
+   "id": "nahum--luk-3-25",
+   "key": "Nahum@Luk.3.25",
+   "ru": "Наум (Лк)"
+  },
+  {
+   "id": "esli--luk-3-25",
+   "key": "Esli@Luk.3.25",
+   "ru": "Если (Лк)"
+  },
+  {
+   "id": "naggai--luk-3-25",
+   "key": "Naggai@Luk.3.25",
+   "ru": "Наггесий (Лк)"
+  },
+  {
+   "id": "maath--luk-3-26",
+   "key": "Maath@Luk.3.26",
+   "ru": "Мааф (Лк)"
+  },
+  {
+   "id": "mattathias--luk-3-26",
+   "key": "Mattathias@Luk.3.26",
+   "ru": "Маттафия (Лк)"
+  },
+  {
+   "id": "semein--luk-3-26",
+   "key": "Semein@Luk.3.26",
+   "ru": "Семеин (Лк)"
+  },
+  {
+   "id": "josech--luk-3-26",
+   "key": "Josech@Luk.3.26",
+   "ru": "Иосиев (Лк)"
+  },
+  {
+   "id": "joda--luk-3-26",
+   "key": "Joda@Luk.3.26",
+   "ru": "Иода (Лк)"
+  },
+  {
+   "id": "joanan--luk-3-27",
+   "key": "Joanan@Luk.3.27",
+   "ru": "Иоанан (Лк)"
+  },
+  {
+   "id": "rhesa--luk-3-27",
+   "key": "Rhesa@Luk.3.27",
+   "ru": "Риса (Лк)"
+  },
+  {
+   "id": "zerubbabel--luk-3-27",
+   "key": "Zerubbabel@Luk.3.27",
+   "ru": "Зоровавель (Лк)"
+  },
+  {
+   "id": "shealtiel--luk-3-27",
+   "key": "Shealtiel@Luk.3.27",
+   "ru": "Салафиил (Лк)"
+  },
+  {
+   "id": "neri--luk-3-27",
+   "key": "Neri@Luk.3.27",
+   "ru": "Нири"
+  },
+  {
+   "id": "melchi--luk-3-28",
+   "key": "Melchi@Luk.3.28",
+   "ru": "Мелхий"
+  },
+  {
+   "id": "addi--luk-3-28",
+   "key": "Addi@Luk.3.28",
+   "ru": "Аддин"
+  },
+  {
+   "id": "cosam--luk-3-28",
+   "key": "Cosam@Luk.3.28",
+   "ru": "Косам"
+  },
+  {
+   "id": "elmadam--luk-3-28",
+   "key": "Elmadam@Luk.3.28",
+   "ru": "Елмодам"
+  },
+  {
+   "id": "er--luk-3-28",
+   "key": "Er@Luk.3.28",
+   "ru": "Ер (Лк)"
+  },
+  {
+   "id": "joshua--luk-3-29",
+   "key": "Joshua@Luk.3.29",
+   "ru": "Иисус (Лк)"
+  },
+  {
+   "id": "eliezer--luk-3-29",
+   "key": "Eliezer@Luk.3.29",
+   "ru": "Елиезер (Лк)"
+  },
+  {
+   "id": "jorim--luk-3-29",
+   "key": "Jorim@Luk.3.29",
+   "ru": "Иорим"
+  },
+  {
+   "id": "matthat--luk-3-29",
+   "key": "Matthat@Luk.3.29",
+   "ru": "Матфат"
+  },
+  {
+   "id": "levi--luk-3-29",
+   "key": "Levi@Luk.3.29",
+   "ru": "Левий (Лк)"
+  },
+  {
+   "id": "simeon--luk-3-30",
+   "key": "Simeon@Luk.3.30",
+   "ru": "Симеон (Лк)"
+  },
+  {
+   "id": "judah--luk-3-30",
+   "key": "Judah@Luk.3.30",
+   "ru": "Иуда (Лк)"
+  },
+  {
+   "id": "joseph--luk-3-30",
+   "key": "Joseph@Luk.3.30",
+   "ru": "Иосиф (Лк)"
+  },
+  {
+   "id": "jonam--luk-3-30",
+   "key": "Jonam@Luk.3.30",
+   "ru": "Ионан"
+  },
+  {
+   "id": "eliakim--luk-3-30",
+   "key": "Eliakim@Luk.3.30",
+   "ru": "Елиаким"
+  },
+  {
+   "id": "melea--luk-3-31",
+   "key": "Melea@Luk.3.31",
+   "ru": "Мелеа"
+  },
+  {
+   "id": "menna--luk-3-31",
+   "key": "Menna@Luk.3.31",
+   "ru": "Менна"
+  },
+  {
+   "id": "mattatha--luk-3-31",
+   "key": "Mattatha@Luk.3.31",
+   "ru": "Маттафа"
+  },
+  {
+   "id": "nathan--2sa-5-14",
+   "key": "Nathan@2Sa.5.14",
+   "ru": "Нафан"
+  },
+  {
+   "id": "david--rut-4-17",
+   "key": "David@Rut.4.17",
+   "ru": "Давид"
+  },
+  {
+   "id": "jesse--rut-4-17",
+   "key": "Jesse@Rut.4.17",
+   "ru": "Иессей"
+  },
+  {
+   "id": "obed--rut-4-17",
+   "key": "Obed@Rut.4.17",
+   "ru": "Овид"
+  },
+  {
+   "id": "boaz--rut-2-1",
+   "key": "Boaz@Rut.2.1",
+   "ru": "Вооз"
+  },
+  {
+   "id": "salmon--rut-4-20",
+   "key": "Salmon@Rut.4.20",
+   "ru": "Салмон"
+  },
+  {
+   "id": "nahshon--exo-6-23",
+   "key": "Nahshon@Exo.6.23",
+   "ru": "Наасон"
+  },
+  {
+   "id": "amminadab--exo-6-23",
+   "key": "Amminadab@Exo.6.23",
+   "ru": "Аминадав"
+  },
+  {
+   "id": "ram--rut-4-19",
+   "key": "Ram@Rut.4.19",
+   "ru": "Арам"
+  },
+  {
+   "id": "hezron--gen-46-12",
+   "key": "Hezron@Gen.46.12",
+   "ru": "Есром"
+  },
+  {
+   "id": "perez--gen-38-29",
+   "key": "Perez@Gen.38.29",
+   "ru": "Фарес"
+  },
+  {
+   "id": "judah--gen-29-35",
+   "key": "Judah@Gen.29.35",
+   "ru": "Иуда"
+  },
+  {
+   "id": "israel--gen-25-26",
+   "key": "Israel@Gen.25.26",
+   "ru": "Иаков"
+  },
+  {
+   "id": "isaac--gen-17-19",
+   "key": "Isaac@Gen.17.19",
+   "ru": "Исаак"
+  },
+  {
+   "id": "abraham--gen-11-26",
+   "key": "Abraham@Gen.11.26",
+   "ru": "Авраам"
+  },
+  {
+   "id": "terah--gen-11-24",
+   "key": "Terah@Gen.11.24",
+   "ru": "Фарра"
+  },
+  {
+   "id": "nahor--gen-11-22",
+   "key": "Nahor@Gen.11.22",
+   "ru": "Нахор"
+  },
+  {
+   "id": "serug--gen-11-20",
+   "key": "Serug@Gen.11.20",
+   "ru": "Серуг"
+  },
+  {
+   "id": "reu--gen-11-18",
+   "key": "Reu@Gen.11.18",
+   "ru": "Рагав"
+  },
+  {
+   "id": "peleg--gen-10-25",
+   "key": "Peleg@Gen.10.25",
+   "ru": "Фалек"
+  },
+  {
+   "id": "eber--gen-10-21",
+   "key": "Eber@Gen.10.21",
+   "ru": "Евер"
+  },
+  {
+   "id": "shelah--gen-10-24",
+   "key": "Shelah@Gen.10.24",
+   "ru": "Сала"
+  },
+  {
+   "id": "cainan--luk-3-36",
+   "key": "Cainan@Luk.3.36",
+   "ru": "Каинан (Лк 3:36)"
+  },
+  {
+   "id": "arpachshad--gen-10-22",
+   "key": "Arpachshad@Gen.10.22",
+   "ru": "Арфаксад"
+  },
+  {
+   "id": "shem--gen-5-32",
+   "key": "Shem@Gen.5.32",
+   "ru": "Сим"
+  },
+  {
+   "id": "noah--gen-5-29",
+   "key": "Noah@Gen.5.29",
+   "ru": "Ной"
+  },
+  {
+   "id": "lamech--gen-5-25",
+   "key": "Lamech@Gen.5.25",
+   "ru": "Ламеха"
+  },
+  {
+   "id": "methuselah--gen-5-21",
+   "key": "Methuselah@Gen.5.21",
+   "ru": "Мафусал"
+  },
+  {
+   "id": "enoch--gen-5-18",
+   "key": "Enoch@Gen.5.18",
+   "ru": "Еноха"
+  },
+  {
+   "id": "jared--gen-5-15",
+   "key": "Jared@Gen.5.15",
+   "ru": "Иаред"
+  },
+  {
+   "id": "mahalalel--gen-5-12",
+   "key": "Mahalalel@Gen.5.12",
+   "ru": "Малелеил"
+  },
+  {
+   "id": "kenan--gen-5-9",
+   "key": "Kenan@Gen.5.9",
+   "ru": "Каинан"
+  },
+  {
+   "id": "enosh--gen-4-26",
+   "key": "Enosh@Gen.4.26",
+   "ru": "Енос"
+  },
+  {
+   "id": "seth--gen-4-25",
+   "key": "Seth@Gen.4.25",
+   "ru": "Сиф"
+  },
+  {
+   "id": "adam--gen-2-19",
+   "key": "Adam@Gen.2.19",
+   "ru": "Адам"
+  }
+ ]
+}

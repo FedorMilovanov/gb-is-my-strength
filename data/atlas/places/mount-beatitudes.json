@@ -1,0 +1,27 @@
+{
+  "id": "mount-beatitudes",
+  "names": {
+    "ru": "Гора Блаженств",
+    "he": "הַר הַאֹשֶׁר"
+  },
+  "type": "mountain",
+  "placements": {
+    "levant": {
+      "x": 650,
+      "y": 662
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "mount_beatitudes"
+    }
+  ],
+  "needsReview": false,
+  "notes": "no-match: традиционная идентификация без библейского топонима; статус traditional | review: досье — GEO-DOSSIER-mount-beatitudes.md — точка остаётся на традиционном хребте над Табхой, статус candidate/traditional; Евангелия гору не называют (Мф 5:1 / Лк 6:17 — терраса на склоне) | geo: Гора Блаженств (традиционная, над Табхой) (manualGeo, уровень B)",
+  "geo": {
+    "lat": 32.882,
+    "lng": 35.5556
+  },
+  "rank": 2
+}

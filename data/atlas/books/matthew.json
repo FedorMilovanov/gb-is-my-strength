@@ -1,0 +1,14 @@
+{
+  "id": "matthew",
+  "title": {
+    "ru": "От Матфея",
+    "abbr": "Мф"
+  },
+  "testament": "nt",
+  "section": "gospels",
+  "order": 40,
+  "chapters": 28,
+  "maps": [
+    "yeshua"
+  ]
+}

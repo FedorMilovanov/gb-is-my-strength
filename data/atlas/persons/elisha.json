@@ -1,0 +1,21 @@
+{
+  "id": "elisha",
+  "names": {
+    "ru": "Елисей"
+  },
+  "role": "prophet",
+  "realm": "israel",
+  "ministry": {
+    "start": -848,
+    "end": -797,
+    "approx": true
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "placeIds": [
+    "samaria",
+    "jericho",
+    "dan"
+  ]
+}
