@@ -126,6 +126,31 @@ const stale = fs.readdirSync(path.join(ROOT, baptDir))
 check('Контент: счётчики Баптистов = канон движка (9 частей, нет «из 10»)',
   stale.length === 0, 'устаревшие счётчики в: ' + stale.join(', '));
 
+/* ---------- конфиги серий: только через defineSeriesConfig ---------- */
+const seriesDir = 'src/components/article-pilots/_shared/series';
+const cfgFiles = fs.readdirSync(path.join(ROOT, seriesDir)).filter((f) => f.endsWith('SeriesConfig.ts'));
+const rawCfgs = cfgFiles.filter((f) => !read(path.join(seriesDir, f)).includes('defineSeriesConfig('));
+check('Серии: каждый *SeriesConfig.ts объявлен через defineSeriesConfig()',
+  rawCfgs.length === 0 && read(path.join(seriesDir, 'seriesConfig.ts')).includes('defineSeriesConfig('),
+  'сырые конфиги (валидатор их не проверит): ' + rawCfgs.join(', '));
+
+check('Серии: гид для агентов docs/SERIES-ENGINE-GUIDE.md на месте',
+  fs.existsSync(path.join(ROOT, 'docs/SERIES-ENGINE-GUIDE.md')));
+
+// Каждая заявленная theme обязана иметь css/series-<theme>.css
+const themes = [];
+for (const f of cfgFiles.concat(['seriesConfig.ts'])) {
+  const m = read(path.join(seriesDir, f)).match(/theme:\s*'([a-z0-9-]+)'/g) || [];
+  for (const t of m) themes.push(t.match(/'([a-z0-9-]+)'/)[1]);
+}
+const missingThemes = themes.filter((t) => !fs.existsSync(path.join(ROOT, `css/series-${t}.css`)));
+check('Серии: у каждой theme есть css/series-<theme>.css', missingThemes.length === 0,
+  'нет файла темы: ' + missingThemes.join(', '));
+
+// Спутники: аккордеон обязан уметь их рендерить (satellitesOf подключён)
+check('Серии: аккордеон рендерит спутники (satellitesOf в GillPartTocOverlay)',
+  read('src/components/article-pilots/gill-series/GillPartTocOverlay.astro').includes('satellitesOf('));
+
 /* ---------- CSS: структурная целостность (AST, не только скобки) ---------- */
 // Регрессия AUDIT-CSS-FLOATCLUSTER-COMMENT-CORRUPTION (arena 2026-07-14):
 // незакрытый баннер-комментарий превращал следующий rule в мусорный селектор

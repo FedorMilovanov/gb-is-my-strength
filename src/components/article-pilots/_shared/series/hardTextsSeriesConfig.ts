@@ -7,7 +7,7 @@
  * (partToc), снятые с собранных статей (dist), и обложки карточки
  * «Сейчас читаете». Quiz пуст → вкладка «Тест» в «Обучении» скрыта движком.
  */
-import { SERIES_CONFIGS, type SeriesConfig, type SeriesPageChromeData, type SeriesPartTocItem } from './seriesConfig';
+import { SERIES_CONFIGS, type SeriesConfig, type SeriesPageChromeData, type SeriesPartTocItem, defineSeriesConfig } from './seriesConfig';
 import {
   HEART_SERIES_ITEMS,
   heartRoman,
@@ -132,7 +132,7 @@ for (const item of HEART_SERIES_ITEMS) {
   };
 }
 
-export const HARD_TEXTS_SERIES: SeriesConfig = {
+export const HARD_TEXTS_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'hard-texts',
   seriesTitle: 'Тайны человеческого сердца',
   seriesTitleFull: 'Тайны человеческого сердца',
@@ -151,7 +151,7 @@ export const HARD_TEXTS_SERIES: SeriesConfig = {
     ribbon: item.ribbon,
   })),
   pages,
-};
+});
 
 // Регистрируем инстанс в общем реестре движка (lookup по seriesId).
 SERIES_CONFIGS[HARD_TEXTS_SERIES.seriesId] = HARD_TEXTS_SERIES;

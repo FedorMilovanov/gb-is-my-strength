@@ -1,10 +1,12 @@
 ---
-import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
+import { GILL_SERIES, satellitesOf, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props { pageId: string; config?: SeriesConfig; }
 const { pageId, config = GILL_SERIES } = Astro.props;
 const page = config.pages[pageId];
-const seriesItems = config.items;
+/* Аккордеон показывает ЯДРО серии; спутники (tier: 'satellite') рендерятся
+   строками ВНУТРИ своей родительской части (см. satRows ниже). */
+const seriesItems = config.items.filter((it) => it.tier !== 'satellite');
 /**
  * «Оглавление части» — АККОРДЕОН (канон владельца 2026-07-13, эталон:
  * auditrepo/references/gb-ui-canon-2026-07-13/mobile-toc-accordion-v5.html).
@@ -16,10 +18,16 @@ const seriesItems = config.items;
  * Оболочка .toc-overlay/.toc-sheet и её open/close/focus-trap — без изменений
  * (initTocPopups в floating-cluster-controller.js).
  */
-const current = seriesItems.find((item) => item.id === pageId)!;
+/* Текущая страница может быть спутником — тогда «текущая часть» аккордеона
+   это её родитель (раскрыт), а сам спутник подсвечен своей строкой. */
+const currentRaw = config.items.find((item) => item.id === pageId)!;
+const currentPartId = currentRaw.tier === 'satellite' ? currentRaw.parent! : currentRaw.id;
+const current = seriesItems.find((item) => item.id === currentPartId)!;
 /* NBSP между «Часть» и нумералом: при длинном имени серии (Тёмная сторона
    кафедры) лейбл переносится — нумерал не должен отрываться на свою строку. */
-const currentPartLabel = current.mark.kind === 'roman' ? `Часть ${current.mark.value}` : current.title;
+const currentPartLabel = currentRaw.tier === 'satellite'
+  ? `${currentRaw.mark.value} · ${currentRaw.shortTitle || currentRaw.title}`
+  : current.mark.kind === 'roman' ? `Часть ${current.mark.value}` : current.title;
 /* Убираем дубль «Часть N.» из заголовка строки — колонка нумерала уже говорит это. */
 const shortTitle = (t: string) => t.replace(/^Часть\s+[IVXLC]+\.\s*/, '');
 const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.href || '';
@@ -34,7 +42,8 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
     <div class="toc-sheet__list gbat" id="gbs2PartToc" data-gill-parts-nav>
       {seriesItems.map((item) => {
-        const isCurrent = item.id === pageId;
+        const isCurrent = item.id === currentPartId;
+        const sats = satellitesOf(config, item.id);
         const secs = config.pages[item.id]?.partToc || [];
         const isLabel = item.mark.kind === 'label';
         return (
@@ -54,9 +63,16 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
               <span class="gbat-rail" aria-hidden="true"></span>
               {!isCurrent && <a class="gbat-sub gbat-go" href={item.href}><span class="gbat-dot"></span><span>Перейти к части</span></a>}
               {secs.map((row) => (
-                <a class={['gbat-sub', row.level === 3 && 'h3', isCurrent && row.current && 'active'].filter(Boolean).join(' ')}
-                   href={isCurrent ? row.href : item.href + row.href}>
+                <a class={['gbat-sub', row.level === 3 && 'h3', isCurrent && row.current && pageId === item.id && 'active'].filter(Boolean).join(' ')}
+                   href={pageId === item.id ? row.href : item.href + row.href}>
                   <span class="gbat-dot"></span><span>{row.label}</span>
+                </a>
+              ))}
+              {sats.map((sat) => (
+                <a class={['gbat-sub', 'gbat-sat', sat.id === pageId && 'active'].filter(Boolean).join(' ')} href={sat.href}>
+                  <span class="gbat-satmark" aria-hidden="true">{sat.mark.value}</span>
+                  <span>{sat.shortTitle || sat.title}</span>
+                  <span class="gbat-satmin">{sat.readingTime}</span>
                 </a>
               ))}
             </div></div></div>

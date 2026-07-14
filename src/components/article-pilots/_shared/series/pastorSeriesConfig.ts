@@ -11,9 +11,9 @@
  * quiz: [] пока (CBM-черновик из ветки lane ждёт вычитки владельцем — вкладка
  * «Тест» движком скрыта до утверждения).
  */
-import { SERIES_CONFIGS, type SeriesConfig } from './seriesConfig';
+import { SERIES_CONFIGS, type SeriesConfig, defineSeriesConfig } from './seriesConfig';
 
-export const PASTOR_SERIES: SeriesConfig = {
+export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'pastor-series',
   seriesTitle: 'Тёмная сторона кафедры',
   seriesTitleFull: 'Тёмная сторона кафедры',
@@ -60,7 +60,7 @@ export const PASTOR_SERIES: SeriesConfig = {
       ],
     },
   },
-};
+});
 
 // Регистрируем инстанс в общем реестре движка.
 SERIES_CONFIGS[PASTOR_SERIES.seriesId] = PASTOR_SERIES;

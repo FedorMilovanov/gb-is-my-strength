@@ -4749,6 +4749,17 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
 #partTocOverlay .gbat-part.cur .gbat-dot{border-color:rgba(184,137,74,.45)}
 #partTocOverlay .gbat-sub.h3{min-height:34px;font-size:12.5px;color:var(--color-text-muted,#7d746a);padding-left:58px}
 #partTocOverlay .gbat-sub.h3 .gbat-dot{width:6px;height:6px;margin-top:-3px;left:20px}
+/* Спутники части (tier: 'satellite', SERIES-ENGINE-GUIDE §3): буква-марка
+   вместо точки метро-линии, приглушённее разделов; активный — акцент серии.
+   Токены серии (--gb-accent и т.п.) перекрашивают под тему автоматически. */
+#partTocOverlay .gbat-sat{font-style:normal}
+#partTocOverlay .gbat-satmark{position:absolute;left:12px;top:50%;margin-top:-9px;width:18px;height:18px;
+  display:grid;place-items:center;border-radius:50%;border:1px solid var(--gb-border,rgba(120,83,46,.35));
+  font-family:Georgia,'Times New Roman',serif;font-size:10.5px;line-height:1;
+  color:var(--gb-text-muted,#8a7a66);background:transparent}
+#partTocOverlay .gbat-sat.active .gbat-satmark{border-color:var(--gb-accent,#b8894a);color:var(--gb-accent,#b8894a)}
+#partTocOverlay .gbat-satmin{margin-left:auto;font-size:11px;color:var(--gb-text-muted,#8a7a66);opacity:.75}
+
 #partTocOverlay .gbat-sub.h3.active .gbat-dot{width:8px;height:8px;margin-top:-4px;left:19px}
 #partTocOverlay .gbat-sub.active{background:color-mix(in srgb,var(--color-accent-gold,#b8936a) 15%,var(--fill));font-weight:700;
   box-shadow:0 3px 10px -6px rgba(138,100,48,.5)}

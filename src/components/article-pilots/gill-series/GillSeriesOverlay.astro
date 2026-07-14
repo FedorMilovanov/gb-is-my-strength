@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { pageId, config = GILL_SERIES } = Astro.props;
-const seriesItems = config.items;
+const seriesItems = config.items.filter((it) => it.tier !== 'satellite');
 ---
 <div class="toc-overlay" id="seriesTocOverlay" aria-hidden="true">
   <div class="toc-sheet" role="dialog" aria-modal="true" aria-label="Содержание серии">
