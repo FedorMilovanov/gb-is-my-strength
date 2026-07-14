@@ -75,39 +75,6 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
 <script>
   const LINE_HEIGHT_KEY = 'gb:gill-line-height:v1';
   const MEASURE_KEY = 'gb:gill-measure:v1';
-  const READER_THEME_KEY = 'gb:gill-reader-theme:v1';
-
-  // Самодостаточный применитель темы «День/Сепия/Ночь». На серия-страницах его
-  // определяет GillSeriesMobileBar (и там же восстанавливает при загрузке);
-  // на ОДИНОЧНЫХ статьях (kod-da-vinchi) бара нет, поэтому лист сам берёт эту
-  // роль — но только если функция ещё не задана (бар выигрывает на сериях).
-  // Корень обобщён: [data-gill-v16] у серий, [data-reader-root] у одиночных.
-  if (!(window as any).applyGillReaderTheme) {
-    (window as any).applyGillReaderTheme = function (theme: string) {
-      const root = (document.querySelector('[data-gill-v16]')
-        || document.querySelector('[data-reader-root]')) as HTMLElement | null;
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-        if (root) root.removeAttribute('data-gill-reader-theme');
-      } else if (theme === 'sepia') {
-        document.documentElement.classList.remove('dark');
-        if (root) root.setAttribute('data-gill-reader-theme', 'sepia');
-      } else {
-        document.documentElement.classList.remove('dark');
-        if (root) root.removeAttribute('data-gill-reader-theme');
-      }
-      try { localStorage.setItem(READER_THEME_KEY, theme); } catch (_) {}
-      try { localStorage.setItem('theme', theme === 'dark' ? 'dark' : 'light'); } catch (_) {}
-      document.querySelectorAll('[data-gill-theme-btn]').forEach((btn) => {
-        btn.setAttribute('aria-pressed', (btn as HTMLElement).dataset.theme === theme ? 'true' : 'false');
-      });
-    };
-    // Восстановить сохранённую читательскую тему при загрузке (роль бара).
-    try {
-      const saved = localStorage.getItem(READER_THEME_KEY);
-      if (saved === 'sepia' || saved === 'dark') (window as any).applyGillReaderTheme(saved);
-    } catch (_) {}
-  }
   // "normal" matches the site's existing baseline article line-height (1.6)
   // exactly, so picking it explicitly never causes a visible jump.
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
@@ -116,11 +83,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
   function initGillReaderSettings() {
     const overlay = document.getElementById('gillSettingsOverlay');
     if (!overlay) return;
-    // Корень применения настроек: серия-движок несёт [data-gill-v16]; одиночные
-    // статьи (kod-da-vinchi) — общий маркер [data-reader-root] на их <main>,
-    // чтобы тот же лист работал и там (тема/сепия/размер/интервал).
-    const gillRoot = (document.querySelector('[data-gill-v16]')
-      || document.querySelector('[data-reader-root]')) as HTMLElement | null;
+    const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
 
     function setPressed(group: Element, current: HTMLElement) {
       group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === current ? 'true' : 'false'));

@@ -1,35 +1,44 @@
 ---
 import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
-import GillReaderSettingsSheet from '@/components/article-pilots/gill-series/GillReaderSettingsSheet.astro';
 import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
+import ReaderSettings from '@/components/article-pilots/_shared/ReaderSettings.astro';
 import { KOD_DA_VINCHI_TOC } from './kodDaVinchiToc';
 /**
- * KodDaVinchiPageChrome — Phase 5a: body-segment-0 Astro component.
+ * KodDaVinchiPageChrome — хром одиночной статьи.
  *
- * Replaces the last raw-fragment import before <main>.
- * Contains: skip-link, reading-progress, section-label, theme-toggle,
- *           toc-sidebar, breadcrumb.
- *
- * DOM/classes/IDs are byte-identical to the legacy HTML so site.js
- * selectors and CSS rules continue to match.
+ * Одиночная статья использует ОБЩИЙ движок одиночных статей (не серия-движок
+ * Гилла): ReaderRail (десктоп-рельс с оглавлением + ⚙) + ReaderSettings
+ * (самодостаточный лист тема/сепия/размер/интервал/ширина, работает и на
+ * десктопе, и на мобиле). Тот же комплект у Герменевтики. С Gill-листом серий
+ * НЕ связано.
  */
 ---
 <a class="skip-link" href="#content">Перейти к содержанию</a>
-<!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
-<FloatingCluster mode="single" variant="article" audioState="none" />
-<!-- Десктоп (≥1200px): читательский рельс слева с оглавлением статьи + ⚙ в
-     нижнем тулбаре (как у Герменевтики — общий ReaderRail). На мобиле рельс
-     скрыт; полноценный лист настроек на мобиле пока не подключаем (Gill-лист
-     глубоко заскоплен под серию/[data-gill-v16] — чистый мобильный вид требует
-     отдельного обобщения; мобила остаётся с день/ночь в угловом кластере). -->
+<!-- Угловой кластер: тема/поиск/PLAY/сохранить + ⚙ (settings=true). ⚙ на
+     десктопе прячется (там настройки открывает ⚙ рельса), на мобиле — рабочая. -->
+<FloatingCluster mode="single" variant="article" audioState="none" settings={true} />
+<!-- Десктоп (≥1200px): читательский рельс слева (оглавление статьи + ⚙ в нижнем
+     тулбаре). settingsTrigger="hm" → рельсовая ⚙ шлёт 'hm:open-settings'. -->
 <ReaderRail
   eyebrow="Разбор заблуждений"
   title="«Код да Винчи»: триллер или подмена?"
   backHref="../../"
   toc={KOD_DA_VINCHI_TOC}
-  settingsTrigger="gill"
+  settingsTrigger="hm"
 />
-<!-- Полноценный лист «Настройки чтения» (тема/сепия/размер/интервал) —
-     тот же GillReaderSettingsSheet, что у серий; применяется к
-     <main data-reader-root>. -->
-<GillReaderSettingsSheet />
+<!-- Общий лист настроек одиночных статей (тот же, что у Герменевтики);
+     применяется к <main data-reader-root>. -->
+<ReaderSettings />
+<script is:inline>
+  // Угловая ⚙ (мобила) открывает тот же ReaderSettings через 'hm:open-settings'.
+  (function () {
+    var btn = document.getElementById('gbFcSettings');
+    if (btn && !btn.dataset.readerBound) {
+      btn.dataset.readerBound = '1';
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.dispatchEvent(new CustomEvent('hm:open-settings'));
+      });
+    }
+  })();
+</script>
