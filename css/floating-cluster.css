@@ -331,6 +331,17 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
 .gb-ember[data-state="paused"]   .gb-ember__ring-svg,
 .gb-ember[data-state="complete"] .gb-ember__ring-svg { opacity: 1; }
 
+/* Owner («не заливать PLAY на десктопе, просто ободок чёрный») — порт
+   невлитого канона 52bb3b5+ac2bec7: на десктопном угловом кластере тонкий
+   контур-ободок ВИДИМ В ПОКОЕ (как на мобиле), при воспроизведении по нему
+   бежит акцентный прогресс (готовый ring-track/ring-progress механизм TTS).
+   Красим track в цвет иконки страницы, не в золото-под-диск. Мобилу не
+   трогаем — у неё свой контур (.mobile-top-ember::before, canon README). */
+@media (min-width: 64em) {
+  .gbs-theme-corner .gb-ember__ring-svg { opacity: 1; }
+  .gbs-theme-corner .gb-ember__ring-track { stroke: var(--color-text, #1a1a1a); opacity: .55; }
+}
+
 .gb-ember__ring-track {
   fill: none;
   stroke: var(--color-border, #e5e2dc);
@@ -1002,7 +1013,10 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
    норм"), which reads better than --color-accent's dark-mode tan here. */
 [data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--color-accent,#7a2e2e)}
 html.dark [data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ring-color:var(--gb-accent-gold-bright,#d8aa6d)}
-[data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-track{stroke:rgba(232,184,120,.22)}
+/* Owner: «не заливать PLAY на десктопе, просто ободок чёрный» — контур виден
+   и в покое (ring-svg opacity:1 в corner-блоке выше), красим его в цвет
+   иконки страницы, а не в бывшее золото-под-диск (порт ac2bec7). */
+[data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-track{stroke:var(--color-text,#1a1a1a);opacity:.55}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-progress{stroke-width:1.5}
 /* Persistent selected-speed echo, bottom-right corner of Play (owner
    reference: mobile prototype's .mobile-spdbadge — a filled gold pill, not
@@ -1012,7 +1026,10 @@ html.dark [data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ring-color:var(--
    reused verbatim, not invented, just wrapped into a small corner badge. */
 [data-gill-v16] .gbs-rail-spdbadge{
   position:absolute;right:-7px;bottom:-6px;z-index:3;
-  min-width:18px;height:14px;padding:0 3px;
+  min-width:18px;height:14px;
+  /* Оптическое центрирование «1×» (порт baec7dd): капитель при line-height:1
+     сидит в верхней части em-box — верхний паддинг компенсирует. */
+  padding:2.2px 3px 0;
   display:grid;place-items:center;
   border-radius:999px;
   background:var(--color-text,#1a1a1a);
@@ -2791,6 +2808,12 @@ html.dark .gb-roman {
 @media (max-width:63.99em){
   .gbs2-world[data-gill-v16]{display:block;min-height:0}
   [data-gill-v16] .gbs-rail{display:none}
+  /* Owner + референс (gill-mobile-bars-v2.9: крошек нет): на мобиле у
+     серия-страниц уже есть верхний бар Назад·Домой — крошки дублируют
+     навигацию и съедают строку до заголовка. Скрываем ТОЛЬКО визуальный ряд и
+     ТОЛЬКО на мобиле; десктоп-крошки и JSON-LD BreadcrumbList не трогаем.
+     Порт невлитого канона 3b04554. */
+  [data-gill-v16] .page-wrap > nav.breadcrumb{display:none}
   [data-gill-v16] .page-wrap{width:100%;padding-bottom:84px}
   [data-gill-v16] .mobile-bottom-bar{
     display:flex;
@@ -3817,7 +3840,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     z-index: 3;
     min-width: 20px;
     height: 16px;
-    padding: 0 4px;
+    padding: 2px 4px 0; /* оптическое центрирование «1×» (порт 1249e56) */
     display: grid;
     place-items: center;
     border-radius: 999px;
