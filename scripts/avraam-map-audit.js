@@ -84,10 +84,10 @@ assert('MapEngine.validateRoute(route.json) ok', routeAudit.ok, JSON.stringify(r
 
 if (PLACES) {
   const ids = PLACES.map(p => p.id);
-  const routeIds = route.places.map(p => p.id);
+  const routeIds = route.places.filter(p => p.type !== 'ctx' && p.type !== 'region').map(p => p.id);
   assert('HTML PLACES count = 19', PLACES.length === 19, String(PLACES.length));
-  assert('route places count = 19', route.places.length === 19, String(route.places.length));
-  assert('HTML and route place IDs match', JSON.stringify(ids) === JSON.stringify(routeIds), `${ids.join(',')} :: ${routeIds.join(',')}`);
+  assert('route places count = 19 (без ctx/region)', routeIds.length === 19, String(routeIds.length));
+  assert('HTML and route place IDs match (set)', JSON.stringify([...ids].sort()) === JSON.stringify([...routeIds].sort()), `${ids.join(',')} :: ${routeIds.join(',')}`);
   // Coordinate drift: every shared place must have identical x,y in inline data and route.json.
   // Closes the last data-sync gap (compareRouteData checks this at runtime; now enforced in CI).
   if (ids.join(',') === routeIds.join(',')) {

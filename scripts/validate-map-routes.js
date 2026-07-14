@@ -131,7 +131,11 @@ function validateRoute(file) {
     // Styled SVG coordinate system is wider than viewport; allow modest negative for future maps but catch absurd values.
     if (isFiniteNum(p.x) && (p.x < -250 || p.x > 2200)) bad(`${where}: x out of expected SVG range (${p.x})`);
     if (isFiniteNum(p.y) && (p.y < -250 || p.y > 1600)) bad(`${where}: y out of expected SVG range (${p.y})`);
-    if (!Number.isInteger(p.stage) || p.stage < 0 || p.stage >= stages.length) bad(`${where}: stage ${p.stage} outside stages[]`);
+    // ctx/region — контекстные точки лексикона Атласа (Вавилон/Мари/Фаран,
+    // DEBT 2026-07-11), не привязаны к этапу маршрута.
+    if (p.type !== 'ctx' && p.type !== 'region') {
+      if (!Number.isInteger(p.stage) || p.stage < 0 || p.stage >= stages.length) bad(`${where}: stage ${p.stage} outside stages[]`);
+    }
     if (!p.type) bad(`${where}: missing type`);
     if (p.photos) {
       if (!Array.isArray(p.photos)) bad(`${where}: photos must be array`);
@@ -182,7 +186,8 @@ function validateRoute(file) {
   }
 
   const stats = route.meta?.stats || {};
-  if (Number.isFinite(stats.places) && stats.places !== places.length) bad(`${label}: meta.stats.places ${stats.places} != places.length ${places.length}`);
+  const routePlaces = places.filter(p => p && p.type !== 'ctx' && p.type !== 'region').length;
+  if (Number.isFinite(stats.places) && stats.places !== routePlaces) bad(`${label}: meta.stats.places ${stats.places} != маршрутных мест ${routePlaces} (ctx/region не считаются)`);
   if (Number.isFinite(stats.stages) && stats.stages !== stages.length) bad(`${label}: meta.stats.stages ${stats.stages} != stages.length ${stages.length}`);
   if (Number.isFinite(stats.stories) && stats.stories !== stories.length) bad(`${label}: meta.stats.stories ${stats.stories} != stories.length ${stories.length}`);
   if (Number.isFinite(stats.photos)) {
@@ -282,8 +287,20 @@ function main() {
     if (fs.existsSync(f)) files.push(f);
   }
   if (!files.length) bad('No karty/*/route.json files found');
-  files.sort().forEach(validateRoute);
-  checkAstroHub(files);
+  // Листы Атласа (sheet-движок: meta.sheet_no без meta.id) — черновики §13-бис,
+  // маршрутный контракт и карточка на хабе к ним не применяются до «ДА» владельца.
+  const routeFiles = files.filter(f => {
+    try {
+      const probe = JSON.parse(fs.readFileSync(f, 'utf8'));
+      if (probe && probe.meta && probe.meta.sheet_no != null && probe.meta.id == null) {
+        ok(path.relative(ROOT, f) + ': лист Атласа (ждёт публикации) — пропущен');
+        return false;
+      }
+    } catch (_) {}
+    return true;
+  });
+  routeFiles.sort().forEach(validateRoute);
+  checkAstroHub(routeFiles);
   if (errors.length) {
     console.log(`\n❌ Map route validation failed: ${errors.length} issue(s)`);
     process.exit(1);
