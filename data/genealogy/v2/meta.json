@@ -1,0 +1,37 @@
+{
+  "pipelineVersion": "0.1.0-phase1",
+  "generatedAt": "2026-07-11T22:57:52.154Z",
+  "counts": {
+    "persons": 3056,
+    "edges": 2053,
+    "parentEdges": 1908,
+    "ancestorEdges": 1,
+    "spouseEdges": 144,
+    "isolatedPersons": 982,
+    "ruNamed": 3056,
+    "ruCoveragePct": 100,
+    "skeletonMerged": 153,
+    "clusters": 14,
+    "nations": 76,
+    "mirrorMisses": 0
+  },
+  "sources": {
+    "tipnr": {
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt",
+      "sha256": "1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c",
+      "license": "CC BY 4.0 — STEPBible.org / Tyndale House Cambridge"
+    },
+    "synodal": {
+      "url": "https://raw.githubusercontent.com/thiagobodruk/bible/master/json/ru_synodal.json",
+      "sha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "license": "Синодальный перевод — public domain (1876); JSON-подача: github.com/thiagobodruk/bible"
+    }
+  },
+  "attribution": [
+    "Данные персон: STEPBible.org (Tyndale House, Cambridge), CC BY 4.0, github.com/STEPBible",
+    "Русский текст: Синодальный перевод (public domain)",
+    "Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет, 156 персон)"
+  ],
+  "license": "Derived dataset: CC BY 4.0 (attribution: STEPBible.org / Tyndale House Cambridge)",
+  "status": "phase1-draft — НЕ подключать в рантайм до exit-критериев Phase 1"
+}

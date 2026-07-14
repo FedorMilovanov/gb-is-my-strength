@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Живое древо — Генеалогия Спасителя (интерактив)</title>
+</head>
+<body>
+<style>
+  :root{
+    --paper0:#f6eedb; --paper1:#f0e5cb; --paperEdge:#e6d8b8;
+    --ink:#3c3120; --inkSoft:#6e5c3d; --inkFaint:#9c8862;
+    --gold:#b8933f; --goldHi:#e6c877; --goldGlow:#f0d488;
+    --panel:#efe6ce; --panelEdge:#dccdaa; --card:#fdf9ef; --cardEdge:#c8a961;
+    --spineGold:#c9a227; --tether:#c9a227;
+    --shadow:rgba(74,54,22,.26); --nameHi:#140d02;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper0:#241c11; --paper1:#1b140b; --paperEdge:#100b06;
+      --ink:#efe3c6; --inkSoft:#cbb891; --inkFaint:#94815d;
+      --gold:#d4af5f; --goldHi:#f2d789; --goldGlow:#f4dc94;
+      --panel:#1c150c; --panelEdge:#3a2e19; --card:#2f2617; --cardEdge:#836a34;
+      --spineGold:#e6c877; --tether:#e6c877;
+      --shadow:rgba(0,0,0,.5); --nameHi:#fff7e6;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="light"]{
+    --paper0:#f6eedb; --paper1:#f0e5cb; --paperEdge:#e6d8b8;
+    --ink:#3c3120; --inkSoft:#6e5c3d; --inkFaint:#9c8862;
+    --gold:#b8933f; --goldHi:#e6c877; --goldGlow:#f0d488;
+    --panel:#efe6ce; --panelEdge:#dccdaa; --card:#fdf9ef; --cardEdge:#c8a961;
+    --spineGold:#c9a227; --tether:#c9a227; --shadow:rgba(74,54,22,.26); --nameHi:#140d02; color-scheme:light;
+  }
+  :root[data-theme="dark"]{
+    --paper0:#241c11; --paper1:#1b140b; --paperEdge:#100b06;
+    --ink:#efe3c6; --inkSoft:#cbb891; --inkFaint:#94815d;
+    --gold:#d4af5f; --goldHi:#f2d789; --goldGlow:#f4dc94;
+    --panel:#1c150c; --panelEdge:#3a2e19; --card:#2f2617; --cardEdge:#836a34;
+    --spineGold:#e6c877; --tether:#e6c877; --shadow:rgba(0,0,0,.5); --nameHi:#fff7e6; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:Georgia,'Times New Roman',serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% 0%, var(--paper0), var(--paper1) 55%, var(--paperEdge));
+    overflow:hidden;
+  }
+  #app{display:grid;grid-template-columns:250px 1fr 280px;grid-template-rows:auto 1fr auto;height:100vh}
+  /* header */
+  header{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid var(--panelEdge);background:linear-gradient(var(--paper0),transparent)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .emblem{width:38px;height:38px;border-radius:50%;border:1.6px solid var(--gold);display:grid;place-items:center;background:var(--card);box-shadow:0 2px 6px var(--shadow);color:var(--gold);font-size:20px}
+  .brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.3px}
+  .brand p{margin:0;font-size:11px;font-style:italic;color:var(--gold)}
+  .search{flex:1;max-width:360px;margin:0 auto;position:relative}
+  .search input{width:100%;padding:8px 14px 8px 34px;border-radius:16px;border:1px solid var(--panelEdge);background:var(--card);color:var(--ink);font-family:inherit;font-size:13px;font-style:italic}
+  .search input:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .btn:focus-visible,.fam:focus-visible,.cv:focus-visible,.sw-tg:focus-visible,.sheet-close:focus-visible,.mob-fab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .search svg{position:absolute;left:11px;top:9px;width:15px;height:15px;stroke:var(--inkFaint);fill:none}
+  .search-hint{position:absolute;left:0;right:0;top:100%;margin-top:6px;text-align:center;font-size:11.5px;color:#b5643f;opacity:0;transition:opacity .15s;pointer-events:none}
+  .search-hint.show{opacity:1}
+  .tools{display:flex;align-items:center;gap:8px}
+  .btn{padding:6px 12px;border-radius:14px;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);font-family:inherit;font-size:12px;cursor:pointer}
+  .btn:hover{border-color:var(--gold);color:var(--gold)}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+  /* panels */
+  aside{overflow-y:auto;padding:16px 14px;background:var(--panel);font-size:13px}
+  aside.left{border-right:1px solid var(--panelEdge)}
+  aside.right{border-left:1px solid var(--panelEdge)}
+  .lab{font-size:10.5px;letter-spacing:1.6px;color:var(--inkFaint);margin:2px 0 10px;text-transform:uppercase}
+  .fam{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent;user-select:none}
+  .fam:hover{background:color-mix(in srgb,var(--gold) 10%,transparent)}
+  .fam.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
+  .fam .sw{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.15) inset}
+  .fam .nm{flex:1;color:var(--ink)}
+  .fam .ct{font-size:10.5px;color:var(--inkFaint);font-variant-numeric:tabular-nums}
+  .toggles{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+  .tg{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--inkSoft)}
+  .sw-tg{width:38px;height:20px;border-radius:11px;border:1px solid var(--panelEdge);background:var(--card);position:relative;cursor:pointer;flex:none}
+  .sw-tg::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--gold);transition:transform .16s}
+  .sw-tg[aria-pressed="true"]::after{transform:translateX(18px)}
+  /* graph */
+  main{position:relative;overflow:hidden}
+  #svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  #svg.grabbing{cursor:grabbing}
+  .edge{fill:none;stroke-linecap:round}
+  .node{cursor:pointer}
+  .node circle{stroke:var(--paper0);transition:stroke-width .12s}
+  /* подписи: тонкий мягкий ореол (круглые стыки — без «шипов» на засечках), никакой рамки-наклейки */
+  .node text{font-family:Georgia,serif;fill:var(--ink);paint-order:stroke;stroke:var(--paper0);stroke-width:1.7px;stroke-linejoin:round;stroke-linecap:round;stroke-opacity:.82;pointer-events:none;transition:fill .16s,letter-spacing .16s}
+  .node text.lbl-big{stroke-width:2.1px;letter-spacing:.15px}
+  .node text.lbl-sub{fill:var(--gold);stroke-width:1.8px;letter-spacing:.55px;transition:opacity .25s}
+  #svg.far .lbl-sub{opacity:0}
+  .node .lbl-leaf{opacity:0;transition:opacity .18s,fill .16s;font-size:9.5px;stroke-width:1.5px}
+  .node.show .lbl-leaf{opacity:1}
+  /* микро-интерактив: при наведении подпись «оживает» — чуть темнее и чуть разрежённее */
+  .node.hl text.lbl-big{fill:var(--nameHi);letter-spacing:.5px}
+  .node.hl .lbl-leaf{fill:var(--nameHi)}
+  .node.hl text.lbl-sub{fill:var(--gold)}
+  #tether{stroke:var(--tether);stroke-width:1.2;stroke-dasharray:2 4;opacity:0;stroke-linecap:round}
+  .dim{opacity:.12;transition:opacity .25s}
+  .undim{transition:opacity .25s}
+  #tooltip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--gold);border-radius:9px;padding:7px 11px;font-size:12px;box-shadow:0 4px 14px var(--shadow);opacity:0;transition:opacity .12s;max-width:220px;z-index:5}
+  #tooltip .t-heb{font-family:'Times New Roman',serif;color:var(--gold);font-size:16px}
+  #tooltip .t-tr{color:var(--inkSoft);font-size:11px;font-style:italic}
+  #tooltip .t-mean{color:var(--ink);font-size:12.5px;margin-top:3px}
+  #tooltip .t-mean b{color:var(--gold);font-weight:600}
+  #tooltip .t-id{color:var(--inkSoft);font-size:11.5px;margin-top:2px}
+  #tooltip .t-ref{color:var(--inkFaint);font-size:10.5px;margin-top:2px}
+  #tooltip .t-ov{color:#8f6bc4;font-size:10.5px;margin-top:3px}
+  /* minimap */
+  #minimap{position:absolute;right:14px;bottom:14px;width:196px;height:150px;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--panelEdge);border-radius:10px;box-shadow:0 4px 14px var(--shadow);overflow:hidden;cursor:crosshair;z-index:4}
+  #minimap .mm-lab{position:absolute;left:8px;top:5px;font-size:8.5px;letter-spacing:1.2px;color:var(--inkFaint);text-transform:uppercase;pointer-events:none}
+  #mm{width:100%;height:100%;display:block}
+  #mm-view{fill:color-mix(in srgb,var(--gold) 15%,transparent);stroke:var(--gold);stroke-width:1.4;rx:2}
+  /* details */
+  .details .card{background:var(--card);border:1px solid var(--cardEdge);border-radius:12px;padding:14px;box-shadow:0 3px 10px var(--shadow)}
+  .details .dn{font-size:22px;font-weight:700;margin:0}
+  .details .dheb{font-family:'Times New Roman',serif;color:var(--gold);font-size:20px;margin-left:6px}
+  .details .dtr{color:var(--inkSoft);font-size:13px;font-style:italic;margin:2px 0}
+  .details .dmean{color:var(--ink);font-size:14px;line-height:1.45;margin:8px 0 4px;padding:8px 11px;background:color-mix(in srgb,var(--gold) 9%,transparent);border-left:2px solid var(--gold);border-radius:0 7px 7px 0}
+  .details .dmean .k{display:block;font-size:9.5px;letter-spacing:1.4px;color:var(--inkFaint);text-transform:uppercase;margin-bottom:2px}
+  .details .did{color:var(--inkSoft);font-size:12.5px;margin:6px 0}
+  .details .did b{color:var(--gold);font-weight:600}
+  .details .dfore{font-size:11.5px;color:var(--inkSoft);margin:2px 0 8px}
+  .details .dfore b{color:var(--ink)}
+  .details .dconf{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.3px;padding:3px 9px;border-radius:11px;margin:2px 0}
+  .details .dconf.certain{color:#4f7a4a;border:1px solid #4f7a4a;background:color-mix(in srgb,#4f7a4a 12%,transparent)}
+  .details .dconf.probable{color:var(--gold);border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}
+  .details .dconf.disputed{color:#b5643f;border:1px dashed #b5643f;background:color-mix(in srgb,#b5643f 9%,transparent)}
+  .details .dconf.obscure{color:var(--inkFaint);border:1px dotted var(--inkFaint)}
+  .details .dregion{font-size:12px;color:var(--inkSoft);margin:7px 0}
+  .details .dspravka{font-size:12.5px;line-height:1.52;color:var(--ink);margin:8px 0}
+  .details .dsrc{font-size:10px;color:var(--inkFaint);margin:6px 0;letter-spacing:.2px}
+  .details .dmyth{font-size:11.5px;line-height:1.45;color:var(--ink);margin:9px 0;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,#b5643f 13%,transparent);border-left:2px solid #b5643f}
+  .details .dmyth b{color:#b5643f}
+  .details .doverlap{font-size:11.5px;line-height:1.45;color:var(--ink);margin:9px 0;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,#6d4b9a 11%,transparent);border-left:2px solid #6d4b9a}
+  .details .doverlap h4{margin:0 0 5px;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:#6d4b9a}
+  .details .doverlap .dmyth{margin:8px 0 2px;padding:7px 9px}
+  .details .dref{color:var(--inkFaint);font-size:12px;margin:6px 0 10px}
+  /* значок «имя встречается ещё раз» на узле народа */
+  .node .ovbadge{fill:#6d4b9a;stroke:var(--paper0);stroke-width:1.4px}
+  .node .ovbadge-g{opacity:.82;transition:opacity .16s}
+  .node:hover .ovbadge-g,.node.hl .ovbadge-g{opacity:1}
+  /* coverage tracker (режим народов) — кликабельно: подсветить узлы этой достоверности */
+  #coverage{margin-top:16px;font-size:11.5px;color:var(--inkSoft)}
+  #coverage .cv{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent;user-select:none;margin:0 -8px}
+  #coverage .cv:hover{background:color-mix(in srgb,var(--gold) 10%,transparent)}
+  #coverage .cv.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
+  #coverage .cv i{width:10px;height:10px;border-radius:3px;flex:none;font-style:normal}
+  #coverage .cv b{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .fbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:11px;border:1px solid currentColor}
+  .rel h3{font-size:10.5px;letter-spacing:1.4px;color:var(--inkFaint);text-transform:uppercase;margin:16px 0 8px}
+  .rel a{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:7px;color:var(--ink);text-decoration:none;font-size:12.5px;cursor:pointer}
+  .rel a:hover{background:color-mix(in srgb,var(--gold) 12%,transparent)}
+  .rel a .d{width:8px;height:8px;border-radius:50%;flex:none}
+  .empty{color:var(--inkFaint);font-style:italic;font-size:12.5px;line-height:1.6;padding:8px 4px}
+  /* footer */
+  footer{grid-column:1/-1;display:flex;justify-content:space-between;gap:16px;padding:9px 20px;border-top:1px solid var(--panelEdge);font-size:11.5px;color:var(--inkFaint)}
+  footer b{color:var(--inkSoft);font-weight:600}
+  /* мобильные шторки (bottom sheet) для панелей семейств/узла — вместо полного скрытия */
+  .sheet-close{display:none}
+  .mob-fab{display:none}
+  #scrim{display:none}
+  @media (max-width:900px){
+    #app{grid-template-columns:1fr}
+    aside{
+      position:fixed;left:0;right:0;bottom:0;z-index:22;max-height:72vh;
+      border-radius:16px 16px 0 0;box-shadow:0 -10px 30px var(--shadow);
+      transform:translateY(104%);transition:transform .26s ease;
+      border-left:1px solid var(--panelEdge)!important;border-right:1px solid var(--panelEdge)!important;
+    }
+    aside.sheet-open{transform:translateY(0)}
+    .sheet-close{display:flex;position:sticky;float:right;top:0;margin:-4px -4px 6px auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+    .mob-fab{display:flex;position:absolute;left:14px;bottom:14px;z-index:15;align-items:center;gap:6px;padding:10px 18px;border-radius:20px;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);font-family:inherit;font-size:12.5px;box-shadow:0 4px 14px var(--shadow);cursor:pointer}
+    #scrim{display:block;position:fixed;inset:0;background:rgba(20,14,4,.38);opacity:0;pointer-events:none;transition:opacity .22s;z-index:21}
+    #scrim.show{opacity:1;pointer-events:auto}
+    #minimap{width:132px;height:100px}
+    #minimap .mm-lab{display:none}
+    footer{padding:8px 14px;font-size:10.5px}
+    footer .hint{display:none}
+  }
+</style>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="emblem">☩</div>
+      <div><h1>Живое древо</h1><p>Генеалогия Спасителя · интерактив</p></div>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" stroke-width="1.6"/><line x1="15" y1="15" x2="20" y2="20" stroke-width="1.6"/></svg>
+      <input id="q" type="text" placeholder="Найти имя…" autocomplete="off" aria-label="Поиск имени">
+      <div class="search-hint" id="searchHint"></div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="reset">Собрать всё</button>
+      <button class="btn" id="theme" aria-label="Тема">☾</button>
+    </div>
+  </header>
+
+  <aside class="left">
+    <button class="sheet-close" type="button" aria-label="Закрыть">✕</button>
+    <div class="lab">Семейства</div>
+    <div id="fams"></div>
+    <div class="toggles">
+      <div class="tg"><span>Облака семейств</span><span class="sw-tg" id="tg-hulls" role="button" aria-pressed="true" tabindex="0"></span></div>
+      <div class="tg"><span>Показывать связи</span><span class="sw-tg" id="tg-edges" role="button" aria-pressed="true" tabindex="0"></span></div>
+      <div class="tg"><span>Подписи листьев</span><span class="sw-tg" id="tg-labels" role="button" aria-pressed="false" tabindex="0"></span></div>
+    </div>
+    <div id="coverage"></div>
+  </aside>
+
+  <main>
+    <svg id="svg"><defs id="icon-defs"></defs><defs>
+      <radialGradient id="nodeSheen" cx="36%" cy="28%" r="78%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+        <stop offset="34%" stop-color="#ffffff" stop-opacity="0.14"/>
+        <stop offset="68%" stop-color="#000000" stop-opacity="0.02"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.26"/>
+      </radialGradient>
+      <radialGradient id="nodeGlint" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="christGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fff2cf" stop-opacity="0.4"/>
+        <stop offset="22%" stop-color="#f9e4a8" stop-opacity="0.26"/>
+        <stop offset="46%" stop-color="#f0d488" stop-opacity="0.12"/>
+        <stop offset="68%" stop-color="#f0d488" stop-opacity="0.05"/>
+        <stop offset="86%" stop-color="#f0d488" stop-opacity="0.014"/>
+        <stop offset="100%" stop-color="#f0d488" stop-opacity="0"/>
+      </radialGradient>
+      <!-- стеклянный (не глянцевый) шар: светящееся тёплое ядро, к кромке — настоящая прозрачность (сквозь стекло видно фон/линии) -->
+      <radialGradient id="christGlass" cx="38%" cy="32%" r="88%">
+        <stop offset="0%" stop-color="#fffef9" stop-opacity="1"/>
+        <stop offset="16%" stop-color="#fbe9ae" stop-opacity="0.97"/>
+        <stop offset="36%" stop-color="#f0d073" stop-opacity="0.87"/>
+        <stop offset="58%" stop-color="#dcb352" stop-opacity="0.74"/>
+        <stop offset="78%" stop-color="#c89a3f" stop-opacity="0.58"/>
+        <stop offset="92%" stop-color="#b98a38" stop-opacity="0.44"/>
+        <stop offset="100%" stop-color="#a97c33" stop-opacity="0.32"/>
+      </radialGradient>
+      <!-- мягкая объёмная кромка вместо жёсткого чёрного контура -->
+      <radialGradient id="christEdge" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#7a5410" stop-opacity="0"/>
+        <stop offset="72%" stop-color="#7a5410" stop-opacity="0"/>
+        <stop offset="92%" stop-color="#6b4a12" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#5c3f10" stop-opacity="0.30"/>
+      </radialGradient>
+      <!-- мягкий стеклянный блик (не резкий зеркальный) -->
+      <radialGradient id="christSpecular" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fffdf6" stop-opacity="0.62"/>
+        <stop offset="55%" stop-color="#fffdf6" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#fffdf6" stop-opacity="0"/>
+      </radialGradient>
+      <!-- нижний рефлекс: свет проходит сквозь стекло на противоположный край (деликатно, не «пятном») -->
+      <radialGradient id="christRim" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fff0c2" stop-opacity="0.38"/>
+        <stop offset="60%" stop-color="#ffedb2" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#ffe9a4" stop-opacity="0"/>
+      </radialGradient>
+    </defs><g id="viewport">
+      <g id="g-hulls"></g>
+      <g id="g-edges"></g>
+      <line id="tether"></line>
+      <g id="g-nodes"></g>
+    </g></svg>
+    <div id="tooltip"></div>
+    <div id="minimap"><span class="mm-lab">Карта</span><svg id="mm" viewBox="0 0 196 150"><g id="mm-nodes"></g><rect id="mm-view" x="0" y="0" width="10" height="10"></rect></svg></div>
+    <button id="mob-fams" class="mob-fab" type="button">Семейства</button>
+  </main>
+
+  <aside class="right details">
+    <button class="sheet-close" type="button" aria-label="Закрыть">✕</button>
+    <div class="lab">Узел</div>
+    <div id="detail"><div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.<br><br>Кликните семейство слева — оно подсветится, остальные померкнут.</div></div>
+  </aside>
+  <div id="scrim"></div>
+
+  <footer>
+    <span class="hint">Перетащите узел — <b>вернётся пружиной</b> · колесо / двойной клик — зум · тащить фон — сдвиг · клик по семейству — подсветка · Esc — сброс</span>
+    <span id="stat"></span>
+  </footer>
+</div>
+
+<script>
+const GRAPH = {"_status":"phase2-proto: реальное родословное дерево (edges.json) для интерактива","bbox":{"minX":-70,"maxX":1304,"minY":66,"maxY":1734,"cx":660},"iconDefs":"<symbol id=\"ic-person\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"3.4\"/><path d=\"M5.5 19c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6\"/></symbol>\n<symbol id=\"ic-people\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8.5\" cy=\"8.6\" r=\"2.7\"/><circle cx=\"15.8\" cy=\"9.2\" r=\"2.3\"/><path d=\"M3.5 18.5c0-2.9 2.2-4.9 5-4.9 1.4 0 2.6.5 3.5 1.3\"/><path d=\"M12.6 18.5c.2-2.4 2-4 4.2-4 2.3 0 4.1 1.8 4.1 4.4\"/></symbol>\n<symbol id=\"ic-ark\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12.5c1.6 3 5 4.7 9 4.7s7.4-1.7 9-4.7\"/><path d=\"M6.2 12.4V8.8h11.6v3.6\"/><path d=\"M9.4 8.8V6.4h5.2v2.4\"/><path d=\"M12 6.4V4.6\"/></symbol>\n<symbol id=\"ic-tent\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 18.5 12 4l9 14.5\"/><path d=\"M12 4v14.5\"/><path d=\"M9.6 18.5c.3-2 1.1-3.4 2.4-3.4s2.1 1.4 2.4 3.4\"/></symbol>\n<symbol id=\"ic-ladder\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 3.5 6.5 20.5M16 3.5 17.5 20.5\"/><path d=\"M7.3 7.5h9.1M7.1 11.2h9.5M6.9 14.9h9.9\"/></symbol>\n<symbol id=\"ic-lion\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M16.62 10.09 Q19 12 16.62 13.91 Q16.95 16.95 13.91 16.62 Q12 19 10.09 16.62 Q7.05 16.95 7.38 13.91 Q5 12 7.38 10.09 Q7.05 7.05 10.09 7.38 Q12 5 13.91 7.38 Q16.95 7.05 16.62 10.09 Z\"/><circle cx=\"12\" cy=\"12.3\" r=\"3.5\"/><circle cx=\"10.7\" cy=\"11.7\" r=\".55\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"13.3\" cy=\"11.7\" r=\".55\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M11.2 13.1h1.6l-.8 1z\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M12 14.1v.7M10.8 15c.7.5 1.7.5 2.4 0\"/></symbol>\n<symbol id=\"ic-crown\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 16.5 3 7l5 4 4-6.5 4 6.5 5-4-1 9.5z\"/><path d=\"M4 16.5h16\"/></symbol>\n<symbol id=\"ic-cross\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3.2v17.6M6.6 9.2h10.8\"/></symbol>\n<symbol id=\"ic-tree\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21v-6.4\"/><path d=\"M9.2 15c-2.3 0-4-1.6-4-3.7 0-1.4.8-2.6 2-3.2-.1-.3-.1-.5-.1-.8 0-1.9 1.5-3.4 3.4-3.4 1.2 0 2.3.6 2.9 1.6.5-.3 1.1-.5 1.7-.5 1.9 0 3.4 1.5 3.4 3.4 0 .3 0 .5-.1.8 1.1.5 1.9 1.7 1.9 3.1 0 2.1-1.7 3.7-4 3.7z\"/><path d=\"M12 15.2 9.9 13M12 12.6l2-2\"/></symbol>\n<symbol id=\"ic-scroll\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 5.5h10.5v11a2.5 2.5 0 0 1-2.5 2.5H6.5\"/><path d=\"M9.5 9h5.5M9.5 12h5.5\"/><path d=\"M7 5.5A2 2 0 0 0 5 7.5 2 2 0 0 0 7 9.5M6.5 19a2.2 2.2 0 0 0 2.2-2.2V7.5\"/></symbol>\n<symbol id=\"ic-book\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 6.2v13\"/><path d=\"M12 6.2C10.4 5 8.4 4.6 5.5 4.6v12.6c2.9 0 4.9.4 6.5 1.6 1.6-1.2 3.6-1.6 6.5-1.6V4.6c-2.9 0-4.9.4-6.5 1.6z\"/></symbol>\n<symbol id=\"ic-temple\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 8 12 3.5 20.5 8z\"/><path d=\"M4.5 8v8.5M9 8v8.5M15 8v8.5M19.5 8v8.5\"/><path d=\"M3 20h18M3.5 16.5h17\"/></symbol>\n<symbol id=\"ic-menorah\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 16.5V7\"/><path d=\"M12 12.4c0-2.1-1-3.4-2.9-3.4M9.1 9V7\"/><path d=\"M12 13.1c0-2.9-1.8-4.6-4.4-4.6M7.6 8.5V7\"/><path d=\"M12 13.8c0-3.7-2.6-5.8-5.9-5.8M6.1 8V7\"/><path d=\"M12 12.4c0-2.1 1-3.4 2.9-3.4M14.9 9V7\"/><path d=\"M12 13.1c0-2.9 1.8-4.6 4.4-4.6M16.4 8.5V7\"/><path d=\"M12 13.8c0-3.7 2.6-5.8 5.9-5.8M17.9 8V7\"/><path d=\"M9.5 16.5h5M10.7 18.6h2.6M12 16.5v2.1\"/></symbol>\n<symbol id=\"ic-camel\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.6 15c-.4-1.9.4-3.4 1.6-3.4.8 0 1.4.7 1.7 1.9.5-2.3 1.5-3.8 2.8-3.8 1.1 0 1.9 1.2 2.4 3.1\"/><path d=\"M12.1 12.8c.4-2.3 1.4-3.9 2.8-3.9.8 0 1.4.5 1.8 1.2l.8 1.6c.3.6-.1 1.3-.6 1.6\"/><path d=\"M5.6 15.2 6 19M8.4 14.1l.2 5.3M12.2 13.1l.2 6.3M15.4 14.6l.2 4.8\"/></symbol>\n<symbol id=\"ic-ram\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 10.4c-1.5 0-2.6 1.2-2.6 2.9 0 2 1.2 3.5 2.6 3.5s2.6-1.5 2.6-3.5c0-1.7-1.1-2.9-2.6-2.9z\"/><circle cx=\"11\" cy=\"12.9\" r=\".5\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"13\" cy=\"12.9\" r=\".5\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M12 14.5v.9M11.2 15.7c.5.4 1.1.4 1.6 0\"/><path d=\"M9.5 11C9 8.8 7.2 7.4 5.4 8.1 3.7 8.7 3.1 10.7 4 12.3c.7 1.3 2.2 1.7 3.2.9.8-.65.9-1.9.1-2.6-.6-.55-1.6-.35-1.9.45\"/><path d=\"M14.5 11c.5-2.2 2.3-3.6 4.1-2.9 1.7.6 2.3 2.6 1.4 4.2-.7 1.3-2.2 1.7-3.2.9-.8-.65-.9-1.9-.1-2.6.6-.55 1.6-.35 1.9.45\"/></symbol>\n<symbol id=\"ic-mountain\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2.5 18.5 9 8l3.2 4.8L15 8.5l6.5 10z\"/><path d=\"M7.4 10.4 9 8l1.6 2.4\"/></symbol>\n<symbol id=\"ic-gate\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 20V9a7 7 0 0 1 14 0v11\"/><path d=\"M5 20h14\"/><path d=\"M9 20v-7a3 3 0 0 1 6 0v7\"/></symbol>\n<symbol id=\"ic-tribes\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 4h12v13l-3-2-3 2-3-2-3 2z\"/><path d=\"M9 8h6M9 11h6\"/></symbol>\n<symbol id=\"ic-globe\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"8.2\"/><path d=\"M3.8 12h16.4M12 3.8v16.4\"/><path d=\"M12 3.8c2.6 2.3 4 5.2 4 8.2s-1.4 5.9-4 8.2c-2.6-2.3-4-5.2-4-8.2s1.4-5.9 4-8.2z\"/></symbol>","families":[{"id":"spine","ru":"Мессианский хребет","color":"#c9a227","icon":"cross"},{"id":"sethites","ru":"До потопа (линия Сифа)","color":"#6f8a4c","icon":"tree","count":13},{"id":"japheth","ru":"Народы от Иафета","color":"#b5643f","icon":"globe","count":13},{"id":"ham","ru":"Народы от Хама","color":"#a86b46","icon":"globe","count":15},{"id":"shem-fathers","ru":"Праотцы после потопа","color":"#9a8b3c","icon":"scroll","count":13},{"id":"keturah","ru":"Сыны Авраама и Хеттуры","color":"#8f7a3a","icon":"tent","count":11},{"id":"ishmaelites","ru":"Измаильтяне (12 князей)","color":"#c08a3e","icon":"camel","count":14},{"id":"esau-edom","ru":"Исав · Едом","color":"#a0453a","icon":"mountain","count":14},{"id":"tribes","ru":"12 колен Израиля","color":"#4f7a4a","icon":"tribes","count":13},{"id":"levites","ru":"Левиты и священство","color":"#8a6db0","icon":"menorah","count":18},{"id":"judah-sons","ru":"Сыны Иуды (линия Фареса)","color":"#7d6ba0","icon":"scroll","count":12},{"id":"house-of-david","ru":"Дом Давида","color":"#6d4b9a","icon":"crown","count":12},{"id":"kings-of-judah","ru":"Цари Иудеи","color":"#9a5ba6","icon":"crown","count":16}],"nodes":[{"id":"spine:Adam@Gen.2.19","ru":"Адам","ref":"Быт 2:19","family":"spine","color":"#c9a227","r":27,"x":660,"y":96,"homeX":660,"homeY":96,"kind":"spine","icon":"person","am":"0 · начало","bc":"Сотворение","key":"Adam@Gen.2.19","heb":"אָדָם","translit":"Адам","meaning":"человек","note":"родств. אֲדָמָה (адама́) «земля, почва» — «взятый из земли» (Быт 2:7)","messiah":false},{"id":"spine:Noah@Gen.5.29","ru":"Ной","ref":"Быт 5:29","family":"spine","color":"#c9a227","r":27,"x":660,"y":278,"homeX":660,"homeY":278,"kind":"spine","icon":"ark","am":"1056 г. от Адама","bc":"≈2950 до Р.Х.","key":"Noah@Gen.5.29","heb":"נֹחַ","translit":"Но́ах","meaning":"покой, утешение","note":"«он утешит нас в работе нашей» (Быт 5:29)","messiah":false},{"id":"spine:Shem@Gen.5.32","ru":"Сим","ref":"Быт 5:32","family":"spine","color":"#c9a227","r":27,"x":660,"y":460,"homeX":660,"homeY":460,"kind":"spine","icon":"scroll","am":"1558 г. от Адама","bc":"≈2450 до Р.Х.","key":"Shem@Gen.5.32","heb":"שֵׁם","translit":"Шем","meaning":"имя","note":"отсюда «семиты»; «Благословен Господь Бог Симов» (Быт 9:26)","messiah":false},{"id":"spine:Abraham@Gen.11.26","ru":"Авраам","ref":"Быт 11:26","family":"spine","color":"#c9a227","r":27,"x":660,"y":642,"homeX":660,"homeY":642,"kind":"spine","icon":"tent","am":"2008 г. от Адама","bc":"≈2000 до Р.Х.","key":"Abraham@Gen.11.26","heb":"אַבְרָהָם","translit":"Авраха́м","meaning":"отец множества","note":"переименован из אַבְרָם Аврам «отец высок» (Быт 17:5) — Сам Бог даёт новое имя","messiah":false},{"id":"spine:Isaac@Gen.17.19","ru":"Исаак","ref":"Быт 17:19","family":"spine","color":"#c9a227","r":27,"x":660,"y":824,"homeX":660,"homeY":824,"kind":"spine","icon":"ram","am":"2108 г. от Адама","bc":"≈1900 до Р.Х.","key":"Isaac@Gen.17.19","heb":"יִצְחָק","translit":"Йицха́к","meaning":"он смеётся","note":"смех Авраама и Сарры (Быт 17:17; 18:12; 21:6)","messiah":false},{"id":"spine:Israel@Gen.25.26","ru":"Иаков","ref":"Быт 25:26","family":"spine","color":"#c9a227","r":27,"x":660,"y":1006,"homeX":660,"homeY":1006,"kind":"spine","icon":"ladder","am":"2168 г. от Адама","bc":"≈1840 до Р.Х.","key":"Israel@Gen.25.26","heb":"יַעֲקֹב","translit":"Яако́в","meaning":"держащийся за пяту","note":"Быт 25:26; новое имя יִשְׂרָאֵל Исраэ́ль «борется Бог / боровшийся с Богом» (Быт 32:28)","messiah":false},{"id":"spine:Judah@Gen.29.35","ru":"Иуда","ref":"Быт 29:35","family":"spine","color":"#c9a227","r":27,"x":660,"y":1188,"homeX":660,"homeY":1188,"kind":"spine","icon":"lion","am":"2250 г. от Адама","bc":"≈1750 до Р.Х.","key":"Judah@Gen.29.35","heb":"יְהוּדָה","translit":"Йехуда́","meaning":"хвала [Яхве]","note":"«теперь-то восхвалю Господа» (Быт 29:35); ТЕОФОРНОЕ — содержит Йехо-/Яхве; отсюда «иудеи»","messiah":false},{"id":"spine:David@Rut.4.17","ru":"Давид","ref":"Руф 4:17","family":"spine","color":"#c9a227","r":27,"x":660,"y":1370,"homeX":660,"homeY":1370,"kind":"spine","icon":"crown","am":"2949 г. от Адама","bc":"≈1000 до Р.Х.","key":"David@Rut.4.17","heb":"דָּוִד","translit":"Дави́д","meaning":"возлюбленный","note":"корень דוד (дод) «любить; любимый»","messiah":false},{"id":"spine:Solomon@2Sa.5.14","ru":"Соломон","ref":"2Цар 5:14","family":"spine","color":"#c9a227","r":27,"x":660,"y":1552,"homeX":660,"homeY":1552,"kind":"spine","icon":"temple","am":"2989 г. от Адама","bc":"≈970 до Р.Х.","key":"Solomon@2Sa.5.14","heb":"שְׁלֹמֹה","translit":"Шеломо́","meaning":"мирный","note":"от שָׁלוֹם шалом «мир»; ср. 1Пар 22:9 «человек мирный… имя ему Соломон»","messiah":false},{"id":"spine:Jesus@Isa.7.14","ru":"Иисус Христос","ref":"Мессия","family":"spine","color":"#c9a227","r":34,"x":660,"y":1734,"homeX":660,"homeY":1734,"kind":"spine","icon":"cross","am":"≈4000 г. от Адама","bc":"Рождество","key":"Jesus@Isa.7.14","heb":"יֵשׁוּעַ","translit":"Йешу́а","meaning":"Яхве спасает / Яхве — спасение","note":"греч. Ἰησοῦς; «наречёшь Ему имя Иисус, ибо Он спасёт людей Своих» (Мф 1:21) — прямое объяснение теофорного имени; Христос (Χριστός) = Помазанник = евр. מָשִׁיחַ Маши́ах (Мессия); Эммануил עִמָּנוּאֵל «с нами Бог» (Ис 7:14; Мф 1:23)","messiah":true},{"id":"hub:sethites","ru":"Линия Сифа","fullRu":"До потопа (линия Сифа)","ref":"13 имён","family":"sethites","color":"#6f8a4c","r":18,"x":424,"y":96,"homeX":424,"homeY":96,"kind":"hub","icon":"tree","count":13},{"id":"leaf:abel--gen-4-2","ru":"Авель","ref":"Быт 4:2","family":"sethites","color":"#6f8a4c","r":8.5,"x":360,"y":66,"homeX":360,"homeY":66,"kind":"leaf","heb":"הֶ֫בֶל","translit":"Хе́вель","meaning":"дуновение, дым","ident":null,"note":"то же слово, что «суета» в Екклесиасте — о краткости и хрупкости жизни"},{"id":"leaf:cain--gen-4-1","ru":"Каин","ref":"Быт 4:1","family":"sethites","color":"#6f8a4c","r":8.5,"x":360,"y":96,"homeX":360,"homeY":96,"kind":"leaf","heb":"קַ֫יִן","translit":"Ка́ин","meaning":"приобретение","ident":null,"note":"«приобрела я человека от Господа» (Быт 4:1) — от кана́ «приобретать»"},{"id":"leaf:seth--gen-4-25","ru":"Сиф","ref":"Быт 4:25","family":"sethites","color":"#6f8a4c","r":8.5,"x":360,"y":126,"homeX":360,"homeY":126,"kind":"leaf","heb":"שֵׁת","translit":"Шет","meaning":"положенный, возмещение","ident":null,"note":"«Бог положил мне другое семя вместо Авеля» (Быт 4:25)"},{"id":"leaf:enoch--gen-4-17","ru":"Енох","ref":"Быт 4:17","family":"sethites","color":"#6f8a4c","r":8.5,"x":274,"y":81,"homeX":274,"homeY":81,"kind":"leaf","heb":"חֲנוֹךְ","translit":"Ханóх","meaning":"посвящённый, наученный","ident":null,"note":null},{"id":"leaf:enosh--gen-4-26","ru":"Енос","ref":"Быт 4:26","family":"sethites","color":"#6f8a4c","r":8.5,"x":274,"y":111,"homeX":274,"homeY":111,"kind":"leaf","heb":"אֱנוֹשׁ","translit":"Эно́ш","meaning":"человек, смертный","ident":null,"note":"подчёркивает слабость и смертность человека (ср. Пс 8:5)"},{"id":"leaf:irad--gen-4-18","ru":"Ирад","ref":"Быт 4:18","family":"sethites","color":"#6f8a4c","r":8.5,"x":188,"y":81,"homeX":188,"homeY":81,"kind":"leaf","heb":"עִירָד","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:kenan--gen-5-9","ru":"Каинан","ref":"Быт 5:9","family":"sethites","color":"#6f8a4c","r":8.5,"x":188,"y":111,"homeX":188,"homeY":111,"kind":"leaf","heb":"קֵינָן","translit":"Кена́н","meaning":"приобретение (?)","ident":null,"note":"близко к имени Каин; точное значение спорно"},{"id":"leaf:mehujael--gen-4-18","ru":"Мехиаеля","ref":"Быт 4:18","family":"sethites","color":"#6f8a4c","r":8.5,"x":102,"y":81,"homeX":102,"homeY":81,"kind":"leaf","heb":"מְחוּיָאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:mahalalel--gen-5-12","ru":"Малелеил","ref":"Быт 5:12","family":"sethites","color":"#6f8a4c","r":8.5,"x":102,"y":111,"homeX":102,"homeY":111,"kind":"leaf","heb":"מַהֲלַלְאֵל","translit":"Махалал-Эль","meaning":"хвала Богу","ident":null,"note":"махала́л «хвала» + Эль «Бог» — «славящий Бога»"},{"id":"leaf:methushael--gen-4-18","ru":"Мехиаеля","ref":"Быт 4:18","family":"sethites","color":"#6f8a4c","r":8.5,"x":16,"y":81,"homeX":16,"homeY":81,"kind":"leaf","heb":"מְתוּשָׁאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jared--gen-5-15","ru":"Иаред","ref":"Быт 5:15","family":"sethites","color":"#6f8a4c","r":8.5,"x":16,"y":111,"homeX":16,"homeY":111,"kind":"leaf","heb":"יֶ֫רֶד","translit":"Йе́ред","meaning":"нисхождение, спуск","ident":null,"note":"от йара́д «спускаться»"},{"id":"leaf:lamech--gen-4-18","ru":"Ламех","ref":"Быт 4:18","family":"sethites","color":"#6f8a4c","r":8.5,"x":-70,"y":81,"homeX":-70,"homeY":81,"kind":"leaf","heb":"לֶ֫מֶךְ","translit":"Ле́мех","meaning":"сильный муж (?)","ident":null,"note":"значение спорно; тот же корень — у Ламеха из рода Каина"},{"id":"leaf:enoch--gen-5-18","ru":"Еноха","ref":"Быт 5:18","family":"sethites","color":"#6f8a4c","r":8.5,"x":-70,"y":111,"homeX":-70,"homeY":111,"kind":"leaf","heb":"חֲנוֹךְ","translit":"Ханóх","meaning":"посвящённый, наученный","ident":null,"note":null},{"id":"hub:japheth","ru":"От Иафета","fullRu":"Народы от Иафета","ref":"13 имён","family":"japheth","color":"#b5643f","r":18,"x":896,"y":278,"homeX":896,"homeY":278,"kind":"hub","icon":"globe","count":13},{"id":"leaf:japheth--gen-5-32","ru":"Иафет","ref":"Быт 5:32","family":"japheth","color":"#b5643f","r":8.5,"x":960,"y":278,"homeX":960,"homeY":278,"kind":"leaf","heb":"יֶפֶת","translit":"Йе́фет","meaning":"да распространит","ident":null,"note":"«да распространит Бог Иафета» (Быт 9:27) — игра слов с יַפְתְּ"},{"id":"leaf:gomer--gen-10-2","ru":"Гомер","ref":"Быт 10:2","family":"japheth","color":"#b5643f","r":8.5,"x":1046,"y":203,"homeX":1046,"homeY":203,"kind":"leaf","heb":"גֹּ֫מֶר","translit":null,"meaning":null,"ident":"Киммерийцы","note":"Ассир. Gimirrāya — киммерийцы Причерноморья."},{"id":"leaf:javan--gen-10-2","ru":"Иаван","ref":"Быт 10:2","family":"japheth","color":"#b5643f","r":8.5,"x":1046,"y":228,"homeX":1046,"homeY":228,"kind":"leaf","heb":"יָוָן","translit":null,"meaning":null,"ident":"Ионийцы (греки)","note":"Евр. Yāwān — ионийские греки Эгеиды."},{"id":"leaf:madai--gen-10-2","ru":"Мадай","ref":"Быт 10:2","family":"japheth","color":"#b5643f","r":8.5,"x":1046,"y":253,"homeX":1046,"homeY":253,"kind":"leaf","heb":"מָדַי","translit":null,"meaning":null,"ident":"Мидяне","note":"Мидия, северо-запад Ирана."},{"id":"leaf:magog--gen-10-2","ru":"Магог","ref":"Быт 10:2","family":"japheth","color":"#b5643f","r":8.5,"x":1046,"y":278,"homeX":1046,"homeY":278,"kind":"leaf","heb":"מָגוֹג","translit":null,"meaning":null,"ident":"Спорно: скифы либо Лидия («земля Гога»)","note":"Скифы (Иосиф Флавий) либо Лидия / «земля Гига»; народы дальнего севера (Иез 38–39)."},{"id":"leaf:meshech--gen-10-2","ru":"Мешех","ref":"Быт 10:2","family":"japheth","color":"#b5643f","r":8.5,"x":1046,"y":303,"homeX":1046,"homeY":303,"kind":"leaf","heb":"מֶ֫שֶׁךְ","translit":null,"meaning":null,"ident":"Мушки (Малая Азия); связь с фригийцами менее надёжна","note":"Ассир. Mushki, центральная Анатолия."},{"id":"leaf:tiras--gen-10-2","ru":"Фирас","ref":"Быт 10:2","family":"japheth","color":"#b5643f","r":8.5,"x":1046,"y":328,"homeX":1046,"homeY":328,"kind":"leaf","heb":"תִּירָ֑ס","translit":null,"meaning":null,"ident":"Спорно: фракийцы либо тирсены/тереш (народы моря)","note":"Фракийцы (Иосиф Флавий) либо «народы моря» Тереш / тирсены (этруски?)."},{"id":"leaf:tubal--gen-10-2","ru":"Фувал","ref":"Быт 10:2","family":"japheth","color":"#b5643f","r":8.5,"x":1046,"y":353,"homeX":1046,"homeY":353,"kind":"leaf","heb":"תּוּבַל","translit":null,"meaning":null,"ident":"Табал (область в Малой Азии)","note":"Ассир. Tabal, восточная Малая Азия."},{"id":"leaf:ashkenaz--gen-10-3","ru":"Аскеназ","ref":"Быт 10:3","family":"japheth","color":"#b5643f","r":8.5,"x":1132,"y":218,"homeX":1132,"homeY":218,"kind":"leaf","heb":"אַשְׁכְּנַז","translit":null,"meaning":null,"ident":"Скифы (ассир. Aškuza/Iškuza)","note":"Ассир. Aškūza; позднее — германские земли."},{"id":"leaf:riphath--gen-10-3","ru":"Рифат","ref":"Быт 10:3","family":"japheth","color":"#b5643f","r":8.5,"x":1132,"y":248,"homeX":1132,"homeY":248,"kind":"leaf","heb":"רִיפַת","translit":null,"meaning":null,"ident":"Неясно; по Флавию — Пафлагония","note":"Пафлагонцы (Иосиф) либо Рифейские горы; 1Пар 1:6 — «Дифат» (смешение ד/ר)."},{"id":"leaf:togarmah--gen-10-3","ru":"Фогарма","ref":"Быт 10:3","family":"japheth","color":"#b5643f","r":8.5,"x":1132,"y":278,"homeX":1132,"homeY":278,"kind":"leaf","heb":"תֹּגַרְמָה","translit":null,"meaning":null,"ident":"Тил-Гаримму / Тегарама (восточная Анатолия)","note":"Хетт./ассир. Til-garimmu, восточная Анатолия; армянская традиция."},{"id":"leaf:elishah--gen-10-4","ru":"Елиса","ref":"Быт 10:4","family":"japheth","color":"#b5643f","r":8.5,"x":1132,"y":308,"homeX":1132,"homeY":308,"kind":"leaf","heb":"אֱלִישָׁה","translit":null,"meaning":null,"ident":"Алашия (Кипр)","note":"Микенско-кипрская Алашия."},{"id":"leaf:tarshish--gen-10-4","ru":"Таршиш","ref":"Быт 10:4","family":"japheth","color":"#b5643f","r":8.5,"x":1132,"y":338,"homeX":1132,"homeY":338,"kind":"leaf","heb":"תַּרְשִׁישׁ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:ham","ru":"От Хама","fullRu":"Народы от Хама","ref":"15 имён","family":"ham","color":"#a86b46","r":18,"x":424,"y":278,"homeX":424,"homeY":278,"kind":"hub","icon":"globe","count":15},{"id":"leaf:ham--gen-5-32","ru":"Хам","ref":"Быт 5:32","family":"ham","color":"#a86b46","r":8.5,"x":360,"y":278,"homeX":360,"homeY":278,"kind":"leaf","heb":"חָם","translit":"Хам","meaning":"жаркий, горячий (?)","ident":null,"note":"Южные и хамитские народы; включает Ханаан."},{"id":"leaf:canaan--gen-9-18","ru":"Ханаан","ref":"Быт 9:18","family":"ham","color":"#a86b46","r":8.5,"x":274,"y":233,"homeX":274,"homeY":233,"kind":"leaf","heb":"כְּנַ֫עַן","translit":null,"meaning":null,"ident":"Ханаан — Левант (Ливан, Израиль/Палестина, зап. Сирия)","note":"Земля обетованная до Израиля; сыны — города-государства и племена."},{"id":"leaf:cush--gen-10-6","ru":"Хус","ref":"Быт 10:6","family":"ham","color":"#a86b46","r":8.5,"x":274,"y":263,"homeX":274,"homeY":263,"kind":"leaf","heb":"כּוּשׁ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:egypt--gen-10-6","ru":"Мицраим","ref":"Быт 10:6","family":"ham","color":"#a86b46","r":8.5,"x":274,"y":293,"homeX":274,"homeY":293,"kind":"leaf","heb":"מִצְרַ֫יִם","translit":null,"meaning":null,"ident":"Мицраим — Египет","note":"Евр. Miṣrayim — Египет."},{"id":"leaf:put--gen-10-6","ru":"Фув","ref":"Быт 10:6","family":"ham","color":"#a86b46","r":8.5,"x":274,"y":323,"homeX":274,"homeY":323,"kind":"leaf","heb":"פּוּט","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:heth--gen-10-15","ru":"Еф","ref":"Быт 10:15","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":203,"homeX":188,"homeY":203,"kind":"leaf","heb":"חֵת","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:sidon--gen-10-15","ru":"Сидон","ref":"Быт 10:15","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":224.42857142857144,"homeX":188,"homeY":224.42857142857144,"kind":"leaf","heb":"צִידוֹן","translit":null,"meaning":null,"ident":"Сидон — финикийский город Сидон (Сайда, Ливан)","note":"Первенец Ханаана."},{"id":"leaf:havilah--gen-10-7","ru":"Хавила","ref":"Быт 10:7","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":245.85714285714286,"homeX":188,"homeY":245.85714285714286,"kind":"leaf","heb":"חֲוִילָה","translit":null,"meaning":null,"ident":"Хавила — область в Аравии (место спорно)","note":"Кушитская Хавила (ср. одноимённого у Иоктана)."},{"id":"leaf:nimrod--gen-10-8","ru":"Нимрод","ref":"Быт 10:8","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":267.2857142857143,"homeX":188,"homeY":267.2857142857143,"kind":"leaf","heb":"נִמְרֹד","translit":null,"meaning":null,"ident":"Нимрод — легендарный царь-основатель Месопотамии (личность, не народ)","note":"«Сильный зверолов»; царство — Вавилон, Эрех, Аккад, Халне (Сеннаар), строит Ниневию (Быт 10:10–12). Конкретного царя история не знает (гипотезы: Саргон, Нинурта, Гильгамеш). В евр. предании — зачинщик Вавилонской башни."},{"id":"leaf:raamah--gen-10-7","ru":"Раама","ref":"Быт 10:7","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":288.7142857142857,"homeX":188,"homeY":288.7142857142857,"kind":"leaf","heb":"רַעְמָה","translit":null,"meaning":null,"ident":"Раама — юго-западная Аравия (район Наджрана)","note":null},{"id":"leaf:sabtah--gen-10-7","ru":"Савта","ref":"Быт 10:7","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":310.1428571428571,"homeX":188,"homeY":310.1428571428571,"kind":"leaf","heb":"סַבְתָּה","translit":null,"meaning":null,"ident":"Савта — предположительно Южная/Восточная Аравия","note":"Хадрамаут / побережье."},{"id":"leaf:sabteca--gen-10-7","ru":"Савтеха","ref":"Быт 10:7","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":331.57142857142856,"homeX":188,"homeY":331.57142857142856,"kind":"leaf","heb":"סַבְתְּכָא","translit":null,"meaning":null,"ident":"Савтеха — неустановленное место (Аравия?)","note":"Точная локализация неизвестна."},{"id":"leaf:seba--gen-10-7","ru":"Сева","ref":"Быт 10:7","family":"ham","color":"#a86b46","r":8.5,"x":188,"y":353,"homeX":188,"homeY":353,"kind":"leaf","heb":"סְבָא","translit":null,"meaning":null,"ident":"Сева — северо-восточная Африка / Красное море (традиц. Мероэ)","note":"Область Куша, верхний Нил."},{"id":"leaf:dedan--gen-10-7","ru":"Дедан","ref":"Быт 10:7","family":"ham","color":"#a86b46","r":8.5,"x":102,"y":263,"homeX":102,"homeY":263,"kind":"leaf","heb":"רֹדָן","translit":null,"meaning":null,"ident":"Дедан — оазис Дадан (эль-Ула, СЗ Аравия)","note":"Оазис аль-Ула."},{"id":"leaf:sheba--gen-10-7","ru":"Шева","ref":"Быт 10:7","family":"ham","color":"#a86b46","r":8.5,"x":102,"y":293,"homeX":102,"homeY":293,"kind":"leaf","heb":"שְׁבָא","translit":null,"meaning":null,"ident":"Шева — сабеи (Саба, Юж. Аравия/Йемен)","note":"Кушитская Шева."},{"id":"hub:shem-fathers","ru":"Праотцы","fullRu":"Праотцы после потопа","ref":"13 имён","family":"shem-fathers","color":"#9a8b3c","r":18,"x":896,"y":460,"homeX":896,"homeY":460,"kind":"hub","icon":"scroll","count":13},{"id":"leaf:aram--gen-10-22","ru":"Арам","ref":"Быт 10:22","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":960,"y":400,"homeX":960,"homeY":400,"kind":"leaf","heb":"אֲרָם","translit":null,"meaning":null,"ident":"Арамеи (Сирия, Верхняя Месопотамия)","note":null},{"id":"leaf:arpachshad--gen-10-22","ru":"Арфаксад","ref":"Быт 10:22","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":960,"y":430,"homeX":960,"homeY":430,"kind":"leaf","heb":"אַרְפַּכְשַׁד","translit":"Арпахша́д","meaning":"спорно","ident":"Звено к Аврааму; локализация спорна","note":"толкований много (напр. «граница халдеев»); достоверного нет"},{"id":"leaf:asshur--gen-10-22","ru":"Ассур","ref":"Быт 10:22","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":960,"y":460,"homeX":960,"homeY":460,"kind":"leaf","heb":"אַשּׁוּר","translit":null,"meaning":null,"ident":"Ассирия (город Ашшур на Тигре)","note":null},{"id":"leaf:elam--gen-10-22","ru":"Елам","ref":"Быт 10:22","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":960,"y":490,"homeX":960,"homeY":490,"kind":"leaf","heb":"עֵילָם","translit":null,"meaning":null,"ident":"Эламитяне (ЮЗ Иран, Сузы)","note":null},{"id":"leaf:lud--gen-10-22","ru":"Луд","ref":"Быт 10:22","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":960,"y":520,"homeX":960,"homeY":520,"kind":"leaf","heb":"לוּד","translit":null,"meaning":null,"ident":"Традиционно Лидия, но сомнительно","note":null},{"id":"leaf:gether--gen-10-23","ru":"Гефер","ref":"Быт 10:23","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1046,"y":400,"homeX":1046,"homeY":400,"kind":"leaf","heb":"גֶּ֫תֶר","translit":null,"meaning":null,"ident":"Арамейская группа; не отождествлена","note":null},{"id":"leaf:hul--gen-10-23","ru":"Хул","ref":"Быт 10:23","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1046,"y":430,"homeX":1046,"homeY":430,"kind":"leaf","heb":"חוּל","translit":null,"meaning":null,"ident":"Арамейская группа; место неизвестно","note":null},{"id":"leaf:mash--gen-10-23","ru":"Маш","ref":"Быт 10:23","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1046,"y":460,"homeX":1046,"homeY":460,"kind":"leaf","heb":"מַשׁ","translit":null,"meaning":null,"ident":"Возможно, гора Масий (Верхняя Месопотамия)","note":null},{"id":"leaf:uz--gen-10-23","ru":"Уз","ref":"Быт 10:23","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1046,"y":490,"homeX":1046,"homeY":490,"kind":"leaf","heb":"עוּץ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:cainan--luk-3-36","ru":"Каинан (Лк 3:36)","ref":"Лк 3:36","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1046,"y":520,"homeX":1046,"homeY":520,"kind":"leaf","heb":null,"translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:shelah--gen-10-24","ru":"Сала","ref":"Быт 10:24","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1132,"y":460,"homeX":1132,"homeY":460,"kind":"leaf","heb":"שֶׁ֫לַח","translit":"Ше́лах","meaning":"росток, посланный","ident":"Звено родословия (отец Евера)","note":"от корня «выпускать, посылать»"},{"id":"leaf:eber--gen-10-21","ru":"Евер","ref":"Быт 10:21","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1218,"y":460,"homeX":1218,"homeY":460,"kind":"leaf","heb":"עֵבֶר","translit":"Э́вер","meaning":"по ту сторону, переход","ident":"Эпоним «евреев» (иврим)","note":"от корня «переходить»; традиционно связывается с «иврим» (евреи) — «пришедшие с той стороны [реки]»"},{"id":"leaf:joktan--gen-10-25","ru":"Иоктан","ref":"Быт 10:25","family":"shem-fathers","color":"#9a8b3c","r":8.5,"x":1304,"y":460,"homeX":1304,"homeY":460,"kind":"leaf","heb":"יׇקְטָן","translit":null,"meaning":null,"ident":"Эпоним южноаравийских племён (арабск. Кахтан)","note":null},{"id":"hub:keturah","ru":"Сыны Хеттуры","fullRu":"Сыны Авраама и Хеттуры","ref":"11 имён","family":"keturah","color":"#8f7a3a","r":18,"x":424,"y":642,"homeX":424,"homeY":642,"kind":"hub","icon":"tent","count":11},{"id":"leaf:ishbak--gen-25-2","ru":"Ишбак","ref":"Быт 25:2","family":"keturah","color":"#8f7a3a","r":8.5,"x":360,"y":567,"homeX":360,"homeY":567,"kind":"leaf","heb":"יִשְׁבָּק","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jokshan--gen-25-2","ru":"Иокшан","ref":"Быт 25:2","family":"keturah","color":"#8f7a3a","r":8.5,"x":360,"y":597,"homeX":360,"homeY":597,"kind":"leaf","heb":"יׇקְשָׁן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:medan--gen-25-2","ru":"Медан","ref":"Быт 25:2","family":"keturah","color":"#8f7a3a","r":8.5,"x":360,"y":627,"homeX":360,"homeY":627,"kind":"leaf","heb":"מְדָן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:midian--gen-25-2","ru":"Мадиан","ref":"Быт 25:2","family":"keturah","color":"#8f7a3a","r":8.5,"x":360,"y":657,"homeX":360,"homeY":657,"kind":"leaf","heb":"מִדְיָן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:shuah--gen-25-2","ru":"Шуа","ref":"Быт 25:2","family":"keturah","color":"#8f7a3a","r":8.5,"x":360,"y":687,"homeX":360,"homeY":687,"kind":"leaf","heb":"שׁוּחַ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:zimran--gen-25-2","ru":"Зимран","ref":"Быт 25:2","family":"keturah","color":"#8f7a3a","r":8.5,"x":360,"y":717,"homeX":360,"homeY":717,"kind":"leaf","heb":"זִמְרָן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:dedan--gen-25-3","ru":"Дедан","ref":"Быт 25:3","family":"keturah","color":"#8f7a3a","r":8.5,"x":274,"y":582,"homeX":274,"homeY":582,"kind":"leaf","heb":"רֹדָן","translit":null,"meaning":null,"ident":"Дедан — оазис Дадан (эль-Ула, СЗ Аравия)","note":"Оазис аль-Ула."},{"id":"leaf:sheba--gen-25-3","ru":"Шеву","ref":"Быт 25:3","family":"keturah","color":"#8f7a3a","r":8.5,"x":274,"y":612,"homeX":274,"homeY":612,"kind":"leaf","heb":"שְׁבָא","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:abida--gen-25-4","ru":"Авида","ref":"Быт 25:4","family":"keturah","color":"#8f7a3a","r":8.5,"x":274,"y":642,"homeX":274,"homeY":642,"kind":"leaf","heb":"אֲבִידָע","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:eldaah--gen-25-4","ru":"Елдага","ref":"Быт 25:4","family":"keturah","color":"#8f7a3a","r":8.5,"x":274,"y":672,"homeX":274,"homeY":672,"kind":"leaf","heb":"אֶלְדָּעָה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:ephah--gen-25-4","ru":"Ефа","ref":"Быт 25:4","family":"keturah","color":"#8f7a3a","r":8.5,"x":274,"y":702,"homeX":274,"homeY":702,"kind":"leaf","heb":"עֵיפָה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:ishmaelites","ru":"Измаильтяне","fullRu":"Измаильтяне (12 князей)","ref":"14 имён","family":"ishmaelites","color":"#c08a3e","r":18,"x":896,"y":642,"homeX":896,"homeY":642,"kind":"hub","icon":"camel","count":14},{"id":"leaf:ishmael--gen-16-11","ru":"Измаил","ref":"Быт 16:11","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":960,"y":642,"homeX":960,"homeY":642,"kind":"leaf","heb":"יִשְׁמָעֵאל","translit":"Йишмаэ́ль","meaning":"услышит Бог","ident":null,"note":"«ибо услышал Господь страдание твоё» (Быт 16:11)"},{"id":"leaf:adbeel--gen-25-13","ru":"Адбеел","ref":"Быт 25:13","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":567,"homeX":1046,"homeY":567,"kind":"leaf","heb":"אַדְבְּאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:dumah--gen-25-14","ru":"Дума","ref":"Быт 25:14","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":579.5,"homeX":1046,"homeY":579.5,"kind":"leaf","heb":"דּוּמָה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:hadad--gen-25-15","ru":"Хадад","ref":"Быт 25:15","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":592,"homeX":1046,"homeY":592,"kind":"leaf","heb":"חֲדַד","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jetur--gen-25-15","ru":"Иетур","ref":"Быт 25:15","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":604.5,"homeX":1046,"homeY":604.5,"kind":"leaf","heb":"יְטוּר","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:kedar--gen-25-13","ru":"Кедар","ref":"Быт 25:13","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":617,"homeX":1046,"homeY":617,"kind":"leaf","heb":"קֵדָר","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:kedemah--gen-25-15","ru":"Кедма","ref":"Быт 25:15","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":629.5,"homeX":1046,"homeY":629.5,"kind":"leaf","heb":"קֵ֑דְמָה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:mahalath--gen-28-9","ru":"Махалафу","ref":"Быт 28:9","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":642,"homeX":1046,"homeY":642,"kind":"leaf","heb":"מַחֲלַת","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:massa--gen-25-14","ru":"Масса","ref":"Быт 25:14","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":654.5,"homeX":1046,"homeY":654.5,"kind":"leaf","heb":"מַשָּׂא","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:mibsam--gen-25-13","ru":"Мивсам","ref":"Быт 25:13","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":667,"homeX":1046,"homeY":667,"kind":"leaf","heb":"מִבְשָׂם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:mishma--gen-25-14","ru":"Мишма","ref":"Быт 25:14","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":679.5,"homeX":1046,"homeY":679.5,"kind":"leaf","heb":"מִשְׁמָע","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:naphish--gen-25-15","ru":"Нафиш","ref":"Быт 25:15","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":692,"homeX":1046,"homeY":692,"kind":"leaf","heb":"נָפִישׁ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:nebaioth--gen-25-13","ru":"Наваиоф","ref":"Быт 25:13","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":704.5,"homeX":1046,"homeY":704.5,"kind":"leaf","heb":"נְבָיוֹת","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:tema--gen-25-15","ru":"Фема","ref":"Быт 25:15","family":"ishmaelites","color":"#c08a3e","r":8.5,"x":1046,"y":717,"homeX":1046,"homeY":717,"kind":"leaf","heb":"תֵּימָא","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:esau-edom","ru":"Исав · Едом","fullRu":"Исав · Едом","ref":"14 имён","family":"esau-edom","color":"#a0453a","r":18,"x":896,"y":824,"homeX":896,"homeY":824,"kind":"hub","icon":"mountain","count":14},{"id":"leaf:esau--gen-25-25","ru":"Исав","ref":"Быт 25:25","family":"esau-edom","color":"#a0453a","r":8.5,"x":960,"y":824,"homeX":960,"homeY":824,"kind":"leaf","heb":"עֵשָׂו","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:eliphaz--gen-36-4","ru":"Елифаз","ref":"Быт 36:4","family":"esau-edom","color":"#a0453a","r":8.5,"x":1046,"y":764,"homeX":1046,"homeY":764,"kind":"leaf","heb":"אֱלִיפַז","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jalam--gen-36-5","ru":"Иалам","ref":"Быт 36:5","family":"esau-edom","color":"#a0453a","r":8.5,"x":1046,"y":794,"homeX":1046,"homeY":794,"kind":"leaf","heb":"יַעְלָם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jeush--gen-36-5","ru":"Иеуса","ref":"Быт 36:5","family":"esau-edom","color":"#a0453a","r":8.5,"x":1046,"y":824,"homeX":1046,"homeY":824,"kind":"leaf","heb":"יְעוּשׁ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:korah--gen-36-5","ru":"Кора","ref":"Быт 36:5","family":"esau-edom","color":"#a0453a","r":8.5,"x":1046,"y":854,"homeX":1046,"homeY":854,"kind":"leaf","heb":"קֹ֫רַח","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:reuel--gen-36-4","ru":"Рагуил","ref":"Быт 36:4","family":"esau-edom","color":"#a0453a","r":8.5,"x":1046,"y":884,"homeX":1046,"homeY":884,"kind":"leaf","heb":"רְעוּאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:amalek--gen-36-12","ru":"Амалик","ref":"Быт 36:12","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":749,"homeX":1132,"homeY":749,"kind":"leaf","heb":"עֲמָלֵק","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:gatam--gen-36-11","ru":"Гафам","ref":"Быт 36:11","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":770.4285714285714,"homeX":1132,"homeY":770.4285714285714,"kind":"leaf","heb":"גַּעְתָּם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:kenaz--gen-36-11","ru":"Кеназ","ref":"Быт 36:11","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":791.8571428571429,"homeX":1132,"homeY":791.8571428571429,"kind":"leaf","heb":"קְנַז","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:korah--gen-36-16","ru":"Кора","ref":"Быт 36:16","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":813.2857142857143,"homeX":1132,"homeY":813.2857142857143,"kind":"leaf","heb":"קֹ֫רַח","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:omar--gen-36-11","ru":"Омар","ref":"Быт 36:11","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":834.7142857142857,"homeX":1132,"homeY":834.7142857142857,"kind":"leaf","heb":"אוֹמָר","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:teman--gen-36-11","ru":"Феман","ref":"Быт 36:11","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":856.1428571428571,"homeX":1132,"homeY":856.1428571428571,"kind":"leaf","heb":"תֵּימָן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:zepho--gen-36-11","ru":"Цефо","ref":"Быт 36:11","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":877.5714285714286,"homeX":1132,"homeY":877.5714285714286,"kind":"leaf","heb":"צְפוֹ, צְפִי","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:mizzah--gen-36-13","ru":"Миза","ref":"Быт 36:13","family":"esau-edom","color":"#a0453a","r":8.5,"x":1132,"y":899,"homeX":1132,"homeY":899,"kind":"leaf","heb":"מִזָּה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:tribes","ru":"12 колен","fullRu":"12 колен Израиля","ref":"13 имён","family":"tribes","color":"#4f7a4a","r":18,"x":424,"y":1006,"homeX":424,"homeY":1006,"kind":"hub","icon":"tribes","count":13},{"id":"leaf:asher--gen-30-13","ru":"Асир","ref":"Быт 30:13","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":931,"homeX":360,"homeY":931,"kind":"leaf","heb":"אָשֵׁר","translit":"Аше́р","meaning":"счастливый, блаженный","ident":null,"note":"«к блаженству моему; блаженной будут звать меня» (Быт 30:13)"},{"id":"leaf:benjamin--gen-35-18","ru":"Вениамин","ref":"Быт 35:18","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":946,"homeX":360,"homeY":946,"kind":"leaf","heb":"בִּנְיָמִין","translit":"Биньями́н","meaning":"сын правой руки","ident":null,"note":"матерью назван Бен-Они «сын скорби», отцом — Вениамин (Быт 35:18)"},{"id":"leaf:dan--gen-30-6","ru":"Дан","ref":"Быт 30:6","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":961,"homeX":360,"homeY":961,"kind":"leaf","heb":"דָּן","translit":"Дан","meaning":"судья, рассудил","ident":null,"note":"«судил мне Бог» (Быт 30:6)"},{"id":"leaf:dinah--gen-30-21","ru":"Дина","ref":"Быт 30:21","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":976,"homeX":360,"homeY":976,"kind":"leaf","heb":"דִּינָה","translit":"Дина́","meaning":"суд, оправдание","ident":null,"note":"женская форма от Дан — «суд»"},{"id":"leaf:gad--gen-30-11","ru":"Гад","ref":"Быт 30:11","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":991,"homeX":360,"homeY":991,"kind":"leaf","heb":"גָּד","translit":"Гад","meaning":"удача, счастье","ident":null,"note":"«прибыло счастье» (Быт 30:11)"},{"id":"leaf:issachar--gen-30-18","ru":"Иссахар","ref":"Быт 30:18","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":1006,"homeX":360,"homeY":1006,"kind":"leaf","heb":"יִשָּׂשכָר","translit":"Иссаха́р","meaning":"есть награда","ident":null,"note":"«дал Бог возмездие мне» (Быт 30:18)"},{"id":"leaf:joseph--gen-30-24","ru":"Иосиф","ref":"Быт 30:24","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":1021,"homeX":360,"homeY":1021,"kind":"leaf","heb":"יוֹסֵף","translit":"Йосэ́ф","meaning":"[Яхве] прибавит","ident":null,"note":"«Господь даст мне и другого сына» (Быт 30:24)"},{"id":"leaf:naphtali--gen-30-8","ru":"Неффалим","ref":"Быт 30:8","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":1036,"homeX":360,"homeY":1036,"kind":"leaf","heb":"נַפְתָּלִי","translit":"Нафтали́","meaning":"моя борьба","ident":null,"note":"«борьбою сразилась я с сестрою» (Быт 30:8)"},{"id":"leaf:reuben--gen-29-32","ru":"Рувим","ref":"Быт 29:32","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":1051,"homeX":360,"homeY":1051,"kind":"leaf","heb":"רְאוּבֵן","translit":"Реуве́н","meaning":"смотрите — сын!","ident":null,"note":"«призрел Господь на моё бедствие» (Быт 29:32)"},{"id":"leaf:simeon--gen-29-33","ru":"Симеон","ref":"Быт 29:33","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":1066,"homeX":360,"homeY":1066,"kind":"leaf","heb":"שִׁמְעוֹן","translit":"Шимо́н","meaning":"услышание","ident":null,"note":"«услышал Господь, что я нелюбима» (Быт 29:33)"},{"id":"leaf:zebulun--gen-30-20","ru":"Завулон","ref":"Быт 30:20","family":"tribes","color":"#4f7a4a","r":8.5,"x":360,"y":1081,"homeX":360,"homeY":1081,"kind":"leaf","heb":"זְבוּלֻן","translit":"Зевулу́н","meaning":"обитель, почтит","ident":null,"note":"«теперь будет жить у меня муж мой» (Быт 30:20)"},{"id":"leaf:beriah--gen-46-17","ru":"Вериа","ref":"Быт 46:17","family":"tribes","color":"#4f7a4a","r":8.5,"x":274,"y":991,"homeX":274,"homeY":991,"kind":"leaf","heb":"בְּרִיעָה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:imnah--gen-46-17","ru":"Имна","ref":"Быт 46:17","family":"tribes","color":"#4f7a4a","r":8.5,"x":274,"y":1021,"homeX":274,"homeY":1021,"kind":"leaf","heb":"יִמְנָה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:levites","ru":"Левиты","fullRu":"Левиты и священство","ref":"18 имён","family":"levites","color":"#8a6db0","r":18,"x":896,"y":1006,"homeX":896,"homeY":1006,"kind":"hub","icon":"menorah","count":18},{"id":"leaf:levi--gen-29-34","ru":"Левий","ref":"Быт 29:34","family":"levites","color":"#8a6db0","r":8.5,"x":960,"y":1006,"homeX":960,"homeY":1006,"kind":"leaf","heb":"לֵוִי","translit":"Леви́","meaning":"привязанность","ident":null,"note":"«теперь прилепится ко мне муж мой» (Быт 29:34)"},{"id":"leaf:gershon--gen-46-11","ru":"Гирсон","ref":"Быт 46:11","family":"levites","color":"#8a6db0","r":8.5,"x":1046,"y":961,"homeX":1046,"homeY":961,"kind":"leaf","heb":"גֵּרְשׁוֹן","translit":"Гершо́н","meaning":"пришелец","ident":null,"note":"ср. гер «пришелец» — «я стал пришельцем в чужой земле» (Исх 2:22)"},{"id":"leaf:jochebed--exo-6-20","ru":"Иохаведа","ref":"Исх 6:20","family":"levites","color":"#8a6db0","r":8.5,"x":1046,"y":991,"homeX":1046,"homeY":991,"kind":"leaf","heb":"יוֹכֶ֫בֶד","translit":"Йохе́вед","meaning":"Яхве — слава","ident":null,"note":"Йо- (Яхве) + кавод «слава»; первое имя с именем Бога в Библии"},{"id":"leaf:kohath--gen-46-11","ru":"Кааф","ref":"Быт 46:11","family":"levites","color":"#8a6db0","r":8.5,"x":1046,"y":1021,"homeX":1046,"homeY":1021,"kind":"leaf","heb":"קְהָת","translit":"Кеха́т","meaning":"собрание (?)","ident":null,"note":"значение спорно; связывают со «сбором, послушанием»"},{"id":"leaf:merari--gen-46-11","ru":"Мерари","ref":"Быт 46:11","family":"levites","color":"#8a6db0","r":8.5,"x":1046,"y":1051,"homeX":1046,"homeY":1051,"kind":"leaf","heb":"מְרָרִי","translit":"Мерари́","meaning":"горький","ident":null,"note":"от мар «горький»"},{"id":"leaf:libni--exo-6-17","ru":"Ливни","ref":"Исх 6:17","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":931,"homeX":1132,"homeY":931,"kind":"leaf","heb":"לִבְנִי","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:shimei--exo-6-17","ru":"Шимеи","ref":"Исх 6:17","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":944.6363636363636,"homeX":1132,"homeY":944.6363636363636,"kind":"leaf","heb":"שִׁמְעִי","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:aaron--exo-4-14","ru":"Аарон","ref":"Исх 4:14","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":958.2727272727273,"homeX":1132,"homeY":958.2727272727273,"kind":"leaf","heb":"אַהֲרֹן","translit":"Ахаро́н","meaning":"светоносный (?)","ident":null,"note":"значение спорно; предлагают «светлый», «гора», «носитель»"},{"id":"leaf:miriam--exo-15-20","ru":"Мариам","ref":"Исх 15:20","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":971.9090909090909,"homeX":1132,"homeY":971.9090909090909,"kind":"leaf","heb":"מִרְיָם","translit":"Мирья́м","meaning":"спорно","ident":null,"note":"предлагают «горечь», «возлюбленная», «упрямство»"},{"id":"leaf:moses--exo-2-10","ru":"Моисей","ref":"Исх 2:10","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":985.5454545454545,"homeX":1132,"homeY":985.5454545454545,"kind":"leaf","heb":"מֹשֶׁה","translit":"Моше́","meaning":"извлечённый [из воды]","ident":null,"note":"Исх 2:10; вероятна и египетская основа мос «сын» (ср. Тут-мос)"},{"id":"leaf:amram--exo-6-18","ru":"Амрам","ref":"Исх 6:18","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":999.1818181818181,"homeX":1132,"homeY":999.1818181818181,"kind":"leaf","heb":"עַמְרָם","translit":"Амра́м","meaning":"народ возвышен","ident":null,"note":"ам «народ» + рам «высокий»"},{"id":"leaf:hebron--exo-6-18","ru":"Хеврон","ref":"Исх 6:18","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":1012.8181818181819,"homeX":1132,"homeY":1012.8181818181819,"kind":"leaf","heb":"חֶבְרוֹן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:izhar--exo-6-18","ru":"Изар","ref":"Исх 6:18","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":1026.4545454545455,"homeX":1132,"homeY":1026.4545454545455,"kind":"leaf","heb":"יִצְהָר","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:uzziel--exo-6-18","ru":"Узиил","ref":"Исх 6:18","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":1040.090909090909,"homeX":1132,"homeY":1040.090909090909,"kind":"leaf","heb":"עֻזִּיאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jaaziah--1ch-24-26","ru":"Иаазии","ref":"1Пар 24:26","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":1053.7272727272727,"homeX":1132,"homeY":1053.7272727272727,"kind":"leaf","heb":"יַעֲזִיָּ֫הוּ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:mahli--exo-6-19","ru":"Махли","ref":"Исх 6:19","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":1067.3636363636363,"homeX":1132,"homeY":1067.3636363636363,"kind":"leaf","heb":"מַחְלִי","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:mushi--exo-6-19","ru":"Муши","ref":"Исх 6:19","family":"levites","color":"#8a6db0","r":8.5,"x":1132,"y":1081,"homeX":1132,"homeY":1081,"kind":"leaf","heb":"מוּשִׁי","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jehiel--1ch-6-20","ru":"Иеиел","ref":"1Пар 6:20","family":"levites","color":"#8a6db0","r":8.5,"x":1218,"y":1006,"homeX":1218,"homeY":1006,"kind":"leaf","heb":"יְחִיאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:judah-sons","ru":"Сыны Иуды","fullRu":"Сыны Иуды (линия Фареса)","ref":"12 имён","family":"judah-sons","color":"#7d6ba0","r":18,"x":424,"y":1188,"homeX":424,"homeY":1188,"kind":"hub","icon":"scroll","count":12},{"id":"leaf:er--gen-38-3","ru":"Ир","ref":"Быт 38:3","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":360,"y":1128,"homeX":360,"homeY":1128,"kind":"leaf","heb":"עֵר","translit":"Эр","meaning":"бодрствующий","ident":null,"note":"от корня «бодрствовать, бдеть»"},{"id":"leaf:onan--gen-38-4","ru":"Онан","ref":"Быт 38:4","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":360,"y":1158,"homeX":360,"homeY":1158,"kind":"leaf","heb":"אוֹנָן","translit":"Она́н","meaning":"сила","ident":null,"note":"от он «сила, мощь»"},{"id":"leaf:perez--gen-38-29","ru":"Фарес","ref":"Быт 38:29","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":360,"y":1188,"homeX":360,"homeY":1188,"kind":"leaf","heb":"פֶּ֫רֶץ","translit":"Пе́рец","meaning":"прорыв","ident":null,"note":"«как ты расторг себе преграду» (Быт 38:29)"},{"id":"leaf:shelah--gen-38-5","ru":"Шела","ref":"Быт 38:5","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":360,"y":1218,"homeX":360,"homeY":1218,"kind":"leaf","heb":"שֶׁ֫לַח","translit":"Ше́лах","meaning":"росток, посланный","ident":null,"note":"от корня «выпускать, посылать»"},{"id":"leaf:zerah--gen-38-30","ru":"Зара","ref":"Быт 38:30","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":360,"y":1248,"homeX":360,"homeY":1248,"kind":"leaf","heb":"זֶ֫רַח","translit":"Зе́рах","meaning":"восход, сияние","ident":null,"note":"от зара́х «восходить, сиять» (о заре)"},{"id":"leaf:hamul--gen-46-12","ru":"Хамул","ref":"Быт 46:12","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":274,"y":1113,"homeX":274,"homeY":1113,"kind":"leaf","heb":"חָמוּל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:hezron--gen-46-12","ru":"Есром","ref":"Быт 46:12","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":274,"y":1138,"homeX":274,"homeY":1138,"kind":"leaf","heb":"חֶצְרוֹן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:er--1ch-4-21","ru":"Ер","ref":"1Пар 4:21","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":274,"y":1163,"homeX":274,"homeY":1163,"kind":"leaf","heb":"עֵר","translit":"Эр","meaning":"бодрствующий","ident":null,"note":"от корня «бодрствовать, бдеть»"},{"id":"leaf:joash--1ch-4-22","ru":"Иоаш","ref":"1Пар 4:22","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":274,"y":1188,"homeX":274,"homeY":1188,"kind":"leaf","heb":"יוֹאָשׁ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jokim--1ch-4-22","ru":"Иоким","ref":"1Пар 4:22","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":274,"y":1213,"homeX":274,"homeY":1213,"kind":"leaf","heb":"יוֹקִים","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:laadah--1ch-4-21","ru":"Лаеда","ref":"1Пар 4:21","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":274,"y":1238,"homeX":274,"homeY":1238,"kind":"leaf","heb":"לַעְדָּה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:saraph--1ch-4-22","ru":"Сараф","ref":"1Пар 4:22","family":"judah-sons","color":"#7d6ba0","r":8.5,"x":274,"y":1263,"homeX":274,"homeY":1263,"kind":"leaf","heb":"שָׂרָף","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:house-of-david","ru":"Дом Давида","fullRu":"Дом Давида","ref":"12 имён","family":"house-of-david","color":"#6d4b9a","r":18,"x":896,"y":1370,"homeX":896,"homeY":1370,"kind":"hub","icon":"crown","count":12},{"id":"leaf:absalom--2sa-3-3","ru":"Авессалом","ref":"2Цар 3:3","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1295,"homeX":960,"homeY":1295,"kind":"leaf","heb":"אַבְשָׁלוֹם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:adonijah--2sa-3-4","ru":"Адония","ref":"2Цар 3:4","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1308.6363636363637,"homeX":960,"homeY":1308.6363636363637,"kind":"leaf","heb":"אֲדֹנִיָּ֫הוּ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:amnon--2sa-3-2","ru":"Амнон","ref":"2Цар 3:2","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1322.2727272727273,"homeX":960,"homeY":1322.2727272727273,"kind":"leaf","heb":"אַמְנוֹן","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:chileab--2sa-3-3","ru":"Хилеав","ref":"2Цар 3:3","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1335.909090909091,"homeX":960,"homeY":1335.909090909091,"kind":"leaf","heb":"כִּלְאָב","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:eliada--2sa-5-16","ru":"Елисама","ref":"2Цар 5:16","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1349.5454545454545,"homeX":960,"homeY":1349.5454545454545,"kind":"leaf","heb":"אֶלְיָדָע","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:eliphelet--2sa-5-16","ru":"Елифалеф","ref":"2Цар 5:16","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1363.1818181818182,"homeX":960,"homeY":1363.1818181818182,"kind":"leaf","heb":"אֱלִיפָֽלֶט","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:elishama--2sa-5-16","ru":"Елисама","ref":"2Цар 5:16","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1376.8181818181818,"homeX":960,"homeY":1376.8181818181818,"kind":"leaf","heb":"אֱלִישָׁמָע","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:elishua--2sa-5-15","ru":"Елисуа","ref":"2Цар 5:15","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1390.4545454545455,"homeX":960,"homeY":1390.4545454545455,"kind":"leaf","heb":"אֱלִישׁוּעַ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:elpelet--1ch-3-6","ru":"Елифелет","ref":"1Пар 3:6","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1404.090909090909,"homeX":960,"homeY":1404.090909090909,"kind":"leaf","heb":"אֶלְפָּֽלֶט","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:ibhar--2sa-5-15","ru":"Ивар","ref":"2Цар 5:15","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1417.7272727272727,"homeX":960,"homeY":1417.7272727272727,"kind":"leaf","heb":"יִבְחָר","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:ithream--2sa-3-5","ru":"Иефераам","ref":"2Цар 3:5","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1431.3636363636363,"homeX":960,"homeY":1431.3636363636363,"kind":"leaf","heb":"יִתְרְעָם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:japhia--2sa-5-15","ru":"Иафиа","ref":"2Цар 5:15","family":"house-of-david","color":"#6d4b9a","r":8.5,"x":960,"y":1445,"homeX":960,"homeY":1445,"kind":"leaf","heb":"יָפִיעַ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"hub:kings-of-judah","ru":"Цари Иудеи","fullRu":"Цари Иудеи","ref":"16 имён","family":"kings-of-judah","color":"#9a5ba6","r":18,"x":424,"y":1552,"homeX":424,"homeY":1552,"kind":"hub","icon":"crown","count":16},{"id":"leaf:rehoboam--1ki-11-43","ru":"Ровоам","ref":"3Цар 11:43","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":360,"y":1552,"homeX":360,"homeY":1552,"kind":"leaf","heb":"רְחַבְעָם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:abijah--1ki-14-31","ru":"Авия","ref":"3Цар 14:31","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":274,"y":1477,"homeX":274,"homeY":1477,"kind":"leaf","heb":"אֲבִיָּה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:attai--2ch-11-20","ru":"Аттая","ref":"2Пар 11:20","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":274,"y":1502,"homeX":274,"homeY":1502,"kind":"leaf","heb":"עַתַּי","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jeush--2ch-11-19","ru":"Иеуш","ref":"2Пар 11:19","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":274,"y":1527,"homeX":274,"homeY":1527,"kind":"leaf","heb":"יְעוּשׁ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:shelomith--2ch-11-20","ru":"Шеломифа","ref":"2Пар 11:20","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":274,"y":1552,"homeX":274,"homeY":1552,"kind":"leaf","heb":"שְׁלֹמִית","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:shemariah--2ch-11-19","ru":"Шемарию","ref":"2Пар 11:19","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":274,"y":1577,"homeX":274,"homeY":1577,"kind":"leaf","heb":"שְׁמַרְיָ֫הוּ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:zaham--2ch-11-19","ru":"Загам","ref":"2Пар 11:19","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":274,"y":1602,"homeX":274,"homeY":1602,"kind":"leaf","heb":"זָ֑הַם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:ziza--2ch-11-20","ru":"Зизу","ref":"2Пар 11:20","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":274,"y":1627,"homeX":274,"homeY":1627,"kind":"leaf","heb":"זִיזָא","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:asa--1ki-15-8","ru":"Аса","ref":"3Цар 15:8","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":188,"y":1552,"homeX":188,"homeY":1552,"kind":"leaf","heb":"אָסָא","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jehoshaphat--1ki-15-24","ru":"Иосафат","ref":"3Цар 15:24","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":102,"y":1552,"homeX":102,"homeY":1552,"kind":"leaf","heb":"יְהוֹשָׁפָט","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:azariah--2ch-21-2","ru":"Азария","ref":"2Пар 21:2","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":16,"y":1477,"homeX":16,"homeY":1477,"kind":"leaf","heb":"עֲזַרְיָה","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:azariahu--2ch-21-2","ru":"Азария","ref":"2Пар 21:2","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":16,"y":1507,"homeX":16,"homeY":1507,"kind":"leaf","heb":"עֲזַרְיָ֫הוּ","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jehiel--2ch-21-2","ru":"Иехиил","ref":"2Пар 21:2","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":16,"y":1537,"homeX":16,"homeY":1537,"kind":"leaf","heb":"יְחִיאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:jehoram--1ki-22-50","ru":"Иорам","ref":"3Цар 22:50","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":16,"y":1567,"homeX":16,"homeY":1567,"kind":"leaf","heb":"יְהוֹרָם","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:michael--2ch-21-2","ru":"Михаил","ref":"2Пар 21:2","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":16,"y":1597,"homeX":16,"homeY":1597,"kind":"leaf","heb":"מִיכָאֵל","translit":null,"meaning":null,"ident":null,"note":null},{"id":"leaf:shephatiah--2ch-21-2","ru":"Шефатиа","ref":"2Пар 21:2","family":"kings-of-judah","color":"#9a5ba6","r":8.5,"x":16,"y":1627,"homeX":16,"homeY":1627,"kind":"leaf","heb":"שְׁפַטְיָהוּ","translit":null,"meaning":null,"ident":null,"note":null}],"edges":[{"a":"spine:Adam@Gen.2.19","b":"spine:Noah@Gen.5.29","kind":"spine"},{"a":"spine:Noah@Gen.5.29","b":"spine:Shem@Gen.5.32","kind":"spine"},{"a":"spine:Shem@Gen.5.32","b":"spine:Abraham@Gen.11.26","kind":"spine"},{"a":"spine:Abraham@Gen.11.26","b":"spine:Isaac@Gen.17.19","kind":"spine"},{"a":"spine:Isaac@Gen.17.19","b":"spine:Israel@Gen.25.26","kind":"spine"},{"a":"spine:Israel@Gen.25.26","b":"spine:Judah@Gen.29.35","kind":"spine"},{"a":"spine:Judah@Gen.29.35","b":"spine:David@Rut.4.17","kind":"spine"},{"a":"spine:David@Rut.4.17","b":"spine:Solomon@2Sa.5.14","kind":"spine"},{"a":"spine:Solomon@2Sa.5.14","b":"spine:Jesus@Isa.7.14","kind":"spine"},{"a":"spine:Adam@Gen.2.19","b":"hub:sethites","kind":"family","color":"#6f8a4c"},{"a":"hub:sethites","b":"leaf:abel--gen-4-2","kind":"leaf","color":"#6f8a4c"},{"a":"hub:sethites","b":"leaf:cain--gen-4-1","kind":"leaf","color":"#6f8a4c"},{"a":"hub:sethites","b":"leaf:seth--gen-4-25","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:cain--gen-4-1","b":"leaf:enoch--gen-4-17","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:seth--gen-4-25","b":"leaf:enosh--gen-4-26","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:enoch--gen-4-17","b":"leaf:irad--gen-4-18","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:enosh--gen-4-26","b":"leaf:kenan--gen-5-9","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:irad--gen-4-18","b":"leaf:mehujael--gen-4-18","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:kenan--gen-5-9","b":"leaf:mahalalel--gen-5-12","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:mehujael--gen-4-18","b":"leaf:methushael--gen-4-18","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:mahalalel--gen-5-12","b":"leaf:jared--gen-5-15","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:methushael--gen-4-18","b":"leaf:lamech--gen-4-18","kind":"leaf","color":"#6f8a4c"},{"a":"leaf:jared--gen-5-15","b":"leaf:enoch--gen-5-18","kind":"leaf","color":"#6f8a4c"},{"a":"spine:Noah@Gen.5.29","b":"hub:japheth","kind":"family","color":"#b5643f"},{"a":"hub:japheth","b":"leaf:japheth--gen-5-32","kind":"leaf","color":"#b5643f"},{"a":"leaf:japheth--gen-5-32","b":"leaf:gomer--gen-10-2","kind":"leaf","color":"#b5643f"},{"a":"leaf:japheth--gen-5-32","b":"leaf:javan--gen-10-2","kind":"leaf","color":"#b5643f"},{"a":"leaf:japheth--gen-5-32","b":"leaf:madai--gen-10-2","kind":"leaf","color":"#b5643f"},{"a":"leaf:japheth--gen-5-32","b":"leaf:magog--gen-10-2","kind":"leaf","color":"#b5643f"},{"a":"leaf:japheth--gen-5-32","b":"leaf:meshech--gen-10-2","kind":"leaf","color":"#b5643f"},{"a":"leaf:japheth--gen-5-32","b":"leaf:tiras--gen-10-2","kind":"leaf","color":"#b5643f"},{"a":"leaf:japheth--gen-5-32","b":"leaf:tubal--gen-10-2","kind":"leaf","color":"#b5643f"},{"a":"leaf:gomer--gen-10-2","b":"leaf:ashkenaz--gen-10-3","kind":"leaf","color":"#b5643f"},{"a":"leaf:gomer--gen-10-2","b":"leaf:riphath--gen-10-3","kind":"leaf","color":"#b5643f"},{"a":"leaf:gomer--gen-10-2","b":"leaf:togarmah--gen-10-3","kind":"leaf","color":"#b5643f"},{"a":"leaf:javan--gen-10-2","b":"leaf:elishah--gen-10-4","kind":"leaf","color":"#b5643f"},{"a":"leaf:javan--gen-10-2","b":"leaf:tarshish--gen-10-4","kind":"leaf","color":"#b5643f"},{"a":"spine:Noah@Gen.5.29","b":"hub:ham","kind":"family","color":"#a86b46"},{"a":"hub:ham","b":"leaf:ham--gen-5-32","kind":"leaf","color":"#a86b46"},{"a":"leaf:ham--gen-5-32","b":"leaf:canaan--gen-9-18","kind":"leaf","color":"#a86b46"},{"a":"leaf:ham--gen-5-32","b":"leaf:cush--gen-10-6","kind":"leaf","color":"#a86b46"},{"a":"leaf:ham--gen-5-32","b":"leaf:egypt--gen-10-6","kind":"leaf","color":"#a86b46"},{"a":"leaf:ham--gen-5-32","b":"leaf:put--gen-10-6","kind":"leaf","color":"#a86b46"},{"a":"leaf:canaan--gen-9-18","b":"leaf:heth--gen-10-15","kind":"leaf","color":"#a86b46"},{"a":"leaf:canaan--gen-9-18","b":"leaf:sidon--gen-10-15","kind":"leaf","color":"#a86b46"},{"a":"leaf:cush--gen-10-6","b":"leaf:havilah--gen-10-7","kind":"leaf","color":"#a86b46"},{"a":"leaf:cush--gen-10-6","b":"leaf:nimrod--gen-10-8","kind":"leaf","color":"#a86b46"},{"a":"leaf:cush--gen-10-6","b":"leaf:raamah--gen-10-7","kind":"leaf","color":"#a86b46"},{"a":"leaf:cush--gen-10-6","b":"leaf:sabtah--gen-10-7","kind":"leaf","color":"#a86b46"},{"a":"leaf:cush--gen-10-6","b":"leaf:sabteca--gen-10-7","kind":"leaf","color":"#a86b46"},{"a":"leaf:cush--gen-10-6","b":"leaf:seba--gen-10-7","kind":"leaf","color":"#a86b46"},{"a":"leaf:raamah--gen-10-7","b":"leaf:dedan--gen-10-7","kind":"leaf","color":"#a86b46"},{"a":"leaf:raamah--gen-10-7","b":"leaf:sheba--gen-10-7","kind":"leaf","color":"#a86b46"},{"a":"spine:Shem@Gen.5.32","b":"hub:shem-fathers","kind":"family","color":"#9a8b3c"},{"a":"hub:shem-fathers","b":"leaf:aram--gen-10-22","kind":"leaf","color":"#9a8b3c"},{"a":"hub:shem-fathers","b":"leaf:arpachshad--gen-10-22","kind":"leaf","color":"#9a8b3c"},{"a":"hub:shem-fathers","b":"leaf:asshur--gen-10-22","kind":"leaf","color":"#9a8b3c"},{"a":"hub:shem-fathers","b":"leaf:elam--gen-10-22","kind":"leaf","color":"#9a8b3c"},{"a":"hub:shem-fathers","b":"leaf:lud--gen-10-22","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:aram--gen-10-22","b":"leaf:gether--gen-10-23","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:aram--gen-10-22","b":"leaf:hul--gen-10-23","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:aram--gen-10-22","b":"leaf:mash--gen-10-23","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:aram--gen-10-22","b":"leaf:uz--gen-10-23","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:arpachshad--gen-10-22","b":"leaf:cainan--luk-3-36","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:cainan--luk-3-36","b":"leaf:shelah--gen-10-24","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:shelah--gen-10-24","b":"leaf:eber--gen-10-21","kind":"leaf","color":"#9a8b3c"},{"a":"leaf:eber--gen-10-21","b":"leaf:joktan--gen-10-25","kind":"leaf","color":"#9a8b3c"},{"a":"spine:Abraham@Gen.11.26","b":"hub:keturah","kind":"family","color":"#8f7a3a"},{"a":"hub:keturah","b":"leaf:ishbak--gen-25-2","kind":"leaf","color":"#8f7a3a"},{"a":"hub:keturah","b":"leaf:jokshan--gen-25-2","kind":"leaf","color":"#8f7a3a"},{"a":"hub:keturah","b":"leaf:medan--gen-25-2","kind":"leaf","color":"#8f7a3a"},{"a":"hub:keturah","b":"leaf:midian--gen-25-2","kind":"leaf","color":"#8f7a3a"},{"a":"hub:keturah","b":"leaf:shuah--gen-25-2","kind":"leaf","color":"#8f7a3a"},{"a":"hub:keturah","b":"leaf:zimran--gen-25-2","kind":"leaf","color":"#8f7a3a"},{"a":"leaf:jokshan--gen-25-2","b":"leaf:dedan--gen-25-3","kind":"leaf","color":"#8f7a3a"},{"a":"leaf:jokshan--gen-25-2","b":"leaf:sheba--gen-25-3","kind":"leaf","color":"#8f7a3a"},{"a":"leaf:midian--gen-25-2","b":"leaf:abida--gen-25-4","kind":"leaf","color":"#8f7a3a"},{"a":"leaf:midian--gen-25-2","b":"leaf:eldaah--gen-25-4","kind":"leaf","color":"#8f7a3a"},{"a":"leaf:midian--gen-25-2","b":"leaf:ephah--gen-25-4","kind":"leaf","color":"#8f7a3a"},{"a":"spine:Abraham@Gen.11.26","b":"hub:ishmaelites","kind":"family","color":"#c08a3e"},{"a":"hub:ishmaelites","b":"leaf:ishmael--gen-16-11","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:adbeel--gen-25-13","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:dumah--gen-25-14","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:hadad--gen-25-15","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:jetur--gen-25-15","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:kedar--gen-25-13","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:kedemah--gen-25-15","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:mahalath--gen-28-9","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:massa--gen-25-14","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:mibsam--gen-25-13","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:mishma--gen-25-14","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:naphish--gen-25-15","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:nebaioth--gen-25-13","kind":"leaf","color":"#c08a3e"},{"a":"leaf:ishmael--gen-16-11","b":"leaf:tema--gen-25-15","kind":"leaf","color":"#c08a3e"},{"a":"spine:Isaac@Gen.17.19","b":"hub:esau-edom","kind":"family","color":"#a0453a"},{"a":"hub:esau-edom","b":"leaf:esau--gen-25-25","kind":"leaf","color":"#a0453a"},{"a":"leaf:esau--gen-25-25","b":"leaf:eliphaz--gen-36-4","kind":"leaf","color":"#a0453a"},{"a":"leaf:esau--gen-25-25","b":"leaf:jalam--gen-36-5","kind":"leaf","color":"#a0453a"},{"a":"leaf:esau--gen-25-25","b":"leaf:jeush--gen-36-5","kind":"leaf","color":"#a0453a"},{"a":"leaf:esau--gen-25-25","b":"leaf:korah--gen-36-5","kind":"leaf","color":"#a0453a"},{"a":"leaf:esau--gen-25-25","b":"leaf:reuel--gen-36-4","kind":"leaf","color":"#a0453a"},{"a":"leaf:eliphaz--gen-36-4","b":"leaf:amalek--gen-36-12","kind":"leaf","color":"#a0453a"},{"a":"leaf:eliphaz--gen-36-4","b":"leaf:gatam--gen-36-11","kind":"leaf","color":"#a0453a"},{"a":"leaf:eliphaz--gen-36-4","b":"leaf:kenaz--gen-36-11","kind":"leaf","color":"#a0453a"},{"a":"leaf:eliphaz--gen-36-4","b":"leaf:korah--gen-36-16","kind":"leaf","color":"#a0453a"},{"a":"leaf:eliphaz--gen-36-4","b":"leaf:omar--gen-36-11","kind":"leaf","color":"#a0453a"},{"a":"leaf:eliphaz--gen-36-4","b":"leaf:teman--gen-36-11","kind":"leaf","color":"#a0453a"},{"a":"leaf:eliphaz--gen-36-4","b":"leaf:zepho--gen-36-11","kind":"leaf","color":"#a0453a"},{"a":"leaf:reuel--gen-36-4","b":"leaf:mizzah--gen-36-13","kind":"leaf","color":"#a0453a"},{"a":"spine:Israel@Gen.25.26","b":"hub:tribes","kind":"family","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:asher--gen-30-13","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:benjamin--gen-35-18","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:dan--gen-30-6","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:dinah--gen-30-21","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:gad--gen-30-11","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:issachar--gen-30-18","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:joseph--gen-30-24","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:naphtali--gen-30-8","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:reuben--gen-29-32","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:simeon--gen-29-33","kind":"leaf","color":"#4f7a4a"},{"a":"hub:tribes","b":"leaf:zebulun--gen-30-20","kind":"leaf","color":"#4f7a4a"},{"a":"leaf:asher--gen-30-13","b":"leaf:beriah--gen-46-17","kind":"leaf","color":"#4f7a4a"},{"a":"leaf:asher--gen-30-13","b":"leaf:imnah--gen-46-17","kind":"leaf","color":"#4f7a4a"},{"a":"spine:Israel@Gen.25.26","b":"hub:levites","kind":"family","color":"#8a6db0"},{"a":"hub:levites","b":"leaf:levi--gen-29-34","kind":"leaf","color":"#8a6db0"},{"a":"leaf:levi--gen-29-34","b":"leaf:gershon--gen-46-11","kind":"leaf","color":"#8a6db0"},{"a":"leaf:levi--gen-29-34","b":"leaf:jochebed--exo-6-20","kind":"leaf","color":"#8a6db0"},{"a":"leaf:levi--gen-29-34","b":"leaf:kohath--gen-46-11","kind":"leaf","color":"#8a6db0"},{"a":"leaf:levi--gen-29-34","b":"leaf:merari--gen-46-11","kind":"leaf","color":"#8a6db0"},{"a":"leaf:gershon--gen-46-11","b":"leaf:libni--exo-6-17","kind":"leaf","color":"#8a6db0"},{"a":"leaf:gershon--gen-46-11","b":"leaf:shimei--exo-6-17","kind":"leaf","color":"#8a6db0"},{"a":"leaf:jochebed--exo-6-20","b":"leaf:aaron--exo-4-14","kind":"leaf","color":"#8a6db0"},{"a":"leaf:jochebed--exo-6-20","b":"leaf:miriam--exo-15-20","kind":"leaf","color":"#8a6db0"},{"a":"leaf:jochebed--exo-6-20","b":"leaf:moses--exo-2-10","kind":"leaf","color":"#8a6db0"},{"a":"leaf:kohath--gen-46-11","b":"leaf:amram--exo-6-18","kind":"leaf","color":"#8a6db0"},{"a":"leaf:kohath--gen-46-11","b":"leaf:hebron--exo-6-18","kind":"leaf","color":"#8a6db0"},{"a":"leaf:kohath--gen-46-11","b":"leaf:izhar--exo-6-18","kind":"leaf","color":"#8a6db0"},{"a":"leaf:kohath--gen-46-11","b":"leaf:uzziel--exo-6-18","kind":"leaf","color":"#8a6db0"},{"a":"leaf:merari--gen-46-11","b":"leaf:jaaziah--1ch-24-26","kind":"leaf","color":"#8a6db0"},{"a":"leaf:merari--gen-46-11","b":"leaf:mahli--exo-6-19","kind":"leaf","color":"#8a6db0"},{"a":"leaf:merari--gen-46-11","b":"leaf:mushi--exo-6-19","kind":"leaf","color":"#8a6db0"},{"a":"leaf:libni--exo-6-17","b":"leaf:jehiel--1ch-6-20","kind":"leaf","color":"#8a6db0"},{"a":"spine:Judah@Gen.29.35","b":"hub:judah-sons","kind":"family","color":"#7d6ba0"},{"a":"hub:judah-sons","b":"leaf:er--gen-38-3","kind":"leaf","color":"#7d6ba0"},{"a":"hub:judah-sons","b":"leaf:onan--gen-38-4","kind":"leaf","color":"#7d6ba0"},{"a":"hub:judah-sons","b":"leaf:perez--gen-38-29","kind":"leaf","color":"#7d6ba0"},{"a":"hub:judah-sons","b":"leaf:shelah--gen-38-5","kind":"leaf","color":"#7d6ba0"},{"a":"hub:judah-sons","b":"leaf:zerah--gen-38-30","kind":"leaf","color":"#7d6ba0"},{"a":"leaf:perez--gen-38-29","b":"leaf:hamul--gen-46-12","kind":"leaf","color":"#7d6ba0"},{"a":"leaf:perez--gen-38-29","b":"leaf:hezron--gen-46-12","kind":"leaf","color":"#7d6ba0"},{"a":"leaf:shelah--gen-38-5","b":"leaf:er--1ch-4-21","kind":"leaf","color":"#7d6ba0"},{"a":"leaf:shelah--gen-38-5","b":"leaf:joash--1ch-4-22","kind":"leaf","color":"#7d6ba0"},{"a":"leaf:shelah--gen-38-5","b":"leaf:jokim--1ch-4-22","kind":"leaf","color":"#7d6ba0"},{"a":"leaf:shelah--gen-38-5","b":"leaf:laadah--1ch-4-21","kind":"leaf","color":"#7d6ba0"},{"a":"leaf:shelah--gen-38-5","b":"leaf:saraph--1ch-4-22","kind":"leaf","color":"#7d6ba0"},{"a":"spine:David@Rut.4.17","b":"hub:house-of-david","kind":"family","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:absalom--2sa-3-3","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:adonijah--2sa-3-4","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:amnon--2sa-3-2","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:chileab--2sa-3-3","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:eliada--2sa-5-16","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:eliphelet--2sa-5-16","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:elishama--2sa-5-16","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:elishua--2sa-5-15","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:elpelet--1ch-3-6","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:ibhar--2sa-5-15","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:ithream--2sa-3-5","kind":"leaf","color":"#6d4b9a"},{"a":"hub:house-of-david","b":"leaf:japhia--2sa-5-15","kind":"leaf","color":"#6d4b9a"},{"a":"spine:Solomon@2Sa.5.14","b":"hub:kings-of-judah","kind":"family","color":"#9a5ba6"},{"a":"hub:kings-of-judah","b":"leaf:rehoboam--1ki-11-43","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:rehoboam--1ki-11-43","b":"leaf:abijah--1ki-14-31","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:rehoboam--1ki-11-43","b":"leaf:attai--2ch-11-20","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:rehoboam--1ki-11-43","b":"leaf:jeush--2ch-11-19","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:rehoboam--1ki-11-43","b":"leaf:shelomith--2ch-11-20","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:rehoboam--1ki-11-43","b":"leaf:shemariah--2ch-11-19","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:rehoboam--1ki-11-43","b":"leaf:zaham--2ch-11-19","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:rehoboam--1ki-11-43","b":"leaf:ziza--2ch-11-20","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:abijah--1ki-14-31","b":"leaf:asa--1ki-15-8","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:asa--1ki-15-8","b":"leaf:jehoshaphat--1ki-15-24","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:jehoshaphat--1ki-15-24","b":"leaf:azariah--2ch-21-2","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:jehoshaphat--1ki-15-24","b":"leaf:azariahu--2ch-21-2","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:jehoshaphat--1ki-15-24","b":"leaf:jehiel--2ch-21-2","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:jehoshaphat--1ki-15-24","b":"leaf:jehoram--1ki-22-50","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:jehoshaphat--1ki-15-24","b":"leaf:michael--2ch-21-2","kind":"leaf","color":"#9a5ba6"},{"a":"leaf:jehoshaphat--1ki-15-24","b":"leaf:shephatiah--2ch-21-2","kind":"leaf","color":"#9a5ba6"}],"counts":{"nodes":186,"edges":185,"families":13}};
+const SVGNS="http://www.w3.org/2000/svg";
+const CONF={certain:'отождествление достоверно',probable:'вероятное отождествление',disputed:'спорно — мнения расходятся',obscure:'малоизвестно — данных мало'};
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---- state ----
+const nodes = GRAPH.nodes.map(n=>({...n, vx:0, vy:0, drag:false}));
+const byId = new Map(nodes.map(n=>[n.id,n]));
+const edges = GRAPH.edges.map(e=>({...e, a:byId.get(e.a), b:byId.get(e.b)})).filter(e=>e.a&&e.b);
+const neighbors = new Map(nodes.map(n=>[n.id,new Set()]));
+for(const e of edges){neighbors.get(e.a.id).add(e.b.id);neighbors.get(e.b.id).add(e.a.id);}
+// направленные связи (родитель→ребёнок) из реальных рёбер — для панели «родословие»
+const parentsOf=new Map(nodes.map(n=>[n.id,new Set()])), childrenOf=new Map(nodes.map(n=>[n.id,new Set()]));
+for(const e of edges){if(e.kind==='leaf'||e.kind==='spine'){childrenOf.get(e.a.id).add(e.b.id);parentsOf.get(e.b.id).add(e.a.id);}}
+const famColor = new Map(GRAPH.families.map(f=>[f.id,f.color]));
+const famName = new Map(GRAPH.families.map(f=>[f.id,f.ru]));
+const NATIONS = GRAPH.mode==='nations';
+let focusFam=null, focusConf=null, selected=null, hovered=null, showEdges=true, showLabels=NATIONS, showHulls=true, searchHits=new Set(), searchActive=false;
+// узлы по семьям (для цветных облаков-кластеров, как на референсе карты)
+const famNodes=new Map();
+for(const n of nodes){ if(n.family&&n.family!=='spine'){ if(!famNodes.has(n.family))famNodes.set(n.family,[]); famNodes.get(n.family).push(n); } }
+
+// ---- viewport (pan/zoom) ----
+const svg=document.getElementById('svg');
+const vpG=document.getElementById('viewport');
+let vp={x:0,y:0,k:1};
+function applyVp(){vpG.setAttribute('transform',`translate(${vp.x} ${vp.y}) scale(${vp.k})`);
+  svg.classList.toggle('far',vp.k<0.6);} // зум-детализация: на отдалении даты-подписи прячутся (не шумят)
+function fit(){
+  const r=svg.getBoundingClientRect();
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  for(const n of nodes){minX=Math.min(minX,n.homeX-n.r);minY=Math.min(minY,n.homeY-n.r);maxX=Math.max(maxX,n.homeX+n.r);maxY=Math.max(maxY,n.homeY+n.r);}
+  const gw=maxX-minX, gh=maxY-minY, pad=60;
+  vp.k=Math.min((r.width-pad*2)/gw,(r.height-pad*2)/gh);
+  vp.x=r.width/2 - (minX+gw/2)*vp.k;
+  vp.y=r.height/2 - (minY+gh/2)*vp.k;
+  applyVp();
+}
+function toGraph(ev){const r=svg.getBoundingClientRect();return{x:(ev.clientX-r.left-vp.x)/vp.k,y:(ev.clientY-r.top-vp.y)/vp.k};}
+
+// ---- build DOM ----
+const gEdges=document.getElementById('g-edges');
+const gNodes=document.getElementById('g-nodes');
+const tether=document.getElementById('tether');
+document.getElementById('icon-defs').innerHTML = GRAPH.iconDefs || '';
+const mk=(t,a)=>{const el=document.createElementNS(SVGNS,t);for(const k in a)el.setAttribute(k,a[k]);return el;};
+const noStroke=el=>{el.style.stroke='none';return el;};   // перебить CSS-контур .node circle
+// крест Спасителя: тонкий, тёмный, чистый латинский крест внутри стекла
+// (скруглённые концы + едва заметный светлый рефлекс снизу — «гравировка в стекле»)
+function messiahCross(r){
+  const g=mk('g',{'pointer-events':'none'});
+  const top=-0.58*r, bot=0.60*r, left=-0.30*r, right=0.30*r, cy=-0.20*r;
+  const w=Math.max(2.2, r*0.072);
+  const seg=(dx,dy,col,ww,op)=>{const gg=mk('g',{});
+    gg.appendChild(mk('line',{x1:dx.toFixed(2),y1:(top+dy).toFixed(2),x2:dx.toFixed(2),y2:(bot+dy).toFixed(2),stroke:col,'stroke-width':ww,'stroke-linecap':'round','stroke-opacity':op}));
+    gg.appendChild(mk('line',{x1:(left+dx).toFixed(2),y1:(cy+dy).toFixed(2),x2:(right+dx).toFixed(2),y2:(cy+dy).toFixed(2),stroke:col,'stroke-width':ww,'stroke-linecap':'round','stroke-opacity':op}));
+    return gg;};
+  g.appendChild(seg(0.5,0.9,'#fff4d8',w*0.85,0.4));  // светлый рефлекс снизу-справа
+  g.appendChild(seg(0,0,'#241708',w,0.92));          // тонкий тёмный крест
+  return g;
+}
+// ---- цветные облака-кластеры семейств (выпуклая оболочка + сглаживание) ----
+const gHulls=document.getElementById('g-hulls');
+const hullEls=new Map();
+for(const [fid] of famNodes){const p=mk('path',{fill:famColor.get(fid),stroke:famColor.get(fid),'stroke-width':1.4,'stroke-opacity':0.16,'stroke-linejoin':'round','pointer-events':'none'});p.style.opacity=0.07;p.style.transition='opacity .25s';gHulls.appendChild(p);hullEls.set(fid,p);}
+function convexHull(ps){ if(ps.length<3)return ps.slice();
+  const P=ps.slice().sort((a,b)=>a.x-b.x||a.y-b.y);const cr=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
+  const lo=[];for(const p of P){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+  const up=[];for(let i=P.length-1;i>=0;i--){const p=P[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}
+  lo.pop();up.pop();return lo.concat(up); }
+function hullPath(arr){
+  const ps=arr.map(n=>({x:n.x,y:n.y,r:n.r}));const h=convexHull(ps);if(h.length<3)return '';
+  const cx=h.reduce((s,p)=>s+p.x,0)/h.length,cy=h.reduce((s,p)=>s+p.y,0)/h.length;
+  const ex=h.map(p=>{const dx=p.x-cx,dy=p.y-cy,d=Math.hypot(dx,dy)||1,pad=p.r+18;return{x:p.x+dx/d*pad,y:p.y+dy/d*pad};});
+  const m0={x:(ex[0].x+ex[ex.length-1].x)/2,y:(ex[0].y+ex[ex.length-1].y)/2};
+  let d=`M ${m0.x.toFixed(1)} ${m0.y.toFixed(1)}`;
+  for(let i=0;i<ex.length;i++){const cur=ex[i],nx=ex[(i+1)%ex.length];d+=` Q ${cur.x.toFixed(1)} ${cur.y.toFixed(1)} ${((cur.x+nx.x)/2).toFixed(1)} ${((cur.y+nx.y)/2).toFixed(1)}`;}
+  return d+' Z';
+}
+const edgeEls=edges.map(e=>{const p=document.createElementNS(SVGNS,'path');p.setAttribute('class','edge');p.setAttribute('stroke',e.color||'#c9a227');p.setAttribute('stroke-width',e.kind==='spine'?3:e.kind==='family'?1.7:1.1);p.setAttribute('opacity',e.kind==='spine'?.85:.5);e.el=p;gEdges.appendChild(p);return p;});
+for(const n of nodes){
+  const g=document.createElementNS(SVGNS,'g');g.setAttribute('class','node');g.dataset.id=n.id;
+  const big=(n.kind!=='leaf');
+  if(n.messiah){
+    // мягкое рассеянное сияние — один слой, без кольца, без венца лучей, без контура
+    g.appendChild(noStroke(mk('circle',{r:n.r+56,fill:'url(#christGlow)','pointer-events':'none'})));
+  }
+  else if(n.kind==='spine'){g.appendChild(noStroke(mk('circle',{r:n.r+7,fill:'var(--goldGlow)',opacity:0.15})));}
+  // медальон: круг-основа (у Христа — стеклянный 3D-шар, без жёсткого чёрного контура)
+  const c=mk('circle',{r:n.r,fill:n.messiah?'url(#christGlass)':(n.kind==='spine'?'var(--spineGold)':n.color),'stroke-width':n.kind==='leaf'?1.2:2});
+  if(n.messiah)c.style.stroke='none';
+  // достоверность отождествления (режим народов): спорное — пунктир, малоизвестное — бледнее
+  if(n.kind==='leaf'&&n.confidence){if(n.confidence==='disputed'){c.setAttribute('stroke','#b5643f');c.setAttribute('stroke-dasharray','2.2 1.8');c.setAttribute('stroke-width',1.4);}if(n.confidence==='obscure'){c.setAttribute('fill-opacity','0.4');}}
+  n.circle=c;g.appendChild(c);
+  if(n.overlap){
+    // «народы смешались»: имя встречается ещё раз в другой линии — маленький значок-ссылка
+    const bx=n.r*0.7,by=-n.r*0.7,br=Math.max(2.8,n.r*0.32);
+    const bg=mk('g',{'class':'ovbadge-g'});
+    bg.appendChild(mk('circle',{cx:bx,cy:by,r:br,'class':'ovbadge'}));
+    g.appendChild(bg);
+  }
+  if(big){
+    if(n.messiah){
+      // стекло: мягкая объёмная кромка (вместо контура) + рассеянный блик + деликатный
+      // глинт + нижний рефлекс (свет сквозь стекло). Всё мягко — стеклянно, не глянцево.
+      g.appendChild(noStroke(mk('circle',{r:n.r,fill:'url(#christEdge)','pointer-events':'none'})));
+      g.appendChild(mk('ellipse',{cx:0,cy:0,rx:n.r*0.986,ry:n.r*0.986,fill:'none',stroke:'#fff6da','stroke-width':Math.max(0.8,n.r*0.03),'stroke-opacity':0.3,'pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.26,cy:-n.r*0.32,rx:n.r*0.58,ry:n.r*0.44,fill:'url(#christSpecular)','pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.2,cy:-n.r*0.44,rx:n.r*0.1,ry:n.r*0.06,fill:'#fffdf6',opacity:0.55,'pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:n.r*0.3,cy:n.r*0.42,rx:n.r*0.46,ry:n.r*0.26,fill:'url(#christRim)','pointer-events':'none'}));
+    } else {
+      // блик-подсветка сверху (объём) + чёткий маленький глинт (clearcoat) + тонкий край медальона
+      g.appendChild(noStroke(mk('circle',{r:n.r,fill:'url(#nodeSheen)','pointer-events':'none'})));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.34,cy:-n.r*0.4,rx:n.r*0.16,ry:n.r*0.1,fill:'url(#nodeGlint)','pointer-events':'none'}));
+      g.appendChild(mk('circle',{r:n.r-3.4,fill:'none',stroke:n.kind==='spine'?'rgba(58,42,14,.42)':'rgba(255,250,236,.5)','stroke-width':1,'pointer-events':'none'}));
+    }
+    // эмблема внутри «шара»: у Христа — объёмный крест, у прочих — SVG-иконка
+    if(n.messiah){g.appendChild(messiahCross(n.r));}
+    else if(n.icon){const s=n.r*(n.kind==='spine'?1.32:1.42);const u=mk('use',{href:'#ic-'+n.icon,x:-s/2,y:-s/2,width:s,height:s});u.setAttributeNS('http://www.w3.org/1999/xlink','href','#ic-'+n.icon);u.style.color=(n.kind==='spine'?'#3a2a0e':'#fbf4e2');u.style.pointerEvents='none';g.appendChild(u);}
+  }
+  if(big){
+    // без рамки-капсулы: читаемость даёт увеличенный «ореол» обводки текста (paint-order:stroke)
+    const t=mk('text',{'class':'lbl-big','text-anchor':'middle',dy:n.r+15,'font-size':n.kind==='spine'?14:11.5,'font-weight':n.kind==='spine'?'700':'600'});t.textContent=n.ru;g.appendChild(t);
+    if(n.kind==='spine'&&n.bc){const s=mk('text',{'class':'lbl-big lbl-sub','text-anchor':'middle',dy:n.r+29,'font-size':9.5,fill:'var(--gold)'});s.textContent=n.bc;g.appendChild(s);}
+  }
+  else{const t=mk('text',{'class':'lbl-leaf','text-anchor':'middle',dy:n.r+11});t.textContent=n.ru;g.appendChild(t);}
+  n.g=g;gNodes.appendChild(g);
+}
+
+// ---- minimap (карта-навигатор, как в референсе-атласе) ----
+const mm=document.getElementById('mm'), mmNodes=document.getElementById('mm-nodes'), mmView=document.getElementById('mm-view');
+const MMW=196, MMH=150, mmPad=10; let mmScale=1, mmOx=0, mmOy=0, mmDrag=false;
+(function mmSetup(){
+  const b=GRAPH.bbox, w=b.maxX-b.minX, h=b.maxY-b.minY;
+  mmScale=Math.min((MMW-mmPad*2)/w,(MMH-mmPad*2)/h);
+  mmOx=mmPad-b.minX*mmScale+((MMW-mmPad*2)-w*mmScale)/2;
+  mmOy=mmPad-b.minY*mmScale+((MMH-mmPad*2)-h*mmScale)/2;
+  for(const n of nodes){const c=mk('circle',{r:n.kind==='spine'?1.9:n.kind==='hub'?1.4:0.85,fill:n.kind==='spine'?'var(--spineGold)':n.color});n.mmDot=c;mmNodes.appendChild(c);}
+})();
+function mmUpdate(){
+  for(const n of nodes){if(!n.mmDot)continue;n.mmDot.setAttribute('cx',(n.x*mmScale+mmOx).toFixed(1));n.mmDot.setAttribute('cy',(n.y*mmScale+mmOy).toFixed(1));}
+  const r=svg.getBoundingClientRect();
+  const x0=(-vp.x)/vp.k*mmScale+mmOx, y0=(-vp.y)/vp.k*mmScale+mmOy;
+  const x1=(r.width-vp.x)/vp.k*mmScale+mmOx, y1=(r.height-vp.y)/vp.k*mmScale+mmOy;
+  mmView.setAttribute('x',x0.toFixed(1));mmView.setAttribute('y',y0.toFixed(1));
+  mmView.setAttribute('width',Math.max(4,x1-x0).toFixed(1));mmView.setAttribute('height',Math.max(4,y1-y0).toFixed(1));
+}
+function mmPanTo(ev){const r=mm.getBoundingClientRect();const mx=(ev.clientX-r.left)/r.width*MMW,my=(ev.clientY-r.top)/r.height*MMH;const wx=(mx-mmOx)/mmScale,wy=(my-mmOy)/mmScale;const sr=svg.getBoundingClientRect();vp.x=sr.width/2-wx*vp.k;vp.y=sr.height/2-wy*vp.k;applyVp();}
+mm.addEventListener('pointerdown',ev=>{ev.stopPropagation();mmDrag=true;mmPanTo(ev);});
+window.addEventListener('pointermove',ev=>{if(mmDrag)mmPanTo(ev);});
+window.addEventListener('pointerup',()=>{mmDrag=false;});
+// плавный перелёт вида к точке (для поиска/связей)
+function tweenVp(tx,ty,tk){
+  if(reduceMotion){vp.x=tx;vp.y=ty;vp.k=tk;applyVp();return;}
+  const x0=vp.x,y0=vp.y,k0=vp.k;let t=0;(function st(){t+=0.11;const e=t>=1?1:1-Math.pow(1-t,3);vp.x=x0+(tx-x0)*e;vp.y=y0+(ty-y0)*e;vp.k=k0+(tk-k0)*e;applyVp();if(t<1)requestAnimationFrame(st);})();}
+function flyTo(n,zoom){const sr=svg.getBoundingClientRect();const k=zoom?Math.max(vp.k,1.35):vp.k;tweenVp(sr.width/2-n.x*k,sr.height/2-n.y*k,k);}
+
+// ---- physics ----
+// режим народов — аккуратная дендрограмма: сильнее держим «дом», слабее расталкивание
+const kHome=NATIONS?0.05:0.021, kEdge=NATIONS?0.002:0.006, damping=0.86, repel=NATIONS?0.16:1.0;
+function step(){
+  // forces
+  for(const n of nodes){ if(n.drag)continue; n.vx+=(n.homeX-n.x)*kHome; n.vy+=(n.homeY-n.y)*kHome; }
+  for(const e of edges){
+    const a=e.a,b=e.b; const dx=b.x-a.x,dy=b.y-a.y; const d=Math.hypot(dx,dy)||1;
+    const rest=Math.hypot(b.homeX-a.homeX,b.homeY-a.homeY);
+    const f=(d-rest)*kEdge; const fx=dx/d*f, fy=dy/d*f;
+    if(!a.drag){a.vx+=fx;a.vy+=fy;} if(!b.drag){b.vx-=fx;b.vy-=fy;}
+  }
+  // soft repulsion to reduce overlap (only between reasonably close)
+  for(let i=0;i<nodes.length;i++){const a=nodes[i];for(let j=i+1;j<nodes.length;j++){const b=nodes[j];
+    const dx=b.x-a.x,dy=b.y-a.y;const d2=dx*dx+dy*dy;const min=a.r+b.r+13;
+    if(d2<min*min&&d2>0.01){const d=Math.sqrt(d2);const f=(min-d)/d*0.17*repel;const fx=dx*f,fy=dy*f;
+      if(!a.drag){a.vx-=fx;a.vy-=fy;}if(!b.drag){b.vx+=fx;b.vy+=fy;}}}}
+  for(const n of nodes){ if(n.drag)continue; n.vx*=damping; n.vy*=damping; n.x+=n.vx; n.y+=n.vy; }
+}
+function render(){
+  if(showHulls)for(const [fid,el] of hullEls){el.setAttribute('d',hullPath(famNodes.get(fid)));}
+  for(const e of edges){const a=e.a,b=e.b;const dx=b.x-a.x,dy=b.y-a.y;const d=Math.hypot(dx,dy)||1;const ux=dx/d,uy=dy/d;
+    // концы линии — на КРОМКЕ шаров, а не в центре (с защитой от инверсии при близких узлах)
+    const oa=Math.min(a.r+1.5,d*0.42),ob=Math.min(b.r+1.5,d*0.42);
+    const ax=a.x+ux*oa,ay=a.y+uy*oa,bx=b.x-ux*ob,by=b.y-uy*ob;
+    const mx=(ax+bx)/2,my=(ay+by)/2,nx=-(by-ay),ny=(bx-ax),l=Math.hypot(nx,ny)||1,sag=Math.min(20,Math.hypot(bx-ax,by-ay)*0.07);
+    e.el.setAttribute('d',`M${ax.toFixed(1)} ${ay.toFixed(1)} Q ${(mx+nx/l*sag).toFixed(1)} ${(my+ny/l*sag).toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`);}
+  for(const n of nodes){n.g.setAttribute('transform',`translate(${n.x} ${n.y})`);}
+  if(dragNode){tether.setAttribute('x1',dragNode.homeX);tether.setAttribute('y1',dragNode.homeY);tether.setAttribute('x2',dragNode.x);tether.setAttribute('y2',dragNode.y);}
+  mmUpdate();
+}
+let settle=0;
+function loop(){step();render();requestAnimationFrame(loop);}
+
+// ---- highlighting ----
+function refresh(){
+  const anyFocus=focusFam||focusConf||hovered||selected||searchActive;
+  for(const n of nodes){
+    let bright=true;
+    if(focusFam) bright=(n.family===focusFam);
+    else if(focusConf) bright=(n.confidence===focusConf);
+    else if(hovered){const h=byId.get(hovered);bright=(n.id===hovered||neighbors.get(hovered).has(n.id)||n.family===h.family);}
+    else if(searchActive){bright=searchHits.has(n.id);}
+    else if(selected){bright=(n.id===selected||neighbors.get(selected).has(n.id));}
+    n.g.classList.toggle('dim',!!anyFocus&&!bright);
+    n.g.classList.toggle('show',showLabels|| (n.kind==='leaf'&&(!anyFocus?false:bright)));
+    n.g.classList.toggle('hl', n.id===hovered||n.id===selected);
+    if(n.circle&&!n.messiah)n.circle.setAttribute('stroke-width', n.id===selected?3.2 : n.kind==='leaf'?1.2:2);
+  }
+  for(const e of edges){
+    let bright=true;
+    if(focusFam) bright=(e.a.family===focusFam&&e.b.family===focusFam)||(e.color===famColor.get(focusFam));
+    else if(focusConf) bright=(e.b.confidence===focusConf);
+    else if(hovered) bright=(e.a.id===hovered||e.b.id===hovered);
+    else if(selected) bright=(e.a.id===selected||e.b.id===selected);
+    else if(searchActive) bright=false;
+    e.el.style.opacity = showEdges ? ((focusFam||focusConf||hovered||selected||searchActive)&&!bright?0.06:(e.kind==='spine'?.85:.5)) : 0;
+  }
+  const hHov=hovered?byId.get(hovered):null, hSel=selected?byId.get(selected):null;
+  for(const [fid,el] of hullEls){
+    let op=0.07;
+    if(!showHulls) op=0;
+    else if(focusFam) op=(fid===focusFam)?0.18:0.018;
+    else if(focusConf) op=0.03;
+    else if(hHov) op=(hHov.family===fid)?0.14:0.04;
+    else if(hSel) op=(hSel.family===fid)?0.12:0.055;
+    else if(searchActive) op=0.03;
+    el.style.opacity=op;
+  }
+}
+
+// ---- interaction ----
+let dragNode=null, panning=false, panStart=null;
+// пинч-зум на касаниях: два активных указателя → масштаб вокруг их середины
+const activePtrs=new Map(); let pinch=null;
+svg.addEventListener('pointerdown',ev=>{
+  activePtrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(activePtrs.size===2){
+    if(dragNode){dragNode.drag=false;dragNode=null;tether.style.opacity=0;}
+    panning=false;svg.classList.remove('grabbing');hideTip();
+    const [a,b]=[...activePtrs.values()];const r=svg.getBoundingClientRect();
+    const mx=(a.x+b.x)/2-r.left,my=(a.y+b.y)/2-r.top;
+    pinch={d0:Math.hypot(a.x-b.x,a.y-b.y)||1,k0:vp.k,gx:(mx-vp.x)/vp.k,gy:(my-vp.y)/vp.k};
+    return;
+  }
+  const g=ev.target.closest('.node');
+  if(g){const n=byId.get(g.dataset.id);dragNode=n;n.drag=true;try{svg.setPointerCapture(ev.pointerId);}catch(_){}
+    const p=toGraph(ev);dragNode._ox=n.x-p.x;dragNode._oy=n.y-p.y;tether.style.opacity=.7;selectNode(n.id);
+  } else {panning=true;panStart={x:ev.clientX-vp.x,y:ev.clientY-vp.y};svg.classList.add('grabbing');}
+});
+svg.addEventListener('pointermove',ev=>{
+  if(activePtrs.has(ev.pointerId))activePtrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(pinch&&activePtrs.size>=2){
+    const [a,b]=[...activePtrs.values()];const r=svg.getBoundingClientRect();
+    const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
+    const mx=(a.x+b.x)/2-r.left,my=(a.y+b.y)/2-r.top;
+    vp.k=Math.max(.3,Math.min(3,pinch.k0*d/pinch.d0));
+    vp.x=mx-pinch.gx*vp.k;vp.y=my-pinch.gy*vp.k;applyVp();
+    return;
+  }
+  if(dragNode){const p=toGraph(ev);const tx=p.x+dragNode._ox,ty=p.y+dragNode._oy;dragNode.x+=(tx-dragNode.x)*0.5;dragNode.y+=(ty-dragNode.y)*0.5;dragNode.vx=0;dragNode.vy=0;}
+  else if(panning){vp.x=ev.clientX-panStart.x;vp.y=ev.clientY-panStart.y;applyVp();}
+  else{const g=ev.target.closest('.node');const id=g?g.dataset.id:null;if(id!==hovered){hovered=id;refresh();}if(id){showTip(byId.get(id),ev);}else hideTip();}
+});
+function endDrag(ev){
+  if(ev&&ev.pointerId!==undefined)activePtrs.delete(ev.pointerId);
+  if(activePtrs.size<2)pinch=null;
+  if(dragNode){dragNode.drag=false;dragNode=null;tether.style.opacity=0;}
+  if(panning&&!activePtrs.size){panning=false;svg.classList.remove('grabbing');}
+}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('pointerleave',()=>{if(hovered){hovered=null;refresh();hideTip();}});
+svg.addEventListener('wheel',ev=>{ev.preventDefault();const r=svg.getBoundingClientRect();const sx=ev.clientX-r.left,sy=ev.clientY-r.top;const gx=(sx-vp.x)/vp.k,gy=(sy-vp.y)/vp.k;const f=ev.deltaY<0?1.12:1/1.12;vp.k=Math.max(.3,Math.min(3,vp.k*f));vp.x=sx-gx*vp.k;vp.y=sy-gy*vp.k;applyVp();},{passive:false});
+// двойной клик: по узлу — подлететь к нему; по фону — плавный зум вокруг курсора
+svg.addEventListener('dblclick',ev=>{ev.preventDefault();
+  const g=ev.target.closest('.node');
+  if(g){flyTo(byId.get(g.dataset.id),true);return;}
+  const r=svg.getBoundingClientRect();const sx=ev.clientX-r.left,sy=ev.clientY-r.top;
+  const gx=(sx-vp.x)/vp.k,gy=(sy-vp.y)/vp.k;const k=Math.min(3,vp.k*1.5);
+  tweenVp(sx-gx*k,sy-gy*k,k);});
+// Escape — мягкий сброс: снять фильтры/поиск/выделение (без пересборки раскладки)
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  selected=null;focusFam=null;focusConf=null;searchActive=false;searchHits=new Set();searchOrder=[];searchIdx=-1;
+  q.value='';searchHint.classList.remove('show');if(document.activeElement===q)q.blur();
+  document.querySelectorAll('.fam,.cv').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+  closeSheets();refresh();});
+
+// ---- tooltip ----
+const tip=document.getElementById('tooltip');
+function showTip(n,ev){
+  tip.innerHTML=`<div><b>${n.ru}</b>${n.heb?` <span class="t-heb">${n.heb}</span>`:''}</div>`
+    +(n.translit?`<div class="t-tr">${n.translit}</div>`:'')
+    +(n.meaning?`<div class="t-mean">значит: <b>«${n.meaning}»</b></div>`:'')
+    +(n.ident?`<div class="t-id">это ${n.ident}</div>`:'')
+    +(n.ref?`<div class="t-ref">${n.ref}${n.am?' · '+n.am:''}</div>`:'')
+    +(n.overlap?`<div class="t-ov">⇄ имя встречается ещё раз в другой линии</div>`:'');
+  // позиция с переворотом у краёв: тултип не должен вылезать за сцену
+  const r=svg.getBoundingClientRect();
+  let lx=ev.clientX-r.left+14, ly=ev.clientY-r.top+14;
+  const tw=tip.offsetWidth, th=tip.offsetHeight;
+  if(lx+tw>r.width-8)lx=ev.clientX-r.left-14-tw;
+  if(ly+th>r.height-8)ly=ev.clientY-r.top-14-th;
+  tip.style.left=Math.max(8,lx)+'px';tip.style.top=Math.max(8,ly)+'px';tip.style.opacity=1;}
+function hideTip(){tip.style.opacity=0;}
+
+// ---- details ----
+const relLink=r=>`<a data-id="${r.id}"><span class="d" style="background:${r.kind==='spine'?'var(--spineGold)':r.color}"></span>${r.ru}<span style="margin-left:auto;color:var(--inkFaint);font-size:10.5px">${r.ref||''}</span></a>`;
+function selectNode(id){selected=id;refresh();const n=byId.get(id);
+  const par=[...parentsOf.get(id)].map(i=>byId.get(i)).filter(x=>x&&x.kind!=='hub');
+  const chi=[...childrenOf.get(id)].map(i=>byId.get(i)).filter(Boolean);
+  const up=n.kind==='spine'?'Выше по линии':'Родитель', dn=n.kind==='spine'?'Ниже по линии':(n.kind==='hub'?'В роду':'Дети');
+  const ov=n.overlap?(GRAPH.overlaps||[]).find(o=>o.id===n.overlap):null;
+  const ovPeers=ov?ov.members.filter(m=>m.id!==n.id):[];
+  const rel=(par.length||chi.length||ovPeers.length)
+    ? `${par.length?`<h3>${up}</h3>${par.map(relLink).join('')}`:''}${chi.length?`<h3>${dn} (${chi.length})</h3>${chi.map(relLink).join('')}`:''}${ovPeers.length?`<h3>Та же линия имени</h3>${ovPeers.map(relLink).join('')}`:''}`
+    : `<p class="empty" style="padding:6px 4px">Прямых связей в этой выборке нет.</p>`;
+  document.getElementById('detail').innerHTML=`<div class="card">
+    <div class="dn">${n.ru}${n.heb?`<span class="dheb">${n.heb}</span>`:''}</div>
+    ${n.translit?`<div class="dtr">${n.translit}</div>`:''}
+    ${n.meaning?`<div class="dmean"><span class="k">Что значит имя</span>«${n.meaning}»</div>`:''}
+    ${n.forefather&&n.forefather.length?`<div class="dfore">Родоначальник: <b>${n.forefather.join(' › ')}</b></div>`:''}
+    ${n.ident?`<div class="did">Отождествление: <b>${n.ident}</b></div>`:''}
+    ${n.confidence?`<div class="dconf ${n.confidence}">${CONF[n.confidence]||n.confidence}</div>`:''}
+    ${n.region?`<div class="dregion">Где жили: ${n.region}</div>`:''}
+    ${n.spravka?`<div class="dspravka">${n.spravka}</div>`:''}
+    ${n.mythWatch?`<div class="dmyth"><b>Не путать с мифом:</b> ${n.mythWatch}</div>`:''}
+    ${n.sources&&n.sources.length?`<div class="dsrc">Источники: ${n.sources.join(' · ')}</div>`:''}
+    ${ov?`<div class="doverlap"><h4>Народы смешались</h4><b>${ov.title}</b>
+      ${ov.confidence?`<div class="dconf ${ov.confidence}" style="margin:5px 0">${CONF[ov.confidence]||ov.confidence}</div>`:''}
+      <div style="margin:6px 0">${ov.note}</div>
+      ${ov.mythWatch?`<div class="dmyth"><b>Не путать с мифом:</b> ${ov.mythWatch}</div>`:''}
+      ${ov.sources&&ov.sources.length?`<div class="dsrc">Источники: ${ov.sources.join(' · ')}</div>`:''}
+    </div>`:''}
+    <div class="dref">${n.ref||''}${n.am?' · '+n.am:''}</div>
+    <span class="fbadge" style="color:${n.kind==='spine'?'var(--spineGold)':n.color}">${famName.get(n.family)||'хребет'}</span>
+  </div>
+  <div class="rel">${rel}</div>`;
+  document.querySelectorAll('.rel a').forEach(a=>a.addEventListener('click',()=>{const t=byId.get(a.dataset.id);selectNode(a.dataset.id);flash(a.dataset.id);flyTo(t,false);}));
+  if(isMobile())openSheet(asideR);
+  try{history.replaceState(null,'','#'+encodeURIComponent(id));}catch(_){}  // deep-link: ссылкой можно поделиться
+}
+function flash(id){if(reduceMotion)return;const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
+
+// ---- families legend ----
+const famsEl=document.getElementById('fams');
+for(const f of GRAPH.families){const d=document.createElement('div');d.className='fam';d.dataset.fam=f.id;
+  d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('aria-pressed','false');
+  d.innerHTML=`<span class="sw" style="background:${f.color}"></span><span class="nm">${f.ru}</span>${f.count?`<span class="ct">${f.count}</span>`:''}`;
+  const act=()=>{focusFam=(focusFam===f.id)?null:f.id;focusConf=null;document.querySelectorAll('.fam').forEach(x=>{const on=x.dataset.fam===focusFam;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});document.querySelectorAll('.cv').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});refresh();if(isMobile())setTimeout(closeSheets,260);};
+  d.addEventListener('click',act);
+  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
+  famsEl.appendChild(d);}
+
+// ---- search ----
+const q=document.getElementById('q'), searchHint=document.getElementById('searchHint');
+if(NATIONS)q.placeholder='Найти народ…';
+let searchOrder=[], searchIdx=-1;
+q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();searchOrder=[];searchIdx=-1;searchActive=!!v;if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v)){searchHits.add(n.id);searchOrder.push(n.id);}}
+  searchHint.classList.toggle('show', searchActive&&!searchOrder.length);
+  searchHint.textContent=searchActive&&!searchOrder.length?`Ничего не найдено: «${q.value.trim()}»`:'';
+  refresh();});
+// Enter — перелёт к найденному; повторный Enter — к следующему совпадению по кругу
+q.addEventListener('keydown',e=>{if(e.key!=='Enter'||!searchOrder.length)return;e.preventDefault();searchIdx=(searchIdx+1)%searchOrder.length;const n=byId.get(searchOrder[searchIdx]);selectNode(n.id);flyTo(n,true);});
+
+// ---- toggles / buttons ----
+function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init;el.setAttribute('aria-pressed',on);const set=()=>{on=!on;el.setAttribute('aria-pressed',on);fn(on);};el.addEventListener('click',set);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();set();}});}
+bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
+bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
+bindToggle('tg-labels',showLabels,v=>{showLabels=v;refresh();});
+document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;focusConf=null;selected=null;searchHits=new Set();searchActive=false;searchOrder=[];searchIdx=-1;q.value='';searchHint.classList.remove('show');document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}fit();refresh();if(isMobile())closeSheets();});
+document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
+
+// ---- мобильные шторки (боковые панели прячутся под экран, а не исчезают совсем) ----
+const isMobile=()=>matchMedia('(max-width:900px)').matches;
+const scrimEl=document.getElementById('scrim'), asideL=document.querySelector('aside.left'), asideR=document.querySelector('aside.right');
+function openSheet(a){a.classList.add('sheet-open');scrimEl.classList.add('show');}
+function closeSheets(){asideL.classList.remove('sheet-open');asideR.classList.remove('sheet-open');scrimEl.classList.remove('show');}
+scrimEl.addEventListener('click',closeSheets);
+document.querySelectorAll('.sheet-close').forEach(b=>b.addEventListener('click',closeSheets));
+document.getElementById('mob-fams').addEventListener('click',()=>openSheet(asideL));
+
+// ---- coverage tracker (что исследовано — режим народов): клик подсвечивает узлы этой достоверности ----
+if(GRAPH.coverage){const cv=GRAPH.coverage;const rows=[['certain','#4f7a4a','достоверно'],['probable','var(--gold)','вероятно'],['disputed','#b5643f','спорно'],['obscure','var(--inkFaint)','мало данных']];
+  const covEl=document.getElementById('coverage');
+  covEl.innerHTML='<div class="lab" style="margin-bottom:8px">Что исследовано · клик — показать на карте</div>'+rows.map(([k,c,l])=>`<div class="cv" data-conf="${k}" role="button" tabindex="0" aria-pressed="false"><i style="background:${c}"></i>${l}<b>${cv[k]||0}</b></div>`).join('');
+  covEl.querySelectorAll('.cv').forEach(el=>{const act=()=>{focusConf=(focusConf===el.dataset.conf)?null:el.dataset.conf;focusFam=null;document.querySelectorAll('.fam').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});covEl.querySelectorAll('.cv').forEach(x=>{const on=x.dataset.conf===focusConf;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});refresh();if(isMobile())setTimeout(closeSheets,260);};
+    el.addEventListener('click',act);
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});});}
+
+// ---- start ----
+document.getElementById('stat').textContent = NATIONS
+  ? `Таблица народов · Быт 10 · ${GRAPH.counts.nations} народов · структура достоверна, отождествления честно размечены`
+  : `${nodes.length} узлов · ${GRAPH.families.length} семейств · демо-выборка из 3056 имён`;
+// scatter-in on load for a premium settle (unless reduced motion)
+if(!reduceMotion){for(const n of nodes){const a=Math.random()*6.283,d=90+Math.random()*120;n.x=n.homeX+Math.cos(a)*d;n.y=n.homeY+Math.sin(a)*d;}}
+window.addEventListener('resize',fit);
+fit();refresh();loop();
+// deep-link: если в URL есть #узел — подлететь к нему после первой раскладки
+if(location.hash.length>1){try{const id=decodeURIComponent(location.hash.slice(1));const n=byId.get(id);
+  if(n){setTimeout(()=>{selectNode(id);flyTo(n,true);},reduceMotion?0:600);}}catch(_){}}
+</script>
+
+</body>
+</html>
