@@ -106,6 +106,13 @@
     "baseUrl": "/articles/",
     "parts": [
       {
+        "n": 0,
+        "slug": "chto-bibliya-nazyvaet-serdcem",
+        "title": "Библейская кардиология: что Библия называет сердцем",
+        "status": "published",
+        "readingTime": 39
+      },
+      {
         "n": 1,
         "slug": "krajne-li-isporcheno-serdce",
         "title": "Крайне ли испорчено сердце верующего?",
@@ -118,6 +125,27 @@
         "title": "Римлянам 7: верующий, неверующий или человек под законом?",
         "status": "published",
         "readingTime": 12
+      },
+      {
+        "n": 3,
+        "slug": "novoe-serdce",
+        "title": "Новое сердце: как Бог меняет то, что мы не смогли исправить",
+        "status": "published",
+        "readingTime": 24
+      },
+      {
+        "n": 4,
+        "slug": "serdce-i-duh",
+        "title": "Сердце и Дух: как Бог живёт в том, что Сам оживил",
+        "status": "published",
+        "readingTime": 25
+      },
+      {
+        "n": 5,
+        "slug": "serdce-spravochnik",
+        "title": "Сердце: библейский справочник",
+        "status": "published",
+        "readingTime": 23
       }
     ]
   },
