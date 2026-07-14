@@ -340,6 +340,11 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
 @media (min-width: 64em) {
   .gbs-theme-corner .gb-ember__ring-svg { opacity: 1; }
   .gbs-theme-corner .gb-ember__ring-track { stroke: var(--color-text, #1a1a1a); opacity: .55; }
+  /* Тот же канон на угловом кластере одиночных статей (.gb-floater — Герменевтика,
+     kod-da-vinchi): было пропущено при первом порте, ободок отсутствовал в покое
+     (обнаружено при повторном визуальном аудите 2026-07-14). */
+  .gb-floater .gb-ember__ring-svg { opacity: 1; }
+  .gb-floater .gb-ember__ring-track { stroke: var(--color-text, #1a1a1a); opacity: .55; }
 }
 
 .gb-ember__ring-track {
@@ -1025,7 +1030,11 @@ html.dark [data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ring-color:var(--
    canon .gb-ember-expand__btn.is-active pill a few lines up in this file —
    reused verbatim, not invented, just wrapped into a small corner badge. */
 [data-gill-v16] .gbs-rail-spdbadge{
-  position:absolute;right:-7px;bottom:-6px;z-index:3;
+  /* Позиция синхронизирована с мобильным каноном (.mobile-spdbadge:
+     right:-2px;bottom:-2px) — было right:-7px;bottom:-6px, бейдж торчал
+     заметно дальше от круга, чем на мобиле («слишком вбок», owner). Теперь
+     бейдж сидит прямо в круге на обеих поверхностях одинаково. */
+  position:absolute;right:-2px;bottom:-2px;z-index:3;
   min-width:18px;height:14px;
   /* Оптическое центрирование «1×» (порт baec7dd): капитель при line-height:1
      сидит в верхней части em-box — верхний паддинг компенсирует. */
@@ -4778,7 +4787,9 @@ html.dark #partTocOverlay .gbat-fbtn--cont{color:#e5bd85;box-shadow:inset 0 1px 
    ========================================================= */
 .gb-ember-playwrap { position: relative; display: grid; place-items: center; }
 .gb-floater .gbs-rail-spdbadge {
-  position: absolute; right: -7px; bottom: -6px; z-index: 3;
+  /* Синхронизировано с мобильным каноном (right:-2px;bottom:-2px) — было
+     -7px/-6px, торчало заметно дальше от круга, чем на мобиле. */
+  position: absolute; right: -2px; bottom: -2px; z-index: 3;
   min-width: 18px; height: 14px; padding: 2.2px 3px 0;
   display: grid; place-items: center; border-radius: 999px;
   background: var(--color-text, #1a1a1a); color: var(--color-canvas, #fdfcf9);
