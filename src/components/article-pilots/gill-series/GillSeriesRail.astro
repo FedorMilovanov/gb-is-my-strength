@@ -23,7 +23,9 @@ interface Props {
 
 const { pageId, config = GILL_SERIES } = Astro.props;
 const page = config.pages[pageId];
-const seriesItems = config.items;
+// Ядро серии: спутники (tier: 'satellite') живут в аккордеоне «Оглавление
+// части», в десктоп-рельсе и prev/next не участвуют (SERIES-ENGINE-GUIDE §3).
+const seriesItems = config.items.filter((it) => it.tier !== 'satellite');
 
 // Assign each submenu row to a collapsible group: every top-level (H2) row
 // opens a new group; the H3 rows beneath it inherit that group index. The rail

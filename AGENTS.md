@@ -890,6 +890,7 @@ window.SiteShare.open(button, {
 1. Обновить `sitemap.xml` (ISO8601 lastmod с +03:00)
 2. Обновить `feed.xml` (`<item>` в начало `<channel>` + `<lastBuildDate>`)
 3. Обновить `data/series.json` (если статья входит в серию)
+   — статья В СЕРИИ (часть/форзац/спутник)? Сначала прочитай **docs/SERIES-ENGINE-GUIDE.md** — единый контракт движка серий (ярусы roman/label/letter, defineSeriesConfig, темы, гейты). Не копируй компоненты движка.
 4. Обновить `data/search-manifest.json` (для Ctrl+K)
 5. Добавить карточку на `/articles/index.html` и (если уместно) на `/index.html`
 6. Подготовить OG-картинку (1200×630, `.webp` или `.jpg`)

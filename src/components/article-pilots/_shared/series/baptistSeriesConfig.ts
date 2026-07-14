@@ -8,7 +8,7 @@
  * газетная бумага, гектографные фиолетовые чернила, цензорский штамп).
  * Чтобы добавить часть — допиши элемент в BAPTIST_ITEMS и страницу в pages.
  */
-import { SERIES_CONFIGS, type SeriesConfig, type SeriesItem, type SeriesPageChromeData } from './seriesConfig';
+import { SERIES_CONFIGS, type SeriesConfig, type SeriesItem, type SeriesPageChromeData, defineSeriesConfig } from './seriesConfig';
 
 const BAPTIST_ITEMS: SeriesItem[] = [
   {
@@ -345,7 +345,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
   },
 };
 
-export const BAPTIST_SERIES: SeriesConfig = {
+export const BAPTIST_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'russian-baptism',
   seriesTitle: 'Баптисты России',
   seriesTitleFull: 'Баптисты России · История ЕХБ',
@@ -355,7 +355,7 @@ export const BAPTIST_SERIES: SeriesConfig = {
   breadcrumbParent: { label: 'Баптисты России', href: '../' },
   items: BAPTIST_ITEMS,
   pages: BAPTIST_PAGES,
-};
+});
 
 // Регистрируем инстанс в общем реестре движка.
 SERIES_CONFIGS[BAPTIST_SERIES.seriesId] = BAPTIST_SERIES;
