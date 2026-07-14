@@ -11,7 +11,7 @@ export const ASSET_VERSIONS = {
   'css/mobile-hotfix.css': 'a6a3187a',
   'css/nagornaya-mobile-toc.css': '282d8fe8',
   'css/series-samizdat.css': '2c4a9f29',
-  'css/site.css': '6942945e',
+  'css/site.css': 'aa650597',
   'css/sw-toast.css': 'efbe868b',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'fdfb2ed7',
