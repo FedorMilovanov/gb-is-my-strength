@@ -121,7 +121,10 @@ export interface SeriesConfig {
  * Полный гид по добавлению статей/серий/спутников: docs/SERIES-ENGINE-GUIDE.md
  */
 export function defineSeriesConfig(cfg: SeriesConfig): SeriesConfig {
-  const fail = (msg: string): never => {
+  // Явная аннотация типа константы обязательна: с выведённым типом TS не
+  // применяет never-narrowing после вызова (microsoft/TypeScript#33622), и
+  // strict-гейт astro check падал на «'p' is possibly 'undefined'» ниже.
+  const fail: (msg: string) => never = (msg) => {
     throw new Error(
       `[series-engine] Конфиг серии «${cfg.seriesId || '?'}» невалиден: ${msg}\n` +
       `→ Правила и примеры: docs/SERIES-ENGINE-GUIDE.md`);
