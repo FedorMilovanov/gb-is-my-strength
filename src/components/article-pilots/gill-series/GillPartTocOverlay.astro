@@ -17,7 +17,9 @@ const seriesItems = config.items;
  * (initTocPopups в floating-cluster-controller.js).
  */
 const current = seriesItems.find((item) => item.id === pageId)!;
-const currentPartLabel = current.mark.kind === 'roman' ? `Часть ${current.mark.value}` : current.title;
+/* NBSP между «Часть» и нумералом: при длинном имени серии (Тёмная сторона
+   кафедры) лейбл переносится — нумерал не должен отрываться на свою строку. */
+const currentPartLabel = current.mark.kind === 'roman' ? `Часть ${current.mark.value}` : current.title;
 /* Убираем дубль «Часть N.» из заголовка строки — колонка нумерала уже говорит это. */
 const shortTitle = (t: string) => t.replace(/^Часть\s+[IVXLC]+\.\s*/, '');
 const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.href || '';
