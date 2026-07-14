@@ -1033,7 +1033,16 @@ const SITE_CSS_MIN_BYTES = 200_000;
       const explicitPath = explicitBase ? path.join(ROOT, explicitBase, part.slug || '', 'index.html') : null;
       const articlePath = path.join(ROOT, 'articles', part.slug || '', 'index.html');
       const nagornayaPath = path.join(ROOT, 'nagornaya', part.slug || '', 'index.html');
-      if (!(explicitPath && fs.existsSync(explicitPath)) && !fs.existsSync(articlePath) && !fs.existsSync(nagornayaPath)) {
+      // S-T-01 fix: Astro-owned маршруты живут в src/pages/, легаси-index.html
+      // у них нет — чекер обязан видеть оба мира (Astro/MDX + легаси).
+      const astroCandidates = [
+        explicitBase ? path.join(ROOT, 'src', 'pages', explicitBase, part.slug || '', 'index.astro') : null,
+        path.join(ROOT, 'src', 'pages', 'articles', part.slug || '', 'index.astro'),
+        path.join(ROOT, 'src', 'pages', 'nagornaya', part.slug || '', 'index.astro'),
+        path.join(ROOT, 'src', 'content', 'articles', (part.slug || '') + '.mdx'),
+      ].filter(Boolean);
+      const astroOwned = astroCandidates.some(p => fs.existsSync(p));
+      if (!astroOwned && !(explicitPath && fs.existsSync(explicitPath)) && !fs.existsSync(articlePath) && !fs.existsSync(nagornayaPath)) {
         problems.push(`${key} part ${part.n} "${part.slug}": no index.html on disk`);
       }
     }
