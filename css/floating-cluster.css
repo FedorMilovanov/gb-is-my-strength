@@ -4520,45 +4520,69 @@ html.dark [data-gill-v16] .mobile-top-bar {
    this adds the INNER content styling that was still missing. Ширина текста
    stays mobile-only (owner) — hidden below, JS-guarded separately. */
 @media (min-width: 64em) {
-  .gill-settings-overlay .setting-group { padding: 10px 16px 11px; border-bottom: 1px solid var(--gb-border); }
-  .gill-settings-overlay .setting-group:last-child { border-bottom: 0; }
-  .gill-settings-overlay .setting-group--measure { display: none; }
-  .gill-settings-overlay .setting-label {
+  /* Шапка листа на десктопе: компактный вид (лейбл-капс + 18px сериф + × в
+     кружке справа). Мобильная шапка стилизуется мобильным блоком; без этого
+     дубликата на десктопе <h3> наследовал крупный статейный сериф, а ×
+     проваливался под заголовок. */
+  [data-gill-v16] .gill-settings-overlay .toc-sheet__head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; padding: 14px 16px 8px;
+  }
+  [data-gill-v16] .gill-settings-overlay .head-copy .lab {
+    font: 900 10px/1 "Source Sans 3", system-ui, sans-serif;
+    text-transform: uppercase; letter-spacing: .14em;
+    color: var(--gb-text-muted, #6a6a6a); margin-bottom: 4px;
+  }
+  [data-gill-v16] .gill-settings-overlay .head-copy h3 {
+    margin: 0; font: 600 18px/1.15 Georgia, "Times New Roman", serif;
+    color: var(--gb-text, #1a1a18);
+  }
+  [data-gill-v16] .gill-settings-overlay .toc-sheet__head .gb-icon {
+    width: 32px; height: 32px; flex-shrink: 0; display: grid; place-items: center;
+    border: 0; border-radius: 50%; background: rgba(0, 0, 0, .05); color: inherit; cursor: pointer;
+  }
+  [data-gill-v16] .gill-settings-overlay .toc-sheet__head .gb-icon svg {
+    width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;
+  }
+  [data-gill-v16] .gill-settings-overlay .setting-group { padding: 10px 16px 11px; border-bottom: 1px solid var(--gb-border); }
+  [data-gill-v16] .gill-settings-overlay .setting-group:last-child { border-bottom: 0; }
+  [data-gill-v16] .gill-settings-overlay .setting-group--measure { display: none; }
+  [data-gill-v16] .gill-settings-overlay .setting-label {
     display: block; margin-bottom: 7px;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em;
     color: var(--gb-text-muted);
   }
-  .gill-settings-overlay .setting-segment { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--gb-border-strong); border-radius: 11px; background: var(--gb-surface-muted); }
-  .gill-settings-overlay .reader-setting-btn {
-    flex: 1; min-width: 0; min-height: 36px;
+  [data-gill-v16] .gill-settings-overlay .setting-segment { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--gb-border-strong); border-radius: 11px; background: var(--gb-surface-muted); }
+  [data-gill-v16] .gill-settings-overlay .reader-setting-btn {
+    flex: 1; min-width: 0; min-height: 36px; white-space: nowrap;
     border: 1px solid transparent; border-radius: 9px;
     background: transparent; color: var(--gb-text-muted);
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 12.5px; font-weight: 700; cursor: pointer;
     transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
   }
-  .gill-settings-overlay .reader-setting-btn[aria-pressed="true"] {
+  [data-gill-v16] .gill-settings-overlay .reader-setting-btn[aria-pressed="true"] {
     background: var(--gb-surface); border-color: var(--gb-border-strong); color: var(--gb-text);
     font-weight: 800;
     box-shadow: 0 1px 5px rgba(0, 0, 0, .08);
   }
-  .gill-settings-overlay .font-track {
+  [data-gill-v16] .gill-settings-overlay .font-track {
     display: flex; align-items: center; justify-content: space-between;
     gap: 8px; height: 40px; padding: 0 14px;
     border: 1px solid var(--gb-border-strong); border-radius: 11px;
     background: var(--gb-surface-muted);
   }
-  .gill-settings-overlay .font-step {
+  [data-gill-v16] .gill-settings-overlay .font-step {
     flex: 0 0 auto; border: 0; background: transparent; padding: 0;
     color: var(--gb-text); font-family: var(--gb-font-serif); font-weight: 700; cursor: pointer;
     line-height: 1;
   }
-  .gill-settings-overlay .font-step--sm { font-size: 13px; color: var(--gb-text-muted); }
-  .gill-settings-overlay .font-step--lg { font-size: 21px; }
-  .gill-settings-overlay .font-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1 1 auto; }
-  .gill-settings-overlay .font-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gb-border-strong); transition: background .15s ease, transform .15s ease; }
-  .gill-settings-overlay .font-dot.is-on { background: var(--gb-accent-gold); transform: scale(1.15); }
+  [data-gill-v16] .gill-settings-overlay .font-step--sm { font-size: 13px; color: var(--gb-text-muted); }
+  [data-gill-v16] .gill-settings-overlay .font-step--lg { font-size: 21px; }
+  [data-gill-v16] .gill-settings-overlay .font-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1 1 auto; }
+  [data-gill-v16] .gill-settings-overlay .font-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gb-border-strong); transition: background .15s ease, transform .15s ease; }
+  [data-gill-v16] .gill-settings-overlay .font-dot.is-on { background: var(--gb-accent-gold); transform: scale(1.15); }
 }
 /* rail-foot gear shows only on desktop (mobile bar has its own gear, hidden on
    desktop via .mobile-*-bar display:none in the same breakpoint). */
@@ -4749,7 +4773,7 @@ html.dark .gb-floater .gbs-rail-spdbadge {
 /* Гилл, десктоп: лист настроек — поповер от триггера (низ-лево rail),
    не центр-модалка с гашением экрана (порт 8f5b87a). */
 @media (min-width: 64em) {
-  .gill-settings-overlay {
+  [data-gill-v16] .gill-settings-overlay {
     background: transparent;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -4757,15 +4781,15 @@ html.dark .gb-floater .gbs-rail-spdbadge {
     justify-content: flex-start;
     padding: 0 0 16px clamp(16px, 2.4vw, 40px);
   }
-  .gill-settings-overlay .gill-settings-sheet {
+  [data-gill-v16] .gill-settings-overlay .gill-settings-sheet {
     width: 320px;
     border-radius: 18px;
     box-shadow: 0 20px 56px rgba(10, 6, 2, .38), 0 2px 10px rgba(10, 6, 2, .18);
     transform-origin: bottom left;
     transform: translateY(12px) scale(.96);
   }
-  .gill-settings-overlay.is-open .gill-settings-sheet {
+  [data-gill-v16] .gill-settings-overlay.is-open .gill-settings-sheet {
     transform: translateY(0) scale(1);
   }
-  .gill-settings-overlay .toc-sheet__handle { display: none; }
+  [data-gill-v16] .gill-settings-overlay .toc-sheet__handle { display: none; }
 }
