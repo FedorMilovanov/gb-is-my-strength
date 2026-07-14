@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-09T19:15:00Z",
+  "generatedAt": "2026-07-14T21:00:00Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -216,7 +216,7 @@
       "description": "Дотошный разбор Рим. 7:14–25: Павел как верующий, человек под законом, Ллойд-Джонс, TMSJ/Jay Street и путь к Рим. 8:1.",
       "section": "Богословие",
       "editor": "Фёдор Милованов",
-      "readTime": 12,
+      "readTime": 45,
       "image": "/images/og-rimlyanam-7.webp",
       "tags": [
         "Римлянам 7",
@@ -229,7 +229,7 @@
       "featured": true,
       "priority": 91,
       "publishedTime": "2026-06-02T00:00:00+03:00",
-      "modifiedTime": "2026-06-04T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
       "scripture": "Рим 7:14–25"
     },
     {
@@ -927,6 +927,330 @@
         "карта"
       ],
       "readTime": 1
+    },
+    {
+      "id": "skrytye-idoly-serdca",
+      "type": "article",
+      "url": "/articles/skrytye-idoly-serdca/",
+      "title": "Скрытые идолы сердца: чему мы поклоняемся, не замечая",
+      "description": "Сердце никогда не нейтрально: оно всегда чему-то поклоняется и ищет сокровище. Что говорит Писание об идолах, поставленных в сердце, и как их не спутать с добрыми дарами.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 26
+    },
+    {
+      "id": "religioznoe-serdce",
+      "type": "article",
+      "url": "/articles/religioznoe-serdce/",
+      "title": "Религиозное сердце: когда благочестие становится маской",
+      "description": "Самое опасное сердце — не безбожное, а религиозное: близкое к форме и далёкое в сути. Что Писание говорит о формализме и самоправедности — и как не превратить эту тему в дубинку.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 26
+    },
+    {
+      "id": "sovest-vnutrenniy-sud",
+      "type": "article",
+      "url": "/articles/sovest-vnutrenniy-sud/",
+      "title": "Совесть: судья, с которым сердце торгуется",
+      "description": "Совесть — не бог внутри и не сбойный инструмент, а свидетель под Богом. Как сердце ведёт с ней переговоры, чем ложный мир отличается от евангельского, и почему очищает совесть не молчание, а кровь Христа.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 30
+    },
+    {
+      "id": "myslennaya-zhizn-serdca",
+      "type": "article",
+      "url": "/articles/myslennaya-zhizn-serdca/",
+      "title": "Мысленная жизнь сердца: поток мыслей и библейская медитация",
+      "description": "Куда сама собой уходит мысль в свободную минуту — самый честный след сердца. Что Писание говорит о воображении, суетных помыслах и библейской медитации — без мистицизма и без невротического самокопания.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 26
+    },
+    {
+      "id": "starye-dorozhki-serdca",
+      "type": "article",
+      "url": "/articles/starye-dorozhki-serdca/",
+      "title": "Старые дорожки сердца: привычка, «вторая натура», детство и стыд",
+      "description": "Почему грех бывает быстрее мысли — «я просто такой»? Что Писание говорит о привычке, ранах детства и стыде — без фатализма («так было всегда») и без наивности («просто перестань»).",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 28
+    },
+    {
+      "id": "serdce-i-yazyk",
+      "type": "article",
+      "url": "/articles/serdce-i-yazyk/",
+      "title": "Сердце и язык: первый выход сердца наружу",
+      "description": "Язык — слышимая форма сердца: из избытка сердца говорят уста. Почему грех языка не лечится вежливостью, что говорит Иакова 3 о неукротимом члене — и почему нельзя закрывать рот плачущему.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 25
+    },
+    {
+      "id": "serdce-i-telo",
+      "type": "article",
+      "url": "/articles/serdce-i-telo/",
+      "title": "Сердце и тело: члены как орудия, комфорт и аппетиты",
+      "description": "Сердце не бесплотно: оно смотрит, ест, спит, ищет комфорта. Что Писание говорит о теле как орудии и храме, о комфорте-господине и усталости — без аскетизма, без стыда к телу и без телесного детерминизма.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 23
+    },
+    {
+      "id": "serdce-i-sokrovishche",
+      "type": "article",
+      "url": "/articles/serdce-i-sokrovishche/",
+      "title": "Сердце и сокровище: деньги, статус и довольство",
+      "description": "Как добрый дар незаметно становится «если» сердца. Что Писание говорит о богатом безумце, корне сребролюбия и выученном довольстве — без романтизации бедности и без дубинки против нуждающегося.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 25
+    },
+    {
+      "id": "tma-na-serdce",
+      "type": "article",
+      "url": "/articles/tma-na-serdce/",
+      "title": "Тьма на сердце: всегда ли уныние — это грех?",
+      "description": "Не всякая темнота на сердце — духовная смерть, и не всякий свет — от Бога. Что Писание и пастырская традиция говорят об унынии, меланхолии и оставленности — и как отличить обличение от обвинения.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 26
+    },
+    {
+      "id": "serdce-pod-skorbyu",
+      "type": "article",
+      "url": "/articles/serdce-pod-skorbyu/",
+      "title": "Сердце под скорбью: страдание, провидение и плач",
+      "description": "Страдание не создаёт сердце заново — оно выносит на поверхность то, на что сердце уже опиралось. Что Писание говорит о боли, провидении и плаче — без фатализма и без дешёвых ответов.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 28
+    },
+    {
+      "id": "kak-menyaetsya-serdce",
+      "type": "article",
+      "url": "/articles/kak-menyaetsya-serdce/",
+      "title": "Как меняется сердце: умерщвление греха и новая любовь",
+      "description": "Сердце меняется не усилием воли и не пассивным ожиданием. Что Писание и реформатская традиция говорят об умерщвлении греха, союзе со Христом и силе новой любви — и почему грех побеждается благодатью, а не законом.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 27
+    },
+    {
+      "id": "serdce-i-iskushenie",
+      "type": "article",
+      "url": "/articles/serdce-i-iskushenie/",
+      "title": "Когда сердце ведёт переговоры с искушением",
+      "description": "Искушение — ещё не грех, но и не «просто мысль». Как грех входит в сердце: от первого движения до согласия воли — и где его можно остановить. Анатомия искушения без дубинки для немощной совести.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 26
+    },
+    {
+      "id": "kak-hranit-serdce",
+      "type": "article",
+      "url": "/articles/kak-hranit-serdce/",
+      "title": "Как хранить сердце: Притчи 4:23 и средства благодати",
+      "description": "«Больше всего хранимого храни сердце» — не разовая победа, а ежедневная стража у источника. Что значит хранить сердце по сезонам жизни и почему средства благодати — дороги к Богу, а не магические кнопки.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 26
+    },
+    {
+      "id": "strah-bozhij-rabskij-ili-synovnij",
+      "type": "article",
+      "url": "/articles/strah-bozhij-rabskij-ili-synovnij/",
+      "title": "Страх Божий: рабский или сыновний",
+      "description": "«Бойтесь Бога» — и «совершенная любовь изгоняет страх». Как страх Божий может быть заповедан и изгнан одновременно: рабский страх гонит от Бога, сыновний — влечёт к Нему. И почему их так легко спутать.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 25
+    },
+    {
+      "id": "svoboda-vo-hriste",
+      "type": "article",
+      "url": "/articles/svoboda-vo-hriste/",
+      "title": "Свобода во Христе: почему освобождённые ещё воюют",
+      "description": "Если я свободен во Христе, почему всё ещё грешу? Разбор Римлянам 6: свобода — не право грешить и не жизнь без хозяина, а конец господству греха через смерть со Христом. Почему грех остаётся, но не царствует.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 26
+    },
+    {
+      "id": "serdce-ne-v-odinochku",
+      "type": "article",
+      "url": "/articles/serdce-ne-v-odinochku/",
+      "title": "Сердце не исцеляется в одиночку: церковь, исповедь, восстановление",
+      "description": "Грех требует одиночества: в изоляции сердце само себе адвокат, свидетель и судья. Почему тело Христово — место правды о сердце, и где граница между исцеляющей общиной и духовным насилием.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-12T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 27
+    },
+    {
+      "id": "serdce-hrista-k-nemoshchnym",
+      "type": "article",
+      "url": "/articles/serdce-hrista-k-nemoshchnym/",
+      "title": "Сердце Христа: образ Отца, Спаситель врагов, сила немощным",
+      "description": "Христос не просто добр к слабым — Он умер за врагов; не просто учит о святости — Он один побеждает плоть, которую нам не одолеть. И Он же — образ Отца, а не Его смягчённая альтернатива.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-12T00:00:00+03:00",
+      "readTime": 44
+    },
+    {
+      "id": "osvobozhdennoe-serdce",
+      "type": "article",
+      "url": "/articles/osvobozhdennoe-serdce/",
+      "title": "Конец войне: сердце, освобождённое навсегда",
+      "description": "Здесь — вечная борьба с грехом, но не навсегда. Писание обещает состояние славы: сердце, окончательно освобождённое от плоти и не способное больше грешить. О последней, телесной, вечной победе над грехом в сердце.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-series-heart.webp",
+      "tags": [
+        "сердце"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-11T00:00:00+03:00",
+      "modifiedTime": "2026-07-11T00:00:00+03:00",
+      "readTime": 27
     }
   ]
 }

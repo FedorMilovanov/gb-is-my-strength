@@ -2526,7 +2526,14 @@ const JS_SIZE_FLOORS = {
     if (!u.includes('/articles/')) continue;
     const local = u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '').replace(/\/$/, '/index.html');
     const abs = path.join(ROOT, local);
-    if (!fs.existsSync(abs)) missing.push(`${u} → article file missing on disk`);
+    // S-T-01 (та же логика, что у чекера серий): Astro-owned статьи живут в
+    // src/pages/** без легаси-index.html в корне — фид обязан видеть оба мира.
+    const slug = (u.match(/\/articles\/([a-z0-9-]+)\//) || [])[1] || '';
+    const astroOwned = slug && (
+      fs.existsSync(path.join(ROOT, 'src', 'pages', 'articles', slug, 'index.astro')) ||
+      fs.existsSync(path.join(ROOT, 'src', 'content', 'articles', slug + '.mdx'))
+    );
+    if (!fs.existsSync(abs) && !astroOwned) missing.push(`${u} → article file missing on disk`);
   }
   if (missing.length) {
     R.err(`feed.xml references non-existent articles:\n  - ${missing.slice(0, 8).join('\n  - ')}`);
