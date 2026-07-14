@@ -1,0 +1,22 @@
+{
+  "id": "nineveh",
+  "names": {
+    "ru": "Ниневия",
+    "he": "נִינְוֵה"
+  },
+  "type": "city",
+  "rank": 2,
+  "placements": {
+    "urheimat": {
+      "x": 710,
+      "y": 535
+    }
+  },
+  "maps": [
+    {
+      "slug": "nachalo",
+      "localId": "nineveh"
+    }
+  ],
+  "needsReview": true
+}

@@ -1,0 +1,16 @@
+{
+  "id": "purim",
+  "title": {
+    "ru": "События Есфири (Пурим)"
+  },
+  "kind": "other",
+  "year": -473,
+  "approx": true,
+  "personIds": [
+    "xerxes1"
+  ],
+  "periodId": "persian",
+  "bibleRefs": [
+    "Есф 9"
+  ]
+}

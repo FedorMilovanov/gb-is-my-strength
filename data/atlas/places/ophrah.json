@@ -1,0 +1,129 @@
+{
+  "id": "ophrah",
+  "names": {
+    "ru": "Офра",
+    "he": "עָפְרָה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 630,
+      "y": 701
+    }
+  },
+  "maps": [
+    {
+      "slug": "shoftim",
+      "localId": "ophrah"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "ophrah-2"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Afula",
+      "lat": 32.6057,
+      "lng": 35.29,
+      "score": 506,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ophrah-2 → afula",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Khirbet Taiyibeh",
+      "lat": 32.51718,
+      "lng": 35.17854,
+      "score": 158,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ophrah-2 → khirbet-taiyibeh",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Ramat Rahel",
+      "lat": 31.739901,
+      "lng": 35.216896,
+      "score": 31,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ophrah-2 → ramat-rahel",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Et Taiyibeh",
+      "lat": 32.60385,
+      "lng": 35.44661,
+      "score": 30,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ophrah-2 → et-taiyibeh",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Silat ad Dhahr",
+      "lat": 32.319492,
+      "lng": 35.184564,
+      "score": -4,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ophrah-2 → silat-ad-dhahr",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Farata",
+      "lat": 32.190556,
+      "lng": 35.165833,
+      "score": -22,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ophrah-2 → farata",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Tell el Farah",
+      "lat": 32.2874,
+      "lng": 35.3378,
+      "score": -23,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: ophrah-2 → tell-el-farah",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.6057,
+    "lng": 35.29
+  },
+  "bibleRefs": [
+    "Judg 6:11",
+    "Judg 6:24",
+    "Judg 8:27",
+    "Judg 8:32",
+    "Judg 9:5"
+  ],
+  "rank": 3
+}

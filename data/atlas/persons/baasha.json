@@ -1,0 +1,19 @@
+{
+  "id": "baasha",
+  "names": {
+    "ru": "Вааса"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -909,
+    "end": -886
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "successor": "elah"
+  }
+}

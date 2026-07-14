@@ -1,0 +1,52 @@
+{
+  "id": "iconium",
+  "names": {
+    "ru": "Икония",
+    "he": "Ἰκόνιον"
+  },
+  "type": "city",
+  "placements": {
+    "mediterranean": {
+      "x": 1502,
+      "y": 541
+    }
+  },
+  "maps": [
+    {
+      "slug": "pavel",
+      "localId": "iconium"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "iconium",
+    "wikidata": "Q79857"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Konya",
+      "lat": 37.872202,
+      "lng": 32.492331,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: iconium → konya",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 37.872202,
+    "lng": 32.492331
+  },
+  "bibleRefs": [
+    "Acts 13:51",
+    "Acts 14:1",
+    "Acts 14:19",
+    "Acts 14:21",
+    "Acts 16:2"
+  ],
+  "rank": 3
+}

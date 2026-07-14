@@ -1,0 +1,50 @@
+{
+  "id": "pergamon",
+  "names": {
+    "ru": "Пергам",
+    "he": "Πέργαμος"
+  },
+  "type": "city",
+  "placements": {
+    "mediterranean": {
+      "x": 1157,
+      "y": 437
+    }
+  },
+  "maps": [
+    {
+      "slug": "revelation",
+      "localId": "pergamon"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "pergamum",
+    "wikidata": "Q18986"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Pergamon",
+      "lat": 39.13216,
+      "lng": 27.18421,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: pergamum → pergamon",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 39.13216,
+    "lng": 27.18421
+  },
+  "bibleRefs": [
+    "Rev 1:11",
+    "Rev 2:12"
+  ],
+  "rank": 3,
+  "notes": "координаты семи церквей разнесены по реальной дуге зап. Анатолии (Ф2-Ц2, G2-фикс revelation; было — пятачок 40×70)"
+}

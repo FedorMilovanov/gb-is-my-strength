@@ -1,0 +1,52 @@
+{
+  "id": "gibeon",
+  "names": {
+    "ru": "Гаваон",
+    "he": "גִּבְעוֹן"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 619,
+      "y": 792
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "gibeon"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "gibeon",
+    "wikidata": "Q889398"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "El Jib",
+      "lat": 31.847451,
+      "lng": 35.183351,
+      "score": 912,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gibeon → el-jib",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.847451,
+    "lng": 35.183351
+  },
+  "bibleRefs": [
+    "Josh 9:3",
+    "Josh 9:17",
+    "Josh 10:1",
+    "Josh 10:2",
+    "Josh 10:4"
+  ],
+  "rank": 3
+}

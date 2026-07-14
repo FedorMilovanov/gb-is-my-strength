@@ -1,0 +1,25 @@
+{
+  "id": "jerusalem-delivered",
+  "title": {
+    "ru": "Избавление Иерусалима от Синаххериба"
+  },
+  "kind": "miracle",
+  "year": -701,
+  "placeIds": [
+    "jerusalem"
+  ],
+  "personIds": [
+    "hezekiah",
+    "isaiah",
+    "sennacherib"
+  ],
+  "periodId": "judah-alone",
+  "bibleRefs": [
+    "4 Цар 19:35",
+    "Ис 37"
+  ],
+  "maps": [
+    "melachim"
+  ],
+  "extraBiblical": "призма Тейлора: «запер Езекию как птицу» — о взятии молчит"
+}

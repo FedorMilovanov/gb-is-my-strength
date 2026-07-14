@@ -1,0 +1,14 @@
+{
+  "id": "judges",
+  "title": {
+    "ru": "Судьи",
+    "abbr": "Суд"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 7,
+  "chapters": 21,
+  "maps": [
+    "shoftim"
+  ]
+}

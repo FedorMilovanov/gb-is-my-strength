@@ -1,0 +1,14 @@
+{
+  "id": "2samuel",
+  "title": {
+    "ru": "2 Царств",
+    "abbr": "2 Цар"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 10,
+  "chapters": 24,
+  "maps": [
+    "melachim"
+  ]
+}

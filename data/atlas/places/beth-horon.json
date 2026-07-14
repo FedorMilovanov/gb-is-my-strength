@@ -1,0 +1,52 @@
+{
+  "id": "beth-horon",
+  "names": {
+    "ru": "Беф-Орон",
+    "he": "בֵּית חוֹרוֹן"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 609,
+      "y": 786
+    }
+  },
+  "maps": [
+    {
+      "slug": "maccabim",
+      "localId": "beth_horon"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "beth-horon",
+    "wikidata": "Q1268514"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Beit Ur al Tahta",
+      "lat": 31.895,
+      "lng": 35.083611,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: beth-horon → beit-ur-al-tahta",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.895,
+    "lng": 35.083611
+  },
+  "bibleRefs": [
+    "Josh 10:10",
+    "Josh 10:11",
+    "Josh 18:14",
+    "Josh 21:22",
+    "1 Sam 13:18"
+  ],
+  "rank": 3
+}

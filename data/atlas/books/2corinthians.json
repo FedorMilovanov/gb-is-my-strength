@@ -1,0 +1,14 @@
+{
+  "id": "2corinthians",
+  "title": {
+    "ru": "2 Коринфянам",
+    "abbr": "2 Кор"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 47,
+  "chapters": 13,
+  "maps": [
+    "pavel"
+  ]
+}

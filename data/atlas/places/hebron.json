@@ -1,0 +1,60 @@
+{
+  "id": "hebron",
+  "names": {
+    "ru": "Хеврон",
+    "he": "חֶבְרוֹן",
+    "variants": [
+      "Хеврон (судьи)"
+    ]
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 610,
+      "y": 829
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "hebron_kings"
+    },
+    {
+      "slug": "shoftim",
+      "localId": "hebron"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "hebron",
+    "wikidata": "Q168225"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tel Rumeida",
+      "lat": 31.525087,
+      "lng": 35.10222,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: hebron → tel-rumeida",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.525087,
+    "lng": 35.10222
+  },
+  "bibleRefs": [
+    "Gen 13:18",
+    "Gen 23:2",
+    "Gen 23:19",
+    "Gen 35:27",
+    "Num 13:22"
+  ],
+  "notes": "review: Хеврон: melachim + shoftim (+ влитый дубль hebron_shoftim)",
+  "rank": 1
+}

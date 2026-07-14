@@ -1,0 +1,20 @@
+{
+  "id": "micah",
+  "names": {
+    "ru": "Михей"
+  },
+  "role": "prophet",
+  "realm": "judah",
+  "ministry": {
+    "start": -735,
+    "end": -700,
+    "approx": true
+  },
+  "periodIds": [
+    "divided-kingdom",
+    "judah-alone"
+  ],
+  "bookIds": [
+    "micah"
+  ]
+}

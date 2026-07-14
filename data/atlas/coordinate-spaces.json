@@ -1,0 +1,90 @@
+{
+  "$comment": "ATLAS-CONTRACT §6 — координатные семейства Атласа. Проекция семейства фиксируется до публикации первой карты семейства и после этого НЕ меняется. Владелец файла: docs/ATLAS-CONTRACT-2026-07-10.md.",
+  "spaces": {
+    "levant": {
+      "title": "Левант: Сирия — Ханаан — Синай",
+      "status": "active",
+      "viewBox": "0 0 1900 1430",
+      "W0": 1900,
+      "H0": 1430,
+      "kmPerUnit": 0.92,
+      "pad": {
+        "x": 450,
+        "y": 380
+      },
+      "zoom": {
+        "minW": 300,
+        "maxW": 2600
+      },
+      "projection": {
+        "type": "legacy-artistic",
+        "$comment": "Историческая художественная развёртка base-geo.svg (не строгая картографическая проекция). Обратное преобразование x/y → lat/lng НЕ определено; реальные координаты мест заполняются из внешних источников (OpenBible/Pleiades) в реестре, а не выводятся из SVG."
+      },
+      "baseGeo": "karty/_engine/base-geo.svg",
+      "maps": [
+        "avraam",
+        "ishod",
+        "shvatim",
+        "shoftim",
+        "melachim",
+        "maccabim",
+        "yeshua",
+        "early-church"
+      ]
+    },
+    "mediterranean": {
+      "title": "Средиземноморье: путешествия Павла и семь церквей",
+      "status": "active",
+      "viewBox": "0 0 1900 1430",
+      "W0": 1900,
+      "H0": 1430,
+      "kmPerUnit": null,
+      "pad": {
+        "x": 450,
+        "y": 380
+      },
+      "zoom": {
+        "minW": 300,
+        "maxW": 2600
+      },
+      "projection": {
+        "type": "legacy-artistic",
+        "$comment": "Собственная художественная развёртка карт pavel/revelation (Рим→Иерусалим): номинальный viewBox совпадает с levant, но ГЕОГРАФИЯ ДРУГАЯ — одинаковые числа ≠ одно пространство (Иерусалим здесь 740,580 против 623,800 в levant). kmPerUnit не калиброван — сделать при базовой географии Средиземноморья (KA-6). Обратное x/y → lat/lng не определено."
+      },
+      "baseGeo": null,
+      "maps": [
+        "pavel",
+        "revelation"
+      ]
+    },
+    "ane-core": {
+      "title": "Древний Ближний Восток: Месопотамия — Египет — Анатолия",
+      "status": "planned",
+      "$comment": "Зафиксировать проекцию и viewBox при первом использовании (цикл «Пророки»: KP-3/KP-4). Кандидат: equirectangular, центр ~38°E 33°N."
+    },
+    "ane-wide": {
+      "title": "Средиземноморье — Иран",
+      "status": "planned",
+      "$comment": "Для цикла «Даниил» (DN-3/DN-4/DN-6). Кандидат проекции: Equal Earth или equirectangular с центром ~35°E."
+    },
+    "city-jerusalem": {
+      "title": "План Иерусалима по эпохам",
+      "status": "planned"
+    },
+    "city-babylon": {
+      "title": "План Вавилона (DN-2)",
+      "status": "planned"
+    },
+    "urheimat": {
+      "title": "Урхаймат: Армянское нагорье — Междуречье — Персидский залив (Быт 1–11)",
+      "status": "active",
+      "viewBox": "0 0 1900 1430",
+      "grid": "x = 40 + (lon − 38)·130 ; y = 60 + (40 − lat)·130 (1 ед. ≈ 0,854 км)",
+      "base": "data/atlas/base/base-geo-urheimat.svg",
+      "maps": [
+        "nachalo"
+      ],
+      "note": "Лист-пролог «Начало». Позиция §2-бис: постпотопный мир; допотопная география потопом переформатирована — Эдем показывается версиями, не координатой."
+    }
+  }
+}

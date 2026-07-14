@@ -1,0 +1,19 @@
+{
+  "id": "carchemish",
+  "title": {
+    "ru": "Битва при Кархемише"
+  },
+  "kind": "battle",
+  "year": -605,
+  "personIds": [
+    "nebuchadnezzar2"
+  ],
+  "periodId": "judah-alone",
+  "bibleRefs": [
+    "Иер 46:2"
+  ],
+  "maps": [
+    "melachim"
+  ],
+  "extraBiblical": "вавилонская хроника ABC 5"
+}

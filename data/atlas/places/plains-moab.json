@@ -1,0 +1,75 @@
+{
+  "id": "plains-moab",
+  "names": {
+    "ru": "Равнины Моавитские",
+    "he": "עַרְבוֹת מוֹאָב"
+  },
+  "type": "camp",
+  "placements": {
+    "levant": {
+      "x": 690,
+      "y": 800
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "plains_moab"
+    }
+  ],
+  "needsReview": true,
+  "sameAs": {
+    "openbible": "abel-shittim",
+    "wikidata": "Q2236536"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Tall el Hammam",
+      "lat": 31.84018,
+      "lng": 35.67368,
+      "score": 511,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: abel-shittim → tall-el-hammam",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Tall Kafrayn",
+      "lat": 31.85055,
+      "lng": 35.65296,
+      "score": 112,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: abel-shittim → tall-kafrayn",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Tell Matabi",
+      "lat": 31.84161,
+      "lng": 35.68404,
+      "score": -4,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: abel-shittim → tell-matabi",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.84018,
+    "lng": 35.67368
+  },
+  "bibleRefs": [
+    "Num 33:49"
+  ],
+  "notes": "review-hold: стан 'равнины Моава' = Аве-Ситтим — интерпретация станов Числ 33, проверить в досье Исхода",
+  "rank": 3
+}

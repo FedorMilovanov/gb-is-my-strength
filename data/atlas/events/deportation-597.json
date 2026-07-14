@@ -1,0 +1,25 @@
+{
+  "id": "deportation-597",
+  "title": {
+    "ru": "Вторая депортация (Иехония, Иезекииль)"
+  },
+  "kind": "deportation",
+  "year": -597,
+  "placeIds": [
+    "jerusalem",
+    "babylon"
+  ],
+  "personIds": [
+    "jehoiachin",
+    "ezekiel",
+    "nebuchadnezzar2"
+  ],
+  "periodId": "judah-alone",
+  "bibleRefs": [
+    "4 Цар 24:10-16"
+  ],
+  "maps": [
+    "melachim"
+  ],
+  "extraBiblical": "вавилонская хроника: точная дата 2 адара 597 = 16.03.597 — редчайшая абсолютная дата"
+}

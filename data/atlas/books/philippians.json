@@ -1,0 +1,14 @@
+{
+  "id": "philippians",
+  "title": {
+    "ru": "К Филиппийцам",
+    "abbr": "Флп"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 50,
+  "chapters": 4,
+  "maps": [
+    "pavel"
+  ]
+}

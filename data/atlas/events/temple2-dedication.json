@@ -1,0 +1,20 @@
+{
+  "id": "temple2-dedication",
+  "title": {
+    "ru": "Освящение Второго Храма"
+  },
+  "kind": "dedication",
+  "year": -516,
+  "placeIds": [
+    "jerusalem"
+  ],
+  "personIds": [
+    "darius1",
+    "haggai",
+    "zechariah-prophet"
+  ],
+  "periodId": "persian",
+  "bibleRefs": [
+    "Езд 6:15-16"
+  ]
+}

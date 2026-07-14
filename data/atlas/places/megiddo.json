@@ -1,0 +1,57 @@
+{
+  "id": "megiddo",
+  "names": {
+    "ru": "Мегиддо",
+    "he": "מְגִדּוֹ"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 619,
+      "y": 703
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "megiddo_kings"
+    },
+    {
+      "slug": "shoftim",
+      "localId": "megiddo"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "megiddo",
+    "wikidata": "Q208379"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tel Megiddo",
+      "lat": 32.585278,
+      "lng": 35.184444,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: megiddo → tel-megiddo",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.585278,
+    "lng": 35.184444
+  },
+  "bibleRefs": [
+    "Josh 12:21",
+    "Josh 17:11",
+    "Judg 1:27",
+    "Judg 5:19",
+    "1 Kgs 4:12"
+  ],
+  "notes": "review: Тель-Мегиддо: shoftim + melachim",
+  "rank": 1
+}

@@ -1,0 +1,61 @@
+{
+  "id": "samaria",
+  "names": {
+    "ru": "Самария",
+    "he": "שֹׁמְרוֹן"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 621,
+      "y": 740
+    }
+  },
+  "maps": [
+    {
+      "slug": "early-church",
+      "localId": "samaria_philip"
+    },
+    {
+      "slug": "maccabim",
+      "localId": "samaria_hasm"
+    },
+    {
+      "slug": "melachim",
+      "localId": "samaria"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "samaria-1",
+    "wikidata": "Q1757438"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Samaria",
+      "lat": 32.276111,
+      "lng": 35.195,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: samaria-1 → samaria",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.276111,
+    "lng": 35.195
+  },
+  "bibleRefs": [
+    "1 Kgs 13:32",
+    "1 Kgs 16:24",
+    "1 Kgs 16:28",
+    "1 Kgs 16:29",
+    "1 Kgs 16:32"
+  ],
+  "notes": "review: Себастия/Шомрон: melachim + maccabim + early-church",
+  "rank": 1
+}

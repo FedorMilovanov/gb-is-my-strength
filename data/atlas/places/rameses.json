@@ -1,0 +1,91 @@
+{
+  "id": "rameses",
+  "names": {
+    "ru": "Раамсес",
+    "he": "רַעְמְסֵס"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 210,
+      "y": 880
+    }
+  },
+  "maps": [
+    {
+      "slug": "ishod",
+      "localId": "rameses"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "rameses",
+    "wikidata": "Q937930"
+  },
+  "identifications": [
+    {
+      "status": "primary",
+      "label": "Qantir",
+      "lat": 30.79937,
+      "lng": 31.834217,
+      "score": 509,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: rameses → qantir",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "candidate",
+      "label": "Tell el Daba",
+      "lat": 30.786228,
+      "lng": 31.82253,
+      "score": 270,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: rameses → tell-el-daba",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tell el Farama",
+      "lat": 31.042512,
+      "lng": 32.546139,
+      "score": 13,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: rameses → tell-el-farama",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "rejected",
+      "label": "Tanis",
+      "lat": 30.976944,
+      "lng": 31.88,
+      "score": -206,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: rameses → tanis",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 30.79937,
+    "lng": 31.834217
+  },
+  "bibleRefs": [
+    "Gen 47:11",
+    "Ex 1:11",
+    "Ex 12:37",
+    "Num 33:3",
+    "Num 33:5"
+  ],
+  "rank": 3
+}

@@ -1,0 +1,19 @@
+{
+  "id": "hanukkah",
+  "title": {
+    "ru": "Очищение Храма (Ханука)"
+  },
+  "kind": "dedication",
+  "year": -164,
+  "placeIds": [
+    "jerusalem"
+  ],
+  "periodId": "hasmonean",
+  "bibleRefs": [
+    "Ин 10:22 (праздник Обновления)"
+  ],
+  "maps": [
+    "maccabim"
+  ],
+  "extraBiblical": "1 Макк 4:52-59"
+}

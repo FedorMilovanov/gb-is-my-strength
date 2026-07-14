@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>12 Колен Израиля — лист Атласа (светлый, awaiting G9)</title>
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<style>
+  html,body{margin:0;min-height:100%;background:#efe6cf}
+  body{display:grid;place-items:center;padding:12px;box-sizing:border-box}
+  .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
+  svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
+  .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .frame-inner{stroke-width:.5;opacity:.35}
+  .frame-orn use{opacity:.5}
+  svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
+  /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
+     Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
+     точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
+     экранных px, пересчитаны на середину каждой ступени).            */
+  #sheet-svg path[fill="none"][stroke="#2d4a66"],
+  #sheet-svg path[fill="none"][stroke="#2e4d6b"],
+  #sheet-svg g[stroke="#2d4a66"] path,
+  #sheet-svg path[stroke="#4a80a8"], #sheet-svg path[stroke="#4a80a0"],
+  #sheet-svg #tradeRoutes path,
+  #sheet-svg .route, #sheet-svg .route-under, #sheet-svg .route-arrow,
+  #sheet-svg .war-route, #sheet-svg .ovl,
+  #sheet-svg .leader, #sheet-svg .grat,
+  #sheet-svg .glyph path, #sheet-svg .glyph circle,
+  #sheet-svg .decor-ship path,
+  #sheet-svg path[stroke="#2e4d6b"], #sheet-svg ellipse[stroke="#2e4d6b"],
+  #sheet-svg path[stroke="#8b7d5a"], #sheet-svg path[stroke="#3a4150"]
+  {vector-effect:non-scaling-stroke}
+  #sheet-svg .pl-city, #sheet-svg .pl-cand, #sheet-svg .pl-ctx, #sheet-svg .wp-dot
+  {vector-effect:non-scaling-stroke}
+  #sheet-svg .pl-city{stroke-width:1px}
+  #sheet-svg .pl-cand{stroke-width:1.1px}
+  /* при non-scaling-stroke dash-паттерн тоже в ЭКРАННЫХ px — задаём один раз */
+  #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
+  #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
+  #sheet-svg .route-arrow{fill:none;stroke:#b0472e;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
+  /* издательский halo подписей: обводка цветом бумаги ПОД заливкой букв
+     (paint-order) — пунктиры маршрутов/рек не перечёркивают текст;
+     non-scaling держит толщину halo на всех зумах */
+  #sheet-svg text.lab-place, #sheet-svg .lab-war, #sheet-svg .lab-ctx,
+  #sheet-svg .mile-t, #sheet-svg text.lab-wp
+  {paint-order:stroke;stroke:rgba(245,237,216,.88);stroke-width:2.6px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  #sheet-svg .route-under{stroke-width:3px}
+  #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
+  #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
+  #sheet-svg .ovl-ctxpath{stroke-width:1.2px;stroke-dasharray:2.8 4.6}
+  #sheet-svg .grat{stroke-width:.8px}
+  #sheet-svg .leader{stroke-width:.75px}
+  /* ── ступень z2 (≈1.6–3.1×, целевые экранные: main 13 · minor 11 · точка 4.4) ── */
+  svg.z2 text.lab-main{font-size:7.1px}
+  svg.z2 text.lab-minor{font-size:6px}
+  svg.z2 text.lab-cand{font-size:5.5px}
+  svg.z2 .pl-city{transform:scale(.257);transform-box:fill-box;transform-origin:center}
+  svg.z2 .pl-cand{transform:scale(.27);transform-box:fill-box;transform-origin:center}
+  svg.z2 .pl-ctx{transform:scale(.293);transform-box:fill-box;transform-origin:center}
+  svg.z2 .mile-t{font-size:5.5px}
+  svg.z2 .lab-war{font-size:4.7px}
+  svg.z2 .lab-ovl{font-size:4.4px}
+  svg.z2 .lab-ctx{font-size:4.7px}
+  svg.z2 text.lab-wp{font-size:4.4px}
+  svg.z2 .war-x{transform:scale(.6);transform-box:fill-box;transform-origin:center}
+  /* ── ступень z3 (≈3.1–5.5×) ── */
+  svg.z3 text.lab-main{font-size:3.7px}
+  svg.z3 text.lab-minor{font-size:3.2px}
+  svg.z3 text.lab-cand{font-size:2.9px}
+  svg.z3 .pl-city{transform:scale(.137);transform-box:fill-box;transform-origin:center}
+  svg.z3 .pl-cand{transform:scale(.144);transform-box:fill-box;transform-origin:center}
+  svg.z3 .pl-ctx{transform:scale(.16);transform-box:fill-box;transform-origin:center}
+  svg.z3 .mile-t{font-size:2.9px}
+  svg.z3 .lab-war{font-size:2.4px}
+  svg.z3 .lab-ovl{font-size:2.3px}
+  svg.z3 .lab-ctx{font-size:2.4px}
+  svg.z3 text.lab-wp{font-size:2.3px}
+  svg.z3 .war-x{transform:scale(.34);transform-box:fill-box;transform-origin:center}
+  svg.z3 .lab-region{opacity:.22}
+  /* ── ступень z4 (≥5.5×) ── */
+  svg.z4 text.lab-main{font-size:2.3px}
+  svg.z4 text.lab-minor{font-size:2px}
+  svg.z4 text.lab-cand{font-size:1.8px}
+  svg.z4 .pl-city{transform:scale(.0857);transform-box:fill-box;transform-origin:center}
+  svg.z4 .pl-cand{transform:scale(.09);transform-box:fill-box;transform-origin:center}
+  svg.z4 .pl-ctx{transform:scale(.107);transform-box:fill-box;transform-origin:center}
+  svg.z4 .mile-t{font-size:1.8px}
+  svg.z4 .lab-war{font-size:1.5px}
+  svg.z4 .lab-ovl{font-size:1.4px}
+  svg.z4 .lab-ctx{font-size:1.5px}
+  svg.z4 text.lab-wp{font-size:1.4px}
+  svg.z4 .war-x{transform:scale(.2);transform-box:fill-box;transform-origin:center}
+  svg.z4 .lab-region{opacity:0}
+  /* глифы: контур постоянный (ve), геометрия скейлится — тоньше не нужно */
+  /* ── базовые подписи (донор): родная LOD-семантика lbl-z1/lbl-z2 ──
+     ДВА бага разом: (1) селектор был ограничен text./g. — сырые ellipse/path
+     с классом lbl-z2 (озеро Хула, стрелки течения, мелкие притоки) не
+     попадали под гейт и были видны ВСЕГДА на любом зуме; (2) базовое
+     правило с #sheet-svg (id) по специфичности ВСЕГДА перебивало
+     "svg.z2 .lbl-z2" (id > class×2 в каскаде CSS) — из-за этого "Киннерет"
+     и все донорские lbl-z2 подписи не проявлялись НИ НА ОДНОМ зуме за всё
+     время существования этой LOD-системы. База без #id — тогда zoom-правило
+     (0,2,0) законно перебивает базовое (0,1,0). */
+  .lbl-z2{opacity:0}
+  svg.z2 .lbl-z2{opacity:.85}
+  svg.z3 .lbl-z2, svg.z4 .lbl-z2{opacity:.9}
+  /* крупные надписи базы (моря/макрорегионы без lbl-классов) — хороши как фоновый
+     "водяной знак" на обзоре, но перечёркивают локальные подписи при малейшем
+     приближении: гасим уже на первой ступени зума, а не только с z3 */
+  svg.zoomed text.sea-label:not(.lbl-z1):not(.lbl-z2),
+  svg.zoomed text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:.45}
+  svg.z3 text.sea-label:not(.lbl-z1):not(.lbl-z2),
+  svg.z3 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:.15}
+  svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
+  svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
+  svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
+  /* штриховка рельефа хороша как фактура на обзоре, но при зуме тайл растёт
+     (userSpaceOnUse) и превращается в редкие гигантские полосы — гасим её
+     к близким масштабам, оставляя мягкий рельефный тон (mtG-эллипсы) */
+  #sheet-svg .relief{transition:none}
+  svg.zoomed .relief{opacity:.5}
+  svg.z3 .relief{opacity:.22}
+  svg.z4 .relief{opacity:.08}
+  /* бумажная фактура/виньетка — для обзора; feTurbulence-грейн на сильном
+     зуме даёт тайловые артефакты (вертикальные полосы) — гасим на близких */
+  svg.z3 .paper-grain{opacity:.2}
+  svg.z4 .paper-grain{opacity:0}
+  svg.z4 .paper-fx{opacity:.4}
+  /* прибрежная тень-мелководье: глубина на обзоре, но на зуме читается
+     тёмным клином вдоль берега — растворяем */
+  svg.zoomed path[fill="rgba(13,40,70,.3)"]{opacity:.22}
+  svg.z3 path[fill="rgba(13,40,70,.3)"], svg.z4 path[fill="rgba(13,40,70,.3)"]{opacity:0}
+  svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
+  svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
+  svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
+  svg.z4 text.lbl-z2, svg.z4 g.lbl-z2 text{font-size:1.5px}
+  svg.z2 .wp-dot{opacity:.75}
+  /* без transition: смена LOD всегда совпадает с синхронной сменой viewBox
+     (см. atlas-reader.js apply()), а CSS-transition для font-size/r в этом
+     случае у части браузеров "застревает" на нескомпенсированном значении —
+     переход в одном тике должен быть мгновенным и детерминированным */
+  .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
+  .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
+  .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
+  .rose .rose-ring{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.5}
+  .rose .rose-ticks path{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.55}
+  .rose .rose-sec{fill:rgba(138,106,31,.16);stroke:#8a6a1f;stroke-width:.4;opacity:.75}
+  .rose .rose-shade{fill:rgba(107,82,22,.45);stroke:none}
+  .rose .rose-hub{fill:#8a6a1f;stroke:none;opacity:.7}
+  .graticule{transition:opacity .35s}
+  svg.zoomed .graticule{opacity:0}
+  .base{opacity:.96}
+  .base [fill="#10263a"]{fill:#8fb7cb}
+  .base [stroke="#2e4d6b"]{stroke:#6f97ae}
+  .base [stroke="#2d4a66"]{stroke:#6f97ae}
+  .base text{opacity:.85}
+  .route-under{fill:none;stroke:#fdf9ef;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.3}
+  .route{fill:none;stroke:#a2653f;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 8.2;opacity:.82}
+  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:.9}
+  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.2;stroke-dasharray:2.6 2}
+  .pl{cursor:pointer}
+  .lab-ctxnote{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a7a5e;letter-spacing:.3em;opacity:.7;paint-order:stroke;stroke:#f3ecdc;stroke-width:.16em}
+  .ovl{fill:none;stroke-linecap:round}
+  .ovl-covenant{stroke:#7d8f4e;stroke-width:1.5;stroke-dasharray:11 7;opacity:.5}
+  .ovl-ctxpath{stroke:#7a8fa0;stroke-width:1.2;stroke-dasharray:3 5;opacity:.55}
+  .lab-ovl{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
+  .lab-ovl-covenant{fill:#6e7f42;letter-spacing:.12em}
+  .lab-ovl-ctxpath{fill:#63798a}
+  .sn-plate{fill:rgba(246,241,231,.72);stroke:rgba(138,106,31,.28);stroke-width:.7}
+  .sn-title{font-family:Lora,Georgia,serif;font-weight:600;fill:#8a6a30;letter-spacing:.22em}
+  .sn-line{font-family:Lora,Georgia,serif;font-style:italic;fill:#5a4c30}
+  .decor-ship path{fill:none;stroke:#5c718a;stroke-width:1.1;opacity:.5;stroke-linejoin:round}
+  .decor-ship .ds-line{stroke-width:.9}
+  .decor-ship .ds-wave{opacity:.35}
+  .pl-ctx{fill:#6e5f43;stroke:#f6f1e7;stroke-width:.7;opacity:.9}
+  .lab-ctx{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#8a7a5e;opacity:.9;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
+  .war-x{stroke:#8a5a5c;stroke-width:1.05;opacity:.72;fill:none}
+  .war-route{fill:none;stroke:#8a6668;stroke-width:1.15;stroke-dasharray:10 6;opacity:.42;stroke-linecap:round}
+  .lab-war{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;fill:#8a4a38;opacity:.92;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
+  .lab-war-note{opacity:.8}
+  .glyph-hit{cursor:pointer}
+  .mile,.wp,.ovl-layer,.decor-ship,.war{cursor:pointer}
+  #sheet-svg [fill="url(#jordanG)"]{opacity:.09}
+  #sheet-svg #tradeRoutes{opacity:.32}
+  .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
+  .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
+  .glyph .glyph-flame{fill:#a25d33;stroke:none}
+  .glyph .glyph-smoke{fill:none;stroke:#8a7a58;stroke-width:.8;opacity:.75;stroke-linecap:round}
+
+  .wp-dot{fill:#4a7a52;stroke:none;opacity:.6}
+  .leader{stroke:#5c4d33;stroke-width:.75;opacity:.45}
+  .mile-t{font:italic 500 1em 'Cormorant Garamond',Georgia,serif;opacity:.95;letter-spacing:.04em}
+  text.lab-place{font-family:Lora,Georgia,serif;font-weight:600;fill:#2b2418;letter-spacing:.01em;paint-order:stroke;stroke:#f5edd8;stroke-width:.17em;stroke-linejoin:round}
+  text.lab-cand{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#6b5a35;paint-order:stroke;stroke:#f5edd8;stroke-width:.15em;stroke-linejoin:round}
+  text.lab-region{font-family:Lora,Georgia,serif;font-weight:500;fill:#7a6a48;letter-spacing:.34em;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em;stroke-linejoin:round}
+  text.lab-ctx{font-family:Georgia,serif;letter-spacing:.24em;fill:#8a7a58;opacity:.6;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
+  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
+  svg.zoomed text.lab-wp{opacity:.85}
+  .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
+  .cart-plate{fill:rgba(246,241,231,.92)}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
+  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cartouche use{opacity:.72}
+  .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
+  .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
+  .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
+  .leg-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#3a3020;opacity:.9}
+  .sb-d{fill:#3a3020}.sb-l{fill:#f6f1e7;stroke:#3a3020;stroke-width:1}
+  .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
+  .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
+  .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
+  /* было position:fixed + bottom:10 — на широких вьюпортах съезжал за
+     край листа (как dive-btn), да ещё и садился на масштабную линейку;
+     теперь внутри .wrap (position:absolute) и в верхнем правом углу, где
+     после переноса dive-btn ниже розы ветров освободилось место */
+  .g9{position:absolute;right:10px;top:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
+  /* компактный HUD зума: экранная шкала + север (фурнитура листа на зуме скрыта) */
+  .zoom-hud{position:absolute;left:14px;bottom:14px;z-index:20;display:flex;align-items:center;gap:9px;font:600 11px/1 Georgia,serif;color:#6b5216;background:rgba(246,241,231,.92);border:1px solid rgba(138,106,31,.4);border-radius:8px;padding:7px 11px;box-shadow:0 2px 8px rgba(90,70,30,.18);pointer-events:none}
+  /* display:flex выше перебивает UA-стиль [hidden] — возвращаем скрытие явно */
+  .zoom-hud[hidden]{display:none}
+  .zoom-hud .zh-bar{display:inline-block;height:5px;background:#4a3f28;border:1px solid #6b5216;border-radius:1px}
+  .zoom-hud .zh-north{letter-spacing:.05em}
+  /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
+  svg.sheet{cursor:grab;touch-action:none}
+  .frame,.legend,.cartouche,.furn{transition:opacity .35s}
+  svg.zoomed .frame,svg.zoomed .legend,svg.zoomed .cartouche,svg.zoomed .furn{opacity:0;pointer-events:none}
+  svg.sheet.grabbing{cursor:grabbing}
+  .stage-strip .st{cursor:pointer;border-radius:8px;padding:2px 8px;margin:-2px -8px;transition:background .15s}
+  .stage-strip .st:hover{background:rgba(138,106,31,.1)}
+  .stage-strip .st--on{background:rgba(138,106,31,.16)}
+  .spine{position:fixed;left:0;top:0;bottom:0;z-index:20;display:flex;align-items:stretch}
+  .spine-tab{writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;gap:6px;padding:14px 5px;background:rgba(246,241,231,.94);border-right:1px solid rgba(138,106,31,.35);color:#8a6a1f;font:700 11px/1 Georgia,serif;letter-spacing:.22em;cursor:pointer;box-shadow:2px 0 10px rgba(90,70,30,.15)}
+  .spine-list{width:0;overflow:hidden;overflow-y:auto;background:rgba(246,241,231,.97);transition:width .25s ease;box-shadow:4px 0 18px rgba(90,70,30,.2)}
+  .spine:hover .spine-list,.spine:focus-within .spine-list{width:212px}
+  .spine-it{display:block;padding:10px 12px;text-decoration:none;color:#3a3020;font:600 13px/1.25 Georgia,serif;border-bottom:1px solid rgba(138,106,31,.14)}
+  .spine-it img{display:block;width:100%;border-radius:6px;margin-bottom:6px;box-shadow:0 2px 8px rgba(90,70,30,.25)}
+  .spine-it:hover{background:rgba(138,106,31,.08)}
+  .spine-it--on{background:rgba(138,106,31,.14);box-shadow:inset 3px 0 0 #8a6a1f}
+  .spine-head{padding:12px 12px 8px;font:700 10px/1 Georgia,serif;letter-spacing:.28em;color:#8a6a1f;border-bottom:1px solid rgba(138,106,31,.25)}
+  .spine-cover{position:relative;display:block}
+  .spine-cover b{position:absolute;left:6px;top:6px;background:rgba(246,241,231,.92);color:#8a6a1f;font:700 10px/1 Georgia,serif;border-radius:6px;padding:3px 6px;border:1px solid rgba(138,106,31,.4)}
+  /* ── Ховер-карточка места: фото раскопок + факт ── */
+  .place-card{position:fixed;z-index:30;width:300px;background:#f6f1e7;border:1px solid rgba(138,106,31,.45);border-radius:12px;box-shadow:0 14px 40px rgba(60,45,15,.35);overflow:hidden;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .18s,transform .18s;pointer-events:none;font-family:Lora,Georgia,serif}
+  .place-card.pc--on{opacity:1;transform:none}
+  .pc-ph{position:relative;height:130px;background:#e8dcbc}
+  .pc-ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .pc-ph i{position:absolute;left:0;right:0;bottom:0;padding:14px 10px 5px;font:600 9px/1 system-ui;letter-spacing:.12em;color:#fff;background:linear-gradient(transparent,rgba(20,14,4,.72))}
+  .pc-body{padding:10px 12px 12px}
+  .pc-body b{display:block;font:700 15px/1.2 Georgia,serif;color:#1e3a63}
+  .pc-body u{display:block;text-decoration:none;font:600 10.5px/1.3 Georgia,serif;color:#8a6a1f;letter-spacing:.06em;margin-top:2px}
+  .pc-body p{margin:7px 0 0;font:400 12px/1.5 Georgia,serif;color:#3a3020}
+  /* ── Панель-досье (клик по месту) ── */
+  .dossier{position:fixed;right:0;top:0;bottom:0;width:min(430px,94vw);z-index:26;background:#f6f1e7;border-left:1px solid rgba(138,106,31,.4);box-shadow:-16px 0 44px rgba(60,45,15,.3);transform:translateX(103%);transition:transform .28s ease;display:flex;flex-direction:column;font-family:Lora,Georgia,serif}
+  .dossier.do--on{transform:none}
+  .do-x{position:absolute;right:10px;top:10px;z-index:2;width:34px;height:34px;border-radius:9px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.95);color:#7a5c26;font-size:19px;cursor:pointer}
+  .do-head{padding:16px 54px 12px 18px;border-bottom:1px solid rgba(138,106,31,.25);background:rgba(240,232,210,.6)}
+  .do-head b{display:block;font:700 20px/1.2 Georgia,serif;color:#1e3a63}
+  .do-head u{display:block;text-decoration:none;font:600 11.5px/1.35 Georgia,serif;color:#8a6a1f;margin-top:3px;letter-spacing:.05em}
+  .do-scroll{overflow-y:auto;padding:14px 18px 22px;flex:1}
+  .do-gallery{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .do-ph{margin:0}
+  .do-ph img{width:100%;height:96px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px rgba(90,70,30,.3);display:block;background:#e8dcbc}
+  .do-ph figcaption{font:600 8.5px/1.3 system-ui;letter-spacing:.08em;color:#7a6a48;margin-top:3px}
+  .do-ph figcaption i{display:block;font:400 8px/1.2 system-ui;color:#9a8a68;letter-spacing:0}
+  .do-sec{margin:0 0 14px}
+  .do-sec h4{margin:0 0 5px;font:700 10.5px/1 Georgia,serif;letter-spacing:.22em;color:#8a6a1f;text-transform:uppercase}
+  .do-lex{background:rgba(138,106,31,.06);border:1px solid rgba(138,106,31,.16);border-radius:10px;padding:12px 14px}
+  .do-lex .lex-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .do-lex .he{font-family:'Noto Serif Hebrew',serif;font-size:1.7em;line-height:1.2;color:#3a3020}
+  .do-lex .lex-tr{font-family:Lora,Georgia,serif;color:#8a6a30;font-size:.95em}
+  .do-lex .lex-ru{font-family:Lora,Georgia,serif;font-weight:600;margin:.2em 0 .35em}
+  .do-lex .lex-note{margin:.25em 0;line-height:1.55}
+  .do-lex .lex-refs{margin:.35em 0 0;font-style:italic;color:#6b5a35;font-size:.92em}
+  .do-lex .lex-glyph{display:flex;flex-direction:column;gap:2px;margin-top:.7em;padding-top:.6em;border-top:1px dashed rgba(138,106,31,.25)}
+  .do-lex .lex-glyph b{font-family:Lora,Georgia,serif}
+  .do-lex .lex-glyph span{line-height:1.5;font-size:.94em}
+  .do-sec p{margin:0 0 8px;font:400 13.5px/1.6 Georgia,serif;color:#2b2418}
+  .do-bible .verse{display:block;padding:10px 12px;background:rgba(30,58,99,.06);border-left:3px solid #1e3a63;border-radius:6px;font:italic 400 13.5px/1.55 Georgia,serif;color:#1e3a63;margin-bottom:8px}
+  .do-bible .verse span{display:block;font:700 9.5px/1 system-ui;letter-spacing:.16em;color:#8a6a1f;margin-top:6px;font-style:normal}
+  .do-sec .dispute-block{border:1px solid rgba(138,106,31,.35);border-radius:10px;padding:10px 12px;background:rgba(240,232,210,.5)}
+  .do-sec .dispute-title{font:700 11px/1.2 Georgia,serif;letter-spacing:.1em;color:#8a6a1f;margin-bottom:7px}
+  .do-sec .dispute-pos{font:400 12.5px/1.55 Georgia,serif;color:#2b2418;margin-bottom:7px}
+  .do-sec .conf-med,.do-sec .conf-lo,.do-sec .conf-hi{display:inline-block;font:600 9px/1 system-ui;letter-spacing:.08em;padding:2px 7px;border-radius:999px;background:rgba(138,106,31,.15);color:#7a5c26}
+  .do-sec .act-btn{display:none}
+  body.dive .dossier{display:none}
+  /* position:absolute относительно .wrap (не viewport) — иначе на широких
+     экранах кнопки съезжают за реальный правый край листа (обрезаются
+     тенью контейнера); top сдвинут ниже розы ветров (компас в SVG кончается
+     на ~108px при ширине листа 1500px) — иначе кнопка "Домой" ложится
+     поверх компаса */
+  .dive-btn{position:absolute;right:10px;top:120px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .home-btn{right:64px}
+  .legend-btn{top:166px}
+  .legend-pop{position:absolute;right:10px;top:210px;z-index:22;background:rgba(246,241,231,.96);border:1px solid rgba(138,106,31,.4);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.28);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
+  .legend-pop b{display:block;font:700 11px/1 Georgia,serif;letter-spacing:.1em;color:#8a6a1f;margin-bottom:8px}
+  .legend-pop i{display:flex;align-items:center;gap:8px;font-style:normal}
+  .legend-pop span{flex:0 0 20px;height:10px;display:inline-block}
+  .legend-pop .lg-route{border-top:2.2px dotted #b0472e}
+  .legend-pop .lg-dot{flex-basis:9px;width:9px;height:9px;border-radius:50%;background:#1e3a63;border:1.5px solid #f6f1e7}
+  .legend-pop .lg-cand{flex-basis:9px;width:9px;height:9px;border-radius:50%;border:1.4px dashed #8a6a1f}
+  .legend-pop .lg-arch{flex-basis:9px;width:8px;height:8px;background:#4e7a52;transform:rotate(45deg)}
+  .legend-pop .lg-war{border-top:0;color:#8a6668;font-weight:700}
+  .legend-pop .lg-war::before{content:"✕";color:#8a6668}
+  .legend-pop .lg-lot{border-top:1.5px dashed #7c93a8}
+  .dive-btn:hover{background:#f6f1e7}
+  body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
+  body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
+  body.dive{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap"><svg id="sheet-svg" viewBox="150.0 333.3 1100 733.3" data-vb="150.0 333.3 1100 733.3" data-km-per-unit="0.92" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="12 Колен Израиля — лист Атласа">
+<defs>
+  <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f0e7cf"/><stop offset=".45" stop-color="#e8dcbc"/><stop offset="1" stop-color="#dfd1a9"/>
+  </linearGradient>
+  <linearGradient id="richLandG" x1="0" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#ece1c2"/><stop offset=".5" stop-color="#e5d8b4"/><stop offset="1" stop-color="#decfa6"/>
+  </linearGradient>
+  <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#cfe0e9"/><stop offset="1" stop-color="#b4cedd"/>
+  </linearGradient>
+  <pattern id="seaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#7fa7c4" stroke-width=".6" opacity=".38"/>
+    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#7fa7c4" stroke-width=".5" opacity=".26"/>
+  </pattern>
+  <radialGradient id="fertileG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#8a9a4e" stop-opacity=".17"/><stop offset="1" stop-color="#8a9a4e" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="jordanG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#4f7a3f" stop-opacity=".3"/><stop offset="1" stop-color="#4f7a3f" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="desertG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#c09a55" stop-opacity=".2"/><stop offset="1" stop-color="#c09a55" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="negevG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#b08050" stop-opacity=".16"/><stop offset="1" stop-color="#b08050" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sinaiG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#a07040" stop-opacity=".18"/><stop offset="1" stop-color="#a07040" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="mtG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
+  </linearGradient>
+  <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".38" vector-effect="non-scaling-stroke"/>
+  </pattern>
+  <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
+    <circle cx="9" cy="9" r=".5" fill="#9c7c43" opacity=".3"/>
+    <circle cx="6" cy="1" r=".4" fill="#b08050" opacity=".25"/>
+  </pattern>
+  <filter id="waterRipple" x="-8%" y="-8%" width="116%" height="116%"><feGaussianBlur stdDeviation=".45"/></filter>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
+    <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
+  </filter>
+  <!-- ═══ БИБЛИОТЕКА РИСОВАННЫХ ОБЪЕКТОВ (гравюрный атлас) ═══
+       reusable <symbol>: силуэт скейлится с картой, штриховка-отмывка
+       (hachure) держит экранную толщину (non-scaling-stroke) — тонкие
+       гравюрные линии на любом зуме. Свет с СЗ, тень (hachure) на ЮВ. -->
+  <linearGradient id="peakG" x1="0" y1="0" x2=".35" y2="1">
+    <stop offset="0" stop-color="#d7c79c" stop-opacity=".62"/>
+    <stop offset="1" stop-color="#ab9366" stop-opacity=".72"/>
+  </linearGradient>
+  <symbol id="peak" viewBox="0 0 20 16" overflow="visible">
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
+      <path d="M8.3,2.8 l.8,1.35"/><path d="M9,4 l.8,1.35"/><path d="M9.6,5.2 l.7,1.25"/>
+      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
+      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    </g>
+    <g stroke="#efe7d2" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
+      <path d="M6.6,5.6 l-.9,1.5"/><path d="M4.9,8.3 l-.9,1.5"/>
+    </g>
+  </symbol>
+  <symbol id="peak-snow" viewBox="0 0 20 16" overflow="visible">
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
+      <path d="M9.1,4.4 l.8,1.35"/><path d="M9.7,5.6 l.7,1.25"/>
+      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
+      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    </g>
+    <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- верблюд-дромадер (вправо) — виньетка каравана старинных карт -->
+  <symbol id="camel" viewBox="0 0 20 14" overflow="visible">
+    <path d="M3.2,13 L3.9,9.7 C3.2,9.2 3,8.2 3.5,7.5 C3.9,6.9 4.7,6.7 5.3,7
+             C5.9,5.4 7.8,4.2 9.6,4.8 C10.8,5.2 11.7,6.1 11.9,7.1
+             C12.5,7.3 13,7.7 13.3,8.2 L14.3,4.9 C14.4,4.4 14.2,4 14.5,3.5
+             C14.8,3 15.5,2.9 15.9,3.3 C16.3,3.7 16.3,4.3 16,4.7 L15.9,5 L15,8.6
+             C14.9,9.5 14.3,10.2 13.4,10.4 L13.7,13 L12.8,13 L12.3,10.5 L11,10.5 L10.7,13 L9.8,13 L9.4,10.4
+             L7,10.2 L6.6,13 L5.7,13 L5.4,10 L4.8,9.9 L4.1,13 Z"
+      fill="none" stroke="#6b5216" stroke-width=".55" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M15.6,3.2 l.5,-.5 M3.5,7.8 l-.9,.9" fill="none" stroke="#6b5216" stroke-width=".5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"/>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"/>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"/>
+    </g>
+  </symbol>
+  <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
+  <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
+    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <g stroke="#6f5f42" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
+      <path d="M8.5,4.6 l.7,1.3"/><path d="M9.6,5.4 l.6,1.3"/>
+      <path d="M13.6,5.2 l.6,1.3"/><path d="M14.7,6 l.5,1.4"/><path d="M15.6,7.4 l.5,1.4"/>
+    </g>
+  </symbol>
+</defs>
+<clipPath id="mapClip"><rect x="157.3" y="340.7" width="1085.3" height="718.7"/></clipPath>
+<g class="geo" clip-path="url(#mapClip)">
+<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#seaG)"/>
+<g class="base"><?xml version="1.0" encoding="UTF-8"?>
+<!-- base-geo.svg — базовая география Ближнего Востока
+     Общая для всех карт: Авраам, Исход, Павел, Давид
+     Координаты: viewBox 0 0 1900 1430 (W0×H0)
+     Масштаб: 1 SVG-единица ≈ 0.92 км
+     НЕ МЕНЯТЬ координатную систему!
+     Обновление: при добавлении новых географических объектов
+-->
+
+<defs>
+  <!-- Все фильтры и градиенты из основного файла -->
+  <!-- Импортируются в конкретную карту через <use> или inline -->
+</defs>
+<!-- ============ TERRAIN ============ -->
+<g id="terrain" data-layer="base-geo">
+  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"/>
+  <!-- (удалён мёртвый rect с filter=url(#terrainTex): фильтр нигде не
+       определён, элемент по SVG-спеке не рендерился — broken reference) -->
+
+  <!-- deserts / fertile tints -->
+  <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"/>
+  <ellipse cx="470" cy="1130" rx="260" ry="220" fill="url(#desertG)"/>
+  <ellipse cx="560" cy="930" rx="170" ry="110" fill="url(#desertG)"/>
+  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)" filter="url(#soft)"/>
+  <ellipse cx="640" cy="700" rx="110" ry="240" fill="url(#fertileG)"/>
+  <ellipse cx="220" cy="930" rx="120" ry="120" fill="url(#fertileG)"/>
+  <!-- зелень дельты: веер от вершины (226,1004) К МОРЮ, по контуру рукавов -->
+  <path fill="url(#fertileG)" d="M226,1008 C202,958 174,910 148,862 L290,854 C262,908 240,958 226,1008 Z"/>
+
+  <!-- mountain ridges (decorative) -->
+  <g stroke="#6b6248" stroke-width="2" fill="none" opacity=".14" filter="url(#soft)">
+    <path d="M120,160 Q300,110 470,150 Q620,180 760,150 Q900,118 1060,160"/>
+    <path d="M180,205 Q330,165 480,195 Q640,225 800,196"/>
+    <path d="M1430,110 Q1530,210 1610,310 Q1700,430 1790,560 Q1840,640 1880,720"/>
+    <path d="M1500,90 Q1600,190 1680,300 Q1770,430 1860,560"/>
+    <path d="M668,520 Q676,560 670,600"/>
+    <path d="M652,758 Q646,800 640,845"/>
+  </g>
+
+  <!-- Ливанские горы / Антиливан — гряда гравюрных вершин вдоль хребта -->
+  <g opacity=".28" filter="url(#soft)">
+    <path fill="url(#mtG)" d="M590,500 C610,480 630,460 655,448 C670,440 690,435 710,432 C730,429 750,430 760,435 C748,450 730,460 710,468 C688,478 660,488 635,500 C618,508 602,515 590,520 Z"/>
+    <path stroke="#8b7d5a" stroke-width="1.5" fill="none" opacity=".7" d="M600,502 Q618,492 636,484 Q660,474 685,468 Q710,462 730,458"/>
+  </g>
+  <g opacity=".5">
+    <use href="#hill" x="604" y="486" width="14" height="8"/>
+    <use href="#peak-snow" x="626" y="464" width="17" height="13"/>
+    <use href="#peak" x="650" y="452" width="15" height="11"/>
+    <use href="#peak-snow" x="672" y="438" width="18" height="14"/>
+    <use href="#peak" x="698" y="430" width="15" height="11"/>
+    <use href="#hill" x="722" y="432" width="14" height="8"/>
+  </g>
+  <!-- Ливан label -->
+  <text class="region-label lbl-z1" x="665" y="428" font-size="5.5" fill="#a09070" opacity=".5" letter-spacing=".2em" transform="rotate(-5 665 428)">ЛИВАН · לְבָנוֹן</text>
+  <!-- Иудейские горы / Самария — хребтовая полоса -->
+  <g opacity=".12" filter="url(#soft)">
+    <path fill="url(#mtG)" d="M597,690 C608,670 618,650 625,630 C630,618 632,608 630,598 C622,606 614,618 607,632 C600,648 596,668 597,690 Z"/>
+    <path fill="url(#mtG)" d="M598,780 C606,760 612,740 615,722 C610,730 604,744 599,760 C596,772 595,784 598,780 Z"/>
+  </g>
+  <!-- Синайский полуостров — тёплый силуэт + хребты -->
+  <!-- Треугольный контур п-ова Синай -->
+  <path fill="url(#sinaiG)" opacity=".9"
+    d="M424,1012 C450,1015 475,1020 490,1032 C510,1048 520,1075 530,1110 C540,1145 548,1175 555,1200 C562,1175 570,1145 580,1112 C590,1078 600,1050 618,1035 C630,1025 648,1015 665,1012"/>
+  <!-- Гранитные горы Синая (юг) — гряда гравюрных вершин; Хорив крупнее -->
+  <g opacity=".5">
+    <use href="#hill" x="500" y="1188" width="20" height="12"/>
+    <use href="#peak" x="522" y="1168" width="24" height="19"/>
+    <use href="#peak" x="550" y="1148" width="32" height="25"/>
+    <use href="#peak" x="586" y="1166" width="24" height="19"/>
+    <use href="#hill" x="608" y="1188" width="20" height="12"/>
+  </g>
+  <!-- Негев / Иудейская пустыня -->
+  <ellipse cx="580" cy="920" rx="90" ry="60" fill="url(#negevG)" opacity=".8"/>
+  <!-- Вади Арава (Долина Иорданского разлома, S) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".3" stroke-linecap="round" stroke-dasharray="3 4" class="lbl-z2"
+    d="M650,895 C648,940 645,990 640,1040 C636,1080 630,1110 622,1130"/>
+  <!-- Перевал/проход Беэр-Шева (в Синай) — маршрут Авраама -->
+  <text class="lbl-z2" x="535" y="958" font-size="4" fill="#9aa2ae" opacity=".45" letter-spacing=".12em">перевал → Египет</text>
+  <!-- Иорданская долина — зелёная полоса (Быт 13:10 — «как сад Господень») -->
+  <path fill="url(#jordanG)" opacity=".8"
+    d="M660,615 C657,640 654,675 652,705 C650,738 648,768 646,798 C640,768 638,738 638,705 C640,675 644,640 648,615 Z"/>
+  <!-- Заливные луга Иордана — более широкие у Мёртвого -->
+  <path fill="url(#jordanG)" opacity=".4"
+    d="M665,740 C660,760 655,780 652,800 C648,820 645,840 643,855 C638,840 636,820 638,800 C640,780 644,760 650,740 Z"/>
+  <!-- Аравийская пустыня — паттерн дюн -->
+  <g opacity=".09">
+    <!-- ряды дюн -->
+    <path fill="none" stroke="#9c7c43" stroke-width="1.5" stroke-linecap="round"
+      d="M1060,1040 Q1090,1025 1120,1040 Q1150,1055 1180,1040"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.5" stroke-linecap="round"
+      d="M1100,1080 Q1130,1065 1160,1080 Q1190,1095 1220,1080"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.3" stroke-linecap="round"
+      d="M1200,1040 Q1230,1028 1260,1040 Q1290,1052 1320,1040"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.3" stroke-linecap="round"
+      d="M1150,1110 Q1180,1098 1210,1110 Q1240,1122 1270,1110"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.2" stroke-linecap="round" opacity=".7"
+      d="M1280,1078 Q1310,1066 1340,1078"/>
+    <!-- точки-акценты -->
+    <circle cx="1100" cy="1050" r="2" fill="#9c7c43"/><circle cx="1250" cy="1060" r="1.8" fill="#9c7c43"/>
+    <circle cx="1320" cy="1100" r="2" fill="#9c7c43"/><circle cx="1060" cy="1090" r="1.5" fill="#9c7c43"/>
+  </g>
+  <!-- Туман на краях карты (глубина) -->
+  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#edgeFog)" pointer-events="none"/>
+
+  <!-- Mediterranean -->
+  <!-- Mediterranean с анимированным водным эффектом (feDisplacementMap) -->
+<g filter="url(#waterRipple)">
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".4"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
+</g>
+<!-- Прибрежная зона Средиземноморья (мелководье) -->
+<path fill="rgba(13,40,70,.3)" opacity=".5"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,280 690,295 680,320 C660,280 630,260 590,256 C550,252 510,256 470,262 C420,268 360,272 290,272 C200,272 80,268 -400,270 Z" pointer-events="none"/>
+<!-- Паттерн волн Средиземного моря -->
+<path fill="url(#seaPattern)" opacity=".45"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
+  <!-- Cyprus с морскими волнами вокруг -->
+  <ellipse cx="432" cy="394" rx="76" ry="26" transform="rotate(-7 432 394)"
+    fill="url(#seaG)" opacity=".3" filter="url(#waterRipple)"/>
+  <!-- Кипр: узнаваемый силуэт — тело с горами Троодос на З, залив Морфу,
+       хребет Кирения на С и длинный «палец» полуострова Карпас на СВ -->
+  <path fill="url(#landG)" stroke="#3a4150" stroke-width="1.2" opacity=".9"
+    d="M368,396 C366,390 372,385 382,383 C394,381 404,382 412,381 C418,380 424,381 430,383 C438,385 444,384 452,384 C460,384 468,385 474,384 C482,382 490,379 497,377 C500,376 502,377 501,379 C499,382 494,386 488,389 C482,392 476,393 470,395 C464,397 459,400 452,403 C444,406 434,409 424,410 C412,411 400,410 390,407 C380,404 370,401 368,396 Z"/>
+  <!-- Кипр иврит -->
+  <text x="416" y="404" font-size="3.6" fill="#8d949f" text-anchor="middle" opacity=".45" class="lbl-z1">כִּתִּים · Κύπρος</text>
+
+  <!-- Red Sea -->
+  <g filter="url(#waterRipple)">
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45"
+  d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
+</g>
+<!-- Паттерн волн на Красном море -->
+<path fill="url(#seaPattern)" opacity=".3" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
+  <!-- Нил живёт ОДНОЙ системой в группе рек ниже (русло с юга + веер рукавов
+       к морю). Здесь остаются только подписи дельты: второй параллельный Нил
+       с waterRipple дублировал легаси-русло и дал «сдвоенную линию» -->
+  <text class="region-label lbl-z1" x="176" y="932" font-size="6" fill="#7fa7c4" opacity=".55" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
+  <text class="region-label lbl-z2" x="176" y="942" font-size="5" fill="#7fa7c4" opacity=".45" letter-spacing=".1em">יְאוֹר · Нил</text>
+  
+
+  <!-- Persian Gulf -->
+  <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
+
+  <!-- Dead Sea -->
+  <!-- Мёртвое море -->
+<g opacity=".9">
+<!-- Мёртвое море: широкий северный бассейн → перешеек у п-ова Лисан (восток)
+     → меньший южный бассейн. Иордан входит с севера (~647,794). Асимметрия:
+     западный берег ровнее, восточный даёт клин Лисана внутрь. -->
+<path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M647,794 C653,796 659,802 661,814 C663,826 662,838 660,848 C659,854 655,858 651,860 C648,861 645,862 644,864 C643,866 644,868 646,869 C652,871 657,875 658,881 C658,887 655,891 649,892 C643,893 639,888 638,882 C637,875 638,869 640,865 C641,862 640,860 638,858 C636,855 635,851 635,846 C633,832 633,816 637,804 C639,797 643,792 647,794 Z"/>
+<!-- полуостров Лисан — светлый язык с востока, сужающий (но не рвущий) пролив -->
+<path fill="url(#desertG)" opacity=".6" d="M661,850 C657,853 652,857 649,860 C653,861 658,859 661,856 C662,854 662,851 661,850 Z"/>
+<!-- соляной берег (южный мелкий бассейн) -->
+<path fill="none" stroke="rgba(200,210,180,.22)" stroke-width="2.5" stroke-dasharray="1.5 3" stroke-linecap="round"
+  d="M649,861 C654,863 658,868 659,875 C660,882 657,889 650,891 C644,892 640,887 639,880"/>
+</g>
+<!-- соляная текстура Мёртвого моря -->
+<g opacity=".18" pointer-events="none">
+  <circle cx="648" cy="835" r=".8" fill="#c8d4a0"/><circle cx="652" cy="845" r=".6" fill="#c8d4a0"/>
+  <circle cx="645" cy="855" r=".8" fill="#c8d4a0"/><circle cx="650" cy="865" r=".6" fill="#c8d4a0"/>
+  <circle cx="656" cy="852" r=".7" fill="#c8d4a0"/><circle cx="642" cy="842" r=".6" fill="#c8d4a0"/>
+</g>
+  <!-- Sea of Galilee (Кинерет) — грушевидный контур: шире на С, уже на Ю,
+       наклон СВ-ЮЗ; Иордан входит сверху (~657,664), выходит снизу (~654,691) -->
+  <g opacity=".9">
+<path fill="#10263a" stroke="#2e4d6b" stroke-width=".9" d="M657,664 C662.5,665 667,670.2 668,677 C668.8,683.2 664.8,689.2 659.4,691.8 C655.8,693.3 652.5,692.1 650.5,689.6 C647.7,685.9 646.8,680.4 647.9,675.4 C649,669.6 652.7,664.5 657,664 Z"/>
+<!-- отражение на Кинерете -->
+<path fill="url(#seaPattern)" opacity=".4" d="M657,664 C662.5,665 667,670.2 668,677 C668.8,683.2 664.8,689.2 659.4,691.8 C655.8,693.3 652.5,692.1 650.5,689.6 C647.7,685.9 646.8,680.4 647.9,675.4 C649,669.6 652.7,664.5 657,664 Z"/>
+<!-- блик -->
+<ellipse cx="654" cy="672" rx="2.6" ry="4.2" transform="rotate(-20 654 672)" fill="rgba(180,210,240,.08)"/>
+</g>
+
+  <!-- rivers -->
+  <!-- Euphrates highlight -->
+  <path fill="none" stroke="#4a80a8" stroke-width="5" opacity=".12" stroke-linecap="round" filter="url(#soft)"
+    d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893"/>
+  <g fill="none" stroke="#2d4a66" stroke-width="3" opacity=".95" stroke-linecap="round">
+    <path d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893 C1760,912 1820,928 1868,938 C1884,944 1896,950 1906,958"/>
+    <path d="M1205,-10 C1230,100 1300,180 1410,256 C1470,310 1520,400 1550,476 C1560,542 1582,604 1620,670 C1662,744 1712,800 1750,833 C1800,870 1845,900 1872,922 C1884,930 1894,938 1902,948"/>
+  </g>
+  <g fill="none" stroke="#2d4a66" stroke-width="2" opacity=".8" stroke-linecap="round">
+    <path d="M1003,194 C1000,250 998,310 1002,362 C1008,404 1040,444 1093,470"/>
+    <path d="M1108,140 C1100,230 1110,330 1140,405 C1160,460 1196,530 1238,578"/>
+    <!-- Иордан: единая нить в стандалон-блоке ниже -->
+    <!-- Река Кишон (вдоль Изреельской долины к морю) -->
+    <path d="M613,706 C603,712 595,720 588,728" fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+    
+    <path d="M232,1830 C226,1690 234,1550 230,1430 C220,1330 232,1200 226,1100 C222,1050 224,1020 226,1004"/>
+    <!-- Дельта: пять рукавов веером К МОРЮ от вершины (226,1004), асимметрично -->
+    <path d="M226,1004 C214,972 198,938 182,908 C172,890 158,872 144,858" stroke-width="1.7"/>
+    <path d="M226,1004 C218,966 205,925 188,880" stroke-width="1.2" opacity=".55"/>
+    <path d="M226,1004 C224,960 222,910 220,852" stroke-width="1.4" opacity=".7"/>
+    <path d="M226,1004 C231,963 241,919 254,876" stroke-width="1.2" opacity=".5"/>
+    <path d="M226,1004 C234,968 246,932 260,900 C268,884 278,868 288,850" stroke-width="1.7"/>
+  </g>
+
+  <!-- sea & region labels -->
+  <g>
+    <!-- Волны Средиземного моря (декоративные) -->
+<g opacity=".08" pointer-events="none">
+  <path d="M100,350 Q130,340 160,350 Q190,360 220,350 Q250,340 280,350" fill="none" stroke="#4a80a0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M150,400 Q180,390 210,400 Q240,410 270,400 Q300,390 330,400" fill="none" stroke="#4a80a0" stroke-width="1.3" stroke-linecap="round"/>
+  <path d="M80,450 Q110,440 140,450 Q170,460 200,450 Q230,440 260,450" fill="none" stroke="#4a80a0" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M200,480 Q230,470 260,480 Q290,490 320,480 Q350,470 380,480" fill="none" stroke="#4a80a0" stroke-width="1" stroke-linecap="round"/>
+  <path d="M100,530 Q150,518 200,530 Q250,542 300,530 Q350,518 400,530" fill="none" stroke="#4a80a0" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M50,580 Q100,568 150,580 Q200,592 250,580" fill="none" stroke="#4a80a0" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+</g>
+<text class="sea-label" x="300" y="555" font-size="26" transform="rotate(-8 300 555)">ВЕЛИКОЕ&#160;&#160;МОРЕ</text>
+    <text class="region-he" x="330" y="588" font-size="15" opacity=".4" fill="#7fa7c4">הַיָּם הַגָּדוֹל</text>
+    <text class="sea-label" x="676" y="1330" font-size="15" transform="rotate(38 676 1330)">КРАСНОЕ&#160;МОРЕ</text>
+    <text class="sea-label lbl-z1" x="650" y="1310" font-size="6.5" transform="rotate(38 650 1310)" fill="#7fa7c4" opacity=".45" letter-spacing=".14em">יַם-סוּף</text>
+  <text class="sea-label lbl-z1" x="702" y="1248" font-size="7" transform="rotate(38 702 1248)" letter-spacing=".18em">ЗАЛИВ АКАБА · יָם סוּף</text>
+  <!-- Суэцкий залив (западная ветвь) -->
+  <text class="sea-label lbl-z2" x="460" y="1110" font-size="5.5" transform="rotate(22 460 1110)" fill="#7fa7c4" opacity=".4" letter-spacing=".15em">ЗАЛИВ СУЭЦ</text>
+  <!-- Эцион-Гевер / Элат — порт у Акабского залива -->
+  <g class="lbl-z2" transform="translate(668,1040)" opacity=".5">
+    <circle r="2.5" fill="rgba(10,13,20,.8)" stroke="#7fa7c4" stroke-width=".8"/>
+    <text x="6" y="4" font-size="4" fill="#7fa7c4" letter-spacing=".08em">ЭЦИОН-ГЕВЕР · עֶצְיֹן גֶּבֶר</text>
+  </g>
+    <!-- Персидский залив — с водой -->
+    <g filter="url(#waterRipple)">
+    <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
+    </g>
+    <!-- Персидский залив — coastal texture -->
+    <path fill="url(#seaPattern)" opacity=".25" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
+    <text class="sea-label" x="1826" y="1002" font-size="11" transform="rotate(60 1826 1002)" letter-spacing=".22em">ЗАЛИВ</text>
+  <text class="sea-label lbl-z1" x="1870" y="1035" font-size="6" transform="rotate(60 1870 1035)" letter-spacing=".12em" opacity=".6">הַיָּם הַמִּזְרָחִי · Вост. море</text>
+    <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
+    <text class="sea-label lbl-z2" x="640" y="858" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 640 858)" fill="#4a80a0" opacity=".4">−430 м · низшая точка Земли</text>
+
+    <text class="sea-label lbl-z2" x="668" y="670" font-size="4" letter-spacing=".14em" transform="rotate(60 668 670)">КИНЕРЕТ</text>
+  <!-- Ярмук (приток Иордана) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.2" opacity=".5" stroke-linecap="round"
+    d="M702,690 C688,692 672,695 654,697" class="lbl-z2"/>
+  <!-- равнина Геннисарет — фон у СЗ берега; сдвинута от воды (была
+       наложена на овал Кинерета сплошным пятном без подписи — читалась
+       как необъяснённый "ореол") -->
+  <ellipse cx="645" cy="662" rx="7" ry="5" transform="rotate(-24 645 662)" fill="rgba(58,90,45,.10)" class="lbl-z1"/>
+  <text class="sea-label lbl-z2" x="638" y="663" font-size="2.6" letter-spacing=".06em" fill="#5a7a45" opacity=".6" transform="rotate(-24 638 663)">равнина Геннисарет</text>
+  <!-- Река Аббана/Барада (Дамаск) — оазис Гута -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".4" stroke-linecap="round" class="lbl-z2"
+    d="M731,594 C714,590 695,588 675,590 C655,593 638,598 620,610"/>
+  <text class="sea-label lbl-z2" x="685" y="583" font-size="4" fill="#4a80a0" opacity=".4" letter-spacing=".1em">АББАНА · אֲמָנָה</text>
+  <!-- Фарпар — вторая река Дамаска (4Цар 5:12), южнее Аббаны -->
+  <path fill="none" stroke="#2d4a66" stroke-width=".9" opacity=".35" stroke-linecap="round" class="lbl-z2"
+    d="M729,602 C713,601 697,603 683,608 C671,612 660,618 650,626"/>
+  <text class="sea-label lbl-z2" x="694" y="612" font-size="3.4" fill="#4a80a0" opacity=".38" letter-spacing=".08em">ФАРПАР</text>
+  <!-- Вади Бесор — крупнейшее вади западного Негева (район Герара) -->
+  <path fill="none" stroke="#2d4a66" stroke-width=".8" opacity=".3" stroke-linecap="round" stroke-dasharray="3 3" class="lbl-z2"
+    d="M584,846 C568,850 550,856 534,860 C524,862 514,864 506,864"/>
+  <text class="sea-label lbl-z2" x="536" y="855" font-size="3.2" fill="#7a93a8" opacity=".45" letter-spacing=".08em" transform="rotate(-8 536 855)">вади Бесор</text>
+  <!-- Верхний Иордан: Дан/Хермон → Мером → Кинерет (единая нить озёр) -->
+  <!-- Верхний Иордан: Дан/Хермон → воды Мерома (Хула) → Кинерет (сев. вершина) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.7" opacity=".78" stroke-linecap="round"
+    d="M668,620 C664,626 661,631 659,636 C658,637 657,638 656,638"/>
+  <path fill="none" stroke="#2d4a66" stroke-width="1.8" opacity=".78" stroke-linecap="round"
+    d="M655,646 C655,651 656,656 657,660 C657,662 657,663 657,664"/>
+  <!-- Иордан: Кинерет → Мёртвое море — выраженные меандры Гхора (не вертикаль) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round"
+    d="M654,692 C650,700 657,708 654,717 C650,726 657,735 652,744 C648,753 655,762 650,771 C646,779 650,786 648,791 C647,792 647,793 647,794"/>
+  <!-- Иавок (вади Зарка) — Быт 32: переправа Иакова, Пенуэл -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.1" opacity=".5" stroke-linecap="round" class="lbl-z2"
+    d="M712,748 C698,753 678,759 664,762 C660,763 656,763 651,763"/>
+  <text class="sea-label lbl-z2" x="676" y="754" font-size="4.6" letter-spacing=".12em" transform="rotate(-14 676 754)" fill="#4a80a0" opacity=".55">ИАВОК</text>
+  <!-- Арнон (вади Муджиб) — восточный приток Мёртвого моря -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".45" stroke-linecap="round" class="lbl-z2"
+    d="M702,842 C690,841 676,839 662,838"/>
+  <text class="sea-label lbl-z2" x="694" y="846" font-size="4.4" letter-spacing=".12em" transform="rotate(-3 694 846)" fill="#4a80a0" opacity=".5">АРНОН</text>
+  <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
+  <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
+  <text class="sea-label lbl-z2" x="664" y="639" font-size="3.2" letter-spacing=".08em" fill="#4a80a0" opacity=".75">Хула</text>
+  <!-- стрелки течения рек — тонкие шевроны (были сплошные треугольники,
+       читались как маркеры/горы, а не как направление потока) -->
+  <path class="lbl-z2" d="M649,714 L653,720 L651,720 M645,714 L649,720" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+  <path class="lbl-z2" d="M1291,622 L1296,628 L1294,628 M1287,622 L1292,628" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+  <path class="lbl-z2" d="M219,954 L223,960 L221,960 M215,954 L219,960" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+  <!-- Иордан -->
+  <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
+  <!-- Евфрат -->
+  <text class="region-label lbl-z1" x="1180" y="350" font-size="7" fill="#4a80a0" opacity=".5" letter-spacing=".18em" transform="rotate(22 1180 350)">ЕВФРАТ · פְּרָת</text>
+  <!-- Тигр -->
+  <text class="region-label lbl-z1" x="1440" y="310" font-size="7" fill="#4a80a0" opacity=".5" letter-spacing=".15em" transform="rotate(40 1440 310)">ТИГР · חִדֶּקֶל</text>
+    <text class="region-label" x="1150" y="395" font-size="25" transform="rotate(22 1150 395)">МЕСОПОТАМИЯ</text>
+    <!-- Ассирия (север) и Вавилония (юг) подписи lbl-z1 -->
+    <text class="region-label lbl-z1" x="1350" y="290" font-size="9" fill="#cdbd95" opacity=".35" letter-spacing=".2em" transform="rotate(22 1350 290)">АССИРИЯ</text>
+    <text class="region-label lbl-z1" x="1400" y="860" font-size="9" fill="#cdbd95" opacity=".3" letter-spacing=".2em">ВАВИЛОНИЯ</text>
+  <!-- Каркемиш — важный узел на пути из Месопотамии в Харран -->
+
+<!-- Алеппо (Халпе) — торговый центр Сирии -->
+<g class="lbl-z2" transform="translate(830,280)" opacity=".35">
+  <circle r="2.5" fill="rgba(10,13,20,.7)" stroke="#9c7c43" stroke-width=".7"/>
+  <text x="5" y="3.5" font-size="3.8" fill="#9c7843" letter-spacing=".06em">АЛЕППО · חָלֶב</text>
+</g>
+<!-- Горный хребет Анатолии (Тавр) — северная граница карты -->
+<g opacity=".16" filter="url(#soft)">
+  <path d="M120,90 Q200,50 320,80 Q440,110 560,75 Q680,40 800,65 Q880,80 950,60"
+    fill="rgba(100,90,70,.3)" stroke="#7a6a4a" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M120,110 Q200,75 320,100 Q440,130 560,95 Q680,60 800,85 Q880,100 950,80"
+    fill="none" stroke="#6a5a3a" stroke-width="1.2" stroke-linejoin="round" opacity=".7"/>
+</g>
+<!-- Загрос (восток карты) -->
+<g opacity=".14" filter="url(#soft)">
+  <path d="M1700,100 Q1750,200 1790,320 Q1820,420 1830,540 Q1840,620 1845,700"
+    fill="rgba(90,80,60,.3)" stroke="#7a6a4a" stroke-width="3" stroke-linejoin="round"/>
+</g>
+<!-- Плодородный полумесяц (label) -->
+  <text class="region-label lbl-z1" x="870" y="255" font-size="8" fill="#7fa780" opacity=".45" letter-spacing=".2em" transform="rotate(15 870 255)">ПЛОДОРОДНЫЙ ПОЛУМЕСЯЦ</text>
+  <!-- Истоки Евфрата и Тигра (Анатолия) -->
+  
+  
+    <text class="region-he" x="1222" y="468" font-size="15" transform="rotate(22 1222 468)">אֲרַם נַהֲרַיִם</text>
+    <text class="region-label" font-size="13" letter-spacing=".48em"><textPath href="#canaanRidge" startOffset="6%">Х&#160;А&#160;Н&#160;А&#160;А&#160;Н</textPath></text>
+    <!-- Декоративная рамка-bounding box Ханаана -->
+    <rect x="575" y="580" width="115" height="310" rx="8"
+      fill="none" stroke="rgba(232,200,121,.06)" stroke-width="1.5"
+      stroke-dasharray="4 6" class="lbl-z1" pointer-events="none"/>
+    <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
+    <!-- макро-подпись СТРАНЫ — в глубине ЮЗ суши, вдали от точки-стана
+         «Египет» у дельты (иначе оба «Египта» стоят рядом = дубль) -->
+    <text class="region-label" x="105" y="1108" font-size="20">ЕГИПЕТ</text>
+    <!-- Раамсес (Тель эд-Даба/Авар) — будущая карта Исхода -->
+    <g class="lbl-z2" transform="translate(210,880)" opacity=".3">
+      <circle r="2" fill="rgba(10,13,20,.7)" stroke="#c8a060" stroke-width=".7"/>
+      <text x="5" y="4" font-size="4" fill="#c8a060" letter-spacing=".06em">РААМСЕС</text>
+    </g>
+    <text class="region-he" x="120" y="1134" font-size="13">מִצְרַיִם</text>
+    <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
+    <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
+    <text class="region-label lbl-z2" x="602" y="815" font-size="4.5" fill="#9aa2ae" opacity=".4" letter-spacing=".12em">ВИФЛЕЕМ · בֵּית לֶחֶם</text>
+    <text class="region-label" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>
+    <!-- Горы Едома (Сеир) — к юго-востоку -->
+    <text class="region-label lbl-z2" x="736" y="950" font-size="6" fill="#8b7d5a" opacity=".38" letter-spacing=".18em" transform="rotate(90 736 950)">ЕДОМ · שֵׂעִיר</text>
+    <!-- Горы Моава (восток Мёртвого моря) -->
+    <text class="region-label lbl-z1" x="708" y="876" font-size="8" fill="#8b7d5a" opacity=".45" letter-spacing=".2em" transform="rotate(90 708 876)">МОАВ</text>
+    <text class="region-label lbl-z2" x="714" y="876" font-size="4.5" fill="#8b7d5a" opacity=".35" letter-spacing=".1em" transform="rotate(90 714 876)">מוֹאָב</text>
+    <!-- Галаад (север Заиорданья) -->
+    <text class="region-label lbl-z2" x="698" y="740" font-size="6" fill="#8b7d5a" opacity=".35" letter-spacing=".15em" transform="rotate(88 698 740)">ГАЛААД · גִּלְעָד</text>
+    <text class="region-he" x="555" y="924" font-size="10">נֶגֶב</text>
+    <text class="region-label" x="938" y="262" font-size="12" letter-spacing=".2em">ПАДАН-АРАМ</text> <!-- era: bronze -->
+    <!-- Пустыня Аравии — stipple pattern -->
+<ellipse cx="1250" cy="1050" rx="380" ry="280" fill="url(#desertStipple)" opacity=".7"/>
+<text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
+    <text class="region-label" x="416" y="396" font-size="9" letter-spacing=".2em" opacity=".4" text-anchor="middle">КИПР</text>
+  </g>
+
+  <!-- ============ ANCIENT TRADE ROUTES ============ -->
+  <!-- Горы Заиорданья (Галаад, Едом) — hatch texture -->
+<g class="lbl-z1" opacity=".15">
+  <ellipse cx="710" cy="790" rx="30" ry="50" fill="url(#mountainHatch)" transform="rotate(10 710 790)"/>
+  <ellipse cx="720" cy="900" rx="25" ry="40" fill="url(#mountainHatch)" transform="rotate(5 720 900)"/>
+</g>
+<!-- Гряды Заиорданья: Галаад (С) → Моав (центр) → Едом/Сеир (Ю) -->
+<g class="lbl-z1" opacity=".42">
+  <use href="#hill" x="700" y="742" width="13" height="8"/>
+  <use href="#peak" x="712" y="762" width="12" height="9"/>
+  <use href="#hill" x="704" y="786" width="13" height="8"/>
+  <use href="#peak" x="714" y="810" width="12" height="9"/>
+  <use href="#hill" x="706" y="838" width="13" height="8"/>
+  <use href="#peak" x="716" y="866" width="13" height="10"/>
+  <use href="#hill" x="708" y="894" width="13" height="8"/>
+  <use href="#peak" x="716" y="920" width="12" height="9"/>
+</g>
+<g id="tradeRoutes" opacity=".5">
+    <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
+    <path id="viaMarisPath" fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
+      d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C630,690 645,668 658,648 C680,630 710,610 731,594">
+  <animate attributeName="stroke-dashoffset" values="0;-28" dur="3s" repeatCount="indefinite"/>
+</path>
+    <text class="region-label lbl-z1" x="440" y="785" font-size="7" fill="#7fa7c4" opacity=".7" letter-spacing=".22em" transform="rotate(-26 420 790)">VIA MARIS · דֶּרֶךְ הַיָּם</text>
+    <!-- Стрелка Via Maris (направление движения) -->
+    <path class="lbl-z2" d="M560,750 L570,742 M570,742 L562,736" fill="none" stroke="#7fa7c4" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+
+    <!-- King's Highway / Царская дорога — Эцион-Гевер → Мёртвое море (вост.) → Дамаск -->
+    <path fill="none" stroke="#c4a07f" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
+      d="M730,1060 C720,990 712,940 705,890 C700,860 696,830 694,800 C692,760 694,720 700,680 C710,650 720,620 731,594">
+  <animate attributeName="stroke-dashoffset" values="0;28" dur="4s" repeatCount="indefinite"/>
+</path>
+    <text class="region-label lbl-z1" x="710" y="870" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
+
+    <!-- Way of Shur / Дорога Сура — Египет (Дельта) → Беэр-Шева → Ханаан -->
+    <path fill="none" stroke="#a0c47f" stroke-width="2.2" stroke-dasharray="6 5" stroke-linecap="round" opacity=".65"
+      d="M260,918 C320,910 380,900 440,890 C490,878 530,865 561,847 C570,855 578,860 584,864"/>
+
+    <!-- Way of the Patriarchs / Дорога патриархов — хребтовая дорога Сихем → Беэр-Шева -->
+    <path fill="none" stroke="#cdbd95" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" opacity=".55"
+      d="M628,748 C626,758 625,768 624,782 C624,788 623,794 623,800 C620,810 616,820 610,829 C602,840 594,852 584,864"/>
+    <text class="region-label lbl-z1" x="604" y="808" font-size="5.5" fill="#cdbd95" opacity=".6" letter-spacing=".12em" transform="rotate(-78 604 808)">ДОРОГА ПАТРИАРХОВ</text>
+    <text class="region-label lbl-z1" x="370" y="878" font-size="6.5" fill="#a0c47f" opacity=".7" letter-spacing=".2em" transform="rotate(-7 370 878)">ДОРОГА СУРА · דֶּרֶךְ שׁוּר</text>
+  </g>
+
+  <!-- ============ MOUNTAINS NEAR SHECHEM ============ -->
+  <!-- Горный hatch texture под Гевалом -->
+  <g class="lbl-z1" opacity=".3">
+    <ellipse cx="628" cy="740" rx="18" ry="10" fill="url(#mountainHatch)"/>
+    <ellipse cx="628" cy="762" rx="18" ry="10" fill="url(#mountainHatch)"/>
+  </g>
+  <g id="mountains" opacity=".55">
+    <!-- Гевал (Эйвал) — 940 м, к северу от Сихема -->
+    <g class="lbl-z1">
+      <use href="#peak" x="617" y="716" width="22" height="15"/>
+      <text x="628" y="712" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕВАЛ</text>
+      <text x="628" y="708" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">עֵיבָל · 940 м</text>
+    </g>
+    <!-- Геризим (Гризим) — 881 м, к югу от Сихема -->
+    <g class="lbl-z1">
+      <use href="#peak" x="617" y="756" width="22" height="15"/>
+      <text x="628" y="776" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+      <text x="628" y="780" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">גְּרִזִּים · 881 м</text>
+    </g>
+  </g>
+
+</g>
+
+<!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
+<!-- Горный хребет Ханаана (Иудейские горы) — более выразительный -->
+<g opacity=".5">
+  <!-- Кармил — прибрежная гряда -->
+  <use href="#hill" x="576" y="707" width="18" height="10"/>
+  <text x="580" y="702" font-size="3.5" fill="#8b7d5a" text-anchor="middle" opacity=".6" class="lbl-z1">הַכַּרְמֶל</text>
+  <!-- Хребет Самарии -->
+  <use href="#hill" x="612" y="726" width="14" height="8"/>
+  <!-- Иудейские горы -->
+  <use href="#hill" x="608" y="799" width="15" height="9"/>
+</g>
+<!-- Оронт (Сирия) — река севернее Дамаска -->
+<path fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"
+  d="M800,120 C790,160 782,200 778,240 C774,280 772,310 775,340 C778,370 782,390 785,410"/>
+<text class="sea-label lbl-z1" x="770" y="270" font-size="4.5" fill="#4a80a0" opacity=".45" letter-spacing=".1em" transform="rotate(-82 770 270)">ОРОНТ</text>
+<!-- Лион-подобный изгиб Средиземного -->
+<!-- Небольшой остров Родос -->
+<!-- Лесбос -->
+
+<!-- Хиос -->
+
+<!-- Родос -->
+
+
+<!-- Крит (обозначение) -->
+<path d="M190,463 C194,459 202,458 212,459 C223,459 231,460 235,463 C236,465 232,467 226,467 C215,468 203,468 196,467 C192,466 188,465 190,463 Z" fill="url(#landG)" stroke="#3a4150" stroke-width=".9" opacity=".9"/>
+<text x="212" y="460" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">КРИТ · כָּפְתּוֹר</text>
+<!-- Западная граница known world -->
+<g class="lbl-z2" opacity=".2">
+  <text x="-200" y="450" font-size="9" fill="#6c737e" transform="rotate(-90 -200 450)" letter-spacing=".2em">← НЕ ИЗВЕСТНО</text>
+</g>
+
+<!-- ============ SINAI MOUNTAIN SYMBOL ============ -->
+<g id="sinaiPeak" class="lbl-z1" transform="translate(588,1120)" opacity=".5">
+  <!-- силуэт горы Синай -->
+  <path d="M-24,18 L-9,-10 L0,-24 L9,-10 L24,18 Z" fill="rgba(140,100,50,.18)" stroke="#9c7840" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- снежная шапка -->
+  <path d="M-5,-13 L0,-24 L5,-13 Z" fill="rgba(240,235,225,.18)" stroke="rgba(240,235,225,.3)" stroke-width=".6"/>
+  <!-- световой блик -->
+  <path d="M-9,-10 L0,-24 L-2,-10 Z" fill="rgba(240,235,225,.06)"/>
+  <text x="0" y="26" text-anchor="middle" font-size="5" fill="#a08040" letter-spacing=".15em">СИНАЙ</text>
+  <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
+</g>
+<!-- Хермон — гора у Дана -->
+<g class="lbl-z1" opacity=".62">
+  <!-- Хермон — высочайшая вершина региона (2814 м), крупный снежный пик -->
+  <use href="#peak-snow" x="652" y="576" width="32" height="30"/>
+  <text x="668" y="611" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
+  <text x="668" y="616" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
+</g>
+<!-- ============ DEBATE: spor o Sodome ============ -->
+<g id="debate" style="display:none">
+  <text x="668" y="785" font-size="4.2" fill="#8fd0c5" style="letter-spacing:.06em">киккар виден (~40 км)</text>
+  <text x="668" y="791" font-size="3" fill="#6fb3a8" opacity=".8">аргумент С. Коллинза за Талл эль-Хаммам</text>
+  <text x="655" y="842" font-size="4.2" fill="#e08a96" style="letter-spacing:.06em">южная котловина не видна (~60 км, за рельефом)</text>
+  <text x="655" y="848" font-size="3" fill="#cf5b6b" opacity=".85">контраргумент: Быт 13 «географически размыта» (У. Раст)</text>
+  <!-- sight line Bethel -> Tall el-Hammam (visible) -->
+  <path d="M624,782 L662,790" fill="none" stroke="#6fb3a8" stroke-width="1.6" stroke-dasharray="1 0" opacity=".9" vector-effect="non-scaling-stroke"/>
+  <circle cx="624" cy="782" r="2" fill="#6fb3a8"/><circle cx="624" cy="782" r="4.5" fill="none" stroke="#6fb3a8" stroke-width=".7" opacity=".6"/>
+  <!-- sight line Bethel -> Bab edh-Dhra (blocked) -->
+  <path d="M624,782 C640,815 655,848 666,876" fill="none" stroke="#6fb3a8" stroke-width="1.3" stroke-dasharray="3 5" opacity=".5" vector-effect="non-scaling-stroke"/>
+  <g transform="translate(650,838)">
+    <line x1="-2.6" y1="-2.6" x2="2.6" y2="2.6" stroke="#cf5b6b" stroke-width="1.1"/>
+    <line x1="-2.6" y1="2.6" x2="2.6" y2="-2.6" stroke="#cf5b6b" stroke-width="1.1"/>
+  </g>
+  
+  
+  
+  
+  <text x="619" y="776" font-size="4.2" fill="#8fd0c5" text-anchor="end" style="letter-spacing:.06em">точка обзора Лота · Быт 13:10</text>
+</g>
+</g>
+
+  <g class="relief" aria-hidden="true">
+    <ellipse cx="678" cy="538" rx="10" ry="62" fill="url(#mtG)" transform="rotate(14 678 538)" opacity=".55"/>
+    <ellipse cx="704" cy="530" rx="12" ry="72" fill="url(#mountainHatch)" transform="rotate(16 704 530)"/>
+    <ellipse cx="676" cy="524" rx="15" ry="82" fill="url(#mountainHatch)" transform="rotate(14 676 524)" opacity=".7"/>
+    <ellipse cx="628" cy="770" rx="13" ry="92" fill="url(#mountainHatch)" transform="rotate(8 628 770)" opacity=".8"/>
+    <ellipse cx="638" cy="778" rx="9" ry="88" fill="url(#mtG)" transform="rotate(8 638 778)" opacity=".55"/>
+    <ellipse cx="640" cy="620" rx="12" ry="40" fill="url(#mountainHatch)" transform="rotate(12 640 620)" opacity=".7"/>
+    <ellipse cx="608" cy="688" rx="7" ry="26" fill="url(#mountainHatch)" transform="rotate(-38 608 688)" opacity=".8"/>
+    <ellipse cx="690" cy="760" rx="11" ry="70" fill="url(#mountainHatch)" transform="rotate(4 690 760)" opacity=".65"/>
+    <ellipse cx="700" cy="900" rx="12" ry="80" fill="url(#mountainHatch)" transform="rotate(2 700 900)" opacity=".6"/>
+    <ellipse cx="648" cy="820" rx="14" ry="46" fill="url(#negevG)" transform="rotate(6 648 820)"/>
+  </g>
+<g class="decor-ship" data-decor="ship" transform="translate(298,468) scale(1.15)"><circle r="26" fill="transparent" stroke="none"/>
+    <path d="M-16,6 Q0,13 16,6 L11,10 Q0,15 -11,10 Z"/>
+    <path d="M-1,6 v-20" class="ds-line"/>
+    <path d="M-1,-14 Q9,-9 12,1 L-1,1 Z"/>
+    <path d="M-1,-14 Q-9,-10 -11,-2 L-1,-2 Z"/>
+    <path d="M-24,12 q4,-2.4 8,0 q4,2.4 8,0 M8,12 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
+  </g><g class="decor-ship" data-decor="ship" transform="translate(430,300) scale(0.8)"><circle r="26" fill="transparent" stroke="none"/>
+    <path d="M-16,6 Q0,13 16,6 L11,10 Q0,15 -11,10 Z"/>
+    <path d="M-1,6 v-20" class="ds-line"/>
+    <path d="M-1,-14 Q9,-9 12,1 L-1,1 Z"/>
+    <path d="M-1,-14 Q-9,-10 -11,-2 L-1,-2 Z"/>
+    <path d="M-24,12 q4,-2.4 8,0 q4,2.4 8,0 M8,12 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
+  </g><g class="decor-ship" data-decor="whale" transform="translate(255,655) scale(1.05)"><circle r="26" fill="transparent" stroke="none"/>
+    <path d="M-14,4 Q-6,-6 6,-4 Q14,-2.6 16,2 Q10,6 0,6 Q-8,6 -14,4 Z M16,2 L21,-3 L19,3 Z"/>
+    <path d="M-7,-5 q-1,-4 -3,-5 m3,5 q1,-4 3,-5" class="ds-line"/>
+    <path d="M-22,9 q4,-2.4 8,0 q4,2.4 8,0 M6,9 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
+  </g>
+  <!-- караван в пустой Аравии — виньетка старинных карт (Быт 24:10) -->
+  <g class="decor-ship decor-caravan" data-decor="caravan" opacity=".55">
+    <circle cx="1085" cy="962" r="42" fill="transparent" stroke="none"/>
+    <use href="#camel" x="1050" y="946" width="15" height="10.5"/>
+    <use href="#camel" x="1072" y="950" width="13" height="9.1"/>
+    <use href="#camel" x="1091" y="953" width="11.5" height="8"/>
+  </g>
+<path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route-under"/>
+<path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route"/>
+<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(599.9,807.1) rotate(-89.9)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(655.8,697.1) rotate(-28.1)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(660.6,759.3) rotate(118.7)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(645.9,710.6) rotate(-75.8)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(618.4,749.1) rotate(109.4)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(603.2,806.0) rotate(-68.6)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(647.7,695.8) rotate(53.1)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(639.9,716.4) rotate(-74.2)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(645.4,687.2) rotate(108.0)" class="route-arrow"/>
+
+<line x1="627.0" y1="779.0" x2="627.0" y2="764.8" class="leader"/><line x1="614.3" y1="793.9" x2="604.2" y2="797.9" class="leader"/>
+<g class="pl" data-pid="judah"><circle cx="600" cy="850" r="3.21" class="pl-city"/></g><g class="pl" data-pid="ephraim"><circle cx="601" cy="760" r="3.21" class="pl-city"/></g><g class="pl" data-pid="manasseh_n"><circle cx="610" cy="726" r="3.21" class="pl-city"/></g><g class="pl" data-pid="manasseh_e"><circle cx="692" cy="688" r="3.21" class="pl-city"/></g><g class="pl" data-pid="benjamin"><circle cx="624" cy="812" r="3.21" class="pl-city"/></g><g class="pl" data-pid="dan"><circle cx="665" cy="625" r="3.21" class="pl-city"/></g><g class="pl" data-pid="simeon"><circle cx="575" cy="875" r="3.21" class="pl-city"/></g><g class="pl" data-pid="issachar"><circle cx="641" cy="703" r="3.21" class="pl-city"/></g><g class="pl" data-pid="zebulun"><circle cx="628" cy="681" r="3.21" class="pl-city"/></g><g class="pl" data-pid="naphtali"><circle cx="640" cy="628" r="3.21" class="pl-city"/></g><g class="pl" data-pid="asher"><circle cx="614" cy="646" r="3.21" class="pl-city"/></g><g class="pl" data-pid="gad"><circle cx="684" cy="752" r="3.21" class="pl-city"/></g><g class="pl" data-pid="reuben"><circle cx="679" cy="822" r="3.21" class="pl-city"/></g><g class="pl" data-pid="jericho"><circle cx="645" cy="789" r="3.21" class="pl-city"/></g><g class="pl" data-pid="ai"><circle cx="627" cy="784" r="3.21" class="pl-city"/></g><g class="pl" data-pid="gibeon"><circle cx="619" cy="792" r="3.21" class="pl-city"/></g><g class="pl" data-pid="hazor_conquest"><circle cx="658" cy="651" r="3.21" class="pl-city"/></g><g class="pl" data-pid="mount_ebal"><circle cx="628" cy="741" r="3.21" class="pl-city"/></g>
+<g class="mile" data-stage="0" data-x="600" data-y="850"><text x="594.0" y="845.4" text-anchor="end" class="mile-t" font-size="9.17" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="2" data-x="692" data-y="688"><text x="686.0" y="683.4" text-anchor="end" class="mile-t" font-size="9.17" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="1" data-x="624" data-y="812"><text x="618.0" y="807.4" text-anchor="end" class="mile-t" font-size="9.17" style="fill:#a25d33">II</text></g>
+
+
+
+<text x="700" y="520" class="lab-ctxnote" font-size="10.54" text-anchor="middle">ЛИВАН</text><text x="800" y="500" class="lab-ctxnote" font-size="10.54" text-anchor="middle">СИРИЯ</text><text x="500" y="700" class="lab-ctxnote" font-size="10.54" text-anchor="middle">ВЕЛИКОЕ МОРЕ</text>
+
+
+<text x="592.2" y="854.1" class="lab-place lab-main" font-size="11.92" text-anchor="end">Иуда</text><text x="593.2" y="763.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Ефрем</text><text x="617.8" y="729.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Манассия (запад)</text><text x="699.8" y="692.1" class="lab-place lab-main" font-size="11.92" text-anchor="start">Манассия (восток)</text><text x="616.2" y="816.1" class="lab-place lab-main" font-size="11.92" text-anchor="end">Вениамин</text><text x="672.8" y="628.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Дан</text><text x="582.8" y="878.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Симеон</text><text x="633.2" y="706.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Иссахар</text><text x="620.2" y="684.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Завулон</text><text x="632.2" y="631.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Неффалим</text><text x="606.2" y="649.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Асир</text><text x="691.8" y="755.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Гад</text><text x="671.2" y="825.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Рувим</text><text x="652.8" y="792.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Иерихон</text><text x="627.0" y="768.2" class="lab-place lab-minor" font-size="10.08" text-anchor="middle">Гай</text><text x="602.4" y="801.3" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Гаваон</text><text x="650.2" y="654.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Асор</text><text x="620.2" y="744.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Гевал · благословение и проклятие</text>
+</g>
+
+  <g class="cartouche">
+    <rect x="172" y="349.8333333333333" width="366.7" height="78.83333333333333" rx="7.333333333333333" class="plate cart-plate"/>
+    <rect x="176.6" y="354.4" width="357.5" height="69.7" rx="5.5" class="cart-inner"/>
+    <rect x="178.9" y="356.7" width="352.9" height="65.1" rx="4.125" class="cart-inner2"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(179.3,357.2) scale(0.917) rotate(0 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(517.6,357.2) scale(0.917) rotate(90 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(517.6,407.6) scale(0.917) rotate(180 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(179.3,407.6) scale(0.917) rotate(270 8 8)"/>
+    <text x="190.33333333333331" y="370.91666666666663" class="cart-over" font-size="8.708333333333332">БИБЛЕЙСКИЙ АТЛАС</text>
+    <text x="190.33333333333331" y="395.66666666666663" class="cart-title" font-size="22.916666666666664">12 Колен Израиля</text>
+    <text x="190.33333333333331" y="415.8333333333333" class="cart-sub" font-size="10.541666666666666">Наследие колен · Иисус Навин 13–21</text>
+  </g>
+
+  <g class="legend">
+    <rect x="172" y="1020.8333333333334" width="570.2" height="27.5" rx="5.5" class="plate"/>
+    <path d="M181.16666666666666,1034.5833333333335 h23.833333333333332" class="route"/>
+    <text x="210.5" y="1038.25" class="leg-t" font-size="9.625">путь Колена</text>
+    <circle cx="417.66666666666663" cy="1034.5833333333335" r="3.85" class="pl-city"/>
+    <text x="426.8333333333333" y="1038.25" class="leg-t" font-size="9.625">город · стан</text>
+    <circle cx="500.16666666666663" cy="1034.5833333333335" r="4.216666666666666" class="pl-cand"/>
+    <text x="509.3333333333333" y="1038.25" class="leg-t" font-size="9.625">локализация спорна</text>
+    <rect x="624.8333333333333" y="1030.9166666666667" width="7.333333333333333" height="7.333333333333333" transform="rotate(45 628.5 1034.5833333333335)" class="wp-dot"/>
+    <text x="637.6666666666666" y="1038.25" class="leg-t" font-size="9.625">археология</text>
+  </g>
+
+  <g class="furn">
+    <rect x="964.7753623188406" y="1015.3333333333334" width="243.05797101449272" height="36.666666666666664" rx="5.5" class="plate"/>
+    <rect x="977.608695652174" y="1035.5" width="108.69565217391303" height="6.416666666666666" class="sb-d"/>
+    <rect x="1086.304347826087" y="1035.5" width="108.69565217391303" height="6.416666666666666" class="sb-l"/>
+    <text x="977.608695652174" y="1029.0833333333333" class="sb-t" font-size="10.083333333333332">0</text>
+    <text x="1086.304347826087" y="1029.0833333333333" class="sb-t" font-size="10.083333333333332" text-anchor="middle">100</text>
+    <text x="1195" y="1029.0833333333333" class="sb-t" font-size="10.083333333333332" text-anchor="end">200 км</text>
+    <g transform="translate(1202.3333333333333,384.66666666666663)">
+      <circle r="27.5" class="plate"/>
+      <g class="rose">
+        <circle r="22.916666666666664" class="rose-ring"/>
+        <g class="rose-ticks"><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(0)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(22.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(45)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(67.5)"/><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(90)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(112.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(135)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(157.5)"/><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(180)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(202.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(225)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(247.5)"/><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(270)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(292.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(315)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(337.5)"/></g>
+        <path d="M0,-13.75 L1.8333333333333333,-1.8333333333333333 L13.75,0 L1.8333333333333333,1.8333333333333333 L0,13.75 L-1.8333333333333333,1.8333333333333333 L-13.75,0 L-1.8333333333333333,-1.8333333333333333 Z" transform="rotate(45)" class="rose-sec"/>
+        <path d="M0,-20.166666666666664 L2.75,-2.75 L20.166666666666664,0 L2.75,2.75 L0,20.166666666666664 L-2.75,2.75 L-20.166666666666664,0 L-2.75,-2.75 Z"/>
+        <path d="M0,-20.166666666666664 L2.75,-2.75 L0,0 Z M20.166666666666664,0 L2.75,2.75 L0,0 Z M0,20.166666666666664 L-2.75,2.75 L0,0 Z M-20.166666666666664,0 L-2.75,-2.75 L0,0 Z" class="rose-shade"/>
+        <circle r="1.925" class="rose-hub"/>
+      </g>
+      <path d="M0,-20.166666666666664 L2.75,-2.75 L0,-5.5 L-2.75,-2.75 Z" class="north"/>
+      <text y="23.833333333333332" text-anchor="middle" class="north-t" font-size="11.916666666666666">С</text>
+    </g>
+  </g>
+<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"/>
+<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"/>
+<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
+<g class="graticule" aria-hidden="true"><line x1="201.0" y1="340.7" x2="201.0" y2="344.3" class="grat"/><line x1="301.0" y1="340.7" x2="301.0" y2="347.1" class="grat"/><text x="301.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">32°</text><line x1="401.0" y1="340.7" x2="401.0" y2="344.3" class="grat"/><line x1="501.0" y1="340.7" x2="501.0" y2="347.1" class="grat"/><text x="501.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">34°</text><line x1="601.0" y1="340.7" x2="601.0" y2="344.3" class="grat"/><line x1="701.0" y1="340.7" x2="701.0" y2="347.1" class="grat"/><text x="701.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">36°</text><line x1="801.0" y1="340.7" x2="801.0" y2="344.3" class="grat"/><line x1="901.0" y1="340.7" x2="901.0" y2="347.1" class="grat"/><text x="901.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">38°</text><line x1="1001.0" y1="340.7" x2="1001.0" y2="344.3" class="grat"/><line x1="1101.0" y1="340.7" x2="1101.0" y2="347.1" class="grat"/><text x="1101.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">40°</text><line x1="1201.0" y1="340.7" x2="1201.0" y2="344.3" class="grat"/><line x1="157.3" y1="893.6" x2="161.0" y2="893.6" class="grat"/><line x1="1242.7" y1="893.6" x2="1239.0" y2="893.6" class="grat"/><line x1="157.3" y1="773.6" x2="163.8" y2="773.6" class="grat"/><text x="166.5" y="776.2" text-anchor="start" class="grat-t" font-size="7.33">32°</text><line x1="1242.7" y1="773.6" x2="1236.3" y2="773.6" class="grat"/><text x="1233.5" y="776.2" text-anchor="end" class="grat-t" font-size="7.33">32°</text><line x1="157.3" y1="653.6" x2="161.0" y2="653.6" class="grat"/><line x1="1242.7" y1="653.6" x2="1239.0" y2="653.6" class="grat"/><line x1="157.3" y1="533.6" x2="163.8" y2="533.6" class="grat"/><text x="166.5" y="536.2" text-anchor="start" class="grat-t" font-size="7.33">34°</text><line x1="1242.7" y1="533.6" x2="1236.3" y2="533.6" class="grat"/><text x="1233.5" y="536.2" text-anchor="end" class="grat-t" font-size="7.33">34°</text><line x1="157.3" y1="413.6" x2="161.0" y2="413.6" class="grat"/><line x1="1242.7" y1="413.6" x2="1239.0" y2="413.6" class="grat"/></g>
+<rect x="157.33333333333334" y="340.66666666666663" width="1085.3333333333333" height="718.6666666666667" class="frame"/>
+<rect x="161" y="344.3333333333333" width="1078" height="711.3333333333334" class="frame frame-inner"/>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(162.8,346.2) scale(1.375) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1215.2,346.2) scale(1.375) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1215.2,1031.8) scale(1.375) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(162.8,1031.8) scale(1.375) rotate(270 8 8)"/>
+</g>
+</svg>
+  <div class="stage-strip">
+    <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Северные колена<i>6 КОЛЕН · ГАЛИЛЕЯ, САМАРИЯ</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Южные колена<i>4 КОЛЕНА · ИУДЕЯ, ШФЕЛА, НЕГЕВ</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Заиорданские колена<i>2½ КОЛЕНА · ГАЛААД, ВАСАН, МОАВ</i></span></div>
+  </div><span class="g9" hidden>SHVATIM · SHEET · awaiting G9</span></div>
+<script>if (/[?&]dev=1/.test(location.search)) document.querySelector('.g9').hidden = false;</script>
+<script>window.ATLAS_SPINE=[{"slug":"nachalo","title":"Начало: от Эдема до Вавилона","current":false,"cover":null},{"slug":"avraam","title":"Путь Авраама","current":false,"cover":"../../images/atlas-avraam-scene-600w.webp"},{"slug":"ishod","title":"Исход из Египта","current":false,"cover":"../../images/atlas-ishod-scene-600w.webp"},{"slug":"shvatim","title":"12 Колен Израиля","current":true,"cover":"../../images/atlas-shvatim-scene-600w.webp"},{"slug":"shoftim","title":"Эпоха Судей","current":false,"cover":"../../images/atlas-shoftim-scene-600w.webp"},{"slug":"melachim","title":"Царства Израиля и Иуды","current":false,"cover":"../../images/atlas-melachim-scene-600w.webp"},{"slug":"yeshua","title":"Жизнь Иисуса Христа","current":false,"cover":"../../images/atlas-yeshua-scene-600w.webp"},{"slug":"early-church","title":"Ранняя Церковь · Деяния 1–12","current":false,"cover":"../../images/atlas-early-church-scene-600w.webp"},{"slug":"pavel","title":"Миссионерские путешествия Павла","current":false,"cover":"../../images/atlas-pavel-scene-600w.webp"},{"slug":"revelation","title":"7 Церквей Откровения","current":false,"cover":"../../images/atlas-revelation-scene-600w.webp"},{"slug":"maccabim","title":"Межзаветный период · Маккавеи","current":false,"cover":"../../images/atlas-maccabim-scene-600w.webp"}];window.ATLAS_LAYERS=[{"id":"main","label":"Колена","pathLabel":"путь Колена"}];window.ATLAS_PLACES={"judah":{"n":"Иуда","k":"Царское колено · Давид","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Hebron_Cave_of_the_Patriarchs.jpg/200px-Hebron_Cave_of_the_Patriarchs.jpg","tl":"Хеврон — пещера Махпела","f":"Удел Иуды (Быт 49:8–12; Нав 15) — крупнейший и южнейший надел. Включал Хеврон (резиденция Давида до Иерусалима), Вифлеем (родина Давида и Христа), Лахис (крепость), Беф-Цур. Раскоп…","lex":null,"glyphs":[],"dossier":{"story":"<p>Иуда — колено, из которого вышел Давид и Мессия. Получил обширную территорию от Мёртвого моря до Средиземного: Хеврон, Вифлеем, Иерусалим. Благословение Иакова: «Не отойдёт скипетр от Иуды» (Быт 49:10).</p>","bible":"<div class=\"verse\">«Не отойдёт скипетр от Иуды и законодатель от чресл его, доколе не придёт Примиритель».<span>БЫТИЕ 49:10</span></div>","arch":"<p>Удел Иуды (Быт 49:8–12; Нав 15) — крупнейший и южнейший надел. Включал Хеврон (резиденция Давида до Иерусалима), Вифлеем (родина Давида и Христа), Лахис (крепость), Беф-Цур. Раскопки Лахиса (IAA) открыли остатки ханаанейских и израильских укреплений, осадный вал Сеннахерима (4Цар 18).</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Колено Царя:</b> Из Иуды произошли Давид, Соломон и — по плоти — Иисус Христос. «Не отойдёт скипетр от Иуды» (Быт 49:10). Это колено получило наибольшую территорию. Иуда стал синонимом еврейского народа.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Hebron_Cave_of_the_Patriarchs.jpg/640px-Hebron_Cave_of_the_Patriarchs.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Hebron_Cave_of_the_Patriarchs.jpg/200px-Hebron_Cave_of_the_Patriarchs.jpg","label":"Хеврон — пещера Махпела","credit":"Wikimedia Commons"}]}},"ephraim":{"n":"Ефрем","k":"Центр · Силом и Сихем","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg/200px-Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg","tl":"Силом — центр Ефрема","f":"Удел Ефрема (Нав 16) — центральная горная страна Самарии. Сихем (Телль-Балата) — ключевой город, где Иисус Навин обновил завет (Нав 24). Раскопки открыли ханаанейский храм Баал-Бер…","lex":null,"glyphs":[],"dossier":{"story":"<p>Ефрем — ведущее колено Северного царства. Здесь находились Силом (Скиния 369 лет) и Сихем (первая столица Израиля). Иеровоам I был ефремлянином. Пророки часто называли Северное царство «Ефремом».</p>","bible":"<div class=\"verse\">«И собралось всё общество сынов Израилевых в Силом, и поставили там скинию собрания».<span>ИИСУС НАВИН 18:1</span></div>","arch":"<p>Удел Ефрема (Нав 16) — центральная горная страна Самарии. Сихем (Телль-Балата) — ключевой город, где Иисус Навин обновил завет (Нав 24). Раскопки открыли ханаанейский храм Баал-Берит, израильские слои. Гора Гаризим (благословение) и Гевал (проклятие) — на границе удела.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Ведущее колено Севера:</b> Ефрем стал синонимом Северного царства. Пророки часто называли Израиль «Ефремом». Иеровоам I, разделивший царство, был ефремлянином. В Силоме, на земле Ефрема, Скиния стояла 369 лет.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg/640px-Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg/200px-Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg","label":"Силом — центр Ефрема","credit":"Wikimedia Commons"}]}},"manasseh_n":{"n":"Манассия (запад)","k":"Половина колена · запад","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Samaria_landscape.jpg/200px-Samaria_landscape.jpg","tl":"Самарийский ландшафт — Манассия","f":"Удел Манассии западный (Нав 17) — от Кармила до Дора. Избранные города: Мегиддо (Тель-Мегиддо, раскопки IAA/Чикагского университета — конюшни Соломона, водный туннель), Таанах, Дор…","lex":null,"glyphs":[],"dossier":{"story":"<p>Манассия получил наибольшую территорию из всех колен — половину к западу от Иордана (от Изрееля до Средиземного моря) и половину к востоку (Галаад и Васан). Гедеон был из Манассии.</p>","bible":"<div class=\"verse\">«И сыны Иосифа сказали: не останется у нас гора; и все Хананеи, живущие на долине, имеют колесницы железные».<span>ИИСУС НАВИН 17:16</span></div>","arch":"<p>Удел Манассии западный (Нав 17) — от Кармила до Дора. Избранные города: Мегиддо (Тель-Мегиддо, раскопки IAA/Чикагского университета — конюшни Соломона, водный туннель), Таанах, Дор. Мегиддо — стратегический узел на Via Maris.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Самое большое колено:</b> Манассия получил наибольшую территорию — половину к западу от Иордана и половину к востоку. Гедеон, один из величайших судей, был из Манассии. Разделённое колено стало символом: даже в самом большом уделе есть разделение.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Samaria_landscape.jpg/640px-Samaria_landscape.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Samaria_landscape.jpg/200px-Samaria_landscape.jpg","label":"Самарийский ландшафт — Манассия","credit":"Wikimedia Commons"}]}},"manasseh_e":{"n":"Манассия (восток)","k":"Половина колена · восток","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/200px-Gilead_region_Jordan.jpg","tl":"Галаад — восточный Манассия","f":"Удел Манассии восточный (Нав 17, 13:29–31) — за Иорданом, Васан. Авирам (Абел-Шиттим), Голаны. Земля Манассиии на востоке простиралась до горы Ермон; раскопки укреплённых городов б…","lex":null,"glyphs":[],"dossier":{"story":"<p>Восточная половина Манассии включала Галаад и Васан — плодородные пастбища. Иаир из Манассии взял 60 городов в Васане. Иеффай Галаадитянин также был из восточной половины.</p>","bible":"","arch":"<p>Удел Манассии восточный (Нав 17, 13:29–31) — за Иорданом, Васан. Авирам (Абел-Шиттим), Голаны. Земля Манассиии на востоке простиралась до горы Ермон; раскопки укреплённых городов басанского типа.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Восточное наследие:</b> Восточная половина Манассии включала Галаад и Васан — плодородные пастбища. Иаир из Манассии взял 60 городов. Иеффай Галаадитянин также был из восточной половины — Бог использует людей с окраин.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/640px-Gilead_region_Jordan.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/200px-Gilead_region_Jordan.jpg","label":"Галаад — восточный Манассия","credit":"Wikimedia Commons"}]}},"benjamin":{"n":"Вениамин","k":"Между Ефремом и Иудой","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Judean_Desert.jpg/200px-Judean_Desert.jpg","tl":"Иудейская пустыня — Вениамин","f":"Удел Вениамина (Нав 18:11–28) — между Иудой и Ефремом. Иерусалим (Иевус) на южной границе удела — завоёван Давидом. Гаваон (эль-Джиб) — где Иисус остановил солнце (Нав 10). Рама, В…","lex":null,"glyphs":[],"dossier":{"story":"<p>Вениамин — самое маленькое колено, но стратегически расположенное между Ефремом и Иудой. Включало Иерихон, Гиву (столица Саула), Вефиль и часть Иерусалима. Саул и Павел были вениамитянами.</p>","bible":"<div class=\"verse\">«Вениамин, хищный волк, утром будет есть ловитву и вечером делить добычу».<span>БЫТИЕ 49:27</span></div>","arch":"<p>Удел Вениамина (Нав 18:11–28) — между Иудой и Ефремом. Иерусалим (Иевус) на южной границе удела — завоёван Давидом. Гаваон (эль-Джиб) — где Иисус остановил солнце (Нав 10). Рама, Вефиль (Бет-Эль) — важнейшие святилища.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Малое, но избранное:</b> Самое маленькое колено, но из него вышли: Саул (первый царь), Савл/Павел (апостол язычников), Есфирь и Мардохей. Вениамин был «хищным волком» (Быт 49:27) — но Бог превращает хищников в апостолов.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Judean_Desert.jpg/640px-Judean_Desert.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Judean_Desert.jpg/200px-Judean_Desert.jpg","label":"Иудейская пустыня — Вениамин","credit":"Wikimedia Commons"}]}},"dan":{"n":"Дан","k":"От Шфелы до Галилеи","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Dan_Gate.jpg/200px-Dan_Gate.jpg","tl":"Ворота Тель Дана","f":"Удел Дана (Нав 19:40–48) — первоначально на побережье (вокруг Яффы), но аморреи оттеснили Дана в горы (Суд 1:34). Позже колено захватило Лаис/Дан (Суд 18) на севере. Раскопки Тель-…","lex":null,"glyphs":[],"dossier":{"story":"<p>Изначально Дан получил удел в Шфеле, но не смог завоевать его. Колено переселилось на север и захватило Лаис (позже Дан). «От Дана до Вирсавии» — северная и южная границы Израиля.</p>","bible":"","arch":"<p>Удел Дана (Нав 19:40–48) — первоначально на побережье (вокруг Яффы), но аморреи оттеснили Дана в горы (Суд 1:34). Позже колено захватило Лаис/Дан (Суд 18) на севере. Раскопки Тель-Дан (IAA, А. Биран) открыли городские ворота эпохи Авраама, жертвенник Иеровоама, надпись «Дом Давидов» (IX в. до н.э.).</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Колено, потерявшее удел:</b> Дан не смог завоевать свой первоначальный удел и переселился на север. Позже здесь был поставлен золотой телец. Колено Дана исчезло из перечня в Откр 7 — предупреждение о последствиях идолопоклонства.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Dan_Gate.jpg/640px-Dan_Gate.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Dan_Gate.jpg/200px-Dan_Gate.jpg","label":"Ворота Тель Дана","credit":"Wikimedia Commons"}]}},"simeon":{"n":"Симеон","k":"Внутри Иуды · Негев","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Negev_desert_panorama.jpg/200px-Negev_desert_panorama.jpg","tl":"Пустыня Негев — Симеон","f":"Удел Симеона (Нав 19:1–9) — поглощён уделом Иуды; «наследие их было среди удела сынов Иудиных». Северо-Негев: Вирсавия (Беэр-Шева, раскопки — ханаанейский ров, израильский жертвенн…","lex":null,"glyphs":[],"dossier":{"story":"<p>Симеон получил удел внутри территории Иуды — 17 городов разбросанных по Негеву. Со временем колено было полностью поглощено Иудой. Благословение Иакова предсказало рассеяние Симеона и Левия.</p>","bible":"<div class=\"verse\">«Разделю их в Иакове и рассею их в Израиле».<span>БЫТИЕ 49:7</span></div>","arch":"<p>Удел Симеона (Нав 19:1–9) — поглощён уделом Иуды; «наследие их было среди удела сынов Иудиных». Северо-Негев: Вирсавия (Беэр-Шева, раскопки — ханаанейский ров, израильский жертвенник), Шаарим. Симеон рассеялся, как пророчествовал Иаков (Быт 49:7).</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Рассеянное колено:</b> Симеон получил удел внутри Иуды и был поглощён им. Благословение Иакова предсказало рассеяние (Быт 49:7). Но Бог не забывает рассеянных — в Откр 7:7 Симеон снова назван среди спасённых.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Negev_desert_panorama.jpg/640px-Negev_desert_panorama.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Negev_desert_panorama.jpg/200px-Negev_desert_panorama.jpg","label":"Пустыня Негев — Симеон","credit":"Wikimedia Commons"}]}},"issachar":{"n":"Иссахар","k":"Изреельская долина","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Jezreel_Valley.jpg/200px-Jezreel_Valley.jpg","tl":"Изреельская долина","f":"Удел Иссахара (Нав 19:17–23) — Изреельская долина, житница Израиля. Избранные города: Изреель (Тель-Изреель — дворец Ахава), Сунем (Шунем — где воскрешён сын сонамитянки, 4Цар 4), …","lex":null,"glyphs":[],"dossier":{"story":"<p>Иссахар получил плодородную Изреельскую долину с городами Изреель, Сунем, Ен-Ганним. «Осёл крепкий, лежащий между протоками вод» (Быт 49:14) — земледельческое колено, снабжавшее Израиль продовольствием.</p>","bible":"","arch":"<p>Удел Иссахара (Нав 19:17–23) — Изреельская долина, житница Израиля. Избранные города: Изреель (Тель-Изреель — дворец Ахава), Сунем (Шунем — где воскрешён сын сонамитянки, 4Цар 4), Ен-Дор (Айн-Дор). Плодородная равнина между Кармилом и Галилеей.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>«Осёл крепкий»:</b> Так Иаков благословил Иссахара (Быт 49:14). Колено земледельцев, снабжавшее Израиль продовольствием. Образ осла как вьючного животного говорит о готовности служить и нести бремя.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Jezreel_Valley.jpg/640px-Jezreel_Valley.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Jezreel_Valley.jpg/200px-Jezreel_Valley.jpg","label":"Изреельская долина","credit":"Wikimedia Commons"}]}},"zebulun":{"n":"Завулон","k":"Торговые пути","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Lower_Galilee.jpg/200px-Lower_Galilee.jpg","tl":"Нижняя Галилея — Завулон","f":"Удел Завулона (Нав 19:10–16) — Нижняя Галилея. Города: Беф-Саул, Вифлеем Галилейский (не иудейский!), Назарет (возможно на границе). Пророчество: «берег моря... пристань для корабл…","lex":null,"glyphs":[],"dossier":{"story":"<p>Завулон получил территорию в Нижней Галилее с выходом к морским путям. Назарет находился на его земле. Благословение Иакова: «Завулон при береге морском будет жить и у пристани корабельной» (Быт 49:13).</p>","bible":"","arch":"<p>Удел Завулона (Нав 19:10–16) — Нижняя Галилея. Города: Беф-Саул, Вифлеем Галилейский (не иудейский!), Назарет (возможно на границе). Пророчество: «берег моря... пристань для кораблей» (Быт 49:13) — доступ к заливу Акко.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Торговое колено:</b> Завулон получил выход к морским путям. На его земле находился Назарет. Пророчество Исайи 9:1-2 о «земле Завулоновой и Неффалимовой» исполнилось в служении Христа в Галилее.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Lower_Galilee.jpg/640px-Lower_Galilee.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Lower_Galilee.jpg/200px-Lower_Galilee.jpg","label":"Нижняя Галилея — Завулон","credit":"Wikimedia Commons"}]}},"naphtali":{"n":"Неффалим","k":"Верхняя Галилея","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sea_of_Galilee_%28panoramic%29.jpg/200px-Sea_of_Galilee_%28panoramic%29.jpg","tl":"Галилейское море — Неффалим","f":"Удел Неффалима (Нав 19:32–39) — Верхняя Галилея и запад Кинерета. Кедес-Неффалим (город-убежище), Хацор (Тель-Хацор — крупнейший библейский тель, раскопки Ядина — ханаанейский двор…","lex":null,"glyphs":[],"dossier":{"story":"<p>Неффалим — северное колено, Галилея языческая. Здесь позже жил и проповедовал Иисус в Капернауме, на горе Блаженств, в Вифсаиде. Пророчество Исайи: «Народ, ходящий во тьме, увидит свет» (Ис 9:1-2).</p>","bible":"<div class=\"verse\">«Земля Завулонова и земля Неффалимова… народ, сидящий во тьме, увидел свет великий».<span>МАТФЕЯ 4:15-16</span></div>","arch":"<p>Удел Неффалима (Нав 19:32–39) — Верхняя Галилея и запад Кинерета. Кедес-Неффалим (город-убежище), Хацор (Тель-Хацор — крупнейший библейский тель, раскопки Ядина — ханаанейский дворец, израильская крепость Соломона). Горный и лесистый удел на севере.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>«Народ, ходящий во тьме, увидит свет»:</b> Исайя 9:1-2 пророчествовал о Галилее языческой. Здесь, на земле Неффалима, Иисус начал Своё служение в Капернауме. «Свет» пришёл именно в ту часть Израиля, которую считали самой тёмной.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sea_of_Galilee_%28panoramic%29.jpg/640px-Sea_of_Galilee_%28panoramic%29.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sea_of_Galilee_%28panoramic%29.jpg/200px-Sea_of_Galilee_%28panoramic%29.jpg","label":"Галилейское море — Неффалим","credit":"Wikimedia Commons"}]}},"asher":{"n":"Асир","k":"Берег Средиземного","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Akko_Crusader_walls.jpg/200px-Akko_Crusader_walls.jpg","tl":"Акко — побережье Асира","f":"Удел Асира (Нав 19:24–31) — побережье от Кармила до Сидона. Тир и Сидон — на границе (не полностью завоёваны). Акко (Птолемаида) — важный порт. Пророчество: «пища его тук» (Втор 33…","lex":null,"glyphs":[],"dossier":{"story":"<p>Асир получил северное побережье Средиземного моря с городами Акко, Тир, Сидон. Благословение Моисея: «Асир благословен между сынами… окунёт в масло ногу свою» (Втор 33:24) — регион славился оливковым маслом.</p>","bible":"","arch":"<p>Удел Асира (Нав 19:24–31) — побережье от Кармила до Сидона. Тир и Сидон — на границе (не полностью завоёваны). Акко (Птолемаида) — важный порт. Пророчество: «пища его тук» (Втор 33:24) — оливковое масло с прибрежных террас.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Благословенное колено:</b> Моисей благословил Асира: «Окунёт в масло ногу свою» (Втор 33:24) — регион славился оливковым маслом. Анна-пророчица, увидевшая Младенца Иисуса в Храме, была из колена Асира (Лк 2:36).</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Akko_Crusader_walls.jpg/640px-Akko_Crusader_walls.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Akko_Crusader_walls.jpg/200px-Akko_Crusader_walls.jpg","label":"Акко — побережье Асира","credit":"Wikimedia Commons"}]}},"gad":{"n":"Гад","k":"За Иорданом · воины","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/200px-Gilead_region_Jordan.jpg","tl":"Галаадские горы — Гад","f":"Удел Гада (Нав 13:24–28) — за Иорданом, в Галааде. Иавис Галаадский (Суд 21), Рамоф-Галаадский (Рафидим/Рамот — стратегическая крепость на востоке). Горный лесистый регион восточне…","lex":null,"glyphs":[],"dossier":{"story":"<p>Гад получил удел к югу от восточного Манассии и к северу от Рувима — территорию от Галаада до равнин Моава. Гадитяне славились как храбрые воины. Благословение Моисея: «Гад расположился как лев» (Втор 33:20).</p>","bible":"","arch":"<p>Удел Гада (Нав 13:24–28) — за Иорданом, в Галааде. Иавис Галаадский (Суд 21), Рамоф-Галаадский (Рафидим/Рамот — стратегическая крепость на востоке). Горный лесистый регион восточнее Иордана.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Воины за Иорданом:</b> Гад вместе с Рувимом и половиной Манассии попросил удел в Заиорданье. Они обязались первыми идти в бой за землю, прежде чем вернуться к своим семьям (Числ 32). Воинское колено, верное обещанию.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/640px-Gilead_region_Jordan.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/200px-Gilead_region_Jordan.jpg","label":"Галаадские горы — Гад","credit":"Wikimedia Commons"}]}},"reuben":{"n":"Рувим","k":"За Иорданом · первый","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Machareus_view.jpg/200px-Machareus_view.jpg","tl":"Заиорданье — регион Рувима","f":"Удел Рувима (Нав 13:15–23) — за Иорданом, к югу от Арнона. Есевон (Хешбон — раскопки открыли моавитские/израильские слои), Дивон. Первоначальный удел, но колено рано ассимилировало…","lex":null,"glyphs":[],"dossier":{"story":"<p>Рувим — первенец Иакова, но потерял первородство из-за греха с Валлой. Получил южное Заиорданье от Арнона до Есевона. Племя постепенно растворилось среди моавитян. Благословение: «Рувим, ты — первенец мой… но ты бушевал как вода» (Быт 49:3-4).</p>","bible":"","arch":"<p>Удел Рувима (Нав 13:15–23) — за Иорданом, к югу от Арнона. Есевон (Хешбон — раскопки открыли моавитские/израильские слои), Дивон. Первоначальный удел, но колено рано ассимилировалось среди моавитян. «Рувим, первенец мой» (Быт 49:3).</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Потерянное первородство:</b> Рувим был первенцем Иакова, но потерял первородство из-за греха. Его удел в Заиорданье — первый захваченный, но и первый потерянный. Колено постепенно растворилось среди моавитян.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Machareus_view.jpg/640px-Machareus_view.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Machareus_view.jpg/200px-Machareus_view.jpg","label":"Заиорданье — регион Рувима","credit":"Wikimedia Commons"}]}},"jericho":{"n":"Иерихон","k":"Первая победа · стены пали","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Tell_es-Sultan_%28Jericho%29.jpg/200px-Tell_es-Sultan_%28Jericho%29.jpg","tl":"Тель эс-Султан — Иерихон","f":"Иерихон (Телль-эс-Султан) — древнейший город мира (~9000 до н.э.). Кенyon (1950-е) и Bartolini (1997–2010) — раскопки открыли оборонительную стену ранней бронзы, которая соответств…","lex":null,"glyphs":[],"dossier":{"story":"<p>Первый город, взятый Израилем в Ханаане. 7 дней обхождения, 7 труб, крик народа — и «обрушилась стена города до своего основания». Только Раав и её семья были пощажены. Археологически: Тель эс-Султан, рухнувшие стены бронзового века.</p>","bible":"<div class=\"verse\">«И обрушилась стена города до своего основания, и народ пошёл в город, каждый с своей стороны, и взяли город».<span>ИИСУС НАВИН 6:20</span></div>","arch":"<p>Иерихон (Телль-эс-Султан) — древнейший город мира (~9000 до н.э.). Кенyon (1950-е) и Bartolini (1997–2010) — раскопки открыли оборонительную стену ранней бронзы, которая соответствует библейскому叙述у о падении стен (Нав 6). Пружина Айн-эс-Султан — источник, делавший город оазисом. Иисус Навин проклял rebuilding (3Цар 16:34 — исполнено при Ахаве).</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Стены Иерихона — вера против логики:</b> Военный план Бога не имел военного смысла: 7 дней обходить город, трубить и кричать. Но «вера есть осуществление ожидаемого и уверенность в невидимом» (Евр 11:1). Иерихон — первый урок: Божьи пути — не наши пути.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Tell_es-Sultan_%28Jericho%29.jpg/640px-Tell_es-Sultan_%28Jericho%29.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Tell_es-Sultan_%28Jericho%29.jpg/200px-Tell_es-Sultan_%28Jericho%29.jpg","label":"Тель эс-Султан — Иерихон","credit":"Wikimedia Commons"}]}},"ai":{"n":"Гай","k":"Грех Ахана · вторая попытка","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Et-Tell.jpg/200px-Et-Tell.jpg","tl":"Эт-Телль — возможный Гай","f":"Гай (et-Tell) — второй город после Иерихона (Нав 7–8). Раскопки (Callaway, 1960-е) показывают, что et-Tell был необитаем в позднебронзовом веке (когда Иисус вошёл в Ханаан) — это п…","lex":null,"glyphs":[],"dossier":{"story":"<p>После Иерихона Израиль потерпел поражение у Гая из-за греха Ахана, взявшего заклятое. После очищения стана Иисус Навин взял город засадой. Урок: победа зависит от послушания, не от военной силы.</p>","bible":"<div class=\"verse\">«Встань, освяти народ… ибо не можешь ты устоять пред врагами твоими, доколе не удалишь от себя заклятое».<span>ИИСУС НАВИН 7:13</span></div>","arch":"<p>Гай (et-Tell) — второй город после Иерихона (Нав 7–8). Раскопки (Callaway, 1960-е) показывают, что et-Tell был необитаем в позднебронзовом веке (когда Иисус вошёл в Ханаан) — это породило дискуссию о локализации Гая. Альтернативная локализация — Khirbet el-Maqatir (Wood/Hanson, 1995+) — раскопки открыли небольшое поселение поздней бронзы.</p>","dispute":"<div class=\"dispute-block\"><div class=\"dispute-title\">Гай (Эт-Телль): археологическая проблема</div><div class=\"dispute-pos cons\"><b>Эт-Телль = Гай?</b> Раннебронзовый город (3100–2400 до н.э.). Разрушен ок. 2400 г. — за 1000 лет до Иисуса Навина. <span class=\"conf-med\">Надёжность идентификации: средняя</span></div><div class=\"dispute-pos alt\"><b>Альтернативы:</b> (1) Гай мог быть военным форпостом, не городом. (2) Название «Гай» (руины) могло быть дано позже. (3) Локализация может быть неверной. <span class=\"conf-lo\">Надёжность: низкая</span></div><div class=\"dispute-note\">YEC позиция: библейский текст точен. Археологическая проблема Гая — одна из самых сложных. Возможное решение: Bethel и Ai были единым военным объектом, или локализация требует пересмотра.</div></div>","bible_extra":"<p class=\"bib-note\"><b>Гай — урок о грехе в стане:</b> После триумфа Иерихона Израиль потерпел поражение у маленького Гая. 36 человек погибли. Причина: грех Ахана, взявшего заклятое. Грех одного человека повлиял на весь народ. Святость — не личное дело.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Et-Tell.jpg/640px-Et-Tell.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Et-Tell.jpg/200px-Et-Tell.jpg","label":"Эт-Телль — возможный Гай","credit":"Wikimedia Commons"}]}},"gibeon":{"n":"Гаваон","k":"Хитрость гаваонитян · битва","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Gibeon_pool.jpg/200px-Gibeon_pool.jpg","tl":"Пруд в Гаваоне (Эль-Джиб)","f":"Гаваон (эль-Джиб, 10 км северо-западнее Иерусалима) — где гаваонитяне обманом заключили завет с Иисусом (Нав 9). Раскопки Pritchard (1956–1962) открыли винодельню эпохи железа, «пр…","lex":null,"glyphs":[],"dossier":{"story":"<p>Жители Гаваона хитростью заключили союз с Израилем. Пять аморрейских царей напали на Гаваон. Иисус Навин вышел на помощь — и Бог бросал на врагов «камни града с небес». «Стой, солнце, над Гаваоном!» — и Бог продлил день для победы.</p>","bible":"<div class=\"verse\">«Стой, солнце, над Гаваоном, и луна, над долиною Аиалонскою! И остановилось солнце… доколе народ мстил врагам своим».<span>ИИСУС НАВИН 10:12-13</span></div>","arch":"<p>Гаваон (эль-Джиб, 10 км северо-западнее Иерусалима) — где гаваонитяне обманом заключили завет с Иисусом (Нав 9). Раскопки Pritchard (1956–1962) открыли винодельню эпохи железа, «пруд Гаваонский» (2Цар 2:13 — где Авенир убил Асуила). Стратегический город на дороге Иерусалим–Сихем.</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>«Стой, солнце, над Гаваоном!»:</b> В день битвы Иисус Навин произнёс молитву, которая остановила движение небесных тел. Скептики ищут астрономические объяснения; верующие видят Творца, Который не связан законами Своего творения.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Gibeon_pool.jpg/640px-Gibeon_pool.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Gibeon_pool.jpg/200px-Gibeon_pool.jpg","label":"Пруд в Гаваоне (Эль-Джиб)","credit":"Wikimedia Commons"}]}},"hazor_conquest":{"n":"Асор","k":"Иавин · северная коалиция","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Hatzor-Israelite-4.jpg/200px-Hatzor-Israelite-4.jpg","tl":"Тель Хацор","f":"Асор (Тель-Хацор) — «глава всех царств сих» (Нав 11:10). Иисус сжёг Асор. Раскопки Ядина (1955–1958, 1968) и Ben-Tor (1990-е–2010-е) открыли огромный ханаанейский дворец эпохи брон…","lex":null,"glyphs":[],"dossier":{"story":"<p>Иавин, царь Асора, собрал коалицию северных царей «многочисленных, как песок на берегу моря». Иисус Навин разбил их у вод Меромских и сжёг Асор. «Не было ни одного города, который заключил бы мир с сынами Израилевыми».</p>","bible":"<div class=\"verse\">«И поразили они их… и не оставили ни одной души. А Асор сожёг он огнём».<span>ИИСУС НАВИН 11:11</span></div>","arch":"<p>Асор (Тель-Хацор) — «глава всех царств сих» (Нав 11:10). Иисус сжёг Асор. Раскопки Ядина (1955–1958, 1968) и Ben-Tor (1990-е–2010-е) открыли огромный ханаанейский дворец эпохи бронзы, ритуальный комплекс, слои пожара, соответствующие библейскому разрушению. Один из трёх городов, сожжённых Иисусом (с Иерихоном и Гаем).</p>","dispute":"","bible_extra":"<p class=\"bib-note\"><b>Асор — «глава всех царств тех» (Нав 11:10):</b> Иавин, царь Асора, собрал северную коалицию «многочисленную, как песок на берегу моря». Иисус Навин разбил их у вод Меромских и сжёг Асор. Археология подтверждает мощный слой разрушения XIII в. до н.э. в верхнем городе.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Hatzor-Israelite-4.jpg/640px-Hatzor-Israelite-4.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Hatzor-Israelite-4.jpg/200px-Hatzor-Israelite-4.jpg","label":"Тель Хацор","credit":"Wikimedia Commons"}]}},"mount_ebal":{"n":"Гевал · благословение и проклятие","k":"Жертвенник Иисуса Навина","t":"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Mount_Ebal_from_Mount_Gerizim.jpg/200px-Mount_Ebal_from_Mount_Gerizim.jpg","tl":"Гора Гевал","f":"Адам Зерталь (1980-е) обнаружил на Гевале массивную каменную структуру (9×7 м) с пандусом, датируемую железным веком I (~1250 г.). В засыпи найдены кости только кошерных животных. …","lex":null,"glyphs":[],"dossier":{"story":"<p>На горе Гевал Иисус Навин построил жертвенник Господу из цельных камней и написал на камнях список с закона Моисеева. Половина колен стояла на Гаризиме для благословения, половина на Гевале для проклятия. Археологически: Адам Зерталь (1980) обнаружил массивный каменный жертвенник на Гевале — возможно, тот самый.</p>","bible":"<div class=\"verse\">«Тогда Иисус устроил жертвенник Господу Богу Израилеву на горе Гевал».<span>ИИСУС НАВИН 8:30</span></div>","arch":"<p>Адам Зерталь (1980-е) обнаружил на Гевале массивную каменную структуру (9×7 м) с пандусом, датируемую железным веком I (~1250 г.). В засыпи найдены кости только кошерных животных. Идентифицирован как жертвенник Иисуса Навина.</p>","dispute":"<div class=\"dispute-block\"><div class=\"dispute-title\">Жертвенник на Гевале — Иисус Навин или израильский?</div><div class=\"dispute-pos cons\"><b>Адам Зерталь (1980):</b> Массивная каменная структура (9×7 м, пандус) на Гевале — жертвенник Иисуса Навина (1200+ г. до н.э.). Только кошерные кости. <span class=\"conf-med\">Надёжность: средняя</span></div><div class=\"dispute-pos alt\"><b>Критика (Финкельштейн, Кемпински):</b> (1) Структура может быть башней или сторожевым постом. (2) Датировка может быть железным веком I (не XIII в.). (3) Не все кости определены как жертвенные. <span class=\"conf-med\">Надёжность: средняя</span></div><div class=\"dispute-note\">Дебаты продолжаются. Если Зерталь прав — это одно из важнейших открытий библейской археологии.</div></div>","bible_extra":"<p class=\"bib-note\"><b>Жертвенник на Гевале — исполнение заповеди Моисея:</b> Второзаконие 27:4-8 повелевало построить жертвенник на горе Гевал. Иисус Навин исполнил это сразу после взятия Гая. Археолог Адам Зерталь (1980) обнаружил массивную каменную структуру — возможно, тот самый жертвенник.</p>","photos":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Mount_Ebal_from_Mount_Gerizim.jpg/640px-Mount_Ebal_from_Mount_Gerizim.jpg","thumb":"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Mount_Ebal_from_Mount_Gerizim.jpg/200px-Mount_Ebal_from_Mount_Gerizim.jpg","label":"Гора Гевал","credit":"Wikimedia Commons"}]}}};window.ATLAS_GLYPHS={"ziggurat":{"t":"Зиккурат","d":"Ступенчатая храмовая башня Междуречья. У Ура — зиккурат Ур-Намму (~2100 г. до н.э.), раскопан Л. Вулли; святилище бога луны Нанны/Сина, городского божества Ура и Харрана."},"pyramid":{"t":"Пирамида","d":"Великие пирамиды Гизы к приходу Аврама уже стояли века (Древнее царство). Знак Египта — «дома фараонов», куда голод погнал патриарха (Быт 12:10)."},"ruin":{"t":"Разрушенный город","d":"Знак городов долины Сиддим, «ниспроверженных» серой и огнём (Быт 19:24–25). Дым над руиной — то, что увидел Авраам с высоты у Хеврона: «дым поднимается с земли, как дым из печи» (Быт 19:28)."},"oak":{"t":"Дубрава Мамре","d":"Элоне-Мамре — «дубрава Мамре» (Быт 13:18; 18:1): вековые деревья, под которыми Авраам принял трёх гостей. Знак дерева — место шатра и жертвенника патриарха."},"well":{"t":"Колодец","d":"Беэр — колодец: главная валюта кочевника в Негеве. За колодцы клялись (Беэр-Шева, Быт 21:25–31), из-за них спорили пастухи (Быт 26). Знак вырытого колодца с воротом."},"tent":{"t":"Шатёр патриарха","d":"«Авраам сидел при входе в шатёр, во время зноя дневного» (Быт 18:1). Шатёр — дом странника, не построившего города: «ибо он ожидал города, имеющего основание» (Евр 11:9–10)."},"sheep":{"t":"Стада","d":"Богатство патриархов измерялось скотом (Быт 13:2; 24:35). Из-за пастбищ разошлись Авраам и Лот (Быт 13:5–9); мелкий скот — предмет клятвы в Гераре и Беэр-Шеве (Быт 21:27–30)."},"ark":{"t":"Ковчег","d":"Знак традиции, не находки: Быт 8:4 говорит о «горах Араратских» (страна Урарту), а не о пике. Все заявленные «находки ковчега» — от Дурупынара до «Арарат-аномалии» — не верифицированы; лодкообразную формацию Дурупынар первыми разобрали креационные геологи (Snelling, 1992). Атлас показывает регион и честно называет традиции."},"spring":{"t":"Источник","d":"Аин — источник живой воды в пустыне; у источников останавливаются и встречают Бога (Агарь — Быт 16:7,13–14)."},"altar":{"t":"Жертвенник","d":"Маршрут Аврама размечен жертвенниками: Сихем (Быт 12:7), Бет-Эль (12:8), Хеврон (13:18), Мория (22:9) — богословская нить листа."},"gate":{"t":"Ворота","d":"Городские ворота — суд и сделки (Быт 23:10,18). У Тель-Дана сохранилась сырцовая арка ворот средней бронзы — «ворота времён Авраама»."},"palm":{"t":"Пальма","d":"Знак оазиса; Хацацон-Фамар — «Фамарь» значит «пальма» (Эн-Геди, 2 Пар 20:2)."},"tower":{"t":"Башня","d":"Знак города-крепости; на листе-прологе — Вавилонская башня (Быт 11)."}};window.ATLAS_STAGES=[{"n":"I","t":"Северные колена","d":"","age":"6 КОЛЕН · ГАЛИЛЕЯ, САМАРИЯ","km":"","r":"Нав 13–19"},{"n":"II","t":"Южные колена","d":"","age":"4 КОЛЕНА · ИУДЕЯ, ШФЕЛА, НЕГЕВ","km":"","r":"Нав 15–18"},{"n":"III","t":"Заиорданские колена","d":"","age":"2½ КОЛЕНА · ГАЛААД, ВАСАН, МОАВ","km":"","r":"Нав 13, 22"}];window.ATLAS_WPS=[];window.ATLAS_OVLS=[];window.ATLAS_DECOR={"ship":{"t":"Корабль Великого моря","d":"Декор в традиции старинных атласов — и напоминание, что Средиземное («Великое», Чис 34:6) море для патриархов было краем мира: их пути шли по суше. Морская торговля (корабли Фарсиса — 3 Цар 10:22; Ион 1:3) расцветёт много позже."},"whale":{"t":"«Левиафан, которого Ты сотворил играть в нём»","d":"Пс 103:25–26 о Великом море: «Это — море великое и пространное: там пресмыкающиеся, которым нет числа… там плавают корабли, там этот левиафан, которого Ты сотворил играть в нём». Кит на пустой воде — цитата старинной картографии и псалма разом."},"caravan":{"t":"Караван в Аравийской пустыне","d":"Виньетка в традиции старинных карт — и напоминание о верблюжьих караванах эпохи патриархов: «И взял раб из верблюдов господина своего десять верблюдов… и пошёл в Месопотамию» (Быт 24:10). Великие караванные пути огибали сердце Аравии — прямых дорог через пустыню не было."}};</script>
+<script src="atlas-reader.js"></script>
+</body>
+</html>

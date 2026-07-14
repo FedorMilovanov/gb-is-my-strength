@@ -36,3 +36,6 @@ dist/
 /LOCAL_REPO_AUDIT_REPORT.txt
 /LOCAL_WINDOWS_AUDIT_REPORT.md
 /summary.json
+
+# OpenBible geocoding data local cache (atlas-enrich-places.js)
+.cache/

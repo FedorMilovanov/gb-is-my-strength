@@ -1,0 +1,74 @@
+{
+  "id": "hovah",
+  "names": {
+    "ru": "Хова",
+    "he": "חוֹבָה"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 752,
+      "y": 556
+    }
+  },
+  "maps": [
+    {
+      "slug": "avraam",
+      "localId": "hovah"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "hobah",
+    "wikidata": "Q16919660"
+  },
+  "identifications": [
+    {
+      "status": "alternative",
+      "label": "Hoba",
+      "lat": 34.25,
+      "lng": 37.066667,
+      "score": 158,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: hobah → hoba",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "alternative",
+      "label": "Damascus",
+      "lat": 33.511112,
+      "lng": 36.30639,
+      "score": 124,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: hobah → damascus",
+          "level": "B"
+        }
+      ]
+    },
+    {
+      "status": "minor",
+      "label": "Tell el Salihiye",
+      "lat": 33.508611,
+      "lng": 36.469722,
+      "score": 58,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: hobah → tell-el-salihiye",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 34.25,
+    "lng": 37.066667
+  },
+  "bibleRefs": [
+    "Gen 14:15"
+  ],
+  "rank": 3
+}

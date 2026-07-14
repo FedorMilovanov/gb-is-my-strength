@@ -1,0 +1,14 @@
+{
+  "id": "nehemiah",
+  "title": {
+    "ru": "Неемия",
+    "abbr": "Неем"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 16,
+  "chapters": 13,
+  "maps": [
+    "melachim"
+  ]
+}

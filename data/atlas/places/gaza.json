@@ -1,0 +1,52 @@
+{
+  "id": "gaza",
+  "names": {
+    "ru": "Газа",
+    "he": "עַזָּה"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 547,
+      "y": 833
+    }
+  },
+  "maps": [
+    {
+      "slug": "shoftim",
+      "localId": "gaza"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "gaza",
+    "wikidata": "Q47492"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tell Harube",
+      "lat": 31.504,
+      "lng": 34.4644,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gaza → tell-harube",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.504,
+    "lng": 34.4644
+  },
+  "bibleRefs": [
+    "Gen 10:19",
+    "Deut 2:23",
+    "Josh 10:41",
+    "Josh 11:22",
+    "Josh 13:3"
+  ],
+  "rank": 1
+}

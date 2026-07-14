@@ -1,0 +1,22 @@
+{
+  "id": "kingdom-split",
+  "title": {
+    "ru": "Раскол царства"
+  },
+  "kind": "founding",
+  "year": -931,
+  "placeIds": [
+    "shechem"
+  ],
+  "personIds": [
+    "rehoboam",
+    "jeroboam1"
+  ],
+  "periodId": "divided-kingdom",
+  "bibleRefs": [
+    "3 Цар 12"
+  ],
+  "maps": [
+    "melachim"
+  ]
+}

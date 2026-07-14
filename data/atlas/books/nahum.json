@@ -1,0 +1,11 @@
+{
+  "id": "nahum",
+  "title": {
+    "ru": "Наум",
+    "abbr": "Наум"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 34,
+  "chapters": 3
+}

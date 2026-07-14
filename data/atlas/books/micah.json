@@ -1,0 +1,14 @@
+{
+  "id": "micah",
+  "title": {
+    "ru": "Михей",
+    "abbr": "Мих"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 33,
+  "chapters": 7,
+  "maps": [
+    "melachim"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "land-allotment",
+  "title": {
+    "ru": "Раздел земли по коленам"
+  },
+  "kind": "founding",
+  "year": -1399,
+  "approx": true,
+  "placeIds": [
+    "shiloh"
+  ],
+  "periodId": "exodus-conquest",
+  "bibleRefs": [
+    "Нав 13-21"
+  ],
+  "maps": [
+    "shvatim"
+  ]
+}

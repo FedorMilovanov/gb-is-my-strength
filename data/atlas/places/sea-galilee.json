@@ -1,0 +1,52 @@
+{
+  "id": "sea-galilee",
+  "names": {
+    "ru": "Галилейское море",
+    "he": "כִּנֶּרֶת"
+  },
+  "type": "lake",
+  "placements": {
+    "levant": {
+      "x": 658,
+      "y": 678
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "sea_galilee"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "sea-of-galilee",
+    "wikidata": "Q126982"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Sea of Galilee",
+      "lat": 32.818906,
+      "lng": 35.590033,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: sea-of-galilee → sea-of-galilee",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 32.818906,
+    "lng": 35.590033
+  },
+  "bibleRefs": [
+    "Num 34:11",
+    "Josh 12:3",
+    "Josh 13:27",
+    "Matt 4:18",
+    "Matt 9:1"
+  ],
+  "rank": 2
+}

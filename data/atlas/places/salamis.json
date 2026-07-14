@@ -1,0 +1,49 @@
+{
+  "id": "salamis",
+  "names": {
+    "ru": "Кипр · Саламин",
+    "he": "Κύπρος"
+  },
+  "type": "city",
+  "notes": "SUB-LOCATION: проверить parentId | parent-candidate: cyprus (записи нет — место самостоятельное)",
+  "placements": {
+    "mediterranean": {
+      "x": 1594,
+      "y": 761
+    }
+  },
+  "maps": [
+    {
+      "slug": "pavel",
+      "localId": "cyprus"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "salamis",
+    "wikidata": "Q767089"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Salamis",
+      "lat": 35.184944,
+      "lng": 33.901944,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: salamis → salamis",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 35.184944,
+    "lng": 33.901944
+  },
+  "bibleRefs": [
+    "Acts 13:5"
+  ],
+  "rank": 3
+}

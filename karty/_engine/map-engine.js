@@ -1,5 +1,7 @@
 /**
- * map-engine.js v0.52 — reusable biblical map rendering engine. Signature controls + story focus halo.
+ * map-engine.js v0.53 — reusable biblical map rendering engine. Signature controls + story focus halo.
+ * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
+ * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -620,6 +622,14 @@ const MapEngine = (function() {
 /* Toast */
 .me-toast{position:absolute;top:60px;left:50%;transform:translate(-50%,-8px);z-index:25;padding:6px 16px;border-radius:999px;background:rgba(232,200,121,.15);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:12px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
 .me-toast--visible{opacity:1;transform:translate(-50%,0)}
+
+/* v0.53 (D-3) — мобильный контракт: панель слоёв не перекрывает этап-бар,
+   строка хоткеев (десктоп-сущность) скрыта на тач-экранах */
+@media (max-width:560px){
+  .me-layers{bottom:132px;right:6px;max-width:150px;padding:5px 8px;opacity:.94}
+  .me-layers__name{white-space:normal;line-height:1.15}
+  .me-shortcuts{display:none}
+}
 
 /* Minimap */
 .me-minimap{position:absolute;bottom:8px;right:48px;z-index:10;width:140px;height:105px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:rgba(7,10,16,.8);backdrop-filter:blur(8px);cursor:pointer;opacity:.7;transition:opacity .2s}
@@ -1547,22 +1557,60 @@ container.appendChild(panel);
         dot.style.transition = 'r .2s ease, fill .2s ease, filter .2s ease';
         g.appendChild(dot);
         
+        // Label-модель v2 (§11 P-8): 8 якорей place.labelAnchor (e/w/n/s/ne/nw/se/sw)
+        // + выноска place.leader {dx,dy}. Legacy: side 'l'→'w', 'r'/умолчание→'e';
+        // авто-сдвиг соседей действует только для legacy-мест без labelAnchor.
         const side=place.side||'r';
-        // Collision check: offset if another label is too close
-        const nearbyLabels = allPlaces.filter(op =>
-          op.id !== place.id &&
-          Math.abs(op.x - place.x) < 100 &&
-          Math.abs(op.y - place.y) < 16 &&
-          (op.side||'r') === side
-        );
-        const labelOffset = nearbyLabels.length > 0 ? 12 : 0;
-        // Label background for readability
-        const labelBg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        const anchor=place.labelAnchor||(side==='l'?'w':'e');
         const labelText = place.name||'';
         const fontSize=10;
         const textWidth=labelText.length*fontSize*0.6;
-        labelBg.setAttribute('x',side==='l'?(-14-textWidth):'14');labelBg.setAttribute('y',String(-7+labelOffset));
-        labelBg.setAttribute('y','-7');
+        const ANCHOR_POS={
+          e:{x:14,y:4,ta:'start'},   w:{x:-14,y:4,ta:'end'},
+          n:{x:0,y:-12,ta:'middle'}, s:{x:0,y:20,ta:'middle'},
+          ne:{x:10,y:-8,ta:'start'}, nw:{x:-10,y:-8,ta:'end'},
+          se:{x:10,y:16,ta:'start'}, sw:{x:-10,y:16,ta:'end'}
+        };
+        const ap=ANCHOR_POS[anchor]||ANCHOR_POS.e;
+        let lx=ap.x, ly=ap.y;
+        if (!place.labelAnchor) {
+          // legacy-коллизия: сосед на той же стороне → сдвиг вниз
+          const nearbyLabels = allPlaces.filter(op =>
+            op.id !== place.id && !op.labelAnchor &&
+            Math.abs(op.x - place.x) < 100 &&
+            Math.abs(op.y - place.y) < 16 &&
+            (op.side||'r') === side
+          );
+          if (nearbyLabels.length > 0) ly += 12;
+        }
+        if (place.leader && typeof place.leader.dx==='number') {
+          lx += place.leader.dx; ly += place.leader.dy;
+          // тонкая выноска: от кромки маркера к ближнему краю текста;
+          // микро-смещения (<10u) — без линии, чтобы не плодить шум
+          if (Math.hypot(place.leader.dx, place.leader.dy) > 10) {
+          const exEdge = ap.ta==='end' ? lx+3 : ap.ta==='middle' ? lx : lx-3;
+          const eyEdge = ly-4;
+          const dLen = Math.hypot(exEdge,eyEdge)||1;
+          const r0 = (isActive?7:4.5)+2;
+          const leaderLine=document.createElementNS('http://www.w3.org/2000/svg','line');
+          leaderLine.setAttribute('x1',String(exEdge/dLen*r0));
+          leaderLine.setAttribute('y1',String(eyEdge/dLen*r0));
+          leaderLine.setAttribute('x2',String(exEdge));
+          leaderLine.setAttribute('y2',String(eyEdge));
+          leaderLine.setAttribute('stroke','rgba(244,238,221,.38)');
+          leaderLine.setAttribute('stroke-width','1');
+          leaderLine.setAttribute('opacity',inStory?'0.9':'0');
+          leaderLine.style.transition='opacity .3s';
+          leaderLine.style.pointerEvents='none';
+          leaderLine.classList.add('me-leader');
+          g.appendChild(leaderLine);
+          }
+        }
+        // Label background for readability — следует за текстом при любом якоре
+        const bgX = ap.ta==='end' ? lx-textWidth-3 : ap.ta==='middle' ? lx-textWidth/2-3 : lx-3;
+        const labelBg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        labelBg.setAttribute('x',String(bgX));
+        labelBg.setAttribute('y',String(ly-11));
         labelBg.setAttribute('width',textWidth+6);
         labelBg.setAttribute('height','14');
         labelBg.setAttribute('rx','3');
@@ -1574,8 +1622,9 @@ container.appendChild(panel);
         labelBg.style.pointerEvents = 'none';
         g.appendChild(labelBg);
         const label=document.createElementNS('http://www.w3.org/2000/svg','text');
-        label.setAttribute('x',side==='l'?'-14':'14');label.setAttribute('y',String(4+labelOffset));
-        label.setAttribute('text-anchor',side==='l'?'end':'start');
+        label.setAttribute('x',String(lx));
+        label.setAttribute('y',String(ly));
+        label.setAttribute('text-anchor',ap.ta);
         label.setAttribute('fill',inStory?'#f4eedd':'#555');
         label.setAttribute('font-size',String(fontSize));
         label.setAttribute('opacity','0.9');
@@ -2309,15 +2358,8 @@ container.appendChild(panel);
     }
 
     // ── Keyboard ──
-    // Show keyboard shortcut hint
-    if (opts.showHints !== false) {
-      const hint = document.createElement('div');
-      hint.className = 'me-hint';
-      hint.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);z-index:15;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.7);color:#9aa2ae;font-size:10px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);pointer-events:none;opacity:0;transition:opacity .5s';
-      hint.textContent = '← → навигация · Esc закрыть · колёсико масштаб';
-      container.appendChild(hint);
-      _tm(() => { hint.style.opacity = '1'; _tm(() => { hint.style.opacity = '0'; }, 4000); }, 2000);
-    }
+    // v0.53 (D-3): рудимент me-hint удалён — дублировал me-shortcuts слово в слово,
+    // 2–6 c на экране жили ДВЕ одинаковые подсказки.
     
     
     // Swipe between places (mobile)
@@ -2626,7 +2668,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.52.0',buildDate:'2026-06-18'
+    version:'0.53.0',buildDate:'2026-07-11'
   };
 })();
 

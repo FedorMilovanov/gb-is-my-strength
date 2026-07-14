@@ -1,0 +1,52 @@
+{
+  "id": "gezer",
+  "names": {
+    "ru": "Газер",
+    "he": "גֶּזֶר"
+  },
+  "type": "city",
+  "placements": {
+    "levant": {
+      "x": 593,
+      "y": 790
+    }
+  },
+  "maps": [
+    {
+      "slug": "melachim",
+      "localId": "gezer"
+    }
+  ],
+  "needsReview": false,
+  "sameAs": {
+    "openbible": "gezer",
+    "wikidata": "Q1466687"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Tel Gezer",
+      "lat": 31.859167,
+      "lng": 34.919167,
+      "score": 942,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: gezer → tel-gezer",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 31.859167,
+    "lng": 34.919167
+  },
+  "bibleRefs": [
+    "Josh 10:33",
+    "Josh 12:12",
+    "Josh 16:3",
+    "Josh 16:10",
+    "Josh 21:21"
+  ],
+  "rank": 3
+}
