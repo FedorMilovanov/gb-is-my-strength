@@ -19,7 +19,7 @@ const REPO_ROOT = path.join(__dirname, '..');
 const SITE = 'https://gospod-bog.ru';
 const DEFAULT_OUT_JSON = 'reports/url-contract-draft.json';
 const DEFAULT_OUT_MD = 'reports/url-contract-draft.md';
-const DEFAULT_SKIP = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports', 'dist', 'out', 'build', '.astro', '_legacy']);
+const DEFAULT_SKIP = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports', 'dist', 'out', 'build', '.astro', '_legacy', 'scripts']);
 const verificationFileRe = /^(google|yandex|microsoft)[^/]*\.html$/i;
 
 function argValue(name, fallback = null) {
