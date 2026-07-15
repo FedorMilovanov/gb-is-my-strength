@@ -137,8 +137,6 @@ const RAIL_COVERS: Record<HeartPageId, string> = {
 
 interface HeartSatelliteDef {
   id: string;
-  mark: string;            // «А1»…«Д3» — буква Движения + номер
-  parent: HeartPageId;     // родительская часть аккордеона
   slug: string;
   minutes: number;
   railTitle: string;       // заголовок карточки «Сейчас читаете» / оверлея
@@ -147,45 +145,45 @@ interface HeartSatelliteDef {
 
 const HEART_SATELLITES: HeartSatelliteDef[] = [
   // Движение А. Где прячется сердце → часть I (диагноз)
-  { id: 'idoly', mark: 'I.1', parent: 'krajne', slug: 'skrytye-idoly-serdca', minutes: 26,
+  { id: 'idoly', slug: 'skrytye-idoly-serdca', minutes: 26,
     railTitle: 'Скрытые идолы сердца', shortTitle: 'Чему сердце поклоняется, не замечая' },
-  { id: 'religioznoe', mark: 'I.2', parent: 'krajne', slug: 'religioznoe-serdce', minutes: 26,
+  { id: 'religioznoe', slug: 'religioznoe-serdce', minutes: 26,
     railTitle: 'Религиозное сердце', shortTitle: 'Благочестие как маска' },
-  { id: 'sovest', mark: 'I.3', parent: 'krajne', slug: 'sovest-vnutrenniy-sud', minutes: 30,
+  { id: 'sovest', slug: 'sovest-vnutrenniy-sud', minutes: 30,
     railTitle: 'Совесть: внутренний суд', shortTitle: 'Судья, с которым сердце торгуется' },
-  { id: 'myslennaya', mark: 'I.4', parent: 'krajne', slug: 'myslennaya-zhizn-serdca', minutes: 26,
+  { id: 'myslennaya', slug: 'myslennaya-zhizn-serdca', minutes: 26,
     railTitle: 'Мысленная жизнь сердца', shortTitle: 'Поток мыслей и библейская медитация' },
-  { id: 'dorozhki', mark: 'I.5', parent: 'krajne', slug: 'starye-dorozhki-serdca', minutes: 28,
+  { id: 'dorozhki', slug: 'starye-dorozhki-serdca', minutes: 28,
     railTitle: 'Старые дорожки сердца', shortTitle: 'Привычка, детство и стыд' },
   // Движение Б. Сердце выходит наружу → часть II (война в членах)
-  { id: 'yazyk', mark: 'II.1', parent: 'rimlyanam', slug: 'serdce-i-yazyk', minutes: 25,
+  { id: 'yazyk', slug: 'serdce-i-yazyk', minutes: 25,
     railTitle: 'Сердце и язык', shortTitle: 'Из избытка сердца говорят уста' },
-  { id: 'telo', mark: 'II.2', parent: 'rimlyanam', slug: 'serdce-i-telo', minutes: 23,
+  { id: 'telo', slug: 'serdce-i-telo', minutes: 23,
     railTitle: 'Сердце и тело', shortTitle: 'Члены как орудия, комфорт, аппетиты' },
-  { id: 'sokrovishche', mark: 'II.3', parent: 'rimlyanam', slug: 'serdce-i-sokrovishche', minutes: 25,
+  { id: 'sokrovishche', slug: 'serdce-i-sokrovishche', minutes: 25,
     railTitle: 'Сердце и сокровище', shortTitle: 'Деньги, статус и довольство' },
   // Движение В. Сердце в темноте → часть II («бедный я человек»)
-  { id: 'tma', mark: 'II.4', parent: 'rimlyanam', slug: 'tma-na-serdce', minutes: 26,
+  { id: 'tma', slug: 'tma-na-serdce', minutes: 26,
     railTitle: 'Тьма на сердце', shortTitle: 'Всегда ли уныние — грех?' },
-  { id: 'skorb', mark: 'II.5', parent: 'rimlyanam', slug: 'serdce-pod-skorbyu', minutes: 28,
+  { id: 'skorb', slug: 'serdce-pod-skorbyu', minutes: 28,
     railTitle: 'Сердце под скорбью', shortTitle: 'Страдание, провидение и плач' },
   // Движение Г. Война и перемена → часть III (перелом)
-  { id: 'menyaetsya', mark: 'III.1', parent: 'novoe', slug: 'kak-menyaetsya-serdce', minutes: 27,
+  { id: 'menyaetsya', slug: 'kak-menyaetsya-serdce', minutes: 27,
     railTitle: 'Как меняется сердце', shortTitle: 'Умерщвление греха и новая любовь' },
-  { id: 'iskushenie', mark: 'III.2', parent: 'novoe', slug: 'serdce-i-iskushenie', minutes: 26,
+  { id: 'iskushenie', slug: 'serdce-i-iskushenie', minutes: 26,
     railTitle: 'Сердце и искушение', shortTitle: 'Переговоры, которых нельзя вести' },
-  { id: 'hranit', mark: 'III.3', parent: 'novoe', slug: 'kak-hranit-serdce', minutes: 26,
+  { id: 'hranit', slug: 'kak-hranit-serdce', minutes: 26,
     railTitle: 'Как хранить сердце', shortTitle: 'Притчи 4:23 и средства благодати' },
-  { id: 'strah', mark: 'III.4', parent: 'novoe', slug: 'strah-bozhij-rabskij-ili-synovnij', minutes: 25,
+  { id: 'strah', slug: 'strah-bozhij-rabskij-ili-synovnij', minutes: 25,
     railTitle: 'Страх Божий', shortTitle: 'Рабский или сыновний?' },
-  { id: 'svoboda', mark: 'III.5', parent: 'novoe', slug: 'svoboda-vo-hriste', minutes: 26,
+  { id: 'svoboda', slug: 'svoboda-vo-hriste', minutes: 26,
     railTitle: 'Свобода во Христе', shortTitle: 'От престола греха — не от борьбы' },
   // Движение Д. Помощь и финал → часть IV (жизнь Духом)
-  { id: 'odinochku', mark: 'IV.1', parent: 'serdce-duh', slug: 'serdce-ne-v-odinochku', minutes: 27,
+  { id: 'odinochku', slug: 'serdce-ne-v-odinochku', minutes: 27,
     railTitle: 'Сердце не в одиночку', shortTitle: 'Церковь, исповедь, восстановление' },
-  { id: 'hrista', mark: 'IV.2', parent: 'serdce-duh', slug: 'serdce-hrista-k-nemoshchnym', minutes: 44,
+  { id: 'hrista', slug: 'serdce-hrista-k-nemoshchnym', minutes: 44,
     railTitle: 'Сердце Христа', shortTitle: 'Образ Отца, Спаситель врагов, сила немощным' },
-  { id: 'osvobozhdennoe', mark: 'IV.3', parent: 'serdce-duh', slug: 'osvobozhdennoe-serdce', minutes: 27,
+  { id: 'osvobozhdennoe', slug: 'osvobozhdennoe-serdce', minutes: 27,
     railTitle: 'Освобождённое сердце', shortTitle: 'Конец войне: вечный покой' },
 ];
 
@@ -419,13 +417,50 @@ const HEART_SATELLITE_TOC: Record<string, SeriesPartTocItem[]> = {
 
 /* ============================ Сборка конфига ============================ */
 
+/* КНИГА (владелец 2026-07-15): «римские цифры — просто названия глав, а не
+   статьи; внутри они раскрываются, как submenu, и там уже 1, 2, 3, 4 обычными
+   цифрами статьи. Как в книге». Серия «Сердце» — первый книжный инстанс:
+   бывшие «части» стали статьёй №1 своей главы, бывшие спутники — статьями
+   2…N. Названия глав — по канонической архитектуре серии (диагноз / война /
+   перелом / жизнь Духом). */
+
+interface HeartChapterDef {
+  id: string;
+  roman: string;         // номер главы (I…IV)
+  title: string;         // название главы — заголовок, НЕ статья
+  lead: HeartPageId;     // бывшая «часть» — статья №1 главы
+  extras: string[];      // бывшие спутники — статьи №2…N (в порядке чтения)
+}
+
+const HEART_CHAPTERS: HeartChapterDef[] = [
+  { id: 'ch1', roman: 'I',   title: 'Диагноз сердца',      lead: 'krajne',     extras: ['idoly', 'religioznoe', 'sovest', 'myslennaya', 'dorozhki'] },
+  { id: 'ch2', roman: 'II',  title: 'Сердце на войне',     lead: 'rimlyanam',  extras: ['yazyk', 'telo', 'sokrovishche', 'tma', 'skorb'] },
+  { id: 'ch3', roman: 'III', title: 'Перелом и перемена',  lead: 'novoe',      extras: ['menyaetsya', 'iskushenie', 'hranit', 'strah', 'svoboda'] },
+  { id: 'ch4', roman: 'IV',  title: 'Жизнь Духом',         lead: 'serdce-duh', extras: ['odinochku', 'hrista', 'osvobozhdennoe'] },
+];
+
+const satById = new Map(HEART_SATELLITES.map((s) => [s.id, s]));
+const coreById = new Map(HEART_SERIES_ITEMS.map((i) => [i.id, i]));
+const declOf = (n: number) => (n === 1 ? 'статья' : n < 5 ? 'статьи' : 'статей');
+
+const items: SeriesItem[] = [];
 const pages: Record<string, SeriesPageChromeData> = {};
-for (const item of HEART_SERIES_ITEMS) {
-  const roman = heartRoman(item.id);
-  const isRoman = item.kind === 'roman';
-  const partWord = isRoman ? `Часть ${roman}` : (item.labelMark === 'Справ.' ? 'Справочник' : item.labelMark ?? '');
+
+/** Страница-форзац (Введение/Справочник) — как раньше, вне глав. */
+function pushLabelPage(pageId: HeartPageId): void {
+  const item = coreById.get(pageId)!;
+  const partWord = item.labelMark === 'Справ.' ? 'Справочник' : item.labelMark ?? '';
   const prog = heartProgress(item.id);
   const toc = HARD_TEXTS_PART_TOC[item.id];
+  items.push({
+    id: item.id,
+    mark: { kind: 'label' as const, value: item.labelMark ?? '' },
+    title: item.railTitle,
+    shortTitle: item.railSub,
+    href: `/articles/${item.slug}/`,
+    readingTime: `${item.minutes} мин`,
+    ribbon: item.ribbon,
+  });
   pages[item.id] = {
     id: item.id,
     label: item.railTitle,
@@ -435,44 +470,87 @@ for (const item of HEART_SERIES_ITEMS) {
     readingProgressDoneMin: prog.doneMin,
     readingProgressPartMin: prog.partMin,
     readingProgressTotalMin: prog.totalMin,
-    railNowTitle: isRoman ? `Часть ${roman}. ${item.railTitle}` : item.railTitle,
+    railNowTitle: item.railTitle,
     railCover: RAIL_COVERS[item.id],
     partDialogLabel: `${partWord} · ${item.railTitle}`,
     partToc: toc,
   };
 }
 
-// Страницы спутников: полный chrome; прогресс серии — как у родительской
-// части (спутник не входит в счёт минут ядра), partMin — свои минуты.
-for (const sat of HEART_SATELLITES) {
-  const prog = heartProgress(sat.parent);
-  const toc = HEART_SATELLITE_TOC[sat.id];
-  pages[sat.id] = {
-    id: sat.id,
-    label: sat.railTitle,
-    title: sat.railTitle,
-    mobileSection: toc[0]?.label ?? sat.railTitle,
-    partLabel: `Дополнение ${sat.mark} · Содержание`,
-    readingProgressDoneMin: prog.doneMin,
-    readingProgressPartMin: sat.minutes,
-    readingProgressTotalMin: HEART_TOTAL_MIN,
-    railNowTitle: `Дополнение ${sat.mark}. ${sat.railTitle}`,
-    railCover: '../../images/og-series-heart-600w.webp',
-    partDialogLabel: `Дополнение ${sat.mark} · ${sat.railTitle}`,
-    partToc: toc,
+pushLabelPage('prolog');
+
+for (const ch of HEART_CHAPTERS) {
+  const lead = coreById.get(ch.lead)!;
+  const extras = ch.extras.map((id) => satById.get(id)!);
+  const chapterTitle = `Глава ${ch.roman}. ${ch.title}`;
+  // Глава — заголовок-группа: не страница, href ведёт на первую статью.
+  items.push({
+    id: ch.id,
+    mark: { kind: 'roman' as const, value: ch.roman },
+    title: chapterTitle,
+    shortTitle: ch.title,
+    href: `/articles/${lead.slug}/`,
+    readingTime: `${1 + extras.length} ${declOf(1 + extras.length)}`,
+    tier: 'chapter' as const,
+  });
+  // Статья №1 — бывшая «часть» (полный хром, прогресс части как раньше).
+  const leadProg = heartProgress(lead.id);
+  const leadToc = HARD_TEXTS_PART_TOC[lead.id];
+  items.push({
+    id: lead.id,
+    mark: { kind: 'arabic' as const, value: '1' },
+    title: lead.railTitle,
+    shortTitle: lead.railSub,
+    href: `/articles/${lead.slug}/`,
+    readingTime: `${lead.minutes} мин`,
+    parent: ch.id,
+  });
+  pages[lead.id] = {
+    id: lead.id,
+    label: lead.railTitle,
+    title: lead.railTitle,
+    mobileSection: leadToc[0]?.label ?? lead.railTitle,
+    partLabel: `Глава ${ch.roman} · Статья 1 · Содержание`,
+    readingProgressDoneMin: leadProg.doneMin,
+    readingProgressPartMin: leadProg.partMin,
+    readingProgressTotalMin: leadProg.totalMin,
+    railNowTitle: `1. ${lead.railTitle}`,
+    railCover: RAIL_COVERS[lead.id],
+    partDialogLabel: `Глава ${ch.roman} · ${lead.railTitle}`,
+    partToc: leadToc,
   };
+  // Статьи №2…N — бывшие спутники: полноценные статьи главы.
+  extras.forEach((sat, i) => {
+    const n = i + 2;
+    const prog = heartProgress(ch.lead);
+    const toc = HEART_SATELLITE_TOC[sat.id];
+    items.push({
+      id: sat.id,
+      mark: { kind: 'arabic' as const, value: String(n) },
+      title: sat.railTitle,
+      shortTitle: sat.shortTitle,
+      href: `/articles/${sat.slug}/`,
+      readingTime: `${sat.minutes} мин`,
+      parent: ch.id,
+    });
+    pages[sat.id] = {
+      id: sat.id,
+      label: sat.railTitle,
+      title: sat.railTitle,
+      mobileSection: toc[0]?.label ?? sat.railTitle,
+      partLabel: `Глава ${ch.roman} · Статья ${n} · Содержание`,
+      readingProgressDoneMin: prog.doneMin,
+      readingProgressPartMin: sat.minutes,
+      readingProgressTotalMin: HEART_TOTAL_MIN,
+      railNowTitle: `${n}. ${sat.railTitle}`,
+      railCover: '../../images/og-series-heart-600w.webp',
+      partDialogLabel: `Глава ${ch.roman} · ${sat.railTitle}`,
+      partToc: toc,
+    };
+  });
 }
 
-const satelliteItems: SeriesItem[] = HEART_SATELLITES.map((sat) => ({
-  id: sat.id,
-  mark: { kind: 'letter' as const, value: sat.mark },
-  title: `Дополнение ${sat.mark}. ${sat.railTitle}`,
-  shortTitle: sat.shortTitle,
-  href: `/articles/${sat.slug}/`,
-  readingTime: `${sat.minutes} мин`,
-  tier: 'satellite' as const,
-  parent: sat.parent,
-}));
+pushLabelPage('spravochnik');
 
 export const HARD_TEXTS_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'hard-texts',
@@ -481,20 +559,7 @@ export const HARD_TEXTS_SERIES: SeriesConfig = defineSeriesConfig({
   railBackHref: '../../hard-texts/',
   quiz: [],
   breadcrumbParent: { label: 'Публикации', href: '../../articles/' },
-  items: [
-    ...HEART_SERIES_ITEMS.map((item) => ({
-      id: item.id,
-      mark: item.kind === 'roman'
-        ? { kind: 'roman' as const, value: heartRoman(item.id) }
-        : { kind: 'label' as const, value: item.labelMark ?? '' },
-      title: item.kind === 'roman' ? `Часть ${heartRoman(item.id)}. ${item.railTitle}` : item.railTitle,
-      shortTitle: item.railSub,
-      href: `/articles/${item.slug}/`,
-      readingTime: `${item.minutes} мин`,
-      ribbon: item.ribbon,
-    })),
-    ...satelliteItems,
-  ],
+  items,
   pages,
 });
 

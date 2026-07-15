@@ -1353,6 +1353,10 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
 [data-gill-v16] .gbs2-satrow:hover{background:rgba(255,255,255,.06);color:#fff}
 [data-gill-v16] .gbs2-satmark{position:absolute;left:0;top:50%;margin-top:-8px;width:16px;height:16px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.22);font-family:'Source Sans 3',system-ui,sans-serif;font-size:9.5px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.6)}
 [data-gill-v16] .gbs2-satrow:hover .gbs2-satmark{border-color:var(--gbs2-accent2);color:var(--gbs2-accent2)}
+/* Книжная серия: в блоке «В этой главе» текущая статья — не ссылка, а метка
+   «вы здесь»: тёплая подложка, полный заголовок, залитый бейдж номера. */
+[data-gill-v16] .gbs2-satrow.is-here{background:rgba(122,46,46,.28);color:rgba(255,255,255,.92);cursor:default}
+[data-gill-v16] .gbs2-satrow.is-here .gbs2-satmark{border-color:transparent;background:var(--gbs2-accent2,#e8b878);color:#241708}
 [data-gill-v16] .gbs2-satrow-t{flex:1;min-width:0}
 [data-gill-v16] .gbs2-satrow-min{font-size:10px;color:rgba(255,255,255,.42);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Flow rail: the parts that FOLLOW the expanded current card. */

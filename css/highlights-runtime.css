@@ -230,26 +230,26 @@
       box-shadow: 0 6px 22px rgba(20,16,11,.3), inset 0 1px 0 rgba(255,255,255,.06);
       transition: opacity .25s ease, transform .2s ease, bottom .2s ease;
     }
-    /* Владелец 2026-07-15: докнутая иконка «Мои цитаты» в баре читается как
-       случайная выбивающаяся галочка — некрасиво, бросается в глаза. Прячем
-       ПОКА (не удаляем функцию: сохранение цитат из выделения текста и
-       localStorage продолжают работать молча) до отдельной проработки
-       мягкого минималистичного SVG-значка. Возврат — снять этот !important. */
-    #gb-hl-fab.visible { display: none !important; }
+    /* Владелец 2026-07-15: прежний вид (залитые кавычки + жёлтый цифровой
+       бейдж) читался как чужеродная нашлёпка. Редизайн: штриховая закладка
+       в языке иконок баров (stroke 1.7, как у Share/Скачать), вместо
+       цифрового бейджа — крошечная точка-индикатор «есть сохранённое».
+       Число сохранённого видно внутри панели «Мои цитаты». */
+    #gb-hl-fab.visible { display: flex; }
     #gb-hl-fab.is-idle-faded { opacity: .46; }
     #gb-hl-fab:hover, #gb-hl-fab:focus-visible { opacity: 1; transform: translateY(-2px); }
     #gb-hl-fab:active { transform: scale(.94); }
 
     #gb-hl-fab-count {
-      position: absolute; top: -3px; right: -3px;
-      min-width: 17px; height: 17px; padding: 0 4px;
+      position: absolute; top: 9px; right: 9px;
+      width: 6px; height: 6px; padding: 0;
       border-radius: 999px;
-      background: var(--gold-2, #7c5c18);
-      color: #fff;
-      font-family: var(--mono, monospace);
-      font-size: 9.5px; font-weight: 800; line-height: 17px;
+      background: var(--gold-2, #b08a3e);
+      color: transparent;
+      font-size: 0; line-height: 0;
+      overflow: hidden;
       text-align: center;
-      box-shadow: 0 1px 4px rgba(20,16,11,.35), 0 0 0 2px #14100b;
+      box-shadow: 0 0 0 2px #14100b;
     }
 
     @keyframes gbHlFabBump {
@@ -280,9 +280,10 @@
     }
     #gb-hl-fab.gb-hl-fab--docked:hover,
     #gb-hl-fab.gb-hl-fab--docked:focus-visible { transform: none; }
+    #gb-hl-fab.gb-hl-fab--docked { position: relative; }
     #gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count {
-      top: 2px; right: 2px;
-      min-width: 14px; height: 14px; font-size: 8px; line-height: 14px;
+      top: 7px; right: 7px;
+      width: 5px; height: 5px;
       box-shadow: 0 0 0 2px var(--color-canvas, #fdfcf9);
     }
     html.dark #gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count {
@@ -296,5 +297,5 @@
     html.dark .gb-hl-item { border-color: rgba(255,255,255,.06); }
     html.dark .gb-hl-del:hover { background: rgba(155,45,45,.25); }
     html.dark #gb-hl-fab { background: linear-gradient(160deg, #2a2119, #1a1410); border-color: rgba(255,255,255,.1); }
-    html.dark #gb-hl-fab-count { background: #eed093; color: #241708; box-shadow: 0 1px 4px rgba(0,0,0,.4), 0 0 0 2px #1a1410; }
+    html.dark #gb-hl-fab-count { background: #caa15a; box-shadow: 0 0 0 2px #1a1410; }
   
