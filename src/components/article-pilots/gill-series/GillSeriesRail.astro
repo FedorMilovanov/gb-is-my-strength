@@ -4,7 +4,7 @@ import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
-import { GILL_SERIES, satellitesOf, type SeriesConfig } from '../_shared/series/seriesConfig';
+import { GILL_SERIES, satellitesOf, chapterArticles, topLevelItems, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 // Leather bookmark treatment for the two label rows (kind: 'label'):
 //   «Введение» → lily ornament, warm leather;  «Справочник» → book ornament,
@@ -23,9 +23,10 @@ interface Props {
 
 const { pageId, config = GILL_SERIES } = Astro.props;
 const page = config.pages[pageId];
-// Ядро серии: спутники (tier: 'satellite') живут в аккордеоне «Оглавление
-// части», в десктоп-рельсе и prev/next не участвуют (SERIES-ENGINE-GUIDE §3).
-const seriesItems = config.items.filter((it) => it.tier !== 'satellite');
+// Верхний уровень рельса: главы + форзацы + плоские части. Спутники живут в
+// аккордеоне «Оглавление части», статьи глав (mark 'arabic') — внутри своей
+// главы; ни те ни другие не рисуются строками верхнего уровня.
+const seriesItems = topLevelItems(config);
 
 // Assign each submenu row to a collapsible group: every top-level (H2) row
 // opens a new group; the H3 rows beneath it inherit that group index. The rail
@@ -54,7 +55,9 @@ const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { gr
 // seriesMeta всегда откатывался на дефолт «Часть 1 из N» (баг, найденный
 // content-агентом 2026-07-14 при вводе 18 спутников серии «Сердце»).
 const rawCurrent = config.items.find((item) => item.id === pageId);
-const parentId = rawCurrent?.tier === 'satellite' ? rawCurrent.parent! : pageId;
+// Вложенные материалы (спутник части ИЛИ статья главы) разворачиваются на
+// своего родителя: рельс показывает окружение части/главы, не самой статьи.
+const parentId = rawCurrent?.parent ?? pageId;
 const currentIdx = seriesItems.findIndex((item) => item.id === parentId);
 const partsBefore = seriesItems.slice(0, Math.max(0, currentIdx));
 const partsAfter = currentIdx >= 0 ? seriesItems.slice(currentIdx + 1) : [];
@@ -71,15 +74,20 @@ const currentItem = currentIdx >= 0 ? seriesItems[currentIdx] : null;
 const romanItems = seriesItems.filter((item) => item.mark.kind === 'roman');
 const romanIdx = romanItems.findIndex((item) => item.id === parentId);
 const partNumber = romanIdx >= 0 ? romanIdx + 1 : 1;
+// Книжная серия: римские пункты — ГЛАВЫ, счёт читается «Глава N из M».
+const countWord = currentItem?.tier === 'chapter' ? 'Глава' : 'Часть';
 const seriesMeta = currentItem && currentItem.mark.kind === 'label'
   ? currentItem.mark.value
-  : `Часть ${partNumber} из ${romanItems.length}`;
+  : `${countWord} ${partNumber} из ${romanItems.length}`;
 
-// Owner (2026-07-15): спутники читаются ПРЯМО В РЕЙЛЕ, без всплывающего окна —
+// Owner (2026-07-15): подпункты читаются ПРЯМО В РЕЙЛЕ, без всплывающего окна —
 // «в рейле нужно все сделать, там все подпункты пускай раскрываются в пункте».
-// Раскрываются они там же, где и обычное «Оглавление части» (gbs2-toch-toggle),
-// внутри пункта ТЕКУЩЕЙ части — отдельной кнопки/попапа для этого не нужно.
-const currentSats = currentItem ? satellitesOf(config, currentItem.id) : [];
+// Книжная серия: строки «В этой главе» — ВСЕ статьи главы, текущая подсвечена.
+// Плоская серия: строки «Дополнения к части» — спутники текущей части.
+const currentKids = currentItem
+  ? (currentItem.tier === 'chapter' ? chapterArticles(config, currentItem.id) : satellitesOf(config, currentItem.id))
+  : [];
+const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : 'Дополнения к части';
 ---
 
 <aside class="gbs-rail" aria-label={`Серия «${config.seriesTitle}»`}>
@@ -143,7 +151,7 @@ const currentSats = currentItem ? satellitesOf(config, currentItem.id) : [];
         <div class="gbs2-curbar"><i id="gbs2Curbar"></i></div>
       </div>
       <div class="gbs2-toch">
-        <span>Оглавление части</span>
+        <span>{currentItem?.tier === 'chapter' ? 'Оглавление статьи' : 'Оглавление части'}</span>
         <span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span>
         <!-- Mechanism 3: раскрытие/сворачивание оглавления части. Персист в
              localStorage gb:rail:toc-collapsed; класс toc-collapsed на
@@ -167,16 +175,17 @@ const currentSats = currentItem ? satellitesOf(config, currentItem.id) : [];
             ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
           ))}
         </ul>
-        {currentSats.length > 0 && (
+        {currentKids.length > 0 && (
           <div class="gbs2-sats">
-            <span class="gbs2-sats-lab">Дополнения к части</span>
-            {currentSats.map((sat) => {
-              const satNum = sat.mark.value.includes('.') ? sat.mark.value.split('.')[1] : sat.mark.value;
+            <span class="gbs2-sats-lab">{kidsLabel}</span>
+            {currentKids.map((kid) => {
+              const kidNum = kid.mark.value.includes('.') ? kid.mark.value.split('.')[1] : kid.mark.value;
+              const isHere = kid.id === pageId;
               return (
-                <a class="gbs2-satrow" href={sat.href}>
-                  <span class="gbs2-satmark" aria-hidden="true">{satNum}</span>
-                  <span class="gbs2-satrow-t">{sat.shortTitle || sat.title}</span>
-                  <span class="gbs2-satrow-min">{sat.readingTime}</span>
+                <a class:list={['gbs2-satrow', isHere && 'is-here']} href={isHere ? undefined : kid.href} aria-current={isHere ? 'page' : undefined}>
+                  <span class="gbs2-satmark" aria-hidden="true">{kidNum}</span>
+                  <span class="gbs2-satrow-t">{kid.title}</span>
+                  <span class="gbs2-satrow-min">{kid.readingTime}</span>
                 </a>
               );
             })}

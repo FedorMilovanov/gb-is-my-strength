@@ -354,16 +354,16 @@ for (const [id, url, satelliteUrl] of [
   R(id, 'TOC: поповер НЕ центр-модалка (прозрачный фон, докнут слева)',
     !!pop && /rgba\(0, ?0, ?0, ?0\)|transparent/.test(pop.bgAlpha) && pop.cx < pop.vw / 2 - 100,
     JSON.stringify(pop));
-  R(id, 'TOC: спутники видны в аккордеоне (под родительской частью)', !!pop && pop.satellites > 0, JSON.stringify(pop));
+  R(id, 'TOC: статьи главы видны в аккордеоне (книжная серия)', !!pop && pop.satellites > 0, JSON.stringify(pop));
   await ctx.close();
 
-  // Страница-спутник: правильный номер РОДИТЕЛЬСКОЙ части (не дефолт "1 из N").
+  // Страница статьи главы: правильный номер СВОЕЙ ГЛАВЫ (не дефолт "1 из N").
   const { ctx: ctx2, page: page2 } = await newPage({ width: 1440, height: 900 });
   await page2.goto(base + satelliteUrl, { waitUntil: 'networkidle' });
   await page2.waitForTimeout(300);
   const meta = await page2.evaluate(() => document.getElementById('gbs2Meta')?.textContent || '');
-  R(id, 'TOC: страница-спутник показывает номер родительской части',
-    /^Часть \d+ из \d+$/.test(meta) && !meta.includes('NaN'), meta);
+  R(id, 'TOC: статья главы показывает номер своей главы',
+    /^Глава \d+ из \d+$/.test(meta) && !meta.includes('NaN'), meta);
   await ctx2.close();
 }
 

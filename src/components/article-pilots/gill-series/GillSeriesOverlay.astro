@@ -8,7 +8,11 @@ interface Props {
 }
 
 const { pageId, config = GILL_SERIES } = Astro.props;
-const seriesItems = config.items.filter((it) => it.tier !== 'satellite');
+// Верхний уровень: главы/форзацы/плоские части (статьи глав и спутники вложены).
+const seriesItems = config.items.filter((it) => it.tier !== 'satellite' && !it.parent);
+// Читатель вложенной статьи «находится» в своём родителе (глава/часть).
+const currentRaw = config.items.find((it) => it.id === pageId);
+const currentTopId = currentRaw?.parent ?? pageId;
 ---
 <div class="toc-overlay" id="seriesTocOverlay" aria-hidden="true">
   <div class="toc-sheet" role="dialog" aria-modal="true" aria-label="Содержание серии">
@@ -19,7 +23,7 @@ const seriesItems = config.items.filter((it) => it.tier !== 'satellite');
     </div>
     <div class="toc-sheet__list">
       {seriesItems.map((item) => {
-        const isCurrent = item.id === pageId;
+        const isCurrent = item.id === currentTopId;
         const href = isCurrent ? '#partTocOverlay' : item.href;
         return (
           <a class:list={['toc-item', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
@@ -27,7 +31,7 @@ const seriesItems = config.items.filter((it) => it.tier !== 'satellite');
             <div class="toc-item__info">
               <b>{item.title}</b>
               {isCurrent ? (
-                <small style="color:var(--gb-accent,#7a2e2e)">Оглавление части · {item.readingTime}</small>
+                <small style="color:var(--gb-accent,#7a2e2e)">{item.tier === 'chapter' ? 'Оглавление главы' : 'Оглавление части'} · {item.readingTime}</small>
               ) : (
                 <small>{item.readingTime}</small>
               )}
