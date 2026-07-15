@@ -4,7 +4,7 @@ import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
-import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
+import { GILL_SERIES, satellitesOf, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 // Leather bookmark treatment for the two label rows (kind: 'label'):
 //   «Введение» → lily ornament, warm leather;  «Справочник» → book ornament,
@@ -47,7 +47,15 @@ const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { gr
 // progress bar + the part TOC), with the remaining parts flowing below it.
 // The pilot did this client-side (display:none + node moves); the Astro rail
 // renders the same result server-side.
-const currentIdx = seriesItems.findIndex((item) => item.id === pageId);
+// Спутник (tier:'satellite') сам не входит в seriesItems (ядро) — рельс
+// показывает окружение его РОДИТЕЛЬСКОЙ части, читатель спутника «Движение
+// А1» по-прежнему находится «внутри» Части I для целей навигации/прогресса.
+// Без этой развязки currentIdx был -1 → partsBefore/After пустые и
+// seriesMeta всегда откатывался на дефолт «Часть 1 из N» (баг, найденный
+// content-агентом 2026-07-14 при вводе 18 спутников серии «Сердце»).
+const rawCurrent = config.items.find((item) => item.id === pageId);
+const parentId = rawCurrent?.tier === 'satellite' ? rawCurrent.parent! : pageId;
+const currentIdx = seriesItems.findIndex((item) => item.id === parentId);
 const partsBefore = seriesItems.slice(0, Math.max(0, currentIdx));
 const partsAfter = currentIdx >= 0 ? seriesItems.slice(currentIdx + 1) : [];
 // Введение/Справочник — «label»-пункты серии (mark.kind==="label"), не
@@ -61,11 +69,17 @@ const partsAfter = currentIdx >= 0 ? seriesItems.slice(currentIdx + 1) : [];
 //     the 2 label entries) instead of the correct "Часть 2 из 3".
 const currentItem = currentIdx >= 0 ? seriesItems[currentIdx] : null;
 const romanItems = seriesItems.filter((item) => item.mark.kind === 'roman');
-const romanIdx = romanItems.findIndex((item) => item.id === pageId);
+const romanIdx = romanItems.findIndex((item) => item.id === parentId);
 const partNumber = romanIdx >= 0 ? romanIdx + 1 : 1;
 const seriesMeta = currentItem && currentItem.mark.kind === 'label'
   ? currentItem.mark.value
   : `Часть ${partNumber} из ${romanItems.length}`;
+
+// Owner (2026-07-15): спутники читаются ПРЯМО В РЕЙЛЕ, без всплывающего окна —
+// «в рейле нужно все сделать, там все подпункты пускай раскрываются в пункте».
+// Раскрываются они там же, где и обычное «Оглавление части» (gbs2-toch-toggle),
+// внутри пункта ТЕКУЩЕЙ части — отдельной кнопки/попапа для этого не нужно.
+const currentSats = currentItem ? satellitesOf(config, currentItem.id) : [];
 ---
 
 <aside class="gbs-rail" aria-label={`Серия «${config.seriesTitle}»`}>
@@ -153,6 +167,21 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
             ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
           ))}
         </ul>
+        {currentSats.length > 0 && (
+          <div class="gbs2-sats">
+            <span class="gbs2-sats-lab">Дополнения к части</span>
+            {currentSats.map((sat) => {
+              const satNum = sat.mark.value.includes('.') ? sat.mark.value.split('.')[1] : sat.mark.value;
+              return (
+                <a class="gbs2-satrow" href={sat.href}>
+                  <span class="gbs2-satmark" aria-hidden="true">{satNum}</span>
+                  <span class="gbs2-satrow-t">{sat.shortTitle || sat.title}</span>
+                  <span class="gbs2-satrow-min">{sat.readingTime}</span>
+                </a>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
 

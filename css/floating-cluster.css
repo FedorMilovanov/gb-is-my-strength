@@ -1344,6 +1344,17 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
    so the v16 parent uses its own class at a calmer intensity). */
 [data-gill-v16] .gbs2-toc a.gbs2-hold{background:rgba(122,46,46,.15);color:rgba(255,255,255,.88)}
 [data-gill-v16] .gbs2-toc a.gbs2-hold .gbs2-dot{border-color:rgba(232,184,120,.55)}
+/* Спутники текущей части (owner 2026-07-15): раскрываются ПРЯМО В РЕЙЛЕ, тем
+   же тумблером «Оглавление части» — без отдельной кнопки/попапа. Визуально
+   отделены от H2/H3-разделов лёгкой чертой + подписью-лейблом. */
+[data-gill-v16] .gbs2-sats{margin:6px 0 0;padding:9px 8px 0 22px;border-top:1px solid rgba(255,255,255,.1)}
+[data-gill-v16] .gbs2-sats-lab{display:block;margin:0 0 4px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+[data-gill-v16] .gbs2-satrow{position:relative;display:flex;align-items:center;gap:8px;padding:6px 8px 6px 26px;border-radius:9px;text-decoration:none;color:rgba(255,255,255,.68);font-family:var(--f-body,Lora,Georgia,serif);font-size:11.5px;line-height:1.25;transition:background .15s,color .15s}
+[data-gill-v16] .gbs2-satrow:hover{background:rgba(255,255,255,.06);color:#fff}
+[data-gill-v16] .gbs2-satmark{position:absolute;left:0;top:50%;margin-top:-8px;width:16px;height:16px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.22);font-family:'Source Sans 3',system-ui,sans-serif;font-size:9.5px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.6)}
+[data-gill-v16] .gbs2-satrow:hover .gbs2-satmark{border-color:var(--gbs2-accent2);color:var(--gbs2-accent2)}
+[data-gill-v16] .gbs2-satrow-t{flex:1;min-width:0}
+[data-gill-v16] .gbs2-satrow-min{font-size:10px;color:rgba(255,255,255,.42);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Flow rail: the parts that FOLLOW the expanded current card. */
 [data-gill-v16] .gbs-rail-list--after{margin-top:2px}
 }
@@ -1354,6 +1365,11 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
    deliberate hover — the outline fills with layered gold and lifts. */
 [data-gill-v16] .gbs2-head{padding-right:clamp(128px,19vw,250px)}
 [data-gill-v16] .gbs2-kinetic{font-size:clamp(64px,8.4vw,124px);letter-spacing:-.1em;white-space:nowrap;opacity:.9;pointer-events:auto;cursor:default;-webkit-text-stroke:1px rgba(184,147,106,.30);transition:transform .5s cubic-bezier(.22,1,.36,1),filter .45s ease,opacity .45s ease}
+/* Спутники серии: марка «I.1»…«IV.3» — на символ длиннее, чем самый широкий
+   роман серии («III»); чуть уменьшаем клемп, чтобы точка-разделитель не
+   теснилась к краю обложки на узких десктопах. Обе базовых site.css/
+   floating-cluster.css правила .gbs2-kinetic побиты этой (доп. класс). */
+[data-gill-v16] .gbs2-kinetic.gbs2-kinetic--compact{font-size:clamp(52px,7vw,108px)}
 html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104,.32)}
 @media (hover:hover) and (pointer:fine){
   [data-gill-v16] .gbs2-kinetic:hover{
@@ -1523,6 +1539,34 @@ html.dark [data-gill-v16] .mobile-bottom-bar{background:rgba(22,26,33,.96);borde
 }
 html.dark [data-gill-v16] .toc-sheet{background:var(--gb-surface);border-color:var(--gb-border)}
 [data-gill-v16] .toc-overlay.is-open .toc-sheet{transform:translateY(0) scale(1)}
+
+/* Десктоп: «Части серии»/«Оглавление части» — поповер от рельса, НЕ
+   центр-модалка с полноэкранным гашением (тот же канон, что и у листа
+   настроек — 8f5b87a — но эти два листа его так и не получили: до сих пор
+   рендерились с мобильным full-screen scrim по центру-снизу экрана даже на
+   1440px+, если лист остался открыт при пересечении брейкпоинта. Найдено
+   2026-07-15 по скринам владельца). .gill-settings-overlay ИСКЛЮЧЁН —
+   у него уже свой (более узкий, 320px) поповер чуть выше в файле. */
+@media (min-width:64em){
+  [data-gill-v16] .toc-overlay:not(.gill-settings-overlay){
+    background:transparent;
+    -webkit-backdrop-filter:none;backdrop-filter:none;
+    align-items:flex-end;justify-content:flex-start;
+    padding:0 0 16px clamp(16px,2.4vw,40px);
+  }
+  [data-gill-v16] .toc-overlay:not(.gill-settings-overlay) .toc-sheet{
+    width:min(420px,calc(100vw - 32px));
+    max-height:min(640px,calc(100vh - 96px));
+    border-radius:18px;
+    box-shadow:0 20px 56px rgba(10,6,2,.38),0 2px 10px rgba(10,6,2,.18);
+    transform-origin:bottom left;
+    transform:translateY(12px) scale(.97);
+  }
+  [data-gill-v16] .toc-overlay:not(.gill-settings-overlay).is-open .toc-sheet{
+    transform:translateY(0) scale(1);
+  }
+  [data-gill-v16] .toc-overlay:not(.gill-settings-overlay) .toc-sheet__handle{display:none}
+}
 
 [data-gill-v16] .toc-sheet__handle{width:40px;height:4px;border-radius:99px;background:var(--gb-border-strong);margin:8px auto 4px;opacity:.5}
 [data-gill-v16] .toc-sheet__head{padding:14px 22px 12px;border-bottom:1px solid var(--gb-border);position:relative}
@@ -4752,11 +4796,15 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
 /* Спутники части (tier: 'satellite', SERIES-ENGINE-GUIDE §3): буква-марка
    вместо точки метро-линии, приглушённее разделов; активный — акцент серии.
    Токены серии (--gb-accent и т.п.) перекрашивают под тему автоматически. */
+/* Круг с ОДНИМ арабским номером (1-5) — родительская «Часть I» уже видна в
+   заголовке аккордеона над этими строками, повторять её в микро-бейдже не
+   нужно (и на таком кегле заглавная римская «I» неотличима от «1» — см.
+   GillPartTocOverlay.astro). Полная форма «I.1» — в заголовке/подписи. */
 #partTocOverlay .gbat-sat{font-style:normal}
 #partTocOverlay .gbat-satmark{position:absolute;left:12px;top:50%;margin-top:-9px;width:18px;height:18px;
   display:grid;place-items:center;border-radius:50%;border:1px solid var(--gb-border,rgba(120,83,46,.35));
-  font-family:Georgia,'Times New Roman',serif;font-size:10.5px;line-height:1;
-  color:var(--gb-text-muted,#8a7a66);background:transparent}
+  font-family:'Source Sans 3',system-ui,sans-serif;font-size:10.5px;font-weight:700;line-height:1;
+  font-variant-numeric:tabular-nums;color:var(--gb-text-muted,#8a7a66);background:transparent}
 #partTocOverlay .gbat-sat.active .gbat-satmark{border-color:var(--gb-accent,#b8894a);color:var(--gb-accent,#b8894a)}
 #partTocOverlay .gbat-satmin{margin-left:auto;font-size:11px;color:var(--gb-text-muted,#8a7a66);opacity:.75}
 

@@ -230,7 +230,12 @@
       box-shadow: 0 6px 22px rgba(20,16,11,.3), inset 0 1px 0 rgba(255,255,255,.06);
       transition: opacity .25s ease, transform .2s ease, bottom .2s ease;
     }
-    #gb-hl-fab.visible { display: flex; }
+    /* Владелец 2026-07-15: докнутая иконка «Мои цитаты» в баре читается как
+       случайная выбивающаяся галочка — некрасиво, бросается в глаза. Прячем
+       ПОКА (не удаляем функцию: сохранение цитат из выделения текста и
+       localStorage продолжают работать молча) до отдельной проработки
+       мягкого минималистичного SVG-значка. Возврат — снять этот !important. */
+    #gb-hl-fab.visible { display: none !important; }
     #gb-hl-fab.is-idle-faded { opacity: .46; }
     #gb-hl-fab:hover, #gb-hl-fab:focus-visible { opacity: 1; transform: translateY(-2px); }
     #gb-hl-fab:active { transform: scale(.94); }

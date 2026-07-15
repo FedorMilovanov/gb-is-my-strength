@@ -1401,6 +1401,23 @@
       });
     }
 
+    // Hardening against a stuck-open sheet rendering with the WRONG (mobile
+    // vs desktop) chrome after a viewport crossing (window resize/rotate
+    // while a sheet is open, or devtools panel toggling layout): close every
+    // Gill sheet on breakpoint cross. Cheap and universal — protects every
+    // series (Gill/Сердце/Баптисты/pastor) and every future one, not just
+    // the two overlays audited today.
+    var deskMq = window.matchMedia && window.matchMedia('(min-width:64em)');
+    if (deskMq && deskMq.addEventListener) {
+      deskMq.addEventListener('change', function () {
+        qsa('.toc-overlay.is-open, .gill-settings-overlay.is-open').forEach(function (ov) {
+          closeOverlay(ov);
+        });
+        qsa('[aria-expanded="true"][data-gill-settings-open], #mobLearningBtn[aria-expanded="true"]')
+          .forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
+      });
+    }
+
     // Back button in Part TOC → Series TOC
     if (backToSeries && seriesToc && partToc) {
       addCleanListener(backToSeries, 'click', function() {

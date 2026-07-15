@@ -68,13 +68,23 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
                   <span class="gbat-dot"></span><span>{row.label}</span>
                 </a>
               ))}
-              {sats.map((sat) => (
-                <a class={['gbat-sub', 'gbat-sat', sat.id === pageId && 'active'].filter(Boolean).join(' ')} href={sat.href}>
-                  <span class="gbat-satmark" aria-hidden="true">{sat.mark.value}</span>
-                  <span>{sat.shortTitle || sat.title}</span>
-                  <span class="gbat-satmin">{sat.readingTime}</span>
-                </a>
-              ))}
+              {sats.map((sat) => {
+                /* В крошечной пилюле показываем ТОЛЬКО номер дополнения
+                   (после точки): «I.1» → «1». Полный код («Дополнение I.1»)
+                   и так избыточен здесь — строка уже физически вложена под
+                   заголовком «Часть I» этого аккордеона. На таком кегле
+                   заглавная римская «I» неотличима от арабской «1» — вместо
+                   борьбы со шрифтом просто не повторяем контекст, который
+                   и так виден (владелец 2026-07-15). */
+                const satNum = sat.mark.value.includes('.') ? sat.mark.value.split('.')[1] : sat.mark.value;
+                return (
+                  <a class={['gbat-sub', 'gbat-sat', sat.id === pageId && 'active'].filter(Boolean).join(' ')} href={sat.href}>
+                    <span class="gbat-satmark" aria-hidden="true">{satNum}</span>
+                    <span>{sat.shortTitle || sat.title}</span>
+                    <span class="gbat-satmin">{sat.readingTime}</span>
+                  </a>
+                );
+              })}
             </div></div></div>
           </div>
         );
