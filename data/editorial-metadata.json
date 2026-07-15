@@ -6,7 +6,7 @@
     "approvedRecordsRequireProjectionConvergence": true,
     "technicalCommitsMayChangeEditorialDates": false
   },
-  "sourceCommit": "080daf227f67e166f50653824be7b01ef7054592",
+  "sourceCommit": "e9faea5b1cc33e877a5971dcb2ad6a99209270de",
   "records": {
     "/articles/20-antisovetov-pastoru/": {
       "route": "/articles/20-antisovetov-pastoru/",
@@ -224,6 +224,54 @@
         "rssPublishedAt": "2026-07-14T18:00:00.000Z"
       }
     },
+    "/articles/kak-hranit-serdce/": {
+      "route": "/articles/kak-hranit-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/kak-hranit-serdce/",
+      "title": "Как хранить сердце: Притчи 4:23 и средства благодати | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/kak-hranit/KakHranitPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/kak-menyaetsya-serdce/": {
+      "route": "/articles/kak-menyaetsya-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/kak-menyaetsya-serdce/",
+      "title": "Как меняется сердце: умерщвление греха и новая любовь | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/kak-menyaetsya/KakMenyaetsyaPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
     "/articles/kod-da-vinchi/": {
       "route": "/articles/kod-da-vinchi/",
       "canonical": "https://gospod-bog.ru/articles/kod-da-vinchi/",
@@ -272,6 +320,30 @@
         "rssPublishedAt": "2026-07-14T18:00:00.000Z"
       }
     },
+    "/articles/myslennaya-zhizn-serdca/": {
+      "route": "/articles/myslennaya-zhizn-serdca/",
+      "canonical": "https://gospod-bog.ru/articles/myslennaya-zhizn-serdca/",
+      "title": "Мысленная жизнь сердца: поток мыслей и библейская медитация | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/myslennaya/MyslennayaPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
     "/articles/novoe-serdce/": {
       "route": "/articles/novoe-serdce/",
       "canonical": "https://gospod-bog.ru/articles/novoe-serdce/",
@@ -296,6 +368,54 @@
         "rssPublishedAt": "2026-07-14T18:00:00.000Z"
       }
     },
+    "/articles/osvobozhdennoe-serdce/": {
+      "route": "/articles/osvobozhdennoe-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/osvobozhdennoe-serdce/",
+      "title": "Конец войне: сердце, освобождённое навсегда | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/osvobozhdennoe/OsvobozhdennoePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/religioznoe-serdce/": {
+      "route": "/articles/religioznoe-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/religioznoe-serdce/",
+      "title": "Религиозное сердце: когда благочестие становится маской | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/religioznoe/ReligioznoePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
     "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
       "route": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
       "canonical": "https://gospod-bog.ru/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
@@ -315,8 +435,32 @@
         "jsonLdPublishedAt": "2026-06-01T21:00:00.000Z",
         "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
         "searchPublishedAt": "2026-06-01T21:00:00.000Z",
-        "searchModifiedAt": "2026-06-03T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/serdce-hrista-k-nemoshchnym/": {
+      "route": "/articles/serdce-hrista-k-nemoshchnym/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-hrista-k-nemoshchnym/",
+      "title": "Сердце Христа: образ Отца, Спаситель врагов, сила немощным | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-hrista/SerdceHristaPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
         "rssPublishedAt": "2026-07-14T18:00:00.000Z"
       }
     },
@@ -344,6 +488,150 @@
         "rssPublishedAt": "2026-07-14T18:00:00.000Z"
       }
     },
+    "/articles/serdce-i-iskushenie/": {
+      "route": "/articles/serdce-i-iskushenie/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-i-iskushenie/",
+      "title": "Когда сердце ведёт переговоры с искушением | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-iskushenie/SerdceIskusheniePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/serdce-i-sokrovishche/": {
+      "route": "/articles/serdce-i-sokrovishche/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-i-sokrovishche/",
+      "title": "Сердце и сокровище: деньги, статус и довольство | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-sokrovishche/SerdceSokrovishchePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/serdce-i-telo/": {
+      "route": "/articles/serdce-i-telo/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-i-telo/",
+      "title": "Сердце и тело: члены как орудия, комфорт и аппетиты | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-telo/SerdceTeloPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/serdce-i-yazyk/": {
+      "route": "/articles/serdce-i-yazyk/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-i-yazyk/",
+      "title": "Сердце и язык: первый выход сердца наружу | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-yazyk/SerdceYazykPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/serdce-ne-v-odinochku/": {
+      "route": "/articles/serdce-ne-v-odinochku/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-ne-v-odinochku/",
+      "title": "Сердце не исцеляется в одиночку: церковь, исповедь, восстановление | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/ne-v-odinochku/NeVOdinochkuPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/serdce-pod-skorbyu/": {
+      "route": "/articles/serdce-pod-skorbyu/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-pod-skorbyu/",
+      "title": "Сердце под скорбью: страдание, провидение и плач | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-skorb/SerdceSkorbPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
     "/articles/serdce-spravochnik/": {
       "route": "/articles/serdce-spravochnik/",
       "canonical": "https://gospod-bog.ru/articles/serdce-spravochnik/",
@@ -364,6 +652,150 @@
         "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
         "searchPublishedAt": null,
         "searchModifiedAt": null,
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/skrytye-idoly-serdca/": {
+      "route": "/articles/skrytye-idoly-serdca/",
+      "canonical": "https://gospod-bog.ru/articles/skrytye-idoly-serdca/",
+      "title": "Скрытые идолы сердца: чему мы поклоняемся, не замечая | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/skrytye-idoly/SkrytyeIdolyPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/sovest-vnutrenniy-sud/": {
+      "route": "/articles/sovest-vnutrenniy-sud/",
+      "canonical": "https://gospod-bog.ru/articles/sovest-vnutrenniy-sud/",
+      "title": "Совесть: судья, с которым сердце торгуется | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/sovest/SovestPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/starye-dorozhki-serdca/": {
+      "route": "/articles/starye-dorozhki-serdca/",
+      "canonical": "https://gospod-bog.ru/articles/starye-dorozhki-serdca/",
+      "title": "Старые дорожки сердца: привычка, «вторая натура», детство и стыд | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/starye-dorozhki/StaryeDorozhkiPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-11T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/strah-bozhij-rabskij-ili-synovnij/": {
+      "route": "/articles/strah-bozhij-rabskij-ili-synovnij/",
+      "canonical": "https://gospod-bog.ru/articles/strah-bozhij-rabskij-ili-synovnij/",
+      "title": "Страх Божий: рабский или сыновний | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/strah-bozhij/StrahBozhijPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/svoboda-vo-hriste/": {
+      "route": "/articles/svoboda-vo-hriste/",
+      "canonical": "https://gospod-bog.ru/articles/svoboda-vo-hriste/",
+      "title": "Свобода во Христе: почему освобождённые ещё воюют | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/svoboda-vo-hriste/SvobodaVoHristePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+      }
+    },
+    "/articles/tma-na-serdce/": {
+      "route": "/articles/tma-na-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/tma-na-serdce/",
+      "title": "Тьма на сердце: всегда ли уныние — это грех? | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/tma-na-serdce/TmaNaSerdcePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
         "rssPublishedAt": "2026-07-14T18:00:00.000Z"
       }
