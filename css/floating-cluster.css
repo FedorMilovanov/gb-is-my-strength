@@ -1351,12 +1351,14 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
 [data-gill-v16] .gbs2-sats-lab{display:block;margin:0 0 4px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
 [data-gill-v16] .gbs2-satrow{position:relative;display:flex;align-items:center;gap:8px;padding:6px 8px 6px 26px;border-radius:9px;text-decoration:none;color:rgba(255,255,255,.68);font-family:var(--f-body,Lora,Georgia,serif);font-size:11.5px;line-height:1.25;transition:background .15s,color .15s}
 [data-gill-v16] .gbs2-satrow:hover{background:rgba(255,255,255,.06);color:#fff}
-[data-gill-v16] .gbs2-satmark{position:absolute;left:0;top:50%;margin-top:-8px;width:16px;height:16px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.22);font-family:'Source Sans 3',system-ui,sans-serif;font-size:9.5px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.6)}
-[data-gill-v16] .gbs2-satrow:hover .gbs2-satmark{border-color:var(--gbs2-accent2);color:var(--gbs2-accent2)}
+[data-gill-v16] .gbs2-satmark{position:absolute;left:-2px;top:50%;margin-top:-10px;width:20px;height:20px;display:grid;place-items:center;border:0;font-family:var(--f-body,Lora,Georgia,serif);font-size:14px;font-weight:600;line-height:1;font-variant-numeric:oldstyle-nums;font-feature-settings:"onum" 1;color:var(--gbs2-accent2,#e8b878)}
+[data-gill-v16] .gbs2-satrow:hover .gbs2-satmark{color:#fff}
 /* Книжная серия: в блоке «В этой главе» текущая статья — не ссылка, а метка
    «вы здесь»: тёплая подложка, полный заголовок, залитый бейдж номера. */
-[data-gill-v16] .gbs2-satrow.is-here{background:rgba(122,46,46,.28);color:rgba(255,255,255,.92);cursor:default}
-[data-gill-v16] .gbs2-satrow.is-here .gbs2-satmark{border-color:transparent;background:var(--gbs2-accent2,#e8b878);color:#241708}
+/* «Вы здесь» — без залитой пилюли: жирная золотая цифра + светлый заголовок. */
+[data-gill-v16] .gbs2-satrow.is-here{background:transparent;color:#fff;cursor:default}
+[data-gill-v16] .gbs2-satrow.is-here .gbs2-satrow-t{font-weight:700}
+[data-gill-v16] .gbs2-satrow.is-here .gbs2-satmark{color:var(--gbs2-accent2,#e8b878);font-weight:700}
 [data-gill-v16] .gbs2-satrow-t{flex:1;min-width:0}
 [data-gill-v16] .gbs2-satrow-min{font-size:10px;color:rgba(255,255,255,.42);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Flow rail: the parts that FOLLOW the expanded current card. */
@@ -4810,12 +4812,17 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
    нужно (и на таком кегле заглавная римская «I» неотличима от «1» — см.
    GillPartTocOverlay.astro). Полная форма «I.1» — в заголовке/подписи. */
 #partTocOverlay .gbat-sat{font-style:normal}
-#partTocOverlay .gbat-satmark{position:absolute;left:14px;top:50%;margin-top:-9px;width:18px;height:18px;
-  display:grid;place-items:center;border-radius:50%;border:1px solid var(--gb-border,rgba(120,83,46,.35));
-  font-family:'Source Sans 3',system-ui,sans-serif;font-size:10.5px;font-weight:700;line-height:1;
-  font-variant-numeric:tabular-nums;color:var(--gb-text-muted,#8a7a66);background:transparent}
-#partTocOverlay .gbat-sat.active .gbat-satmark{border-color:var(--gb-accent,#7a2e2e);color:var(--gb-accent,#7a2e2e);font-weight:800}
-html.dark #partTocOverlay .gbat-sat.active .gbat-satmark{border-color:#e5bd85;color:#e5bd85}
+/* Владелец 2026-07-17: номер статьи — книжная старостильная цифра золотом
+   (Lora, oldstyle-nums), без кружка; halo цвета карточки разрывает линию-
+   трек вокруг цифры (сегментированная линия — ресерч GBS). Центр совпадает
+   со старым (11+12 = 14+9 = 23px), ось узлов не сдвигается. */
+#partTocOverlay .gbat-satmark{position:absolute;left:11px;top:50%;margin-top:-12px;width:24px;height:24px;z-index:1;
+  display:grid;place-items:center;border:0;
+  font-family:var(--gb-font-serif,Lora,Georgia,serif);font-size:17px;font-weight:600;line-height:1;
+  font-variant-numeric:oldstyle-nums;font-feature-settings:"onum" 1;
+  color:var(--gb-accent-gold,#b8894a);background:var(--fill)}
+#partTocOverlay .gbat-sat.active .gbat-satmark{color:var(--gb-accent,#7a2e2e);font-weight:700}
+html.dark #partTocOverlay .gbat-sat.active .gbat-satmark{color:#e5bd85}
 #partTocOverlay .gbat-satmin{margin-left:auto;font-size:11px;color:var(--gb-text-muted,#8a7a66);opacity:.75}
 /* Трёхуровневая книга (референс GBS 2026-07-15 §2.2): строка статьи = ссылка +
    шеврон-тумблер её собственного оглавления (H2). Раскрытие — grid 0fr→1fr
@@ -4851,22 +4858,61 @@ html.dark #partTocOverlay .gbat-go{color:#e5bd85}
   background:color-mix(in srgb,var(--color-accent-gold,#b8936a) 10%,var(--fill))}
 #partTocOverlay .gbat-go .gbat-dot::before{content:"→";position:absolute;inset:0;display:grid;place-items:center;font-size:12px;line-height:1;color:currentColor}
 
-#partTocOverlay .gbat-foot{display:grid;grid-template-columns:1fr 1fr 48px;gap:8px;
+/* minmax(0,1fr): треки обязаны сжиматься ниже min-content, иначе широкая
+   подпись «СЛУШАТЬ СТАТЬЮ» распирает грид и PDF уезжает за край (было 183+157
+   +46 > 354). Теперь оба текст-трека равны и всегда влезают. */
+#partTocOverlay .gbat-foot{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 42px;gap:6px;
   box-shadow:0 -10px 18px -14px rgba(60,44,20,.18)}
 html.dark #partTocOverlay .gbat-foot{box-shadow:0 -12px 20px -14px rgba(0,0,0,.55)}
-#partTocOverlay .gbat-fbtn{display:flex;align-items:center;justify-content:center;gap:7px;min-height:48px;border-radius:12px;
-  font:700 12.5px/1 var(--gb-font-sans,sans-serif);letter-spacing:.01em;white-space:nowrap;padding:0 6px;cursor:pointer;border:0;transition:background .15s,transform .12s}
-#partTocOverlay .gbat-fbtn:active{transform:scale(.97)}
-#partTocOverlay .gbat-fbtn svg{width:16px;height:16px;flex:0 0 auto}
-#partTocOverlay .gbat-fbtn--listen{background:linear-gradient(135deg,var(--color-accent-gold,#b8936a),var(--color-accent-gold-bright,#d8aa6d));
-  color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 3px 14px -3px rgba(184,137,74,.55)}
-html.dark #partTocOverlay .gbat-fbtn--listen{color:#1a1408}
-#partTocOverlay .gbat-fbtn--listen svg{fill:currentColor;stroke:none}
-#partTocOverlay .gbat-fbtn--cont{background:color-mix(in srgb,var(--color-accent-gold,#b8936a) 10%,transparent);color:#8a6430;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
-html.dark #partTocOverlay .gbat-fbtn--cont{color:#e5bd85;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-#partTocOverlay .gbat-fbtn--pdf{background:transparent;color:var(--color-text-muted,#988d7f);border:1px solid var(--color-border,#e8dfd2)}
-#partTocOverlay .gbat-fbtn--pdf svg{width:17px;height:17px}
+/* Референс владельца 2026-07-17: кнопки-карточки — иконка в тонком кружке +
+   подпись + время/подзаголовок, мягкий контур вместо кричащей золотой пилюли. */
+#partTocOverlay .gbat-fbtn{display:flex;align-items:center;gap:8px;min-height:52px;padding:0 8px;border-radius:13px;
+  text-align:left;cursor:pointer;border:1px solid var(--color-border,#e8dfd2);background:var(--color-surface,#fffdf9);
+  transition:border-color .18s,background .18s,transform .12s}
+#partTocOverlay .gbat-fbtn:active{transform:scale(.98)}
+#partTocOverlay .gbat-fbtn:hover{border-color:color-mix(in srgb,var(--color-accent-gold,#b8894a) 55%,var(--color-border,#e8dfd2))}
+#partTocOverlay .gbat-fbtn-ic{flex:0 0 30px;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;
+  border:1px solid var(--color-accent-gold,#b8894a);color:var(--color-accent-gold,#b8894a);transition:background .18s,color .18s,border-color .18s}
+#partTocOverlay .gbat-fbtn-ic svg{width:14px;height:14px}
+#partTocOverlay .gbat-fbtn-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+#partTocOverlay .gbat-fbtn-txt b{font:800 9.5px/1.15 var(--gb-font-sans,sans-serif);letter-spacing:.02em;text-transform:uppercase;
+  color:var(--color-text,#241b15);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#partTocOverlay .gbat-fbtn-txt small{font:600 10px/1 var(--gb-font-sans,sans-serif);color:var(--color-text-muted,#988d7f);font-variant-numeric:tabular-nums}
+/* listen — акцентная: чуть тёплый фон + залитый золотой play-кружок. */
+#partTocOverlay .gbat-fbtn--listen{background:color-mix(in srgb,var(--color-accent-gold,#b8894a) 7%,var(--color-surface,#fffdf9));
+  border-color:color-mix(in srgb,var(--color-accent-gold,#b8894a) 40%,var(--color-border,#e8dfd2))}
+#partTocOverlay .gbat-fbtn--listen .gbat-fbtn-ic{background:linear-gradient(135deg,var(--color-accent-gold,#b8936a),var(--color-accent-gold-bright,#d8aa6d));border-color:transparent;color:#fff}
+html.dark #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-ic{color:#1a1408}
+#partTocOverlay .gbat-fbtn--listen .gbat-fbtn-ic svg{fill:currentColor;stroke:none;margin-left:1px}
+/* Продолжить (владелец 2026-07-17): без кружка-иконки — не дублировать Play;
+   просто крупная центрированная подпись в стильной золотистой рамке. */
+#partTocOverlay .gbat-fbtn--cont{justify-content:center;padding:0 8px;
+  border-color:color-mix(in srgb,var(--color-accent-gold,#b8894a) 34%,var(--color-border,#e8dfd2))}
+#partTocOverlay .gbat-fbtn--cont:hover{border-color:var(--color-accent-gold,#b8894a);
+  background:color-mix(in srgb,var(--color-accent-gold,#b8894a) 5%,var(--color-surface,#fffdf9))}
+#partTocOverlay .gbat-cont-label{font:800 14.5px/1 var(--gb-font-sans,sans-serif);letter-spacing:.005em;
+  color:var(--color-text,#241b15);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html.dark #partTocOverlay .gbat-cont-label{color:#f2e8d8}
+html.dark #partTocOverlay .gbat-fbtn--cont:hover{background:color-mix(in srgb,var(--gbs2-accent2,#e8b878) 8%,transparent)}
+/* PDF — компактная контурная иконка, тот же язык рамки. */
+#partTocOverlay .gbat-fbtn--pdf{justify-content:center;padding:0;color:var(--color-text-muted,#988d7f)}
+#partTocOverlay .gbat-fbtn--pdf svg{width:18px;height:18px}
+/* Тёмная тема: карточки на тёмном листе. */
+html.dark #partTocOverlay .gbat-fbtn{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.1)}
+html.dark #partTocOverlay .gbat-fbtn:hover{border-color:color-mix(in srgb,var(--gbs2-accent2,#e8b878) 45%,rgba(255,255,255,.1))}
+html.dark #partTocOverlay .gbat-fbtn-txt b{color:#f2e8d8}
+html.dark #partTocOverlay .gbat-fbtn-ic{border-color:var(--gbs2-accent2,#e8b878);color:var(--gbs2-accent2,#e8b878)}
+html.dark #partTocOverlay .gbat-fbtn--listen{background:color-mix(in srgb,var(--gbs2-accent2,#e8b878) 12%,rgba(255,255,255,.02));border-color:color-mix(in srgb,var(--gbs2-accent2,#e8b878) 32%,transparent)}
+html.dark #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-ic{background:linear-gradient(135deg,#d8aa6d,#e8b878)}
+/* Узкие телефоны (≤360px): подпись «Слушать статью» не должна обрезаться. */
+@media (max-width:22.6em){
+  #partTocOverlay .gbat-foot{gap:5px;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) 40px}
+  #partTocOverlay .gbat-fbtn{padding:0 7px;gap:6px}
+  #partTocOverlay .gbat-fbtn-ic{flex-basis:26px;width:26px;height:26px}
+  #partTocOverlay .gbat-fbtn-ic svg{width:12px;height:12px}
+  #partTocOverlay .gbat-fbtn-txt b{font-size:8.5px;letter-spacing:0}
+  #partTocOverlay .gbat-cont-label{font-size:12px}
+}
 @media (prefers-reduced-motion:reduce){
   #partTocOverlay .gbat-subs,#partTocOverlay .gbat-sub,#partTocOverlay .gbat-chev{transition:none!important}
 }
