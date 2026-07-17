@@ -806,11 +806,17 @@ q.addEventListener('input',()=>{
     if(hit)hits.push(c.id);
   }
   if(v.length>=2){
+    // ранг: 0 имя-с-начала · 1 имя-внутри · 2 транслит · 3 значение
+    const scored=[];
     for(let i=0;i<LEX.length;i++){
-      const e=LEX[i];
-      if(norm(e.ru).includes(v)||(e.tr&&norm(e.tr).includes(v))||(e.mean&&norm(e.mean).includes(v)))lexHits.push(i);
-      if(lexHits.length>=30)break;
+      const e=LEX[i], ru=norm(e.ru), tr=e.tr?norm(e.tr):'', mn=e.mean?norm(e.mean):'';
+      let rank=-1;
+      if(ru.startsWith(v))rank=0; else if(ru.includes(v))rank=1;
+      else if(tr.includes(v))rank=2; else if(mn.includes(v))rank=3;
+      if(rank>=0)scored.push([rank,i]);
     }
+    scored.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);   // по рангу, затем по алфавиту (LEX уже отсортирован)
+    lexHits=scored.slice(0,30).map(s=>s[1]);
   }
   if(lexHits.length){
     const top=lexHits.slice(0,8);
