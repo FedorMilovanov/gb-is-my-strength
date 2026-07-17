@@ -15,11 +15,39 @@
       "scientific_variants": 9
     },
     "viewport_init": {
-      "cx": 700,
-      "cy": 700,
-      "w": 1100
+      "cx": 620,
+      "cy": 772,
+      "w": 400
     }
   },
+  "regions": [
+    { "id": "asher", "name": "Асир", "badge": 9, "tint": "asher", "labelSize": 6,
+      "d": "M618,636 L612,655 L600,672 L592,690 L590,706 L626,706 L628,672 L628,648 L626,636 Z", "labelPos": [607, 676] },
+    { "id": "naphtali", "name": "Наффтали", "badge": 10, "tint": "naphtali", "labelSize": 6,
+      "d": "M628,636 L628,648 L628,672 L626,706 L647,706 L648,672 L648,648 L645,636 Z", "labelPos": [640, 682] },
+    { "id": "zebulun", "name": "Завулон", "badge": 11, "tint": "zebulun", "labelSize": 5.4,
+      "d": "M590,706 L588,726 L591,736 L632,736 L633,708 L626,706 Z", "labelPos": [610, 724] },
+    { "id": "issachar", "name": "Иссахар", "badge": 12, "tint": "issachar", "labelSize": 5.4,
+      "d": "M632,708 L632,736 L634,746 L656,745 L654,706 L650,706 Z", "labelPos": [645, 728] },
+    { "id": "manasseh_w", "name": "Манассия", "badge": 4, "tint": "manasseh", "labelSize": 7.5,
+      "d": "M588,730 L578,745 L577,772 L651,772 L656,745 L634,746 L633,736 L591,736 L590,730 Z", "labelPos": [612, 760] },
+    { "id": "ephraim", "name": "Ефрем", "badge": 3, "tint": "ephraim", "labelSize": 7,
+      "d": "M577,772 L572,782 L569,797 L649,796 L651,772 Z", "labelPos": [606, 787] },
+    { "id": "dan", "name": "Дан", "badge": 5, "tint": "dan", "labelSize": 5.6,
+      "d": "M569,797 L566,802 L557,818 L556,824 L601,822 L601,797 Z", "labelPos": [580, 813] },
+    { "id": "benjamin", "name": "Вениамин", "badge": 2, "tint": "benjamin", "labelSize": 5,
+      "d": "M601,797 L601,822 L632,820 L636,798 Z", "labelPos": [620, 810] },
+    { "id": "judah", "name": "Иуда", "badge": 1, "tint": "judah", "labelSize": 8.5,
+      "d": "M601,822 L556,824 L544,836 L528,852 L560,865 L588,868 L616,896 L632,878 L632,840 L633,820 Z", "labelPos": [596, 848] },
+    { "id": "simeon", "name": "Симеон", "badge": 6, "tint": "simeon", "labelSize": 6,
+      "d": "M528,852 L512,864 L520,886 L576,889 L588,868 L560,865 Z", "labelPos": [548, 874] },
+    { "id": "manasseh_e", "name": "Манассия", "badge": 4, "tint": "manasseh", "labelSize": 6,
+      "d": "M666,654 L665,692 L668,720 L712,718 L716,662 L692,650 L676,650 Z", "labelPos": [688, 690] },
+    { "id": "gad", "name": "Гад", "badge": 7, "tint": "gad", "labelSize": 7.5,
+      "d": "M657,720 L657,762 L654,800 L708,800 L714,760 L712,718 Z", "labelPos": [684, 762] },
+    { "id": "reuben", "name": "Рувим", "badge": 8, "tint": "reuben", "labelSize": 7.5,
+      "d": "M656,802 L662,838 L667,870 L704,868 L708,804 Z", "labelPos": [683, 836] }
+  ],
   "stories": [
     {
       "id": "main",
@@ -85,6 +113,7 @@
   "places": [
     {
       "id": "judah",
+      "asRegion": true,
       "name": "Иуда",
       "he": "יְהוּדָה",
       "x": 600,
@@ -114,6 +143,7 @@
     },
     {
       "id": "ephraim",
+      "asRegion": true,
       "name": "Ефрем",
       "he": "אֶפְרָיִם",
       "x": 601,
@@ -143,6 +173,7 @@
     },
     {
       "id": "manasseh_n",
+      "asRegion": true,
       "name": "Манассия (запад)",
       "he": "מְנַשֶּׁה",
       "x": 610,
@@ -172,6 +203,7 @@
     },
     {
       "id": "manasseh_e",
+      "asRegion": true,
       "name": "Манассия (восток)",
       "he": "מְנַשֶּׁה",
       "x": 692,
@@ -200,6 +232,7 @@
     },
     {
       "id": "benjamin",
+      "asRegion": true,
       "name": "Вениамин",
       "he": "בִּנְיָמִין",
       "x": 624,
@@ -229,6 +262,7 @@
     },
     {
       "id": "dan",
+      "asRegion": true,
       "name": "Дан",
       "he": "דָּן",
       "x": 665,
@@ -257,6 +291,7 @@
     },
     {
       "id": "simeon",
+      "asRegion": true,
       "name": "Симеон",
       "he": "שִׁמְעוֹן",
       "x": 575,
@@ -286,6 +321,7 @@
     },
     {
       "id": "issachar",
+      "asRegion": true,
       "name": "Иссахар",
       "he": "יִשָּׂשכָר",
       "x": 641,
@@ -314,6 +350,7 @@
     },
     {
       "id": "zebulun",
+      "asRegion": true,
       "name": "Завулон",
       "he": "זְבוּלֻן",
       "x": 628,
@@ -342,6 +379,7 @@
     },
     {
       "id": "naphtali",
+      "asRegion": true,
       "name": "Неффалим",
       "he": "נַפְתָּלִי",
       "x": 640,
@@ -371,6 +409,7 @@
     },
     {
       "id": "asher",
+      "asRegion": true,
       "name": "Асир",
       "he": "אָשֵׁר",
       "x": 614,
@@ -399,6 +438,7 @@
     },
     {
       "id": "gad",
+      "asRegion": true,
       "name": "Гад",
       "he": "גָּד",
       "x": 684,
@@ -427,6 +467,7 @@
     },
     {
       "id": "reuben",
+      "asRegion": true,
       "name": "Рувим",
       "he": "רְאוּבֵן",
       "x": 679,
@@ -455,12 +496,13 @@
     },
     {
       "id": "jericho",
+      "stage": 0,
+      "noRoute": true,
       "name": "Иерихон",
       "he": "יְרִיחוֹ",
       "x": 645,
       "y": 789,
       "type": "main",
-      "stage": 0,
       "kick": "Первая победа · стены пали",
       "id2": "Иудейская пустыня",
       "ep1": "Нав 6:1-27",
@@ -485,12 +527,13 @@
     },
     {
       "id": "ai",
+      "stage": 0,
+      "noRoute": true,
       "name": "Гай",
       "he": "הָעָי",
       "x": 627,
       "y": 784,
       "type": "main",
-      "stage": 0,
       "kick": "Грех Ахана · вторая попытка",
       "id2": "Эт-Телль",
       "ep1": "Нав 7–8",
@@ -520,12 +563,13 @@
     },
     {
       "id": "gibeon",
+      "stage": 0,
+      "noRoute": true,
       "name": "Гаваон",
       "he": "גִּבְעוֹן",
       "x": 619,
       "y": 792,
       "type": "main",
-      "stage": 0,
       "kick": "Хитрость гаваонитян · битва",
       "id2": "Эль-Джиб",
       "ep1": "Нав 9–10",
@@ -554,12 +598,13 @@
     },
     {
       "id": "hazor_conquest",
+      "stage": 0,
+      "noRoute": true,
       "name": "Асор",
       "he": "חָצוֹר",
       "x": 658,
       "y": 651,
       "type": "main",
-      "stage": 0,
       "kick": "Иавин · северная коалиция",
       "id2": "Верхняя Галилея",
       "ep1": "Нав 11:1-15",
@@ -583,12 +628,13 @@
     },
     {
       "id": "mount_ebal",
+      "stage": 0,
+      "noRoute": true,
       "name": "Гевал · благословение и проклятие",
       "he": "הַר עֵיבָל",
       "x": 628,
       "y": 741,
       "type": "main",
-      "stage": 0,
       "kick": "Жертвенник Иисуса Навина",
       "id2": "Напротив Гаризима",
       "ep1": "Нав 8:30-35",

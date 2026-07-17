@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="sheet-svg" viewBox="70.0 20.0 1800 1200.0" data-vb="70.0 20.0 1800 1200.0" data-km-per-unit="0.92" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="Путь Авраама — лист Атласа">
+<svg id="sheet-svg" viewBox="420.0 638.7 400 266.7" data-vb="420.0 638.7 400 266.7" data-km-per-unit="0.92" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="12 Колен Израиля — лист Атласа">
 <defs>
   <!-- винтажная палитра ВАРИАНТ 1: тёплый выцветший пергамент, контрастное
        приглушённо-бирюзовое море -->
@@ -141,9 +141,9 @@
     <stop offset="0" stop-color="#8bb0c4"></stop><stop offset="1" stop-color="#4d7391"></stop>
   </linearGradient>
 </defs>
-<clipPath id="mapClip"><rect x="82.0" y="32.0" width="1776.0" height="1176.0"></rect></clipPath>
+<clipPath id="mapClip"><rect x="422.7" y="641.3" width="394.7" height="261.3"></rect></clipPath>
 <g class="geo" clip-path="url(#mapClip)">
-<rect x="70" y="20" width="1800" height="1200" fill="url(#seaG)"></rect>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" fill="url(#seaG)"></rect>
 <g class="base"><!--?xml version="1.0" encoding="UTF-8"?-->
 <!-- base-geo.svg — базовая география Ближнего Востока
      Общая для всех карт: Авраам, Исход, Павел, Давид
@@ -706,7 +706,7 @@
   <text x="619" y="776" font-size="4.2" fill="#8fd0c5" text-anchor="end" style="letter-spacing:.06em">точка обзора Лота · Быт 13:10</text>
 </g>
 </g>
-<g class="regions-layer"></g>
+<g class="regions-layer"><g class="region" data-rid="asher"><path d="M618,636 L612,655 L600,672 L592,690 L590,706 L626,706 L628,672 L628,648 L626,636 Z" class="region-fill" style="fill:#8f9a52"></path><path d="M618,636 L612,655 L600,672 L592,690 L590,706 L626,706 L628,672 L628,648 L626,636 Z" class="region-border"></path><circle cx="607" cy="672.8" r="1.4" class="region-badge" style="fill:#8f9a52"></circle><text x="607" y="673.4" text-anchor="middle" class="region-badge-t" font-size="1.6">9</text><text x="607" y="676" text-anchor="middle" class="region-name" font-size="2.0">Асир</text></g><g class="region" data-rid="naphtali"><path d="M628,636 L628,648 L628,672 L626,706 L647,706 L648,672 L648,648 L645,636 Z" class="region-fill" style="fill:#d7c24a"></path><path d="M628,636 L628,648 L628,672 L626,706 L647,706 L648,672 L648,648 L645,636 Z" class="region-border"></path><circle cx="640" cy="678.8" r="1.4" class="region-badge" style="fill:#d7c24a"></circle><text x="640" y="679.4" text-anchor="middle" class="region-badge-t" font-size="1.6">10</text><text x="640" y="682" text-anchor="middle" class="region-name" font-size="2.0">Наффтали</text></g><g class="region" data-rid="zebulun"><path d="M590,706 L588,726 L591,736 L632,736 L633,708 L626,706 Z" class="region-fill" style="fill:#a86fa0"></path><path d="M590,706 L588,726 L591,736 L632,736 L633,708 L626,706 Z" class="region-border"></path><circle cx="610" cy="721.1" r="1.3" class="region-badge" style="fill:#a86fa0"></circle><text x="610" y="721.7" text-anchor="middle" class="region-badge-t" font-size="1.5">11</text><text x="610" y="724" text-anchor="middle" class="region-name" font-size="1.8">Завулон</text></g><g class="region" data-rid="issachar"><path d="M632,708 L632,736 L634,746 L656,745 L654,706 L650,706 Z" class="region-fill" style="fill:#c9b877"></path><path d="M632,708 L632,736 L634,746 L656,745 L654,706 L650,706 Z" class="region-border"></path><circle cx="645" cy="725.1" r="1.3" class="region-badge" style="fill:#c9b877"></circle><text x="645" y="725.7" text-anchor="middle" class="region-badge-t" font-size="1.5">12</text><text x="645" y="728" text-anchor="middle" class="region-name" font-size="1.8">Иссахар</text></g><g class="region" data-rid="manasseh_w"><path d="M588,730 L578,745 L577,772 L651,772 L656,745 L634,746 L633,736 L591,736 L590,730 Z" class="region-fill" style="fill:#4fa39a"></path><path d="M588,730 L578,745 L577,772 L651,772 L656,745 L634,746 L633,736 L591,736 L590,730 Z" class="region-border"></path><circle cx="612" cy="756.0" r="1.8" class="region-badge" style="fill:#4fa39a"></circle><text x="612" y="756.8" text-anchor="middle" class="region-badge-t" font-size="2.0">4</text><text x="612" y="760" text-anchor="middle" class="region-name" font-size="2.5">Манассия</text></g><g class="region" data-rid="ephraim"><path d="M577,772 L572,782 L569,797 L649,796 L651,772 Z" class="region-fill" style="fill:#6f9a52"></path><path d="M577,772 L572,782 L569,797 L649,796 L651,772 Z" class="region-border"></path><circle cx="606" cy="783.3" r="1.6" class="region-badge" style="fill:#6f9a52"></circle><text x="606" y="784.0" text-anchor="middle" class="region-badge-t" font-size="1.9">3</text><text x="606" y="787" text-anchor="middle" class="region-name" font-size="2.3">Ефрем</text></g><g class="region" data-rid="dan"><path d="M569,797 L566,802 L557,818 L556,824 L601,822 L601,797 Z" class="region-fill" style="fill:#d98b6a"></path><path d="M569,797 L566,802 L557,818 L556,824 L601,822 L601,797 Z" class="region-border"></path><circle cx="580" cy="810.0" r="1.3" class="region-badge" style="fill:#d98b6a"></circle><text x="580" y="810.6" text-anchor="middle" class="region-badge-t" font-size="1.5">5</text><text x="580" y="813" text-anchor="middle" class="region-name" font-size="1.9">Дан</text></g><g class="region" data-rid="benjamin"><path d="M601,797 L601,822 L632,820 L636,798 Z" class="region-fill" style="fill:#d9a441"></path><path d="M601,797 L601,822 L632,820 L636,798 Z" class="region-border"></path><circle cx="620" cy="807.3" r="1.2" class="region-badge" style="fill:#d9a441"></circle><text x="620" y="807.8" text-anchor="middle" class="region-badge-t" font-size="1.4">2</text><text x="620" y="810" text-anchor="middle" class="region-name" font-size="1.7">Вениамин</text></g><g class="region" data-rid="judah"><path d="M601,822 L556,824 L544,836 L528,852 L560,865 L588,868 L616,896 L632,878 L632,840 L633,820 Z" class="region-fill" style="fill:#c0603f"></path><path d="M601,822 L556,824 L544,836 L528,852 L560,865 L588,868 L616,896 L632,878 L632,840 L633,820 Z" class="region-border"></path><circle cx="596" cy="843.5" r="2.0" class="region-badge" style="fill:#c0603f"></circle><text x="596" y="844.3" text-anchor="middle" class="region-badge-t" font-size="2.3">1</text><text x="596" y="848" text-anchor="middle" class="region-name" font-size="2.8">Иуда</text></g><g class="region" data-rid="simeon"><path d="M528,852 L512,864 L520,886 L576,889 L588,868 L560,865 Z" class="region-fill" style="fill:#9a6fa8"></path><path d="M528,852 L512,864 L520,886 L576,889 L588,868 L560,865 Z" class="region-border"></path><circle cx="548" cy="870.8" r="1.4" class="region-badge" style="fill:#9a6fa8"></circle><text x="548" y="871.4" text-anchor="middle" class="region-badge-t" font-size="1.6">6</text><text x="548" y="874" text-anchor="middle" class="region-name" font-size="2.0">Симеон</text></g><g class="region" data-rid="manasseh_e"><path d="M666,654 L665,692 L668,720 L712,718 L716,662 L692,650 L676,650 Z" class="region-fill" style="fill:#4fa39a"></path><path d="M666,654 L665,692 L668,720 L712,718 L716,662 L692,650 L676,650 Z" class="region-border"></path><circle cx="688" cy="686.8" r="1.4" class="region-badge" style="fill:#4fa39a"></circle><text x="688" y="687.4" text-anchor="middle" class="region-badge-t" font-size="1.6">4</text><text x="688" y="690" text-anchor="middle" class="region-name" font-size="2.0">Манассия</text></g><g class="region" data-rid="gad"><path d="M657,720 L657,762 L654,800 L708,800 L714,760 L712,718 Z" class="region-fill" style="fill:#d98a45"></path><path d="M657,720 L657,762 L654,800 L708,800 L714,760 L712,718 Z" class="region-border"></path><circle cx="684" cy="758.0" r="1.8" class="region-badge" style="fill:#d98a45"></circle><text x="684" y="758.8" text-anchor="middle" class="region-badge-t" font-size="2.0">7</text><text x="684" y="762" text-anchor="middle" class="region-name" font-size="2.5">Гад</text></g><g class="region" data-rid="reuben"><path d="M656,802 L662,838 L667,870 L704,868 L708,804 Z" class="region-fill" style="fill:#6a86b8"></path><path d="M656,802 L662,838 L667,870 L704,868 L708,804 Z" class="region-border"></path><circle cx="683" cy="832.0" r="1.8" class="region-badge" style="fill:#6a86b8"></circle><text x="683" y="832.8" text-anchor="middle" class="region-badge-t" font-size="2.0">8</text><text x="683" y="836" text-anchor="middle" class="region-name" font-size="2.5">Рувим</text></g></g>
 
   <g class="relief" aria-hidden="true">
     <ellipse cx="678" cy="538" rx="10" ry="62" fill="url(#mtG)" transform="rotate(14 678 538)" opacity=".55"></ellipse>
@@ -744,224 +744,78 @@
     <use href="#camel" x="1072" y="950" width="13" height="9.1"></use>
     <use href="#camel" x="1091" y="953" width="11.5" height="8"></use>
   </g>
-<path d="M1710,897 C1592.2,779.8 1166.2,244.5 1003,194 C839.8,143.5 793.5,501.7 731,594 C668.5,686.3 645.8,716.7 628,748 C610.2,779.3 642.0,759.7 624,782 C606.0,804.3 554.0,862.7 520,882 C486.0,901.3 451.7,892.7 420,898 C388.3,903.3 360.8,907.0 330,914 C299.2,921.0 231.7,942.0 235,940 C238.3,938.0 305.8,911.0 350,902 C394.2,893.0 456.7,898.2 500,886 C543.3,873.8 587.7,856.7 610,829 C632.3,801.3 628.7,748.2 634,720 C639.3,691.8 636.8,675.8 642,660 C647.2,644.2 646.7,642.3 665,625 C683.3,607.7 745.2,553.5 752,556 C758.8,558.5 718.3,610.0 706,640 C693.7,670.0 691.8,709.3 678,736 C664.2,762.7 642.5,781.5 623,800 C603.5,818.5 567.5,836.3 561,847 C554.5,857.7 580.2,861.2 584,864" class="route-under"></path>
-<path d="M1710,897 C1592.2,779.8 1166.2,244.5 1003,194 C839.8,143.5 793.5,501.7 731,594 C668.5,686.3 645.8,716.7 628,748 C610.2,779.3 642.0,759.7 624,782 C606.0,804.3 554.0,862.7 520,882 C486.0,901.3 451.7,892.7 420,898 C388.3,903.3 360.8,907.0 330,914 C299.2,921.0 231.7,942.0 235,940 C238.3,938.0 305.8,911.0 350,902 C394.2,893.0 456.7,898.2 500,886 C543.3,873.8 587.7,856.7 610,829 C632.3,801.3 628.7,748.2 634,720 C639.3,691.8 636.8,675.8 642,660 C647.2,644.2 646.7,642.3 665,625 C683.3,607.7 745.2,553.5 752,556 C758.8,558.5 718.3,610.0 706,640 C693.7,670.0 691.8,709.3 678,736 C664.2,762.7 642.5,781.5 623,800 C603.5,818.5 567.5,836.3 561,847 C554.5,857.7 580.2,861.2 584,864" class="route"></path>
-<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(1373.5,520.5) rotate(-132.5)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(829.3,340.4) rotate(112.8)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(662.8,693.9) rotate(124.3)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(578.0,833.1) rotate(134.6)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(425.3,895.2) rotate(-2.9)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(628.4,774.7) rotate(-82.9)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(712.8,583.1) rotate(-39.6)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(692.6,689.3) rotate(102.4)" class="route-arrow"></path>
+<path d="" class="route-under"></path>
+<path d="" class="route"></path>
 
 
-<g class="pl" data-pid="ur"><circle cx="1710" cy="897" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="urfa"><circle cx="979" cy="159" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="harran"><circle cx="1003" cy="194" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="damascus"><circle cx="731" cy="594" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="shechem"><circle cx="628" cy="748" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="bethel"><circle cx="624" cy="782" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="egypt"><circle cx="235" cy="940" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hebron"><circle cx="610" cy="829" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="dan"><circle cx="665" cy="625" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hovah"><circle cx="752" cy="556" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="salem"><circle cx="623" cy="800" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="sodom"><circle cx="658" cy="866" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hammam"><circle cx="667" cy="818" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="zoar"><circle cx="652" cy="893" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="gerar"><circle cx="561" cy="847" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="beersheba"><circle cx="584" cy="864" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="kadesh"><circle cx="542" cy="934" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="shur"><circle cx="400" cy="940" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="lahairoi"><circle cx="534" cy="931" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="babylon"><circle cx="1543" cy="708" r="3.75" class="pl-ctx"></circle></g><g class="pl" data-pid="mari"><circle cx="1190" cy="468" r="3.75" class="pl-ctx"></circle></g>
-<g class="mile" data-stage="0" data-x="1710" data-y="897"><text x="1700.3" y="912.8" text-anchor="end" class="mile-t" font-size="15.00" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="1" data-x="731" data-y="594"><text x="721.3" y="609.8" text-anchor="end" class="mile-t" font-size="15.00" style="fill:#a25d33">II</text></g><g class="mile" data-stage="2" data-x="235" data-y="917"><text x="235.0" y="917.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="3" data-x="592" data-y="832"><text x="592.0" y="832.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#8f4a56">IV</text></g><g class="mile" data-stage="4" data-x="665" data-y="625"><text x="655.3" y="640.8" text-anchor="end" class="mile-t" font-size="15.00" style="fill:#6b5a43">V</text></g><g class="mile" data-stage="7" data-x="631" data-y="810"><text x="631.0" y="810.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#4a6a6a">VIII</text></g><g class="mile" data-stage="5" data-x="667" data-y="873"><text x="667.0" y="873.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#3f6a8a">VI</text></g><g class="mile" data-stage="6" data-x="568" data-y="835"><text x="568.0" y="835.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#7a5a8a">VII</text></g>
-<g class="war-layer" aria-label="Поход четырёх царей · Быт 14"><path d="M702,676 C698.8,680.3 688.2,675.7 683,702 C677.8,728.3 674.5,804.3 671,834 C667.5,863.7 665.0,864.8 662,880 C659.0,895.2 656.0,912.0 653,925 C650.0,938.0 649.5,951.5 644,958 C638.5,964.5 631.3,970.0 620,964 C608.7,958.0 593.0,938.3 576,922 C559.0,905.7 522.0,878.0 518,866 C514.0,854.0 539.7,857.3 552,850 C564.3,842.7 584.0,825.3 592,822 C600.0,818.7 593.7,826.2 600,830 C606.3,833.8 621.8,840.0 630,845 C638.2,850.0 645.8,857.5 649,860" class="war-route"></path><path d="M644.1,850.7 L649,860 L638.8,857.4" class="war-route" style="stroke-dasharray:none"></path><text x="712.0" y="760.0" class="lab-war lab-war-note" font-size="13.50">ПОХОД ЦАРЕЙ ВОСТОКА · БЫТ 14</text><g class="war" data-pid="ashteroth-karnaim"><circle cx="702" cy="676" r="9.0" fill="transparent" stroke="none"></circle><path d="M698.55,672.55 L705.45,679.45 M698.55,679.45 L705.45,672.55" class="war-x"></path><text x="711.8" y="680.6" text-anchor="start" class="lab-war" font-size="13.50">Аштероф-Карнаим</text></g><g class="war" data-pid="ham-zuzim"><circle cx="683" cy="702" r="9.0" fill="transparent" stroke="none"></circle><path d="M679.55,698.55 L686.45,705.45 M679.55,705.45 L686.45,698.55" class="war-x"></path><text x="692.8" y="706.6" text-anchor="start" class="lab-war" font-size="13.50">Хам</text></g><g class="war" data-pid="shaveh-kiriathaim"><circle cx="671" cy="834" r="9.0" fill="transparent" stroke="none"></circle><path d="M667.55,830.55 L674.45,837.45 M667.55,837.45 L674.45,830.55" class="war-x"></path><text x="680.8" y="838.6" text-anchor="start" class="lab-war" font-size="13.50">Шаве-Кириафаим</text></g><g class="war" data-pid="hazazon-tamar"><circle cx="630" cy="839" r="9.0" fill="transparent" stroke="none"></circle><path d="M626.55,835.55 L633.45,842.45 M626.55,842.45 L633.45,835.55" class="war-x"></path><text x="630.0" y="853.3" text-anchor="middle" class="lab-war" font-size="13.50">Хацацон-Фамар</text></g><g class="war" data-pid="el-paran-turn"><circle cx="641" cy="973" r="9.0" fill="transparent" stroke="none"></circle><text x="648.3" y="986.9" text-anchor="start" class="lab-war" font-size="13.50">до Эл-Фарана</text></g></g>
-<g class="glyph-hit" data-pid="ur"><circle cx="1710" cy="886.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="1710" cy="892.5" rx="5.18" ry="1.01"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M1703.7,890.34 h12.6 v-2.34 h-1.8 v-2.34 h-2.07 v-2.34 h-1.26 v-2.16 h-1.08 v2.16 h-1.26 v2.34 h-2.07 v2.34 h-1.8 Z"></path>
-    <path class="g-sh" d="M1710.54,881.16 h1.08 v2.16 h1.26 v2.34 h2.07 v2.34 h1.8 v2.16 h-6.3 Z"></path>
-    <path class="g-out" d="M1710,883.86 v-2.61" style="stroke-width:.55px;opacity:.6"></path>
-  </g></g><g class="glyph-hit" data-pid="harran"><circle cx="1003" cy="183.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="1003" cy="189.5" rx="5.83" ry="1.13"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M1004.8,187.25 V178.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V187.25 Z"></path>
-    <path class="g-sh" d="M1008.4,187.25 V178.79 h0.9 V187.25 Z"></path>
-    <path class="g-out" d="M1006.24,181.76 h2.52" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M1006.6,178.7 v-2.7"></path>
-    <path fill="#a8412a" d="M1006.6,176 l2.88,0.9 l-2.88,0.9 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M997.06,187.25 V183.56
-      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
-      h1.08 V187.25 Z"></path>
-    <path class="g-sh" d="M1004.26,187.25 V183.56 h1.08 V187.25 Z"></path>
-    <path fill="#5c3f18" d="M999.58,187.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
-    <path class="g-hi" d="M997.06,187.16 V183.74"></path>
-  </g></g><g class="glyph-hit" data-pid="damascus"><circle cx="731" cy="583.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="731" cy="589.5" rx="5.83" ry="1.13"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M732.8,587.25 V578.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V587.25 Z"></path>
-    <path class="g-sh" d="M736.4,587.25 V578.79 h0.9 V587.25 Z"></path>
-    <path class="g-out" d="M734.24,581.76 h2.52" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M734.6,578.7 v-2.7"></path>
-    <path fill="#a8412a" d="M734.6,576 l2.88,0.9 l-2.88,0.9 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M725.06,587.25 V583.56
-      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
-      h1.08 V587.25 Z"></path>
-    <path class="g-sh" d="M732.26,587.25 V583.56 h1.08 V587.25 Z"></path>
-    <path fill="#5c3f18" d="M727.58,587.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
-    <path class="g-hi" d="M725.06,587.16 V583.74"></path>
-  </g></g><g class="glyph-hit" data-pid="shechem"><circle cx="628" cy="737.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="628" cy="743.5" rx="5.83" ry="1.13"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M629.8,741.25 V732.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V741.25 Z"></path>
-    <path class="g-sh" d="M633.4,741.25 V732.79 h0.9 V741.25 Z"></path>
-    <path class="g-out" d="M631.24,735.76 h2.52" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M631.6,732.7 v-2.7"></path>
-    <path fill="#a8412a" d="M631.6,730 l2.88,0.9 l-2.88,0.9 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M622.06,741.25 V737.56
-      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
-      h1.08 V741.25 Z"></path>
-    <path class="g-sh" d="M629.26,741.25 V737.56 h1.08 V741.25 Z"></path>
-    <path fill="#5c3f18" d="M624.58,741.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
-    <path class="g-hi" d="M622.06,741.16 V737.74"></path>
-  </g></g><g class="glyph-hit" data-pid="bethel"><circle cx="624" cy="771.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="624" cy="777.5" rx="4.21" ry="0.82"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M618.96,775.34 h10.08 v-2.52 h-10.08 Z"></path>
-    <path class="g-sh" d="M627.06,772.82 h1.98 v2.52 h-1.98 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M620.4,772.82 h7.2 v-2.88 h-7.2 Z"></path>
-    <path class="g-sh" d="M625.98,769.94 h1.62 v2.88 h-1.62 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M620.4,769.94 l-0.63,-1.17 l1.26,0 Z M627.6,769.94 l0.63,-1.17 l-1.26,0 Z"></path>
-    <path fill="url(#gFlame)" d="M624,769.76
-      q2.52,2.16 0.9,5.04 q1.08,-1.26 0.45,-2.88
-      q1.08,1.62 -0.18,3.42 q-1.26,1.8 -2.34,0.36
-      q-1.08,-1.44 -0.27,-2.88 q-1.62,1.08 -0.9,3.06
-      q-1.98,-2.52 0.54,-5.76 q-0.18,1.44 0.99,2.16
-      q0.81,-1.62 0.63,-2.7 Z"></path>
-  </g></g><g class="glyph-hit" data-pid="egypt"><circle cx="235" cy="929.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="235" cy="935.5" rx="5.18" ry="1.01"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M228.7,933.34 L234.64,923.44 L236.44,933.34 Z"></path>
-    <path class="g-sh2" d="M234.64,923.44 L240.4,933.34 L236.44,933.34 Z"></path>
-    <path fill="url(#gStone)" d="M238.6,933.34 L241.48,928.66 L244.36,933.34 Z" opacity=".85"></path>
-    <path class="g-hi" d="M234.64,923.44 L229.06,933.16"></path>
-  </g></g><g class="glyph-hit" data-pid="hebron"><circle cx="610" cy="817.5" r="8.5" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="610" cy="823.5" rx="4.42" ry="0.86"></ellipse>
-    <path fill="url(#gTrunk)" d="M608.96,821.23 q-0.28,-2.83 0.38,-4.72 q0.47,1.8 1.42,0 q0.57,1.89 0.28,4.72 Z"></path>
-    <path fill="url(#gLeaf)" d="M610,817.45
-      q-5.29,0.38 -4.91,-3.78 q0.09,-2.46 2.46,-2.65
-      q0.57,-2.83 3.78,-2.46 q2.83,0.28 3.02,2.83
-      q2.46,0.38 2.08,3.21 q-0.38,3.21 -4.35,2.65
-      q-0.94,1.51 -3.21,0.57 Z"></path>
-    <path class="g-sh" d="M610.95,817.83 q1.89,0.38 2.46,-0.94 q3.4,0.28 3.59,-2.83 q-0.19,1.7 -2.27,2.27 q-1.89,0.57 -3.4,0.19 q-0.76,0.76 -2.27,0.94 Z"></path>
-    <path class="g-hi" d="M606.79,813.11 q1.32,-1.32 3.21,-1.04" style="opacity:.5"></path>
-  </g></g><g class="glyph-hit" data-pid="dan"><circle cx="665" cy="614.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="665" cy="620.5" rx="3.89" ry="0.76"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M660.14,618.34 v-5.76 a4.86,4.5 0 0 1 9.72,0 v5.76 h-2.34 v-5.04 a2.52,2.52 0 0 0 -5.04,0 v5.04 Z"></path>
-    <path class="g-sh" d="M667.52,618.34 v-5.04 a2.52,2.52 0 0 0 -0.9,-1.89 a2.52,2.52 0 0 1 0.9,1.89 v5.04 h2.34 v-5.76 a4.86,4.5 0 0 0 -2.16,-3.69 a4.86,4.5 0 0 1 2.16,3.69 v5.76 Z"></path>
-    <path fill="#5c3f18" d="M662.66,618.34 v-5.04 a2.52,2.52 0 0 1 5.04,0 v5.04 Z" opacity=".55"></path>
-    <path class="g-hi" d="M660.32,618.25 v-5.58 a4.68,4.32 0 0 1 2.34,-3.51"></path>
-  </g></g><g class="glyph-hit" data-pid="salem"><circle cx="623" cy="789.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="623" cy="795.5" rx="5.83" ry="1.13"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M624.8,793.25 V784.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V793.25 Z"></path>
-    <path class="g-sh" d="M628.4,793.25 V784.79 h0.9 V793.25 Z"></path>
-    <path class="g-out" d="M626.24,787.76 h2.52" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M626.6,784.7 v-2.7"></path>
-    <path fill="#a8412a" d="M626.6,782 l2.88,0.9 l-2.88,0.9 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M617.06,793.25 V789.56
-      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
-      h1.08 V793.25 Z"></path>
-    <path class="g-sh" d="M624.26,793.25 V789.56 h1.08 V793.25 Z"></path>
-    <path fill="#5c3f18" d="M619.58,793.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
-    <path class="g-hi" d="M617.06,793.16 V789.74"></path>
-  </g></g><g class="glyph-hit" data-pid="sodom"><circle cx="662" cy="863.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="662" cy="869.5" rx="3.89" ry="0.76"></ellipse>
-    <path class="g-smoke" d="M660.74,862.3 q-1.8,-2.34 -0.18,-4.14 q1.44,-1.26 0.18,-3.06"></path>
-    <path class="g-smoke" d="M664.34,863.2 q1.98,-1.98 0.72,-4.32 q-0.72,-1.44 0.72,-2.88"></path>
-    <path fill="url(#gBody)" class="gb" d="M656.06,867.34 V863.2 l0.99,-1.26 l0.99,1.08 l0.9,-1.8 l0.81,1.44 V867.34 Z"></path>
-    <path class="g-sh" d="M658.85,866.08 l0.81,1.44 V867.34 h-0.81 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M660.74,867.34 V859.6 l2.34,1.26 l0.18,6.12 V867.34 Z"></path>
-    <path class="g-sh" d="M662.72,860.68 l0.36,1.08 l0.18,5.58 h-0.54 Z"></path>
-    <path fill="#5c3f18" d="M661.37,867.34 v-2.16 a0.81,0.99 0 0 1 1.62,0 v2.16 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M664.7,867.34 V865.18 l0.99,-1.08 l1.08,1.26 V867.34 Z"></path>
-    <path fill="url(#gFlame)" d="M659.66,865.9 q1.62,1.62 0.63,3.6 q0.81,-0.9 0.45,-2.16 q0.9,1.26 -0.18,2.7 q-1.08,1.44 -1.98,0.27 q-0.9,-1.17 -0.18,-2.34 q-1.26,0.81 -0.72,2.34 q-1.44,-1.98 0.36,-4.5 q-0.09,1.08 0.81,1.62 q0.63,-1.17 0.45,-1.98 Z"></path>
-    <path fill="url(#gFlame)" d="M664.16,866.26 q1.26,1.26 0.45,2.88 q0.63,-0.72 0.36,-1.71 q0.72,0.99 -0.18,2.16 q-0.81,1.08 -1.53,0.18 q-0.72,-0.9 -0.09,-1.8 q-0.99,0.63 -0.54,1.8 q-1.08,-1.53 0.27,-3.42 q-0.09,0.81 0.63,1.26 q0.45,-0.9 0.27,-1.53 Z"></path>
-  </g></g><g class="glyph-hit" data-pid="zoar"><circle cx="655" cy="901.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="655" cy="907.5" rx="3.56" ry="0.69"></ellipse>
-    <path fill="url(#gTrunk)" d="M654.19,905.34 q-0.9,-4.14 0.54,-7.2 q0.9,0.36 1.26,0 q-1.26,3.24 -0.18,7.2 Z"></path>
-    <g fill="url(#gLeaf)">
-      <path d="M655.18,898.14 q3.06,-1.62 5.4,0.36 q-2.88,-0.54 -5.4,1.08 Z"></path>
-      <path d="M655.18,898.14 q-3.06,-1.62 -5.4,0.36 q2.88,-0.54 5.4,1.08 Z"></path>
-      <path d="M655.18,898.14 q2.16,-3.06 4.5,-2.88 q-2.34,0.9 -3.96,3.24 Z"></path>
-      <path d="M655.18,898.14 q-2.16,-3.06 -4.5,-2.88 q2.34,0.9 3.96,3.24 Z"></path>
-      <path d="M655.18,898.14 q0.36,-3.42 -0.18,-4.68 q0.9,2.7 1.26,4.5 Z"></path>
-    </g>
-    <circle cx="655.18" cy="898.14" r="0.72" fill="#5c421d"></circle>
-  </g></g><g class="glyph-hit" data-pid="gerar"><circle cx="557" cy="841.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="557" cy="847.5" rx="3.89" ry="0.76"></ellipse>
-    <path class="g-legs" d="M554.66,844.62 v1.8 M556.64,844.62 v1.8 M559.34,844.44 v1.98"></path>
-    <path fill="url(#gBody)" class="gb" d="M552.86,843.72
-      a1.26,1.26 0 0 1 0.36,-2.34 a1.44,1.44 0 0 1 2.34,-0.9
-      a1.53,1.53 0 0 1 2.7,0.18 a1.35,1.35 0 0 1 1.8,1.53
-      a1.26,1.26 0 0 1 0.09,2.16 q0,1.26 -1.44,1.26 h-5.76
-      q-1.44,0 -1.44,-1.35 Z"></path>
-    <path class="g-sh" d="M560.78,841.92 a1.26,1.26 0 0 1 0.09,2.16 q0,1.26 -1.44,1.26 h-1.8 q1.8,-1.62 1.44,-3.6 Z"></path>
-    <path fill="url(#gTrunk)" d="M552.68,843.54 q-1.8,0.18 -1.98,1.8 q0,0.9 0.9,0.99 q1.26,0 1.44,-1.26 Z"></path>
-    <circle cx="551.96" cy="844.44" r="0.31" fill="#2a1c0a"></circle>
-  </g></g><g class="glyph-hit" data-pid="beersheba"><circle cx="594" cy="859.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="594" cy="865.5" rx="3.56" ry="0.69"></ellipse>
-    <path fill="url(#gStone)" class="gb" d="M590.22,863.16 a3.78,1.71 0 0 0 7.56,0 v-2.16 a3.78,1.71 0 0 0 -7.56,0 Z"></path>
-    <ellipse fill="url(#gWater)" cx="594" cy="861.00" rx="3.78" ry="1.71"></ellipse>
-    <ellipse cx="594" cy="861.00" rx="3.78" ry="1.71" class="g-out" fill="none"></ellipse>
-    <path class="g-out" d="M590.94,860.1 a3.06,3.6 0 0 1 6.12,0"></path>
-    <path fill="url(#gTrunk)" d="M590.4,857.04 h7.2 v0.81 h-7.2 Z"></path>
-    <path class="g-out" d="M590.94,857.4 v-1.26 M597.06,857.4 v-1.26"></path>
-  </g></g><g class="glyph-hit" data-pid="lahairoi"><circle cx="534" cy="920.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="534" cy="926.5" rx="3.56" ry="0.69"></ellipse>
-    <path fill="url(#gStone)" class="gb" d="M530.22,924.16 a3.78,1.71 0 0 0 7.56,0 v-2.16 a3.78,1.71 0 0 0 -7.56,0 Z"></path>
-    <ellipse fill="url(#gWater)" cx="534" cy="922.00" rx="3.78" ry="1.71"></ellipse>
-    <ellipse cx="534" cy="922.00" rx="3.78" ry="1.71" class="g-out" fill="none"></ellipse>
-    <path class="g-out" d="M530.94,921.1 a3.06,3.6 0 0 1 6.12,0"></path>
-    <path fill="url(#gTrunk)" d="M530.4,918.04 h7.2 v0.81 h-7.2 Z"></path>
-    <path class="g-out" d="M530.94,918.4 v-1.26 M537.06,918.4 v-1.26"></path>
-  </g></g>
-<g class="wp" data-wpi="0"><circle cx="1646" cy="836" r="10.5" fill="transparent" stroke="none"></circle><rect x="1642.5" y="832.5" width="6.9" height="6.9" transform="rotate(45 1646 836)" class="wp-dot"></rect><text x="1655.0" y="841.4" class="lab-wp" font-size="15.00">Урук</text></g><g class="wp" data-wpi="1"><circle cx="1542" cy="789" r="10.5" fill="transparent" stroke="none"></circle><rect x="1538.5" y="785.5" width="6.9" height="6.9" transform="rotate(45 1542 789)" class="wp-dot"></rect><text x="1551.0" y="794.4" class="lab-wp" font-size="15.00">Ниппур</text></g><g class="wp" data-wpi="2"><circle cx="903" cy="194" r="10.5" fill="transparent" stroke="none"></circle><rect x="899.5" y="190.6" width="6.9" height="6.9" transform="rotate(45 903 194)" class="wp-dot"></rect><text x="912.0" y="199.4" class="lab-wp" font-size="15.00">Каркемиш</text></g>
-<text x="1540" y="710" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="1189" y="470" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="780" y="320" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="1410" y="256" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="613" y="706" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="660" y="895" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="658" y="648" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text>
-<g class="ovl-layer" data-ovl="0"><path d="M452,940 C454.7,934.3 461.3,917.3 468,906 C474.7,894.7 485.0,881.0 492,872 C499.0,863.0 507.0,855.3 510,852" class="ovl-hit" fill="none" stroke="transparent" stroke-width="13.5"></path><path d="M452,940 C454.7,934.3 461.3,917.3 468,906 C474.7,894.7 485.0,881.0 492,872 C499.0,863.0 507.0,855.3 510,852" class="ovl ovl-covenant"></path><text x="415" y="965" text-anchor="start" class="lab-ovl lab-ovl-covenant" font-size="14.25">река Египетская · предел обетования</text></g><g class="ovl-layer" data-ovl="1"><path d="M818,110 C823.3,114.7 839.7,128.7 850,138 C860.3,147.3 875.0,161.3 880,166" class="ovl-hit" fill="none" stroke="transparent" stroke-width="13.5"></path><path d="M818,110 C823.3,114.7 839.7,128.7 850,138 C860.3,147.3 875.0,161.3 880,166" class="ovl ovl-covenant"></path><text x="846" y="122" text-anchor="start" class="lab-ovl lab-ovl-covenant" font-size="14.25">«до реки великой, реки Евфрат» · Быт 15:18</text></g><g class="ovl-layer" data-ovl="2"><path d="M630,788 C633.3,790.0 644.8,795.0 650,800 C655.2,805.0 659.2,815.0 661,818" class="ovl-hit" fill="none" stroke="transparent" stroke-width="13.5"></path><path d="M630,788 C633.3,790.0 644.8,795.0 650,800 C655.2,805.0 659.2,815.0 661,818" class="ovl ovl-ctxpath"></path><path d="M660.1,809.0 L661,818 L653.4,813.1" class="ovl ovl-ctxpath" style="stroke-dasharray:none;fill:none"></path></g>
+<line x1="627.0" y1="782.2" x2="627.0" y2="777.0" class="leader"></line><line x1="617.3" y1="792.7" x2="613.6" y2="794.1" class="leader"></line>
+<g class="pl" data-pid="jericho"><circle cx="645" cy="789" r="1.17" class="pl-city"></circle></g><g class="pl" data-pid="ai"><circle cx="627" cy="784" r="1.17" class="pl-city"></circle></g><g class="pl" data-pid="gibeon"><circle cx="619" cy="792" r="1.17" class="pl-city"></circle></g><g class="pl" data-pid="hazor_conquest"><circle cx="658" cy="651" r="1.17" class="pl-city"></circle></g><g class="pl" data-pid="mount_ebal"><circle cx="628" cy="741" r="1.17" class="pl-city"></circle></g>
 
-<text x="1697.3" y="903.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Ур Халдейский</text><text x="991.8" y="164.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="start">Урфа (Шанлыурфа)</text><text x="1015.8" y="200.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Харран</text><text x="743.8" y="600.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Дамаск</text><text x="640.8" y="754.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Сихем</text><text x="614.4" y="770.5" class="lab-place lab-main" font-size="19.50" text-anchor="end">Бет-Эль и Гай</text><text x="222.3" y="946.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Египет</text><text x="597.3" y="835.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Хеврон · Мамре</text><text x="677.8" y="631.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Дан (Лаиш)</text><text x="764.8" y="561.6" class="lab-place lab-minor" font-size="16.50" text-anchor="start">Хова</text><text x="610.3" y="797.0" class="lab-place lab-main" font-size="19.50" text-anchor="end">Шалем · гора Мория</text><text x="670.8" y="872.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Содом и Гоморра</text><text x="679.8" y="823.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="start">Талл эль-Хаммам</text><text x="664.8" y="899.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Цоар</text><text x="543.5" y="863.2" class="lab-place lab-main" font-size="19.50" text-anchor="end">Герар</text><text x="584.0" y="892.4" class="lab-place lab-main" font-size="19.50" text-anchor="middle">Беэр-Шева</text><text x="554.8" y="939.6" class="lab-place lab-minor" font-size="16.50" text-anchor="start">Кадеш (Кадеш-Барнеа)</text><text x="387.3" y="945.6" class="lab-place lab-minor" font-size="16.50" text-anchor="end">Пустыня Сур</text><text x="521.3" y="936.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="end">Беэр-лахай-рои</text><text x="1553.5" y="713.1" text-anchor="start" class="lab-ctx" font-size="15.00">Вавилон</text><text x="1197.9" y="483.1" text-anchor="start" class="lab-ctx" font-size="15.00">Мари</text><text x="508" y="1002" class="lab-region" font-size="18.75" text-anchor="middle">ПУСТЫНЯ ФАРАН</text>
+
+
+
+<text x="700" y="520" class="lab-ctxnote" font-size="3.83" text-anchor="middle">ЛИВАН</text><text x="800" y="500" class="lab-ctxnote" font-size="3.83" text-anchor="middle">СИРИЯ</text><text x="500" y="700" class="lab-ctxnote" font-size="3.83" text-anchor="middle">ВЕЛИКОЕ МОРЕ</text>
+
+
+<text x="647.8" y="790.2" class="lab-place lab-minor" font-size="3.67" text-anchor="start">Иерихон</text><text x="627.0" y="778.3" class="lab-place lab-minor" font-size="3.67" text-anchor="middle">Гай</text><text x="613.0" y="795.4" class="lab-place lab-minor" font-size="3.67" text-anchor="end">Гаваон</text><text x="655.2" y="652.2" class="lab-place lab-minor" font-size="3.67" text-anchor="end">Асор</text><text x="625.2" y="742.2" class="lab-place lab-minor" font-size="3.67" text-anchor="end">Гевал · благословение и проклятие</text>
 </g>
 
   <g class="cartouche">
-    <rect x="106" y="47" width="600.0" height="129" rx="12" class="plate cart-plate"></rect>
-    <rect x="113.5" y="54.5" width="585.0" height="114.0" rx="9" class="cart-inner"></rect>
-    <rect x="117.3" y="58.3" width="577.5" height="106.5" rx="6.75" class="cart-inner2"></rect>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(118.0,59.0) scale(1.500) rotate(0 8 8)"></use>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(671.5,59.0) scale(1.500) rotate(90 8 8)"></use>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(671.5,141.5) scale(1.500) rotate(180 8 8)"></use>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(118.0,141.5) scale(1.500) rotate(270 8 8)"></use>
-    <text x="136" y="81.5" class="cart-over" font-size="14.25">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ I</text>
-    <text x="136" y="122" class="cart-title" font-size="37.5">Путь Авраама</text>
-    <text x="136" y="155" class="cart-sub" font-size="17.25">Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.</text>
+    <rect x="428" y="644.6666666666666" width="133.3" height="28.666666666666664" rx="2.6666666666666665" class="plate cart-plate"></rect>
+    <rect x="429.7" y="646.3" width="130.0" height="25.3" rx="2" class="cart-inner"></rect>
+    <rect x="430.5" y="647.2" width="128.3" height="23.7" rx="1.5" class="cart-inner2"></rect>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(430.7,647.3) scale(0.333) rotate(0 8 8)"></use>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(553.7,647.3) scale(0.333) rotate(90 8 8)"></use>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(553.7,665.7) scale(0.333) rotate(180 8 8)"></use>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(430.7,665.7) scale(0.333) rotate(270 8 8)"></use>
+    <text x="434.6666666666667" y="652.3333333333333" class="cart-over" font-size="3.1666666666666665">БИБЛЕЙСКИЙ АТЛАС</text>
+    <text x="434.6666666666667" y="661.3333333333333" class="cart-title" font-size="8.333333333333332">12 Колен Израиля</text>
+    <text x="434.6666666666667" y="668.6666666666666" class="cart-sub" font-size="3.833333333333333">Наследие колен · Иисус Навин 13–21</text>
   </g>
 
   <g class="legend">
-    <rect x="106" y="1145" width="1373.4" height="45" rx="9" class="plate"></rect>
-    <path d="M121,1167.5 h39" class="route"></path>
-    <text x="169" y="1173.5" class="leg-t" font-size="15.75">путь Авраама · Быт 11–25</text>
-    <circle cx="508" cy="1167.5" r="6.300000000000001" class="pl-city"></circle>
-    <text x="523" y="1173.5" class="leg-t" font-size="15.75">город · стан</text>
-    <circle cx="643" cy="1167.5" r="6.8999999999999995" class="pl-cand"></circle>
-    <text x="658" y="1173.5" class="leg-t" font-size="15.75">локализация спорна</text>
-    <rect x="847" y="1161.5" width="12" height="12" transform="rotate(45 853 1167.5)" class="wp-dot"></rect>
-    <text x="868" y="1173.5" class="leg-t" font-size="15.75">археология</text>
-    <path d="M973,1163 l9,9 m-9,0 l9,-9" class="war-x"></path>
-    <text x="991" y="1173.5" class="leg-t" font-size="15.75">поход царей · Быт 14</text>
-    <path d="M1213,1167.5 h33" class="ovl ovl-ctxpath"></path>
-    <text x="1258" y="1173.5" class="leg-t" font-size="15.75">путь Лота · Быт 13:11</text>
+    <rect x="428" y="888.6666666666666" width="207.3" height="10" rx="2" class="plate"></rect>
+    <path d="M431.3333333333333,893.6666666666666 h8.666666666666666" class="route"></path>
+    <text x="442" y="894.9999999999999" class="leg-t" font-size="3.5">путь Колена</text>
+    <circle cx="517.3333333333334" cy="893.6666666666666" r="1.4" class="pl-city"></circle>
+    <text x="520.6666666666666" y="894.9999999999999" class="leg-t" font-size="3.5">город · стан</text>
+    <circle cx="547.3333333333334" cy="893.6666666666666" r="1.5333333333333332" class="pl-cand"></circle>
+    <text x="550.6666666666666" y="894.9999999999999" class="leg-t" font-size="3.5">локализация спорна</text>
+    <rect x="592.6666666666666" y="892.3333333333333" width="2.6666666666666665" height="2.6666666666666665" transform="rotate(45 594 893.6666666666666)" class="wp-dot"></rect>
+    <text x="597.3333333333333" y="894.9999999999999" class="leg-t" font-size="3.5">археология</text>
   </g>
 
   <g class="furn">
-    <rect x="1541.608695652174" y="1136" width="259.39130434782606" height="60" rx="9" class="plate"></rect>
-    <rect x="1562.608695652174" y="1169" width="108.69565217391303" height="10.5" class="sb-d"></rect>
-    <rect x="1671.304347826087" y="1169" width="108.69565217391303" height="10.5" class="sb-l"></rect>
-    <text x="1562.608695652174" y="1158.5" class="sb-t" font-size="16.5">0</text>
-    <text x="1671.304347826087" y="1158.5" class="sb-t" font-size="16.5" text-anchor="middle">100</text>
-    <text x="1780" y="1158.5" class="sb-t" font-size="16.5" text-anchor="end">200 км</text>
-    <g transform="translate(1792,104)">
-      <circle r="45" class="plate"></circle>
+    <rect x="577.9420289855074" y="886.6666666666665" width="226.7246376811594" height="13.333333333333332" rx="2" class="plate"></rect>
+    <rect x="582.608695652174" y="893.9999999999999" width="108.69565217391303" height="2.333333333333333" class="sb-d"></rect>
+    <rect x="691.304347826087" y="893.9999999999999" width="108.69565217391303" height="2.333333333333333" class="sb-l"></rect>
+    <text x="582.608695652174" y="891.6666666666665" class="sb-t" font-size="3.6666666666666665">0</text>
+    <text x="691.304347826087" y="891.6666666666665" class="sb-t" font-size="3.6666666666666665" text-anchor="middle">100</text>
+    <text x="800" y="891.6666666666665" class="sb-t" font-size="3.6666666666666665" text-anchor="end">200 км</text>
+    <g transform="translate(802.6666666666666,657.3333333333333)">
+      <circle r="10" class="plate"></circle>
       <g class="rose">
-        <circle r="37.5" class="rose-ring"></circle>
-        <g class="rose-ticks"><path d="M0,-37.5 v4.800000000000001" transform="rotate(0)"></path><path d="M0,-37.5 v2.7" transform="rotate(22.5)"></path><path d="M0,-37.5 v2.7" transform="rotate(45)"></path><path d="M0,-37.5 v2.7" transform="rotate(67.5)"></path><path d="M0,-37.5 v4.800000000000001" transform="rotate(90)"></path><path d="M0,-37.5 v2.7" transform="rotate(112.5)"></path><path d="M0,-37.5 v2.7" transform="rotate(135)"></path><path d="M0,-37.5 v2.7" transform="rotate(157.5)"></path><path d="M0,-37.5 v4.800000000000001" transform="rotate(180)"></path><path d="M0,-37.5 v2.7" transform="rotate(202.5)"></path><path d="M0,-37.5 v2.7" transform="rotate(225)"></path><path d="M0,-37.5 v2.7" transform="rotate(247.5)"></path><path d="M0,-37.5 v4.800000000000001" transform="rotate(270)"></path><path d="M0,-37.5 v2.7" transform="rotate(292.5)"></path><path d="M0,-37.5 v2.7" transform="rotate(315)"></path><path d="M0,-37.5 v2.7" transform="rotate(337.5)"></path></g>
-        <path d="M0,-22.5 L3,-3 L22.5,0 L3,3 L0,22.5 L-3,3 L-22.5,0 L-3,-3 Z" transform="rotate(45)" class="rose-sec"></path>
-        <path d="M0,-33 L4.5,-4.5 L33,0 L4.5,4.5 L0,33 L-4.5,4.5 L-33,0 L-4.5,-4.5 Z"></path>
-        <path d="M0,-33 L4.5,-4.5 L0,0 Z M33,0 L4.5,4.5 L0,0 Z M0,33 L-4.5,4.5 L0,0 Z M-33,0 L-4.5,-4.5 L0,0 Z" class="rose-shade"></path>
-        <circle r="3.1500000000000004" class="rose-hub"></circle>
+        <circle r="8.333333333333332" class="rose-ring"></circle>
+        <g class="rose-ticks"><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(0)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(22.5)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(45)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(67.5)"></path><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(90)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(112.5)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(135)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(157.5)"></path><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(180)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(202.5)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(225)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(247.5)"></path><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(270)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(292.5)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(315)"></path><path d="M0,-8.333333333333332 v0.6" transform="rotate(337.5)"></path></g>
+        <path d="M0,-5 L0.6666666666666666,-0.6666666666666666 L5,0 L0.6666666666666666,0.6666666666666666 L0,5 L-0.6666666666666666,0.6666666666666666 L-5,0 L-0.6666666666666666,-0.6666666666666666 Z" transform="rotate(45)" class="rose-sec"></path>
+        <path d="M0,-7.333333333333333 L1,-1 L7.333333333333333,0 L1,1 L0,7.333333333333333 L-1,1 L-7.333333333333333,0 L-1,-1 Z"></path>
+        <path d="M0,-7.333333333333333 L1,-1 L0,0 Z M7.333333333333333,0 L1,1 L0,0 Z M0,7.333333333333333 L-1,1 L0,0 Z M-7.333333333333333,0 L-1,-1 L0,0 Z" class="rose-shade"></path>
+        <circle r="0.7" class="rose-hub"></circle>
       </g>
-      <path d="M0,-33 L4.5,-4.5 L0,-9 L-4.5,-4.5 Z" class="north"></path>
-      <text y="39" text-anchor="middle" class="north-t" font-size="19.5">С</text>
+      <path d="M0,-7.333333333333333 L1,-1 L0,-2 L-1,-1 Z" class="north"></path>
+      <text y="8.666666666666666" text-anchor="middle" class="north-t" font-size="4.333333333333333">С</text>
     </g>
   </g>
-<rect x="70" y="20" width="1800" height="1200" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"></rect>
-<rect x="70" y="20" width="1800" height="1200" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"></rect>
-<rect x="70" y="20" width="1800" height="1200" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"></rect>
-<g class="graticule" aria-hidden="true"><line x1="201.0" y1="32.0" x2="201.0" y2="38.0" class="grat"></line><line x1="301.0" y1="32.0" x2="301.0" y2="42.5" class="grat"></line><text x="301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">32°</text><line x1="401.0" y1="32.0" x2="401.0" y2="38.0" class="grat"></line><line x1="501.0" y1="32.0" x2="501.0" y2="42.5" class="grat"></line><text x="501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">34°</text><line x1="601.0" y1="32.0" x2="601.0" y2="38.0" class="grat"></line><line x1="701.0" y1="32.0" x2="701.0" y2="42.5" class="grat"></line><text x="701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">36°</text><line x1="801.0" y1="32.0" x2="801.0" y2="38.0" class="grat"></line><line x1="901.0" y1="32.0" x2="901.0" y2="42.5" class="grat"></line><text x="901.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">38°</text><line x1="1001.0" y1="32.0" x2="1001.0" y2="38.0" class="grat"></line><line x1="1101.0" y1="32.0" x2="1101.0" y2="42.5" class="grat"></line><text x="1101.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">40°</text><line x1="1201.0" y1="32.0" x2="1201.0" y2="38.0" class="grat"></line><line x1="1301.0" y1="32.0" x2="1301.0" y2="42.5" class="grat"></line><text x="1301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">42°</text><line x1="1401.0" y1="32.0" x2="1401.0" y2="38.0" class="grat"></line><line x1="1501.0" y1="32.0" x2="1501.0" y2="42.5" class="grat"></line><text x="1501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">44°</text><line x1="1601.0" y1="32.0" x2="1601.0" y2="38.0" class="grat"></line><line x1="1701.0" y1="32.0" x2="1701.0" y2="42.5" class="grat"></line><text x="1701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">46°</text><line x1="1801.0" y1="32.0" x2="1801.0" y2="38.0" class="grat"></line><line x1="82.0" y1="893.6" x2="88.0" y2="893.6" class="grat"></line><line x1="1858.0" y1="893.6" x2="1852.0" y2="893.6" class="grat"></line><line x1="82.0" y1="773.6" x2="92.5" y2="773.6" class="grat"></line><text x="97.0" y="777.8" text-anchor="start" class="grat-t" font-size="12.00">32°</text><line x1="1858.0" y1="773.6" x2="1847.5" y2="773.6" class="grat"></line><text x="1843.0" y="777.8" text-anchor="end" class="grat-t" font-size="12.00">32°</text><line x1="82.0" y1="653.6" x2="88.0" y2="653.6" class="grat"></line><line x1="1858.0" y1="653.6" x2="1852.0" y2="653.6" class="grat"></line><line x1="82.0" y1="533.6" x2="92.5" y2="533.6" class="grat"></line><text x="97.0" y="537.8" text-anchor="start" class="grat-t" font-size="12.00">34°</text><line x1="1858.0" y1="533.6" x2="1847.5" y2="533.6" class="grat"></line><text x="1843.0" y="537.8" text-anchor="end" class="grat-t" font-size="12.00">34°</text><line x1="82.0" y1="413.6" x2="88.0" y2="413.6" class="grat"></line><line x1="1858.0" y1="413.6" x2="1852.0" y2="413.6" class="grat"></line><line x1="82.0" y1="293.6" x2="92.5" y2="293.6" class="grat"></line><text x="97.0" y="297.8" text-anchor="start" class="grat-t" font-size="12.00">36°</text><line x1="1858.0" y1="293.6" x2="1847.5" y2="293.6" class="grat"></line><text x="1843.0" y="297.8" text-anchor="end" class="grat-t" font-size="12.00">36°</text><line x1="82.0" y1="173.6" x2="88.0" y2="173.6" class="grat"></line><line x1="1858.0" y1="173.6" x2="1852.0" y2="173.6" class="grat"></line></g>
-<rect x="82" y="32" width="1776" height="1176" class="frame"></rect>
-<rect x="88" y="38" width="1764" height="1164" class="frame frame-inner"></rect>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"></rect>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"></rect>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"></rect>
+<g class="graticule" aria-hidden="true"><line x1="501.0" y1="641.3" x2="501.0" y2="643.7" class="grat"></line><text x="501.0" y="647.0" text-anchor="middle" class="grat-t" font-size="2.67">34°</text><line x1="601.0" y1="641.3" x2="601.0" y2="642.7" class="grat"></line><line x1="701.0" y1="641.3" x2="701.0" y2="643.7" class="grat"></line><text x="701.0" y="647.0" text-anchor="middle" class="grat-t" font-size="2.67">36°</text><line x1="801.0" y1="641.3" x2="801.0" y2="642.7" class="grat"></line><line x1="422.7" y1="773.6" x2="425.0" y2="773.6" class="grat"></line><text x="426.0" y="774.5" text-anchor="start" class="grat-t" font-size="2.67">32°</text><line x1="817.3" y1="773.6" x2="815.0" y2="773.6" class="grat"></line><text x="814.0" y="774.5" text-anchor="end" class="grat-t" font-size="2.67">32°</text><line x1="422.7" y1="653.6" x2="424.0" y2="653.6" class="grat"></line><line x1="817.3" y1="653.6" x2="816.0" y2="653.6" class="grat"></line></g>
+<rect x="422.6666666666667" y="641.3333333333333" width="394.6666666666667" height="261.33333333333337" class="frame"></rect>
+<rect x="424" y="642.6666666666666" width="392" height="258.6666666666667" class="frame frame-inner"></rect>
 <g class="frame-orn">
-  <use href="#cornerOrn" width="16" height="16" transform="translate(91.0,41.0) scale(2.250) rotate(0 8 8)"></use>
-  <use href="#cornerOrn" width="16" height="16" transform="translate(1813.0,41.0) scale(2.250) rotate(90 8 8)"></use>
-  <use href="#cornerOrn" width="16" height="16" transform="translate(1813.0,1163.0) scale(2.250) rotate(180 8 8)"></use>
-  <use href="#cornerOrn" width="16" height="16" transform="translate(91.0,1163.0) scale(2.250) rotate(270 8 8)"></use>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(424.7,643.3) scale(0.500) rotate(0 8 8)"></use>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(807.3,643.3) scale(0.500) rotate(90 8 8)"></use>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(807.3,892.7) scale(0.500) rotate(180 8 8)"></use>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(424.7,892.7) scale(0.500) rotate(270 8 8)"></use>
 </g>
 </svg>

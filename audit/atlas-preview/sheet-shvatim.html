@@ -15,6 +15,18 @@
   .frame-inner{stroke-width:.5;opacity:.35}
   .frame-orn use{opacity:.5}
   svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
+  /* ═══ E1: территории-уделы (заливка+граница+подпись+бейдж) ═══ */
+  .region{cursor:pointer}
+  .region-fill{opacity:.42;stroke:none;transition:opacity .2s}
+  svg.zoomed .region-fill{opacity:.34}
+  svg.z3 .region-fill{opacity:.24}
+  svg.z4 .region-fill{opacity:.16}
+  .region:hover .region-fill{opacity:.56}
+  .region-border{fill:none;stroke:#5c4a24;stroke-width:1.1px;stroke-dasharray:5 3.5;opacity:.55;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .region-border-k{fill:none;stroke:#5c4a24;stroke-width:1.5px;opacity:.7;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .region-name{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;fill:#4a3a1c;letter-spacing:.14em;text-transform:uppercase;opacity:.8;paint-order:stroke;stroke:#ecdcb4;stroke-width:2.6px;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+  .region-badge{stroke:#ecdcb4;stroke-width:1.3px;vector-effect:non-scaling-stroke}
+  .region-badge-t{font-family:Georgia,serif;font-weight:700;fill:#fff;pointer-events:none;paint-order:stroke;stroke:rgba(60,40,10,.35);stroke-width:.4px}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
@@ -330,7 +342,7 @@
 </style>
 </head>
 <body>
-<div class="wrap"><svg id="sheet-svg" viewBox="150.0 333.3 1100 733.3" data-vb="150.0 333.3 1100 733.3" data-km-per-unit="0.92" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="12 Колен Израиля — лист Атласа">
+<div class="wrap"><svg id="sheet-svg" viewBox="420.0 638.7 400 266.7" data-vb="420.0 638.7 400 266.7" data-km-per-unit="0.92" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="12 Колен Израиля — лист Атласа">
 <defs>
   <!-- винтажная палитра ВАРИАНТ 1: тёплый выцветший пергамент, контрастное
        приглушённо-бирюзовое море -->
@@ -473,9 +485,9 @@
     <stop offset="0" stop-color="#8bb0c4"/><stop offset="1" stop-color="#4d7391"/>
   </linearGradient>
 </defs>
-<clipPath id="mapClip"><rect x="157.3" y="340.7" width="1085.3" height="718.7"/></clipPath>
+<clipPath id="mapClip"><rect x="422.7" y="641.3" width="394.7" height="261.3"/></clipPath>
 <g class="geo" clip-path="url(#mapClip)">
-<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#seaG)"/>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" fill="url(#seaG)"/>
 <g class="base"><?xml version="1.0" encoding="UTF-8"?>
 <!-- base-geo.svg — базовая география Ближнего Востока
      Общая для всех карт: Авраам, Исход, Павел, Давид
@@ -1078,6 +1090,7 @@
   <text x="619" y="776" font-size="4.2" fill="#8fd0c5" text-anchor="end" style="letter-spacing:.06em">точка обзора Лота · Быт 13:10</text>
 </g>
 </g>
+<g class="regions-layer"><g class="region" data-rid="asher"><path d="M618,636 L612,655 L600,672 L592,690 L590,706 L626,706 L628,672 L628,648 L626,636 Z" class="region-fill" style="fill:#8f9a52"/><path d="M618,636 L612,655 L600,672 L592,690 L590,706 L626,706 L628,672 L628,648 L626,636 Z" class="region-border"/><circle cx="607" cy="672.8" r="1.4" class="region-badge" style="fill:#8f9a52"/><text x="607" y="673.4" text-anchor="middle" class="region-badge-t" font-size="1.6">9</text><text x="607" y="676" text-anchor="middle" class="region-name" font-size="2.0">Асир</text></g><g class="region" data-rid="naphtali"><path d="M628,636 L628,648 L628,672 L626,706 L647,706 L648,672 L648,648 L645,636 Z" class="region-fill" style="fill:#d7c24a"/><path d="M628,636 L628,648 L628,672 L626,706 L647,706 L648,672 L648,648 L645,636 Z" class="region-border"/><circle cx="640" cy="678.8" r="1.4" class="region-badge" style="fill:#d7c24a"/><text x="640" y="679.4" text-anchor="middle" class="region-badge-t" font-size="1.6">10</text><text x="640" y="682" text-anchor="middle" class="region-name" font-size="2.0">Наффтали</text></g><g class="region" data-rid="zebulun"><path d="M590,706 L588,726 L591,736 L632,736 L633,708 L626,706 Z" class="region-fill" style="fill:#a86fa0"/><path d="M590,706 L588,726 L591,736 L632,736 L633,708 L626,706 Z" class="region-border"/><circle cx="610" cy="721.1" r="1.3" class="region-badge" style="fill:#a86fa0"/><text x="610" y="721.7" text-anchor="middle" class="region-badge-t" font-size="1.5">11</text><text x="610" y="724" text-anchor="middle" class="region-name" font-size="1.8">Завулон</text></g><g class="region" data-rid="issachar"><path d="M632,708 L632,736 L634,746 L656,745 L654,706 L650,706 Z" class="region-fill" style="fill:#c9b877"/><path d="M632,708 L632,736 L634,746 L656,745 L654,706 L650,706 Z" class="region-border"/><circle cx="645" cy="725.1" r="1.3" class="region-badge" style="fill:#c9b877"/><text x="645" y="725.7" text-anchor="middle" class="region-badge-t" font-size="1.5">12</text><text x="645" y="728" text-anchor="middle" class="region-name" font-size="1.8">Иссахар</text></g><g class="region" data-rid="manasseh_w"><path d="M588,730 L578,745 L577,772 L651,772 L656,745 L634,746 L633,736 L591,736 L590,730 Z" class="region-fill" style="fill:#4fa39a"/><path d="M588,730 L578,745 L577,772 L651,772 L656,745 L634,746 L633,736 L591,736 L590,730 Z" class="region-border"/><circle cx="612" cy="756.0" r="1.8" class="region-badge" style="fill:#4fa39a"/><text x="612" y="756.8" text-anchor="middle" class="region-badge-t" font-size="2.0">4</text><text x="612" y="760" text-anchor="middle" class="region-name" font-size="2.5">Манассия</text></g><g class="region" data-rid="ephraim"><path d="M577,772 L572,782 L569,797 L649,796 L651,772 Z" class="region-fill" style="fill:#6f9a52"/><path d="M577,772 L572,782 L569,797 L649,796 L651,772 Z" class="region-border"/><circle cx="606" cy="783.3" r="1.6" class="region-badge" style="fill:#6f9a52"/><text x="606" y="784.0" text-anchor="middle" class="region-badge-t" font-size="1.9">3</text><text x="606" y="787" text-anchor="middle" class="region-name" font-size="2.3">Ефрем</text></g><g class="region" data-rid="dan"><path d="M569,797 L566,802 L557,818 L556,824 L601,822 L601,797 Z" class="region-fill" style="fill:#d98b6a"/><path d="M569,797 L566,802 L557,818 L556,824 L601,822 L601,797 Z" class="region-border"/><circle cx="580" cy="810.0" r="1.3" class="region-badge" style="fill:#d98b6a"/><text x="580" y="810.6" text-anchor="middle" class="region-badge-t" font-size="1.5">5</text><text x="580" y="813" text-anchor="middle" class="region-name" font-size="1.9">Дан</text></g><g class="region" data-rid="benjamin"><path d="M601,797 L601,822 L632,820 L636,798 Z" class="region-fill" style="fill:#d9a441"/><path d="M601,797 L601,822 L632,820 L636,798 Z" class="region-border"/><circle cx="620" cy="807.3" r="1.2" class="region-badge" style="fill:#d9a441"/><text x="620" y="807.8" text-anchor="middle" class="region-badge-t" font-size="1.4">2</text><text x="620" y="810" text-anchor="middle" class="region-name" font-size="1.7">Вениамин</text></g><g class="region" data-rid="judah"><path d="M601,822 L556,824 L544,836 L528,852 L560,865 L588,868 L616,896 L632,878 L632,840 L633,820 Z" class="region-fill" style="fill:#c0603f"/><path d="M601,822 L556,824 L544,836 L528,852 L560,865 L588,868 L616,896 L632,878 L632,840 L633,820 Z" class="region-border"/><circle cx="596" cy="843.5" r="2.0" class="region-badge" style="fill:#c0603f"/><text x="596" y="844.3" text-anchor="middle" class="region-badge-t" font-size="2.3">1</text><text x="596" y="848" text-anchor="middle" class="region-name" font-size="2.8">Иуда</text></g><g class="region" data-rid="simeon"><path d="M528,852 L512,864 L520,886 L576,889 L588,868 L560,865 Z" class="region-fill" style="fill:#9a6fa8"/><path d="M528,852 L512,864 L520,886 L576,889 L588,868 L560,865 Z" class="region-border"/><circle cx="548" cy="870.8" r="1.4" class="region-badge" style="fill:#9a6fa8"/><text x="548" y="871.4" text-anchor="middle" class="region-badge-t" font-size="1.6">6</text><text x="548" y="874" text-anchor="middle" class="region-name" font-size="2.0">Симеон</text></g><g class="region" data-rid="manasseh_e"><path d="M666,654 L665,692 L668,720 L712,718 L716,662 L692,650 L676,650 Z" class="region-fill" style="fill:#4fa39a"/><path d="M666,654 L665,692 L668,720 L712,718 L716,662 L692,650 L676,650 Z" class="region-border"/><circle cx="688" cy="686.8" r="1.4" class="region-badge" style="fill:#4fa39a"/><text x="688" y="687.4" text-anchor="middle" class="region-badge-t" font-size="1.6">4</text><text x="688" y="690" text-anchor="middle" class="region-name" font-size="2.0">Манассия</text></g><g class="region" data-rid="gad"><path d="M657,720 L657,762 L654,800 L708,800 L714,760 L712,718 Z" class="region-fill" style="fill:#d98a45"/><path d="M657,720 L657,762 L654,800 L708,800 L714,760 L712,718 Z" class="region-border"/><circle cx="684" cy="758.0" r="1.8" class="region-badge" style="fill:#d98a45"/><text x="684" y="758.8" text-anchor="middle" class="region-badge-t" font-size="2.0">7</text><text x="684" y="762" text-anchor="middle" class="region-name" font-size="2.5">Гад</text></g><g class="region" data-rid="reuben"><path d="M656,802 L662,838 L667,870 L704,868 L708,804 Z" class="region-fill" style="fill:#6a86b8"/><path d="M656,802 L662,838 L667,870 L704,868 L708,804 Z" class="region-border"/><circle cx="683" cy="832.0" r="1.8" class="region-badge" style="fill:#6a86b8"/><text x="683" y="832.8" text-anchor="middle" class="region-badge-t" font-size="2.0">8</text><text x="683" y="836" text-anchor="middle" class="region-name" font-size="2.5">Рувим</text></g></g>
 
   <g class="relief" aria-hidden="true">
     <ellipse cx="678" cy="538" rx="10" ry="62" fill="url(#mtG)" transform="rotate(14 678 538)" opacity=".55"/>
@@ -1115,79 +1128,79 @@
     <use href="#camel" x="1072" y="950" width="13" height="9.1"/>
     <use href="#camel" x="1091" y="953" width="11.5" height="8"/>
   </g>
-<path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route-under"/>
-<path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route"/>
-<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(599.9,807.1) rotate(-89.9)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(655.8,697.1) rotate(-28.1)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(660.6,759.3) rotate(118.7)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(645.9,710.6) rotate(-75.8)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(618.4,749.1) rotate(109.4)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(603.2,806.0) rotate(-68.6)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(647.7,695.8) rotate(53.1)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(639.9,716.4) rotate(-74.2)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(645.4,687.2) rotate(108.0)" class="route-arrow"/>
-
-<line x1="627.0" y1="779.0" x2="627.0" y2="764.8" class="leader"/><line x1="614.3" y1="793.9" x2="604.2" y2="797.9" class="leader"/>
-<g class="pl" data-pid="judah"><circle cx="600" cy="850" r="3.21" class="pl-city"/></g><g class="pl" data-pid="ephraim"><circle cx="601" cy="760" r="3.21" class="pl-city"/></g><g class="pl" data-pid="manasseh_n"><circle cx="610" cy="726" r="3.21" class="pl-city"/></g><g class="pl" data-pid="manasseh_e"><circle cx="692" cy="688" r="3.21" class="pl-city"/></g><g class="pl" data-pid="benjamin"><circle cx="624" cy="812" r="3.21" class="pl-city"/></g><g class="pl" data-pid="dan"><circle cx="665" cy="625" r="3.21" class="pl-city"/></g><g class="pl" data-pid="simeon"><circle cx="575" cy="875" r="3.21" class="pl-city"/></g><g class="pl" data-pid="issachar"><circle cx="641" cy="703" r="3.21" class="pl-city"/></g><g class="pl" data-pid="zebulun"><circle cx="628" cy="681" r="3.21" class="pl-city"/></g><g class="pl" data-pid="naphtali"><circle cx="640" cy="628" r="3.21" class="pl-city"/></g><g class="pl" data-pid="asher"><circle cx="614" cy="646" r="3.21" class="pl-city"/></g><g class="pl" data-pid="gad"><circle cx="684" cy="752" r="3.21" class="pl-city"/></g><g class="pl" data-pid="reuben"><circle cx="679" cy="822" r="3.21" class="pl-city"/></g><g class="pl" data-pid="jericho"><circle cx="645" cy="789" r="3.21" class="pl-city"/></g><g class="pl" data-pid="ai"><circle cx="627" cy="784" r="3.21" class="pl-city"/></g><g class="pl" data-pid="gibeon"><circle cx="619" cy="792" r="3.21" class="pl-city"/></g><g class="pl" data-pid="hazor_conquest"><circle cx="658" cy="651" r="3.21" class="pl-city"/></g><g class="pl" data-pid="mount_ebal"><circle cx="628" cy="741" r="3.21" class="pl-city"/></g>
-<g class="mile" data-stage="0" data-x="600" data-y="850"><text x="594.0" y="845.4" text-anchor="end" class="mile-t" font-size="9.17" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="2" data-x="692" data-y="688"><text x="686.0" y="683.4" text-anchor="end" class="mile-t" font-size="9.17" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="1" data-x="624" data-y="812"><text x="618.0" y="807.4" text-anchor="end" class="mile-t" font-size="9.17" style="fill:#a25d33">II</text></g>
+<path d="" class="route-under"/>
+<path d="" class="route"/>
 
 
+<line x1="627.0" y1="782.2" x2="627.0" y2="777.0" class="leader"/><line x1="617.3" y1="792.7" x2="613.6" y2="794.1" class="leader"/>
+<g class="pl" data-pid="jericho"><circle cx="645" cy="789" r="1.17" class="pl-city"/></g><g class="pl" data-pid="ai"><circle cx="627" cy="784" r="1.17" class="pl-city"/></g><g class="pl" data-pid="gibeon"><circle cx="619" cy="792" r="1.17" class="pl-city"/></g><g class="pl" data-pid="hazor_conquest"><circle cx="658" cy="651" r="1.17" class="pl-city"/></g><g class="pl" data-pid="mount_ebal"><circle cx="628" cy="741" r="1.17" class="pl-city"/></g>
 
-<text x="700" y="520" class="lab-ctxnote" font-size="10.54" text-anchor="middle">ЛИВАН</text><text x="800" y="500" class="lab-ctxnote" font-size="10.54" text-anchor="middle">СИРИЯ</text><text x="500" y="700" class="lab-ctxnote" font-size="10.54" text-anchor="middle">ВЕЛИКОЕ МОРЕ</text>
 
 
-<text x="592.2" y="854.1" class="lab-place lab-main" font-size="11.92" text-anchor="end">Иуда</text><text x="593.2" y="763.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Ефрем</text><text x="617.8" y="729.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Манассия (запад)</text><text x="699.8" y="692.1" class="lab-place lab-main" font-size="11.92" text-anchor="start">Манассия (восток)</text><text x="616.2" y="816.1" class="lab-place lab-main" font-size="11.92" text-anchor="end">Вениамин</text><text x="672.8" y="628.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Дан</text><text x="582.8" y="878.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Симеон</text><text x="633.2" y="706.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Иссахар</text><text x="620.2" y="684.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Завулон</text><text x="632.2" y="631.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Неффалим</text><text x="606.2" y="649.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Асир</text><text x="691.8" y="755.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Гад</text><text x="671.2" y="825.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Рувим</text><text x="652.8" y="792.4" class="lab-place lab-minor" font-size="10.08" text-anchor="start">Иерихон</text><text x="627.0" y="768.2" class="lab-place lab-minor" font-size="10.08" text-anchor="middle">Гай</text><text x="602.4" y="801.3" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Гаваон</text><text x="650.2" y="654.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Асор</text><text x="620.2" y="744.4" class="lab-place lab-minor" font-size="10.08" text-anchor="end">Гевал · благословение и проклятие</text>
+
+<text x="700" y="520" class="lab-ctxnote" font-size="3.83" text-anchor="middle">ЛИВАН</text><text x="800" y="500" class="lab-ctxnote" font-size="3.83" text-anchor="middle">СИРИЯ</text><text x="500" y="700" class="lab-ctxnote" font-size="3.83" text-anchor="middle">ВЕЛИКОЕ МОРЕ</text>
+
+
+<text x="647.8" y="790.2" class="lab-place lab-minor" font-size="3.67" text-anchor="start">Иерихон</text><text x="627.0" y="778.3" class="lab-place lab-minor" font-size="3.67" text-anchor="middle">Гай</text><text x="613.0" y="795.4" class="lab-place lab-minor" font-size="3.67" text-anchor="end">Гаваон</text><text x="655.2" y="652.2" class="lab-place lab-minor" font-size="3.67" text-anchor="end">Асор</text><text x="625.2" y="742.2" class="lab-place lab-minor" font-size="3.67" text-anchor="end">Гевал · благословение и проклятие</text>
 </g>
 
   <g class="cartouche">
-    <rect x="172" y="349.8333333333333" width="366.7" height="78.83333333333333" rx="7.333333333333333" class="plate cart-plate"/>
-    <rect x="176.6" y="354.4" width="357.5" height="69.7" rx="5.5" class="cart-inner"/>
-    <rect x="178.9" y="356.7" width="352.9" height="65.1" rx="4.125" class="cart-inner2"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(179.3,357.2) scale(0.917) rotate(0 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(517.6,357.2) scale(0.917) rotate(90 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(517.6,407.6) scale(0.917) rotate(180 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(179.3,407.6) scale(0.917) rotate(270 8 8)"/>
-    <text x="190.33333333333331" y="370.91666666666663" class="cart-over" font-size="8.708333333333332">БИБЛЕЙСКИЙ АТЛАС</text>
-    <text x="190.33333333333331" y="395.66666666666663" class="cart-title" font-size="22.916666666666664">12 Колен Израиля</text>
-    <text x="190.33333333333331" y="415.8333333333333" class="cart-sub" font-size="10.541666666666666">Наследие колен · Иисус Навин 13–21</text>
+    <rect x="428" y="644.6666666666666" width="133.3" height="28.666666666666664" rx="2.6666666666666665" class="plate cart-plate"/>
+    <rect x="429.7" y="646.3" width="130.0" height="25.3" rx="2" class="cart-inner"/>
+    <rect x="430.5" y="647.2" width="128.3" height="23.7" rx="1.5" class="cart-inner2"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(430.7,647.3) scale(0.333) rotate(0 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(553.7,647.3) scale(0.333) rotate(90 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(553.7,665.7) scale(0.333) rotate(180 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(430.7,665.7) scale(0.333) rotate(270 8 8)"/>
+    <text x="434.6666666666667" y="652.3333333333333" class="cart-over" font-size="3.1666666666666665">БИБЛЕЙСКИЙ АТЛАС</text>
+    <text x="434.6666666666667" y="661.3333333333333" class="cart-title" font-size="8.333333333333332">12 Колен Израиля</text>
+    <text x="434.6666666666667" y="668.6666666666666" class="cart-sub" font-size="3.833333333333333">Наследие колен · Иисус Навин 13–21</text>
   </g>
 
   <g class="legend">
-    <rect x="172" y="1020.8333333333334" width="570.2" height="27.5" rx="5.5" class="plate"/>
-    <path d="M181.16666666666666,1034.5833333333335 h23.833333333333332" class="route"/>
-    <text x="210.5" y="1038.25" class="leg-t" font-size="9.625">путь Колена</text>
-    <circle cx="417.66666666666663" cy="1034.5833333333335" r="3.85" class="pl-city"/>
-    <text x="426.8333333333333" y="1038.25" class="leg-t" font-size="9.625">город · стан</text>
-    <circle cx="500.16666666666663" cy="1034.5833333333335" r="4.216666666666666" class="pl-cand"/>
-    <text x="509.3333333333333" y="1038.25" class="leg-t" font-size="9.625">локализация спорна</text>
-    <rect x="624.8333333333333" y="1030.9166666666667" width="7.333333333333333" height="7.333333333333333" transform="rotate(45 628.5 1034.5833333333335)" class="wp-dot"/>
-    <text x="637.6666666666666" y="1038.25" class="leg-t" font-size="9.625">археология</text>
+    <rect x="428" y="888.6666666666666" width="207.3" height="10" rx="2" class="plate"/>
+    <path d="M431.3333333333333,893.6666666666666 h8.666666666666666" class="route"/>
+    <text x="442" y="894.9999999999999" class="leg-t" font-size="3.5">путь Колена</text>
+    <circle cx="517.3333333333334" cy="893.6666666666666" r="1.4" class="pl-city"/>
+    <text x="520.6666666666666" y="894.9999999999999" class="leg-t" font-size="3.5">город · стан</text>
+    <circle cx="547.3333333333334" cy="893.6666666666666" r="1.5333333333333332" class="pl-cand"/>
+    <text x="550.6666666666666" y="894.9999999999999" class="leg-t" font-size="3.5">локализация спорна</text>
+    <rect x="592.6666666666666" y="892.3333333333333" width="2.6666666666666665" height="2.6666666666666665" transform="rotate(45 594 893.6666666666666)" class="wp-dot"/>
+    <text x="597.3333333333333" y="894.9999999999999" class="leg-t" font-size="3.5">археология</text>
   </g>
 
   <g class="furn">
-    <rect x="964.7753623188406" y="1015.3333333333334" width="243.05797101449272" height="36.666666666666664" rx="5.5" class="plate"/>
-    <rect x="977.608695652174" y="1035.5" width="108.69565217391303" height="6.416666666666666" class="sb-d"/>
-    <rect x="1086.304347826087" y="1035.5" width="108.69565217391303" height="6.416666666666666" class="sb-l"/>
-    <text x="977.608695652174" y="1029.0833333333333" class="sb-t" font-size="10.083333333333332">0</text>
-    <text x="1086.304347826087" y="1029.0833333333333" class="sb-t" font-size="10.083333333333332" text-anchor="middle">100</text>
-    <text x="1195" y="1029.0833333333333" class="sb-t" font-size="10.083333333333332" text-anchor="end">200 км</text>
-    <g transform="translate(1202.3333333333333,384.66666666666663)">
-      <circle r="27.5" class="plate"/>
+    <rect x="577.9420289855074" y="886.6666666666665" width="226.7246376811594" height="13.333333333333332" rx="2" class="plate"/>
+    <rect x="582.608695652174" y="893.9999999999999" width="108.69565217391303" height="2.333333333333333" class="sb-d"/>
+    <rect x="691.304347826087" y="893.9999999999999" width="108.69565217391303" height="2.333333333333333" class="sb-l"/>
+    <text x="582.608695652174" y="891.6666666666665" class="sb-t" font-size="3.6666666666666665">0</text>
+    <text x="691.304347826087" y="891.6666666666665" class="sb-t" font-size="3.6666666666666665" text-anchor="middle">100</text>
+    <text x="800" y="891.6666666666665" class="sb-t" font-size="3.6666666666666665" text-anchor="end">200 км</text>
+    <g transform="translate(802.6666666666666,657.3333333333333)">
+      <circle r="10" class="plate"/>
       <g class="rose">
-        <circle r="22.916666666666664" class="rose-ring"/>
-        <g class="rose-ticks"><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(0)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(22.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(45)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(67.5)"/><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(90)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(112.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(135)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(157.5)"/><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(180)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(202.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(225)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(247.5)"/><path d="M0,-22.916666666666664 v2.9333333333333336" transform="rotate(270)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(292.5)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(315)"/><path d="M0,-22.916666666666664 v1.65" transform="rotate(337.5)"/></g>
-        <path d="M0,-13.75 L1.8333333333333333,-1.8333333333333333 L13.75,0 L1.8333333333333333,1.8333333333333333 L0,13.75 L-1.8333333333333333,1.8333333333333333 L-13.75,0 L-1.8333333333333333,-1.8333333333333333 Z" transform="rotate(45)" class="rose-sec"/>
-        <path d="M0,-20.166666666666664 L2.75,-2.75 L20.166666666666664,0 L2.75,2.75 L0,20.166666666666664 L-2.75,2.75 L-20.166666666666664,0 L-2.75,-2.75 Z"/>
-        <path d="M0,-20.166666666666664 L2.75,-2.75 L0,0 Z M20.166666666666664,0 L2.75,2.75 L0,0 Z M0,20.166666666666664 L-2.75,2.75 L0,0 Z M-20.166666666666664,0 L-2.75,-2.75 L0,0 Z" class="rose-shade"/>
-        <circle r="1.925" class="rose-hub"/>
+        <circle r="8.333333333333332" class="rose-ring"/>
+        <g class="rose-ticks"><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(0)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(22.5)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(45)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(67.5)"/><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(90)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(112.5)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(135)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(157.5)"/><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(180)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(202.5)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(225)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(247.5)"/><path d="M0,-8.333333333333332 v1.0666666666666667" transform="rotate(270)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(292.5)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(315)"/><path d="M0,-8.333333333333332 v0.6" transform="rotate(337.5)"/></g>
+        <path d="M0,-5 L0.6666666666666666,-0.6666666666666666 L5,0 L0.6666666666666666,0.6666666666666666 L0,5 L-0.6666666666666666,0.6666666666666666 L-5,0 L-0.6666666666666666,-0.6666666666666666 Z" transform="rotate(45)" class="rose-sec"/>
+        <path d="M0,-7.333333333333333 L1,-1 L7.333333333333333,0 L1,1 L0,7.333333333333333 L-1,1 L-7.333333333333333,0 L-1,-1 Z"/>
+        <path d="M0,-7.333333333333333 L1,-1 L0,0 Z M7.333333333333333,0 L1,1 L0,0 Z M0,7.333333333333333 L-1,1 L0,0 Z M-7.333333333333333,0 L-1,-1 L0,0 Z" class="rose-shade"/>
+        <circle r="0.7" class="rose-hub"/>
       </g>
-      <path d="M0,-20.166666666666664 L2.75,-2.75 L0,-5.5 L-2.75,-2.75 Z" class="north"/>
-      <text y="23.833333333333332" text-anchor="middle" class="north-t" font-size="11.916666666666666">С</text>
+      <path d="M0,-7.333333333333333 L1,-1 L0,-2 L-1,-1 Z" class="north"/>
+      <text y="8.666666666666666" text-anchor="middle" class="north-t" font-size="4.333333333333333">С</text>
     </g>
   </g>
-<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"/>
-<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"/>
-<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
-<g class="graticule" aria-hidden="true"><line x1="201.0" y1="340.7" x2="201.0" y2="344.3" class="grat"/><line x1="301.0" y1="340.7" x2="301.0" y2="347.1" class="grat"/><text x="301.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">32°</text><line x1="401.0" y1="340.7" x2="401.0" y2="344.3" class="grat"/><line x1="501.0" y1="340.7" x2="501.0" y2="347.1" class="grat"/><text x="501.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">34°</text><line x1="601.0" y1="340.7" x2="601.0" y2="344.3" class="grat"/><line x1="701.0" y1="340.7" x2="701.0" y2="347.1" class="grat"/><text x="701.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">36°</text><line x1="801.0" y1="340.7" x2="801.0" y2="344.3" class="grat"/><line x1="901.0" y1="340.7" x2="901.0" y2="347.1" class="grat"/><text x="901.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">38°</text><line x1="1001.0" y1="340.7" x2="1001.0" y2="344.3" class="grat"/><line x1="1101.0" y1="340.7" x2="1101.0" y2="347.1" class="grat"/><text x="1101.0" y="356.3" text-anchor="middle" class="grat-t" font-size="7.33">40°</text><line x1="1201.0" y1="340.7" x2="1201.0" y2="344.3" class="grat"/><line x1="157.3" y1="893.6" x2="161.0" y2="893.6" class="grat"/><line x1="1242.7" y1="893.6" x2="1239.0" y2="893.6" class="grat"/><line x1="157.3" y1="773.6" x2="163.8" y2="773.6" class="grat"/><text x="166.5" y="776.2" text-anchor="start" class="grat-t" font-size="7.33">32°</text><line x1="1242.7" y1="773.6" x2="1236.3" y2="773.6" class="grat"/><text x="1233.5" y="776.2" text-anchor="end" class="grat-t" font-size="7.33">32°</text><line x1="157.3" y1="653.6" x2="161.0" y2="653.6" class="grat"/><line x1="1242.7" y1="653.6" x2="1239.0" y2="653.6" class="grat"/><line x1="157.3" y1="533.6" x2="163.8" y2="533.6" class="grat"/><text x="166.5" y="536.2" text-anchor="start" class="grat-t" font-size="7.33">34°</text><line x1="1242.7" y1="533.6" x2="1236.3" y2="533.6" class="grat"/><text x="1233.5" y="536.2" text-anchor="end" class="grat-t" font-size="7.33">34°</text><line x1="157.3" y1="413.6" x2="161.0" y2="413.6" class="grat"/><line x1="1242.7" y1="413.6" x2="1239.0" y2="413.6" class="grat"/></g>
-<rect x="157.33333333333334" y="340.66666666666663" width="1085.3333333333333" height="718.6666666666667" class="frame"/>
-<rect x="161" y="344.3333333333333" width="1078" height="711.3333333333334" class="frame frame-inner"/>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"/>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"/>
+<rect x="420" y="638.6666666666666" width="400" height="266.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
+<g class="graticule" aria-hidden="true"><line x1="501.0" y1="641.3" x2="501.0" y2="643.7" class="grat"/><text x="501.0" y="647.0" text-anchor="middle" class="grat-t" font-size="2.67">34°</text><line x1="601.0" y1="641.3" x2="601.0" y2="642.7" class="grat"/><line x1="701.0" y1="641.3" x2="701.0" y2="643.7" class="grat"/><text x="701.0" y="647.0" text-anchor="middle" class="grat-t" font-size="2.67">36°</text><line x1="801.0" y1="641.3" x2="801.0" y2="642.7" class="grat"/><line x1="422.7" y1="773.6" x2="425.0" y2="773.6" class="grat"/><text x="426.0" y="774.5" text-anchor="start" class="grat-t" font-size="2.67">32°</text><line x1="817.3" y1="773.6" x2="815.0" y2="773.6" class="grat"/><text x="814.0" y="774.5" text-anchor="end" class="grat-t" font-size="2.67">32°</text><line x1="422.7" y1="653.6" x2="424.0" y2="653.6" class="grat"/><line x1="817.3" y1="653.6" x2="816.0" y2="653.6" class="grat"/></g>
+<rect x="422.6666666666667" y="641.3333333333333" width="394.6666666666667" height="261.33333333333337" class="frame"/>
+<rect x="424" y="642.6666666666666" width="392" height="258.6666666666667" class="frame frame-inner"/>
 <g class="frame-orn">
-  <use href="#cornerOrn" width="16" height="16" transform="translate(162.8,346.2) scale(1.375) rotate(0 8 8)"/>
-  <use href="#cornerOrn" width="16" height="16" transform="translate(1215.2,346.2) scale(1.375) rotate(90 8 8)"/>
-  <use href="#cornerOrn" width="16" height="16" transform="translate(1215.2,1031.8) scale(1.375) rotate(180 8 8)"/>
-  <use href="#cornerOrn" width="16" height="16" transform="translate(162.8,1031.8) scale(1.375) rotate(270 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(424.7,643.3) scale(0.500) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(807.3,643.3) scale(0.500) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(807.3,892.7) scale(0.500) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(424.7,892.7) scale(0.500) rotate(270 8 8)"/>
 </g>
 </svg>
   <div class="stage-strip">

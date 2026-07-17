@@ -21,6 +21,16 @@
 const KM_PER_UNIT = { levant: 0.92, mediterranean: 1.354, urheimat: 0.854 };
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const STAGE_TINT = ['#8a6a1f', '#a25d33', '#4a7a52', '#8f4a56', '#6b5a43', '#3f6a8a', '#7a5a8a', '#4a6a6a'];
+// ═══ E1: палитра территорий (уделы колен + царства), пастель по эталону 05/07.
+// Заливка идёт на opacity ~.4 (см. CSS .region-fill), потому тона насыщенные.
+const REGION_TINTS = {
+  judah: '#c0603f', benjamin: '#d9a441', ephraim: '#6f9a52', manasseh: '#4fa39a',
+  dan: '#d98b6a', simeon: '#9a6fa8', gad: '#d98a45', reuben: '#6a86b8',
+  asher: '#8f9a52', naphtali: '#d7c24a', zebulun: '#a86fa0', issachar: '#c9b877',
+  levi: '#9a7fb0',
+  // царства (M4/M3)
+  israel: '#6a86b8', judah_k: '#d9a441', other: '#b0a486', edom: '#b07a55',
+};
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
@@ -507,7 +517,7 @@ function renderSheet(route, opts) {
   // Маршрут героя — только основные станы: кандидаты (cand) и линии спутников
   // (lot и т.п.) в главную нить не входят
   const routeStops = places.filter(p => typeof p.stage === 'number' &&
-    p.type !== 'region' && p.type !== 'cand' && p.type !== 'lot' && !p.noRoute);
+    p.type !== 'region' && p.type !== 'cand' && p.type !== 'lot' && !p.noRoute && !p.asRegion);
   // route_via: невидимые формирующие точки между станами — гнут нить вокруг
   // воды/гор там, где прямая интерполяция между городами шла бы по озеру
   // (сами станы — данные, кривая между ними — интерполяция, ей нужны опоры)
@@ -558,6 +568,7 @@ function renderSheet(route, opts) {
 
   const seenStage = new Set(), milestones = [], milestoneIds = new Set();
   for (const p of places) {
+    if (p.asRegion || p.noRoute) continue; // территории/внемаршрутные не дают вех-этапов
     if (typeof p.stage === 'number' && !seenStage.has(p.stage)) {
       seenStage.add(p.stage);
       milestones.push({ x: p.x + (p.mileDx || 0), y: p.y + (p.mileDy || 0), n: p.stage, cand: p.type === 'cand', g: !!p.glyph, fix: p.mileDx != null || p.mileDy != null });
@@ -569,6 +580,9 @@ function renderSheet(route, opts) {
   // Иерархия кеглей листа: вехи и места с глифами — крупно, остальное — второй кегль
   const fontMain = 13 * k, fontMinor = 11 * k, fontCtx = 11.5 * k;
   for (const p of places) {
+    // asRegion: место представлено территорией (route.regions) — данные
+    // сохраняем (для карточки-клика), но точку/подпись/маршрут не рисуем
+    if (p.asRegion) continue;
     if (p.type === 'region') {
       labels.push(`<text x="${p.x}" y="${p.y}" class="lab-region" font-size="${(12.5 * k).toFixed(2)}" text-anchor="middle">${esc((p.name || '').toUpperCase())}</text>`);
       continue;
@@ -767,6 +781,29 @@ function renderSheet(route, opts) {
     <text x="${x0 + ((hasWar ? 512 : 372) + heroOff + 30) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${(10.5 * k).toFixed(2)}">${esc(legOvl.label)}</text>` : ''}
   </g>`;
 
+  // ═══ E1: территории (route.regions) — заливка + граница + подпись + бейдж.
+  // Кликабельны (data-rid) как глифы; лежат ПОД городами/маршрутами. ═══
+  const regions = route.regions || [];
+  const regionsSvg = regions.map((r) => {
+    const tint = REGION_TINTS[r.tint] || r.tint || '#b0a486';
+    const eraCls = r.era ? ` era-el era--${esc(r.era)}` : '';
+    const bcls = r.border === 'kingdom' ? 'region-border-k' : 'region-border';
+    const lp = r.labelPos || [];
+    const fs = (r.labelSize || 7) * k;
+    let out = `<g class="region${eraCls}" data-rid="${esc(r.id || '')}">`;
+    out += `<path d="${r.d}" class="region-fill" style="fill:${tint}"/>`;
+    out += `<path d="${r.d}" class="${bcls}"/>`;
+    if (lp[0] != null) {
+      if (r.badge != null) {
+        const by = (lp[1] - fs * 1.6).toFixed(1);
+        out += `<circle cx="${lp[0]}" cy="${by}" r="${(fs * 0.7).toFixed(1)}" class="region-badge" style="fill:${tint}"/>`;
+        out += `<text x="${lp[0]}" y="${(lp[1] - fs * 1.6 + fs * 0.3).toFixed(1)}" text-anchor="middle" class="region-badge-t" font-size="${(fs * 0.82).toFixed(1)}">${esc(String(r.badge))}</text>`;
+      }
+      out += `<text x="${lp[0]}" y="${lp[1]}" text-anchor="middle" class="region-name" font-size="${fs.toFixed(1)}">${esc(r.name || '')}</text>`;
+    }
+    return out + `</g>`;
+  }).join('');
+
   const stageStripHtml = stages.length ? `
   <div class="stage-strip">
     ${stages.map((s, i) =>
@@ -781,6 +818,7 @@ ${GEO_DEFS}
 <g class="geo" clip-path="url(#mapClip)">
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#seaG)"/>
 <g class="base">${base}</g>
+<g class="regions-layer">${regionsSvg}</g>
 ${RELIEF[family] || ''}
 ${DECOR[family] || ''}
 <path d="${routePath}" class="route-under"/>
@@ -828,6 +866,18 @@ function sheetCss() {
   .frame-inner{stroke-width:.5;opacity:.35}
   .frame-orn use{opacity:.5}
   svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
+  /* ═══ E1: территории-уделы (заливка+граница+подпись+бейдж) ═══ */
+  .region{cursor:pointer}
+  .region-fill{opacity:.42;stroke:none;transition:opacity .2s}
+  svg.zoomed .region-fill{opacity:.34}
+  svg.z3 .region-fill{opacity:.24}
+  svg.z4 .region-fill{opacity:.16}
+  .region:hover .region-fill{opacity:.56}
+  .region-border{fill:none;stroke:#5c4a24;stroke-width:1.1px;stroke-dasharray:5 3.5;opacity:.55;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .region-border-k{fill:none;stroke:#5c4a24;stroke-width:1.5px;opacity:.7;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .region-name{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;fill:#4a3a1c;letter-spacing:.14em;text-transform:uppercase;opacity:.8;paint-order:stroke;stroke:#ecdcb4;stroke-width:2.6px;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+  .region-badge{stroke:#ecdcb4;stroke-width:1.3px;vector-effect:non-scaling-stroke}
+  .region-badge-t{font-family:Georgia,serif;font-weight:700;fill:#fff;pointer-events:none;paint-order:stroke;stroke:rgba(60,40,10,.35);stroke-width:.4px}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
