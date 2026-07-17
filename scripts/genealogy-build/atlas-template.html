@@ -164,11 +164,29 @@
   #namecard ol.nmem li::before{content:counter(m);flex:none;width:20px;text-align:right;font-size:10px;color:var(--inkFaint);font-variant-numeric:tabular-nums}
   #namecard ol.nmem li span{color:var(--ink)}
   #namecard ol.nmem li i{margin-left:auto;font-style:normal;font-size:10px;color:var(--inkFaint);white-space:nowrap}
+  #namecard ol.nmem li .mmn{font-style:italic;color:var(--inkSoft);font-size:10.5px;margin-left:7px}
   #namecard .nmemrest{margin-top:8px;font-size:11px;color:var(--inkSoft);font-style:italic}
   #namecard ol.nmem.tribes li{border-bottom:none;padding-bottom:1px}
   #namecard ol.nmem.tribes .thb{font-family:'Times New Roman',serif;color:var(--gold);font-weight:400;font-size:13px}
   #namecard ol.nmem.tribes .tmn{margin-left:auto;font-style:italic;color:var(--inkSoft);font-size:11px}
   #namecard ol.nmem.tribes .tnote{margin:0 0 7px 28px;font-size:10.5px;line-height:1.4;color:var(--inkFaint)}
+  /* сверка Мф/Лк */
+  #namecard .cmp{--matcol:#7d6ba0;--lukcol:#3f6f8c;margin-top:13px}
+  #namecard .cmphdr{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--inkFaint);margin-bottom:9px}
+  #namecard .cmpseg{margin-bottom:12px}
+  #namecard .cmpseg h5{margin:0 0 6px;font-size:12px;color:var(--ink)}
+  #namecard .cmpseg.converge h5{color:var(--gold)}
+  #namecard .chips{display:flex;flex-wrap:wrap;gap:4px}
+  #namecard .chips .gn{font-size:11px;padding:2px 8px;border-radius:9px;border:1px solid var(--panelEdge);background:color-mix(in srgb,var(--card) 60%,transparent);color:var(--ink)}
+  #namecard .chips .ell{color:var(--inkFaint);padding:2px 3px}
+  #namecard .converge .chips .gn{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}
+  #namecard .lane{margin:6px 0;padding:7px 9px;border-left:2.5px solid;border-radius:0 8px 8px 0;background:color-mix(in srgb,var(--panel) 40%,transparent)}
+  #namecard .lane b{display:block;font-size:10.5px;font-weight:600;margin-bottom:5px;color:var(--inkSoft)}
+  #namecard .cmpnote{margin-top:6px;font-size:11px;line-height:1.45;color:var(--inkSoft)}
+  #namecard .cmpnotes{margin-top:6px;padding-top:11px;border-top:1px solid var(--panelEdge)}
+  #namecard .cmpnotes h5{margin:0 0 7px;font-size:12px}
+  #namecard .cmpnotes ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:6px}
+  #namecard .cmpnotes li{font-size:11.5px;line-height:1.5;color:var(--ink)}
   /* мини-карта / правая рейка */
   aside.rail{background:var(--panel);border-left:1px solid var(--panelEdge);padding:14px;display:flex;flex-direction:column;gap:13px;overflow-y:auto}
   .rail .lab{font-size:11px;letter-spacing:1px;color:var(--inkFaint);margin-bottom:6px}
@@ -601,20 +619,40 @@ function openName(id){
     if(d.sub)h+=`<div class="nrole">${esc(d.sub)}</div>`;
     if(d.region)h+=`<div class="nnote">Регион расселения: ${esc(d.region)}</div>`;
     if(d.ref)h+=`<div class="nmeta"><span>${esc(d.ref)}</span></div>`;
+    // Матфей 1 / Лука 3: сверка двух родословий Христа
+    if(d.compare&&ATLAS.mtLk){
+      const M=ATLAS.mtLk;
+      const ELL='…';
+      const chip=(arr)=>arr.map(x=> x===ELL ? '<span class="ell">'+ELL+'</span>' : '<span class="gn">'+esc(x)+'</span>').join('');
+      h+=`<div class="cmp">`;
+      h+=`<div class="cmphdr">Два родословия Христа · ${esc(M.refs)}</div>`;
+      h+=`<div class="cmpseg"><h5>${esc(M.shared.title)}</h5><div class="chips">${chip(M.shared.names)}</div></div>`;
+      h+=`<div class="cmpseg diverge"><h5>${esc(M.diverge1.title)}</h5>`;
+      h+=`<div class="lane" style="border-color:var(--matcol)"><b>${esc(M.diverge1.mt.label)}</b><div class="chips">${chip(M.diverge1.mt.names)}</div></div>`;
+      h+=`<div class="lane" style="border-color:var(--lukcol)"><b>${esc(M.diverge1.lk.label)}</b><div class="chips">${chip(M.diverge1.lk.names)}</div></div></div>`;
+      h+=`<div class="cmpseg converge"><h5>⇊ ${esc(M.converge.title)}</h5><div class="chips">${chip(M.converge.names)}</div><div class="cmpnote">${esc(M.converge.note)}</div></div>`;
+      h+=`<div class="cmpseg diverge"><h5>${esc(M.diverge2.title)}</h5>`;
+      h+=`<div class="lane" style="border-color:var(--matcol)"><b>${esc(M.diverge2.mt.label)}</b><div class="chips">${chip(M.diverge2.mt.names)}</div></div>`;
+      h+=`<div class="lane" style="border-color:var(--lukcol)"><b>${esc(M.diverge2.lk.label)}</b><div class="chips">${chip(M.diverge2.lk.names)}</div></div></div>`;
+      h+=`<div class="cmpseg"><h5>Женщины в родословии Матфея</h5><div class="chips">${chip(M.women)}</div></div>`;
+      h+=`<div class="cmpnotes"><h5>Почему две родословные</h5><ul>${M.notes.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+      h+=`</div>`;
+    }
     // 12 колен: полный список с библейскими значениями имён (Быт 29–35)
-    if(d.tribes&&d.tribes.length){
+    else if(d.tribes&&d.tribes.length){
       h+=`<div class="nmemhdr">12 колен · значения имён (Быт 29–35)</div>`;
       h+=`<ol class="nmem tribes">${d.tribes.map(t=>
         `<li><span>${esc(t.ru)}${t.heb?` <b class="thb">${esc(t.heb)}</b>`:''}</span>${t.meaning?`<i class="tmn">«${esc(t.meaning)}»</i>`:''}</li>`
         +(t.note?`<div class="tnote">${esc(t.note)}</div>`:'')).join('')}</ol>`;
     }
     // раскрытие: реальные имена членов кластера (из TIPNR), стих у каждого
+    // (не показываем для карточек со сверкой Мф/Лк и списком колен — там свой контент)
     const mem=(ATLAS.members||{})[id];
-    if(!(d.tribes&&d.tribes.length)){
+    if(!(d.tribes&&d.tribes.length)&&!d.compare){
       if(mem&&mem.shown.length){
         const rest=mem.total-mem.shown.length;
         h+=`<div class="nmemhdr">Имена в этом роду${mem.total>mem.shown.length?` · показаны ${mem.shown.length} из ${mem.total}`:` · всего ${mem.total}`}</div>`;
-        h+=`<ol class="nmem">${mem.shown.map(m=>`<li><span>${esc(m.ru)}</span>${m.ref?`<i>${esc(m.ref)}</i>`:''}</li>`).join('')}</ol>`;
+        h+=`<ol class="nmem">${mem.shown.map(m=>`<li><span>${esc(m.ru)}${m.meaning?`<em class="mmn">«${esc(m.meaning)}»</em>`:''}</span>${m.ref?`<i>${esc(m.ref)}</i>`:''}</li>`).join('')}</ol>`;
         if(rest>0)h+=`<div class="nmemrest">… ещё ${rest} имён — полностью в базе родословий</div>`;
       } else if(d.rows&&d.rows.length){
         h+=`<div class="nnote">В выборке: ${d.rows.map(esc).join(' · ')}${d.more?' '+esc(d.more):''}</div>`;
