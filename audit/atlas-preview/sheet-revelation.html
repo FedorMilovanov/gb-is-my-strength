@@ -224,9 +224,8 @@
   text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#ecdcb4;stroke-width:.16em}
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
-  .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
-  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cart-plate{fill:rgba(247,242,231,.82);stroke:rgba(138,106,31,.28);stroke-width:1}
+  .cart-rule{stroke:rgba(138,106,31,.3);stroke-width:.8}
   .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
@@ -321,10 +320,13 @@
      тенью контейнера); top сдвинут ниже розы ветров (компас в SVG кончается
      на ~108px при ширине листа 1500px) — иначе кнопка "Домой" ложится
      поверх компаса */
-  .dive-btn{position:absolute;right:10px;top:120px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
-  .home-btn{right:64px}
-  .legend-btn{top:166px}
-  .legend-pop{position:absolute;right:10px;top:210px;z-index:22;background:rgba(246,241,231,.96);border:1px solid rgba(138,106,31,.4);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.28);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
+  /* навигационные кнопки — ровная вертикальная колонка (home · fullscreen · menu),
+     единый размер и правый край; никакого «треугольника» */
+  .dive-btn{position:absolute;right:14px;top:164px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.32);background:rgba(247,242,231,.94);color:#7a5c26;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.16);transition:background .15s,box-shadow .15s}
+  .dive-btn:hover{background:#fbf7ec;box-shadow:0 3px 12px rgba(90,70,30,.24)}
+  .home-btn{top:116px;right:14px}
+  .legend-btn{top:212px;right:14px}
+  .legend-pop{position:absolute;right:14px;top:256px;z-index:22;background:rgba(247,242,231,.97);border:1px solid rgba(138,106,31,.32);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.24);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
   .legend-pop b{display:block;font:700 11px/1 Georgia,serif;letter-spacing:.1em;color:#8a6a1f;margin-bottom:8px}
   .legend-pop i{display:flex;align-items:center;gap:8px;font-style:normal}
   .legend-pop span{flex:0 0 20px;height:10px;display:inline-block}
@@ -704,15 +706,10 @@ Z"/>
 </g>
 
   <g class="cartouche">
-    <rect x="992.6" y="375.1166666666666" width="143.3" height="30.816666666666666" rx="2.8666666666666667" class="plate cart-plate"/>
-    <rect x="994.4" y="376.9" width="139.8" height="27.2" rx="2.15" class="cart-inner"/>
-    <rect x="995.3" y="377.8" width="138.0" height="25.4" rx="1.6125" class="cart-inner2"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(995.5,378.0) scale(0.358) rotate(0 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(1127.7,378.0) scale(0.358) rotate(90 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(1127.7,397.7) scale(0.358) rotate(180 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(995.5,397.7) scale(0.358) rotate(270 8 8)"/>
-    <text x="999.7666666666667" y="383.3583333333333" class="cart-over" font-size="3.404166666666667">БИБЛЕЙСКИЙ АТЛАС</text>
-    <text x="999.7666666666667" y="393.0333333333333" class="cart-title" font-size="8.958333333333334">7 Церквей Откровения</text>
+    <rect x="992.6" y="375.1166666666666" width="143.3" height="30.1" rx="1.7916666666666667" class="cart-plate"/>
+    <line x1="999.7666666666667" y1="385.5083333333333" x2="1128.8" y2="385.5083333333333" class="cart-rule"/>
+    <text x="999.7666666666667" y="383.3583333333333" class="cart-over" font-size="3.225">БИБЛЕЙСКИЙ АТЛАС</text>
+    <text x="999.7666666666667" y="393.74999999999994" class="cart-title" font-size="8.958333333333334">7 Церквей Откровения</text>
     <text x="999.7666666666667" y="400.91666666666663" class="cart-sub" font-size="4.120833333333334">Откровение 2–3 · Малая Азия · ~95 г. н.э.</text>
   </g>
 

@@ -224,9 +224,8 @@
   text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#ecdcb4;stroke-width:.16em}
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
-  .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
-  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cart-plate{fill:rgba(247,242,231,.82);stroke:rgba(138,106,31,.28);stroke-width:1}
+  .cart-rule{stroke:rgba(138,106,31,.3);stroke-width:.8}
   .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
@@ -321,10 +320,13 @@
      тенью контейнера); top сдвинут ниже розы ветров (компас в SVG кончается
      на ~108px при ширине листа 1500px) — иначе кнопка "Домой" ложится
      поверх компаса */
-  .dive-btn{position:absolute;right:10px;top:120px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
-  .home-btn{right:64px}
-  .legend-btn{top:166px}
-  .legend-pop{position:absolute;right:10px;top:210px;z-index:22;background:rgba(246,241,231,.96);border:1px solid rgba(138,106,31,.4);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.28);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
+  /* навигационные кнопки — ровная вертикальная колонка (home · fullscreen · menu),
+     единый размер и правый край; никакого «треугольника» */
+  .dive-btn{position:absolute;right:14px;top:164px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.32);background:rgba(247,242,231,.94);color:#7a5c26;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.16);transition:background .15s,box-shadow .15s}
+  .dive-btn:hover{background:#fbf7ec;box-shadow:0 3px 12px rgba(90,70,30,.24)}
+  .home-btn{top:116px;right:14px}
+  .legend-btn{top:212px;right:14px}
+  .legend-pop{position:absolute;right:14px;top:256px;z-index:22;background:rgba(247,242,231,.97);border:1px solid rgba(138,106,31,.32);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.24);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
   .legend-pop b{display:block;font:700 11px/1 Georgia,serif;letter-spacing:.1em;color:#8a6a1f;margin-bottom:8px}
   .legend-pop i{display:flex;align-items:center;gap:8px;font-style:normal}
   .legend-pop span{flex:0 0 20px;height:10px;display:inline-block}
@@ -613,15 +615,10 @@ M1610,60 C1652,118 1678,186 1688,262 C1696,332 1692,402 1672,462 C1660,498 1668,
 </g>
 
   <g class="cartouche">
-    <rect x="38" y="110.16666666666663" width="720.1" height="136.16666666666666" rx="12.666666666666666" class="plate cart-plate"/>
-    <rect x="45.9" y="118.1" width="704.3" height="120.3" rx="9.5" class="cart-inner"/>
-    <rect x="49.9" y="122.0" width="696.4" height="112.4" rx="7.125" class="cart-inner2"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(50.7,122.8) scale(1.583) rotate(0 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(721.7,122.8) scale(1.583) rotate(90 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(721.7,209.9) scale(1.583) rotate(180 8 8)"/>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(50.7,209.9) scale(1.583) rotate(270 8 8)"/>
-    <text x="69.66666666666666" y="146.5833333333333" class="cart-over" font-size="15.041666666666666">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ ПРОЛОГ</text>
-    <text x="69.66666666666666" y="189.3333333333333" class="cart-title" font-size="39.58333333333333">Начало: от Эдема до Вавилона</text>
+    <rect x="38" y="110.16666666666663" width="720.1" height="133" rx="7.916666666666666" class="cart-plate"/>
+    <line x1="69.66666666666666" y1="156.0833333333333" x2="726.4" y2="156.0833333333333" class="cart-rule"/>
+    <text x="69.66666666666666" y="146.5833333333333" class="cart-over" font-size="14.25">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ ПРОЛОГ</text>
+    <text x="69.66666666666666" y="192.49999999999994" class="cart-title" font-size="39.58333333333333">Начало: от Эдема до Вавилона</text>
     <text x="69.66666666666666" y="224.16666666666663" class="cart-sub" font-size="18.208333333333332">Бытие 1–11 · Потоп · Арарат · Шинар · ~2350–2000 до н.э.</text>
   </g>
 
