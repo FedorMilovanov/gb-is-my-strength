@@ -110,9 +110,31 @@
   .card .row{fill:var(--ink)}
   .card .rown{fill:var(--inkFaint);font-variant-numeric:tabular-nums}
   .card .divid{stroke:var(--panelEdge);stroke-width:1}
+  .card .heb{fill:var(--gold);font-family:'Times New Roman',serif;opacity:.9}
+  .card .mean{fill:var(--inkSoft);font-style:italic}
+  .card.sel rect.bg{stroke:var(--gold);stroke-width:2.2}
   .dim{opacity:.16;transition:opacity .2s}
   .lvl-hid{display:none}
   .fan{pointer-events:none}
+  /* панель объяснения имени (по клику на карточку хребта) */
+  #namecard{position:absolute;top:78px;right:16px;width:288px;max-height:calc(100% - 200px);overflow-y:auto;
+    border:1px solid var(--cardEdge);border-radius:15px;background:var(--card);box-shadow:0 12px 34px var(--shadow);
+    padding:16px 18px;display:none;z-index:12}
+  #namecard.show{display:block}
+  #namecard .nx{position:absolute;top:11px;right:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);cursor:pointer;font-size:12px}
+  #namecard .nname{font-size:21px;font-weight:700;margin:0 30px 0 0;line-height:1.15}
+  #namecard .nheb{font-family:'Times New Roman',serif;color:var(--gold);font-size:23px;margin-top:3px}
+  #namecard .ntr{font-style:italic;color:var(--inkSoft);font-size:12.5px;margin-top:1px}
+  #namecard .nrole{font-size:12px;color:var(--inkSoft);margin-top:8px}
+  #namecard .nmean{margin-top:12px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--gold) 10%,transparent);border-left:2px solid var(--gold)}
+  #namecard .nmean .k{display:block;font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--inkFaint);margin-bottom:3px}
+  #namecard .nmean b{font-size:14.5px;color:var(--ink)}
+  #namecard .nnote{margin-top:11px;font-size:12px;line-height:1.55;color:var(--ink)}
+  #namecard .nmeta{margin-top:11px;display:flex;flex-wrap:wrap;gap:6px}
+  #namecard .nmeta span{font-size:10.5px;color:var(--inkSoft);border:1px solid var(--panelEdge);border-radius:9px;padding:3px 9px;background:color-mix(in srgb,var(--card) 60%,transparent)}
+  #namecard .nlinks{margin-top:13px;display:flex;flex-direction:column;gap:5px}
+  #namecard .nlinks a{font-size:12px;color:var(--gold);text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:6px}
+  #namecard .nlinks a:hover{text-decoration:underline}
   /* мини-карта / правая рейка */
   aside.rail{background:var(--panel);border-left:1px solid var(--panelEdge);padding:14px;display:flex;flex-direction:column;gap:13px;overflow-y:auto}
   .rail .lab{font-size:11px;letter-spacing:1px;color:var(--inkFaint);margin-bottom:6px}
@@ -201,6 +223,7 @@
       <div class="row"><button class="tbtn" id="t-skip">Пропустить тур</button><span class="sp"></span><button class="tbtn" id="t-prev">Назад</button><button class="tbtn primary" id="t-next">Далее</button></div>
     </div>
     <div id="toast"></div>
+    <div id="namecard"><button class="nx" id="nx" aria-label="Закрыть">✕</button><div id="namebody"></div></div>
     <button class="mfab" id="mfab-nav">Главы</button>
     <button class="mfab" id="mfab-rail">Карта · поиск</button>
   </main>
@@ -369,6 +392,9 @@ for(const c of cards.values()){
     g.appendChild(textEl('ttl',-c.w/2+48,d.sub?( -2 ):4,14.5,'start',d.ru));
     const sub=textEl('sub',-c.w/2+48,12,9.5,'start',d.sub);sub.dataset.minK=0.95;g.appendChild(sub);
     const ref=textEl('refln',0,c.h/2+13,9.5,'middle',d.ref);ref.dataset.minK=0.95;g.appendChild(ref);
+    // иврит справа (со среднего масштаба) + значение имени под карточкой (близкий)
+    if(d.heb){const hb=textEl('heb',c.w/2-14,4,15,'end',d.heb);hb.dataset.minK=0.7;g.appendChild(hb);}
+    if(d.meaning){const mn=textEl('mean',0,c.h/2+26,9.5,'middle','«'+d.meaning+'»');mn.dataset.minK=1.05;g.appendChild(mn);}
   }else if(c.kind==='cluster'||c.kind==='history'){
     iconCircle(g,-c.w/2+26,0,15,d.icon,c.color);
     g.appendChild(textEl('ttl',-c.w/2+48,-3,12.5,'start',d.ru));
@@ -485,12 +511,58 @@ svg.addEventListener('dblclick',ev=>{ev.preventDefault();
   const r=svg.getBoundingClientRect();const sx=ev.clientX-r.left,sy=ev.clientY-r.top;
   const gx=(sx-vp.x)/vp.k,gy=(sy-vp.y)/vp.k;const k=Math.min(2.2,vp.k*1.5);
   tweenVp(sx-gx*k,sy-gy*k,k);});
-// клик по карточке = подлёт + deep-link
+// клик по карточке = подлёт + панель + deep-link
 gCards.addEventListener('click',ev=>{
   const g=ev.target.closest('.card');if(!g)return;
   flyTo(g.dataset.id,true);
+  openName(g.dataset.id);
   try{history.replaceState(null,'','#'+encodeURIComponent(g.dataset.id));}catch(_){}
 });
+
+// ── панель объяснения имени / карточки-кластера ──
+const nameEl=document.getElementById('namecard'),nameBody=document.getElementById('namebody');
+const spineIds=ATLAS.spine.map(s=>s.id);
+// у каких кластеров есть отдельная страница-вид
+const clusterLink={nations:{href:'nations-interactive.html',label:'Открыть «Карту народов» →'}};
+function openName(id){
+  const c=cards.get(id);if(!c){nameEl.classList.remove('show');return;}
+  const d=c.data;
+  document.querySelectorAll('.card.sel').forEach(x=>x.classList.remove('sel'));
+  c.el.classList.add('sel');
+  const esc=s=>String(s).replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]));
+  let h='';
+  if(c.kind==='spine'){
+    const i=spineIds.indexOf(id);
+    h+=`<div class="nname">${esc(d.ru)}${d.heb?`<span class="nheb"> ${esc(d.heb)}</span>`:''}</div>`;
+    if(d.translit)h+=`<div class="ntr">${esc(d.translit)}</div>`;
+    if(d.sub)h+=`<div class="nrole">${esc(d.sub)}</div>`;
+    if(d.meaning)h+=`<div class="nmean"><span class="k">Что значит имя</span><b>«${esc(d.meaning)}»</b></div>`;
+    if(d.note)h+=`<div class="nnote">${esc(d.note)}</div>`;
+    const meta=[];if(d.ref)meta.push(d.ref);if(d.bc)meta.push(d.bc);if(d.am)meta.push(d.am);
+    if(meta.length)h+=`<div class="nmeta">${meta.map(m=>`<span>${esc(m)}</span>`).join('')}</div>`;
+    h+='<div class="nlinks">';
+    if(i>0)h+=`<a data-goto="${spineIds[i-1]}">↑ выше по линии: ${esc(ATLAS.spine[i-1].ru)}</a>`;
+    if(i<spineIds.length-1)h+=`<a data-goto="${spineIds[i+1]}">↓ ниже по линии: ${esc(ATLAS.spine[i+1].ru)}</a>`;
+    h+='</div>';
+  }else{
+    h+=`<div class="nname">${esc(d.ru)}</div>`;
+    if(d.gold)h+=`<div class="nrole" style="color:${c.color}">${esc(d.gold)}</div>`;
+    if(d.sub)h+=`<div class="nrole">${esc(d.sub)}</div>`;
+    if(d.ref)h+=`<div class="nmeta"><span>${esc(d.ref)}</span></div>`;
+    if(d.rows&&d.rows.length){h+=`<div class="nnote">В выборке: ${d.rows.map(esc).join(' · ')}${d.more?' '+esc(d.more):''}</div>`;}
+    h+='<div class="nlinks">';
+    const anchor=d.anchor&&cards.get(d.anchor);
+    if(anchor)h+=`<a data-goto="${d.anchor}">↔ примыкает к: ${esc(anchor.title)}</a>`;
+    const lk=clusterLink[id];if(lk)h+=`<a data-href="${lk.href}">${esc(lk.label)}</a>`;
+    h+='</div>';
+  }
+  nameBody.innerHTML=h;
+  nameEl.classList.add('show');
+  nameBody.querySelectorAll('a[data-goto]').forEach(a=>a.addEventListener('click',()=>{flyTo(a.dataset.goto,true);openName(a.dataset.goto);}));
+  nameBody.querySelectorAll('a[data-href]').forEach(a=>a.addEventListener('click',()=>{location.href=a.dataset.href;}));
+}
+function closeName(){nameEl.classList.remove('show');document.querySelectorAll('.card.sel').forEach(x=>x.classList.remove('sel'));}
+document.getElementById('nx').addEventListener('click',closeName);
 
 // ── зум-кнопки ──
 const KSTEPS=[0.2,0.35,0.7,1.1,1.6];
@@ -635,7 +707,7 @@ scrim.addEventListener('click',closeDrawers);
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   q.value='';hits=[];for(const c of cards.values())c.el.classList.remove('dim');
-  tourHide();closeDrawers();
+  tourHide();closeDrawers();closeName();
 });
 
 // ── старт ──
@@ -647,6 +719,6 @@ fit();
   if(!h)return;
   if(h.startsWith('view=')){const [x,y,k]=h.slice(5).split(',').map(Number);
     if([x,y,k].every(Number.isFinite)){vp={x,y,k};applyVp();}return;}
-  if(cards.has(h))setTimeout(()=>flyTo(h,true),reduceMotion?0:500);
+  if(cards.has(h))setTimeout(()=>{flyTo(h,true);openName(h);},reduceMotion?0:500);
 })();
 </script>

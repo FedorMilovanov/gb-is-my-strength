@@ -39,23 +39,40 @@ const C = {
   relatives: '#a8683f', exile: '#7a5e46', returned: '#4f7a4a', after: '#6e5c3d',
 };
 
+// ── обогащение именами (иврит, транслит, значение, этимология) из genealogy-graph.json ──
+// Данные уже выверены (теофорная разметка + переименования). Читаем детерминированно.
+async function nameLexicon() {
+  try {
+    const g = JSON.parse(await readFile(path.join(OUT, 'build', 'genealogy-graph.json'), 'utf8'));
+    const m = new Map();
+    for (const nd of g.nodes) {
+      if (!nd.key) continue;
+      m.set(nd.key, { heb: nd.heb ?? null, translit: nd.translit ?? null, meaning: nd.meaning ?? null, note: nd.note ?? null, am: nd.am ?? null, bc: nd.bc ?? null });
+    }
+    return m;
+  } catch { return new Map(); }
+}
+
 async function main() {
   const cc = await clusterCounts();
   const n = id => cc.get(id) ?? null;
+  const lex = await nameLexicon();
+  const L = key => lex.get(key) || {};
 
-  // ── мессианский хребет (вертикаль, x=0) ──
+  // ── мессианский хребет (вертикаль, x=0) ── key связывает с лексиконом имён
   // minK: 0 — виден всегда (обзор); 0.55 — со среднего масштаба
-  const spine = [
-    { id: 'adam',    y: 0,    icon: 'person', ru: 'Адам',            sub: 'сотворён по образу Божию', ref: 'Быт 2:7 · 5:1',            minK: 0 },
-    { id: 'noah',    y: 150,  icon: 'ark',    ru: 'Ной',             sub: 'потоп и завет',            ref: 'Быт 6–9',                  minK: 0 },
-    { id: 'abraham', y: 330,  icon: 'tent',   ru: 'Авраам',          sub: 'патриарх, друг Божий',     ref: 'Быт 12:1–4 · 15:6 · 17:1–8', minK: 0 },
-    { id: 'isaac',   y: 480,  icon: 'ram',    ru: 'Исаак',           sub: 'сын обетования',           ref: 'Быт 21:1–7 · 26:2–5',      minK: 0 },
-    { id: 'jacob',   y: 640,  icon: 'ladder', ru: 'Иаков (Израиль)', sub: 'патриарх 12 колен',        ref: 'Быт 25:21–28 · 35:9–12',   minK: 0, wide: true },
-    { id: 'judah',   y: 800,  icon: 'lion',   ru: 'Иуда',            sub: 'царское колено',           ref: 'Быт 29:35 · 49:8–10',      minK: 0.55 },
-    { id: 'david',   y: 960,  icon: 'crown',  ru: 'Давид',           sub: 'царь Израиля',             ref: 'Пс 78:70–72 · 2Цар 7:12–16', minK: 0 },
-    { id: 'solomon', y: 1110, icon: 'temple', ru: 'Соломон',         sub: 'строитель храма',          ref: '3Цар 6 · 2Пар 3',          minK: 0.55 },
-    { id: 'jesus',   y: 1280, icon: 'cross',  ru: 'Иисус Христос',   sub: 'Мессия, Сын Давидов',      ref: 'Мф 1:1',                   minK: 0, hero: true, wide: true },
+  const spineRaw = [
+    { id: 'adam',    y: 0,    icon: 'person', ru: 'Адам',            sub: 'сотворён по образу Божию', ref: 'Быт 2:7 · 5:1',            minK: 0,    key: 'Adam@Gen.2.19' },
+    { id: 'noah',    y: 150,  icon: 'ark',    ru: 'Ной',             sub: 'потоп и завет',            ref: 'Быт 6–9',                  minK: 0,    key: 'Noah@Gen.5.29' },
+    { id: 'abraham', y: 330,  icon: 'tent',   ru: 'Авраам',          sub: 'патриарх, друг Божий',     ref: 'Быт 12:1–4 · 15:6 · 17:1–8', minK: 0,  key: 'Abraham@Gen.11.26' },
+    { id: 'isaac',   y: 480,  icon: 'ram',    ru: 'Исаак',           sub: 'сын обетования',           ref: 'Быт 21:1–7 · 26:2–5',      minK: 0,    key: 'Isaac@Gen.17.19' },
+    { id: 'jacob',   y: 640,  icon: 'ladder', ru: 'Иаков (Израиль)', sub: 'патриарх 12 колен',        ref: 'Быт 25:21–28 · 35:9–12',   minK: 0, wide: true, key: 'Israel@Gen.25.26' },
+    { id: 'judah',   y: 800,  icon: 'lion',   ru: 'Иуда',            sub: 'царское колено',           ref: 'Быт 29:35 · 49:8–10',      minK: 0.55, key: 'Judah@Gen.29.35' },
+    { id: 'david',   y: 960,  icon: 'crown',  ru: 'Давид',           sub: 'царь Израиля',             ref: 'Пс 78:70–72 · 2Цар 7:12–16', minK: 0,  key: 'David@Rut.4.17' },
+    { id: 'solomon', y: 1110, icon: 'temple', ru: 'Соломон',         sub: 'строитель храма',          ref: '3Цар 6 · 2Пар 3',          minK: 0.55, key: 'Solomon@2Sa.5.14' },
+    { id: 'jesus',   y: 1280, icon: 'cross',  ru: 'Иисус Христос',   sub: 'Мессия, Сын Давидов',      ref: 'Мф 1:1',                   minK: 0, hero: true, wide: true, key: 'Jesus@Isa.7.14' },
   ];
+  const spine = spineRaw.map(s => ({ ...s, ...L(s.key) }));   // heb/translit/meaning/note/am/bc
   const spineY = Object.fromEntries(spine.map(s => [s.id, s.y]));
 
   // ── боковые кластеры (карточки-свитки; счётчики честные — из TIPNR либо канон) ──
