@@ -30,6 +30,42 @@ async function clusterCounts() {
   } catch { return new Map(); }
 }
 
+// ── списки членов кластеров (id→ru+стих) для раскрытия по клику ──
+// atlas-id → groups.json cluster id
+const CLUSTER_GROUP = {
+  antediluvian: 'antediluvian-patriarchs', 'abr-desc': 'abraham-descendants',
+  ishmael: 'ishmaelites', edom: 'esau-edom', levites: 'levites', priests: 'priests',
+  'david-house': 'house-of-david', return: 'return-from-exile',
+  tribes12: 'tribes-12', matthew1: 'matthew-1', luke3: 'luke-3', relatives: 'lords-relatives',
+};
+const MEMBER_CAP = 60;   // сколько имён показываем в раскрытии (остальное — «ещё N»)
+// канонический порядок книг (OSIS) — чтобы выборка начиналась с Бытия, а не с «1Ki» по алфавиту
+const BOOK_ORDER = ['Gen','Exod','Lev','Num','Deut','Josh','Judg','Ruth','1Sam','2Sam','1Kgs','2Kgs','1Chr','2Chr','Ezra','Neh','Esth','Job','Ps','Prov','Eccl','Song','Isa','Jer','Lam','Ezek','Dan','Hos','Joel','Amos','Obad','Jonah','Mic','Nah','Hab','Zeph','Hag','Zech','Mal','Matt','Mark','Luke','John','Acts','Rom','1Cor','2Cor','Gal','Eph','Phil','Col','1Thess','2Thess','1Tim','2Tim','Titus','Phlm','Heb','Jas','1Pet','2Pet','1John','2John','3John','Jude','Rev'];
+const bookIdx = new Map(BOOK_ORDER.map((b, i) => [b.toLowerCase(), i]));
+function osisSortKey(osis) {
+  if (!osis) return [999, 999, 999];
+  const [bk, ch, vs] = osis.split('.');
+  return [bookIdx.get(String(bk).toLowerCase()) ?? 900, +ch || 0, +vs || 0];
+}
+async function clusterMembers() {
+  const groups = JSON.parse(await readFile(path.join(OUT, 'groups.json'), 'utf8')).clusters || [];
+  const persons = JSON.parse(await readFile(path.join(OUT, 'persons.json'), 'utf8'));
+  const parr = Array.isArray(persons) ? persons : (persons.persons || Object.values(persons));
+  const byId = new Map();
+  for (const p of parr) byId.set(p.id, { ru: (p.ru && p.ru.name) || p.en || p.id, ref: p.firstRef && p.firstRef.ru, osis: p.firstRef && p.firstRef.osis });
+  const gById = new Map(groups.map(g => [g.id, g]));
+  const out = {};
+  for (const [atlasId, gid] of Object.entries(CLUSTER_GROUP)) {
+    const g = gById.get(gid); if (!g || !g.members) continue;
+    const rows = g.members.map(id => byId.get(id)).filter(Boolean)
+      .filter(r => r.ru && !/^[a-z-]+$/i.test(r.ru))          // отбрасываем нерусские заглушки
+      .sort((a, b) => { const ka = osisSortKey(a.osis), kb = osisSortKey(b.osis);
+        return ka[0] - kb[0] || ka[1] - kb[1] || ka[2] - kb[2] || a.ru.localeCompare(b.ru, 'ru'); });
+    out[atlasId] = { total: g.count ?? rows.length, shown: rows.slice(0, MEMBER_CAP).map(r => ({ ru: r.ru, ref: r.ref })) };
+  }
+  return out;
+}
+
 // ── честная сводка охвата («что уже есть / что ещё предстоит») из meta + данных ──
 async function coverageStats() {
   const j = async f => { try { return JSON.parse(await readFile(path.join(OUT, f), 'utf8')); } catch { return null; } };
@@ -57,7 +93,7 @@ async function coverageStats() {
       { done: false, ru: `Объяснения имён: ${etyN} готово, ещё ~${persons - etyN} без иврита/значения` },
       { done: false, ru: `Изолированные персоны (без связей в графе): ${c.isolatedPersons ?? '—'} — предстоит связать` },
       { done: false, ru: 'Трассировка народов до сынов Ноя (Сим/Хам/Иафет) через (d)-маркеры TIPNR' },
-      { done: false, ru: 'Раскрытие кластеров на месте по клику (полные списки имён)' },
+      { done: true,  ru: 'Раскрытие кластеров по клику — реальные имена со стихами' },
       { done: true,  ru: `Русские имена: ${c.ruCoveragePct ?? 100}% (${persons} персон)` },
       { done: true,  ru: `Народы размечены по достоверности: ${conf.certain}·${conf.probable}·${conf.disputed}·${conf.obscure}` },
       { done: true,  ru: 'Защита от мифов (mythWatch) на спорных отождествлениях' },
@@ -74,15 +110,28 @@ const C = {
   relatives: '#a8683f', exile: '#7a5e46', returned: '#4f7a4a', after: '#6e5c3d',
 };
 
-// ── обогащение именами (иврит, транслит, значение, этимология) из genealogy-graph.json ──
-// Данные уже выверены (теофорная разметка + переименования). Читаем детерминированно.
+// ── обогащение именами (иврит, транслит, значение, этимология) ──
+// Источники: genealogy-graph.json (выверенный хребет) + name-etymology.json (ядро 70 имён).
+// Читаем детерминированно.
 async function nameLexicon() {
   try {
     const g = JSON.parse(await readFile(path.join(OUT, 'build', 'genealogy-graph.json'), 'utf8'));
     const m = new Map();
+    // сначала этимологический слой (ядро 70) — по key
+    try {
+      const ety = JSON.parse(await readFile(path.join(OUT, 'name-etymology.json'), 'utf8'));
+      for (const e of ety.entries || []) {
+        if (!e.key) continue;
+        m.set(e.key, { heb: e.heb ?? null, translit: e.translit ?? null, meaning: e.meaningRu ?? null, note: e.note ?? null, am: null, bc: null });
+      }
+    } catch {}
+    // затем graph-узлы (перекрывают/дополняют am/bc и т.п.)
     for (const nd of g.nodes) {
       if (!nd.key) continue;
-      m.set(nd.key, { heb: nd.heb ?? null, translit: nd.translit ?? null, meaning: nd.meaning ?? null, note: nd.note ?? null, am: nd.am ?? null, bc: nd.bc ?? null });
+      const prev = m.get(nd.key) || {};
+      m.set(nd.key, { heb: nd.heb ?? prev.heb ?? null, translit: nd.translit ?? prev.translit ?? null,
+        meaning: nd.meaning ?? prev.meaning ?? null, note: nd.note ?? prev.note ?? null,
+        am: nd.am ?? prev.am ?? null, bc: nd.bc ?? prev.bc ?? null });
     }
     return m;
   } catch { return new Map(); }
@@ -132,14 +181,23 @@ async function main() {
     { id: 'br-shem',    x: 770, y: 190, icon: 'scroll',  ru: 'Сим',   gold: '26 народов', color: '#9a7b3c', region: 'Месопотамия · Аравия · Сирия — семиты',        anchor: 'nations', minK: 0.5 },
   ];
 
-  // ── 12 колен: карточка-список слева от Иакова ──
-  const tribesRows = ['Рувим', 'Симеон', 'Левий', 'Иуда', 'Дан', 'Неффалим'];
+  // ── 12 колен: полный список со значениями имён (библейские этимологии Быт 29–35) ──
+  const TRIBE_KEYS = ['Reuben@Gen.29.32','Simeon@Gen.29.33','Levi@Gen.29.34','Judah@Gen.29.35',
+    'Dan@Gen.30.6','Naphtali@Gen.30.8','Gad@Gen.30.11','Asher@Gen.30.13','Issachar@Gen.30.18',
+    'Zebulun@Gen.30.20','Joseph@Gen.30.24','Benjamin@Gen.35.18'];
+  const TRIBE_RU = { Reuben:'Рувим', Simeon:'Симеон', Levi:'Левий', Judah:'Иуда', Dan:'Дан',
+    Naphtali:'Неффалим', Gad:'Гад', Asher:'Асир', Issachar:'Иссахар', Zebulun:'Завулон',
+    Joseph:'Иосиф', Benjamin:'Вениамин' };
+  const refRu = ref => ref.replace(/^Gen\.(\d+)\.(\d+)$/, 'Быт $1:$2');
+  const tribesFull = TRIBE_KEYS.map(k => { const e = L(k); const en = k.split('@')[0];
+    return { ru: TRIBE_RU[en], heb: e.heb || null, meaning: e.meaning || null, note: e.note || null, refRu: refRu(k.split('@')[1]) }; });
+  const tribesRows = tribesFull.slice(0, 6).map(t => t.ru);
   // ── Матфей 1 / Лука 3: карточки-свитки родословий Господа ──
   const mtRows = ['Авраам', 'Исаак', 'Иаков', 'Иуда и братья его', 'Фарес', 'Есром'];
   const lkRows = ['Адам', 'Сиф', 'Енос', 'Каинан', 'Малелеил', 'Иаред'];
   const listCards = [
     { id: 'tribes12', x: XL, y: 560, icon: 'tribes', ru: '12 колен Израиля', sub: 'сыновья Иакова', rows: tribesRows,
-      more: '… ещё 6 колен', color: C.tribes, anchor: 'jacob', minK: 0 },
+      more: '… ещё 6 колен', color: C.tribes, anchor: 'jacob', minK: 0, tribes: tribesFull },
     { id: 'matthew1', x: XL, y: 1210, icon: 'book', ru: 'Матфей 1', sub: 'Авраам → Давид → Иисус', rows: mtRows,
       more: '… 42 поколения (3×14)', footer: 'Иосиф, муж Марии', color: C.matthew, anchor: 'jesus', minK: 0, dashed: true },
     { id: 'luke3', x: XR, y: 1210, icon: 'scroll', ru: 'Лука 3', sub: 'Адам → Иисус · 77 поколений', rows: lkRows,
@@ -205,11 +263,12 @@ async function main() {
   ];
 
   const coverage = await coverageStats();
+  const members = await clusterMembers();
 
   const scene = {
     _status: 'atlas: карточный Библейский атлас родословий (по референсам)',
     iconDefs: iconSymbolDefs(),
-    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage,
+    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage, members,
     counts: { spine: spine.length, clusters: clusters.length + listCards.length, history: history.length },
   };
 
