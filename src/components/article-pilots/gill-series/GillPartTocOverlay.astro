@@ -68,22 +68,35 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
             <div class="gbat-subs"><div><div class="gbat-pad">
               <span class="gbat-rail" aria-hidden="true"></span>
               {!isCurrent && !isChapter && <a class="gbat-sub gbat-go" href={item.href}><span class="gbat-dot"></span><span>Перейти к части</span></a>}
+              {/* Трёхуровневая книга (референс GBS 2026-07-15 §2.2): глава →
+                  статья → её H2. ЛЮБАЯ статья раскрывает своё оглавление
+                  шевроном (одновременно раскрыта одна); текущая — сразу. */}
               {arts.map((art) => {
                 const isHere = art.id === pageId;
-                const artSecs = isHere ? (config.pages[art.id]?.partToc || []) : [];
+                const artSecs = config.pages[art.id]?.partToc || [];
                 return (
-                  <Fragment>
-                    <a class={['gbat-sub', 'gbat-sat', isHere && 'active'].filter(Boolean).join(' ')} href={art.href} aria-current={isHere ? 'page' : undefined}>
-                      <span class="gbat-satmark" aria-hidden="true">{art.mark.value}</span>
-                      <span>{art.title}</span>
-                      <span class="gbat-satmin">{art.readingTime}</span>
-                    </a>
-                    {artSecs.map((row) => (
-                      <a class={['gbat-sub', 'h3', row.current && 'active'].filter(Boolean).join(' ')} href={row.href}>
-                        <span class="gbat-dot"></span><span>{row.label}</span>
+                  <div class={['gbat-art', isHere && 'open'].filter(Boolean).join(' ')}>
+                    <div class="gbat-artrow">
+                      <a class={['gbat-sub', 'gbat-sat', isHere && 'active'].filter(Boolean).join(' ')} href={art.href} aria-current={isHere ? 'page' : undefined}>
+                        <span class="gbat-satmark" aria-hidden="true">{art.mark.value}</span>
+                        <span>{art.title}</span>
+                        <span class="gbat-satmin">{art.readingTime}</span>
                       </a>
-                    ))}
-                  </Fragment>
+                      {artSecs.length > 0 && (
+                        <button class="gbat-art-chev" type="button" aria-expanded={isHere ? 'true' : 'false'} aria-label={`Оглавление: ${art.title}`}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                        </button>
+                      )}
+                    </div>
+                    <div class="gbat-artsecs"><div>
+                      {artSecs.map((row) => (
+                        <a class={['gbat-sub', 'h3', isHere && row.current && 'active'].filter(Boolean).join(' ')}
+                           href={isHere ? row.href : art.href + row.href}>
+                          <span class="gbat-dot"></span><span>{row.label}</span>
+                        </a>
+                      ))}
+                    </div></div>
+                  </div>
                 );
               })}
               {secs.map((row) => (
@@ -143,6 +156,24 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
   /* Якорные ссылки текущей части: закрыть лист, дать браузеру доскроллить. */
   ov.querySelectorAll('a.gbat-sub[href^="#"]').forEach(function (a) {
     a.addEventListener('click', function () { closeOverlay(); });
+  });
+  /* Книга: шеврон статьи раскрывает её оглавление; в главе одновременно
+     раскрыта одна статья (референс GBS 2026-07-15 §2.2, правило 4). */
+  ov.querySelectorAll('.gbat-art-chev').forEach(function (ch) {
+    ch.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var art = ch.closest('.gbat-art');
+      var pad = art.closest('.gbat-pad');
+      pad.querySelectorAll('.gbat-art.open').forEach(function (o) {
+        if (o === art) return;
+        o.classList.remove('open');
+        var oc = o.querySelector('.gbat-art-chev');
+        if (oc) oc.setAttribute('aria-expanded', 'false');
+      });
+      var open = art.classList.toggle('open');
+      ch.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
   });
   /* ▶ Слушать часть: жмём реальный PLAY ember (мобильный бар / десктоп-угол). */
   var listen = ov.querySelector('[data-gbat-listen]');

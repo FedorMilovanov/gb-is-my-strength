@@ -108,6 +108,12 @@ export interface SeriesConfig {
   seriesTitleFull: string;
   /** Куда ведёт «Назад» рельса. */
   railBackHref: string;
+  /** Форма серии (референс GBS_ENGINE_RESEARCH_2026-07-15: «книга — не
+   *  четвёртый engine, это series.shape='book'»). 'book' — главы (tier
+   *  'chapter') со статьями (mark 'arabic'); 'flat' (дефолт) — обычные части.
+   *  Поле не дублирует данные — делает ветвление декларативным и проверяемым:
+   *  валидатор не даст объявить главы в плоской серии и наоборот. */
+  shape?: 'flat' | 'book';
   /** Необязательный визуальный «характер» серии. Ставится как
    *  data-series-theme на .gbs2-world и body; CSS-тема (напр.
    *  css/series-samizdat.css) переопределяет токены движка и добавляет
@@ -187,8 +193,16 @@ export function defineSeriesConfig(cfg: SeriesConfig): SeriesConfig {
     if (it.tier === 'chapter') {
       if (!cfg.items.some((x) => x.mark.kind === 'arabic' && x.parent === it.id)) fail(`глава «${it.id}» пуста — нужна хотя бы одна статья (mark 'arabic', parent: '${it.id}')`);
       if (cfg.pages[it.id]) fail(`глава «${it.id}» — заголовок, не страница: pages["${it.id}"] быть не должно`);
+      // Номера статей главы обязаны идти подряд 1, 2, 3… в объявленном порядке.
+      const nums = cfg.items.filter((x) => x.mark.kind === 'arabic' && x.parent === it.id).map((x) => x.mark.value);
+      nums.forEach((v, i) => { if (v !== String(i + 1)) fail(`глава «${it.id}»: номера статей должны идти подряд (ожидалась «${i + 1}», найдена «${v}»)`); });
     }
+    if (it.mark.kind === 'arabic' && !cfg.pages[it.id]) fail(`статья главы «${it.id}»: нет pages["${it.id}"] (partToc обязателен)`);
   }
+  // shape ↔ данные: книга обязана иметь главы, плоская — не иметь.
+  const hasChapters = cfg.items.some((x) => x.tier === 'chapter');
+  if (cfg.shape === 'book' && !hasChapters) fail(`shape: 'book', но глав (tier 'chapter') нет`);
+  if (cfg.shape !== 'book' && hasChapters) fail(`есть главы (tier 'chapter'), но серия не объявлена книгой — добавьте shape: 'book'`);
   for (const [pageId, page] of Object.entries(cfg.pages)) {
     if (!ids.has(pageId)) fail(`pages["${pageId}"] не соответствует ни одному item.id`);
     if (!Array.isArray(page.partToc) || page.partToc.length === 0) fail(`pages["${pageId}"]: пустой partToc (H2/H3 статьи)`);
@@ -211,9 +225,9 @@ export function coreItems(cfg: SeriesConfig): SeriesItem[] {
   return cfg.items.filter((it) => it.tier !== 'satellite');
 }
 
-/** Книжная ли серия: есть хотя бы одна глава (рендер ветвится по этому). */
+/** Книжная ли серия (валидатор гарантирует shape ↔ наличие глав). */
 export function isBookSeries(cfg: SeriesConfig): boolean {
-  return cfg.items.some((it) => it.tier === 'chapter');
+  return cfg.shape === 'book';
 }
 
 /** Верхний уровень серии: главы + форзацы + плоские части — то, что видно

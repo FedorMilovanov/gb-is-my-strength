@@ -4811,6 +4811,23 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
   font-variant-numeric:tabular-nums;color:var(--gb-text-muted,#8a7a66);background:transparent}
 #partTocOverlay .gbat-sat.active .gbat-satmark{border-color:var(--gb-accent,#b8894a);color:var(--gb-accent,#b8894a)}
 #partTocOverlay .gbat-satmin{margin-left:auto;font-size:11px;color:var(--gb-text-muted,#8a7a66);opacity:.75}
+/* Трёхуровневая книга (референс GBS 2026-07-15 §2.2): строка статьи = ссылка +
+   шеврон-тумблер её собственного оглавления (H2). Раскрытие — grid 0fr→1fr
+   (без measure-скриптов), в главе одновременно раскрыта одна статья (JS). */
+#partTocOverlay .gbat-artrow{display:flex;align-items:stretch}
+#partTocOverlay .gbat-artrow > .gbat-sat{flex:1;min-width:0}
+#partTocOverlay .gbat-art-chev{flex:0 0 36px;display:grid;place-items:center;background:none;border:0;cursor:pointer;
+  color:var(--gb-text-muted,#8a7a66);border-radius:9px}
+#partTocOverlay .gbat-art-chev svg{width:15px;height:15px;transition:transform .24s ease}
+#partTocOverlay .gbat-art.open .gbat-art-chev svg{transform:rotate(180deg)}
+#partTocOverlay .gbat-art-chev:hover,#partTocOverlay .gbat-art-chev:focus-visible{color:var(--gb-accent,#b8894a);background:rgba(184,137,74,.1)}
+#partTocOverlay .gbat-artsecs{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.22,1,.36,1)}
+#partTocOverlay .gbat-art.open .gbat-artsecs{grid-template-rows:1fr}
+#partTocOverlay .gbat-artsecs > div{overflow:hidden;min-height:0}
+@media (prefers-reduced-motion: reduce){
+  #partTocOverlay .gbat-artsecs{transition:none}
+  #partTocOverlay .gbat-art-chev svg{transition:none}
+}
 
 #partTocOverlay .gbat-sub.h3.active .gbat-dot{width:8px;height:8px;margin-top:-4px;left:19px}
 #partTocOverlay .gbat-sub.active{background:color-mix(in srgb,var(--color-accent-gold,#b8936a) 15%,var(--fill));font-weight:700;
