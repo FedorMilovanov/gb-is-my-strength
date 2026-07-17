@@ -151,7 +151,7 @@ async function etymologyList() {
     for (const e of ety.entries || []) {
       if (!e.key) continue;
       const p = byKey.get(e.key);
-      const ru = (p && p.ru && p.ru.name) || e.key.split('@')[0];
+      const ru = e.ru || (p && p.ru && p.ru.name) || e.key.split('@')[0];
       out.push({ ru, heb: e.heb || null, tr: e.translit || null, mean: e.meaningRu || null,
         note: e.note || null, ref: (p && p.firstRef && p.firstRef.ru) || null,
         conf: e.confidence || null, src: Array.isArray(e.sources) ? e.sources : [] });

@@ -32,6 +32,16 @@ const KEY_OVERRIDES = {
   'Thaddaeus': 'Judas@Mat.10.3',    // Иуда Иаковлев = Фаддей (Лк 6:16)
   'Judas Iscariot': 'Judas@Mat.10.4',
   'Simon the Zealot': 'Simon@Mat.10.4',
+  Jonathan: 'Jonathan@1Sa.13.2',    // сын Саула (первый — левит Суд 18:30)
+  Nathan: 'Nathan@2Sa.7.2',         // пророк (первый — сын Давида)
+  Jeremiah: 'Jeremiah@2Ch.35.25',   // пророк (первый — дед Иоахаза)
+  Hilkiah: 'Hilkiah@2Ki.22.4',      // первосвященник при Иосии
+  Baruch: 'Baruch@Jer.32.12',       // писец Иеремии (первый — строитель Неем 3:20)
+  Daniel: 'Daniel@Ezk.14.14',       // пророк (второй Даниил — Езд 8:2)
+  Hananiah: 'Hananiah@Dan.1.6',     // Анания-Седрах (тёзок 15)
+  Mishael: 'Mishael@Dan.1.6',       // Мисаил-Мисах (первый — дядя Моисея)
+  Azariah: 'Azariah@Dan.1.6',       // Азария-Авденаго (тёзок 19)
+  'Mary Magdalene': 'Mary@Mat.27.56',
 };
 
 async function main() {
@@ -43,21 +53,30 @@ async function main() {
   const haveKey = new Set(main.entries.map(e => e.key));
 
   const files = (await readdir(RES)).filter(f => f.endsWith('.json')).sort();
-  let added = 0, skipped = 0; const noKey = [];
+  const byKey = new Map(main.entries.map(e => [e.key, e]));
+  let added = 0, skipped = 0, enriched = 0; const noKey = [];
   for (const f of files) {
     const batch = JSON.parse(await readFile(path.join(RES, f), 'utf8'));
     for (const e of batch.entries || []) {
       const key = KEY_OVERRIDES[e.en] || enToKey.get(e.en);
       if (!key) { noKey.push(`${f}: ${e.en}`); continue; }
-      if (haveKey.has(key)) { skipped++; continue; }
-      main.entries.push({ key, heb: e.heb ?? null, translit: e.translit ?? null,
+      if (haveKey.has(key)) {
+        // существующую запись не перезатираем (ядро побеждает), но
+        // пустые поля дозаполняем из батча — например, отображаемое ru
+        const cur = byKey.get(key);
+        if (cur && !cur.ru && e.ru) { cur.ru = e.ru; enriched++; }
+        skipped++; continue;
+      }
+      const rec = { key, heb: e.heb ?? null, translit: e.translit ?? null,
         meaningRu: e.meaningRu ?? null, note: e.note ?? null,
-        sources: e.sources ?? [], confidence: e.confidence ?? 'probable', elements: [] });
-      haveKey.add(key); added++;
+        sources: e.sources ?? [], confidence: e.confidence ?? 'probable', elements: [] };
+      if (e.ru) rec.ru = e.ru;
+      main.entries.push(rec);
+      byKey.set(key, rec); haveKey.add(key); added++;
     }
   }
   await writeFile(path.join(V2, 'name-etymology.json'), JSON.stringify(main, null, 1) + '\n');
-  console.log(`[apply-etymology] батчей ${files.length} · добавлено ${added} · уже были ${skipped} · всего ${main.entries.length}`);
+  console.log(`[apply-etymology] батчей ${files.length} · добавлено ${added} · уже были ${skipped} · дозаполнено ru ${enriched} · всего ${main.entries.length}`);
   if (noKey.length) console.log('  без key (проверить вручную):', noKey.join('; '));
 }
 
