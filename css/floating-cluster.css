@@ -4166,19 +4166,23 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em;
     color: var(--gb-text-muted);
   }
-  [data-gill-v16] .setting-segment { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--gb-border-strong); border-radius: 11px; background: var(--gb-surface-muted); }
+  /* Референс GBS 2026-07-15: «minimal outlined settings — every choice has its
+     own border, no backing strip». Без общей подложки; активная — золотая
+     рамка с лёгким inset-свечением, фон прозрачный. */
+  [data-gill-v16] .setting-segment { display: flex; gap: 6px; padding: 0; border: 0; background: transparent; }
   [data-gill-v16] .reader-setting-btn {
     flex: 1; min-width: 0; min-height: 36px;
-    border: 1px solid transparent; border-radius: 9px;
+    border: 1px solid var(--gb-border); border-radius: 9px;
     background: transparent; color: var(--gb-text-muted);
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 12.5px; font-weight: 700; cursor: pointer;
     transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
   }
+  [data-gill-v16] .reader-setting-btn:hover { border-color: color-mix(in srgb, var(--gb-accent-gold) 45%, var(--gb-border)); color: var(--gb-text); }
   [data-gill-v16] .reader-setting-btn[aria-pressed="true"] {
-    background: var(--gb-surface); border-color: var(--gb-border-strong); color: var(--gb-text);
+    background: transparent; border-color: var(--gb-accent-gold); color: var(--gb-text);
     font-weight: 800;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .08);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gb-accent-gold) 22%, transparent);
   }
   /* Single continuous track (small A ... dots ... large A), matching the
      reference's slider-like presentation rather than two separate boxed
@@ -4186,8 +4190,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .font-track {
     display: flex; align-items: center; justify-content: space-between;
     gap: 8px; height: 40px; padding: 0 14px;
-    border: 1px solid var(--gb-border-strong); border-radius: 11px;
-    background: var(--gb-surface-muted);
+    border: 1px solid var(--gb-border); border-radius: 9px;
+    background: transparent;
   }
   [data-gill-v16] .font-step {
     flex: 0 0 auto; border: 0; background: transparent; padding: 0;
@@ -4635,25 +4639,26 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em;
     color: var(--gb-text-muted);
   }
-  [data-gill-v16] .gill-settings-overlay .setting-segment { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--gb-border-strong); border-radius: 11px; background: var(--gb-surface-muted); }
+  [data-gill-v16] .gill-settings-overlay .setting-segment { display: flex; gap: 6px; padding: 0; border: 0; background: transparent; }
   [data-gill-v16] .gill-settings-overlay .reader-setting-btn {
     flex: 1; min-width: 0; min-height: 36px; white-space: nowrap;
-    border: 1px solid transparent; border-radius: 9px;
+    border: 1px solid var(--gb-border); border-radius: 9px;
     background: transparent; color: var(--gb-text-muted);
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 12.5px; font-weight: 700; cursor: pointer;
     transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
   }
+  [data-gill-v16] .gill-settings-overlay .reader-setting-btn:hover { border-color: color-mix(in srgb, var(--gb-accent-gold) 45%, var(--gb-border)); color: var(--gb-text); }
   [data-gill-v16] .gill-settings-overlay .reader-setting-btn[aria-pressed="true"] {
-    background: var(--gb-surface); border-color: var(--gb-border-strong); color: var(--gb-text);
+    background: transparent; border-color: var(--gb-accent-gold); color: var(--gb-text);
     font-weight: 800;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .08);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gb-accent-gold) 22%, transparent);
   }
   [data-gill-v16] .gill-settings-overlay .font-track {
     display: flex; align-items: center; justify-content: space-between;
     gap: 8px; height: 40px; padding: 0 14px;
-    border: 1px solid var(--gb-border-strong); border-radius: 11px;
-    background: var(--gb-surface-muted);
+    border: 1px solid var(--gb-border); border-radius: 9px;
+    background: transparent;
   }
   [data-gill-v16] .gill-settings-overlay .font-step {
     flex: 0 0 auto; border: 0; background: transparent; padding: 0;
