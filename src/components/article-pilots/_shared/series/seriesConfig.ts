@@ -241,6 +241,15 @@ export function chapterArticles(cfg: SeriesConfig, chapterId: string): SeriesIte
   return cfg.items.filter((it) => it.mark.kind === 'arabic' && it.parent === chapterId);
 }
 
+/** Вариант 1 владельца (2026-07-17): в КНИЖНОЙ серии H2-разделы статьи
+ *  показываются в оглавлении/рельсе БЕЗ ведущего римского «I. » — он
+ *  конфликтует с римским номером ГЛАВЫ (глаз путает «Глава I» и «раздел I»).
+ *  Плоские серии (Гилл/pastor) не затрагиваются: там префикс остаётся.
+ *  Тексты самих статей не меняются — префикс снимается только при выводе. */
+export function sectionLabel(cfg: SeriesConfig, label: string): string {
+  return cfg.shape === 'book' ? label.replace(/^[IVXLC]+\.\s+/, '') : label;
+}
+
 /** Глава, содержащая страницу (для статей глав), иначе null. */
 export function chapterOf(cfg: SeriesConfig, pageId: string): SeriesItem | null {
   const it = cfg.items.find((x) => x.id === pageId);

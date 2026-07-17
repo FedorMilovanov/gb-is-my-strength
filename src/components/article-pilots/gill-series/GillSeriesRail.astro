@@ -4,7 +4,7 @@ import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
-import { GILL_SERIES, satellitesOf, chapterArticles, topLevelItems, type SeriesConfig } from '../_shared/series/seriesConfig';
+import { GILL_SERIES, satellitesOf, chapterArticles, topLevelItems, sectionLabel, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 // Leather bookmark treatment for the two label rows (kind: 'label'):
 //   «Введение» → lily ornament, warm leather;  «Справочник» → book ornament,
@@ -172,7 +172,7 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
             <li
               class:list={{ 'gbs2-sub': item.level === 3, 'gbs2-collapsed': item.level === 3 && item.grp !== currentGrp }}
               data-gbs2-grp={String(item.grp)}
-            ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
+            ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{sectionLabel(config, item.label)}</a></li>
           ))}
         </ul>
         {currentKids.length > 0 && (
