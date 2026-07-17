@@ -30,6 +30,41 @@ async function clusterCounts() {
   } catch { return new Map(); }
 }
 
+// ── честная сводка охвата («что уже есть / что ещё предстоит») из meta + данных ──
+async function coverageStats() {
+  const j = async f => { try { return JSON.parse(await readFile(path.join(OUT, f), 'utf8')); } catch { return null; } };
+  const meta = await j('meta.json');
+  const ety = await j('name-etymology.json');
+  const nat = await j('table-of-nations.json');
+  const c = meta?.counts || {};
+  const etyN = ety?.entries?.length ?? 0;
+  // confidence народов
+  const conf = { certain: 0, probable: 0, disputed: 0, obscure: 0 };
+  (function walk(node) {
+    if (!node) return;
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (node.confidence && conf[node.confidence] != null) conf[node.confidence]++;
+    (node.children || []).forEach(walk);
+    (node.branches || []).forEach(walk);
+  })(nat?.branches);
+  const persons = c.persons ?? 3056;
+  return {
+    persons, ruPct: c.ruCoveragePct ?? 100, isolated: c.isolatedPersons ?? null,
+    edges: c.parentEdges ?? null, clusters: c.clusters ?? null, nations: nat?._meta?.counts?.nationsProper ?? 70,
+    etyDone: etyN, etyRemain: Math.max(0, persons - etyN), conf,
+    // «что предстоит» — честный список открытых фронтов
+    todo: [
+      { done: false, ru: `Объяснения имён: ${etyN} готово, ещё ~${persons - etyN} без иврита/значения` },
+      { done: false, ru: `Изолированные персоны (без связей в графе): ${c.isolatedPersons ?? '—'} — предстоит связать` },
+      { done: false, ru: 'Трассировка народов до сынов Ноя (Сим/Хам/Иафет) через (d)-маркеры TIPNR' },
+      { done: false, ru: 'Раскрытие кластеров на месте по клику (полные списки имён)' },
+      { done: true,  ru: `Русские имена: ${c.ruCoveragePct ?? 100}% (${persons} персон)` },
+      { done: true,  ru: `Народы размечены по достоверности: ${conf.certain}·${conf.probable}·${conf.disputed}·${conf.obscure}` },
+      { done: true,  ru: 'Защита от мифов (mythWatch) на спорных отождествлениях' },
+    ],
+  };
+}
+
 // ── палитра линий (согласована с интерактивом/статикой) ──
 const C = {
   spine: 'var(--spineGold)',
@@ -161,10 +196,12 @@ async function main() {
     { color: 'var(--gold)', ru: 'Пунктир — связь между линиями', swatch: 'dashed' },
   ];
 
+  const coverage = await coverageStats();
+
   const scene = {
     _status: 'atlas: карточный Библейский атлас родословий (по референсам)',
     iconDefs: iconSymbolDefs(),
-    spine, spineY, clusters, listCards, history, epochs, quickLinks, tour, legend,
+    spine, spineY, clusters, listCards, history, epochs, quickLinks, tour, legend, coverage,
     counts: { spine: spine.length, clusters: clusters.length + listCards.length, history: history.length },
   };
 

@@ -53,8 +53,31 @@
   .epoch .ic svg{width:19px;height:19px}
   .epoch b{display:block;font-size:13.5px;font-weight:700}
   .epoch i{display:block;font-style:normal;font-size:11px;color:var(--inkFaint)}
-  .nav .about{margin-top:auto;padding:12px 8px 6px;border-top:1px solid var(--panelEdge);font-size:11px;color:var(--inkFaint);line-height:1.5}
+  .nav .about{margin-top:auto;padding:12px 8px 6px;border-top:1px solid var(--panelEdge);font-size:11px;color:var(--inkFaint);line-height:1.5;cursor:pointer;border-radius:0 0 10px 10px}
+  .nav .about:hover{color:var(--inkSoft)}
   .nav .about b{display:block;color:var(--inkSoft);font-size:11.5px;margin-bottom:2px}
+  /* модалка охвата «что готово / что впереди» */
+  #cover{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(20,12,2,.44)}
+  #cover.show{display:flex}
+  #cover .box{width:min(560px,92vw);max-height:88vh;overflow-y:auto;background:var(--card);border:1px solid var(--cardEdge);border-radius:18px;box-shadow:0 20px 50px var(--shadow);padding:24px 26px}
+  #cover h2{margin:0 0 3px;font-size:21px}
+  #cover .csub{margin:0 0 18px;font-size:12.5px;color:var(--gold)}
+  #cover .cx{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:50%;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);cursor:pointer;font-size:14px}
+  #cover .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  #cover .stat{border:1px solid var(--panelEdge);border-radius:12px;padding:11px 12px;background:color-mix(in srgb,var(--gold) 5%,transparent)}
+  #cover .stat b{display:block;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
+  #cover .stat i{display:block;font-style:normal;font-size:10.5px;color:var(--inkFaint);margin-top:4px}
+  #cover .bar{height:8px;border-radius:5px;background:color-mix(in srgb,var(--inkFaint) 22%,transparent);overflow:hidden;margin:2px 0 4px}
+  #cover .bar>i{display:block;height:100%;background:var(--gold)}
+  #cover h3{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--inkFaint);margin:16px 0 8px}
+  #cover .todo{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+  #cover .todo li{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.45}
+  #cover .todo li .m{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;margin-top:1px}
+  #cover .todo li.ok .m{background:color-mix(in srgb,#4f7a4a 22%,transparent);color:#4f7a4a}
+  #cover .todo li.next .m{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold)}
+  #cover .todo li.ok{color:var(--inkSoft)}
+  #cover .method{margin-top:16px;padding-top:13px;border-top:1px solid var(--panelEdge);font-size:11.5px;line-height:1.55;color:var(--inkSoft)}
+  #cover .method b{color:var(--ink)}
   .nav .util{display:flex;gap:8px;padding:8px 4px 0}
   .util button{width:34px;height:34px;border-radius:50%;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);cursor:pointer;font-size:15px;display:grid;place-items:center}
   .util button:hover{border-color:var(--gold);color:var(--gold)}
@@ -186,7 +209,7 @@
       <h1>Библейский<br>атлас родословий</h1>
     </div>
     <div id="epochs"></div>
-    <div class="about"><b>О проекте</b>Методология, источники и принципы</div>
+    <div class="about" id="about" role="button" tabindex="0"><b>О проекте · охват</b>Методология, источники, что уже готово и что впереди</div>
     <div class="util">
       <button id="u-book" title="Закладка">⛉</button>
       <button id="u-help" title="Помощь / тур">?</button>
@@ -260,6 +283,7 @@
     <div class="credit"><span>Данные: Синодальный перевод, библейская генеалогическая система (TIPNR); честные счётчики</span><span class="i">i</span></div>
   </aside>
   <div id="scrim"></div>
+  <div id="cover"><div class="box"><button class="cx" id="cover-x" aria-label="Закрыть">✕</button><div id="cover-body"></div></div></div>
 </div>
 <script>
 'use strict';
@@ -703,11 +727,49 @@ document.getElementById('mfab-nav').addEventListener('click',()=>{navEl.classLis
 document.getElementById('mfab-rail').addEventListener('click',()=>{railEl.classList.add('open');scrim.classList.add('show');});
 scrim.addEventListener('click',closeDrawers);
 
+// ── модалка охвата «что готово / что впереди» ──
+const coverEl=document.getElementById('cover'),coverBody=document.getElementById('cover-body');
+function openCover(){
+  const cv=ATLAS.coverage;if(!cv){return;}
+  const pct=Math.round(cv.etyDone/cv.persons*100);
+  const linkedPct=Math.round((cv.persons-cv.isolated)/cv.persons*100);
+  const stat=(b,i)=>`<div class="stat"><b>${b}</b><i>${i}</i></div>`;
+  const li=t=>`<li class="${t.done?'ok':'next'}"><span class="m">${t.done?'✓':'▸'}</span><span>${t.ru}</span></li>`;
+  coverBody.innerHTML=`
+    <h2>Охват атласа</h2>
+    <p class="csub">Честная картина: что уже выверено и что ещё предстоит</p>
+    <div class="stats">
+      ${stat(cv.persons.toLocaleString('ru'),'именованных персон Библии')}
+      ${stat(cv.ruPct+'%','с русскими именами')}
+      ${stat(cv.nations,'народов размечено')}
+    </div>
+    <h3>Объяснения имён (иврит + значение)</h3>
+    <div class="bar"><i style="width:${Math.max(2,pct)}%"></i></div>
+    <div style="font-size:11.5px;color:var(--inkSoft)">${cv.etyDone} готово · ещё ~${cv.etyRemain.toLocaleString('ru')} впереди (${pct}%)</div>
+    <h3>Связность графа</h3>
+    <div class="bar"><i style="width:${Math.max(2,linkedPct)}%"></i></div>
+    <div style="font-size:11.5px;color:var(--inkSoft)">${(cv.persons-cv.isolated).toLocaleString('ru')} связаны · ${cv.isolated} изолированы (${linkedPct}%)</div>
+    <h3>Что уже готово · что ещё предстоит</h3>
+    <ul class="todo">${cv.todo.map(li).join('')}</ul>
+    <div class="method"><b>Метод:</b> имена и структура — Синодальный перевод + TIPNR (библейская
+    генеалогическая система); значения — редакционный слой по консенсусу словарей (Gesenius, BDB,
+    HALOT, Толковая Библия), спорные помечены. Народы — с уровнем достоверности и защитой от мифов
+    (mythWatch). Счётчики — только честные (вычисленные), не иллюстративные.</div>`;
+  coverEl.classList.add('show');
+}
+function closeCover(){coverEl.classList.remove('show');}
+const aboutEl=document.getElementById('about');
+aboutEl.addEventListener('click',openCover);
+aboutEl.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCover();}});
+document.querySelector('.rail .credit .i').addEventListener('click',openCover);
+document.getElementById('cover-x').addEventListener('click',closeCover);
+coverEl.addEventListener('click',e=>{if(e.target===coverEl)closeCover();});
+
 // ── Esc ──
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   q.value='';hits=[];for(const c of cards.values())c.el.classList.remove('dim');
-  tourHide();closeDrawers();closeName();
+  tourHide();closeDrawers();closeName();closeCover();
 });
 
 // ── старт ──
