@@ -4814,7 +4814,8 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
   display:grid;place-items:center;border-radius:50%;border:1px solid var(--gb-border,rgba(120,83,46,.35));
   font-family:'Source Sans 3',system-ui,sans-serif;font-size:10.5px;font-weight:700;line-height:1;
   font-variant-numeric:tabular-nums;color:var(--gb-text-muted,#8a7a66);background:transparent}
-#partTocOverlay .gbat-sat.active .gbat-satmark{border-color:var(--gb-accent,#b8894a);color:var(--gb-accent,#b8894a)}
+#partTocOverlay .gbat-sat.active .gbat-satmark{border-color:var(--gb-accent,#7a2e2e);color:var(--gb-accent,#7a2e2e);font-weight:800}
+html.dark #partTocOverlay .gbat-sat.active .gbat-satmark{border-color:#e5bd85;color:#e5bd85}
 #partTocOverlay .gbat-satmin{margin-left:auto;font-size:11px;color:var(--gb-text-muted,#8a7a66);opacity:.75}
 /* Трёхуровневая книга (референс GBS 2026-07-15 §2.2): строка статьи = ссылка +
    шеврон-тумблер её собственного оглавления (H2). Раскрытие — grid 0fr→1fr
@@ -4826,6 +4827,8 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
 #partTocOverlay .gbat-art-chev svg{width:15px;height:15px;transition:transform .24s ease}
 #partTocOverlay .gbat-art.open .gbat-art-chev svg{transform:rotate(180deg)}
 #partTocOverlay .gbat-art-chev:hover,#partTocOverlay .gbat-art-chev:focus-visible{color:var(--gb-accent,#b8894a);background:rgba(184,137,74,.1)}
+@media (hover:none){#partTocOverlay .gbat-art-chev:hover{background:transparent}}
+#partTocOverlay .gbat-art.open .gbat-art-chev{color:var(--gb-accent,#b8894a)}
 #partTocOverlay .gbat-artsecs{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.22,1,.36,1)}
 #partTocOverlay .gbat-art.open .gbat-artsecs{grid-template-rows:1fr}
 #partTocOverlay .gbat-artsecs > div{overflow:hidden;min-height:0}
@@ -4835,8 +4838,10 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
 }
 
 #partTocOverlay .gbat-sub.h3.active .gbat-dot{width:8px;height:8px;margin-top:-4px;left:19px}
-#partTocOverlay .gbat-sub.active{background:color-mix(in srgb,var(--color-accent-gold,#b8936a) 15%,var(--fill));font-weight:700;
-  box-shadow:0 3px 10px -6px rgba(138,100,48,.5)}
+/* Владелец 2026-07-17: выбранные пункты БЕЗ залитых пилюль/рамок — отличие
+   только весом, цветом и светящейся точкой узла. Стильно = типографикой. */
+#partTocOverlay .gbat-sub.active{background:transparent;box-shadow:none;font-weight:700;color:var(--gb-text,#241b15)}
+html.dark #partTocOverlay .gbat-sub.active{color:#f2e8d8}
 #partTocOverlay .gbat-sub.active .gbat-dot{background:#8a6430;border-color:#8a6430;
   box-shadow:0 0 0 3px rgba(184,137,74,.18),0 0 6px rgba(184,137,74,.45)}
 html.dark #partTocOverlay .gbat-sub.active .gbat-dot{background:#e5bd85;border-color:#e5bd85}
