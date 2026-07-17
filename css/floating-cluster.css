@@ -4810,7 +4810,7 @@ html.dark #partTocOverlay .gbat-now{color:#e5bd85}
    нужно (и на таком кегле заглавная римская «I» неотличима от «1» — см.
    GillPartTocOverlay.astro). Полная форма «I.1» — в заголовке/подписи. */
 #partTocOverlay .gbat-sat{font-style:normal}
-#partTocOverlay .gbat-satmark{position:absolute;left:12px;top:50%;margin-top:-9px;width:18px;height:18px;
+#partTocOverlay .gbat-satmark{position:absolute;left:14px;top:50%;margin-top:-9px;width:18px;height:18px;
   display:grid;place-items:center;border-radius:50%;border:1px solid var(--gb-border,rgba(120,83,46,.35));
   font-family:'Source Sans 3',system-ui,sans-serif;font-size:10.5px;font-weight:700;line-height:1;
   font-variant-numeric:tabular-nums;color:var(--gb-text-muted,#8a7a66);background:transparent}
