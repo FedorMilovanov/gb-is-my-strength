@@ -427,7 +427,7 @@ html.dark .gbs2-resume-go{color:#1c1208}
 .gbs2-thumb.gbs2-noimg,.gbs2-sheet-part .gbs2-noimg{position:relative;background:none}
 .gbs2-noimg-n{position:absolute;inset:0;display:grid;place-items:center;font-family:Lora,Georgia,serif;font-size:19px;font-weight:600;font-style:italic;color:var(--gbs2-accent);text-shadow:none}
 .gbs2-hero.gbs2-noimg{aspect-ratio:21/7;background:linear-gradient(145deg,#4a2820,#241a14)}
-.gbs2-hero.gbs2-noimg::before{content:attr(data-n);position:absolute;inset:0;z-index:1;display:grid;place-items:center;padding-bottom:24px;font-family:Lora,Georgia,serif;font-size:clamp(52px,8vw,84px);font-weight:700;color:var(--gbs2-accent2);opacity:.85;text-shadow:0 2px 22px rgba(0,0,0,.45)}
+.gbs2-hero.gbs2-noimg::before{content:attr(data-n);position:absolute;inset:0;z-index:1;display:grid;place-items:center;padding-bottom:24px;font-family:Lora,Georgia,serif;font-size:clamp(52px,8vw,84px);font-weight:700;font-variant-numeric:oldstyle-nums;font-feature-settings:"onum" 1;color:var(--gbs2-accent2);opacity:.85;text-shadow:0 2px 22px rgba(0,0,0,.45)}
 @media (prefers-reduced-motion:reduce){.gbs2-ring.gbs2-celebrate{animation:none}.gbs2-resume,.gbs2-mobile-head,.gbs2-bbar{transition:none}}
 .gbs2-sum{display:flex;align-items:center;gap:12px;margin:26px 0 12px;font-family:'Source Sans 3',system-ui,sans-serif;font-size:12.5px;color:var(--color-text-muted)}
 .gbs2-sum-dots{display:flex;gap:5px}
