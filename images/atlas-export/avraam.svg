@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="sheet-svg" viewBox="70.0 20.0 1800 1200.0" data-vb="70.0 20.0 1800 1200.0" data-km-per-unit="0.92" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="Путь Авраама — лист Атласа">
 <defs>
+  <!-- винтажная палитра ВАРИАНТ 1: тёплый выцветший пергамент, контрастное
+       приглушённо-бирюзовое море -->
   <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#f0e7cf"></stop><stop offset=".45" stop-color="#e8dcbc"></stop><stop offset="1" stop-color="#dfd1a9"></stop>
+    <stop offset="0" stop-color="#ecdcb4"></stop><stop offset=".45" stop-color="#e1d1a2"></stop><stop offset="1" stop-color="#d3bf8a"></stop>
   </linearGradient>
   <linearGradient id="richLandG" x1="0" y1="0" x2=".5" y2="1">
-    <stop offset="0" stop-color="#ece1c2"></stop><stop offset=".5" stop-color="#e5d8b4"></stop><stop offset="1" stop-color="#decfa6"></stop>
+    <stop offset="0" stop-color="#e7d9ae"></stop><stop offset=".5" stop-color="#dccd98"></stop><stop offset="1" stop-color="#cfbc86"></stop>
   </linearGradient>
   <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#cfe0e9"></stop><stop offset="1" stop-color="#b4cedd"></stop>
+    <stop offset="0" stop-color="#a7c5c2"></stop><stop offset="1" stop-color="#7ea3a4"></stop>
   </linearGradient>
   <pattern id="seaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#7fa7c4" stroke-width=".6" opacity=".38"></path>
-    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#7fa7c4" stroke-width=".5" opacity=".26"></path>
+    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#5f8c8b" stroke-width=".6" opacity=".34"></path>
+    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#5f8c8b" stroke-width=".5" opacity=".24"></path>
   </pattern>
   <radialGradient id="fertileG" cx=".5" cy=".5" r=".5">
     <stop offset="0" stop-color="#8a9a4e" stop-opacity=".17"></stop><stop offset="1" stop-color="#8a9a4e" stop-opacity="0"></stop>
