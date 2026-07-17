@@ -311,7 +311,10 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
    Было добавлено (dc092f1), затем случайно откачено ревертом d3b4dde без
    причины и не дошло до main. Возвращено по прямой просьбе владельца. */
 @media (max-width: 63.99em) {
-  .mobile-top-ember::before { opacity: .38; transform: scale(1); }
+  /* Владелец 2026-07-17: «рамка вокруг PLAY будто уменьшенная» — контур покоя
+     наследовал inset:6px халo-геометрию (24px круг в 36px кнопке), а SVG-кольцо
+     прогресса рисует r=45/100 (=inset 5%). Совмещаем контур с кольцом. */
+  .mobile-top-ember::before { inset: 2px; opacity: .38; transform: scale(1); }
 }
 
 /* SVG progress ring */
@@ -4831,14 +4834,22 @@ html.dark #partTocOverlay .gbat-sat.active .gbat-satmark{color:#e5bd85}
 #partTocOverlay .gbat-artrow > .gbat-sat{flex:1;min-width:0}
 #partTocOverlay .gbat-art-chev{flex:0 0 36px;display:grid;place-items:center;background:none;border:0;cursor:pointer;
   color:var(--gb-text-muted,#8a7a66);border-radius:9px}
-#partTocOverlay .gbat-art-chev svg{width:15px;height:15px;transition:transform .24s ease}
+#partTocOverlay .gbat-art-chev svg{width:15px;height:15px;transition:transform .3s var(--gb-ease-spring,cubic-bezier(.32,.72,0,1))}
 #partTocOverlay .gbat-art.open .gbat-art-chev svg{transform:rotate(180deg)}
 #partTocOverlay .gbat-art-chev:hover,#partTocOverlay .gbat-art-chev:focus-visible{color:var(--gb-accent,#b8894a);background:rgba(184,137,74,.1)}
 @media (hover:none){#partTocOverlay .gbat-art-chev:hover{background:transparent}}
 #partTocOverlay .gbat-art.open .gbat-art-chev{color:var(--gb-accent,#b8894a)}
-#partTocOverlay .gbat-artsecs{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.22,1,.36,1)}
+#partTocOverlay .gbat-artsecs{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s var(--gb-ease-spring,cubic-bezier(.32,.72,0,1))}
 #partTocOverlay .gbat-art.open .gbat-artsecs{grid-template-rows:1fr}
 #partTocOverlay .gbat-artsecs > div{overflow:hidden;min-height:0}
+/* Каскад (TOP-10 #3): разделы раскрытой статьи появляются друг за другом. */
+#partTocOverlay .gbat-artsecs .gbat-sub{opacity:0;transform:translateY(-4px);transition:opacity .25s ease,transform .3s var(--gb-ease-spring,cubic-bezier(.32,.72,0,1))}
+#partTocOverlay .gbat-art.open .gbat-artsecs .gbat-sub{opacity:1;transform:none}
+#partTocOverlay .gbat-art.open .gbat-artsecs .gbat-sub:nth-child(2){transition-delay:.04s}
+#partTocOverlay .gbat-art.open .gbat-artsecs .gbat-sub:nth-child(3){transition-delay:.08s}
+#partTocOverlay .gbat-art.open .gbat-artsecs .gbat-sub:nth-child(4){transition-delay:.12s}
+#partTocOverlay .gbat-art.open .gbat-artsecs .gbat-sub:nth-child(n+5){transition-delay:.16s}
+@media (prefers-reduced-motion:reduce){#partTocOverlay .gbat-artsecs .gbat-sub{transition:opacity .15s ease;transform:none}}
 @media (prefers-reduced-motion: reduce){
   #partTocOverlay .gbat-artsecs{transition:none}
   #partTocOverlay .gbat-art-chev svg{transition:none}
