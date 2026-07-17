@@ -181,15 +181,20 @@
   .lab-war{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;fill:#8a4a38;opacity:.92;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
   .lab-war-note{opacity:.8}
   .glyph-hit{cursor:pointer}
+  /* иконки живут мелко; при наведении — плавно вырастают из своего основания
+     (transform-origin у «земли»), штрихи non-scaling держат тонкость */
+  #sheet-svg .glyph{transition:transform .2s cubic-bezier(.34,1.35,.5,1)}
+  #sheet-svg .glyph-hit:hover .glyph,
+  #sheet-svg .glyph-hit:focus-visible .glyph{transform:scale(1.7);transform-box:fill-box;transform-origin:50% 90%}
   .mile,.wp,.ovl-layer,.decor-ship,.war{cursor:pointer}
   #sheet-svg [fill="url(#jordanG)"]{opacity:.09}
   #sheet-svg #tradeRoutes{opacity:.32}
   /* ── киношные иконки-глифы: объём, светотень, цвет-акцент ── */
-  .glyph .gb{stroke:#5a4114;stroke-width:.85px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .glyph .g-out{fill:none;stroke:#5a4114;stroke-width:.9px;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .glyph .g-sh{fill:#3d2c0f;opacity:.3;stroke:none}
-  .glyph .g-sh2{fill:#3d2c0f;opacity:.5;stroke:none}
-  .glyph .g-hi{fill:none;stroke:rgba(255,250,235,.7);stroke-width:.7px;stroke-linecap:round;vector-effect:non-scaling-stroke}
+  .glyph .gb{stroke:#6a5028;stroke-width:.62px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .glyph .g-out{fill:none;stroke:#6a5028;stroke-width:.68px;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .glyph .g-sh{fill:#3d2c0f;opacity:.2;stroke:none}
+  .glyph .g-sh2{fill:#3d2c0f;opacity:.32;stroke:none}
+  .glyph .g-hi{fill:none;stroke:rgba(255,250,235,.6);stroke-width:.55px;stroke-linecap:round;vector-effect:non-scaling-stroke}
   .glyph .g-smoke{fill:none;stroke:#8a7a58;stroke-width:.85px;opacity:.7;stroke-linecap:round;vector-effect:non-scaling-stroke}
   .glyph .g-legs{fill:none;stroke:#5c421d;stroke-width:.8px;stroke-linecap:round;vector-effect:non-scaling-stroke}
   .glyph .g-shadow{stroke:none}
@@ -393,25 +398,28 @@
     <stop offset="0" stop-color="#d7c79c" stop-opacity=".62"/>
     <stop offset="1" stop-color="#ab9366" stop-opacity=".72"/>
   </linearGradient>
+  <!-- освещённая грань киношных гор (свет с СЗ) -->
+  <linearGradient id="mtLitG" x1="0" y1="0" x2=".25" y2="1">
+    <stop offset="0" stop-color="#e7dab6"/><stop offset="1" stop-color="#c8b083"/>
+  </linearGradient>
   <symbol id="peak" viewBox="0 0 20 16" overflow="visible">
-    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
-      <path d="M8.3,2.8 l.8,1.35"/><path d="M9,4 l.8,1.35"/><path d="M9.6,5.2 l.7,1.25"/>
-      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
-      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 L8.6,15 Z" fill="#4a3410" fill-opacity=".2"/>
+    <path d="M13.5,5.4 L16,9 L19,15 L14.4,15 Z" fill="#4a3410" fill-opacity=".1"/>
+    <g stroke="#5f5038" stroke-width=".5" stroke-linecap="round" fill="none" opacity=".3" vector-effect="non-scaling-stroke">
+      <path d="M10.6,6.4 l.9,1.5"/><path d="M12.4,7.8 l.8,1.5"/><path d="M15.4,10 l.7,1.5"/>
     </g>
-    <g stroke="#efe7d2" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
-      <path d="M6.6,5.6 l-.9,1.5"/><path d="M4.9,8.3 l-.9,1.5"/>
-    </g>
+    <path d="M1,15 L5.5,7 L8,2" fill="none" stroke="rgba(255,250,235,.55)" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
   </symbol>
   <symbol id="peak-snow" viewBox="0 0 20 16" overflow="visible">
-    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
-      <path d="M9.1,4.4 l.8,1.35"/><path d="M9.7,5.6 l.7,1.25"/>
-      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
-      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 L8.6,15 Z" fill="#4a3410" fill-opacity=".2"/>
+    <path d="M13.5,5.4 L16,9 L19,15 L14.4,15 Z" fill="#4a3410" fill-opacity=".1"/>
+    <g stroke="#5f5038" stroke-width=".5" stroke-linecap="round" fill="none" opacity=".28" vector-effect="non-scaling-stroke">
+      <path d="M12.4,7.8 l.8,1.5"/><path d="M15.4,10 l.7,1.5"/>
     </g>
-    <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M5.7,5 L8,2 L10.4,5 C9.2,3.9 6.9,3.9 5.7,5 Z" fill="#f7fafc" fill-opacity=".95" stroke="#8fa3bd" stroke-width=".3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M1,15 L5.5,7 L8,2" fill="none" stroke="rgba(255,250,235,.5)" stroke-width=".6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
   </symbol>
   <!-- верблюд-дромадер (вправо) — виньетка каравана старинных карт -->
   <symbol id="camel" viewBox="0 0 20 14" overflow="visible">
@@ -434,17 +442,15 @@
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
-    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <g stroke="#6f5f42" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
-      <path d="M8.5,4.6 l.7,1.3"/><path d="M9.6,5.4 l.6,1.3"/>
-      <path d="M13.6,5.2 l.6,1.3"/><path d="M14.7,6 l.5,1.4"/><path d="M15.6,7.4 l.5,1.4"/>
-    </g>
+    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".55" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 L8.5,9.2 Z" fill="#4a3410" fill-opacity=".16"/>
+    <path d="M1,9.2 Q3.5,4.2 7.5,4" fill="none" stroke="rgba(255,250,235,.5)" stroke-width=".6" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
   </symbol>
   <!-- ═══ КРАСКИ КИНОШНЫХ ИКОНОК-ГЛИФОВ (объём: тело-эмбосс, тень, акценты) ═══ -->
   <radialGradient id="gShadow" cx=".5" cy=".5" r=".5">
-    <stop offset="0" stop-color="#4a3512" stop-opacity=".22"/>
-    <stop offset=".55" stop-color="#4a3512" stop-opacity=".1"/>
-    <stop offset="1" stop-color="#4a3512" stop-opacity="0"/>
+    <stop offset="0" stop-color="#5a4620" stop-opacity=".1"/>
+    <stop offset=".6" stop-color="#5a4620" stop-opacity=".045"/>
+    <stop offset="1" stop-color="#5a4620" stop-opacity="0"/>
   </radialGradient>
   <linearGradient id="gBody" x1="0" y1="0" x2=".5" y2="1">
     <stop offset="0" stop-color="#f2e7c8"/><stop offset=".55" stop-color="#ddc79a"/><stop offset="1" stop-color="#c3a973"/>
@@ -561,24 +567,24 @@ M1610,60 C1652,118 1678,186 1688,262 C1696,332 1692,402 1672,462 C1660,498 1668,
 <g class="pl" data-pid="eden"><circle cx="672" cy="268" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="ararat"><circle cx="852" cy="172" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="nineveh"><circle cx="710" cy="535" r="5.54" class="pl-city"/></g><g class="pl" data-pid="calah"><circle cx="733" cy="567" r="5.54" class="pl-city"/></g><g class="pl" data-pid="akkad"><circle cx="872" cy="957" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="babylon"><circle cx="875" cy="1030" r="5.54" class="pl-city"/></g><g class="pl" data-pid="uruk-city"><circle cx="1033" cy="1188" r="5.54" class="pl-city"/></g><g class="pl" data-pid="ur"><circle cx="1093" cy="1235" r="5.54" class="pl-city"/></g><g class="pl" data-pid="resen"><circle cx="731" cy="546" r="5.86" class="pl-cand"/></g>
 <g class="mile" data-stage="0" data-x="672" data-y="268"><text x="661.7" y="260.1" text-anchor="end" class="mile-t" font-size="15.83" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="1" data-x="852" data-y="172"><text x="841.7" y="188.6" text-anchor="end" class="mile-t" font-size="15.83" style="fill:#a25d33">II</text></g><g class="mile" data-stage="2" data-x="710" data-y="535"><text x="699.7" y="527.1" text-anchor="end" class="mile-t" font-size="15.83" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="3" data-x="875" data-y="1030"><text x="864.7" y="1046.6" text-anchor="end" class="mile-t" font-size="15.83" style="fill:#8f4a56">IV</text></g><g class="mile" data-stage="4" data-x="1093" data-y="1235"><text x="1082.7" y="1251.6" text-anchor="end" class="mile-t" font-size="15.83" style="fill:#6b5a43">V</text></g>
 
-<g class="glyph-hit" data-pid="ararat"><circle cx="852" cy="159.3" r="11.9" fill="transparent" stroke="none"/><g class="glyph">
-    <ellipse class="g-shadow" cx="852" cy="167.25" rx="9.74" ry="2.53"/>
-    <path fill="url(#gBody)" class="gb" d="M842.91,162.06 q9.09,3.38 18.18,0 l-2.08,3.89 q-7.01,2.34 -14.02,0 Z"/>
-    <path class="g-sh" d="M860.31,162.58 l-2.08,3.89 q-2.6,0.91 -5.45,1.3 q4.15,-0.26 5.45,-1.82 Z"/>
-    <path fill="url(#gStone)" class="gb" d="M847.59,161.67 h8.83 v-3.38 h-8.83 Z"/>
-    <path class="g-out" d="M850.96,158.29 v-2.08"/>
-  </g></g><g class="glyph-hit" data-pid="babylon"><circle cx="875" cy="1017.3" r="11.9" fill="transparent" stroke="none"/><g class="glyph">
-    <ellipse class="g-shadow" cx="875" cy="1025.25" rx="6.49" ry="1.69"/>
-    <path fill="url(#gBody)" class="gb" d="M870.59,1022.13 v-12.2 h-1.43 v-2.34 h2.73 v1.3 h1.82 v-1.3 h2.73 v1.3 h1.82 v-1.3 h2.73 v2.34 h-1.43 v12.2 Z"/>
-    <path class="g-sh" d="M878.38,1022.13 v-12.2 h1.43 v-2.34 h-1.43 v1.3 Z"/>
-    <path fill="#5c3f18" d="M873.44,1022.13 v-3.89 a1.56,1.82 0 0 1 3.12,0 v3.89 Z"/>
-    <rect x="873.96" y="1014.34" width="2.08" height="2.6" fill="#5c3f18" opacity=".7"/>
-    <path class="g-hi" d="M870.85,1022 v-11.94"/>
-  </g></g><g class="glyph-hit" data-pid="ur"><circle cx="1093" cy="1222.3" r="11.9" fill="transparent" stroke="none"/><g class="glyph">
-    <ellipse class="g-shadow" cx="1093" cy="1230.25" rx="10.39" ry="2.7"/>
-    <path fill="url(#gBody)" class="gb" d="M1083.91,1227.13 h18.18 v-3.38 h-2.6 v-3.38 h-2.99 v-3.38 h-1.82 v-3.12 h-1.56 v3.12 h-1.82 v3.38 h-2.99 v3.38 h-2.6 Z"/>
-    <path class="g-sh" d="M1093.78,1213.89 h1.56 v3.12 h1.82 v3.38 h2.99 v3.38 h2.6 v3.12 h-9.09 Z"/>
-    <path class="g-out" d="M1093,1217.79 v-3.77" style="stroke-width:.55px;opacity:.6"/>
+<g class="glyph-hit" data-pid="ararat"><circle cx="852" cy="160.9" r="8.6" fill="transparent" stroke="none"/><g class="glyph">
+    <ellipse class="g-shadow" cx="852" cy="167.25" rx="5.13" ry="1"/>
+    <path fill="url(#gBody)" class="gb" d="M845.35,163.45 q6.65,2.47 13.3,0 l-1.52,2.85 q-5.13,1.71 -10.26,0 Z"/>
+    <path class="g-sh" d="M858.08,163.83 l-1.52,2.85 q-1.9,0.66 -3.99,0.95 q3.04,-0.19 3.99,-1.33 Z"/>
+    <path fill="url(#gStone)" class="gb" d="M848.77,163.16 h6.46 v-2.47 h-6.46 Z"/>
+    <path class="g-out" d="M851.24,160.69 v-1.52"/>
+  </g></g><g class="glyph-hit" data-pid="babylon"><circle cx="875" cy="1018.9" r="8.6" fill="transparent" stroke="none"/><g class="glyph">
+    <ellipse class="g-shadow" cx="875" cy="1025.25" rx="3.42" ry="0.67"/>
+    <path fill="url(#gBody)" class="gb" d="M871.77,1022.97 v-8.93 h-1.04 v-1.71 h1.99 v0.95 h1.33 v-0.95 h1.99 v0.95 h1.33 v-0.95 h1.99 v1.71 h-1.04 v8.93 Z"/>
+    <path class="g-sh" d="M877.47,1022.97 v-8.93 h1.04 v-1.71 h-1.04 v0.95 Z"/>
+    <path fill="#5c3f18" d="M873.86,1022.97 v-2.85 a1.14,1.33 0 0 1 2.28,0 v2.85 Z"/>
+    <rect x="874.24" y="1017.27" width="1.52" height="1.9" fill="#5c3f18" opacity=".7"/>
+    <path class="g-hi" d="M871.96,1022.88 v-8.74"/>
+  </g></g><g class="glyph-hit" data-pid="ur"><circle cx="1093" cy="1223.9" r="8.6" fill="transparent" stroke="none"/><g class="glyph">
+    <ellipse class="g-shadow" cx="1093" cy="1230.25" rx="5.47" ry="1.06"/>
+    <path fill="url(#gBody)" class="gb" d="M1086.35,1227.97 h13.3 v-2.47 h-1.9 v-2.47 h-2.18 v-2.47 h-1.33 v-2.28 h-1.14 v2.28 h-1.33 v2.47 h-2.18 v2.47 h-1.9 Z"/>
+    <path class="g-sh" d="M1093.57,1218.28 h1.14 v2.28 h1.33 v2.47 h2.18 v2.47 h1.9 v2.28 h-6.65 Z"/>
+    <path class="g-out" d="M1093,1221.13 v-2.75" style="stroke-width:.55px;opacity:.6"/>
   </g></g>
 <g class="wp" data-wpi="0"><circle cx="886" cy="1044" r="11.1" fill="transparent" stroke="none"/><rect x="882.4" y="1040.4" width="7.3" height="7.3" transform="rotate(45 886 1044)" class="wp-dot"/><text x="895.5" y="1049.7" class="lab-wp" font-size="15.83">Этеменанки (фундамент)</text></g><g class="wp" data-wpi="1"><circle cx="1046" cy="1201" r="11.1" fill="transparent" stroke="none"/><rect x="1042.4" y="1197.4" width="7.3" height="7.3" transform="rotate(45 1046 1201)" class="wp-dot"/><text x="1055.5" y="1206.7" class="lab-wp" font-size="15.83">Варка (раскопки Урука)</text></g><g class="wp" data-wpi="2"><circle cx="1106" cy="1247" r="11.1" fill="transparent" stroke="none"/><rect x="1102.4" y="1243.4" width="7.3" height="7.3" transform="rotate(45 1106 1247)" class="wp-dot"/><text x="1115.5" y="1252.7" class="lab-wp" font-size="15.83">Зиккурат Ур-Намму</text></g>
 <text x="330" y="330" class="lab-ctxnote" font-size="18.21" text-anchor="middle">ИАФЕТ · СЕВЕР И ЗАПАД</text><text x="1560" y="700" class="lab-ctxnote" font-size="18.21" text-anchor="middle">СИМ · ВОСТОК</text><text x="280" y="1235" class="lab-ctxnote" font-size="18.21" text-anchor="middle">ХАМ · ЮГ И ЕГИПЕТ</text>

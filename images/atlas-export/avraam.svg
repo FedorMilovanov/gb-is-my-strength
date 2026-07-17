@@ -67,25 +67,28 @@
     <stop offset="0" stop-color="#d7c79c" stop-opacity=".62"></stop>
     <stop offset="1" stop-color="#ab9366" stop-opacity=".72"></stop>
   </linearGradient>
+  <!-- освещённая грань киношных гор (свет с СЗ) -->
+  <linearGradient id="mtLitG" x1="0" y1="0" x2=".25" y2="1">
+    <stop offset="0" stop-color="#e7dab6"></stop><stop offset="1" stop-color="#c8b083"></stop>
+  </linearGradient>
   <symbol id="peak" viewBox="0 0 20 16" overflow="visible">
-    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
-    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
-      <path d="M8.3,2.8 l.8,1.35"></path><path d="M9,4 l.8,1.35"></path><path d="M9.6,5.2 l.7,1.25"></path>
-      <path d="M13.6,6 l.7,1.35"></path><path d="M14.5,7.6 l.7,1.45"></path><path d="M15.4,9.2 l.6,1.45"></path>
-      <path d="M16.4,11 l.55,1.4"></path><path d="M17.3,12.7 l.5,1.4"></path>
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+    <path d="M8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 L8.6,15 Z" fill="#4a3410" fill-opacity=".2"></path>
+    <path d="M13.5,5.4 L16,9 L19,15 L14.4,15 Z" fill="#4a3410" fill-opacity=".1"></path>
+    <g stroke="#5f5038" stroke-width=".5" stroke-linecap="round" fill="none" opacity=".3" vector-effect="non-scaling-stroke">
+      <path d="M10.6,6.4 l.9,1.5"></path><path d="M12.4,7.8 l.8,1.5"></path><path d="M15.4,10 l.7,1.5"></path>
     </g>
-    <g stroke="#efe7d2" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
-      <path d="M6.6,5.6 l-.9,1.5"></path><path d="M4.9,8.3 l-.9,1.5"></path>
-    </g>
+    <path d="M1,15 L5.5,7 L8,2" fill="none" stroke="rgba(255,250,235,.55)" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
   </symbol>
   <symbol id="peak-snow" viewBox="0 0 20 16" overflow="visible">
-    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
-    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
-      <path d="M9.1,4.4 l.8,1.35"></path><path d="M9.7,5.6 l.7,1.25"></path>
-      <path d="M13.6,6 l.7,1.35"></path><path d="M14.5,7.6 l.7,1.45"></path><path d="M15.4,9.2 l.6,1.45"></path>
-      <path d="M16.4,11 l.55,1.4"></path><path d="M17.3,12.7 l.5,1.4"></path>
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+    <path d="M8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 L8.6,15 Z" fill="#4a3410" fill-opacity=".2"></path>
+    <path d="M13.5,5.4 L16,9 L19,15 L14.4,15 Z" fill="#4a3410" fill-opacity=".1"></path>
+    <g stroke="#5f5038" stroke-width=".5" stroke-linecap="round" fill="none" opacity=".28" vector-effect="non-scaling-stroke">
+      <path d="M12.4,7.8 l.8,1.5"></path><path d="M15.4,10 l.7,1.5"></path>
     </g>
-    <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+    <path d="M5.7,5 L8,2 L10.4,5 C9.2,3.9 6.9,3.9 5.7,5 Z" fill="#f7fafc" fill-opacity=".95" stroke="#8fa3bd" stroke-width=".3" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+    <path d="M1,15 L5.5,7 L8,2" fill="none" stroke="rgba(255,250,235,.5)" stroke-width=".6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
   </symbol>
   <!-- верблюд-дромадер (вправо) — виньетка каравана старинных карт -->
   <symbol id="camel" viewBox="0 0 20 14" overflow="visible">
@@ -107,17 +110,15 @@
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
-    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
-    <g stroke="#6f5f42" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
-      <path d="M8.5,4.6 l.7,1.3"></path><path d="M9.6,5.4 l.6,1.3"></path>
-      <path d="M13.6,5.2 l.6,1.3"></path><path d="M14.7,6 l.5,1.4"></path><path d="M15.6,7.4 l.5,1.4"></path>
-    </g>
+    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".55" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+    <path d="M7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 L8.5,9.2 Z" fill="#4a3410" fill-opacity=".16"></path>
+    <path d="M1,9.2 Q3.5,4.2 7.5,4" fill="none" stroke="rgba(255,250,235,.5)" stroke-width=".6" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
   </symbol>
   <!-- ═══ КРАСКИ КИНОШНЫХ ИКОНОК-ГЛИФОВ (объём: тело-эмбосс, тень, акценты) ═══ -->
   <radialGradient id="gShadow" cx=".5" cy=".5" r=".5">
-    <stop offset="0" stop-color="#4a3512" stop-opacity=".22"></stop>
-    <stop offset=".55" stop-color="#4a3512" stop-opacity=".1"></stop>
-    <stop offset="1" stop-color="#4a3512" stop-opacity="0"></stop>
+    <stop offset="0" stop-color="#5a4620" stop-opacity=".1"></stop>
+    <stop offset=".6" stop-color="#5a4620" stop-opacity=".045"></stop>
+    <stop offset="1" stop-color="#5a4620" stop-opacity="0"></stop>
   </radialGradient>
   <linearGradient id="gBody" x1="0" y1="0" x2=".5" y2="1">
     <stop offset="0" stop-color="#f2e7c8"></stop><stop offset=".55" stop-color="#ddc79a"></stop><stop offset="1" stop-color="#c3a973"></stop>
@@ -635,155 +636,154 @@
 <g class="pl" data-pid="ur"><circle cx="1710" cy="897" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="urfa"><circle cx="979" cy="159" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="harran"><circle cx="1003" cy="194" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="damascus"><circle cx="731" cy="594" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="shechem"><circle cx="628" cy="748" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="bethel"><circle cx="624" cy="782" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="egypt"><circle cx="235" cy="940" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hebron"><circle cx="610" cy="829" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="dan"><circle cx="665" cy="625" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hovah"><circle cx="752" cy="556" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="salem"><circle cx="623" cy="800" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="sodom"><circle cx="658" cy="866" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hammam"><circle cx="667" cy="818" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="zoar"><circle cx="652" cy="893" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="gerar"><circle cx="561" cy="847" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="beersheba"><circle cx="584" cy="864" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="kadesh"><circle cx="542" cy="934" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="shur"><circle cx="400" cy="940" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="lahairoi"><circle cx="534" cy="931" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="babylon"><circle cx="1543" cy="708" r="3.75" class="pl-ctx"></circle></g><g class="pl" data-pid="mari"><circle cx="1190" cy="468" r="3.75" class="pl-ctx"></circle></g>
 <g class="mile" data-stage="0" data-x="1710" data-y="897"><text x="1700.3" y="912.8" text-anchor="end" class="mile-t" font-size="15.00" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="1" data-x="731" data-y="594"><text x="721.3" y="609.8" text-anchor="end" class="mile-t" font-size="15.00" style="fill:#a25d33">II</text></g><g class="mile" data-stage="2" data-x="235" data-y="917"><text x="235.0" y="917.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="3" data-x="592" data-y="832"><text x="592.0" y="832.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#8f4a56">IV</text></g><g class="mile" data-stage="4" data-x="665" data-y="625"><text x="655.3" y="640.8" text-anchor="end" class="mile-t" font-size="15.00" style="fill:#6b5a43">V</text></g><g class="mile" data-stage="7" data-x="631" data-y="810"><text x="631.0" y="810.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#4a6a6a">VIII</text></g><g class="mile" data-stage="5" data-x="667" data-y="873"><text x="667.0" y="873.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#3f6a8a">VI</text></g><g class="mile" data-stage="6" data-x="568" data-y="835"><text x="568.0" y="835.0" text-anchor="middle" class="mile-t" font-size="15.00" style="fill:#7a5a8a">VII</text></g>
 <g class="war-layer" aria-label="Поход четырёх царей · Быт 14"><path d="M702,676 C698.8,680.3 688.2,675.7 683,702 C677.8,728.3 674.5,804.3 671,834 C667.5,863.7 665.0,864.8 662,880 C659.0,895.2 656.0,912.0 653,925 C650.0,938.0 649.5,951.5 644,958 C638.5,964.5 631.3,970.0 620,964 C608.7,958.0 593.0,938.3 576,922 C559.0,905.7 522.0,878.0 518,866 C514.0,854.0 539.7,857.3 552,850 C564.3,842.7 584.0,825.3 592,822 C600.0,818.7 593.7,826.2 600,830 C606.3,833.8 621.8,840.0 630,845 C638.2,850.0 645.8,857.5 649,860" class="war-route"></path><path d="M644.1,850.7 L649,860 L638.8,857.4" class="war-route" style="stroke-dasharray:none"></path><text x="712.0" y="760.0" class="lab-war lab-war-note" font-size="13.50">ПОХОД ЦАРЕЙ ВОСТОКА · БЫТ 14</text><g class="war" data-pid="ashteroth-karnaim"><circle cx="702" cy="676" r="9.0" fill="transparent" stroke="none"></circle><path d="M698.55,672.55 L705.45,679.45 M698.55,679.45 L705.45,672.55" class="war-x"></path><text x="711.8" y="680.6" text-anchor="start" class="lab-war" font-size="13.50">Аштероф-Карнаим</text></g><g class="war" data-pid="ham-zuzim"><circle cx="683" cy="702" r="9.0" fill="transparent" stroke="none"></circle><path d="M679.55,698.55 L686.45,705.45 M679.55,705.45 L686.45,698.55" class="war-x"></path><text x="692.8" y="706.6" text-anchor="start" class="lab-war" font-size="13.50">Хам</text></g><g class="war" data-pid="shaveh-kiriathaim"><circle cx="671" cy="834" r="9.0" fill="transparent" stroke="none"></circle><path d="M667.55,830.55 L674.45,837.45 M667.55,837.45 L674.45,830.55" class="war-x"></path><text x="680.8" y="838.6" text-anchor="start" class="lab-war" font-size="13.50">Шаве-Кириафаим</text></g><g class="war" data-pid="hazazon-tamar"><circle cx="630" cy="839" r="9.0" fill="transparent" stroke="none"></circle><path d="M626.55,835.55 L633.45,842.45 M626.55,842.45 L633.45,835.55" class="war-x"></path><text x="630.0" y="853.3" text-anchor="middle" class="lab-war" font-size="13.50">Хацацон-Фамар</text></g><g class="war" data-pid="el-paran-turn"><circle cx="641" cy="973" r="9.0" fill="transparent" stroke="none"></circle><text x="648.3" y="986.9" text-anchor="start" class="lab-war" font-size="13.50">до Эл-Фарана</text></g></g>
-<g class="glyph-hit" data-pid="ur"><circle cx="1710" cy="885.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="1710" cy="892.5" rx="9.84" ry="2.56"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M1701.39,889.55 h17.22 v-3.2 h-2.46 v-3.2 h-2.83 v-3.2 h-1.72 v-2.95 h-1.48 v2.95 h-1.72 v3.2 h-2.83 v3.2 h-2.46 Z"></path>
-    <path class="g-sh" d="M1710.74,877 h1.48 v2.95 h1.72 v3.2 h2.83 v3.2 h2.46 v2.95 h-8.61 Z"></path>
-    <path class="g-out" d="M1710,880.69 v-3.57" style="stroke-width:.55px;opacity:.6"></path>
-  </g></g><g class="glyph-hit" data-pid="harran"><circle cx="1003" cy="182.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="1003" cy="189.5" rx="11.07" ry="2.88"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M1005.46,186.43 V174.74 h1.23 v-1.48 h1.23 v1.48 h1.23 v-1.48 h1.23 v1.48 h1.23 V186.43 Z"></path>
-    <path class="g-sh" d="M1010.38,186.43 V174.86 h1.23 V186.43 Z"></path>
-    <path class="g-out" d="M1007.43,178.92 h3.44" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M1007.92,174.74 v-3.69"></path>
-    <path fill="#a8412a" d="M1007.92,171.05 l3.94,1.23 l-3.94,1.23 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M994.88,186.43 V181.38
-      h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48
-      h1.48 V186.43 Z"></path>
-    <path class="g-sh" d="M1004.72,186.43 V181.38 h1.48 V186.43 Z"></path>
-    <path fill="#5c3f18" d="M998.33,186.43 v-2.95 a1.72,1.97 0 0 1 3.44,0 v2.95 Z"></path>
-    <path class="g-hi" d="M994.88,186.3 V181.63"></path>
-  </g></g><g class="glyph-hit" data-pid="damascus"><circle cx="731" cy="582.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="731" cy="589.5" rx="11.07" ry="2.88"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M733.46,586.42 V574.74 h1.23 v-1.48 h1.23 v1.48 h1.23 v-1.48 h1.23 v1.48 h1.23 V586.42 Z"></path>
-    <path class="g-sh" d="M738.38,586.42 V574.86 h1.23 V586.42 Z"></path>
-    <path class="g-out" d="M735.43,578.92 h3.44" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M735.92,574.74 v-3.69"></path>
-    <path fill="#a8412a" d="M735.92,571.05 l3.94,1.23 l-3.94,1.23 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M722.88,586.42 V581.38
-      h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48
-      h1.48 V586.42 Z"></path>
-    <path class="g-sh" d="M732.72,586.42 V581.38 h1.48 V586.42 Z"></path>
-    <path fill="#5c3f18" d="M726.33,586.42 v-2.95 a1.72,1.97 0 0 1 3.44,0 v2.95 Z"></path>
-    <path class="g-hi" d="M722.88,586.3 V581.63"></path>
-  </g></g><g class="glyph-hit" data-pid="shechem"><circle cx="628" cy="736.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="628" cy="743.5" rx="11.07" ry="2.88"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M630.46,740.42 V728.74 h1.23 v-1.48 h1.23 v1.48 h1.23 v-1.48 h1.23 v1.48 h1.23 V740.42 Z"></path>
-    <path class="g-sh" d="M635.38,740.42 V728.86 h1.23 V740.42 Z"></path>
-    <path class="g-out" d="M632.43,732.92 h3.44" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M632.92,728.74 v-3.69"></path>
-    <path fill="#a8412a" d="M632.92,725.05 l3.94,1.23 l-3.94,1.23 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M619.88,740.42 V735.38
-      h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48
-      h1.48 V740.42 Z"></path>
-    <path class="g-sh" d="M629.72,740.42 V735.38 h1.48 V740.42 Z"></path>
-    <path fill="#5c3f18" d="M623.33,740.42 v-2.95 a1.72,1.97 0 0 1 3.44,0 v2.95 Z"></path>
-    <path class="g-hi" d="M619.88,740.3 V735.63"></path>
-  </g></g><g class="glyph-hit" data-pid="bethel"><circle cx="624" cy="770.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="624" cy="777.5" rx="8" ry="2.08"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M617.11,774.55 h13.78 v-3.44 h-13.78 Z"></path>
-    <path class="g-sh" d="M628.18,771.1 h2.71 v3.44 h-2.71 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M619.08,771.1 h9.84 v-3.94 h-9.84 Z"></path>
-    <path class="g-sh" d="M626.71,767.17 h2.21 v3.94 h-2.21 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M619.08,767.17 l-0.86,-1.6 l1.72,0 Z M628.92,767.17 l0.86,-1.6 l-1.72,0 Z"></path>
-    <path fill="url(#gFlame)" d="M624,766.92
-      q3.44,2.95 1.23,6.89 q1.48,-1.72 0.61,-3.94
-      q1.48,2.21 -0.25,4.67 q-1.72,2.46 -3.2,0.49
-      q-1.48,-1.97 -0.37,-3.94 q-2.21,1.48 -1.23,4.18
-      q-2.71,-3.44 0.74,-7.87 q-0.25,1.97 1.35,2.95
-      q1.11,-2.21 0.86,-3.69 Z"></path>
-  </g></g><g class="glyph-hit" data-pid="egypt"><circle cx="235" cy="928.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="235" cy="935.5" rx="9.84" ry="2.56"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M226.39,932.55 L234.51,919.02 L236.97,932.55 Z"></path>
-    <path class="g-sh2" d="M234.51,919.02 L242.38,932.55 L236.97,932.55 Z"></path>
-    <path fill="url(#gStone)" d="M239.92,932.55 L243.86,926.15 L247.79,932.55 Z" opacity=".85"></path>
-    <path class="g-hi" d="M234.51,919.02 L226.88,932.3"></path>
-  </g></g><g class="glyph-hit" data-pid="hebron"><circle cx="610" cy="816.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="610" cy="823.5" rx="10.39" ry="2.7"></ellipse>
-    <path fill="url(#gTrunk)" d="M608.24,819.66 q-0.48,-4.8 0.64,-8 q0.8,3.04 2.4,0 q0.96,3.2 0.48,8 Z"></path>
-    <path fill="url(#gLeaf)" d="M610,813.27
-      q-8.95,0.64 -8.31,-6.4 q0.16,-4.16 4.16,-4.48
-      q0.96,-4.8 6.4,-4.16 q4.8,0.48 5.12,4.8
-      q4.16,0.64 3.52,5.44 q-0.64,5.44 -7.36,4.48
-      q-1.6,2.56 -5.44,0.96 Z"></path>
-    <path class="g-sh" d="M611.6,813.91 q3.2,0.64 4.16,-1.6 q5.76,0.48 6.08,-4.8 q-0.32,2.88 -3.84,3.84 q-3.2,0.96 -5.76,0.32 q-1.28,1.28 -3.84,1.6 Z"></path>
-    <path class="g-hi" d="M604.56,805.91 q2.24,-2.24 5.44,-1.76" style="opacity:.5"></path>
-  </g></g><g class="glyph-hit" data-pid="hebron"><circle cx="596" cy="832.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="596" cy="839.5" rx="11.19" ry="2.91"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M596,823.51 L606.23,835.66 L585.77,835.66 Z"></path>
-    <path class="g-sh2" d="M596,823.51 L606.23,835.66 L598.24,835.66 Z"></path>
-    <path fill="#5c3f18" d="M596,835.66 L593.28,829.59 q2.72,-1.76 5.44,0 Z"></path>
-    <path class="g-out" d="M596,823.51 v-2.56"></path>
-    <path class="g-out" d="M585.77,835.66 l-2.56,1.92 M606.23,835.66 l2.56,1.92" style="opacity:.6"></path>
-    <path class="g-hi" d="M596,824.15 L586.89,835.34"></path>
-  </g></g><g class="glyph-hit" data-pid="dan"><circle cx="665" cy="613.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="665" cy="620.5" rx="7.38" ry="1.92"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M658.36,617.55 v-7.87 a6.64,6.15 0 0 1 13.28,0 v7.87 h-3.2 v-6.89 a3.44,3.44 0 0 0 -6.89,0 v6.89 Z"></path>
-    <path class="g-sh" d="M668.44,617.55 v-6.89 a3.44,3.44 0 0 0 -1.23,-2.58 a3.44,3.44 0 0 1 1.23,2.58 v6.89 h3.2 v-7.87 a6.64,6.15 0 0 0 -2.95,-5.04 a6.64,6.15 0 0 1 2.95,5.04 v7.87 Z"></path>
-    <path fill="#5c3f18" d="M661.8,617.55 v-6.89 a3.44,3.44 0 0 1 6.89,0 v6.89 Z" opacity=".55"></path>
-    <path class="g-hi" d="M658.6,617.42 v-7.63 a6.4,5.9 0 0 1 3.2,-4.8"></path>
-  </g></g><g class="glyph-hit" data-pid="salem"><circle cx="623" cy="788.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="623" cy="795.5" rx="11.07" ry="2.88"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M625.46,792.42 V780.74 h1.23 v-1.48 h1.23 v1.48 h1.23 v-1.48 h1.23 v1.48 h1.23 V792.42 Z"></path>
-    <path class="g-sh" d="M630.38,792.42 V780.86 h1.23 V792.42 Z"></path>
-    <path class="g-out" d="M627.43,784.92 h3.44" style="stroke-width:.5px"></path>
-    <path class="g-out" d="M627.92,780.74 v-3.69"></path>
-    <path fill="#a8412a" d="M627.92,777.05 l3.94,1.23 l-3.94,1.23 Z"></path>
-    <path fill="url(#gBody)" class="gb" d="M614.88,792.42 V787.38
-      h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48 h1.35 v-1.48 h1.35 v1.48
-      h1.48 V792.42 Z"></path>
-    <path class="g-sh" d="M624.72,792.42 V787.38 h1.48 V792.42 Z"></path>
-    <path fill="#5c3f18" d="M618.33,792.42 v-2.95 a1.72,1.97 0 0 1 3.44,0 v2.95 Z"></path>
-    <path class="g-hi" d="M614.88,792.3 V787.63"></path>
-  </g></g><g class="glyph-hit" data-pid="sodom"><circle cx="664" cy="855.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="664" cy="862.5" rx="8" ry="2.08"></ellipse>
-    <path fill="url(#gBody)" class="gb" d="M657.24,859.55 v-7.38 h3.2 v4.18 h2.71 v-8 h3.2 v11.19 Z"></path>
-    <path class="g-sh" d="M665.6,848.36 h3.2 v11.19 h-3.2 Z"></path>
-    <path class="g-smoke" d="M668.18,847.74 q1.72,-2.21 3.44,-0.74 M666.21,849.46 q1.48,-1.84 2.95,-0.61"></path>
-  </g></g><g class="glyph-hit" data-pid="zoar"><circle cx="661" cy="888.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="661" cy="895.5" rx="6.76" ry="1.76"></ellipse>
-    <path fill="url(#gTrunk)" d="M659.89,892.55 q-1.23,-5.66 0.74,-9.84 q1.23,0.49 1.72,0 q-1.72,4.43 -0.25,9.84 Z"></path>
+<g class="glyph-hit" data-pid="ur"><circle cx="1710" cy="886.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="1710" cy="892.5" rx="5.18" ry="1.01"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M1703.7,890.34 h12.6 v-2.34 h-1.8 v-2.34 h-2.07 v-2.34 h-1.26 v-2.16 h-1.08 v2.16 h-1.26 v2.34 h-2.07 v2.34 h-1.8 Z"></path>
+    <path class="g-sh" d="M1710.54,881.16 h1.08 v2.16 h1.26 v2.34 h2.07 v2.34 h1.8 v2.16 h-6.3 Z"></path>
+    <path class="g-out" d="M1710,883.86 v-2.61" style="stroke-width:.55px;opacity:.6"></path>
+  </g></g><g class="glyph-hit" data-pid="harran"><circle cx="1003" cy="183.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="1003" cy="189.5" rx="5.83" ry="1.13"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M1004.8,187.25 V178.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V187.25 Z"></path>
+    <path class="g-sh" d="M1008.4,187.25 V178.79 h0.9 V187.25 Z"></path>
+    <path class="g-out" d="M1006.24,181.76 h2.52" style="stroke-width:.5px"></path>
+    <path class="g-out" d="M1006.6,178.7 v-2.7"></path>
+    <path fill="#a8412a" d="M1006.6,176 l2.88,0.9 l-2.88,0.9 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M997.06,187.25 V183.56
+      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
+      h1.08 V187.25 Z"></path>
+    <path class="g-sh" d="M1004.26,187.25 V183.56 h1.08 V187.25 Z"></path>
+    <path fill="#5c3f18" d="M999.58,187.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
+    <path class="g-hi" d="M997.06,187.16 V183.74"></path>
+  </g></g><g class="glyph-hit" data-pid="damascus"><circle cx="731" cy="583.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="731" cy="589.5" rx="5.83" ry="1.13"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M732.8,587.25 V578.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V587.25 Z"></path>
+    <path class="g-sh" d="M736.4,587.25 V578.79 h0.9 V587.25 Z"></path>
+    <path class="g-out" d="M734.24,581.76 h2.52" style="stroke-width:.5px"></path>
+    <path class="g-out" d="M734.6,578.7 v-2.7"></path>
+    <path fill="#a8412a" d="M734.6,576 l2.88,0.9 l-2.88,0.9 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M725.06,587.25 V583.56
+      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
+      h1.08 V587.25 Z"></path>
+    <path class="g-sh" d="M732.26,587.25 V583.56 h1.08 V587.25 Z"></path>
+    <path fill="#5c3f18" d="M727.58,587.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
+    <path class="g-hi" d="M725.06,587.16 V583.74"></path>
+  </g></g><g class="glyph-hit" data-pid="shechem"><circle cx="628" cy="737.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="628" cy="743.5" rx="5.83" ry="1.13"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M629.8,741.25 V732.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V741.25 Z"></path>
+    <path class="g-sh" d="M633.4,741.25 V732.79 h0.9 V741.25 Z"></path>
+    <path class="g-out" d="M631.24,735.76 h2.52" style="stroke-width:.5px"></path>
+    <path class="g-out" d="M631.6,732.7 v-2.7"></path>
+    <path fill="#a8412a" d="M631.6,730 l2.88,0.9 l-2.88,0.9 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M622.06,741.25 V737.56
+      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
+      h1.08 V741.25 Z"></path>
+    <path class="g-sh" d="M629.26,741.25 V737.56 h1.08 V741.25 Z"></path>
+    <path fill="#5c3f18" d="M624.58,741.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
+    <path class="g-hi" d="M622.06,741.16 V737.74"></path>
+  </g></g><g class="glyph-hit" data-pid="bethel"><circle cx="624" cy="771.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="624" cy="777.5" rx="4.21" ry="0.82"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M618.96,775.34 h10.08 v-2.52 h-10.08 Z"></path>
+    <path class="g-sh" d="M627.06,772.82 h1.98 v2.52 h-1.98 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M620.4,772.82 h7.2 v-2.88 h-7.2 Z"></path>
+    <path class="g-sh" d="M625.98,769.94 h1.62 v2.88 h-1.62 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M620.4,769.94 l-0.63,-1.17 l1.26,0 Z M627.6,769.94 l0.63,-1.17 l-1.26,0 Z"></path>
+    <path fill="url(#gFlame)" d="M624,769.76
+      q2.52,2.16 0.9,5.04 q1.08,-1.26 0.45,-2.88
+      q1.08,1.62 -0.18,3.42 q-1.26,1.8 -2.34,0.36
+      q-1.08,-1.44 -0.27,-2.88 q-1.62,1.08 -0.9,3.06
+      q-1.98,-2.52 0.54,-5.76 q-0.18,1.44 0.99,2.16
+      q0.81,-1.62 0.63,-2.7 Z"></path>
+  </g></g><g class="glyph-hit" data-pid="egypt"><circle cx="235" cy="929.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="235" cy="935.5" rx="5.18" ry="1.01"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M228.7,933.34 L234.64,923.44 L236.44,933.34 Z"></path>
+    <path class="g-sh2" d="M234.64,923.44 L240.4,933.34 L236.44,933.34 Z"></path>
+    <path fill="url(#gStone)" d="M238.6,933.34 L241.48,928.66 L244.36,933.34 Z" opacity=".85"></path>
+    <path class="g-hi" d="M234.64,923.44 L229.06,933.16"></path>
+  </g></g><g class="glyph-hit" data-pid="hebron"><circle cx="610" cy="817.5" r="8.5" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="610" cy="823.5" rx="4.42" ry="0.86"></ellipse>
+    <path fill="url(#gTrunk)" d="M608.96,821.23 q-0.28,-2.83 0.38,-4.72 q0.47,1.8 1.42,0 q0.57,1.89 0.28,4.72 Z"></path>
+    <path fill="url(#gLeaf)" d="M610,817.45
+      q-5.29,0.38 -4.91,-3.78 q0.09,-2.46 2.46,-2.65
+      q0.57,-2.83 3.78,-2.46 q2.83,0.28 3.02,2.83
+      q2.46,0.38 2.08,3.21 q-0.38,3.21 -4.35,2.65
+      q-0.94,1.51 -3.21,0.57 Z"></path>
+    <path class="g-sh" d="M610.95,817.83 q1.89,0.38 2.46,-0.94 q3.4,0.28 3.59,-2.83 q-0.19,1.7 -2.27,2.27 q-1.89,0.57 -3.4,0.19 q-0.76,0.76 -2.27,0.94 Z"></path>
+    <path class="g-hi" d="M606.79,813.11 q1.32,-1.32 3.21,-1.04" style="opacity:.5"></path>
+  </g></g><g class="glyph-hit" data-pid="dan"><circle cx="665" cy="614.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="665" cy="620.5" rx="3.89" ry="0.76"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M660.14,618.34 v-5.76 a4.86,4.5 0 0 1 9.72,0 v5.76 h-2.34 v-5.04 a2.52,2.52 0 0 0 -5.04,0 v5.04 Z"></path>
+    <path class="g-sh" d="M667.52,618.34 v-5.04 a2.52,2.52 0 0 0 -0.9,-1.89 a2.52,2.52 0 0 1 0.9,1.89 v5.04 h2.34 v-5.76 a4.86,4.5 0 0 0 -2.16,-3.69 a4.86,4.5 0 0 1 2.16,3.69 v5.76 Z"></path>
+    <path fill="#5c3f18" d="M662.66,618.34 v-5.04 a2.52,2.52 0 0 1 5.04,0 v5.04 Z" opacity=".55"></path>
+    <path class="g-hi" d="M660.32,618.25 v-5.58 a4.68,4.32 0 0 1 2.34,-3.51"></path>
+  </g></g><g class="glyph-hit" data-pid="salem"><circle cx="623" cy="789.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="623" cy="795.5" rx="5.83" ry="1.13"></ellipse>
+    <path fill="url(#gBody)" class="gb" d="M624.8,793.25 V784.7 h0.9 v-1.08 h0.9 v1.08 h0.9 v-1.08 h0.9 v1.08 h0.9 V793.25 Z"></path>
+    <path class="g-sh" d="M628.4,793.25 V784.79 h0.9 V793.25 Z"></path>
+    <path class="g-out" d="M626.24,787.76 h2.52" style="stroke-width:.5px"></path>
+    <path class="g-out" d="M626.6,784.7 v-2.7"></path>
+    <path fill="#a8412a" d="M626.6,782 l2.88,0.9 l-2.88,0.9 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M617.06,793.25 V789.56
+      h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08 h0.99 v-1.08 h0.99 v1.08
+      h1.08 V793.25 Z"></path>
+    <path class="g-sh" d="M624.26,793.25 V789.56 h1.08 V793.25 Z"></path>
+    <path fill="#5c3f18" d="M619.58,793.25 v-2.16 a1.26,1.44 0 0 1 2.52,0 v2.16 Z"></path>
+    <path class="g-hi" d="M617.06,793.16 V789.74"></path>
+  </g></g><g class="glyph-hit" data-pid="sodom"><circle cx="662" cy="863.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="662" cy="869.5" rx="3.89" ry="0.76"></ellipse>
+    <path class="g-smoke" d="M660.74,862.3 q-1.8,-2.34 -0.18,-4.14 q1.44,-1.26 0.18,-3.06"></path>
+    <path class="g-smoke" d="M664.34,863.2 q1.98,-1.98 0.72,-4.32 q-0.72,-1.44 0.72,-2.88"></path>
+    <path fill="url(#gBody)" class="gb" d="M656.06,867.34 V863.2 l0.99,-1.26 l0.99,1.08 l0.9,-1.8 l0.81,1.44 V867.34 Z"></path>
+    <path class="g-sh" d="M658.85,866.08 l0.81,1.44 V867.34 h-0.81 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M660.74,867.34 V859.6 l2.34,1.26 l0.18,6.12 V867.34 Z"></path>
+    <path class="g-sh" d="M662.72,860.68 l0.36,1.08 l0.18,5.58 h-0.54 Z"></path>
+    <path fill="#5c3f18" d="M661.37,867.34 v-2.16 a0.81,0.99 0 0 1 1.62,0 v2.16 Z"></path>
+    <path fill="url(#gBody)" class="gb" d="M664.7,867.34 V865.18 l0.99,-1.08 l1.08,1.26 V867.34 Z"></path>
+    <path fill="url(#gFlame)" d="M659.66,865.9 q1.62,1.62 0.63,3.6 q0.81,-0.9 0.45,-2.16 q0.9,1.26 -0.18,2.7 q-1.08,1.44 -1.98,0.27 q-0.9,-1.17 -0.18,-2.34 q-1.26,0.81 -0.72,2.34 q-1.44,-1.98 0.36,-4.5 q-0.09,1.08 0.81,1.62 q0.63,-1.17 0.45,-1.98 Z"></path>
+    <path fill="url(#gFlame)" d="M664.16,866.26 q1.26,1.26 0.45,2.88 q0.63,-0.72 0.36,-1.71 q0.72,0.99 -0.18,2.16 q-0.81,1.08 -1.53,0.18 q-0.72,-0.9 -0.09,-1.8 q-0.99,0.63 -0.54,1.8 q-1.08,-1.53 0.27,-3.42 q-0.09,0.81 0.63,1.26 q0.45,-0.9 0.27,-1.53 Z"></path>
+  </g></g><g class="glyph-hit" data-pid="zoar"><circle cx="655" cy="901.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="655" cy="907.5" rx="3.56" ry="0.69"></ellipse>
+    <path fill="url(#gTrunk)" d="M654.19,905.34 q-0.9,-4.14 0.54,-7.2 q0.9,0.36 1.26,0 q-1.26,3.24 -0.18,7.2 Z"></path>
     <g fill="url(#gLeaf)">
-      <path d="M661.25,882.71 q4.18,-2.21 7.38,0.49 q-3.94,-0.74 -7.38,1.48 Z"></path>
-      <path d="M661.25,882.71 q-4.18,-2.21 -7.38,0.49 q3.94,-0.74 7.38,1.48 Z"></path>
-      <path d="M661.25,882.71 q2.95,-4.18 6.15,-3.94 q-3.2,1.23 -5.41,4.43 Z"></path>
-      <path d="M661.25,882.71 q-2.95,-4.18 -6.15,-3.94 q3.2,1.23 5.41,4.43 Z"></path>
-      <path d="M661.25,882.71 q0.49,-4.67 -0.25,-6.4 q1.23,3.69 1.72,6.15 Z"></path>
+      <path d="M655.18,898.14 q3.06,-1.62 5.4,0.36 q-2.88,-0.54 -5.4,1.08 Z"></path>
+      <path d="M655.18,898.14 q-3.06,-1.62 -5.4,0.36 q2.88,-0.54 5.4,1.08 Z"></path>
+      <path d="M655.18,898.14 q2.16,-3.06 4.5,-2.88 q-2.34,0.9 -3.96,3.24 Z"></path>
+      <path d="M655.18,898.14 q-2.16,-3.06 -4.5,-2.88 q2.34,0.9 3.96,3.24 Z"></path>
+      <path d="M655.18,898.14 q0.36,-3.42 -0.18,-4.68 q0.9,2.7 1.26,4.5 Z"></path>
     </g>
-    <circle cx="661.25" cy="882.71" r="0.98" fill="#5c421d"></circle>
-  </g></g><g class="glyph-hit" data-pid="gerar"><circle cx="559" cy="834.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="559" cy="841.5" rx="7.38" ry="1.92"></ellipse>
-    <path class="g-legs" d="M555.8,837.56 v2.46 M558.51,837.56 v2.46 M562.2,837.32 v2.71"></path>
-    <path fill="url(#gBody)" class="gb" d="M553.34,836.33
-      a1.72,1.72 0 0 1 0.49,-3.2 a1.97,1.97 0 0 1 3.2,-1.23
-      a2.09,2.09 0 0 1 3.69,0.25 a1.84,1.84 0 0 1 2.46,2.09
-      a1.72,1.72 0 0 1 0.12,2.95 q0,1.72 -1.97,1.72 h-7.87
-      q-1.97,0 -1.97,-1.84 Z"></path>
-    <path class="g-sh" d="M564.17,833.87 a1.72,1.72 0 0 1 0.12,2.95 q0,1.72 -1.97,1.72 h-2.46 q2.46,-2.21 1.97,-4.92 Z"></path>
-    <path fill="url(#gTrunk)" d="M553.1,836.09 q-2.46,0.25 -2.71,2.46 q0,1.23 1.23,1.35 q1.72,0 1.97,-1.72 Z"></path>
-    <circle cx="552.11" cy="837.32" r="0.43" fill="#2a1c0a"></circle>
-  </g></g><g class="glyph-hit" data-pid="beersheba"><circle cx="594" cy="858.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="594" cy="865.5" rx="6.76" ry="1.76"></ellipse>
-    <path fill="url(#gStone)" class="gb" d="M588.83,862.3 a5.17,2.34 0 0 0 10.33,0 v-2.95 a5.17,2.34 0 0 0 -10.33,0 Z"></path>
-    <ellipse fill="url(#gWater)" cx="594" cy="859.35" rx="5.17" ry="2.34"></ellipse>
-    <ellipse cx="594" cy="859.35" rx="5.17" ry="2.34" class="g-out" fill="none"></ellipse>
-    <path class="g-out" d="M589.82,858.12 a4.18,4.92 0 0 1 8.36,0"></path>
-    <path fill="url(#gTrunk)" d="M589.08,853.94 h9.84 v1.11 h-9.84 Z"></path>
-    <path class="g-out" d="M589.82,854.43 v-1.72 M598.18,854.43 v-1.72"></path>
-  </g></g><g class="glyph-hit" data-pid="lahairoi"><circle cx="534" cy="919.0" r="11.3" fill="transparent" stroke="none"></circle><g class="glyph">
-    <ellipse class="g-shadow" cx="534" cy="926.5" rx="6.76" ry="1.76"></ellipse>
-    <path fill="url(#gStone)" class="gb" d="M528.83,923.3 a5.17,2.34 0 0 0 10.33,0 v-2.95 a5.17,2.34 0 0 0 -10.33,0 Z"></path>
-    <ellipse fill="url(#gWater)" cx="534" cy="920.35" rx="5.17" ry="2.34"></ellipse>
-    <ellipse cx="534" cy="920.35" rx="5.17" ry="2.34" class="g-out" fill="none"></ellipse>
-    <path class="g-out" d="M529.82,919.12 a4.18,4.92 0 0 1 8.36,0"></path>
-    <path fill="url(#gTrunk)" d="M529.08,914.94 h9.84 v1.11 h-9.84 Z"></path>
-    <path class="g-out" d="M529.82,915.43 v-1.72 M538.18,915.43 v-1.72"></path>
+    <circle cx="655.18" cy="898.14" r="0.72" fill="#5c421d"></circle>
+  </g></g><g class="glyph-hit" data-pid="gerar"><circle cx="557" cy="841.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="557" cy="847.5" rx="3.89" ry="0.76"></ellipse>
+    <path class="g-legs" d="M554.66,844.62 v1.8 M556.64,844.62 v1.8 M559.34,844.44 v1.98"></path>
+    <path fill="url(#gBody)" class="gb" d="M552.86,843.72
+      a1.26,1.26 0 0 1 0.36,-2.34 a1.44,1.44 0 0 1 2.34,-0.9
+      a1.53,1.53 0 0 1 2.7,0.18 a1.35,1.35 0 0 1 1.8,1.53
+      a1.26,1.26 0 0 1 0.09,2.16 q0,1.26 -1.44,1.26 h-5.76
+      q-1.44,0 -1.44,-1.35 Z"></path>
+    <path class="g-sh" d="M560.78,841.92 a1.26,1.26 0 0 1 0.09,2.16 q0,1.26 -1.44,1.26 h-1.8 q1.8,-1.62 1.44,-3.6 Z"></path>
+    <path fill="url(#gTrunk)" d="M552.68,843.54 q-1.8,0.18 -1.98,1.8 q0,0.9 0.9,0.99 q1.26,0 1.44,-1.26 Z"></path>
+    <circle cx="551.96" cy="844.44" r="0.31" fill="#2a1c0a"></circle>
+  </g></g><g class="glyph-hit" data-pid="beersheba"><circle cx="594" cy="859.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="594" cy="865.5" rx="3.56" ry="0.69"></ellipse>
+    <path fill="url(#gStone)" class="gb" d="M590.22,863.16 a3.78,1.71 0 0 0 7.56,0 v-2.16 a3.78,1.71 0 0 0 -7.56,0 Z"></path>
+    <ellipse fill="url(#gWater)" cx="594" cy="861.00" rx="3.78" ry="1.71"></ellipse>
+    <ellipse cx="594" cy="861.00" rx="3.78" ry="1.71" class="g-out" fill="none"></ellipse>
+    <path class="g-out" d="M590.94,860.1 a3.06,3.6 0 0 1 6.12,0"></path>
+    <path fill="url(#gTrunk)" d="M590.4,857.04 h7.2 v0.81 h-7.2 Z"></path>
+    <path class="g-out" d="M590.94,857.4 v-1.26 M597.06,857.4 v-1.26"></path>
+  </g></g><g class="glyph-hit" data-pid="lahairoi"><circle cx="534" cy="920.5" r="8.1" fill="transparent" stroke="none"></circle><g class="glyph">
+    <ellipse class="g-shadow" cx="534" cy="926.5" rx="3.56" ry="0.69"></ellipse>
+    <path fill="url(#gStone)" class="gb" d="M530.22,924.16 a3.78,1.71 0 0 0 7.56,0 v-2.16 a3.78,1.71 0 0 0 -7.56,0 Z"></path>
+    <ellipse fill="url(#gWater)" cx="534" cy="922.00" rx="3.78" ry="1.71"></ellipse>
+    <ellipse cx="534" cy="922.00" rx="3.78" ry="1.71" class="g-out" fill="none"></ellipse>
+    <path class="g-out" d="M530.94,921.1 a3.06,3.6 0 0 1 6.12,0"></path>
+    <path fill="url(#gTrunk)" d="M530.4,918.04 h7.2 v0.81 h-7.2 Z"></path>
+    <path class="g-out" d="M530.94,918.4 v-1.26 M537.06,918.4 v-1.26"></path>
   </g></g>
 <g class="wp" data-wpi="0"><circle cx="1646" cy="836" r="10.5" fill="transparent" stroke="none"></circle><rect x="1642.5" y="832.5" width="6.9" height="6.9" transform="rotate(45 1646 836)" class="wp-dot"></rect><text x="1655.0" y="841.4" class="lab-wp" font-size="15.00">Урук</text></g><g class="wp" data-wpi="1"><circle cx="1542" cy="789" r="10.5" fill="transparent" stroke="none"></circle><rect x="1538.5" y="785.5" width="6.9" height="6.9" transform="rotate(45 1542 789)" class="wp-dot"></rect><text x="1551.0" y="794.4" class="lab-wp" font-size="15.00">Ниппур</text></g><g class="wp" data-wpi="2"><circle cx="903" cy="194" r="10.5" fill="transparent" stroke="none"></circle><rect x="899.5" y="190.6" width="6.9" height="6.9" transform="rotate(45 903 194)" class="wp-dot"></rect><text x="912.0" y="199.4" class="lab-wp" font-size="15.00">Каркемиш</text></g>
 <text x="1540" y="710" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="1189" y="470" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="780" y="320" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="1410" y="256" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="613" y="706" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="660" y="895" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text><text x="658" y="648" class="lab-ctxnote" font-size="17.25" text-anchor="middle"></text>
 <g class="ovl-layer" data-ovl="0"><path d="M452,940 C454.7,934.3 461.3,917.3 468,906 C474.7,894.7 485.0,881.0 492,872 C499.0,863.0 507.0,855.3 510,852" class="ovl-hit" fill="none" stroke="transparent" stroke-width="13.5"></path><path d="M452,940 C454.7,934.3 461.3,917.3 468,906 C474.7,894.7 485.0,881.0 492,872 C499.0,863.0 507.0,855.3 510,852" class="ovl ovl-covenant"></path><text x="415" y="965" text-anchor="start" class="lab-ovl lab-ovl-covenant" font-size="14.25">река Египетская · предел обетования</text></g><g class="ovl-layer" data-ovl="1"><path d="M818,110 C823.3,114.7 839.7,128.7 850,138 C860.3,147.3 875.0,161.3 880,166" class="ovl-hit" fill="none" stroke="transparent" stroke-width="13.5"></path><path d="M818,110 C823.3,114.7 839.7,128.7 850,138 C860.3,147.3 875.0,161.3 880,166" class="ovl ovl-covenant"></path><text x="846" y="100" text-anchor="start" class="lab-ovl lab-ovl-covenant" font-size="14.25">«до реки великой, реки Евфрат» · Быт 15:18</text></g><g class="ovl-layer" data-ovl="2"><path d="M630,788 C633.3,790.0 644.8,795.0 650,800 C655.2,805.0 659.2,815.0 661,818" class="ovl-hit" fill="none" stroke="transparent" stroke-width="13.5"></path><path d="M630,788 C633.3,790.0 644.8,795.0 650,800 C655.2,805.0 659.2,815.0 661,818" class="ovl ovl-ctxpath"></path><path d="M660.1,809.0 L661,818 L653.4,813.1" class="ovl ovl-ctxpath" style="stroke-dasharray:none;fill:none"></path></g>
 
-<text x="1697.3" y="903.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Ур Халдейский</text><text x="991.8" y="164.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="start">Урфа (Шанлыурфа)</text><text x="1015.8" y="200.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Харран</text><text x="743.8" y="600.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Дамаск</text><text x="640.8" y="754.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Сихем</text><text x="614.4" y="770.5" class="lab-place lab-main" font-size="19.50" text-anchor="end">Бет-Эль и Гай</text><text x="222.3" y="946.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Египет</text><text x="597.3" y="835.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Хеврон · Мамре</text><text x="677.8" y="631.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Дан (Лаиш)</text><text x="764.8" y="561.6" class="lab-place lab-minor" font-size="16.50" text-anchor="start">Хова</text><text x="613.4" y="809.1" class="lab-place lab-main" font-size="19.50" text-anchor="end">Шалем · гора Мория</text><text x="670.8" y="872.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Содом и Гоморра</text><text x="679.8" y="823.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="start">Талл эль-Хаммам</text><text x="661.6" y="911.7" class="lab-place lab-main" font-size="19.50" text-anchor="start">Цоар</text><text x="543.5" y="863.2" class="lab-place lab-main" font-size="19.50" text-anchor="end">Герар</text><text x="584.0" y="892.4" class="lab-place lab-main" font-size="19.50" text-anchor="middle">Беэр-Шева</text><text x="554.8" y="939.6" class="lab-place lab-minor" font-size="16.50" text-anchor="start">Кадеш (Кадеш-Барнеа)</text><text x="387.3" y="945.6" class="lab-place lab-minor" font-size="16.50" text-anchor="end">Пустыня Сур</text><text x="521.3" y="936.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="end">Беэр-лахай-рои</text><text x="1553.5" y="713.1" text-anchor="start" class="lab-ctx" font-size="15.00">Вавилон</text><text x="1197.9" y="483.1" text-anchor="start" class="lab-ctx" font-size="15.00">Мари</text><text x="508" y="1002" class="lab-region" font-size="18.75" text-anchor="middle">ПУСТЫНЯ ФАРАН</text>
+<text x="1697.3" y="903.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Ур Халдейский</text><text x="991.8" y="164.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="start">Урфа (Шанлыурфа)</text><text x="1015.8" y="200.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Харран</text><text x="743.8" y="600.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Дамаск</text><text x="640.8" y="754.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Сихем</text><text x="614.4" y="770.5" class="lab-place lab-main" font-size="19.50" text-anchor="end">Бет-Эль и Гай</text><text x="222.3" y="946.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Египет</text><text x="597.3" y="835.6" class="lab-place lab-main" font-size="19.50" text-anchor="end">Хеврон · Мамре</text><text x="677.8" y="631.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Дан (Лаиш)</text><text x="764.8" y="561.6" class="lab-place lab-minor" font-size="16.50" text-anchor="start">Хова</text><text x="610.3" y="797.0" class="lab-place lab-main" font-size="19.50" text-anchor="end">Шалем · гора Мория</text><text x="670.8" y="872.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Содом и Гоморра</text><text x="679.8" y="823.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="start">Талл эль-Хаммам</text><text x="664.8" y="899.6" class="lab-place lab-main" font-size="19.50" text-anchor="start">Цоар</text><text x="543.5" y="863.2" class="lab-place lab-main" font-size="19.50" text-anchor="end">Герар</text><text x="584.0" y="892.4" class="lab-place lab-main" font-size="19.50" text-anchor="middle">Беэр-Шева</text><text x="554.8" y="939.6" class="lab-place lab-minor" font-size="16.50" text-anchor="start">Кадеш (Кадеш-Барнеа)</text><text x="387.3" y="945.6" class="lab-place lab-minor" font-size="16.50" text-anchor="end">Пустыня Сур</text><text x="521.3" y="936.6" class="lab-place lab-minor lab-cand" font-size="16.50" text-anchor="end">Беэр-лахай-рои</text><text x="1553.5" y="713.1" text-anchor="start" class="lab-ctx" font-size="15.00">Вавилон</text><text x="1197.9" y="483.1" text-anchor="start" class="lab-ctx" font-size="15.00">Мари</text><text x="508" y="1002" class="lab-region" font-size="18.75" text-anchor="middle">ПУСТЫНЯ ФАРАН</text>
 </g>
 
   <g class="cartouche">
