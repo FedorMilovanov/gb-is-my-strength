@@ -30,6 +30,42 @@ async function clusterCounts() {
   } catch { return new Map(); }
 }
 
+// ── списки членов кластеров (id→ru+стих) для раскрытия по клику ──
+// atlas-id → groups.json cluster id
+const CLUSTER_GROUP = {
+  antediluvian: 'antediluvian-patriarchs', 'abr-desc': 'abraham-descendants',
+  ishmael: 'ishmaelites', edom: 'esau-edom', levites: 'levites', priests: 'priests',
+  'david-house': 'house-of-david', return: 'return-from-exile',
+  tribes12: 'tribes-12', matthew1: 'matthew-1', luke3: 'luke-3', relatives: 'lords-relatives',
+};
+const MEMBER_CAP = 60;   // сколько имён показываем в раскрытии (остальное — «ещё N»)
+// канонический порядок книг (OSIS) — чтобы выборка начиналась с Бытия, а не с «1Ki» по алфавиту
+const BOOK_ORDER = ['Gen','Exod','Lev','Num','Deut','Josh','Judg','Ruth','1Sam','2Sam','1Kgs','2Kgs','1Chr','2Chr','Ezra','Neh','Esth','Job','Ps','Prov','Eccl','Song','Isa','Jer','Lam','Ezek','Dan','Hos','Joel','Amos','Obad','Jonah','Mic','Nah','Hab','Zeph','Hag','Zech','Mal','Matt','Mark','Luke','John','Acts','Rom','1Cor','2Cor','Gal','Eph','Phil','Col','1Thess','2Thess','1Tim','2Tim','Titus','Phlm','Heb','Jas','1Pet','2Pet','1John','2John','3John','Jude','Rev'];
+const bookIdx = new Map(BOOK_ORDER.map((b, i) => [b.toLowerCase(), i]));
+function osisSortKey(osis) {
+  if (!osis) return [999, 999, 999];
+  const [bk, ch, vs] = osis.split('.');
+  return [bookIdx.get(String(bk).toLowerCase()) ?? 900, +ch || 0, +vs || 0];
+}
+async function clusterMembers() {
+  const groups = JSON.parse(await readFile(path.join(OUT, 'groups.json'), 'utf8')).clusters || [];
+  const persons = JSON.parse(await readFile(path.join(OUT, 'persons.json'), 'utf8'));
+  const parr = Array.isArray(persons) ? persons : (persons.persons || Object.values(persons));
+  const byId = new Map();
+  for (const p of parr) byId.set(p.id, { ru: (p.ru && p.ru.name) || p.en || p.id, ref: p.firstRef && p.firstRef.ru, osis: p.firstRef && p.firstRef.osis });
+  const gById = new Map(groups.map(g => [g.id, g]));
+  const out = {};
+  for (const [atlasId, gid] of Object.entries(CLUSTER_GROUP)) {
+    const g = gById.get(gid); if (!g || !g.members) continue;
+    const rows = g.members.map(id => byId.get(id)).filter(Boolean)
+      .filter(r => r.ru && !/^[a-z-]+$/i.test(r.ru))          // отбрасываем нерусские заглушки
+      .sort((a, b) => { const ka = osisSortKey(a.osis), kb = osisSortKey(b.osis);
+        return ka[0] - kb[0] || ka[1] - kb[1] || ka[2] - kb[2] || a.ru.localeCompare(b.ru, 'ru'); });
+    out[atlasId] = { total: g.count ?? rows.length, shown: rows.slice(0, MEMBER_CAP).map(r => ({ ru: r.ru, ref: r.ref })) };
+  }
+  return out;
+}
+
 // ── честная сводка охвата («что уже есть / что ещё предстоит») из meta + данных ──
 async function coverageStats() {
   const j = async f => { try { return JSON.parse(await readFile(path.join(OUT, f), 'utf8')); } catch { return null; } };
@@ -205,11 +241,12 @@ async function main() {
   ];
 
   const coverage = await coverageStats();
+  const members = await clusterMembers();
 
   const scene = {
     _status: 'atlas: карточный Библейский атлас родословий (по референсам)',
     iconDefs: iconSymbolDefs(),
-    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage,
+    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage, members,
     counts: { spine: spine.length, clusters: clusters.length + listCards.length, history: history.length },
   };
 
