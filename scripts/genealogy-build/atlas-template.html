@@ -321,6 +321,11 @@ for(const c of ATLAS.listCards){
 for(const c of ATLAS.history){
   reg({id:c.id,x:c.x,y:c.y,w:CL_W-10,h:CL_H+8,kind:'history',color:c.color,minK:c.minK,data:c,title:c.ru});
 }
+// связь народов: ветви-сыны Ноя (мини-карточки)
+const BR_W=150, BR_H=44;
+for(const c of (ATLAS.nationBranches||[])){
+  reg({id:c.id,x:c.x,y:c.y,w:BR_W,h:BR_H,kind:'branch',color:c.color,minK:c.minK,data:c,title:c.ru});
+}
 
 // ── рендер: связи (за карточками) ──
 const spineXY=id=>{const c=cards.get(id);return {x:c.x,y:c.y};};
@@ -357,6 +362,11 @@ for(const c of [...ATLAS.clusters,...ATLAS.listCards]){
   const dir=Math.sign(c.x);
   const sx=dir*( (cards.get(c.anchor).w/2)+6 ), ex=c.x-dir*(card.w/2+6);
   elbow(sx,a.y,ex,c.y,c.color,!!c.dashed,c.minK);
+}
+// связь народов: от карточки «Народы от Ноя» к 3 ветвям-сынам
+for(const c of (ATLAS.nationBranches||[])){
+  const anc=cards.get(c.anchor),card=cards.get(c.id);
+  elbow(anc.x+anc.w/2+6,anc.y,card.x-card.w/2-6,card.y,c.color,false,c.minK);
 }
 // нижний ряд: цепь между собой + связь от Соломона вниз к «Разделённому царству»
 for(let i=0;i<ATLAS.history.length-1;i++){
@@ -441,6 +451,12 @@ for(const c of cards.values()){
       g.appendChild(mk('line',{'class':'divid',x1:-c.w/2+12,y1:y-11,x2:c.w/2-12,y2:y-11}));
       g.appendChild(textEl('goldln',0,y+4,10.5,'middle','⚭ '+d.footer));
     }
+  }else if(c.kind==='branch'){
+    // ветвь-сын Ноя: цветная точка + имя + счётчик
+    g.appendChild(mk('circle',{cx:-c.w/2+17,cy:0,r:5,fill:c.color}));
+    g.appendChild(textEl('ttl',-c.w/2+30,-1,12,'start',d.ru));
+    g.appendChild(textEl('goldln',-c.w/2+30,12,9.5,'start',d.gold));
+    g.querySelector('.goldln').setAttribute('fill',c.color);
   }
   gCards.appendChild(g);c.el=g;
 }
@@ -572,12 +588,14 @@ function openName(id){
     h+=`<div class="nname">${esc(d.ru)}</div>`;
     if(d.gold)h+=`<div class="nrole" style="color:${c.color}">${esc(d.gold)}</div>`;
     if(d.sub)h+=`<div class="nrole">${esc(d.sub)}</div>`;
+    if(d.region)h+=`<div class="nnote">Регион расселения: ${esc(d.region)}</div>`;
     if(d.ref)h+=`<div class="nmeta"><span>${esc(d.ref)}</span></div>`;
     if(d.rows&&d.rows.length){h+=`<div class="nnote">В выборке: ${d.rows.map(esc).join(' · ')}${d.more?' '+esc(d.more):''}</div>`;}
     h+='<div class="nlinks">';
     const anchor=d.anchor&&cards.get(d.anchor);
     if(anchor)h+=`<a data-goto="${d.anchor}">↔ примыкает к: ${esc(anchor.title)}</a>`;
-    const lk=clusterLink[id];if(lk)h+=`<a data-href="${lk.href}">${esc(lk.label)}</a>`;
+    const lk=clusterLink[id]||(c.kind==='branch'?{href:'nations-interactive.html',label:'Открыть «Карту народов» →'}:null);
+    if(lk)h+=`<a data-href="${lk.href}">${esc(lk.label)}</a>`;
     h+='</div>';
   }
   nameBody.innerHTML=h;

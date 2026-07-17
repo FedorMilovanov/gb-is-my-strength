@@ -124,6 +124,14 @@ async function main() {
     { id: 'relatives',    x: 0,  y: 1450, icon: 'people',  ru: 'Родственники Господа', gold: 'братья по традиции · Мк 6:3', color: C.relatives, anchor: 'jesus',  minK: 0, dashed: true, below: true },
   ];
 
+  // ── связь народов: 3 сына Ноя как ветви-мини-карточки справа от «Народы от Ноя» ──
+  // (появляются со среднего масштаба; клик ведёт на «Карту народов»). Числа из Быт 10.
+  const nationBranches = [
+    { id: 'br-japheth', x: 770, y: 10,  icon: 'globe',   ru: 'Иафет', gold: '14 народов', color: '#3f7f8c', region: 'Север · Анатолия · Эгеида · Причерноморье', anchor: 'nations', minK: 0.5 },
+    { id: 'br-ham',     x: 770, y: 100, icon: 'globe',   ru: 'Хам',   gold: '30 народов', color: '#a8683f', region: 'Египет · Африка · Месопотамия · Ханаан',      anchor: 'nations', minK: 0.5 },
+    { id: 'br-shem',    x: 770, y: 190, icon: 'scroll',  ru: 'Сим',   gold: '26 народов', color: '#9a7b3c', region: 'Месопотамия · Аравия · Сирия — семиты',        anchor: 'nations', minK: 0.5 },
+  ];
+
   // ── 12 колен: карточка-список слева от Иакова ──
   const tribesRows = ['Рувим', 'Симеон', 'Левий', 'Иуда', 'Дан', 'Неффалим'];
   // ── Матфей 1 / Лука 3: карточки-свитки родословий Господа ──
@@ -201,7 +209,7 @@ async function main() {
   const scene = {
     _status: 'atlas: карточный Библейский атлас родословий (по референсам)',
     iconDefs: iconSymbolDefs(),
-    spine, spineY, clusters, listCards, history, epochs, quickLinks, tour, legend, coverage,
+    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage,
     counts: { spine: spine.length, clusters: clusters.length + listCards.length, history: history.length },
   };
 
