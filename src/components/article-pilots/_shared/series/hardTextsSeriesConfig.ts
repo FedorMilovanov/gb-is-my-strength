@@ -556,6 +556,7 @@ export const HARD_TEXTS_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'hard-texts',
   seriesTitle: 'Тайны человеческого сердца',
   seriesTitleFull: 'Тайны человеческого сердца',
+  shape: 'book',
   railBackHref: '../../hard-texts/',
   quiz: [],
   breadcrumbParent: { label: 'Публикации', href: '../../articles/' },
