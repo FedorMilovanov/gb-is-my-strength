@@ -140,6 +140,27 @@ async function nameLexicon() {
   } catch { return new Map(); }
 }
 
+// ── полный лексикон этимологий для поиска (все записи с key; ru — из persons) ──
+async function etymologyList() {
+  try {
+    const ety = JSON.parse(await readFile(path.join(OUT, 'name-etymology.json'), 'utf8'));
+    const persons = JSON.parse(await readFile(path.join(OUT, 'persons.json'), 'utf8'));
+    const parr = Array.isArray(persons) ? persons : (persons.persons || Object.values(persons));
+    const byKey = new Map(parr.map(p => [p.key, p]));
+    const out = [];
+    for (const e of ety.entries || []) {
+      if (!e.key) continue;
+      const p = byKey.get(e.key);
+      const ru = (p && p.ru && p.ru.name) || e.key.split('@')[0];
+      out.push({ ru, heb: e.heb || null, tr: e.translit || null, mean: e.meaningRu || null,
+        note: e.note || null, ref: (p && p.firstRef && p.firstRef.ru) || null,
+        conf: e.confidence || null, src: Array.isArray(e.sources) ? e.sources : [] });
+    }
+    out.sort((a, b) => a.ru.localeCompare(b.ru, 'ru'));
+    return out;
+  } catch { return []; }
+}
+
 async function main() {
   const cc = await clusterCounts();
   const n = id => cc.get(id) ?? null;
@@ -294,11 +315,12 @@ async function main() {
 
   const coverage = await coverageStats();
   const members = await clusterMembers(lex);
+  const lexAll = await etymologyList();
 
   const scene = {
     _status: 'atlas: карточный Библейский атлас родословий (по референсам)',
     iconDefs: iconSymbolDefs(),
-    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage, members, mtLk,
+    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage, members, mtLk, lexAll,
     counts: { spine: spine.length, clusters: clusters.length + listCards.length, history: history.length },
   };
 
