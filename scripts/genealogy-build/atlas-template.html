@@ -224,6 +224,7 @@
     aside.rail.open{transform:none}
     .head h2{font-size:20px}
     .legend{display:none}
+    #namecard{left:12px;right:12px;width:auto;top:64px;max-height:calc(100% - 130px)}
     .mfab{position:absolute;bottom:14px;z-index:20;padding:10px 16px;border-radius:18px;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);font-family:inherit;font-size:12.5px;box-shadow:0 4px 14px var(--shadow);cursor:pointer}
     #mfab-nav{left:14px}#mfab-rail{right:14px}
     #scrim{position:fixed;inset:0;background:rgba(20,12,2,.4);z-index:25;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -455,8 +456,8 @@ for(const c of cards.values()){
     g.appendChild(textEl('ttl',-c.w/2+48,d.sub?( -2 ):4,14.5,'start',d.ru));
     const sub=textEl('sub',-c.w/2+48,12,9.5,'start',d.sub);sub.dataset.minK=0.95;g.appendChild(sub);
     const ref=textEl('refln',0,c.h/2+13,9.5,'middle',d.ref);ref.dataset.minK=0.95;g.appendChild(ref);
-    // иврит справа (со среднего масштаба) + значение имени под карточкой (близкий)
-    if(d.heb){const hb=textEl('heb',c.w/2-14,4,15,'end',d.heb);hb.dataset.minK=0.7;g.appendChild(hb);}
+    // иврит справа (со среднего масштаба; не рисуем при длинном имени — наезжает) + значение (близкий)
+    if(d.heb&&d.ru.length<=10){const hb=textEl('heb',c.w/2-14,4,15,'end',d.heb);hb.dataset.minK=0.7;g.appendChild(hb);}
     if(d.meaning){const mn=textEl('mean',0,c.h/2+26,9.5,'middle','«'+d.meaning+'»');mn.dataset.minK=1.05;g.appendChild(mn);}
   }else if(c.kind==='cluster'||c.kind==='history'){
     iconCircle(g,-c.w/2+26,0,15,d.icon,c.color);

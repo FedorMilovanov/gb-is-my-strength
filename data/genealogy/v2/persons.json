@@ -304,11 +304,11 @@
   "key": "Mehujael@Gen.4.18",
   "en": "Mehujael",
   "ru": {
-   "name": "Мехиаеля",
-   "source": "pattern",
+   "name": "Мехиаель",
+   "source": "override",
    "confidence": 1,
    "review": false,
-   "verseRef": "Gen.4.18"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -336,11 +336,11 @@
   "key": "Methushael@Gen.4.18",
   "en": "Methushael",
   "ru": {
-   "name": "Мехиаеля",
-   "source": "pattern",
-   "confidence": 0.75,
-   "review": true,
-   "verseRef": "Gen.4.18"
+   "name": "Мафусал",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
