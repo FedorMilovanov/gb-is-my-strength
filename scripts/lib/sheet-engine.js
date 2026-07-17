@@ -138,6 +138,30 @@ const GEO_DEFS = `<defs>
       <path d="M13.6,5.2 l.6,1.3"/><path d="M14.7,6 l.5,1.4"/><path d="M15.6,7.4 l.5,1.4"/>
     </g>
   </symbol>
+  <!-- ═══ КРАСКИ КИНОШНЫХ ИКОНОК-ГЛИФОВ (объём: тело-эмбосс, тень, акценты) ═══ -->
+  <radialGradient id="gShadow" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#4a3512" stop-opacity=".22"/>
+    <stop offset=".55" stop-color="#4a3512" stop-opacity=".1"/>
+    <stop offset="1" stop-color="#4a3512" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="gBody" x1="0" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#f2e7c8"/><stop offset=".55" stop-color="#ddc79a"/><stop offset="1" stop-color="#c3a973"/>
+  </linearGradient>
+  <linearGradient id="gStone" x1="0" y1="0" x2=".4" y2="1">
+    <stop offset="0" stop-color="#e8dcc0"/><stop offset="1" stop-color="#b49f76"/>
+  </linearGradient>
+  <linearGradient id="gFlame" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f6da5c"/><stop offset=".5" stop-color="#e08a2c"/><stop offset="1" stop-color="#b63c18"/>
+  </linearGradient>
+  <linearGradient id="gLeaf" x1="0" y1="0" x2=".4" y2="1">
+    <stop offset="0" stop-color="#8fa85e"/><stop offset="1" stop-color="#59763c"/>
+  </linearGradient>
+  <linearGradient id="gTrunk" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#8a6836"/><stop offset="1" stop-color="#5c421d"/>
+  </linearGradient>
+  <linearGradient id="gWater" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8bb0c4"/><stop offset="1" stop-color="#4d7391"/>
+  </linearGradient>
 </defs>`;
 
 // Рельефный слой листа (поверх базы, только на листе — SYSTEM-файл не трогаем).
@@ -197,23 +221,168 @@ const DECOR = {
 
 function glyphSvg(name, x, y, k) {
   const s = k; // масштаб
-  const G = {
-    ziggurat: `<g class="glyph"><path d="M${x - 7 * s},${y - 2.6 * s} h${14 * s} m${-1.6 * s},0 v${-3 * s} h${-2.2 * s} m${-6.4 * s},${3 * s} v${-3 * s} h${2.2 * s} m${1.2 * s},${-3 * s} h${3.9 * s} v${3 * s} m${-3.9 * s},${-3 * s} v${3 * s} m${.6 * s},${-3 * s} v${-2.6 * s} h${2.7 * s} v${2.6 * s} Z" class="glyph-line"/><path d="M${x},${y - 2.6 * s} v${-8.4 * s}" class="glyph-line" style="stroke-width:${.55 * s};opacity:.7"/></g>`,
-    pyramid: `<g class="glyph"><path d="M${x - 7 * s},${y - 3 * s} L${x - .5 * s},${y - 14 * s} L${x + 6 * s},${y - 3 * s} Z"/><path d="M${x - .5 * s},${y - 14 * s} L${x + 1.4 * s},${y - 3 * s}" class="glyph-line" style="stroke-width:${.55 * s}"/><path d="M${x + 4.4 * s},${y - 3 * s} L${x + 7.6 * s},${y - 8 * s} L${x + 10.4 * s},${y - 3 * s}" class="glyph-line"/></g>`,
-    altar: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} h${10 * s} v${-2.5 * s} h${-1.5 * s} v${-3 * s} h${-7 * s} v${3 * s} h${-1.5 * s} Z"/><path d="M${x},${y - 12 * s} q${1.6 * s},${1.8 * s} 0,${3.4 * s} q${-1.6 * s},${-1.8 * s} 0,${-3.4 * s} Z" class="glyph-flame"/></g>`,
-    well: `<g class="glyph"><path d="M${x - 3.8 * s},${y - 3.2 * s} a${3.8 * s},${1.7 * s} 0 1 0 ${7.6 * s},0 a${3.8 * s},${1.7 * s} 0 1 0 ${-7.6 * s},0 Z"/><path class="glyph-line" d="M${x - 3.2 * s},${y - 4.6 * s} a${3.2 * s},${3.6 * s} 0 0 1 ${6.4 * s},0"/></g>`,
-    oak: `<g class="glyph"><path class="glyph-line" d="M${x},${y - 3.4 * s} v${-2.6 * s}"/><path d="M${x - 4.6 * s},${y - 6.4 * s} Q${x - 5.4 * s},${y - 10.4 * s} ${x - 1.6 * s},${y - 10.6 * s} Q${x},${y - 13 * s} ${x + 1.6 * s},${y - 10.6 * s} Q${x + 5.4 * s},${y - 10.4 * s} ${x + 4.6 * s},${y - 6.4 * s} Q${x + 2.4 * s},${y - 5 * s} ${x},${y - 5.4 * s} Q${x - 2.4 * s},${y - 5 * s} ${x - 4.6 * s},${y - 6.4 * s} Z"/></g>`,
-    ruin: `<g class="glyph"><path d="M${x - 5.5 * s},${y - 3 * s} v${-6 * s} h${2.6 * s} v${3.4 * s} h${2.2 * s} v${-6.5 * s} h${2.6 * s} v${9.1 * s} Z"/><path d="M${x + 3.4 * s},${y - 12 * s} q${1.4 * s},${-1.8 * s} ${2.8 * s},${-.6 * s}" class="glyph-smoke"/><path d="M${x + 1.8 * s},${y - 10.6 * s} q${1.2 * s},${-1.5 * s} ${2.4 * s},${-.5 * s}" class="glyph-smoke"/></g>`,
-    gate: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} v${-6.5 * s} a${5 * s},${4.6 * s} 0 0 1 ${10 * s},0 v${6.5 * s} h${-2.4 * s} v${-5.8 * s} a${2.6 * s},${2.6 * s} 0 0 0 ${-5.2 * s},0 v${5.8 * s} Z"/></g>`,
-    palm: `<g class="glyph"><path d="M${x},${y - 3 * s} q${-.6 * s},${-4 * s} ${.4 * s},${-7.6 * s}" class="glyph-line" style="stroke-width:${1.3 * s}"/><path d="M${x + .4 * s},${y - 10.6 * s} q${2.8 * s},${-1.4 * s} ${4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2.8 * s},${-1.4 * s} ${-4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${2 * s},${-2.6 * s} ${4 * s},${-2.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2 * s},${-2.6 * s} ${-4 * s},${-2.6 * s}" class="glyph-line"/></g>`,
-    tower: `<g class="glyph"><path d="M${x - 3.4 * s},${y - 3 * s} v${-9 * s} h${-1.2 * s} v${-2 * s} h${2.4 * s} v${1 * s} h${1.6 * s} v${-1 * s} h${2.4 * s} v${1 * s} h${1.6 * s} v${-1 * s} h${2.4 * s} v${2 * s} h${-1.2 * s} v${9 * s} Z" transform="translate(${-1.3 * s},0)"/></g>`,
-    town: `<g class="glyph"><path d="M${x - 6.2 * s},${y - 3 * s} V${y - 6.6 * s} h${1.3 * s} v${-1.3 * s} h${1.3 * s} v${1.3 * s} h${1.3 * s} v${-1.3 * s} h${1.3 * s} v${1.3 * s} h${1.5 * s} V${y - 10.2 * s} h${1.4 * s} v${1.3 * s} h${1.3 * s} v${-1.3 * s} h${1.4 * s} V${y - 6.6 * s} h${.9 * s} V${y - 3 * s} Z"/><path class="glyph-line" style="stroke-width:${.5 * s}" d="M${x - 1.5 * s},${y - 3 * s} v${-2.4 * s} a${1.5 * s},${1.5 * s} 0 0 1 ${3 * s},0 v${2.4 * s}"/></g>`,
-    tent: `<g class="glyph"><path d="M${x - 6 * s},${y - 2.6 * s} L${x},${y - 9.6 * s} L${x + 6 * s},${y - 2.6 * s} Z"/><path d="M${x},${y - 9.6 * s} L${x + 1.8 * s},${y - 2.6 * s} M${x - 6 * s},${y - 2.6 * s} l${-1.6 * s},${1.2 * s} M${x + 6 * s},${y - 2.6 * s} l${1.6 * s},${1.2 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
-    sheep: `<g class="glyph"><path d="M${x - 3.6 * s},${y - 5 * s} a${1.8 * s},${1.8 * s} 0 0 1 ${1.2 * s},${-2.6 * s} a${2.2 * s},${2.2 * s} 0 0 1 ${3 * s},${-1 * s} a${2 * s},${2 * s} 0 0 1 ${2.8 * s},${.8 * s} a${1.7 * s},${1.7 * s} 0 0 1 ${.6 * s},${2.8 * s} Z"/><path d="M${x + 3.9 * s},${y - 7.4 * s} a${1.1 * s},${1.1 * s} 0 1 1 ${1.4 * s},${1.4 * s} M${x - 2.4 * s},${y - 4.9 * s} v${2.2 * s} m${4 * s},${-2.2 * s} v${2.2 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
-    spring: `<g class="glyph"><path d="M${x - 4 * s},${y - 4 * s} q${2 * s},${-2.2 * s} ${4 * s},0 q${2 * s},${2.2 * s} ${4 * s},0 M${x - 4 * s},${y - 6.8 * s} q${2 * s},${-2.2 * s} ${4 * s},0 q${2 * s},${2.2 * s} ${4 * s},0" class="glyph-line"/><circle cx="${x}" cy="${y - 10.4 * s}" r="${.9 * s}" style="fill:#6b5216;stroke:none;opacity:.7"/></g>`,
-    ark: `<g class="glyph"><path d="M${x - 7 * s},${y - 5.6 * s} q${7 * s},${2.6 * s} ${14 * s},0 l${-1.6 * s},${3 * s} q${-5.4 * s},${1.8 * s} ${-10.8 * s},0 Z"/><path d="M${x - 3.4 * s},${y - 5.9 * s} h${6.8 * s} v${-2.6 * s} h${-6.8 * s} Z"/><path d="M${x - .8 * s},${y - 8.5 * s} v${-1.6 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
-  };
-  return G[name] || '';
+  // Киношные иконки: тело-эмбосс (gBody), мягкая тень на земле (gShadow),
+  // затенённая грань (g-sh/g-sh2), NW-блик (g-hi), сдержанные цвет-акценты
+  // (пламя/листва/вода). Свет с СЗ, рост вверх от (x,y); штрихи держат
+  // экранную толщину (non-scaling-stroke) на любом зуме.
+  const P = (v) => +(v * s).toFixed(2);
+  const M = (dx, dy) => `${+(x + dx * s).toFixed(2)},${+(y + dy * s).toFixed(2)}`;
+  const B = 'fill="url(#gBody)" class="gb"';
+  const ST = 'fill="url(#gStone)" class="gb"';
+  const OUT = 'class="g-out"';
+  const HI = 'class="g-hi"';
+  const SH = 'class="g-sh"';
+  const SH2 = 'class="g-sh2"';
+  const AC = (u) => `fill="url(#${u})"`;
+  const shadow = (sx, sy, rx) => `<ellipse class="g-shadow" cx="${sx}" cy="${sy}" rx="${rx}" ry="${+(rx * 0.26).toFixed(2)}"/>`;
+  switch (name) {
+
+  case 'town': return `<g class="glyph">
+    ${shadow(x, y, P(9))}
+    <path ${B} d="M${M(2, -2.5)} V${M(2, -12).split(',')[1]} h${P(1)} v${P(-1.2)} h${P(1)} v${P(1.2)} h${P(1)} v${P(-1.2)} h${P(1)} v${P(1.2)} h${P(1)} V${M(0, -2.5).split(',')[1]} Z"/>
+    <path ${SH} d="M${M(6, -2.5)} V${M(6, -11.9).split(',')[1]} h${P(1)} V${M(0, -2.5).split(',')[1]} Z"/>
+    <path ${OUT} d="M${M(3.6, -8.6)} h${P(2.8)}" style="stroke-width:.5px"/>
+    <path ${OUT} d="M${M(4, -12)} v${P(-3)}"/>
+    <path fill="#a8412a" d="M${M(4, -15)} l${P(3.2)},${P(1)} l${P(-3.2)},${P(1)} Z"/>
+    <path ${B} d="M${M(-6.6, -2.5)} V${M(0, -6.6).split(',')[1]}
+      h${P(1.1)} v${P(-1.2)} h${P(1.1)} v${P(1.2)} h${P(1.1)} v${P(-1.2)} h${P(1.1)} v${P(1.2)} h${P(1.1)} v${P(-1.2)} h${P(1.1)} v${P(1.2)}
+      h${P(1.2)} V${M(0, -2.5).split(',')[1]} Z"/>
+    <path ${SH} d="M${M(1.4, -2.5)} V${M(0, -6.6).split(',')[1]} h${P(1.2)} V${M(0, -2.5).split(',')[1]} Z"/>
+    <path fill="#5c3f18" d="M${M(-3.8, -2.5)} v${P(-2.4)} a${P(1.4)},${P(1.6)} 0 0 1 ${P(2.8)},0 v${P(2.4)} Z"/>
+    <path ${HI} d="M${M(-6.6, -2.6)} V${M(0, -6.4).split(',')[1]}"/>
+  </g>`;
+
+  case 'altar': return `<g class="glyph">
+    ${shadow(x, y, P(6.5))}
+    <path ${B} d="M${M(-5.6, -2.4)} h${P(11.2)} v${P(-2.8)} h${P(-11.2)} Z"/>
+    <path ${SH} d="M${M(3.4, -5.2)} h${P(2.2)} v${P(2.8)} h${P(-2.2)} Z"/>
+    <path ${B} d="M${M(-4, -5.2)} h${P(8)} v${P(-3.2)} h${P(-8)} Z"/>
+    <path ${SH} d="M${M(2.2, -8.4)} h${P(1.8)} v${P(3.2)} h${P(-1.8)} Z"/>
+    <path ${B} d="M${M(-4, -8.4)} l${P(-0.7)},${P(-1.3)} l${P(1.4)},${P(0)} Z M${M(4, -8.4)} l${P(0.7)},${P(-1.3)} l${P(-1.4)},${P(0)} Z"/>
+    <path ${AC('gFlame')} d="M${M(0, -8.6)}
+      q${P(2.8)},${P(2.4)} ${P(1)},${P(5.6)} q${P(1.2)},${P(-1.4)} ${P(0.5)},${P(-3.2)}
+      q${P(1.2)},${P(1.8)} ${P(-0.2)},${P(3.8)} q${P(-1.4)},${P(2)} ${P(-2.6)},${P(0.4)}
+      q${P(-1.2)},${P(-1.6)} ${P(-0.3)},${P(-3.2)} q${P(-1.8)},${P(1.2)} ${P(-1)},${P(3.4)}
+      q${P(-2.2)},${P(-2.8)} ${P(0.6)},${P(-6.4)} q${P(-0.2)},${P(1.6)} ${P(1.1)},${P(2.4)}
+      q${P(0.9)},${P(-1.8)} ${P(0.7)},${P(-3)} Z"/>
+  </g>`;
+
+  case 'oak': return `<g class="glyph">
+    ${shadow(x, y, P(6.5))}
+    <path ${AC('gTrunk')} d="M${M(-1.1, -2.4)} q${P(-0.3)},${P(-3)} ${P(0.4)},${P(-5)} q${P(0.5)},${P(1.9)} ${P(1.5)},${P(0)} q${P(0.6)},${P(2)} ${P(0.3)},${P(5)} Z"/>
+    <path ${AC('gLeaf')} d="M${M(0, -6.4)}
+      q${P(-5.6)},${P(0.4)} ${P(-5.2)},${P(-4)} q${P(0.1)},${P(-2.6)} ${P(2.6)},${P(-2.8)}
+      q${P(0.6)},${P(-3)} ${P(4)},${P(-2.6)} q${P(3)},${P(0.3)} ${P(3.2)},${P(3)}
+      q${P(2.6)},${P(0.4)} ${P(2.2)},${P(3.4)} q${P(-0.4)},${P(3.4)} ${P(-4.6)},${P(2.8)}
+      q${P(-1)},${P(1.6)} ${P(-3.4)},${P(0.6)} Z"/>
+    <path ${SH} d="M${M(1, -6)} q${P(2)},${P(0.4)} ${P(2.6)},${P(-1)} q${P(3.6)},${P(0.3)} ${P(3.8)},${P(-3)} q${P(-0.2)},${P(1.8)} ${P(-2.4)},${P(2.4)} q${P(-2)},${P(0.6)} ${P(-3.6)},${P(0.2)} q${P(-0.8)},${P(0.8)} ${P(-2.4)},${P(1)} Z"/>
+    <path ${HI} d="M${M(-3.4, -11)} q${P(1.4)},${P(-1.4)} ${P(3.4)},${P(-1.1)}" style="opacity:.5"/>
+  </g>`;
+
+  case 'tent': return `<g class="glyph">
+    ${shadow(x, y, P(7))}
+    <path ${B} d="M${M(0, -10)} L${M(6.4, -2.4)} L${M(-6.4, -2.4)} Z"/>
+    <path ${SH2} d="M${M(0, -10)} L${M(6.4, -2.4)} L${M(1.4, -2.4)} Z"/>
+    <path fill="#5c3f18" d="M${M(0, -2.4)} L${M(-1.7, -6.2)} q${P(1.7)},${P(-1.1)} ${P(3.4)},${P(0)} Z"/>
+    <path ${OUT} d="M${M(0, -10)} v${P(-1.6)}"/>
+    <path ${OUT} d="M${M(-6.4, -2.4)} l${P(-1.6)},${P(1.2)} M${M(6.4, -2.4)} l${P(1.6)},${P(1.2)}" style="opacity:.6"/>
+    <path ${HI} d="M${M(0, -9.6)} L${M(-5.7, -2.6)}"/>
+  </g>`;
+
+  case 'well': return `<g class="glyph">
+    ${shadow(x, y, P(5.5))}
+    <path ${ST} d="M${M(-4.2, -2.6)} a${P(4.2)},${P(1.9)} 0 0 0 ${P(8.4)},0 v${P(-2.4)} a${P(4.2)},${P(1.9)} 0 0 0 ${P(-8.4)},0 Z"/>
+    <ellipse ${AC('gWater')} cx="${x}" cy="${(y - 5 * s).toFixed(2)}" rx="${P(4.2)}" ry="${P(1.9)}"/>
+    <ellipse cx="${x}" cy="${(y - 5 * s).toFixed(2)}" rx="${P(4.2)}" ry="${P(1.9)}" class="g-out" fill="none"/>
+    <path ${OUT} d="M${M(-3.4, -6)} a${P(3.4)},${P(4)} 0 0 1 ${P(6.8)},0"/>
+    <path ${AC('gTrunk')} d="M${M(-4, -9.4)} h${P(8)} v${P(0.9)} h${P(-8)} Z"/>
+    <path ${OUT} d="M${M(-3.4, -9)} v${P(-1.4)} M${M(3.4, -9)} v${P(-1.4)}"/>
+  </g>`;
+
+  case 'palm': return `<g class="glyph">
+    ${shadow(x, y, P(5.5))}
+    <path ${AC('gTrunk')} d="M${M(-0.9, -2.4)} q${P(-1)},${P(-4.6)} ${P(0.6)},${P(-8)} q${P(1)},${P(0.4)} ${P(1.4)},${P(0)} q${P(-1.4)},${P(3.6)} ${P(-0.2)},${P(8)} Z"/>
+    <g ${AC('gLeaf')}>
+      <path d="M${M(0.2, -10.4)} q${P(3.4)},${P(-1.8)} ${P(6)},${P(0.4)} q${P(-3.2)},${P(-0.6)} ${P(-6)},${P(1.2)} Z"/>
+      <path d="M${M(0.2, -10.4)} q${P(-3.4)},${P(-1.8)} ${P(-6)},${P(0.4)} q${P(3.2)},${P(-0.6)} ${P(6)},${P(1.2)} Z"/>
+      <path d="M${M(0.2, -10.4)} q${P(2.4)},${P(-3.4)} ${P(5)},${P(-3.2)} q${P(-2.6)},${P(1)} ${P(-4.4)},${P(3.6)} Z"/>
+      <path d="M${M(0.2, -10.4)} q${P(-2.4)},${P(-3.4)} ${P(-5)},${P(-3.2)} q${P(2.6)},${P(1)} ${P(4.4)},${P(3.6)} Z"/>
+      <path d="M${M(0.2, -10.4)} q${P(0.4)},${P(-3.8)} ${P(-0.2)},${P(-5.2)} q${P(1)},${P(3)} ${P(1.4)},${P(5)} Z"/>
+    </g>
+    <circle cx="${(x + 0.2 * s).toFixed(2)}" cy="${(y - 10.4 * s).toFixed(2)}" r="${P(0.8)}" fill="#5c421d"/>
+  </g>`;
+
+  case 'gate': return `<g class="glyph">
+    ${shadow(x, y, P(6))}
+    <path ${B} d="M${M(-5.4, -2.4)} v${P(-6.4)} a${P(5.4)},${P(5)} 0 0 1 ${P(10.8)},0 v${P(6.4)} h${P(-2.6)} v${P(-5.6)} a${P(2.8)},${P(2.8)} 0 0 0 ${P(-5.6)},0 v${P(5.6)} Z"/>
+    <path ${SH} d="M${M(2.8, -2.4)} v${P(-5.6)} a${P(2.8)},${P(2.8)} 0 0 0 ${P(-1)},${P(-2.1)} a${P(2.8)},${P(2.8)} 0 0 1 ${P(1)},${P(2.1)} v${P(5.6)} h${P(2.6)} v${P(-6.4)} a${P(5.4)},${P(5)} 0 0 0 ${P(-2.4)},${P(-4.1)} a${P(5.4)},${P(5)} 0 0 1 ${P(2.4)},${P(4.1)} v${P(6.4)} Z"/>
+    <path fill="#5c3f18" d="M${M(-2.6, -2.4)} v${P(-5.6)} a${P(2.8)},${P(2.8)} 0 0 1 ${P(5.6)},0 v${P(5.6)} Z" opacity=".55"/>
+    <path ${HI} d="M${M(-5.2, -2.5)} v${P(-6.2)} a${P(5.2)},${P(4.8)} 0 0 1 ${P(2.6)},${P(-3.9)}"/>
+  </g>`;
+
+  case 'pyramid': return `<g class="glyph">
+    ${shadow(x, y, P(8))}
+    <path ${B} d="M${M(-7, -2.4)} L${M(-0.4, -13.4)} L${M(1.6, -2.4)} Z"/>
+    <path ${SH2} d="M${M(-0.4, -13.4)} L${M(6, -2.4)} L${M(1.6, -2.4)} Z"/>
+    <path ${AC('gStone')} d="M${M(4, -2.4)} L${M(7.2, -7.6)} L${M(10.4, -2.4)} Z" opacity=".85"/>
+    <path ${HI} d="M${M(-0.4, -13.4)} L${M(-6.6, -2.6)}"/>
+  </g>`;
+
+  case 'ziggurat': return `<g class="glyph">
+    ${shadow(x, y, P(8))}
+    <path ${B} d="M${M(-7, -2.4)} h${P(14)} v${P(-2.6)} h${P(-2)} v${P(-2.6)} h${P(-2.3)} v${P(-2.6)} h${P(-1.4)} v${P(-2.4)} h${P(-1.2)} v${P(2.4)} h${P(-1.4)} v${P(2.6)} h${P(-2.3)} v${P(2.6)} h${P(-2)} Z"/>
+    <path ${SH} d="M${M(0.6, -12.6)} h${P(1.2)} v${P(2.4)} h${P(1.4)} v${P(2.6)} h${P(2.3)} v${P(2.6)} h${P(2)} v${P(2.4)} h${P(-7)} Z"/>
+    <path ${OUT} d="M${M(0, -9.6)} v${P(-2.9)}" style="stroke-width:.55px;opacity:.6"/>
+  </g>`;
+
+  case 'ruin': return `<g class="glyph">
+    ${shadow(x, y, P(6.5))}
+    <path ${B} d="M${M(-5.5, -2.4)} v${P(-6)} h${P(2.6)} v${P(3.4)} h${P(2.2)} v${P(-6.5)} h${P(2.6)} v${P(9.1)} Z"/>
+    <path ${SH} d="M${M(1.3, -11.5)} h${P(2.6)} v${P(9.1)} h${P(-2.6)} Z"/>
+    <path class="g-smoke" d="M${M(3.4, -12)} q${P(1.4)},${P(-1.8)} ${P(2.8)},${P(-0.6)} M${M(1.8, -10.6)} q${P(1.2)},${P(-1.5)} ${P(2.4)},${P(-0.5)}"/>
+  </g>`;
+
+  case 'spring': return `<g class="glyph">
+    ${shadow(x, y, P(5.5))}
+    <path ${ST} d="M${M(-5, -2.4)} a${P(5)},${P(2.4)} 0 0 0 ${P(10)},0 v${P(-1.2)} a${P(5)},${P(2)} 0 0 1 ${P(-10)},0 Z"/>
+    <path ${AC('gWater')} d="M${M(-4.4, -4)} a${P(4.4)},${P(1.8)} 0 0 0 ${P(8.8)},0 a${P(4.4)},${P(1.8)} 0 0 0 ${P(-8.8)},0 Z"/>
+    <path fill="none" stroke="url(#gWater)" stroke-width="${P(1.1)}" stroke-linecap="round" d="M${M(0, -4.6)} q${P(-1.4)},${P(-2.6)} ${P(0)},${P(-5)} q${P(1.4)},${P(2.4)} ${P(0)},${P(5)}"/>
+    <path ${HI} d="M${M(-3.6, -4.3)} a${P(3.6)},${P(1.4)} 0 0 1 ${P(3)},${P(-0.7)}" style="opacity:.55"/>
+    <circle cx="${x}" cy="${(y - 10 * s).toFixed(2)}" r="${P(0.9)}" ${AC('gWater')}/>
+  </g>`;
+
+  case 'sheep': return `<g class="glyph">
+    ${shadow(x, y, P(6))}
+    <path class="g-legs" d="M${M(-2.6, -3.2)} v${P(2)} M${M(-0.4, -3.2)} v${P(2)} M${M(2.6, -3.4)} v${P(2.2)}"/>
+    <path ${B} d="M${M(-4.6, -4.2)}
+      a${P(1.4)},${P(1.4)} 0 0 1 ${P(0.4)},${P(-2.6)} a${P(1.6)},${P(1.6)} 0 0 1 ${P(2.6)},${P(-1)}
+      a${P(1.7)},${P(1.7)} 0 0 1 ${P(3)},${P(0.2)} a${P(1.5)},${P(1.5)} 0 0 1 ${P(2)},${P(1.7)}
+      a${P(1.4)},${P(1.4)} 0 0 1 ${P(0.1)},${P(2.4)} q${P(0)},${P(1.4)} ${P(-1.6)},${P(1.4)} h${P(-6.4)}
+      q${P(-1.6)},${P(0)} ${P(-1.6)},${P(-1.5)} Z"/>
+    <path ${SH} d="M${M(4.2, -6.2)} a${P(1.4)},${P(1.4)} 0 0 1 ${P(0.1)},${P(2.4)} q${P(0)},${P(1.4)} ${P(-1.6)},${P(1.4)} h${P(-2)} q${P(2)},${P(-1.8)} ${P(1.6)},${P(-4)} Z"/>
+    <path ${AC('gTrunk')} d="M${M(-4.8, -4.4)} q${P(-2)},${P(0.2)} ${P(-2.2)},${P(2)} q${P(0)},${P(1)} ${P(1)},${P(1.1)} q${P(1.4)},${P(0)} ${P(1.6)},${P(-1.4)} Z"/>
+    <circle cx="${(x - 5.6 * s).toFixed(2)}" cy="${(y - 3.4 * s).toFixed(2)}" r="${P(0.35)}" fill="#2a1c0a"/>
+  </g>`;
+
+  case 'tower': return `<g class="glyph">
+    ${shadow(x, y, P(5))}
+    <path ${B} d="M${M(-3.4, -2.4)} v${P(-9.4)} h${P(-1.1)} v${P(-1.8)} h${P(2.1)} v${P(1)} h${P(1.4)} v${P(-1)} h${P(2.1)} v${P(1)} h${P(1.4)} v${P(-1)} h${P(2.1)} v${P(1.8)} h${P(-1.1)} v${P(9.4)} Z"/>
+    <path ${SH} d="M${M(2.6, -2.4)} v${P(-9.4)} h${P(1.1)} v${P(-1.8)} h${P(-1.1)} v${P(1)} Z"/>
+    <path fill="#5c3f18" d="M${M(-1.2, -2.4)} v${P(-3)} a${P(1.2)},${P(1.4)} 0 0 1 ${P(2.4)},0 v${P(3)} Z"/>
+    <rect x="${(x - 0.8 * s).toFixed(2)}" y="${(y - 8.4 * s).toFixed(2)}" width="${P(1.6)}" height="${P(2)}" fill="#5c3f18" opacity=".7"/>
+    <path ${HI} d="M${M(-3.2, -2.5)} v${P(-9.2)}"/>
+  </g>`;
+
+  case 'ark': return `<g class="glyph">
+    ${shadow(x, y, P(7.5))}
+    <path ${B} d="M${M(-7, -4)} q${P(7)},${P(2.6)} ${P(14)},${P(0)} l${P(-1.6)},${P(3)} q${P(-5.4)},${P(1.8)} ${P(-10.8)},${P(0)} Z"/>
+    <path ${SH} d="M${M(6.4, -3.6)} l${P(-1.6)},${P(3)} q${P(-2)},${P(0.7)} ${P(-4.2)},${P(1)} q${P(3.2)},${P(-0.2)} ${P(4.2)},${P(-1.4)} Z"/>
+    <path ${ST} d="M${M(-3.4, -4.3)} h${P(6.8)} v${P(-2.6)} h${P(-6.8)} Z"/>
+    <path ${OUT} d="M${M(-0.8, -6.9)} v${P(-1.6)}"/>
+  </g>`;
+
+  }
+  return '';
 }
 
 
@@ -815,10 +984,18 @@ function sheetCss() {
   .mile,.wp,.ovl-layer,.decor-ship,.war{cursor:pointer}
   #sheet-svg [fill="url(#jordanG)"]{opacity:.09}
   #sheet-svg #tradeRoutes{opacity:.32}
-  .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
-  .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
-  .glyph .glyph-flame{fill:#a25d33;stroke:none}
-  .glyph .glyph-smoke{fill:none;stroke:#8a7a58;stroke-width:.8;opacity:.75;stroke-linecap:round}
+  /* ── киношные иконки-глифы: объём, светотень, цвет-акцент ── */
+  .glyph .gb{stroke:#5a4114;stroke-width:.85px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .glyph .g-out{fill:none;stroke:#5a4114;stroke-width:.9px;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .glyph .g-sh{fill:#3d2c0f;opacity:.3;stroke:none}
+  .glyph .g-sh2{fill:#3d2c0f;opacity:.5;stroke:none}
+  .glyph .g-hi{fill:none;stroke:rgba(255,250,235,.7);stroke-width:.7px;stroke-linecap:round;vector-effect:non-scaling-stroke}
+  .glyph .g-smoke{fill:none;stroke:#8a7a58;stroke-width:.85px;opacity:.7;stroke-linecap:round;vector-effect:non-scaling-stroke}
+  .glyph .g-legs{fill:none;stroke:#5c421d;stroke-width:.8px;stroke-linecap:round;vector-effect:non-scaling-stroke}
+  .glyph .g-shadow{stroke:none}
+  /* мягкое гашение объёма иконок на глубоких зумах, чтобы не давить карту */
+  svg.z3 .glyph .g-shadow{opacity:.6}
+  svg.z4 .glyph .g-shadow{opacity:.35}
 
   .wp-dot{fill:#4a7a52;stroke:none;opacity:.6}
   .leader{stroke:#5c4d33;stroke-width:.75;opacity:.45}
