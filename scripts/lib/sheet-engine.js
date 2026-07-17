@@ -91,25 +91,28 @@ const GEO_DEFS = `<defs>
     <stop offset="0" stop-color="#d7c79c" stop-opacity=".62"/>
     <stop offset="1" stop-color="#ab9366" stop-opacity=".72"/>
   </linearGradient>
+  <!-- освещённая грань киношных гор (свет с СЗ) -->
+  <linearGradient id="mtLitG" x1="0" y1="0" x2=".25" y2="1">
+    <stop offset="0" stop-color="#e7dab6"/><stop offset="1" stop-color="#c8b083"/>
+  </linearGradient>
   <symbol id="peak" viewBox="0 0 20 16" overflow="visible">
-    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
-      <path d="M8.3,2.8 l.8,1.35"/><path d="M9,4 l.8,1.35"/><path d="M9.6,5.2 l.7,1.25"/>
-      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
-      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 L8.6,15 Z" fill="#4a3410" fill-opacity=".2"/>
+    <path d="M13.5,5.4 L16,9 L19,15 L14.4,15 Z" fill="#4a3410" fill-opacity=".1"/>
+    <g stroke="#5f5038" stroke-width=".5" stroke-linecap="round" fill="none" opacity=".3" vector-effect="non-scaling-stroke">
+      <path d="M10.6,6.4 l.9,1.5"/><path d="M12.4,7.8 l.8,1.5"/><path d="M15.4,10 l.7,1.5"/>
     </g>
-    <g stroke="#efe7d2" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
-      <path d="M6.6,5.6 l-.9,1.5"/><path d="M4.9,8.3 l-.9,1.5"/>
-    </g>
+    <path d="M1,15 L5.5,7 L8,2" fill="none" stroke="rgba(255,250,235,.55)" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
   </symbol>
   <symbol id="peak-snow" viewBox="0 0 20 16" overflow="visible">
-    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
-      <path d="M9.1,4.4 l.8,1.35"/><path d="M9.7,5.6 l.7,1.25"/>
-      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
-      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 L8.6,15 Z" fill="#4a3410" fill-opacity=".2"/>
+    <path d="M13.5,5.4 L16,9 L19,15 L14.4,15 Z" fill="#4a3410" fill-opacity=".1"/>
+    <g stroke="#5f5038" stroke-width=".5" stroke-linecap="round" fill="none" opacity=".28" vector-effect="non-scaling-stroke">
+      <path d="M12.4,7.8 l.8,1.5"/><path d="M15.4,10 l.7,1.5"/>
     </g>
-    <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M5.7,5 L8,2 L10.4,5 C9.2,3.9 6.9,3.9 5.7,5 Z" fill="#f7fafc" fill-opacity=".95" stroke="#8fa3bd" stroke-width=".3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M1,15 L5.5,7 L8,2" fill="none" stroke="rgba(255,250,235,.5)" stroke-width=".6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
   </symbol>
   <!-- верблюд-дромадер (вправо) — виньетка каравана старинных карт -->
   <symbol id="camel" viewBox="0 0 20 14" overflow="visible">
@@ -132,17 +135,15 @@ const GEO_DEFS = `<defs>
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
-    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <g stroke="#6f5f42" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
-      <path d="M8.5,4.6 l.7,1.3"/><path d="M9.6,5.4 l.6,1.3"/>
-      <path d="M13.6,5.2 l.6,1.3"/><path d="M14.7,6 l.5,1.4"/><path d="M15.6,7.4 l.5,1.4"/>
-    </g>
+    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#mtLitG)" stroke="#6f5b38" stroke-width=".55" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path d="M7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 L8.5,9.2 Z" fill="#4a3410" fill-opacity=".16"/>
+    <path d="M1,9.2 Q3.5,4.2 7.5,4" fill="none" stroke="rgba(255,250,235,.5)" stroke-width=".6" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
   </symbol>
   <!-- ═══ КРАСКИ КИНОШНЫХ ИКОНОК-ГЛИФОВ (объём: тело-эмбосс, тень, акценты) ═══ -->
   <radialGradient id="gShadow" cx=".5" cy=".5" r=".5">
-    <stop offset="0" stop-color="#4a3512" stop-opacity=".22"/>
-    <stop offset=".55" stop-color="#4a3512" stop-opacity=".1"/>
-    <stop offset="1" stop-color="#4a3512" stop-opacity="0"/>
+    <stop offset="0" stop-color="#5a4620" stop-opacity=".1"/>
+    <stop offset=".6" stop-color="#5a4620" stop-opacity=".045"/>
+    <stop offset="1" stop-color="#5a4620" stop-opacity="0"/>
   </radialGradient>
   <linearGradient id="gBody" x1="0" y1="0" x2=".5" y2="1">
     <stop offset="0" stop-color="#f2e7c8"/><stop offset=".55" stop-color="#ddc79a"/><stop offset="1" stop-color="#c3a973"/>
@@ -234,7 +235,9 @@ function glyphSvg(name, x, y, k) {
   const SH = 'class="g-sh"';
   const SH2 = 'class="g-sh2"';
   const AC = (u) => `fill="url(#${u})"`;
-  const shadow = (sx, sy, rx) => `<ellipse class="g-shadow" cx="${sx}" cy="${sy}" rx="${rx}" ry="${+(rx * 0.26).toFixed(2)}"/>`;
+  // контактная тень-намёк: очень мягкая узкая полоска у основания (не клякса);
+  // чистый опрятный вид — объём держат грани, а не тяжёлая тень
+  const shadow = (sx, sy, rx) => `<ellipse class="g-shadow" cx="${sx}" cy="${sy}" rx="${+(rx * 0.72).toFixed(2)}" ry="${+(rx * 0.14).toFixed(2)}"/>`;
   switch (name) {
 
   case 'town': return `<g class="glyph">
@@ -336,10 +339,17 @@ function glyphSvg(name, x, y, k) {
   </g>`;
 
   case 'ruin': return `<g class="glyph">
-    ${shadow(x, y, P(6.5))}
-    <path ${B} d="M${M(-5.5, -2.4)} v${P(-6)} h${P(2.6)} v${P(3.4)} h${P(2.2)} v${P(-6.5)} h${P(2.6)} v${P(9.1)} Z"/>
-    <path ${SH} d="M${M(1.3, -11.5)} h${P(2.6)} v${P(9.1)} h${P(-2.6)} Z"/>
-    <path class="g-smoke" d="M${M(3.4, -12)} q${P(1.4)},${P(-1.8)} ${P(2.8)},${P(-0.6)} M${M(1.8, -10.6)} q${P(1.2)},${P(-1.5)} ${P(2.4)},${P(-0.5)}"/>
+    ${shadow(x, y, P(6))}
+    <path class="g-smoke" d="M${M(-1.4, -8)} q${P(-2)},${P(-2.6)} ${P(-0.2)},${P(-4.6)} q${P(1.6)},${P(-1.4)} ${P(0.2)},${P(-3.4)}"/>
+    <path class="g-smoke" d="M${M(2.6, -7)} q${P(2.2)},${P(-2.2)} ${P(0.8)},${P(-4.8)} q${P(-0.8)},${P(-1.6)} ${P(0.8)},${P(-3.2)}"/>
+    <path ${B} d="M${M(-6.6, -2.4)} V${M(0, -7).split(',')[1]} l${P(1.1)},${P(-1.4)} l${P(1.1)},${P(1.2)} l${P(1)},${P(-2)} l${P(0.9)},${P(1.6)} V${M(0, -2.4).split(',')[1]} Z"/>
+    <path ${SH} d="M${M(-3.5, -3.8)} l${P(0.9)},${P(1.6)} V${M(0, -2.4).split(',')[1]} h${P(-0.9)} Z"/>
+    <path ${B} d="M${M(-1.4, -2.4)} V${M(0, -11).split(',')[1]} l${P(2.6)},${P(1.4)} l${P(0.2)},${P(6.8)} V${M(0, -2.4).split(',')[1]} Z"/>
+    <path ${SH} d="M${M(0.8, -9.8)} l${P(0.4)},${P(1.2)} l${P(0.2)},${P(6.2)} h${P(-0.6)} Z"/>
+    <path fill="#5c3f18" d="M${M(-0.7, -2.4)} v${P(-2.4)} a${P(0.9)},${P(1.1)} 0 0 1 ${P(1.8)},0 v${P(2.4)} Z"/>
+    <path ${B} d="M${M(3, -2.4)} V${M(0, -4.8).split(',')[1]} l${P(1.1)},${P(-1.2)} l${P(1.2)},${P(1.4)} V${M(0, -2.4).split(',')[1]} Z"/>
+    <path ${AC('gFlame')} d="M${M(-2.6, -4)} q${P(1.8)},${P(1.8)} ${P(0.7)},${P(4)} q${P(0.9)},${P(-1)} ${P(0.5)},${P(-2.4)} q${P(1)},${P(1.4)} ${P(-0.2)},${P(3)} q${P(-1.2)},${P(1.6)} ${P(-2.2)},${P(0.3)} q${P(-1)},${P(-1.3)} ${P(-0.2)},${P(-2.6)} q${P(-1.4)},${P(0.9)} ${P(-0.8)},${P(2.6)} q${P(-1.6)},${P(-2.2)} ${P(0.4)},${P(-5)} q${P(-0.1)},${P(1.2)} ${P(0.9)},${P(1.8)} q${P(0.7)},${P(-1.3)} ${P(0.5)},${P(-2.2)} Z"/>
+    <path ${AC('gFlame')} d="M${M(2.4, -3.6)} q${P(1.4)},${P(1.4)} ${P(0.5)},${P(3.2)} q${P(0.7)},${P(-0.8)} ${P(0.4)},${P(-1.9)} q${P(0.8)},${P(1.1)} ${P(-0.2)},${P(2.4)} q${P(-0.9)},${P(1.2)} ${P(-1.7)},${P(0.2)} q${P(-0.8)},${P(-1)} ${P(-0.1)},${P(-2)} q${P(-1.1)},${P(0.7)} ${P(-0.6)},${P(2)} q${P(-1.2)},${P(-1.7)} ${P(0.3)},${P(-3.8)} q${P(-0.1)},${P(0.9)} ${P(0.7)},${P(1.4)} q${P(0.5)},${P(-1)} ${P(0.3)},${P(-1.7)} Z"/>
   </g>`;
 
   case 'spring': return `<g class="glyph">
@@ -583,8 +593,8 @@ function renderSheet(route, opts) {
       if (!gname) continue;
       const gx = p.x + (gdx || 0), gy = p.y - 3 * k + (gdy || 0);
       // glyphScale — акцент сюжетно-ключевых объектов (дуб Мамре и т.п.)
-      const g = glyphSvg(gname, gx, gy, k * 0.82 * (p.glyphScale || 1));
-      if (g) glyphs.push(`<g class="glyph-hit" data-pid="${esc(p.id)}"><circle cx="${gx}" cy="${(gy - 5 * k).toFixed(1)}" r="${(7.5 * k).toFixed(1)}" fill="transparent" stroke="none"/>${g}</g>`);
+      const g = glyphSvg(gname, gx, gy, k * 0.6 * (p.glyphScale || 1));
+      if (g) glyphs.push(`<g class="glyph-hit" data-pid="${esc(p.id)}"><circle cx="${gx}" cy="${(gy - 4 * k).toFixed(1)}" r="${(5.4 * k * (p.glyphScale || 1)).toFixed(1)}" fill="transparent" stroke="none"/>${g}</g>`);
     }
 
     const fontPlace = (isMile || (p.glyph && p.type !== 'cand')) ? fontMain : fontMinor;
@@ -981,15 +991,20 @@ function sheetCss() {
   .lab-war{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;fill:#8a4a38;opacity:.92;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
   .lab-war-note{opacity:.8}
   .glyph-hit{cursor:pointer}
+  /* иконки живут мелко; при наведении — плавно вырастают из своего основания
+     (transform-origin у «земли»), штрихи non-scaling держат тонкость */
+  #sheet-svg .glyph{transition:transform .2s cubic-bezier(.34,1.35,.5,1)}
+  #sheet-svg .glyph-hit:hover .glyph,
+  #sheet-svg .glyph-hit:focus-visible .glyph{transform:scale(1.7);transform-box:fill-box;transform-origin:50% 90%}
   .mile,.wp,.ovl-layer,.decor-ship,.war{cursor:pointer}
   #sheet-svg [fill="url(#jordanG)"]{opacity:.09}
   #sheet-svg #tradeRoutes{opacity:.32}
   /* ── киношные иконки-глифы: объём, светотень, цвет-акцент ── */
-  .glyph .gb{stroke:#5a4114;stroke-width:.85px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .glyph .g-out{fill:none;stroke:#5a4114;stroke-width:.9px;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .glyph .g-sh{fill:#3d2c0f;opacity:.3;stroke:none}
-  .glyph .g-sh2{fill:#3d2c0f;opacity:.5;stroke:none}
-  .glyph .g-hi{fill:none;stroke:rgba(255,250,235,.7);stroke-width:.7px;stroke-linecap:round;vector-effect:non-scaling-stroke}
+  .glyph .gb{stroke:#6a5028;stroke-width:.62px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .glyph .g-out{fill:none;stroke:#6a5028;stroke-width:.68px;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .glyph .g-sh{fill:#3d2c0f;opacity:.2;stroke:none}
+  .glyph .g-sh2{fill:#3d2c0f;opacity:.32;stroke:none}
+  .glyph .g-hi{fill:none;stroke:rgba(255,250,235,.6);stroke-width:.55px;stroke-linecap:round;vector-effect:non-scaling-stroke}
   .glyph .g-smoke{fill:none;stroke:#8a7a58;stroke-width:.85px;opacity:.7;stroke-linecap:round;vector-effect:non-scaling-stroke}
   .glyph .g-legs{fill:none;stroke:#5c421d;stroke-width:.8px;stroke-linecap:round;vector-effect:non-scaling-stroke}
   .glyph .g-shadow{stroke:none}
