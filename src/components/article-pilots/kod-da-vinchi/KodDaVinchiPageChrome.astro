@@ -2,6 +2,7 @@
 import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
 import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
 import ReaderSettings from '@/components/article-pilots/_shared/ReaderSettings.astro';
+import HermenevtikaMobileBar from '@/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro';
 import { KOD_DA_VINCHI_TOC } from './kodDaVinchiToc';
 /**
  * KodDaVinchiPageChrome — хром одиночной статьи.
@@ -14,9 +15,22 @@ import { KOD_DA_VINCHI_TOC } from './kodDaVinchiToc';
  */
 ---
 <a class="skip-link" href="#content">Перейти к содержанию</a>
-<!-- Угловой кластер: тема/поиск/PLAY/сохранить + ⚙ (settings=true). ⚙ на
-     десктопе прячется (там настройки открывает ⚙ рельса), на мобиле — рабочая. -->
-<FloatingCluster mode="single" variant="article" audioState="none" settings={true} />
+<!-- Угловой кластер — ТОЛЬКО десктоп (владелец 2026-07-17: на мобиле не «старое
+     меню со значками», а канонные бары движка статей, как у Герменевтики).
+     Обёртка скрывает кластер <1200px точечно, не трогая другие статьи. -->
+<div class="kdv-cluster-scope">
+  <FloatingCluster mode="single" variant="article" audioState="none" settings={true} />
+</div>
+<style is:global>@media (max-width: 1199px) { .kdv-cluster-scope { display: none; } }</style>
+<!-- Мобильные бары движка статей (общий компонент с Герменевтикой): верх
+     Back·Справка/Speed·PLAY·Save, низ прогресс·«Сейчас читаете»·тема·⚙·share,
+     лист оглавления с поиском и прогрессом. -->
+<HermenevtikaMobileBar
+  title="«Код да Винчи»: триллер или подмена?"
+  backHref="../../"
+  readingMinutes={30}
+  toc={KOD_DA_VINCHI_TOC}
+/>
 <!-- Десктоп (≥1200px): читательский рельс слева (оглавление статьи + ⚙ в нижнем
      тулбаре). settingsTrigger="hm" → рельсовая ⚙ шлёт 'hm:open-settings'. -->
 <ReaderRail

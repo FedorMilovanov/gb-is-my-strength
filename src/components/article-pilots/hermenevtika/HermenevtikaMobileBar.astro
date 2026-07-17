@@ -31,8 +31,11 @@ interface Props {
   title: string;
   backHref: string;
   readingMinutes?: number;
+  /** Оглавление статьи. Дефолт — Герменевтика; КдВ передаёт своё
+   *  (движок статей ОДИН, бар переиспользуется без форка). */
+  toc?: typeof HERMENEVTIKA_TOC;
 }
-const { title, backHref, readingMinutes = 50 } = Astro.props;
+const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.props;
 ---
 <MobileChromeShell
   engine="article"
@@ -72,7 +75,7 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
   </button>
   <button class="hmbar-section" id="hmSectionBtn" type="button" aria-label="Открыть оглавление статьи" slot="bottom-context">
     <span class="hmbar-section-label">Сейчас читаете</span>
-    <span class="hmbar-section-name" id="hmSectionName">{HERMENEVTIKA_TOC[0]?.label}</span>
+    <span class="hmbar-section-name" id="hmSectionName">{toc[0]?.label}</span>
   </button>
   <Fragment slot="bottom-actions">
   <span class="hmbar-divider"></span>
@@ -96,7 +99,7 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
     <div class="hmsheet-head">
       <div class="hmsheet-head-left">
         <div class="hmsheet-title" id="hmSheetTitle">Оглавление</div>
-        <div class="hmsheet-subtitle" id="hmSheetSubtitle">{HERMENEVTIKA_TOC.length} разделов</div>
+        <div class="hmsheet-subtitle" id="hmSheetSubtitle">{toc.length} разделов</div>
       </div>
       <button class="hmsheet-close" id="hmSheetClose" type="button" aria-label="Закрыть">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
@@ -115,7 +118,7 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
       <input id="hmSheetSearch" type="text" placeholder="Поиск по разделам…" autocomplete="off">
     </label>
     <ul class="hmsheet-list" id="hmSheetList">
-      {HERMENEVTIKA_TOC.map((item, i) => (
+      {toc.map((item, i) => (
         <li class:list={{ 'hmsheet-sub': item.level === 3 }} data-idx={i}>
           <a href={item.href} class="hmsheet-link" data-name={item.label}>{item.label}</a>
         </li>
