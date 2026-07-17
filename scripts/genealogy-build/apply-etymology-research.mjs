@@ -42,6 +42,10 @@ const KEY_OVERRIDES = {
   Mishael: 'Mishael@Dan.1.6',       // Мисаил-Мисах (первый — дядя Моисея)
   Azariah: 'Azariah@Dan.1.6',       // Азария-Авденаго (тёзок 19)
   'Mary Magdalene': 'Mary@Mat.27.56',
+  Naaman: 'Naaman@2Ki.5.1',          // сириец-прокажённый (первый — сын Вениамина)
+  'Ben-Hadad': 'Ben-hadad@1Ki.15.18',
+  Jair: 'Jair@Jdg.10.3',             // судья (первый — сын Манассии)
+  Tola: 'Tola@Jdg.10.1',             // судья (первый — сын Иссахара)
 };
 
 async function main() {
