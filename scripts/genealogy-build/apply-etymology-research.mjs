@@ -46,6 +46,11 @@ const KEY_OVERRIDES = {
   'Ben-Hadad': 'Ben-hadad@1Ki.15.18',
   Jair: 'Jair@Jdg.10.3',             // судья (первый — сын Манассии)
   Tola: 'Tola@Jdg.10.1',             // судья (первый — сын Иссахара)
+  Zerah: 'Zerah@Gen.38.30',          // близнец Фареса (первый — эдомитянин Быт 36:13)
+  // народ / город / божество — не персоны TIPNR; синтетич. ключи (несут ru из батча)
+  Edom: 'Edom@Gen.25.30',
+  Bozrah: 'Bozrah@Gen.36.33',
+  Molech: 'Molech@Lev.18.21',
 };
 
 async function main() {
