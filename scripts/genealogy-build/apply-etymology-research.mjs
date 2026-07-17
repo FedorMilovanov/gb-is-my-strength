@@ -27,6 +27,11 @@ const KEY_OVERRIDES = {
   Abijah: 'Abijah@1Ki.14.31',
   'Jehoram': 'Jehoram@1Ki.22.50',
   'Uzziah': 'Uzziah@2Ki.15.13',
+  Jehoash: 'Joash@2Ki.13.9',        // Иоас, царь Израиля (4Цар 13:9)
+  'James son of Alphaeus': 'James@Mat.10.3',
+  'Thaddaeus': 'Judas@Mat.10.3',    // Иуда Иаковлев = Фаддей (Лк 6:16)
+  'Judas Iscariot': 'Judas@Mat.10.4',
+  'Simon the Zealot': 'Simon@Mat.10.4',
 };
 
 async function main() {
