@@ -1373,7 +1373,7 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
    text. Wider gutter + a size that fits three glyphs; the numeral also gets a
    deliberate hover — the outline fills with layered gold and lifts. */
 [data-gill-v16] .gbs2-head{padding-right:clamp(128px,19vw,250px)}
-[data-gill-v16] .gbs2-kinetic{font-size:clamp(64px,8.4vw,124px);letter-spacing:-.1em;white-space:nowrap;opacity:.9;pointer-events:auto;cursor:default;-webkit-text-stroke:1px rgba(184,147,106,.30);transition:transform .5s cubic-bezier(.22,1,.36,1),filter .45s ease,opacity .45s ease}
+[data-gill-v16] .gbs2-kinetic{font-size:clamp(64px,8.4vw,124px);letter-spacing:-.1em;white-space:nowrap;opacity:.9;pointer-events:auto;cursor:default;-webkit-text-stroke:1px rgba(184,147,106,.30);font-variant-numeric:oldstyle-nums;font-feature-settings:"onum" 1;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .45s ease,opacity .45s ease}
 /* Спутники серии: марка «I.1»…«IV.3» — на символ длиннее, чем самый широкий
    роман серии («III»); чуть уменьшаем клемп, чтобы точка-разделитель не
    теснилась к краю обложки на узких десктопах. Обе базовых site.css/
