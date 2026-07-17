@@ -903,15 +903,10 @@
 </g>
 
   <g class="cartouche">
-    <rect x="106" y="47" width="600.0" height="129" rx="12" class="plate cart-plate"></rect>
-    <rect x="113.5" y="54.5" width="585.0" height="114.0" rx="9" class="cart-inner"></rect>
-    <rect x="117.3" y="58.3" width="577.5" height="106.5" rx="6.75" class="cart-inner2"></rect>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(118.0,59.0) scale(1.500) rotate(0 8 8)"></use>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(671.5,59.0) scale(1.500) rotate(90 8 8)"></use>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(671.5,141.5) scale(1.500) rotate(180 8 8)"></use>
-    <use href="#cornerOrn" width="16" height="16" transform="translate(118.0,141.5) scale(1.500) rotate(270 8 8)"></use>
-    <text x="136" y="81.5" class="cart-over" font-size="14.25">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ I</text>
-    <text x="136" y="122" class="cart-title" font-size="37.5">Путь Авраама</text>
+    <rect x="106" y="47" width="600.0" height="126" rx="7.5" class="cart-plate"></rect>
+    <line x1="136" y1="90.5" x2="676.0" y2="90.5" class="cart-rule"></line>
+    <text x="136" y="81.5" class="cart-over" font-size="13.5">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ I</text>
+    <text x="136" y="125" class="cart-title" font-size="37.5">Путь Авраама</text>
     <text x="136" y="155" class="cart-sub" font-size="17.25">Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.</text>
   </g>
 

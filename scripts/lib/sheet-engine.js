@@ -740,19 +740,14 @@ function renderSheet(route, opts) {
   const sheetNo = opts.sheetNo; // номер листа в атласе (римская цифра), опционально
     const cartW = Math.max(400, 46 + Math.max((meta.title || slug).length * 14.6, ((meta.subtitle || '').length) * 6.6)) * k;
   // орнаментальные углы картуша (внутр. рамка): 4 завитка + двойная линия
-  const inX = x0 + 29 * k, inY = y0 + 23 * k, inW = cartW - 10 * k, inH = 76 * k, o = 15 * k, oi = 3 * k;
-  const orn = (px, py, deg) => `<use href="#cornerOrn" width="16" height="16" transform="translate(${px.toFixed(1)},${py.toFixed(1)}) scale(${k.toFixed(3)}) rotate(${deg} 8 8)"/>`;
+  // Минималистичный титульный картуш: одна чистая подложка + тонкая линейка-
+  // акцент под шапкой; без вложенных рамок и угловых завитков (по просьбе).
   const cart = `
   <g class="cartouche">
-    <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${cartW.toFixed(1)}" height="${86 * k}" rx="${8 * k}" class="plate cart-plate"/>
-    <rect x="${inX.toFixed(1)}" y="${inY.toFixed(1)}" width="${inW.toFixed(1)}" height="${inH.toFixed(1)}" rx="${6 * k}" class="cart-inner"/>
-    <rect x="${(inX + 2.5 * k).toFixed(1)}" y="${(inY + 2.5 * k).toFixed(1)}" width="${(inW - 5 * k).toFixed(1)}" height="${(inH - 5 * k).toFixed(1)}" rx="${4.5 * k}" class="cart-inner2"/>
-    ${orn(inX + oi, inY + oi, 0)}
-    ${orn(inX + inW - oi - o, inY + oi, 90)}
-    ${orn(inX + inW - oi - o, inY + inH - oi - o, 180)}
-    ${orn(inX + oi, inY + inH - oi - o, 270)}
-    <text x="${x0 + 44 * k}" y="${y0 + 41 * k}" class="cart-over" font-size="${9.5 * k}">БИБЛЕЙСКИЙ АТЛАС${sheetNo ? ` · ЛИСТ ${sheetNo}` : ''}</text>
-    <text x="${x0 + 44 * k}" y="${y0 + 68 * k}" class="cart-title" font-size="${25 * k}">${esc(meta.title || slug)}</text>
+    <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${cartW.toFixed(1)}" height="${84 * k}" rx="${5 * k}" class="cart-plate"/>
+    <line x1="${x0 + 44 * k}" y1="${y0 + 47 * k}" x2="${(x0 + 24 * k + cartW - 20 * k).toFixed(1)}" y2="${y0 + 47 * k}" class="cart-rule"/>
+    <text x="${x0 + 44 * k}" y="${y0 + 41 * k}" class="cart-over" font-size="${9 * k}">БИБЛЕЙСКИЙ АТЛАС${sheetNo ? ` · ЛИСТ ${sheetNo}` : ''}</text>
+    <text x="${x0 + 44 * k}" y="${y0 + 70 * k}" class="cart-title" font-size="${25 * k}">${esc(meta.title || slug)}</text>
     <text x="${x0 + 44 * k}" y="${y0 + 90 * k}" class="cart-sub" font-size="${11.5 * k}">${esc(meta.subtitle || '')}</text>
   </g>`;
 
@@ -1075,9 +1070,8 @@ function sheetCss() {
   text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#ecdcb4;stroke-width:.16em}
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
-  .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
-  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cart-plate{fill:rgba(247,242,231,.82);stroke:rgba(138,106,31,.28);stroke-width:1}
+  .cart-rule{stroke:rgba(138,106,31,.3);stroke-width:.8}
   .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
@@ -1172,10 +1166,13 @@ function sheetCss() {
      тенью контейнера); top сдвинут ниже розы ветров (компас в SVG кончается
      на ~108px при ширине листа 1500px) — иначе кнопка "Домой" ложится
      поверх компаса */
-  .dive-btn{position:absolute;right:10px;top:120px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
-  .home-btn{right:64px}
-  .legend-btn{top:166px}
-  .legend-pop{position:absolute;right:10px;top:210px;z-index:22;background:rgba(246,241,231,.96);border:1px solid rgba(138,106,31,.4);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.28);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
+  /* навигационные кнопки — ровная вертикальная колонка (home · fullscreen · menu),
+     единый размер и правый край; никакого «треугольника» */
+  .dive-btn{position:absolute;right:14px;top:164px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.32);background:rgba(247,242,231,.94);color:#7a5c26;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.16);transition:background .15s,box-shadow .15s}
+  .dive-btn:hover{background:#fbf7ec;box-shadow:0 3px 12px rgba(90,70,30,.24)}
+  .home-btn{top:116px;right:14px}
+  .legend-btn{top:212px;right:14px}
+  .legend-pop{position:absolute;right:14px;top:256px;z-index:22;background:rgba(247,242,231,.97);border:1px solid rgba(138,106,31,.32);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.24);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
   .legend-pop b{display:block;font:700 11px/1 Georgia,serif;letter-spacing:.1em;color:#8a6a1f;margin-bottom:8px}
   .legend-pop i{display:flex;align-items:center;gap:8px;font-style:normal}
   .legend-pop span{flex:0 0 20px;height:10px;display:inline-block}
