@@ -58,7 +58,10 @@
   .nav .about b{display:block;color:var(--inkSoft);font-size:11.5px;margin-bottom:2px}
   /* модалка охвата «что готово / что впереди» */
   #cover{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(20,12,2,.44)}
-  #cover.show{display:flex}
+  #cover.show{display:flex;animation:covIn .18s ease-out}
+  @keyframes covIn{from{opacity:0}to{opacity:1}}
+  #cover.show .box{animation:covBox .22s ease-out}
+  @keyframes covBox{from{opacity:0;transform:scale(.965) translateY(8px)}to{opacity:1;transform:none}}
   #cover .box{width:min(560px,92vw);max-height:88vh;overflow-y:auto;background:var(--card);border:1px solid var(--cardEdge);border-radius:18px;box-shadow:0 20px 50px var(--shadow);padding:24px 26px}
   #cover h2{margin:0 0 3px;font-size:21px}
   #cover .csub{margin:0 0 18px;font-size:12.5px;color:var(--gold)}
@@ -104,7 +107,8 @@
   .legend .sw.dashed{border-top-style:dashed}
   /* тур */
   #tour{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);width:min(620px,86%);border:1px solid var(--panelEdge);border-radius:15px;background:var(--card);box-shadow:0 10px 30px var(--shadow);padding:15px 20px 13px;display:none}
-  #tour.show{display:block}
+  #tour.show{display:block;animation:tourIn .26s ease-out}
+  @keyframes tourIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
   #tour .steps{display:flex;align-items:center;gap:6px;margin-bottom:9px}
   #tour .steps span{font-size:11.5px;color:var(--inkFaint);margin-right:6px;white-space:nowrap}
   #tour .seg{flex:1;height:5px;border-radius:3px;background:color-mix(in srgb,var(--inkFaint) 26%,transparent)}
@@ -137,13 +141,31 @@
   .card .mean{fill:var(--inkSoft);font-style:italic}
   .card.sel rect.bg{stroke:var(--gold);stroke-width:2.2}
   .dim{opacity:.16;transition:opacity .2s}
-  .lvl-hid{display:none}
+  /* семантические уровни: плавное проявление вместо резкого display:none */
+  [data-min-k]{transition:opacity .28s ease}
+  .lvl-hid{opacity:0 !important;visibility:hidden;pointer-events:none}
   .fan{pointer-events:none}
+  /* hover-лифт: внутренняя группа карточки чуть приподнимается */
+  .card .cin{transition:transform .16s ease;transform-box:fill-box;transform-origin:center}
+  .card:hover .cin{transform:translateY(-3px)}
+  /* появление сцены: карточки каскадом, связи/россыпь мягко следом */
+  .card{animation:cardIn .5s ease-out both}
+  @keyframes cardIn{from{opacity:0}to{opacity:1}}
+  #g-links,#g-fans{animation:linksIn .9s ease-out both;animation-delay:.35s}
+  @keyframes linksIn{from{opacity:0}to{opacity:1}}
+  /* живая нить: золотые бусины хребта медленно текут вниз */
+  .bead{animation:beadFlow 7s linear infinite}
+  @keyframes beadFlow{to{stroke-dashoffset:-26.2}}
+  @media (prefers-reduced-motion: reduce){
+    #namecard.show,#cover.show,#cover.show .box,#tour.show,.card,#g-links,#g-fans,.bead{animation:none}
+    [data-min-k],.card .cin{transition:none}
+  }
   /* панель объяснения имени (по клику на карточку хребта) */
   #namecard{position:absolute;top:78px;right:16px;width:288px;max-height:calc(100% - 200px);overflow-y:auto;
     border:1px solid var(--cardEdge);border-radius:15px;background:var(--card);box-shadow:0 12px 34px var(--shadow);
     padding:16px 18px;display:none;z-index:12}
-  #namecard.show{display:block}
+  #namecard.show{display:block;animation:ncIn .22s ease-out}
+  @keyframes ncIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
   #namecard .nx{position:absolute;top:11px;right:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);cursor:pointer;font-size:12px}
   #namecard .nname{font-size:21px;font-weight:700;margin:0 30px 0 0;line-height:1.15}
   #namecard .nheb{font-family:'Times New Roman',serif;color:var(--gold);font-size:23px;margin-top:3px}
@@ -360,7 +382,7 @@ for(const c of (ATLAS.nationBranches||[])){
 // ── рендер: связи (за карточками) ──
 const spineXY=id=>{const c=cards.get(id);return {x:c.x,y:c.y};};
 function beadLine(x1,y1,x2,y2,color,minK){
-  const l=mk('line',{x1,y1,x2,y2,stroke:color,'stroke-width':4.6,'stroke-linecap':'round','stroke-dasharray':'0.1 13','opacity':.9});
+  const l=mk('line',{x1,y1,x2,y2,stroke:color,'stroke-width':4.6,'stroke-linecap':'round','stroke-dasharray':'0.1 13','opacity':.9,'class':'bead'});
   l.dataset.minK=minK??0;gLinks.appendChild(l);return l;
 }
 function elbow(x1,y1,x2,y2,color,dashed,minK){
@@ -446,9 +468,12 @@ function iconCircle(g,cx,cy,r,icon,color){
   u.style.color=color||'var(--gold)';u.style.pointerEvents='none';
   g.appendChild(u);
 }
+let cardIdx=0;
 for(const c of cards.values()){
-  const g=mk('g',{'class':'card '+c.kind+(c.data.hero?' hero':''),transform:`translate(${c.x} ${c.y})`});
-  g.dataset.id=c.id;g.dataset.minK=c.minK??0;
+  const gOut=mk('g',{'class':'card '+c.kind+(c.data.hero?' hero':''),transform:`translate(${c.x} ${c.y})`});
+  gOut.dataset.id=c.id;gOut.dataset.minK=c.minK??0;
+  gOut.style.animationDelay=(cardIdx++*24)+'ms';   // каскадное проявление при загрузке
+  const g=mk('g',{'class':'cin'});          // внутренняя группа — hover-лифт без конфликта с позицией
   g.appendChild(mk('rect',{'class':'bg',x:-c.w/2,y:-c.h/2,width:c.w,height:c.h,rx:15}));
   const d=c.data;
   if(c.kind==='spine'){
@@ -488,7 +513,7 @@ for(const c of cards.values()){
     g.appendChild(textEl('goldln',-c.w/2+30,12,9.5,'start',d.gold));
     g.querySelector('.goldln').setAttribute('fill',c.color);
   }
-  gCards.appendChild(g);c.el=g;
+  gOut.appendChild(g);gCards.appendChild(gOut);c.el=gOut;
 }
 
 // ── viewport: пан/зум/пинч/dblclick (перенос выверенных паттернов) ──
