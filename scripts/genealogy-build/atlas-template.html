@@ -165,6 +165,10 @@
   #namecard ol.nmem li span{color:var(--ink)}
   #namecard ol.nmem li i{margin-left:auto;font-style:normal;font-size:10px;color:var(--inkFaint);white-space:nowrap}
   #namecard .nmemrest{margin-top:8px;font-size:11px;color:var(--inkSoft);font-style:italic}
+  #namecard ol.nmem.tribes li{border-bottom:none;padding-bottom:1px}
+  #namecard ol.nmem.tribes .thb{font-family:'Times New Roman',serif;color:var(--gold);font-weight:400;font-size:13px}
+  #namecard ol.nmem.tribes .tmn{margin-left:auto;font-style:italic;color:var(--inkSoft);font-size:11px}
+  #namecard ol.nmem.tribes .tnote{margin:0 0 7px 28px;font-size:10.5px;line-height:1.4;color:var(--inkFaint)}
   /* мини-карта / правая рейка */
   aside.rail{background:var(--panel);border-left:1px solid var(--panelEdge);padding:14px;display:flex;flex-direction:column;gap:13px;overflow-y:auto}
   .rail .lab{font-size:11px;letter-spacing:1px;color:var(--inkFaint);margin-bottom:6px}
@@ -597,15 +601,24 @@ function openName(id){
     if(d.sub)h+=`<div class="nrole">${esc(d.sub)}</div>`;
     if(d.region)h+=`<div class="nnote">Регион расселения: ${esc(d.region)}</div>`;
     if(d.ref)h+=`<div class="nmeta"><span>${esc(d.ref)}</span></div>`;
+    // 12 колен: полный список с библейскими значениями имён (Быт 29–35)
+    if(d.tribes&&d.tribes.length){
+      h+=`<div class="nmemhdr">12 колен · значения имён (Быт 29–35)</div>`;
+      h+=`<ol class="nmem tribes">${d.tribes.map(t=>
+        `<li><span>${esc(t.ru)}${t.heb?` <b class="thb">${esc(t.heb)}</b>`:''}</span>${t.meaning?`<i class="tmn">«${esc(t.meaning)}»</i>`:''}</li>`
+        +(t.note?`<div class="tnote">${esc(t.note)}</div>`:'')).join('')}</ol>`;
+    }
     // раскрытие: реальные имена членов кластера (из TIPNR), стих у каждого
     const mem=(ATLAS.members||{})[id];
-    if(mem&&mem.shown.length){
-      const rest=mem.total-mem.shown.length;
-      h+=`<div class="nmemhdr">Имена в этом роду${mem.total>mem.shown.length?` · показаны ${mem.shown.length} из ${mem.total}`:` · всего ${mem.total}`}</div>`;
-      h+=`<ol class="nmem">${mem.shown.map(m=>`<li><span>${esc(m.ru)}</span>${m.ref?`<i>${esc(m.ref)}</i>`:''}</li>`).join('')}</ol>`;
-      if(rest>0)h+=`<div class="nmemrest">… ещё ${rest} имён — полностью в базе родословий</div>`;
-    } else if(d.rows&&d.rows.length){
-      h+=`<div class="nnote">В выборке: ${d.rows.map(esc).join(' · ')}${d.more?' '+esc(d.more):''}</div>`;
+    if(!(d.tribes&&d.tribes.length)){
+      if(mem&&mem.shown.length){
+        const rest=mem.total-mem.shown.length;
+        h+=`<div class="nmemhdr">Имена в этом роду${mem.total>mem.shown.length?` · показаны ${mem.shown.length} из ${mem.total}`:` · всего ${mem.total}`}</div>`;
+        h+=`<ol class="nmem">${mem.shown.map(m=>`<li><span>${esc(m.ru)}</span>${m.ref?`<i>${esc(m.ref)}</i>`:''}</li>`).join('')}</ol>`;
+        if(rest>0)h+=`<div class="nmemrest">… ещё ${rest} имён — полностью в базе родословий</div>`;
+      } else if(d.rows&&d.rows.length){
+        h+=`<div class="nnote">В выборке: ${d.rows.map(esc).join(' · ')}${d.more?' '+esc(d.more):''}</div>`;
+      }
     }
     h+='<div class="nlinks">';
     const anchor=d.anchor&&cards.get(d.anchor);
