@@ -30,6 +30,9 @@ const currentPartLabel = currentRaw.mark.kind === 'arabic'
   : currentRaw.tier === 'satellite'
     ? `${currentRaw.mark.value} · ${currentRaw.shortTitle || currentRaw.title}`
     : current.mark.kind === 'roman' ? `Часть ${current.mark.value}` : current.title;
+/* Время текущей статьи/части — для подписи кнопки «Слушать» (референс владельца
+   2026-07-17: play-в-кружке + подпись + время). */
+const listenTime = currentRaw.readingTime;
 /* Убираем дубль «Часть N.»/«Глава N.» из заголовка строки — колонка нумерала уже говорит это. */
 const shortTitle = (t: string) => t.replace(/^(?:Часть|Глава)\s+[IVXLC]+\.\s*/, '');
 const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.href || '';
@@ -128,8 +131,13 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
       })}
     </div>
     <div class="toc-sheet__actions gbat-foot">
-      <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.8v14.4L18.5 12 7 4.8z" /></svg><span>{current.tier === 'chapter' ? 'Слушать статью' : 'Слушать часть'}</span></button>
-      <button class="gbat-fbtn gbat-fbtn--cont" type="button" data-gbat-continue><span>Продолжить</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
+      <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen>
+        <span class="gbat-fbtn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.14v13.72L19 12 8 5.14z" /></svg></span>
+        <span class="gbat-fbtn-txt"><b>{current.tier === 'chapter' ? 'Слушать статью' : 'Слушать часть'}</b><small>{listenTime}</small></span>
+      </button>
+      <button class="gbat-fbtn gbat-fbtn--cont" type="button" data-gbat-continue>
+        <span class="gbat-cont-label">Продолжить</span>
+      </button>
       <button class="gbat-fbtn gbat-fbtn--pdf" type="button" data-action="print" aria-label="Распечатать страницу и сохранить в PDF" title="Распечатать · PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg></button>
     </div>
   </div>
