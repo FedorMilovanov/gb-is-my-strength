@@ -1,5 +1,5 @@
 ---
-import { GILL_SERIES, satellitesOf, chapterArticles, type SeriesConfig } from '../_shared/series/seriesConfig';
+import { GILL_SERIES, satellitesOf, chapterArticles, sectionLabel, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props { pageId: string; config?: SeriesConfig; }
 const { pageId, config = GILL_SERIES } = Astro.props;
@@ -95,7 +95,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
                       {artSecs.map((row) => (
                         <a class={['gbat-sub', 'h3', isHere && row.current && 'active'].filter(Boolean).join(' ')}
                            href={isHere ? row.href : art.href + row.href}>
-                          <span class="gbat-dot"></span><span>{row.label}</span>
+                          <span class="gbat-dot"></span><span>{sectionLabel(config, row.label)}</span>
                         </a>
                       ))}
                     </div></div>
@@ -105,7 +105,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
               {secs.map((row) => (
                 <a class={['gbat-sub', row.level === 3 && 'h3', isCurrent && row.current && pageId === item.id && 'active'].filter(Boolean).join(' ')}
                    href={pageId === item.id ? row.href : item.href + row.href}>
-                  <span class="gbat-dot"></span><span>{row.label}</span>
+                  <span class="gbat-dot"></span><span>{sectionLabel(config, row.label)}</span>
                 </a>
               ))}
               {sats.map((sat) => {
