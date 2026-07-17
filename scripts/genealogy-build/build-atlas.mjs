@@ -47,12 +47,12 @@ function osisSortKey(osis) {
   const [bk, ch, vs] = osis.split('.');
   return [bookIdx.get(String(bk).toLowerCase()) ?? 900, +ch || 0, +vs || 0];
 }
-async function clusterMembers() {
+async function clusterMembers(lex) {
   const groups = JSON.parse(await readFile(path.join(OUT, 'groups.json'), 'utf8')).clusters || [];
   const persons = JSON.parse(await readFile(path.join(OUT, 'persons.json'), 'utf8'));
   const parr = Array.isArray(persons) ? persons : (persons.persons || Object.values(persons));
   const byId = new Map();
-  for (const p of parr) byId.set(p.id, { ru: (p.ru && p.ru.name) || p.en || p.id, ref: p.firstRef && p.firstRef.ru, osis: p.firstRef && p.firstRef.osis });
+  for (const p of parr) byId.set(p.id, { ru: (p.ru && p.ru.name) || p.en || p.id, ref: p.firstRef && p.firstRef.ru, osis: p.firstRef && p.firstRef.osis, key: p.key });
   const gById = new Map(groups.map(g => [g.id, g]));
   const out = {};
   for (const [atlasId, gid] of Object.entries(CLUSTER_GROUP)) {
@@ -61,7 +61,10 @@ async function clusterMembers() {
       .filter(r => r.ru && !/^[a-z-]+$/i.test(r.ru))          // отбрасываем нерусские заглушки
       .sort((a, b) => { const ka = osisSortKey(a.osis), kb = osisSortKey(b.osis);
         return ka[0] - kb[0] || ka[1] - kb[1] || ka[2] - kb[2] || a.ru.localeCompare(b.ru, 'ru'); });
-    out[atlasId] = { total: g.count ?? rows.length, shown: rows.slice(0, MEMBER_CAP).map(r => ({ ru: r.ru, ref: r.ref })) };
+    out[atlasId] = { total: g.count ?? rows.length, shown: rows.slice(0, MEMBER_CAP).map(r => {
+      const e = lex && lex.get(r.key);                          // значение имени, если оно есть в лексиконе
+      return { ru: r.ru, ref: r.ref, meaning: e && e.meaning ? e.meaning : null };
+    }) };
   }
   return out;
 }
@@ -195,13 +198,40 @@ async function main() {
   // ── Матфей 1 / Лука 3: карточки-свитки родословий Господа ──
   const mtRows = ['Авраам', 'Исаак', 'Иаков', 'Иуда и братья его', 'Фарес', 'Есром'];
   const lkRows = ['Адам', 'Сиф', 'Енос', 'Каинан', 'Малелеил', 'Иаред'];
+
+  // ── сверка двух родословий Христа (Мф 1 / Лк 3) — по библейскому тексту ──
+  // Классическая тема: общий отрезок Авраам→Давид; расхождение у Давида
+  // (Соломон / Нафан); схождение у Салафииля и Зоровавеля; снова расхождение
+  // до Иосифа. Курируется по Мф 1:1–16 и Лк 3:23–38 (Синодальный).
+  const mtLk = {
+    shared: { title: 'Общая линия: Авраам → Давид', names: ['Авраам', 'Исаак', 'Иаков', 'Иуда', 'Фарес', 'Есром', 'Арам', 'Аминадав', 'Наассон', 'Салмон', 'Вооз', 'Овид', 'Иессей', 'Давид'] },
+    diverge1: {
+      title: 'Расходятся у Давида',
+      mt: { label: 'Матфей — через Соломона (царская линия)', names: ['Соломон', 'Ровоам', 'Авия', 'Аса', 'Иосафат', 'Иорам', '…', 'Езекия', 'Манассия', 'Амон', 'Иосия', 'Иехония'] },
+      lk: { label: 'Лука — через Нафана (иная линия)', names: ['Нафан', 'Маттафай', 'Маинан', 'Мелеай', 'Елиаким', '…', 'Мелхий', 'Нирий'] },
+    },
+    converge: { title: 'Сходятся после плена', names: ['Салафииль', 'Зоровавель'], note: 'Оба родословия проходят через Салафииля и Зоровавеля (Мф 1:12; Лк 3:27) — точка схода после Вавилонского плена.' },
+    diverge2: {
+      title: 'Снова расходятся до Иосифа',
+      mt: { label: 'Матфей', names: ['Авиуд', '…', 'Матфан', 'Иаков', 'Иосиф'] },
+      lk: { label: 'Лука', names: ['Рисай', '…', 'Матфат', 'Илий', 'Иосиф'] },
+    },
+    women: ['Фамарь (Быт 38)', 'Раав (Нав 2)', 'Руфь (Руф)', '«бывшая за Уриею» — Вирсавия', 'Мария'],
+    notes: [
+      'Матфей ведёт линию ЮРИДИЧЕСКУЮ (право на престол Давида) — от Авраама вниз, через царей Иудеи.',
+      'Лука ведёт линию до Адама и Бога — традиционно понимается как природная линия (часто связывают с Марией через Илия).',
+      'Матфей строит 3×14 поколений (Мф 1:17), сознательно опуская трёх царей (Охозия, Иоас, Амасия) и сжимая список — это приём памяти, не ошибка.',
+      'Иехония (Мф 1:11–12): на нём лежало пророчество Иер 22:30 — законная линия приходит к Иосифу, но не даёт «кровного» права; Лука обходит эту трудность иной линией.',
+    ],
+    refs: 'Мф 1:1–17 · Лк 3:23–38',
+  };
   const listCards = [
     { id: 'tribes12', x: XL, y: 560, icon: 'tribes', ru: '12 колен Израиля', sub: 'сыновья Иакова', rows: tribesRows,
       more: '… ещё 6 колен', color: C.tribes, anchor: 'jacob', minK: 0, tribes: tribesFull },
     { id: 'matthew1', x: XL, y: 1210, icon: 'book', ru: 'Матфей 1', sub: 'Авраам → Давид → Иисус', rows: mtRows,
-      more: '… 42 поколения (3×14)', footer: 'Иосиф, муж Марии', color: C.matthew, anchor: 'jesus', minK: 0, dashed: true },
+      more: '… 42 поколения (3×14)', footer: 'Иосиф, муж Марии', color: C.matthew, anchor: 'jesus', minK: 0, dashed: true, compare: true },
     { id: 'luke3', x: XR, y: 1210, icon: 'scroll', ru: 'Лука 3', sub: 'Адам → Иисус · 77 поколений', rows: lkRows,
-      more: '… ещё 71 поколение', footer: 'Иосиф, муж Марии', color: C.luke, anchor: 'jesus', minK: 0, dashed: true },
+      more: '… ещё 71 поколение', footer: 'Иосиф, муж Марии', color: C.luke, anchor: 'jesus', minK: 0, dashed: true, compare: true },
   ];
 
   // ── нижний ряд истории (царство → плен → возвращение) ──
@@ -263,12 +293,12 @@ async function main() {
   ];
 
   const coverage = await coverageStats();
-  const members = await clusterMembers();
+  const members = await clusterMembers(lex);
 
   const scene = {
     _status: 'atlas: карточный Библейский атлас родословий (по референсам)',
     iconDefs: iconSymbolDefs(),
-    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage, members,
+    spine, spineY, clusters, listCards, history, nationBranches, epochs, quickLinks, tour, legend, coverage, members, mtLk,
     counts: { spine: spine.length, clusters: clusters.length + listCards.length, history: history.length },
   };
 
