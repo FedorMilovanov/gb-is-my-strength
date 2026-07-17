@@ -172,6 +172,29 @@
   #namecard .nheb{font-family:'Times New Roman',serif;color:var(--gold);font-size:23px;margin-top:3px}
   #namecard .ntr{font-style:italic;color:var(--inkSoft);font-size:12.5px;margin-top:1px}
   #namecard .nrole{font-size:12px;color:var(--inkSoft);margin-top:8px}
+  /* поисковый дроп-даун по лексикону имён */
+  #qwrap{position:relative}
+  #qdrop{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:var(--card);border:1px solid var(--cardEdge);border-radius:12px;box-shadow:0 14px 34px var(--shadow);max-height:320px;overflow-y:auto;padding:5px}
+  #qdrop.open{display:block;animation:ncIn .16s ease-out}
+  #qdrop .qi{display:block;width:100%;text-align:left;border:0;background:none;cursor:pointer;padding:8px 10px;border-radius:8px;font:inherit;color:var(--ink)}
+  #qdrop .qi:hover,#qdrop .qi.act{background:color-mix(in srgb,var(--gold) 12%,transparent)}
+  #qdrop .qi .qn{font-size:12.5px;font-weight:600}
+  #qdrop .qi .qn .qh{font-size:11px;color:var(--inkSoft);font-weight:400;margin-left:5px}
+  #qdrop .qi .qm{display:block;font-size:11px;color:var(--inkSoft);margin-top:1px}
+  #qdrop .qi .qm i{font-style:normal;color:var(--inkFaint)}
+  #qdrop .qhdr{padding:6px 10px 3px;font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--inkFaint)}
+  #qdrop .qmore{padding:5px 10px 7px;font-size:10.5px;color:var(--inkFaint)}
+  #namecard .nconf{display:inline-block;margin-top:10px;font-size:10px;letter-spacing:.4px;border-radius:9px;padding:3px 9px;border:1px solid var(--panelEdge);color:var(--inkSoft)}
+  #namecard .nconf.c-certain{border-color:color-mix(in srgb,#3f7d4e 45%,transparent);color:#3f7d4e}
+  #namecard .nconf.c-probable{border-color:color-mix(in srgb,var(--gold) 55%,transparent);color:var(--gold)}
+  #namecard .nconf.c-disputed{border-color:color-mix(in srgb,#a06a2c 50%,transparent);color:#a06a2c}
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]) #namecard .nconf.c-certain{color:#7fc08d;border-color:color-mix(in srgb,#7fc08d 40%,transparent)}
+    :root:not([data-theme="light"]) #namecard .nconf.c-disputed{color:#d9a05f;border-color:color-mix(in srgb,#d9a05f 40%,transparent)}
+  }
+  :root[data-theme="dark"] #namecard .nconf.c-certain{color:#7fc08d;border-color:color-mix(in srgb,#7fc08d 40%,transparent)}
+  :root[data-theme="dark"] #namecard .nconf.c-disputed{color:#d9a05f;border-color:color-mix(in srgb,#d9a05f 40%,transparent)}
+  #namecard .nsrc{margin-top:9px;font-size:10.5px;line-height:1.5;color:var(--inkFaint)}
   #namecard .nmean{margin-top:12px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--gold) 10%,transparent);border-left:2px solid var(--gold)}
   #namecard .nmean .k{display:block;font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--inkFaint);margin-bottom:3px}
   #namecard .nmean b{font-size:14.5px;color:var(--ink)}
@@ -318,7 +341,10 @@
     </div>
     <div>
       <div class="lab">Поиск</div>
-      <input id="q" type="text" placeholder="Найти имя, место, ссылку…" autocomplete="off" aria-label="Поиск">
+      <div id="qwrap">
+        <input id="q" type="text" placeholder="Найти имя, место, ссылку…" autocomplete="off" aria-label="Поиск" role="combobox" aria-expanded="false" aria-controls="qdrop">
+        <div id="qdrop" role="listbox" aria-label="Найденные имена"></div>
+      </div>
     </div>
     <div>
       <div class="lab">Фильтры</div>
@@ -740,19 +766,62 @@ ATLAS.quickLinks.forEach(l=>{
 document.getElementById('legend').innerHTML=ATLAS.legend.map(l=>
   `<span class="li"><span class="sw ${l.swatch==='dashed'?'dashed':''}" style="border-color:${l.color}"></span>${l.ru}</span>`).join('');
 
-// ── поиск: карточки + строки списков ──
-const q=document.getElementById('q');
-let hits=[];
+// ── поиск: карточки + строки списков + полный лексикон этимологий ──
+const q=document.getElementById('q'),qdrop=document.getElementById('qdrop');
+const LEX=ATLAS.lexAll||[];
+let hits=[],lexHits=[];
+const CONF_RU={certain:'этимология надёжна',probable:'вероятная этимология',disputed:'спорная этимология'};
+const escL=s=>String(s).replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]));
+function openLex(i){
+  const e=LEX[i];if(!e)return;
+  const esc=escL;
+  document.querySelectorAll('.card.sel').forEach(x=>x.classList.remove('sel'));
+  let h=`<div class="nname">${esc(e.ru)}${e.heb?`<span class="nheb"> ${esc(e.heb)}</span>`:''}</div>`;
+  if(e.tr)h+=`<div class="ntr">${esc(e.tr)}</div>`;
+  if(e.mean)h+=`<div class="nmean"><span class="k">Что значит имя</span><b>«${esc(e.mean)}»</b></div>`;
+  if(e.note)h+=`<div class="nnote">${esc(e.note)}</div>`;
+  const meta=[];if(e.ref)meta.push('Первое упоминание: '+e.ref);
+  if(meta.length)h+=`<div class="nmeta">${meta.map(m=>`<span>${esc(m)}</span>`).join('')}</div>`;
+  if(e.conf&&CONF_RU[e.conf])h+=`<span class="nconf c-${esc(e.conf)}">${CONF_RU[e.conf]}</span>`;
+  if(e.src&&e.src.length)h+=`<div class="nsrc">Источники: ${e.src.map(esc).join(' · ')}</div>`;
+  nameBody.innerHTML=h;
+  nameEl.classList.add('show');
+}
+function qClose(){qdrop.classList.remove('open');qdrop.innerHTML='';q.setAttribute('aria-expanded','false');}
+function norm(s){return String(s).toLowerCase().replace(/ё/g,'е');}
 q.addEventListener('input',()=>{
-  const v=q.value.trim().toLowerCase();hits=[];
+  const v=norm(q.value.trim());hits=[];lexHits=[];
   for(const c of cards.values()){
-    const inRows=(c.data.rows||[]).some(r=>r.toLowerCase().includes(v));
-    const hit=v&&(c.title.toLowerCase().includes(v)||inRows);
+    const inRows=(c.data.rows||[]).some(r=>norm(r).includes(v));
+    const hit=v&&(norm(c.title).includes(v)||inRows);
     c.el.classList.toggle('dim',!!v&&!hit);
     if(hit)hits.push(c.id);
   }
+  if(v.length>=2){
+    for(let i=0;i<LEX.length;i++){
+      const e=LEX[i];
+      if(norm(e.ru).includes(v)||(e.tr&&norm(e.tr).includes(v))||(e.mean&&norm(e.mean).includes(v)))lexHits.push(i);
+      if(lexHits.length>=30)break;
+    }
+  }
+  if(lexHits.length){
+    const top=lexHits.slice(0,8);
+    qdrop.innerHTML='<div class="qhdr">Имена и значения · '+lexHits.length+(lexHits.length>=30?'+':'')+'</div>'+
+      top.map(i=>{const e=LEX[i];
+        return `<button class="qi" data-lex="${i}" role="option"><span class="qn">${escL(e.ru)}${e.heb?`<span class="qh">${escL(e.heb)}</span>`:''}</span><span class="qm">${e.mean?'«'+escL(e.mean)+'»':''}${e.ref?' <i>· '+escL(e.ref)+'</i>':''}</span></button>`;}).join('')+
+      (lexHits.length>8?'<div class="qmore">… уточните запрос, чтобы сузить список</div>':'');
+    qdrop.classList.add('open');q.setAttribute('aria-expanded','true');
+    qdrop.querySelectorAll('[data-lex]').forEach(b=>b.addEventListener('click',()=>{openLex(+b.dataset.lex);qClose();}));
+  } else qClose();
 });
-q.addEventListener('keydown',e=>{if(e.key==='Enter'&&hits.length){e.preventDefault();flyTo(hits[0],true);}});
+q.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();
+    if(hits.length)flyTo(hits[0],true);
+    else if(lexHits.length){openLex(lexHits[0]);qClose();}
+  }
+  if(e.key==='Escape')qClose();
+});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#qwrap'))qClose();});
 
 // ── фильтры-чипы ──
 function chip(id,fn){const el=document.getElementById(id);el.addEventListener('click',()=>{const on=el.getAttribute('aria-pressed')!=='true';el.setAttribute('aria-pressed',on);fn(on);});}
