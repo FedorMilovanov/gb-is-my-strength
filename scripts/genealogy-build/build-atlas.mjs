@@ -93,7 +93,7 @@ async function coverageStats() {
       { done: false, ru: `Объяснения имён: ${etyN} готово, ещё ~${persons - etyN} без иврита/значения` },
       { done: false, ru: `Изолированные персоны (без связей в графе): ${c.isolatedPersons ?? '—'} — предстоит связать` },
       { done: false, ru: 'Трассировка народов до сынов Ноя (Сим/Хам/Иафет) через (d)-маркеры TIPNR' },
-      { done: false, ru: 'Раскрытие кластеров на месте по клику (полные списки имён)' },
+      { done: true,  ru: 'Раскрытие кластеров по клику — реальные имена со стихами' },
       { done: true,  ru: `Русские имена: ${c.ruCoveragePct ?? 100}% (${persons} персон)` },
       { done: true,  ru: `Народы размечены по достоверности: ${conf.certain}·${conf.probable}·${conf.disputed}·${conf.obscure}` },
       { done: true,  ru: 'Защита от мифов (mythWatch) на спорных отождествлениях' },
@@ -110,15 +110,28 @@ const C = {
   relatives: '#a8683f', exile: '#7a5e46', returned: '#4f7a4a', after: '#6e5c3d',
 };
 
-// ── обогащение именами (иврит, транслит, значение, этимология) из genealogy-graph.json ──
-// Данные уже выверены (теофорная разметка + переименования). Читаем детерминированно.
+// ── обогащение именами (иврит, транслит, значение, этимология) ──
+// Источники: genealogy-graph.json (выверенный хребет) + name-etymology.json (ядро 70 имён).
+// Читаем детерминированно.
 async function nameLexicon() {
   try {
     const g = JSON.parse(await readFile(path.join(OUT, 'build', 'genealogy-graph.json'), 'utf8'));
     const m = new Map();
+    // сначала этимологический слой (ядро 70) — по key
+    try {
+      const ety = JSON.parse(await readFile(path.join(OUT, 'name-etymology.json'), 'utf8'));
+      for (const e of ety.entries || []) {
+        if (!e.key) continue;
+        m.set(e.key, { heb: e.heb ?? null, translit: e.translit ?? null, meaning: e.meaningRu ?? null, note: e.note ?? null, am: null, bc: null });
+      }
+    } catch {}
+    // затем graph-узлы (перекрывают/дополняют am/bc и т.п.)
     for (const nd of g.nodes) {
       if (!nd.key) continue;
-      m.set(nd.key, { heb: nd.heb ?? null, translit: nd.translit ?? null, meaning: nd.meaning ?? null, note: nd.note ?? null, am: nd.am ?? null, bc: nd.bc ?? null });
+      const prev = m.get(nd.key) || {};
+      m.set(nd.key, { heb: nd.heb ?? prev.heb ?? null, translit: nd.translit ?? prev.translit ?? null,
+        meaning: nd.meaning ?? prev.meaning ?? null, note: nd.note ?? prev.note ?? null,
+        am: nd.am ?? prev.am ?? null, bc: nd.bc ?? prev.bc ?? null });
     }
     return m;
   } catch { return new Map(); }
@@ -168,14 +181,23 @@ async function main() {
     { id: 'br-shem',    x: 770, y: 190, icon: 'scroll',  ru: 'Сим',   gold: '26 народов', color: '#9a7b3c', region: 'Месопотамия · Аравия · Сирия — семиты',        anchor: 'nations', minK: 0.5 },
   ];
 
-  // ── 12 колен: карточка-список слева от Иакова ──
-  const tribesRows = ['Рувим', 'Симеон', 'Левий', 'Иуда', 'Дан', 'Неффалим'];
+  // ── 12 колен: полный список со значениями имён (библейские этимологии Быт 29–35) ──
+  const TRIBE_KEYS = ['Reuben@Gen.29.32','Simeon@Gen.29.33','Levi@Gen.29.34','Judah@Gen.29.35',
+    'Dan@Gen.30.6','Naphtali@Gen.30.8','Gad@Gen.30.11','Asher@Gen.30.13','Issachar@Gen.30.18',
+    'Zebulun@Gen.30.20','Joseph@Gen.30.24','Benjamin@Gen.35.18'];
+  const TRIBE_RU = { Reuben:'Рувим', Simeon:'Симеон', Levi:'Левий', Judah:'Иуда', Dan:'Дан',
+    Naphtali:'Неффалим', Gad:'Гад', Asher:'Асир', Issachar:'Иссахар', Zebulun:'Завулон',
+    Joseph:'Иосиф', Benjamin:'Вениамин' };
+  const refRu = ref => ref.replace(/^Gen\.(\d+)\.(\d+)$/, 'Быт $1:$2');
+  const tribesFull = TRIBE_KEYS.map(k => { const e = L(k); const en = k.split('@')[0];
+    return { ru: TRIBE_RU[en], heb: e.heb || null, meaning: e.meaning || null, note: e.note || null, refRu: refRu(k.split('@')[1]) }; });
+  const tribesRows = tribesFull.slice(0, 6).map(t => t.ru);
   // ── Матфей 1 / Лука 3: карточки-свитки родословий Господа ──
   const mtRows = ['Авраам', 'Исаак', 'Иаков', 'Иуда и братья его', 'Фарес', 'Есром'];
   const lkRows = ['Адам', 'Сиф', 'Енос', 'Каинан', 'Малелеил', 'Иаред'];
   const listCards = [
     { id: 'tribes12', x: XL, y: 560, icon: 'tribes', ru: '12 колен Израиля', sub: 'сыновья Иакова', rows: tribesRows,
-      more: '… ещё 6 колен', color: C.tribes, anchor: 'jacob', minK: 0 },
+      more: '… ещё 6 колен', color: C.tribes, anchor: 'jacob', minK: 0, tribes: tribesFull },
     { id: 'matthew1', x: XL, y: 1210, icon: 'book', ru: 'Матфей 1', sub: 'Авраам → Давид → Иисус', rows: mtRows,
       more: '… 42 поколения (3×14)', footer: 'Иосиф, муж Марии', color: C.matthew, anchor: 'jesus', minK: 0, dashed: true },
     { id: 'luke3', x: XR, y: 1210, icon: 'scroll', ru: 'Лука 3', sub: 'Адам → Иисус · 77 поколений', rows: lkRows,
