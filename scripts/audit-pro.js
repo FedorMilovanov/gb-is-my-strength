@@ -980,6 +980,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
     // (DEBT-REGISTER 2026-07-12 «пересборка листов + экспорт»), не для <img>.
     'images/atlas-export/avraam-hires.png',
     'images/atlas-export/avraam-preview.png',
+    'images/atlas-export/shvatim-hires.png',
+    'images/atlas-export/shvatim-preview.png',
   ]);
   const offenders = [];
   function walkImg(dir) {
