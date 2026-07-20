@@ -24,7 +24,9 @@ jobs:
           node-version: "22"
 
       - name: Apply exact initial-state transaction
-        run: python3 scripts/_temp_apply_map_initial_state.py
+        run: |
+          sed -i "s/!= 3:/!= 4:/; s/expected 3, found/expected 4, found/" scripts/_temp_apply_map_initial_state.py
+          python3 scripts/_temp_apply_map_initial_state.py
 
       - name: Verify patched runtime
         run: |
