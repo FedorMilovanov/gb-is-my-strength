@@ -23,7 +23,7 @@ export const ASSET_VERSIONS = {
   'js/nagornaya-mobile-toc.js': '649d9217',
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': 'b0fd43b8',
-  'js/site-utils.js': 'f6c1f247',
+  'js/site-utils.js': '5ed472a0',
   'js/site.js': '69fffb41',
   'js/sw-register.js': '7a8bd1e7',
   'nagornaya/tw.min.css': '2670414e',

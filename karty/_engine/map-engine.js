@@ -357,6 +357,10 @@ const MapEngine = (function() {
     let dragState = null;
     let tourTimer = null;
     let view = {x:0, y:0, w:cfg.W0, h:cfg.H0};
+
+    function getState() {
+      return { place: activePlaceId, story: activeStoryId };
+    }
     
     // Cleanup tracking
     const _listeners = [];
@@ -837,14 +841,21 @@ _on(searchInput,'input',()=>{
   searchTimer = setTimeout(() => {
     const q = searchInput.value.toLowerCase().trim();
     const allG = markersG.querySelectorAll('g[transform]');
-    if (!q) { allG.forEach(g => { g.style.opacity = ''; }); return; }
+    if (!q) {
+      const visibleIds = new Set(visiblePlaces().map(p => p.id));
+      allG.forEach(g => {
+        const placeId = g.getAttribute('data-place-id');
+        g.style.opacity = !placeId || visibleIds.has(placeId) ? '1' : '.15';
+      });
+      return;
+    }
     let matchCount = 0;
     allG.forEach(g => {
+      const placeId = g.getAttribute('data-place-id');
       const text = g.querySelector('text');
       let match = false;
       if (text && text.textContent && text.textContent.toLowerCase().includes(q)) match = true;
       if (!match) {
-        const placeId = g.getAttribute('data-place-id');
         if (placeId) {
           const place = (route.places||[]).find(p => p.id === placeId);
           if (place) {
@@ -860,7 +871,11 @@ _on(searchInput,'input',()=>{
         if (labelEl) {
           labelEl.setAttribute('fill', '#e8c879');
           labelEl.setAttribute('font-weight', '700');
-          _tm(() => { labelEl.setAttribute('fill', inStory?'#f4eedd':'#555'); labelEl.setAttribute('font-weight',''); }, 3000);
+          _tm(() => {
+            const markerStillInStory = !placeId || visiblePlaces().some(p => p.id === placeId);
+            labelEl.setAttribute('fill', markerStillInStory ? '#f4eedd' : '#555');
+            labelEl.setAttribute('font-weight','');
+          }, 3000);
         }
       }
       if (match) matchCount++;
@@ -1001,26 +1016,30 @@ header.appendChild(shareBtn);
     container.appendChild(zoomControls);
     // Zoom with hold-to-repeat
     let zoomRepeatTimer = null;
+    let suppressZoomClickUntil = 0;
+    function zoomOnce(dir) {
+      const cx=view.x+view.w/2,cy=view.y+view.h/2;
+      const nw=dir==='in'?Math.max(cfg.minW,view.w*0.85):Math.min(cfg.maxW,view.w*1.15);
+      flyTo(cx,cy,nw,150);
+    }
     function startZoomRepeat(dir) {
-      const doZoom = () => {
-        if (zoomRepeatTimer === null) return;
-        const cx=view.x+view.w/2,cy=view.y+view.h/2;
-        const nw=dir==='in'?Math.max(cfg.minW,view.w*0.85):Math.min(cfg.maxW,view.w*1.15);
-        flyTo(cx,cy,nw,150);
-      };
-      doZoom();
-      zoomRepeatTimer = setInterval(doZoom, 120);
+      zoomOnce(dir);
+      zoomRepeatTimer = setInterval(() => zoomOnce(dir), 120);
     }
     function stopZoomRepeat() { if (zoomRepeatTimer) { clearInterval(zoomRepeatTimer); zoomRepeatTimer = null; } }
     ['in','out'].forEach(dir => {
       const btn = zoomControls.querySelector('[data-zoom='+dir+']');
       if (!btn) return;
-      _on(btn, 'mousedown', (e) => { e.preventDefault(); startZoomRepeat(dir); });
+      _on(btn, 'mousedown', (e) => { e.preventDefault(); suppressZoomClickUntil=Date.now()+800; startZoomRepeat(dir); });
       _on(btn, 'mouseup', stopZoomRepeat);
       _on(btn, 'mouseleave', stopZoomRepeat);
-      _on(btn, 'touchstart', (e) => { e.preventDefault(); startZoomRepeat(dir); });
+      _on(btn, 'touchstart', (e) => { e.preventDefault(); suppressZoomClickUntil=Date.now()+800; startZoomRepeat(dir); });
       _on(btn, 'touchend', stopZoomRepeat);
-      _on(btn, 'click', (e) => { e.preventDefault(); }); // Prevent double-fire
+      _on(btn, 'click', (e) => {
+        e.preventDefault();
+        if(Date.now()<suppressZoomClickUntil)return;
+        zoomOnce(dir);
+      });
     });
     _on(zoomControls.querySelector('[data-zoom=reset]'),'click',()=>{
       const initVp=route.meta?.viewport_init||{cx:cfg.W0/2,cy:cfg.H0/2,w:cfg.W0};
@@ -1291,7 +1310,10 @@ container.appendChild(panel);
 
       // Stage paths
       const stagePaths=Array.from({length:(route.stages||[]).length},()=>[]);
-      allPlaces.forEach(p=>{if(typeof p.stage==='number')stagePaths[p.stage]=stagePaths[p.stage]||[];stagePaths[p.stage].push(p)});
+      allPlaces.forEach(p=>{
+        if(!Number.isInteger(p.stage)||p.stage<0||p.stage>=stagePaths.length)return;
+        stagePaths[p.stage].push(p);
+      });
       stagePaths.forEach((places,i)=>{
         if(places.length<2)return;
         const d=places.map((p,j)=>`${j===0?'M':'L'}${p.x},${p.y}`).join(' ');
