@@ -1,0 +1,41 @@
+name: TEMP cache-bust repair
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.head_ref == 'lane/system-map-engine-p0-runtime-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Regenerate asset revisions
+        run: |
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Commit generated revision sync
+        run: |
+          if git diff --quiet; then
+            echo "Asset revisions already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "[LANE lane/system-map-engine-p0-runtime-2026-07-21] fix(release): sync site-utils asset revision"
+          git push origin HEAD:lane/system-map-engine-p0-runtime-2026-07-21
