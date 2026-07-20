@@ -15,7 +15,7 @@ const route = {
   ],
   stages: [{}, {}],
   stories: [
-    { id: 'main', label: 'Main', active_by_default: true, places: ['a', 'b', 'c'] },
+    { id: 'main', label: 'Main', active_by_default: true, places: ['a'] },
     { id: 'sinai', label: 'Sinai', places: ['b', 'c'], viewport: [800, 460, 700] },
   ],
 };
