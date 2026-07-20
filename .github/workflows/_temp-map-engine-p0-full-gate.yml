@@ -27,7 +27,13 @@ jobs:
         run: npm ci
 
       - name: Static publication barrier
-        run: npm run validate:static-publication
+        shell: bash
+        run: |
+          set +e
+          npm run validate:static-publication > /tmp/static-publication.log 2>&1
+          status=$?
+          tail -n 240 /tmp/static-publication.log
+          exit "$status"
 
       - name: Shared files barrier
         run: npm run guard:shared-files
