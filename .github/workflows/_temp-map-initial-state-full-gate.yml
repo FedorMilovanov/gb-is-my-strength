@@ -46,3 +46,21 @@ jobs:
 
       - name: Shared files barrier
         run: npm run guard:shared-files
+
+      - name: Build production-like browser target
+        run: npm run strangler:build:production-like
+
+      - name: Install Chromium
+        run: npx playwright install chromium
+
+      - name: Browser deep-link witnesses
+        shell: bash
+        run: |
+          python3 -m http.server 8090 --directory dist >/tmp/map-initial-state-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8090/karty/ishod/ >/dev/null; then break; fi
+            sleep 1
+          done
+          AUDIT_BASE=http://127.0.0.1:8090 node scripts/map-initial-state-browser-smoke.js
