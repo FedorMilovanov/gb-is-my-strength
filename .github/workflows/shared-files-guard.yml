@@ -28,6 +28,9 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Runtime integrity regressions
+        run: node scripts/runtime-integrity-test.js
+
       - name: Guard shared/system files (strict on main/PR)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
         run: node scripts/guard-shared-files.js
