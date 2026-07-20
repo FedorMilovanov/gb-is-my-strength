@@ -31,6 +31,11 @@ jobs:
       - name: Runtime integrity regressions
         run: node scripts/runtime-integrity-test.js
 
+      - name: Map engine P0 regressions
+        run: |
+          node --check karty/_engine/map-engine.js
+          node scripts/map-engine-p0-regression-test.js
+
       - name: Guard shared/system files (strict on main/PR)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
         run: node scripts/guard-shared-files.js
