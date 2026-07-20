@@ -31,12 +31,10 @@ jobs:
           node --check karty/_engine/map-engine.js
           node scripts/map-engine-p0-regression-test.js
 
-      - name: Commit clean result
+      - name: Commit engine source only
         run: |
-          rm .github/workflows/_temp-map-engine-p0-patcher.yml
-          rm scripts/_temp_apply_map_engine_p0.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add karty/_engine/map-engine.js scripts/map-engine-p0-regression-test.js .github/workflows/shared-files-guard.yml .github/workflows/_temp-map-engine-p0-patcher.yml scripts/_temp_apply_map_engine_p0.py
+          git add karty/_engine/map-engine.js
           git commit -m "[LANE lane/system-map-engine-p0-runtime-2026-07-21] fix(karty): close runtime map P0 crashes"
           git push origin HEAD:lane/system-map-engine-p0-runtime-2026-07-21
