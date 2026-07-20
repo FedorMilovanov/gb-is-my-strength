@@ -317,9 +317,10 @@ const MapEngine = (function() {
     const hash=new URLSearchParams(String(locationLike.hash||'').replace(/^#/,''));
     const queryHas=query.has('story')||query.has('place');
     const hashHas=hash.has('story')||hash.has('place');
+    const sourceParams=queryHas?query:hash;
     const normalized=_normalizeMapStateCandidate(route,{
-      story:query.get('story')||hash.get('story'),
-      place:query.get('place')||hash.get('place')
+      story:sourceParams.get('story'),
+      place:sourceParams.get('place')
     },_defaultStoryId(route));
     return {...normalized,hasExplicit:queryHas||hashHas,source:queryHas?'query':(hashHas?'hash':'default')};
   }
@@ -459,11 +460,14 @@ const MapEngine = (function() {
       document.body.style.overflow = '';
     }
     const initVp = initialState.viewport || [cfg.W0/2,cfg.H0/2,cfg.W0];
-    const initW=clamp(Number(initVp[2])||cfg.W0,cfg.minW,cfg.maxW);
+    const rawCx=Number(initVp[0]),rawCy=Number(initVp[1]),rawW=Number(initVp[2]);
+    const initCx=Number.isFinite(rawCx)?rawCx:cfg.W0/2;
+    const initCy=Number.isFinite(rawCy)?rawCy:cfg.H0/2;
+    const initW=clamp(Number.isFinite(rawW)&&rawW>0?rawW:cfg.W0,cfg.minW,cfg.maxW);
     const initH=initW*cfg.H0/cfg.W0;
     view={
-      x:clamp((Number(initVp[0])||cfg.W0/2)-initW/2,-cfg.padX,cfg.W0+cfg.padX-initW),
-      y:clamp((Number(initVp[1])||cfg.H0/2)-initH/2,-cfg.padY,cfg.H0+cfg.padY-initH),
+      x:clamp(initCx-initW/2,-cfg.padX,cfg.W0+cfg.padX-initW),
+      y:clamp(initCy-initH/2,-cfg.padY,cfg.H0+cfg.padY-initH),
       w:initW,h:initH
     };
 
