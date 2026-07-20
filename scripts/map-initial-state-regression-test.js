@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const MapEngine = require('../karty/_engine/map-engine.js');
 
+const root = path.join(__dirname, '..');
 const route = {
   meta: { id: 'fixture', viewport_init: { cx: 500, cy: 400, w: 1200 } },
   places: [
@@ -20,13 +21,8 @@ const route = {
   ],
 };
 
-function locationFixture({ search = '', hash = '' } = {}) {
-  return {
-    origin: 'https://gospod-bog.ru',
-    pathname: '/karty/test/',
-    search,
-    hash,
-  };
+function locationFixture({ search = '', hash = '', pathname = '/karty/test/' } = {}) {
+  return { origin: 'https://gospod-bog.ru', pathname, search, hash };
 }
 
 const query = MapEngine.parseMapStateFromLocation(route, locationFixture({
@@ -37,6 +33,16 @@ assert.deepStrictEqual(
   { story: query.story, place: query.place, source: query.source, hasExplicit: query.hasExplicit },
   { story: 'sinai', place: 'b', source: 'query', hasExplicit: true },
   'query parameters must win over legacy hash values'
+);
+
+const atomicQuery = MapEngine.parseMapStateFromLocation(route, locationFixture({
+  search: '?story=sinai',
+  hash: '#story=main&place=a',
+}));
+assert.deepStrictEqual(
+  { story: atomicQuery.story, place: atomicQuery.place, source: atomicQuery.source },
+  { story: 'sinai', place: null, source: 'query' },
+  'query and legacy hash must never be mixed into one state'
 );
 
 const legacyHash = MapEngine.parseMapStateFromLocation(route, locationFixture({
@@ -61,11 +67,7 @@ assert.strictEqual(explicitWins.source, 'query');
 assert.strictEqual(explicitWins.story, 'sinai');
 assert.strictEqual(explicitWins.place, 'c');
 
-const savedWins = MapEngine.resolveInitialMapState(
-  route,
-  locationFixture(),
-  { story: 'sinai', place: 'b' }
-);
+const savedWins = MapEngine.resolveInitialMapState(route, locationFixture(), { story: 'sinai', place: 'b' });
 assert.strictEqual(savedWins.source, 'saved');
 assert.strictEqual(savedWins.story, 'sinai');
 assert.strictEqual(savedWins.place, 'b');
@@ -85,7 +87,19 @@ assert.strictEqual(
   'share/runtime URL must use query parameters, preserve unrelated query data and remove legacy map hash'
 );
 
-const source = fs.readFileSync(path.join(__dirname, '../karty/_engine/map-engine.js'), 'utf8');
+for (const rel of ['karty/ishod/route.json', 'karty/pavel/route.json']) {
+  const actual = JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8'));
+  const stories = actual.stories || [];
+  const target = stories.find((story) => story && story.id && story.id !== 'main') || stories[0];
+  const resolvedDefault = MapEngine.resolveInitialMapState(actual, locationFixture(), null);
+  assert(Array.isArray(resolvedDefault.viewport) && resolvedDefault.viewport.length >= 3, `${rel}: default viewport must resolve`);
+  if (target) {
+    const parsed = MapEngine.parseMapStateFromLocation(actual, locationFixture({ search: `?story=${encodeURIComponent(target.id)}` }));
+    assert.strictEqual(parsed.story, target.id, `${rel}: query story must select a real route story`);
+  }
+}
+
+const source = fs.readFileSync(path.join(root, 'karty/_engine/map-engine.js'), 'utf8');
 assert(source.includes('const initialState = resolveInitialMapState(route, location, savedInitialState);'));
 assert(source.includes('let activeStoryId = initialState.story;'));
 assert(!source.includes('function loadFromHash()'), 'split hash-only initialization must be removed');
