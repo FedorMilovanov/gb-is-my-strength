@@ -1,0 +1,92 @@
+name: TEMP reader R1 browser proof
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  engine-sweep:
+    if: github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npx playwright install chromium
+          browser_path="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          test -x "$browser_path"
+          sudo mkdir -p /opt/pw-browsers
+          sudo ln -sfn "$browser_path" /opt/pw-browsers/chromium
+          test -x /opt/pw-browsers/chromium
+      - name: Build production-like target
+        run: npm run strangler:build:production-like
+      - name: Run functional engine sweep with diagnostics
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=30s 20m npm run engine:sweep 2>&1 | tee reader-engine-sweep.log
+      - name: Upload engine diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r1-engine-sweep-proof
+          path: reader-engine-sweep.log
+          if-no-files-found: warn
+          retention-days: 1
+
+  cross-engine-matrix:
+    if: github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Build production-like target
+        run: npm run strangler:build:production-like
+      - name: Run cross-engine browser matrix
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -m http.server 8090 --directory dist > reader-browser-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8090/articles/dzhon-gill-chast-1-chelovek/ >/dev/null; then
+              ready=1
+              break
+            fi
+            echo "server not ready: attempt $attempt"
+            sleep 1
+          done
+          test "$ready" -eq 1
+          timeout --signal=TERM --kill-after=30s 20m env AUDIT_BASE=http://127.0.0.1:8090 node scripts/reader-preferences-browser-smoke.js 2>&1 | tee reader-preferences-browser.log
+      - name: Upload browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r1-cross-engine-proof
+          path: |
+            reader-preferences-browser.log
+            reader-browser-server.log
+          if-no-files-found: warn
+          retention-days: 1
