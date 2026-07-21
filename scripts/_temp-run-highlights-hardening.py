@@ -106,7 +106,7 @@ def main() -> None:
         return
     try:
         transaction()
-    except Exception:
+    except BaseException:
         persist_diagnostic()
         raise
 
