@@ -2,7 +2,7 @@
 
 ## Status
 
-Map panel + nested photo ownership is the active implementation cluster. MindMap3D and built-output verification remain separate follow-up commits in this PR.
+Map panel + nested photo ownership is the active implementation cluster. Chromium has verified the nested lifecycle and exact restoration. The final source transaction also removes the legacy `_cleanupAll()` body-overflow reset before the map cluster is committed. MindMap3D and built-output verification remain separate follow-up commits in this PR.
 
 ## Source boundary
 
@@ -16,6 +16,7 @@ Map panel + nested photo ownership is the active implementation cluster. MindMap
    - place panel writes `document.body.style.overflow` directly;
    - photo modal has an independent Escape handler;
    - panel has a route-local focus trap and Escape handler;
+   - `_cleanupAll()` performs an unconditional legacy body-overflow reset;
    - `destroy()` does not release overlay ownership.
 2. `_build-tools/konfessii-baptizm/MindMap3D.tsx`
    - fullscreen effect writes html/body overflow and body overscroll directly.
@@ -27,6 +28,7 @@ Map panel + nested photo ownership is the active implementation cluster. MindMap
 - photo modal is the top layer over an open place panel;
 - Escape closes only the top runtime layer;
 - closing the final owner restores exact styles, scroll and opener focus;
+- `_cleanupAll()` never releases another overlay’s lock;
 - `destroy()` releases only the map instance’s owners;
 - MindMap3D fullscreen uses a named canonical scroll token.
 
