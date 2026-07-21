@@ -19,7 +19,15 @@ jobs:
           node <<'JS'
           const fs = require('fs');
           const path = require('path');
+          const { execFileSync } = require('child_process');
           const { loadRouteRecords } = require(path.resolve('scripts/lib/effective-route-registry'));
+
+          const SERIES_FACADE = 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+          const HISTORICAL_SERIES_IMPL = 'src/components/article-pilots/gill-series/GillSeriesChrome.astro';
+          const BOOK_CONFIG = 'src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts';
+          const SERIES_TYPES = new Set(['series-article', 'series-chapter']);
+          const SPECIAL_TYPES = new Set(['map', 'map-landing', 'confession', 'genealogy']);
+          const SERIES_INDEX_ROUTES = new Set(['/baptisty-rossii/', '/nagornaya/']);
 
           const loaded = loadRouteRecords();
           const mobileRegistryPath = 'src/components/article-pilots/_shared/mobileChromeRegistry.ts';
@@ -39,31 +47,90 @@ jobs:
             });
           }
 
+          function buildAdjacency(imports) {
+            const adjacency = new Map();
+            for (const item of imports || []) {
+              if (!item.importer || !item.resolved) continue;
+              if (!adjacency.has(item.importer)) adjacency.set(item.importer, []);
+              adjacency.get(item.importer).push(item.resolved);
+            }
+            return adjacency;
+          }
+
+          function shortestDistance(adjacency, start, target) {
+            if (!start || !target) return null;
+            if (start === target) return 0;
+            const queue = [[start, 0]];
+            const seen = new Set([start]);
+            while (queue.length) {
+              const [node, distance] = queue.shift();
+              for (const next of adjacency.get(node) || []) {
+                if (seen.has(next)) continue;
+                if (next === target) return distance + 1;
+                seen.add(next);
+                queue.push([next, distance + 1]);
+              }
+            }
+            return null;
+          }
+
+          function candidateSurface(route, owner, routeType, usesSeriesFacade) {
+            if (owner === 'built-app' || SPECIAL_TYPES.has(routeType)) return 'special';
+            if (SERIES_TYPES.has(routeType) || SERIES_INDEX_ROUTES.has(route) || usesSeriesFacade) return 'series';
+            if (routeType === 'article') return 'article';
+            return 'page';
+          }
+
+          function classificationBasis(route, owner, routeType, usesSeriesFacade) {
+            if (owner === 'built-app') return 'owner:built-app';
+            if (SPECIAL_TYPES.has(routeType)) return `routeType:${routeType}`;
+            if (SERIES_TYPES.has(routeType)) return `routeType:${routeType}`;
+            if (SERIES_INDEX_ROUTES.has(route)) return 'explicit-series-index';
+            if (usesSeriesFacade) return 'resolved-import:SeriesReaderChrome';
+            if (routeType === 'article') return 'routeType:article';
+            return `page-fallback:${routeType || 'missing-routeType'}`;
+          }
+
           const rows = loaded.records.map((record) => {
-            const files = record.inspection?.files || [];
-            const sourceText = files
-              .filter((file) => fs.existsSync(file))
-              .map((file) => fs.readFileSync(file, 'utf8'))
-              .join('\n');
-            const usesSeriesFacade = /SeriesReaderChrome/.test(sourceText);
-            const usesHistoricalSeriesImpl = /GillSeriesChrome/.test(sourceText);
-            const usesBookConfig = /hardTextsSeriesConfig|HARD_TEXTS_SERIES|shape\s*:\s*['"]book['"]/.test(sourceText);
+            const imports = record.inspection?.imports || [];
+            const adjacency = buildAdjacency(imports);
+            const facadeDistance = shortestDistance(adjacency, record.sourceRel, SERIES_FACADE);
+            const bookConfigDistance = shortestDistance(adjacency, record.sourceRel, BOOK_CONFIG);
+            const usesSeriesFacade = facadeDistance !== null;
+            const usesBookConfig = bookConfigDistance !== null;
+            const historicalLeaks = imports
+              .filter((item) => item.resolved === HISTORICAL_SERIES_IMPL && item.importer !== SERIES_FACADE)
+              .map((item) => `${item.importer} -> ${item.resolved}`);
+            const configImports = [...new Set(imports
+              .filter((item) => item.importer !== SERIES_FACADE)
+              .map((item) => item.resolved)
+              .filter((resolved) => /\/series\/[^/]*(?:SeriesConfig|seriesConfig)\.(?:ts|js)$/.test(resolved || ''))
+            )].sort();
             const profile = record.profile || {};
             const owner = record.owner || {};
+            const routeType = profile.routeType || null;
+            const surfaceCandidate = candidateSurface(record.route, owner.owner || null, routeType, usesSeriesFacade);
+            const shapeCandidate = surfaceCandidate === 'series' ? (usesBookConfig ? 'book' : 'flat') : null;
             return {
               route: record.route,
               owner: owner.owner || null,
               status: owner.status || null,
               source: record.sourceRel || owner.source || null,
               profileFile: record.profileFile || null,
-              routeType: profile.routeType || null,
+              routeType,
               migrationMode: profile.migrationMode || record.matrix?.mode || null,
               visualMode: profile.visualMode || record.matrix?.visualMode || null,
+              declaredSurface: profile.surface || null,
+              declaredSeriesShape: profile.seriesShape || null,
               mobileChrome: profile.mobileChrome || mobileEntries.get(record.route) || null,
-              usesSeriesFacade,
-              usesHistoricalSeriesImpl,
-              usesBookConfig,
-              importFileCount: files.length,
+              surfaceCandidate,
+              shapeCandidate,
+              classificationBasis: classificationBasis(record.route, owner.owner || null, routeType, usesSeriesFacade),
+              seriesFacadeDistance: facadeDistance,
+              bookConfigDistance,
+              seriesConfigImports: configImports,
+              historicalImplementationLeaks: historicalLeaks,
+              importFileCount: record.inspection?.files?.length || 0,
             };
           }).sort((a, b) => a.route.localeCompare(b.route));
 
@@ -75,18 +142,22 @@ jobs:
 
           const report = {
             generatedAt: new Date().toISOString(),
-            sourceHead: process.env.GITHUB_SHA || null,
+            sourceHead: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
             routeCount: rows.length,
             counts: {
               owner: countBy('owner'),
               status: countBy('status'),
               routeType: countBy('routeType'),
               migrationMode: countBy('migrationMode'),
+              surfaceCandidate: countBy('surfaceCandidate'),
+              shapeCandidate: countBy('shapeCandidate'),
             },
             missingProfiles: rows.filter((r) => !r.profileFile).map((r) => r.route),
-            seriesFacadeRoutes: rows.filter((r) => r.usesSeriesFacade).map((r) => r.route),
-            bookRoutes: rows.filter((r) => r.usesBookConfig).map((r) => r.route),
-            historicalImplementationLeakRoutes: rows.filter((r) => r.usesHistoricalSeriesImpl && !r.usesSeriesFacade).map((r) => r.route),
+            missingOrUnknownRouteTypes: rows.filter((r) => !r.routeType || r.routeType === 'unknown').map((r) => r.route),
+            seriesFacadeRoutes: rows.filter((r) => r.seriesFacadeDistance !== null).map((r) => r.route),
+            bookRoutes: rows.filter((r) => r.bookConfigDistance !== null).map((r) => r.route),
+            historicalImplementationLeakRoutes: rows.filter((r) => r.historicalImplementationLeaks.length).map((r) => ({ route: r.route, leaks: r.historicalImplementationLeaks })),
+            undeclaredSurfaces: rows.filter((r) => !r.declaredSurface).map((r) => r.route),
             mobileRegistryRoutes: [...mobileEntries.entries()].map(([route, value]) => ({ route, ...value })),
             rows,
           };
@@ -99,30 +170,37 @@ jobs:
           md.push('');
           md.push(`- Routes: **${rows.length}**`);
           md.push(`- Missing profiles: **${report.missingProfiles.length}**`);
-          md.push(`- Series façade routes: **${report.seriesFacadeRoutes.length}**`);
-          md.push(`- Book routes: **${report.bookRoutes.length}**`);
+          md.push(`- Missing/unknown route types: **${report.missingOrUnknownRouteTypes.length}**`);
+          md.push(`- Exact SeriesReaderChrome routes: **${report.seriesFacadeRoutes.length}**`);
+          md.push(`- Exact book-config routes: **${report.bookRoutes.length}**`);
           md.push(`- Historical implementation leaks: **${report.historicalImplementationLeakRoutes.length}**`);
+          md.push(`- Profiles without declared surface: **${report.undeclaredSurfaces.length}**`);
           md.push('');
-          md.push('## routeType counts');
+          md.push('## Candidate surface counts');
           md.push('');
-          for (const [key, value] of Object.entries(report.counts.routeType)) md.push(`- \`${key}\`: ${value}`);
+          for (const [key, value] of Object.entries(report.counts.surfaceCandidate)) md.push(`- \`${key}\`: ${value}`);
           md.push('');
-          md.push('## migrationMode counts');
+          md.push('## Candidate series shapes');
           md.push('');
-          for (const [key, value] of Object.entries(report.counts.migrationMode)) md.push(`- \`${key}\`: ${value}`);
+          for (const [key, value] of Object.entries(report.counts.shapeCandidate)) md.push(`- \`${key}\`: ${value}`);
+          md.push('');
+          md.push('## Classification gaps');
+          md.push('');
+          for (const route of report.missingOrUnknownRouteTypes) md.push(`- \`${route}\``);
           md.push('');
           md.push('## Routes');
           md.push('');
-          md.push('| Route | Owner/status | routeType | mode | series | book | mobile |');
-          md.push('|---|---|---|---|---:|---:|---|');
+          md.push('| Route | routeType | candidate | shape | basis | façade d | book d | config source | mobile |');
+          md.push('|---|---|---|---|---|---:|---:|---|---|');
           for (const row of rows) {
             const mobile = row.mobileChrome ? JSON.stringify(row.mobileChrome).replaceAll('|', '\\|') : '';
-            md.push(`| \`${row.route}\` | ${row.owner || ''}/${row.status || ''} | ${row.routeType || ''} | ${row.migrationMode || ''} | ${row.usesSeriesFacade ? 'yes' : ''} | ${row.usesBookConfig ? 'yes' : ''} | ${mobile} |`);
+            const config = row.seriesConfigImports.join('<br>').replaceAll('|', '\\|');
+            md.push(`| \`${row.route}\` | ${row.routeType || ''} | **${row.surfaceCandidate}** | ${row.shapeCandidate || ''} | ${row.classificationBasis} | ${row.seriesFacadeDistance ?? ''} | ${row.bookConfigDistance ?? ''} | ${config} | ${mobile} |`);
           }
           fs.writeFileSync('reports/reader-r4-public-surface-inventory.md', md.join('\n') + '\n');
 
           console.log(JSON.stringify(report.counts, null, 2));
-          console.log(`Routes=${rows.length} missingProfiles=${report.missingProfiles.length} series=${report.seriesFacadeRoutes.length} book=${report.bookRoutes.length}`);
+          console.log(`Routes=${rows.length} gaps=${report.missingOrUnknownRouteTypes.length} series=${report.counts.surfaceCandidate.series || 0} article=${report.counts.surfaceCandidate.article || 0} page=${report.counts.surfaceCandidate.page || 0} special=${report.counts.surfaceCandidate.special || 0} book=${report.bookRoutes.length}`);
           JS
       - uses: actions/upload-artifact@v4
         with:
