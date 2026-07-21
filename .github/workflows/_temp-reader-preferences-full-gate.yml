@@ -27,10 +27,26 @@ jobs:
         run: npm ci
 
       - name: Reader and engine contracts
+        shell: bash
         run: |
-          node scripts/reader-preferences-regression-test.js
-          npm run engine:contracts
-          npm run engine:sweep
+          set +e
+          {
+            node scripts/reader-preferences-regression-test.js
+            npm run engine:contracts
+            npm run engine:sweep
+          } > reader-preferences-contracts.log 2>&1
+          status=$?
+          tail -n 140 reader-preferences-contracts.log
+          exit "$status"
+
+      - name: Upload contracts log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-preferences-contracts-log
+          path: reader-preferences-contracts.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Static publication barrier
         shell: bash
