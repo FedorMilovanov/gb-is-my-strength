@@ -40,18 +40,40 @@ jobs:
           echo '✅ Verification branch retains the exact merged special-runtime blobs'
 
       - name: Reproduce Pages production dist
+        id: build
         shell: bash
         run: |
-          set -euo pipefail
-          npm ci
-          node scripts/cache-bust.js
-          npm run validate:static-publication
-          npm run strangler:build:production-like
-          test -s dist/js/site.js
-          test -s dist/karty/_engine/map-engine.js
-          test -s dist/konfessii/russkij-baptizm/_app/index.html
+          set +e
+          mkdir -p reports
+          {
+            set -euo pipefail
+            npm ci
+            node scripts/cache-bust.js
+            npm run validate:static-publication
+            npm run strangler:build:production-like
+            test -s dist/js/site.js
+            test -s dist/karty/_engine/map-engine.js
+            test -s dist/konfessii/russkij-baptizm/_app/index.html
+          } > reports/special-overlay-pages-dist-build.log 2>&1
+          status=$?
+          cat reports/special-overlay-pages-dist-build.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload dist reproduction diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: special-overlay-pages-dist-build
+          path: reports/special-overlay-pages-dist-build.log
+          retention-days: 7
+
+      - name: Fail on dist reproduction error
+        if: steps.build.outputs.status != '0'
+        run: exit 1
 
       - name: Wait for public assets and compare with production dist
+        if: steps.build.outputs.status == '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -88,12 +110,6 @@ jobs:
               data = Path(path).read_bytes()
               return {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
 
-          assets = {
-              '/': {**digest('/tmp/gb-smoke/index.html'), 'http': 200},
-              '/js/site.js': {**digest('/tmp/gb-smoke/site.js'), 'exact_production_dist_match': True},
-              '/karty/_engine/map-engine.js': {**digest('/tmp/gb-smoke/map-engine.js'), 'exact_production_dist_match': True},
-              '/konfessii/russkij-baptizm/_app/index.html': {**digest('/tmp/gb-smoke/mindmap.html'), 'exact_production_dist_match': True},
-          }
           evidence = {
               'contract': 'special-overlay-production-smoke/v2',
               'verified_source_merge_sha': '39f6c3ac5851b6ded164f4de42b4e9dba1ca72e7',
@@ -101,7 +117,12 @@ jobs:
               'verified_at_utc': datetime.now(timezone.utc).isoformat(),
               'public_origin': 'https://gospod-bog.ru',
               'attempt': int(os.environ['ATTEMPT']),
-              'assets': assets,
+              'assets': {
+                  '/': {**digest('/tmp/gb-smoke/index.html'), 'http': 200},
+                  '/js/site.js': {**digest('/tmp/gb-smoke/site.js'), 'exact_production_dist_match': True},
+                  '/karty/_engine/map-engine.js': {**digest('/tmp/gb-smoke/map-engine.js'), 'exact_production_dist_match': True},
+                  '/konfessii/russkij-baptizm/_app/index.html': {**digest('/tmp/gb-smoke/mindmap.html'), 'exact_production_dist_match': True},
+              },
               'assertions': {
                   'main_contains_merge': True,
                   'current_source_blobs_equal_merge_blobs': True,
