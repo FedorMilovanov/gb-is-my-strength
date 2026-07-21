@@ -1,5 +1,9 @@
 # Special Overlay Adapters — issue #58 completion lane
 
+## Status
+
+Map panel + nested photo ownership is the active implementation cluster. MindMap3D and built-output verification remain separate follow-up commits in this PR.
+
 ## Source boundary
 
 - Base source: `43d8672f59128de816cfd47c638c132a73d71599` (Reader R5 merge).
