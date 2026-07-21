@@ -2,7 +2,7 @@ name: TEMP Special Map Overlay Commit
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [reopened]
     branches: [main]
 
 permissions:
