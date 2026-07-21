@@ -1,0 +1,62 @@
+name: TEMP reader R3 inventory
+
+on:
+  pull_request:
+    types: [synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    if: github.head_ref == 'lane/reader-r3-series-facade-2026-07-21'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inventory direct GillSeriesChrome consumers
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+          needle = 'GillSeriesChrome'
+          rows = []
+          for path in sorted(root.rglob('*')):
+            if not path.is_file() or any(part in {'.git', 'node_modules', 'dist'} for part in path.parts):
+              continue
+            try:
+              text = path.read_text(encoding='utf-8')
+            except Exception:
+              continue
+            if needle not in text:
+              continue
+            matches = []
+            for lineno, line in enumerate(text.splitlines(), 1):
+              if needle in line:
+                matches.append(f'{lineno}: {line.strip()}')
+            rows.append((str(path), matches))
+
+          out = ['# Reader R3 GillSeriesChrome inventory', '']
+          out.append(f'Files containing symbol: {len(rows)}')
+          out.append('')
+          for path, matches in rows:
+            out.append(f'## {path}')
+            out.extend(f'- {line}' for line in matches)
+            out.append('')
+
+          consumers = [path for path, _ in rows if path != 'src/components/article-pilots/gill-series/GillSeriesChrome.astro']
+          out.append('## Direct-consumer paths')
+          out.extend(f'- {path}' for path in consumers)
+          out.append('')
+          out.append(f'Direct consumers excluding implementation: {len(consumers)}')
+          Path('reader-r3-inventory.txt').write_text('\n'.join(out) + '\n', encoding='utf-8')
+          print('\n'.join(out))
+          PY
+      - name: Upload inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r3-series-import-inventory
+          path: reader-r3-inventory.txt
+          retention-days: 1
