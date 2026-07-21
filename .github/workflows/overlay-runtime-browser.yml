@@ -8,8 +8,13 @@ on:
       - "js/site-utils.js"
       - "js/site.js"
       - "js/floating-cluster-controller.js"
+      - "karty/_engine/map-engine.js"
+      - "_build-tools/konfessii-baptizm/MindMap3D.tsx"
+      - "konfessii/russkij-baptizm/_app/index.html"
       - "src/components/article-pilots/**"
       - "scripts/overlay-runtime-*.js"
+      - "scripts/map-overlay-runtime-browser-test.js"
+      - "scripts/special-overlay-*.js"
       - "scripts/runtime-integrity-test.js"
       - "package.json"
       - "package-lock.json"
@@ -26,7 +31,7 @@ jobs:
   browser:
     name: ${{ matrix.browser }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +45,7 @@ jobs:
       - run: npm ci
       - name: Install ${{ matrix.browser }}
         run: npx playwright install --with-deps ${{ matrix.browser }}
-      - name: Nested overlay browser matrix
+      - name: Full overlay browser matrix
         env:
           PW_BROWSER: ${{ matrix.browser }}
-        run: npm run overlay:browser:test
+        run: npm run overlay:browser:all
