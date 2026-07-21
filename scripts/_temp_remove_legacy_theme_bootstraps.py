@@ -11,6 +11,16 @@ HTML_COMMENT_RE = re.compile(r'(?:[ \t]*\n)?[ \t]*<!--\s*Anti-FOUC(?:\s*:[\s\S]*
 ASTRO_COMMENT_RE = re.compile(r'(?:[ \t]*\n)?[ \t]*\{/\*\s*Anti-FOUC[\s\S]*?\*/\}[ \t]*(?:\r?\n)?$', re.I)
 
 
+def replace_once(relative: str, old: str, new: str, label: str) -> None:
+    path = ROOT / relative
+    text = path.read_text(encoding='utf-8')
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(f'{label}: expected one exact match, found {count}')
+    path.write_text(text.replace(old, new, 1), encoding='utf-8')
+    print(f'patched {label}: {relative}')
+
+
 def iter_files():
     for suffix in ('*.astro', '*.html'):
         for path in ROOT.rglob(suffix):
@@ -30,6 +40,59 @@ def theme_matches(text: str):
             matches.append(match)
     return matches
 
+
+replace_once(
+    'scripts/reader-preferences-regression-test.js',
+    '''function importsPageHead(source) {
+  return /<[A-Z][A-Za-z0-9]*PageHead\\b/.test(source);
+}
+
+const astroTargets = [];
+''',
+    '''function importsPageHead(source) {
+  return /<[A-Z][A-Za-z0-9]*PageHead\\b/.test(source);
+}
+
+function hasLegacyThemeBootstrap(source) {
+  const scripts = /<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi;
+  for (const match of source.matchAll(scripts)) {
+    const body = match[1] || '';
+    if (/localStorage\\.getItem\\(\\s*['\"]theme['\"]\\s*\\)/.test(body) &&
+        /document\\.documentElement\\.(?:classList\\.(?:add|toggle)\\(\\s*['\"]dark['\"]|setAttribute\\(\\s*['\"]data-reader-theme['\"])/.test(body)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const astroTargets = [];
+''',
+    'permanent legacy bootstrap detector',
+)
+
+replace_once(
+    'scripts/reader-preferences-regression-test.js',
+    '''  astroTargets.push(file);
+  assert(source.includes('ReaderPreferencesHead'), `${path.relative(ROOT, file)} must import shared head preferences`);
+''',
+    '''  astroTargets.push(file);
+  assert(!hasLegacyThemeBootstrap(source), `${path.relative(ROOT, file)} must not contain a route-owned theme bootstrap`);
+  assert(source.includes('ReaderPreferencesHead'), `${path.relative(ROOT, file)} must import shared head preferences`);
+''',
+    'Astro no-duplicate assertion',
+)
+
+replace_once(
+    'scripts/reader-preferences-regression-test.js',
+    '''  legacyTargets.push(file);
+  assert(source.includes('js/reader-preferences-head.js?v='), `${path.relative(ROOT, file)} missing first-paint bootstrap`);
+''',
+    '''  legacyTargets.push(file);
+  assert(!hasLegacyThemeBootstrap(source), `${path.relative(ROOT, file)} must not contain a route-owned theme bootstrap`);
+  assert(source.includes('js/reader-preferences-head.js?v='), `${path.relative(ROOT, file)} missing first-paint bootstrap`);
+''',
+    'legacy no-duplicate assertion',
+)
 
 changed_files = []
 removed_scripts = 0
