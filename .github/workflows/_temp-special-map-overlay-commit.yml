@@ -92,10 +92,10 @@ jobs:
           set +e
           {
             set -euo pipefail
-            git rm scripts/_temp-special-map-overlay-patch.py \
-                   scripts/_temp-special-map-cleanup-writer.py \
-                   scripts/_temp-special-map-browser-diagnostic.py \
-                   scripts/_temp-special-map-browser-finalize.py
+            git rm -f scripts/_temp-special-map-overlay-patch.py \
+                       scripts/_temp-special-map-cleanup-writer.py \
+                       scripts/_temp-special-map-browser-diagnostic.py \
+                       scripts/_temp-special-map-browser-finalize.py
             git add karty/_engine/map-engine.js \
                     scripts/overlay-runtime-contract-test.js \
                     scripts/map-overlay-runtime-browser-test.js \
