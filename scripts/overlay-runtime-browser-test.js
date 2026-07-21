@@ -1,62 +1,21 @@
-#!/usr/bin/env python3
-from pathlib import Path
-import json
-
-
-def once(text, old, new, label):
-    count = text.count(old)
-    if count != 1:
-        raise SystemExit(f'{label}: expected one match, found {count}')
-    return text.replace(old, new, 1)
-
-reader_path = Path('src/components/article-pilots/_shared/ReaderSettings.astro')
-reader = reader_path.read_text(encoding='utf-8')
-reader = once(
-    reader,
-    "      else if (toc?.classList.contains('is-open')) {\n        toc.classList.remove('is-open');\n        toc.setAttribute('aria-hidden', 'true');\n      }",
-    "      else if (toc?.classList.contains('is-open')) {\n        toc.classList.remove('is-open');\n        toc.setAttribute('aria-hidden', 'true');\n        fallbackUtils()?.unlockScroll?.('hermenevtika-toc');\n      }",
-    'Hermenevtika fallback unlock',
-)
-reader_path.write_text(reader, encoding='utf-8')
-
-package_path = Path('package.json')
-package_text = package_path.read_text(encoding='utf-8')
-package_text = once(
-    package_text,
-    '    "series:facade:guard": "node scripts/series-reader-facade-regression-test.js",\n',
-    '    "series:facade:guard": "node scripts/series-reader-facade-regression-test.js",\n'
-    '    "overlay:runtime:test": "node scripts/runtime-integrity-test.js && node scripts/overlay-runtime-contract-test.js",\n'
-    '    "overlay:browser:test": "node scripts/overlay-runtime-browser-test.js",\n',
-    'package overlay scripts',
-)
-package_path.write_text(package_text, encoding='utf-8')
-
-contract_path = Path('scripts/overlay-runtime-contract-test.js')
-contract = contract_path.read_text(encoding='utf-8')
-contract = once(
-    contract,
-    "assert.ok(reader.includes(\"OVERLAY_OWNER = 'reader-settings'\"));\n",
-    "assert.ok(reader.includes(\"OVERLAY_OWNER = 'reader-settings'\"));\n"
-    "assert.ok(reader.includes(\"unlockScroll?.('hermenevtika-toc')\"), 'fallback switch must release the Hermenevtika owner');\n",
-    'fallback contract',
-)
-contract_path.write_text(contract, encoding='utf-8')
-
-browser_test = r'''#!/usr/bin/env node
+#!/usr/bin/env node
 'use strict';
 
 const assert = require('assert/strict');
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
-const { chromium } = require('playwright');
+const playwright = require('playwright');
+const browserName = process.env.PW_BROWSER || 'chromium';
+const browserType = playwright[browserName];
+if (!browserType) throw new Error(`Unsupported PW_BROWSER: ${browserName}`);
 
 const siteUtils = fs.readFileSync(path.join(process.cwd(), 'js/site-utils.js'), 'utf8');
 const html = `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;min-height:3000px}.overlay{position:fixed;inset:20px;background:white;padding:20px}.overlay[aria-hidden="true"]{display:none}
 </style></head><body>
-<main id="background"><button id="openA">Open A</button><div style="height:2600px"></div></main>
+<main id="background"><button id="openA">Open A</button><button id="openBRoot">Open B root</button><div style="height:3600px"></div></main>
 <section id="overlayA" class="overlay" aria-hidden="true"><button id="focusA">A focus</button><button id="openB">Open B</button></section>
 <section id="overlayB" class="overlay" aria-hidden="true"><button id="focusB">B focus</button></section>
 <script src="/site-utils.js"></script>
@@ -75,7 +34,7 @@ async function main() {
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
-  const browser = await chromium.launch({ headless: true });
+  const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1200, height: 800 }, reducedMotion: 'reduce' });
   const page = await context.newPage();
   const errors = [];
@@ -88,14 +47,20 @@ async function main() {
     assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
 
     await page.evaluate(() => {
-      scrollTo(0, 420);
       document.body.style.overflow = 'auto';
       document.body.style.position = 'relative';
       document.body.style.top = '4px';
       document.body.classList.add('no-scroll');
       document.documentElement.classList.add('cp-scroll-lock');
       document.documentElement.setAttribute('data-scroll-locked', 'legacy');
-      document.getElementById('openA').focus();
+    });
+    await page.evaluate(() => scrollTo(0, 420));
+    await page.waitForFunction(() => Math.round(window.scrollY) === 420);
+    assert.equal(await page.evaluate(() => Math.round(window.scrollY)), 420, 'precondition: page must be scrolled before opener focus');
+    await page.evaluate(() => document.getElementById('openA').focus({ preventScroll: true }));
+    assert.equal(await page.evaluate(() => Math.round(window.scrollY)), 420, 'precondition: opener focus must preserve scroll');
+
+    await page.evaluate(() => {
       const runtime = window.OverlayRuntime;
       const background = document.getElementById('background');
       const overlayA = document.getElementById('overlayA');
@@ -159,7 +124,7 @@ async function main() {
     });
 
     await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));
-    await page.waitForTimeout(30);
+    await page.waitForFunction(() => window.OverlayRuntime.size() === 0 && Math.round(window.scrollY) === 420 && document.activeElement && document.activeElement.id === 'openA');
     state = await page.evaluate(() => ({
       size: window.OverlayRuntime.size(),
       overflow: document.body.style.overflow,
@@ -184,6 +149,54 @@ async function main() {
       active: 'openA',
       scrollY: 420,
     });
+
+    await page.evaluate(() => {
+      const runtime = window.OverlayRuntime;
+      const background = document.getElementById('background');
+      const overlayA = document.getElementById('overlayA');
+      const overlayB = document.getElementById('overlayB');
+      document.getElementById('openBRoot').focus({ preventScroll: true });
+      runtime.open('reverse-b', {
+        element: overlayB,
+        opener: document.getElementById('openBRoot'),
+        focusTarget: document.getElementById('focusB'),
+        inertTargets: [background],
+        onRequestClose: (reason) => runtime.close('reverse-b', reason),
+      });
+      runtime.open('reverse-a', {
+        element: overlayA,
+        opener: document.getElementById('focusB'),
+        focusTarget: document.getElementById('focusA'),
+        inertTargets: [background, overlayB],
+        onRequestClose: (reason) => runtime.close('reverse-a', reason),
+      });
+    });
+    await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'focusA');
+    await page.evaluate(() => window.OverlayRuntime.close('reverse-a', 'programmatic'));
+    await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'focusB');
+    assert.deepEqual(await page.evaluate(() => ({
+      b: window.OverlayRuntime.isOpen('reverse-b'),
+      a: window.OverlayRuntime.isOpen('reverse-a'),
+      top: window.OverlayRuntime.topLayer()?.ownerId,
+      position: document.body.style.position,
+      overlayBInert: document.getElementById('overlayB').inert,
+      active: document.activeElement?.id,
+    })), {
+      b: true,
+      a: false,
+      top: 'reverse-b',
+      position: 'fixed',
+      overlayBInert: false,
+      active: 'focusB',
+    });
+    await page.evaluate(() => window.OverlayRuntime.close('reverse-b', 'programmatic'));
+    await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'openBRoot');
+    await page.waitForFunction(() => Math.round(window.scrollY) === 420);
+    assert.deepEqual(await page.evaluate(() => ({
+      size: window.OverlayRuntime.size(),
+      position: document.body.style.position,
+      scrollY: Math.round(window.scrollY),
+    })), { size: 0, position: 'relative', scrollY: 420 });
 
     await page.evaluate(() => {
       const runtime = window.OverlayRuntime;
@@ -242,7 +255,7 @@ async function main() {
     })), { size: 0, position: 'relative', backgroundInert: false });
 
     assert.deepEqual(errors, []);
-    console.log('✅ overlay-runtime-browser-test: nested stack + exact restore + focus + Escape + pagehide + reduced motion');
+    console.log(`✅ overlay-runtime-browser-test [${browserName}]: forward/reverse nested stack + exact restore + focus + Escape + pagehide + reduced motion`);
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
@@ -253,26 +266,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-'''
-Path('scripts/overlay-runtime-browser-test.js').write_text(browser_test, encoding='utf-8')
-
-shared_path = Path('.github/workflows/shared-files-guard.yml')
-shared = shared_path.read_text(encoding='utf-8')
-shared = once(
-    shared,
-    "      - name: Runtime integrity regressions\n        run: node scripts/runtime-integrity-test.js\n",
-    "      - name: Overlay and runtime integrity regressions\n        run: npm run overlay:runtime:test\n",
-    'permanent overlay guard',
-)
-shared_path.write_text(shared, encoding='utf-8')
-
-browser_workflow = '''name: Overlay Runtime Browser\n\non:\n  workflow_dispatch:\n  pull_request:\n    branches: [main]\n    paths:\n      - "js/site-utils.js"\n      - "js/site.js"\n      - "js/floating-cluster-controller.js"\n      - "src/components/article-pilots/**"\n      - "scripts/overlay-runtime-*.js"\n      - "scripts/runtime-integrity-test.js"\n      - "package.json"\n      - "package-lock.json"\n      - ".github/workflows/overlay-runtime-browser.yml"\n\nconcurrency:\n  group: overlay-runtime-browser-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  browser:\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: "22"\n          cache: "npm"\n      - run: npm ci\n      - name: Install Chromium\n        run: npx playwright install --with-deps chromium\n      - name: Nested overlay browser matrix\n        run: npm run overlay:browser:test\n'''
-Path('.github/workflows/overlay-runtime-browser.yml').write_text(browser_workflow, encoding='utf-8')
-
-inventory_path = Path('docs/READER-R5-OVERLAY-RUNTIME-INVENTORY-2026-07-21.md')
-inventory = inventory_path.read_text(encoding='utf-8')
-if '## Resolution status' not in inventory:
-    inventory += '''\n\n## Resolution status\n\nThe reader P0 cluster is migrated to `OverlayRuntime`: the duplicate `site.js` store delegates to the canonical coordinator; ReaderSettings, Hermenevtika TOC, Gill series/part TOCs, Gill learning/settings, and GBS2 sheet use named owners. Map and built-app adapters remain explicitly outside Reader R5 and retain their dedicated special-surface lane.\n'''
-inventory_path.write_text(inventory, encoding='utf-8')
-
-print('R5 final permanent files prepared')
