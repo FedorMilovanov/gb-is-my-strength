@@ -1,0 +1,77 @@
+name: TEMP Special Overlay Source Context
+
+on:
+  pull_request:
+    types: [reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  context:
+    if: github.head_ref == 'lane/special-overlay-adapters-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Extract exact minified and source contexts
+        shell: bash
+        run: |
+          mkdir -p reports
+          python3 - <<'PY' > reports/special-overlay-source-context.txt
+          import re
+          import subprocess
+          from pathlib import Path
+
+          def compact(text):
+              return re.sub(r'\s+', ' ', text).strip()
+
+          targets = {
+              'js/site.js': [106210, 106527, 117215, 118901],
+              'konfessii/russkij-baptizm/_app/index.html': [416040, 416144, 416203],
+          }
+          for raw, offsets in targets.items():
+              text = Path(raw).read_text(encoding='utf-8')
+              print(f'## {raw}')
+              for offset in offsets:
+                  start = max(0, offset - 1200)
+                  end = min(len(text), offset + 2200)
+                  print(f'\n### offset {offset}')
+                  print(compact(text[start:end]))
+
+          print('\n## _build-tools/konfessii-baptizm relevant source contexts')
+          paths = subprocess.check_output(['git','ls-files','-z','_build-tools/konfessii-baptizm']).decode().split('\0')
+          terms = re.compile(r'overflow|overscroll|fullscreen|isFullscreen|Escape|1800|loading', re.I)
+          for raw in paths:
+              if not raw or Path(raw).suffix.lower() not in {'.js','.jsx','.ts','.tsx','.html'}:
+                  continue
+              try:
+                  lines = Path(raw).read_text(encoding='utf-8').splitlines()
+              except (UnicodeDecodeError, OSError):
+                  continue
+              hits = [i for i,line in enumerate(lines) if terms.search(line)]
+              if not hits:
+                  continue
+              print(f'\n### {raw}')
+              emitted = set()
+              for i in hits:
+                  lo=max(0,i-2); hi=min(len(lines),i+3)
+                  key=(lo,hi)
+                  if key in emitted: continue
+                  emitted.add(key)
+                  for j in range(lo,hi):
+                      print(f'{j+1}: {lines[j][:700]}')
+                  print('---')
+          PY
+          cat reports/special-overlay-source-context.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: special-overlay-source-context
+          path: reports/special-overlay-source-context.txt
+          retention-days: 1
