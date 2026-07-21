@@ -1,0 +1,40 @@
+name: TEMP Capture Pages Deploy Witness
+
+on:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  capture:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Record immutable Pages deploy witness on issue 58
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
+        run: |
+          BODY=$(cat <<EOF
+          ## Automated GitHub Pages deploy witness
+
+          - Deploy workflow conclusion: **success**
+          - Workflow run: \`${RUN_ID}\` (#${RUN_NUMBER})
+          - Workflow head SHA: \`${HEAD_SHA}\`
+          - Completed at: \`${UPDATED_AT}\`
+          - Run URL: ${RUN_URL}
+
+          This comment is generated only after `Deploy to GitHub Pages` completes successfully. Source/runtime closure still requires matching this immutable run to the verified PR #106/#108 asset revisions.
+          EOF
+          )
+          gh issue comment 58 --repo "$GITHUB_REPOSITORY" --body "$BODY"
