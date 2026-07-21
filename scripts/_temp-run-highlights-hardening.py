@@ -37,9 +37,14 @@ def load_patcher():
 
 
 def verify_transaction_paths() -> None:
-    changed = subprocess.check_output(
-        ["git", "diff", "--name-only"], cwd=ROOT, text=True
+    status_lines = subprocess.check_output(
+        ["git", "status", "--porcelain"], cwd=ROOT, text=True
     ).splitlines()
+    changed = {
+        line[3:].split(" -> ")[-1]
+        for line in status_lines
+        if len(line) >= 4
+    }
     allowed_exact = {
         "js/highlights.js",
         "scripts/highlights-runtime-regression-test.js",
@@ -47,7 +52,7 @@ def verify_transaction_paths() -> None:
     }
     unexpected = [
         path
-        for path in changed
+        for path in sorted(changed)
         if path not in allowed_exact
         and not path.endswith(".html")
         and not path.endswith(".astro")
