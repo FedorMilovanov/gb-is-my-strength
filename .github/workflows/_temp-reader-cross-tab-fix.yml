@@ -1,0 +1,51 @@
+name: TEMP reader cross-tab fix
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]' && github.head_ref == 'lane/system-reader-preferences-foundation-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply and verify cross-tab fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/_temp_fix_reader_cross_tab.py
+          node scripts/cache-bust.js --write
+          node scripts/reader-preferences-regression-test.js
+          node scripts/audit-pro.js
+          node --check js/reader-preferences.js
+          node --check scripts/reader-preferences-browser-smoke.js
+
+      - name: Commit cross-tab fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git add js/reader-preferences.js scripts/reader-preferences-browser-smoke.js
+          git diff --cached --quiet && { echo 'no cross-tab changes'; exit 1; }
+          git commit -m "[LANE lane/system-reader-preferences-foundation-2026-07-21] fix(reader): preserve canonical Sepia across tabs"
+          git push origin HEAD:lane/system-reader-preferences-foundation-2026-07-21
