@@ -1,0 +1,84 @@
+name: TEMP reader R3 parity proof
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  output-parity:
+    if: github.head_ref == 'lane/reader-r3-series-facade-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies once
+        run: npm ci
+      - name: Build façade head
+        run: npm run strangler:build:production-like
+      - name: Preserve representative head output
+        shell: bash
+        run: |
+          mkdir -p /tmp/r3-head
+          cp dist/articles/dzhon-gill-chast-1-chelovek/index.html /tmp/r3-head/gill.html
+          cp dist/articles/novoe-serdce/index.html /tmp/r3-head/book.html
+          cp dist/baptisty-rossii/dva-sezda-1884/index.html /tmp/r3-head/baptisty.html
+          sha256sum /tmp/r3-head/*.html
+      - name: Build exact main baseline
+        shell: bash
+        run: |
+          git worktree add /tmp/r3-main origin/main
+          ln -s "$GITHUB_WORKSPACE/node_modules" /tmp/r3-main/node_modules
+          npm --prefix /tmp/r3-main run strangler:build:production-like
+      - name: Require byte-identical output
+        shell: bash
+        run: |
+          declare -A routes=(
+            [gill]='/tmp/r3-main/dist/articles/dzhon-gill-chast-1-chelovek/index.html'
+            [book]='/tmp/r3-main/dist/articles/novoe-serdce/index.html'
+            [baptisty]='/tmp/r3-main/dist/baptisty-rossii/dva-sezda-1884/index.html'
+          )
+          for name in gill book baptisty; do
+            base="${routes[$name]}"
+            head="/tmp/r3-head/$name.html"
+            if ! cmp -s "$base" "$head"; then
+              echo "::error::$name output changed across façade-only migration"
+              diff -u "$base" "$head" | head -300 || true
+              exit 1
+            fi
+            echo "PASS byte-identical: $name"
+          done
+
+  engine-sweep:
+    if: github.head_ref == 'lane/reader-r3-series-facade-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies and Chromium
+        shell: bash
+        run: |
+          npm ci
+          npx playwright install chromium
+          browser_path="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          test -x "$browser_path"
+          sudo mkdir -p /opt/pw-browsers
+          sudo ln -sfn "$browser_path" /opt/pw-browsers/chromium
+          test -x /opt/pw-browsers/chromium
+      - name: Build production-like target
+        run: npm run strangler:build:production-like
+      - name: Run full functional engine sweep
+        run: npm run engine:sweep
