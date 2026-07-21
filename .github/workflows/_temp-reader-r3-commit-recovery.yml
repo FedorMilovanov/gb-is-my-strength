@@ -1,4 +1,4 @@
-name: TEMP reader R3 commit recovery
+name: TEMP reader R3 source commit
 
 on:
   pull_request:
@@ -9,14 +9,20 @@ permissions:
   contents: write
 
 jobs:
-  recover:
+  commit-source:
     if: github.head_ref == 'lane/reader-r3-series-facade-2026-07-21'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
       - name: Reapply deterministic implementation patch
         shell: bash
         run: |
@@ -34,52 +40,25 @@ jobs:
           Path('/tmp/reader-r3-apply.py').write_text('\n'.join(code) + '\n', encoding='utf-8')
           PY
           python3 /tmp/reader-r3-apply.py
-      - name: Record validation diagnostics
+      - name: Validate permanent source contracts
+        run: |
+          node --check scripts/series-reader-facade-regression-test.js
+          npm run series:facade:guard
+          npm run engine:contracts
+      - name: Commit only non-workflow files
         shell: bash
         run: |
-          set +e
-          {
-            node --check scripts/series-reader-facade-regression-test.js
-            npm run series:facade:guard
-            npm run engine:contracts
-          } 2>&1 | tee /tmp/reader-r3-validation.txt
-          echo "validation_exit=${PIPESTATUS[0]}" >> /tmp/reader-r3-validation.txt
-          exit 0
-      - name: Diagnose commit and push
-        shell: bash
-        run: |
-          set +e
-          {
-            echo '=== before rm ==='
-            git status --short
-            git rm .github/workflows/_temp-reader-r3-inventory.yml .github/workflows/_temp-reader-r3-commit-recovery.yml
-            echo "git_rm_exit=$?"
-            git add -A
-            echo "git_add_exit=$?"
-            echo '=== staged stat ==='
-            git diff --cached --stat
-            echo '=== staged names ==='
-            git diff --cached --name-status
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'refactor(reader): route series through neutral façade'
-            commit_status=$?
-            echo "git_commit_exit=$commit_status"
-            if [ "$commit_status" -eq 0 ]; then
-              git push origin "HEAD:${GITHUB_HEAD_REF}"
-              echo "git_push_exit=$?"
-            fi
-            echo '=== after attempt ==='
-            git status --short
-          } 2>&1 | tee /tmp/reader-r3-commit.txt
-          exit 0
-      - name: Upload diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reader-r3-commit-diagnostics
-          path: |
-            /tmp/reader-r3-validation.txt
-            /tmp/reader-r3-commit.txt
-          if-no-files-found: error
-          retention-days: 1
+          # The branch workflow files are written separately by the GitHub App,
+          # because the ephemeral GITHUB_TOKEN cannot update workflow paths.
+          git restore -- .github/workflows/shared-files-guard.yml
+          git add -A
+          git restore --staged .github/workflows
+          if git diff --cached --name-only | grep -q '^.github/workflows/'; then
+            echo 'workflow file unexpectedly staged' >&2
+            exit 1
+          fi
+          test -n "$(git diff --cached --name-only)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor(reader): route series through neutral façade'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
