@@ -31,7 +31,7 @@ reverse = anchor + r'''    await page.evaluate(() => {
       const background = document.getElementById('background');
       const overlayA = document.getElementById('overlayA');
       const overlayB = document.getElementById('overlayB');
-      document.getElementById('openBRoot').focus();
+      document.getElementById('openBRoot').focus({ preventScroll: true });
       runtime.open('reverse-b', {
         element: overlayB,
         opener: document.getElementById('openBRoot'),
@@ -81,4 +81,4 @@ text = text.replace(
     'forward/reverse nested stack + exact restore + focus + Escape + pagehide + reduced motion',
 )
 path.write_text(text, encoding='utf-8')
-print('Browser fixture awaits reverse ownership and scroll settlement')
+print('Browser fixture preserves scroll in reverse ownership order')
