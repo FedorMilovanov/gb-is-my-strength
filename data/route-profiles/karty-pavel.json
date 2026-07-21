@@ -4,6 +4,8 @@
   "migrationContractSyncedAt": "2026-07-09",
   "migrationLane": "special",
   "routeType": "map",
+  "surfaceContractVersion": 1,
+  "surface": "special",
   "section": "karty",
   "slug": "pavel",
   "currentStatus": "production-dist",

@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-22",
   "migrationLane": "landing",
   "routeType": "home",
+  "surfaceContractVersion": 1,
+  "surface": "page",
   "section": "home",
   "slug": null,
   "currentStatus": "production-dist",
