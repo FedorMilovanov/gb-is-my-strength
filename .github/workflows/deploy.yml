@@ -1,11 +1,11 @@
 name: Deploy to GitHub Pages
 
-# Запускается ПОСЛЕ того, как indexnow.yml завершил работу —
-# то есть уже после cache-bust-коммита — чтобы деплоить
-# актуальную версию, а не ту, что была до автообновления мета.
+# Запускается после успешной read-only readiness-проверки indexnow.yml.
+# Ссылки на asset revisions должны быть синхронизированы и закоммичены до deploy;
+# production workflow никогда не переписывает исходники автоматически.
 on:
   # Asset-only / infrastructure pushes that do not trigger indexnow.yml.
-  # Content/CSS/JS pushes deploy via workflow_run after metadata/cache-bust.
+  # Content/CSS/JS pushes deploy via workflow_run after metadata/readiness gates.
   push:
     branches: [main]
     paths:
@@ -69,7 +69,7 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
-      - name: Checkout (последний коммит в main, включая cache-bust)
+      - name: Checkout latest verified main commit
         uses: actions/checkout@v4
         with:
           ref: main
@@ -89,9 +89,10 @@ jobs:
       - name: Download fonts (if not in repo)
         run: node scripts/download-fonts.js || echo "Fonts download skipped"
 
-      - name: Cache bust assets (skip if IndexNow already did it)
+      - name: Check asset revisions for direct deploys
+        # workflow_run already follows a successful read-only IndexNow readiness check.
         if: github.event_name != 'workflow_run'
-        run: node scripts/cache-bust.js || echo "Cache bust skipped"
+        run: node scripts/cache-bust.js
 
       - name: Static publication gates
         run: npm run validate:static-publication
@@ -222,7 +223,7 @@ jobs:
 
           BODY=$(jq -n \
             --arg host "$HOST" \
-            --arg key  "$KEY"  \
+            --arg key  "$KEY" \
             --argjson urls "$URLS" \
             '{host: $host, key: $key, keyLocation: ("https://"+$host+"/"+$key+".txt"), urlList: $urls}')
 
