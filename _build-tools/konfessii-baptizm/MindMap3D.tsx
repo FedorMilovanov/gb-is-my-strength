@@ -18,6 +18,8 @@ import type { LinkData, MapSelection, NodeData, RoutePreset } from './mindmap3d/
 import { timelineEvents, categoryColors, categoryLabels } from '../data/timeline';
 import { ANCHORS, CITY_MARKERS, COUNTRY_FOCUS, GROUP_COLORS, GROUP_LABELS, LINKS, MAP_AREAS, NODES, ROUTE_PRESETS } from './mindmap3d/data';
 
+let mindMapOverlaySequence = 0;
+
 const NIGHT_MAP_DATA_URL: string | null = (() => {
   if (typeof document === 'undefined') return null;
   const canvas = document.createElement('canvas');
@@ -577,6 +579,7 @@ export default function MindMap3D() {
   const timelineYearRef = useRef<number | null>(null);
   const [showIntro, setShowIntro] = useState(true);
   const [showLegend, setShowLegend] = useState(false);
+  const [fullscreenOverlayOwner] = useState(() => `special:mindmap3d:fullscreen:${++mindMapOverlaySequence}`);
 
   const nightMapUrl = NIGHT_MAP_DATA_URL;
 
@@ -596,21 +599,16 @@ export default function MindMap3D() {
   }, [focusNode]);
 
   useEffect(() => {
-    if (!isFullscreen || typeof document === 'undefined') return;
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-    const prevBodyOverscroll = body.style.overscrollBehavior;
-    html.style.overflow = 'hidden';
-    body.style.overflow = 'hidden';
-    body.style.overscrollBehavior = 'none';
-    return () => {
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
-      body.style.overscrollBehavior = prevBodyOverscroll;
-    };
-  }, [isFullscreen]);
+    if (!isFullscreen || typeof window === 'undefined') return;
+    const siteUtils = (window as any).SiteUtils;
+    const runtime = (window as any).OverlayRuntime || siteUtils?.OverlayRuntime;
+    if (runtime?.lockScroll && runtime?.unlockScroll) {
+      runtime.lockScroll(fullscreenOverlayOwner);
+      return () => runtime.unlockScroll(fullscreenOverlayOwner);
+    }
+    siteUtils?.lockScroll?.(fullscreenOverlayOwner);
+    return () => siteUtils?.unlockScroll?.(fullscreenOverlayOwner);
+  }, [isFullscreen, fullscreenOverlayOwner]);
 
   const projection = useMemo(() => geoMercator().center([42, 52]).scale(580).translate([600, 340]), []);
   const geoPathGenerator = useMemo(() => geoPath(projection), [projection]);
