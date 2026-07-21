@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-21T14:29:18.637Z",
-  "sourceHead": "fb0fb1041a6b7d72c27c894b64ebfe26675aa647",
-  "scannedFiles": 778,
-  "matchCount": 4767,
+  "generatedAt": "2026-07-21T14:30:54.334Z",
+  "sourceHead": "aa586e3a1ae7857dac41440e6149d5d6beaf03c2",
+  "scannedFiles": 779,
+  "matchCount": 4771,
   "countsByRule": {
     "body-style-writer": 34,
     "escape-handler": 27,
@@ -11,9 +11,9 @@
     "html-style-writer": 4,
     "keydown-handler": 144,
     "overlay-dialog-semantics": 3034,
-    "overlay-naming": 1267,
+    "overlay-naming": 1268,
     "route-recovery": 15,
-    "scroll-api": 101,
+    "scroll-api": 104,
     "style-remove-property-writer": 13
   },
   "directWriterFiles": [
@@ -1506,6 +1506,18 @@
       "rules": [
         "keydown-handler",
         "overlay-dialog-semantics"
+      ],
+      "matchCount": 4
+    },
+    {
+      "file": "scripts/overlay-runtime-contract-test.js",
+      "categories": [
+        "coordination",
+        "lifecycle"
+      ],
+      "rules": [
+        "overlay-naming",
+        "scroll-api"
       ],
       "matchCount": 4
     },
@@ -26595,6 +26607,38 @@
       "line": 1194,
       "token": "SHEET",
       "excerpt": "const badge = opts.badge || `${String(opts.slug || '').toUpperCase()} · SHEET · awaiting G9`;"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/overlay-runtime-contract-test.js",
+      "line": 12,
+      "token": "forceRecover",
+      "excerpt": "for (const name of ['register', 'open', 'close', 'requestClose', 'destroy', 'topLayer', 'forceRecover']) {"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/overlay-runtime-contract-test.js",
+      "line": 19,
+      "token": "_scrollLockCount",
+      "excerpt": "const start = site.indexOf('_scrollLockCount:0,_savedScrollY:0,_scrollLockSources:{}');"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/overlay-runtime-contract-test.js",
+      "line": 19,
+      "token": "_scrollLockSources",
+      "excerpt": "const start = site.indexOf('_scrollLockCount:0,_savedScrollY:0,_scrollLockSources:{}');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/overlay-runtime-contract-test.js",
+      "line": 32,
+      "token": "overlay",
+      "excerpt": "console.log('✅ overlay-runtime-contract-test: canonical store + protected API + standalone consumers');"
     },
     {
       "rule": "overlay-dialog-semantics",

@@ -1,11 +1,11 @@
 # Reader R5 overlay runtime inventory
 
-- Source: `fb0fb1041a6b7d72c27c894b64ebfe26675aa647`
-- Scanned files: **778**
-- Pattern matches: **4767**
+- Source: `aa586e3a1ae7857dac41440e6149d5d6beaf03c2`
+- Scanned files: **779**
+- Pattern matches: **4771**
 - Direct writer files: **10**
 - Global scroll API overwrite files: **2**
-- Multi-category lifecycle candidates: **76**
+- Multi-category lifecycle candidates: **77**
 
 ## Counts by rule
 
@@ -16,9 +16,9 @@
 - `html-style-writer`: 4
 - `keydown-handler`: 144
 - `overlay-dialog-semantics`: 3034
-- `overlay-naming`: 1267
+- `overlay-naming`: 1268
 - `route-recovery`: 15
-- `scroll-api`: 101
+- `scroll-api`: 104
 - `style-remove-property-writer`: 13
 
 ## Direct body/html style writers
@@ -190,6 +190,7 @@
 | `src/components/articles/ArticlesPageFooter.astro` | 6 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `src/components/biografii/BiografiiPageFooter.astro` | 6 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `rodosloviye/index.html` | 4 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
+| `scripts/overlay-runtime-contract-test.js` | 4 | coordination, lifecycle | overlay-naming, scroll-api |
 | `src/components/about/AboutPageChrome.astro` | 4 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `src/components/nagornaya/seriya/NagornayaSeriyaPageFooter.astro` | 4 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `src/components/rodosloviye/RodosloviyeBody.astro` | 4 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
