@@ -14,22 +14,22 @@ for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
   const stages = Array.isArray(route.stages) ? route.stages : (route.stages_index || []);
   const layers = route.layers || [];
   if (!layers.length) continue;
-  rows.push({
-    route: entry.name,
-    layers: layers.map((layer) => ({
-      id: layer.id,
-      on: layer.on !== false,
-      selector: layer.selector || null,
-      place_ids: layer.place_ids || layer.places || null,
-      stage_ids: layer.stage_ids || layer.stages || null,
-      types: layer.types || layer.place_types || null,
-    })),
-    stageClasses: [...new Set(stages.map((stage) => stage && stage.cls).filter(Boolean))],
-    placeTypes: [...new Set(places.map((place) => place && place.type).filter(Boolean))],
-    placeLayers: [...new Set(places.flatMap((place) => {
-      const value = place && (place.layer || place.layers);
-      return Array.isArray(value) ? value : value ? [value] : [];
-    }))],
-  });
+  const layerSummary = layers.map((layer) => {
+    const details = [];
+    if (layer.selector) details.push(`sel=${layer.selector}`);
+    if (layer.place_ids || layer.places) details.push(`places=${(layer.place_ids || layer.places).length}`);
+    if (layer.stage_ids || layer.stages) details.push(`stages=${(layer.stage_ids || layer.stages).join(',')}`);
+    if (layer.types || layer.place_types) details.push(`types=${(layer.types || layer.place_types).join(',')}`);
+    return `${layer.id}:${layer.on === false ? 'off' : 'on'}${details.length ? `[${details.join(';')}]` : ''}`;
+  }).join('|');
+  const stageClasses = [...new Set(stages.map((stage) => stage && stage.cls).filter(Boolean))].join(',') || '-';
+  const placeTypes = [...new Set(places.map((place) => place && place.type).filter(Boolean))].join(',') || '-';
+  const direct = [...new Set(places.flatMap((place) => {
+    const value = place && (place.layer || place.layers);
+    return Array.isArray(value) ? value : value ? [value] : [];
+  }))].join(',') || '-';
+  rows.push(`${entry.name} :: layers=${layerSummary} :: stage.cls=${stageClasses} :: place.type=${placeTypes} :: direct=${direct}`);
 }
-console.log(JSON.stringify(rows, null, 2));
+console.log('=== MAP_LAYER_INVENTORY_BEGIN ===');
+for (const row of rows.sort()) console.log(row);
+console.log('=== MAP_LAYER_INVENTORY_END ===');
