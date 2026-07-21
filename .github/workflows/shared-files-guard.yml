@@ -42,6 +42,9 @@ jobs:
       - name: Map layers and palette regressions
         run: node scripts/map-layers-theme-regression-test.js
 
+      - name: Reader preferences regressions
+        run: node scripts/reader-preferences-regression-test.js
+
       - name: Guard shared/system files (strict on main/PR)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
         run: node scripts/guard-shared-files.js

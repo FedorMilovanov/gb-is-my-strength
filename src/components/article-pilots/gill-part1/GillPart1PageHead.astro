@@ -1,9 +1,14 @@
 ---
 /** Native PageHead extracted from approved legacy head for /articles/dzhon-gill-chast-1-chelovek/ */
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
+
 <meta charset="utf-8"/>
 <link rel="preconnect" href="https://mc.yandex.ru" crossorigin>
 <meta content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com https://huggingface.co https://*.aws.cdn.hf.co https://cdn.jsdelivr.net; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self';" http-equiv="Content-Security-Policy"/>
+  <ReaderPreferencesHead />
+
+
 <meta content="nosniff" http-equiv="X-Content-Type-Options"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" name="viewport"/>
 <meta content="#fdfcf9" media="(prefers-color-scheme: light)" name="theme-color"/>
@@ -63,10 +68,6 @@
  ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true,referrer:document.referrer,url:location.href});
 </script>
 <noscript><div><img alt="" loading="lazy" decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;"/></div></noscript>
-<!-- Anti-FOUC: применяем тему до рендера CSS -->
-<script is:inline>
- (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
-</script>
 <!-- Shared styles -->
 <link href="../../css/site.css?v=7b0067c7" rel="stylesheet"/>
 <link href="../../css/home.css?v=a1933595" rel="stylesheet"/>

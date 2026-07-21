@@ -40,11 +40,16 @@ const jsonLd = {
     { "@type": "WebSite", "@id": "https://gospod-bog.ru/#website", name: "Господь Бог — Сила Моя", url: "https://gospod-bog.ru/", inLanguage: "ru-RU", publisher: { "@id": "https://gospod-bog.ru/#organization" } },
   ],
 };
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
 <meta charset="utf-8" />
+  <ReaderPreferencesHead />
+
+
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex, follow" />
 <title>{title}</title>
@@ -70,7 +75,7 @@ const jsonLd = {
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="stylesheet" href="../../fonts/fonts.css?v=864cc57a" />
 <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-<script is:inline>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
+
 <style is:inline>
 :root{--bg:#0b0f16;--card:#121820;--line:#3b3328;--ink:#f5efe6;--muted:#b9aea2;--gold:#d6b25e;--accent:#8b2f2f}
 *{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 28% 12%,rgba(214,178,94,.14),transparent 34%),linear-gradient(135deg,#070a10,#11161d 55%,#080b10);color:var(--ink);font-family:Lora,Georgia,serif;display:grid;place-items:center;padding:28px}
