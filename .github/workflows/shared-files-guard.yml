@@ -31,6 +31,9 @@ jobs:
       - name: Asset revision drift (read-only)
         run: node scripts/cache-bust.js
 
+      - name: Workflow policy contracts
+        run: npm run workflows:check
+
       - name: Runtime integrity regressions
         run: node scripts/runtime-integrity-test.js
 
