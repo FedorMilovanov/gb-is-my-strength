@@ -57,6 +57,10 @@ jobs:
           python3 scripts/_temp-special-map-overlay-patch.py > reports/special-map-patch.log 2>&1
           status=$?
           if [ "$status" -eq 0 ]; then
+            python3 scripts/_temp-special-map-cleanup-writer.py >> reports/special-map-patch.log 2>&1
+            status=$?
+          fi
+          if [ "$status" -eq 0 ]; then
             python3 scripts/_temp-special-map-browser-diagnostic.py >> reports/special-map-patch.log 2>&1
             status=$?
           fi
@@ -87,6 +91,7 @@ jobs:
         run: |
           set +e
           {
+            set -euo pipefail
             node --check karty/_engine/map-engine.js
             node --check scripts/map-overlay-runtime-browser-test.js
             npm run overlay:runtime:test
@@ -155,7 +160,7 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
-          git rm scripts/_temp-special-map-overlay-patch.py scripts/_temp-special-map-browser-diagnostic.py scripts/_temp-special-map-browser-finalize.py
+          git rm scripts/_temp-special-map-overlay-patch.py scripts/_temp-special-map-cleanup-writer.py scripts/_temp-special-map-browser-diagnostic.py scripts/_temp-special-map-browser-finalize.py
           git add karty/_engine/map-engine.js \
                   scripts/overlay-runtime-contract-test.js \
                   scripts/map-overlay-runtime-browser-test.js \
