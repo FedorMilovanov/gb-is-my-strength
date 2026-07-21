@@ -106,15 +106,8 @@ html[data-reader-theme="sepia"] .info-box {
   color: var(--color-text, #493720);
 }
 
-/* Sepia is semantic color, never a blanket media filter. */
-html[data-reader-theme="sepia"] img,
-html[data-reader-theme="sepia"] picture,
-html[data-reader-theme="sepia"] video,
-html[data-reader-theme="sepia"] canvas,
-html[data-reader-theme="sepia"] .me-canvas svg,
-html[data-reader-theme="sepia"] .hall-stage {
-  filter: none;
-}
+/* Sepia changes semantic color tokens only. It deliberately leaves every
+   route-owned image, video, canvas, SVG and 3D filter untouched. */
 
 /* Shared reading values. Adapters opt their article root into these variables
    without scaling navigation or control chrome. */
