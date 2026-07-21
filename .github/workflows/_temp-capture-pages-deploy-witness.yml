@@ -3,7 +3,7 @@ name: TEMP Capture Pages Pipeline Witness
 on:
   workflow_run:
     workflows:
-      - "IndexNow — Notify Search Engines"
+      - "Metadata & IndexNow Readiness"
       - "Deploy to GitHub Pages"
     types: [completed]
     branches: [main]
