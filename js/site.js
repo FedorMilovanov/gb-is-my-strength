@@ -214,10 +214,16 @@ showTimer=setTimeout(hidePopup,7e3);
   window.__gbLegacyThemeMounted=true;
   var preClickDark = null;
   function setTheme(dark){
-    document.documentElement.classList.toggle('dark', dark);
-    try{localStorage.setItem('theme', dark ? 'dark' : 'light')}catch(_){ }
+    var theme=dark?'dark':'light';
+    if(window.GBReaderPreferences&&typeof window.GBReaderPreferences.setTheme==='function'){
+      window.GBReaderPreferences.setTheme(theme,{source:'legacy-site-toggle'});
+    }else{
+      document.documentElement.classList.toggle('dark',dark);
+      document.documentElement.setAttribute('data-reader-theme',theme);
+      try{localStorage.setItem('theme',theme)}catch(_){ }
+    }
     document.querySelectorAll('#themeToggle,#hThemeBtn,#barThemeBtn,.gb-fc-theme,.nag-sidebar-theme-btn').forEach(function(btn){
-      if(btn && btn.setAttribute) btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      if(btn&&btn.setAttribute)btn.setAttribute('aria-pressed',dark?'true':'false');
     });
   }
   document.addEventListener('click', function(ev){

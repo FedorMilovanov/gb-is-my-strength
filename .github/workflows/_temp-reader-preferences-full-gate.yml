@@ -1,0 +1,127 @@
+name: TEMP reader preferences full gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  full-gate:
+    if: github.head_ref == 'lane/system-reader-preferences-foundation-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npx playwright install chromium
+          browser_path="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          test -x "$browser_path"
+          sudo mkdir -p /opt/pw-browsers
+          sudo ln -sfn "$browser_path" /opt/pw-browsers/chromium
+          test -x /opt/pw-browsers/chromium
+
+      - name: Reader and engine static contracts
+        shell: bash
+        run: |
+          set +e
+          {
+            node scripts/reader-preferences-regression-test.js
+            npm run engine:contracts
+          } > reader-preferences-contracts.log 2>&1
+          status=$?
+          tail -n 140 reader-preferences-contracts.log
+          exit "$status"
+
+      - name: Upload contracts log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-preferences-contracts-log
+          path: reader-preferences-contracts.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Static publication barrier
+        shell: bash
+        run: |
+          set +e
+          npm run validate:static-publication > reader-static-publication.log 2>&1
+          status=$?
+          tail -n 100 reader-static-publication.log
+          exit "$status"
+
+      - name: Upload publication log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-preferences-static-publication-log
+          path: reader-static-publication.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Shared files barrier
+        run: npm run guard:shared-files
+
+      - name: Build production-like browser target
+        run: npm run strangler:build:production-like
+
+      - name: Functional engine sweep
+        shell: bash
+        run: |
+          set +e
+          npm run engine:sweep > reader-engine-sweep.log 2>&1
+          status=$?
+          tail -n 160 reader-engine-sweep.log
+          exit "$status"
+
+      - name: Upload engine sweep log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-preferences-engine-sweep-log
+          path: reader-engine-sweep.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Cross-engine browser matrix
+        shell: bash
+        run: |
+          set +e
+          python3 -m http.server 8090 --directory dist > /tmp/reader-preferences-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8090/articles/dzhon-gill-chast-1-chelovek/ >/dev/null; then break; fi
+            sleep 1
+          done
+          AUDIT_BASE=http://127.0.0.1:8090 node scripts/reader-preferences-browser-smoke.js > reader-preferences-browser.log 2>&1
+          status=$?
+          cat reader-preferences-browser.log
+          exit "$status"
+
+      - name: Upload browser matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-preferences-browser-log
+          path: |
+            reader-preferences-browser.log
+            /tmp/reader-preferences-server.log
+          if-no-files-found: warn
+          retention-days: 1
