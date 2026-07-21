@@ -30,11 +30,26 @@ jobs:
       - name: Integrate reader assets into canonical contracts
         shell: bash
         run: |
-          set -euo pipefail
-          python3 scripts/_temp_integrate_reader_assets.py
-          node scripts/cache-bust.js
-          node scripts/reader-preferences-regression-test.js
-          node scripts/audit-pro.js
+          set +e
+          {
+            set -x
+            python3 scripts/_temp_integrate_reader_assets.py
+            node scripts/cache-bust.js
+            node scripts/reader-preferences-regression-test.js
+            node scripts/audit-pro.js
+          } > reader-assets-integrator.log 2>&1
+          status=$?
+          cat reader-assets-integrator.log
+          exit "$status"
+
+      - name: Upload integration diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-assets-integrator-log
+          path: reader-assets-integrator.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Commit integrated reader assets
         shell: bash
