@@ -16,6 +16,8 @@ const route = {meta:{id:'special-witness',title:'Witness',viewport_init:{cx:500,
 
 async function builtLauncherWitness(browser) {
   const page = await browser.newPage({viewport:{width:844,height:620}});
+  page.on('console', message => console.log(`[built:${browserName}:${message.type()}] ${message.text()}`));
+  page.on('pageerror', error => console.error(`[built:${browserName}:pageerror]`, error));
   try {
     await page.route('https://fixture.test/**', async request => {
       const url = new URL(request.request().url());
@@ -30,13 +32,24 @@ async function builtLauncherWitness(browser) {
       const button=[...document.querySelectorAll('button')].find(item=>item.textContent.includes('Войти в 3D-карту'));
       button.focus({preventScroll:true});
       window.OverlayRuntime.open('foreign:witness',{lockScroll:true,trapFocus:false,restoreFocus:false});
+      window.__launcherOpenedState=null;
+      const observer=new MutationObserver(() => {
+        const root=document.getElementById('konfessii-mindmap-overlay');
+        if (!root || window.OverlayRuntime.size() !== 2) return;
+        window.__launcherOpenedState={
+          size:window.OverlayRuntime.size(),
+          top:window.OverlayRuntime.topLayer()?.ownerId,
+          position:document.body.style.position,
+        };
+        observer.disconnect();
+        document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+      });
+      observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-overlay-count'],childList:true,subtree:true});
       button.click();
     });
-    await page.waitForFunction(() => document.getElementById('konfessii-mindmap-overlay') && window.OverlayRuntime.size() === 2);
-    let state = await page.evaluate(() => ({size:window.OverlayRuntime.size(),top:window.OverlayRuntime.topLayer()?.ownerId,position:document.body.style.position}));
+    await page.waitForFunction(() => window.__launcherOpenedState && !document.getElementById('konfessii-mindmap-overlay') && window.OverlayRuntime.size() === 1);
+    let state = await page.evaluate(() => window.__launcherOpenedState);
     assert.deepEqual(state,{size:2,top:'special:konfessii-mindmap-launcher',position:'fixed'});
-    await page.keyboard.press('Escape');
-    await page.waitForFunction(() => !document.getElementById('konfessii-mindmap-overlay') && window.OverlayRuntime.size() === 1);
     await page.waitForFunction(() => document.activeElement?.textContent?.includes('Войти в 3D-карту'));
     state = await page.evaluate(() => ({size:window.OverlayRuntime.size(),top:window.OverlayRuntime.topLayer()?.ownerId,position:document.body.style.position}));
     assert.deepEqual(state,{size:1,top:'foreign:witness',position:'fixed'});
@@ -47,7 +60,7 @@ async function builtLauncherWitness(browser) {
 
     await page.evaluate(() => [...document.querySelectorAll('button')].find(item=>item.textContent.includes('Войти в 3D-карту')).click());
     await page.waitForFunction(() => window.OverlayRuntime.size() === 1);
-    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide')));
+    await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
     await page.waitForFunction(() => window.OverlayRuntime.size() === 0);
   } finally { await page.close(); }
 }
