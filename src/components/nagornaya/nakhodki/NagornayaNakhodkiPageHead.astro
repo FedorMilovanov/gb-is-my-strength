@@ -3,7 +3,9 @@
  * NagornayaNakhodkiPageHead — native <head> for /nagornaya/nakhodki//.
  * Extracted from the approved legacy document for 100% native Astro output.
  */
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
+<ReaderPreferencesHead />
 <script is:inline>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
   <meta charset="UTF-8">
 <link rel="preconnect" href="https://mc.yandex.ru" crossorigin>

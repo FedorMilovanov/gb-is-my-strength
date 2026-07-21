@@ -40,10 +40,12 @@ const jsonLd = {
     { "@type": "WebSite", "@id": "https://gospod-bog.ru/#website", name: "Господь Бог — Сила Моя", url: "https://gospod-bog.ru/", inLanguage: "ru-RU", publisher: { "@id": "https://gospod-bog.ru/#organization" } },
   ],
 };
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <ReaderPreferencesHead />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex, follow" />

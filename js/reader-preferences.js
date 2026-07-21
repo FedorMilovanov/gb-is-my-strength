@@ -137,6 +137,24 @@
     return parseStored(safeGet(STORAGE_KEY)) || readLegacy();
   }
 
+  function applyReaderRoots(state) {
+    var sepia = state.theme === 'sepia';
+    var line = LINE_VALUES[state.lineHeight];
+    var measure = MEASURE_VALUES[state.measure];
+    document.querySelectorAll('[data-gill-v16]').forEach(function (element) {
+      if (sepia) element.setAttribute('data-gill-reader-theme', 'sepia');
+      else element.removeAttribute('data-gill-reader-theme');
+      element.style.setProperty('--gbs2-article-line', line);
+      element.style.setProperty('--gbs2-article-measure', measure);
+    });
+    document.querySelectorAll('[data-reader-root]').forEach(function (element) {
+      if (sepia) element.setAttribute('data-hm-reader-theme', 'sepia');
+      else element.removeAttribute('data-hm-reader-theme');
+      element.style.setProperty('--hm-article-line', line);
+      element.style.setProperty('--hm-article-measure', measure);
+    });
+  }
+
   function apply(prefs) {
     var state = normalize(prefs);
     root.setAttribute('data-reader-theme', state.theme);
@@ -147,6 +165,7 @@
     root.style.setProperty('--gb-reader-line-height', LINE_VALUES[state.lineHeight]);
     root.style.setProperty('--gb-reader-measure', MEASURE_VALUES[state.measure]);
     root.style.setProperty('--gb-reader-theme-ready', '1');
+    applyReaderRoots(state);
     return state;
   }
 
@@ -206,6 +225,7 @@
 
   global.GBReaderPreferences = api;
   global.__GB_READER_PREFS_BOOTSTRAP__ = Object.assign({}, current);
+  emit(current, 'init');
 
   global.addEventListener('storage', function (event) {
     if (!event) return;
