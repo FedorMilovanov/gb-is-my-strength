@@ -1,4 +1,4 @@
-name: TEMP reader R4 inventory runner
+name: TEMP reader R4 registry implementation
 
 on:
   pull_request:
@@ -6,19 +6,25 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inventory:
+  implement:
     if: github.head_ref == 'lane/reader-r4-public-surface-registry-2026-07-21'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-      - name: Extract and run R4 inventory
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Rebuild exact R4 inventory
         shell: bash
         run: |
           python3 - <<'PY'
@@ -33,12 +39,420 @@ jobs:
           Path('/tmp/reader-r4-inventory.js').write_text('\n'.join(code) + '\n', encoding='utf-8')
           PY
           node /tmp/reader-r4-inventory.js
-      - name: Upload inventory evidence
+      - name: Apply explicit profile surfaces and permanent registry
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('.')
+          report = json.loads(Path('reports/reader-r4-public-surface-inventory.json').read_text(encoding='utf-8'))
+
+          for row in report['rows']:
+              profile_path = Path(row['profileFile'])
+              profile = json.loads(profile_path.read_text(encoding='utf-8'))
+              rebuilt = {}
+              inserted = False
+              for key, value in profile.items():
+                  if key in {'surfaceContractVersion', 'surface', 'seriesShape'}:
+                      continue
+                  rebuilt[key] = value
+                  if key == 'routeType':
+                      rebuilt['surfaceContractVersion'] = 1
+                      rebuilt['surface'] = row['surfaceCandidate']
+                      if row['surfaceCandidate'] == 'series':
+                          rebuilt['seriesShape'] = row['shapeCandidate']
+                      inserted = True
+              if not inserted:
+                  rebuilt['surfaceContractVersion'] = 1
+                  rebuilt['surface'] = row['surfaceCandidate']
+                  if row['surfaceCandidate'] == 'series':
+                      rebuilt['seriesShape'] = row['shapeCandidate']
+              profile_path.write_text(json.dumps(rebuilt, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          Path('scripts/lib/public-surface-registry.js').write_text(r'''\
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const { loadRouteRecords } = require('./effective-route-registry');
+
+const SURFACES = new Set(['series', 'article', 'page', 'special']);
+const SERIES_SHAPES = new Set(['flat', 'book']);
+const SERIES_ROUTE_TYPES = new Set(['series-article', 'series-chapter']);
+const SPECIAL_ROUTE_TYPES = new Set(['map', 'map-landing', 'confession', 'genealogy']);
+const SERIES_FACADE = 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+const HISTORICAL_SERIES_IMPL = 'src/components/article-pilots/gill-series/GillSeriesChrome.astro';
+const BOOK_CONFIG = 'src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts';
+const GILL_DEFAULT_CONFIG = 'src/components/article-pilots/_shared/series/seriesConfig.ts#GILL_SERIES';
+const MOBILE_REGISTRY_FILE = path.join(
+  process.cwd(),
+  'src/components/article-pilots/_shared/mobileChromeRegistry.ts'
+);
+
+function parseMobileChromeRegistry(source = fs.readFileSync(MOBILE_REGISTRY_FILE, 'utf8')) {
+  const entries = new Map();
+  const routeRe = /['"](\/[^'"]+\/)['"]\s*:\s*\{([^}]+)\}/g;
+  let match;
+  while ((match = routeRe.exec(source))) {
+    const route = match[1];
+    const body = match[2];
+    const value = (name) => {
+      const field = body.match(new RegExp(name + "\\s*:\\s*['\"]([^'\"]+)['\"]"));
+      return field ? field[1] : null;
+    };
+    entries.set(route, {
+      engine: value('engine'),
+      adapter: value('adapter'),
+      mount: value('mount'),
+    });
+  }
+  return entries;
+}
+
+function resolvedImports(record) {
+  return (record.inspection?.imports || []).filter((item) => item.resolved);
+}
+
+function hasResolvedImport(record, target) {
+  return resolvedImports(record).some((item) => item.resolved === target);
+}
+
+function historicalImplementationLeaks(record) {
+  return resolvedImports(record).filter(
+    (item) => item.resolved === HISTORICAL_SERIES_IMPL && item.importer !== SERIES_FACADE
+  );
+}
+
+function seriesConfigSources(record) {
+  const sources = [...new Set(resolvedImports(record)
+    .filter((item) => item.importer !== SERIES_FACADE)
+    .map((item) => item.resolved)
+    .filter((resolved) => /\/series\/[^/]*(?:SeriesConfig|seriesConfig)\.(?:ts|js)$/.test(resolved || ''))
+  )].sort();
+  if (hasResolvedImport(record, SERIES_FACADE) && !sources.some((item) => !item.endsWith('/seriesConfig.ts'))) {
+    return [GILL_DEFAULT_CONFIG];
+  }
+  return sources;
+}
+
+function deriveChrome(record, mobileEntries) {
+  const profile = record.profile || {};
+  const surface = profile.surface;
+  const mobile = profile.mobileChrome || mobileEntries.get(record.route) || null;
+  if (mobile) return { ...mobile, owner: 'mobile-registry' };
+  if (surface === 'series' && hasResolvedImport(record, SERIES_FACADE)) {
+    return { engine: 'series', adapter: 'series-reader', mount: 'static', owner: 'SeriesReaderChrome' };
+  }
+  if (surface === 'series') {
+    return { engine: 'series', adapter: 'route-native', mount: 'static', owner: 'route-profile' };
+  }
+  if (surface === 'article') {
+    return { engine: 'article', adapter: 'route-native', mount: 'static', owner: 'route-profile' };
+  }
+  if (surface === 'page') {
+    return { engine: 'page', adapter: 'route-native', mount: 'static', owner: 'route-profile' };
+  }
+  return {
+    engine: 'special',
+    adapter: record.owner?.owner === 'built-app' ? 'built-app' : (profile.routeType || 'route-native-app'),
+    mount: record.owner?.owner === 'built-app' ? 'built-app' : 'static',
+    owner: record.owner?.owner === 'built-app' ? 'built-app' : 'route-profile',
+  };
+}
+
+function settingsCapability(record, chrome) {
+  const surface = record.profile?.surface;
+  if (surface === 'special') return 'global-preferences+special-bridge';
+  if (hasResolvedImport(record, SERIES_FACADE) || chrome.engine === 'series' || chrome.engine === 'article') {
+    return 'reader-ui';
+  }
+  return 'global-preferences';
+}
+
+function derivePublicSurfaceEntry(record, mobileEntries = parseMobileChromeRegistry()) {
+  const profile = record.profile || {};
+  const chrome = deriveChrome(record, mobileEntries);
+  return {
+    route: record.route,
+    surface: profile.surface || null,
+    seriesShape: profile.seriesShape || null,
+    routeType: profile.routeType || null,
+    owner: record.owner?.owner || null,
+    status: record.owner?.status || null,
+    source: record.sourceRel || record.owner?.source || null,
+    profileFile: record.profileFile || null,
+    chrome,
+    settingsCapability: settingsCapability(record, chrome),
+    configSources: profile.surface === 'series' ? seriesConfigSources(record) : [],
+    facts: {
+      importsSeriesFacade: hasResolvedImport(record, SERIES_FACADE),
+      importsBookConfig: hasResolvedImport(record, BOOK_CONFIG),
+      historicalImplementationLeaks: historicalImplementationLeaks(record).map(
+        (item) => `${item.importer} -> ${item.resolved}`
+      ),
+    },
+  };
+}
+
+function validatePublicSurfaceRecord(record, entry, mobileEntries) {
+  const errors = [];
+  const profile = record.profile || {};
+  const surface = profile.surface;
+  const shape = profile.seriesShape;
+  const routeType = profile.routeType || null;
+  const issue = (message) => errors.push(`${record.route}: ${message}`);
+
+  if (profile.surfaceContractVersion !== 1) issue('surfaceContractVersion must be 1');
+  if (!SURFACES.has(surface)) issue(`invalid or missing surface: ${surface || '<missing>'}`);
+  if (surface === 'series') {
+    if (!SERIES_SHAPES.has(shape)) issue(`series requires seriesShape flat|book, got ${shape || '<missing>'}`);
+  } else if (shape != null) {
+    issue(`non-series surface must not declare seriesShape (${shape})`);
+  }
+
+  if (entry.facts.importsSeriesFacade && surface !== 'series') {
+    issue('SeriesReaderChrome import requires surface=series');
+  }
+  if (entry.facts.importsBookConfig && !(surface === 'series' && shape === 'book')) {
+    issue('hardTextsSeriesConfig import requires surface=series and seriesShape=book');
+  }
+  if (surface === 'series' && shape === 'book' && !entry.facts.importsBookConfig) {
+    issue('seriesShape=book requires resolved hardTextsSeriesConfig import');
+  }
+  if (entry.facts.historicalImplementationLeaks.length) {
+    issue(`direct GillSeriesChrome import outside façade: ${entry.facts.historicalImplementationLeaks.join(', ')}`);
+  }
+
+  if (SERIES_ROUTE_TYPES.has(routeType) && surface !== 'series') {
+    issue(`routeType=${routeType} requires surface=series`);
+  }
+  if (SPECIAL_ROUTE_TYPES.has(routeType) && surface !== 'special') {
+    issue(`routeType=${routeType} requires surface=special`);
+  }
+  if (record.owner?.owner === 'built-app' && surface !== 'special') {
+    issue('built-app owner requires surface=special');
+  }
+  if (surface === 'article' && routeType !== 'article') {
+    issue(`surface=article requires routeType=article, got ${routeType || '<missing>'}`);
+  }
+  if ((surface === 'page' || surface === 'special') && entry.facts.importsSeriesFacade) {
+    issue(`${surface} surface must not import SeriesReaderChrome`);
+  }
+
+  const mobile = profile.mobileChrome || mobileEntries.get(record.route) || null;
+  if (mobile?.engine === 'series' && surface !== 'series') issue('mobile engine=series requires surface=series');
+  if (mobile?.engine === 'article' && surface !== 'article') issue('mobile engine=article requires surface=article');
+  if (mobile?.engine === 'page' && !['page', 'special'].includes(surface)) {
+    issue(`mobile engine=page is incompatible with surface=${surface}`);
+  }
+
+  if (profile.route && profile.route !== record.route) issue(`profile.route drift: ${profile.route}`);
+  if (profile.source && record.owner?.source && profile.source !== record.owner.source) {
+    issue(`profile.source drift: ${profile.source} != ${record.owner.source}`);
+  }
+  return errors;
+}
+
+function buildPublicSurfaceRegistry(options = {}) {
+  const loaded = options.loaded || loadRouteRecords();
+  const records = options.records || loaded.records;
+  const mobileEntries = options.mobileEntries || parseMobileChromeRegistry();
+  const expectedRoutes = options.expectedRoutes || Object.keys(loaded.ownership?.routes || {});
+  const entries = records.map((record) => derivePublicSurfaceEntry(record, mobileEntries));
+  const errors = [];
+  const routeSet = new Set(entries.map((entry) => entry.route));
+
+  for (let index = 0; index < records.length; index += 1) {
+    errors.push(...validatePublicSurfaceRecord(records[index], entries[index], mobileEntries));
+  }
+  for (const route of expectedRoutes) {
+    if (!routeSet.has(route)) errors.push(`${route}: missing from public surface registry`);
+  }
+  for (const route of routeSet) {
+    if (!expectedRoutes.includes(route)) errors.push(`${route}: registry route absent from page ownership`);
+  }
+  for (const route of mobileEntries.keys()) {
+    if (!routeSet.has(route)) errors.push(`${route}: mobile registry route absent from public surface registry`);
+  }
+
+  const counts = entries.reduce((acc, entry) => {
+    acc[entry.surface || '<missing>'] = (acc[entry.surface || '<missing>'] || 0) + 1;
+    return acc;
+  }, {});
+  const shapeCounts = entries
+    .filter((entry) => entry.surface === 'series')
+    .reduce((acc, entry) => {
+      acc[entry.seriesShape || '<missing>'] = (acc[entry.seriesShape || '<missing>'] || 0) + 1;
+      return acc;
+    }, {});
+
+  return { entries, errors, counts, shapeCounts, mobileEntries };
+}
+
+module.exports = {
+  SURFACES,
+  SERIES_SHAPES,
+  SERIES_FACADE,
+  HISTORICAL_SERIES_IMPL,
+  BOOK_CONFIG,
+  parseMobileChromeRegistry,
+  derivePublicSurfaceEntry,
+  validatePublicSurfaceRecord,
+  buildPublicSurfaceRegistry,
+};
+''', encoding='utf-8')
+
+          Path('scripts/public-surface-registry-audit.js').write_text(r'''\
+#!/usr/bin/env node
+'use strict';
+
+const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
+
+const result = buildPublicSurfaceRegistry();
+console.log(`Public surfaces: ${result.entries.length}`);
+console.log(`Counts: ${JSON.stringify(result.counts)}`);
+console.log(`Series shapes: ${JSON.stringify(result.shapeCounts)}`);
+if (result.errors.length) {
+  for (const error of result.errors) console.error(`ERROR ${error}`);
+  process.exit(1);
+}
+console.log('✅ public-surface-registry: all ownership routes classified and cross-validated');
+''', encoding='utf-8')
+
+          Path('scripts/public-surface-registry-regression-test.js').write_text(r'''\
+#!/usr/bin/env node
+'use strict';
+
+const assert = require('assert/strict');
+const { loadRouteRecords } = require('./lib/effective-route-registry');
+const {
+  SERIES_FACADE,
+  HISTORICAL_SERIES_IMPL,
+  buildPublicSurfaceRegistry,
+} = require('./lib/public-surface-registry');
+
+const loaded = loadRouteRecords();
+const baseline = buildPublicSurfaceRegistry({ loaded });
+assert.deepEqual(baseline.errors, [], baseline.errors.join('\n'));
+assert.equal(baseline.entries.length, 76);
+assert.deepEqual(baseline.counts, { page: 9, series: 51, article: 2, special: 14 });
+assert.deepEqual(baseline.shapeCounts, { flat: 27, book: 24 });
+
+function cloneRecord(route) {
+  const record = loaded.records.find((item) => item.route === route);
+  assert.ok(record, `missing fixture route ${route}`);
+  return JSON.parse(JSON.stringify(record));
+}
+
+function errorsFor(record) {
+  return buildPublicSurfaceRegistry({
+    loaded,
+    records: [record],
+    expectedRoutes: [record.route],
+  }).errors;
+}
+
+{
+  const record = cloneRecord('/articles/novoe-serdce/');
+  record.profile.surface = 'nonsense';
+  assert.ok(errorsFor(record).some((error) => error.includes('invalid or missing surface')));
+}
+{
+  const record = cloneRecord('/articles/novoe-serdce/');
+  delete record.profile.seriesShape;
+  assert.ok(errorsFor(record).some((error) => error.includes('series requires seriesShape')));
+}
+{
+  const record = cloneRecord('/articles/novoe-serdce/');
+  record.profile.seriesShape = 'flat';
+  assert.ok(errorsFor(record).some((error) => error.includes('hardTextsSeriesConfig import requires')));
+}
+{
+  const record = cloneRecord('/karty/avraam/');
+  record.inspection.imports.push({ importer: record.sourceRel, resolved: SERIES_FACADE });
+  assert.ok(errorsFor(record).some((error) => error.includes('must not import SeriesReaderChrome')));
+}
+{
+  const record = cloneRecord('/articles/dzhon-gill-chast-1-chelovek/');
+  record.inspection.imports.push({ importer: record.sourceRel, resolved: HISTORICAL_SERIES_IMPL });
+  assert.ok(errorsFor(record).some((error) => error.includes('direct GillSeriesChrome import outside façade')));
+}
+{
+  const record = cloneRecord('/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/');
+  record.profile.source = 'src/pages/drifted/index.astro';
+  assert.ok(errorsFor(record).some((error) => error.includes('profile.source drift')));
+}
+{
+  const records = loaded.records.slice(1);
+  const result = buildPublicSurfaceRegistry({ loaded, records });
+  assert.ok(result.errors.some((error) => error.includes('missing from public surface registry')));
+}
+{
+  const record = cloneRecord('/about/');
+  record.profile.surface = 'series';
+  record.profile.seriesShape = 'book';
+  assert.ok(errorsFor(record).some((error) => error.includes('requires resolved hardTextsSeriesConfig import')));
+}
+
+console.log('✅ public-surface-registry mutation tests passed');
+''', encoding='utf-8')
+
+          package_path = Path('package.json')
+          package = json.loads(package_path.read_text(encoding='utf-8'))
+          scripts = package['scripts']
+          scripts['surface:registry:check'] = 'node scripts/public-surface-registry-audit.js'
+          scripts['surface:registry:test'] = 'node scripts/public-surface-registry-regression-test.js'
+          for key in ['migration:metadata:check', 'migration:metadata:check:strict']:
+              if 'surface:registry:check' not in scripts[key]:
+                  scripts[key] += ' && npm run surface:registry:check'
+          package_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          inventory_doc = Path('reports/reader-r4-public-surface-inventory.md').read_text(encoding='utf-8')
+          Path('docs/READER-R4-PUBLIC-SURFACE-INVENTORY-2026-07-21.md').write_text(inventory_doc, encoding='utf-8')
+          Path('docs/READER-R4-PUBLIC-SURFACE-REGISTRY-2026-07-21.md').write_text('''# Reader R4 — public surface registry\n\n## Canonical model\n\nEvery public route is already owned by `migration/page-ownership.json` and described by one file in `data/route-profiles/`. R4 extends those existing profiles; it does not create a second handwritten route list.\n\nRequired profile fields:\n\n- `surfaceContractVersion: 1`;\n- `surface: series | article | page | special`;\n- `seriesShape: flat | book` only when `surface=series`.\n\nThe build-time registry derives chrome owner, config sources and settings capability from the actual resolved import graph and `mobileChromeRegistry.ts`.\n\n## Verified baseline\n\n- 76 owned public routes;\n- 51 series routes: 27 flat and 24 book;\n- 2 standalone articles;\n- 9 ordinary pages;\n- 14 special applications/surfaces;\n- 41 exact `SeriesReaderChrome` consumers;\n- 0 direct `GillSeriesChrome` leaks outside the façade.\n\n## Invariants\n\n1. A book is always `surface=series` plus `seriesShape=book`; it is never a fifth engine.\n2. A resolved `SeriesReaderChrome` import requires `surface=series`.\n3. A resolved `hardTextsSeriesConfig` import requires `seriesShape=book`.\n4. Map, map-landing, confession and genealogy route types are `special`.\n5. Built applications are `special`.\n6. Mobile series/article adapters must agree with the profile surface. A page adapter may be reused by a special surface only as navigation chrome.\n7. The historical `GillSeriesChrome` implementation may be imported only by `SeriesReaderChrome`.\n8. Registry validation is read-only and covers every page-ownership route.\n\n## Change workflow\n\nTo add or migrate a public route, edit its existing route profile and production source. Run:\n\n```bash\nnpm run surface:registry:check\nnpm run surface:registry:test\nnpm run migration:metadata:check:strict\n```\n\nChanging the series implementation remains centralized behind `SeriesReaderChrome`; changing global preferences remains centralized in Reader R1. R4 classifies and cross-validates surfaces but does not redesign their DOM or visuals.\n''', encoding='utf-8')
+          PY
+      - name: Validate permanent R4 contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          {
+            node --check scripts/lib/public-surface-registry.js
+            node --check scripts/public-surface-registry-audit.js
+            node --check scripts/public-surface-registry-regression-test.js
+            npm run surface:registry:check
+            npm run surface:registry:test
+            npm run migration:metadata:check:strict
+            git diff --check
+          } 2>&1 | tee reports/reader-r4-implementation.log
+      - name: Commit permanent non-workflow implementation
+        shell: bash
+        run: |
+          git add data/route-profiles \
+                  package.json \
+                  scripts/lib/public-surface-registry.js \
+                  scripts/public-surface-registry-audit.js \
+                  scripts/public-surface-registry-regression-test.js \
+                  docs/READER-R4-PUBLIC-SURFACE-INVENTORY-2026-07-21.md \
+                  docs/READER-R4-PUBLIC-SURFACE-REGISTRY-2026-07-21.md
+          if git diff --cached --quiet; then
+            echo 'Permanent R4 implementation already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat(reader): derive public surface registry from route profiles'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
+      - name: Upload R4 diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reader-r4-public-surface-inventory
+          name: reader-r4-implementation-${{ github.run_id }}
           path: |
+            reports/reader-r4-implementation.log
             reports/reader-r4-public-surface-inventory.md
             reports/reader-r4-public-surface-inventory.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 1
