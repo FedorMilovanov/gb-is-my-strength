@@ -67,6 +67,7 @@ reverse = anchor + r'''    await page.evaluate(() => {
     });
     await page.evaluate(() => window.OverlayRuntime.close('reverse-b', 'programmatic'));
     await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'openBRoot');
+    await page.waitForFunction(() => Math.round(window.scrollY) === 420);
     assert.deepEqual(await page.evaluate(() => ({
       size: window.OverlayRuntime.size(),
       position: document.body.style.position,
@@ -80,4 +81,4 @@ text = text.replace(
     'forward/reverse nested stack + exact restore + focus + Escape + pagehide + reduced motion',
 )
 path.write_text(text, encoding='utf-8')
-print('Browser fixture adds reverse ownership order without duplicating scroll setup')
+print('Browser fixture awaits reverse ownership and scroll settlement')
