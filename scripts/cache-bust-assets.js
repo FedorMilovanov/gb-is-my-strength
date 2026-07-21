@@ -13,6 +13,7 @@
 
 const ASSETS = [
   'css/site.css',
+  'css/reader-preferences.css',
   'css/home.css',
   'css/command-palette.css',
   'css/mobile-hotfix.css',
@@ -25,6 +26,8 @@ const ASSETS = [
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
   'js/site.js',
+  'js/reader-preferences-head.js',
+  'js/reader-preferences.js',
   'js/site-utils.js',
   'js/scroll-perf.js',
   'js/bookmark-engine.js',

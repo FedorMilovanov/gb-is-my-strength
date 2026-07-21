@@ -108,11 +108,16 @@ const runtimeScripts = [
   assetUrl('js/sw-register.js'),
 ];
 const searchSrc = assetUrl('js/search.js');
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
 <!doctype html>
 <html lang="ru">
   <head>
+
     <meta charset="utf-8" />
+  <ReaderPreferencesHead />
+
+
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <Seo
       title={title}

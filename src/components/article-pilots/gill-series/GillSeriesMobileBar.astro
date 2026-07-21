@@ -13,8 +13,8 @@
  *     fix for the A−/A+ reflow bug: hideGillTopBar() only ever touches the
  *     top bar's own class, never closeGillSheet()).
  *   BOTTOM bar: dual-progress ring → «Сейчас читаете» (opens Part TOC,
- *     unchanged) → theme cycle (День→Сепия→Ночь→День,
- *     window.applyGillReaderTheme) → settings sheet trigger → «Поделиться»
+ *     unchanged) → fast binary Day/Night toggle through the canonical global
+ *     preference adapter (Sepia remains in Settings) → settings → «Поделиться»
  *     (data-action="share" — kept verbatim; js/highlights.js docks its
  *     contextual save FAB immediately before this exact selector). Always
  *     visible, never auto-hides.
@@ -136,86 +136,52 @@ const page = config.pages[pageId];
 </MobileChromeShell>
 
 <script>
-  const READER_THEME_KEY = 'gb:gill-reader-theme:v1';
+  function currentGillTheme() {
+    const preferences = (window as any).GBReaderPreferences?.get?.() || (window as any).__GB_READER_PREFS_BOOTSTRAP__;
+    if (preferences?.theme) return preferences.theme;
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  }
 
-  // Shared by the bottom-bar quick-cycle button AND GillReaderSettingsSheet's
-  // segmented control — one function owns theme application so the two
-  // surfaces can never fall out of sync. "Ночь" reuses the sitewide
-  // html.dark toggle (single dark-mode implementation); "Сепия" is scoped
-  // to [data-gill-v16][data-gill-reader-theme="sepia"] under <64em only
-  // (see css/floating-cluster.css) and never touches html.sepia, which
-  // doesn't exist sitewide.
-  function applyGillReaderTheme(theme: string) {
+  function syncGillThemeSegment(theme = currentGillTheme()) {
     const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      if (gillRoot) gillRoot.removeAttribute('data-gill-reader-theme');
-    } else if (theme === 'sepia') {
-      document.documentElement.classList.remove('dark');
-      if (gillRoot) gillRoot.setAttribute('data-gill-reader-theme', 'sepia');
-    } else {
-      document.documentElement.classList.remove('dark');
-      if (gillRoot) gillRoot.removeAttribute('data-gill-reader-theme');
+    if (gillRoot) {
+      if (theme === 'sepia') gillRoot.setAttribute('data-gill-reader-theme', 'sepia');
+      else gillRoot.removeAttribute('data-gill-reader-theme');
     }
-    try { localStorage.setItem(READER_THEME_KEY, theme); } catch (_) {}
-    try { localStorage.setItem('theme', theme === 'dark' ? 'dark' : 'light'); } catch (_) {}
-
     const label = theme === 'dark' ? 'Ночь' : theme === 'sepia' ? 'Сепия' : 'День';
     const glyph = theme === 'dark' ? '☾' : theme === 'sepia' ? '◐' : '☀';
     const cycleBtn = document.getElementById('mobGillThemeBtn');
     if (cycleBtn) {
       cycleBtn.setAttribute('aria-label', 'Тема: ' + label);
-      const g = cycleBtn.querySelector('.theme-glyph');
-      if (g) g.textContent = glyph;
+      const glyphNode = cycleBtn.querySelector('.theme-glyph');
+      if (glyphNode) glyphNode.textContent = glyph;
     }
-    document.querySelectorAll('[data-gill-theme-btn]').forEach((btn) => {
-      btn.setAttribute('aria-pressed', (btn as HTMLElement).dataset.theme === theme ? 'true' : 'false');
+    document.querySelectorAll('[data-gill-theme-btn]').forEach((button) => {
+      button.setAttribute('aria-pressed', (button as HTMLElement).dataset.theme === theme ? 'true' : 'false');
     });
+  }
+
+  function applyGillReaderTheme(theme: string) {
+    const api = (window as any).GBReaderPreferences;
+    if (api && typeof api.setTheme === 'function') api.setTheme(theme, { source: 'gill-reader-theme' });
+    else {
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      document.documentElement.setAttribute('data-reader-theme', theme);
+    }
+    syncGillThemeSegment(theme);
   }
   (window as any).applyGillReaderTheme = applyGillReaderTheme;
 
-  // Читает истинное состояние темы (dark→ночь, reader-theme=sepia→сепия,
-  // иначе день) и проставляет aria-pressed на сегменте «Тема» листа настроек.
-  function syncGillThemeSegment() {
-    const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
-    const theme = document.documentElement.classList.contains('dark')
-      ? 'dark'
-      : gillRoot && gillRoot.getAttribute('data-gill-reader-theme') === 'sepia'
-        ? 'sepia'
-        : 'light';
-    document.querySelectorAll('[data-gill-theme-btn]').forEach((btn) => {
-      btn.setAttribute('aria-pressed', (btn as HTMLElement).dataset.theme === theme ? 'true' : 'false');
-    });
-  }
-
-  // Быстрая кнопка бара теперь канонический .gb-theme-toggle (sitewide
-  // toggleTheme → html.dark) и НЕ проходит через applyGillReaderTheme —
-  // поэтому сегмент «Тема» в листе настроек надо досинхронизировать
-  // отдельно, иначе лист покажет «День», когда сайт уже в «Ночи»
-  // (регрессия при переходе на канон). Бар/клавиша/десктоп-угол —
-  // всегда чистые день/ночь: при таком переключении сбрасываем сепию.
   function initGillThemeSync() {
-    try {
-      const saved = localStorage.getItem(READER_THEME_KEY);
-      if (saved === 'sepia' && !document.documentElement.classList.contains('dark')) {
-        applyGillReaderTheme('sepia');
-      }
-    } catch (_) {}
     syncGillThemeSegment();
-
-    const clearSepiaAndSync = () => requestAnimationFrame(() => {
-      const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
-      if (gillRoot) gillRoot.removeAttribute('data-gill-reader-theme');
-      syncGillThemeSegment();
-    });
     document
       .querySelectorAll('.mobile-bottom-bar .gb-theme-toggle, .gbs-theme-corner .gb-theme-toggle')
-      .forEach((btn) => btn.addEventListener('click', clearSepiaAndSync));
-
-    // Лист настроек могли открыть ПОСЛЕ смены темы где-то ещё — синхроним
-    // сегмент на открытии, чтобы он всегда отражал истинное состояние.
-    const sBtn = document.getElementById('mobSettingsBtn');
-    if (sBtn) sBtn.addEventListener('click', () => requestAnimationFrame(syncGillThemeSegment));
+      .forEach((button) => button.addEventListener('click', () => requestAnimationFrame(() => syncGillThemeSegment())));
+    const settingsButton = document.getElementById('mobSettingsBtn');
+    if (settingsButton) settingsButton.addEventListener('click', () => requestAnimationFrame(() => syncGillThemeSegment()));
+    document.addEventListener('gb:reader-preferences-change', (event: Event) => {
+      syncGillThemeSegment((event as CustomEvent).detail?.preferences?.theme || currentGillTheme());
+    });
   }
 
   // Smart auto-hide (owner: "верхняя как-то умно убирается и появляется…
