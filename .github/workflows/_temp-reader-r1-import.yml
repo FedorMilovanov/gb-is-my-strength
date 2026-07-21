@@ -1,0 +1,87 @@
+name: TEMP reader R1 import
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    if: github.actor != 'github-actions[bot]' && github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: lane/system-reader-preferences-r1-final-2026-07-21
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Import permanent R1 diff onto current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_branch='origin/lane/system-reader-preferences-foundation-2026-07-21'
+          git fetch origin main lane/system-reader-preferences-foundation-2026-07-21
+          base="$(git merge-base origin/main "$source_branch")"
+          git diff --binary "$base" "$source_branch" -- . \
+            ':(exclude).github/workflows/_temp-*' \
+            ':(exclude)scripts/_temp_*' \
+            ':(exclude).github/workflows/shared-files-guard.yml' \
+            > /tmp/reader-r1.patch
+          test -s /tmp/reader-r1.patch
+          git apply --3way --index /tmp/reader-r1.patch
+
+          git show "$source_branch":.github/workflows/_temp-reader-preferences-full-gate.yml \
+            > .github/workflows/_temp-reader-preferences-full-gate.yml
+          git add .github/workflows/_temp-reader-preferences-full-gate.yml
+
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/shared-files-guard.yml')
+          text = path.read_text(encoding='utf-8')
+          old = '''      - name: Map layers and palette regressions
+                run: node scripts/map-layers-theme-regression-test.js
+
+              - name: Guard shared/system files (strict on main/PR)
+          '''
+          new = '''      - name: Map layers and palette regressions
+                run: node scripts/map-layers-theme-regression-test.js
+
+              - name: Reader preferences regressions
+                run: node scripts/reader-preferences-regression-test.js
+
+              - name: Guard shared/system files (strict on main/PR)
+          '''
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one permanent guard insertion point, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          git add .github/workflows/shared-files-guard.yml
+
+          git rm .github/workflows/_temp-reader-r1-import.yml
+          git diff --cached --check
+
+      - name: Verify imported contracts
+        run: |
+          node --check js/reader-preferences-head.js
+          node --check js/reader-preferences.js
+          node --check scripts/reader-preferences-browser-smoke.js
+          node scripts/reader-preferences-regression-test.js
+          node scripts/audit-pro.js
+          npm run engine:contracts
+
+      - name: Commit clean R1 transfer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "[LANE lane/system-reader-preferences-r1-final-2026-07-21] feat(reader): transfer universal preference foundation"
+          git push origin HEAD:lane/system-reader-preferences-r1-final-2026-07-21
