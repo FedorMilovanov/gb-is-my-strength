@@ -41,8 +41,10 @@ jobs:
           rm -f .github/_temp-nagornaya-bar-trigger
           git add -A
 
-      - name: Cache-bust read-only contract
-        run: npm run cache-bust
+      - name: Materialize and verify canonical revisions
+        run: |
+          node scripts/cache-bust.js --write
+          npm run cache-bust
 
       - name: Nagornaya bar asset source contract
         run: npm run nagornaya:bar-asset:contract
@@ -73,7 +75,8 @@ jobs:
             src/components/nagornaya/chast-3/NagornayaChast3PageFooter.astro \
             src/components/nagornaya/chast-4/NagornayaChast4PageFooter.astro \
             src/components/nagornaya/chast-5/NagornayaChast5PageFooter.astro \
-            nagornaya/chast-1/index.html nagornaya/chast-2/index.html nagornaya/chast-3/index.html nagornaya/chast-4/index.html nagornaya/chast-5/index.html
+            nagornaya/chast-1/index.html nagornaya/chast-2/index.html nagornaya/chast-3/index.html nagornaya/chast-4/index.html nagornaya/chast-5/index.html \
+            src/lib/asset-version.js
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'fix(nagornaya): enforce bar asset publication contract'
