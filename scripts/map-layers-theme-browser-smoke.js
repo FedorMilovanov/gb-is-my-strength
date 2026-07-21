@@ -22,6 +22,20 @@ async function openMap(context, slug) {
   return { page, errors };
 }
 
+async function mountRouteFixture(page, routeUrl) {
+  await page.evaluate(async (url) => {
+    const route = await fetch(url).then((response) => {
+      if (!response.ok) throw new Error(`route fixture fetch failed: ${response.status}`);
+      return response.json();
+    });
+    document.body.innerHTML = '<div id="map-engine-fixture" style="position:fixed;inset:0;width:100vw;height:100vh"></div>';
+    const container = document.getElementById('map-engine-fixture');
+    window.__mapFixture = window.MapEngine.createMap(container, route, { showIntro: false, showCompass: false });
+  }, routeUrl);
+  await page.waitForSelector('#map-engine-fixture.me-map', { state: 'attached', timeout: 15000 });
+  await page.waitForTimeout(450);
+}
+
 async function clickLayer(page, id) {
   const selector = `.me-layers__row[data-layer-id="${id}"] .me-layers__toggle`;
   await page.waitForSelector(selector, { timeout: 8000 });
@@ -129,9 +143,11 @@ async function elementLayerState(page, selector) {
       await page.close();
     }
 
-    // PAVEL: alternative journey membership keeps shared Antioch until all matching journeys are off.
+    // PAVEL: public page intentionally remains an owner-approved audit placeholder.
+    // Mount its real route.json only inside an isolated shared-engine test fixture.
     {
-      const { page, errors } = await openMap(context, 'pavel');
+      const { page, errors } = await openMap(context, 'ishod');
+      await mountRouteFixture(page, '/karty/pavel/route.json');
       const antiochSelector = '#me-markers [data-place-id="antioch"]';
       await page.waitForSelector(antiochSelector, { state: 'attached' });
       const initial = await elementLayerState(page, antiochSelector);
