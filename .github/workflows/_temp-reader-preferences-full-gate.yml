@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   full-gate:
-    if: github.head_ref == 'lane/system-reader-preferences-foundation-2026-07-21'
+    if: github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
