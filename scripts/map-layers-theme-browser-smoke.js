@@ -116,10 +116,11 @@ async function elementLayerState(page, selector) {
         pressed: el.getAttribute('aria-pressed'),
         onClass: el.classList.contains('me-layers__toggle--on'),
       }));
-      await clickLayer(page, 'war');
-      const warOff = await elementLayerState(page, warSelector);
+      const warDefaultOff = await elementLayerState(page, warSelector);
       await clickLayer(page, 'war');
       const warOn = await elementLayerState(page, warSelector);
+      await clickLayer(page, 'war');
+      const warOff = await elementLayerState(page, warSelector);
       await clickLayer(page, 'cand');
       const candOnBeforeStory = await elementLayerState(page, candSelector);
       await clickLayer(page, 'cand');
@@ -137,9 +138,9 @@ async function elementLayerState(page, selector) {
         errors.length === 0 &&
           theme.theme === 'light' && theme.stored === 'light' &&
           candDefaultOff.hidden === '1' && candToggleDefault.pressed === 'false' && !candToggleDefault.onClass &&
-          warOff.hidden === '1' && warOn.hidden === '0' &&
+          warDefaultOff.hidden === '1' && warOn.hidden === '0' && warOff.hidden === '1' &&
           candOnBeforeStory.hidden === '0' && candOffBeforeStory.hidden === '1' && candOffAfterStory.hidden === '1',
-        { theme, candDefaultOff, candToggleDefault, warOff, warOn, candOnBeforeStory, candOffBeforeStory, candOffAfterStory, errors },
+        { theme, candDefaultOff, candToggleDefault, warDefaultOff, warOn, warOff, candOnBeforeStory, candOffBeforeStory, candOffAfterStory, errors },
       );
       await page.close();
     }
