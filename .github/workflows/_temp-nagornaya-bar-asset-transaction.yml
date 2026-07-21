@@ -13,9 +13,7 @@ permissions:
 
 jobs:
   materialize:
-    if: >-
-      (github.event_name == 'push' && contains(github.event.head_commit.message, 'complete bar asset patch transaction')) ||
-      (github.event_name == 'pull_request' && github.head_ref == 'agent/nagornaya-bar-asset-contract-2026-07-22')
+    if: github.head_ref == 'agent/nagornaya-bar-asset-contract-2026-07-22' || github.ref_name == 'agent/nagornaya-bar-asset-contract-2026-07-22'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -32,27 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Repair transaction literal and apply exact patch
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('scripts/_temp-patch-nagornaya-bar-asset.py')
-          text = p.read_text(encoding='utf-8')
-          start = text.index("cache = ROOT / 'scripts/cache-bust.js'")
-          end = text.index('\n\nfor part in range(1, 6):', start)
-          block = r'''cache = ROOT / 'scripts/cache-bust.js'
-          once(
-              cache,
-              r"    const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`, 'g');",
-              r''' + '"""' + r'''    const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s"'&}>]+`, 'g');''' + '"""' + r''',
-              'accept arbitrary stale Astro revision values',
-          )'''
-          p.write_text(text[:start] + block + text[end:], encoding='utf-8')
-          PY
-          python3 scripts/_temp-patch-nagornaya-bar-asset.py
+      - name: Apply repaired exact patch
+        run: python3 scripts/_temp-repair-run-nagornaya-bar.py
 
       - name: Remove transaction-only files
         run: |
+          git rm scripts/_temp-repair-run-nagornaya-bar.py
           git rm scripts/_temp-patch-nagornaya-bar-asset.py
           git rm .github/workflows/_temp-nagornaya-bar-asset-transaction.yml
           git rm -f .github/_temp-nagornaya-bar-trigger || true
