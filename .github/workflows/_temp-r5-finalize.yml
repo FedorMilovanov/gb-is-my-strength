@@ -29,7 +29,9 @@ jobs:
           cache: "npm"
 
       - name: Prepare permanent R5 files
-        run: python3 scripts/_temp-r5-finalize.py
+        run: |
+          python3 scripts/_temp-r5-finalize.py
+          python3 scripts/_temp-r5-browser-fix.py
 
       - name: Validate static and runtime contracts
         run: |
@@ -48,6 +50,8 @@ jobs:
 
       - name: Validate browser ownership matrix
         shell: bash
+        env:
+          PW_BROWSER: chromium
         run: |
           set -o pipefail
           mkdir -p reports
@@ -86,14 +90,17 @@ jobs:
             scripts/_temp-r5-patch-test-cases.py \
             scripts/_temp-r5-patch-test-harness.py \
             scripts/_temp-reader-r5-inventory.js \
+            scripts/_temp-r5-browser-fix.py \
             scripts/_temp-r5-finalize.py
           git add -- \
             .github/workflows/shared-files-guard.yml \
             .github/workflows/overlay-runtime-browser.yml \
             docs/READER-R5-OVERLAY-RUNTIME-INVENTORY-2026-07-21.md \
+            js/site-utils.js \
             package.json \
             scripts/overlay-runtime-browser-test.js \
             scripts/overlay-runtime-contract-test.js \
+            scripts/runtime-integrity-test.js \
             src/components/article-pilots/_shared/ReaderSettings.astro
           test -z "$(git diff --cached --name-only | grep -E '(^|/)_temp-|reader-r5-overlay-runtime-inventory\.json$' || true)"
           git config user.name "github-actions[bot]"
