@@ -56,6 +56,8 @@ jobs:
             python3 scripts/_temp-special-map-browser-finalize.py
             node --check karty/_engine/map-engine.js
             node --check scripts/map-overlay-runtime-browser-test.js
+            echo '--- remaining direct body lock writers ---'
+            grep -nE 'document\.body\.style\.(overflow|position|top|left|right|width)[[:space:]]*=' karty/_engine/map-engine.js || true
             npm run overlay:runtime:test
             git diff --check
           } > reports/special-map-materialize.log 2>&1
@@ -69,7 +71,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: special-map-materialize-diagnostic
-          path: reports/special-map-materialize.log
+          path: |
+            reports/special-map-materialize.log
+            karty/_engine/map-engine.js
+            scripts/overlay-runtime-contract-test.js
           retention-days: 1
 
       - name: Fail on materialize error
