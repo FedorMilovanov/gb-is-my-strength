@@ -38,6 +38,9 @@ jobs:
           node --check js/floating-cluster-controller.js
           node scripts/overlay-runtime-contract-test.js
 
+      - name: Special overlay writer regressions
+        run: npm run overlay:special:writers:test
+
       - name: Map engine P0 regressions
         run: |
           node --check karty/_engine/map-engine.js
