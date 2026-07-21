@@ -34,6 +34,9 @@ jobs:
       - name: Workflow policy contracts
         run: npm run workflows:check
 
+      - name: Readiness-to-deploy workflow linkage
+        run: node scripts/workflow-linkage-regression-test.js
+
       - name: Runtime integrity regressions
         run: node scripts/runtime-integrity-test.js
 
