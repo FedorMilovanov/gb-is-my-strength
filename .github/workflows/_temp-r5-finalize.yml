@@ -50,7 +50,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: reader-r5-prepare-diagnostic
-          path: reports/reader-r5-prepare.log
+          path: |
+            reports/reader-r5-prepare.log
+            scripts/overlay-runtime-browser-test.js
+            js/site-utils.js
           if-no-files-found: error
           retention-days: 1
 
