@@ -49,6 +49,7 @@ assert(light.svgFilter && light.svgFilter !== 'none', 'light theme must material
 
 const source = fs.readFileSync(path.join(root, 'karty/_engine/map-engine.js'), 'utf8');
 assert(source.includes("container.setAttribute('data-map-theme',palette.id)"));
+assert(source.includes('container.style.backgroundColor=palette.bg;'));
 assert(source.includes('applyLayerVisibility();'));
 assert(source.includes("g.setAttribute('data-layer-all',membership.all.join(' '))"));
 assert(source.includes("g.setAttribute('data-layer-any',membership.any.join(' '))"));

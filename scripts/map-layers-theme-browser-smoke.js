@@ -59,9 +59,10 @@ async function elementLayerState(page, selector) {
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport: { width: 1366, height: 900 } });
   try {
-    await context.addInitScript(() => {
-      try { localStorage.removeItem('me-map-theme'); } catch (_) {}
-    });
+    const resetPage = await context.newPage();
+    await resetPage.goto(`${BASE}/karty/ishod/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await resetPage.evaluate(() => { try { localStorage.removeItem('me-map-theme'); } catch (_) {} });
+    await resetPage.close();
 
     // ISHOD: main layer controls markers and paths, then restores them.
     {
@@ -102,7 +103,7 @@ async function elementLayerState(page, selector) {
     // AVRAAM: explicit stage/type facets remain restrictive and survive rerender.
     {
       const { page, errors } = await openMap(context, 'avraam');
-      const warSelector = '#me-markers [data-layer~="war"]';
+      const warSelector = '#me-markers [data-layer-all~="war"]';
       const candSelector = '#me-markers [data-layer~="cand"]';
       await page.waitForSelector(warSelector, { state: 'attached' });
       await page.waitForSelector(candSelector, { state: 'attached' });

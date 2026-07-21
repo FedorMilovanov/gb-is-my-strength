@@ -1083,6 +1083,8 @@ container.appendChild(header);
       const palette=getMapThemePalette(theme);
       activeTheme=palette.id;
       container.setAttribute('data-map-theme',palette.id);
+      container.style.backgroundColor=palette.bg;
+      container.style.color=palette.text;
       container.style.setProperty('--me-bg',palette.bg);
       container.style.setProperty('--me-panel-bg',palette.panelBg);
       container.style.setProperty('--me-text',palette.text);
