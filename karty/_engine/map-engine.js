@@ -33,6 +33,7 @@
 const MapEngine = (function() {
   const DEFAULTS = { W0: 1900, H0: 1430, minW: 300, maxW: 2600, padX: 450, padY: 380, tourDelay: 2500, kmPerUnit: 0.92, kmPerDay: 30 };
   const EASE = { outCubic: p => 1 - Math.pow(1 - p, 3) };
+  let mapOverlaySequence = 0;
 
   // Verified Archaeological References (2024-2026 discoveries)
   const ARCHAEOLOGY_REFERENCES = {
@@ -485,7 +486,53 @@ const MapEngine = (function() {
     }
     const route = normalizeRouteData(routeData);
     const cfg = {...DEFAULTS, ...opts};
-    
+
+    const overlayRuntime = window.OverlayRuntime || window.SiteUtils?.OverlayRuntime || null;
+    const mapInstanceToken = ++mapOverlaySequence;
+    const mapOwnerStem = `special:map:${String(route.meta?.id || 'map').replace(/[^a-zA-Z0-9_-]+/g, '-')}:${mapInstanceToken}`;
+    const panelOverlayOwner = `${mapOwnerStem}:panel`;
+    const photoOverlayOwner = `${mapOwnerStem}:photo`;
+    const fallbackOverlayOpeners = new Map();
+    const fallbackOverlayOwners = new Set();
+
+    function specialInertTargets(exclusions = []) {
+      const excluded = new Set(exclusions.filter(Boolean));
+      return Array.from(container.children).filter(element => !excluded.has(element));
+    }
+
+    function focusSpecialTarget(target) {
+      target = typeof target === 'function' ? target() : target;
+      if (!target || typeof target.focus !== 'function') return;
+      try { target.focus({preventScroll:true}); }
+      catch (_) { try { target.focus(); } catch (_) {} }
+    }
+
+    function openSpecialOverlay(ownerId, options = {}) {
+      if (overlayRuntime?.open) return overlayRuntime.open(ownerId, options);
+      const opener = options.opener || document.activeElement;
+      if (opener && opener !== document.body && opener !== document.documentElement) fallbackOverlayOpeners.set(ownerId, opener);
+      fallbackOverlayOwners.add(ownerId);
+      if (options.lockScroll !== false) window.SiteUtils?.lockScroll?.(ownerId);
+      setTimeout(() => focusSpecialTarget(options.focusTarget), 0);
+      return {ownerId, element:options.element || null};
+    }
+
+    function closeSpecialOverlay(ownerId, reason = 'close', options = {}) {
+      if (overlayRuntime?.close) return overlayRuntime.close(ownerId, reason, options);
+      if (!fallbackOverlayOwners.has(ownerId)) return false;
+      fallbackOverlayOwners.delete(ownerId);
+      window.SiteUtils?.unlockScroll?.(ownerId);
+      const opener = fallbackOverlayOpeners.get(ownerId);
+      fallbackOverlayOpeners.delete(ownerId);
+      if (options.restoreFocus !== false && opener) setTimeout(() => focusSpecialTarget(opener), 0);
+      return true;
+    }
+
+    function destroySpecialOverlay(ownerId) {
+      if (overlayRuntime?.destroy) return overlayRuntime.destroy(ownerId);
+      return closeSpecialOverlay(ownerId, 'destroy', {restoreFocus:false});
+    }
+
     // State: one deterministic transaction before the first render.
     const stateStorageKey='me-map-state-'+(route.meta?.id||'map');
     let savedInitialState=null;
@@ -536,8 +583,6 @@ const MapEngine = (function() {
       // Remove injected CSS
       const css = document.getElementById('me-base-css');
       if (css) css.remove();
-      // Restore body overflow
-      document.body.style.overflow = '';
     }
     const initVp = initialState.viewport || [cfg.W0/2,cfg.H0/2,cfg.W0];
     const rawCx=Number(initVp[0]),rawCy=Number(initVp[1]),rawW=Number(initVp[2]);
@@ -1247,6 +1292,8 @@ header.appendChild(shareBtn);
     
     // Panel
     const panel=document.createElement('div');panel.className='me-panel';
+    panel.setAttribute('aria-hidden','true');
+    panel.setAttribute('inert','');
     panel.innerHTML='<button class="me-panel__close">×</button><button class="me-panel__scroll-top" style="display:none;position:absolute;top:10px;right:44px;z-index:5;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#9aa2ae;font-size:14px;cursor:pointer;padding:3px 7px;line-height:1">↑</button><div class="me-panel__resize"></div><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div><div id="me-tour-speed" style="display:none;position:absolute;top:4px;right:8px;display:none;gap:4px"><button id="me-tour-faster" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#9aa2ae;font-size:10px;cursor:pointer;padding:1px 6px">▶▶</button><button id="me-tour-slower" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#9aa2ae;font-size:10px;cursor:pointer;padding:1px 6px">▶</button></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
     // Scroll-to-top button logic
     const scrollTopBtn = panel.querySelector('.me-panel__scroll-top');
@@ -2135,20 +2182,22 @@ container.appendChild(panel);
     // ── Public API ──
     function open(id){
       try {
+      const panelOpener = document.activeElement;
       const place=(route.places||[]).find(p=>p.id===id);
       if(!place)return;
       activePlaceId=id;
       panel.classList.add('me-panel--open');
       panelBackdrop.classList.add('me-panel__backdrop--active');
-      // Auto-focus first tab for keyboard navigation
-      _tm(() => {
-        const firstTab = panel.querySelector('.me-tab');
-        if (firstTab) firstTab.focus();
-      }, 400);
-      document.body.style.overflow = 'hidden';
       updateUrl();
       renderMarkers();
       renderPanel();
+      openSpecialOverlay(panelOverlayOwner, {
+        element: panel,
+        opener: panelOpener,
+        focusTarget: () => panel.querySelector('.me-tab:not([disabled])') || panel.querySelector('.me-panel__close'),
+        inertTargets: specialInertTargets([panel, panelBackdrop, photoModal]),
+        onRequestClose: reason => close(reason),
+      });
       // Animate content entrance
       const content = panel.querySelector('.me-content');
       if (content) {
@@ -2207,7 +2256,8 @@ container.appendChild(panel);
     }
     }
 
-    function close(){
+    function close(reason = 'close', closeOptions = {}){
+      closePhoto('panel-close', {restoreFocus:false});
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
       // Reset all stage paths to equal opacity
@@ -2221,9 +2271,7 @@ container.appendChild(panel);
       });
       pathsG.querySelectorAll('.me-route-label').forEach(lbl => lbl.setAttribute('opacity','0.72'));
       panelBackdrop.classList.remove('me-panel__backdrop--active');
-      document.body.style.overflow = '';
-      // Return focus to search input
-      _tm(() => { if (searchInput) searchInput.focus(); }, 100);
+      closeSpecialOverlay(panelOverlayOwner, reason, closeOptions);
       hideCaption();
       updateUrl();
       saveState();
@@ -2434,9 +2482,11 @@ container.appendChild(panel);
     }
 
     
-    // Photo modal
+    // Photo modal — a nested OverlayRuntime owner above the place panel.
     const photoModal = document.createElement('div');
     photoModal.className = 'me-photo-modal';
+    photoModal.setAttribute('aria-hidden','true');
+    photoModal.setAttribute('inert','');
     photoModal.innerHTML = '<div class="me-photo-modal__backdrop"></div><button class="me-photo-modal__close" aria-label="Закрыть">×</button><img class="me-photo-modal__img" alt=""><div class="me-photo-modal__caption"></div>';
     container.appendChild(photoModal);
     // Photo swipe
@@ -2460,15 +2510,28 @@ container.appendChild(panel);
         haptic(10);
       }
     }, {passive: true});
-    _on(photoModal.querySelector('.me-photo-modal__backdrop'), 'click', () => photoModal.classList.remove('me-photo-modal--open'));
-    _on(photoModal.querySelector('.me-photo-modal__close'), 'click', () => photoModal.classList.remove('me-photo-modal--open'));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') photoModal.classList.remove('me-photo-modal--open'); });
+
+    function closePhoto(reason = 'close', closeOptions = {}) {
+      photoModal.classList.remove('me-photo-modal--open');
+      closeSpecialOverlay(photoOverlayOwner, reason, closeOptions);
+    }
+
+    _on(photoModal.querySelector('.me-photo-modal__backdrop'), 'click', () => closePhoto('backdrop'));
+    _on(photoModal.querySelector('.me-photo-modal__close'), 'click', () => closePhoto('button'));
 
     function openPhoto(src, caption, credit, place, idx) {
+      const opener = document.activeElement;
       if (place) { photoCurrentPlace = place; photoCurrentIdx = idx || 0; }
       photoModal.querySelector('.me-photo-modal__img').src = src;
       photoModal.querySelector('.me-photo-modal__caption').innerHTML = caption ? caption + (credit ? ' · <span class="me-photo-modal__credit">' + credit + '</span>' : '') : '';
       photoModal.classList.add('me-photo-modal--open');
+      openSpecialOverlay(photoOverlayOwner, {
+        element: photoModal,
+        opener,
+        focusTarget: () => photoModal.querySelector('.me-photo-modal__close'),
+        inertTargets: specialInertTargets([photoModal]),
+        onRequestClose: reason => closePhoto(reason),
+      });
     }
     
     // Make photos in panel clickable via delegation
@@ -2597,17 +2660,6 @@ container.appendChild(panel);
       swipeStartX = e.touches[0].clientX;
     }, {passive: true});
     
-    // Focus trap in panel
-    panel.addEventListener('keydown', e => {
-      if (e.key !== 'Tab' || !panel.classList.contains('me-panel--open')) return;
-      const focusable = panel.querySelectorAll('button:not([disabled]), [tabindex]:not([tabindex="-1"])');
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    });
-
     panel.addEventListener('touchend', e => {
       if (!activePlaceId) return;
       const dx = (e.changedTouches[0]?.clientX || 0) - swipeStartX;
@@ -2668,7 +2720,7 @@ container.appendChild(panel);
 
     _on(document,'keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
-      if(e.key==='Escape'){close();return}
+      if(e.key==='Escape'){if(!overlayRuntime)close('escape');return}
       if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
       if(e.key==='?'||(e.key==='/'&&e.shiftKey)){e.preventDefault();toggleShortcutsHelp();return}
       if(!activePlaceId)return;
@@ -2853,6 +2905,11 @@ container.appendChild(panel);
       get layers(){return Object.fromEntries(layerState)},
       destroy(){
         stopTour();
+        photoModal.classList.remove('me-photo-modal--open');
+        panel.classList.remove('me-panel--open');
+        panelBackdrop.classList.remove('me-panel__backdrop--active');
+        destroySpecialOverlay(photoOverlayOwner);
+        destroySpecialOverlay(panelOverlayOwner);
         _cleanupAll();
         container.innerHTML='';container.className='';
       }
