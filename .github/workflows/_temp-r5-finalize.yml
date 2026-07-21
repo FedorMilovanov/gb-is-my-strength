@@ -61,18 +61,9 @@ jobs:
         if: steps.prepare.outputs.status != '0'
         run: exit 1
 
-      - name: Validate static and runtime contracts
+      - name: Install dependencies
         if: steps.prepare.outputs.status == '0'
-        run: |
-          set -euo pipefail
-          node --check js/site-utils.js
-          node --check js/site.js
-          node --check js/floating-cluster-controller.js
-          node --check scripts/overlay-runtime-browser-test.js
-          npm ci
-          npm run overlay:runtime:test
-          npm run astro:check
-          git diff --check
+        run: npm ci
 
       - name: Install Chromium
         if: steps.prepare.outputs.status == '0'
@@ -96,6 +87,18 @@ jobs:
           path: reports/reader-r5-browser.log
           if-no-files-found: warn
           retention-days: 1
+
+      - name: Validate static and runtime contracts
+        if: steps.prepare.outputs.status == '0'
+        run: |
+          set -euo pipefail
+          node --check js/site-utils.js
+          node --check js/site.js
+          node --check js/floating-cluster-controller.js
+          node --check scripts/overlay-runtime-browser-test.js
+          npm run overlay:runtime:test
+          npm run astro:check
+          git diff --check
 
       - name: Lint permanent workflows
         if: steps.prepare.outputs.status == '0'
