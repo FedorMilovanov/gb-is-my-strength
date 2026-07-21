@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-21T14:08:18.650Z",
-  "sourceHead": "b3187e75673db88718eff573a1d01ef60ace407f",
-  "scannedFiles": 777,
-  "matchCount": 4700,
+  "generatedAt": "2026-07-21T14:27:17.361Z",
+  "sourceHead": "61c5a21ebec829df553d0e7ac45545ff211f199e",
+  "scannedFiles": 778,
+  "matchCount": 4767,
   "countsByRule": {
     "body-style-writer": 34,
-    "escape-handler": 26,
-    "focus-operation": 110,
+    "escape-handler": 27,
+    "focus-operation": 125,
     "global-scroll-api-write": 3,
     "html-style-writer": 4,
-    "keydown-handler": 143,
-    "overlay-dialog-semantics": 3008,
-    "overlay-naming": 1254,
-    "route-recovery": 13,
-    "scroll-api": 92,
+    "keydown-handler": 144,
+    "overlay-dialog-semantics": 3034,
+    "overlay-naming": 1267,
+    "route-recovery": 15,
+    "scroll-api": 101,
     "style-remove-property-writer": 13
   },
   "directWriterFiles": [
@@ -614,6 +614,26 @@
         "overlay-naming"
       ],
       "matchCount": 84
+    },
+    {
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "categories": [
+        "coordination",
+        "focus",
+        "keyboard",
+        "lifecycle",
+        "recovery"
+      ],
+      "rules": [
+        "escape-handler",
+        "focus-operation",
+        "keydown-handler",
+        "overlay-dialog-semantics",
+        "overlay-naming",
+        "route-recovery",
+        "scroll-api"
+      ],
+      "matchCount": 67
     },
     {
       "file": "articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html",
@@ -23847,6 +23867,542 @@
       "line": 80,
       "token": "addEventListener(\"keydown\"",
       "excerpt": "<script>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src=\"/js/search.js?v=b0fd43b8\";function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 10,
+      "token": "overlay",
+      "excerpt": "return id === '__anonymous__' ? 'overlay:anonymous' : id;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 32,
+      "token": "trapFocus",
+      "excerpt": "trapFocus: true,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 33,
+      "token": "restoreFocus",
+      "excerpt": "restoreFocus: true,"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 34,
+      "token": "lockScroll",
+      "excerpt": "lockScroll: true,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 45,
+      "token": "trapFocus",
+      "excerpt": "['closeOnEscape', 'trapFocus', 'restoreFocus', 'lockScroll'].forEach(function (key) {"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 45,
+      "token": "restoreFocus",
+      "excerpt": "['closeOnEscape', 'trapFocus', 'restoreFocus', 'lockScroll'].forEach(function (key) {"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 45,
+      "token": "lockScroll",
+      "excerpt": "['closeOnEscape', 'trapFocus', 'restoreFocus', 'lockScroll'].forEach(function (key) {"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 55,
+      "token": "aria-hidden",
+      "excerpt": "if (element.getAttribute && element.getAttribute('aria-hidden') === 'true') return false;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 56,
+      "token": "document.activeElement",
+      "excerpt": "return element.offsetParent !== null || element === document.activeElement;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 61,
+      "token": ".focus(",
+      "excerpt": "try { element.focus({ preventScroll: true }); return true; }"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 62,
+      "token": ".focus(",
+      "excerpt": "catch (_) { try { element.focus(); return true; } catch (_) { return false; } }"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 89,
+      "token": "inert",
+      "excerpt": "inert: element.hasAttribute ? element.hasAttribute('inert') : Boolean(element.inert),"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 89,
+      "token": "inert",
+      "excerpt": "inert: element.hasAttribute ? element.hasAttribute('inert') : Boolean(element.inert),"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 89,
+      "token": "inert",
+      "excerpt": "inert: element.hasAttribute ? element.hasAttribute('inert') : Boolean(element.inert),"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 90,
+      "token": "aria-hidden",
+      "excerpt": "ariaHidden: element.getAttribute ? element.getAttribute('aria-hidden') : null"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 95,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = true;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 95,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = true;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 97,
+      "token": "inert",
+      "excerpt": "element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 98,
+      "token": "aria-hidden",
+      "excerpt": "element.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 110,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = claim.inert;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 110,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = claim.inert;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 110,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = claim.inert;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 112,
+      "token": "inert",
+      "excerpt": "if (claim.inert) element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 112,
+      "token": "inert",
+      "excerpt": "if (claim.inert) element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 113,
+      "token": "inert",
+      "excerpt": "else element.removeAttribute('inert');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 114,
+      "token": "aria-hidden",
+      "excerpt": "if (claim.ariaHidden === null) element.removeAttribute('aria-hidden');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 115,
+      "token": "aria-hidden",
+      "excerpt": "else element.setAttribute('aria-hidden', claim.ariaHidden);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 135,
+      "token": "lockScroll",
+      "excerpt": "lockScroll: record.lockScroll,"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 135,
+      "token": "lockScroll",
+      "excerpt": "lockScroll: record.lockScroll,"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 143,
+      "token": "data-overlay",
+      "excerpt": "document.documentElement.setAttribute('data-overlay-count', String(overlaySnapshot().length));"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 144,
+      "token": "data-overlay",
+      "excerpt": "if (top) document.documentElement.setAttribute('data-overlay-top', top.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 145,
+      "token": "data-overlay",
+      "excerpt": "else document.documentElement.removeAttribute('data-overlay-top');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 160,
+      "token": "document.activeElement",
+      "excerpt": "var active = document.activeElement;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 168,
+      "token": "aria-hidden",
+      "excerpt": "record.element.setAttribute('aria-hidden', 'false');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 169,
+      "token": "inert",
+      "excerpt": "record.element.removeAttribute('inert');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 170,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = false;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 170,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = false;"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 171,
+      "token": "data-overlay",
+      "excerpt": "record.element.setAttribute('data-overlay-owner', record.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 172,
+      "token": "data-overlay",
+      "excerpt": "record.element.setAttribute('data-overlay-open', '1');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 175,
+      "token": "overlay",
+      "excerpt": "if (record.lockScroll) lockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 175,
+      "token": "lockScroll",
+      "excerpt": "if (record.lockScroll) lockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 175,
+      "token": "lockScroll",
+      "excerpt": "if (record.lockScroll) lockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 177,
+      "token": "overlay",
+      "excerpt": "overlayEvent('gb:overlay-open', record, options.reason || 'open');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 190,
+      "token": "aria-hidden",
+      "excerpt": "record.element.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 191,
+      "token": "inert",
+      "excerpt": "record.element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 192,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = true;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 192,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = true;"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 193,
+      "token": "data-overlay",
+      "excerpt": "record.element.removeAttribute('data-overlay-open');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 196,
+      "token": "overlay",
+      "excerpt": "if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 196,
+      "token": "lockScroll",
+      "excerpt": "if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 196,
+      "token": "unlockScroll",
+      "excerpt": "if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 198,
+      "token": "overlay",
+      "excerpt": "overlayEvent('gb:overlay-close', record, reason || 'close');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 199,
+      "token": "restoreFocus",
+      "excerpt": "var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 199,
+      "token": "restoreFocus",
+      "excerpt": "var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 223,
+      "token": "restoreFocus",
+      "excerpt": "if (record.open) closeOverlayOwner(id, 'destroy', { restoreFocus: false });"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 225,
+      "token": "data-overlay",
+      "excerpt": "record.element.removeAttribute('data-overlay-owner');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 226,
+      "token": "data-overlay",
+      "excerpt": "record.element.removeAttribute('data-overlay-open');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 238,
+      "token": "restoreFocus",
+      "excerpt": "closeOverlayOwner(id, reason || 'force', { restoreFocus: false });"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 251,
+      "token": "aria-hidden",
+      "excerpt": "return record.element.isConnected !== false && record.element.getAttribute('aria-hidden') !== 'true';"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 256,
+      "token": "trapFocus",
+      "excerpt": "if (!record || !record.trapFocus || !record.element || !record.element.querySelectorAll) return false;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 261,
+      "token": "document.activeElement",
+      "excerpt": "if (event.shiftKey && document.activeElement === first) {"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 264,
+      "token": "document.activeElement",
+      "excerpt": "if (!event.shiftKey && document.activeElement === last) {"
+    },
+    {
+      "rule": "keydown-handler",
+      "severity": "keyboard",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 270,
+      "token": "addEventListener('keydown'",
+      "excerpt": "document.addEventListener('keydown', function (event) {"
+    },
+    {
+      "rule": "escape-handler",
+      "severity": "keyboard",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 273,
+      "token": ".key === 'Escape'",
+      "excerpt": "if (event.key === 'Escape' || event.key === 'Esc') {"
+    },
+    {
+      "rule": "route-recovery",
+      "severity": "recovery",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 284,
+      "token": "addEventListener('pagehide'",
+      "excerpt": "window.addEventListener('pagehide', function () { recoverOverlayOwners('pagehide'); });"
+    },
+    {
+      "rule": "route-recovery",
+      "severity": "recovery",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 285,
+      "token": "addEventListener('beforeunload'",
+      "excerpt": "window.addEventListener('beforeunload', function () { recoverOverlayOwners('beforeunload'); });"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "scripts/_temp-r5-overlay-runtime.inc.js",
+      "line": 311,
+      "token": "forceRecover",
+      "excerpt": "forceRecover: recoverOverlayOwners"
     },
     {
       "rule": "scroll-api",
