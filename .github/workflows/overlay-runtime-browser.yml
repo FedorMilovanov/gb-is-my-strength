@@ -1,0 +1,46 @@
+name: Overlay Runtime Browser
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "js/site-utils.js"
+      - "js/site.js"
+      - "js/floating-cluster-controller.js"
+      - "src/components/article-pilots/**"
+      - "scripts/overlay-runtime-*.js"
+      - "scripts/runtime-integrity-test.js"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/overlay-runtime-browser.yml"
+
+concurrency:
+  group: overlay-runtime-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    name: ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - name: Install ${{ matrix.browser }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Nested overlay browser matrix
+        env:
+          PW_BROWSER: ${{ matrix.browser }}
+        run: npm run overlay:browser:test

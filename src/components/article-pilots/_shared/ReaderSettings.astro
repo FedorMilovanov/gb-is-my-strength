@@ -212,24 +212,45 @@
     const backdrop = document.getElementById('hmSettingsBackdrop');
     const closeBtn = document.getElementById('hmSettingsClose');
 
-    const open = () => {
-      const toc = document.getElementById('hmSheet');
-      if (toc && toc.classList.contains('is-open')) {
-        toc.classList.remove('is-open'); toc.setAttribute('aria-hidden', 'true');
-      }
-      sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
+    const OVERLAY_OWNER = 'reader-settings';
+    const overlayRuntime = () => (window as any).OverlayRuntime || null;
+    const fallbackUtils = () => (window as any).SiteUtils || null;
+
+    const close = (reason = 'programmatic', restoreFocus = true) => {
+      sheet.classList.remove('is-open');
+      sheet.setAttribute('aria-hidden', 'true');
+      const runtime = overlayRuntime();
+      if (runtime?.close) runtime.close(OVERLAY_OWNER, reason, { restoreFocus });
+      else fallbackUtils()?.unlockScroll?.(OVERLAY_OWNER);
     };
-    const close = () => {
-      sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
+
+    const open = () => {
+      const runtime = overlayRuntime();
+      const toc = document.getElementById('hmSheet');
+      if (runtime?.isOpen?.('hermenevtika-toc')) runtime.requestClose('hermenevtika-toc', 'switch');
+      else if (toc?.classList.contains('is-open')) {
+        toc.classList.remove('is-open');
+        toc.setAttribute('aria-hidden', 'true');
+        fallbackUtils()?.unlockScroll?.('hermenevtika-toc');
+      }
+      sheet.classList.add('is-open');
+      sheet.setAttribute('aria-hidden', 'false');
+      if (runtime?.open) runtime.open(OVERLAY_OWNER, {
+        element: sheet,
+        opener: document.activeElement,
+        onRequestClose: (closeReason: string) => close(closeReason, true),
+        closeOnEscape: true,
+        trapFocus: true
+      });
+      else fallbackUtils()?.lockScroll?.(OVERLAY_OWNER);
     };
     document.addEventListener('hm:open-settings', open);
-    backdrop?.addEventListener('click', close);
-    closeBtn?.addEventListener('click', close);
+    backdrop?.addEventListener('click', () => close('backdrop', true));
+    closeBtn?.addEventListener('click', () => close('button', true));
     document.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && sheet.classList.contains('is-open')) close();
+      if (!overlayRuntime() && e.key === 'Escape' && sheet.classList.contains('is-open')) close('escape', true);
     });
+
 
     function setPressed(group: Element | null, selector: string, value: string) {
       group?.querySelectorAll('button').forEach((button) => {
