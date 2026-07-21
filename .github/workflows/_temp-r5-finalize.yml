@@ -1,0 +1,75 @@
+name: TEMP Reader R5 Finalize
+
+on:
+  push:
+    branches:
+      - lane/reader-r5-overlay-runtime-2026-07-21
+
+concurrency:
+  group: temp-reader-r5-finalize
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: lane/reader-r5-overlay-runtime-2026-07-21
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Apply deterministic permanent R5 files
+        id: apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test -f scripts/overlay-runtime-browser-test.js; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 scripts/_temp-r5-finalize.py
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Validate permanent R5 files
+        if: steps.apply.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          node --check js/site-utils.js
+          node --check js/site.js
+          node --check js/floating-cluster-controller.js
+          node --check scripts/overlay-runtime-browser-test.js
+          node scripts/runtime-integrity-test.js
+          node scripts/overlay-runtime-contract-test.js
+          git diff --check
+          npm ci
+          npm run astro:check
+
+      - name: Commit only permanent R5 files
+        if: steps.apply.outputs.changed == 'true'
+        env:
+          HEAD_REF: lane/reader-r5-overlay-runtime-2026-07-21
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            src/components/article-pilots/_shared/ReaderSettings.astro \
+            package.json \
+            scripts/overlay-runtime-contract-test.js \
+            scripts/overlay-runtime-browser-test.js \
+            .github/workflows/shared-files-guard.yml \
+            .github/workflows/overlay-runtime-browser.yml \
+            docs/READER-R5-OVERLAY-RUNTIME-INVENTORY-2026-07-21.md
+          test -z "$(git diff --cached --name-only | grep -E '(^|/)_temp-' || true)"
+          git diff --cached --quiet && exit 0
+          git commit -m "test(reader): add overlay browser witness"
+          git push origin "HEAD:${HEAD_REF}"
