@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-23",
   "migrationLane": "biographies-index",
   "routeType": "biographies-index",
+  "surfaceContractVersion": 1,
+  "surface": "page",
   "section": "biografii",
   "slug": null,
   "currentStatus": "production-dist",
@@ -21,16 +23,34 @@
   },
   "pagefindContract": {
     "strategy": "needs-explicit-audit",
-    "requiredMarkers": ["home-v20", "biografii-landing"],
+    "requiredMarkers": [
+      "home-v20",
+      "biografii-landing"
+    ],
     "risk": "data-pagefind-body may index only hero/body-segment summary, not full componentized main"
   },
   "styleContract": {
-    "requiredRoots": ["#main-content"],
-    "requiredSections": ["recent", "focus", "eras", "awakening", "epigraph", "article-end-block"],
+    "requiredRoots": [
+      "#main-content"
+    ],
+    "requiredSections": [
+      "recent",
+      "focus",
+      "eras",
+      "awakening",
+      "epigraph",
+      "article-end-block"
+    ],
     "forbiddenMode": "no generic rewrite without visual parity"
   },
   "publicationContract": {
-    "participatesIn": ["biographiesCatalog", "search", "sitemap", "pagefind", "indexNow"]
+    "participatesIn": [
+      "biographiesCatalog",
+      "search",
+      "sitemap",
+      "pagefind",
+      "indexNow"
+    ]
   },
   "visualParity": {
     "desktop": 0,

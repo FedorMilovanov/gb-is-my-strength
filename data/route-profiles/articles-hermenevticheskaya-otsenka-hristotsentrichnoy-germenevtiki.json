@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-22",
   "migrationLane": "content",
   "routeType": "article",
+  "surfaceContractVersion": 1,
+  "surface": "article",
   "section": "articles",
   "slug": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
   "currentStatus": "production-dist",

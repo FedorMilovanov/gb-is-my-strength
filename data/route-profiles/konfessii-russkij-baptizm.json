@@ -4,6 +4,8 @@
   "migrationContractSyncedAt": "2026-06-26",
   "migrationLane": "special",
   "routeType": "confession",
+  "surfaceContractVersion": 1,
+  "surface": "special",
   "section": "konfessii",
   "slug": "russkij-baptizm",
   "currentStatus": "production-dist",

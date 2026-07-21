@@ -4,6 +4,8 @@
   "migrationContractSyncedAt": "2026-06-26",
   "migrationLane": "landing",
   "routeType": "map-landing",
+  "surfaceContractVersion": 1,
+  "surface": "special",
   "section": "map",
   "slug": null,
   "currentStatus": "production-dist",

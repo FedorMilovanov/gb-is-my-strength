@@ -4,6 +4,8 @@
   "migrationContractSyncedAt": "2026-06-26",
   "migrationLane": "special",
   "routeType": "map",
+  "surfaceContractVersion": 1,
+  "surface": "special",
   "section": "karty",
   "slug": "avraam",
   "currentStatus": "production-dist",
