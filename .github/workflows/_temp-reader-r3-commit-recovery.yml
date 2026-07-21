@@ -34,7 +34,7 @@ jobs:
           Path('/tmp/reader-r3-apply.py').write_text('\n'.join(code) + '\n', encoding='utf-8')
           PY
           python3 /tmp/reader-r3-apply.py
-      - name: Record validation diagnostics without discarding diff
+      - name: Record validation diagnostics
         shell: bash
         run: |
           set +e
@@ -42,15 +42,44 @@ jobs:
             node --check scripts/series-reader-facade-regression-test.js
             npm run series:facade:guard
             npm run engine:contracts
-          } 2>&1 | tee docs/READER-R3-VALIDATION-INITIAL.txt
-          echo "validation_exit=${PIPESTATUS[0]}" >> docs/READER-R3-VALIDATION-INITIAL.txt
+          } 2>&1 | tee /tmp/reader-r3-validation.txt
+          echo "validation_exit=${PIPESTATUS[0]}" >> /tmp/reader-r3-validation.txt
           exit 0
-      - name: Commit permanent draft implementation
+      - name: Diagnose commit and push
         shell: bash
         run: |
-          git rm .github/workflows/_temp-reader-r3-inventory.yml .github/workflows/_temp-reader-r3-commit-recovery.yml
-          git add -A
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'refactor(reader): route series through neutral façade'
-          git push origin "HEAD:${GITHUB_HEAD_REF}"
+          set +e
+          {
+            echo '=== before rm ==='
+            git status --short
+            git rm .github/workflows/_temp-reader-r3-inventory.yml .github/workflows/_temp-reader-r3-commit-recovery.yml
+            echo "git_rm_exit=$?"
+            git add -A
+            echo "git_add_exit=$?"
+            echo '=== staged stat ==='
+            git diff --cached --stat
+            echo '=== staged names ==='
+            git diff --cached --name-status
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'refactor(reader): route series through neutral façade'
+            commit_status=$?
+            echo "git_commit_exit=$commit_status"
+            if [ "$commit_status" -eq 0 ]; then
+              git push origin "HEAD:${GITHUB_HEAD_REF}"
+              echo "git_push_exit=$?"
+            fi
+            echo '=== after attempt ==='
+            git status --short
+          } 2>&1 | tee /tmp/reader-r3-commit.txt
+          exit 0
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r3-commit-diagnostics
+          path: |
+            /tmp/reader-r3-validation.txt
+            /tmp/reader-r3-commit.txt
+          if-no-files-found: error
+          retention-days: 1
