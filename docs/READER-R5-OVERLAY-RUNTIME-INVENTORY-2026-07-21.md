@@ -1,25 +1,25 @@
 # Reader R5 overlay runtime inventory
 
-- Source: `6ab5f5b05f1c91b3d863e21c1a4536db04672dde`
+- Source: `5fdcba10223ffec346c050a3477624811277d102`
 - Scanned files: **779**
-- Pattern matches: **4771**
-- Direct writer files: **10**
+- Pattern matches: **4851**
+- Direct writer files: **9**
 - Global scroll API overwrite files: **2**
 - Multi-category lifecycle candidates: **77**
 
 ## Counts by rule
 
-- `body-style-writer`: 34
-- `escape-handler`: 27
-- `focus-operation`: 125
+- `body-style-writer`: 33
+- `escape-handler`: 28
+- `focus-operation`: 149
 - `global-scroll-api-write`: 3
 - `html-style-writer`: 4
-- `keydown-handler`: 144
-- `overlay-dialog-semantics`: 3034
-- `overlay-naming`: 1268
-- `route-recovery`: 15
-- `scroll-api`: 104
-- `style-remove-property-writer`: 13
+- `keydown-handler`: 145
+- `overlay-dialog-semantics`: 3068
+- `overlay-naming`: 1287
+- `route-recovery`: 17
+- `scroll-api`: 116
+- `style-remove-property-writer`: 1
 
 ## Direct body/html style writers
 
@@ -37,30 +37,18 @@
 
 ### `js/site-utils.js`
 
-- L39 · `body-style-writer` · body.style.position === 'fixed' &&
-- L40 · `body-style-writer` · body.style.overflow === 'hidden' &&
-- L42 · `body-style-writer` · body.style.width === '100%'
-- L69 · `body-style-writer` · body.style.overflow = 'hidden';
-- L71 · `body-style-writer` · body.style.position = 'fixed';
-- L72 · `body-style-writer` · body.style.top = '-' + savedScrollY + 'px';
-- L73 · `body-style-writer` · body.style.left = '0';
-- L74 · `body-style-writer` · body.style.right = '0';
-- L75 · `body-style-writer` · body.style.width = '100%';
-- L89 · `style-remove-property-writer` · body.style.removeProperty('overflow');
-- L91 · `style-remove-property-writer` · body.style.removeProperty('position');
-- L92 · `style-remove-property-writer` · body.style.removeProperty('top');
-- L95 · `style-remove-property-writer` · body.style.removeProperty('width');
+- L41 · `body-style-writer` · body.style.position === 'fixed' &&
+- L42 · `body-style-writer` · body.style.overflow === 'hidden' &&
+- L44 · `body-style-writer` · body.style.width === '100%'
+- L131 · `body-style-writer` · body.style.overflow = 'hidden';
+- L133 · `body-style-writer` · body.style.position = 'fixed';
+- L134 · `body-style-writer` · body.style.top = '-' + savedScrollY + 'px';
+- L135 · `body-style-writer` · body.style.left = '0';
+- L136 · `body-style-writer` · body.style.right = '0';
+- L137 · `body-style-writer` · body.style.width = '100%';
 
 ### `js/site.js`
 
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
-- L1 · `style-remove-property-writer` · !function(){"use strict";function tt(n){return String(n||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var e,t,n,i='<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',o='<svg viewBox="0 0 24 2
 - L143 · `body-style-writer` · (),function(){var e=document.querySelector(".article-list");function t(e){var t=(e||"/").replace(/index\.html$/,"").replace(/\/$/,"");return t&&"/"!==t.charAt(0)&&(t="/"+t),t||"/"}function n(){if(window.BookmarkEngine&&"function"==typeof window.BookmarkEngine.getAllForSite){var n=window.BookmarkEngi
 - L143 · `body-style-writer` · (),function(){var e=document.querySelector(".article-list");function t(e){var t=(e||"/").replace(/index\.html$/,"").replace(/\/$/,"");return t&&"/"!==t.charAt(0)&&(t="/"+t),t||"/"}function n(){if(window.BookmarkEngine&&"function"==typeof window.BookmarkEngine.getAllForSite){var n=window.BookmarkEngi
 - L143 · `html-style-writer` · (),function(){var e=document.querySelector(".article-list");function t(e){var t=(e||"/").replace(/index\.html$/,"").replace(/\/$/,"");return t&&"/"!==t.charAt(0)&&(t="/"+t),t||"/"}function n(){if(window.BookmarkEngine&&"function"==typeof window.BookmarkEngine.getAllForSite){var n=window.BookmarkEngi
@@ -94,15 +82,11 @@
 - L377 · `body-style-writer` · scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden'
 - L377 · `html-style-writer` · scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden'
 
-### `src/components/article-pilots/_shared/ReaderSettings.astro`
+### `scripts/runtime-integrity-test.js`
 
-- L221 · `body-style-writer` · document.body.style.overflow = 'hidden';
-- L225 · `body-style-writer` · document.body.style.overflow = '';
-
-### `src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro`
-
-- L355 · `body-style-writer` · const openSheet = () => { sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; };
-- L356 · `body-style-writer` · const closeSheet = () => { sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; };
+- L171 · `body-style-writer` · body.style.overflow = 'auto';
+- L172 · `body-style-writer` · body.style.position = 'relative';
+- L173 · `body-style-writer` · body.style.top = '4px';
 
 ## Global scroll API writes
 
@@ -113,15 +97,16 @@
 
 ### `scripts/runtime-integrity-test.js`
 
-- L129 · window.SiteUtils.lockScroll = function broken() {};
+- L149 · window.SiteUtils.lockScroll = function broken() {};
 
 ## Highest-density lifecycle candidates
 
 | File | Matches | Categories | Rules |
 |---|---:|---|---|
-| `js/site.js` | 211 | coordination, focus, keyboard, lifecycle, migration, recovery | body-style-writer, escape-handler, focus-operation, html-style-writer, keydown-handler, overlay-dialog-semantics, overlay-naming, route-recovery, scroll-api, style-remove-property-writer |
+| `js/site.js` | 202 | coordination, focus, keyboard, lifecycle, migration, recovery | body-style-writer, escape-handler, focus-operation, html-style-writer, keydown-handler, overlay-dialog-semantics, overlay-naming, route-recovery, scroll-api, style-remove-property-writer |
 | `konfessii/russkij-baptizm/_app/index.html` | 152 | focus, keyboard, lifecycle, migration, recovery | body-style-writer, escape-handler, focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming, route-recovery |
 | `js/floating-cluster-controller.js` | 141 | coordination, focus, keyboard, lifecycle, migration | body-style-writer, escape-handler, focus-operation, overlay-dialog-semantics, overlay-naming, scroll-api |
+| `js/site-utils.js` | 120 | coordination, focus, keyboard, lifecycle, migration, recovery | body-style-writer, escape-handler, focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming, route-recovery, scroll-api |
 | `index.html` | 92 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `articles/krajne-li-isporcheno-serdce/index.html` | 85 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `biografii/index.html` | 84 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
@@ -138,7 +123,6 @@
 | `baptisty-rossii/spravochnik/index.html` | 58 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `baptisty-rossii/vsehib-1944/index.html` | 58 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `baptisty-rossii/yuzhnaya-shtunda/index.html` | 58 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
-| `js/site-utils.js` | 57 | coordination, lifecycle, migration, recovery | body-style-writer, overlay-dialog-semantics, overlay-naming, route-recovery, scroll-api, style-remove-property-writer |
 | `baptisty-rossii/index.html` | 54 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `src/components/baptisty-rossii/BaptistyRossiiBody.astro` | 54 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `nagornaya/chast-3/index.html` | 50 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
@@ -152,15 +136,17 @@
 | `articles/dzhon-gill-spravochnik/index.html` | 46 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `articles/dzhon-gill-chast-1-chelovek/index.html` | 45 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `js/enhancements.js` | 42 | coordination, keyboard, lifecycle | escape-handler, keydown-handler, overlay-dialog-semantics, overlay-naming, scroll-api |
+| `src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro` | 42 | coordination, focus, keyboard, lifecycle | escape-handler, focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming, scroll-api |
 | `articles/kod-da-vinchi/index.html` | 41 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html` | 39 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
+| `scripts/runtime-integrity-test.js` | 38 | conflict, coordination, focus, lifecycle, migration | body-style-writer, focus-operation, global-scroll-api-write, overlay-dialog-semantics, overlay-naming, scroll-api |
 | `articles/dzhon-gill-chast-2-uchenyi/index.html` | 37 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `nagornaya/chast-5/index.html` | 37 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `articles/index.html` | 36 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `src/components/article-pilots/gill-series/GillLearningSheet.astro` | 36 | focus, keyboard, lifecycle | focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming |
-| `src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro` | 36 | keyboard, lifecycle, migration | body-style-writer, escape-handler, keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `js/search.js` | 35 | coordination, focus, keyboard, lifecycle | focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming, scroll-api |
 | `nagornaya/chast-2/index.html` | 35 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
+| `src/components/article-pilots/_shared/ReaderSettings.astro` | 35 | coordination, focus, keyboard, lifecycle | escape-handler, focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming, scroll-api |
 | `pastor-series/index.html` | 34 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `nagornaya/nakhodki/index.html` | 33 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `scripts/_temp-reader-r5-inventory.js` | 33 | coordination, focus, lifecycle | focus-operation, overlay-dialog-semantics, overlay-naming, scroll-api |
@@ -168,13 +154,11 @@
 | `karty/avraam/avraam-app.js` | 31 | focus, keyboard, lifecycle | escape-handler, focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `src/components/nagornaya/seriya/NagornayaSeriyaBody.astro` | 31 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `nagornaya/seriya/index.html` | 30 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
-| `src/components/article-pilots/_shared/ReaderSettings.astro` | 29 | keyboard, lifecycle, migration | body-style-writer, escape-handler, keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `_build-tools/konfessii-baptizm/MindMap3D.tsx` | 28 | keyboard, lifecycle, migration | body-style-writer, escape-handler, keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `nagornaya/index.html` | 28 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `js/highlights.js` | 27 | conflict, coordination, focus, keyboard, lifecycle | escape-handler, focus-operation, global-scroll-api-write, keydown-handler, overlay-dialog-semantics, overlay-naming, scroll-api |
 | `nagornaya/istochniki/index.html` | 26 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `src/components/article-pilots/krajne/KrajneBody.astro` | 25 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
-| `scripts/runtime-integrity-test.js` | 24 | conflict, coordination, lifecycle | global-scroll-api-write, overlay-dialog-semantics, overlay-naming, scroll-api |
 | `src/components/pastor-series/PastorSeriesPageChrome.astro` | 23 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `src/components/article-pilots/hermenevtika/HermenevtikaBody.astro` | 19 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `scripts/gill-v16-mobile-play-smoke.js` | 18 | lifecycle, migration | body-style-writer, overlay-dialog-semantics, overlay-naming |
