@@ -1,0 +1,40 @@
+name: TEMP map layers theme patcher
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'lane/system-map-layers-theme-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Apply exact engine patch
+        run: python3 scripts/_temp_apply_map_layers_theme.py
+
+      - name: Verify syntax and pure contracts
+        run: |
+          node --check karty/_engine/map-engine.js
+          node scripts/map-layers-theme-regression-test.js
+
+      - name: Commit engine source only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add karty/_engine/map-engine.js
+          git commit -m "[LANE lane/system-map-layers-theme-2026-07-21] fix(karty): restore layers and map palette"
+          git push origin HEAD:lane/system-map-layers-theme-2026-07-21
