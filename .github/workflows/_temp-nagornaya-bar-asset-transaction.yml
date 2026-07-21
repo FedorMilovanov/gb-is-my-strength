@@ -4,13 +4,18 @@ on:
   push:
     branches:
       - agent/nagornaya-bar-asset-contract-2026-07-22
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   materialize:
-    if: contains(github.event.head_commit.message, 'complete bar asset patch transaction')
+    if: >-
+      (github.event_name == 'push' && contains(github.event.head_commit.message, 'complete bar asset patch transaction')) ||
+      (github.event_name == 'pull_request' && github.head_ref == 'agent/nagornaya-bar-asset-contract-2026-07-22')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -34,6 +39,7 @@ jobs:
         run: |
           git rm scripts/_temp-patch-nagornaya-bar-asset.py
           git rm .github/workflows/_temp-nagornaya-bar-asset-transaction.yml
+          git rm -f .github/_temp-nagornaya-bar-trigger || true
 
       - name: Source and revision contracts
         run: |
