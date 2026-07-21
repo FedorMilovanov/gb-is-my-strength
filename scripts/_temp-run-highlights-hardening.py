@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import importlib.util
 import subprocess
+import sys
 import traceback
 from pathlib import Path
+
+sys.dont_write_bytecode = True
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "js/highlights.js"
