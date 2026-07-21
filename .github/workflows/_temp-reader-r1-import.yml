@@ -96,13 +96,30 @@ jobs:
           git diff --cached --check
 
       - name: Verify imported contracts
+        shell: bash
         run: |
-          node --check js/reader-preferences-head.js
-          node --check js/reader-preferences.js
-          node --check scripts/reader-preferences-browser-smoke.js
-          node scripts/reader-preferences-regression-test.js
-          node scripts/audit-pro.js
-          npm run engine:contracts
+          set +e
+          {
+            set -x
+            node --check js/reader-preferences-head.js
+            node --check js/reader-preferences.js
+            node --check scripts/reader-preferences-browser-smoke.js
+            node scripts/reader-preferences-regression-test.js
+            node scripts/audit-pro.js
+            npm run engine:contracts
+          } > /tmp/reader-r1-verify.log 2>&1
+          status=$?
+          cat /tmp/reader-r1-verify.log
+          exit "$status"
+
+      - name: Upload verification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r1-verify-log
+          path: /tmp/reader-r1-verify.log
+          if-no-files-found: warn
+          retention-days: 1
 
       - name: Commit clean R1 transfer
         shell: bash
