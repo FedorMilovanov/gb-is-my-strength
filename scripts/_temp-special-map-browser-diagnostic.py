@@ -33,5 +33,12 @@ new_wait = "    await page.waitForTimeout(250);\n    console.log('panel-precondi
 if text.count(old_wait) != 1:
     raise SystemExit(f'panel wait diagnostic anchor mismatch: {text.count(old_wait)}')
 text = text.replace(old_wait, new_wait, 1)
+
+old_photo_close = "    await page.waitForFunction(() => !document.querySelector('.me-photo-modal--open') && window.OverlayRuntime.size() === 1);\n"
+new_photo_close = "    await page.waitForFunction(() => !document.querySelector('.me-photo-modal--open') && window.OverlayRuntime.size() === 1);\n    await page.waitForFunction(() => document.activeElement?.classList?.contains('me-clickable-photo'));\n"
+if text.count(old_photo_close) != 1:
+    raise SystemExit(f'photo focus wait anchor mismatch: {text.count(old_photo_close)}')
+text = text.replace(old_photo_close, new_photo_close, 1)
+
 path.write_text(text, encoding='utf-8')
-print('Map browser real-origin and precondition diagnostics prepared')
+print('Map browser real-origin, precondition and exact focus waits prepared')
