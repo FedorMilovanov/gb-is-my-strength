@@ -55,6 +55,7 @@ jobs:
       - name: Browser layers and palette witnesses
         shell: bash
         run: |
+          set +e
           python3 -m http.server 8090 --directory dist >/tmp/map-layers-theme-server.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
@@ -62,4 +63,18 @@ jobs:
             if curl -fsS http://127.0.0.1:8090/karty/ishod/ >/dev/null; then break; fi
             sleep 1
           done
-          AUDIT_BASE=http://127.0.0.1:8090 node scripts/map-layers-theme-browser-smoke.js
+          AUDIT_BASE=http://127.0.0.1:8090 node scripts/map-layers-theme-browser-smoke.js > map-layers-theme-browser.log 2>&1
+          status=$?
+          cat map-layers-theme-browser.log
+          exit "$status"
+
+      - name: Upload browser witness log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-layers-theme-browser-log
+          path: |
+            map-layers-theme-browser.log
+            /tmp/map-layers-theme-server.log
+          if-no-files-found: warn
+          retention-days: 1
