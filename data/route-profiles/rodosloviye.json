@@ -4,6 +4,8 @@
   "migrationContractSyncedAt": "2026-06-26",
   "migrationLane": "special",
   "routeType": "genealogy",
+  "surfaceContractVersion": 1,
+  "surface": "special",
   "section": "rodosloviye",
   "slug": null,
   "currentStatus": "production-dist",

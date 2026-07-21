@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-22",
   "migrationLane": "landing",
   "routeType": "pastor-index",
+  "surfaceContractVersion": 1,
+  "surface": "page",
   "section": "pastor-series",
   "slug": null,
   "currentStatus": "production-dist",

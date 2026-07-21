@@ -7,19 +7,56 @@
   "migrationMode": "strict-native",
   "statusDetail": "native Astro (Favorites personal collection page)",
   "migrationHistory": [
-    { "phase": "native", "version": "r260", "description": "src/pages/izbrannoe/index.astro — client-side favorites page reading gb-favorites localStorage, rendered via BaseLayout. noindex (personal data)." }
+    {
+      "phase": "native",
+      "version": "r260",
+      "description": "src/pages/izbrannoe/index.astro — client-side favorites page reading gb-favorites localStorage, rendered via BaseLayout. noindex (personal data)."
+    }
   ],
   "anatomy": {
-    "head": { "source": "BaseLayout + Seo.astro", "contains": ["SEO meta (noindex)", "JSON-LD WebPage", "CSS links"] },
+    "head": {
+      "source": "BaseLayout + Seo.astro",
+      "contains": [
+        "SEO meta (noindex)",
+        "JSON-LD WebPage",
+        "CSS links"
+      ]
+    },
     "mainContent": [
-      { "component": "izbrannoe/index.astro", "type": "hand-authored", "semanticBlock": "section.izbrannoe-wrap", "pagefindBody": false, "note": "personal/localStorage-driven, excluded from Pagefind + sitemap" }
+      {
+        "component": "izbrannoe/index.astro",
+        "type": "hand-authored",
+        "semanticBlock": "section.izbrannoe-wrap",
+        "pagefindBody": false,
+        "note": "personal/localStorage-driven, excluded from Pagefind + sitemap"
+      }
     ],
-    "bodyAfter": { "source": "BaseLayout footer", "contains": ["SDG footer", "runtime scripts"] }
+    "bodyAfter": {
+      "source": "BaseLayout footer",
+      "contains": [
+        "SDG footer",
+        "runtime scripts"
+      ]
+    }
   },
-  "visualParity": { "desktop": 0, "mobile": 0, "source": "n/a (new page)" },
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0,
+    "source": "n/a (new page)"
+  },
   "contentSections": [
-    { "id": null, "heading": "Избранное", "type": "section", "uiType": "favorites-grid" }
+    {
+      "id": null,
+      "heading": "Избранное",
+      "type": "section",
+      "uiType": "favorites-grid"
+    }
   ],
-  "seo": { "indexable": false, "reason": "personal/localStorage content, noindex,follow" },
-  "premiumControls": "n/a (landing-type, no article controls)"
+  "seo": {
+    "indexable": false,
+    "reason": "personal/localStorage content, noindex,follow"
+  },
+  "premiumControls": "n/a (landing-type, no article controls)",
+  "surfaceContractVersion": 1,
+  "surface": "page"
 }

@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-22",
   "migrationLane": "content",
   "routeType": "article",
+  "surfaceContractVersion": 1,
+  "surface": "article",
   "section": "articles",
   "slug": "kod-da-vinchi",
   "currentStatus": "production-dist",

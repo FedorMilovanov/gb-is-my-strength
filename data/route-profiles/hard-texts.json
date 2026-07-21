@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-22",
   "migrationLane": "landing",
   "routeType": "hard-texts-index",
+  "surfaceContractVersion": 1,
+  "surface": "page",
   "section": "hard-texts",
   "slug": null,
   "currentStatus": "production-dist",

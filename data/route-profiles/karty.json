@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-22",
   "migrationLane": "unknown",
   "routeType": "unknown",
+  "surfaceContractVersion": 1,
+  "surface": "page",
   "section": "unknown",
   "slug": null,
   "currentStatus": "production-dist",
