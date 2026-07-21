@@ -26,23 +26,31 @@ jobs:
       - name: Import permanent R1 diff onto current main
         shell: bash
         run: |
-          set -euo pipefail
-          source_branch='origin/lane/system-reader-preferences-foundation-2026-07-21'
-          git fetch origin main lane/system-reader-preferences-foundation-2026-07-21
-          base="$(git merge-base origin/main "$source_branch")"
-          git diff --binary "$base" "$source_branch" -- . \
-            ':(exclude).github/workflows/_temp-*' \
-            ':(exclude)scripts/_temp_*' \
-            ':(exclude).github/workflows/shared-files-guard.yml' \
-            > /tmp/reader-r1.patch
-          test -s /tmp/reader-r1.patch
-          git apply --3way --index /tmp/reader-r1.patch
+          set +e
+          {
+            set -x
+            source_branch='origin/lane/system-reader-preferences-foundation-2026-07-21'
+            git fetch origin main lane/system-reader-preferences-foundation-2026-07-21
+            base="$(git merge-base origin/main "$source_branch")"
+            echo "merge-base=$base"
+            git diff --binary "$base" "$source_branch" -- . \
+              ':(exclude).github/workflows/_temp-*' \
+              ':(exclude)scripts/_temp_*' \
+              ':(exclude).github/workflows/shared-files-guard.yml' \
+              > /tmp/reader-r1.patch
+            test -s /tmp/reader-r1.patch
+            git apply --3way --index /tmp/reader-r1.patch
+            apply_status=$?
+            echo "apply-status=$apply_status"
+            git status --short
+            git diff --name-only --diff-filter=U
+            test "$apply_status" -eq 0
 
-          git show "$source_branch":.github/workflows/_temp-reader-preferences-full-gate.yml \
-            > .github/workflows/_temp-reader-preferences-full-gate.yml
-          git add .github/workflows/_temp-reader-preferences-full-gate.yml
+            git show "$source_branch":.github/workflows/_temp-reader-preferences-full-gate.yml \
+              > .github/workflows/_temp-reader-preferences-full-gate.yml
+            git add .github/workflows/_temp-reader-preferences-full-gate.yml
 
-          python3 - <<'PY'
+            python3 - <<'PY'
           from pathlib import Path
           path = Path('.github/workflows/shared-files-guard.yml')
           text = path.read_text(encoding='utf-8')
@@ -63,10 +71,25 @@ jobs:
               raise SystemExit(f'expected one permanent guard insertion point, found {text.count(old)}')
           path.write_text(text.replace(old, new, 1), encoding='utf-8')
           PY
-          git add .github/workflows/shared-files-guard.yml
+            git add .github/workflows/shared-files-guard.yml
 
-          git rm .github/workflows/_temp-reader-r1-import.yml
-          git diff --cached --check
+            git rm .github/workflows/_temp-reader-r1-import.yml
+            git diff --cached --check
+          } > /tmp/reader-r1-import.log 2>&1
+          status=$?
+          cat /tmp/reader-r1-import.log
+          exit "$status"
+
+      - name: Upload import diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r1-import-log
+          path: |
+            /tmp/reader-r1-import.log
+            /tmp/reader-r1.patch
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Verify imported contracts
         run: |
