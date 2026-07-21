@@ -1,10 +1,10 @@
 ---
 /**
  * @deprecated Route-local wrapper kept intentionally thin while all Gill chrome
- * is centralized in ../gill-series/GillSeriesChrome.astro.
+ * is routed through ../_shared/series/SeriesReaderChrome.astro.
  */
-import GillSeriesChrome from '@/components/article-pilots/gill-series/GillSeriesChrome.astro';
+import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 ---
-<GillSeriesChrome pageId="spravochnik">
+<SeriesReaderChrome pageId="spravochnik">
   <slot />
-</GillSeriesChrome>
+</SeriesReaderChrome>

@@ -94,7 +94,7 @@ check('Page-движок: 6 каталогов в MOBILE_CHROME_ROUTES',
   catalogRoutes.every((r) => registry.includes("'" + r + "'")),
   'потерян маршрут из: ' + catalogRoutes.join(', '));
 
-/* ---------- серия-движок: все тела серий на GillSeriesChrome ---------- */
+/* ---------- серия-движок: все тела серий на SeriesReaderChrome ---------- */
 const seriesBodies = [
   'src/components/baptisty-rossii',
   'src/components/article-pilots/novoe-serdce',
@@ -110,12 +110,12 @@ for (const dir of seriesBodies) {
   const bodies = fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith('Body.astro'));
   for (const b of bodies) {
     const content = read(path.join(dir, b));
-    // Хаб /baptisty-rossii/ — лендинг серии, не статья: GillSeriesChrome не обязан.
+    // Хаб /baptisty-rossii/ — лендинг серии, не статья: SeriesReaderChrome не обязан.
     if (b === 'BaptistyRossiiBody.astro') continue;
-    if (!content.includes('GillSeriesChrome')) missing.push(path.join(dir, b));
+    if (!content.includes('SeriesReaderChrome')) missing.push(path.join(dir, b));
   }
 }
-check('Серия-движок: все статьи серий на GillSeriesChrome', missing.length === 0,
+check('Серия-движок: все статьи серий на SeriesReaderChrome', missing.length === 0,
   'вне движка: ' + missing.join(', '));
 
 /* ---------- контент ↔ движок: счётчики Баптистов ---------- */
