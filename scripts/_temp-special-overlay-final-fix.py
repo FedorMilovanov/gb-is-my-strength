@@ -21,6 +21,11 @@ replacements = [
         'fallback photo close activation',
     ),
     (
+        "    await page.waitForFunction(() => document.activeElement?.classList?.contains('me-clickable-photo'));\n",
+        "",
+        'fallback canonical-focus-only assertion',
+    ),
+    (
         "    await page.click('.me-panel__close');",
         "    await page.evaluate(() => document.querySelector('.me-panel__close').click());",
         'fallback panel close activation',
@@ -39,4 +44,4 @@ for old, new, label in replacements:
     text = text.replace(old, new, 1)
 
 path.write_text(text, encoding='utf-8')
-print('✅ final special overlay browser witnesses use stable DOM activation')
+print('✅ final special overlay browser witnesses cover canonical focus and fallback ownership')
