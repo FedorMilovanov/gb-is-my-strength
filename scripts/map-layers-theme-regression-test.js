@@ -9,6 +9,8 @@ const MapEngine = require('../karty/_engine/map-engine.js');
 const root = path.join(__dirname, '..');
 const readRoute = (slug) => JSON.parse(fs.readFileSync(path.join(root, 'karty', slug, 'route.json'), 'utf8'));
 
+assert.strictEqual(MapEngine.version, '0.54.0', 'layers/theme contract belongs to map-engine v0.54.0');
+
 const avraam = readRoute('avraam');
 const warStage = (avraam.stages || []).findIndex((stage) => stage && stage.cls === 'war');
 const warPlace = (avraam.places || []).find((place) => place.stage === warStage);
