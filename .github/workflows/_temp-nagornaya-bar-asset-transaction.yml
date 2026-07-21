@@ -35,10 +35,11 @@ jobs:
 
       - name: Remove transaction-only files
         run: |
-          git rm scripts/_temp-repair-run-nagornaya-bar.py
-          git rm scripts/_temp-patch-nagornaya-bar-asset.py
-          git rm .github/workflows/_temp-nagornaya-bar-asset-transaction.yml
-          git rm -f .github/_temp-nagornaya-bar-trigger || true
+          rm -f scripts/_temp-repair-run-nagornaya-bar.py
+          rm -f scripts/_temp-patch-nagornaya-bar-asset.py
+          rm -f .github/workflows/_temp-nagornaya-bar-asset-transaction.yml
+          rm -f .github/_temp-nagornaya-bar-trigger
+          git add -A
 
       - name: Source and revision contracts
         run: |
