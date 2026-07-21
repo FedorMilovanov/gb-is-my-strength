@@ -180,3 +180,8 @@
 | `src/components/rodosloviye/RodosloviyeBody.astro` | 4 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `404.html` | 3 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `src/components/genealogy/GenealogyTree.tsx` | 3 | keyboard, lifecycle | escape-handler, keydown-handler, overlay-dialog-semantics |
+
+
+## Resolution status
+
+The reader P0 cluster is migrated to `OverlayRuntime`: the duplicate `site.js` store delegates to the canonical coordinator; ReaderSettings, Hermenevtika TOC, Gill series/part TOCs, Gill learning/settings, and GBS2 sheet use named owners. Map and built-app adapters remain explicitly outside Reader R5 and retain their dedicated special-surface lane.

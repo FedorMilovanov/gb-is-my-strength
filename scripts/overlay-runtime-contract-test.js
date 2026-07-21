@@ -29,6 +29,7 @@ assert.ok(!directWriter.test(reader), 'ReaderSettings must not write body lock s
 assert.ok(!directWriter.test(hermenevtika), 'Hermenevtika TOC must not write body lock styles');
 assert.ok(!directWriter.test(floating), 'floating cluster overlays must not write body lock styles');
 assert.ok(reader.includes("OVERLAY_OWNER = 'reader-settings'"));
+assert.ok(reader.includes("unlockScroll?.('hermenevtika-toc')"), 'fallback switch must release the Hermenevtika owner');
 assert.ok(hermenevtika.includes("OVERLAY_OWNER = 'hermenevtika-toc'"));
 for (const owner of ['gill-series-toc', 'gill-part-toc', 'gill-learning', 'gill-settings', 'gbs2-sheet']) {
   assert.ok(floating.includes(owner), `floating cluster must register ${owner}`);

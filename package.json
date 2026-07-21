@@ -23,6 +23,8 @@
     "tokens:check": "node scripts/check-design-tokens.js",
     "gill:chrome:guard": "node scripts/gill-canonical-chrome-guard.js",
     "series:facade:guard": "node scripts/series-reader-facade-regression-test.js",
+    "overlay:runtime:test": "node scripts/runtime-integrity-test.js && node scripts/overlay-runtime-contract-test.js",
+    "overlay:browser:test": "node scripts/overlay-runtime-browser-test.js",
     "engine:contracts": "node scripts/check-engine-contracts.js && npm run series:facade:guard",
     "engine:sweep": "node scripts/engine-sweep.mjs",
     "engine:guard": "npm run engine:contracts && npm run gill:chrome:guard && npm run engine:sweep",

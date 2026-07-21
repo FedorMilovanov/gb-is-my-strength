@@ -231,6 +231,7 @@
       else if (toc?.classList.contains('is-open')) {
         toc.classList.remove('is-open');
         toc.setAttribute('aria-hidden', 'true');
+        fallbackUtils()?.unlockScroll?.('hermenevtika-toc');
       }
       sheet.classList.add('is-open');
       sheet.setAttribute('aria-hidden', 'false');
