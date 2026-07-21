@@ -397,12 +397,17 @@
 
   function openOverlayOwner(ownerId, options) {
     options = options || {};
-    var record = overlayRecord(ownerId, options);
+    var id = overlayId(ownerId);
+    var existing = overlayRecords.get(id);
+    var wasOpen = Boolean(existing && existing.open);
+    var originalOpener = wasOpen && existing ? existing.opener : null;
+    var record = overlayRecord(id, options);
+    if (wasOpen && originalOpener) record.opener = originalOpener;
     if (!record.opener) {
       var active = document.activeElement;
       if (active && active !== document.body && active !== document.documentElement) record.opener = active;
     }
-    overlayStack = overlayStack.filter(function (id) { return id !== record.ownerId; });
+    overlayStack = overlayStack.filter(function (stackId) { return stackId !== record.ownerId; });
     overlayStack.push(record.ownerId);
     record.open = true;
     record.sequence = ++overlaySequence;
@@ -413,10 +418,12 @@
       record.element.setAttribute('data-overlay-owner', record.ownerId);
       record.element.setAttribute('data-overlay-open', '1');
     }
-    claimOverlayInert(record);
-    if (record.lockScroll) lockScroll('overlay:' + record.ownerId);
+    if (!wasOpen) {
+      claimOverlayInert(record);
+      if (record.lockScroll) lockScroll('overlay:' + record.ownerId);
+      overlayEvent('gb:overlay-open', record, options.reason || 'open');
+    }
     syncOverlayDiagnostics();
-    overlayEvent('gb:overlay-open', record, options.reason || 'open');
     var target = firstOverlayFocus(record);
     if (target) setTimeout(function () { if (record.open) overlayFocus(target); }, 0);
     return { ownerId: record.ownerId, element: record.element, sequence: record.sequence };
@@ -542,6 +549,8 @@
     close: closeOverlayOwner,
     requestClose: requestOverlayClose,
     destroy: destroyOverlayOwner,
+    lockScroll: lockScroll,
+    unlockScroll: unlockScroll,
     topLayer: function () {
       var record = topOverlayRecord();
       return record ? { ownerId: record.ownerId, element: record.element, sequence: record.sequence } : null;
