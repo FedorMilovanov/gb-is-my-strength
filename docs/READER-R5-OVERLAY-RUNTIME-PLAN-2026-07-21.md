@@ -2,7 +2,9 @@
 
 ## Status
 
-Core runtime, standalone reader consumers and shared Gill/series overlays are migrated. Chromium has passed the forward/reverse nested ownership, exact scroll restoration, focus, Escape, inert and pagehide witness; the permanent three-browser workflow covers Chromium, Firefox and WebKit.
+Reader R5 is implemented for the reader P0 cluster. Chromium, Firefox and WebKit pass the permanent forward/reverse nested-ownership matrix, exact scroll/style restoration, exact opener focus return, top-layer Escape routing, inert ownership, repeated-open idempotence, reduced motion and pagehide recovery. Transaction-only patchers and workflows have been removed.
+
+Map-engine and generated-app direct writers remain explicitly outside this reader lane and are tracked as special-surface adapter work; they are not represented as completed by R5.
 
 ## Scope
 
