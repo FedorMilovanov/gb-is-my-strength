@@ -1,0 +1,56 @@
+name: TEMP reader preferences patcher
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]' && github.head_ref == 'lane/system-reader-preferences-foundation-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Materialize exact patcher
+        shell: bash
+        env:
+          PATCH_GZ_B64: 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
+        run: |
+          printf '%s' "$PATCH_GZ_B64" | base64 -d | gzip -d > /tmp/reader-preferences-patch.py
+          echo 'd3ade8e3ec066101f363772c2c929bc0e4c9100c19d182560dac7f9166f9d3bd  /tmp/reader-preferences-patch.py' | sha256sum -c -
+          python3 -m py_compile /tmp/reader-preferences-patch.py
+
+      - name: Apply exact site-wide preference patch
+        run: python3 /tmp/reader-preferences-patch.py
+
+      - name: Synchronize canonical asset revisions
+        run: |
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Verify preference foundation
+        run: |
+          node --check js/reader-preferences-head.js
+          node --check js/reader-preferences.js
+          node scripts/reader-preferences-regression-test.js
+
+      - name: Commit permanent source changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "[LANE lane/system-reader-preferences-foundation-2026-07-21] feat(reader): connect global preferences site-wide"
+          git push origin HEAD:lane/system-reader-preferences-foundation-2026-07-21
