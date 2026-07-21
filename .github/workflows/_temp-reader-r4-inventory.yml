@@ -19,7 +19,7 @@ jobs:
           node <<'JS'
           const fs = require('fs');
           const path = require('path');
-          const { loadRouteRecords } = require('./scripts/lib/effective-route-registry');
+          const { loadRouteRecords } = require(path.resolve('scripts/lib/effective-route-registry'));
 
           const loaded = loadRouteRecords();
           const mobileRegistryPath = 'src/components/article-pilots/_shared/mobileChromeRegistry.ts';
