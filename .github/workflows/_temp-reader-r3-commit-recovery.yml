@@ -49,13 +49,7 @@ jobs:
         shell: bash
         run: |
           git rm .github/workflows/_temp-reader-r3-inventory.yml .github/workflows/_temp-reader-r3-commit-recovery.yml
-          git add .github/workflows/shared-files-guard.yml package.json \
-                  scripts/check-engine-contracts.js scripts/series-reader-facade-regression-test.js \
-                  src/components css/series-samizdat.css migration/page-ownership.json \
-                  docs/READER-PLATFORM-ARCHITECTURE-2026-07-21.md \
-                  docs/READER-PLATFORM-MIGRATION-MATRIX-2026-07-21.md \
-                  docs/READER-R3-SERIES-FACADE-2026-07-21.md docs/SERIES-ENGINE-GUIDE.md \
-                  docs/READER-R3-VALIDATION-INITIAL.txt
+          git add -A
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'refactor(reader): route series through neutral façade'
