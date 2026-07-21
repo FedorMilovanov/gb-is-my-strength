@@ -27,7 +27,14 @@ jobs:
         run: npm ci
 
       - name: Install Chromium
-        run: npx playwright install chromium
+        shell: bash
+        run: |
+          npx playwright install chromium
+          browser_path="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          test -x "$browser_path"
+          sudo mkdir -p /opt/pw-browsers
+          sudo ln -sfn "$browser_path" /opt/pw-browsers/chromium
+          test -x /opt/pw-browsers/chromium
 
       - name: Reader and engine contracts
         shell: bash
