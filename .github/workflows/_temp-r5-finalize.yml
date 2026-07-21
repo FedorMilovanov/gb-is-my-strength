@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: reader-r5-finalize-${{ github.event.pull_request.number }}
+  group: reader-r5-finalize-${{ github.event.pull_request.head.sha }}
   cancel-in-progress: false
 
 permissions:
