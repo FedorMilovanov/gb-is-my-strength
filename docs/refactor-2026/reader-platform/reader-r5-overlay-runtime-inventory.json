@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-07-21T14:32:52.059Z",
-  "sourceHead": "6ab5f5b05f1c91b3d863e21c1a4536db04672dde",
+  "generatedAt": "2026-07-21T14:49:47.983Z",
+  "sourceHead": "5fdcba10223ffec346c050a3477624811277d102",
   "scannedFiles": 779,
-  "matchCount": 4771,
+  "matchCount": 4851,
   "countsByRule": {
-    "body-style-writer": 34,
-    "escape-handler": 27,
-    "focus-operation": 125,
+    "body-style-writer": 33,
+    "escape-handler": 28,
+    "focus-operation": 149,
     "global-scroll-api-write": 3,
     "html-style-writer": 4,
-    "keydown-handler": 144,
-    "overlay-dialog-semantics": 3034,
-    "overlay-naming": 1268,
-    "route-recovery": 15,
-    "scroll-api": 104,
-    "style-remove-property-writer": 13
+    "keydown-handler": 145,
+    "overlay-dialog-semantics": 3068,
+    "overlay-naming": 1287,
+    "route-recovery": 17,
+    "scroll-api": 116,
+    "style-remove-property-writer": 1
   },
   "directWriterFiles": [
     {
@@ -82,7 +82,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 39,
+          "line": 41,
           "token": "body.style.position =",
           "excerpt": "body.style.position === 'fixed' &&"
         },
@@ -90,7 +90,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 40,
+          "line": 42,
           "token": "body.style.overflow =",
           "excerpt": "body.style.overflow === 'hidden' &&"
         },
@@ -98,7 +98,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 42,
+          "line": 44,
           "token": "body.style.width =",
           "excerpt": "body.style.width === '100%'"
         },
@@ -106,7 +106,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 69,
+          "line": 131,
           "token": "body.style.overflow =",
           "excerpt": "body.style.overflow = 'hidden';"
         },
@@ -114,7 +114,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 71,
+          "line": 133,
           "token": "body.style.position =",
           "excerpt": "body.style.position = 'fixed';"
         },
@@ -122,7 +122,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 72,
+          "line": 134,
           "token": "body.style.top =",
           "excerpt": "body.style.top = '-' + savedScrollY + 'px';"
         },
@@ -130,7 +130,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 73,
+          "line": 135,
           "token": "body.style.left =",
           "excerpt": "body.style.left = '0';"
         },
@@ -138,7 +138,7 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 74,
+          "line": 136,
           "token": "body.style.right =",
           "excerpt": "body.style.right = '0';"
         },
@@ -146,111 +146,15 @@
           "rule": "body-style-writer",
           "severity": "migration",
           "file": "js/site-utils.js",
-          "line": 75,
+          "line": 137,
           "token": "body.style.width =",
           "excerpt": "body.style.width = '100%';"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site-utils.js",
-          "line": 89,
-          "token": ".style.removeProperty('overflow'",
-          "excerpt": "body.style.removeProperty('overflow');"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site-utils.js",
-          "line": 91,
-          "token": ".style.removeProperty('position'",
-          "excerpt": "body.style.removeProperty('position');"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site-utils.js",
-          "line": 92,
-          "token": ".style.removeProperty('top'",
-          "excerpt": "body.style.removeProperty('top');"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site-utils.js",
-          "line": 95,
-          "token": ".style.removeProperty('width'",
-          "excerpt": "body.style.removeProperty('width');"
         }
       ]
     },
     {
       "file": "js/site.js",
       "matches": [
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"overflow\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"position\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"top\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"width\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"overflow\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"position\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"top\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
-        {
-          "rule": "style-remove-property-writer",
-          "severity": "migration",
-          "file": "js/site.js",
-          "line": 1,
-          "token": ".style.removeProperty(\"width\"",
-          "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-        },
         {
           "rule": "body-style-writer",
           "severity": "migration",
@@ -434,44 +338,31 @@
       ]
     },
     {
-      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "file": "scripts/runtime-integrity-test.js",
       "matches": [
         {
           "rule": "body-style-writer",
           "severity": "migration",
-          "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-          "line": 221,
-          "token": "document.body.style.overflow =",
-          "excerpt": "document.body.style.overflow = 'hidden';"
+          "file": "scripts/runtime-integrity-test.js",
+          "line": 171,
+          "token": "body.style.overflow =",
+          "excerpt": "body.style.overflow = 'auto';"
         },
         {
           "rule": "body-style-writer",
           "severity": "migration",
-          "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-          "line": 225,
-          "token": "document.body.style.overflow =",
-          "excerpt": "document.body.style.overflow = '';"
-        }
-      ]
-    },
-    {
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "matches": [
-        {
-          "rule": "body-style-writer",
-          "severity": "migration",
-          "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-          "line": 355,
-          "token": "document.body.style.overflow =",
-          "excerpt": "const openSheet = () => { sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; };"
+          "file": "scripts/runtime-integrity-test.js",
+          "line": 172,
+          "token": "body.style.position =",
+          "excerpt": "body.style.position = 'relative';"
         },
         {
           "rule": "body-style-writer",
           "severity": "migration",
-          "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-          "line": 356,
-          "token": "document.body.style.overflow =",
-          "excerpt": "const closeSheet = () => { sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; };"
+          "file": "scripts/runtime-integrity-test.js",
+          "line": 173,
+          "token": "body.style.top =",
+          "excerpt": "body.style.top = '4px';"
         }
       ]
     }
@@ -505,7 +396,7 @@
           "rule": "global-scroll-api-write",
           "severity": "conflict",
           "file": "scripts/runtime-integrity-test.js",
-          "line": 129,
+          "line": 149,
           "token": "window.SiteUtils.lockScroll =",
           "excerpt": "window.SiteUtils.lockScroll = function broken() {};"
         }
@@ -535,7 +426,7 @@
         "scroll-api",
         "style-remove-property-writer"
       ],
-      "matchCount": 211
+      "matchCount": 202
     },
     {
       "file": "konfessii/russkij-baptizm/_app/index.html",
@@ -575,6 +466,28 @@
         "scroll-api"
       ],
       "matchCount": 141
+    },
+    {
+      "file": "js/site-utils.js",
+      "categories": [
+        "coordination",
+        "focus",
+        "keyboard",
+        "lifecycle",
+        "migration",
+        "recovery"
+      ],
+      "rules": [
+        "body-style-writer",
+        "escape-handler",
+        "focus-operation",
+        "keydown-handler",
+        "overlay-dialog-semantics",
+        "overlay-naming",
+        "route-recovery",
+        "scroll-api"
+      ],
+      "matchCount": 120
     },
     {
       "file": "index.html",
@@ -791,24 +704,6 @@
       "matchCount": 58
     },
     {
-      "file": "js/site-utils.js",
-      "categories": [
-        "coordination",
-        "lifecycle",
-        "migration",
-        "recovery"
-      ],
-      "rules": [
-        "body-style-writer",
-        "overlay-dialog-semantics",
-        "overlay-naming",
-        "route-recovery",
-        "scroll-api",
-        "style-remove-property-writer"
-      ],
-      "matchCount": 57
-    },
-    {
       "file": "baptisty-rossii/index.html",
       "categories": [
         "keyboard",
@@ -988,6 +883,24 @@
       "matchCount": 42
     },
     {
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "categories": [
+        "coordination",
+        "focus",
+        "keyboard",
+        "lifecycle"
+      ],
+      "rules": [
+        "escape-handler",
+        "focus-operation",
+        "keydown-handler",
+        "overlay-dialog-semantics",
+        "overlay-naming",
+        "scroll-api"
+      ],
+      "matchCount": 42
+    },
+    {
       "file": "articles/kod-da-vinchi/index.html",
       "categories": [
         "keyboard",
@@ -1012,6 +925,25 @@
         "overlay-naming"
       ],
       "matchCount": 39
+    },
+    {
+      "file": "scripts/runtime-integrity-test.js",
+      "categories": [
+        "conflict",
+        "coordination",
+        "focus",
+        "lifecycle",
+        "migration"
+      ],
+      "rules": [
+        "body-style-writer",
+        "focus-operation",
+        "global-scroll-api-write",
+        "overlay-dialog-semantics",
+        "overlay-naming",
+        "scroll-api"
+      ],
+      "matchCount": 38
     },
     {
       "file": "articles/dzhon-gill-chast-2-uchenyi/index.html",
@@ -1067,22 +999,6 @@
       "matchCount": 36
     },
     {
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "categories": [
-        "keyboard",
-        "lifecycle",
-        "migration"
-      ],
-      "rules": [
-        "body-style-writer",
-        "escape-handler",
-        "keydown-handler",
-        "overlay-dialog-semantics",
-        "overlay-naming"
-      ],
-      "matchCount": 36
-    },
-    {
       "file": "js/search.js",
       "categories": [
         "coordination",
@@ -1108,6 +1024,24 @@
       "rules": [
         "keydown-handler",
         "overlay-dialog-semantics"
+      ],
+      "matchCount": 35
+    },
+    {
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "categories": [
+        "coordination",
+        "focus",
+        "keyboard",
+        "lifecycle"
+      ],
+      "rules": [
+        "escape-handler",
+        "focus-operation",
+        "keydown-handler",
+        "overlay-dialog-semantics",
+        "overlay-naming",
+        "scroll-api"
       ],
       "matchCount": 35
     },
@@ -1211,22 +1145,6 @@
       "matchCount": 30
     },
     {
-      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "categories": [
-        "keyboard",
-        "lifecycle",
-        "migration"
-      ],
-      "rules": [
-        "body-style-writer",
-        "escape-handler",
-        "keydown-handler",
-        "overlay-dialog-semantics",
-        "overlay-naming"
-      ],
-      "matchCount": 29
-    },
-    {
       "file": "_build-tools/konfessii-baptizm/MindMap3D.tsx",
       "categories": [
         "keyboard",
@@ -1297,21 +1215,6 @@
         "overlay-dialog-semantics"
       ],
       "matchCount": 25
-    },
-    {
-      "file": "scripts/runtime-integrity-test.js",
-      "categories": [
-        "conflict",
-        "coordination",
-        "lifecycle"
-      ],
-      "rules": [
-        "global-scroll-api-write",
-        "overlay-dialog-semantics",
-        "overlay-naming",
-        "scroll-api"
-      ],
-      "matchCount": 24
     },
     {
       "file": "src/components/pastor-series/PastorSeriesPageChrome.astro",
@@ -16364,7 +16267,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 20,
+      "line": 22,
       "token": "aria-hidden",
       "excerpt": "document.querySelector('.mobile-nav.active, .mobile-nav[aria-hidden=\"false\"]') ||"
     },
@@ -16372,7 +16275,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 21,
+      "line": 23,
       "token": "aria-hidden",
       "excerpt": "document.querySelector('.cp-backdrop.is-open, .cp-panel[aria-hidden=\"false\"]') ||"
     },
@@ -16380,7 +16283,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 21,
+      "line": 23,
       "token": "backdrop",
       "excerpt": "document.querySelector('.cp-backdrop.is-open, .cp-panel[aria-hidden=\"false\"]') ||"
     },
@@ -16388,7 +16291,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 22,
+      "line": 24,
       "token": "aria-hidden",
       "excerpt": "document.querySelector('#btocOverlay.open, .btoc-panel[aria-hidden=\"false\"]') ||"
     },
@@ -16396,7 +16299,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 24,
+      "line": 26,
       "token": "overlay",
       "excerpt": "document.querySelector('.toc-overlay.is-open, #partTocOverlay.is-open, #seriesTocOverlay.is-open') ||"
     },
@@ -16404,7 +16307,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 25,
+      "line": 27,
       "token": "backdrop",
       "excerpt": "document.querySelector('#gb-hl-backdrop.is-open')"
     },
@@ -16412,7 +16315,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 39,
+      "line": 41,
       "token": "body.style.position =",
       "excerpt": "body.style.position === 'fixed' &&"
     },
@@ -16420,7 +16323,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 40,
+      "line": 42,
       "token": "body.style.overflow =",
       "excerpt": "body.style.overflow === 'hidden' &&"
     },
@@ -16428,7 +16331,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 42,
+      "line": 44,
       "token": "body.style.width =",
       "excerpt": "body.style.width === '100%'"
     },
@@ -16436,7 +16339,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 69,
+      "line": 131,
       "token": "body.style.overflow =",
       "excerpt": "body.style.overflow = 'hidden';"
     },
@@ -16444,7 +16347,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 71,
+      "line": 133,
       "token": "body.style.position =",
       "excerpt": "body.style.position = 'fixed';"
     },
@@ -16452,7 +16355,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 72,
+      "line": 134,
       "token": "body.style.top =",
       "excerpt": "body.style.top = '-' + savedScrollY + 'px';"
     },
@@ -16460,7 +16363,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 73,
+      "line": 135,
       "token": "body.style.left =",
       "excerpt": "body.style.left = '0';"
     },
@@ -16468,7 +16371,7 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 74,
+      "line": 136,
       "token": "body.style.right =",
       "excerpt": "body.style.right = '0';"
     },
@@ -16476,47 +16379,15 @@
       "rule": "body-style-writer",
       "severity": "migration",
       "file": "js/site-utils.js",
-      "line": 75,
+      "line": 137,
       "token": "body.style.width =",
       "excerpt": "body.style.width = '100%';"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site-utils.js",
-      "line": 89,
-      "token": ".style.removeProperty('overflow'",
-      "excerpt": "body.style.removeProperty('overflow');"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site-utils.js",
-      "line": 91,
-      "token": ".style.removeProperty('position'",
-      "excerpt": "body.style.removeProperty('position');"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site-utils.js",
-      "line": 92,
-      "token": ".style.removeProperty('top'",
-      "excerpt": "body.style.removeProperty('top');"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site-utils.js",
-      "line": 95,
-      "token": ".style.removeProperty('width'",
-      "excerpt": "body.style.removeProperty('width');"
     },
     {
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 110,
+      "line": 157,
       "token": "ensureLockState",
       "excerpt": "function ensureLockState() {"
     },
@@ -16524,7 +16395,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 120,
+      "line": 167,
       "token": "forceUnlock",
       "excerpt": "forceUnlock();"
     },
@@ -16532,7 +16403,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 135,
+      "line": 182,
       "token": "lockScroll",
       "excerpt": "function lockScroll(source) {"
     },
@@ -16540,7 +16411,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 143,
+      "line": 190,
       "token": "unlockScroll",
       "excerpt": "function unlockScroll(source) {"
     },
@@ -16548,7 +16419,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 153,
+      "line": 200,
       "token": "forceUnlock",
       "excerpt": "function forceUnlock() {"
     },
@@ -16556,7 +16427,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 168,
+      "line": 215,
       "token": "ensureLockState",
       "excerpt": "queueMicrotask(ensureLockState);"
     },
@@ -16564,7 +16435,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 174,
+      "line": 221,
       "token": "ensureLockState",
       "excerpt": "queueMicrotask(ensureLockState);"
     },
@@ -16572,7 +16443,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 189,
+      "line": 236,
       "token": "lockScroll",
       "excerpt": "protectedMethod('lockScroll', lockScroll);"
     },
@@ -16580,7 +16451,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 189,
+      "line": 236,
       "token": "lockScroll",
       "excerpt": "protectedMethod('lockScroll', lockScroll);"
     },
@@ -16588,7 +16459,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 190,
+      "line": 237,
       "token": "unlockScroll",
       "excerpt": "protectedMethod('unlockScroll', unlockScroll);"
     },
@@ -16596,7 +16467,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 190,
+      "line": 237,
       "token": "unlockScroll",
       "excerpt": "protectedMethod('unlockScroll', unlockScroll);"
     },
@@ -16604,7 +16475,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 191,
+      "line": 238,
       "token": "forceUnlock",
       "excerpt": "protectedMethod('forceUnlockScroll', forceUnlock);"
     },
@@ -16612,15 +16483,551 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 192,
+      "line": 239,
       "token": "forceUnlock",
       "excerpt": "protectedMethod('forceUnlockEmergency', forceUnlock);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 252,
+      "token": "overlay",
+      "excerpt": "return id === '__anonymous__' ? 'overlay:anonymous' : id;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 274,
+      "token": "trapFocus",
+      "excerpt": "trapFocus: true,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 275,
+      "token": "restoreFocus",
+      "excerpt": "restoreFocus: true,"
     },
     {
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 196,
+      "line": 276,
+      "token": "lockScroll",
+      "excerpt": "lockScroll: true,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 287,
+      "token": "trapFocus",
+      "excerpt": "['closeOnEscape', 'trapFocus', 'restoreFocus', 'lockScroll'].forEach(function (key) {"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 287,
+      "token": "restoreFocus",
+      "excerpt": "['closeOnEscape', 'trapFocus', 'restoreFocus', 'lockScroll'].forEach(function (key) {"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 287,
+      "token": "lockScroll",
+      "excerpt": "['closeOnEscape', 'trapFocus', 'restoreFocus', 'lockScroll'].forEach(function (key) {"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 297,
+      "token": "aria-hidden",
+      "excerpt": "if (element.getAttribute && element.getAttribute('aria-hidden') === 'true') return false;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 298,
+      "token": "document.activeElement",
+      "excerpt": "return element.offsetParent !== null || element === document.activeElement;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 303,
+      "token": ".focus(",
+      "excerpt": "try { element.focus({ preventScroll: true }); return true; }"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 304,
+      "token": ".focus(",
+      "excerpt": "catch (_) { try { element.focus(); return true; } catch (_) { return false; } }"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 331,
+      "token": "inert",
+      "excerpt": "inert: element.hasAttribute ? element.hasAttribute('inert') : Boolean(element.inert),"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 331,
+      "token": "inert",
+      "excerpt": "inert: element.hasAttribute ? element.hasAttribute('inert') : Boolean(element.inert),"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 331,
+      "token": "inert",
+      "excerpt": "inert: element.hasAttribute ? element.hasAttribute('inert') : Boolean(element.inert),"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 332,
+      "token": "aria-hidden",
+      "excerpt": "ariaHidden: element.getAttribute ? element.getAttribute('aria-hidden') : null"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 337,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = true;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 337,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = true;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 339,
+      "token": "inert",
+      "excerpt": "element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 340,
+      "token": "aria-hidden",
+      "excerpt": "element.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 352,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = claim.inert;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 352,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = claim.inert;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 352,
+      "token": "inert",
+      "excerpt": "if ('inert' in element) element.inert = claim.inert;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 354,
+      "token": "inert",
+      "excerpt": "if (claim.inert) element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 354,
+      "token": "inert",
+      "excerpt": "if (claim.inert) element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 355,
+      "token": "inert",
+      "excerpt": "else element.removeAttribute('inert');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 356,
+      "token": "aria-hidden",
+      "excerpt": "if (claim.ariaHidden === null) element.removeAttribute('aria-hidden');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 357,
+      "token": "aria-hidden",
+      "excerpt": "else element.setAttribute('aria-hidden', claim.ariaHidden);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 377,
+      "token": "lockScroll",
+      "excerpt": "lockScroll: record.lockScroll,"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 377,
+      "token": "lockScroll",
+      "excerpt": "lockScroll: record.lockScroll,"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 385,
+      "token": "data-overlay",
+      "excerpt": "document.documentElement.setAttribute('data-overlay-count', String(overlaySnapshot().length));"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 386,
+      "token": "data-overlay",
+      "excerpt": "if (top) document.documentElement.setAttribute('data-overlay-top', top.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 387,
+      "token": "data-overlay",
+      "excerpt": "else document.documentElement.removeAttribute('data-overlay-top');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 402,
+      "token": "document.activeElement",
+      "excerpt": "var active = document.activeElement;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 410,
+      "token": "aria-hidden",
+      "excerpt": "record.element.setAttribute('aria-hidden', 'false');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 411,
+      "token": "inert",
+      "excerpt": "record.element.removeAttribute('inert');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 412,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = false;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 412,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = false;"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 413,
+      "token": "data-overlay",
+      "excerpt": "record.element.setAttribute('data-overlay-owner', record.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 414,
+      "token": "data-overlay",
+      "excerpt": "record.element.setAttribute('data-overlay-open', '1');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 417,
+      "token": "overlay",
+      "excerpt": "if (record.lockScroll) lockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 417,
+      "token": "lockScroll",
+      "excerpt": "if (record.lockScroll) lockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 417,
+      "token": "lockScroll",
+      "excerpt": "if (record.lockScroll) lockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 419,
+      "token": "overlay",
+      "excerpt": "overlayEvent('gb:overlay-open', record, options.reason || 'open');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 432,
+      "token": "aria-hidden",
+      "excerpt": "record.element.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 433,
+      "token": "inert",
+      "excerpt": "record.element.setAttribute('inert', '');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 434,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = true;"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 434,
+      "token": "inert",
+      "excerpt": "if ('inert' in record.element) record.element.inert = true;"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 435,
+      "token": "data-overlay",
+      "excerpt": "record.element.removeAttribute('data-overlay-open');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 438,
+      "token": "overlay",
+      "excerpt": "if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 438,
+      "token": "lockScroll",
+      "excerpt": "if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 438,
+      "token": "unlockScroll",
+      "excerpt": "if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 440,
+      "token": "overlay",
+      "excerpt": "overlayEvent('gb:overlay-close', record, reason || 'close');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 441,
+      "token": "restoreFocus",
+      "excerpt": "var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 441,
+      "token": "restoreFocus",
+      "excerpt": "var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 465,
+      "token": "restoreFocus",
+      "excerpt": "if (record.open) closeOverlayOwner(id, 'destroy', { restoreFocus: false });"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 467,
+      "token": "data-overlay",
+      "excerpt": "record.element.removeAttribute('data-overlay-owner');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 468,
+      "token": "data-overlay",
+      "excerpt": "record.element.removeAttribute('data-overlay-open');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 480,
+      "token": "restoreFocus",
+      "excerpt": "closeOverlayOwner(id, reason || 'force', { restoreFocus: false });"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "js/site-utils.js",
+      "line": 493,
+      "token": "aria-hidden",
+      "excerpt": "return record.element.isConnected !== false && record.element.getAttribute('aria-hidden') !== 'true';"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 498,
+      "token": "trapFocus",
+      "excerpt": "if (!record || !record.trapFocus || !record.element || !record.element.querySelectorAll) return false;"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 503,
+      "token": "document.activeElement",
+      "excerpt": "if (event.shiftKey && document.activeElement === first) {"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "js/site-utils.js",
+      "line": 506,
+      "token": "document.activeElement",
+      "excerpt": "if (!event.shiftKey && document.activeElement === last) {"
+    },
+    {
+      "rule": "keydown-handler",
+      "severity": "keyboard",
+      "file": "js/site-utils.js",
+      "line": 512,
+      "token": "addEventListener('keydown'",
+      "excerpt": "document.addEventListener('keydown', function (event) {"
+    },
+    {
+      "rule": "escape-handler",
+      "severity": "keyboard",
+      "file": "js/site-utils.js",
+      "line": 515,
+      "token": ".key === 'Escape'",
+      "excerpt": "if (event.key === 'Escape' || event.key === 'Esc') {"
+    },
+    {
+      "rule": "route-recovery",
+      "severity": "recovery",
+      "file": "js/site-utils.js",
+      "line": 526,
+      "token": "addEventListener('pagehide'",
+      "excerpt": "window.addEventListener('pagehide', function () { recoverOverlayOwners('pagehide'); });"
+    },
+    {
+      "rule": "route-recovery",
+      "severity": "recovery",
+      "file": "js/site-utils.js",
+      "line": 527,
+      "token": "addEventListener('beforeunload'",
+      "excerpt": "window.addEventListener('beforeunload', function () { recoverOverlayOwners('beforeunload'); });"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 553,
+      "token": "forceRecover",
+      "excerpt": "forceRecover: recoverOverlayOwners"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site-utils.js",
+      "line": 572,
       "token": "_scrollLockSources",
       "excerpt": "Object.defineProperty(api, '_scrollLockSources', {"
     },
@@ -16628,7 +17035,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 202,
+      "line": 578,
       "token": "_scrollLockCount",
       "excerpt": "Object.defineProperty(api, '_scrollLockCount', {"
     },
@@ -16636,7 +17043,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 272,
+      "line": 648,
       "token": "dialog",
       "excerpt": "function syncHighlightDialog(dialog) {"
     },
@@ -16644,7 +17051,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 273,
+      "line": 649,
       "token": "dialog",
       "excerpt": "if (!dialog || dialog.id !== 'gb-hl-backdrop') return;"
     },
@@ -16652,7 +17059,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 273,
+      "line": 649,
       "token": "dialog",
       "excerpt": "if (!dialog || dialog.id !== 'gb-hl-backdrop') return;"
     },
@@ -16660,7 +17067,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 273,
+      "line": 649,
       "token": "backdrop",
       "excerpt": "if (!dialog || dialog.id !== 'gb-hl-backdrop') return;"
     },
@@ -16668,7 +17075,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 274,
+      "line": 650,
       "token": "dialog",
       "excerpt": "var open = dialog.classList.contains('is-open');"
     },
@@ -16676,7 +17083,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 275,
+      "line": 651,
       "token": "aria-hidden",
       "excerpt": "dialog.setAttribute('aria-hidden', open ? 'false' : 'true');"
     },
@@ -16684,7 +17091,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 275,
+      "line": 651,
       "token": "dialog",
       "excerpt": "dialog.setAttribute('aria-hidden', open ? 'false' : 'true');"
     },
@@ -16692,7 +17099,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 276,
+      "line": 652,
       "token": "inert",
       "excerpt": "if ('inert' in dialog) dialog.inert = !open;"
     },
@@ -16700,7 +17107,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 276,
+      "line": 652,
       "token": "inert",
       "excerpt": "if ('inert' in dialog) dialog.inert = !open;"
     },
@@ -16708,7 +17115,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 276,
+      "line": 652,
       "token": "dialog",
       "excerpt": "if ('inert' in dialog) dialog.inert = !open;"
     },
@@ -16716,7 +17123,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 276,
+      "line": 652,
       "token": "dialog",
       "excerpt": "if ('inert' in dialog) dialog.inert = !open;"
     },
@@ -16724,7 +17131,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 277,
+      "line": 653,
       "token": "dialog",
       "excerpt": "if (!dialog.__gbAriaObserver) {"
     },
@@ -16732,7 +17139,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 278,
+      "line": 654,
       "token": "dialog",
       "excerpt": "var observer = new MutationObserver(function () { syncHighlightDialog(dialog); });"
     },
@@ -16740,7 +17147,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 279,
+      "line": 655,
       "token": "dialog",
       "excerpt": "observer.observe(dialog, { attributes: true, attributeFilter: ['class'] });"
     },
@@ -16748,7 +17155,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 280,
+      "line": 656,
       "token": "dialog",
       "excerpt": "dialog.__gbAriaObserver = observer;"
     },
@@ -16756,7 +17163,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 285,
+      "line": 661,
       "token": "dialog",
       "excerpt": "var dialog = document.getElementById('gb-hl-backdrop');"
     },
@@ -16764,7 +17171,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 285,
+      "line": 661,
       "token": "backdrop",
       "excerpt": "var dialog = document.getElementById('gb-hl-backdrop');"
     },
@@ -16772,7 +17179,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 286,
+      "line": 662,
       "token": "dialog",
       "excerpt": "if (dialog) syncHighlightDialog(dialog);"
     },
@@ -16780,7 +17187,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 286,
+      "line": 662,
       "token": "dialog",
       "excerpt": "if (dialog) syncHighlightDialog(dialog);"
     },
@@ -16788,7 +17195,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "js/site-utils.js",
-      "line": 299,
+      "line": 675,
       "token": "overlay",
       "excerpt": "// A private site.js unlock can remove body styles while a global overlay is"
     },
@@ -16796,7 +17203,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "js/site-utils.js",
-      "line": 303,
+      "line": 679,
       "token": "ensureLockState",
       "excerpt": "if (!restoring && effectiveLocked() && !lockStylesApplied()) queueMicrotask(ensureLockState);"
     },
@@ -16804,7 +17211,7 @@
       "rule": "route-recovery",
       "severity": "recovery",
       "file": "js/site-utils.js",
-      "line": 309,
+      "line": 685,
       "token": "addEventListener('pagehide'",
       "excerpt": "window.addEventListener('pagehide', stopEmergencyTimer);"
     },
@@ -16812,7 +17219,7 @@
       "rule": "route-recovery",
       "severity": "recovery",
       "file": "js/site-utils.js",
-      "line": 310,
+      "line": 686,
       "token": "addEventListener('beforeunload'",
       "excerpt": "window.addEventListener('beforeunload', stopEmergencyTimer);"
     },
@@ -17637,7 +18044,15 @@
       "severity": "coordination",
       "file": "js/site.js",
       "line": 1,
-      "token": "_scrollLockSources",
+      "token": "_scrollLockCount",
+      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "js/site.js",
+      "line": 1,
+      "token": "_scrollLockCount",
       "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
     },
     {
@@ -17661,7 +18076,7 @@
       "severity": "coordination",
       "file": "js/site.js",
       "line": 1,
-      "token": "_scrollLockSources",
+      "token": "lockScroll",
       "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
     },
     {
@@ -17669,7 +18084,7 @@
       "severity": "coordination",
       "file": "js/site.js",
       "line": 1,
-      "token": "_scrollLockSources",
+      "token": "lockScroll",
       "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
     },
     {
@@ -17685,7 +18100,7 @@
       "severity": "coordination",
       "file": "js/site.js",
       "line": 1,
-      "token": "_scrollLockSources",
+      "token": "unlockScroll",
       "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
     },
     {
@@ -17693,23 +18108,7 @@
       "severity": "coordination",
       "file": "js/site.js",
       "line": 1,
-      "token": "_scrollLockSources",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "scroll-api",
-      "severity": "coordination",
-      "file": "js/site.js",
-      "line": 1,
-      "token": "_scrollLockSources",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "scroll-api",
-      "severity": "coordination",
-      "file": "js/site.js",
-      "line": 1,
-      "token": "_scrollLockCount",
+      "token": "unlockScroll",
       "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
     },
     {
@@ -17774,70 +18173,6 @@
       "file": "js/site.js",
       "line": 1,
       "token": "lockScroll",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"overflow\"",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"position\"",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"top\"",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"width\"",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"overflow\"",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"position\"",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"top\"",
-      "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
-    },
-    {
-      "rule": "style-remove-property-writer",
-      "severity": "migration",
-      "file": "js/site.js",
-      "line": 1,
-      "token": ".style.removeProperty(\"width\"",
       "excerpt": "!function(){\"use strict\";function tt(n){return String(n||\"\").replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\")}var e,t,n,i='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">',o='<svg viewBox=\"0 0 24 2"
     },
     {
@@ -26804,15 +27139,55 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 45,
+      "line": 47,
       "token": "inert",
       "excerpt": "this.inert = false;"
     },
     {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 54,
+      "token": "inert",
+      "excerpt": "setAttribute(key, value) { this.attrs[key] = String(value); if (key === 'inert') this.inert = true; }"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 54,
+      "token": "inert",
+      "excerpt": "setAttribute(key, value) { this.attrs[key] = String(value); if (key === 'inert') this.inert = true; }"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 55,
+      "token": "inert",
+      "excerpt": "removeAttribute(key) { delete this.attrs[key]; if (key === 'inert') this.inert = false; }"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 55,
+      "token": "inert",
+      "excerpt": "removeAttribute(key) { delete this.attrs[key]; if (key === 'inert') this.inert = false; }"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 60,
+      "token": "document.activeElement",
+      "excerpt": "focus() { this.focusCount += 1; document.activeElement = this; }"
+    },
+    {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 65,
+      "line": 76,
       "token": "dialog",
       "excerpt": "const dialog = new Element('gb-hl-backdrop');"
     },
@@ -26820,7 +27195,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 65,
+      "line": 76,
       "token": "backdrop",
       "excerpt": "const dialog = new Element('gb-hl-backdrop');"
     },
@@ -26828,7 +27203,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 71,
+      "line": 81,
       "token": "backdrop",
       "excerpt": "getElementById(id) { return id === 'gb-hl-backdrop' ? dialog : null; },"
     },
@@ -26836,7 +27211,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 71,
+      "line": 81,
       "token": "dialog",
       "excerpt": "getElementById(id) { return id === 'gb-hl-backdrop' ? dialog : null; },"
     },
@@ -26844,7 +27219,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 120,
+      "line": 140,
       "token": "sheet",
       "excerpt": "window.SiteUtils.lockScroll('sheet-a');"
     },
@@ -26852,7 +27227,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 120,
+      "line": 140,
       "token": "lockScroll",
       "excerpt": "window.SiteUtils.lockScroll('sheet-a');"
     },
@@ -26860,7 +27235,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 121,
+      "line": 141,
       "token": "sheet",
       "excerpt": "window.SiteUtils.lockScroll('sheet-b');"
     },
@@ -26868,7 +27243,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 121,
+      "line": 141,
       "token": "lockScroll",
       "excerpt": "window.SiteUtils.lockScroll('sheet-b');"
     },
@@ -26876,7 +27251,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 123,
+      "line": 143,
       "token": "sheet",
       "excerpt": "window.SiteUtils.unlockScroll('sheet-a');"
     },
@@ -26884,7 +27259,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 123,
+      "line": 143,
       "token": "unlockScroll",
       "excerpt": "window.SiteUtils.unlockScroll('sheet-a');"
     },
@@ -26892,7 +27267,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 125,
+      "line": 145,
       "token": "sheet",
       "excerpt": "window.SiteUtils.unlockScroll('sheet-b');"
     },
@@ -26900,7 +27275,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 125,
+      "line": 145,
       "token": "unlockScroll",
       "excerpt": "window.SiteUtils.unlockScroll('sheet-b');"
     },
@@ -26908,7 +27283,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 128,
+      "line": 148,
       "token": "lockScroll",
       "excerpt": "const lockFn = window.SiteUtils.lockScroll;"
     },
@@ -26916,7 +27291,7 @@
       "rule": "global-scroll-api-write",
       "severity": "conflict",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 129,
+      "line": 149,
       "token": "window.SiteUtils.lockScroll =",
       "excerpt": "window.SiteUtils.lockScroll = function broken() {};"
     },
@@ -26924,7 +27299,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 129,
+      "line": 149,
       "token": "lockScroll",
       "excerpt": "window.SiteUtils.lockScroll = function broken() {};"
     },
@@ -26932,7 +27307,7 @@
       "rule": "scroll-api",
       "severity": "coordination",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 130,
+      "line": 150,
       "token": "lockScroll",
       "excerpt": "assert.strictEqual(window.SiteUtils.lockScroll, lockFn, 'site.js must not replace the coordinator');"
     },
@@ -26940,7 +27315,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 132,
+      "line": 152,
       "token": "aria-hidden",
       "excerpt": "assert.equal(dialog.getAttribute('aria-hidden'), 'true', 'the quotes dialog must start hidden');"
     },
@@ -26948,7 +27323,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 132,
+      "line": 152,
       "token": "dialog",
       "excerpt": "assert.equal(dialog.getAttribute('aria-hidden'), 'true', 'the quotes dialog must start hidden');"
     },
@@ -26956,7 +27331,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 132,
+      "line": 152,
       "token": "dialog",
       "excerpt": "assert.equal(dialog.getAttribute('aria-hidden'), 'true', 'the quotes dialog must start hidden');"
     },
@@ -26964,7 +27339,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 133,
+      "line": 153,
       "token": "inert",
       "excerpt": "assert.equal(dialog.inert, true, 'the hidden quotes dialog must be inert');"
     },
@@ -26972,7 +27347,7 @@
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 133,
+      "line": 153,
       "token": "inert",
       "excerpt": "assert.equal(dialog.inert, true, 'the hidden quotes dialog must be inert');"
     },
@@ -26980,7 +27355,7 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 133,
+      "line": 153,
       "token": "dialog",
       "excerpt": "assert.equal(dialog.inert, true, 'the hidden quotes dialog must be inert');"
     },
@@ -26988,9 +27363,81 @@
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "scripts/runtime-integrity-test.js",
-      "line": 133,
+      "line": 153,
       "token": "dialog",
       "excerpt": "assert.equal(dialog.inert, true, 'the hidden quotes dialog must be inert');"
+    },
+    {
+      "rule": "body-style-writer",
+      "severity": "migration",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 171,
+      "token": "body.style.overflow =",
+      "excerpt": "body.style.overflow = 'auto';"
+    },
+    {
+      "rule": "body-style-writer",
+      "severity": "migration",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 172,
+      "token": "body.style.position =",
+      "excerpt": "body.style.position = 'relative';"
+    },
+    {
+      "rule": "body-style-writer",
+      "severity": "migration",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 173,
+      "token": "body.style.top =",
+      "excerpt": "body.style.top = '4px';"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 179,
+      "token": "overlay",
+      "excerpt": "const overlayA = new Element('overlay-a');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 180,
+      "token": "overlay",
+      "excerpt": "const overlayB = new Element('overlay-b');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 207,
+      "token": "inert",
+      "excerpt": "assert.equal(background.inert, true);"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 213,
+      "token": "inert",
+      "excerpt": "assert.equal(background.inert, true, 'nested inert claim must remain');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 213,
+      "token": "inert",
+      "excerpt": "assert.equal(background.inert, true, 'nested inert claim must remain');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "scripts/runtime-integrity-test.js",
+      "line": 223,
+      "token": "inert",
+      "excerpt": "assert.equal(background.inert, false);"
     },
     {
       "rule": "overlay-naming",
@@ -27385,20 +27832,12 @@
       "excerpt": "const backdrop = document.getElementById('hmSettingsBackdrop');"
     },
     {
-      "rule": "overlay-dialog-semantics",
-      "severity": "lifecycle",
+      "rule": "focus-operation",
+      "severity": "focus",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 218,
-      "token": "aria-hidden",
-      "excerpt": "toc.classList.remove('is-open'); toc.setAttribute('aria-hidden', 'true');"
-    },
-    {
-      "rule": "overlay-dialog-semantics",
-      "severity": "lifecycle",
-      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 220,
-      "token": "aria-hidden",
-      "excerpt": "sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false');"
+      "line": 219,
+      "token": "restoreFocus",
+      "excerpt": "const close = (reason = 'programmatic', restoreFocus = true) => {"
     },
     {
       "rule": "overlay-naming",
@@ -27406,69 +27845,125 @@
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
       "line": 220,
       "token": "sheet",
-      "excerpt": "sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false');"
+      "excerpt": "sheet.classList.remove('is-open');"
     },
     {
-      "rule": "overlay-naming",
+      "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
-      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 220,
-      "token": "sheet",
-      "excerpt": "sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false');"
-    },
-    {
-      "rule": "body-style-writer",
-      "severity": "migration",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
       "line": 221,
-      "token": "document.body.style.overflow =",
-      "excerpt": "document.body.style.overflow = 'hidden';"
+      "token": "aria-hidden",
+      "excerpt": "sheet.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 221,
+      "token": "sheet",
+      "excerpt": "sheet.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 223,
+      "token": "restoreFocus",
+      "excerpt": "if (runtime?.close) runtime.close(OVERLAY_OWNER, reason, { restoreFocus });"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 224,
+      "token": "unlockScroll",
+      "excerpt": "else fallbackUtils()?.unlockScroll?.(OVERLAY_OWNER);"
     },
     {
       "rule": "overlay-dialog-semantics",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 224,
+      "line": 233,
       "token": "aria-hidden",
-      "excerpt": "sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true');"
+      "excerpt": "toc.setAttribute('aria-hidden', 'true');"
     },
     {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 224,
+      "line": 235,
       "token": "sheet",
-      "excerpt": "sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true');"
+      "excerpt": "sheet.classList.add('is-open');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 236,
+      "token": "aria-hidden",
+      "excerpt": "sheet.setAttribute('aria-hidden', 'false');"
     },
     {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 224,
+      "line": 236,
       "token": "sheet",
-      "excerpt": "sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true');"
-    },
-    {
-      "rule": "body-style-writer",
-      "severity": "migration",
-      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 225,
-      "token": "document.body.style.overflow =",
-      "excerpt": "document.body.style.overflow = '';"
+      "excerpt": "sheet.setAttribute('aria-hidden', 'false');"
     },
     {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 228,
+      "line": 238,
+      "token": "sheet",
+      "excerpt": "element: sheet,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 239,
+      "token": "document.activeElement",
+      "excerpt": "opener: document.activeElement,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 242,
+      "token": "trapFocus",
+      "excerpt": "trapFocus: true"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 244,
+      "token": "lockScroll",
+      "excerpt": "else fallbackUtils()?.lockScroll?.(OVERLAY_OWNER);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 247,
       "token": "backdrop",
-      "excerpt": "backdrop?.addEventListener('click', close);"
+      "excerpt": "backdrop?.addEventListener('click', () => close('backdrop', true));"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
+      "line": 247,
+      "token": "backdrop",
+      "excerpt": "backdrop?.addEventListener('click', () => close('backdrop', true));"
     },
     {
       "rule": "keydown-handler",
       "severity": "keyboard",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 230,
+      "line": 249,
       "token": "addEventListener('keydown'",
       "excerpt": "document.addEventListener('keydown', (e: KeyboardEvent) => {"
     },
@@ -27476,17 +27971,17 @@
       "rule": "escape-handler",
       "severity": "keyboard",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 231,
+      "line": 250,
       "token": ".key === 'Escape'",
-      "excerpt": "if (e.key === 'Escape' && sheet.classList.contains('is-open')) close();"
+      "excerpt": "if (!overlayRuntime() && e.key === 'Escape' && sheet.classList.contains('is-open')) close('escape', true);"
     },
     {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/_shared/ReaderSettings.astro",
-      "line": 231,
+      "line": 250,
       "token": "sheet",
-      "excerpt": "if (e.key === 'Escape' && sheet.classList.contains('is-open')) close();"
+      "excerpt": "if (!overlayRuntime() && e.key === 'Escape' && sheet.classList.contains('is-open')) close('escape', true);"
     },
     {
       "rule": "overlay-dialog-semantics",
@@ -29585,114 +30080,162 @@
       "excerpt": "if (!sheet) return;"
     },
     {
-      "rule": "body-style-writer",
-      "severity": "migration",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 355,
-      "token": "document.body.style.overflow =",
-      "excerpt": "const openSheet = () => { sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; };"
-    },
-    {
-      "rule": "overlay-dialog-semantics",
-      "severity": "lifecycle",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 355,
-      "token": "aria-hidden",
-      "excerpt": "const openSheet = () => { sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; };"
-    },
-    {
-      "rule": "overlay-naming",
-      "severity": "lifecycle",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 355,
-      "token": "sheet",
-      "excerpt": "const openSheet = () => { sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; };"
-    },
-    {
-      "rule": "overlay-naming",
-      "severity": "lifecycle",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 355,
-      "token": "sheet",
-      "excerpt": "const openSheet = () => { sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; };"
-    },
-    {
-      "rule": "body-style-writer",
-      "severity": "migration",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 356,
-      "token": "document.body.style.overflow =",
-      "excerpt": "const closeSheet = () => { sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; };"
-    },
-    {
-      "rule": "overlay-dialog-semantics",
-      "severity": "lifecycle",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 356,
-      "token": "aria-hidden",
-      "excerpt": "const closeSheet = () => { sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; };"
-    },
-    {
-      "rule": "overlay-naming",
-      "severity": "lifecycle",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 356,
-      "token": "sheet",
-      "excerpt": "const closeSheet = () => { sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; };"
-    },
-    {
-      "rule": "overlay-naming",
-      "severity": "lifecycle",
-      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 356,
-      "token": "sheet",
-      "excerpt": "const closeSheet = () => { sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; };"
-    },
-    {
-      "rule": "overlay-naming",
-      "severity": "lifecycle",
+      "rule": "focus-operation",
+      "severity": "focus",
       "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
       "line": 359,
-      "token": "backdrop",
-      "excerpt": "backdrop?.addEventListener('click', closeSheet);"
+      "token": "restoreFocus",
+      "excerpt": "const closeSheet = (reason = 'programmatic', restoreFocus = true) => {"
     },
     {
-      "rule": "escape-handler",
-      "severity": "keyboard",
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 360,
+      "token": "sheet",
+      "excerpt": "sheet.classList.remove('is-open');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
       "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
       "line": 361,
-      "token": ".key === 'Escape'",
-      "excerpt": "document.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Escape' && sheet.classList.contains('is-open')) closeSheet(); });"
+      "token": "aria-hidden",
+      "excerpt": "sheet.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 361,
+      "token": "sheet",
+      "excerpt": "sheet.setAttribute('aria-hidden', 'true');"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 363,
+      "token": "restoreFocus",
+      "excerpt": "if (runtime?.close) runtime.close(OVERLAY_OWNER, reason, { restoreFocus });"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 364,
+      "token": "unlockScroll",
+      "excerpt": "else fallbackUtils()?.unlockScroll?.(OVERLAY_OWNER);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 368,
+      "token": "sheet",
+      "excerpt": "sheet.classList.add('is-open');"
+    },
+    {
+      "rule": "overlay-dialog-semantics",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 369,
+      "token": "aria-hidden",
+      "excerpt": "sheet.setAttribute('aria-hidden', 'false');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 369,
+      "token": "sheet",
+      "excerpt": "sheet.setAttribute('aria-hidden', 'false');"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 372,
+      "token": "sheet",
+      "excerpt": "element: sheet,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 373,
+      "token": "document.activeElement",
+      "excerpt": "opener: opener instanceof Element ? opener : document.activeElement,"
+    },
+    {
+      "rule": "focus-operation",
+      "severity": "focus",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 376,
+      "token": "trapFocus",
+      "excerpt": "trapFocus: true"
+    },
+    {
+      "rule": "scroll-api",
+      "severity": "coordination",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 378,
+      "token": "lockScroll",
+      "excerpt": "else fallbackUtils()?.lockScroll?.(OVERLAY_OWNER);"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 382,
+      "token": "backdrop",
+      "excerpt": "backdrop?.addEventListener('click', () => closeSheet('backdrop', true));"
+    },
+    {
+      "rule": "overlay-naming",
+      "severity": "lifecycle",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 382,
+      "token": "backdrop",
+      "excerpt": "backdrop?.addEventListener('click', () => closeSheet('backdrop', true));"
     },
     {
       "rule": "keydown-handler",
       "severity": "keyboard",
       "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 361,
+      "line": 384,
       "token": "addEventListener('keydown'",
-      "excerpt": "document.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Escape' && sheet.classList.contains('is-open')) closeSheet(); });"
+      "excerpt": "document.addEventListener('keydown', (e: KeyboardEvent) => {"
+    },
+    {
+      "rule": "escape-handler",
+      "severity": "keyboard",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 385,
+      "token": ".key === 'Escape'",
+      "excerpt": "if (!overlayRuntime() && e.key === 'Escape' && sheet.classList.contains('is-open')) closeSheet('escape', true);"
     },
     {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 361,
+      "line": 385,
       "token": "sheet",
-      "excerpt": "document.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Escape' && sheet.classList.contains('is-open')) closeSheet(); });"
+      "excerpt": "if (!overlayRuntime() && e.key === 'Escape' && sheet.classList.contains('is-open')) closeSheet('escape', true);"
     },
     {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 362,
+      "line": 387,
       "token": "sheet",
-      "excerpt": "sheet.querySelectorAll('.hmsheet-link').forEach((a) => a.addEventListener('click', closeSheet));"
+      "excerpt": "sheet.querySelectorAll('.hmsheet-link').forEach((a) => a.addEventListener('click', () => closeSheet('navigate', false)));"
     },
     {
       "rule": "overlay-naming",
       "severity": "lifecycle",
       "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
-      "line": 434,
+      "line": 460,
       "token": "sheet",
       "excerpt": "// share (both top-bar-adjacent bottom bar button and sheet footer button)"
     },
