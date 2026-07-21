@@ -1361,48 +1361,70 @@
       if (dialog) dialog.setAttribute('aria-modal', 'true');
     });
 
-    var GILL_LOCK_KEY = 'gill-toc';
+    var GILL_OVERLAY_OWNERS = {
+      seriesTocOverlay: 'gill-series-toc',
+      partTocOverlay: 'gill-part-toc',
+      gillLearningOverlay: 'gill-learning',
+      gillSettingsOverlay: 'gill-settings'
+    };
 
-    function openOverlay(el) {
-      if (el) {
-        el.classList.add('is-open');
-        el.setAttribute('aria-hidden', 'false');
-        document.documentElement.classList.add('gb-gill-toc-open');
-        // Coordinate with SiteUtils lock system to prevent cross-overlay desync.
-        // SiteUtils.lockScroll uses position:fixed which also blocks scroll,
-        // and its named-key system prevents unlockScroll from other modals
-        // accidentally clearing the lock Gill set.
-        var utils = window.SiteUtils;
-        if (utils && typeof utils.lockScroll === 'function') {
-          utils.lockScroll(GILL_LOCK_KEY);
-        } else if (document.body) {
-          document.body.style.overflow = 'hidden';
-        }
-        // Any Gill mobile top-bar auto-hide logic listens for this to force
-        // an immediate re-show, even mid-scroll-down (GillSeriesMobileBar.astro).
-        // Harmless no-op on routes without that listener (Hermenevtika, etc.).
-        try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch (_) {}
-      }
+    function getOverlayRuntime() {
+      return window.OverlayRuntime || null;
     }
-    function closeOverlay(el) {
-      if (el) {
-        el.classList.remove('is-open');
-        el.setAttribute('aria-hidden', 'true');
-      }
-      if (!qs('.toc-overlay.is-open')) {
-        document.documentElement.classList.remove('gb-gill-toc-open');
+
+    function gillOverlayOwner(el) {
+      if (!el) return 'gill-overlay';
+      return GILL_OVERLAY_OWNERS[el.id] || ('gill-overlay-' + (el.id || 'sheet'));
+    }
+
+    function syncGillOverlayClass() {
+      var open = qs('.toc-overlay.is-open, .gill-settings-overlay.is-open');
+      document.documentElement.classList.toggle('gb-gill-toc-open', Boolean(open));
+    }
+
+    function openOverlay(el, opener, options) {
+      if (!el) return;
+      options = options || {};
+      el.classList.add('is-open');
+      el.setAttribute('aria-hidden', 'false');
+      syncGillOverlayClass();
+      var owner = gillOverlayOwner(el);
+      var runtime = getOverlayRuntime();
+      if (runtime && typeof runtime.open === 'function') {
+        runtime.open(owner, {
+          element: el,
+          opener: opener || document.activeElement,
+          focusTarget: options.focusTarget || null,
+          onRequestClose: options.onRequestClose || function(reason) { closeOverlay(el, reason, true); },
+          closeOnEscape: true,
+          trapFocus: options.trapFocus !== false,
+          lockScroll: true
+        });
+      } else {
         var utils = window.SiteUtils;
-        if (utils && typeof utils.unlockScroll === 'function') {
-          utils.unlockScroll(GILL_LOCK_KEY);
-        } else if (document.body) {
-          document.body.style.overflow = '';
-        }
+        if (utils && typeof utils.lockScroll === 'function') utils.lockScroll(owner);
       }
+      try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch (_) {}
+    }
+
+    function closeOverlay(el, reason, restoreFocus) {
+      if (!el) return;
+      el.classList.remove('is-open');
+      el.setAttribute('aria-hidden', 'true');
+      var owner = gillOverlayOwner(el);
+      var runtime = getOverlayRuntime();
+      if (runtime && typeof runtime.close === 'function') {
+        runtime.close(owner, reason || 'programmatic', { restoreFocus: restoreFocus !== false });
+      } else {
+        var utils = window.SiteUtils;
+        if (utils && typeof utils.unlockScroll === 'function') utils.unlockScroll(owner);
+      }
+      syncGillOverlayClass();
     }
 
     // Mobile TOC button opens series
     if (mobTocBtn && seriesToc) {
-      addCleanListener(mobTocBtn, 'click', function(e) { e.preventDefault(); openOverlay(seriesToc); });
+      addCleanListener(mobTocBtn, 'click', function(e) { e.preventDefault(); closeOverlay(partToc, 'switch', false); openOverlay(seriesToc, e.currentTarget); });
     }
 
     // Explicit mobile Part TOC button opens the current article/part submenu.
@@ -1410,8 +1432,8 @@
       addCleanListener(mobPartTocBtn, 'click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        closeOverlay(seriesToc);
-        openOverlay(partToc);
+        closeOverlay(seriesToc, 'switch', false);
+        openOverlay(partToc, e.currentTarget);
       });
     }
 
@@ -1425,7 +1447,7 @@
     if (deskMq && deskMq.addEventListener) {
       deskMq.addEventListener('change', function () {
         qsa('.toc-overlay.is-open, .gill-settings-overlay.is-open').forEach(function (ov) {
-          closeOverlay(ov);
+          closeOverlay(ov, 'breakpoint', false);
         });
         qsa('[aria-expanded="true"][data-gill-settings-open], #mobLearningBtn[aria-expanded="true"]')
           .forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
@@ -1435,8 +1457,8 @@
     // Back button in Part TOC → Series TOC
     if (backToSeries && seriesToc && partToc) {
       addCleanListener(backToSeries, 'click', function() {
-        closeOverlay(partToc);
-        openOverlay(seriesToc);
+        closeOverlay(partToc, 'switch', false);
+        openOverlay(seriesToc, mobTocBtn || mobPartTocBtn);
       });
     }
 
@@ -1448,8 +1470,8 @@
         if (item.classList.contains('is-current') && partToc) {
           e.preventDefault();
           e.stopPropagation();
-          closeOverlay(seriesToc);
-          openOverlay(partToc);
+          closeOverlay(seriesToc, 'switch', false);
+          openOverlay(partToc, mobTocBtn || mobPartTocBtn);
           return;
         }
         // Non-current items are regular links — let them navigate
@@ -1460,21 +1482,20 @@
     [seriesToc, partToc].forEach(function(overlay) {
       if (!overlay) return;
       addCleanListener(overlay, 'click', function(e) {
-        if (e.target === overlay) closeOverlay(overlay);
+        if (e.target === overlay) closeOverlay(overlay, 'backdrop', true);
       });
       // Close on handle tap/click (simple version)
       var handle = overlay.querySelector('.toc-sheet__handle');
       if (handle) {
-        addCleanListener(handle, 'click', function() { closeOverlay(overlay); });
+        addCleanListener(handle, 'click', function() { closeOverlay(overlay, 'handle', true); });
       }
     });
 
-    // Escape closes any open overlay
+    // OverlayRuntime owns Escape globally; fallback keeps legacy pages usable.
     addCleanListener(document, 'keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeOverlay(seriesToc);
-        closeOverlay(partToc);
-      }
+      if (getOverlayRuntime() || e.key !== 'Escape') return;
+      if (partToc && partToc.classList.contains('is-open')) closeOverlay(partToc, 'escape', true);
+      else if (seriesToc && seriesToc.classList.contains('is-open')) closeOverlay(seriesToc, 'escape', true);
     });
 
     // Gill v16 mobile bottom-bar dual-progress ring (article % + series %)
@@ -1509,34 +1530,37 @@
       if (overlay === settingsOverlay) return settingsBtns;
       return [];
     }
-    function openGillSheet(overlay, triggers) {
+    function openGillSheet(overlay, triggers, opener) {
       if (!overlay) return;
-      openOverlay(overlay);
-      (triggers || []).forEach(function(t) { t.setAttribute('aria-expanded', 'true'); });
       var focusable = overlay.querySelector('input, button:not([data-overlay-close]):not(.toc-sheet__handle)');
-      if (focusable) setTimeout(function() { try { focusable.focus(); } catch(_) {} }, 20);
+      openOverlay(overlay, opener || (triggers && triggers[0]), {
+        focusTarget: focusable,
+        onRequestClose: function(reason) { closeGillSheet(overlay, true, reason); }
+      });
+      (triggers || []).forEach(function(t) { t.setAttribute('aria-expanded', 'true'); });
+      if (!getOverlayRuntime() && focusable) setTimeout(function() { try { focusable.focus(); } catch(_) {} }, 20);
     }
-    function closeGillSheet(overlay, restoreFocus) {
+    function closeGillSheet(overlay, restoreFocus, reason) {
       if (!overlay) return;
       var triggers = triggersFor(overlay);
-      closeOverlay(overlay);
+      closeOverlay(overlay, reason || 'programmatic', restoreFocus !== false);
       triggers.forEach(function(t) { t.setAttribute('aria-expanded', 'false'); });
-      if (restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
+      if (!getOverlayRuntime() && restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
     }
 
     if (mobLearningBtn && learningOverlay) {
       addCleanListener(mobLearningBtn, 'click', function(e) {
         e.preventDefault();
-        closeGillSheet(settingsOverlay, false);
-        openGillSheet(learningOverlay, [mobLearningBtn]);
+        closeGillSheet(settingsOverlay, false, 'switch');
+        openGillSheet(learningOverlay, [mobLearningBtn], e.currentTarget);
       });
     }
     if (settingsBtns.length && settingsOverlay) {
       settingsBtns.forEach(function(btn) {
         addCleanListener(btn, 'click', function(e) {
           e.preventDefault();
-          closeGillSheet(learningOverlay, false);
-          openGillSheet(settingsOverlay, settingsBtns);
+          closeGillSheet(learningOverlay, false, 'switch');
+          openGillSheet(settingsOverlay, settingsBtns, e.currentTarget);
         });
       });
     }
@@ -1545,16 +1569,16 @@
       addCleanListener(overlay, 'click', function(e) {
         // Only a direct hit on the backdrop closes — clicks inside the
         // sheet must never bubble-close it (owner: A-/A+ etc. stay open).
-        if (e.target === overlay) closeGillSheet(overlay, true);
+        if (e.target === overlay) closeGillSheet(overlay, true, 'backdrop');
       });
       var handle = overlay.querySelector('.toc-sheet__handle');
-      if (handle) addCleanListener(handle, 'click', function() { closeGillSheet(overlay, true); });
+      if (handle) addCleanListener(handle, 'click', function() { closeGillSheet(overlay, true, 'handle'); });
       overlay.querySelectorAll('[data-overlay-close]').forEach(function(btn) {
-        addCleanListener(btn, 'click', function() { closeGillSheet(overlay, true); });
+        addCleanListener(btn, 'click', function() { closeGillSheet(overlay, true, 'button'); });
       });
       // Focus trap while this sheet is open.
       addCleanListener(overlay, 'keydown', function(e) {
-        if (e.key !== 'Tab' || !overlay.classList.contains('is-open')) return;
+        if (getOverlayRuntime() || e.key !== 'Tab' || !overlay.classList.contains('is-open')) return;
         var focusable = Array.prototype.slice.call(
           overlay.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')
         ).filter(function(el) { return el.offsetParent !== null; });
@@ -1567,9 +1591,9 @@
 
     if (extraOverlays.length) {
       addCleanListener(document, 'keydown', function(e) {
-        if (e.key !== 'Escape') return;
-        if (learningOverlay && learningOverlay.classList.contains('is-open')) closeGillSheet(learningOverlay, true);
-        if (settingsOverlay && settingsOverlay.classList.contains('is-open')) closeGillSheet(settingsOverlay, true);
+        if (getOverlayRuntime() || e.key !== 'Escape') return;
+        if (settingsOverlay && settingsOverlay.classList.contains('is-open')) closeGillSheet(settingsOverlay, true, 'escape');
+        else if (learningOverlay && learningOverlay.classList.contains('is-open')) closeGillSheet(learningOverlay, true, 'escape');
       });
     }
   }
@@ -2038,7 +2062,7 @@
           a.appendChild(textNode);
           addCleanListener(a, 'click', function(e) {
             e.preventDefault();
-            closeSheet();
+            closeSheet('navigate', false);
             var target = document.getElementById(h.id);
             if (target) setTimeout(function() {
               target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2057,50 +2081,59 @@
     }
 
     // --- Sheet Open/Close ---
-    var SHEET_LOCK_KEY = 'gbs2-sheet';
-    function openSheet() {
+    var GBS2_OVERLAY_OWNER = 'gbs2-sheet';
+    function openSheet(opener) {
       if (!sheet || sheet.classList.contains('gbs2-open')) return;
       sheet.setAttribute('aria-hidden', 'false');
       sheet.style.display = 'block';
       sheet.classList.add('gbs2-open');
-      // Coordinate with SiteUtils lock system to prevent cross-overlay desync.
-      var utils = window.SiteUtils;
-      if (utils && typeof utils.lockScroll === 'function') {
-        utils.lockScroll(SHEET_LOCK_KEY);
-      } else if (document.body) {
-        document.body.style.overflow = 'hidden';
+      var runtime = window.OverlayRuntime;
+      if (runtime && typeof runtime.open === 'function') {
+        runtime.open(GBS2_OVERLAY_OWNER, {
+          element: sheet,
+          opener: opener || document.activeElement,
+          focusTarget: sheet.querySelector('[data-gbs2-close], [data-gbs2-tab], a[href], button'),
+          onRequestClose: function(reason) { closeSheet(reason, true); },
+          closeOnEscape: true,
+          trapFocus: true,
+          lockScroll: true
+        });
+      } else {
+        var utils = window.SiteUtils;
+        if (utils && typeof utils.lockScroll === 'function') utils.lockScroll(GBS2_OVERLAY_OWNER);
       }
     }
-    function closeSheet() {
+    function closeSheet(reason, restoreFocus) {
       if (!sheet) return;
       sheet.setAttribute('aria-hidden', 'true');
       sheet.classList.remove('gbs2-open');
       sheet.style.display = '';
-      var utils = window.SiteUtils;
-      if (utils && typeof utils.unlockScroll === 'function') {
-        utils.unlockScroll(SHEET_LOCK_KEY);
-      } else if (document.body) {
-        document.body.style.overflow = '';
+      var runtime = window.OverlayRuntime;
+      if (runtime && typeof runtime.close === 'function') {
+        runtime.close(GBS2_OVERLAY_OWNER, reason || 'programmatic', { restoreFocus: restoreFocus !== false });
+      } else {
+        var utils = window.SiteUtils;
+        if (utils && typeof utils.unlockScroll === 'function') utils.unlockScroll(GBS2_OVERLAY_OWNER);
       }
     }
 
     // Bottom bar opens sheet
     if (bbar && sheet) {
-      addCleanListener(bbar, 'click', function() { openSheet(); });
+      addCleanListener(bbar, 'click', function(e) { openSheet(e.currentTarget); });
     }
 
     // Close buttons
     qsa('[data-gbs2-close]').forEach(function(el) {
       addCleanListener(el, 'click', function(e) {
         e.stopPropagation();
-        closeSheet();
+        closeSheet('button', true);
       });
     });
 
-    // Escape closes sheet
+    // OverlayRuntime owns Escape globally; fallback keeps legacy pages usable.
     addCleanListener(document, 'keydown', function(e) {
-      if (e.key === 'Escape' && sheet && sheet.classList.contains('gbs2-open')) {
-        closeSheet();
+      if (!window.OverlayRuntime && e.key === 'Escape' && sheet && sheet.classList.contains('gbs2-open')) {
+        closeSheet('escape', true);
       }
     });
 
