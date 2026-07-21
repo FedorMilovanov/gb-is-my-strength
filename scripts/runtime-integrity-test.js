@@ -132,4 +132,14 @@ assert.strictEqual(window.SiteUtils.lockScroll, lockFn, 'site.js must not replac
 assert.equal(dialog.getAttribute('aria-hidden'), 'true', 'the quotes dialog must start hidden');
 assert.equal(dialog.inert, true, 'the hidden quotes dialog must be inert');
 
-console.log('✅ runtime-integrity-test: dedupe + ARIA bootstrap + coordinated scroll lock');
+assert.ok(source.includes('function lockStylesApplied()'), 'scroll-lock repair must be idempotent');
+assert.ok(
+  source.includes('restoring || lockStylesApplied()'),
+  'applyLock must not rewrite an already-correct lock state',
+);
+assert.ok(
+  source.includes('effectiveLocked() && !lockStylesApplied()'),
+  'MutationObserver must repair only real lock drift',
+);
+
+console.log('✅ runtime-integrity-test: dedupe + ARIA bootstrap + coordinated idempotent scroll lock');
