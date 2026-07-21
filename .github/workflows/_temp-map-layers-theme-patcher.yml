@@ -23,6 +23,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Correct exact patch signature
+        run: python3 scripts/_temp_correct_map_layers_theme_patcher.py
+
       - name: Apply exact engine patch
         id: apply
         shell: bash
