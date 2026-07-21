@@ -13,8 +13,8 @@
  *     fix for the A−/A+ reflow bug: hideGillTopBar() only ever touches the
  *     top bar's own class, never closeGillSheet()).
  *   BOTTOM bar: dual-progress ring → «Сейчас читаете» (opens Part TOC,
- *     unchanged) → theme cycle (День→Сепия→Ночь→День,
- *     window.applyGillReaderTheme) → settings sheet trigger → «Поделиться»
+ *     unchanged) → fast binary Day/Night toggle through the canonical global
+ *     preference adapter (Sepia remains in Settings) → settings → «Поделиться»
  *     (data-action="share" — kept verbatim; js/highlights.js docks its
  *     contextual save FAB immediately before this exact selector). Always
  *     visible, never auto-hides.
