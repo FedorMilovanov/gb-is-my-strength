@@ -15,7 +15,7 @@ permissions:
 jobs:
   capture:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: Checkout exact workflow head for production comparison
         if: github.event.workflow_run.name == 'Deploy to GitHub Pages' && github.event.workflow_run.conclusion == 'success'
