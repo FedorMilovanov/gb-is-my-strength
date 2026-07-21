@@ -45,6 +45,9 @@ jobs:
       - name: Reader preferences regressions
         run: node scripts/reader-preferences-regression-test.js
 
+      - name: Series reader façade regressions
+        run: npm run series:facade:guard
+
       - name: Guard shared/system files (strict on main/PR)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
         run: node scripts/guard-shared-files.js
