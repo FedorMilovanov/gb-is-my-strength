@@ -60,7 +60,7 @@ def apply_patch() -> None:
     RUNTIME.write_text(source, encoding="utf-8")
 
     test_source = textwrap.dedent(
-        r'''\
+        r'''
         #!/usr/bin/env node
         'use strict';
 
@@ -144,7 +144,7 @@ def apply_patch() -> None:
 
         console.log('✅ highlights runtime dedupe + ARIA regression passed');
         '''
-    )
+    ).lstrip()
     TEST.write_text(test_source, encoding="utf-8")
 
 
