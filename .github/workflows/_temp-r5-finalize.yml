@@ -29,12 +29,37 @@ jobs:
           cache: "npm"
 
       - name: Prepare permanent R5 files
+        id: prepare
+        shell: bash
         run: |
-          python3 scripts/_temp-r5-finalize.py
-          python3 scripts/_temp-r5-browser-fix.py
-          python3 scripts/_temp-r5-browser-fixture.py
+          set +e
+          mkdir -p reports
+          status=0
+          {
+            set -euo pipefail
+            python3 scripts/_temp-r5-finalize.py
+            python3 scripts/_temp-r5-browser-fix.py
+            python3 scripts/_temp-r5-browser-fixture.py
+          } > reports/reader-r5-prepare.log 2>&1 || status=$?
+          cat reports/reader-r5-prepare.log
+          echo "status=${status}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload prepare diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r5-prepare-diagnostic
+          path: reports/reader-r5-prepare.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail on prepare error
+        if: steps.prepare.outputs.status != '0'
+        run: exit 1
 
       - name: Validate static and runtime contracts
+        if: steps.prepare.outputs.status == '0'
         run: |
           set -euo pipefail
           node --check js/site-utils.js
@@ -47,9 +72,11 @@ jobs:
           git diff --check
 
       - name: Install Chromium
+        if: steps.prepare.outputs.status == '0'
         run: npx playwright install --with-deps chromium
 
       - name: Validate browser ownership matrix
+        if: steps.prepare.outputs.status == '0'
         shell: bash
         env:
           PW_BROWSER: chromium
@@ -68,12 +95,14 @@ jobs:
           retention-days: 1
 
       - name: Lint permanent workflows
+        if: steps.prepare.outputs.status == '0'
         run: |
           curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
             | tar xz -C /tmp actionlint
           /tmp/actionlint -color .github/workflows/shared-files-guard.yml .github/workflows/overlay-runtime-browser.yml
 
       - name: Remove transaction-only evidence and commit
+        if: steps.prepare.outputs.status == '0'
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
