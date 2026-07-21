@@ -21,6 +21,18 @@ Current read-only results:
 5. Confirm the special overlay runtime blobs themselves are unchanged.
 6. Merge only after permanent CI and deployment gates are green.
 
+## Generated transaction evidence
+
+The one-shot reconciliation published generated commit `e7d73870edfde2d24f893dbcc9c1f3b81ac6c674` only after all transaction barriers completed successfully:
+
+- changed paths were restricted to HTML, Astro and `src/lib/asset-version.js`;
+- the MindMap application remained identical after removing revision query strings;
+- the read-only cache-bust check was idempotently green;
+- static publication, production-like build, ownership, contract extraction/comparison, JSON-LD and special-overlay writer checks completed;
+- `js/site.js` and `karty/_engine/map-engine.js` remained byte-identical to the special-overlay merge.
+
+The generated commit was authored by `github-actions[bot]`, so its standard pull-request workflows did not execute normally. This documentation commit intentionally retriggers the permanent PR checks without changing production behavior. The temporary reconciliation workflow has been removed from `main` in commit `8d9205ff5b6dacd45005e467db8b4e00c1c42531`.
+
 ## Non-goals
 
 - no content rewriting;
