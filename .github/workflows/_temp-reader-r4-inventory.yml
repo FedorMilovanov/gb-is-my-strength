@@ -1,0 +1,134 @@
+name: TEMP reader R4 public-surface inventory
+
+on:
+  push:
+    branches: [lane/reader-r4-public-surface-registry-2026-07-21]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build public-surface inventory
+        shell: bash
+        run: |
+          node <<'JS'
+          const fs = require('fs');
+          const path = require('path');
+          const { loadRouteRecords } = require('./scripts/lib/effective-route-registry');
+
+          const loaded = loadRouteRecords();
+          const mobileRegistryPath = 'src/components/article-pilots/_shared/mobileChromeRegistry.ts';
+          const mobileRegistry = fs.readFileSync(mobileRegistryPath, 'utf8');
+          const mobileEntries = new Map();
+          const mobileRe = /['"](\/[^'"]+\/)['"]\s*:\s*\{([^}]+)\}/g;
+          let mm;
+          while ((mm = mobileRe.exec(mobileRegistry))) {
+            const route = mm[1];
+            const body = mm[2];
+            const get = (name) => {
+              const m = body.match(new RegExp(name + "\\s*:\\s*['\"]([^'\"]+)['\"]"));
+              return m ? m[1] : null;
+            };
+            mobileEntries.set(route, {
+              engine: get('engine'), adapter: get('adapter'), mount: get('mount'),
+            });
+          }
+
+          const rows = loaded.records.map((record) => {
+            const files = record.inspection?.files || [];
+            const sourceText = files
+              .filter((file) => fs.existsSync(file))
+              .map((file) => fs.readFileSync(file, 'utf8'))
+              .join('\n');
+            const usesSeriesFacade = /SeriesReaderChrome/.test(sourceText);
+            const usesHistoricalSeriesImpl = /GillSeriesChrome/.test(sourceText);
+            const usesBookConfig = /hardTextsSeriesConfig|HARD_TEXTS_SERIES|shape\s*:\s*['"]book['"]/.test(sourceText);
+            const profile = record.profile || {};
+            const owner = record.owner || {};
+            return {
+              route: record.route,
+              owner: owner.owner || null,
+              status: owner.status || null,
+              source: record.sourceRel || owner.source || null,
+              profileFile: record.profileFile || null,
+              routeType: profile.routeType || null,
+              migrationMode: profile.migrationMode || record.matrix?.mode || null,
+              visualMode: profile.visualMode || record.matrix?.visualMode || null,
+              mobileChrome: profile.mobileChrome || mobileEntries.get(record.route) || null,
+              usesSeriesFacade,
+              usesHistoricalSeriesImpl,
+              usesBookConfig,
+              importFileCount: files.length,
+            };
+          }).sort((a, b) => a.route.localeCompare(b.route));
+
+          const countBy = (field) => Object.fromEntries([...rows.reduce((map, row) => {
+            const key = row[field] ?? '<missing>';
+            map.set(key, (map.get(key) || 0) + 1);
+            return map;
+          }, new Map())].sort((a, b) => String(a[0]).localeCompare(String(b[0]))));
+
+          const report = {
+            generatedAt: new Date().toISOString(),
+            sourceHead: process.env.GITHUB_SHA || null,
+            routeCount: rows.length,
+            counts: {
+              owner: countBy('owner'),
+              status: countBy('status'),
+              routeType: countBy('routeType'),
+              migrationMode: countBy('migrationMode'),
+            },
+            missingProfiles: rows.filter((r) => !r.profileFile).map((r) => r.route),
+            seriesFacadeRoutes: rows.filter((r) => r.usesSeriesFacade).map((r) => r.route),
+            bookRoutes: rows.filter((r) => r.usesBookConfig).map((r) => r.route),
+            historicalImplementationLeakRoutes: rows.filter((r) => r.usesHistoricalSeriesImpl && !r.usesSeriesFacade).map((r) => r.route),
+            mobileRegistryRoutes: [...mobileEntries.entries()].map(([route, value]) => ({ route, ...value })),
+            rows,
+          };
+
+          fs.mkdirSync('reports', { recursive: true });
+          fs.writeFileSync('reports/reader-r4-public-surface-inventory.json', JSON.stringify(report, null, 2) + '\n');
+
+          const md = [];
+          md.push('# Reader R4 public-surface inventory');
+          md.push('');
+          md.push(`- Routes: **${rows.length}**`);
+          md.push(`- Missing profiles: **${report.missingProfiles.length}**`);
+          md.push(`- Series façade routes: **${report.seriesFacadeRoutes.length}**`);
+          md.push(`- Book routes: **${report.bookRoutes.length}**`);
+          md.push(`- Historical implementation leaks: **${report.historicalImplementationLeakRoutes.length}**`);
+          md.push('');
+          md.push('## routeType counts');
+          md.push('');
+          for (const [key, value] of Object.entries(report.counts.routeType)) md.push(`- \`${key}\`: ${value}`);
+          md.push('');
+          md.push('## migrationMode counts');
+          md.push('');
+          for (const [key, value] of Object.entries(report.counts.migrationMode)) md.push(`- \`${key}\`: ${value}`);
+          md.push('');
+          md.push('## Routes');
+          md.push('');
+          md.push('| Route | Owner/status | routeType | mode | series | book | mobile |');
+          md.push('|---|---|---|---|---:|---:|---|');
+          for (const row of rows) {
+            const mobile = row.mobileChrome ? JSON.stringify(row.mobileChrome).replaceAll('|', '\\|') : '';
+            md.push(`| \`${row.route}\` | ${row.owner || ''}/${row.status || ''} | ${row.routeType || ''} | ${row.migrationMode || ''} | ${row.usesSeriesFacade ? 'yes' : ''} | ${row.usesBookConfig ? 'yes' : ''} | ${mobile} |`);
+          }
+          fs.writeFileSync('reports/reader-r4-public-surface-inventory.md', md.join('\n') + '\n');
+
+          console.log(JSON.stringify(report.counts, null, 2));
+          console.log(`Routes=${rows.length} missingProfiles=${report.missingProfiles.length} series=${report.seriesFacadeRoutes.length} book=${report.bookRoutes.length}`);
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reader-r4-public-surface-inventory
+          path: |
+            reports/reader-r4-public-surface-inventory.json
+            reports/reader-r4-public-surface-inventory.md
+          if-no-files-found: error
+          retention-days: 1
