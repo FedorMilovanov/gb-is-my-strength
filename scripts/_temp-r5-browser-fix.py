@@ -61,6 +61,18 @@ browser = once(
 browser = once(browser, "  const browser = await chromium.launch({ headless: true });", "  const browser = await browserType.launch({ headless: true });", 'browser selector launch')
 browser = once(
     browser,
+    "    await page.evaluate(() => {\n      scrollTo(0, 420);\n      document.body.style.overflow = 'auto';",
+    "    await page.evaluate(() => {\n      document.body.style.overflow = 'auto';",
+    'remove same-task scroll',
+)
+browser = once(
+    browser,
+    "      document.documentElement.setAttribute('data-scroll-locked', 'legacy');\n      document.getElementById('openA').focus();\n      const runtime = window.OverlayRuntime;",
+    "      document.documentElement.setAttribute('data-scroll-locked', 'legacy');\n    });\n    await page.evaluate(() => scrollTo(0, 420));\n    await page.waitForFunction(() => Math.round(window.scrollY) === 420);\n    assert.equal(await page.evaluate(() => Math.round(window.scrollY)), 420, 'precondition: page must be scrolled before opening');\n\n    await page.evaluate(() => {\n      document.getElementById('openA').focus();\n      const runtime = window.OverlayRuntime;",
+    'frame-realistic scroll precondition',
+)
+browser = once(
+    browser,
     "    console.log('✅ overlay-runtime-browser-test: nested stack + exact restore + focus + Escape + pagehide + reduced motion');",
     "    console.log(`✅ overlay-runtime-browser-test [${browserName}]: nested stack + exact restore + focus + Escape + pagehide + reduced motion`);",
     'browser result label',
