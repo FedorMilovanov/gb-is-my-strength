@@ -61,6 +61,27 @@ new_release = '''  function releaseLock() {
   }
 '''
 site = once(site, old_release, new_release, 'post-layout scroll restore')
+old_close = '''    releaseOverlayInert(record);
+    if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);
+    syncOverlayDiagnostics();
+    overlayEvent('gb:overlay-close', record, reason || 'close');
+    var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
+    var opener = record.opener;
+    record.opener = null;
+    if (restore && opener) setTimeout(function () { overlayFocus(opener); }, 0);
+    return true;
+'''
+new_close = '''    releaseOverlayInert(record);
+    var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
+    var opener = record.opener;
+    record.opener = null;
+    if (restore && opener) overlayFocus(opener);
+    if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);
+    syncOverlayDiagnostics();
+    overlayEvent('gb:overlay-close', record, reason || 'close');
+    return true;
+'''
+site = once(site, old_close, new_close, 'focus before final scroll unlock')
 site_path.write_text(site, encoding='utf-8')
 
 browser_path = Path('scripts/overlay-runtime-browser-test.js')
@@ -151,4 +172,4 @@ if "requestAnimationFrame" not in runtime:
     )
 runtime_path.write_text(runtime, encoding='utf-8')
 
-print('Post-layout scroll restoration and exact browser diagnostics prepared')
+print('Focus-before-unlock restoration and exact browser diagnostics prepared')
