@@ -24,7 +24,22 @@ jobs:
           node-version: "22"
 
       - name: Reorder first-paint bootstrap after charset and CSP
-        run: python3 scripts/_temp_reorder_reader_preferences.py
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/_temp_reorder_reader_preferences.py > reader-preferences-ordering.log 2>&1
+          status=$?
+          cat reader-preferences-ordering.log
+          exit "$status"
+
+      - name: Upload ordering diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-preferences-ordering-log
+          path: reader-preferences-ordering.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Verify preference foundation and revisions
         run: |
