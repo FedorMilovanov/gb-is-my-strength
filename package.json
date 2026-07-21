@@ -149,7 +149,10 @@
     "content:coverage:audit": "node scripts/content-coverage-audit.js",
     "surface:registry:check": "node scripts/public-surface-registry-audit.js",
     "surface:registry:test": "node scripts/public-surface-registry-regression-test.js",
-    "overlay:map:browser:test": "node scripts/map-overlay-runtime-browser-test.js"
+    "overlay:map:browser:test": "node scripts/map-overlay-runtime-browser-test.js",
+    "overlay:special:writers:test": "node scripts/special-overlay-writer-regression-test.js",
+    "overlay:special:browser:test": "node scripts/special-overlay-runtime-browser-test.js",
+    "overlay:browser:all": "npm run overlay:browser:test && npm run overlay:map:browser:test && npm run overlay:special:browser:test"
   },
   "engines": {
     "node": ">=22.12.0"

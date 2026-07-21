@@ -511,8 +511,9 @@ const MapEngine = (function() {
       if (overlayRuntime?.open) return overlayRuntime.open(ownerId, options);
       const opener = options.opener || document.activeElement;
       if (opener && opener !== document.body && opener !== document.documentElement) fallbackOverlayOpeners.set(ownerId, opener);
+      const wasOpen = fallbackOverlayOwners.has(ownerId);
       fallbackOverlayOwners.add(ownerId);
-      if (options.lockScroll !== false) window.SiteUtils?.lockScroll?.(ownerId);
+      if (!wasOpen && options.lockScroll !== false) window.SiteUtils?.lockScroll?.(ownerId);
       setTimeout(() => focusSpecialTarget(options.focusTarget), 0);
       return {ownerId, element:options.element || null};
     }

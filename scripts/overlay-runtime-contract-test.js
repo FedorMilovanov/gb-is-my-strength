@@ -11,6 +11,7 @@ const hermenevtika = fs.readFileSync('src/components/article-pilots/hermenevtika
 const floating = fs.readFileSync('js/floating-cluster-controller.js', 'utf8');
 const mapEngine = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
 const mindMap3D = fs.readFileSync('_build-tools/konfessii-baptizm/MindMap3D.tsx', 'utf8');
+const builtMindMap = fs.readFileSync('konfessii/russkij-baptizm/_app/index.html', 'utf8');
 
 for (const name of ['register', 'open', 'close', 'requestClose', 'destroy', 'lockScroll', 'unlockScroll', 'topLayer', 'forceRecover']) {
   assert.ok(siteUtils.includes(`${name}:`), `OverlayRuntime must expose ${name}`);
@@ -45,5 +46,11 @@ assert.ok(!mapEngine.includes('Focus trap in panel'), 'map panel must use the sh
 assert.ok(!mapEngine.includes("document.addEventListener('keydown', e => { if (e.key === 'Escape')"), 'photo modal must not own a competing Escape listener');
 assert.ok(mindMap3D.includes('special:mindmap3d:fullscreen:'), 'MindMap3D must use a namespaced fullscreen owner');
 assert.ok(mindMap3D.includes('runtime.lockScroll(fullscreenOverlayOwner)') && mindMap3D.includes('runtime.unlockScroll(fullscreenOverlayOwner)'), 'MindMap3D must delegate fullscreen lock lifecycle to OverlayRuntime');
+assert.ok(!specialDirectWriter.test(site), 'site.js overlays and menu fallbacks must not write html/body lock styles');
+assert.ok(!specialDirectWriter.test(builtMindMap), 'committed MindMap launcher must not write html/body lock styles');
+assert.ok(site.includes('site-image-viewer'), 'site image viewer must have a canonical owner');
+assert.ok(builtMindMap.includes('special:konfessii-mindmap-launcher'), 'built MindMap launcher must have a canonical owner');
+assert.ok(builtMindMap.includes('id:"konfessii-mindmap-overlay"'), 'built MindMap launcher must expose its overlay root');
+assert.ok(builtMindMap.includes('../../../js/site-utils.js'), 'built MindMap launcher must load canonical runtime');
 
 console.log('✅ overlay-runtime-contract-test: canonical store + protected API + standalone consumers');
