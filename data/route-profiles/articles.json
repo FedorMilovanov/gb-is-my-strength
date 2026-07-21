@@ -3,6 +3,8 @@
   "profiledAt": "2026-06-23",
   "migrationLane": "catalog-index",
   "routeType": "articles-index",
+  "surfaceContractVersion": 1,
+  "surface": "page",
   "section": "articles",
   "slug": null,
   "currentStatus": "production-dist",
@@ -21,16 +23,34 @@
   },
   "pagefindContract": {
     "strategy": "hidden-sr-only-summary + visible body fallback risk — needs explicit audit",
-    "requiredMarkers": ["articles-index-page", "home-v20", "h-article-card"],
+    "requiredMarkers": [
+      "articles-index-page",
+      "home-v20",
+      "h-article-card"
+    ],
     "risk": "data-pagefind-body may index only hero/body-segment summary, not full componentized main"
   },
   "styleContract": {
-    "requiredRoots": ["#main-content"],
-    "requiredComponents": ["ArticlesMain", "ArticlesHeroSection", "ArticlesPublicationsSection", "ArticlesRefutationsSection", "ArticlesArticleEndBlock"],
+    "requiredRoots": [
+      "#main-content"
+    ],
+    "requiredComponents": [
+      "ArticlesMain",
+      "ArticlesHeroSection",
+      "ArticlesPublicationsSection",
+      "ArticlesRefutationsSection",
+      "ArticlesArticleEndBlock"
+    ],
     "forbiddenMode": "no generic astro-card-grid rewrite without visual parity"
   },
   "publicationContract": {
-    "participatesIn": ["articlesCatalog", "search", "sitemap", "pagefind", "indexNow"]
+    "participatesIn": [
+      "articlesCatalog",
+      "search",
+      "sitemap",
+      "pagefind",
+      "indexNow"
+    ]
   },
   "visualParity": {
     "desktop": 0,

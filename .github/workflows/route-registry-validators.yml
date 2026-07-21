@@ -12,6 +12,10 @@ on:
       - "migration/page-ownership.json"
       - "migration/route-migration-matrix.json"
       - "src/content/**"
+      - "src/components/article-pilots/_shared/mobileChromeRegistry.ts"
+      - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
+      - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
+      - "package.json"
       - "scripts/check-route-profiles.js"
       - "scripts/check-route-migration-matrix.js"
       - "scripts/check-content-source-coverage.js"
@@ -19,6 +23,9 @@ on:
       - "scripts/route-profile-contract-audit.js"
       - "scripts/route-migration-matrix-contract-audit.js"
       - "scripts/content-source-provenance-audit.js"
+      - "scripts/public-surface-registry-audit.js"
+      - "scripts/public-surface-registry-regression-test.js"
+      - "scripts/lib/public-surface-registry.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
       - "scripts/lib/effective-route-registry.js"
@@ -60,6 +67,16 @@ jobs:
           node -r ./scripts/install-effective-route-registry.js \
             scripts/route-profile-contract-audit.js --strict 2>&1 \
             | tee reports/route-profile-contract.log
+
+      - name: Public surface registry
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          {
+            npm run surface:registry:check
+            npm run surface:registry:test
+          } 2>&1 | tee reports/public-surface-registry.log
 
       - name: Migration matrix contract
         if: always()

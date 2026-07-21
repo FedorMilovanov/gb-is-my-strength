@@ -6,8 +6,8 @@
   "scripts": {
     "migration:matrix:check": "node scripts/check-route-migration-matrix.js",
     "content:sources:check": "node scripts/check-content-source-coverage.js",
-    "migration:metadata:check": "npm run route:profiles:check && npm run migration:matrix:check && npm run content:sources:check",
-    "migration:metadata:check:strict": "npm run route:profiles:check -- --strict && npm run migration:matrix:check -- --strict && npm run content:sources:check -- --strict",
+    "migration:metadata:check": "npm run route:profiles:check && npm run migration:matrix:check && npm run content:sources:check && npm run surface:registry:check",
+    "migration:metadata:check:strict": "npm run route:profiles:check -- --strict && npm run migration:matrix:check -- --strict && npm run content:sources:check -- --strict && npm run surface:registry:check",
     "update-meta": "node scripts/update-meta.js",
     "cache-bust": "node scripts/cache-bust.js",
     "validate": "node scripts/validate.js",
@@ -144,7 +144,9 @@
     "workflows:lint": "npx actionlint",
     "workflows:policy": "npm run workflows:check && npm run workflows:lint",
     "gill:pre-v16-submenu:audit": "node scripts/gill-pre-v16-submenu-regression-audit.js",
-    "content:coverage:audit": "node scripts/content-coverage-audit.js"
+    "content:coverage:audit": "node scripts/content-coverage-audit.js",
+    "surface:registry:check": "node scripts/public-surface-registry-audit.js",
+    "surface:registry:test": "node scripts/public-surface-registry-regression-test.js"
   },
   "engines": {
     "node": ">=22.12.0"
