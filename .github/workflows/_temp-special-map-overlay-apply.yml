@@ -38,13 +38,21 @@ jobs:
           from pathlib import Path
           path = Path('scripts/_temp-special-map-overlay-patch.py')
           text = path.read_text(encoding='utf-8')
-          old = '''    "       destroy(){\n         stopTour();\n         _cleanupAll();\n         container.innerHTML='';container.className='';\n       }\n",
-              "       destroy(){\n         stopTour();\n         photoModal.classList.remove('me-photo-modal--open');\n         panel.classList.remove('me-panel--open');\n         panelBackdrop.classList.remove('me-panel__backdrop--active');\n         destroySpecialOverlay(photoOverlayOwner);\n         destroySpecialOverlay(panelOverlayOwner);\n         _cleanupAll();\n         container.innerHTML='';container.className='';\n       }\n",'''
-          new = '''    "      destroy(){\n        stopTour();\n        _cleanupAll();\n        container.innerHTML='';container.className='';\n      }\n",
-              "      destroy(){\n        stopTour();\n        photoModal.classList.remove('me-photo-modal--open');\n        panel.classList.remove('me-panel--open');\n        panelBackdrop.classList.remove('me-panel__backdrop--active');\n        destroySpecialOverlay(photoOverlayOwner);\n        destroySpecialOverlay(panelOverlayOwner);\n        _cleanupAll();\n        container.innerHTML='';container.className='';\n      }\n",'''
-          if text.count(old) != 1:
-              raise SystemExit(f'destroy patcher source mismatch: {text.count(old)}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          pairs = [
+            (
+              '"       destroy(){\\n         stopTour();\\n         _cleanupAll();\\n         container.innerHTML=\'\';container.className=\'\';\\n       }\\n"',
+              '"      destroy(){\\n        stopTour();\\n        _cleanupAll();\\n        container.innerHTML=\'\';container.className=\'\';\\n      }\\n"',
+            ),
+            (
+              '"       destroy(){\\n         stopTour();\\n         photoModal.classList.remove(\'me-photo-modal--open\');\\n         panel.classList.remove(\'me-panel--open\');\\n         panelBackdrop.classList.remove(\'me-panel__backdrop--active\');\\n         destroySpecialOverlay(photoOverlayOwner);\\n         destroySpecialOverlay(panelOverlayOwner);\\n         _cleanupAll();\\n         container.innerHTML=\'\';container.className=\'\';\\n       }\\n"',
+              '"      destroy(){\\n        stopTour();\\n        photoModal.classList.remove(\'me-photo-modal--open\');\\n        panel.classList.remove(\'me-panel--open\');\\n        panelBackdrop.classList.remove(\'me-panel__backdrop--active\');\\n        destroySpecialOverlay(photoOverlayOwner);\\n        destroySpecialOverlay(panelOverlayOwner);\\n        _cleanupAll();\\n        container.innerHTML=\'\';container.className=\'\';\\n      }\\n"',
+            ),
+          ]
+          for old, new in pairs:
+              if text.count(old) != 1:
+                  raise SystemExit(f'destroy patcher source mismatch: {text.count(old)}')
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
           PY
           python3 scripts/_temp-special-map-overlay-patch.py > reports/special-map-patch.log 2>&1
           status=$?
