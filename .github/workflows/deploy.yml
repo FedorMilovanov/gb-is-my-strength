@@ -34,7 +34,7 @@ on:
       - '.github/workflows/deploy.yml'
 
   workflow_run:
-    workflows: ["IndexNow — Notify Search Engines"]
+    workflows: ["Metadata & IndexNow Readiness"]
     types: [completed]
     branches: [main]
 
