@@ -1,5 +1,9 @@
 # Reader R5 — Unified Overlay Runtime
 
+## Status
+
+Core runtime and the first standalone reader consumers are applied. The shared Gill/series TOC, learning, settings and GBS2 sheets are now the active migration transaction.
+
 ## Scope
 
 R5 implements issue #58 as one isolated runtime lane. It unifies lifecycle, focus and scroll ownership for reader overlays without redesigning their DOM or visuals.
@@ -11,6 +15,8 @@ OverlayRuntime.register(ownerId, options)
 OverlayRuntime.open(ownerId, options)
 OverlayRuntime.close(ownerId, reason)
 OverlayRuntime.destroy(ownerId)
+OverlayRuntime.lockScroll(ownerId)
+OverlayRuntime.unlockScroll(ownerId)
 OverlayRuntime.topLayer()
 OverlayRuntime.forceRecover(reason)
 ```
@@ -29,6 +35,7 @@ The runtime owns named/reference-counted scroll tokens, open-layer ordering, exa
 8. Reduced-motion and interrupted transitions do not delay ownership release indefinitely.
 9. Existing selectors, buttons, sheets and visual CSS remain stable.
 10. Direct body/html lock writers are forbidden outside the canonical module and temporary compatibility bridge.
+11. Reopening the same owner is idempotent and cannot leak inert or scroll claims.
 
 ## Transaction order
 
