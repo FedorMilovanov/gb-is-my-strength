@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   inventory:
@@ -33,19 +33,12 @@ jobs:
           Path('/tmp/reader-r4-inventory.js').write_text('\n'.join(code) + '\n', encoding='utf-8')
           PY
           node /tmp/reader-r4-inventory.js
-      - name: Persist inventory evidence to R4 branch
-        shell: bash
-        run: |
-          mkdir -p docs/refactor-2026/reader-platform
-          cp reports/reader-r4-public-surface-inventory.md docs/READER-R4-PUBLIC-SURFACE-INVENTORY-2026-07-21.md
-          cp reports/reader-r4-public-surface-inventory.json docs/refactor-2026/reader-platform/reader-r4-public-surface-inventory.json
-          git add docs/READER-R4-PUBLIC-SURFACE-INVENTORY-2026-07-21.md \
-                  docs/refactor-2026/reader-platform/reader-r4-public-surface-inventory.json
-          if git diff --cached --quiet; then
-            echo 'Inventory evidence already current.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'research(reader): record R4 public-surface inventory'
-          git push origin "HEAD:${GITHUB_HEAD_REF}"
+      - name: Upload inventory evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r4-public-surface-inventory
+          path: |
+            reports/reader-r4-public-surface-inventory.md
+            reports/reader-r4-public-surface-inventory.json
+          if-no-files-found: error
+          retention-days: 1
