@@ -87,8 +87,8 @@ browser = once(
 browser = once(
     browser,
     "    await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));\n    await page.waitForTimeout(30);\n    state = await page.evaluate(() => ({",
-    "    await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));\n    await page.waitForFunction(() => window.OverlayRuntime.size() === 0 && Math.round(window.scrollY) === 420 && document.activeElement && document.activeElement.id === 'openA');\n    state = await page.evaluate(() => ({",
-    'wait for exact post-layout restoration',
+    "    await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));\n    await page.waitForFunction(() => window.OverlayRuntime.size() === 0);\n    await page.waitForTimeout(250);\n    state = await page.evaluate(() => ({",
+    'capture exact post-layout restoration state',
 )
 browser = once(
     browser,
@@ -151,4 +151,4 @@ if "requestAnimationFrame" not in runtime:
     )
 runtime_path.write_text(runtime, encoding='utf-8')
 
-print('Post-layout scroll restoration and three-browser matrix prepared')
+print('Post-layout scroll restoration and exact browser diagnostics prepared')
