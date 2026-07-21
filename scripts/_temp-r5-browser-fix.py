@@ -36,29 +36,31 @@ new_release = '''  function releaseLock() {
       savedLockStyles = null;
       var html = document.documentElement;
       var oldBehavior = html.style.scrollBehavior;
+      var frameCount = 0;
       html.style.scrollBehavior = 'auto';
-      var attempts = 0;
+      window.scrollTo(0, targetY);
       var finishRestore = function () {
         if (effectiveLocked()) {
           html.style.scrollBehavior = oldBehavior;
           return;
         }
         window.scrollTo(0, targetY);
-        attempts += 1;
-        var currentY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-        if (Math.abs(currentY - targetY) > 1 && attempts < 4 && typeof window.requestAnimationFrame === 'function') {
+        frameCount += 1;
+        if (frameCount < 2 && typeof window.requestAnimationFrame === 'function') {
           window.requestAnimationFrame(finishRestore);
           return;
         }
-        html.style.scrollBehavior = oldBehavior;
+        setTimeout(function () {
+          if (!effectiveLocked()) window.scrollTo(0, targetY);
+          html.style.scrollBehavior = oldBehavior;
+        }, 0);
       };
-      finishRestore();
       if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(finishRestore);
       else setTimeout(finishRestore, 0);
     } finally { restoring = false; }
   }
 '''
-site = once(site, old_release, new_release, 'multi-frame scroll restore')
+site = once(site, old_release, new_release, 'post-layout scroll restore')
 site_path.write_text(site, encoding='utf-8')
 
 browser_path = Path('scripts/overlay-runtime-browser-test.js')
@@ -79,14 +81,14 @@ browser = once(
 browser = once(
     browser,
     "      document.documentElement.setAttribute('data-scroll-locked', 'legacy');\n      document.getElementById('openA').focus();\n      const runtime = window.OverlayRuntime;",
-    "      document.documentElement.setAttribute('data-scroll-locked', 'legacy');\n    });\n    await page.evaluate(() => {\n      document.scrollingElement.scrollTop = 420;\n      window.scrollTo(0, 420);\n    });\n    await page.waitForFunction(() => Math.round(window.scrollY) === 420);\n    assert.equal(await page.evaluate(() => Math.round(window.scrollY)), 420, 'precondition: page must be scrolled before opening');\n\n    await page.evaluate(() => {\n      document.getElementById('openA').focus();\n      const runtime = window.OverlayRuntime;",
+    "      document.documentElement.setAttribute('data-scroll-locked', 'legacy');\n    });\n    await page.evaluate(() => scrollTo(0, 420));\n    await page.waitForFunction(() => Math.round(window.scrollY) === 420);\n    assert.equal(await page.evaluate(() => Math.round(window.scrollY)), 420, 'precondition: page must be scrolled before opening');\n\n    await page.evaluate(() => {\n      document.getElementById('openA').focus();\n      const runtime = window.OverlayRuntime;",
     'frame-realistic scroll precondition',
 )
 browser = once(
     browser,
-    "    await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));\n    await page.waitForTimeout(30);",
-    "    await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));\n    await page.waitForFunction(() => Math.round(window.scrollY) === 420);",
-    'forward scroll settle witness',
+    "    await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));\n    await page.waitForTimeout(30);\n    state = await page.evaluate(() => ({",
+    "    await page.evaluate(() => window.OverlayRuntime.close('browser-a', 'programmatic'));\n    await page.waitForFunction(() => window.OverlayRuntime.size() === 0 && Math.round(window.scrollY) === 420 && document.activeElement && document.activeElement.id === 'openA');\n    state = await page.evaluate(() => ({",
+    'wait for exact post-layout restoration',
 )
 browser = once(
     browser,
@@ -149,4 +151,4 @@ if "requestAnimationFrame" not in runtime:
     )
 runtime_path.write_text(runtime, encoding='utf-8')
 
-print('Multi-frame scroll restoration and three-browser matrix prepared')
+print('Post-layout scroll restoration and three-browser matrix prepared')
