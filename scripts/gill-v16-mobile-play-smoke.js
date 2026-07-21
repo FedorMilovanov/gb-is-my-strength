@@ -336,7 +336,7 @@ async function testMobileOverlays(browser) {
       }));
       assert(state.partOpen && !state.seriesOpen, `${prefix}: #mobPartTocBtn opens part overlay`, JSON.stringify(state));
       assert(page.url() === beforeUrl, `${prefix}: URL unchanged after section-button tap`, `${beforeUrl} -> ${page.url()}`);
-      assert((state.partTitle || '').includes('Введение'), `${prefix}: part overlay is intro TOC`, state.partTitle);
+      assert(['Джон Гилл', 'Исторический контекст', 'Оглавление части'].every((part) => (state.partTitle || '').includes(part)), `${prefix}: part overlay identifies intro article and TOC`, state.partTitle);
       assert(state.scrollLocked, `${prefix}: body scroll locked while part overlay open`, { overflow: state.overflow, scrollLocked: state.scrollLocked });
       assert(state.xOverflow <= 1, `${prefix}: no horizontal overflow in part overlay`, String(state.xOverflow));
 
