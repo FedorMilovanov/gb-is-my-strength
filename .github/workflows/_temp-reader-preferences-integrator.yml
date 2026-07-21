@@ -34,7 +34,7 @@ jobs:
           {
             set -x
             python3 scripts/_temp_integrate_reader_assets.py
-            node scripts/cache-bust.js
+            node scripts/cache-bust.js --write
             node scripts/reader-preferences-regression-test.js
             node scripts/audit-pro.js
           } > reader-assets-integrator.log 2>&1
