@@ -3,16 +3,28 @@ from __future__ import annotations
 
 import importlib.util
 import subprocess
+import traceback
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "js/highlights.js"
 PATCHER = ROOT / "scripts/_temp-highlights-runtime-hardening-patch.py"
+DIAGNOSTIC = ROOT / ".github/_temp-highlights-transaction-diagnostic.txt"
 BRANCH = "lane/highlights-runtime-hardening-2026-07-21"
 
 
 def run(*args: str) -> None:
     subprocess.run(args, cwd=ROOT, check=True)
+
+
+def configure_bot() -> None:
+    run("git", "config", "user.name", "github-actions[bot]")
+    run(
+        "git",
+        "config",
+        "user.email",
+        "41898282+github-actions[bot]@users.noreply.github.com",
+    )
 
 
 def load_patcher():
@@ -52,7 +64,7 @@ def verify_transaction_paths() -> None:
     print(f"✅ restricted generated transaction: {len(changed)} paths")
 
 
-def main() -> None:
+def transaction() -> None:
     if "function gbHighlightPath" in RUNTIME.read_text(encoding="utf-8"):
         print("✅ highlights hardening already materialized; no-op")
         return
@@ -69,13 +81,7 @@ def main() -> None:
     run("npm", "run", "validate:static-publication:light")
 
     run("git", "add", "-A")
-    run("git", "config", "user.name", "github-actions[bot]")
-    run(
-        "git",
-        "config",
-        "user.email",
-        "41898282+github-actions[bot]@users.noreply.github.com",
-    )
+    configure_bot()
     run(
         "git",
         "commit",
@@ -83,6 +89,26 @@ def main() -> None:
         "fix(reader): deduplicate highlights and synchronize dialog state",
     )
     run("git", "push", "origin", f"HEAD:{BRANCH}")
+
+
+def persist_diagnostic() -> None:
+    DIAGNOSTIC.write_text(traceback.format_exc(), encoding="utf-8")
+    configure_bot()
+    run("git", "add", str(DIAGNOSTIC.relative_to(ROOT)))
+    run("git", "commit", "-m", "chore(highlights): capture transaction diagnostic")
+    run("git", "push", "origin", f"HEAD:{BRANCH}")
+
+
+def main() -> None:
+    if DIAGNOSTIC.exists():
+        print("⚠️ diagnostic already captured; transaction paused")
+        print(DIAGNOSTIC.read_text(encoding="utf-8"))
+        return
+    try:
+        transaction()
+    except Exception:
+        persist_diagnostic()
+        raise
 
 
 if __name__ == "__main__":
