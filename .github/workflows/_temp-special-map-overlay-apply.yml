@@ -29,9 +29,31 @@ jobs:
           cache: npm
 
       - name: Apply deterministic map adapter patch
-        run: python3 scripts/_temp-special-map-overlay-patch.py
+        id: patch
+        shell: bash
+        run: |
+          set +e
+          mkdir -p reports
+          python3 scripts/_temp-special-map-overlay-patch.py > reports/special-map-patch.log 2>&1
+          status=$?
+          cat reports/special-map-patch.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload patch diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: special-map-patch-diagnostic
+          path: reports/special-map-patch.log
+          retention-days: 1
+
+      - name: Fail on patch error
+        if: steps.patch.outputs.status != '0'
+        run: exit 1
 
       - name: Validate static contracts
+        if: steps.patch.outputs.status == '0'
         run: |
           set -euo pipefail
           node --check karty/_engine/map-engine.js
@@ -40,20 +62,25 @@ jobs:
           git diff --check
 
       - name: Install dependencies
+        if: steps.patch.outputs.status == '0'
         run: npm ci
 
       - name: Install Chromium
+        if: steps.patch.outputs.status == '0'
         run: npx playwright install --with-deps chromium
 
       - name: Validate map overlay browser lifecycle
+        if: steps.patch.outputs.status == '0'
         env:
           PW_BROWSER: chromium
         run: npm run overlay:map:browser:test
 
       - name: Validate Astro templates
+        if: steps.patch.outputs.status == '0'
         run: npm run astro:check
 
       - name: Commit permanent map adapter files
+        if: steps.patch.outputs.status == '0'
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
