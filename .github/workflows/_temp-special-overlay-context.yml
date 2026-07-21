@@ -41,7 +41,9 @@ jobs:
             set -euo pipefail
             python3 scripts/_temp-special-overlay-final-patch.py
             python3 scripts/_temp-special-overlay-final-fix.py
+            python3 scripts/_temp-special-overlay-fallback-idempotency.py
             node --check js/site.js
+            node --check karty/_engine/map-engine.js
             node --check scripts/special-overlay-writer-regression-test.js
             node --check scripts/special-overlay-runtime-browser-test.js
             npm run overlay:runtime:test
@@ -118,8 +120,9 @@ jobs:
           set +e
           {
             set -euo pipefail
-            git rm -f scripts/_temp-special-overlay-final-patch.py scripts/_temp-special-overlay-final-fix.py
+            git rm -f scripts/_temp-special-overlay-final-patch.py scripts/_temp-special-overlay-final-fix.py scripts/_temp-special-overlay-fallback-idempotency.py
             git add js/site.js \
+                    karty/_engine/map-engine.js \
                     konfessii/russkij-baptizm/_app/index.html \
                     scripts/overlay-runtime-contract-test.js \
                     scripts/special-overlay-writer-regression-test.js \
