@@ -1,24 +1,24 @@
 # Reader R5 overlay runtime inventory
 
-- Source: `b3187e75673db88718eff573a1d01ef60ace407f`
-- Scanned files: **777**
-- Pattern matches: **4700**
+- Source: `61c5a21ebec829df553d0e7ac45545ff211f199e`
+- Scanned files: **778**
+- Pattern matches: **4767**
 - Direct writer files: **10**
 - Global scroll API overwrite files: **2**
-- Multi-category lifecycle candidates: **75**
+- Multi-category lifecycle candidates: **76**
 
 ## Counts by rule
 
 - `body-style-writer`: 34
-- `escape-handler`: 26
-- `focus-operation`: 110
+- `escape-handler`: 27
+- `focus-operation`: 125
 - `global-scroll-api-write`: 3
 - `html-style-writer`: 4
-- `keydown-handler`: 143
-- `overlay-dialog-semantics`: 3008
-- `overlay-naming`: 1254
-- `route-recovery`: 13
-- `scroll-api`: 92
+- `keydown-handler`: 144
+- `overlay-dialog-semantics`: 3034
+- `overlay-naming`: 1267
+- `route-recovery`: 15
+- `scroll-api`: 101
 - `style-remove-property-writer`: 13
 
 ## Direct body/html style writers
@@ -125,6 +125,7 @@
 | `index.html` | 92 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `articles/krajne-li-isporcheno-serdce/index.html` | 85 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `biografii/index.html` | 84 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
+| `scripts/_temp-r5-overlay-runtime.inc.js` | 67 | coordination, focus, keyboard, lifecycle, recovery | escape-handler, focus-operation, keydown-handler, overlay-dialog-semantics, overlay-naming, route-recovery, scroll-api |
 | `articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html` | 63 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
 | `articles/20-antisovetov-pastoru/index.html` | 59 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics |
 | `baptisty-rossii/dva-sezda-1884/index.html` | 58 | keyboard, lifecycle | keydown-handler, overlay-dialog-semantics, overlay-naming |
