@@ -1,0 +1,122 @@
+name: VERIFY Special Overlay Production Smoke
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-special-overlay-production-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
+jobs:
+  production-smoke:
+    if: github.head_ref == 'verify/special-overlay-production-smoke-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Verify source ancestry and immutable blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          merge_sha='39f6c3ac5851b6ded164f4de42b4e9dba1ca72e7'
+          git merge-base --is-ancestor "$merge_sha" HEAD
+          test "$(git rev-parse HEAD:js/site.js)" = "$(git rev-parse ${merge_sha}:js/site.js)"
+          test "$(git rev-parse HEAD:karty/_engine/map-engine.js)" = "$(git rev-parse ${merge_sha}:karty/_engine/map-engine.js)"
+          test "$(git rev-parse HEAD:konfessii/russkij-baptizm/_app/index.html)" = "$(git rev-parse ${merge_sha}:konfessii/russkij-baptizm/_app/index.html)"
+          echo '✅ Verification branch retains the exact merged special-runtime blobs'
+
+      - name: Wait for public assets and verify exact deployment
+        id: smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='https://gospod-bog.ru'
+          cache="?deploy-smoke=${GITHUB_SHA}"
+          mkdir -p /tmp/gb-smoke reports
+
+          for attempt in $(seq 1 60); do
+            echo "Production smoke attempt ${attempt}/60"
+            ok=1
+            curl --compressed -fsSL --max-time 30 "${root}/${cache}" -o /tmp/gb-smoke/index.html || ok=0
+            curl --compressed -fsSL --max-time 30 "${root}/js/site.js${cache}" -o /tmp/gb-smoke/site.js || ok=0
+            curl --compressed -fsSL --max-time 30 "${root}/karty/_engine/map-engine.js${cache}" -o /tmp/gb-smoke/map-engine.js || ok=0
+            curl --compressed -fsSL --max-time 45 "${root}/konfessii/russkij-baptizm/_app/index.html${cache}" -o /tmp/gb-smoke/mindmap.html || ok=0
+
+            if [ "$ok" -eq 1 ] \
+              && cmp -s js/site.js /tmp/gb-smoke/site.js \
+              && cmp -s karty/_engine/map-engine.js /tmp/gb-smoke/map-engine.js \
+              && cmp -s konfessii/russkij-baptizm/_app/index.html /tmp/gb-smoke/mindmap.html \
+              && grep -Fq 'site-image-viewer' /tmp/gb-smoke/site.js \
+              && grep -Fq 'special:map:' /tmp/gb-smoke/map-engine.js \
+              && grep -Fq 'const wasOpen = fallbackOverlayOwners.has(ownerId)' /tmp/gb-smoke/map-engine.js \
+              && grep -Fq 'special:konfessii-mindmap-launcher' /tmp/gb-smoke/mindmap.html \
+              && grep -Fq '../../../js/site-utils.js' /tmp/gb-smoke/mindmap.html \
+              && ! grep -Eq 'document\.body\.style\.(overflow|position|top|left|right|width)[[:space:]]*=' /tmp/gb-smoke/map-engine.js \
+              && ! grep -Eq 'document\.(body|documentElement)\.style\.(overflow|position|top|left|right|width|overscrollBehavior)[[:space:]]*=' /tmp/gb-smoke/mindmap.html; then
+              export ATTEMPT="$attempt"
+              python3 - <<'PY'
+          import hashlib, json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          def digest(path):
+              data = Path(path).read_bytes()
+              return {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+
+          evidence = {
+              'contract': 'special-overlay-production-smoke/v1',
+              'verified_source_merge_sha': '39f6c3ac5851b6ded164f4de42b4e9dba1ca72e7',
+              'verification_head_sha': os.environ['GITHUB_SHA'],
+              'verified_at_utc': datetime.now(timezone.utc).isoformat(),
+              'public_origin': 'https://gospod-bog.ru',
+              'attempt': int(os.environ['ATTEMPT']),
+              'assets': {
+                  '/': {**digest('/tmp/gb-smoke/index.html'), 'http': 200},
+                  '/js/site.js': {**digest('/tmp/gb-smoke/site.js'), 'exact_repo_match': True},
+                  '/karty/_engine/map-engine.js': {**digest('/tmp/gb-smoke/map-engine.js'), 'exact_repo_match': True},
+                  '/konfessii/russkij-baptizm/_app/index.html': {**digest('/tmp/gb-smoke/mindmap.html'), 'exact_repo_match': True},
+              },
+              'assertions': {
+                  'main_contains_merge': True,
+                  'current_blobs_equal_merge_blobs': True,
+                  'site_image_viewer_owner_live': True,
+                  'map_namespaced_owners_live': True,
+                  'map_fallback_idempotency_live': True,
+                  'built_launcher_owner_live': True,
+                  'built_launcher_loads_canonical_runtime': True,
+                  'legacy_special_direct_writers_absent': True,
+              },
+              'result': 'PASS',
+          }
+          Path('reports/SPECIAL-OVERLAY-PRODUCTION-SMOKE-2026-07-21.json').write_text(
+              json.dumps(evidence, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+          )
+          PY
+              cat reports/SPECIAL-OVERLAY-PRODUCTION-SMOKE-2026-07-21.json
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo '❌ Public assets did not match the current merged special-runtime blobs'
+          sha256sum js/site.js karty/_engine/map-engine.js konfessii/russkij-baptizm/_app/index.html || true
+          sha256sum /tmp/gb-smoke/site.js /tmp/gb-smoke/map-engine.js /tmp/gb-smoke/mindmap.html || true
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: special-overlay-production-smoke-evidence
+          path: reports/SPECIAL-OVERLAY-PRODUCTION-SMOKE-2026-07-21.json
+          if-no-files-found: warn
+          retention-days: 7
