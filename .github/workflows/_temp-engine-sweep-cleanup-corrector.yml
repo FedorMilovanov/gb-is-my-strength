@@ -1,0 +1,92 @@
+name: TEMP engine sweep cleanup corrector
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  correct-engine-sweep:
+    if: github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Guarantee engine sweep cleanup
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/engine-sweep.mjs')
+          text = path.read_text(encoding='utf-8')
+
+          start = """const { srv, base } = await serve();
+          const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+          """
+          replacement = """const { srv, base } = await serve();
+          let browser;
+          try {
+            browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+            browser.on('disconnected', () => console.error('[engine:sweep] browser disconnected'));
+          """
+          if text.count(start) != 1:
+              raise SystemExit(f'expected one browser start anchor, found {text.count(start)}')
+          text = text.replace(start, replacement, 1)
+
+          click = """  if (hit && hit.visible && hit.hit) await page.mouse.click(hit.x, hit.y);
+            return hit;
+          """
+          click_replacement = """  if (hit && hit.visible && hit.hit) {
+              if (page.isClosed()) throw new Error(`engine:sweep page closed before click: ${selector}`);
+              await page.mouse.click(hit.x, hit.y);
+            }
+            return hit;
+          """
+          if text.count(click) != 1:
+              raise SystemExit(f'expected one click anchor, found {text.count(click)}')
+          text = text.replace(click, click_replacement, 1)
+
+          tail = """await browser.close();
+          srv.close();
+
+          const fails = results.filter((r) => !r.ok);
+          for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'}  [${r.page}] ${r.name}${r.ok ? '' : '  ' + r.detail}`);
+          console.log(`\nTOTAL: ${results.length - fails.length}/${results.length} PASS`);
+          if (fails.length) { console.error('❌ engine:sweep — регрессия движка. Скрины/замеры выше.'); process.exit(1); }
+          console.log('✅ engine:sweep — все движки соответствуют канону.');
+          """
+          tail_replacement = """  const fails = results.filter((r) => !r.ok);
+            for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'}  [${r.page}] ${r.name}${r.ok ? '' : '  ' + r.detail}`);
+            console.log(`\nTOTAL: ${results.length - fails.length}/${results.length} PASS`);
+            if (fails.length) {
+              console.error('❌ engine:sweep — регрессия движка. Скрины/замеры выше.');
+              process.exitCode = 1;
+            } else {
+              console.log('✅ engine:sweep — все движки соответствуют канону.');
+            }
+          } finally {
+            if (browser) await browser.close().catch(() => {});
+            await new Promise((resolve) => srv.close(resolve));
+          }
+          """
+          if text.count(tail) != 1:
+              raise SystemExit(f'expected one cleanup tail, found {text.count(tail)}')
+          text = text.replace(tail, tail_replacement, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate syntax
+        run: node --check scripts/engine-sweep.mjs
+      - name: Commit cleanup correction
+        shell: bash
+        run: |
+          git rm .github/workflows/_temp-engine-sweep-cleanup-corrector.yml
+          git add scripts/engine-sweep.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'test(engine): always close browser and server on failure'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
