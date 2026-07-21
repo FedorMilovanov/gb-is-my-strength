@@ -1,0 +1,142 @@
+name: TEMP Special MindMap Overlay Commit
+
+on:
+  pull_request:
+    types: [reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: special-mindmap-commit-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
+jobs:
+  commit:
+    if: github.head_ref == 'lane/special-overlay-adapters-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply MindMap3D adapter and validate
+        id: materialize
+        shell: bash
+        run: |
+          set +e
+          mkdir -p reports
+          {
+            set -euo pipefail
+            python3 scripts/_temp-special-mindmap-overlay-patch.py
+            node scripts/overlay-runtime-contract-test.js
+            node - <<'NODE'
+            const fs = require('node:fs');
+            const ts = require('typescript');
+            const path = '_build-tools/konfessii-baptizm/MindMap3D.tsx';
+            const source = fs.readFileSync(path, 'utf8');
+            const result = ts.transpileModule(source, {
+              fileName: path,
+              reportDiagnostics: true,
+              compilerOptions: {
+                jsx: ts.JsxEmit.ReactJSX,
+                target: ts.ScriptTarget.ES2022,
+                module: ts.ModuleKind.ESNext,
+              },
+            });
+            const errors = (result.diagnostics || []).filter(d => d.category === ts.DiagnosticCategory.Error);
+            if (errors.length) {
+              for (const diagnostic of errors) {
+                console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+              }
+              process.exit(1);
+            }
+            console.log('✅ MindMap3D TSX transpile check');
+            NODE
+            git diff --check
+
+            echo '## Files containing MindMap/source signatures' > reports/special-overlay-inventory.txt
+            find . -type f \( -name '*.html' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' \) \
+              -not -path './node_modules/*' -not -path './.git/*' -not -path './dist/*' \
+              -print0 | xargs -0 grep -IlE 'NIGHT_MAP_DATA_URL|special:mindmap3d:fullscreen|prevBodyOverscroll|MindMap3D' \
+              | sort >> reports/special-overlay-inventory.txt || true
+            echo >> reports/special-overlay-inventory.txt
+            echo '## Remaining direct special lock writers' >> reports/special-overlay-inventory.txt
+            grep -RInE '(document\.(body|documentElement)|(body|html))\.style\.(overflow|position|top|left|right|width|overscrollBehavior)[[:space:]]*=' \
+              --include='*.js' --include='*.mjs' --include='*.cjs' --include='*.jsx' --include='*.ts' --include='*.tsx' --include='*.html' \
+              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist . \
+              | sort >> reports/special-overlay-inventory.txt || true
+            cat reports/special-overlay-inventory.txt
+          } > reports/special-mindmap-materialize.log 2>&1
+          status=$?
+          cat reports/special-mindmap-materialize.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload MindMap and inventory diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: special-mindmap-overlay-diagnostic
+          path: |
+            reports/special-mindmap-materialize.log
+            reports/special-overlay-inventory.txt
+            _build-tools/konfessii-baptizm/MindMap3D.tsx
+            scripts/overlay-runtime-contract-test.js
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Fail on materialize error
+        if: steps.materialize.outputs.status != '0'
+        run: exit 1
+
+      - name: Publish clean MindMap transaction
+        if: steps.materialize.outputs.status == '0'
+        id: publish
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        shell: bash
+        run: |
+          set +e
+          {
+            set -euo pipefail
+            git rm -f scripts/_temp-special-mindmap-overlay-patch.py
+            git add _build-tools/konfessii-baptizm/MindMap3D.tsx \
+                    scripts/overlay-runtime-contract-test.js
+            echo '--- staged files ---'
+            git status --short
+            forbidden="$(git diff --cached --diff-filter=ACMR --name-only | grep -E '(^|/)_temp-|^\.github/workflows/' || true)"
+            test -z "$forbidden" || { echo 'Forbidden staged files:'; echo "$forbidden"; exit 1; }
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'refactor(special): migrate MindMap fullscreen lock'
+            git push origin "HEAD:${HEAD_REF}"
+          } > reports/special-mindmap-publish.log 2>&1
+          status=$?
+          cat reports/special-mindmap-publish.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload publish diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: special-mindmap-publish-diagnostic
+          path: reports/special-mindmap-publish.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Fail on publish error
+        if: steps.materialize.outputs.status == '0' && steps.publish.outputs.status != '0'
+        run: exit 1
