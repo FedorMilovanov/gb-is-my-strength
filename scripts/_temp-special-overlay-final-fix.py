@@ -16,6 +16,16 @@ replacements = [
         'fallback map URL fixture',
     ),
     (
+        "    await page.click('.me-photo-modal__close');",
+        "    await page.evaluate(() => document.querySelector('.me-photo-modal__close').click());",
+        'fallback photo close activation',
+    ),
+    (
+        "    await page.click('.me-panel__close');",
+        "    await page.evaluate(() => document.querySelector('.me-panel__close').click());",
+        'fallback panel close activation',
+    ),
+    (
         "    window;\n  } finally { await page.close(); }",
         "  } finally { await page.close(); }",
         'fallback witness cleanup',
@@ -29,4 +39,4 @@ for old, new, label in replacements:
     text = text.replace(old, new, 1)
 
 path.write_text(text, encoding='utf-8')
-print('✅ final special overlay browser witnesses use real fixture URLs')
+print('✅ final special overlay browser witnesses use stable DOM activation')
