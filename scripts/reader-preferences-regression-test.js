@@ -184,6 +184,11 @@ for (const file of walk(path.join(ROOT, 'src'), '.astro')) {
   astroTargets.push(file);
   assert(source.includes('ReaderPreferencesHead'), `${path.relative(ROOT, file)} must import shared head preferences`);
   assert(source.includes('<ReaderPreferencesHead />'), `${path.relative(ROOT, file)} must render shared head preferences`);
+  const preferenceIndex = source.indexOf('<ReaderPreferencesHead />');
+  const charset = /<meta\s+[^>]*charset\s*=\s*["']?[^>]+>/i.exec(source);
+  const csp = /<meta\s+[^>]*http-equiv\s*=\s*["']Content-Security-Policy["'][^>]*>/i.exec(source);
+  if (charset) assert(preferenceIndex > charset.index + charset[0].length - 1, `${path.relative(ROOT, file)} preferences must follow charset`);
+  if (csp) assert(preferenceIndex > csp.index + csp[0].length - 1, `${path.relative(ROOT, file)} preferences must follow CSP`);
 }
 assert(astroTargets.length >= 65, `expected broad Astro head coverage, got ${astroTargets.length}`);
 
@@ -196,6 +201,11 @@ for (const file of walk(ROOT, '.html', new Set(['node_modules', 'dist', 'out', '
   assert(source.includes('js/reader-preferences-head.js?v='), `${path.relative(ROOT, file)} missing first-paint bootstrap`);
   assert(source.includes('css/reader-preferences.css?v='), `${path.relative(ROOT, file)} missing preference tokens`);
   assert(source.includes('js/reader-preferences.js?v='), `${path.relative(ROOT, file)} missing preference runtime`);
+  const preferenceIndex = source.indexOf('js/reader-preferences-head.js?v=');
+  const charset = /<meta\s+[^>]*charset\s*=\s*["']?[^>]+>/i.exec(source);
+  const csp = /<meta\s+[^>]*http-equiv\s*=\s*["']Content-Security-Policy["'][^>]*>/i.exec(source);
+  if (charset) assert(preferenceIndex > charset.index + charset[0].length - 1, `${path.relative(ROOT, file)} preferences must follow charset`);
+  if (csp) assert(preferenceIndex > csp.index + csp[0].length - 1, `${path.relative(ROOT, file)} preferences must follow CSP`);
 }
 assert(legacyTargets.length >= 50, `expected broad legacy coverage, got ${legacyTargets.length}`);
 

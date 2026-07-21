@@ -7,11 +7,10 @@
  * sheets — open/close/focus-trap/scroll-lock come from
  * initTocPopups() in floating-cluster-controller.js.
  *
- * Sepia is scoped to [data-gill-v16][data-gill-reader-theme="sepia"] under
- * a <64em media query (see css/floating-cluster.css) — it never touches
- * html.sepia (doesn't exist sitewide) or bleeds into desktop/other routes.
- * "Ночь" reuses the existing sitewide html.dark toggle so there is only
- * ONE dark-mode implementation, not a second competing one.
+ * State comes from the universal GBReaderPreferences store. Existing Gill
+ * attributes/CSS variables remain a compatibility adapter so visual parity and
+ * selectors stay stable while Day, Sepia, Night, line height and measure now
+ * persist across books, series, standalone articles and ordinary pages.
  *
  * Carries an optional `config` prop for series-engine symmetry (Chrome threads
  * the same SeriesConfig to every subcomponent); this sheet is data-free, so the
