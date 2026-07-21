@@ -16,6 +16,21 @@ assert.equal(baseline.entries.length, 76);
 assert.deepEqual(baseline.counts, { page: 9, series: 51, article: 2, special: 14 });
 assert.deepEqual(baseline.shapeCounts, { flat: 27, book: 24 });
 
+const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));
+const bookEntry = entryByRoute.get('/articles/novoe-serdce/');
+const pageEntry = entryByRoute.get('/about/');
+const specialEntry = entryByRoute.get('/karty/avraam/');
+assert.ok(bookEntry, 'book fixture must be present in registry');
+assert.ok(pageEntry, 'ordinary page fixture must be present in registry');
+assert.ok(specialEntry, 'special map fixture must be present in registry');
+assert.equal(bookEntry.settingsCapability, 'reader-ui');
+assert.equal(pageEntry.settingsCapability, 'global-preferences');
+assert.equal(specialEntry.settingsCapability, 'global-preferences+special-bridge');
+assert.ok(
+  bookEntry.configSources.includes('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'),
+  'book route must resolve the canonical hard-texts series config'
+);
+
 function cloneRecord(route) {
   const record = loaded.records.find((item) => item.route === route);
   assert.ok(record, `missing fixture route ${route}`);
@@ -23,10 +38,15 @@ function cloneRecord(route) {
 }
 
 function errorsFor(record) {
+  const mobileEntries = new Map();
+  if (baseline.mobileEntries.has(record.route)) {
+    mobileEntries.set(record.route, baseline.mobileEntries.get(record.route));
+  }
   return buildPublicSurfaceRegistry({
     loaded,
     records: [record],
     expectedRoutes: [record.route],
+    mobileEntries,
   }).errors;
 }
 
@@ -59,6 +79,11 @@ function errorsFor(record) {
   const record = cloneRecord('/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/');
   record.profile.source = 'src/pages/drifted/index.astro';
   assert.ok(errorsFor(record).some((error) => error.includes('profile.source drift')));
+}
+{
+  const record = cloneRecord('/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/');
+  record.profile.surface = 'page';
+  assert.ok(errorsFor(record).some((error) => error.includes('mobile engine=article requires surface=article')));
 }
 {
   const records = loaded.records.slice(1);
