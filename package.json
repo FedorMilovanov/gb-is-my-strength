@@ -148,7 +148,8 @@
     "gill:pre-v16-submenu:audit": "node scripts/gill-pre-v16-submenu-regression-audit.js",
     "content:coverage:audit": "node scripts/content-coverage-audit.js",
     "surface:registry:check": "node scripts/public-surface-registry-audit.js",
-    "surface:registry:test": "node scripts/public-surface-registry-regression-test.js"
+    "surface:registry:test": "node scripts/public-surface-registry-regression-test.js",
+    "overlay:map:browser:test": "node scripts/map-overlay-runtime-browser-test.js"
   },
   "engines": {
     "node": ">=22.12.0"
