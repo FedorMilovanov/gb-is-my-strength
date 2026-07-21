@@ -31,6 +31,13 @@ jobs:
       - name: Runtime integrity regressions
         run: node scripts/runtime-integrity-test.js
 
+      - name: Overlay runtime contracts
+        run: |
+          node --check js/site-utils.js
+          node --check js/site.js
+          node --check js/floating-cluster-controller.js
+          node scripts/overlay-runtime-contract-test.js
+
       - name: Map engine P0 regressions
         run: |
           node --check karty/_engine/map-engine.js
