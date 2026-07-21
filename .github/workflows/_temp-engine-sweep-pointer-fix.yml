@@ -1,0 +1,38 @@
+name: TEMP engine sweep pointer fix
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]' && github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: lane/system-reader-preferences-r1-final-2026-07-21
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Patch pointer witnesses
+        run: |
+          python3 scripts/_temp_fix_engine_sweep_pointer.py
+          node --check scripts/engine-sweep.mjs
+          git diff --check
+
+      - name: Commit pointer witness fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/engine-sweep.mjs
+          git commit -m "[LANE lane/system-reader-preferences-r1-final-2026-07-21] test(engine): use hit-tested pointer clicks for locking sheets"
+          git push origin HEAD:lane/system-reader-preferences-r1-final-2026-07-21
