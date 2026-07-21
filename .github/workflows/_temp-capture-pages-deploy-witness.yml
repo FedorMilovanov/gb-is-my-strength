@@ -34,7 +34,7 @@ jobs:
           - Completed at: \`${UPDATED_AT}\`
           - Run URL: ${RUN_URL}
 
-          This comment is generated only after `Deploy to GitHub Pages` completes successfully. Source/runtime closure still requires matching this immutable run to the verified PR #106/#108 asset revisions.
+          This comment is generated only after \`Deploy to GitHub Pages\` completes successfully. Source/runtime closure still requires matching this immutable run to the verified PR #106/#108 asset revisions.
           EOF
           )
           gh issue comment 58 --repo "$GITHUB_REPOSITORY" --body "$BODY"
