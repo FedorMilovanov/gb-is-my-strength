@@ -96,20 +96,41 @@ jobs:
         id: apply
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
+          mkdir -p reports
           changed=false
-          if ! grep -q "lockScroll: lockScroll" js/site-utils.js; then
-            python3 scripts/_temp-r5-patch-runtime-hardening.py
-            changed=true
-          fi
-          if ! grep -q "gill-series-toc" js/floating-cluster-controller.js; then
-            python3 scripts/_temp-r5-patch-floating-cluster.py
-            changed=true
-          fi
+          status=0
+          {
+            set -euo pipefail
+            if ! grep -q "lockScroll: lockScroll" js/site-utils.js; then
+              python3 scripts/_temp-r5-patch-runtime-hardening.py
+              changed=true
+            fi
+            if ! grep -q "gill-series-toc" js/floating-cluster-controller.js; then
+              python3 scripts/_temp-r5-patch-floating-cluster.py
+              changed=true
+            fi
+          } > reports/r5-patch-diagnostic.log 2>&1 || status=$?
+          cat reports/r5-patch-diagnostic.log
           echo "changed=${changed}" >> "$GITHUB_OUTPUT"
+          echo "status=${status}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload R5 patch diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r5-patch-diagnostic
+          path: reports/r5-patch-diagnostic.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail on patch error
+        if: steps.apply.outputs.status != '0'
+        run: exit 1
 
       - name: Validate R5 runtime transaction
-        if: steps.apply.outputs.changed == 'true'
+        if: steps.apply.outputs.changed == 'true' && steps.apply.outputs.status == '0'
         run: |
           set -euo pipefail
           node --check js/site-utils.js
@@ -122,7 +143,7 @@ jobs:
           npm run astro:check
 
       - name: Commit only permanent R5 runtime files
-        if: steps.apply.outputs.changed == 'true'
+        if: steps.apply.outputs.changed == 'true' && steps.apply.outputs.status == '0'
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
