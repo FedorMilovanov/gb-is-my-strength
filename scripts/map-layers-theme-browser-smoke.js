@@ -90,16 +90,23 @@ async function elementLayerState(page, selector) {
       const { page, errors } = await openMap(context, 'avraam');
       const warSelector = '#me-markers [data-layer~="war"]';
       const candSelector = '#me-markers [data-layer~="cand"]';
-      await page.waitForSelector(warSelector);
-      await page.waitForSelector(candSelector);
+      await page.waitForSelector(warSelector, { state: 'attached' });
+      await page.waitForSelector(candSelector, { state: 'attached' });
       const theme = await page.evaluate(() => ({
         theme: document.querySelector('.me-map')?.getAttribute('data-map-theme'),
         stored: localStorage.getItem('me-map-theme'),
+      }));
+      const candDefaultOff = await elementLayerState(page, candSelector);
+      const candToggleDefault = await page.$eval('.me-layers__row[data-layer-id="cand"] .me-layers__toggle', (el) => ({
+        pressed: el.getAttribute('aria-pressed'),
+        onClass: el.classList.contains('me-layers__toggle--on'),
       }));
       await clickLayer(page, 'war');
       const warOff = await elementLayerState(page, warSelector);
       await clickLayer(page, 'war');
       const warOn = await elementLayerState(page, warSelector);
+      await clickLayer(page, 'cand');
+      const candOnBeforeStory = await elementLayerState(page, candSelector);
       await clickLayer(page, 'cand');
       const candOffBeforeStory = await elementLayerState(page, candSelector);
       await page.evaluate(() => {
@@ -108,9 +115,17 @@ async function elementLayerState(page, selector) {
         other?.click();
       });
       await page.waitForTimeout(850);
-      await page.waitForSelector(candSelector);
+      await page.waitForSelector(candSelector, { state: 'attached' });
       const candOffAfterStory = await elementLayerState(page, candSelector);
-      record('avraam restrictive war/cand layers survive rerender', errors.length === 0 && theme.theme === 'light' && theme.stored === 'light' && warOff.hidden === '1' && warOn.hidden === '0' && candOffBeforeStory.hidden === '1' && candOffAfterStory.hidden === '1', { theme, warOff, warOn, candOffBeforeStory, candOffAfterStory, errors });
+      record(
+        'avraam restrictive war/cand layers survive rerender',
+        errors.length === 0 &&
+          theme.theme === 'light' && theme.stored === 'light' &&
+          candDefaultOff.hidden === '1' && candToggleDefault.pressed === 'false' && !candToggleDefault.onClass &&
+          warOff.hidden === '1' && warOn.hidden === '0' &&
+          candOnBeforeStory.hidden === '0' && candOffBeforeStory.hidden === '1' && candOffAfterStory.hidden === '1',
+        { theme, candDefaultOff, candToggleDefault, warOff, warOn, candOnBeforeStory, candOffBeforeStory, candOffAfterStory, errors },
+      );
       await page.close();
     }
 
@@ -118,7 +133,7 @@ async function elementLayerState(page, selector) {
     {
       const { page, errors } = await openMap(context, 'pavel');
       const antiochSelector = '#me-markers [data-place-id="antioch"]';
-      await page.waitForSelector(antiochSelector);
+      await page.waitForSelector(antiochSelector, { state: 'attached' });
       const initial = await elementLayerState(page, antiochSelector);
       await clickLayer(page, 'journey1');
       const afterJourney1Off = await elementLayerState(page, antiochSelector);
