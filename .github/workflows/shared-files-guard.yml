@@ -36,6 +36,9 @@ jobs:
           node --check karty/_engine/map-engine.js
           node scripts/map-engine-p0-regression-test.js
 
+      - name: Map initial-state regressions
+        run: node scripts/map-initial-state-regression-test.js
+
       - name: Guard shared/system files (strict on main/PR)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
         run: node scripts/guard-shared-files.js
