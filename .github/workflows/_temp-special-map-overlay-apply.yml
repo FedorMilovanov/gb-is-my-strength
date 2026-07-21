@@ -1,0 +1,70 @@
+name: TEMP Special Map Overlay Apply
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: special-map-overlay-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.head_ref == 'lane/special-overlay-adapters-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Apply deterministic map adapter patch
+        run: python3 scripts/_temp-special-map-overlay-patch.py
+
+      - name: Validate static contracts
+        run: |
+          set -euo pipefail
+          node --check karty/_engine/map-engine.js
+          node --check scripts/map-overlay-runtime-browser-test.js
+          npm run overlay:runtime:test
+          git diff --check
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate map overlay browser lifecycle
+        env:
+          PW_BROWSER: chromium
+        run: npm run overlay:map:browser:test
+
+      - name: Validate Astro templates
+        run: npm run astro:check
+
+      - name: Commit permanent map adapter files
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          git rm scripts/_temp-special-map-overlay-patch.py
+          git add karty/_engine/map-engine.js \
+                  scripts/overlay-runtime-contract-test.js \
+                  scripts/map-overlay-runtime-browser-test.js \
+                  package.json
+          test -z "$(git diff --cached --diff-filter=ACMR --name-only | grep -E '(^|/)_temp-' || true)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor(special): migrate map overlays to canonical runtime'
+          git push origin "HEAD:${HEAD_REF}"
