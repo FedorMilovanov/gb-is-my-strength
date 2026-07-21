@@ -1,0 +1,14 @@
+---
+import GillSeriesChrome from '../../gill-series/GillSeriesChrome.astro';
+import type { SeriesConfig } from './seriesConfig';
+
+interface Props {
+  pageId: string;
+  config?: SeriesConfig;
+}
+
+const { pageId, config } = Astro.props;
+---
+<GillSeriesChrome pageId={pageId} config={config}>
+  <slot />
+</GillSeriesChrome>

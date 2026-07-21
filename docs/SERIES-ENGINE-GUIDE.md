@@ -46,7 +46,7 @@
    `pages['<id>']` — label/title/cover/минуты/`partToc` (все H2/H3 тела с
    `#якорями`, у ОДНОЙ строки `current:true`).
 3. **Тело статьи**: компонент `<...>Body.astro`, внутри —
-   `<GillSeriesChrome pageId="<id>" config={<СЕРИЯ>}><article>…</article></GillSeriesChrome>`.
+   `<SeriesReaderChrome pageId="<id>" config={<СЕРИЯ>}><article>…</article></SeriesReaderChrome>`.
    Смотри соседнюю часть той же серии как образец 1-в-1.
 4. **Маршрут**: `src/pages/.../<slug>/index.astro` (копия соседнего, поменяй
    импорты). PageHead — по образцу соседнего (canonical/og/JSON-LD).
