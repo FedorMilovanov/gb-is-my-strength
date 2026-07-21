@@ -1,0 +1,67 @@
+name: TEMP Nagornaya Bar Asset Transaction
+
+on:
+  push:
+    branches:
+      - agent/nagornaya-bar-asset-contract-2026-07-22
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: contains(github.event.head_commit.message, 'complete bar asset patch transaction')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/nagornaya-bar-asset-contract-2026-07-22
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.3'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply exact patch
+        run: python3 scripts/_temp-patch-nagornaya-bar-asset.py
+
+      - name: Remove transaction-only files
+        run: |
+          git rm scripts/_temp-patch-nagornaya-bar-asset.py
+          git rm .github/workflows/_temp-nagornaya-bar-asset-transaction.yml
+
+      - name: Source and revision contracts
+        run: |
+          npm run cache-bust
+          npm run nagornaya:bar-asset:contract
+          npm run engine:contracts
+          npm run nagornaya:visual-parity:audit
+          git diff --check
+
+      - name: Production-like build
+        run: npm run strangler:build:production-like
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser matrix
+        run: npm run nagornaya:bar-asset:browser:test
+
+      - name: Commit permanent implementation
+        run: |
+          git add package.json scripts/cache-bust.js scripts/nagornaya-bar-asset-contract-test.js scripts/nagornaya-bar-asset-browser-test.js \
+            src/components/nagornaya/chast-1/NagornayaChast1PageFooter.astro \
+            src/components/nagornaya/chast-2/NagornayaChast2PageFooter.astro \
+            src/components/nagornaya/chast-3/NagornayaChast3PageFooter.astro \
+            src/components/nagornaya/chast-4/NagornayaChast4PageFooter.astro \
+            src/components/nagornaya/chast-5/NagornayaChast5PageFooter.astro \
+            nagornaya/chast-1/index.html nagornaya/chast-2/index.html nagornaya/chast-3/index.html nagornaya/chast-4/index.html nagornaya/chast-5/index.html
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(nagornaya): enforce bar asset publication contract'
+          git push origin HEAD:agent/nagornaya-bar-asset-contract-2026-07-22
