@@ -89,7 +89,10 @@ const SINGLES = [
 const CATALOGS = ['/articles/', '/biografii/', '/karty/', '/konfessii/', '/hard-texts/', '/rodosloviye/'];
 
 const { srv, base } = await serve();
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+let browser;
+try {
+  browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  browser.on('disconnected', () => console.error('[engine:sweep] browser disconnected'));
 
 async function newPage(vp, { speech = false } = {}) {
   const ctx = await browser.newContext({ viewport: vp });
@@ -118,7 +121,10 @@ async function clickVisibleCenter(page, selector) {
       top: top ? (top.id || top.className || top.tagName) : null,
     };
   }, selector);
-  if (hit && hit.visible && hit.hit) await page.mouse.click(hit.x, hit.y);
+  if (hit && hit.visible && hit.hit) {
+    if (page.isClosed()) throw new Error(`engine:sweep page closed before click: ${selector}`);
+    await page.mouse.click(hit.x, hit.y);
+  }
   return hit;
 }
 
@@ -398,11 +404,16 @@ for (const [id, url, satelliteUrl] of [
   await ctx2.close();
 }
 
-await browser.close();
-srv.close();
-
-const fails = results.filter((r) => !r.ok);
-for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'}  [${r.page}] ${r.name}${r.ok ? '' : '  ' + r.detail}`);
-console.log(`\nTOTAL: ${results.length - fails.length}/${results.length} PASS`);
-if (fails.length) { console.error('❌ engine:sweep — регрессия движка. Скрины/замеры выше.'); process.exit(1); }
-console.log('✅ engine:sweep — все движки соответствуют канону.');
+  const fails = results.filter((r) => !r.ok);
+  for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'}  [${r.page}] ${r.name}${r.ok ? '' : '  ' + r.detail}`);
+  console.log(`\nTOTAL: ${results.length - fails.length}/${results.length} PASS`);
+  if (fails.length) {
+    console.error('❌ engine:sweep — регрессия движка. Скрины/замеры выше.');
+    process.exitCode = 1;
+  } else {
+    console.log('✅ engine:sweep — все движки соответствуют канону.');
+  }
+} finally {
+  if (browser) await browser.close().catch(() => {});
+  await new Promise((resolve) => srv.close(resolve));
+}
