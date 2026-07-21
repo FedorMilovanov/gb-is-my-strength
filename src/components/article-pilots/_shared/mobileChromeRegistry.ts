@@ -5,7 +5,7 @@
  *
  * mount:
  *  - 'static'   — обвязка уже собрана внутри Chrome-компонента раздела
- *                 (Гилл: GillSeriesChrome→GillSeriesMobileBar; Герменевтика:
+ *                 (Гилл: SeriesReaderChrome→GillSeriesMobileBar; Герменевтика:
  *                 HermenevtikaBody→HermenevtikaMobileBar). Запись фиксирует
  *                 движок/адаптер как контракт и не требует подключения.
  *  - 'registry' — страница подключает адаптер сама через mobileChromeFor():
@@ -26,7 +26,7 @@ export interface MobileChromeRegistryEntry {
 }
 
 export const MOBILE_CHROME_ROUTES: Record<string, MobileChromeRegistryEntry> = {
-  // --- series (эталон: Гилл) — статически в GillSeriesChrome ---
+  // --- series (эталон: Гилл) — статически в SeriesReaderChrome ---
   '/articles/dzhon-gill-istoricheskiy-kontekst/': { enabled: true, engine: 'series', adapter: 'gill', mount: 'static' },
   '/articles/dzhon-gill-chast-1-chelovek/':       { enabled: true, engine: 'series', adapter: 'gill', mount: 'static' },
   '/articles/dzhon-gill-chast-2-uchenyi/':        { enabled: true, engine: 'series', adapter: 'gill', mount: 'static' },

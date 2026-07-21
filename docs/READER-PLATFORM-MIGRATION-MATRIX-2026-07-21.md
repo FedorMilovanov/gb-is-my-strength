@@ -9,10 +9,10 @@ This is an implementation inventory, not a visual redesign plan.
 
 | Surface | Canonical engine | Shape | Current implementation | Target |
 |---|---|---:|---|---|
-| Gill biography/context/reference | `series` | `flat` | `GillSeriesChrome` + Gill-specific sheets/data | Generic series façade, Gill theme/capabilities preserved |
+| Gill biography/context/reference | `series` | `flat` | `SeriesReaderChrome` façade + Gill-specific sheets/data | Generic series façade, Gill theme/capabilities preserved |
 | Heart / hard-texts work | `series` | `book` | Generic `SeriesConfig` rendered through `GillSeriesChrome` | Same series engine, generic name/API, shared preferences |
-| Baptist history series | `series` | `flat` | Generic configs rendered through `GillSeriesChrome` | Same series engine, shared preferences and registry |
-| Pastor/thematic series | `series` | `flat` | Generic configs rendered through `GillSeriesChrome` | Same series engine, shared preferences and registry |
+| Baptist history series | `series` | `flat` | Generic configs rendered through `SeriesReaderChrome` façade | Same series engine, shared preferences and registry |
+| Pastor/thematic series | `series` | `flat` | Generic configs rendered through `SeriesReaderChrome` façade | Same series engine, shared preferences and registry |
 | Hermenevtika | `article` | — | Dedicated MobileBar/Rail + shared-ish ReaderSettings | Standalone article adapter on shared settings/chrome primitives |
 | Kod Da Vinci | `article` | — | `ReaderRail` + `ReaderSettings`, page-specific chrome | Standalone article adapter and registry entry |
 | Catalogs (`/articles/`, `/biografii/`, etc.) | `page` | — | `MobileChromePage` on an incomplete registry | Complete registry + shared preference capability where appropriate |
@@ -37,7 +37,7 @@ This is an implementation inventory, not a visual redesign plan.
 
 ### 2.2 Quantified duplication / incompleteness
 
-- `GillSeriesChrome` is referenced by 43 source files and already acts as the de facto generic series engine.
+- `SeriesReaderChrome` is imported by 41 production consumers and fronts the existing implementation.
 - `MobileChromeShell` is referenced by only a small adapter set.
 - 62 `*PageHead.astro` files contain route-owned theme/localStorage bootstrap code.
 - `mobileChromeRegistry.ts` explicitly covers Gill, Hermenevtika and six page catalogs, but not the full set of routes already using shared series chrome.
@@ -64,7 +64,7 @@ This is an implementation inventory, not a visual redesign plan.
 
 | Current component | Problem | Compatibility step | Final role |
 |---|---|---|---|
-| `GillSeriesChrome` | Generic implementation has Gill name | Add `SeriesReaderChrome` façade forwarding identical props/slots | Generic series chrome; Gill wrapper optional/deprecated |
+| `SeriesReaderChrome` | Neutral façade landed; historical implementation remains internal | Keep façade as the only direct importer and preserve props/slot/DOM/CSS | Generic series chrome; Gill implementation internal |
 | `GillReaderSettingsSheet` | Own preference state and keys | Replace handlers with shared preference API; keep DOM/CSS parity | Series settings adapter |
 | `ReaderSettings` | Separate HM preference namespace | Replace with shared preference API | Generic settings primitive or standalone adapter |
 | `HermenevtikaMobileBar` | Standalone-specific action wiring | Keep semantic adapter, move shell/settings behavior shared | `StandaloneArticleChrome` adapter |

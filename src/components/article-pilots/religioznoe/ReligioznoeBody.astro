@@ -1,9 +1,9 @@
 ---
-import GillSeriesChrome from '@/components/article-pilots/gill-series/GillSeriesChrome.astro';
+import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/hardTextsSeriesConfig';
 ---
 
-<GillSeriesChrome pageId="religioznoe" config={HARD_TEXTS_SERIES}>
+<SeriesReaderChrome pageId="religioznoe" config={HARD_TEXTS_SERIES}>
 <main class="article-main" id="main-content">
 <article data-pagefind-body>
 <span data-pagefind-meta="author" hidden>Автор-редактор: Фёдор Милованов</span>
@@ -106,5 +106,5 @@ import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/ha
 </ul>
 </section><div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg" itemscope="" itemtype="https://schema.org/CreativeWork"><meta itemprop="about" content="Soli Deo Gloria"><span class="sdg" itemprop="name">Soli Deo Gloria</span><svg width="52" height="70" viewBox="0 0 52 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="26" y1="3" x2="26" y2="67" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line><line x1="6" y1="19" x2="46" y2="19" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line></svg></div></div>
 </main>
-</GillSeriesChrome>
+</SeriesReaderChrome>
 <button id="back-to-top" aria-label="Наверх" type="button"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>

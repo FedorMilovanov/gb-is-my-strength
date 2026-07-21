@@ -28,7 +28,7 @@ The repository already contains the correct beginning of the platform:
 - `SeriesConfig.shape` supports `flat | book`;
 - `defineSeriesConfig()` validates series data;
 - `engine:contracts`, `engine:sweep` and `engine:guard` protect shared behavior;
-- `GillSeriesChrome` already renders not only Gill, but the Heart/book series, Baptist series and other series routes;
+- `SeriesReaderChrome` now fronts the existing Gill implementation for Gill, Heart/book, Baptist and other series routes;
 - `ReaderRail` and `ReaderSettings` are already shared by standalone article pilots;
 - global design tokens exist in `css/site.css`.
 
@@ -37,7 +37,7 @@ The problem is incomplete convergence, not absence of an engine.
 Inventory at this baseline:
 
 - 1,736 relevant text/source files inventoried;
-- 43 source files reference `GillSeriesChrome`;
+- 41 production consumers import the neutral `SeriesReaderChrome` façade;
 - 62 `*PageHead.astro` files contain their own early theme/localStorage bootstrap;
 - the mobile registry explicitly lists only a small subset of the real series/article/page surfaces;
 - Gill and standalone readers use different localStorage keys for the same concepts;
@@ -191,7 +191,7 @@ Shared primitives:
 
 Adapters:
 
-- `SeriesReaderChrome` — generic name and API; initially wraps or aliases the existing `GillSeriesChrome` implementation to preserve parity;
+- `SeriesReaderChrome` — landed generic façade; it alone imports the existing `GillSeriesChrome` implementation to preserve parity;
 - `StandaloneArticleChrome` — article TOC/progress without series navigation;
 - `ContentPageChrome` — ordinary page navigation/search/actions;
 - special adapters for map/3D only where shared capabilities make sense.
