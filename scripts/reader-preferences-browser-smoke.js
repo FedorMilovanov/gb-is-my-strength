@@ -16,6 +16,23 @@ const ROUTES = {
 const WIDTHS = [320, 360, 390, 430];
 const OVERFLOW_ROUTES = [ROUTES.gill, ROUTES.book, ROUTES.hermenevtika, ROUTES.page, ROUTES.map];
 const results = [];
+const PRODUCTION_ORIGIN = 'https://gospod-bog.ru';
+const EXPECTED_LOCAL_CSP_ASSETS = new Set([
+  `${PRODUCTION_ORIGIN}/favicon.ico`,
+  `${PRODUCTION_ORIGIN}/apple-touch-icon.png`,
+  `${PRODUCTION_ORIGIN}/favicon-48.png`,
+  `${PRODUCTION_ORIGIN}/favicon-120.png`,
+  `${PRODUCTION_ORIGIN}/icons/icon-192.png`,
+]);
+const IS_LOCAL_PROOF_ORIGIN = new URL(BASE).origin !== PRODUCTION_ORIGIN;
+
+function isExpectedLocalOriginCspNoise(message) {
+  if (!IS_LOCAL_PROOF_ORIGIN || !message.includes('violates the following Content Security Policy directive')) return false;
+  for (const asset of EXPECTED_LOCAL_CSP_ASSETS) {
+    if (message.includes(`Loading the image '${asset}'`)) return true;
+  }
+  return false;
+}
 
 function result(name, ok, detail = {}) {
   results.push({ name, ok, detail });
@@ -50,7 +67,11 @@ async function openSurface(context, route, width = 390) {
   const errors = [];
   const failed = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('console', (message) => {
+  if (message.type() !== 'error') return;
+  const text = message.text();
+  if (!isExpectedLocalOriginCspNoise(text)) errors.push(text);
+});
   page.on('requestfailed', (request) => failed.push(`${request.method()} ${request.url()} :: ${request.failure()?.errorText || 'failed'}`));
   await page.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const firstPaint = await page.evaluate(() => ({
