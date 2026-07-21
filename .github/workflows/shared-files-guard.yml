@@ -74,3 +74,23 @@ jobs:
           echo "Branch: $REF_NAME"
           echo "Event: $EVENT_NAME"
           echo "Shared files guard completed"
+
+  r5-inventory:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lane/reader-r5-overlay-runtime-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Run overlay runtime inventory
+        run: node scripts/_temp-reader-r5-inventory.js
+      - name: Upload inventory evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r5-overlay-runtime-inventory
+          path: |
+            reports/reader-r5-overlay-runtime-inventory.json
+            reports/reader-r5-overlay-runtime-inventory.md
+          if-no-files-found: error
+          retention-days: 1
