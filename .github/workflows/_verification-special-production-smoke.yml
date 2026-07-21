@@ -48,7 +48,8 @@ jobs:
           {
             set -euo pipefail
             npm ci
-            node scripts/cache-bust.js
+            node scripts/download-fonts.js || echo 'Fonts download skipped'
+            node scripts/cache-bust.js || echo 'Cache bust skipped (deploy.yml-compatible)'
             npm run validate:static-publication
             npm run strangler:build:production-like
             test -s dist/js/site.js
@@ -74,34 +75,37 @@ jobs:
 
       - name: Wait for public assets and compare with production dist
         if: steps.build.outputs.status == '0'
+        id: public
         shell: bash
         run: |
-          set -euo pipefail
-          root='https://gospod-bog.ru'
-          cache="?deploy-smoke=${GITHUB_SHA}"
+          set +e
           mkdir -p /tmp/gb-smoke reports
+          {
+            set -euo pipefail
+            root='https://gospod-bog.ru'
+            cache="?deploy-smoke=${GITHUB_SHA}"
 
-          for attempt in $(seq 1 60); do
-            echo "Production smoke attempt ${attempt}/60"
-            ok=1
-            curl --compressed -fsSL --max-time 30 "${root}/${cache}" -o /tmp/gb-smoke/index.html || ok=0
-            curl --compressed -fsSL --max-time 30 "${root}/js/site.js${cache}" -o /tmp/gb-smoke/site.js || ok=0
-            curl --compressed -fsSL --max-time 30 "${root}/karty/_engine/map-engine.js${cache}" -o /tmp/gb-smoke/map-engine.js || ok=0
-            curl --compressed -fsSL --max-time 45 "${root}/konfessii/russkij-baptizm/_app/index.html${cache}" -o /tmp/gb-smoke/mindmap.html || ok=0
+            for attempt in $(seq 1 60); do
+              echo "Production smoke attempt ${attempt}/60"
+              ok=1
+              curl --compressed -fsSL --max-time 30 "${root}/${cache}" -o /tmp/gb-smoke/index.html || ok=0
+              curl --compressed -fsSL --max-time 30 "${root}/js/site.js${cache}" -o /tmp/gb-smoke/site.js || ok=0
+              curl --compressed -fsSL --max-time 30 "${root}/karty/_engine/map-engine.js${cache}" -o /tmp/gb-smoke/map-engine.js || ok=0
+              curl --compressed -fsSL --max-time 45 "${root}/konfessii/russkij-baptizm/_app/index.html${cache}" -o /tmp/gb-smoke/mindmap.html || ok=0
 
-            if [ "$ok" -eq 1 ] \
-              && cmp -s dist/js/site.js /tmp/gb-smoke/site.js \
-              && cmp -s dist/karty/_engine/map-engine.js /tmp/gb-smoke/map-engine.js \
-              && cmp -s dist/konfessii/russkij-baptizm/_app/index.html /tmp/gb-smoke/mindmap.html \
-              && grep -Fq 'site-image-viewer' /tmp/gb-smoke/site.js \
-              && grep -Fq 'special:map:' /tmp/gb-smoke/map-engine.js \
-              && grep -Fq 'const wasOpen = fallbackOverlayOwners.has(ownerId)' /tmp/gb-smoke/map-engine.js \
-              && grep -Fq 'special:konfessii-mindmap-launcher' /tmp/gb-smoke/mindmap.html \
-              && grep -Fq '../../../js/site-utils.js' /tmp/gb-smoke/mindmap.html \
-              && ! grep -Eq 'document\.body\.style\.(overflow|position|top|left|right|width)[[:space:]]*=' /tmp/gb-smoke/map-engine.js \
-              && ! grep -Eq 'document\.(body|documentElement)\.style\.(overflow|position|top|left|right|width|overscrollBehavior)[[:space:]]*=' /tmp/gb-smoke/mindmap.html; then
-              export ATTEMPT="$attempt"
-              python3 - <<'PY'
+              if [ "$ok" -eq 1 ] \
+                && cmp -s dist/js/site.js /tmp/gb-smoke/site.js \
+                && cmp -s dist/karty/_engine/map-engine.js /tmp/gb-smoke/map-engine.js \
+                && cmp -s dist/konfessii/russkij-baptizm/_app/index.html /tmp/gb-smoke/mindmap.html \
+                && grep -Fq 'site-image-viewer' /tmp/gb-smoke/site.js \
+                && grep -Fq 'special:map:' /tmp/gb-smoke/map-engine.js \
+                && grep -Fq 'const wasOpen = fallbackOverlayOwners.has(ownerId)' /tmp/gb-smoke/map-engine.js \
+                && grep -Fq 'special:konfessii-mindmap-launcher' /tmp/gb-smoke/mindmap.html \
+                && grep -Fq '../../../js/site-utils.js' /tmp/gb-smoke/mindmap.html \
+                && ! grep -Eq 'document\.body\.style\.(overflow|position|top|left|right|width)[[:space:]]*=' /tmp/gb-smoke/map-engine.js \
+                && ! grep -Eq 'document\.(body|documentElement)\.style\.(overflow|position|top|left|right|width|overscrollBehavior)[[:space:]]*=' /tmp/gb-smoke/mindmap.html; then
+                export ATTEMPT="$attempt"
+                python3 - <<'PY'
           import hashlib, json, os
           from datetime import datetime, timezone
           from pathlib import Path
@@ -140,16 +144,37 @@ jobs:
               json.dumps(evidence, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
           )
           PY
-              cat reports/SPECIAL-OVERLAY-PRODUCTION-SMOKE-2026-07-21.json
-              exit 0
-            fi
-            sleep 10
-          done
+                cat reports/SPECIAL-OVERLAY-PRODUCTION-SMOKE-2026-07-21.json
+                exit 0
+              fi
 
-          echo '❌ Public assets did not match the reproduced Pages dist'
-          sha256sum dist/js/site.js dist/karty/_engine/map-engine.js dist/konfessii/russkij-baptizm/_app/index.html || true
-          sha256sum /tmp/gb-smoke/site.js /tmp/gb-smoke/map-engine.js /tmp/gb-smoke/mindmap.html || true
-          exit 1
+              echo '--- expected dist hashes ---'
+              sha256sum dist/js/site.js dist/karty/_engine/map-engine.js dist/konfessii/russkij-baptizm/_app/index.html || true
+              echo '--- observed public hashes ---'
+              sha256sum /tmp/gb-smoke/site.js /tmp/gb-smoke/map-engine.js /tmp/gb-smoke/mindmap.html || true
+              sleep 10
+            done
+
+            echo '❌ Public assets did not match the reproduced Pages dist'
+            exit 1
+          } > reports/special-overlay-public-dist-compare.log 2>&1
+          status=$?
+          cat reports/special-overlay-public-dist-compare.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload public/dist diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: special-overlay-public-dist-compare
+          path: reports/special-overlay-public-dist-compare.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Fail on public/dist mismatch
+        if: steps.build.outputs.status == '0' && steps.public.outputs.status != '0'
+        run: exit 1
 
       - uses: actions/upload-artifact@v4
         if: always()
