@@ -23,3 +23,10 @@ Status: implementation lane opened from source `main` after Reader R1 (`ffdba149
 ## Required gates
 
 Shared Files Guard, Native Source Contract, production-like build, engine contracts, façade guard and browser parity.
+
+## Inventory and implementation
+
+- 41 production consumers migrated.
+- façade is the only direct implementation importer.
+- no DOM/CSS selector changes.
+- permanent guard wired into engine contracts and Shared Files Guard.
