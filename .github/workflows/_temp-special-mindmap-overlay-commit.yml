@@ -41,41 +41,19 @@ jobs:
             set -euo pipefail
             python3 scripts/_temp-special-mindmap-overlay-patch.py
             node scripts/overlay-runtime-contract-test.js
-            node - <<'NODE'
-            const fs = require('node:fs');
-            const ts = require('typescript');
-            const path = '_build-tools/konfessii-baptizm/MindMap3D.tsx';
-            const source = fs.readFileSync(path, 'utf8');
-            const result = ts.transpileModule(source, {
-              fileName: path,
-              reportDiagnostics: true,
-              compilerOptions: {
-                jsx: ts.JsxEmit.ReactJSX,
-                target: ts.ScriptTarget.ES2022,
-                module: ts.ModuleKind.ESNext,
-              },
-            });
-            const errors = (result.diagnostics || []).filter(d => d.category === ts.DiagnosticCategory.Error);
-            if (errors.length) {
-              for (const diagnostic of errors) {
-                console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
-              }
-              process.exit(1);
-            }
-            console.log('✅ MindMap3D TSX transpile check');
-            NODE
+            node -e 'const fs=require("node:fs");const ts=require("typescript");const path="_build-tools/konfessii-baptizm/MindMap3D.tsx";const source=fs.readFileSync(path,"utf8");const result=ts.transpileModule(source,{fileName:path,reportDiagnostics:true,compilerOptions:{jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});const errors=(result.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error);for(const d of errors)console.error(ts.flattenDiagnosticMessageText(d.messageText,"\n"));if(errors.length)process.exit(1);console.log("✅ MindMap3D TSX transpile check");'
             git diff --check
 
             echo '## Files containing MindMap/source signatures' > reports/special-overlay-inventory.txt
             find . -type f \( -name '*.html' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' \) \
-              -not -path './node_modules/*' -not -path './.git/*' -not -path './dist/*' \
-              -print0 | xargs -0 grep -IlE 'NIGHT_MAP_DATA_URL|special:mindmap3d:fullscreen|prevBodyOverscroll|MindMap3D' \
+              -not -path './node_modules/*' -not -path './.git/*' \
+              -print0 | xargs -0 -r grep -IlE 'NIGHT_MAP_DATA_URL|special:mindmap3d:fullscreen|prevBodyOverscroll|MindMap3D' \
               | sort >> reports/special-overlay-inventory.txt || true
             echo >> reports/special-overlay-inventory.txt
             echo '## Remaining direct special lock writers' >> reports/special-overlay-inventory.txt
             grep -RInE '(document\.(body|documentElement)|(body|html))\.style\.(overflow|position|top|left|right|width|overscrollBehavior)[[:space:]]*=' \
               --include='*.js' --include='*.mjs' --include='*.cjs' --include='*.jsx' --include='*.ts' --include='*.tsx' --include='*.html' \
-              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist . \
+              --exclude-dir=.git --exclude-dir=node_modules . \
               | sort >> reports/special-overlay-inventory.txt || true
             cat reports/special-overlay-inventory.txt
           } > reports/special-mindmap-materialize.log 2>&1
