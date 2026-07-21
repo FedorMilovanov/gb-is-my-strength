@@ -249,10 +249,6 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 <link as="style" href="../../fonts/fonts.css?v=864cc57a" rel="preload"/>
 <link as="font" crossorigin="" href="/fonts/Lora/lora-cyrillic-400.woff2" rel="preload" type="font/woff2"/>
 <link href="../../fonts/fonts.css?v=864cc57a" rel="stylesheet"/>
-<!-- Anti-FOUC: применяем тему до рендера CSS -->
-<script is:inline>
- (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
- </script>
 <!-- Shared styles -->
 <link href="../../css/site.css?v=7b0067c7" rel="stylesheet"/>
 <script is:inline>
