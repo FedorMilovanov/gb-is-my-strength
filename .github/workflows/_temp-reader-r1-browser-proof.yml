@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# Exact cleanup-head diagnostic. Remove after engine:sweep proof.
+# Exact scroll-lock-fix diagnostic. Remove after engine:sweep proof.
 jobs:
   engine-sweep:
     if: github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
