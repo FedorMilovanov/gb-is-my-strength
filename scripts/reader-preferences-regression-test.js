@@ -43,6 +43,7 @@ function createBrowser(seed = {}) {
 
   const document = {
     documentElement,
+    querySelectorAll() { return []; },
     addEventListener(name, listener) {
       if (!documentListeners.has(name)) documentListeners.set(name, []);
       documentListeners.get(name).push(listener);
