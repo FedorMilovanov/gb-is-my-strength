@@ -75,22 +75,69 @@ jobs:
           echo "Event: $EVENT_NAME"
           echo "Shared files guard completed"
 
-  r5-inventory:
+  r5-apply-core:
     if: github.event_name == 'pull_request' && github.head_ref == 'lane/reader-r5-overlay-runtime-2026-07-21'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - name: Run overlay runtime inventory
-        run: node scripts/_temp-reader-r5-inventory.js
-      - name: Upload inventory evidence
-        uses: actions/upload-artifact@v4
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
         with:
-          name: reader-r5-overlay-runtime-inventory
-          path: |
-            reports/reader-r5-overlay-runtime-inventory.json
-            reports/reader-r5-overlay-runtime-inventory.md
-          if-no-files-found: error
-          retention-days: 1
+          node-version: "22"
+          cache: "npm"
+
+      - name: Apply deterministic R5 core patches
+        id: apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -q "Object.defineProperty(window, 'OverlayRuntime'" js/site-utils.js; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "OverlayRuntime core is already applied"
+            exit 0
+          fi
+          python3 scripts/_temp-r5-patch-lock.py
+          python3 scripts/_temp-r5-patch-runtime.py
+          python3 scripts/_temp-r5-patch-sitejs.py
+          python3 scripts/_temp-r5-patch-reader-settings.py
+          python3 scripts/_temp-r5-patch-hermenevtika.py
+          python3 scripts/_temp-r5-patch-test-harness.py
+          python3 scripts/_temp-r5-patch-test-cases.py
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Validate R5 core transaction
+        if: steps.apply.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          node --check js/site-utils.js
+          node --check js/site.js
+          node scripts/runtime-integrity-test.js
+          node scripts/overlay-runtime-contract-test.js
+          git diff --check
+          npm ci
+          npm run astro:check
+
+      - name: Commit only permanent R5 core files
+        if: steps.apply.outputs.changed == 'true'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            js/site-utils.js \
+            js/site.js \
+            src/components/article-pilots/_shared/ReaderSettings.astro \
+            src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro \
+            scripts/runtime-integrity-test.js
+          test -z "$(git diff --cached --name-only | grep -E '(^|/)_temp-|^reports/|reader-r5-overlay-runtime-inventory\.json$' || true)"
+          git diff --cached --quiet && { echo "No permanent changes to commit"; exit 0; }
+          git commit -m "refactor(reader): add unified overlay runtime core"
+          git push origin "HEAD:${HEAD_REF}"
