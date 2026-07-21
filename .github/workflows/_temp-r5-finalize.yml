@@ -47,7 +47,20 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Validate browser ownership matrix
-        run: npm run overlay:browser:test
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          npm run overlay:browser:test 2>&1 | tee reports/reader-r5-browser.log
+
+      - name: Upload browser diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-r5-browser-diagnostic
+          path: reports/reader-r5-browser.log
+          if-no-files-found: warn
+          retention-days: 1
 
       - name: Lint permanent workflows
         run: |
