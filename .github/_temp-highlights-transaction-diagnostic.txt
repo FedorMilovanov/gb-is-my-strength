@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/_temp-run-highlights-hardening.py", line 108, in main
+    transaction()
+  File "/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/_temp-run-highlights-hardening.py", line 79, in transaction
+    verify_transaction_paths()
+  File "/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/_temp-run-highlights-hardening.py", line 63, in verify_transaction_paths
+    raise SystemExit("required permanent files are missing: " + ", ".join(sorted(missing)))
+SystemExit: required permanent files are missing: scripts/highlights-runtime-regression-test.js
