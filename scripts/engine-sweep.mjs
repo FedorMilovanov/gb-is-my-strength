@@ -100,6 +100,28 @@ async function newPage(vp, { speech = false } = {}) {
   return { ctx, page };
 }
 
+async function clickVisibleCenter(page, selector) {
+  const hit = await page.evaluate((value) => {
+    const el = document.querySelector(value);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    const top = document.elementFromPoint(x, y);
+    return {
+      x,
+      y,
+      width: Math.round(r.width),
+      height: Math.round(r.height),
+      visible: r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none',
+      hit: top === el || el.contains(top),
+      top: top ? (top.id || top.className || top.tagName) : null,
+    };
+  }, selector);
+  if (hit && hit.visible && hit.hit) await page.mouse.click(hit.x, hit.y);
+  return hit;
+}
+
 /* ============ СЕРИЯ-ДВИЖОК — ДЕСКТОП ============ */
 for (const [id, url] of SERIES) {
   const { ctx, page } = await newPage({ width: 1440, height: 900 });
@@ -123,7 +145,11 @@ for (const [id, url] of SERIES) {
   });
   R(id, 'desk: «1×» в круге', !!badge && badge.br <= 4 && badge.bb <= 4, JSON.stringify(badge));
 
-  await page.click('#railSettingsBtn');
+  const settingsHit = await clickVisibleCenter(page, '#railSettingsBtn');
+  R(id, 'desk: rail ⚙ hit-target', !!settingsHit && settingsHit.visible && settingsHit.hit, JSON.stringify(settingsHit));
+  if (settingsHit && settingsHit.visible && settingsHit.hit) {
+    await page.waitForFunction(() => document.querySelector('#gillSettingsOverlay')?.classList.contains('is-open'), null, { timeout: 8000 });
+  }
   await page.waitForTimeout(450);
   const pop = await page.evaluate(() => {
     const p = document.querySelector('[data-gill-v16] .gill-settings-overlay [class*="sheet"]');
@@ -177,7 +203,12 @@ for (const [id, url] of SERIES) {
 
   const gear = await page.$('#mobSettingsBtn');
   if (gear) {
-    await gear.click(); await page.waitForTimeout(450);
+    const gearHit = await clickVisibleCenter(page, '#mobSettingsBtn');
+    R(id, 'mob: ⚙ hit-target', !!gearHit && gearHit.visible && gearHit.hit, JSON.stringify(gearHit));
+    if (gearHit && gearHit.visible && gearHit.hit) {
+      await page.waitForFunction(() => document.querySelector('#gillSettingsOverlay')?.classList.contains('is-open'), null, { timeout: 8000 });
+    }
+    await page.waitForTimeout(450);
     const sheet = await page.evaluate(() => {
       const p = document.querySelector('#gillSettingsOverlay [class*="sheet"]');
       if (!p) return null;
