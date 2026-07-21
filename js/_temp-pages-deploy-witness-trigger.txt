@@ -1,1 +1,2 @@
 Trigger one verified IndexNow-readiness → Pages deploy transaction for exact deployment evidence.
+Observer version: readiness-and-deploy-v2.
