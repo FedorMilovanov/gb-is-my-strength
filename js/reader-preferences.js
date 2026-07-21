@@ -235,8 +235,12 @@
       return;
     }
     // During the compatibility window another tab may still use the old
-    // binary theme toggle. Import that change instead of allowing divergence.
+    // binary theme toggle. Canonical Sepia is intentionally stronger: our own
+    // compatibility write (`theme=light`) must never downgrade another tab.
     if (event.key === 'theme' && (event.newValue === 'dark' || event.newValue === 'light')) {
+      var canonical = parseStored(safeGet(STORAGE_KEY));
+      if (canonical && canonical.theme === 'sepia') return;
+      if (canonical && canonical.theme === event.newValue) return;
       commit({ theme: event.newValue }, { source: 'legacy-storage' });
     }
   });

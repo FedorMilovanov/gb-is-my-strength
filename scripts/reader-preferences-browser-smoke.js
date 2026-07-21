@@ -194,7 +194,33 @@ async function clickAndWait(page, selector) {
       await page.close();
     }
 
-    // 6. Representative mobile width matrix.
+    // 6. Canonical Sepia survives the compatibility `theme=light` storage
+    // event and remains synchronized across two simultaneously open tabs.
+    {
+      const left = await openSurface(context, ROUTES.page);
+      const right = await openSurface(context, ROUTES.gill);
+      await left.page.evaluate(() => window.GBReaderPreferences.setTheme('dark', { source: 'cross-tab-precondition' }));
+      await right.page.waitForFunction(() => window.GBReaderPreferences?.get?.().theme === 'dark', null, { timeout: 8000 });
+      await left.page.evaluate(() => window.GBReaderPreferences.setTheme('sepia', { source: 'cross-tab-sepia' }));
+      await right.page.waitForFunction(() => window.GBReaderPreferences?.get?.().theme === 'sepia', null, { timeout: 8000 });
+      await left.page.waitForTimeout(250);
+      const leftState = await snapshot(left.page);
+      const rightState = await snapshot(right.page);
+      result(
+        'Canonical Sepia remains synchronized across tabs',
+        left.errors.length === 0 && right.errors.length === 0 &&
+          left.failed.length === 0 && right.failed.length === 0 &&
+          leftState.theme === 'sepia' && rightState.theme === 'sepia' &&
+          leftState.prefs?.theme === 'sepia' && rightState.prefs?.theme === 'sepia' &&
+          JSON.parse(leftState.canonical || '{}').theme === 'sepia' &&
+          JSON.parse(rightState.canonical || '{}').theme === 'sepia',
+        { leftState, rightState, leftErrors: left.errors, rightErrors: right.errors, leftFailed: left.failed, rightFailed: right.failed },
+      );
+      await left.page.close();
+      await right.page.close();
+    }
+
+    // 7. Representative mobile width matrix.
     for (const width of WIDTHS) {
       for (const route of OVERFLOW_ROUTES) {
         const { page, errors, failed, firstPaint } = await openSurface(context, route, width);
