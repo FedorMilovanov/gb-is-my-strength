@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
 
+# Exact cleanup-head diagnostic. Remove after engine:sweep proof.
 jobs:
   engine-sweep:
     if: github.head_ref == 'lane/system-reader-preferences-r1-final-2026-07-21'
@@ -84,4 +85,4 @@ jobs:
     if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo 'Already proved green on source SHA 2635efba7f6cea148fa284cab5e987a3073871ce.'
+      - run: echo 'Already proved green on permanent source before cleanup-only engine runner correction.'
