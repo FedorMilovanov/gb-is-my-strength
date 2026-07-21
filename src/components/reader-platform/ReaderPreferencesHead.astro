@@ -9,6 +9,7 @@
 import { assetUrl } from '@/lib/asset-version';
 
 const runtimeSrc = assetUrl('js/reader-preferences.js');
+const preferencesCss = assetUrl('css/reader-preferences.css');
 ---
 <script is:inline>
   (function (w, d) {
@@ -56,4 +57,5 @@ const runtimeSrc = assetUrl('js/reader-preferences.js');
     w.__GB_READER_PREFS_BOOTSTRAP__ = state;
   })(window, document);
 </script>
+<link rel="stylesheet" href={preferencesCss} />
 <script is:inline defer src={runtimeSrc}></script>
