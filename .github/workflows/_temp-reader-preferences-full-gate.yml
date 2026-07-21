@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Chromium
+        run: npx playwright install chromium
+
       - name: Reader and engine contracts
         shell: bash
         run: |
@@ -71,9 +74,6 @@ jobs:
 
       - name: Build production-like browser target
         run: npm run strangler:build:production-like
-
-      - name: Install Chromium
-        run: npx playwright install chromium
 
       - name: Cross-engine browser matrix
         shell: bash
