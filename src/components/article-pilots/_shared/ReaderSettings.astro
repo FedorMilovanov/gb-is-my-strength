@@ -188,11 +188,23 @@
 </style>
 
 <script>
-  const THEME_KEY = 'gb:hm-reader-theme:v1';
-  const LINE_KEY = 'gb:hm-line-height:v1';
-  const MEASURE_KEY = 'gb:hm-measure:v1';
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
   const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '50rem' };
+
+  function readerPreferences() {
+    return (window as any).GBReaderPreferences || null;
+  }
+
+  function currentPreferences() {
+    const api = readerPreferences();
+    if (api && typeof api.get === 'function') return api.get();
+    return (window as any).__GB_READER_PREFS_BOOTSTRAP__ || {
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      fontScale: 1,
+      lineHeight: 'normal',
+      measure: 'normal'
+    };
+  }
 
   function initReaderSettings() {
     const sheet = document.getElementById('hmSettings');
@@ -202,7 +214,6 @@
     const closeBtn = document.getElementById('hmSettingsClose');
 
     const open = () => {
-      // взаимное исключение: гасим TOC-лист, если открыт
       const toc = document.getElementById('hmSheet');
       if (toc && toc.classList.contains('is-open')) {
         toc.classList.remove('is-open'); toc.setAttribute('aria-hidden', 'true');
@@ -221,101 +232,81 @@
       if (e.key === 'Escape' && sheet.classList.contains('is-open')) close();
     });
 
-    function setPressed(group: Element | null, current: HTMLElement) {
-      group?.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === current ? 'true' : 'false'));
+    function setPressed(group: Element | null, selector: string, value: string) {
+      group?.querySelectorAll('button').forEach((button) => {
+        const element = button as HTMLElement;
+        element.setAttribute('aria-pressed', element.dataset[selector] === value ? 'true' : 'false');
+      });
     }
 
-    // ---- Theme (День/Сепия/Ночь). Ночь = общесайтовый html.dark (одна реализация);
-    //      Сепия = скоуп на #content, не конфликтует с site theme. ----
     const themeGroup = document.getElementById('hmThemeGroup');
-    function applyTheme(theme: string) {
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-        content?.removeAttribute('data-hm-reader-theme');
-      } else if (theme === 'sepia') {
-        document.documentElement.classList.remove('dark');
-        content?.setAttribute('data-hm-reader-theme', 'sepia');
-      } else {
-        document.documentElement.classList.remove('dark');
-        content?.removeAttribute('data-hm-reader-theme');
-      }
-      try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
-    }
-    function pressTheme(theme: string) {
-      const b = themeGroup?.querySelector('[data-hm-theme="' + theme + '"]') as HTMLElement | null;
-      if (b) setPressed(themeGroup, b);
-    }
-    themeGroup?.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('[data-hm-theme]') as HTMLElement | null;
-      if (!btn) return;
-      applyTheme(btn.dataset.hmTheme || 'light');
-      setPressed(themeGroup, btn);
-    });
-    // Нижний бар держит быстрый 2-х позиционный тумблер темы (data-fc-action="theme",
-    // общесайтовый html.dark). Чтобы он не оставлял «сепия+ночь» одновременно,
-    // после его нажатия сбрасываем сепию и синхронизируем состояние листа.
-    document.querySelectorAll('[data-fc-action="theme"]').forEach((btn) => {
-      btn.addEventListener('click', () => setTimeout(() => {
-        const isDark = document.documentElement.classList.contains('dark');
-        content?.removeAttribute('data-hm-reader-theme');
-        const theme = isDark ? 'dark' : 'light';
-        try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
-        pressTheme(theme);
-      }, 0));
-    });
-
-    // ---- Line-height ----
     const lineGroup = document.getElementById('hmLineGroup');
-    function applyLine(value: string) {
-      content?.style.setProperty('--hm-article-line', LINE_VALUES[value] || LINE_VALUES.normal);
-      try { localStorage.setItem(LINE_KEY, value); } catch (_) {}
-    }
-    lineGroup?.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('[data-hm-line]') as HTMLElement | null;
-      if (!btn) return;
-      applyLine(btn.dataset.hmLine || 'normal');
-      setPressed(lineGroup, btn);
-    });
-
-    // ---- Measure (width) ----
     const measureGroup = document.getElementById('hmMeasureGroup');
-    function applyMeasure(value: string) {
-      content?.style.setProperty('--hm-article-measure', MEASURE_VALUES[value] || MEASURE_VALUES.normal);
-      try { localStorage.setItem(MEASURE_KEY, value); } catch (_) {}
-    }
-    measureGroup?.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('[data-hm-measure]') as HTMLElement | null;
-      if (!btn) return;
-      applyMeasure(btn.dataset.hmMeasure || 'normal');
-      setPressed(measureGroup, btn);
-    });
-
-    // ---- Font-scale dots (read-only reflection of gb:font-scale) ----
     const dots = document.getElementById('hmFontDots');
-    if (dots && !dots.childElementCount) {
-      for (let i = 0; i < 5; i++) { const d = document.createElement('span'); d.className = 'hmset-dot'; dots.appendChild(d); }
+
+    function applyCompatibility(state: any) {
+      const theme = state.theme || 'light';
+      if (theme === 'sepia') content?.setAttribute('data-hm-reader-theme', 'sepia');
+      else content?.removeAttribute('data-hm-reader-theme');
+      content?.style.setProperty('--hm-article-line', LINE_VALUES[state.lineHeight] || LINE_VALUES.normal);
+      content?.style.setProperty('--hm-article-measure', MEASURE_VALUES[state.measure] || MEASURE_VALUES.normal);
     }
-    function syncDots() {
+
+    function syncDots(scale: number) {
       if (!dots) return;
-      let scale = 1;
-      try { scale = parseFloat(localStorage.getItem('gb:font-scale') || '1') || 1; } catch (_) {}
-      const idx = Math.round((scale - 0.85) / 0.05);
-      Array.prototype.forEach.call(dots.children, (dot: HTMLElement, i: number) => dot.classList.toggle('is-on', i <= idx));
+      if (!dots.childElementCount) {
+        for (let i = 0; i < 5; i++) { const dot = document.createElement('span'); dot.className = 'hmset-dot'; dots.appendChild(dot); }
+      }
+      const index = Math.round(((Number(scale) || 1) - .85) / .05);
+      Array.prototype.forEach.call(dots.children, (dot: HTMLElement, i: number) => dot.classList.toggle('is-on', i <= index));
     }
-    syncDots();
-    document.querySelectorAll('[data-fc-action="font-up"], [data-fc-action="font-down"]').forEach((btn) => {
-      btn.addEventListener('click', () => setTimeout(syncDots, 0));
+
+    function sync(state = currentPreferences()) {
+      applyCompatibility(state);
+      setPressed(themeGroup, 'hmTheme', state.theme || 'light');
+      setPressed(lineGroup, 'hmLine', state.lineHeight || 'normal');
+      setPressed(measureGroup, 'hmMeasure', state.measure || 'normal');
+      syncDots(state.fontScale || 1);
+    }
+
+    themeGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-hm-theme]') as HTMLElement | null;
+      if (!button) return;
+      const theme = button.dataset.hmTheme || 'light';
+      const api = readerPreferences();
+      if (api) api.setTheme(theme, { source: 'standalone-reader-settings' });
+      else {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.setAttribute('data-reader-theme', theme);
+        sync({ ...currentPreferences(), theme });
+      }
     });
 
-    // ---- Restore saved prefs ----
-    try {
-      const t = localStorage.getItem(THEME_KEY);
-      if (t) { applyTheme(t); const b = themeGroup?.querySelector('[data-hm-theme="' + t + '"]') as HTMLElement | null; if (b) setPressed(themeGroup, b); }
-      const l = localStorage.getItem(LINE_KEY);
-      if (l && LINE_VALUES[l]) { applyLine(l); const b = lineGroup?.querySelector('[data-hm-line="' + l + '"]') as HTMLElement | null; if (b) setPressed(lineGroup, b); }
-      const m = localStorage.getItem(MEASURE_KEY);
-      if (m && MEASURE_VALUES[m]) { applyMeasure(m); const b = measureGroup?.querySelector('[data-hm-measure="' + m + '"]') as HTMLElement | null; if (b) setPressed(measureGroup, b); }
-    } catch (_) {}
+    lineGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-hm-line]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.hmLine || 'normal';
+      const api = readerPreferences();
+      if (api) api.set({ lineHeight: value }, { source: 'standalone-reader-settings' });
+      else sync({ ...currentPreferences(), lineHeight: value });
+    });
+
+    measureGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-hm-measure]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.hmMeasure || 'normal';
+      const api = readerPreferences();
+      if (api) api.set({ measure: value }, { source: 'standalone-reader-settings' });
+      else sync({ ...currentPreferences(), measure: value });
+    });
+
+    document.querySelectorAll('[data-fc-action="theme"], [data-fc-action="font-up"], [data-fc-action="font-down"]').forEach((button) => {
+      button.addEventListener('click', () => requestAnimationFrame(() => sync()));
+    });
+    document.addEventListener('gb:reader-preferences-change', (event: Event) => {
+      sync((event as CustomEvent).detail?.preferences || currentPreferences());
+    });
+    sync();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initReaderSettings, { once: true });

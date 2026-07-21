@@ -106,8 +106,14 @@
   }
 
   function setTheme(dark) {
-    document.documentElement.classList.toggle('dark', !!dark);
-    try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (_) {}
+    var theme = dark ? 'dark' : 'light';
+    if (window.GBReaderPreferences && typeof window.GBReaderPreferences.setTheme === 'function') {
+      window.GBReaderPreferences.setTheme(theme, { source: 'floating-cluster' });
+    } else {
+      document.documentElement.classList.toggle('dark', !!dark);
+      document.documentElement.setAttribute('data-reader-theme', theme);
+      try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+    }
     syncThemeButtons();
   }
 
@@ -927,7 +933,11 @@
      ===================================================== */
   var FONT_SCALE_KEY = 'gb:font-scale';
   var fontScale = (function() {
-    try { var s = parseFloat(localStorage.getItem(FONT_SCALE_KEY)); return (!isNaN(s) && s >= 0.85 && s <= 1.25) ? s : 1; } catch (_) { return 1; }
+    try {
+      var prefs = window.GBReaderPreferences && window.GBReaderPreferences.get();
+      var s = prefs ? parseFloat(prefs.fontScale) : parseFloat(localStorage.getItem(FONT_SCALE_KEY));
+      return (!isNaN(s) && s >= 0.85 && s <= 1.25) ? s : 1;
+    } catch (_) { return 1; }
   })();
   function applyFontScale() {
     var article = qs('article.article-body') || qs('.article-main') || qs('main');
@@ -935,7 +945,11 @@
   }
   function changeFontSize(direction) {
     fontScale = Math.max(0.85, Math.min(1.25, Math.round((fontScale + direction * 0.05) * 100) / 100));
-    try { localStorage.setItem(FONT_SCALE_KEY, String(fontScale)); } catch (_) {}
+    if (window.GBReaderPreferences && typeof window.GBReaderPreferences.set === 'function') {
+      window.GBReaderPreferences.set({ fontScale: fontScale }, { source: 'floating-cluster' });
+    } else {
+      try { localStorage.setItem(FONT_SCALE_KEY, String(fontScale)); } catch (_) {}
+    }
     applyFontScale();
   }
 

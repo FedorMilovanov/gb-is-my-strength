@@ -10,10 +10,12 @@ import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChrom
 
 // Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
 const mobileChrome = mobileChromeFor('/biografii/');
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru" class="">
   <head>
+    <ReaderPreferencesHead />
     <BiografiiPageChrome />
   </head>
   <body>
