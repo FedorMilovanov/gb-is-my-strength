@@ -28,6 +28,9 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Asset revision drift (read-only)
+        run: node scripts/cache-bust.js
+
       - name: Runtime integrity regressions
         run: node scripts/runtime-integrity-test.js
 
