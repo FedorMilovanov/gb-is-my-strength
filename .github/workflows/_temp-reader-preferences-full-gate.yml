@@ -36,14 +36,13 @@ jobs:
           sudo ln -sfn "$browser_path" /opt/pw-browsers/chromium
           test -x /opt/pw-browsers/chromium
 
-      - name: Reader and engine contracts
+      - name: Reader and engine static contracts
         shell: bash
         run: |
           set +e
           {
             node scripts/reader-preferences-regression-test.js
             npm run engine:contracts
-            npm run engine:sweep
           } > reader-preferences-contracts.log 2>&1
           status=$?
           tail -n 140 reader-preferences-contracts.log
@@ -81,6 +80,24 @@ jobs:
 
       - name: Build production-like browser target
         run: npm run strangler:build:production-like
+
+      - name: Functional engine sweep
+        shell: bash
+        run: |
+          set +e
+          npm run engine:sweep > reader-engine-sweep.log 2>&1
+          status=$?
+          tail -n 160 reader-engine-sweep.log
+          exit "$status"
+
+      - name: Upload engine sweep log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-preferences-engine-sweep-log
+          path: reader-engine-sweep.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Cross-engine browser matrix
         shell: bash
