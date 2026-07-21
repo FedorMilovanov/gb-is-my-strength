@@ -19,4 +19,10 @@ jobs:
         with:
           node-version: "22"
       - name: Inventory live route layer contracts
-        run: node scripts/_temp_inventory_map_layers.js
+        run: node scripts/_temp_inventory_map_layers.js > map-layer-inventory.txt
+      - name: Upload inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-layer-inventory
+          path: map-layer-inventory.txt
+          retention-days: 1
