@@ -17,15 +17,24 @@ LEGACY_RE = re.compile(
 CHARSET_RE = re.compile(r'<meta\s+[^>]*charset\s*=\s*["\']?[^>]+>', re.I)
 CSP_RE = re.compile(r'<meta\s+[^>]*http-equiv\s*=\s*["\']Content-Security-Policy["\'][^>]*>', re.I)
 HEAD_RE = re.compile(r'<head(?:\s[^>]*)?>', re.I)
+FRONTMATTER_RE = re.compile(r'^\s*---[\s\S]*?---\s*', re.M)
+
+
+def content_start(text: str) -> int:
+    head = HEAD_RE.search(text)
+    if head:
+        return head.end()
+    frontmatter = FRONTMATTER_RE.match(text)
+    if frontmatter:
+        return frontmatter.end()
+    return 0
 
 
 def insertion_offset(text: str) -> int:
-    head = HEAD_RE.search(text)
-    if not head:
-        raise RuntimeError('missing <head>')
-    candidates = [head.end()]
-    charset = CHARSET_RE.search(text, head.end())
-    csp = CSP_RE.search(text, head.end())
+    start = content_start(text)
+    candidates = [start]
+    charset = CHARSET_RE.search(text, start)
+    csp = CSP_RE.search(text, start)
     if charset:
         candidates.append(charset.end())
     if csp:
