@@ -42,7 +42,8 @@ const ALLOWED_CSS = new Set([
   'css/highlights-runtime.css',
   'css/sw-toast.css',
   'css/nagornaya-mobile-toc.css',
-  'css/series-samizdat.css'
+  'css/series-samizdat.css',
+  'css/reader-preferences.css'
 ]);
 
 const REQUIRED_EXTRA_CSS = new Set([
@@ -63,6 +64,8 @@ const ALLOWED_JS = new Set([
   'js/nagornaya-bar-extras.js',
   'js/sw-register.js',
   'js/floating-cluster-controller.js',
+  'js/reader-preferences-head.js',
+  'js/reader-preferences.js',
   'js/vosk-tts-core.js',
   'js/vosk-tts-engine.js',
   'js/vosk-stress-lookup.js',
