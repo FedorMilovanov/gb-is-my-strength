@@ -1,8 +1,10 @@
-name: TEMP Capture Pages Deploy Witness
+name: TEMP Capture Pages Pipeline Witness
 
 on:
   workflow_run:
-    workflows: ["Deploy to GitHub Pages"]
+    workflows:
+      - "IndexNow — Notify Search Engines"
+      - "Deploy to GitHub Pages"
     types: [completed]
     branches: [main]
 
@@ -12,29 +14,29 @@ permissions:
 
 jobs:
   capture:
-    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Record immutable Pages deploy witness on issue 58
+      - name: Record immutable pipeline witness on issue 58
         env:
           GH_TOKEN: ${{ github.token }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           RUN_ID: ${{ github.event.workflow_run.id }}
           RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
-          UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
         run: |
-          BODY=$(cat <<EOF
-          ## Automated GitHub Pages deploy witness
-
-          - Deploy workflow conclusion: **success**
-          - Workflow run: \`${RUN_ID}\` (#${RUN_NUMBER})
-          - Workflow head SHA: \`${HEAD_SHA}\`
-          - Completed at: \`${UPDATED_AT}\`
-          - Run URL: ${RUN_URL}
-
-          This comment is generated only after \`Deploy to GitHub Pages\` completes successfully. Source/runtime closure still requires matching this immutable run to the verified PR #106/#108 asset revisions.
-          EOF
-          )
+          BODY=$(printf '%s\n' \
+            '## Automated CI/CD pipeline witness' \
+            '' \
+            "- Workflow: **${WORKFLOW_NAME}**" \
+            "- Conclusion: **${CONCLUSION}**" \
+            "- Run: ${RUN_ID} (#${RUN_NUMBER})" \
+            "- Head SHA: ${HEAD_SHA}" \
+            "- Head branch: ${HEAD_BRANCH}" \
+            "- Run URL: ${RUN_URL}" \
+            '' \
+            'This comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages witness whose source contains the verified PR #106/#108 runtime revisions.')
           gh issue comment 58 --repo "$GITHUB_REPOSITORY" --body "$BODY"
