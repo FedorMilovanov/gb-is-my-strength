@@ -1,0 +1,40 @@
+name: TEMP reader preferences ordering
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  reorder:
+    if: github.head_ref == 'lane/system-reader-preferences-foundation-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Reorder first-paint bootstrap after charset and CSP
+        run: python3 scripts/_temp_reorder_reader_preferences.py
+
+      - name: Verify preference foundation and revisions
+        run: |
+          node scripts/cache-bust.js
+          node scripts/reader-preferences-regression-test.js
+
+      - name: Commit secure ordering
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "[LANE lane/system-reader-preferences-foundation-2026-07-21] fix(reader): apply preferences after charset and CSP"
+          git push origin HEAD:lane/system-reader-preferences-foundation-2026-07-21
