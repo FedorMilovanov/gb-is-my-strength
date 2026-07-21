@@ -1,0 +1,22 @@
+name: TEMP map layer inventory
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    if: github.head_ref == 'lane/system-map-layers-theme-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Inventory live route layer contracts
+        run: node scripts/_temp_inventory_map_layers.js
