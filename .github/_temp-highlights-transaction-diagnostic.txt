@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/_temp-run-highlights-hardening.py", line 113, in main
-    transaction()
-  File "/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/_temp-run-highlights-hardening.py", line 84, in transaction
-    verify_transaction_paths()
-  File "/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/_temp-run-highlights-hardening.py", line 61, in verify_transaction_paths
-    raise SystemExit("unexpected paths: " + ", ".join(unexpected))
-SystemExit: unexpected paths: scripts/__pycache__/
