@@ -2,7 +2,7 @@
 
 ## Status
 
-Core runtime and the first standalone reader consumers are applied. The shared Gill/series TOC, learning, settings and GBS2 sheets are now the active migration transaction.
+Core runtime, standalone reader consumers and shared Gill/series overlays are migrated. Chromium has passed the forward/reverse nested ownership, exact scroll restoration, focus, Escape, inert and pagehide witness; the permanent three-browser workflow covers Chromium, Firefox and WebKit.
 
 ## Scope
 
