@@ -5,6 +5,10 @@ on:
     types: [reopened, synchronize]
     branches: [main]
 
+concurrency:
+  group: reader-r5-commit-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -26,11 +30,17 @@ jobs:
           python3 scripts/_temp-r5-browser-fix.py
           python3 scripts/_temp-r5-browser-fixture.py
 
-      - name: Commit clean R5 transaction
+      - name: Commit clean non-workflow R5 transaction
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
+          # GitHub Actions tokens cannot safely publish workflow changes here.
+          # Keep those two files on the verified branch version; the connector
+          # applies their already-linted permanent contents after this commit.
+          git restore -- .github/workflows/shared-files-guard.yml
+          rm -f .github/workflows/overlay-runtime-browser.yml
+
           git rm -f --ignore-unmatch \
             docs/refactor-2026/reader-platform/reader-r5-overlay-runtime-inventory.json \
             scripts/_temp-r5-overlay-runtime.inc.js \
@@ -50,9 +60,7 @@ jobs:
           git add -A
           echo '--- staged files ---'
           git status --short
-          echo '--- staged stat ---'
-          git diff --cached --stat
-          forbidden="$(git diff --cached --diff-filter=ACMR --name-only | grep -E '(^|/)_temp-|reader-r5-overlay-runtime-inventory\.json$' || true)"
+          forbidden="$(git diff --cached --diff-filter=ACMR --name-only | grep -E '(^|/)_temp-|reader-r5-overlay-runtime-inventory\.json$|^\.github/workflows/' || true)"
           test -z "$forbidden" || { echo "Forbidden staged files:"; echo "$forbidden"; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
