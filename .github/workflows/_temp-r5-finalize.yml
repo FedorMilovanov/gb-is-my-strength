@@ -139,7 +139,7 @@ jobs:
             scripts/overlay-runtime-contract-test.js \
             scripts/runtime-integrity-test.js \
             src/components/article-pilots/_shared/ReaderSettings.astro
-          test -z "$(git diff --cached --name-only | grep -E '(^|/)_temp-|reader-r5-overlay-runtime-inventory\.json$' || true)"
+          test -z "$(git diff --cached --diff-filter=ACMR --name-only | grep -E '(^|/)_temp-|reader-r5-overlay-runtime-inventory\.json$' || true)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "test(reader): lock unified overlay runtime contract"
