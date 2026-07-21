@@ -1,0 +1,51 @@
+name: TEMP reader R4 inventory runner
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  inventory:
+    if: github.head_ref == 'lane/reader-r4-public-surface-registry-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Extract and run R4 inventory
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          lines = Path('.github/workflows/_temp-reader-r4-inventory.yml').read_text(encoding='utf-8').splitlines()
+          start = next(i for i, line in enumerate(lines) if "node <<'JS'" in line)
+          end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == 'JS')
+          code = []
+          for line in lines[start + 1:end]:
+              code.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/reader-r4-inventory.js').write_text('\n'.join(code) + '\n', encoding='utf-8')
+          PY
+          node /tmp/reader-r4-inventory.js
+      - name: Persist inventory evidence to R4 branch
+        shell: bash
+        run: |
+          mkdir -p docs/refactor-2026/reader-platform
+          cp reports/reader-r4-public-surface-inventory.md docs/READER-R4-PUBLIC-SURFACE-INVENTORY-2026-07-21.md
+          cp reports/reader-r4-public-surface-inventory.json docs/refactor-2026/reader-platform/reader-r4-public-surface-inventory.json
+          git add docs/READER-R4-PUBLIC-SURFACE-INVENTORY-2026-07-21.md \
+                  docs/refactor-2026/reader-platform/reader-r4-public-surface-inventory.json
+          if git diff --cached --quiet; then
+            echo 'Inventory evidence already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'research(reader): record R4 public-surface inventory'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
