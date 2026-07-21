@@ -25,63 +25,42 @@ jobs:
           path = Path('js/site-utils.js')
           text = path.read_text(encoding='utf-8')
 
-          anchor = r"""  function effectiveLocked() {
-              return legacyLockActive || globalSources.size > 0;
-            }
+          sync_anchor = '  function syncPublicState() {'
+          lock_helper = """  function lockStylesApplied() {
+            var body = document.body;
+            var html = document.documentElement;
+            return Boolean(
+              body && html &&
+              html.getAttribute('data-scroll-locked') === '1' &&
+              body.style.position === 'fixed' &&
+              body.style.overflow === 'hidden' &&
+              body.style.overscrollBehavior === 'none' &&
+              body.style.width === '100%'
+            );
+          }
 
-            function syncPublicState() {
           """
-          replacement = r"""  function effectiveLocked() {
-              return legacyLockActive || globalSources.size > 0;
-            }
+          if text.count(sync_anchor) != 1:
+              raise SystemExit(f'expected one syncPublicState anchor, found {text.count(sync_anchor)}')
+          text = text.replace(sync_anchor, lock_helper + sync_anchor, 1)
 
-            function lockStylesApplied() {
-              var body = document.body;
-              var html = document.documentElement;
-              return Boolean(
-                body && html &&
-                html.getAttribute('data-scroll-locked') === '1' &&
-                body.style.position === 'fixed' &&
-                body.style.overflow === 'hidden' &&
-                body.style.overscrollBehavior === 'none' &&
-                body.style.width === '100%'
-              );
-            }
-
-            function syncPublicState() {
-          """
-          if text.count(anchor) != 1:
-              raise SystemExit(f'expected one effectiveLocked anchor, found {text.count(anchor)}')
-          text = text.replace(anchor, replacement, 1)
-
-          old_apply = "  function applyLock() {\n    if (!effectiveLocked() || restoring) return;\n"
-          new_apply = "  function applyLock() {\n    if (!effectiveLocked() || restoring || lockStylesApplied()) return;\n"
+          old_apply = '    if (!effectiveLocked() || restoring) return;'
+          new_apply = '    if (!effectiveLocked() || restoring || lockStylesApplied()) return;'
           if text.count(old_apply) != 1:
-              raise SystemExit(f'expected one applyLock anchor, found {text.count(old_apply)}')
+              raise SystemExit(f'expected one applyLock guard, found {text.count(old_apply)}')
           text = text.replace(old_apply, new_apply, 1)
 
-          old_observer = """    var lockObserver = new MutationObserver(function () {
-              if (!restoring && effectiveLocked()) queueMicrotask(ensureLockState);
-            });
-          """
-          new_observer = """    var lockObserver = new MutationObserver(function () {
-              if (!restoring && effectiveLocked() && !lockStylesApplied()) queueMicrotask(ensureLockState);
-            });
-          """
+          old_observer = '      if (!restoring && effectiveLocked()) queueMicrotask(ensureLockState);'
+          new_observer = '      if (!restoring && effectiveLocked() && !lockStylesApplied()) queueMicrotask(ensureLockState);'
           if text.count(old_observer) != 1:
-              raise SystemExit(f'expected one observer anchor, found {text.count(old_observer)}')
+              raise SystemExit(f'expected one observer guard, found {text.count(old_observer)}')
           text = text.replace(old_observer, new_observer, 1)
           path.write_text(text, encoding='utf-8')
 
           test_path = Path('scripts/runtime-integrity-test.js')
           test = test_path.read_text(encoding='utf-8')
-          test_anchor = """assert.equal(dialog.inert, true, 'the hidden quotes dialog must be inert');
-
-          console.log('✅ runtime-integrity-test: dedupe + ARIA bootstrap + coordinated scroll lock');
-          """
-          test_replacement = """assert.equal(dialog.inert, true, 'the hidden quotes dialog must be inert');
-
-          assert.ok(source.includes('function lockStylesApplied()'), 'scroll-lock repair must be idempotent');
+          console_line = "console.log('✅ runtime-integrity-test: dedupe + ARIA bootstrap + coordinated scroll lock');"
+          assertions = """assert.ok(source.includes('function lockStylesApplied()'), 'scroll-lock repair must be idempotent');
           assert.ok(
             source.includes('restoring || lockStylesApplied()'),
             'applyLock must not rewrite an already-correct lock state',
@@ -91,11 +70,10 @@ jobs:
             'MutationObserver must repair only real lock drift',
           );
 
-          console.log('✅ runtime-integrity-test: dedupe + ARIA bootstrap + coordinated idempotent scroll lock');
-          """
-          if test.count(test_anchor) != 1:
-              raise SystemExit(f'expected one runtime test anchor, found {test.count(test_anchor)}')
-          test = test.replace(test_anchor, test_replacement, 1)
+          console.log('✅ runtime-integrity-test: dedupe + ARIA bootstrap + coordinated idempotent scroll lock');"""
+          if test.count(console_line) != 1:
+              raise SystemExit(f'expected one runtime console anchor, found {test.count(console_line)}')
+          test = test.replace(console_line, assertions, 1)
           test_path.write_text(test, encoding='utf-8')
           PY
       - name: Validate correction
