@@ -173,6 +173,18 @@ function importsPageHead(source) {
   return /<[A-Z][A-Za-z0-9]*PageHead\b/.test(source);
 }
 
+function hasLegacyThemeBootstrap(source) {
+  const scripts = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+  for (const match of source.matchAll(scripts)) {
+    const body = match[1] || '';
+    if (/localStorage\.getItem\(\s*['"]theme['"]\s*\)/.test(body) &&
+        /document\.documentElement\.(?:classList\.(?:add|toggle)\(\s*['"]dark['"]|setAttribute\(\s*['"]data-reader-theme['"])/.test(body)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 const astroTargets = [];
 for (const file of walk(path.join(ROOT, 'src'), '.astro')) {
   if (file.endsWith('ReaderPreferencesHead.astro')) continue;
@@ -182,6 +194,7 @@ for (const file of walk(path.join(ROOT, 'src'), '.astro')) {
   if (!pageHead && !fullHead) continue;
   if (fullHead && !pageHead && importsPageHead(source)) continue;
   astroTargets.push(file);
+  assert(!hasLegacyThemeBootstrap(source), `${path.relative(ROOT, file)} must not contain a route-owned theme bootstrap`);
   assert(source.includes('ReaderPreferencesHead'), `${path.relative(ROOT, file)} must import shared head preferences`);
   assert(source.includes('<ReaderPreferencesHead />'), `${path.relative(ROOT, file)} must render shared head preferences`);
   const preferenceIndex = source.indexOf('<ReaderPreferencesHead />');
@@ -198,6 +211,7 @@ for (const file of walk(ROOT, '.html', new Set(['node_modules', 'dist', 'out', '
   const source = fs.readFileSync(file, 'utf8');
   if (!/<html\b/i.test(source) || !/<head\b/i.test(source)) continue;
   legacyTargets.push(file);
+  assert(!hasLegacyThemeBootstrap(source), `${path.relative(ROOT, file)} must not contain a route-owned theme bootstrap`);
   assert(source.includes('js/reader-preferences-head.js?v='), `${path.relative(ROOT, file)} missing first-paint bootstrap`);
   assert(source.includes('css/reader-preferences.css?v='), `${path.relative(ROOT, file)} missing preference tokens`);
   assert(source.includes('js/reader-preferences.js?v='), `${path.relative(ROOT, file)} missing preference runtime`);
