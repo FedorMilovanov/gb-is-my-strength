@@ -21,6 +21,15 @@ function result(name, ok, detail = {}) {
   results.push({ name, ok, detail });
 }
 
+function visiblePaletteChanged(before, after) {
+  return Boolean(before && after) && (
+    before.bodyBackground !== after.bodyBackground ||
+    before.bodyColor !== after.bodyColor ||
+    before.surfaceBackground !== after.surfaceBackground ||
+    before.surfaceColor !== after.surfaceColor
+  );
+}
+
 async function seedLegacy(context) {
   const page = await context.newPage();
   await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -60,7 +69,10 @@ async function snapshot(page) {
     const html = document.documentElement;
     const gill = document.querySelector('[data-gill-v16]');
     const standalone = document.querySelector('[data-reader-root]');
+    const surface = gill || standalone || document.querySelector('.page-wrap, .article-main, main') || document.body;
     const style = getComputedStyle(html);
+    const bodyStyle = document.body ? getComputedStyle(document.body) : null;
+    const surfaceStyle = surface ? getComputedStyle(surface) : null;
     const media = document.querySelector('img, video, canvas, .me-canvas svg');
     return {
       prefs,
@@ -77,6 +89,10 @@ async function snapshot(page) {
       runtimeScript: [...document.scripts].some((script) => String(script.src || '').includes('reader-preferences.js')),
       overflow: Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0) - window.innerWidth,
       mediaFilter: media ? getComputedStyle(media).filter : null,
+      bodyBackground: bodyStyle?.backgroundColor || null,
+      bodyColor: bodyStyle?.color || null,
+      surfaceBackground: surfaceStyle?.backgroundColor || null,
+      surfaceColor: surfaceStyle?.color || null,
     };
   });
 }
@@ -98,6 +114,7 @@ async function clickAndWait(page, selector) {
       const { page, errors, failed, firstPaint } = await openSurface(context, ROUTES.gill);
       const migrated = await snapshot(page);
       await clickAndWait(page, '[data-gill-theme-btn][data-theme="light"]');
+      const light = await snapshot(page);
       await clickAndWait(page, '[data-gill-theme-btn][data-theme="sepia"]');
       await clickAndWait(page, '#gillLineHeightGroup [data-line="compact"]');
       await clickAndWait(page, '#gillLineHeightGroup [data-line="relaxed"]');
@@ -112,11 +129,12 @@ async function clickAndWait(page, selector) {
           firstPaint.theme === 'sepia' && firstPaint.ready === '1' &&
           migrated.theme === 'sepia' && migrated.gillTheme === 'sepia' &&
           migrated.prefs?.lineHeight === 'relaxed' && migrated.prefs?.measure === 'wide' &&
+          light.theme === 'light' && visiblePaletteChanged(light, after) &&
           after.theme === 'sepia' && after.gillTheme === 'sepia' &&
           after.prefs?.lineHeight === 'relaxed' && after.prefs?.measure === 'wide' &&
           Number(after.prefs?.fontScale) > fontBefore &&
           after.styleSheet && after.bootstrapScript && after.runtimeScript && after.overflow <= 1,
-        { firstPaint, migrated, after, errors, failed },
+        { firstPaint, migrated, light, after, errors, failed },
       );
       await page.close();
     }
@@ -148,6 +166,7 @@ async function clickAndWait(page, selector) {
         'Standalone settings adapter reads and updates canonical state',
         errors.length === 0 && failed.length === 0 &&
           firstPaint.theme === 'sepia' && before.standaloneTheme === 'sepia' &&
+          visiblePaletteChanged(before, after) &&
           after.theme === 'dark' && after.darkClass && after.standaloneTheme === null &&
           after.prefs?.lineHeight === 'compact' && after.prefs?.measure === 'narrow' && after.overflow <= 1,
         { firstPaint, before, after, errors, failed },
@@ -169,13 +188,21 @@ async function clickAndWait(page, selector) {
       await page.close();
     }
 
-    // 5. Sepia is site-wide but does not blanket-filter special media/map canvas.
+    // 5. Ordinary page visibly renders Sepia; special media keeps its own filter.
     {
-      const setter = await context.newPage();
-      await setter.goto(`${BASE}${ROUTES.page}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await setter.waitForFunction(() => window.GBReaderPreferences);
-      await setter.evaluate(() => window.GBReaderPreferences.setTheme('sepia', { source: 'browser-smoke' }));
-      await setter.close();
+      const ordinary = await openSurface(context, ROUTES.page);
+      const darkPage = await snapshot(ordinary.page);
+      await ordinary.page.evaluate(() => window.GBReaderPreferences.setTheme('sepia', { source: 'browser-smoke' }));
+      await ordinary.page.waitForTimeout(180);
+      const sepiaPage = await snapshot(ordinary.page);
+      result(
+        'Ordinary page renders a visible Sepia palette',
+        ordinary.errors.length === 0 && ordinary.failed.length === 0 &&
+          darkPage.theme === 'dark' && sepiaPage.theme === 'sepia' &&
+          visiblePaletteChanged(darkPage, sepiaPage) && sepiaPage.overflow <= 1,
+        { darkPage, sepiaPage, errors: ordinary.errors, failed: ordinary.failed },
+      );
+      await ordinary.page.close();
 
       const { page, errors, failed, firstPaint } = await openSurface(context, ROUTES.map);
       await page.waitForSelector('.me-map', { timeout: 15000 });
