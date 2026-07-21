@@ -41,13 +41,20 @@ jobs:
           rm -f .github/_temp-nagornaya-bar-trigger
           git add -A
 
-      - name: Source and revision contracts
-        run: |
-          npm run cache-bust
-          npm run nagornaya:bar-asset:contract
-          npm run engine:contracts
-          npm run nagornaya:visual-parity:audit
-          git diff --check
+      - name: Cache-bust read-only contract
+        run: npm run cache-bust
+
+      - name: Nagornaya bar asset source contract
+        run: npm run nagornaya:bar-asset:contract
+
+      - name: Engine contracts
+        run: npm run engine:contracts
+
+      - name: Nagornaya visual parity
+        run: npm run nagornaya:visual-parity:audit
+
+      - name: Diff integrity
+        run: git diff --check
 
       - name: Production-like build
         run: npm run strangler:build:production-like
