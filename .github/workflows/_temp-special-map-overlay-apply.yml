@@ -74,33 +74,54 @@ jobs:
 
       - name: Validate static contracts
         if: steps.patch.outputs.status == '0'
+        id: static
+        shell: bash
         run: |
-          set -euo pipefail
-          node --check karty/_engine/map-engine.js
-          node --check scripts/map-overlay-runtime-browser-test.js
-          npm run overlay:runtime:test
-          git diff --check
+          set +e
+          {
+            node --check karty/_engine/map-engine.js
+            node --check scripts/map-overlay-runtime-browser-test.js
+            npm run overlay:runtime:test
+            git diff --check
+          } > reports/special-map-static.log 2>&1
+          status=$?
+          cat reports/special-map-static.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload static diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: special-map-static-diagnostic
+          path: reports/special-map-static.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Fail on static error
+        if: steps.patch.outputs.status == '0' && steps.static.outputs.status != '0'
+        run: exit 1
 
       - name: Install dependencies
-        if: steps.patch.outputs.status == '0'
+        if: steps.patch.outputs.status == '0' && steps.static.outputs.status == '0'
         run: npm ci
 
       - name: Install Chromium
-        if: steps.patch.outputs.status == '0'
+        if: steps.patch.outputs.status == '0' && steps.static.outputs.status == '0'
         run: npx playwright install --with-deps chromium
 
       - name: Validate map overlay browser lifecycle
-        if: steps.patch.outputs.status == '0'
+        if: steps.patch.outputs.status == '0' && steps.static.outputs.status == '0'
         env:
           PW_BROWSER: chromium
         run: npm run overlay:map:browser:test
 
       - name: Validate Astro templates
-        if: steps.patch.outputs.status == '0'
+        if: steps.patch.outputs.status == '0' && steps.static.outputs.status == '0'
         run: npm run astro:check
 
       - name: Commit permanent map adapter files
-        if: steps.patch.outputs.status == '0'
+        if: steps.patch.outputs.status == '0' && steps.static.outputs.status == '0'
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
