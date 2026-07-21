@@ -37,21 +37,27 @@ new_release = '''  function releaseLock() {
       var html = document.documentElement;
       var oldBehavior = html.style.scrollBehavior;
       var frameCount = 0;
+      var writeScrollPosition = function () {
+        window.scrollTo(0, targetY);
+        var root = document.scrollingElement || document.documentElement;
+        if (root) root.scrollTop = targetY;
+        if (document.body && document.body !== root) document.body.scrollTop = targetY;
+      };
       html.style.scrollBehavior = 'auto';
-      window.scrollTo(0, targetY);
+      writeScrollPosition();
       var finishRestore = function () {
         if (effectiveLocked()) {
           html.style.scrollBehavior = oldBehavior;
           return;
         }
-        window.scrollTo(0, targetY);
+        writeScrollPosition();
         frameCount += 1;
         if (frameCount < 2 && typeof window.requestAnimationFrame === 'function') {
           window.requestAnimationFrame(finishRestore);
           return;
         }
         setTimeout(function () {
-          if (!effectiveLocked()) window.scrollTo(0, targetY);
+          if (!effectiveLocked()) writeScrollPosition();
           html.style.scrollBehavior = oldBehavior;
         }, 0);
       };
@@ -60,7 +66,7 @@ new_release = '''  function releaseLock() {
     } finally { restoring = false; }
   }
 '''
-site = once(site, old_release, new_release, 'post-layout scroll restore')
+site = once(site, old_release, new_release, 'scrolling-element restoration')
 old_close = '''    releaseOverlayInert(record);
     if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);
     syncOverlayDiagnostics();
@@ -172,4 +178,4 @@ if "requestAnimationFrame" not in runtime:
     )
 runtime_path.write_text(runtime, encoding='utf-8')
 
-print('Focus-before-unlock restoration and exact browser diagnostics prepared')
+print('Scrolling-element restoration and exact browser diagnostics prepared')
