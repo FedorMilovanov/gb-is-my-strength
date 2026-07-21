@@ -1,0 +1,60 @@
+name: TEMP Special Overlay Production Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/_temp-special-production-smoke.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: special-overlay-production-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for Pages and verify deployed runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='https://gospod-bog.ru'
+          cache="?deploy-smoke=${GITHUB_SHA}"
+          mkdir -p /tmp/gb-smoke
+
+          for attempt in $(seq 1 60); do
+            echo "Production smoke attempt ${attempt}/60"
+            ok=1
+            curl --compressed -fsSL --max-time 30 "${root}/${cache}" -o /tmp/gb-smoke/index.html || ok=0
+            curl --compressed -fsSL --max-time 30 "${root}/js/site.js${cache}" -o /tmp/gb-smoke/site.js || ok=0
+            curl --compressed -fsSL --max-time 30 "${root}/karty/_engine/map-engine.js${cache}" -o /tmp/gb-smoke/map-engine.js || ok=0
+            curl --compressed -fsSL --max-time 45 "${root}/konfessii/russkij-baptizm/_app/index.html${cache}" -o /tmp/gb-smoke/mindmap.html || ok=0
+
+            if [ "$ok" -eq 1 ] \
+              && grep -Fq 'site-image-viewer' /tmp/gb-smoke/site.js \
+              && grep -Fq 'special:map:' /tmp/gb-smoke/map-engine.js \
+              && grep -Fq 'const wasOpen = fallbackOverlayOwners.has(ownerId)' /tmp/gb-smoke/map-engine.js \
+              && grep -Fq 'special:konfessii-mindmap-launcher' /tmp/gb-smoke/mindmap.html \
+              && grep -Fq '../../../js/site-utils.js' /tmp/gb-smoke/mindmap.html \
+              && ! grep -Eq 'document\.body\.style\.(overflow|position|top|left|right|width)[[:space:]]*=' /tmp/gb-smoke/map-engine.js \
+              && ! grep -Eq 'document\.(body|documentElement)\.style\.(overflow|position|top|left|right|width|overscrollBehavior)[[:space:]]*=' /tmp/gb-smoke/mindmap.html; then
+              echo '✅ Production smoke: deployed special overlay runtime is live'
+              echo "root_bytes=$(wc -c < /tmp/gb-smoke/index.html)"
+              echo "site_js_bytes=$(wc -c < /tmp/gb-smoke/site.js)"
+              echo "map_engine_bytes=$(wc -c < /tmp/gb-smoke/map-engine.js)"
+              echo "mindmap_bytes=$(wc -c < /tmp/gb-smoke/mindmap.html)"
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo '❌ Deployed assets did not converge to the expected special overlay runtime'
+          for file in /tmp/gb-smoke/*; do
+            echo "--- ${file} ($(wc -c < "$file" 2>/dev/null || echo 0) bytes)"
+          done
+          exit 1
