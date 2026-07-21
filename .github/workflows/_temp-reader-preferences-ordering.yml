@@ -32,6 +32,9 @@ jobs:
           cat reader-preferences-ordering.log
           exit "$status"
 
+      - name: Finalize permanent assertions and adapter docs
+        run: python3 scripts/_temp_finalize_reader_preferences.py
+
       - name: Upload ordering diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,10 +49,10 @@ jobs:
           node scripts/cache-bust.js
           node scripts/reader-preferences-regression-test.js
 
-      - name: Commit secure ordering
+      - name: Commit secure ordering and permanent contracts
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
-          git commit -m "[LANE lane/system-reader-preferences-foundation-2026-07-21] fix(reader): apply preferences after charset and CSP"
+          git commit -m "[LANE lane/system-reader-preferences-foundation-2026-07-21] fix(reader): secure bootstrap order and adapter contracts"
           git push origin HEAD:lane/system-reader-preferences-foundation-2026-07-21
