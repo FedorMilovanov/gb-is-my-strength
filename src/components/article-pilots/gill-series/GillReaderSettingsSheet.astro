@@ -7,11 +7,10 @@
  * sheets — open/close/focus-trap/scroll-lock come from
  * initTocPopups() in floating-cluster-controller.js.
  *
- * Sepia is scoped to [data-gill-v16][data-gill-reader-theme="sepia"] under
- * a <64em media query (see css/floating-cluster.css) — it never touches
- * html.sepia (doesn't exist sitewide) or bleeds into desktop/other routes.
- * "Ночь" reuses the existing sitewide html.dark toggle so there is only
- * ONE dark-mode implementation, not a second competing one.
+ * State comes from the universal GBReaderPreferences store. Existing Gill
+ * attributes/CSS variables remain a compatibility adapter so visual parity and
+ * selectors stay stable while Day, Sepia, Night, line height and measure now
+ * persist across books, series, standalone articles and ordinary pages.
  *
  * Carries an optional `config` prop for series-engine symmetry (Chrome threads
  * the same SeriesConfig to every subcomponent); this sheet is data-free, so the
@@ -73,10 +72,6 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
 </div>
 
 <script>
-  const LINE_HEIGHT_KEY = 'gb:gill-line-height:v1';
-  const MEASURE_KEY = 'gb:gill-measure:v1';
-  // "normal" matches the site's existing baseline article line-height (1.6)
-  // exactly, so picking it explicitly never causes a visible jump.
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
   const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '50rem' };
 
@@ -84,98 +79,82 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
     const overlay = document.getElementById('gillSettingsOverlay');
     if (!overlay) return;
     const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
+    const api = () => (window as any).GBReaderPreferences || null;
+    const state = () => api()?.get?.() || (window as any).__GB_READER_PREFS_BOOTSTRAP__ || { theme: 'light', fontScale: 1, lineHeight: 'normal', measure: 'normal' };
 
-    function setPressed(group: Element, current: HTMLElement) {
-      group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === current ? 'true' : 'false'));
+    function setPressed(group: Element | null, attribute: string, value: string) {
+      group?.querySelectorAll('button').forEach((button) => {
+        const element = button as HTMLElement;
+        element.setAttribute('aria-pressed', element.getAttribute(attribute) === value ? 'true' : 'false');
+      });
     }
 
-    // ---- Line-height ----
     const lineGroup = document.getElementById('gillLineHeightGroup');
-    function applyLineHeight(value: string) {
-      if (gillRoot) gillRoot.style.setProperty('--gbs2-article-line', LINE_VALUES[value] || LINE_VALUES.normal);
-      try { localStorage.setItem(LINE_HEIGHT_KEY, value); } catch (_) {}
-    }
-    if (lineGroup) {
-      lineGroup.addEventListener('click', (e) => {
-        const btn = (e.target as HTMLElement).closest('[data-line]') as HTMLElement | null;
-        if (!btn) return;
-        applyLineHeight(btn.dataset.line || 'normal');
-        setPressed(lineGroup, btn);
-      });
-      try {
-        const saved = localStorage.getItem(LINE_HEIGHT_KEY);
-        if (saved && LINE_VALUES[saved]) {
-          applyLineHeight(saved);
-          const btn = lineGroup.querySelector('[data-line="' + saved + '"]') as HTMLElement | null;
-          if (btn) setPressed(lineGroup, btn);
-        }
-      } catch (_) {}
-    }
-
-    // ---- Measure (text width) — MOBILE ONLY (owner: "не меняем" ширину на
-    // десктопе). The control itself is CSS-hidden above 64em, but a value
-    // saved on a phone must not leak into a later desktop visit — guard the
-    // actual style mutation the same way, not just the button visibility.
     const measureGroup = document.getElementById('gillMeasureGroup');
-    function applyMeasure(value: string) {
-      try { localStorage.setItem(MEASURE_KEY, value); } catch (_) {}
-      if (!window.matchMedia('(max-width: 64em)').matches) return;
-      if (gillRoot) gillRoot.style.setProperty('--gbs2-article-measure', MEASURE_VALUES[value] || MEASURE_VALUES.normal);
-    }
-    if (measureGroup) {
-      measureGroup.addEventListener('click', (e) => {
-        const btn = (e.target as HTMLElement).closest('[data-measure]') as HTMLElement | null;
-        if (!btn) return;
-        applyMeasure(btn.dataset.measure || 'normal');
-        setPressed(measureGroup, btn);
-      });
-      try {
-        const saved = localStorage.getItem(MEASURE_KEY);
-        if (saved && MEASURE_VALUES[saved]) {
-          applyMeasure(saved);
-          const btn = measureGroup.querySelector('[data-measure="' + saved + '"]') as HTMLElement | null;
-          if (btn) setPressed(measureGroup, btn);
-        }
-      } catch (_) {}
-    }
-
-    // ---- Theme (День/Сепия/Ночь) — settings segment mirrors the quick
-    // cycle button in the bottom bar via the shared window.applyGillReaderTheme
-    // (defined in GillSeriesMobileBar.astro, which also restores it on load).
     const themeGroup = document.getElementById('gillSettingsThemeGroup');
-    if (themeGroup) {
-      themeGroup.addEventListener('click', (e) => {
-        const btn = (e.target as HTMLElement).closest('[data-gill-theme-btn]') as HTMLElement | null;
-        if (!btn) return;
-        const theme = btn.dataset.theme || 'light';
-        if ((window as any).applyGillReaderTheme) (window as any).applyGillReaderTheme(theme);
-      });
-    }
-
-    // Font-scale dots mirror the existing sitewide contract (gb:font-scale,
-    // 0.85–1.25 step 0.05, five displayed steps) — read-only reflection,
-    // the actual +/- buttons already work via data-fc-action="font-up/down".
     const dots = document.getElementById('gillFontDots');
-    if (dots && !dots.childElementCount) {
-      for (let i = 0; i < 5; i++) {
-        const d = document.createElement('span');
-        d.className = 'font-dot';
-        dots.appendChild(d);
+
+    function applyCompatibility(preferences: any) {
+      const line = preferences.lineHeight || 'normal';
+      const measure = preferences.measure || 'normal';
+      if (gillRoot) {
+        gillRoot.style.setProperty('--gbs2-article-line', LINE_VALUES[line] || LINE_VALUES.normal);
+        if (window.matchMedia('(max-width: 64em)').matches) {
+          gillRoot.style.setProperty('--gbs2-article-measure', MEASURE_VALUES[measure] || MEASURE_VALUES.normal);
+        }
+        if (preferences.theme === 'sepia') gillRoot.setAttribute('data-gill-reader-theme', 'sepia');
+        else gillRoot.removeAttribute('data-gill-reader-theme');
       }
     }
-    function syncFontDots() {
+
+    function syncDots(scale: number) {
       if (!dots) return;
-      let scale = 1;
-      try { scale = parseFloat(localStorage.getItem('gb:font-scale') || '1') || 1; } catch (_) {}
-      const idx = Math.round((scale - 0.85) / 0.05);
-      Array.prototype.forEach.call(dots.children, (dot: HTMLElement, i: number) => {
-        dot.classList.toggle('is-on', i <= idx);
-      });
+      if (!dots.childElementCount) {
+        for (let i = 0; i < 5; i++) { const dot = document.createElement('span'); dot.className = 'font-dot'; dots.appendChild(dot); }
+      }
+      const index = Math.round(((Number(scale) || 1) - .85) / .05);
+      Array.prototype.forEach.call(dots.children, (dot: HTMLElement, i: number) => dot.classList.toggle('is-on', i <= index));
     }
-    syncFontDots();
-    document.querySelectorAll('[data-fc-action="font-up"], [data-fc-action="font-down"]').forEach((btn) => {
-      btn.addEventListener('click', () => setTimeout(syncFontDots, 0));
+
+    function sync(preferences = state()) {
+      applyCompatibility(preferences);
+      setPressed(lineGroup, 'data-line', preferences.lineHeight || 'normal');
+      setPressed(measureGroup, 'data-measure', preferences.measure || 'normal');
+      setPressed(themeGroup, 'data-theme', preferences.theme || 'light');
+      syncDots(preferences.fontScale || 1);
+    }
+
+    lineGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-line]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.line || 'normal';
+      if (api()) api().set({ lineHeight: value }, { source: 'series-reader-settings' });
+      else sync({ ...state(), lineHeight: value });
     });
+
+    measureGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-measure]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.measure || 'normal';
+      if (api()) api().set({ measure: value }, { source: 'series-reader-settings' });
+      else sync({ ...state(), measure: value });
+    });
+
+    themeGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-gill-theme-btn]') as HTMLElement | null;
+      if (!button) return;
+      const theme = button.dataset.theme || 'light';
+      if ((window as any).applyGillReaderTheme) (window as any).applyGillReaderTheme(theme);
+      else if (api()) api().setTheme(theme, { source: 'series-reader-settings' });
+    });
+
+    document.querySelectorAll('[data-fc-action="font-up"], [data-fc-action="font-down"]').forEach((button) => {
+      button.addEventListener('click', () => requestAnimationFrame(() => sync()));
+    });
+    document.addEventListener('gb:reader-preferences-change', (event: Event) => {
+      sync((event as CustomEvent).detail?.preferences || state());
+    });
+    sync();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGillReaderSettings, { once: true });

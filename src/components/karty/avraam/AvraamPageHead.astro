@@ -4,8 +4,13 @@
  *
  * Preserves the validated SEO/JSON-LD metadata exactly.
  */
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
+
 <meta charset="UTF-8" />
+  <ReaderPreferencesHead />
+
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Путь Авраама: интерактивная карта Бытия 11–25 | Господь Бог — Сила Моя</title>
 <meta name="description" content="Интерактивная карта Авраама: от Ура Халдейского до горы Мория. 19 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур, археология, иврит, хронология 175 лет." />
@@ -34,7 +39,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <script is:inline type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://gospod-bog.ru/#organization","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","logo":{"@type":"ImageObject","url":"https://gospod-bog.ru/icons/icon-512.png","width":512,"height":512},"sameAs":["https://t.me/fedormilovanov","https://vk.com/curtmf"]},{"@type":"WebSite","@id":"https://gospod-bog.ru/#website","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","inLanguage":"ru","publisher":{"@id":"https://gospod-bog.ru/#organization"}},{"@type":"WebPage","@id":"https://gospod-bog.ru/karty/avraam/#webpage","url":"https://gospod-bog.ru/karty/avraam/","name":"Путь Авраама — интерактивная карта","description":"Интерактивная карта странствий Авраама по Книге Бытия 11–25 с археологическим контекстом.","inLanguage":"ru","isPartOf":{"@id":"https://gospod-bog.ru/#website"},"breadcrumb":{"@id":"https://gospod-bog.ru/karty/avraam/#breadcrumb"}},{"@type":"BreadcrumbList","@id":"https://gospod-bog.ru/karty/avraam/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"https://gospod-bog.ru/"},{"@type":"ListItem","position":2,"name":"Карты","item":"https://gospod-bog.ru/karty/"},{"@type":"ListItem","position":3,"name":"Путь Авраама","item":"https://gospod-bog.ru/karty/avraam/"}]}]}</script>
-<script is:inline>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
+
 <style is:inline>
   :root{--gold:#e8c879;--txt:#e9e4d6;--panel:rgba(13,17,26,.86)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}

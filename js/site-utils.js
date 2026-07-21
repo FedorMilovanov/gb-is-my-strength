@@ -30,6 +30,19 @@
     return legacyLockActive || globalSources.size > 0;
   }
 
+  function lockStylesApplied() {
+  var body = document.body;
+  var html = document.documentElement;
+  return Boolean(
+    body && html &&
+    html.getAttribute('data-scroll-locked') === '1' &&
+    body.style.position === 'fixed' &&
+    body.style.overflow === 'hidden' &&
+    body.style.overscrollBehavior === 'none' &&
+    body.style.width === '100%'
+  );
+}
+
   function syncPublicState() {
     for (var key in globalSourceMap) delete globalSourceMap[key];
     globalSources.forEach(function (source) { globalSourceMap[source] = true; });
@@ -43,7 +56,7 @@
   }
 
   function applyLock() {
-    if (!effectiveLocked() || restoring) return;
+    if (!effectiveLocked() || restoring || lockStylesApplied()) return;
     restoring = true;
     try {
       var body = document.body;
@@ -287,7 +300,7 @@
   // still open. Restore them on the next microtask/animation frame.
   if (window.MutationObserver && document.body) {
     var lockObserver = new MutationObserver(function () {
-      if (!restoring && effectiveLocked()) queueMicrotask(ensureLockState);
+      if (!restoring && effectiveLocked() && !lockStylesApplied()) queueMicrotask(ensureLockState);
     });
     lockObserver.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
     lockObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-scroll-locked', 'class'] });

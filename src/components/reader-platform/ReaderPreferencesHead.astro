@@ -1,0 +1,16 @@
+---
+/**
+ * ReaderPreferencesHead
+ *
+ * One synchronous first-paint bootstrap plus the shared semantic token bridge
+ * and deferred runtime. Astro and legacy documents consume the same files.
+ */
+import { assetUrl } from '@/lib/asset-version';
+
+const bootstrapSrc = assetUrl('js/reader-preferences-head.js');
+const runtimeSrc = assetUrl('js/reader-preferences.js');
+const preferencesCss = assetUrl('css/reader-preferences.css');
+---
+<script is:inline src={bootstrapSrc}></script>
+<link rel="stylesheet" href={preferencesCss} />
+<script is:inline defer src={runtimeSrc}></script>

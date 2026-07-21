@@ -4,8 +4,13 @@
  *
  * Preserves the validated SEO/JSON-LD metadata exactly.
  */
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
+
 <meta charset="utf-8" />
+  <ReaderPreferencesHead />
+
+
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#070a10" media="(prefers-color-scheme: dark)" />
 <meta name="theme-color" content="#f8f5ef" media="(prefers-color-scheme: light)" />
@@ -35,4 +40,3 @@
 <link rel="icon" href="/favicon.ico" sizes="any" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <script is:inline type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://gospod-bog.ru/#organization","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","logo":{"@type":"ImageObject","url":"https://gospod-bog.ru/icons/icon-512.png","width":512,"height":512},"sameAs":["https://t.me/fedormilovanov","https://vk.com/curtmf"]},{"@type":"WebSite","@id":"https://gospod-bog.ru/#website","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","inLanguage":"ru","publisher":{"@id":"https://gospod-bog.ru/#organization"}},{"@type":"WebPage","@id":"https://gospod-bog.ru/rodosloviye/#webpage","url":"https://gospod-bog.ru/rodosloviye/","name":"Родословие от Адама до Христа","description":"Интерактивное генеалогическое древо от Адама до Христа: библейские родословия, хронология, возрасты патриархов и мессианская линия.","inLanguage":"ru","isPartOf":{"@id":"https://gospod-bog.ru/#website"},"breadcrumb":{"@id":"https://gospod-bog.ru/rodosloviye/#breadcrumb"}},{"@type":"BreadcrumbList","@id":"https://gospod-bog.ru/rodosloviye/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"https://gospod-bog.ru/"},{"@type":"ListItem","position":2,"name":"Родословие","item":"https://gospod-bog.ru/rodosloviye/"}]}]}</script>
-<script is:inline>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
