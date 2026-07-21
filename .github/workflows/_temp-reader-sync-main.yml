@@ -1,0 +1,55 @@
+name: TEMP reader sync main
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]' && github.head_ref == 'lane/system-reader-preferences-foundation-2026-07-21'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Merge current main with exact conflict policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .github/workflows/shared-files-guard.yml /tmp/reader-shared-files-guard.yml
+          git fetch origin main
+          set +e
+          git merge --no-commit --no-ff origin/main
+          merge_status=$?
+          set -e
+          conflicts="$(git diff --name-only --diff-filter=U)"
+          if [ -n "$conflicts" ] && [ "$conflicts" != ".github/workflows/shared-files-guard.yml" ]; then
+            echo "Unexpected merge conflicts:"
+            echo "$conflicts"
+            exit 1
+          fi
+          cp /tmp/reader-shared-files-guard.yml .github/workflows/shared-files-guard.yml
+          git add .github/workflows/shared-files-guard.yml
+          unresolved="$(git diff --name-only --diff-filter=U)"
+          test -z "$unresolved"
+          if [ "$merge_status" -ne 0 ] && ! git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+            echo "Merge failed without a resolvable merge state"
+            exit 1
+          fi
+          git diff --cached --check
+
+      - name: Commit synchronized ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "merge(reader): synchronize current main before R1 validation"
+          git push origin HEAD:lane/system-reader-preferences-foundation-2026-07-21
