@@ -25,7 +25,7 @@
     "series:facade:guard": "node scripts/series-reader-facade-regression-test.js",
     "overlay:runtime:test": "node scripts/runtime-integrity-test.js && node scripts/overlay-runtime-contract-test.js",
     "overlay:browser:test": "node scripts/overlay-runtime-browser-test.js",
-    "engine:contracts": "node scripts/check-engine-contracts.js && npm run series:facade:guard",
+    "engine:contracts": "node scripts/check-engine-contracts.js && npm run series:facade:guard && npm run nagornaya:bar-asset:contract",
     "engine:sweep": "node scripts/engine-sweep.mjs",
     "engine:guard": "npm run engine:contracts && npm run gill:chrome:guard && npm run engine:sweep",
     "visual-audit": "node scripts/visual-audit.js",
@@ -152,7 +152,9 @@
     "overlay:map:browser:test": "node scripts/map-overlay-runtime-browser-test.js",
     "overlay:special:writers:test": "node scripts/special-overlay-writer-regression-test.js",
     "overlay:special:browser:test": "node scripts/special-overlay-runtime-browser-test.js",
-    "overlay:browser:all": "npm run overlay:browser:test && npm run overlay:map:browser:test && npm run overlay:special:browser:test"
+    "overlay:browser:all": "npm run overlay:browser:test && npm run overlay:map:browser:test && npm run overlay:special:browser:test",
+    "nagornaya:bar-asset:contract": "node scripts/nagornaya-bar-asset-contract-test.js",
+    "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js"
   },
   "engines": {
     "node": ">=22.12.0"
