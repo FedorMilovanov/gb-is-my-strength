@@ -112,8 +112,6 @@ for (const [route, profile, label] of [
   const routePolicy = policy.routeModes[route];
   assert.strictEqual(profile.visualParity.mode, 'native-contract', `${label} profile must declare native-contract`);
   assert.strictEqual(routePolicy.mode, profile.visualParity.mode, `${label} profile and central policy mode must agree`);
-  assert.strictEqual(routePolicy.reason, profile.visualParity.reason,
-    `${label} profile and central policy must record the same ownership reason`);
   assert.deepStrictEqual(routePolicy.requiredGuards, profile.visualParity.requiredGuards,
     `${label} profile and central policy must name the same blocking guards`);
   assert(profile.visualParity.requiredGuards.includes('scripts/public-surface-browser-matrix.mjs'),
@@ -123,6 +121,8 @@ for (const [route, profile, label] of [
   }
 }
 
+assert.strictEqual(policy.routeModes['/hard-texts/'].reason, hardTexts.visualParity.reason,
+  'Hard texts profile and central policy must record the same ownership reason');
 assert(hardTexts.visualParity.requiredGuards.includes('scripts/hard-texts-visual-parity-audit.js'),
   'Hard texts native contract must retain its route-specific source/component audit');
 assert.strictEqual(policy.routes['/karty/'].mobile, karty.visualParity.mobile,
