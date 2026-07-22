@@ -6,8 +6,29 @@ const { loadRouteRecords } = require('./effective-route-registry');
 
 const SURFACES = new Set(['series', 'article', 'page', 'special']);
 const SERIES_SHAPES = new Set(['flat', 'book']);
-const SERIES_ROUTE_TYPES = new Set(['series-article', 'series-chapter']);
+const SERIES_ROUTE_TYPES = new Set(['series-article', 'series-chapter', 'series-landing', 'series-reference']);
+const PAGE_ROUTE_TYPES = new Set([
+  'home',
+  'articles-index',
+  'biographies-index',
+  'hard-texts-index',
+  'pastor-index',
+  'maps-index',
+  'confessions-index',
+]);
 const SPECIAL_ROUTE_TYPES = new Set(['map', 'map-landing', 'confession', 'genealogy']);
+const READING_ROUTE_TYPES = new Set(['article', 'series-article', 'series-chapter']);
+const LANDING_ROUTE_TYPES = new Set([
+  'home',
+  'articles-index',
+  'biographies-index',
+  'hard-texts-index',
+  'pastor-index',
+  'maps-index',
+  'confessions-index',
+  'series-landing',
+]);
+const REFERENCE_ROUTE_TYPES = new Set(['series-reference']);
 const SERIES_FACADE = 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 const HISTORICAL_SERIES_IMPL = 'src/components/article-pilots/gill-series/GillSeriesChrome.astro';
 const BOOK_CONFIG = 'src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts';
@@ -63,7 +84,16 @@ function seriesConfigSources(record) {
   return sources;
 }
 
-function deriveChrome(record, mobileEntries) {
+function deriveRouteRole(profile = {}) {
+  if (profile.surface === 'special') return 'application';
+  const routeType = profile.routeType || null;
+  if (READING_ROUTE_TYPES.has(routeType)) return 'reading';
+  if (LANDING_ROUTE_TYPES.has(routeType)) return 'landing';
+  if (REFERENCE_ROUTE_TYPES.has(routeType)) return 'reference';
+  return 'page';
+}
+
+function deriveChrome(record, mobileEntries, routeRole = deriveRouteRole(record.profile || {})) {
   const profile = record.profile || {};
   const surface = profile.surface;
   const mobile = profile.mobileChrome || mobileEntries.get(record.route) || null;
@@ -72,13 +102,18 @@ function deriveChrome(record, mobileEntries) {
     return { engine: 'series', adapter: 'series-reader', mount: 'static', owner: 'SeriesReaderChrome' };
   }
   if (surface === 'series') {
-    return { engine: 'series', adapter: 'route-native', mount: 'static', owner: 'route-profile' };
+    const adapter = routeRole === 'landing'
+      ? 'series-landing'
+      : routeRole === 'reference'
+        ? 'series-reference'
+        : 'route-native';
+    return { engine: 'series', adapter, mount: 'static', owner: 'route-profile' };
   }
   if (surface === 'article') {
     return { engine: 'article', adapter: 'route-native', mount: 'static', owner: 'route-profile' };
   }
   if (surface === 'page') {
-    return { engine: 'page', adapter: 'route-native', mount: 'static', owner: 'route-profile' };
+    return { engine: 'page', adapter: routeRole === 'landing' ? 'page-landing' : 'route-native', mount: 'static', owner: 'route-profile' };
   }
   return {
     engine: 'special',
@@ -88,10 +123,10 @@ function deriveChrome(record, mobileEntries) {
   };
 }
 
-function settingsCapability(record, chrome) {
+function settingsCapability(record, chrome, routeRole) {
   const surface = record.profile?.surface;
   if (surface === 'special') return 'global-preferences+special-bridge';
-  if (hasResolvedImport(record, SERIES_FACADE) || chrome.engine === 'series' || chrome.engine === 'article') {
+  if (routeRole === 'reading' && (hasResolvedImport(record, SERIES_FACADE) || chrome.engine === 'series' || chrome.engine === 'article')) {
     return 'reader-ui';
   }
   return 'global-preferences';
@@ -99,18 +134,22 @@ function settingsCapability(record, chrome) {
 
 function derivePublicSurfaceEntry(record, mobileEntries = parseMobileChromeRegistry()) {
   const profile = record.profile || {};
-  const chrome = deriveChrome(record, mobileEntries);
+  const routeRole = deriveRouteRole(profile);
+  const chrome = deriveChrome(record, mobileEntries, routeRole);
   return {
     route: record.route,
     surface: profile.surface || null,
     seriesShape: profile.seriesShape || null,
     routeType: profile.routeType || null,
+    routeRole,
+    migrationLane: profile.migrationLane || null,
+    section: profile.section || null,
     owner: record.owner?.owner || null,
     status: record.owner?.status || null,
     source: record.sourceRel || record.owner?.source || null,
     profileFile: record.profileFile || null,
     chrome,
-    settingsCapability: settingsCapability(record, chrome),
+    settingsCapability: settingsCapability(record, chrome, routeRole),
     configSources: profile.surface === 'series' ? seriesConfigSources(record) : [],
     facts: {
       importsSeriesFacade: hasResolvedImport(record, SERIES_FACADE),
@@ -128,6 +167,8 @@ function validatePublicSurfaceRecord(record, entry, mobileEntries) {
   const surface = profile.surface;
   const shape = profile.seriesShape;
   const routeType = profile.routeType || null;
+  const routeRole = entry.routeRole;
+  const isProduction = record.owner?.status === 'production-dist' || profile.currentStatus === 'production-dist';
   const issue = (message) => errors.push(`${record.route}: ${message}`);
 
   if (profile.surfaceContractVersion !== 1) issue('surfaceContractVersion must be 1');
@@ -136,6 +177,12 @@ function validatePublicSurfaceRecord(record, entry, mobileEntries) {
     if (!SERIES_SHAPES.has(shape)) issue(`series requires seriesShape flat|book, got ${shape || '<missing>'}`);
   } else if (shape != null) {
     issue(`non-series surface must not declare seriesShape (${shape})`);
+  }
+
+  if (isProduction) {
+    for (const field of ['routeType', 'migrationLane', 'section']) {
+      if (profile[field] === 'unknown') issue(`production profile must not declare ${field}=unknown`);
+    }
   }
 
   if (entry.facts.importsSeriesFacade && surface !== 'series') {
@@ -154,8 +201,23 @@ function validatePublicSurfaceRecord(record, entry, mobileEntries) {
   if (SERIES_ROUTE_TYPES.has(routeType) && surface !== 'series') {
     issue(`routeType=${routeType} requires surface=series`);
   }
+  if (PAGE_ROUTE_TYPES.has(routeType) && surface !== 'page') {
+    issue(`routeType=${routeType} requires surface=page`);
+  }
   if (SPECIAL_ROUTE_TYPES.has(routeType) && surface !== 'special') {
     issue(`routeType=${routeType} requires surface=special`);
+  }
+  if (routeType === 'series-landing' && profile.migrationLane !== 'landing') {
+    issue('routeType=series-landing requires migrationLane=landing');
+  }
+  if (routeType === 'series-reference' && profile.migrationLane !== 'reference') {
+    issue('routeType=series-reference requires migrationLane=reference');
+  }
+  if (routeRole === 'landing' && !['series-landing', 'page-landing'].includes(entry.chrome.adapter)) {
+    issue(`landing route requires landing adapter, got ${entry.chrome.adapter}`);
+  }
+  if (routeRole === 'reference' && entry.chrome.adapter !== 'series-reference') {
+    issue(`reference route requires series-reference adapter, got ${entry.chrome.adapter}`);
   }
   if (record.owner?.owner === 'built-app' && surface !== 'special') {
     issue('built-app owner requires surface=special');
@@ -213,17 +275,28 @@ function buildPublicSurfaceRegistry(options = {}) {
       acc[entry.seriesShape || '<missing>'] = (acc[entry.seriesShape || '<missing>'] || 0) + 1;
       return acc;
     }, {});
+  const roleCounts = entries.reduce((acc, entry) => {
+    acc[entry.routeRole || '<missing>'] = (acc[entry.routeRole || '<missing>'] || 0) + 1;
+    return acc;
+  }, {});
 
-  return { entries, errors, counts, shapeCounts, mobileEntries };
+  return { entries, errors, counts, shapeCounts, roleCounts, mobileEntries };
 }
 
 module.exports = {
   SURFACES,
   SERIES_SHAPES,
+  SERIES_ROUTE_TYPES,
+  PAGE_ROUTE_TYPES,
+  SPECIAL_ROUTE_TYPES,
+  READING_ROUTE_TYPES,
+  LANDING_ROUTE_TYPES,
+  REFERENCE_ROUTE_TYPES,
   SERIES_FACADE,
   HISTORICAL_SERIES_IMPL,
   BOOK_CONFIG,
   parseMobileChromeRegistry,
+  deriveRouteRole,
   derivePublicSurfaceEntry,
   validatePublicSurfaceRecord,
   buildPublicSurfaceRegistry,
