@@ -1,81 +1,104 @@
-name: Temp Nagornaya neutral UI inventory
+name: Temp Nagornaya neutral UI materializer
 
 on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - agent/nagornaya-neutral-comparison-ui
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: temp-nagornaya-neutral-ui-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 jobs:
-  inventory:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Locate epistemic UI blocks
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import json, re
-
-          roots = [Path('src/components/nagornaya'), Path('src/pages/nagornaya')]
-          patterns = {
-              'binary-symbol': re.compile(r'[✓✗❌✅]'),
-              'red-green-class': re.compile(r'(?:bg|text|border)-(?:red|rose|green|emerald)-\d+'),
-              'ipsissima': re.compile(r'ipsissima', re.I),
-              'matthew-luke': re.compile(r'Матф|Лук'),
-              'institution-label': re.compile(r'\bTMS\b|Семинарии Мастерс|Семинария Мастерс'),
-              'verdict-language': re.compile(r'правильн|неправильн|приемлем|неприемлем|ж[её]стк(?:ая|ую) границ|бескомпромисс', re.I),
-          }
-          rows = []
-          for root in roots:
-              if not root.exists():
-                  continue
-              for path in sorted(root.rglob('*')):
-                  if path.suffix not in {'.astro', '.ts', '.js', '.html', '.md', '.mdx'}:
-                      continue
-                  text = path.read_text(encoding='utf-8')
-                  lines = text.splitlines()
-                  for i, line in enumerate(lines, 1):
-                      hits = [name for name, rx in patterns.items() if rx.search(line)]
-                      if not hits:
-                          continue
-                      start = max(1, i - 3)
-                      end = min(len(lines), i + 3)
-                      rows.append({
-                          'path': str(path),
-                          'line': i,
-                          'hits': hits,
-                          'context': [f'{n}: {lines[n-1]}' for n in range(start, end + 1)],
-                      })
-          Path('nagornaya-neutral-ui-inventory.json').write_text(
-              json.dumps(rows, ensure_ascii=False, indent=2), encoding='utf-8'
-          )
-          with Path('nagornaya-neutral-ui-inventory.txt').open('w', encoding='utf-8') as out:
-              for row in rows:
-                  out.write(f"\n## {row['path']}:{row['line']} [{', '.join(row['hits'])}]\n")
-                  out.write('\n'.join(row['context']))
-                  out.write('\n')
-          print(f'Inventory rows: {len(rows)}')
-          PY
-      - name: Materialize exact source cluster
-        run: |
-          mkdir -p exact-source
-          cp --parents data/nagornaya/source-registry.json exact-source/
-          cp --parents data/nagornaya/source-registry.schema.json exact-source/
-          cp -R --parents src/components/nagornaya exact-source/
-          cp -R --parents src/pages/nagornaya exact-source/
-          find scripts -maxdepth 1 -type f -name 'nagornaya*' -exec cp --parents {} exact-source/ \;
-          cp --parents package.json exact-source/
-      - uses: actions/upload-artifact@v4
         with:
-          name: nagornaya-neutral-ui-inventory
-          path: |
-            nagornaya-neutral-ui-inventory.json
-            nagornaya-neutral-ui-inventory.txt
-            exact-source
-          retention-days: 3
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Apply exact MainShell patch
+        run: |
+          cat > /tmp/main-shell-patcher.py <<'PY'
+          from pathlib import Path
+          import re, sys
+          ROOT=Path(sys.argv[1] if len(sys.argv)>1 else '.')
+          def read(p): return (ROOT/p).read_text(encoding='utf-8')
+          def write(p,s): (ROOT/p).write_text(s,encoding='utf-8')
+          def once(t,old,new,label):
+              n=t.count(old)
+              if n!=1: raise SystemExit(f'{label}: expected 1, got {n}')
+              return t.replace(old,new,1)
+          obs_call='''\n<NagornayaObservationComparison\n  blockId="nagornaya-matthew-luke-observation-matrix"\n  title="Что видно в тексте и какие объяснения остаются моделями"\n  rows={[\n    { observation: 'Матфей помещает речь на горе; Лука — на ровном месте.', possibleExplanation: 'Одно событие на ровной площадке горного склона.', competingExplanation: 'Два близких эпизода или повторение сходного учения.', confidence: 'Наблюдение: высокая; реконструкция: средняя.' },\n    { observation: 'Матфей передаёт значительно больший объём материала, чем Лука.', possibleExplanation: 'Различный отбор и сокращение одной проповеди.', competingExplanation: 'Повторное обучение либо литературная композиция из близких речений.', confidence: 'Объём: высокая; механизм: средняя/низкая.' },\n    { observation: 'После речевого блока оба повествования переходят к исцелению слуги сотника.', possibleExplanation: 'Общий последующий контекст поддерживает связь рассказов.', competingExplanation: 'Евангелисты могли располагать материал тематически.', confidence: 'Последовательность: высокая; вывод о едином событии: средняя.' },\n    { observation: 'Матфей и Лука различаются формулировками, адресацией и набором тем.', possibleExplanation: 'Разные ракурсы, перевод и богодухновенный отбор.', competingExplanation: 'Разные события, устная традиция или редакционная композиция.', confidence: 'Различия: высокая; объяснение зависит от модели.' },\n  ]}\n/>\n'''
+          vox_call='''\n<NagornayaClaimComparison\n  blockId="nagornaya-ipsissima-vox-models"\n  claimIds={['green-ipsissima-vox-model']}\n  title="Границы ipsissima vox: аргумент, альтернатива и позиция серии"\n  description="Вместо цветового ответа «приемлемо / неприемлемо» показаны объяснительная сила модели, её пределы и уровень атрибуции источника."\n/>\n'''
+          sermon_call='''\n<NagornayaModelComparison\n  blockId="nagornaya-sermon-identity-models"\n  title="Одна проповедь, повторное обучение или литературная композиция"\n  models={[\n    { id:'one-event', title:'Одно историческое событие, переданное с разной полнотой', layer:'Историческая реконструкция', explains:['Общий порядок совпадающего материала и переход к рассказу о сотнике.','Цельное речевое обрамление у Матфея.'], limits:['Композиционное единство само по себе не доказывает стенографическую единичность события.','Требуется дополнительная гармонизация места и объёма.'], assumptionCost:['Матфей и Лука отбирают и располагают материал одной речи по-разному.'], seriesPosition:'Серия считает эту модель наиболее вероятной, но обозначает её как реконструкцию, а не как прямое текстовое наблюдение.' },\n    { id:'repeated-teaching', title:'Два эпизода или повторение близкого учения', layer:'Историческая реконструкция', explains:['Различие места, адресации и объёма.','Обычную для странствующего Учителя повторяемость ключевых наставлений.'], limits:['Усложняет объяснение общего порядка и последующего контекста.','Не доказывается одним различием «гора / ровное место».'], assumptionCost:['Иисус произносил близкие по содержанию блоки в разных обстоятельствах.'], seriesPosition:'Серия признаёт модель богословски совместимой с историчностью и не использует против неё цветовой отрицательный вердикт.' },\n    { id:'literary-composition', title:'Литературная композиция из традиции и речевых единиц', layer:'Литературная модель', explains:['Сходства, перестановки, сокращения и авторские акценты.','Возможность тематической организации материала.'], limits:['Сама по себе не устанавливает, какие слова были произнесены в одном событии.','Радикальная версия может ослаблять исторический речевой акт, но умеренные версии не тождественны Иисус Семинару.'], assumptionCost:['Евангелист обладает заметной композиционной свободой при сохранении канонической истинности.'], seriesPosition:'Серия отвергает приписывание Христу неподдерживаемого содержания, но обязуется сначала представлять умеренную альтернативу без карикатуры.' },\n  ]}\n/>\n'''
+          # Part 1
+          p=Path('src/components/nagornaya/chast-1/NagornayaChast1MainShell.astro'); t=read(p)
+          t=once(t,' */\n---\n<main id="main-content"',' */\nimport NagornayaObservationComparison from \'../_shared/NagornayaObservationComparison.astro\';\n---\n<main id="main-content"','p1 import')
+          t=t.replace('Два ракурса одной смысловой реальности','Сначала текстовые данные, затем конкурирующие объяснения',1)
+          old='''<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Сравнение Матфея и Луки — это не упражнение по поиску «ошибок», а способ увидеть многогранную славу Христа. Матфей (еврейский автор) представляет Иисуса как <span class="tooltip-trigger" data-tooltip="Мессия как истинный Царь Израиля, обладающий всей полнотой власти">Царя-Законодателя</span>, тогда как Лука (пишущий для язычников) делает акцент на Христе как Спасителе всех сословий.</p>\n<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Ниже приведена таблица ключевых различий. Эти данные станут фундаментом для Части II, где мы разберём, как независимость авторов и руководство Духа Святого гармонируют с этими фактами. Мы увидим, что <span class="tooltip-trigger" data-tooltip="Различия в выборе материала разными авторами, не являющиеся противоречием">различный отбор материала</span> — это осознанный замысел Духа.</p>'''
+          new='''<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Сначала зафиксируем различия Матфея и Луки без преждевременного объяснения их происхождения. Место, объём, порядок и формулировки — наблюдаемые свойства канонического текста. Выводы об одном или двух событиях, переводе, повторном обучении, устной традиции либо литературной композиции относятся уже к уровню реконструкции.</p>\n<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Серия придерживается конфессионального доверия к исторической истинности и богодухновенности обоих Евангелий. Но это богословская рамка серии; сама сравнительная таблица ниже не должна незаметно превращать её в единственно возможное описание механизма возникновения текста.</p>'''
+          t=once(t,old,new,'p1 intro')
+          marker='</tbody>\n</table>\n</div>'; start=t.index('id="ii-параметры-сравнения-матфей-и-лука"'); pos=t.index(marker,start); t=t[:pos]+marker+obs_call+t[pos+len(marker):]; write(p,t)
+          # Part 2
+          p=Path('src/components/nagornaya/chast-2/NagornayaChast2MainShell.astro'); t=read(p)
+          t=once(t,' */\n---\n<main id="main-content"',' */\nimport NagornayaClaimComparison from \'../_shared/NagornayaClaimComparison.astro\';\nimport NagornayaModelComparison from \'../_shared/NagornayaModelComparison.astro\';\n---\n<main id="main-content"','p2 imports')
+          t=t.replace('Семинария Мастерс занимает более строгую позицию и настаивает на очень жёстких границах свободы автора.','Дональд Грин и другие названные авторы TMSJ защищают более строгую модель и проводят узкие границы авторской свободы. Публикация в журнале не превращает каждую формулировку статьи в официальное заявление учреждения.',1)
+          start=t.index('<div class="space-y-2.5">',t.index('id="vi-точность-передачи-слова-или-смысл"')); end=t.index('\n\n<!-- VII. Аргумент перевода -->',start); t=t[:start]+vox_call+t[end:]
+          start=t.index('<div class="space-y-3">',t.index('id="viii-одна-проповедь')); end=t.index('\n\n<!-- IX. Спектр',start); t=t[:start]+sermon_call+t[end:]
+          t=t.replace('Строгая позиция TMS</div><span class="shrink-0 text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">Thomas, Farnell, Green (TMSJ)</span>','Аргументы Thomas, Farnell и Green</div><span class="shrink-0 text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">Авторские статьи в TMSJ</span>',1)
+          t=t.replace('Точная запись под вдохновением Духа. Дух обеспечивает не только смысл, но и подлинную точность (Ин 14:26)','Эти авторы защищают строгую историческую точность под вдохновением Духа и связывают её с Ин 14:26; уровень атрибуции — авторский, не автоматически институциональный.',1); write(p,t)
+          # Part 4
+          p=Path('src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro'); t=read(p)
+          t=once(t,' */\n---\n<main id="main-content"',' */\nimport NagornayaClaimComparison from \'../_shared/NagornayaClaimComparison.astro\';\n---\n<main id="main-content"','p4 import')
+          t=t.replace('Грин проводит строгую границу: Евангелия передают не приблизительный смысл и не богословские догадки авторов. В рамках этой серии мы принимаем концепцию','Грин проводит строгую границу в рамках собственного аргумента. В рамках этой серии мы принимаем концепцию',1)
+          anchor='<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Грин проводит строгую границу в рамках собственного аргумента. В рамках этой серии мы принимаем концепцию <em>ipsissima vox</em> <strong>исключительно в её узком, строгом смысле</strong>: Дух Святой обеспечил безошибочную передачу подлинного смысла, намерения и исторического содержания речей Христа через призму индивидуальных стилей авторов, исключая любые человеческие искажения или «творческие дописки».<sup class="text-amber-600 font-bold">[10]</sup></p>'
+          t=once(t,anchor,anchor+'\n<NagornayaClaimComparison blockId="nagornaya-part4-green-model" claimIds={[\'green-ipsissima-vox-model\']} title="Грин и границы ipsissima vox" />','p4 green')
+          old='Роберт Томас в статье «Евангельские ответы на Иисус Семинар» (TMSJ 7/1, 1996) произвёл сильный разбор этого феномена. Он показал, что «Иисус Семинар» — это лишь логическое завершение тех самых методов исторической критики, которые многие евангельские авторы пытаются принять в «умеренной» форме. Нельзя некритически заимствовать метод, который в своей радикальной форме построен на отрицании Божественного вдохновения.[20]'
+          new='Роберт Томас в статье «Евангельские ответы на Иисус Семинар» (TMSJ 7/1, 1996) критикует критерии и историко-критические предпосылки этого движения. Серия видит родственные методологические риски в некоторых умеренных реконструкциях, но не утверждает, что их выводы или процедуры логически тождественны Иисус Семинару.[20]'
+          t=once(t,old,new,'p4 Thomas')
+          para='<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify"><strong>2. «Иисус Семинар» (The Jesus Seminar).</strong>'; idx=t.index(para); close=t.index('</p>',idx)+4; t=t[:close]+'\n<NagornayaClaimComparison blockId="nagornaya-part4-thomas-model" claimIds={[\'thomas-jesus-seminar-critique\']} title="Томас, Иисус Семинар и предел переноса критики" />'+t[close:]
+          t=t.replace('Линия фронта проходит не где-то в либеральных университетах, а внутри самой евангельской церкви, и Семинария Мастерс и TMSJ (Томас, Фарнелл, Грин) являются одним из главных бастионов её защиты.[26]','Линия спора проходит и внутри евангельской академической среды. Здесь серия обращается к аргументам конкретных авторов — Томаса, Фарнелла и Грина, опубликованным в TMSJ, — не превращая публикационную площадку в доказательство единой официальной позиции учреждения.[26]',1); write(p,t)
+          print('MainShell materialization complete')
+          PY
+          python /tmp/main-shell-patcher.py "$GITHUB_WORKSPACE"
+      - name: Verify exact scope
+        run: |
+          git diff --name-only | sort > /tmp/changed.txt
+          cat > /tmp/allowed.txt <<'EOF'
+          src/components/nagornaya/chast-1/NagornayaChast1MainShell.astro
+          src/components/nagornaya/chast-2/NagornayaChast2MainShell.astro
+          src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro
+          EOF
+          sort -o /tmp/allowed.txt /tmp/allowed.txt
+          diff -u /tmp/allowed.txt /tmp/changed.txt
+      - name: Install dependencies
+        run: npm ci
+      - name: Permanent epistemic UI regression
+        run: node scripts/nagornaya-epistemic-ui-regression-test.js
+      - name: Source registry contracts
+        run: |
+          node scripts/nagornaya-source-registry-test.js
+          node scripts/nagornaya-source-integrity-regression-test.js
+      - name: Astro type check
+        run: npm run astro:check
+      - name: Commit exact MainShell materialization
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git diff --quiet; then
+            echo 'MainShells already exact; nothing to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            src/components/nagornaya/chast-1/NagornayaChast1MainShell.astro \
+            src/components/nagornaya/chast-2/NagornayaChast2MainShell.astro \
+            src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro
+          git commit -m 'fix(nagornaya): materialize neutral comparison UI'
+          git push origin HEAD:"$BRANCH"
