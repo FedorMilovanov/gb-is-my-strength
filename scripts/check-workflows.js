@@ -20,6 +20,13 @@ function read(rel) {
 function must(file, text, rx, msg) {
   if (!rx.test(text)) issues.push(`${file}: ${msg}`);
 }
+function mustNot(file, text, rx, msg) {
+  if (rx.test(text)) issues.push(`${file}: ${msg}`);
+}
+function pushPathRx(glob) {
+  const escaped = glob.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`-\\s*['"]${escaped}['"]`);
+}
 function mustScript(scripts, name, rx, msg) {
   const value = scripts && scripts[name];
   if (typeof value !== 'string') {
@@ -183,20 +190,28 @@ must('.github/workflows/notify-on-failure.yml', notify, /source-link|Source Link
 must('.github/workflows/notify-on-failure.yml', notify, /interactive|Runtime Interactive/i, 'notify issue body must explain runtime audit failures');
 must('.github/workflows/notify-on-failure.yml', notify, /dist strangler|production-like dist|Dist Strangler/i, 'notify issue body must explain dist dry run failures');
 
-// Astro migration safety: after the root→dist deploy switch, public pages live
-// in src/** (Astro pages, MDX content, layouts). If a workflow drops src/** from
-// its paths filter, src-only commits silently stop deploying/indexing — exactly
-// the regression that left the live site stuck on a stale commit (2026-06-18).
-must('.github/workflows/deploy.yml', deploy, /-\s*['"]src\/\*\*['"]/, 'deploy paths must include src/** so Astro page/content changes deploy (migration: pages now live in src/)');
-must('.github/workflows/indexnow.yml', indexnow, /-\s*['"]src\/\*\*['"]/, 'indexnow paths must include src/** so Astro page/content changes notify search engines');
-
-// Legacy HTML content sections must remain covered by BOTH deploy and indexnow
-// path filters. If a workflow drops a legacy section (e.g. baptisty-rossii),
-// edits to those articles silently stop deploying AND indexing. This guard closes
-// that gap and prevents future regressions (2026-07-05 audit).
-['deploy.yml', 'indexnow.yml'].forEach(f => {
-  must('.github/workflows/' + f, read('.github/workflows/' + f), /-\s*['"]baptisty-rossii\/\*\*['"]/, f + ' paths must include baptisty-rossii/** (legacy content section)');
-});
+// Source/build changes have exactly one trigger owner: readiness. Deploy then
+// follows through workflow_run. Keeping the same path in deploy.push creates two
+// concurrent Pages runs; one cancels the other and the workflow_run job may skip.
+const readinessOnlyPushPaths = [
+  'src/**',
+  'data/**',
+  'baptisty-rossii/**',
+  'scripts/**',
+  'css/**',
+  'js/**',
+  'sitemap.xml',
+  'feed.xml',
+  'astro.config.mjs',
+  'tsconfig.json',
+  'migration/**',
+  'package.json',
+  'package-lock.json',
+];
+for (const glob of readinessOnlyPushPaths) {
+  must('.github/workflows/indexnow.yml', indexnow, pushPathRx(glob), `readiness paths must include ${glob}`);
+  mustNot('.github/workflows/deploy.yml', deploy, pushPathRx(glob), `direct deploy paths must exclude readiness-owned ${glob}`);
+}
 
 // Visual parity and shared-files guards must exist and stay well-formed, and the
 // failure notifier must listen for them. Previously only 3 of 7 workflows were
@@ -221,6 +236,6 @@ if (issues.length) {
 }
 console.log('✅ Workflow policy passed');
 console.log('\nNOTE: For GitHub Actions YAML syntax/expression validation,');
-console.log('also run: npx actionlint (or install via: brew install actionlint)');
+console.log('also run the repository-pinned actionlint v1.7.7 binary.');
 console.log('actionlint catches expression syntax, missing inputs, shell errors in run commands.');
-console.log('Add to CI: workflows:check && npx actionlint');
+console.log('Shared Files Guard installs and runs the pinned binary on main and PRs.');
