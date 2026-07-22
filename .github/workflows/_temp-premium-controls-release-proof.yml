@@ -1,0 +1,69 @@
+name: Temp PremiumControls release proof
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-premium-controls-release-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Run exact PremiumControls deploy gate
+        shell: bash
+        run: |
+          mkdir -p reports/premium-controls-release-proof
+          set -o pipefail
+          npm run audit:premium-controls 2>&1 \
+            | tee reports/premium-controls-release-proof/audit.log
+
+      - name: Verify Nagornaya output ARIA
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+          rows=[]
+          for part in range(1,6):
+              path=Path(f'dist/nagornaya/chast-{part}/index.html')
+              text=path.read_text(encoding='utf-8')
+              tags=re.findall(r'<button[^>]+class="gb-ember nag-sidebar-ember"[^>]*>',text)
+              ok=len(tags)==1 and 'aria-haspopup="dialog"' in tags[0] and 'aria-expanded="false"' in tags[0]
+              rows.append({'part':part,'path':str(path),'controls':len(tags),'ok':ok})
+          Path('reports/premium-controls-release-proof/dist-aria.json').write_text(json.dumps(rows,indent=2),encoding='utf-8')
+          print(json.dumps(rows,indent=2))
+          if not all(row['ok'] for row in rows): raise SystemExit('Nagornaya dist ARIA contract failed')
+          PY
+
+      - name: Upload release proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-controls-release-proof-${{ github.run_id }}
+          path: reports/premium-controls-release-proof/**
+          if-no-files-found: error
+          retention-days: 14
