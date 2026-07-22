@@ -9,6 +9,8 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const ASSET = 'js/nagornaya-bar-extras.js';
+const COMPACT_COMPONENT = 'src/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';
+const COMPACT_IMPORT = "import NagornayaCompactBottomBar from '@/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';";
 const assetAbs = path.join(ROOT, ASSET);
 const expectedHash = crypto.createHash('md5').update(fs.readFileSync(assetAbs)).digest('hex').slice(0, 8);
 
@@ -31,8 +33,23 @@ function assertPageContract(rel) {
     `${rel}: required order is mobile-toc -> bar-extras -> floating-cluster`);
 }
 
+function assertCompactFooterContract(rel) {
+  const source = read(rel);
+  assert(source.includes(COMPACT_IMPORT), `${rel}: compact bottom-bar component import is missing`);
+  assert(source.includes('<NagornayaCompactBottomBar />'), `${rel}: compact bottom-bar component mount is missing`);
+}
+
+const compact = read(COMPACT_COMPONENT);
+assert.match(compact, /@media\s*\(max-width:\s*359px\)/, `${COMPACT_COMPONENT}: 320px media contract is missing`);
+for (const selector of ['.bar-progress', '.bar-divider', '#barUpBtn', '#barShareBtn']) {
+  assert(compact.includes(selector), `${COMPACT_COMPONENT}: compact priority rule is missing ${selector}`);
+}
+assert.match(compact, /\.nag-bar-controls[\s\S]*?padding:\s*0\s*!important/, `${COMPACT_COMPONENT}: cloned controls must shed sidebar padding`);
+
 for (let part = 1; part <= 5; part += 1) {
-  assertPageContract(`src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`);
+  const footer = `src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`;
+  assertPageContract(footer);
+  assertCompactFooterContract(footer);
   assertPageContract(`nagornaya/chast-${part}/index.html`);
 }
 
@@ -57,4 +74,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared <=359px priority contract, adversarial v=1 rejected`);
