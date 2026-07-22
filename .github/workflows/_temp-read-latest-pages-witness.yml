@@ -1,0 +1,26 @@
+name: TEMP Relay Latest Pages Witness
+
+on:
+  push:
+    branches:
+      - agent/nagornaya-bar-asset-contract-2026-07-22
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Relay latest issue 58 comment to PR 116
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          api="repos/${GITHUB_REPOSITORY}/issues/58/comments?per_page=100"
+          gh api "$api" --jq '.[-1] | "## Latest issue #58 witness\n\nComment ID: `\(.id)`\n\n\(.body)"' > /tmp/latest.md
+          cat /tmp/latest.md
+          gh pr comment 116 --body-file /tmp/latest.md
