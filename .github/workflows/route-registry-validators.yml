@@ -31,6 +31,7 @@ on:
       - "scripts/public-surface-registry-audit.js"
       - "scripts/public-surface-registry-regression-test.js"
       - "scripts/public-surface-browser-matrix.mjs"
+      - "scripts/public-surface-browser-diagnostics.mjs"
       - "scripts/lib/public-surface-registry.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
@@ -158,6 +159,21 @@ jobs:
           GB_MATRIX_WORKERS: "4"
         run: node scripts/public-surface-browser-matrix.mjs
 
+      - name: Diagnose overflowing routes
+        if: failure()
+        shell: bash
+        run: |
+          python3 -m http.server 4177 --bind 127.0.0.1 --directory dist >/tmp/public-surface-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in {1..20}; do
+            curl -fsS http://127.0.0.1:4177/ >/dev/null && break
+            sleep 0.25
+          done
+          node scripts/public-surface-browser-diagnostics.mjs \
+            reports/public-surface-browser-matrix.json \
+            http://127.0.0.1:4177
+
       - name: Upload browser matrix report
         if: always()
         uses: actions/upload-artifact@v4
@@ -166,5 +182,6 @@ jobs:
           path: |
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
+            reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
           retention-days: 14
