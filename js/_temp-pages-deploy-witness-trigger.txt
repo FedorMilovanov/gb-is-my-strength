@@ -1,3 +1,0 @@
-Trigger one verified Metadata & IndexNow Readiness → Pages deploy transaction for exact deployment evidence.
-Observer version: readiness-and-deploy-v3-linked.
-Retrigger: 2026-07-22 after Gill smoke correction `2b67ee8f`; readiness path filters do not include general `scripts/**`.
