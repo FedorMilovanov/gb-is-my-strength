@@ -1,29 +1,41 @@
 name: Temp Nagornaya neutral comparison orchestrator
 
 on:
-  pull_request_target:
-    types: [opened, reopened, synchronize]
-    branches: [main]
+  workflow_run:
+    workflows: ["Shared Files Guard"]
+    types: [completed]
+    branches:
+      - agent/nagornaya-neutral-comparison-ui-2026-07-22
 
 permissions:
   contents: write
 
 concurrency:
-  group: temp-nagornaya-neutral-comparison-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: temp-nagornaya-neutral-comparison-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
 
 jobs:
   transaction:
-    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/nagornaya-neutral-comparison-ui-2026-07-22'
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_branch == 'agent/nagornaya-neutral-comparison-ui-2026-07-22'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
+      - name: Check transaction state
+        id: gate
+        run: |
+          if test -f reports/nagornaya-neutral-comparison/transaction-status.txt; then
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish transaction start marker
+        if: steps.gate.outputs.run == 'true'
         env:
           RUN_ID: ${{ github.run_id }}
         run: |
@@ -36,43 +48,54 @@ jobs:
           git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
 
       - uses: actions/setup-node@v4
+        if: steps.gate.outputs.run == 'true'
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies
+        if: steps.gate.outputs.run == 'true'
         run: npm ci
 
       - name: Install Chromium
+        if: steps.gate.outputs.run == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Capture exact live baseline
+        if: steps.gate.outputs.run == 'true'
         env:
           BASE_URL: https://gospod-bog.ru
           EVIDENCE_DIR: reports/nagornaya-neutral-comparison
         run: node scripts/_temp-nagornaya-neutral-baseline-witness.mjs
 
       - name: Apply isolated exact patch
+        if: steps.gate.outputs.run == 'true'
         run: python3 scripts/_temp-nagornaya-neutral-comparison-patcher.py
 
       - name: Build production-like output
+        if: steps.gate.outputs.run == 'true'
         run: npm run strangler:build:production-like
 
       - name: Synchronize canonical shadow pages
+        if: steps.gate.outputs.run == 'true'
         run: cp dist/nagornaya/chast-4/index.html nagornaya/chast-4/index.html && cp dist/nagornaya/chast-5/index.html nagornaya/chast-5/index.html
 
       - name: Run permanent source contracts
+        if: steps.gate.outputs.run == 'true'
         run: npm run nagornaya:neutral-comparison:test && npm run engine:contracts && node scripts/cache-bust.js
 
       - name: Run browser witness and capture after state
+        if: steps.gate.outputs.run == 'true'
         env:
           EVIDENCE_DIR: reports/nagornaya-neutral-comparison
         run: npm run nagornaya:neutral-comparison:browser:test
 
       - name: Run static publication barrier
+        if: steps.gate.outputs.run == 'true'
         run: npm run validate:static-publication:light
 
       - name: Commit verified permanent diff to PR branch
+        if: steps.gate.outputs.run == 'true'
         env:
           RUN_ID: ${{ github.run_id }}
         run: |
@@ -83,7 +106,7 @@ jobs:
           git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
 
       - name: Publish transaction failure marker
-        if: failure()
+        if: failure() && steps.gate.outputs.run == 'true'
         env:
           RUN_ID: ${{ github.run_id }}
         run: |
@@ -95,7 +118,7 @@ jobs:
           git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
 
       - name: Upload visual evidence
-        if: always()
+        if: always() && steps.gate.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: nagornaya-neutral-comparison-evidence-${{ github.run_id }}
