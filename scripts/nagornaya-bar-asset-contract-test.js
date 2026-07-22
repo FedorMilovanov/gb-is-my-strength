@@ -47,6 +47,7 @@ for (const selector of ['.bar-progress', '.bar-divider', '#barUpBtn', '#barShare
 assert.match(compact, /\.nag-bar-controls[\s\S]*?padding:\s*0\s*!important/, `${COMPACT_COMPONENT}: cloned controls must shed sidebar padding`);
 assert.match(compact, /\.gb-ember-expand[\s\S]*?position:\s*fixed\s*!important/, `${COMPACT_COMPONENT}: narrow speed sheet must be viewport-fixed`);
 assert.match(compact, /\.gb-ember-expand[\s\S]*?left:[\s\S]*?right:/, `${COMPACT_COMPONENT}: narrow speed sheet must be bounded on both viewport edges`);
+assert.match(compact, /\.gb-ember-expand[\s\S]*?transform:\s*none\s*!important/, `${COMPACT_COMPONENT}: narrow speed sheet must cancel the desktop centering transform`);
 
 for (let part = 1; part <= 5; part += 1) {
   const footer = `src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`;
