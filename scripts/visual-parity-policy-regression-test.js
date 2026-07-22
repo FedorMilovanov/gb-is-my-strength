@@ -13,6 +13,7 @@ const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'visual-parity.yml');
 const POLICY_FILE = path.join(ROOT, 'data', 'visual-parity-baseline.json');
 const ARTICLES_PROFILE = path.join(ROOT, 'data', 'route-profiles', 'articles.json');
 const BAPTISTY_PROFILE = path.join(ROOT, 'data', 'route-profiles', 'baptisty-rossii.json');
+const HARD_TEXTS_PROFILE = path.join(ROOT, 'data', 'route-profiles', 'hard-texts.json');
 const KARTY_PROFILE = path.join(ROOT, 'data', 'route-profiles', 'karty.json');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'gb-visual-policy-'));
 
@@ -100,15 +101,19 @@ assert(!/threshold[^\n]*2(?:\.0)?/.test(workflow), 'workflow must not hide failu
 const policy = JSON.parse(fs.readFileSync(POLICY_FILE, 'utf8'));
 const articles = JSON.parse(fs.readFileSync(ARTICLES_PROFILE, 'utf8'));
 const baptisty = JSON.parse(fs.readFileSync(BAPTISTY_PROFILE, 'utf8'));
+const hardTexts = JSON.parse(fs.readFileSync(HARD_TEXTS_PROFILE, 'utf8'));
 const karty = JSON.parse(fs.readFileSync(KARTY_PROFILE, 'utf8'));
 
 for (const [route, profile, label] of [
   ['/articles/', articles, 'Articles'],
   ['/baptisty-rossii/', baptisty, 'Baptist'],
+  ['/hard-texts/', hardTexts, 'Hard texts'],
 ]) {
   const routePolicy = policy.routeModes[route];
   assert.strictEqual(profile.visualParity.mode, 'native-contract', `${label} profile must declare native-contract`);
   assert.strictEqual(routePolicy.mode, profile.visualParity.mode, `${label} profile and central policy mode must agree`);
+  assert.strictEqual(routePolicy.reason, profile.visualParity.reason,
+    `${label} profile and central policy must record the same ownership reason`);
   assert.deepStrictEqual(routePolicy.requiredGuards, profile.visualParity.requiredGuards,
     `${label} profile and central policy must name the same blocking guards`);
   assert(profile.visualParity.requiredGuards.includes('scripts/public-surface-browser-matrix.mjs'),
@@ -118,10 +123,12 @@ for (const [route, profile, label] of [
   }
 }
 
+assert(hardTexts.visualParity.requiredGuards.includes('scripts/hard-texts-visual-parity-audit.js'),
+  'Hard texts native contract must retain its route-specific source/component audit');
 assert.strictEqual(policy.routes['/karty/'].mobile, karty.visualParity.mobile,
   'Karty reviewed mobile raster baseline must agree across profile and central policy');
 assert.strictEqual(policy.tolerancePct, 0.5, 'global tolerance must remain 0.5%');
 assert.strictEqual(policy.policy.globalToleranceWasNotRaised, true);
 
 fs.rmSync(temp, { recursive: true, force: true });
-console.log('✅ Visual parity policy regression: native delegation, fake-guard rejection, legacy failure, unknown-mode, strict-new-route, owner-update and articles/Baptist/Karty SSOT witnesses passed');
+console.log('✅ Visual parity policy regression: native delegation, fake-guard rejection, legacy failure, unknown-mode, strict-new-route, owner-update and Articles/Baptist/HardTexts/Karty SSOT witnesses passed');
