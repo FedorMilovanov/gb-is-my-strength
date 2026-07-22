@@ -1,0 +1,28 @@
+[
+  {
+    "id": 29908451585,
+    "name": "TEMP Rebuild Nagornaya Bar Asset Clean",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "failure",
+    "run_number": 3,
+    "head_sha": "cd1adc686f21248c8712ffec913789419225e491",
+    "head_branch": "fix/nagornaya-bar-asset-contract-clean-2026-07-22",
+    "created_at": "2026-07-22T09:33:39Z",
+    "updated_at": "2026-07-22T09:34:12Z",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29908451585"
+  },
+  {
+    "id": 29908453586,
+    "name": "Shared Files Guard",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "run_number": 1835,
+    "head_sha": "cd1adc686f21248c8712ffec913789419225e491",
+    "head_branch": "fix/nagornaya-bar-asset-contract-clean-2026-07-22",
+    "created_at": "2026-07-22T09:33:41Z",
+    "updated_at": "2026-07-22T09:34:09Z",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29908453586"
+  }
+]
