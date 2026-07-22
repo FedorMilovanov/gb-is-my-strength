@@ -49,3 +49,5 @@ git add \
 git diff --cached --check
 git commit -m 'feat(nagornaya): add neutral comparison UI'
 git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
+
+# synchronization trigger: simplified workflow job
