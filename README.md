@@ -89,7 +89,7 @@
 3. **Не коммитить** `<INDEXNOW_KEY>.txt` в репозиторий: `deploy.yml` сам создаёт его в Pages-артефакте перед деплоем.
 4. После добавления/ротации ключа — один раз вручную запустить workflow **Deploy to GitHub Pages**, чтобы новый `<INDEXNOW_KEY>.txt` появился на живом сайте.
 5. Проверить: `https://gospod-bog.ru/<INDEXNOW_KEY>.txt` доступен.
-6. Зарегистрировать ключ в [Яндекс.Вебмастер → IndexNow](https://webmaster.yandex.ru/indexnow/) и [Bing Webmaster](https://www.bing.com/indexnow).
+6. Зарегистрировать ключ в [Яндекс.Вебмастер → IndexNow](https://webmaster.yandex.ru/indexnow/) и [Bing Webmaster](http://web.archive.org/web/20260623135256/https://www.bing.com/indexnow).
 
 После этого каждый `git push main` автоматически уведомляет поисковики.
 
