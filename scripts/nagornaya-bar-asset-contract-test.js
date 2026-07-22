@@ -9,6 +9,8 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const ASSET = 'js/nagornaya-bar-extras.js';
+const COMPACT_COMPONENT = 'src/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';
+const COMPACT_IMPORT = "import NagornayaCompactBottomBar from '@/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';";
 const assetAbs = path.join(ROOT, ASSET);
 const expectedHash = crypto.createHash('md5').update(fs.readFileSync(assetAbs)).digest('hex').slice(0, 8);
 
@@ -31,8 +33,29 @@ function assertPageContract(rel) {
     `${rel}: required order is mobile-toc -> bar-extras -> floating-cluster`);
 }
 
+function assertCompactFooterContract(rel) {
+  const source = read(rel);
+  assert(source.includes(COMPACT_IMPORT), `${rel}: compact bottom-bar component import is missing`);
+  assert(source.includes('<NagornayaCompactBottomBar />'), `${rel}: compact bottom-bar component mount is missing`);
+}
+
+const compact = read(COMPACT_COMPONENT);
+assert.match(compact, /\.gtip:not\(\.gb-floating-tip\)[\s\S]*?display:\s*none\s*!important/, `${COMPACT_COMPONENT}: closed glossary cards must not contribute layout width`);
+assert.match(compact, /@media\s*\(max-width:\s*359px\)/, `${COMPACT_COMPONENT}: 320px media contract is missing`);
+for (const selector of ['.bar-progress', '.bar-divider', '#barUpBtn', '#barShareBtn']) {
+  assert(compact.includes(selector), `${COMPACT_COMPONENT}: compact priority rule is missing ${selector}`);
+}
+assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?min-width:\s*0/, `${COMPACT_COMPONENT}: long flex headings must be shrinkable`);
+assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: long section headings need a narrow-screen wrap fallback`);
+assert.match(compact, /\.nag-bar-controls[\s\S]*?padding:\s*0\s*!important/, `${COMPACT_COMPONENT}: cloned controls must shed sidebar padding`);
+assert.match(compact, /\.gb-ember-expand[\s\S]*?position:\s*fixed\s*!important/, `${COMPACT_COMPONENT}: narrow speed sheet must be viewport-fixed`);
+assert.match(compact, /\.gb-ember-expand[\s\S]*?left:[\s\S]*?right:/, `${COMPACT_COMPONENT}: narrow speed sheet must be bounded on both viewport edges`);
+assert.match(compact, /\.gb-ember-expand[\s\S]*?transform:\s*none\s*!important/, `${COMPACT_COMPONENT}: narrow speed sheet must cancel the desktop centering transform`);
+
 for (let part = 1; part <= 5; part += 1) {
-  assertPageContract(`src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`);
+  const footer = `src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`;
+  assertPageContract(footer);
+  assertCompactFooterContract(footer);
   assertPageContract(`nagornaya/chast-${part}/index.html`);
 }
 
@@ -57,4 +80,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading, priority and speed-sheet contracts, adversarial v=1 rejected`);
