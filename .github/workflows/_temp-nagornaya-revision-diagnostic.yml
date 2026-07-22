@@ -1,4 +1,4 @@
-name: TEMP Nagornaya Revision Diagnostic
+name: TEMP Nagornaya Revision Materialization
 
 on:
   push:
@@ -6,49 +6,48 @@ on:
       - agent/nagornaya-bar-asset-contract-2026-07-22
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: write
 
 concurrency:
-  group: temp-nagornaya-revision-diagnostic
+  group: temp-nagornaya-revision-materialization
   cancel-in-progress: true
 
 jobs:
-  diagnose:
+  materialize:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: agent/nagornaya-bar-asset-contract-2026-07-22
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22.22.3'
-      - name: Capture read-only revision check
+      - name: Reconcile revisions and enforce exact generated scope
         shell: bash
         run: |
-          mkdir -p reports
-          set +e
-          node scripts/cache-bust.js > reports/cache-bust.log 2>&1
-          status=$?
-          printf 'exit_code=%s\n' "$status" > reports/status.txt
-          {
-            echo '## Temporary cache-bust diagnostic'
-            echo
-            echo "Exit code: \`$status\`"
-            echo
-            echo '```text'
-            head -c 55000 reports/cache-bust.log
-            echo
-            echo '```'
-          } > reports/comment.md
-          cat reports/cache-bust.log
-          exit 0
-      - name: Publish diagnostic to PR 116
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh pr comment 116 --body-file reports/comment.md
-      - name: Upload diagnostic
-        uses: actions/upload-artifact@v4
-        with:
-          name: nagornaya-revision-diagnostic-${{ github.run_id }}
-          path: reports/
-          retention-days: 3
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          mapfile -t changed < <(git diff --name-only)
+          if [ "${#changed[@]}" -eq 0 ]; then
+            echo 'No generated revision drift remains.'
+            exit 0
+          fi
+          printf '%s\n' "${changed[@]}"
+          test "${#changed[@]}" -eq 11
+          for path in "${changed[@]}"; do
+            case "$path" in
+              src/components/baptisty-rossii/*PageHead.astro) ;;
+              *) echo "Unexpected generated file: $path" >&2; exit 1 ;;
+            esac
+          done
+      - name: Commit generated revision reconciliation
+        shell: bash
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git add src/components/baptisty-rossii/*PageHead.astro
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(assets): reconcile Baptist page-head revisions'
+          git push origin HEAD:agent/nagornaya-bar-asset-contract-2026-07-22
