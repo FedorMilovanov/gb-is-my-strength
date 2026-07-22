@@ -9,10 +9,12 @@ const ROOT = path.resolve(__dirname, '..');
 const REGISTRY_PATH = path.join(ROOT, 'data/nagornaya/source-registry.json');
 const SCHEMA_PATH = path.join(ROOT, 'data/nagornaya/source-registry.schema.json');
 const COMPONENT_PATH = path.join(ROOT, 'src/components/nagornaya/istochniki/NagornayaIstochnikiMainShell.astro');
+const VISUAL_WORKFLOW_PATH = path.join(ROOT, '.github/workflows/visual-parity.yml');
 
 const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
 const schema = JSON.parse(fs.readFileSync(SCHEMA_PATH, 'utf8'));
 const component = fs.readFileSync(COMPONENT_PATH, 'utf8');
+const visualWorkflow = fs.readFileSync(VISUAL_WORKFLOW_PATH, 'utf8');
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -23,7 +25,11 @@ function unique(values) {
 }
 
 function validDate(value) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+  if (!match) return false;
+  const [, year, month, day] = match.map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
 function validHttpsUrl(value) {
@@ -66,8 +72,12 @@ function validateRegistry(candidate) {
     ['institution', 2],
   ]);
 
+  const allowedTopLevel = new Set(Object.keys(schema.properties || {}));
   for (const key of schema.required || []) {
     if (!(key in candidate)) problems.push(`registry: missing required field ${key}`);
+  }
+  for (const key of Object.keys(candidate)) {
+    if (!allowedTopLevel.has(key)) problems.push(`registry: unknown field ${key}`);
   }
   if (candidate.version !== 1) problems.push('registry: version must be 1');
   if (candidate.scope !== 'nagornaya') problems.push('registry: scope must be nagornaya');
@@ -225,6 +235,10 @@ const missingVerifiedPages = clone(registry);
 missingVerifiedPages.sources[0].pages = '';
 expectInvalid(missingVerifiedPages, /verified PDF requires pages/, 'verified PDF pages mutation');
 
+const unknownTopLevel = clone(registry);
+unknownTopLevel.unreviewedEscapeHatch = true;
+expectInvalid(unknownTopLevel, /registry: unknown field unreviewedEscapeHatch/, 'top-level schema escape mutation');
+
 assert.match(component, /import sourceRegistry from ['"]\.\.\/\.\.\/\.\.\/\.\.\/data\/nagornaya\/source-registry\.json['"];/,
   'native sources page must import the canonical registry');
 for (const hardcoded of [
@@ -241,4 +255,9 @@ for (const id of ['tmsj-green-ipsissima-vox', 'tmsj-thomas-jesus-seminar', 'tmsj
   assert.ok(component.includes(id), `native component must resolve pilot source ${id}`);
 }
 
-console.log('✅ Nagornaya source registry: schema shape, exact PDF objects, attribution boundaries, doesNotSupport conflicts and native derivation passed');
+const baselineRoute = '/nagornaya/istochniki/';
+const baselineOccurrences = visualWorkflow.split(baselineRoute).length - 1;
+assert.ok(baselineOccurrences >= 2,
+  'visual parity workflow must include /nagornaya/istochniki/ in both dispatch and automatic default routes');
+
+console.log('✅ Nagornaya source registry: schema shape, exact PDFs, attribution boundaries, conflicts, native derivation and literal browser baseline coverage passed');
