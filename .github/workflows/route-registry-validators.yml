@@ -12,10 +12,15 @@ on:
       - "migration/page-ownership.json"
       - "migration/route-migration-matrix.json"
       - "src/content/**"
+      - "src/pages/**"
+      - "src/components/article-pilots/**"
       - "src/components/article-pilots/_shared/mobileChromeRegistry.ts"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
       - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
+      - "css/**"
+      - "js/**"
       - "package.json"
+      - "package-lock.json"
       - "scripts/check-route-profiles.js"
       - "scripts/check-route-migration-matrix.js"
       - "scripts/check-content-source-coverage.js"
@@ -25,6 +30,7 @@ on:
       - "scripts/content-source-provenance-audit.js"
       - "scripts/public-surface-registry-audit.js"
       - "scripts/public-surface-registry-regression-test.js"
+      - "scripts/public-surface-browser-matrix.mjs"
       - "scripts/lib/public-surface-registry.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
@@ -121,3 +127,44 @@ jobs:
             migration/route-migration-matrix.json
           if-no-files-found: error
           retention-days: 7
+
+  public-surface-browser-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Test every public surface in Chromium
+        env:
+          GB_MATRIX_WORKERS: "4"
+        run: node scripts/public-surface-browser-matrix.mjs
+
+      - name: Upload browser matrix report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-surface-browser-matrix-${{ github.run_id }}
+          path: |
+            reports/public-surface-browser-matrix.json
+            reports/public-surface-browser-matrix.md
+          if-no-files-found: error
+          retention-days: 14
