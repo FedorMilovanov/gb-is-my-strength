@@ -89,7 +89,6 @@ jobs:
           BRANCH: ${{ github.event.pull_request.head.ref }}
         shell: bash
         run: |
-          git diff --name-only | sort > /tmp/changed.txt
           cat > /tmp/allowed.txt <<'EOF'
           .github/workflows/shared-files-guard.yml
           scripts/nagornaya-premium-controls-aria-regression-test.js
@@ -100,9 +99,10 @@ jobs:
           src/components/nagornaya/chast-5/NagornayaChast5PageChrome.astro
           EOF
           sort -o /tmp/allowed.txt /tmp/allowed.txt
+          git add -A
+          git diff --cached --name-only | sort > /tmp/changed.txt
           diff -u /tmp/allowed.txt /tmp/changed.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
           git commit -m 'fix(nagornaya): restore PremiumControls ARIA contract'
           git push origin HEAD:"$BRANCH"
