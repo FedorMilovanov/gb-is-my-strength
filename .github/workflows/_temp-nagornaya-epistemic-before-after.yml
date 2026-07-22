@@ -46,7 +46,9 @@ jobs:
           cp -a dist /tmp/nagornaya-base-dist
 
       - name: Capture five before-after blocks
+        shell: bash
         run: |
+          mkdir -p reports/nagornaya-epistemic-before-after
           cat > /tmp/nagornaya-proof.mjs <<'JS'
           import { createServer } from 'node:http';
           import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
@@ -66,14 +68,19 @@ jobs:
           const viewports=[{id:'mobile-390',width:390,height:844},{id:'desktop-1440',width:1440,height:900}];
           const before=await serve(roots.before),after=await serve(roots.after),browser=await chromium.launch({headless:true});const manifest=[];const out='reports/nagornaya-epistemic-before-after';await mkdir(out,{recursive:true});
           try{for(const item of cases){await mkdir(join(out,item.id),{recursive:true});for(const viewport of viewports){const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height}});const page=await context.newPage();
-            const rb=await page.goto(before.base+item.route,{waitUntil:'networkidle'});if(rb?.status()!==200)throw new Error(`${item.id} before HTTP ${rb?.status()}`);if(await page.locator(item.target).count())throw new Error(`${item.id} target unexpectedly exists in baseline`);const bh=page.locator(item.heading);if(await bh.count()!==1)throw new Error(`${item.id} baseline heading count`);await bh.scrollIntoViewIfNeeded();await page.waitForTimeout(150);const beforePath=join(out,item.id,`${viewport.id}-before.png`);await page.screenshot({path:beforePath,fullPage:false});
-            const ra=await page.goto(after.base+item.route,{waitUntil:'networkidle'});if(ra?.status()!==200)throw new Error(`${item.id} after HTTP ${ra?.status()}`);const target=page.locator(item.target);if(await target.count()!==1)throw new Error(`${item.id} target count`);await target.scrollIntoViewIfNeeded();await page.waitForTimeout(150);const afterPath=join(out,item.id,`${viewport.id}-after.png`);await page.screenshot({path:afterPath,fullPage:false});const box=await target.boundingBox();manifest.push({...item,viewport:viewport.id,beforePath,afterPath,targetBox:box});await context.close();}}
+            const rb=await page.goto(before.base+item.route,{waitUntil:'networkidle'});if(rb?.status()!==200)throw new Error(`${item.id} before HTTP ${rb?.status()}`);if(await page.locator(item.target).count())throw new Error(`${item.id} target unexpectedly exists in baseline`);const bh=page.locator(item.heading);if(await bh.count()!==1)throw new Error(`${item.id} baseline heading count=${await bh.count()}`);await bh.scrollIntoViewIfNeeded();await page.waitForTimeout(150);const beforePath=join(out,item.id,`${viewport.id}-before.png`);await page.screenshot({path:beforePath,fullPage:false});
+            const ra=await page.goto(after.base+item.route,{waitUntil:'networkidle'});if(ra?.status()!==200)throw new Error(`${item.id} after HTTP ${ra?.status()}`);const target=page.locator(item.target);if(await target.count()!==1)throw new Error(`${item.id} target count=${await target.count()}`);await target.scrollIntoViewIfNeeded();await page.waitForTimeout(150);const afterPath=join(out,item.id,`${viewport.id}-after.png`);await page.screenshot({path:afterPath,fullPage:false});const box=await target.boundingBox();manifest.push({...item,viewport:viewport.id,beforePath,afterPath,targetBox:box});await context.close();}}
           }finally{await browser.close();await new Promise(r=>before.server.close(r));await new Promise(r=>after.server.close(r));}
           await writeFile(join(out,'manifest.json'),JSON.stringify({baseSha:process.env.BASE_SHA,headSha:process.env.HEAD_SHA,generatedAt:new Date().toISOString(),screenshots:manifest},null,2));console.log(`Captured ${manifest.length*2} screenshots for ${cases.length} blocks.`);
           JS
-          BASE_SHA="${{ github.event.pull_request.base.sha }}" HEAD_SHA="${{ github.event.pull_request.head.sha }}" node /tmp/nagornaya-proof.mjs
+          set +e
+          BASE_SHA="${{ github.event.pull_request.base.sha }}" HEAD_SHA="${{ github.event.pull_request.head.sha }}" node /tmp/nagornaya-proof.mjs 2>&1 | tee reports/nagornaya-epistemic-before-after/proof.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > reports/nagornaya-epistemic-before-after/proof.exit-code
+          exit "$status"
 
       - name: Upload before-after proof
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nagornaya-epistemic-before-after-${{ github.run_id }}
