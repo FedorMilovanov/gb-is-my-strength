@@ -19,24 +19,35 @@ function workflowName(text, rel) {
   return (match[1] || match[2] || match[3] || '').trim();
 }
 
+function eventBlock(text, rel, eventName) {
+  const escaped = eventName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`^\\s{2}${escaped}:\\s*$([\\s\\S]*?)(?=^\\s{2}[A-Za-z_][\\w-]*:\\s*$|^permissions:\\s*$)`, 'm');
+  const match = text.match(pattern);
+  assert.ok(match, `${rel}: on.${eventName} block is missing`);
+  return match[1];
+}
+
 function workflowRunDependencies(text) {
-  const block = text.match(/^\s{2}workflow_run:\s*$([\s\S]*?)(?=^\s{2}[A-Za-z_][\w-]*:\s*$|^permissions:\s*$)/m);
-  assert.ok(block, `${DEPLOY_PATH}: on.workflow_run block is missing`);
-  const workflows = block[1].match(/^\s{4}workflows:\s*\[(.*)\]\s*$/m);
+  const block = eventBlock(text, DEPLOY_PATH, 'workflow_run');
+  const workflows = block.match(/^\s{4}workflows:\s*\[(.*)\]\s*$/m);
   assert.ok(workflows, `${DEPLOY_PATH}: on.workflow_run.workflows must be an explicit inline list`);
   return Array.from(workflows[1].matchAll(/["']([^"']+)["']/g), (match) => match[1].trim());
 }
 
-function assertPushPath(text, rel, expectedPath) {
-  const escaped = expectedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`^\\s{6}-\\s*["']${escaped}["']\\s*$`, 'm');
-  assert.match(text, pattern, `${rel}: push.paths must include ${expectedPath}`);
+function pushPaths(text, rel) {
+  const block = eventBlock(text, rel, 'push');
+  const paths = Array.from(block.matchAll(/^\s{6}-\s*["']([^"']+)["']\s*$/gm), (match) => match[1]);
+  assert.ok(paths.length > 0, `${rel}: on.push.paths is empty or unparsable`);
+  assert.equal(new Set(paths).size, paths.length, `${rel}: on.push.paths contains duplicates`);
+  return paths;
 }
 
 const readiness = read(READINESS_PATH);
 const deploy = read(DEPLOY_PATH);
 const readinessName = workflowName(readiness, READINESS_PATH);
 const dependencies = workflowRunDependencies(deploy);
+const readinessPaths = pushPaths(readiness, READINESS_PATH);
+const deployPaths = pushPaths(deploy, DEPLOY_PATH);
 
 assert.ok(
   dependencies.includes(readinessName),
@@ -48,11 +59,30 @@ assert.equal(
   `${DEPLOY_PATH}: readiness workflow dependency must be declared exactly once`,
 );
 
-// Any build, validation or deploy-smoke script can change whether a commit is
-// safe to publish. Readiness therefore must observe the whole scripts tree.
-// We intentionally do not freeze deploy.yml's direct-push path topology here;
-// removing overlapping direct deploy triggers is a separate architecture lane.
-assertPushPath(readiness, READINESS_PATH, 'scripts/**');
+const requiredReadinessPaths = [
+  'src/**', 'data/**', 'baptisty-rossii/**', 'scripts/**', 'css/**', 'js/**',
+  'sitemap.xml', 'feed.xml', 'astro.config.mjs', 'tsconfig.json', 'migration/**',
+  'package.json', 'package-lock.json',
+];
+for (const glob of requiredReadinessPaths) {
+  assert.ok(readinessPaths.includes(glob), `${READINESS_PATH}: push.paths must include ${glob}`);
+}
+
+const requiredDirectDeployPaths = [
+  'images/**', 'fonts/**', 'icons/**', 'konfessii/**', 'karty/**', 'map/**',
+  'biografii/**', 'hard-texts/**', '.nojekyll', 'favicon*',
+  'apple-touch-icon.png', 'CNAME', '.github/workflows/deploy.yml',
+];
+for (const glob of requiredDirectDeployPaths) {
+  assert.ok(deployPaths.includes(glob), `${DEPLOY_PATH}: asset/infrastructure push.paths must include ${glob}`);
+}
+
+const overlap = deployPaths.filter((glob) => readinessPaths.includes(glob));
+assert.deepEqual(
+  overlap,
+  [],
+  `readiness and direct deploy push.paths must be disjoint; overlap: ${JSON.stringify(overlap)}`,
+);
 
 console.log(`✅ workflow linkage: ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
-console.log('✅ readiness script path coverage: scripts/**');
+console.log(`✅ readiness-owned paths: ${readinessPaths.length}; direct asset paths: ${deployPaths.length}; overlap: 0`);
