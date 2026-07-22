@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: temp-nagornaya-neutral-comparison-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   transaction:
     if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/nagornaya-neutral-comparison-ui-2026-07-22'
@@ -18,6 +22,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+
+      - name: Publish transaction start marker
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p reports/nagornaya-neutral-comparison
+          printf 'running %s\n' "$RUN_ID" > reports/nagornaya-neutral-comparison/transaction-status.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/nagornaya-neutral-comparison/transaction-status.txt
+          git commit -m 'chore(ci): mark Nagornaya proof running'
+          git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
 
       - uses: actions/setup-node@v4
         with:
@@ -57,12 +73,25 @@ jobs:
         run: npm run validate:static-publication:light
 
       - name: Commit verified permanent diff to PR branch
+        env:
+          RUN_ID: ${{ github.run_id }}
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          printf 'success %s\n' "$RUN_ID" > reports/nagornaya-neutral-comparison/transaction-status.txt
           git add package.json src/lib/nagornaya-claim-projection.ts src/components/nagornaya/shared/NagornayaClaimComparison.astro src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro nagornaya/chast-4/index.html nagornaya/chast-5/index.html scripts/nagornaya-neutral-comparison-regression-test.js scripts/nagornaya-neutral-comparison-browser-test.mjs reports/nagornaya-neutral-comparison
           git diff --cached --check
           git commit -m 'feat(nagornaya): add neutral comparison UI'
+          git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
+
+      - name: Publish transaction failure marker
+        if: failure()
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git reset --hard
+          mkdir -p reports/nagornaya-neutral-comparison
+          printf 'failure %s\n' "$RUN_ID" > reports/nagornaya-neutral-comparison/transaction-status.txt
+          git add reports/nagornaya-neutral-comparison/transaction-status.txt
+          git commit -m 'chore(ci): mark Nagornaya proof failed'
           git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
 
       - name: Upload visual evidence
