@@ -12,10 +12,10 @@ on:
       # indexnow.yml path filters so edits to these articles keep triggering
       # the readiness gate (check-workflows.js enforces this; 2026-07-05 audit).
       - 'baptisty-rossii/**'
-      - 'scripts/editorial-metadata-*.js'
-      - 'scripts/lib/editorial-metadata.js'
-      - 'scripts/update-meta.js'
-      - 'scripts/cache-bust.js'
+      # Build, validation and deployment-only script fixes must also retrigger
+      # readiness. A Gill smoke correction under scripts/ previously fixed the
+      # only deploy blocker but could not start a new readiness → Pages chain.
+      - 'scripts/**'
       - 'css/**'
       - 'js/**'
       - 'sitemap.xml'

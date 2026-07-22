@@ -27,6 +27,12 @@ function workflowRunDependencies(text) {
   return Array.from(workflows[1].matchAll(/["']([^"']+)["']/g), (match) => match[1].trim());
 }
 
+function assertPushPath(text, rel, expectedPath) {
+  const escaped = expectedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`^\\s{6}-\\s*["']${escaped}["']\\s*$`, 'm');
+  assert.match(text, pattern, `${rel}: push.paths must include ${expectedPath}`);
+}
+
 const readiness = read(READINESS_PATH);
 const deploy = read(DEPLOY_PATH);
 const readinessName = workflowName(readiness, READINESS_PATH);
@@ -42,4 +48,11 @@ assert.equal(
   `${DEPLOY_PATH}: readiness workflow dependency must be declared exactly once`,
 );
 
+// Any build, validation or deploy-smoke script can change whether a commit is
+// safe to publish. Readiness therefore must observe the whole scripts tree.
+// We intentionally do not freeze deploy.yml's direct-push path topology here;
+// removing overlapping direct deploy triggers is a separate architecture lane.
+assertPushPath(readiness, READINESS_PATH, 'scripts/**');
+
 console.log(`✅ workflow linkage: ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
+console.log('✅ readiness script path coverage: scripts/**');
