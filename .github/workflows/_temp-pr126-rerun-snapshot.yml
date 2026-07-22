@@ -1,0 +1,44 @@
+name: TEMP PR126 Rerun Snapshot
+
+on:
+  push:
+    branches:
+      - diagnostic/final-pages-witness-2026-07-22
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: temp-pr126-rerun-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    if: ${{ !contains(github.event.head_commit.message, '[pr126-rerun]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_SHA: cd1adc686f21248c8712ffec913789419225e491
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diagnostic/final-pages-witness-2026-07-22
+          fetch-depth: 0
+      - name: Capture exact-head workflow runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${EXPECTED_SHA}&per_page=100" --slurp \
+            | jq 'map(.workflow_runs) | add | sort_by(.created_at) | map({id,name,event,status,conclusion,run_number,head_sha,head_branch,created_at,updated_at,html_url})' \
+            > .github/_temp-pr126-rerun-actions.json
+      - name: Remove extractor and publish snapshot
+        shell: bash
+        run: |
+          rm -f .github/workflows/_temp-pr126-rerun-snapshot.yml
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[pr126-rerun] capture exact-head Actions snapshot'
+          git push origin HEAD:diagnostic/final-pages-witness-2026-07-22
