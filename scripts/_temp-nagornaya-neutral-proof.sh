@@ -3,6 +3,7 @@ set -euo pipefail
 
 STATUS_FILE="reports/nagornaya-neutral-comparison/transaction-status.txt"
 EVIDENCE_DIR="reports/nagornaya-neutral-comparison"
+LOG_FILE="$EVIDENCE_DIR/proof.log"
 
 if [[ -f "$STATUS_FILE" ]]; then
   echo "Nagornaya proof already completed: $(cat "$STATUS_FILE")"
@@ -10,6 +11,8 @@ if [[ -f "$STATUS_FILE" ]]; then
 fi
 
 mkdir -p "$EVIDENCE_DIR"
+exec > >(tee "$LOG_FILE") 2>&1
+
 BASE_URL="https://gospod-bog.ru" EVIDENCE_DIR="$EVIDENCE_DIR" \
   node scripts/_temp-nagornaya-neutral-baseline-witness.mjs
 python3 scripts/_temp-nagornaya-neutral-comparison-patcher.py
@@ -49,5 +52,3 @@ git add \
 git diff --cached --check
 git commit -m 'feat(nagornaya): add neutral comparison UI'
 git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
-
-# synchronization trigger: simplified workflow job
