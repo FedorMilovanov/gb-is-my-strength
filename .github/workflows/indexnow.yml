@@ -3,13 +3,15 @@ name: Metadata & IndexNow Readiness
 on:
   workflow_dispatch:
 
+  # Readiness is the single automatic owner for every main push. The explicit
+  # production paths below document critical classes and remain protected by
+  # policy tests; the final '**' catch-all prevents mixed commits or new route
+  # families from bypassing readiness and creating a second deploy path.
   push:
     branches: [main]
     paths:
       - 'src/**'
       - 'data/**'
-      # Legacy content and every source/build input have one trigger owner:
-      # readiness. Deploy follows only through workflow_run after these gates pass.
       - 'baptisty-rossii/**'
       - 'scripts/**'
       - 'css/**'
@@ -21,6 +23,21 @@ on:
       - 'migration/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'images/**'
+      - 'fonts/**'
+      - 'icons/**'
+      - 'konfessii/**'
+      - 'karty/**'
+      - 'map/**'
+      - 'biografii/**'
+      - 'hard-texts/**'
+      - '.nojekyll'
+      - 'favicon*'
+      - 'apple-touch-icon.png'
+      - 'CNAME'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/indexnow.yml'
+      - '**'
 
 permissions:
   contents: read
