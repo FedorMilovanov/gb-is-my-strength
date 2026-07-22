@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p reports/nagornaya-epistemic-before-after
-          cat > /tmp/nagornaya-proof.mjs <<'JS'
+          cat > reports/nagornaya-epistemic-before-after/nagornaya-proof.mjs <<'JS'
           import { createServer } from 'node:http';
           import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
           import { join, extname } from 'node:path';
@@ -74,7 +74,7 @@ jobs:
           await writeFile(join(out,'manifest.json'),JSON.stringify({baseSha:process.env.BASE_SHA,headSha:process.env.HEAD_SHA,generatedAt:new Date().toISOString(),screenshots:manifest},null,2));console.log(`Captured ${manifest.length*2} screenshots for ${cases.length} blocks.`);
           JS
           set +e
-          BASE_SHA="${{ github.event.pull_request.base.sha }}" HEAD_SHA="${{ github.event.pull_request.head.sha }}" node /tmp/nagornaya-proof.mjs 2>&1 | tee reports/nagornaya-epistemic-before-after/proof.log
+          BASE_SHA="${{ github.event.pull_request.base.sha }}" HEAD_SHA="${{ github.event.pull_request.head.sha }}" node reports/nagornaya-epistemic-before-after/nagornaya-proof.mjs 2>&1 | tee reports/nagornaya-epistemic-before-after/proof.log
           status=${PIPESTATUS[0]}
           echo "$status" > reports/nagornaya-epistemic-before-after/proof.exit-code
           exit "$status"
