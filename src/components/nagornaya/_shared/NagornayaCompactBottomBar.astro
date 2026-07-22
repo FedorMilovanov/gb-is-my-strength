@@ -1,6 +1,7 @@
 ---
 /**
- * Shared narrow-viewport contract for the native Nagornaya chapter bar.
+ * Shared narrow-viewport contract for the native Nagornaya chapter bar and
+ * long section headings.
  *
  * The mobile TOC keeps progress and sharing available, so at <=359px the
  * persistent bar may drop those duplicate controls (plus the redundant Up
@@ -9,6 +10,17 @@
 ---
 <style is:global>
   @media (max-width: 359px) {
+    body.nagornaya-page #main-content .group,
+    body.nagornaya-page #main-content .group > .flex,
+    body.nagornaya-page #main-content .group > .flex > h2 {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    body.nagornaya-page #main-content .group > .flex > h2 {
+      overflow-wrap: anywhere;
+    }
+
     body.nagornaya-page #bottomBar .bar-progress,
     body.nagornaya-page #bottomBar .bar-divider,
     body.nagornaya-page #bottomBar #barUpBtn,
