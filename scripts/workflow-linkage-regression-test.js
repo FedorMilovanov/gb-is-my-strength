@@ -27,6 +27,12 @@ function workflowRunDependencies(text) {
   return Array.from(workflows[1].matchAll(/["']([^"']+)["']/g), (match) => match[1].trim());
 }
 
+function assertPushPath(text, rel, expectedPath) {
+  const escaped = expectedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`^\\s{6}-\\s*["']${escaped}["']\\s*$`, 'm');
+  assert.match(text, pattern, `${rel}: push.paths must include ${expectedPath}`);
+}
+
 const readiness = read(READINESS_PATH);
 const deploy = read(DEPLOY_PATH);
 const readinessName = workflowName(readiness, READINESS_PATH);
@@ -42,4 +48,9 @@ assert.equal(
   `${DEPLOY_PATH}: readiness workflow dependency must be declared exactly once`,
 );
 
+for (const [rel, text] of [[READINESS_PATH, readiness], [DEPLOY_PATH, deploy]]) {
+  assertPushPath(text, rel, 'scripts/**');
+}
+
 console.log(`✅ workflow linkage: ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
+console.log('✅ readiness/deploy script path coverage: scripts/**');
