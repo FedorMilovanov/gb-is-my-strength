@@ -1,0 +1,51 @@
+name: TEMP Apply Nagornaya Source Registry
+
+on:
+  push:
+    branches:
+      - agent/nagornaya-source-role-registry
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-nagornaya-source-registry
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout registry branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/nagornaya-source-role-registry
+          fetch-depth: 0
+
+      - name: Apply exact component patch
+        run: python3 scripts/_temp_apply_nagornaya_source_registry.py
+
+      - name: Verify registry and source contracts
+        run: |
+          node scripts/nagornaya-source-registry-test.js
+          node scripts/nagornaya-source-integrity-regression-test.js
+
+      - name: Remove temporary infrastructure
+        run: |
+          rm -f scripts/_temp_apply_nagornaya_source_registry.py
+          rm -f .registry-temp-trigger
+          rm -f .github/workflows/_temp-apply-nagornaya-source-registry.yml
+
+      - name: Commit patched component and cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/nagornaya/istochniki/NagornayaIstochnikiMainShell.astro \
+                  scripts/_temp_apply_nagornaya_source_registry.py \
+                  .registry-temp-trigger \
+                  .github/workflows/_temp-apply-nagornaya-source-registry.yml
+          git diff --cached --check
+          git commit -m "feat(nagornaya): derive pilot sources from registry"
+          git push origin HEAD:agent/nagornaya-source-role-registry
