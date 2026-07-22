@@ -79,6 +79,9 @@ jobs:
       - name: Nagornaya source registry regressions
         run: node scripts/nagornaya-source-registry-test.js
 
+      - name: Nagornaya epistemic UI regressions
+        run: node scripts/nagornaya-epistemic-ui-regression-test.js
+
       - name: Series reader façade regressions
         run: npm run series:facade:guard
 
