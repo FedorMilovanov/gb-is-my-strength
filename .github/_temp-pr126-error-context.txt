@@ -1,0 +1,72 @@
+2026-07-22T09:21:44.6617774Z   ✔ js/floating-cluster-controller.js → ?v=f746adb1
+2026-07-22T09:21:44.9401058Z 
+2026-07-22T09:21:44.9402339Z ────────────────────────────────────────────────────────────
+2026-07-22T09:21:44.9403619Z ✅ Asset revisions are synchronized; repository was not modified.
+2026-07-22T09:21:44.9404238Z 
+2026-07-22T09:21:44.9490164Z ##[group]Run npm run nagornaya:bar-asset:contract
+2026-07-22T09:21:44.9490584Z [36;1mnpm run nagornaya:bar-asset:contract[0m
+2026-07-22T09:21:44.9491257Z [36;1mnpm run engine:contracts[0m
+2026-07-22T09:21:44.9491547Z [36;1mnpm run visual:parity:production[0m
+2026-07-22T09:21:44.9491840Z [36;1mgit diff --check[0m
+2026-07-22T09:21:44.9550331Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:21:44.9550589Z ##[endgroup]
+2026-07-22T09:21:45.0612182Z 
+2026-07-22T09:21:45.0613022Z > gb-is-my-strength@1.6.3 nagornaya:bar-asset:contract
+---
+2026-07-22T09:21:45.0613580Z > node scripts/nagornaya-bar-asset-contract-test.js
+---
+2026-07-22T09:21:45.0613843Z 
+---
+2026-07-22T09:21:45.6883628Z ✅ Nagornaya bar asset contract: 10 page sources, revision 3c7e0bdd, adversarial v=1 rejected
+---
+2026-07-22T09:21:45.7943608Z 
+2026-07-22T09:21:45.7944256Z > gb-is-my-strength@1.6.3 engine:contracts
+2026-07-22T09:21:45.7945238Z > node scripts/check-engine-contracts.js && npm run series:facade:guard && npm run nagornaya:bar-asset:contract
+2026-07-22T09:21:45.7945715Z 
+2026-07-22T09:21:45.8212284Z ✅ CSS: все правила .gill-settings-overlay под [data-gill-v16]
+---
+2026-07-22T09:21:45.8215287Z ✅ CSS: нет двойной рамки .gill-tab (focus-visible без outline-offset)
+2026-07-22T09:21:45.8216743Z ✅ CSS: мобильные крошки скрыты ([data-gill-v16] .page-wrap > nav.breadcrumb)
+2026-07-22T09:21:45.8217616Z ✅ CSS: контур PLAY в покое — .gbs-theme-corner
+2026-07-22T09:21:45.8219066Z ✅ CSS: контур PLAY в покое — .gb-floater (одиночные статьи)
+2026-07-22T09:21:45.8223790Z ✅ CSS: бейдж скорости в круге (3 места, -2px/-2px)
+---
+2026-07-22T09:21:45.8230311Z ✅ JS: follow-скролл озвучки (buildFollowMap/followReading)
+---
+2026-07-22T09:21:46.0441743Z ✅ CSS AST: css/nagornaya-mobile-toc.css парсится без ошибок
+2026-07-22T09:21:46.0638979Z ✅ CSS AST: css/home.css парсится без ошибок
+2026-07-22T09:21:46.0640221Z ✅ SVG-обложка медиа-шторки images/tts-artwork.svg
+2026-07-22T09:21:46.1151907Z ✅ Нет осиротевших компонентов в _shared
+2026-07-22T09:21:46.1152690Z 
+2026-07-22T09:21:46.1153601Z ✅ engine:contracts — все контракты движков целы.
+2026-07-22T09:21:46.2246626Z 
+2026-07-22T09:21:46.2247210Z > gb-is-my-strength@1.6.3 series:facade:guard
+2026-07-22T09:21:46.2247771Z > node scripts/series-reader-facade-regression-test.js
+2026-07-22T09:21:46.2248049Z 
+2026-07-22T09:21:46.2906014Z ✅ series-reader-facade: 41 consumers; implementation import isolated to façade
+2026-07-22T09:21:46.3986958Z 
+2026-07-22T09:21:46.3987748Z > gb-is-my-strength@1.6.3 nagornaya:bar-asset:contract
+2026-07-22T09:21:46.3989044Z > node scripts/nagornaya-bar-asset-contract-test.js
+---
+2026-07-22T09:21:46.3989784Z 
+2026-07-22T09:21:47.0289464Z ✅ Nagornaya bar asset contract: 10 page sources, revision 3c7e0bdd, adversarial v=1 rejected
+2026-07-22T09:21:47.1391552Z 
+2026-07-22T09:21:47.1392067Z > gb-is-my-strength@1.6.3 visual:parity:production
+2026-07-22T09:21:47.1392542Z > node scripts/visual-parity-contract.js
+2026-07-22T09:21:47.1392765Z 
+2026-07-22T09:21:47.1621287Z ❌ dist/ missing; run production-like dist build before visual parity contract
+---
+2026-07-22T09:21:47.1623305Z 
+2026-07-22T09:21:47.1623531Z VISUAL PARITY CONTRACT
+2026-07-22T09:21:47.1624421Z ❌ 1 problem(s). This is NOT production-ready visual parity.
+2026-07-22T09:21:47.1712054Z ##[error]Process completed with exit code 1.
+2026-07-22T09:21:47.1888215Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+---
+2026-07-22T09:21:47.1889468Z Post job cleanup.
+2026-07-22T09:21:47.2713674Z [command]/usr/bin/git version
+2026-07-22T09:21:47.2758609Z git version 2.54.0
+2026-07-22T09:21:47.2802150Z Temporarily overriding HOME='/home/runner/work/_temp/c289412d-afbf-4180-8dc1-622d0850eabc' before making global git config changes
+2026-07-22T09:21:47.2803596Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-22T09:21:47.2807591Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gb-is-my-strength/gb-is-my-strength
+2026-07-22T09:21:47.2848452Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+---
