@@ -22,7 +22,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Apply exact ARIA and CI cleanup patch
+      - name: Apply exact ARIA source patch
         shell: bash
         run: |
           python3 - <<'PY'
@@ -62,35 +62,21 @@ jobs:
           }
           console.log('✅ Nagornaya PremiumControls ARIA source contract passed (parts I–V)');
           """),encoding='utf-8')
-
-          guard=Path('.github/workflows/shared-files-guard.yml')
-          text=guard.read_text(encoding='utf-8')
-          anchor='''      - name: Nagornaya epistemic UI regressions\n        run: node scripts/nagornaya-epistemic-ui-regression-test.js\n'''
-          addition=anchor+'''\n      - name: Nagornaya PremiumControls ARIA regressions\n        run: node scripts/nagornaya-premium-controls-aria-regression-test.js\n'''
-          if addition not in text:
-              if text.count(anchor)!=1: raise SystemExit('Shared Guard insertion anchor drift')
-              text=text.replace(anchor,addition,1)
-          stale='\n  nagornaya-neutral-proof:'
-          if stale in text:
-              text=text.split(stale,1)[0].rstrip()+'\n'
-          guard.write_text(text,encoding='utf-8')
           PY
 
-      - name: Validate exact repair
+      - name: Validate exact source repair
         shell: bash
         run: |
           node scripts/nagornaya-premium-controls-aria-regression-test.js
           node --check scripts/nagornaya-premium-controls-aria-regression-test.js
-          node scripts/check-workflows.js
           git diff --check
 
-      - name: Commit permanent repair
+      - name: Commit permanent source repair
         env:
           BRANCH: ${{ github.event.pull_request.head.ref }}
         shell: bash
         run: |
           cat > /tmp/allowed.txt <<'EOF'
-          .github/workflows/shared-files-guard.yml
           scripts/nagornaya-premium-controls-aria-regression-test.js
           src/components/nagornaya/chast-1/NagornayaChast1PageChrome.astro
           src/components/nagornaya/chast-2/NagornayaChast2PageChrome.astro
@@ -104,5 +90,5 @@ jobs:
           diff -u /tmp/allowed.txt /tmp/changed.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'fix(nagornaya): restore PremiumControls ARIA contract'
+          git commit -m 'fix(nagornaya): restore PremiumControls ARIA source contract'
           git push origin HEAD:"$BRANCH"
