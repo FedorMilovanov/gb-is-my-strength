@@ -1,4 +1,4 @@
-name: TEMP Publish Verified Nagornaya Pastoral Safety
+name: TEMP Export Verified Nagornaya Pastoral Safety
 
 on:
   push:
@@ -9,14 +9,14 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: temp-publish-nagornaya-pastoral-safety
+  group: temp-export-nagornaya-pastoral-safety
   cancel-in-progress: true
 
 jobs:
-  publish:
+  export:
     if: github.head_ref == 'fix/nagornaya-pastoral-safety-2026-07-22' || github.ref_name == 'fix/nagornaya-pastoral-safety-2026-07-22'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -24,7 +24,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: fix/nagornaya-pastoral-safety-2026-07-22
-          fetch-depth: 0
 
       - name: Materialize already validated correction
         shell: bash
@@ -44,6 +43,7 @@ jobs:
                       changed.append(str(path))
           if len(changed) < 2:
               raise SystemExit(f'expected at least two canonical files, found {changed}')
+          Path('/tmp/changed-files.txt').write_text('\n'.join(changed) + '\n', encoding='utf-8')
           print('\n'.join(changed))
           PY
 
@@ -75,7 +75,6 @@ jobs:
           }
           console.log('✅ Nagornaya pastoral safety contract passed');
           EOF
-          chmod +x scripts/nagornaya-pastoral-safety-regression-test.js
 
           python3 - <<'PY'
           from pathlib import Path
@@ -91,14 +90,22 @@ jobs:
           node scripts/nagornaya-pastoral-safety-regression-test.js
           git diff --check
 
-      - name: Commit and push permanent files
+      - name: Assemble verified files
         shell: bash
         run: |
-          set -euxo pipefail
-          git add src nagornaya scripts/nagornaya-pastoral-safety-regression-test.js .github/workflows/shared-files-guard.yml
-          git status --short
-          git diff --cached --stat
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit --no-verify -m 'fix(nagornaya): replace final-verdict pastoral wording'
-          git push origin HEAD:fix/nagornaya-pastoral-safety-2026-07-22
+          mkdir -p /tmp/pastoral-artifact
+          while IFS= read -r rel; do
+            mkdir -p "/tmp/pastoral-artifact/$(dirname "$rel")"
+            cp "$rel" "/tmp/pastoral-artifact/$rel"
+          done < /tmp/changed-files.txt
+          mkdir -p /tmp/pastoral-artifact/scripts /tmp/pastoral-artifact/.github/workflows
+          cp scripts/nagornaya-pastoral-safety-regression-test.js /tmp/pastoral-artifact/scripts/
+          cp .github/workflows/shared-files-guard.yml /tmp/pastoral-artifact/.github/workflows/
+          cp /tmp/changed-files.txt /tmp/pastoral-artifact/changed-files.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nagornaya-pastoral-safety-verified-files
+          path: /tmp/pastoral-artifact
+          if-no-files-found: error
+          retention-days: 3
