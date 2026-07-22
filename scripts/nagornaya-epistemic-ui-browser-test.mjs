@@ -9,6 +9,13 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const REPORTS = join(ROOT, 'reports');
 const MIME = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2' };
+const EXPECTED_LOCALHOST_CSP_ICON_URLS = new Set([
+  'https://gospod-bog.ru/favicon.ico',
+  'https://gospod-bog.ru/apple-touch-icon.png',
+  'https://gospod-bog.ru/favicon-48.png',
+  'https://gospod-bog.ru/favicon-120.png',
+  'https://gospod-bog.ru/icons/icon-192.png',
+]);
 const CASES = [
   { route:'/nagornaya/chast-1/', target:'#nagornaya-matthew-luke-observation-matrix', kind:'observation' },
   { route:'/nagornaya/chast-2/', target:'#nagornaya-ipsissima-vox-models', kind:'claim' },
@@ -20,8 +27,13 @@ const VIEWPORTS = [{id:'mobile-320',width:320,height:760},{id:'mobile-390',width
 const results=[];
 function record(item, viewport, contract, ok, detail=''){results.push({route:item.route,target:item.target,viewport:viewport.id,contract,ok:Boolean(ok),detail:String(detail||'')});}
 function routeFile(pathname){const clean=decodeURIComponent(pathname.split('?')[0]).replace(/^\/+/, '');return join(DIST,clean,clean.endsWith('.html')?'':'index.html');}
+function isExpectedLocalhostCspIconError(text){
+  if(!text.includes('violates the following Content Security Policy directive'))return false;
+  for(const url of EXPECTED_LOCALHOST_CSP_ICON_URLS){if(text.includes(`'${url}'`))return true;}
+  return false;
+}
 async function serve(){const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url||'/','http://127.0.0.1').pathname;let file=pathname.includes('.')&&!pathname.endsWith('/')?join(DIST,pathname.replace(/^\/+/,'')):routeFile(pathname);try{if((await stat(file)).isDirectory())file=join(file,'index.html');}catch{file=join(ROOT,pathname.replace(/^\/+/,''));}const body=await readFile(file);res.writeHead(200,{'content-type':MIME[extname(file).toLowerCase()]||'application/octet-stream','cache-control':'no-store'});res.end(body);}catch{res.writeHead(404,{'content-type':'text/plain; charset=utf-8'});res.end('not found');}});await new Promise((resolve)=>server.listen(0,'127.0.0.1',resolve));return{server,base:`http://127.0.0.1:${server.address().port}`};}
-async function persist(){await mkdir(REPORTS,{recursive:true});await writeFile(join(REPORTS,'nagornaya-epistemic-ui-browser.json'),JSON.stringify({generatedAt:new Date().toISOString(),results},null,2));}
+async function persist(){await mkdir(REPORTS,{recursive:true});await writeFile(join(REPORTS,'nagornaya-epistemic-ui-browser.json'),JSON.stringify({generatedAt:new Date().toISOString(),expectedLocalhostCspIconUrls:[...EXPECTED_LOCALHOST_CSP_ICON_URLS],results},null,2));}
 
 let browser;
 let server;
@@ -38,7 +50,7 @@ try {
         try {
           page.removeAllListeners('pageerror');page.removeAllListeners('console');page.removeAllListeners('requestfailed');
           page.on('pageerror',(error)=>runtime.push(`pageerror: ${error.message}`));
-          page.on('console',(message)=>{if(message.type()==='error')runtime.push(`console: ${message.text()}`);});
+          page.on('console',(message)=>{if(message.type()==='error'&&!isExpectedLocalhostCspIconError(message.text()))runtime.push(`console: ${message.text()}`);});
           page.on('requestfailed',(request)=>{const url=new URL(request.url());if(url.origin===base)runtime.push(`requestfailed: ${url.pathname}`);});
           const response=await page.goto(base+item.route,{waitUntil:'load'});
           record(item,viewport,'http-200',response?.status()===200,`status=${response?.status()}`);
