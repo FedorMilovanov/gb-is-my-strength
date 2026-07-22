@@ -39,10 +39,12 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
-      - name: Checkout latest verified main commit
+      - name: Checkout exact readiness-verified commit
         uses: actions/checkout@v4
         with:
-          ref: main
+          # Never replace the verified workflow_run SHA with a newer moving main.
+          # Manual operator recovery deliberately uses current main.
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || 'main' }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
