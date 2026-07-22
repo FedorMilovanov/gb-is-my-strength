@@ -47,8 +47,8 @@ git add \
   nagornaya/chast-4/index.html \
   nagornaya/chast-5/index.html \
   scripts/nagornaya-neutral-comparison-regression-test.js \
-  scripts/nagornaya-neutral-comparison-browser-test.mjs \
-  reports/nagornaya-neutral-comparison
+  scripts/nagornaya-neutral-comparison-browser-test.mjs
+git add -f reports/nagornaya-neutral-comparison
 git diff --cached --check
 git commit -m 'feat(nagornaya): add neutral comparison UI'
 git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
