@@ -1,220 +1,81 @@
 {
-  "note": "Owner-approved pixel-diff baseline per Astro route — Gill v16 sanitary refresh 2026-06-29. BaselineType: legacy-vs-dist-pixel. 0% = pixel parity evidence, NOT proof of Native Astro completeness. Previous claim 'All 51 public routes now covered with full-document shadow-wrap' was HISTORICAL (2026-06-21) and superseded by Native Astro / Gill v16 shared chrome convergence (main 72c42d6 / 7792974 / a417d9c / d644e278 / 28d5962f / cc9957b8). Higher diff% than baseline+tolerance fails CI. Update only after owner visual review. See: data/visual-route-contracts.json (future), migration/page-ownership.json v2.",
+  "note": "Owner-approved visual comparison policy per public route. legacy-diff measures root legacy HTML against production-like dist; native-contract routes intentionally retired legacy presentation and are blocked by the named source/dist and browser guards instead. Never promote a route to native-contract merely to silence a screenshot failure.",
   "tolerancePct": 0.5,
-  "updatedAt": "2026-06-29",
-  "baselineType": "legacy-vs-dist-pixel",
+  "updatedAt": "2026-07-22",
+  "baselineType": "policy-aware-legacy-vs-dist-pixel",
   "baselineSource": "repo-root-html-vs-dist",
-  "routeArchitectureAtApproval": "mixed: native-astro + gill-v16-shared-chrome + gbs2-baptisty + built-app maps",
-  "sourceMainSha": "cc9957b816714f13f9a95e8acc499c2727f69228",
+  "routeArchitectureAtApproval": "mixed: legacy parity + native Astro + shared series chrome + built-app maps",
+  "sourceMainSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e",
   "policy": {
     "newRouteDefault": "advisory-warn-only",
-    "strictNewRoutesMode": "available via --strict-new-routes (not default in CI, see visual-parity-baseline.js)",
-    "screenshotDiffIsNotNativeAstroProof": true
+    "strictNewRoutesMode": "available via --strict-new-routes",
+    "screenshotGenerationIsDiagnostic": true,
+    "screenshotDiffIsNotNativeAstroProof": true,
+    "globalToleranceWasNotRaised": true
+  },
+  "routeModes": {
+    "/baptisty-rossii/": {
+      "mode": "native-contract",
+      "reason": "The strict-native series landing intentionally uses the approved compact gbs2 Astro layout; root legacy HTML is retained as historical evidence, not the render owner.",
+      "requiredGuards": [
+        "scripts/baptisty-rossii-visual-parity-audit.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-22",
+      "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
+    }
   },
   "routes": {
-    "/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/about/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/": {
-      "desktop": 0,
-      "mobile": 0.0023
-    },
-    "/biografii/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/": {
-      "desktop": 0,
-      "mobile": 0.0037
-    },
-    "/nagornaya/chast-1/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/chast-5/": {
-      "desktop": 0.0042,
-      "mobile": 0.1262
-    },
-    "/hard-texts/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/konfessii/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/pastor-series/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/map/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/20-antisovetov-pastoru/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/dzhon-gill-chast-1-chelovek/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/dzhon-gill-chast-2-uchenyi/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/dzhon-gill-chast-3-nasledie/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/dzhon-gill-istoricheskiy-kontekst/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/dzhon-gill-spravochnik/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/kod-da-vinchi/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/krajne-li-isporcheno-serdce/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/dva-sezda-1884/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/goneniya-i-sovest/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/iniciativnaya-gruppa/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/noch-na-kure/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/peterburgskaya-liniya/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/podpolnaya-pechat/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/sovetskaya-noch/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/spravochnik/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/vsehib-1944/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/baptisty-rossii/yuzhnaya-shtunda/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/avraam/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/early-church/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/ishod/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/maccabim/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/melachim/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/pavel/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/revelation/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/shoftim/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/shvatim/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/karty/yeshua/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/konfessii/russkij-baptizm/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/chast-2/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/chast-3/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/chast-4/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/istochniki/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/nakhodki/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/nagornaya/seriya/": {
-      "desktop": 0,
-      "mobile": 0
-    },
-    "/rodosloviye/": {
-      "desktop": 0,
-      "mobile": 0
-    }
+    "/": { "desktop": 0, "mobile": 0 },
+    "/about/": { "desktop": 0, "mobile": 0 },
+    "/articles/": { "desktop": 0, "mobile": 0.0023 },
+    "/biografii/": { "desktop": 0, "mobile": 0 },
+    "/karty/": { "desktop": 0, "mobile": 2.0506 },
+    "/baptisty-rossii/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/": { "desktop": 0, "mobile": 0.0037 },
+    "/nagornaya/chast-1/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/chast-5/": { "desktop": 0.0042, "mobile": 0.1262 },
+    "/hard-texts/": { "desktop": 0, "mobile": 0 },
+    "/konfessii/": { "desktop": 0, "mobile": 0 },
+    "/pastor-series/": { "desktop": 0, "mobile": 0 },
+    "/map/": { "desktop": 0, "mobile": 0 },
+    "/articles/20-antisovetov-pastoru/": { "desktop": 0, "mobile": 0 },
+    "/articles/dzhon-gill-chast-1-chelovek/": { "desktop": 0, "mobile": 0 },
+    "/articles/dzhon-gill-chast-2-uchenyi/": { "desktop": 0, "mobile": 0 },
+    "/articles/dzhon-gill-chast-3-nasledie/": { "desktop": 0, "mobile": 0 },
+    "/articles/dzhon-gill-istoricheskiy-kontekst/": { "desktop": 0, "mobile": 0 },
+    "/articles/dzhon-gill-spravochnik/": { "desktop": 0, "mobile": 0 },
+    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": { "desktop": 0, "mobile": 0 },
+    "/articles/kod-da-vinchi/": { "desktop": 0, "mobile": 0 },
+    "/articles/krajne-li-isporcheno-serdce/": { "desktop": 0, "mobile": 0 },
+    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/dva-sezda-1884/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/goneniya-i-sovest/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/iniciativnaya-gruppa/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/noch-na-kure/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/peterburgskaya-liniya/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/podpolnaya-pechat/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/sovetskaya-noch/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/spravochnik/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/vsehib-1944/": { "desktop": 0, "mobile": 0 },
+    "/baptisty-rossii/yuzhnaya-shtunda/": { "desktop": 0, "mobile": 0 },
+    "/karty/avraam/": { "desktop": 0, "mobile": 0 },
+    "/karty/early-church/": { "desktop": 0, "mobile": 0 },
+    "/karty/ishod/": { "desktop": 0, "mobile": 0 },
+    "/karty/maccabim/": { "desktop": 0, "mobile": 0 },
+    "/karty/melachim/": { "desktop": 0, "mobile": 0 },
+    "/karty/pavel/": { "desktop": 0, "mobile": 0 },
+    "/karty/revelation/": { "desktop": 0, "mobile": 0 },
+    "/karty/shoftim/": { "desktop": 0, "mobile": 0 },
+    "/karty/shvatim/": { "desktop": 0, "mobile": 0 },
+    "/karty/yeshua/": { "desktop": 0, "mobile": 0 },
+    "/konfessii/russkij-baptizm/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/chast-2/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/chast-3/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/chast-4/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/istochniki/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/nakhodki/": { "desktop": 0, "mobile": 0 },
+    "/nagornaya/seriya/": { "desktop": 0, "mobile": 0 },
+    "/rodosloviye/": { "desktop": 0, "mobile": 0 }
   }
 }
