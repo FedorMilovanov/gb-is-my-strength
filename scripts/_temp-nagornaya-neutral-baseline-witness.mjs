@@ -40,4 +40,4 @@ try {
 }
 
 console.log('Nagornaya neutral comparison baseline witness captured');
-// synchronization trigger: Shared Files Guard proof job
+// synchronization trigger: event-safe Shared Files Guard proof job
