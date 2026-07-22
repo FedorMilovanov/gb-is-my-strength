@@ -1,0 +1,126 @@
+2026-07-22T09:33:57.1010031Z  * [new branch]          claude/biblical-genealogy-svg-6l6qb8 -> origin/claude/biblical-genealogy-svg-6l6qb8
+2026-07-22T09:33:57.1012969Z  * [new branch]          claude/dns-configuration-setup-c0w26g -> origin/claude/dns-configuration-setup-c0w26g
+2026-07-22T09:33:57.1015266Z  * [new branch]          claude/website-map-audit-ik3ypo -> origin/claude/website-map-audit-ik3ypo
+2026-07-22T09:33:57.1017557Z  * [new branch]          cleanup/pages-deploy-witness-2026-07-21 -> origin/cleanup/pages-deploy-witness-2026-07-21
+2026-07-22T09:33:57.1020753Z  * [new branch]          cleanup/pages-deploy-witness-2026-07-22 -> origin/cleanup/pages-deploy-witness-2026-07-22
+2026-07-22T09:33:57.1023766Z  * [new branch]          diagnostic/final-pages-witness-2026-07-22 -> origin/diagnostic/final-pages-witness-2026-07-22
+2026-07-22T09:33:57.1026795Z  * [new branch]          diagnostic/gill-mobile-layout-2026-07-22 -> origin/diagnostic/gill-mobile-layout-2026-07-22
+2026-07-22T09:33:57.1030292Z  * [new branch]          diagnostic/gill-mobile-play-smoke-2026-07-21 -> origin/diagnostic/gill-mobile-play-smoke-2026-07-21
+2026-07-22T09:33:57.1034111Z  * [new branch]          fix/deploy-cache-bust-reconcile-2026-07-21 -> origin/fix/deploy-cache-bust-reconcile-2026-07-21
+2026-07-22T09:33:57.1037528Z  * [new branch]          fix/gill-editorial-content-integrity -> origin/fix/gill-editorial-content-integrity
+2026-07-22T09:33:57.1040643Z  * [new branch]          fix/gill-editorial-integrity -> origin/fix/gill-editorial-integrity
+2026-07-22T09:33:57.1043518Z  * [new branch]          fix/gill-mobile-frost-audit-2026-07-22 -> origin/fix/gill-mobile-frost-audit-2026-07-22
+2026-07-22T09:33:57.1047037Z  * [new branch]          fix/gill-mobile-smoke-intro-heading-2026-07-21 -> origin/fix/gill-mobile-smoke-intro-heading-2026-07-21
+2026-07-22T09:33:57.1050656Z  * [new branch]          fix/gill-part4-propagate-sibling-grids -> origin/fix/gill-part4-propagate-sibling-grids
+2026-07-22T09:33:57.1053997Z  * [new branch]          fix/highlights-runtime-hardening-2026-07-22 -> origin/fix/highlights-runtime-hardening-2026-07-22
+2026-07-22T09:33:57.1057780Z  * [new branch]          fix/nagornaya-bar-asset-contract-clean-2026-07-22 -> origin/fix/nagornaya-bar-asset-contract-clean-2026-07-22
+2026-07-22T09:33:57.1061758Z  * [new branch]          fix/nagornaya-pastoral-safety-2026-07-22 -> origin/fix/nagornaya-pastoral-safety-2026-07-22
+2026-07-22T09:33:57.1064795Z  * [new branch]          fix/pages-trigger-topology-2026-07-22 -> origin/fix/pages-trigger-topology-2026-07-22
+2026-07-22T09:33:57.1068013Z  * [new branch]          fix/premerge-asset-revision-guard-2026-07-21 -> origin/fix/premerge-asset-revision-guard-2026-07-21
+2026-07-22T09:33:57.1071495Z  * [new branch]          fix/readiness-deploy-linkage-2026-07-21 -> origin/fix/readiness-deploy-linkage-2026-07-21
+---
+2026-07-22T09:34:09.2229764Z [36;1mpackage_path = Path('package.json')[0m
+2026-07-22T09:34:09.2230169Z [36;1mpackage = json.loads(package_path.read_text(encoding='utf-8'))[0m
+2026-07-22T09:34:09.2230897Z [36;1mscripts = package['scripts'][0m
+2026-07-22T09:34:09.2231386Z [36;1mscripts['nagornaya:bar-asset:contract'] = 'node scripts/nagornaya-bar-asset-contract-test.js'[0m
+2026-07-22T09:34:09.2232069Z [36;1mscripts['nagornaya:bar-asset:browser:test'] = 'node scripts/nagornaya-bar-asset-browser-test.js'[0m
+2026-07-22T09:34:09.2232736Z [36;1mbase_engine = 'node scripts/check-engine-contracts.js && npm run series:facade:guard'[0m
+2026-07-22T09:34:09.2233309Z [36;1mexpected_engine = base_engine + ' && npm run nagornaya:bar-asset:contract'[0m
+2026-07-22T09:34:09.2233855Z [36;1mif scripts.get('engine:contracts') not in {base_engine, expected_engine}:[0m
+2026-07-22T09:34:09.2234569Z [36;1m    raise SystemExit(f"unexpected current engine:contracts: {scripts.get('engine:contracts')!r}")[0m
+2026-07-22T09:34:09.2235297Z [36;1mscripts['engine:contracts'] = expected_engine[0m
+2026-07-22T09:34:09.2235834Z [36;1mpackage_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')[0m
+2026-07-22T09:34:09.2236305Z [36;1m[0m
+2026-07-22T09:34:09.2236551Z [36;1mcache_path = Path('scripts/cache-bust.js')[0m
+2026-07-22T09:34:09.2236902Z [36;1mcache = cache_path.read_text(encoding='utf-8')[0m
+2026-07-22T09:34:09.2237361Z [36;1mold = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`, 'g');"[0m
+2026-07-22T09:34:09.2237883Z [36;1mnew = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s\"'&}>]+`, 'g');"[0m
+2026-07-22T09:34:09.2238278Z [36;1mif old in cache:[0m
+2026-07-22T09:34:09.2238577Z [36;1m    cache = cache.replace(old, new, 1)[0m
+2026-07-22T09:34:09.2238875Z [36;1melif new not in cache:[0m
+2026-07-22T09:34:09.2239249Z [36;1m    raise SystemExit('cache-bust Astro revision regex anchor not found')[0m
+---
+2026-07-22T09:34:09.2232069Z [36;1mscripts['nagornaya:bar-asset:browser:test'] = 'node scripts/nagornaya-bar-asset-browser-test.js'[0m
+2026-07-22T09:34:09.2232736Z [36;1mbase_engine = 'node scripts/check-engine-contracts.js && npm run series:facade:guard'[0m
+2026-07-22T09:34:09.2233309Z [36;1mexpected_engine = base_engine + ' && npm run nagornaya:bar-asset:contract'[0m
+2026-07-22T09:34:09.2233855Z [36;1mif scripts.get('engine:contracts') not in {base_engine, expected_engine}:[0m
+2026-07-22T09:34:09.2234569Z [36;1m    raise SystemExit(f"unexpected current engine:contracts: {scripts.get('engine:contracts')!r}")[0m
+2026-07-22T09:34:09.2235297Z [36;1mscripts['engine:contracts'] = expected_engine[0m
+2026-07-22T09:34:09.2235834Z [36;1mpackage_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')[0m
+2026-07-22T09:34:09.2236305Z [36;1m[0m
+2026-07-22T09:34:09.2236551Z [36;1mcache_path = Path('scripts/cache-bust.js')[0m
+2026-07-22T09:34:09.2236902Z [36;1mcache = cache_path.read_text(encoding='utf-8')[0m
+2026-07-22T09:34:09.2237361Z [36;1mold = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`, 'g');"[0m
+2026-07-22T09:34:09.2237883Z [36;1mnew = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s\"'&}>]+`, 'g');"[0m
+2026-07-22T09:34:09.2238278Z [36;1mif old in cache:[0m
+2026-07-22T09:34:09.2238577Z [36;1m    cache = cache.replace(old, new, 1)[0m
+2026-07-22T09:34:09.2238875Z [36;1melif new not in cache:[0m
+2026-07-22T09:34:09.2239249Z [36;1m    raise SystemExit('cache-bust Astro revision regex anchor not found')[0m
+2026-07-22T09:34:09.2239689Z [36;1mcache_path.write_text(cache, encoding='utf-8')[0m
+2026-07-22T09:34:09.2240095Z [36;1mPY[0m
+2026-07-22T09:34:09.2310035Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-07-22T09:34:09.2310594Z ##[endgroup]
+---
+2026-07-22T09:34:09.2236305Z [36;1m[0m
+2026-07-22T09:34:09.2236551Z [36;1mcache_path = Path('scripts/cache-bust.js')[0m
+2026-07-22T09:34:09.2236902Z [36;1mcache = cache_path.read_text(encoding='utf-8')[0m
+2026-07-22T09:34:09.2237361Z [36;1mold = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`, 'g');"[0m
+2026-07-22T09:34:09.2237883Z [36;1mnew = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s\"'&}>]+`, 'g');"[0m
+2026-07-22T09:34:09.2238278Z [36;1mif old in cache:[0m
+2026-07-22T09:34:09.2238577Z [36;1m    cache = cache.replace(old, new, 1)[0m
+2026-07-22T09:34:09.2238875Z [36;1melif new not in cache:[0m
+2026-07-22T09:34:09.2239249Z [36;1m    raise SystemExit('cache-bust Astro revision regex anchor not found')[0m
+2026-07-22T09:34:09.2239689Z [36;1mcache_path.write_text(cache, encoding='utf-8')[0m
+2026-07-22T09:34:09.2240095Z [36;1mPY[0m
+2026-07-22T09:34:09.2310035Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-07-22T09:34:09.2310594Z ##[endgroup]
+2026-07-22T09:34:09.3235746Z cache-bust Astro revision regex anchor not found
+2026-07-22T09:34:09.3291338Z ##[error]Process completed with exit code 1.
+2026-07-22T09:34:09.3455821Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-22T09:34:09.3456984Z Post job cleanup.
+2026-07-22T09:34:09.4321409Z [command]/usr/bin/git version
+2026-07-22T09:34:09.4359087Z git version 2.54.0
+2026-07-22T09:34:09.4426727Z Temporarily overriding HOME='/home/runner/work/_temp/e09f7728-9f5c-43b3-8de2-bf375257b945' before making global git config changes
+---
+2026-07-22T09:34:09.2238278Z [36;1mif old in cache:[0m
+2026-07-22T09:34:09.2238577Z [36;1m    cache = cache.replace(old, new, 1)[0m
+2026-07-22T09:34:09.2238875Z [36;1melif new not in cache:[0m
+2026-07-22T09:34:09.2239249Z [36;1m    raise SystemExit('cache-bust Astro revision regex anchor not found')[0m
+2026-07-22T09:34:09.2239689Z [36;1mcache_path.write_text(cache, encoding='utf-8')[0m
+2026-07-22T09:34:09.2240095Z [36;1mPY[0m
+2026-07-22T09:34:09.2310035Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-07-22T09:34:09.2310594Z ##[endgroup]
+2026-07-22T09:34:09.3235746Z cache-bust Astro revision regex anchor not found
+2026-07-22T09:34:09.3291338Z ##[error]Process completed with exit code 1.
+2026-07-22T09:34:09.3455821Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-22T09:34:09.3456984Z Post job cleanup.
+2026-07-22T09:34:09.4321409Z [command]/usr/bin/git version
+2026-07-22T09:34:09.4359087Z git version 2.54.0
+2026-07-22T09:34:09.4426727Z Temporarily overriding HOME='/home/runner/work/_temp/e09f7728-9f5c-43b3-8de2-bf375257b945' before making global git config changes
+2026-07-22T09:34:09.4428303Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-22T09:34:09.4431651Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gb-is-my-strength/gb-is-my-strength
+2026-07-22T09:34:09.4472671Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-22T09:34:09.4510011Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-22T09:34:09.4825813Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+---
+2026-07-22T09:34:09.2238577Z [36;1m    cache = cache.replace(old, new, 1)[0m
+2026-07-22T09:34:09.2238875Z [36;1melif new not in cache:[0m
+2026-07-22T09:34:09.2239249Z [36;1m    raise SystemExit('cache-bust Astro revision regex anchor not found')[0m
+2026-07-22T09:34:09.2239689Z [36;1mcache_path.write_text(cache, encoding='utf-8')[0m
+2026-07-22T09:34:09.2240095Z [36;1mPY[0m
+2026-07-22T09:34:09.2310035Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-07-22T09:34:09.2310594Z ##[endgroup]
+2026-07-22T09:34:09.3235746Z cache-bust Astro revision regex anchor not found
+2026-07-22T09:34:09.3291338Z ##[error]Process completed with exit code 1.
+2026-07-22T09:34:09.3455821Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-22T09:34:09.3456984Z Post job cleanup.
+2026-07-22T09:34:09.4321409Z [command]/usr/bin/git version
+2026-07-22T09:34:09.4359087Z git version 2.54.0
+2026-07-22T09:34:09.4426727Z Temporarily overriding HOME='/home/runner/work/_temp/e09f7728-9f5c-43b3-8de2-bf375257b945' before making global git config changes
+2026-07-22T09:34:09.4428303Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-22T09:34:09.4431651Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gb-is-my-strength/gb-is-my-strength
+2026-07-22T09:34:09.4472671Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-22T09:34:09.4510011Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-22T09:34:09.4825813Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-22T09:34:09.4854412Z http.https://github.com/.extraheader
+---
