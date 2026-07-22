@@ -65,6 +65,9 @@ forbidText(component, '✓', 'neutral component verdict glyphs');
 forbidText(component, '✗', 'neutral component verdict glyphs');
 
 for (const exactIconUrl of [
+  'https://gospod-bog.ru/favicon.ico',
+  'https://gospod-bog.ru/favicon-48.png',
+  'https://gospod-bog.ru/favicon-120.png',
   'https://gospod-bog.ru/apple-touch-icon.png',
   'https://gospod-bog.ru/icons/icon-192.png',
 ]) {
