@@ -1,11 +1,13 @@
 name: Temp Nagornaya neutral comparison orchestrator
 
 on:
-  push:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
     branches:
       - main
-    paths:
-      - .github/workflows/_temp-nagornaya-neutral-comparison-orchestrator.yml
   workflow_dispatch:
 
 permissions:
@@ -13,12 +15,16 @@ permissions:
 
 jobs:
   transaction:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/nagornaya-neutral-comparison-ui-2026-07-22')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: agent/nagornaya-neutral-comparison-ui-2026-07-22
+          ref: ${{ github.event.pull_request.head.sha || 'agent/nagornaya-neutral-comparison-ui-2026-07-22' }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -108,5 +114,3 @@ jobs:
           name: nagornaya-neutral-comparison-evidence-${{ github.run_id }}
           path: reports/nagornaya-neutral-comparison
           if-no-files-found: warn
-
-# trigger: 2026-07-22T22:35:00+02:00
