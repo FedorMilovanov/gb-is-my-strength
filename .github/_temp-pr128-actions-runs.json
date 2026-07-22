@@ -1,0 +1,28 @@
+[
+  {
+    "id": 29909187468,
+    "name": "TEMP Validate SW V191 Baseline",
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "run_number": 2,
+    "head_sha": "d21a5eeb043e85cca48942532443f82bd89447e6",
+    "head_branch": "fix/sw-baseline-v191-2026-07-22",
+    "created_at": "2026-07-22T09:44:49Z",
+    "updated_at": "2026-07-22T09:45:00Z",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29909187468"
+  },
+  {
+    "id": 29909190913,
+    "name": "Shared Files Guard",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "run_number": 1840,
+    "head_sha": "d21a5eeb043e85cca48942532443f82bd89447e6",
+    "head_branch": "fix/sw-baseline-v191-2026-07-22",
+    "created_at": "2026-07-22T09:44:52Z",
+    "updated_at": "2026-07-22T09:45:25Z",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29909190913"
+  }
+]
