@@ -1,0 +1,68 @@
+name: Temp Gill wave4 monolith finalize
+
+on:
+  workflow_run:
+    workflows: ["Shared Files Guard"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-gill-wave4-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_branch == 'agent/gill-source-marathon'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact Gill branch head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Detect one-time finalizer
+        id: finalizer
+        shell: bash
+        run: |
+          if [[ -f scripts/gill-wave4-finalize.py ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply native Gill monolith corrections
+        if: steps.finalizer.outputs.present == 'true'
+        run: python3 scripts/gill-wave4-finalize.py
+
+      - name: Set up Node
+        if: steps.finalizer.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.finalizer.outputs.present == 'true'
+        run: npm ci
+
+      - name: Validate native publication
+        if: steps.finalizer.outputs.present == 'true'
+        run: |
+          node scripts/route-source-contract-audit.js --strict
+          npm run astro:check
+          npm run validate:static-publication
+
+      - name: Commit verified Gill corpus
+        if: steps.finalizer.outputs.present == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          git commit -m 'content(gill): finalize source-backed legacy corrections'
+          git push origin HEAD:refs/heads/agent/gill-source-marathon
