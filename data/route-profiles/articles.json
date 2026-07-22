@@ -53,8 +53,16 @@
     ]
   },
   "visualParity": {
-    "desktop": 0,
-    "mobile": 0
+    "mode": "native-contract",
+    "legacyComparison": "diagnostic-only",
+    "reason": "The strict-native catalog derives current series counters and reading metadata from native content contracts; root legacy HTML is retained as historical evidence and contains intentionally stale values.",
+    "requiredGuards": [
+      "scripts/articles-visual-parity-audit.js",
+      "scripts/check-data-consistency.js",
+      "scripts/public-surface-browser-matrix.mjs"
+    ],
+    "reviewedAt": "2026-07-22",
+    "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
   },
   "cssPilot": null,
   "migrationHistory": "AGENTS-r276 (split raw main), AGENTS-r279 (componentized main), AGENTS-r251 (native-shadow confirmed)"
