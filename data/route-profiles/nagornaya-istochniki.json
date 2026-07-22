@@ -1,8 +1,8 @@
 {
   "route": "/nagornaya/istochniki/",
   "profiledAt": "2026-06-22",
-  "migrationLane": "content",
-  "routeType": "series-chapter",
+  "migrationLane": "reference",
+  "routeType": "series-reference",
   "surfaceContractVersion": 1,
   "surface": "series",
   "seriesShape": "flat",
@@ -19,6 +19,6 @@
     "mobile": 0
   },
   "cssPilot": null,
-  "scope": "excluded-semantic-lane",
+  "scope": "route-semantics-v1",
   "migrationMode": "strict-native"
 }
