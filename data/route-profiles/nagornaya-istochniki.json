@@ -19,6 +19,6 @@
     "mobile": 0
   },
   "cssPilot": null,
-  "scope": "route-semantics-v1",
+  "scope": "excluded-semantic-lane",
   "migrationMode": "strict-native"
 }
