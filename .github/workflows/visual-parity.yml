@@ -47,10 +47,10 @@ on:
   workflow_dispatch:
     inputs:
       routes:
-        description: 'Comma-separated routes (default: all landing routes).'
+        description: 'Comma-separated routes (default: landing routes plus the Nagornaya sources baseline).'
         required: false
         type: string
-        default: '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/hard-texts/,/konfessii/,/pastor-series/,/map/'
+        default: '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/nagornaya/istochniki/,/hard-texts/,/konfessii/,/pastor-series/,/map/'
       threshold:
         description: 'Diagnostic raw pixel-diff threshold percent (default: 1.0).'
         required: false
@@ -97,7 +97,7 @@ jobs:
       - name: Capture legacy-vs-dist pixel diagnostics
         id: screenshots
         env:
-          ROUTES: ${{ github.event.inputs.routes || '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/hard-texts/,/konfessii/,/pastor-series/,/map/' }}
+          ROUTES: ${{ github.event.inputs.routes || '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/nagornaya/istochniki/,/hard-texts/,/konfessii/,/pastor-series/,/map/' }}
           THRESHOLD: ${{ github.event.inputs.threshold || '1.0' }}
         run: |
           echo "Routes: $ROUTES"
