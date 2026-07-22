@@ -48,9 +48,11 @@ assert.equal(
   `${DEPLOY_PATH}: readiness workflow dependency must be declared exactly once`,
 );
 
-for (const [rel, text] of [[READINESS_PATH, readiness], [DEPLOY_PATH, deploy]]) {
-  assertPushPath(text, rel, 'scripts/**');
-}
+// Any build, validation or deploy-smoke script can change whether a commit is
+// safe to publish. Readiness therefore must observe the whole scripts tree.
+// We intentionally do not freeze deploy.yml's direct-push path topology here;
+// removing overlapping direct deploy triggers is a separate architecture lane.
+assertPushPath(readiness, READINESS_PATH, 'scripts/**');
 
 console.log(`✅ workflow linkage: ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
-console.log('✅ readiness/deploy script path coverage: scripts/**');
+console.log('✅ readiness script path coverage: scripts/**');
