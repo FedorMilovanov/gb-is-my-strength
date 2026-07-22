@@ -4,8 +4,6 @@ on:
   workflow_run:
     workflows: ["Shared Files Guard"]
     types: [completed]
-    branches:
-      - agent/nagornaya-neutral-comparison-ui-2026-07-22
 
 permissions:
   contents: write
