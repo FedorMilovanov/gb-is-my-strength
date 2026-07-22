@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+const ROOT_PREFIX = `${ROOT}${path.sep}`;
 const ARGS = process.argv.slice(2);
 const MODE = ARGS.includes('--update') ? 'update' : 'check';
 const STRICT_NEW_ROUTES = ARGS.includes('--strict-new-routes');
@@ -56,6 +57,15 @@ function routeMode(baseline, route) {
   return policy?.mode || 'legacy-diff';
 }
 
+function validateGuardPath(route, guard) {
+  if (typeof guard !== 'string' || !guard.trim()) return `${route}: native-contract guard must be a non-empty repository path`;
+  if (path.isAbsolute(guard)) return `${route}: native-contract guard must be repository-relative: ${guard}`;
+  const resolved = path.resolve(ROOT, guard);
+  if (!resolved.startsWith(ROOT_PREFIX)) return `${route}: native-contract guard escapes repository root: ${guard}`;
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) return `${route}: native-contract guard file does not exist: ${guard}`;
+  return null;
+}
+
 function validateRouteModes(baseline) {
   const problems = [];
   for (const [route, policy] of Object.entries(baseline.routeModes || {})) {
@@ -70,6 +80,14 @@ function validateRouteModes(baseline) {
       }
       if (!Array.isArray(policy.requiredGuards) || policy.requiredGuards.length < 2) {
         problems.push(`${route}: native-contract requires at least two named blocking guards`);
+      } else {
+        if (new Set(policy.requiredGuards).size !== policy.requiredGuards.length) {
+          problems.push(`${route}: native-contract requiredGuards must be unique`);
+        }
+        for (const guard of policy.requiredGuards) {
+          const guardProblem = validateGuardPath(route, guard);
+          if (guardProblem) problems.push(guardProblem);
+        }
       }
     }
   }
@@ -160,4 +178,4 @@ if (problems.length) {
   console.error(`\n❌ visual parity policy failed: ${problems.length} problem(s)`);
   process.exit(1);
 }
-console.log(`\n✅ visual parity policy passed (legacy tolerance +${tol}%; native-contract routes delegated to named guards)`);
+console.log(`\n✅ visual parity policy passed (legacy tolerance +${tol}%; native-contract routes delegated to existing named guards)`);
