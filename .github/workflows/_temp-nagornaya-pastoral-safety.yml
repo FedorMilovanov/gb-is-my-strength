@@ -43,10 +43,9 @@ jobs:
           old = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Полное отсутствие плодов — смертный приговор вере</strong> — если за годы «христианства» в жизни человека нет ни покаяния, ни борьбы с грехом, ни плодов Духа — библейский пастырь обязан предупредить его: Мф 7:21 относится к нему.</span></div>'
           new = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Упорное бесплодие требует серьёзного самоиспытания</strong> — если на протяжении долгого времени человек не видит ни покаяния, ни борьбы с грехом, ни направления к послушанию, пастырь обязан серьёзно предупредить его о возможности самообмана в свете Мф 7:21–23, призвать к покаянию и помочь обратиться за пастырской поддержкой. Окончательный суд о сердце принадлежит Христу; это предупреждение нельзя механически применять к сокрушённому верующему, который борется с грехом.</span></div>'
 
-          roots = [Path('src'), Path('nagornaya')]
           changed = []
           matches = 0
-          for root in roots:
+          for root in (Path('src'), Path('nagornaya')):
               for path in root.rglob('*'):
                   if path.suffix not in {'.astro', '.html', '.mdx'}:
                       continue
@@ -116,16 +115,11 @@ jobs:
           from pathlib import Path
           p = Path('.github/workflows/shared-files-guard.yml')
           text = p.read_text(encoding='utf-8')
-          anchor = '''      - name: Reader preferences regressions
-                run: node scripts/reader-preferences-regression-test.js
-          '''
-          insert = anchor + '''
-                - name: Nagornaya pastoral safety regressions
-                  run: node scripts/nagornaya-pastoral-safety-regression-test.js
-          '''
+          anchor = "      - name: Reader preferences regressions\n        run: node scripts/reader-preferences-regression-test.js\n"
+          addition = "\n      - name: Nagornaya pastoral safety regressions\n        run: node scripts/nagornaya-pastoral-safety-regression-test.js\n"
           if text.count(anchor) != 1:
               raise SystemExit(f'shared-files guard anchor count: {text.count(anchor)}')
-          p.write_text(text.replace(anchor, insert, 1), encoding='utf-8')
+          p.write_text(text.replace(anchor, anchor + addition, 1), encoding='utf-8')
           PY
 
       - name: Remove transaction workflow
