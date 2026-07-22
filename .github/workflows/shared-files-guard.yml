@@ -6,16 +6,21 @@ on:
     branches: [main]
   push:
     branches: [main, "lane/**", "agent/**"]
+  issue_comment:
+    types: [created]
 
 concurrency:
-  group: shared-files-guard-${{ github.ref }}
+  group: ${{ github.event_name == 'issue_comment' && 'shared-files-guard-command-156' || format('shared-files-guard-{0}', github.ref) }}
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: read
+  issues: read
 
 jobs:
   guard:
+    if: github.event_name != 'issue_comment'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -113,3 +118,55 @@ jobs:
           echo "Branch: $REF_NAME"
           echo "Event: $EVENT_NAME"
           echo "Shared files guard completed"
+
+  gill_wave4_finalize:
+    if: github.event_name == 'issue_comment' && github.event.issue.pull_request && github.event.issue.number == 156 && github.event.comment.user.login == 'FedorMilovanov' && github.event.comment.body == '/run-gill-wave4'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact Gill branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/gill-source-marathon
+          fetch-depth: 0
+
+      - name: Verify one-time finalizer
+        run: test -f scripts/gill-wave4-finalize.py
+
+      - name: Mark finalizer start
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          printf 'pr=156\ncomment=%s\nsource_head=%s\n' '${{ github.event.comment.id }}' "$(git rev-parse HEAD)" > .gill-wave4-finalizer-started
+          git add .gill-wave4-finalizer-started
+          git commit -m 'chore(gill): mark wave4 finalizer start'
+          git push origin HEAD:refs/heads/agent/gill-source-marathon
+
+      - name: Apply native Gill monolith corrections
+        run: python3 scripts/gill-wave4-finalize.py
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate native publication
+        run: |
+          node scripts/route-source-contract-audit.js --strict
+          npm run astro:check
+          npm run validate:static-publication
+
+      - name: Commit verified Gill corpus
+        run: |
+          rm -f .gill-wave4-finalizer-started .gill-wave4-trigger
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          git commit -m 'content(gill): finalize source-backed legacy corrections'
+          git push origin HEAD:refs/heads/agent/gill-source-marathon
