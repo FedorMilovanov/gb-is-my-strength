@@ -64,7 +64,35 @@ interface RegistryShape {
   claims: RegistryClaim[];
 }
 
+type ClaimPresentation = Pick<
+  NagornayaClaimProjection,
+  'claim' | 'alternative' | 'seriesPosition' | 'changeCondition'
+>;
+
 const registry = registryData as RegistryShape;
+
+const claimPresentationRu: Record<string, ClaimPresentation> = {
+  'green-ipsissima-vox-model': {
+    claim:
+      'Дональд Грин защищает ограниченное употребление модели ipsissima vox в рамках богодухновенности и обещанного апостолам напоминания в Ин 14:26.',
+    alternative:
+      'Более широкая модель ipsissima vox допускает свободнее передавать смысл слов Иисуса без близкого словесного соответствия.',
+    seriesPosition:
+      'Серия принимает более узкую модель Грина, но ясно отмечает: обе позиции являются литературно-богословскими моделями, а не непосредственными наблюдениями над текстом.',
+    changeCondition:
+      'Вывод следует пересмотреть, если точная статья или более сильное первичное свидетельство покажет, что аргумент Грина либо альтернативная модель представлены неточно.',
+  },
+  'thomas-jesus-seminar-critique': {
+    claim:
+      'Роберт Томас критикует Jesus Seminar и связанные с ним историко-критические реконструкции евангельской традиции.',
+    alternative:
+      'Историко-критические реконструкции могут придавать больший объяснительный вес традиции общины и редакционному развитию материала.',
+    seriesPosition:
+      'Серия цитирует критику конкретного автора — Роберта Томаса — и не использует её как автоматическое доказательство всех последующих доктринальных или институциональных выводов.',
+    changeCondition:
+      'Вывод следует пересмотреть, если точная статья не подтверждает заявленный масштаб критики Томаса.',
+  },
+};
 
 const layerLimits: Record<NagornayaClaimLayer, string> = {
   'textual-observation':
@@ -118,6 +146,7 @@ export function getNagornayaClaimProjection(claimId: string): NagornayaClaimProj
     } satisfies NagornayaEvidenceItem;
   });
 
+  const presentation = claimPresentationRu[claim.id] ?? claim;
   const attributionBoundary =
     claim.attributionLevel === 'author'
       ? 'Публикация подтверждает аргумент названного автора, но не автоматически официальную позицию журнала, семинарии или всей традиции.'
@@ -125,14 +154,14 @@ export function getNagornayaClaimProjection(claimId: string): NagornayaClaimProj
 
   return {
     id: claim.id,
-    claim: claim.claim,
+    claim: presentation.claim,
     layer: claim.layer,
     primaryEvidence,
-    alternative: claim.alternative,
+    alternative: presentation.alternative,
     limits: [layerLimits[claim.layer], attributionBoundary].filter(Boolean).join(' '),
-    seriesPosition: claim.seriesPosition,
+    seriesPosition: presentation.seriesPosition,
     confidence: claim.confidence,
-    changeCondition: claim.changeCondition,
+    changeCondition: presentation.changeCondition,
     attributionLevel: claim.attributionLevel,
   };
 }
