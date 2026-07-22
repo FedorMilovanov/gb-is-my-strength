@@ -40,4 +40,4 @@ try {
 }
 
 console.log('Nagornaya neutral comparison baseline witness captured');
-// synchronization trigger: post-shared-guard orchestration
+// synchronization trigger: unfiltered workflow-run orchestration
