@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: temp-apply-nagornaya-source-integrity-141
@@ -38,19 +39,32 @@ jobs:
         run: npm ci
 
       - name: Apply exact source-integrity patch
+        id: patch
         if: steps.guard.outputs.apply == 'true'
-        run: python3 scripts/_temp_apply_nagornaya_source_integrity.py
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/_temp_apply_nagornaya_source_integrity.py > /tmp/source-integrity-patch.log 2>&1
+          rc=$?
+          cat /tmp/source-integrity-patch.log
+          exit "$rc"
+
+      - name: Post exact patch diagnostic
+        if: always() && steps.guard.outputs.apply == 'true' && steps.patch.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment 141 --repo "$GITHUB_REPOSITORY" --body-file /tmp/source-integrity-patch.log
 
       - name: Verify source-integrity regression
-        if: steps.guard.outputs.apply == 'true'
+        if: steps.guard.outputs.apply == 'true' && steps.patch.outcome == 'success'
         run: node scripts/nagornaya-source-integrity-regression-test.js
 
       - name: Verify full publication barrier
-        if: steps.guard.outputs.apply == 'true'
+        if: steps.guard.outputs.apply == 'true' && steps.patch.outcome == 'success'
         run: npm run validate:static-publication:light
 
       - name: Verify clean scoped diff
-        if: steps.guard.outputs.apply == 'true'
+        if: steps.guard.outputs.apply == 'true' && steps.patch.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
@@ -80,7 +94,7 @@ jobs:
           PY
 
       - name: Publish validated source-integrity files
-        if: steps.guard.outputs.apply == 'true'
+        if: steps.guard.outputs.apply == 'true' && steps.patch.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
