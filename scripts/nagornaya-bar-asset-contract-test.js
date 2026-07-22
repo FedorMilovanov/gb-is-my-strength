@@ -40,6 +40,7 @@ function assertCompactFooterContract(rel) {
 }
 
 const compact = read(COMPACT_COMPONENT);
+assert.match(compact, /\.gtip:not\(\.gb-floating-tip\)[\s\S]*?display:\s*none\s*!important/, `${COMPACT_COMPONENT}: closed glossary cards must not contribute layout width`);
 assert.match(compact, /@media\s*\(max-width:\s*359px\)/, `${COMPACT_COMPONENT}: 320px media contract is missing`);
 for (const selector of ['.bar-progress', '.bar-divider', '#barUpBtn', '#barShareBtn']) {
   assert(compact.includes(selector), `${COMPACT_COMPONENT}: compact priority rule is missing ${selector}`);
@@ -79,4 +80,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared <=359px heading, priority and speed-sheet contracts, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading, priority and speed-sheet contracts, adversarial v=1 rejected`);
