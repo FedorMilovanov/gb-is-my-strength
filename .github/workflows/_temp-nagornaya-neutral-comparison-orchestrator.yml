@@ -2,7 +2,7 @@ name: Temp Nagornaya neutral comparison orchestrator
 
 on:
   pull_request_target:
-    types: [synchronize]
+    types: [opened, reopened, synchronize]
     branches: [main]
 
 permissions:
