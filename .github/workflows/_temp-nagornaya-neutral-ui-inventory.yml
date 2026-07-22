@@ -1,6 +1,9 @@
 name: Temp Nagornaya neutral UI inventory
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - agent/nagornaya-neutral-comparison-ui
