@@ -1,9 +1,30 @@
 name: Deploy to GitHub Pages
 
-# Production deploy has one automatic entry point: a successful read-only
-# Metadata & IndexNow Readiness run. workflow_dispatch remains for explicit
-# operator recovery. The workflow never rewrites source revisions.
+# Automatic deploys have two disjoint trigger owners:
+# - source/build changes pass Metadata & IndexNow Readiness, then workflow_run;
+# - asset/special/static-only changes enter this workflow directly.
+# workflow_dispatch remains for explicit operator recovery. The workflow never
+# rewrites source revisions.
 on:
+  # These paths are intentionally absent from indexnow.yml. The permanent
+  # linkage regression requires the two push path sets to remain disjoint.
+  push:
+    branches: [main]
+    paths:
+      - 'images/**'
+      - 'fonts/**'
+      - 'icons/**'
+      - 'konfessii/**'
+      - 'karty/**'
+      - 'map/**'
+      - 'biografii/**'
+      - 'hard-texts/**'
+      - '.nojekyll'
+      - 'favicon*'
+      - 'apple-touch-icon.png'
+      - 'CNAME'
+      - '.github/workflows/deploy.yml'
+
   workflow_run:
     workflows: ["Metadata & IndexNow Readiness"]
     types: [completed]
@@ -25,11 +46,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Automatic deploy is allowed only after readiness succeeds. Manual runs
-    # remain available for explicit operator recovery. A failed/cancelled
-    # readiness must never ship production.
+    # Source/build deploys require successful readiness. Direct pushes are
+    # limited to the disjoint asset/special/static path set above. A failed or
+    # cancelled readiness must never ship production.
     if: >
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
 
     environment:
@@ -56,9 +78,9 @@ jobs:
       - name: Download fonts (if not in repo)
         run: node scripts/download-fonts.js || echo "Fonts download skipped"
 
-      - name: Check asset revisions for manual deploys
+      - name: Check asset revisions for direct deploys
         # workflow_run already follows a successful read-only readiness check.
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'workflow_run'
         run: node scripts/cache-bust.js
 
       - name: Static publication gates
