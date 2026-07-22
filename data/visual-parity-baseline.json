@@ -14,6 +14,17 @@
     "globalToleranceWasNotRaised": true
   },
   "routeModes": {
+    "/articles/": {
+      "mode": "native-contract",
+      "reason": "The strict-native catalog derives current series counters and reading metadata from native content contracts; the root legacy catalog is retained as historical evidence and contains intentionally stale values.",
+      "requiredGuards": [
+        "scripts/articles-visual-parity-audit.js",
+        "scripts/check-data-consistency.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-22",
+      "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
+    },
     "/baptisty-rossii/": {
       "mode": "native-contract",
       "reason": "The strict-native series landing intentionally uses the approved compact gbs2 Astro layout; root legacy HTML is retained as historical evidence, not the render owner.",
