@@ -62,10 +62,20 @@ jobs:
                   out.write('\n')
           print(f'Inventory rows: {len(rows)}')
           PY
+      - name: Materialize exact source cluster
+        run: |
+          mkdir -p exact-source
+          cp --parents data/nagornaya/source-registry.json exact-source/
+          cp --parents data/nagornaya/source-registry.schema.json exact-source/
+          cp -R --parents src/components/nagornaya exact-source/
+          cp -R --parents src/pages/nagornaya exact-source/
+          find scripts -maxdepth 1 -type f -name 'nagornaya*' -exec cp --parents {} exact-source/ \;
+          cp --parents package.json exact-source/
       - uses: actions/upload-artifact@v4
         with:
           name: nagornaya-neutral-ui-inventory
           path: |
             nagornaya-neutral-ui-inventory.json
             nagornaya-neutral-ui-inventory.txt
+            exact-source
           retention-days: 3
