@@ -1,0 +1,18 @@
+[
+  {
+    "id": 5044381703,
+    "created_at": "2026-07-22T09:51:31Z",
+    "updated_at": "2026-07-22T09:51:31Z",
+    "body": "## Final SW deploy blocker corrected\n\nThe single-owner Pages run `29907735891` for exact head `e4cf04ab` proved the topology fix and passed every gate through content coverage. It failed only at `Service Worker deploy-switch readiness` because `sw.js` was already `gb-v191-reader-preferences-20260721` while `migration/sw-cache-version-baseline.json` still expected v189.\n\nPR #128 fixed only that baseline and merged as `a0c9c025b05eccfce0ab4818da250d05d1b65da0`.\n\nEvidence before merge:\n- production-like build + Pagefind + exact fatal `sw:dist:audit:deploy-switch`: success in run `29909187468`;\n- final one-file Shared Files Guard `29909481987`: success;\n- `sw.js` itself was not changed or bumped again.\n\nKeeping #58 open for the new exact-head readiness → Pages success and all five production blob PASS results.",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5044381703",
+    "user": "FedorMilovanov"
+  },
+  {
+    "id": 5044481262,
+    "created_at": "2026-07-22T10:01:06Z",
+    "updated_at": "2026-07-22T10:01:06Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Metadata & IndexNow Readiness**\n- Conclusion: **success**\n- Run: 29909598796 (#1374)\n- Head SHA: a0c9c025b05eccfce0ab4818da250d05d1b65da0\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29909598796\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5044481262",
+    "user": "github-actions[bot]"
+  }
+]
