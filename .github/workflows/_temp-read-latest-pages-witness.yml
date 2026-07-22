@@ -1,4 +1,4 @@
-name: TEMP Relay Latest Pages Witness
+name: TEMP Persist Latest Pages Witness
 
 on:
   push:
@@ -6,21 +6,36 @@ on:
       - agent/nagornaya-bar-asset-contract-2026-07-22
 
 permissions:
-  contents: read
+  contents: write
   issues: read
-  pull-requests: write
+
+concurrency:
+  group: temp-persist-latest-pages-witness
+  cancel-in-progress: true
 
 jobs:
-  relay:
+  persist:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Relay latest issue 58 comment to PR 116
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/nagornaya-bar-asset-contract-2026-07-22
+          fetch-depth: 0
+      - name: Save latest issue 58 comment
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           api="repos/${GITHUB_REPOSITORY}/issues/58/comments?per_page=100"
-          gh api "$api" --jq '.[-1] | "## Latest issue #58 witness\n\nComment ID: `\(.id)`\n\n\(.body)"' > /tmp/latest.md
-          cat /tmp/latest.md
-          gh pr comment 116 --body-file /tmp/latest.md
+          gh api "$api" --jq '.[-1] | "# Latest issue 58 witness\n\nComment ID: `\(.id)`\n\nCreated: `\(.created_at)`\n\n\(.body)"' > .github/_temp-latest-issue58-witness.md
+          cat .github/_temp-latest-issue58-witness.md
+      - name: Commit witness file
+        shell: bash
+        run: |
+          git add .github/_temp-latest-issue58-witness.md
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'ci: persist latest issue 58 witness'
+          git push origin HEAD:agent/nagornaya-bar-asset-contract-2026-07-22
