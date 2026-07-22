@@ -1,0 +1,39 @@
+name: TEMP Nagornaya Revision Diagnostic
+
+on:
+  push:
+    branches:
+      - agent/nagornaya-bar-asset-contract-2026-07-22
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-nagornaya-revision-diagnostic
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.3'
+      - name: Capture read-only revision check
+        shell: bash
+        run: |
+          mkdir -p reports
+          set +e
+          node scripts/cache-bust.js > reports/cache-bust.log 2>&1
+          status=$?
+          printf 'exit_code=%s\n' "$status" > reports/status.txt
+          cat reports/cache-bust.log
+          exit 0
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: nagornaya-revision-diagnostic-${{ github.run_id }}
+          path: reports/
+          retention-days: 3
