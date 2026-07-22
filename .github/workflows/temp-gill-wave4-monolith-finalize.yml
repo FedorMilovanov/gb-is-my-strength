@@ -1,26 +1,28 @@
 name: Temp Gill wave4 monolith finalize
 
 on:
-  pull_request_target:
-    types: [synchronize]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
+  pull-requests: read
+  issues: read
 
 concurrency:
-  group: temp-gill-wave4-pr-${{ github.event.pull_request.number }}
+  group: temp-gill-wave4-pr-156
   cancel-in-progress: false
 
 jobs:
   finalize:
-    if: github.event.pull_request.number == 156 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/gill-source-marathon'
+    if: github.event.issue.pull_request && github.event.issue.number == 156 && github.event.comment.user.login == 'FedorMilovanov' && github.event.comment.body == '/run-gill-wave4'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - name: Checkout exact Gill branch head
+      - name: Checkout exact Gill branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: agent/gill-source-marathon
           fetch-depth: 0
 
       - name: Detect one-time finalizer
@@ -38,7 +40,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          printf 'pr=%s\nsource_head=%s\n' '${{ github.event.pull_request.number }}' '${{ github.event.pull_request.head.sha }}' > .gill-wave4-finalizer-started
+          printf 'pr=156\ncomment=%s\nsource_head=%s\n' '${{ github.event.comment.id }}' "$(git rev-parse HEAD)" > .gill-wave4-finalizer-started
           git add .gill-wave4-finalizer-started
           git commit -m 'chore(gill): mark wave4 finalizer start'
           git push origin HEAD:refs/heads/agent/gill-source-marathon
