@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: temp-nagornaya-revision-diagnostic
@@ -29,8 +30,22 @@ jobs:
           node scripts/cache-bust.js > reports/cache-bust.log 2>&1
           status=$?
           printf 'exit_code=%s\n' "$status" > reports/status.txt
+          {
+            echo '## Temporary cache-bust diagnostic'
+            echo
+            echo "Exit code: \`$status\`"
+            echo
+            echo '```text'
+            head -c 55000 reports/cache-bust.log
+            echo
+            echo '```'
+          } > reports/comment.md
           cat reports/cache-bust.log
           exit 0
+      - name: Publish diagnostic to PR 116
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment 116 --body-file reports/comment.md
       - name: Upload diagnostic
         uses: actions/upload-artifact@v4
         with:
