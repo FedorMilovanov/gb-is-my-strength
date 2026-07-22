@@ -40,3 +40,4 @@ try {
 }
 
 console.log('Nagornaya neutral comparison baseline witness captured');
+// synchronization trigger: simplified trusted orchestration
