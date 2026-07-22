@@ -27,6 +27,11 @@ function eventBlock(text, rel, eventName) {
   return match[1];
 }
 
+function hasEvent(text, eventName) {
+  const escaped = eventName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^\\s{2}${escaped}:\\s*$`, 'm').test(text);
+}
+
 function workflowRunDependencies(text) {
   const block = eventBlock(text, DEPLOY_PATH, 'workflow_run');
   const workflows = block.match(/^\s{4}workflows:\s*\[(.*)\]\s*$/m);
@@ -47,7 +52,6 @@ const deploy = read(DEPLOY_PATH);
 const readinessName = workflowName(readiness, READINESS_PATH);
 const dependencies = workflowRunDependencies(deploy);
 const readinessPaths = pushPaths(readiness, READINESS_PATH);
-const deployPaths = pushPaths(deploy, DEPLOY_PATH);
 
 assert.ok(
   dependencies.includes(readinessName),
@@ -59,30 +63,33 @@ assert.equal(
   `${DEPLOY_PATH}: readiness workflow dependency must be declared exactly once`,
 );
 
-const requiredReadinessPaths = [
+const documentedProductionPaths = [
   'src/**', 'data/**', 'baptisty-rossii/**', 'scripts/**', 'css/**', 'js/**',
   'sitemap.xml', 'feed.xml', 'astro.config.mjs', 'tsconfig.json', 'migration/**',
-  'package.json', 'package-lock.json',
+  'package.json', 'package-lock.json', 'images/**', 'fonts/**', 'icons/**',
+  'konfessii/**', 'karty/**', 'map/**', 'biografii/**', 'hard-texts/**',
+  '.nojekyll', 'favicon*', 'apple-touch-icon.png', 'CNAME',
+  '.github/workflows/deploy.yml', '.github/workflows/indexnow.yml',
 ];
-for (const glob of requiredReadinessPaths) {
+for (const glob of documentedProductionPaths) {
   assert.ok(readinessPaths.includes(glob), `${READINESS_PATH}: push.paths must include ${glob}`);
 }
-
-const requiredDirectDeployPaths = [
-  'images/**', 'fonts/**', 'icons/**', 'konfessii/**', 'karty/**', 'map/**',
-  'biografii/**', 'hard-texts/**', '.nojekyll', 'favicon*',
-  'apple-touch-icon.png', 'CNAME', '.github/workflows/deploy.yml',
-];
-for (const glob of requiredDirectDeployPaths) {
-  assert.ok(deployPaths.includes(glob), `${DEPLOY_PATH}: asset/infrastructure push.paths must include ${glob}`);
-}
-
-const overlap = deployPaths.filter((glob) => readinessPaths.includes(glob));
-assert.deepEqual(
-  overlap,
-  [],
-  `readiness and direct deploy push.paths must be disjoint; overlap: ${JSON.stringify(overlap)}`,
+assert.ok(
+  readinessPaths.includes('**'),
+  `${READINESS_PATH}: push.paths must include ** so mixed commits and new route families cannot bypass readiness`,
 );
 
-console.log(`✅ workflow linkage: ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
-console.log(`✅ readiness-owned paths: ${readinessPaths.length}; direct asset paths: ${deployPaths.length}; overlap: 0`);
+assert.equal(
+  hasEvent(deploy, 'push'),
+  false,
+  `${DEPLOY_PATH}: on.push is forbidden; all automatic deploys must follow successful readiness`,
+);
+assert.doesNotMatch(
+  deploy,
+  /github\.event_name\s*==\s*['"]push['"]/,
+  `${DEPLOY_PATH}: deploy job condition must not accept direct push events`,
+);
+
+console.log(`✅ workflow linkage: every main push → ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
+console.log(`✅ readiness documented paths: ${documentedProductionPaths.length}; exhaustive catch-all: **`);
+console.log('✅ direct automatic Pages push entry: absent');
