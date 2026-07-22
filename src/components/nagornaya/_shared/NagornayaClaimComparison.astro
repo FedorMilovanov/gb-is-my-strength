@@ -1,0 +1,142 @@
+---
+import registry from '../../../../data/nagornaya/source-registry.json';
+
+interface Props {
+  blockId: string;
+  claimIds: string[];
+  title?: string;
+  description?: string;
+}
+
+const {
+  blockId,
+  claimIds,
+  title = 'Карта аргумента: данные, модель и вывод серии',
+  description = 'Альтернативная модель представлена до конфессионального вывода; источник автора не повышается автоматически до позиции учреждения.',
+} = Astro.props;
+
+if (!/^[a-z][a-z0-9-]*$/.test(blockId)) {
+  throw new Error(`Invalid Nagornaya comparison blockId: ${blockId}`);
+}
+if (!Array.isArray(claimIds) || claimIds.length === 0 || new Set(claimIds).size !== claimIds.length) {
+  throw new Error(`Nagornaya comparison ${blockId}: claimIds must be a non-empty unique list`);
+}
+
+const layerLabels: Record<string, string> = {
+  'textual-observation': 'Наблюдение над текстом',
+  'historical-reconstruction': 'Историческая реконструкция',
+  'literary-model': 'Литературная модель',
+  'doctrinal-synthesis': 'Богословский синтез',
+  'pastoral-application': 'Пастырское применение',
+};
+const confidenceLabels: Record<string, string> = {
+  high: 'высокая', medium: 'средняя', low: 'низкая', unsupported: 'не подтверждено',
+};
+const attributionLabels: Record<string, string> = {
+  author: 'позиция названного автора',
+  'editorial-venue': 'позиция редакционной площадки',
+  institution: 'официальная позиция учреждения',
+};
+
+const claims = claimIds.map((id) => {
+  const claim = registry.claims.find((entry) => entry.id === id);
+  if (!claim) throw new Error(`Unknown Nagornaya claim id: ${id}`);
+  if (!('presentation' in claim) || !claim.presentation) {
+    throw new Error(`Nagornaya claim ${id} has no canonical presentation projection`);
+  }
+  const sources = claim.primaryEvidence.map((sourceId) => {
+    const source = registry.sources.find((entry) => entry.id === sourceId);
+    if (!source) throw new Error(`Unknown Nagornaya source id: ${sourceId}`);
+    return source;
+  });
+  return { claim, presentation: claim.presentation, sources };
+});
+const headingId = `${blockId}-title`;
+---
+<section class="ng-claim-comparison" id={blockId} data-nagornaya-epistemic-ui="claim-registry" aria-labelledby={headingId}>
+  <header class="ng-claim-comparison__header">
+    <p class="ng-claim-comparison__eyebrow">Проверяемая карта аргумента</p>
+    <h3 id={headingId}>{title}</h3>
+    <p>{description}</p>
+  </header>
+  <div class="ng-claim-comparison__list">
+    {claims.map(({ claim, presentation, sources }, index) => {
+      const claimHeadingId = `${blockId}-claim-${index + 1}`;
+      return (
+        <article class="ng-claim-card" aria-labelledby={claimHeadingId} data-claim-id={claim.id}>
+          <div class="ng-claim-card__meta">
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <span>{layerLabels[claim.layer] ?? claim.layer}</span>
+            <span>Уверенность: {confidenceLabels[claim.confidence] ?? claim.confidence}</span>
+          </div>
+          <h4 id={claimHeadingId}>{presentation.title}</h4>
+          <p class="ng-claim-card__claim">{presentation.claim}</p>
+          <div class="ng-claim-card__grid">
+            <section>
+              <h5>Что объясняет</h5>
+              <ul>{presentation.explains.map((item) => <li>{item}</li>)}</ul>
+            </section>
+            <section>
+              <h5>Чего не доказывает</h5>
+              <ul>{presentation.doesNotProve.map((item) => <li>{item}</li>)}</ul>
+            </section>
+            <section>
+              <h5>Цена предпосылок</h5>
+              <ul>{presentation.assumptionCost.map((item) => <li>{item}</li>)}</ul>
+            </section>
+            <section>
+              <h5>Альтернативная модель</h5>
+              <p>{presentation.alternative}</p>
+            </section>
+            <section>
+              <h5>Первичное свидетельство</h5>
+              {sources.length ? <ul>{sources.map((source) => <li><a href={source.resolvedUrl} rel="noopener noreferrer">{source.author}. {source.title}</a><small>{source.volumeIssueYear}, с. {source.pages}</small></li>)}</ul> : <p>Первичное свидетельство для этого уровня атрибуции в реестре отсутствует.</p>}
+            </section>
+            <section>
+              <h5>Граница атрибуции</h5>
+              <p>{attributionLabels[claim.attributionLevel] ?? claim.attributionLevel}. Публикационная площадка сама по себе не повышает аргумент до официального заявления учреждения.</p>
+            </section>
+          </div>
+          <section class="ng-claim-card__series-position">
+            <h5>Позиция серии</h5><p>{presentation.seriesPosition}</p>
+          </section>
+          <details class="ng-claim-card__revision">
+            <summary>Что может изменить вывод</summary><p>{presentation.changeCondition}</p>
+          </details>
+        </article>
+      );
+    })}
+  </div>
+</section>
+<style>
+  .ng-claim-comparison{margin:1.5rem 0 2rem;border:1px solid #d6d3d1;border-radius:1.1rem;background:#fafaf9;overflow:hidden;color:#292524}
+  .ng-claim-comparison__header{padding:1.25rem 1.35rem;border-bottom:1px solid #d6d3d1;background:linear-gradient(135deg,#f5f5f4,#fffbeb)}
+  .ng-claim-comparison__eyebrow{margin:0 0 .45rem;color:#92400e;font-size:.72rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
+  .ng-claim-comparison h3{margin:0;font-size:clamp(1.15rem,3vw,1.55rem);line-height:1.25;color:#292524}
+  .ng-claim-comparison__header>p:last-child{max-width:72ch;margin:.65rem 0 0;color:#57534e;font-size:.92rem;line-height:1.6}
+  .ng-claim-comparison__list{display:grid;gap:1px;background:#d6d3d1}
+  .ng-claim-card{padding:1.25rem 1.35rem;background:#fff}
+  .ng-claim-card__meta{display:flex;flex-wrap:wrap;gap:.45rem .7rem;margin-bottom:.8rem;color:#57534e;font:700 .7rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .ng-claim-card__meta span{padding:.28rem .55rem;border:1px solid #d6d3d1;border-radius:999px;background:#f5f5f4}
+  .ng-claim-card h4{margin:0;color:#292524;font-size:1.05rem;line-height:1.45}
+  .ng-claim-card__claim{margin:.7rem 0 0;color:#57534e;line-height:1.65}
+  .ng-claim-card__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin-top:1rem}
+  .ng-claim-card__grid>section{min-width:0;padding:.9rem;border:1px solid #e7e5e4;border-radius:.8rem;background:#fafaf9}
+  .ng-claim-card h5{margin:0 0 .45rem;color:#78716c;font-size:.69rem;font-weight:850;letter-spacing:.055em;text-transform:uppercase}
+  .ng-claim-card p,.ng-claim-card li{color:#57534e;font-size:.86rem;line-height:1.58;overflow-wrap:anywhere}
+  .ng-claim-card ul{margin:0;padding-left:1.05rem}.ng-claim-card li+li{margin-top:.35rem}
+  .ng-claim-card a{color:#7c2d12;font-weight:700;text-decoration-thickness:.08em;text-underline-offset:.18em}
+  .ng-claim-card small{display:block;margin-top:.15rem;color:#78716c}
+  .ng-claim-card__series-position{margin-top:.85rem;padding:1rem;border:1px solid #d6d3d1;border-left:4px solid #a8a29e;border-radius:.8rem;background:#f5f5f4}
+  .ng-claim-card__series-position p{margin:0}
+  .ng-claim-card__revision{margin-top:.8rem;border-top:1px solid #e7e5e4;padding-top:.75rem}.ng-claim-card__revision summary{cursor:pointer;color:#57534e;font-size:.82rem;font-weight:750}.ng-claim-card__revision p{margin:.55rem 0 0}
+  @media(max-width:640px){.ng-claim-comparison__header,.ng-claim-card{padding:1rem}.ng-claim-card__grid{grid-template-columns:minmax(0,1fr)}}
+  :global(html.dark) .ng-claim-comparison,:global(html[data-theme='dark']) .ng-claim-comparison{border-color:#57534e;background:#1c1917;color:#f5f5f4}
+  :global(html.dark) .ng-claim-comparison__header,:global(html[data-theme='dark']) .ng-claim-comparison__header{border-color:#57534e;background:linear-gradient(135deg,#292524,#451a03)}
+  :global(html.dark) .ng-claim-comparison h3,:global(html.dark) .ng-claim-card h4,:global(html[data-theme='dark']) .ng-claim-comparison h3,:global(html[data-theme='dark']) .ng-claim-card h4{color:#fafaf9}
+  :global(html.dark) .ng-claim-comparison__header>p:last-child,:global(html.dark) .ng-claim-card p,:global(html.dark) .ng-claim-card li,:global(html[data-theme='dark']) .ng-claim-comparison__header>p:last-child,:global(html[data-theme='dark']) .ng-claim-card p,:global(html[data-theme='dark']) .ng-claim-card li{color:#d6d3d1}
+  :global(html.dark) .ng-claim-comparison__list,:global(html[data-theme='dark']) .ng-claim-comparison__list{background:#57534e}
+  :global(html.dark) .ng-claim-card,:global(html[data-theme='dark']) .ng-claim-card{background:#1c1917}
+  :global(html.dark) .ng-claim-card__grid>section,:global(html.dark) .ng-claim-card__series-position,:global(html[data-theme='dark']) .ng-claim-card__grid>section,:global(html[data-theme='dark']) .ng-claim-card__series-position{border-color:#57534e;background:#292524}
+  @media(prefers-reduced-motion:reduce){.ng-claim-card__revision summary{scroll-behavior:auto}}
+</style>

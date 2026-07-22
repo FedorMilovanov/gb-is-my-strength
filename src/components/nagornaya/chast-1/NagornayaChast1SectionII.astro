@@ -5,12 +5,13 @@
  * Extracted from main.html lines 105-135.
  * DOM/classes/IDs preserved byte-identical for site.js selector compatibility.
  */
+import NagornayaObservationComparison from '../_shared/NagornayaObservationComparison.astro';
 ---
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><h2 id="ii-параметры-сравнения-матфей-и-лука" class="text-xl font-bold text-stone-800 tracking-tight">II. Параметры сравнения: Матфей и Лука</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Два ракурса одной смысловой реальности</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><h2 id="ii-параметры-сравнения-матфей-и-лука" class="text-xl font-bold text-stone-800 tracking-tight">II. Параметры сравнения: Матфей и Лука</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Сначала текстовые данные, затем конкурирующие объяснения</p></div>
 
 <div class="bg-white border border-stone-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 text-sm text-stone-700">
-<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Сравнение Матфея и Луки — это не упражнение по поиску «ошибок», а способ увидеть многогранную славу Христа. Матфей (еврейский автор) представляет Иисуса как <span class="tooltip-trigger" data-tooltip="Мессия как истинный Царь Израиля, обладающий всей полнотой власти">Царя-Законодателя</span>, тогда как Лука (пишущий для язычников) делает акцент на Христе как Спасителе всех сословий.</p>
-<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Ниже приведена таблица ключевых различий. Эти данные станут фундаментом для Части II, где мы разберём, как независимость авторов и руководство Духа Святого гармонируют с этими фактами. Мы увидим, что <span class="tooltip-trigger" data-tooltip="Различия в выборе материала разными авторами, не являющиеся противоречием">различный отбор материала</span> — это осознанный замысел Духа.</p>
+<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Сначала зафиксируем различия Матфея и Луки без преждевременного объяснения их происхождения. Место, объём, порядок и формулировки — наблюдаемые свойства канонического текста. Выводы об одном или двух событиях, переводе, повторном обучении, устной традиции либо литературной композиции относятся уже к уровню реконструкции.</p>
+<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Серия придерживается конфессионального доверия к исторической истинности и богодухновенности обоих Евангелий. Но это богословская рамка серии; сама сравнительная таблица ниже не должна незаметно превращать её в единственно возможное описание механизма возникновения текста.</p>
 </div>
 
 <div class="overflow-x-auto">
@@ -30,6 +31,17 @@
 </tbody>
 </table>
 </div>
+<NagornayaObservationComparison
+  blockId="nagornaya-matthew-luke-observation-matrix"
+  title="Что видно в тексте и какие объяснения остаются моделями"
+  rows={[
+    { observation: 'Матфей помещает речь на горе; Лука — на ровном месте.', possibleExplanation: 'Одно событие на ровной площадке горного склона.', competingExplanation: 'Два близких эпизода или повторение сходного учения.', confidence: 'Наблюдение: высокая; реконструкция: средняя.' },
+    { observation: 'Матфей передаёт значительно больший объём материала, чем Лука.', possibleExplanation: 'Различный отбор и сокращение одной проповеди.', competingExplanation: 'Повторное обучение либо литературная композиция из близких речений.', confidence: 'Объём: высокая; механизм: средняя/низкая.' },
+    { observation: 'После речевого блока оба повествования переходят к исцелению слуги сотника.', possibleExplanation: 'Общий последующий контекст поддерживает связь рассказов.', competingExplanation: 'Евангелисты могли располагать материал тематически.', confidence: 'Последовательность: высокая; вывод о едином событии: средняя.' },
+    { observation: 'Матфей и Лука различаются формулировками, адресацией и набором тем.', possibleExplanation: 'Разные ракурсы, перевод и богодухновенный отбор.', competingExplanation: 'Разные события, устная традиция или редакционная композиция.', confidence: 'Различия: высокая; объяснение зависит от модели.' },
+  ]}
+/>
+
 
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
 <blockquote class="text-stone-800 italic leading-relaxed text-[15px] mb-2">«Те, кто считает, что проповедь Христа, описанная у Матфея, отличается от той, что изложена в шестой главе Луки, основывают своё мнение на лёгком и легкомысленном аргументе.»</blockquote>

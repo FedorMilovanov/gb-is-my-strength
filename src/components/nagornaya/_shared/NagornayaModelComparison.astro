@@ -1,0 +1,32 @@
+---
+interface ModelItem {
+  id: string;
+  title: string;
+  layer: string;
+  explains: string[];
+  limits: string[];
+  assumptionCost: string[];
+  seriesPosition: string;
+}
+interface Props { blockId:string; title:string; description?:string; models:ModelItem[] }
+const { blockId,title,description='Модели сравниваются по объяснительной силе, ограничениям и цене предпосылок — без цветового вердикта «правильно/неправильно».',models }=Astro.props;
+if(!/^[a-z][a-z0-9-]*$/.test(blockId)) throw new Error(`Invalid Nagornaya model blockId: ${blockId}`);
+if(!Array.isArray(models)||models.length<2||new Set(models.map(m=>m.id)).size!==models.length) throw new Error(`${blockId}: models must contain at least two unique items`);
+const headingId=`${blockId}-title`;
+---
+<section class="ng-model-comparison" id={blockId} data-nagornaya-epistemic-ui="typed-models" aria-labelledby={headingId}>
+  <header><p>Сравнение моделей</p><h3 id={headingId}>{title}</h3><div>{description}</div></header>
+  <div class="ng-model-comparison__grid">
+    {models.map((model,index)=><article aria-labelledby={`${blockId}-${model.id}`}>
+      <div class="ng-model-comparison__meta"><span>{String(index+1).padStart(2,'0')}</span><span>{model.layer}</span></div>
+      <h4 id={`${blockId}-${model.id}`}>{model.title}</h4>
+      <section><h5>Что объясняет</h5><ul>{model.explains.map(v=><li>{v}</li>)}</ul></section>
+      <section><h5>Ограничения</h5><ul>{model.limits.map(v=><li>{v}</li>)}</ul></section>
+      <section><h5>Цена предпосылок</h5><ul>{model.assumptionCost.map(v=><li>{v}</li>)}</ul></section>
+      <section class="ng-model-comparison__position"><h5>Позиция серии</h5><p>{model.seriesPosition}</p></section>
+    </article>)}
+  </div>
+</section>
+<style>
+.ng-model-comparison{margin:1.5rem 0 2rem;border:1px solid #d6d3d1;border-radius:1rem;overflow:hidden;background:#fafaf9}.ng-model-comparison>header{padding:1.1rem 1.2rem;border-bottom:1px solid #d6d3d1}.ng-model-comparison>header>p{margin:0 0 .35rem;color:#78716c;font-size:.7rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase}.ng-model-comparison h3{margin:0;color:#292524;font-size:1.2rem}.ng-model-comparison>header>div{margin-top:.5rem;color:#57534e;font-size:.88rem;line-height:1.55}.ng-model-comparison__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1px;background:#d6d3d1}.ng-model-comparison article{min-width:0;padding:1rem;background:#fff}.ng-model-comparison__meta{display:flex;gap:.45rem;margin-bottom:.65rem}.ng-model-comparison__meta span{padding:.25rem .5rem;border:1px solid #d6d3d1;border-radius:999px;background:#f5f5f4;color:#57534e;font:700 .67rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace}.ng-model-comparison h4{margin:0 0 .85rem;color:#292524;font-size:.98rem;line-height:1.4}.ng-model-comparison article section{padding-top:.7rem;border-top:1px solid #e7e5e4}.ng-model-comparison article section+section{margin-top:.7rem}.ng-model-comparison h5{margin:0 0 .35rem;color:#78716c;font-size:.67rem;font-weight:850;letter-spacing:.05em;text-transform:uppercase}.ng-model-comparison ul{margin:0;padding-left:1rem}.ng-model-comparison li,.ng-model-comparison article p{color:#57534e;font-size:.82rem;line-height:1.52}.ng-model-comparison li+li{margin-top:.28rem}.ng-model-comparison__position{padding:.7rem;border:1px solid #d6d3d1!important;border-left:3px solid #a8a29e!important;border-radius:.65rem;background:#f5f5f4}.ng-model-comparison__position p{margin:0}@media(max-width:640px){.ng-model-comparison__grid{grid-template-columns:1fr}.ng-model-comparison>header,.ng-model-comparison article{padding:.9rem}}:global(html.dark) .ng-model-comparison,:global(html[data-theme='dark']) .ng-model-comparison{border-color:#57534e;background:#1c1917}:global(html.dark) .ng-model-comparison__grid,:global(html[data-theme='dark']) .ng-model-comparison__grid{background:#57534e}:global(html.dark) .ng-model-comparison article,:global(html[data-theme='dark']) .ng-model-comparison article{background:#1c1917}:global(html.dark) .ng-model-comparison h3,:global(html.dark) .ng-model-comparison h4,:global(html[data-theme='dark']) .ng-model-comparison h3,:global(html[data-theme='dark']) .ng-model-comparison h4{color:#fafaf9}:global(html.dark) .ng-model-comparison li,:global(html.dark) .ng-model-comparison article p,:global(html.dark) .ng-model-comparison>header>div,:global(html[data-theme='dark']) .ng-model-comparison li,:global(html[data-theme='dark']) .ng-model-comparison article p,:global(html[data-theme='dark']) .ng-model-comparison>header>div{color:#d6d3d1}:global(html.dark) .ng-model-comparison__position,:global(html[data-theme='dark']) .ng-model-comparison__position{border-color:#57534e!important;background:#292524}
+</style>
