@@ -1,0 +1,23 @@
+[
+  {
+    "id": 5040791209,
+    "created_at": "2026-07-22T01:25:29Z",
+    "updated_at": "2026-07-22T01:25:29Z",
+    "body": "## Corrected deployment transaction started\n\nTwo isolated fixes have landed in the required order:\n\n- PR #119, squash `41f78f4357c1da7fcfbeb4838a04b9e3414fbf3a`: readiness now observes all `scripts/**`, so deploy-only validation/smoke fixes cannot silently fail to retrigger the pipeline.\n- PR #123, squash `a6a783044af69b8cc019f6885368ad67aa6a19f2`: the Gill layout audit now enforces the canonical frosted-bar contract (blur active, alpha >= .75) while retaining all 24-route/viewport/theme layout, contrast, overlap, overflow and TOC assertions. Transaction run `29882284960` and final Shared Files Guard `29882717875` passed.\n\nThe merge of #123 is script-only and is now covered by #119, so it should start the final readiness → Pages chain automatically. Keeping #58 open until the observer posts successful Pages for `a6a78304` (or a later exact head containing it) plus PASS for all five production blobs.",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040791209"
+  },
+  {
+    "id": 5040791398,
+    "created_at": "2026-07-22T01:25:31Z",
+    "updated_at": "2026-07-22T01:25:31Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Deploy to GitHub Pages**\n- Conclusion: **cancelled**\n- Run: 29883038757 (#1621)\n- Head SHA: a6a783044af69b8cc019f6885368ad67aa6a19f2\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883038757\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040791398"
+  },
+  {
+    "id": 5040791631,
+    "created_at": "2026-07-22T01:25:34Z",
+    "updated_at": "2026-07-22T01:25:34Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Deploy to GitHub Pages**\n- Conclusion: **skipped**\n- Run: 29883052484 (#1622)\n- Head SHA: a6a783044af69b8cc019f6885368ad67aa6a19f2\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883052484\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040791631"
+  }
+]
