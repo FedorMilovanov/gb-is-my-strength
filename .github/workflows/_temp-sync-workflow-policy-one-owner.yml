@@ -1,0 +1,83 @@
+name: TEMP Sync Workflow Policy One Owner
+
+on:
+  push:
+    branches:
+      - fix/pages-trigger-topology-2026-07-22
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-sync-workflow-policy-one-owner
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[policy-one-owner]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/pages-trigger-topology-2026-07-22
+          fetch-depth: 0
+
+      - name: Synchronize policy guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/check-workflows.js')
+          text = p.read_text(encoding='utf-8')
+          start_marker = '// Source/build changes have exactly one trigger owner: readiness.'
+          end_marker = '// Visual parity and shared-files guards must exist and stay well-formed, and the'
+          if text.count(start_marker) != 1 or text.count(end_marker) != 1:
+              raise SystemExit(f'policy anchors: start={text.count(start_marker)} end={text.count(end_marker)}')
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+          replacement = """// Every production-impacting path has exactly one automatic trigger owner:
+// readiness. Deploy follows only through workflow_run. The exhaustive `**`
+// catch-all prevents mixed commits and new route families from bypassing gates.
+const readinessOwnedPushPaths = [
+  'src/**', 'data/**', 'baptisty-rossii/**', 'scripts/**', 'css/**', 'js/**',
+  'sitemap.xml', 'feed.xml', 'astro.config.mjs', 'tsconfig.json', 'migration/**',
+  'package.json', 'package-lock.json', 'images/**', 'fonts/**', 'icons/**',
+  'konfessii/**', 'karty/**', 'map/**', 'biografii/**', 'hard-texts/**',
+  '.nojekyll', 'favicon*', 'apple-touch-icon.png', 'CNAME',
+  '.github/workflows/deploy.yml', '.github/workflows/indexnow.yml',
+];
+for (const glob of readinessOwnedPushPaths) {
+  must('.github/workflows/indexnow.yml', indexnow, pushPathRx(glob), `readiness paths must include ${glob}`);
+}
+must('.github/workflows/indexnow.yml', indexnow, pushPathRx('**'), 'readiness paths must include exhaustive ** catch-all');
+mustNot(
+  '.github/workflows/deploy.yml',
+  deploy,
+  /^\\s{2}push:\\s*$/m,
+  'deploy must not declare an automatic push trigger; readiness is the sole automatic owner',
+);
+mustNot(
+  '.github/workflows/deploy.yml',
+  deploy,
+  /github\\.event_name\\s*==\\s*['\"]push['\"]/,
+  'deploy job condition must not accept direct push events',
+);
+
+"""
+          p.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
+          PY
+          node scripts/check-workflows.js
+          node scripts/workflow-linkage-regression-test.js
+          git diff --check
+
+      - name: Publish permanent guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add scripts/check-workflows.js
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[policy-one-owner] guard exhaustive readiness ownership'
+          git push origin HEAD:fix/pages-trigger-topology-2026-07-22
