@@ -1,0 +1,92 @@
+name: TEMP Materialize Clean Highlights Runtime
+
+on:
+  push:
+    branches:
+      - fix/highlights-runtime-hardening-clean-2026-07-22
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-materialize-clean-highlights
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/highlights-runtime-hardening-clean-2026-07-22
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.3'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Copy proven logical files and patch permanent guard
+        shell: bash
+        run: |
+          git fetch origin fix/highlights-runtime-hardening-2026-07-22
+          git show origin/fix/highlights-runtime-hardening-2026-07-22:js/highlights.js > js/highlights.js
+          git show origin/fix/highlights-runtime-hardening-2026-07-22:scripts/highlights-runtime-regression-test.js > scripts/highlights-runtime-regression-test.js
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/shared-files-guard.yml')
+          text = path.read_text()
+          step = '''      - name: Highlights runtime regressions
+        run: node scripts/highlights-runtime-regression-test.js
+
+'''
+          if step not in text:
+              anchor = '''      - name: Series reader façade regressions
+        run: npm run series:facade:guard
+'''
+              if text.count(anchor) != 1:
+                  raise SystemExit(f'expected one façade anchor, found {text.count(anchor)}')
+              text = text.replace(anchor, step + anchor)
+              path.write_text(text)
+          PY
+
+      - name: Reconcile generated asset revisions
+        run: |
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Prove highlights behavior and full publication barrier
+        run: |
+          node scripts/highlights-runtime-regression-test.js
+          npm run validate:static-publication:light
+          git diff --check
+
+      - name: Reject temporary or unrelated working-tree changes
+        shell: bash
+        run: |
+          mapfile -t changed < <(git diff --name-only)
+          test "${#changed[@]}" -ge 3
+          for path in "${changed[@]}"; do
+            case "$path" in
+              js/highlights.js|scripts/highlights-runtime-regression-test.js|.github/workflows/shared-files-guard.yml|src/lib/asset-version.js|*.html|src/components/*.astro|src/components/**/*.astro) ;;
+              *) echo "Unexpected highlights materialization file: $path" >&2; exit 1 ;;
+            esac
+          done
+
+      - name: Commit permanent diff only
+        shell: bash
+        run: |
+          git add js/highlights.js scripts/highlights-runtime-regression-test.js .github/workflows/shared-files-guard.yml src/lib/asset-version.js
+          git add '*.html' 'src/components/**/*.astro' 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo 'No permanent diff to publish.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(reader): harden highlights dedupe and dialog state'
+          git push origin HEAD:fix/highlights-runtime-hardening-clean-2026-07-22
