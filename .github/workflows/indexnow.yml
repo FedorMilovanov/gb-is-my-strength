@@ -3,26 +3,41 @@ name: Metadata & IndexNow Readiness
 on:
   workflow_dispatch:
 
+  # Readiness is the single automatic owner for every main push. The explicit
+  # production paths below document critical classes and remain protected by
+  # policy tests; the final '**' catch-all prevents mixed commits or new route
+  # families from bypassing readiness and creating a second deploy path.
   push:
     branches: [main]
     paths:
       - 'src/**'
       - 'data/**'
-      # Legacy content section — must stay covered by BOTH deploy.yml and
-      # indexnow.yml path filters so edits to these articles keep triggering
-      # the readiness gate (check-workflows.js enforces this; 2026-07-05 audit).
       - 'baptisty-rossii/**'
-      # Build, validation and deployment-only script fixes must also retrigger
-      # readiness. A Gill smoke correction under scripts/ previously fixed the
-      # only deploy blocker but could not start a new readiness → Pages chain.
       - 'scripts/**'
       - 'css/**'
       - 'js/**'
       - 'sitemap.xml'
       - 'feed.xml'
       - 'astro.config.mjs'
+      - 'tsconfig.json'
+      - 'migration/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'images/**'
+      - 'fonts/**'
+      - 'icons/**'
+      - 'konfessii/**'
+      - 'karty/**'
+      - 'map/**'
+      - 'biografii/**'
+      - 'hard-texts/**'
+      - '.nojekyll'
+      - 'favicon*'
+      - 'apple-touch-icon.png'
+      - 'CNAME'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/indexnow.yml'
+      - '**'
 
 permissions:
   contents: read
