@@ -124,6 +124,7 @@ async function inspectBase(page, entry, viewport, base) {
   const baseFacts = await page.evaluate(() => {
     const html = document.documentElement;
     const body = document.body;
+    const scrollingElement = document.scrollingElement || html;
     const duplicateInteractiveIds = [];
     const grouped = new Map();
     document.querySelectorAll('[id]').forEach((node) => {
@@ -154,7 +155,13 @@ async function inspectBase(page, entry, viewport, base) {
       return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
     });
     return {
-      overflow: Math.max(html.scrollWidth, body?.scrollWidth || 0) - innerWidth,
+      overflow: Math.max(0, scrollingElement.scrollWidth - scrollingElement.clientWidth),
+      scrollRoot: {
+        tag: scrollingElement.tagName.toLowerCase(),
+        clientWidth: scrollingElement.clientWidth,
+        scrollWidth: scrollingElement.scrollWidth,
+      },
+      bodyIntrinsicOverflow: body ? Math.max(0, body.scrollWidth - body.clientWidth) : 0,
       duplicateInteractiveIds,
       brokenControls,
       canonical,
@@ -164,7 +171,13 @@ async function inspectBase(page, entry, viewport, base) {
   });
   record(entry, viewport, 'runtime:pageerror', pageErrors.length === 0, pageErrors.join(' | '));
   record(entry, viewport, 'assets:same-origin', badAssets.length === 0, badAssets.join(' | '));
-  record(entry, viewport, 'layout:no-horizontal-overflow', baseFacts.overflow <= 8, `${baseFacts.overflow}px`);
+  record(
+    entry,
+    viewport,
+    'layout:no-horizontal-overflow',
+    baseFacts.overflow <= 8,
+    `${baseFacts.overflow}px root (${baseFacts.scrollRoot.scrollWidth}/${baseFacts.scrollRoot.clientWidth}); body intrinsic ${baseFacts.bodyIntrinsicOverflow}px`,
+  );
   record(entry, viewport, 'a11y:no-duplicate-interactive-id', baseFacts.duplicateInteractiveIds.length === 0, baseFacts.duplicateInteractiveIds.join(', '));
   record(entry, viewport, 'a11y:aria-controls-targets', baseFacts.brokenControls.length === 0, baseFacts.brokenControls.join(', '));
   record(entry, viewport, 'document:title', baseFacts.title.trim().length >= 4, baseFacts.title);
