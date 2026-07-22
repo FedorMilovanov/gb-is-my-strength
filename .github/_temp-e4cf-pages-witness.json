@@ -1,0 +1,26 @@
+[
+  {
+    "id": 5044079526,
+    "created_at": "2026-07-22T09:18:43Z",
+    "updated_at": "2026-07-22T09:18:43Z",
+    "body": "## Final single-owner deployment transaction\n\nPR #125 merged as `e4cf04ab63966e9002e3403eff64fffda8d8d757` after exact-head validation:\n\n- Shared Files Guard `29907160633`: success;\n- Editorial Metadata v3 `29907160694`: success.\n\nThe permanent topology now has one automatic production entry point:\n\n1. every `main` push enters **Metadata & IndexNow Readiness** (`**` catch-all plus documented critical path classes);\n2. Pages runs only from a successful readiness `workflow_run` restricted to `main`;\n3. automatic deploy checks out the exact `workflow_run.head_sha`, not moving `main`;\n4. direct `deploy.on.push` is forbidden by permanent regression tests;\n5. manual `workflow_dispatch` recovery remains available.\n\nKeeping #58 open until the observer records one successful Pages run for `e4cf04ab` and PASS for all five critical production blob comparisons.",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5044079526",
+    "user": "FedorMilovanov"
+  },
+  {
+    "id": 5044082915,
+    "created_at": "2026-07-22T09:19:03Z",
+    "updated_at": "2026-07-22T09:19:03Z",
+    "body": "## Deploy topology correction merged\n\nPR #125 was squash-merged as `e4cf04ab63966e9002e3403eff64fffda8d8d757` after the exact candidate head passed Shared Files Guard and Editorial Metadata v3.\n\nPermanent invariants now enforced:\n- every automatic `main` push enters `Metadata & IndexNow Readiness` exactly once;\n- `Deploy to GitHub Pages` has no direct `push` trigger;\n- mixed source/asset commits cannot create competing Pages transactions;\n- automatic deploy checks out the exact `github.event.workflow_run.head_sha` that passed readiness, not moving `main`;\n- direct automatic push entry and moving-main checkout are blocked by regression tests.\n\nKeeping #58 open until the observer records one successful readiness run, one successful Pages run for the same verified SHA, and PASS for all five source/production blob comparisons.",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5044082915",
+    "user": "FedorMilovanov"
+  },
+  {
+    "id": 5044118474,
+    "created_at": "2026-07-22T09:23:05Z",
+    "updated_at": "2026-07-22T09:23:05Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Metadata & IndexNow Readiness**\n- Conclusion: **success**\n- Run: 29907405446 (#1373)\n- Head SHA: e4cf04ab63966e9002e3403eff64fffda8d8d757\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29907405446\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5044118474",
+    "user": "github-actions[bot]"
+  }
+]
