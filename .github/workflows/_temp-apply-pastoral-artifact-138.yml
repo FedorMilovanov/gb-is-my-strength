@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      BRANCH: fix/nagornaya-pastoral-safety-final-2026-07-22
       ARTIFACT_ID: '8514987098'
     steps:
       - uses: actions/checkout@v4
@@ -62,27 +61,43 @@ jobs:
             'f4d17b01cce005831cfb8f3dab865eaaebc28b7f99cfea750d32e172613742ff' 'scripts/nagornaya-pastoral-safety-regression-test.js' \
             | sha256sum --check --strict
 
-      - name: Apply four permanent files
+      - name: Apply exact pastoral replacement to fresh layers
         if: steps.guard.outputs.apply == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          for path in \
-            src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro \
-            src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro \
-            nagornaya/chast-5/index.html \
-            scripts/nagornaya-pastoral-safety-regression-test.js; do
-            cp "/tmp/pastoral/${path}" "$path"
-          done
+          python3 - <<'PY'
+          from pathlib import Path
+          paths = [
+              Path('src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro'),
+              Path('src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro'),
+              Path('nagornaya/chast-5/index.html'),
+          ]
+          old = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Полное отсутствие плодов — смертный приговор вере</strong> — если за годы «христианства» в жизни человека нет ни покаяния, ни борьбы с грехом, ни плодов Духа — библейский пастырь обязан предупредить его: Мф 7:21 относится к нему.</span></div>'
+          new = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Упорное бесплодие требует серьёзного самоиспытания</strong> — если на протяжении долгого времени человек не видит ни покаяния, ни борьбы с грехом, ни направления к послушанию, пастырь обязан серьёзно предупредить его о возможности самообмана в свете Мф 7:21–23, призвать к покаянию и помочь обратиться за пастырской поддержкой. Окончательный суд о сердце принадлежит Христу; это предупреждение нельзя механически применять к сокрушённому верующему, который борется с грехом.</span></div>'
+          for path in paths:
+              text = path.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected one pastoral anchor, found {count}')
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          cp /tmp/pastoral/scripts/nagornaya-pastoral-safety-regression-test.js scripts/
           rm .github/_temp-pastoral-artifact-trigger
 
-      - name: Verify pastoral contract and full publication barrier
+      - name: Verify pastoral regression
+        if: steps.guard.outputs.apply == 'true'
+        run: node scripts/nagornaya-pastoral-safety-regression-test.js
+
+      - name: Verify full publication barrier
+        if: steps.guard.outputs.apply == 'true'
+        run: npm run validate:static-publication:light
+
+      - name: Verify clean scoped diff
         if: steps.guard.outputs.apply == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/nagornaya-pastoral-safety-regression-test.js
-          npm run validate:static-publication:light
           git diff --check
           python3 - <<'PY'
           import subprocess
