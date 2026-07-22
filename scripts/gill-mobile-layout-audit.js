@@ -5,7 +5,8 @@
  * Gill mobile reference layout audit.
  *
  * Verifies the actual Android/Yandex regression:
- * - bottom bar must be readable and nearly opaque in light/dark;
+ * - bottom bar must be readable with the intended frosted surface in light/dark;
+ * - backdrop blur and a protective minimum alpha must remain active;
  * - article text must not leak through or under it;
  * - old root-static one-level bar must be upgraded by JS;
  * - explicit Part TOC trigger must exist and open #partTocOverlay;
@@ -210,6 +211,7 @@ async function runCase(browser, viewport, dark, route) {
       barText: bar ? bar.textContent.replace(/\s+/g, ' ').trim() : '',
       barRect: barRect ? { left: barRect.left, top: barRect.top, right: barRect.right, bottom: barRect.bottom, width: barRect.width, height: barRect.height } : null,
       barBg: style ? style.backgroundColor : '',
+      barBackdropFilter: style ? (style.backdropFilter || style.webkitBackdropFilter || '') : '',
       barDisplay: style ? style.display : '',
       barPosition: style ? style.position : '',
       barOverflow: style ? style.overflow : '',
@@ -227,6 +229,7 @@ async function runCase(browser, viewport, dark, route) {
   });
 
   const alpha = alphaFromColor(facts.barBg);
+  const hasFrostBlur = /blur\(/.test(facts.barBackdropFilter || '');
   const contrast = contrastRatio(facts.labelColor, facts.barBg) || contrastRatio(facts.labelColor, facts.labelBg);
   assert(facts.hasRoot, `Gill root present ${tag}`);
   assert(facts.hasBar, `Gill mobile bar present ${tag}`, facts);
@@ -236,7 +239,8 @@ async function runCase(browser, viewport, dark, route) {
   // part overlay's #backToSeries arrow (exercised below).
   assert(facts.upgradedOldRoot, `Old/static Gill bar upgraded or native V3 bar present ${tag}`, facts);
   assert(facts.barPosition === 'fixed', `Bottom bar fixed ${tag}`, facts);
-  assert(alpha >= 0.94, `Bottom bar background alpha >= .94 ${tag}`, { alpha, bg: facts.barBg });
+  assert(alpha >= 0.75, `Bottom bar frost alpha >= .75 ${tag}`, { alpha, bg: facts.barBg });
+  assert(hasFrostBlur, `Bottom bar backdrop blur active ${tag}`, { backdropFilter: facts.barBackdropFilter });
   assert(facts.centerInsideBar, `Bottom bar center is controlled by bar, not article text ${tag}`, facts);
   assert(!facts.fallbackVisible, `No generic fallback controls over Gill mobile ${tag}`, facts);
   assert(facts.docWidth <= facts.viewportWidth + 1, `No horizontal overflow ${tag}`, facts);
