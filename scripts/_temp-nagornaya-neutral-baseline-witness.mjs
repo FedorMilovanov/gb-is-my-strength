@@ -40,4 +40,4 @@ try {
 }
 
 console.log('Nagornaya neutral comparison baseline witness captured');
-// synchronization trigger: unfiltered workflow-run orchestration
+// synchronization trigger: Shared Files Guard proof job
