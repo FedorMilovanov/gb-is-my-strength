@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Copy only proven permanent files
+      - name: Copy proven page/test files and patch current contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -42,8 +42,6 @@ jobs:
             'nagornaya/chast-3/index.html'
             'nagornaya/chast-4/index.html'
             'nagornaya/chast-5/index.html'
-            'package.json'
-            'scripts/cache-bust.js'
             'scripts/nagornaya-bar-asset-browser-test.js'
             'scripts/nagornaya-bar-asset-contract-test.js'
             'src/components/nagornaya/chast-1/NagornayaChast1PageFooter.astro'
@@ -57,6 +55,33 @@ jobs:
             git show "${source_ref}:${path}" > "$path"
           done
 
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          package_path = Path('package.json')
+          package = json.loads(package_path.read_text(encoding='utf-8'))
+          scripts = package['scripts']
+          scripts['nagornaya:bar-asset:contract'] = 'node scripts/nagornaya-bar-asset-contract-test.js'
+          scripts['nagornaya:bar-asset:browser:test'] = 'node scripts/nagornaya-bar-asset-browser-test.js'
+          base_engine = 'node scripts/check-engine-contracts.js && npm run series:facade:guard'
+          expected_engine = base_engine + ' && npm run nagornaya:bar-asset:contract'
+          if scripts.get('engine:contracts') not in {base_engine, expected_engine}:
+              raise SystemExit(f"unexpected current engine:contracts: {scripts.get('engine:contracts')!r}")
+          scripts['engine:contracts'] = expected_engine
+          package_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          cache_path = Path('scripts/cache-bust.js')
+          cache = cache_path.read_text(encoding='utf-8')
+          old = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`, 'g');"
+          new = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s\"'&}>]+`, 'g');"
+          if old in cache:
+              cache = cache.replace(old, new, 1)
+          elif new not in cache:
+              raise SystemExit('cache-bust Astro revision regex anchor not found')
+          cache_path.write_text(cache, encoding='utf-8')
+          PY
+
       - name: Reconcile and verify revisions
         run: |
           node scripts/cache-bust.js --write
@@ -66,11 +91,13 @@ jobs:
         run: |
           npm run nagornaya:bar-asset:contract
           npm run engine:contracts
-          npm run visual:parity:production
           git diff --check
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
+
+      - name: Verify production visual parity
+        run: npm run visual:parity:production
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
