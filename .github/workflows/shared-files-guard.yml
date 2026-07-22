@@ -67,6 +67,9 @@ jobs:
       - name: Highlights runtime regressions
         run: node scripts/highlights-runtime-regression-test.js
 
+      - name: Nagornaya pastoral safety regressions
+        run: node scripts/nagornaya-pastoral-safety-regression-test.js
+
       - name: Series reader façade regressions
         run: npm run series:facade:guard
 
