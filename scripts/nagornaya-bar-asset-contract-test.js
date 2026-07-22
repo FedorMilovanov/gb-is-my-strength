@@ -45,6 +45,8 @@ for (const selector of ['.bar-progress', '.bar-divider', '#barUpBtn', '#barShare
   assert(compact.includes(selector), `${COMPACT_COMPONENT}: compact priority rule is missing ${selector}`);
 }
 assert.match(compact, /\.nag-bar-controls[\s\S]*?padding:\s*0\s*!important/, `${COMPACT_COMPONENT}: cloned controls must shed sidebar padding`);
+assert.match(compact, /\.gb-ember-expand[\s\S]*?position:\s*fixed\s*!important/, `${COMPACT_COMPONENT}: narrow speed sheet must be viewport-fixed`);
+assert.match(compact, /\.gb-ember-expand[\s\S]*?left:[\s\S]*?right:/, `${COMPACT_COMPONENT}: narrow speed sheet must be bounded on both viewport edges`);
 
 for (let part = 1; part <= 5; part += 1) {
   const footer = `src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`;
@@ -74,4 +76,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared <=359px priority contract, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared <=359px priority and speed-sheet contract, adversarial v=1 rejected`);
