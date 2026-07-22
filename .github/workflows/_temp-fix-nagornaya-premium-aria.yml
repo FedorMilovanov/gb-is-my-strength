@@ -27,6 +27,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import textwrap
 
           paths=[
             'src/components/nagornaya/chast-1/NagornayaChast1PageChrome.astro',
@@ -45,7 +46,8 @@ jobs:
               print(f'patched {name}')
 
           regression=Path('scripts/nagornaya-premium-controls-aria-regression-test.js')
-          regression.write_text("""#!/usr/bin/env node
+          regression.write_text(textwrap.dedent("""\
+          #!/usr/bin/env node
           'use strict';
           const fs = require('fs');
           const assert = require('assert/strict');
@@ -59,7 +61,7 @@ jobs:
             assert.match(tags[0], /aria-expanded=\"false\"/, `${file}: Play control must declare its initial closed state`);
           }
           console.log('✅ Nagornaya PremiumControls ARIA source contract passed (parts I–V)');
-          """.replace(/^          /gm,''),encoding='utf-8')
+          """),encoding='utf-8')
 
           guard=Path('.github/workflows/shared-files-guard.yml')
           text=guard.read_text(encoding='utf-8')
