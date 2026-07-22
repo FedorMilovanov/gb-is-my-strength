@@ -1,85 +1,230 @@
-name: Temp Reader route semantics inventory
+name: Temp Reader route semantics materializer
 
 on:
   pull_request:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: temp-reader-route-semantics-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 jobs:
-  inventory:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Inventory route profile semantics
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import json, collections, re
-
-          profiles=[]
-          for path in sorted(Path('data/route-profiles').glob('*.json')):
-              try: data=json.loads(path.read_text(encoding='utf-8'))
-              except Exception as exc:
-                  profiles.append({'file':str(path),'parseError':str(exc)})
-                  continue
-              profiles.append({
-                  'file':str(path),
-                  'route':data.get('route'),
-                  'routeType':data.get('routeType'),
-                  'migrationLane':data.get('migrationLane'),
-                  'section':data.get('section'),
-                  'surface':data.get('surface'),
-                  'seriesShape':data.get('seriesShape'),
-                  'scope':data.get('scope'),
-                  'migrationMode':data.get('migrationMode'),
-                  'mobileChrome':data.get('mobileChrome'),
-              })
-          counts={field:collections.Counter(str(p.get(field)) for p in profiles) for field in ['routeType','migrationLane','section','surface','seriesShape']}
-          targets={'/nagornaya/','/baptisty-rossii/','/nagornaya/seriya/','/nagornaya/istochniki/','/nagornaya/nakhodki/'}
-          target_rows=[p for p in profiles if p.get('route') in targets]
-          code_hits=[]
-          patterns={
-              'routeType':re.compile(r'routeType'),
-              'series-chapter':re.compile(r'series-chapter'),
-              'series-landing':re.compile(r'series-landing'),
-              'reference-route':re.compile(r'reference-route'),
-              'migrationLane':re.compile(r'migrationLane'),
-              'adapter':re.compile(r'\badapter\b'),
-              'seriesMode':re.compile(r'seriesMode'),
-              'surface-kind':re.compile(r'\bkind\b'),
-          }
-          for root in [Path('scripts'),Path('src/components'),Path('data')]:
-              if not root.exists(): continue
-              for path in root.rglob('*'):
-                  if path.suffix not in {'.js','.mjs','.cjs','.ts','.tsx','.astro','.json'}: continue
-                  try: lines=path.read_text(encoding='utf-8').splitlines()
-                  except Exception: continue
-                  for index,line in enumerate(lines,1):
-                      tags=[name for name,rx in patterns.items() if rx.search(line)]
-                      if tags:
-                          code_hits.append({'file':str(path),'line':index,'tags':tags,'text':line.strip()})
-          output={
-              'profiles':profiles,
-              'counts':{field:dict(counter) for field,counter in counts.items()},
-              'targets':target_rows,
-              'codeHits':code_hits,
-          }
-          Path('reader-route-semantics-inventory.json').write_text(json.dumps(output,ensure_ascii=False,indent=2),encoding='utf-8')
-          with Path('reader-route-semantics-inventory.txt').open('w',encoding='utf-8') as out:
-              out.write('TARGETS\n=======\n')
-              for row in target_rows: out.write(json.dumps(row,ensure_ascii=False)+'\n')
-              out.write('\nCOUNTS\n======\n')
-              for field,counter in counts.items(): out.write(f'{field}: {dict(counter)}\n')
-              out.write('\nCODE HITS\n=========\n')
-              for hit in code_hits: out.write(f"{hit['file']}:{hit['line']} [{','.join(hit['tags'])}] {hit['text']}\n")
-          print(f'Profiles: {len(profiles)}; code hits: {len(code_hits)}')
-          PY
-      - uses: actions/upload-artifact@v4
         with:
-          name: reader-route-semantics-inventory
-          path: |
-            reader-route-semantics-inventory.json
-            reader-route-semantics-inventory.txt
-          retention-days: 3
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Apply exact semantic contract patches
+        run: |
+          cat > /tmp/route-semantics-patcher.py <<'PY'
+          from pathlib import Path
+
+          def patch_once(path, old, new, label):
+              p=Path(path); text=p.read_text(encoding='utf-8'); count=text.count(old)
+              if count==0 and new in text:
+                  print(f'{label}: already applied'); return False
+              if count!=1: raise SystemExit(f'{label}: expected one match, found {count}')
+              p.write_text(text.replace(old,new,1),encoding='utf-8'); print(f'{label}: applied'); return True
+
+          patch_once(
+            'scripts/lib/public-surface-registry.js',
+            """  if (routeRole === 'landing' && !['series-landing', 'page-landing'].includes(entry.chrome.adapter)) {
+    issue(`landing route requires landing adapter, got ${entry.chrome.adapter}`);
+  }
+""",
+            """  if (routeRole === 'landing') {
+    const allowedLandingAdapters = surface === 'series'
+      ? new Set(['series-landing'])
+      : new Set(['page-landing', 'default-page']);
+    if (!allowedLandingAdapters.has(entry.chrome.adapter)) {
+      issue(`landing route requires landing adapter, got ${entry.chrome.adapter}`);
+    }
+  }
+""",
+            'landing adapter validation'
+          )
+
+          registry_test=Path('scripts/public-surface-registry-regression-test.js')
+          text=registry_test.read_text(encoding='utf-8')
+          old="""assert.deepEqual(baseline.shapeCounts, { flat: 27, book: 24 });
+
+const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));
+"""
+          new="""assert.deepEqual(baseline.shapeCounts, { flat: 27, book: 24 });
+assert.deepEqual(baseline.roleCounts, { page: 2, reading: 48, application: 14, landing: 10, reference: 2 });
+
+const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));
+"""
+          if old in text: text=text.replace(old,new,1)
+          elif new not in text: raise SystemExit('registry roleCounts anchor missing')
+          anchor="""assert.ok(
+  bookEntry.configSources.includes('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'),
+  'book route must resolve the canonical hard-texts series config'
+);
+"""
+          addition=anchor+"""
+const semanticExpectations = new Map([
+  ['/nagornaya/', ['landing', 'series-landing', 'global-preferences']],
+  ['/baptisty-rossii/', ['landing', 'series-landing', 'global-preferences']],
+  ['/nagornaya/seriya/', ['landing', 'series-landing', 'global-preferences']],
+  ['/nagornaya/istochniki/', ['reference', 'series-reference', 'global-preferences']],
+  ['/nagornaya/nakhodki/', ['reference', 'series-reference', 'global-preferences']],
+  ['/karty/', ['landing', 'default-page', 'global-preferences']],
+  ['/konfessii/', ['landing', 'default-page', 'global-preferences']],
+]);
+for (const [route, [role, adapter, settings]] of semanticExpectations) {
+  const entry = entryByRoute.get(route);
+  assert.ok(entry, `${route}: semantic fixture missing`);
+  assert.equal(entry.routeRole, role, `${route}: routeRole`);
+  assert.equal(entry.chrome.adapter, adapter, `${route}: adapter`);
+  assert.equal(entry.settingsCapability, settings, `${route}: settings capability`);
+}
+"""
+          if anchor in text and addition not in text: text=text.replace(anchor,addition,1)
+          elif addition not in text: raise SystemExit('semantic expectations anchor missing')
+          tail="""{
+  const record = cloneRecord('/about/');
+  record.profile.surface = 'series';
+  record.profile.seriesShape = 'book';
+  assert.ok(errorsFor(record).some((error) => error.includes('requires resolved hardTextsSeriesConfig import')));
+}
+
+console.log('✅ public-surface-registry mutation tests passed');
+"""
+          replacement="""{
+  const record = cloneRecord('/about/');
+  record.profile.surface = 'series';
+  record.profile.seriesShape = 'book';
+  assert.ok(errorsFor(record).some((error) => error.includes('requires resolved hardTextsSeriesConfig import')));
+}
+{
+  const record = cloneRecord('/nagornaya/');
+  record.profile.routeType = 'unknown';
+  assert.ok(errorsFor(record).some((error) => error.includes('routeType=unknown')));
+}
+{
+  const record = cloneRecord('/nagornaya/');
+  record.profile.migrationLane = 'content';
+  assert.ok(errorsFor(record).some((error) => error.includes('series-landing requires migrationLane=landing')));
+}
+{
+  const record = cloneRecord('/nagornaya/istochniki/');
+  record.profile.surface = 'page';
+  delete record.profile.seriesShape;
+  assert.ok(errorsFor(record).some((error) => error.includes('series-reference requires surface=series')));
+}
+{
+  const record = cloneRecord('/karty/');
+  record.profile.section = 'unknown';
+  assert.ok(errorsFor(record).some((error) => error.includes('section=unknown')));
+}
+
+console.log('✅ public-surface-registry mutation tests passed');
+"""
+          if tail in text: text=text.replace(tail,replacement,1)
+          elif replacement not in text: raise SystemExit('registry mutation tail missing')
+          registry_test.write_text(text,encoding='utf-8')
+
+          patch_once(
+            'scripts/public-surface-browser-matrix.mjs',
+            """function record(entry, viewport, contract, ok, detail = '') {
+  results.push({ route: entry.route, surface: entry.surface, seriesShape: entry.seriesShape, viewport: viewport.id, contract, ok: Boolean(ok), detail: String(detail || '') });
+}
+""",
+            """function record(entry, viewport, contract, ok, detail = '') {
+  results.push({ route: entry.route, surface: entry.surface, seriesShape: entry.seriesShape, routeType: entry.routeType, routeRole: entry.routeRole, viewport: viewport.id, contract, ok: Boolean(ok), detail: String(detail || '') });
+}
+""",
+            'browser report route semantics'
+          )
+          patch_once(
+            'scripts/public-surface-browser-matrix.mjs',
+            """  if (entry.surface === 'series' && entry.seriesShape === 'flat') {
+    record(entry, viewport, 'series:flat-no-book-article-rows', facts.bookRows === 0, `${facts.bookRows}`);
+  }
+}
+""",
+            """  if (entry.surface === 'series' && entry.seriesShape === 'flat') {
+    record(entry, viewport, 'series:flat-no-book-article-rows', facts.bookRows === 0, `${facts.bookRows}`);
+  }
+  if (entry.routeRole === 'landing' || entry.routeRole === 'reference') {
+    const noReaderChrome = !facts.gillRoot && !facts.seriesRail && !facts.articleRail;
+    record(entry, viewport, `semantics:${entry.routeRole}-no-reader-chrome`, noReaderChrome, JSON.stringify(facts));
+    const expectedAdapters = entry.routeRole === 'reference'
+      ? new Set(['series-reference'])
+      : entry.surface === 'series'
+        ? new Set(['series-landing'])
+        : new Set(['page-landing', 'default-page']);
+    record(entry, viewport, `semantics:${entry.routeRole}-adapter`, expectedAdapters.has(entry.chrome.adapter), entry.chrome.adapter);
+    record(entry, viewport, `semantics:${entry.routeRole}-global-preferences`, entry.settingsCapability === 'global-preferences', entry.settingsCapability);
+  }
+}
+""",
+            'browser landing reference assertions'
+          )
+
+          source_contract=Path('scripts/lib/route-source-contract.js')
+          text=source_contract.read_text(encoding='utf-8')
+          old="""  if (!profile) return { errors, warnings, isArticle, isStrictNative };
+
+  if (profile.route && profile.route !== route) issue(`profile.route mismatch (${profile.route})`);
+"""
+          new="""  if (!profile) return { errors, warnings, isArticle, isStrictNative };
+
+  if (owner.status === 'production-dist' || profile.currentStatus === 'production-dist') {
+    for (const field of ['routeType', 'migrationLane', 'section']) {
+      if (profile[field] === 'unknown') issue(`production profile must not declare ${field}=unknown`);
+    }
+  }
+
+  if (profile.route && profile.route !== route) issue(`profile.route mismatch (${profile.route})`);
+"""
+          if old in text: text=text.replace(old,new,1)
+          elif new not in text: raise SystemExit('route-source unknown guard anchor missing')
+          source_contract.write_text(text,encoding='utf-8')
+          PY
+          python /tmp/route-semantics-patcher.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate route semantics
+        run: |
+          node --check scripts/lib/public-surface-registry.js
+          node --check scripts/public-surface-registry-regression-test.js
+          node --check scripts/public-surface-browser-matrix.mjs
+          node --check scripts/lib/route-source-contract.js
+          npm run surface:registry:check
+          npm run surface:registry:test
+          node scripts/route-profile-contract-audit.js --strict
+
+      - name: Commit permanent contract changes
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git diff --name-only | sort > /tmp/changed.txt
+          cat > /tmp/allowed.txt <<'EOF'
+          scripts/lib/public-surface-registry.js
+          scripts/lib/route-source-contract.js
+          scripts/public-surface-browser-matrix.mjs
+          scripts/public-surface-registry-regression-test.js
+          EOF
+          sort -o /tmp/allowed.txt /tmp/allowed.txt
+          diff -u /tmp/allowed.txt /tmp/changed.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            scripts/lib/public-surface-registry.js \
+            scripts/lib/route-source-contract.js \
+            scripts/public-surface-browser-matrix.mjs \
+            scripts/public-surface-registry-regression-test.js
+          git commit -m 'refactor(reader): enforce route semantic roles'
+          git push origin HEAD:"$BRANCH"
