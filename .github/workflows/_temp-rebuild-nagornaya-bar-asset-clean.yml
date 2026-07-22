@@ -1,0 +1,103 @@
+name: TEMP Rebuild Nagornaya Bar Asset Clean
+
+on:
+  push:
+    branches:
+      - fix/nagornaya-bar-asset-contract-clean-2026-07-22
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-rebuild-nagornaya-bar-asset-clean
+  cancel-in-progress: true
+
+jobs:
+  rebuild:
+    if: ${{ !contains(github.event.head_commit.message, '[nag-bar-clean]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/nagornaya-bar-asset-contract-clean-2026-07-22
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Copy only proven permanent files
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_ref='origin/agent/nagornaya-bar-asset-contract-2026-07-22'
+          files=(
+            'nagornaya/chast-1/index.html'
+            'nagornaya/chast-2/index.html'
+            'nagornaya/chast-3/index.html'
+            'nagornaya/chast-4/index.html'
+            'nagornaya/chast-5/index.html'
+            'package.json'
+            'scripts/cache-bust.js'
+            'scripts/nagornaya-bar-asset-browser-test.js'
+            'scripts/nagornaya-bar-asset-contract-test.js'
+            'src/components/nagornaya/chast-1/NagornayaChast1PageFooter.astro'
+            'src/components/nagornaya/chast-2/NagornayaChast2PageFooter.astro'
+            'src/components/nagornaya/chast-3/NagornayaChast3PageFooter.astro'
+            'src/components/nagornaya/chast-4/NagornayaChast4PageFooter.astro'
+            'src/components/nagornaya/chast-5/NagornayaChast5PageFooter.astro'
+          )
+          for path in "${files[@]}"; do
+            mkdir -p "$(dirname "$path")"
+            git show "${source_ref}:${path}" > "$path"
+          done
+
+      - name: Reconcile and verify revisions
+        run: |
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Verify source and engine contracts
+        run: |
+          npm run nagornaya:bar-asset:contract
+          npm run engine:contracts
+          npm run visual:parity:production
+          git diff --check
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify browser matrix
+        run: npm run nagornaya:bar-asset:browser:test
+
+      - name: Publish clean permanent diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add \
+            nagornaya/chast-1/index.html \
+            nagornaya/chast-2/index.html \
+            nagornaya/chast-3/index.html \
+            nagornaya/chast-4/index.html \
+            nagornaya/chast-5/index.html \
+            package.json \
+            scripts/cache-bust.js \
+            scripts/nagornaya-bar-asset-browser-test.js \
+            scripts/nagornaya-bar-asset-contract-test.js \
+            src/components/nagornaya/chast-1/NagornayaChast1PageFooter.astro \
+            src/components/nagornaya/chast-2/NagornayaChast2PageFooter.astro \
+            src/components/nagornaya/chast-3/NagornayaChast3PageFooter.astro \
+            src/components/nagornaya/chast-4/NagornayaChast4PageFooter.astro \
+            src/components/nagornaya/chast-5/NagornayaChast5PageFooter.astro
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[nag-bar-clean] materialize verified asset contract'
+          git push origin HEAD:fix/nagornaya-bar-asset-contract-clean-2026-07-22
