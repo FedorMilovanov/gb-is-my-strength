@@ -244,7 +244,8 @@ jobs:
         run: |
           node scripts/workflow-linkage-regression-test.js
           npm run workflows:check
-          npx actionlint .github/workflows/deploy.yml .github/workflows/indexnow.yml .github/workflows/shared-files-guard.yml
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" | tar xz -C /tmp actionlint
+          /tmp/actionlint -color .github/workflows/deploy.yml .github/workflows/indexnow.yml .github/workflows/shared-files-guard.yml
           git diff --check
           test ! -e .github/workflows/_temp-pages-trigger-topology-fix.yml
 
