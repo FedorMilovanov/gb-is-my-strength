@@ -19,7 +19,6 @@
     body.nagornaya-page #bottomBar .bottom-bar-inner {
       gap: 5px;
       min-width: 0;
-      overflow: visible;
     }
 
     body.nagornaya-page #bottomBar .bar-section-btn {
@@ -36,6 +35,17 @@
       padding: 0 !important;
       border: 0 !important;
       background: transparent !important;
+    }
+
+    body.nagornaya-page #bottomBar .nag-bar-controls .gb-ember-expand {
+      position: fixed !important;
+      left: max(10px, env(safe-area-inset-left, 10px)) !important;
+      right: max(10px, env(safe-area-inset-right, 10px)) !important;
+      bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+      width: auto !important;
+      max-width: none !important;
+      box-sizing: border-box;
+      z-index: calc(var(--z-bottom-bar, 2000) + 1);
     }
   }
 </style>
