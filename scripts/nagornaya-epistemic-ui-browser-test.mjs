@@ -40,9 +40,10 @@ try {
           page.on('pageerror',(error)=>runtime.push(`pageerror: ${error.message}`));
           page.on('console',(message)=>{if(message.type()==='error')runtime.push(`console: ${message.text()}`);});
           page.on('requestfailed',(request)=>{const url=new URL(request.url());if(url.origin===base)runtime.push(`requestfailed: ${url.pathname}`);});
-          const response=await page.goto(base+item.route,{waitUntil:'networkidle'});
+          const response=await page.goto(base+item.route,{waitUntil:'load'});
           record(item,viewport,'http-200',response?.status()===200,`status=${response?.status()}`);
           const target=page.locator(item.target);
+          await target.waitFor({state:'attached',timeout:5000}).catch(()=>{});
           const count=await target.count();record(item,viewport,'target-present',count===1,`count=${count}`);if(count!==1)continue;
           await target.scrollIntoViewIfNeeded();
           const metrics=await page.evaluate((selector)=>{
