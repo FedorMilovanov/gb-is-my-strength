@@ -1,8 +1,8 @@
 {
   "route": "/nagornaya/seriya/",
   "profiledAt": "2026-06-22",
-  "migrationLane": "content",
-  "routeType": "series-chapter",
+  "migrationLane": "landing",
+  "routeType": "series-landing",
   "surfaceContractVersion": 1,
   "surface": "series",
   "seriesShape": "flat",
