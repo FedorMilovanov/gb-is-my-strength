@@ -31,22 +31,20 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
           old = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Полное отсутствие плодов — смертный приговор вере</strong> — если за годы «христианства» в жизни человека нет ни покаяния, ни борьбы с грехом, ни плодов Духа — библейский пастырь обязан предупредить его: Мф 7:21 относится к нему.</span></div>'
           new = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Упорное бесплодие требует серьёзного самоиспытания</strong> — если на протяжении долгого времени человек не видит ни покаяния, ни борьбы с грехом, ни направления к послушанию, пастырь обязан серьёзно предупредить его о возможности самообмана в свете Мф 7:21–23, призвать к покаянию и помочь обратиться за пастырской поддержкой. Окончательный суд о сердце принадлежит Христу; это предупреждение нельзя механически применять к сокрушённому верующему, который борется с грехом.</span></div>'
-          matches = 0
+          changed = []
           for root in (Path('src'), Path('nagornaya')):
               for path in root.rglob('*'):
                   if path.suffix not in {'.astro', '.html', '.mdx'}:
                       continue
                   text = path.read_text(encoding='utf-8')
-                  count = text.count(old)
-                  if count:
-                      matches += count
+                  if old in text:
                       path.write_text(text.replace(old, new), encoding='utf-8')
-          if matches < 2:
-              raise SystemExit(f'expected at least two canonical matches, found {matches}')
-          print(f'replaced {matches} canonical occurrences')
+                      changed.append(str(path))
+          if len(changed) < 2:
+              raise SystemExit(f'expected at least two canonical files, found {changed}')
+          print('\n'.join(changed))
           PY
 
           cat > scripts/nagornaya-pastoral-safety-regression-test.js <<'EOF'
@@ -90,15 +88,14 @@ jobs:
           p.write_text(text.replace(anchor, anchor + addition, 1), encoding='utf-8')
           PY
 
-          rm -f .github/workflows/_temp-nagornaya-pastoral-safety.yml
           node scripts/nagornaya-pastoral-safety-regression-test.js
           git diff --check
 
-      - name: Commit and push clean result
+      - name: Commit and push permanent files
         shell: bash
         run: |
           set -euxo pipefail
-          git add -A
+          git add src nagornaya scripts/nagornaya-pastoral-safety-regression-test.js .github/workflows/shared-files-guard.yml
           git status --short
           git diff --cached --stat
           git config user.name 'github-actions[bot]'
