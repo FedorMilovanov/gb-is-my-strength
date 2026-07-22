@@ -70,6 +70,9 @@ jobs:
       - name: Nagornaya pastoral safety regressions
         run: node scripts/nagornaya-pastoral-safety-regression-test.js
 
+      - name: Nagornaya source integrity regressions
+        run: node scripts/nagornaya-source-integrity-regression-test.js
+
       - name: Series reader façade regressions
         run: npm run series:facade:guard
 
