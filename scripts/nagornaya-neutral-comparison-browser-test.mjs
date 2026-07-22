@@ -25,6 +25,18 @@ const mime = {
   '.woff2': 'font/woff2',
 };
 
+const expectedLocalhostIconUrls = [
+  'https://gospod-bog.ru/apple-touch-icon.png',
+  'https://gospod-bog.ru/icons/icon-192.png',
+];
+
+function isExpectedLocalhostIconCsp(message) {
+  return (
+    message.includes('Content Security Policy') &&
+    expectedLocalhostIconUrls.some((url) => message.includes(url))
+  );
+}
+
 const server = createServer((request, response) => {
   const url = new URL(request.url || '/', origin);
   const decoded = decodeURIComponent(url.pathname);
@@ -67,7 +79,8 @@ try {
       const pageErrors = [];
       page.on('pageerror', (error) => pageErrors.push(String(error)));
       page.on('console', (message) => {
-        if (message.type() === 'error' && !message.text().includes('favicon')) pageErrors.push(message.text());
+        const text = message.text();
+        if (message.type() === 'error' && !isExpectedLocalhostIconCsp(text)) pageErrors.push(text);
       });
 
       const response = await page.goto(`${origin}${route.path}`, { waitUntil: 'networkidle' });
