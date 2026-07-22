@@ -11,38 +11,38 @@ PART4_FILES = [
 ]
 
 
-def replace_once(text: str, old: str, new: str, path: Path, label: str) -> str:
+def replace_exact(text: str, old: str, new: str, path: Path, label: str, expected: int = 1) -> str:
     count = text.count(old)
-    if count != 1:
-        raise SystemExit(f'{path}: {label}: expected one anchor, found {count}')
-    return text.replace(old, new, 1)
+    if count != expected:
+        raise SystemExit(f'{path}: {label}: expected {expected} anchor(s), found {count}')
+    return text.replace(old, new, expected)
 
 
 for path in SOURCE_FILES:
     text = path.read_text(encoding='utf-8')
-    text = replace_once(text, 'pp. 49–74', 'pp. 49–68', path, 'Green pages')
-    text = replace_once(
+    text = replace_exact(text, 'pp. 49–74', 'pp. 49–68', path, 'Green pages')
+    text = replace_exact(
         text,
         '<strong class="text-stone-800">Evangelical Responses to the Jesus Seminar</strong>',
         '<strong class="text-stone-800"><a href="https://tms.edu/wp-content/uploads/2021/09/tmsj7d.pdf" target="_blank" rel="noopener">Evangelical Responses to the Jesus Seminar</a></strong>',
         path,
         'Thomas exact object',
     )
-    text = replace_once(
+    text = replace_exact(
         text,
         '<strong class="text-stone-800">The Dispensational View of the Davidic Kingdom</strong>',
         '<strong class="text-stone-800"><a href="https://tms.edu/wp-content/uploads/2021/09/tmsj7h.pdf" target="_blank" rel="noopener">The Dispensational View of the Davidic Kingdom</a></strong>',
         path,
         'Nichols exact object',
     )
-    text = replace_once(
+    text = replace_exact(
         text,
         'Все ссылки верифицированы по первоисточникам.',
         'Ключевые библиографические данные и доступные первичные объекты проверены на дату обновления; состояние внешних ссылок может меняться.',
         path,
         'bounded verification claim',
     )
-    text = replace_once(
+    text = replace_exact(
         text,
         'Один источник отмечен предупреждением: используется только как историческое свидетельство.',
         'Один источник отмечен предупреждением: используется только как историческое свидетельство. Статья в TMSJ представляет аргумент названного автора и место публикации, а не автоматически официальную позицию TMS.',
@@ -53,28 +53,30 @@ for path in SOURCE_FILES:
 
 for path in PART4_FILES:
     text = path.read_text(encoding='utf-8')
-    text = replace_once(
+    heading_count = 2 if path == Path('nagornaya/chast-4/index.html') else 1
+    text = replace_exact(
         text,
         'V. Ipsissima Verba и Ipsissima Vox: Жёсткая граница Семинарии Мастерс',
         'V. Ipsissima Verba и Ipsissima Vox: Аргумент Дональда Грина',
         path,
         'section heading',
+        heading_count,
     )
-    text = replace_once(
+    text = replace_exact(
         text,
         'В этой дискуссии Семинария Мастерс предложила последовательную консервативную защиту историчности евангельского свидетельства. Дональд Грин',
         'В этой дискуссии Дональд Грин',
         path,
         'author publication attribution',
     )
-    text = replace_once(
+    text = replace_exact(
         text,
         'Аргументы Дональда Грина и позиции TMS сводятся к трём фундаментальным пунктам:',
         'Аргумент Дональда Грина в этой статье сводится к трём фундаментальным пунктам:',
         path,
         'argument attribution',
     )
-    text = replace_once(
+    text = replace_exact(
         text,
         'Позиция Семинарии Мастерс бескомпромиссна: Евангелия передают не приблизительный смысл и не богословские догадки авторов. Мы принимаем концепцию',
         'Грин проводит строгую границу: Евангелия передают не приблизительный смысл и не богословские догадки авторов. В рамках этой серии мы принимаем концепцию',
@@ -113,7 +115,7 @@ for (const rel of sourceFiles) {
   assert.doesNotMatch(text, /tmsj7h\.pdf[^<]{0,300}Jesus Seminar|Jesus Seminar[\s\S]{0,300}tmsj7h\.pdf/, `${rel}: Jesus Seminar must never resolve to tmsj7h.pdf`);
   assert.doesNotMatch(text, /Все ссылки верифицированы по первоисточникам/, `${rel}: universal verification claim returned`);
   assert.match(text, /Ключевые библиографические данные и доступные первичные объекты проверены на дату обновления/, `${rel}: bounded verification wording missing`);
-  assert.match(text, /Статья в TMSJ представляет аргумент названного автора[^.]+не автоматически официальную позицию TMS/, `${rel}: author/institution source-role note missing`);
+  assert.match(text, /Статья в TMSJ представляет аргумент названного автора[^.]+не автоматически официальную позицию TMS/, `${rel}: author\/institution source-role note missing`);
 }
 
 const banned = [
