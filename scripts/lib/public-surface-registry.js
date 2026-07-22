@@ -213,8 +213,13 @@ function validatePublicSurfaceRecord(record, entry, mobileEntries) {
   if (routeType === 'series-reference' && profile.migrationLane !== 'reference') {
     issue('routeType=series-reference requires migrationLane=reference');
   }
-  if (routeRole === 'landing' && !['series-landing', 'page-landing'].includes(entry.chrome.adapter)) {
-    issue(`landing route requires landing adapter, got ${entry.chrome.adapter}`);
+  if (routeRole === 'landing') {
+    const allowedLandingAdapters = surface === 'series'
+      ? new Set(['series-landing'])
+      : new Set(['page-landing', 'default-page']);
+    if (!allowedLandingAdapters.has(entry.chrome.adapter)) {
+      issue(`landing route requires landing adapter, got ${entry.chrome.adapter}`);
+    }
   }
   if (routeRole === 'reference' && entry.chrome.adapter !== 'series-reference') {
     issue(`reference route requires series-reference adapter, got ${entry.chrome.adapter}`);
