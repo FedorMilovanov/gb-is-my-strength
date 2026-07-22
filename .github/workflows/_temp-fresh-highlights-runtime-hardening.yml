@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/highlights-runtime-hardening-2026-07-22
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
 
 permissions:
   contents: write
@@ -14,6 +17,7 @@ concurrency:
 
 jobs:
   materialize:
+    if: github.head_ref == 'fix/highlights-runtime-hardening-2026-07-22' || github.ref_name == 'fix/highlights-runtime-hardening-2026-07-22'
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
