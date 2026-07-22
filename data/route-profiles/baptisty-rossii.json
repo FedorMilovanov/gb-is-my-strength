@@ -15,8 +15,14 @@
   "mdxPath": null,
   "legacyPath": "baptisty-rossii/index.html",
   "visualParity": {
-    "desktop": 0,
-    "mobile": 0
+    "mode": "native-contract",
+    "legacyComparison": "diagnostic-only",
+    "requiredGuards": [
+      "scripts/baptisty-rossii-visual-parity-audit.js",
+      "scripts/public-surface-browser-matrix.mjs"
+    ],
+    "reviewedAt": "2026-07-22",
+    "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
   },
   "cssPilot": null,
   "migrationMode": "strict-native",
