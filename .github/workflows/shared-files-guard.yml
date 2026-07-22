@@ -37,6 +37,9 @@ jobs:
       - name: Readiness-to-deploy workflow linkage
         run: node scripts/workflow-linkage-regression-test.js
 
+      - name: Visual parity route-policy regressions
+        run: node scripts/visual-parity-policy-regression-test.js
+
       - name: Runtime integrity regressions
         run: node scripts/runtime-integrity-test.js
 
@@ -88,7 +91,6 @@ jobs:
       - name: Lint workflow YAML (actionlint)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
         run: |
-          # Download actionlint binary (no npx — deterministic version)
           curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
             | tar xz -C /tmp actionlint
           /tmp/actionlint -color
