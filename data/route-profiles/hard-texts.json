@@ -14,8 +14,16 @@
   "mdxPath": null,
   "legacyPath": "hard-texts/index.html",
   "visualParity": {
-    "desktop": 0,
-    "mobile": 0
+    "mode": "native-contract",
+    "legacyComparison": "diagnostic-only",
+    "reason": "The strict-native landing renders the current series cards and metadata from first-class Astro components; root legacy HTML is retained as historical evidence and omits the current Materials section.",
+    "requiredGuards": [
+      "scripts/hard-texts-visual-parity-audit.js",
+      "scripts/check-data-consistency.js",
+      "scripts/public-surface-browser-matrix.mjs"
+    ],
+    "reviewedAt": "2026-07-22",
+    "reviewedSourceSha": "aeae401d782d769dad582395f2045fa79c020f42"
   },
   "cssPilot": null,
   "scope": "excluded-semantic-lane",
