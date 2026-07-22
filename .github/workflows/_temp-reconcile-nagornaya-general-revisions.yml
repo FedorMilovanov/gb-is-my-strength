@@ -1,0 +1,58 @@
+name: TEMP Reconcile Nagornaya General Revisions
+
+on:
+  push:
+    branches:
+      - fix/nagornaya-bar-asset-contract-clean-2026-07-22
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-reconcile-nagornaya-general-revisions
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    if: ${{ !contains(github.event.head_commit.message, '[nag-revisions]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/nagornaya-bar-asset-contract-clean-2026-07-22
+          fetch-depth: 0
+
+      - name: Generate and prove all revisions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          expected=$(cat <<'EOF'
+          src/components/baptisty-rossii/BaptistyRossiiDvaSezda1884PageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiGoneniyaISovestPageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiIniciativnayaGruppaPageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiNochNaKurePageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiPageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaPageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiPodpolnayaPechatPageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiSovetskayaNochPageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiSpravochnikPageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiVsehib1944PageHead.astro
+          src/components/baptisty-rossii/BaptistyRossiiYuzhnayaShtundaPageHead.astro
+          EOF
+          )
+          actual=$(git diff --name-only | sort)
+          diff -u <(printf '%s\n' "$expected" | sed 's/^ *//' | sort) <(printf '%s\n' "$actual")
+          git diff --check
+
+      - name: Publish generated revision files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add src/components/baptisty-rossii/*PageHead.astro
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[nag-revisions] reconcile refs exposed by general Astro matcher'
+          git push origin HEAD:fix/nagornaya-bar-asset-contract-clean-2026-07-22
