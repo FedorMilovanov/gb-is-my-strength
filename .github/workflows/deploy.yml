@@ -5,7 +5,7 @@ name: Deploy to GitHub Pages
 # production workflow никогда не переписывает исходники автоматически.
 on:
   # Asset-only / infrastructure pushes that do not trigger indexnow.yml.
-  # Content/CSS/JS pushes deploy via workflow_run after metadata/readiness gates.
+  # Source/build changes deploy only via workflow_run after readiness succeeds.
   push:
     branches: [main]
     paths:
@@ -17,16 +17,9 @@ on:
       - 'map/**'
       - 'biografii/**'
       - 'hard-texts/**'
-      - 'baptisty-rossii/**'
-      # Astro migration: public pages now live in src/ — deploy must fire on
-      # any change to Astro pages, MDX content, layouts, or the strangler manifest.
-      - 'src/**'
-      - 'astro.config.mjs'
-      - 'tsconfig.json'
-      - 'migration/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
+      # Source/build paths are intentionally absent here. They enter Pages
+      # only through workflow_run after Metadata & IndexNow Readiness passes.
+      # Exact push-path disjointness is protected by a permanent regression.
       - '.nojekyll'
       - 'favicon*'
       - 'apple-touch-icon.png'
