@@ -1,7 +1,0 @@
-{
-  "id": 5040539509,
-  "created_at": "2026-07-22T00:41:14Z",
-  "updated_at": "2026-07-22T00:41:14Z",
-  "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Deploy to GitHub Pages**\n- Conclusion: **failure**\n- Run: 29880149692 (#1619)\n- Head SHA: c702f06edb9b36fc171532c7b9bc0bea41b896dc\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29880149692\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
-  "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040539509"
-}
