@@ -1,0 +1,41 @@
+---
+/**
+ * Shared narrow-viewport contract for the native Nagornaya chapter bar.
+ *
+ * The mobile TOC keeps progress and sharing available, so at <=359px the
+ * persistent bar may drop those duplicate controls (plus the redundant Up
+ * action) instead of forcing Play/Save and Share outside the viewport.
+ */
+---
+<style is:global>
+  @media (max-width: 359px) {
+    body.nagornaya-page #bottomBar .bar-progress,
+    body.nagornaya-page #bottomBar .bar-divider,
+    body.nagornaya-page #bottomBar #barUpBtn,
+    body.nagornaya-page #bottomBar #barShareBtn {
+      display: none !important;
+    }
+
+    body.nagornaya-page #bottomBar .bottom-bar-inner {
+      gap: 5px;
+      min-width: 0;
+      overflow: visible;
+    }
+
+    body.nagornaya-page #bottomBar .bar-section-btn {
+      min-width: 0;
+      padding-inline: 8px;
+    }
+
+    body.nagornaya-page #bottomBar .nag-bar-controls {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 0;
+      gap: 4px;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      background: transparent !important;
+    }
+  }
+</style>
