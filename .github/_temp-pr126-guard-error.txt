@@ -1,0 +1,322 @@
+2026-07-22T09:46:43.5037831Z  * [new branch]          claude/biblical-genealogy-svg-6l6qb8     -> origin/claude/biblical-genealogy-svg-6l6qb8
+2026-07-22T09:46:43.5038461Z  * [new branch]          claude/dns-configuration-setup-c0w26g    -> origin/claude/dns-configuration-setup-c0w26g
+2026-07-22T09:46:43.5039115Z  * [new branch]          claude/website-map-audit-ik3ypo          -> origin/claude/website-map-audit-ik3ypo
+2026-07-22T09:46:43.5039744Z  * [new branch]          cleanup/pages-deploy-witness-2026-07-21  -> origin/cleanup/pages-deploy-witness-2026-07-21
+2026-07-22T09:46:43.5040680Z  * [new branch]          cleanup/pages-deploy-witness-2026-07-22  -> origin/cleanup/pages-deploy-witness-2026-07-22
+2026-07-22T09:46:43.5041321Z  * [new branch]          diagnostic/final-pages-witness-2026-07-22 -> origin/diagnostic/final-pages-witness-2026-07-22
+2026-07-22T09:46:43.5041938Z  * [new branch]          diagnostic/gill-mobile-layout-2026-07-22 -> origin/diagnostic/gill-mobile-layout-2026-07-22
+2026-07-22T09:46:43.5042612Z  * [new branch]          diagnostic/gill-mobile-play-smoke-2026-07-21 -> origin/diagnostic/gill-mobile-play-smoke-2026-07-21
+2026-07-22T09:46:43.5043856Z  * [new branch]          fix/deploy-cache-bust-reconcile-2026-07-21 -> origin/fix/deploy-cache-bust-reconcile-2026-07-21
+2026-07-22T09:46:43.5044692Z  * [new branch]          fix/gill-editorial-content-integrity     -> origin/fix/gill-editorial-content-integrity
+2026-07-22T09:46:43.5045659Z  * [new branch]          fix/gill-editorial-integrity             -> origin/fix/gill-editorial-integrity
+2026-07-22T09:46:43.5046631Z  * [new branch]          fix/gill-mobile-frost-audit-2026-07-22   -> origin/fix/gill-mobile-frost-audit-2026-07-22
+2026-07-22T09:46:43.5047726Z  * [new branch]          fix/gill-mobile-smoke-intro-heading-2026-07-21 -> origin/fix/gill-mobile-smoke-intro-heading-2026-07-21
+2026-07-22T09:46:43.5048845Z  * [new branch]          fix/gill-part4-propagate-sibling-grids   -> origin/fix/gill-part4-propagate-sibling-grids
+2026-07-22T09:46:43.5049518Z  * [new branch]          fix/highlights-runtime-hardening-2026-07-22 -> origin/fix/highlights-runtime-hardening-2026-07-22
+2026-07-22T09:46:43.5050248Z  * [new branch]          fix/nagornaya-bar-asset-contract-clean-2026-07-22 -> origin/fix/nagornaya-bar-asset-contract-clean-2026-07-22
+2026-07-22T09:46:43.5051105Z  * [new branch]          fix/nagornaya-pastoral-safety-2026-07-22 -> origin/fix/nagornaya-pastoral-safety-2026-07-22
+2026-07-22T09:46:43.5051722Z  * [new branch]          fix/pages-trigger-topology-2026-07-22    -> origin/fix/pages-trigger-topology-2026-07-22
+2026-07-22T09:46:43.5052379Z  * [new branch]          fix/premerge-asset-revision-guard-2026-07-21 -> origin/fix/premerge-asset-revision-guard-2026-07-21
+2026-07-22T09:46:43.5053307Z  * [new branch]          fix/readiness-deploy-linkage-2026-07-21  -> origin/fix/readiness-deploy-linkage-2026-07-21
+2026-07-22T09:46:43.5054040Z  * [new branch]          fix/readiness-script-path-coverage-2026-07-22 -> origin/fix/readiness-script-path-coverage-2026-07-22
+2026-07-22T09:46:43.5054657Z  * [new branch]          fix/sw-baseline-v191-2026-07-22          -> origin/fix/sw-baseline-v191-2026-07-22
+---
+2026-07-22T09:46:43.5060087Z  * [new branch]          lane/system-map-layers-theme-2026-07-21  -> origin/lane/system-map-layers-theme-2026-07-21
+2026-07-22T09:46:43.5060908Z  * [new branch]          lane/system-reader-preferences-foundation-2026-07-21 -> origin/lane/system-reader-preferences-foundation-2026-07-21
+2026-07-22T09:46:43.5121871Z  * [new branch]          lane/system-reader-preferences-r1-final-2026-07-21 -> origin/lane/system-reader-preferences-r1-final-2026-07-21
+2026-07-22T09:46:43.5122869Z  * [new branch]          lane/system-runtime-integrity-2026-07-21 -> origin/lane/system-runtime-integrity-2026-07-21
+2026-07-22T09:46:43.5123578Z  * [new branch]          main                                     -> origin/main
+2026-07-22T09:46:43.5124174Z  * [new branch]          research/reader-platform-inventory-2026-07-21 -> origin/research/reader-platform-inventory-2026-07-21
+2026-07-22T09:46:43.5124948Z  * [new branch]          verify/special-overlay-production-smoke-2026-07-21 -> origin/verify/special-overlay-production-smoke-2026-07-21
+2026-07-22T09:46:43.5125715Z  * [new tag]             archive/pr-20-gill-series-shared-chrome-2026-06-27 -> archive/pr-20-gill-series-shared-chrome-2026-06-27
+2026-07-22T09:46:43.5126557Z  * [new tag]             archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27 -> archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27
+2026-07-22T09:46:43.5127571Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27
+2026-07-22T09:46:43.5128603Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27
+2026-07-22T09:46:43.5129638Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27
+2026-07-22T09:46:43.5131421Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27
+2026-07-22T09:46:43.5133414Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27
+2026-07-22T09:46:43.5135007Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27
+2026-07-22T09:46:43.5135892Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-11-32 -> before-gb-is-my-strength-2026-05-11_06-11-32
+2026-07-22T09:46:43.5136557Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-38-51 -> before-gb-is-my-strength-2026-05-11_06-38-51
+2026-07-22T09:46:43.5137170Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-52-15 -> before-gb-is-my-strength-2026-05-11_06-52-15
+2026-07-22T09:46:43.5137764Z  * [new tag]             before-gb-is-my-strength-2026-05-11_14-12-15 -> before-gb-is-my-strength-2026-05-11_14-12-15
+2026-07-22T09:46:43.5138353Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-18-38 -> before-gb-is-my-strength-2026-05-11_21-18-38
+2026-07-22T09:46:43.5138948Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-42-55 -> before-gb-is-my-strength-2026-05-11_21-42-55
+2026-07-22T09:46:43.5139535Z  * [new tag]             before-gb-is-my-strength-2026-05-12_00-36-27 -> before-gb-is-my-strength-2026-05-12_00-36-27
+---
+2026-07-22T09:46:43.5060908Z  * [new branch]          lane/system-reader-preferences-foundation-2026-07-21 -> origin/lane/system-reader-preferences-foundation-2026-07-21
+2026-07-22T09:46:43.5121871Z  * [new branch]          lane/system-reader-preferences-r1-final-2026-07-21 -> origin/lane/system-reader-preferences-r1-final-2026-07-21
+2026-07-22T09:46:43.5122869Z  * [new branch]          lane/system-runtime-integrity-2026-07-21 -> origin/lane/system-runtime-integrity-2026-07-21
+2026-07-22T09:46:43.5123578Z  * [new branch]          main                                     -> origin/main
+2026-07-22T09:46:43.5124174Z  * [new branch]          research/reader-platform-inventory-2026-07-21 -> origin/research/reader-platform-inventory-2026-07-21
+2026-07-22T09:46:43.5124948Z  * [new branch]          verify/special-overlay-production-smoke-2026-07-21 -> origin/verify/special-overlay-production-smoke-2026-07-21
+2026-07-22T09:46:43.5125715Z  * [new tag]             archive/pr-20-gill-series-shared-chrome-2026-06-27 -> archive/pr-20-gill-series-shared-chrome-2026-06-27
+2026-07-22T09:46:43.5126557Z  * [new tag]             archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27 -> archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27
+2026-07-22T09:46:43.5127571Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27
+2026-07-22T09:46:43.5128603Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27
+2026-07-22T09:46:43.5129638Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27
+2026-07-22T09:46:43.5131421Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27
+2026-07-22T09:46:43.5133414Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27
+2026-07-22T09:46:43.5135007Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27
+2026-07-22T09:46:43.5135892Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-11-32 -> before-gb-is-my-strength-2026-05-11_06-11-32
+2026-07-22T09:46:43.5136557Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-38-51 -> before-gb-is-my-strength-2026-05-11_06-38-51
+2026-07-22T09:46:43.5137170Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-52-15 -> before-gb-is-my-strength-2026-05-11_06-52-15
+2026-07-22T09:46:43.5137764Z  * [new tag]             before-gb-is-my-strength-2026-05-11_14-12-15 -> before-gb-is-my-strength-2026-05-11_14-12-15
+2026-07-22T09:46:43.5138353Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-18-38 -> before-gb-is-my-strength-2026-05-11_21-18-38
+2026-07-22T09:46:43.5138948Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-42-55 -> before-gb-is-my-strength-2026-05-11_21-42-55
+2026-07-22T09:46:43.5139535Z  * [new tag]             before-gb-is-my-strength-2026-05-12_00-36-27 -> before-gb-is-my-strength-2026-05-12_00-36-27
+2026-07-22T09:46:43.5140125Z  * [new tag]             before-gb-is-my-strength-2026-05-12_19-52-53 -> before-gb-is-my-strength-2026-05-12_19-52-53
+---
+2026-07-22T09:46:43.5121871Z  * [new branch]          lane/system-reader-preferences-r1-final-2026-07-21 -> origin/lane/system-reader-preferences-r1-final-2026-07-21
+2026-07-22T09:46:43.5122869Z  * [new branch]          lane/system-runtime-integrity-2026-07-21 -> origin/lane/system-runtime-integrity-2026-07-21
+2026-07-22T09:46:43.5123578Z  * [new branch]          main                                     -> origin/main
+2026-07-22T09:46:43.5124174Z  * [new branch]          research/reader-platform-inventory-2026-07-21 -> origin/research/reader-platform-inventory-2026-07-21
+2026-07-22T09:46:43.5124948Z  * [new branch]          verify/special-overlay-production-smoke-2026-07-21 -> origin/verify/special-overlay-production-smoke-2026-07-21
+2026-07-22T09:46:43.5125715Z  * [new tag]             archive/pr-20-gill-series-shared-chrome-2026-06-27 -> archive/pr-20-gill-series-shared-chrome-2026-06-27
+2026-07-22T09:46:43.5126557Z  * [new tag]             archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27 -> archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27
+2026-07-22T09:46:43.5127571Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27
+2026-07-22T09:46:43.5128603Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27
+2026-07-22T09:46:43.5129638Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27
+2026-07-22T09:46:43.5131421Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27
+2026-07-22T09:46:43.5133414Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27
+2026-07-22T09:46:43.5135007Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27
+2026-07-22T09:46:43.5135892Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-11-32 -> before-gb-is-my-strength-2026-05-11_06-11-32
+2026-07-22T09:46:43.5136557Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-38-51 -> before-gb-is-my-strength-2026-05-11_06-38-51
+2026-07-22T09:46:43.5137170Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-52-15 -> before-gb-is-my-strength-2026-05-11_06-52-15
+2026-07-22T09:46:43.5137764Z  * [new tag]             before-gb-is-my-strength-2026-05-11_14-12-15 -> before-gb-is-my-strength-2026-05-11_14-12-15
+2026-07-22T09:46:43.5138353Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-18-38 -> before-gb-is-my-strength-2026-05-11_21-18-38
+2026-07-22T09:46:43.5138948Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-42-55 -> before-gb-is-my-strength-2026-05-11_21-42-55
+2026-07-22T09:46:43.5139535Z  * [new tag]             before-gb-is-my-strength-2026-05-12_00-36-27 -> before-gb-is-my-strength-2026-05-12_00-36-27
+2026-07-22T09:46:43.5140125Z  * [new tag]             before-gb-is-my-strength-2026-05-12_19-52-53 -> before-gb-is-my-strength-2026-05-12_19-52-53
+2026-07-22T09:46:43.5140870Z  * [new tag]             before-gb-is-my-strength-2026-05-13_00-49-06 -> before-gb-is-my-strength-2026-05-13_00-49-06
+---
+2026-07-22T09:46:43.5122869Z  * [new branch]          lane/system-runtime-integrity-2026-07-21 -> origin/lane/system-runtime-integrity-2026-07-21
+2026-07-22T09:46:43.5123578Z  * [new branch]          main                                     -> origin/main
+2026-07-22T09:46:43.5124174Z  * [new branch]          research/reader-platform-inventory-2026-07-21 -> origin/research/reader-platform-inventory-2026-07-21
+2026-07-22T09:46:43.5124948Z  * [new branch]          verify/special-overlay-production-smoke-2026-07-21 -> origin/verify/special-overlay-production-smoke-2026-07-21
+2026-07-22T09:46:43.5125715Z  * [new tag]             archive/pr-20-gill-series-shared-chrome-2026-06-27 -> archive/pr-20-gill-series-shared-chrome-2026-06-27
+2026-07-22T09:46:43.5126557Z  * [new tag]             archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27 -> archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27
+2026-07-22T09:46:43.5127571Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27
+2026-07-22T09:46:43.5128603Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27
+2026-07-22T09:46:43.5129638Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27
+2026-07-22T09:46:43.5131421Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27
+2026-07-22T09:46:43.5133414Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27
+2026-07-22T09:46:43.5135007Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27
+2026-07-22T09:46:43.5135892Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-11-32 -> before-gb-is-my-strength-2026-05-11_06-11-32
+2026-07-22T09:46:43.5136557Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-38-51 -> before-gb-is-my-strength-2026-05-11_06-38-51
+2026-07-22T09:46:43.5137170Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-52-15 -> before-gb-is-my-strength-2026-05-11_06-52-15
+2026-07-22T09:46:43.5137764Z  * [new tag]             before-gb-is-my-strength-2026-05-11_14-12-15 -> before-gb-is-my-strength-2026-05-11_14-12-15
+2026-07-22T09:46:43.5138353Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-18-38 -> before-gb-is-my-strength-2026-05-11_21-18-38
+2026-07-22T09:46:43.5138948Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-42-55 -> before-gb-is-my-strength-2026-05-11_21-42-55
+2026-07-22T09:46:43.5139535Z  * [new tag]             before-gb-is-my-strength-2026-05-12_00-36-27 -> before-gb-is-my-strength-2026-05-12_00-36-27
+2026-07-22T09:46:43.5140125Z  * [new tag]             before-gb-is-my-strength-2026-05-12_19-52-53 -> before-gb-is-my-strength-2026-05-12_19-52-53
+2026-07-22T09:46:43.5140870Z  * [new tag]             before-gb-is-my-strength-2026-05-13_00-49-06 -> before-gb-is-my-strength-2026-05-13_00-49-06
+2026-07-22T09:46:43.5141581Z  * [new tag]             before-gb-is-my-strength-2026-05-13_15-09-01 -> before-gb-is-my-strength-2026-05-13_15-09-01
+---
+2026-07-22T09:46:43.5123578Z  * [new branch]          main                                     -> origin/main
+2026-07-22T09:46:43.5124174Z  * [new branch]          research/reader-platform-inventory-2026-07-21 -> origin/research/reader-platform-inventory-2026-07-21
+2026-07-22T09:46:43.5124948Z  * [new branch]          verify/special-overlay-production-smoke-2026-07-21 -> origin/verify/special-overlay-production-smoke-2026-07-21
+2026-07-22T09:46:43.5125715Z  * [new tag]             archive/pr-20-gill-series-shared-chrome-2026-06-27 -> archive/pr-20-gill-series-shared-chrome-2026-06-27
+2026-07-22T09:46:43.5126557Z  * [new tag]             archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27 -> archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27
+2026-07-22T09:46:43.5127571Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27
+2026-07-22T09:46:43.5128603Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27
+2026-07-22T09:46:43.5129638Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27
+2026-07-22T09:46:43.5131421Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27
+2026-07-22T09:46:43.5133414Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27
+2026-07-22T09:46:43.5135007Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27
+2026-07-22T09:46:43.5135892Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-11-32 -> before-gb-is-my-strength-2026-05-11_06-11-32
+2026-07-22T09:46:43.5136557Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-38-51 -> before-gb-is-my-strength-2026-05-11_06-38-51
+2026-07-22T09:46:43.5137170Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-52-15 -> before-gb-is-my-strength-2026-05-11_06-52-15
+2026-07-22T09:46:43.5137764Z  * [new tag]             before-gb-is-my-strength-2026-05-11_14-12-15 -> before-gb-is-my-strength-2026-05-11_14-12-15
+2026-07-22T09:46:43.5138353Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-18-38 -> before-gb-is-my-strength-2026-05-11_21-18-38
+2026-07-22T09:46:43.5138948Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-42-55 -> before-gb-is-my-strength-2026-05-11_21-42-55
+2026-07-22T09:46:43.5139535Z  * [new tag]             before-gb-is-my-strength-2026-05-12_00-36-27 -> before-gb-is-my-strength-2026-05-12_00-36-27
+2026-07-22T09:46:43.5140125Z  * [new tag]             before-gb-is-my-strength-2026-05-12_19-52-53 -> before-gb-is-my-strength-2026-05-12_19-52-53
+2026-07-22T09:46:43.5140870Z  * [new tag]             before-gb-is-my-strength-2026-05-13_00-49-06 -> before-gb-is-my-strength-2026-05-13_00-49-06
+2026-07-22T09:46:43.5141581Z  * [new tag]             before-gb-is-my-strength-2026-05-13_15-09-01 -> before-gb-is-my-strength-2026-05-13_15-09-01
+2026-07-22T09:46:43.5142217Z  * [new tag]             before-gb-is-my-strength-2026-05-13_18-48-14 -> before-gb-is-my-strength-2026-05-13_18-48-14
+---
+2026-07-22T09:46:43.5124174Z  * [new branch]          research/reader-platform-inventory-2026-07-21 -> origin/research/reader-platform-inventory-2026-07-21
+2026-07-22T09:46:43.5124948Z  * [new branch]          verify/special-overlay-production-smoke-2026-07-21 -> origin/verify/special-overlay-production-smoke-2026-07-21
+2026-07-22T09:46:43.5125715Z  * [new tag]             archive/pr-20-gill-series-shared-chrome-2026-06-27 -> archive/pr-20-gill-series-shared-chrome-2026-06-27
+2026-07-22T09:46:43.5126557Z  * [new tag]             archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27 -> archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27
+2026-07-22T09:46:43.5127571Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27
+2026-07-22T09:46:43.5128603Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27
+2026-07-22T09:46:43.5129638Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27
+2026-07-22T09:46:43.5131421Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27
+2026-07-22T09:46:43.5133414Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27
+2026-07-22T09:46:43.5135007Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27
+2026-07-22T09:46:43.5135892Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-11-32 -> before-gb-is-my-strength-2026-05-11_06-11-32
+2026-07-22T09:46:43.5136557Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-38-51 -> before-gb-is-my-strength-2026-05-11_06-38-51
+2026-07-22T09:46:43.5137170Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-52-15 -> before-gb-is-my-strength-2026-05-11_06-52-15
+2026-07-22T09:46:43.5137764Z  * [new tag]             before-gb-is-my-strength-2026-05-11_14-12-15 -> before-gb-is-my-strength-2026-05-11_14-12-15
+2026-07-22T09:46:43.5138353Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-18-38 -> before-gb-is-my-strength-2026-05-11_21-18-38
+2026-07-22T09:46:43.5138948Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-42-55 -> before-gb-is-my-strength-2026-05-11_21-42-55
+2026-07-22T09:46:43.5139535Z  * [new tag]             before-gb-is-my-strength-2026-05-12_00-36-27 -> before-gb-is-my-strength-2026-05-12_00-36-27
+2026-07-22T09:46:43.5140125Z  * [new tag]             before-gb-is-my-strength-2026-05-12_19-52-53 -> before-gb-is-my-strength-2026-05-12_19-52-53
+2026-07-22T09:46:43.5140870Z  * [new tag]             before-gb-is-my-strength-2026-05-13_00-49-06 -> before-gb-is-my-strength-2026-05-13_00-49-06
+2026-07-22T09:46:43.5141581Z  * [new tag]             before-gb-is-my-strength-2026-05-13_15-09-01 -> before-gb-is-my-strength-2026-05-13_15-09-01
+2026-07-22T09:46:43.5142217Z  * [new tag]             before-gb-is-my-strength-2026-05-13_18-48-14 -> before-gb-is-my-strength-2026-05-13_18-48-14
+2026-07-22T09:46:43.5143115Z  * [new tag]             before-gb-is-my-strength-2026-05-13_19-21-13 -> before-gb-is-my-strength-2026-05-13_19-21-13
+---
+2026-07-22T09:46:43.5124948Z  * [new branch]          verify/special-overlay-production-smoke-2026-07-21 -> origin/verify/special-overlay-production-smoke-2026-07-21
+2026-07-22T09:46:43.5125715Z  * [new tag]             archive/pr-20-gill-series-shared-chrome-2026-06-27 -> archive/pr-20-gill-series-shared-chrome-2026-06-27
+2026-07-22T09:46:43.5126557Z  * [new tag]             archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27 -> archive/stale-2026-06-28/lane/system-current-truth-cleanup-2026-06-27
+2026-07-22T09:46:43.5127571Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27
+2026-07-22T09:46:43.5128603Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27
+2026-07-22T09:46:43.5129638Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27
+2026-07-22T09:46:43.5131421Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27
+2026-07-22T09:46:43.5133414Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27
+2026-07-22T09:46:43.5135007Z  * [new tag]             archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27 -> archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27
+2026-07-22T09:46:43.5135892Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-11-32 -> before-gb-is-my-strength-2026-05-11_06-11-32
+2026-07-22T09:46:43.5136557Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-38-51 -> before-gb-is-my-strength-2026-05-11_06-38-51
+2026-07-22T09:46:43.5137170Z  * [new tag]             before-gb-is-my-strength-2026-05-11_06-52-15 -> before-gb-is-my-strength-2026-05-11_06-52-15
+2026-07-22T09:46:43.5137764Z  * [new tag]             before-gb-is-my-strength-2026-05-11_14-12-15 -> before-gb-is-my-strength-2026-05-11_14-12-15
+2026-07-22T09:46:43.5138353Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-18-38 -> before-gb-is-my-strength-2026-05-11_21-18-38
+2026-07-22T09:46:43.5138948Z  * [new tag]             before-gb-is-my-strength-2026-05-11_21-42-55 -> before-gb-is-my-strength-2026-05-11_21-42-55
+2026-07-22T09:46:43.5139535Z  * [new tag]             before-gb-is-my-strength-2026-05-12_00-36-27 -> before-gb-is-my-strength-2026-05-12_00-36-27
+2026-07-22T09:46:43.5140125Z  * [new tag]             before-gb-is-my-strength-2026-05-12_19-52-53 -> before-gb-is-my-strength-2026-05-12_19-52-53
+2026-07-22T09:46:43.5140870Z  * [new tag]             before-gb-is-my-strength-2026-05-13_00-49-06 -> before-gb-is-my-strength-2026-05-13_00-49-06
+2026-07-22T09:46:43.5141581Z  * [new tag]             before-gb-is-my-strength-2026-05-13_15-09-01 -> before-gb-is-my-strength-2026-05-13_15-09-01
+2026-07-22T09:46:43.5142217Z  * [new tag]             before-gb-is-my-strength-2026-05-13_18-48-14 -> before-gb-is-my-strength-2026-05-13_18-48-14
+2026-07-22T09:46:43.5143115Z  * [new tag]             before-gb-is-my-strength-2026-05-13_19-21-13 -> before-gb-is-my-strength-2026-05-13_19-21-13
+2026-07-22T09:46:43.5143964Z  * [new tag]             before-gb-is-my-strength-2026-05-13_20-16-56 -> before-gb-is-my-strength-2026-05-13_20-16-56
+---
+2026-07-22T09:46:44.6792639Z /home/runner/.npm
+2026-07-22T09:46:44.9459248Z Cache hit for: node-cache-Linux-x64-npm-cd60113dd531b4d94a36f5cd9e2611c4c12abbe91d0677de93a43f6a9f279a63
+2026-07-22T09:46:44.9570058Z (node:2141) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-07-22T09:46:45.3447177Z Received 696 of 696 (100.0%), 0.0 MBs/sec
+2026-07-22T09:46:45.3447627Z Cache Size: ~0 MB (696 B)
+2026-07-22T09:46:45.3467247Z [command]/usr/bin/tar -xf /home/runner/work/_temp/00f74409-b653-49ac-8bb2-44222aeec010/cache.tzst -P -C /home/runner/work/gb-is-my-strength/gb-is-my-strength --use-compress-program unzstd
+2026-07-22T09:46:45.3509718Z Cache restored successfully
+2026-07-22T09:46:45.3513072Z Cache restored from key: node-cache-Linux-x64-npm-cd60113dd531b4d94a36f5cd9e2611c4c12abbe91d0677de93a43f6a9f279a63
+2026-07-22T09:46:45.3620831Z ##[group]Run node scripts/cache-bust.js
+2026-07-22T09:46:45.3621166Z [36;1mnode scripts/cache-bust.js[0m
+2026-07-22T09:46:45.3696094Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:46:45.3696325Z ##[endgroup]
+2026-07-22T09:46:45.4005914Z 
+2026-07-22T09:46:45.4011528Z ⚡ asset revision READ-ONLY CHECK
+2026-07-22T09:46:45.4011760Z 
+2026-07-22T09:46:45.4016022Z   ✔ css/site.css                   → ?v=7b0067c7
+2026-07-22T09:46:45.4017204Z   ✔ css/reader-preferences.css     → ?v=2b0b76ce
+2026-07-22T09:46:45.4019158Z   ✔ css/home.css                   → ?v=a1933595
+2026-07-22T09:46:45.4020288Z   ✔ css/command-palette.css        → ?v=afe33045
+2026-07-22T09:46:45.4021367Z   ✔ css/mobile-hotfix.css          → ?v=a6a3187a
+2026-07-22T09:46:45.4023348Z   ✔ css/nagornaya-mobile-toc.css   → ?v=282d8fe8
+2026-07-22T09:46:45.4024311Z   ✔ css/series-samizdat.css        → ?v=2c4a9f29
+---
+2026-07-22T09:46:44.9459248Z Cache hit for: node-cache-Linux-x64-npm-cd60113dd531b4d94a36f5cd9e2611c4c12abbe91d0677de93a43f6a9f279a63
+2026-07-22T09:46:44.9570058Z (node:2141) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-07-22T09:46:45.3447177Z Received 696 of 696 (100.0%), 0.0 MBs/sec
+2026-07-22T09:46:45.3447627Z Cache Size: ~0 MB (696 B)
+2026-07-22T09:46:45.3467247Z [command]/usr/bin/tar -xf /home/runner/work/_temp/00f74409-b653-49ac-8bb2-44222aeec010/cache.tzst -P -C /home/runner/work/gb-is-my-strength/gb-is-my-strength --use-compress-program unzstd
+2026-07-22T09:46:45.3509718Z Cache restored successfully
+2026-07-22T09:46:45.3513072Z Cache restored from key: node-cache-Linux-x64-npm-cd60113dd531b4d94a36f5cd9e2611c4c12abbe91d0677de93a43f6a9f279a63
+2026-07-22T09:46:45.3620831Z ##[group]Run node scripts/cache-bust.js
+2026-07-22T09:46:45.3621166Z [36;1mnode scripts/cache-bust.js[0m
+2026-07-22T09:46:45.3696094Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:46:45.3696325Z ##[endgroup]
+2026-07-22T09:46:45.4005914Z 
+2026-07-22T09:46:45.4011528Z ⚡ asset revision READ-ONLY CHECK
+2026-07-22T09:46:45.4011760Z 
+2026-07-22T09:46:45.4016022Z   ✔ css/site.css                   → ?v=7b0067c7
+2026-07-22T09:46:45.4017204Z   ✔ css/reader-preferences.css     → ?v=2b0b76ce
+2026-07-22T09:46:45.4019158Z   ✔ css/home.css                   → ?v=a1933595
+2026-07-22T09:46:45.4020288Z   ✔ css/command-palette.css        → ?v=afe33045
+2026-07-22T09:46:45.4021367Z   ✔ css/mobile-hotfix.css          → ?v=a6a3187a
+2026-07-22T09:46:45.4023348Z   ✔ css/nagornaya-mobile-toc.css   → ?v=282d8fe8
+2026-07-22T09:46:45.4024311Z   ✔ css/series-samizdat.css        → ?v=2c4a9f29
+2026-07-22T09:46:45.4029554Z   ✔ css/floating-cluster.css       → ?v=896f0c4d
+---
+2026-07-22T09:46:45.3467247Z [command]/usr/bin/tar -xf /home/runner/work/_temp/00f74409-b653-49ac-8bb2-44222aeec010/cache.tzst -P -C /home/runner/work/gb-is-my-strength/gb-is-my-strength --use-compress-program unzstd
+2026-07-22T09:46:45.3509718Z Cache restored successfully
+2026-07-22T09:46:45.3513072Z Cache restored from key: node-cache-Linux-x64-npm-cd60113dd531b4d94a36f5cd9e2611c4c12abbe91d0677de93a43f6a9f279a63
+2026-07-22T09:46:45.3620831Z ##[group]Run node scripts/cache-bust.js
+2026-07-22T09:46:45.3621166Z [36;1mnode scripts/cache-bust.js[0m
+2026-07-22T09:46:45.3696094Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:46:45.3696325Z ##[endgroup]
+2026-07-22T09:46:45.4005914Z 
+2026-07-22T09:46:45.4011528Z ⚡ asset revision READ-ONLY CHECK
+2026-07-22T09:46:45.4011760Z 
+2026-07-22T09:46:45.4016022Z   ✔ css/site.css                   → ?v=7b0067c7
+2026-07-22T09:46:45.4017204Z   ✔ css/reader-preferences.css     → ?v=2b0b76ce
+2026-07-22T09:46:45.4019158Z   ✔ css/home.css                   → ?v=a1933595
+2026-07-22T09:46:45.4020288Z   ✔ css/command-palette.css        → ?v=afe33045
+2026-07-22T09:46:45.4021367Z   ✔ css/mobile-hotfix.css          → ?v=a6a3187a
+2026-07-22T09:46:45.4023348Z   ✔ css/nagornaya-mobile-toc.css   → ?v=282d8fe8
+2026-07-22T09:46:45.4024311Z   ✔ css/series-samizdat.css        → ?v=2c4a9f29
+2026-07-22T09:46:45.4029554Z   ✔ css/floating-cluster.css       → ?v=896f0c4d
+2026-07-22T09:46:45.4033001Z   ✔ css/enhancements-runtime.css   → ?v=97a3e924
+2026-07-22T09:46:45.4034187Z   ✔ css/highlights-runtime.css     → ?v=9f42844a
+2026-07-22T09:46:45.4034855Z   ✔ css/sw-toast.css               → ?v=efbe868b
+2026-07-22T09:46:45.4035470Z   ✔ fonts/fonts.css                → ?v=864cc57a
+---
+2026-07-22T09:46:45.4048093Z   ✔ js/search.js                   → ?v=b0fd43b8
+2026-07-22T09:46:45.4048613Z   ✔ js/sw-register.js              → ?v=7a8bd1e7
+2026-07-22T09:46:45.4049422Z   ✔ js/nagornaya-mobile-toc.js     → ?v=649d9217
+2026-07-22T09:46:45.4049957Z   ✔ js/nagornaya-bar-extras.js     → ?v=3c7e0bdd
+2026-07-22T09:46:45.4050627Z   ✔ js/glossary.js                 → ?v=ae46a35b
+2026-07-22T09:46:45.4053659Z   ✔ js/floating-cluster-controller.js → ?v=f746adb1
+2026-07-22T09:46:45.6406337Z 
+2026-07-22T09:46:45.6407493Z ────────────────────────────────────────────────────────────
+2026-07-22T09:46:45.6407927Z ❌ Stale files: 11
+2026-07-22T09:46:45.6408315Z   - src/components/baptisty-rossii/BaptistyRossiiDvaSezda1884PageHead.astro
+2026-07-22T09:46:45.6408886Z   - src/components/baptisty-rossii/BaptistyRossiiGoneniyaISovestPageHead.astro
+2026-07-22T09:46:45.6409789Z   - src/components/baptisty-rossii/BaptistyRossiiIniciativnayaGruppaPageHead.astro
+2026-07-22T09:46:45.6410669Z   - src/components/baptisty-rossii/BaptistyRossiiNochNaKurePageHead.astro
+2026-07-22T09:46:45.6411378Z   - src/components/baptisty-rossii/BaptistyRossiiPageHead.astro
+2026-07-22T09:46:45.6412126Z   - src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaPageHead.astro
+2026-07-22T09:46:45.6412876Z   - src/components/baptisty-rossii/BaptistyRossiiPodpolnayaPechatPageHead.astro
+2026-07-22T09:46:45.6413435Z   - src/components/baptisty-rossii/BaptistyRossiiSovetskayaNochPageHead.astro
+2026-07-22T09:46:45.6413949Z   - src/components/baptisty-rossii/BaptistyRossiiSpravochnikPageHead.astro
+2026-07-22T09:46:45.6414406Z   - src/components/baptisty-rossii/BaptistyRossiiVsehib1944PageHead.astro
+2026-07-22T09:46:45.6414856Z   - src/components/baptisty-rossii/BaptistyRossiiYuzhnayaShtundaPageHead.astro
+2026-07-22T09:46:45.6415403Z Run explicitly to regenerate: node scripts/cache-bust.js --write
+2026-07-22T09:46:45.6479889Z ##[error]Process completed with exit code 1.
+---
+2026-07-22T09:46:45.6410669Z   - src/components/baptisty-rossii/BaptistyRossiiNochNaKurePageHead.astro
+2026-07-22T09:46:45.6411378Z   - src/components/baptisty-rossii/BaptistyRossiiPageHead.astro
+2026-07-22T09:46:45.6412126Z   - src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaPageHead.astro
+2026-07-22T09:46:45.6412876Z   - src/components/baptisty-rossii/BaptistyRossiiPodpolnayaPechatPageHead.astro
+2026-07-22T09:46:45.6413435Z   - src/components/baptisty-rossii/BaptistyRossiiSovetskayaNochPageHead.astro
+2026-07-22T09:46:45.6413949Z   - src/components/baptisty-rossii/BaptistyRossiiSpravochnikPageHead.astro
+2026-07-22T09:46:45.6414406Z   - src/components/baptisty-rossii/BaptistyRossiiVsehib1944PageHead.astro
+2026-07-22T09:46:45.6414856Z   - src/components/baptisty-rossii/BaptistyRossiiYuzhnayaShtundaPageHead.astro
+2026-07-22T09:46:45.6415403Z Run explicitly to regenerate: node scripts/cache-bust.js --write
+2026-07-22T09:46:45.6479889Z ##[error]Process completed with exit code 1.
+2026-07-22T09:46:45.6566526Z ##[group]Run echo "Branch: $REF_NAME"
+2026-07-22T09:46:45.6566812Z [36;1mecho "Branch: $REF_NAME"[0m
+2026-07-22T09:46:45.6567029Z [36;1mecho "Event: $EVENT_NAME"[0m
+2026-07-22T09:46:45.6567267Z [36;1mecho "Shared files guard completed"[0m
+2026-07-22T09:46:45.6621477Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:46:45.6621691Z env:
+2026-07-22T09:46:45.6621855Z   REF_NAME: 126/merge
+2026-07-22T09:46:45.6622045Z   EVENT_NAME: pull_request
+2026-07-22T09:46:45.6622238Z ##[endgroup]
+2026-07-22T09:46:45.6690352Z Branch: 126/merge
+2026-07-22T09:46:45.6690625Z Event: pull_request
+2026-07-22T09:46:45.6690844Z Shared files guard completed
+---
+2026-07-22T09:46:45.6411378Z   - src/components/baptisty-rossii/BaptistyRossiiPageHead.astro
+2026-07-22T09:46:45.6412126Z   - src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaPageHead.astro
+2026-07-22T09:46:45.6412876Z   - src/components/baptisty-rossii/BaptistyRossiiPodpolnayaPechatPageHead.astro
+2026-07-22T09:46:45.6413435Z   - src/components/baptisty-rossii/BaptistyRossiiSovetskayaNochPageHead.astro
+2026-07-22T09:46:45.6413949Z   - src/components/baptisty-rossii/BaptistyRossiiSpravochnikPageHead.astro
+2026-07-22T09:46:45.6414406Z   - src/components/baptisty-rossii/BaptistyRossiiVsehib1944PageHead.astro
+2026-07-22T09:46:45.6414856Z   - src/components/baptisty-rossii/BaptistyRossiiYuzhnayaShtundaPageHead.astro
+2026-07-22T09:46:45.6415403Z Run explicitly to regenerate: node scripts/cache-bust.js --write
+2026-07-22T09:46:45.6479889Z ##[error]Process completed with exit code 1.
+2026-07-22T09:46:45.6566526Z ##[group]Run echo "Branch: $REF_NAME"
+2026-07-22T09:46:45.6566812Z [36;1mecho "Branch: $REF_NAME"[0m
+2026-07-22T09:46:45.6567029Z [36;1mecho "Event: $EVENT_NAME"[0m
+2026-07-22T09:46:45.6567267Z [36;1mecho "Shared files guard completed"[0m
+2026-07-22T09:46:45.6621477Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:46:45.6621691Z env:
+2026-07-22T09:46:45.6621855Z   REF_NAME: 126/merge
+2026-07-22T09:46:45.6622045Z   EVENT_NAME: pull_request
+2026-07-22T09:46:45.6622238Z ##[endgroup]
+2026-07-22T09:46:45.6690352Z Branch: 126/merge
+2026-07-22T09:46:45.6690625Z Event: pull_request
+2026-07-22T09:46:45.6690844Z Shared files guard completed
+2026-07-22T09:46:45.6800231Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+---
