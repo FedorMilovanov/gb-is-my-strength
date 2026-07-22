@@ -32,7 +32,7 @@ jobs:
         id: guard
         shell: bash
         run: |
-          if [ -f .github/_temp-pastoral-api-trigger ]; then
+          if [ -f .github/_temp-pastoral-content-trigger ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -60,20 +60,28 @@ jobs:
           done
 
           python3 - <<'PY'
+          import json
           from pathlib import Path
-          p = Path('.github/workflows/shared-files-guard.yml')
+          p = Path('package.json')
           text = p.read_text(encoding='utf-8')
-          anchor = "      - name: Reader preferences regressions\n        run: node scripts/reader-preferences-regression-test.js\n"
-          addition = "\n      - name: Nagornaya pastoral safety regressions\n        run: node scripts/nagornaya-pastoral-safety-regression-test.js\n"
+          anchor = '    "cache-bust": "node scripts/cache-bust.js",\n'
+          addition = '    "nagornaya:pastoral-safety:contract": "node scripts/nagornaya-pastoral-safety-regression-test.js",\n'
           if text.count(anchor) != 1:
-              raise SystemExit(f'shared-files guard anchor count: {text.count(anchor)}')
-          p.write_text(text.replace(anchor, anchor + addition, 1), encoding='utf-8')
+              raise SystemExit(f'package script anchor count: {text.count(anchor)}')
+          text = text.replace(anchor, anchor + addition, 1)
+          old = '&& npm run nagornaya:visual-parity:audit &&'
+          new = '&& npm run nagornaya:visual-parity:audit && npm run nagornaya:pastoral-safety:contract &&'
+          if text.count(old) != 2:
+              raise SystemExit(f'publication command anchor count: {text.count(old)}')
+          text = text.replace(old, new)
+          json.loads(text)
+          p.write_text(text, encoding='utf-8')
           PY
 
           node scripts/nagornaya-pastoral-safety-regression-test.js
           git diff --check
 
-      - name: Apply files through Contents API
+      - name: Apply ordinary files through Contents API
         if: steps.guard.outputs.apply == 'true'
         shell: bash
         run: |
@@ -84,7 +92,7 @@ jobs:
             local sha
             sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=${BRANCH}" --jq .sha 2>/dev/null || true)
             [ -z "$sha" ] && return 0
-            jq -n --arg message '[pastoral-artifact] remove transaction file' --arg sha "$sha" --arg branch "$BRANCH" \
+            jq -n --arg message '[pastoral-artifact] remove content trigger' --arg sha "$sha" --arg branch "$BRANCH" \
               '{message:$message,sha:$sha,branch:$branch}' > /tmp/delete.json
             gh api --method DELETE "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/delete.json >/dev/null
           }
@@ -104,21 +112,9 @@ jobs:
             gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/put.json >/dev/null
           }
 
-          delete_path '.github/_temp-pastoral-api-trigger'
-          delete_path '.github/workflows/_temp-nagornaya-pastoral-safety.yml'
-
+          delete_path '.github/_temp-pastoral-content-trigger'
           put_path 'src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro'
           put_path 'src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro'
           put_path 'nagornaya/chast-5/index.html'
           put_path 'scripts/nagornaya-pastoral-safety-regression-test.js'
-          put_path '.github/workflows/shared-files-guard.yml'
-
-      - name: Remove temporary main runner
-        if: steps.guard.outputs.apply == 'true'
-        shell: bash
-        run: |
-          path='.github/workflows/_temp-apply-pastoral-artifact-pr.yml'
-          sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=main" --jq .sha)
-          jq -n --arg message 'ci: retire pastoral artifact runner' --arg sha "$sha" --arg branch 'main' \
-            '{message:$message,sha:$sha,branch:$branch}' > /tmp/self-delete.json
-          gh api --method DELETE "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/self-delete.json >/dev/null
+          put_path 'package.json'
