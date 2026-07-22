@@ -1,27 +1,26 @@
 name: Temp Gill wave4 monolith finalize
 
 on:
-  workflow_run:
-    workflows: ["Shared Files Guard"]
-    types: [completed]
+  pull_request_target:
+    types: [synchronize]
 
 permissions:
   contents: write
 
 concurrency:
-  group: temp-gill-wave4-${{ github.event.workflow_run.head_branch }}
+  group: temp-gill-wave4-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   finalize:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_branch == 'agent/gill-source-marathon'
+    if: github.event.pull_request.number == 156 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/gill-source-marathon'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
       - name: Checkout exact Gill branch head
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Detect one-time finalizer
@@ -39,7 +38,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          printf 'source_run=%s\nsource_head=%s\n' '${{ github.event.workflow_run.id }}' '${{ github.event.workflow_run.head_sha }}' > .gill-wave4-finalizer-started
+          printf 'pr=%s\nsource_head=%s\n' '${{ github.event.pull_request.number }}' '${{ github.event.pull_request.head.sha }}' > .gill-wave4-finalizer-started
           git add .gill-wave4-finalizer-started
           git commit -m 'chore(gill): mark wave4 finalizer start'
           git push origin HEAD:refs/heads/agent/gill-source-marathon
