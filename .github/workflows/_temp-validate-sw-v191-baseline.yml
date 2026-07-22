@@ -1,0 +1,47 @@
+name: TEMP Validate SW V191 Baseline
+
+on:
+  push:
+    branches:
+      - fix/sw-baseline-v191-2026-07-22
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-validate-sw-v191-baseline
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/sw-baseline-v191-2026-07-22
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index
+        run: npm run pagefind:build:dist
+
+      - name: Run exact deploy-switch SW gate
+        run: npm run sw:dist:audit:deploy-switch
+
+      - name: Confirm one-file permanent diff
+        shell: bash
+        run: |
+          git diff --check
+          git diff --name-only origin/main...HEAD \
+            | grep -vx '.github/workflows/_temp-validate-sw-v191-baseline.yml' \
+            | diff -u <(printf '%s\n' 'migration/sw-cache-version-baseline.json') -
