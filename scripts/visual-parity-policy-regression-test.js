@@ -10,6 +10,9 @@ const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPT = path.join(ROOT, 'scripts', 'visual-parity-baseline.js');
 const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'visual-parity.yml');
+const POLICY_FILE = path.join(ROOT, 'data', 'visual-parity-baseline.json');
+const BAPTISTY_PROFILE = path.join(ROOT, 'data', 'route-profiles', 'baptisty-rossii.json');
+const KARTY_PROFILE = path.join(ROOT, 'data', 'route-profiles', 'karty.json');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'gb-visual-policy-'));
 
 function write(name, value) {
@@ -74,9 +77,22 @@ assert.strictEqual(updateWithoutApproval.status, 2, 'baseline update must requir
 assert.match(`${updateWithoutApproval.stdout}\n${updateWithoutApproval.stderr}`, /OWNER_APPROVED=true/);
 
 const workflow = fs.readFileSync(WORKFLOW, 'utf8');
-assert.match(workflow, /visual-parity-screenshots\.js[\s\S]*?--warn-only[\s\S]*?visual-parity-baseline\.js/,
-  'workflow must capture screenshots diagnostically before the policy verdict');
+assert.match(workflow, /pull_request:[\s\S]*?visual-parity-screenshots\.js[\s\S]*?--warn-only[\s\S]*?visual-parity-baseline\.js/,
+  'PR workflow must capture screenshots diagnostically before the policy verdict');
 assert(!/threshold[^\n]*2(?:\.0)?/.test(workflow), 'workflow must not hide failures by globally raising the raw threshold');
 
+const policy = JSON.parse(fs.readFileSync(POLICY_FILE, 'utf8'));
+const baptisty = JSON.parse(fs.readFileSync(BAPTISTY_PROFILE, 'utf8'));
+const karty = JSON.parse(fs.readFileSync(KARTY_PROFILE, 'utf8'));
+const baptistyPolicy = policy.routeModes['/baptisty-rossii/'];
+assert.strictEqual(baptisty.visualParity.mode, 'native-contract');
+assert.strictEqual(baptistyPolicy.mode, baptisty.visualParity.mode, 'Baptist profile and central policy mode must agree');
+assert.deepStrictEqual(baptistyPolicy.requiredGuards, baptisty.visualParity.requiredGuards,
+  'Baptist profile and central policy must name the same blocking guards');
+assert.strictEqual(policy.routes['/karty/'].mobile, karty.visualParity.mobile,
+  'Karty reviewed mobile raster baseline must agree across profile and central policy');
+assert.strictEqual(policy.tolerancePct, 0.5, 'global tolerance must remain 0.5%');
+assert.strictEqual(policy.policy.globalToleranceWasNotRaised, true);
+
 fs.rmSync(temp, { recursive: true, force: true });
-console.log('✅ Visual parity policy regression: native delegation, legacy failure, unknown-mode, strict-new-route and owner-update witnesses passed');
+console.log('✅ Visual parity policy regression: native delegation, legacy failure, unknown-mode, strict-new-route, owner-update and profile/policy SSOT witnesses passed');
