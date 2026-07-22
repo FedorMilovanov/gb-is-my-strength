@@ -1,0 +1,121 @@
+name: TEMP Apply Pastoral Artifact 138
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize, reopened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-apply-pastoral-artifact-138
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.event.pull_request.number == 138 && github.event.pull_request.head.ref == 'fix/nagornaya-pastoral-safety-final-2026-07-22'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      BRANCH: fix/nagornaya-pastoral-safety-final-2026-07-22
+      ARTIFACT_ID: '8514987098'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/nagornaya-pastoral-safety-final-2026-07-22
+          fetch-depth: 0
+
+      - name: Check one-shot trigger
+        id: guard
+        shell: bash
+        run: |
+          if [ -f .github/_temp-pastoral-artifact-trigger ]; then
+            echo 'apply=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'apply=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.guard.outputs.apply == 'true'
+        run: npm ci
+
+      - name: Download and verify validated artifact
+        if: steps.guard.outputs.apply == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pastoral
+          curl -L --fail --retry 3 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            -o /tmp/pastoral.zip
+          unzip -q /tmp/pastoral.zip -d /tmp/pastoral
+          cd /tmp/pastoral
+          printf '%s  %s\n' \
+            '933f1978f73e1eeb58b59f4ef3e4fa468784d696cb771a369a5c57a68e79195b' 'src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro' \
+            '67877fd3febd876da1b430dea35c93b2803ec52f7a081dccbbad9437c4a2397b' 'src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro' \
+            '2d0eacf5a83a75496914d08167028a613971166a2aa5fc0e058c0f98cd9299ce' 'nagornaya/chast-5/index.html' \
+            'f4d17b01cce005831cfb8f3dab865eaaebc28b7f99cfea750d32e172613742ff' 'scripts/nagornaya-pastoral-safety-regression-test.js' \
+            | sha256sum --check --strict
+
+      - name: Apply four permanent files
+        if: steps.guard.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in \
+            src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro \
+            src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro \
+            nagornaya/chast-5/index.html \
+            scripts/nagornaya-pastoral-safety-regression-test.js; do
+            cp "/tmp/pastoral/${path}" "$path"
+          done
+          rm .github/_temp-pastoral-artifact-trigger
+
+      - name: Verify pastoral contract and full publication barrier
+        if: steps.guard.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/nagornaya-pastoral-safety-regression-test.js
+          npm run validate:static-publication:light
+          git diff --check
+          python3 - <<'PY'
+          import subprocess
+          allowed = {
+              'src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro',
+              'src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro',
+              'nagornaya/chast-5/index.html',
+              'scripts/nagornaya-pastoral-safety-regression-test.js',
+              '.github/_temp-pastoral-artifact-trigger',
+          }
+          lines = subprocess.check_output(['git', 'status', '--porcelain=v1'], text=True).splitlines()
+          paths = {line[3:] for line in lines if line.strip()}
+          unexpected = sorted(paths - allowed)
+          if unexpected:
+              raise SystemExit(f'unexpected transaction paths: {unexpected}')
+          required = allowed - {'.github/_temp-pastoral-artifact-trigger'}
+          missing = sorted(required - paths)
+          if missing:
+              raise SystemExit(f'missing permanent paths: {missing}')
+          PY
+
+      - name: Publish validated pastoral files
+        if: steps.guard.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add \
+            src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro \
+            src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro \
+            nagornaya/chast-5/index.html \
+            scripts/nagornaya-pastoral-safety-regression-test.js \
+            .github/_temp-pastoral-artifact-trigger
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(nagornaya): apply verified pastoral safety wording [pastoral-artifact]'
+          git push origin HEAD:fix/nagornaya-pastoral-safety-final-2026-07-22
