@@ -93,8 +93,19 @@ assert.doesNotMatch(
   /github\.event_name\s*==\s*['"]push['"]/,
   `${DEPLOY_PATH}: deploy job condition must not accept direct push events`,
 );
+assert.match(
+  deploy,
+  /ref:\s*\$\{\{\s*github\.event_name\s*==\s*['"]workflow_run['"]\s*&&\s*github\.event\.workflow_run\.head_sha\s*\|\|\s*['"]main['"]\s*\}\}/,
+  `${DEPLOY_PATH}: workflow_run deploy must checkout its exact verified head_sha; only manual recovery may use main`,
+);
+assert.doesNotMatch(
+  deploy,
+  /- name:\s*Checkout[^\n]*\n[\s\S]{0,160}?ref:\s*main\s*$/m,
+  `${DEPLOY_PATH}: moving main checkout is forbidden for automatic workflow_run deploys`,
+);
 
 console.log(`✅ workflow linkage: every main push → ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
 console.log(`✅ readiness documented paths: ${documentedProductionPaths.length}; exhaustive catch-all: **`);
 console.log('✅ deploy workflow_run: completed + main; manual recovery retained');
+console.log('✅ automatic deploy checkout: exact readiness workflow_run.head_sha');
 console.log('✅ direct automatic Pages push entry: absent');
