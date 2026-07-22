@@ -4,8 +4,6 @@ on:
   workflow_run:
     workflows: ["Shared Files Guard"]
     types: [completed]
-    branches:
-      - agent/gill-source-marathon
 
 permissions:
   contents: write
