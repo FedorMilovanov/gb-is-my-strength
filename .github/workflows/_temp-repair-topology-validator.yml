@@ -1,0 +1,47 @@
+name: TEMP Repair Topology Validator
+
+on:
+  push:
+    branches:
+      - fix/pages-trigger-topology-2026-07-22
+  pull_request:
+    types: [synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-repair-topology-validator
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    if: github.head_ref == 'fix/pages-trigger-topology-2026-07-22' || github.ref_name == 'fix/pages-trigger-topology-2026-07-22'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/pages-trigger-topology-2026-07-22
+          fetch-depth: 0
+
+      - name: Use repository-standard deterministic actionlint
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/_temp-pages-trigger-topology-fix.yml')
+          text = p.read_text(encoding='utf-8')
+          old = "          npx actionlint .github/workflows/deploy.yml .github/workflows/indexnow.yml .github/workflows/shared-files-guard.yml\n"
+          new = "          curl -sL \"https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz\" | tar xz -C /tmp actionlint\n          /tmp/actionlint -color .github/workflows/deploy.yml .github/workflows/indexnow.yml .github/workflows/shared-files-guard.yml\n"
+          if text.count(old) != 1:
+              raise SystemExit(f'actionlint validator anchor count: {text.count(old)}')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          rm -f .github/workflows/_temp-repair-topology-validator.yml
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'ci: use deterministic actionlint in topology transaction'
+          git push origin HEAD:fix/pages-trigger-topology-2026-07-22
