@@ -1,7 +1,11 @@
 ---
 /**
- * Shared narrow-viewport contract for the native Nagornaya chapter bar and
- * long section headings.
+ * Shared narrow-viewport contract for the native Nagornaya chapter bar,
+ * glossary cards and long section headings.
+ *
+ * Closed glossary cards must not contribute intrinsic width. The canonical
+ * tooltip controller moves a card to <body> and adds .gb-floating-tip before
+ * it becomes visible.
  *
  * The mobile TOC keeps progress and sharing available, so at <=359px the
  * persistent bar may drop those duplicate controls (plus the redundant Up
@@ -9,6 +13,10 @@
  */
 ---
 <style is:global>
+  body.nagornaya-page .gtip:not(.gb-floating-tip) {
+    display: none !important;
+  }
+
   @media (max-width: 359px) {
     body.nagornaya-page #main-content .group,
     body.nagornaya-page #main-content .group > .flex,
