@@ -1,31 +1,27 @@
-name: TEMP Export Verified Nagornaya Pastoral Safety
+name: TEMP Publish Nagornaya Pastoral Safety via API
 
 on:
   push:
     branches:
       - fix/nagornaya-pastoral-safety-2026-07-22
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [main]
 
 permissions:
-  contents: read
-
-concurrency:
-  group: temp-export-nagornaya-pastoral-safety
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  export:
-    if: github.head_ref == 'fix/nagornaya-pastoral-safety-2026-07-22' || github.ref_name == 'fix/nagornaya-pastoral-safety-2026-07-22'
+  publish:
+    if: ${{ !contains(github.event.head_commit.message, '[pastoral-api]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    env:
+      BRANCH: fix/nagornaya-pastoral-safety-2026-07-22
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: fix/nagornaya-pastoral-safety-2026-07-22
 
-      - name: Materialize already validated correction
+      - name: Materialize verified permanent files
         shell: bash
         run: |
           python3 - <<'PY'
@@ -41,10 +37,12 @@ jobs:
                   if old in text:
                       path.write_text(text.replace(old, new), encoding='utf-8')
                       changed.append(str(path))
-          if len(changed) < 2:
-              raise SystemExit(f'expected at least two canonical files, found {changed}')
-          Path('/tmp/changed-files.txt').write_text('\n'.join(changed) + '\n', encoding='utf-8')
-          print('\n'.join(changed))
+          if sorted(changed) != sorted([
+              'src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro',
+              'src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro',
+              'nagornaya/chast-5/index.html',
+          ]):
+              raise SystemExit(f'unexpected canonical files: {changed}')
           PY
 
           cat > scripts/nagornaya-pastoral-safety-regression-test.js <<'EOF'
@@ -69,7 +67,7 @@ jobs:
           const corpus = ROOTS.flatMap((rel) => collect(path.join(ROOT, rel))).map((file) => fs.readFileSync(file, 'utf8')).join('\n');
           for (const phrase of banned) assert(!corpus.includes(phrase), `banned pastoral verdict returned: ${phrase}`);
           for (const phrase of required) assert(corpus.includes(phrase), `pastoral safeguard missing: ${phrase}`);
-          for (const rel of ['src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro', 'nagornaya/chast-5/index.html']) {
+          for (const rel of ['src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro', 'src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro', 'nagornaya/chast-5/index.html']) {
             const source = fs.readFileSync(path.join(ROOT, rel), 'utf8');
             for (const phrase of required) assert(source.includes(phrase), `${rel}: safeguard missing: ${phrase}`);
           }
@@ -90,22 +88,37 @@ jobs:
           node scripts/nagornaya-pastoral-safety-regression-test.js
           git diff --check
 
-      - name: Assemble verified files
+      - name: Write permanent files through GitHub Contents API
         shell: bash
         run: |
-          mkdir -p /tmp/pastoral-artifact
-          while IFS= read -r rel; do
-            mkdir -p "/tmp/pastoral-artifact/$(dirname "$rel")"
-            cp "$rel" "/tmp/pastoral-artifact/$rel"
-          done < /tmp/changed-files.txt
-          mkdir -p /tmp/pastoral-artifact/scripts /tmp/pastoral-artifact/.github/workflows
-          cp scripts/nagornaya-pastoral-safety-regression-test.js /tmp/pastoral-artifact/scripts/
-          cp .github/workflows/shared-files-guard.yml /tmp/pastoral-artifact/.github/workflows/
-          cp /tmp/changed-files.txt /tmp/pastoral-artifact/changed-files.txt
+          set -euo pipefail
+          put_file() {
+            local path="$1"
+            local message="$2"
+            local sha
+            sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=${BRANCH}" --jq .sha 2>/dev/null || true)
+            local content
+            content=$(base64 -w0 "$path")
+            if [ -n "$sha" ]; then
+              jq -n --arg message "$message" --arg content "$content" --arg sha "$sha" --arg branch "$BRANCH" \
+                '{message:$message,content:$content,sha:$sha,branch:$branch}' > /tmp/payload.json
+            else
+              jq -n --arg message "$message" --arg content "$content" --arg branch "$BRANCH" \
+                '{message:$message,content:$content,branch:$branch}' > /tmp/payload.json
+            fi
+            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/payload.json >/dev/null
+          }
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: nagornaya-pastoral-safety-verified-files
-          path: /tmp/pastoral-artifact
-          if-no-files-found: error
-          retention-days: 3
+          put_file 'src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro' '[pastoral-api] update active Nagornaya text'
+          put_file 'src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro' '[pastoral-api] update Nagornaya Section VII text'
+          put_file 'nagornaya/chast-5/index.html' '[pastoral-api] update Nagornaya legacy shadow'
+          put_file 'scripts/nagornaya-pastoral-safety-regression-test.js' '[pastoral-api] add pastoral safety regression'
+          put_file '.github/workflows/shared-files-guard.yml' '[pastoral-api] wire pastoral safety regression'
+
+      - name: Delete temporary publisher through Contents API
+        shell: bash
+        run: |
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/.github/workflows/_temp-nagornaya-pastoral-safety.yml?ref=${BRANCH}" --jq .sha)
+          jq -n --arg message '[pastoral-api] remove temporary pastoral publisher' --arg sha "$sha" --arg branch "$BRANCH" \
+            '{message:$message,sha:$sha,branch:$branch}' > /tmp/delete.json
+          gh api --method DELETE "repos/${GITHUB_REPOSITORY}/contents/.github/workflows/_temp-nagornaya-pastoral-safety.yml" --input /tmp/delete.json >/dev/null
