@@ -121,90 +121,22 @@ jobs:
           ref: agent/nagornaya-neutral-comparison-ui-2026-07-22
           fetch-depth: 0
 
-      - name: Check proof state
-        id: gate
-        run: |
-          if test -f reports/nagornaya-neutral-comparison/transaction-status.txt; then
-            echo 'run=false' >> "$GITHUB_OUTPUT"
-          else
-            echo 'run=true' >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/setup-node@v4
-        if: steps.gate.outputs.run == 'true'
         with:
           node-version: "22"
           cache: "npm"
 
       - name: Install dependencies
-        if: steps.gate.outputs.run == 'true'
         run: npm ci
 
       - name: Install Chromium
-        if: steps.gate.outputs.run == 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Capture exact live baseline
-        if: steps.gate.outputs.run == 'true'
-        env:
-          BASE_URL: https://gospod-bog.ru
-          EVIDENCE_DIR: reports/nagornaya-neutral-comparison
-        run: node scripts/_temp-nagornaya-neutral-baseline-witness.mjs
-
-      - name: Apply isolated exact patch
-        if: steps.gate.outputs.run == 'true'
-        run: python3 scripts/_temp-nagornaya-neutral-comparison-patcher.py
-
-      - name: Build production-like output
-        if: steps.gate.outputs.run == 'true'
-        run: npm run strangler:build:production-like
-
-      - name: Synchronize canonical shadow pages
-        if: steps.gate.outputs.run == 'true'
-        run: cp dist/nagornaya/chast-4/index.html nagornaya/chast-4/index.html && cp dist/nagornaya/chast-5/index.html nagornaya/chast-5/index.html
-
-      - name: Run permanent source contracts
-        if: steps.gate.outputs.run == 'true'
-        run: npm run nagornaya:neutral-comparison:test && npm run engine:contracts && node scripts/cache-bust.js
-
-      - name: Run browser witness and capture after state
-        if: steps.gate.outputs.run == 'true'
-        env:
-          EVIDENCE_DIR: reports/nagornaya-neutral-comparison
-        run: npm run nagornaya:neutral-comparison:browser:test
-
-      - name: Run static publication barrier
-        if: steps.gate.outputs.run == 'true'
-        run: npm run validate:static-publication:light
-
-      - name: Record evidence manifest
-        if: steps.gate.outputs.run == 'true'
-        env:
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          printf '%s\n' \
-            '# Nagornaya neutral comparison evidence' \
-            '' \
-            '- Baseline source: live production from exact verified main `6c4106aecd35a3c95b09b041332d653f581ceb92`.' \
-            "- Shared Files Guard proof run: \`${RUN_ID}\`." \
-            '- Viewports: 390×844 and 1440×900.' \
-            '- Blocks: Part IV / Green, Part IV / Thomas, Part V / pastoral discernment.' \
-            '- Browser contract also covers 320×760, reduced motion, Sepia, ARIA, DOM order and horizontal overflow.' \
-            > reports/nagornaya-neutral-comparison/README.md
-          printf 'success %s\n' "$RUN_ID" > reports/nagornaya-neutral-comparison/transaction-status.txt
-
-      - name: Commit verified permanent diff to PR branch
-        if: steps.gate.outputs.run == 'true'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package.json src/lib/nagornaya-claim-projection.ts src/components/nagornaya/shared/NagornayaClaimComparison.astro src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro nagornaya/chast-4/index.html nagornaya/chast-5/index.html scripts/nagornaya-neutral-comparison-regression-test.js scripts/nagornaya-neutral-comparison-browser-test.mjs reports/nagornaya-neutral-comparison
-          git diff --cached --check
-          git commit -m 'feat(nagornaya): add neutral comparison UI'
-          git push origin HEAD:refs/heads/agent/nagornaya-neutral-comparison-ui-2026-07-22
+      - name: Run isolated Nagornaya proof
+        run: bash scripts/_temp-nagornaya-neutral-proof.sh
 
       - name: Upload visual evidence
-        if: always() && steps.gate.outputs.run == 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nagornaya-neutral-comparison-evidence-${{ github.run_id }}
