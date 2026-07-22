@@ -108,3 +108,5 @@ jobs:
           name: nagornaya-neutral-comparison-evidence-${{ github.run_id }}
           path: reports/nagornaya-neutral-comparison
           if-no-files-found: warn
+
+# trigger: 2026-07-22T22:35:00+02:00
