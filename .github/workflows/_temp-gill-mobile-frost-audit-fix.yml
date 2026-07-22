@@ -1,0 +1,99 @@
+name: TEMP Gill Mobile Frost Audit Fix
+
+on:
+  push:
+    branches:
+      - fix/gill-mobile-frost-audit-2026-07-22
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-gill-mobile-frost-audit-fix
+  cancel-in-progress: true
+
+jobs:
+  verify-and-publish:
+    if: ${{ github.event_name == 'pull_request' || !contains(github.event.head_commit.message, '[gill-frost-api]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      BRANCH: fix/gill-mobile-frost-audit-2026-07-22
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/gill-mobile-frost-audit-2026-07-22
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.3'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Correct stale opacity-only audit contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/gill-mobile-layout-audit.js')
+          text = p.read_text(encoding='utf-8')
+
+          replacements = [
+              (
+                  ' * - bottom bar must be readable and nearly opaque in light/dark;\n * - article text must not leak through or under it;',
+                  ' * - bottom bar must be readable with the intended frosted surface in light/dark;\n * - backdrop blur and a protective minimum alpha must remain active;\n * - article text must not leak through or under it;'
+              ),
+              (
+                  "      barBg: style ? style.backgroundColor : '',\n      barDisplay: style ? style.display : '',",
+                  "      barBg: style ? style.backgroundColor : '',\n      barBackdropFilter: style ? (style.backdropFilter || style.webkitBackdropFilter || '') : '',\n      barDisplay: style ? style.display : '',"
+              ),
+              (
+                  "  const alpha = alphaFromColor(facts.barBg);\n  const contrast = contrastRatio(facts.labelColor, facts.barBg) || contrastRatio(facts.labelColor, facts.labelBg);",
+                  "  const alpha = alphaFromColor(facts.barBg);\n  const hasFrostBlur = /blur\\(/.test(facts.barBackdropFilter || '');\n  const contrast = contrastRatio(facts.labelColor, facts.barBg) || contrastRatio(facts.labelColor, facts.labelBg);"
+              ),
+              (
+                  "  assert(alpha >= 0.94, `Bottom bar background alpha >= .94 ${tag}`, { alpha, bg: facts.barBg });",
+                  "  assert(alpha >= 0.75, `Bottom bar frost alpha >= .75 ${tag}`, { alpha, bg: facts.barBg });\n  assert(hasFrostBlur, `Bottom bar backdrop blur active ${tag}`, { backdropFilter: facts.barBackdropFilter });"
+              ),
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one match, found {count}: {old[:80]}')
+              text = text.replace(old, new, 1)
+
+          p.write_text(text, encoding='utf-8')
+          PY
+          git diff --check
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify Gill frost and interaction matrix
+        shell: bash
+        run: |
+          node scripts/gill-mobile-layout-audit.js
+          node scripts/gill-v16-mobile-play-smoke.js
+
+      - name: Publish verified script through Contents API
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          path='scripts/gill-mobile-layout-audit.js'
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=${BRANCH}" --jq .sha)
+          content=$(base64 -w0 "$path")
+          jq -n --arg message '[gill-frost-api] align layout audit with canonical frosted bar' --arg content "$content" --arg sha "$sha" --arg branch "$BRANCH" \
+            '{message:$message,content:$content,sha:$sha,branch:$branch}' > /tmp/payload.json
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/payload.json >/dev/null
