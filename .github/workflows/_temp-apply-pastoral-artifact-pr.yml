@@ -1,0 +1,124 @@
+name: TEMP Apply Verified Pastoral Artifact
+
+on:
+  pull_request:
+    types: [synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temp-apply-pastoral-artifact-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.head_ref == 'fix/nagornaya-pastoral-safety-2026-07-22'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BRANCH: fix/nagornaya-pastoral-safety-2026-07-22
+      GH_TOKEN: ${{ github.token }}
+      ARTIFACT_ID: '8514987098'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Resolve one-shot trigger
+        id: guard
+        shell: bash
+        run: |
+          if [ -f .github/_temp-pastoral-api-trigger ]; then
+            echo 'apply=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'apply=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download and verify permanent files
+        if: steps.guard.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pastoral
+          curl -L --fail \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            -o /tmp/pastoral.zip
+          unzip -q /tmp/pastoral.zip -d /tmp/pastoral
+          for path in \
+            src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro \
+            src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro \
+            nagornaya/chast-5/index.html \
+            scripts/nagornaya-pastoral-safety-regression-test.js; do
+            test -f "/tmp/pastoral/${path}"
+            cp "/tmp/pastoral/${path}" "$path"
+          done
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/shared-files-guard.yml')
+          text = p.read_text(encoding='utf-8')
+          anchor = "      - name: Reader preferences regressions\n        run: node scripts/reader-preferences-regression-test.js\n"
+          addition = "\n      - name: Nagornaya pastoral safety regressions\n        run: node scripts/nagornaya-pastoral-safety-regression-test.js\n"
+          if text.count(anchor) != 1:
+              raise SystemExit(f'shared-files guard anchor count: {text.count(anchor)}')
+          p.write_text(text.replace(anchor, anchor + addition, 1), encoding='utf-8')
+          PY
+
+          node scripts/nagornaya-pastoral-safety-regression-test.js
+          git diff --check
+
+      - name: Apply files through Contents API
+        if: steps.guard.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          delete_path() {
+            local path="$1"
+            local sha
+            sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=${BRANCH}" --jq .sha 2>/dev/null || true)
+            [ -z "$sha" ] && return 0
+            jq -n --arg message '[pastoral-artifact] remove transaction file' --arg sha "$sha" --arg branch "$BRANCH" \
+              '{message:$message,sha:$sha,branch:$branch}' > /tmp/delete.json
+            gh api --method DELETE "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/delete.json >/dev/null
+          }
+
+          put_path() {
+            local path="$1"
+            local sha content
+            sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=${BRANCH}" --jq .sha 2>/dev/null || true)
+            content=$(base64 -w0 "$path")
+            if [ -n "$sha" ]; then
+              jq -n --arg message "[pastoral-artifact] update ${path}" --arg content "$content" --arg sha "$sha" --arg branch "$BRANCH" \
+                '{message:$message,content:$content,sha:$sha,branch:$branch}' > /tmp/put.json
+            else
+              jq -n --arg message "[pastoral-artifact] add ${path}" --arg content "$content" --arg branch "$BRANCH" \
+                '{message:$message,content:$content,branch:$branch}' > /tmp/put.json
+            fi
+            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/put.json >/dev/null
+          }
+
+          delete_path '.github/_temp-pastoral-api-trigger'
+          delete_path '.github/workflows/_temp-nagornaya-pastoral-safety.yml'
+
+          put_path 'src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro'
+          put_path 'src/components/nagornaya/chast-5/NagornayaChast5SectionVII.astro'
+          put_path 'nagornaya/chast-5/index.html'
+          put_path 'scripts/nagornaya-pastoral-safety-regression-test.js'
+          put_path '.github/workflows/shared-files-guard.yml'
+
+      - name: Remove temporary main runner
+        if: steps.guard.outputs.apply == 'true'
+        shell: bash
+        run: |
+          path='.github/workflows/_temp-apply-pastoral-artifact-pr.yml'
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${path}?ref=main" --jq .sha)
+          jq -n --arg message 'ci: retire pastoral artifact runner' --arg sha "$sha" --arg branch 'main' \
+            '{message:$message,sha:$sha,branch:$branch}' > /tmp/self-delete.json
+          gh api --method DELETE "repos/${GITHUB_REPOSITORY}/contents/${path}" --input /tmp/self-delete.json >/dev/null
