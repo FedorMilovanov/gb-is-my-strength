@@ -1,0 +1,68 @@
+name: Temp Nagornaya neutral UI inventory
+
+on:
+  push:
+    branches:
+      - agent/nagornaya-neutral-comparison-ui
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate epistemic UI blocks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          roots = [Path('src/components/nagornaya'), Path('src/pages/nagornaya')]
+          patterns = {
+              'binary-symbol': re.compile(r'[✓✗❌✅]'),
+              'red-green-class': re.compile(r'(?:bg|text|border)-(?:red|rose|green|emerald)-\d+'),
+              'ipsissima': re.compile(r'ipsissima', re.I),
+              'matthew-luke': re.compile(r'Матф|Лук'),
+              'institution-label': re.compile(r'\bTMS\b|Семинарии Мастерс|Семинария Мастерс'),
+              'verdict-language': re.compile(r'правильн|неправильн|приемлем|неприемлем|ж[её]стк(?:ая|ую) границ|бескомпромисс', re.I),
+          }
+          rows = []
+          for root in roots:
+              if not root.exists():
+                  continue
+              for path in sorted(root.rglob('*')):
+                  if path.suffix not in {'.astro', '.ts', '.js', '.html', '.md', '.mdx'}:
+                      continue
+                  text = path.read_text(encoding='utf-8')
+                  lines = text.splitlines()
+                  for i, line in enumerate(lines, 1):
+                      hits = [name for name, rx in patterns.items() if rx.search(line)]
+                      if not hits:
+                          continue
+                      start = max(1, i - 3)
+                      end = min(len(lines), i + 3)
+                      rows.append({
+                          'path': str(path),
+                          'line': i,
+                          'hits': hits,
+                          'context': [f'{n}: {lines[n-1]}' for n in range(start, end + 1)],
+                      })
+          Path('nagornaya-neutral-ui-inventory.json').write_text(
+              json.dumps(rows, ensure_ascii=False, indent=2), encoding='utf-8'
+          )
+          with Path('nagornaya-neutral-ui-inventory.txt').open('w', encoding='utf-8') as out:
+              for row in rows:
+                  out.write(f"\n## {row['path']}:{row['line']} [{', '.join(row['hits'])}]\n")
+                  out.write('\n'.join(row['context']))
+                  out.write('\n')
+          print(f'Inventory rows: {len(rows)}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nagornaya-neutral-ui-inventory
+          path: |
+            nagornaya-neutral-ui-inventory.json
+            nagornaya-neutral-ui-inventory.txt
+          retention-days: 3
