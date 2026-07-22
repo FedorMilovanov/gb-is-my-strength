@@ -1,0 +1,67 @@
+name: TEMP Fresh Highlights Runtime Hardening
+
+on:
+  push:
+    branches:
+      - fix/highlights-runtime-hardening-2026-07-22
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-fresh-highlights-runtime-hardening
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/highlights-runtime-hardening-2026-07-22
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.3'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Copy only proven permanent highlights files
+        run: |
+          git fetch origin lane/highlights-runtime-hardening-2026-07-21
+          git checkout origin/lane/highlights-runtime-hardening-2026-07-21 -- \
+            js/highlights.js \
+            scripts/highlights-runtime-regression-test.js \
+            .github/workflows/shared-files-guard.yml
+          rm -f .github/workflows/_temp-fresh-highlights-runtime-hardening.yml
+          git add -A
+
+      - name: Reconcile asset revisions from fresh main
+        run: |
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Highlights runtime regression
+        run: node scripts/highlights-runtime-regression-test.js
+
+      - name: Full static publication light barrier
+        run: npm run validate:static-publication:light
+
+      - name: Workflow and diff integrity
+        run: |
+          npm run workflows:check
+          node scripts/workflow-linkage-regression-test.js
+          git diff --check
+          test ! -e .github/workflows/_temp-fresh-highlights-runtime-hardening.yml
+
+      - name: Commit clean permanent implementation
+        run: |
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(reader): harden saved highlights dedupe and dialog state'
+          git push origin HEAD:fix/highlights-runtime-hardening-2026-07-22
