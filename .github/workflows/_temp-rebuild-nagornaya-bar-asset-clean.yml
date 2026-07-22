@@ -57,6 +57,7 @@ jobs:
 
           python3 - <<'PY'
           import json
+          import subprocess
           from pathlib import Path
 
           package_path = Path('package.json')
@@ -72,14 +73,19 @@ jobs:
           package_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
           cache_path = Path('scripts/cache-bust.js')
-          cache = cache_path.read_text(encoding='utf-8')
-          old = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`, 'g');"
-          new = "const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s\"'&}>]+`, 'g');"
-          if old in cache:
-              cache = cache.replace(old, new, 1)
-          elif new not in cache:
-              raise SystemExit('cache-bust Astro revision regex anchor not found')
-          cache_path.write_text(cache, encoding='utf-8')
+          current_lines = cache_path.read_text(encoding='utf-8').splitlines()
+          proven_text = subprocess.check_output(
+              ['git', 'show', 'origin/agent/nagornaya-bar-asset-contract-2026-07-22:scripts/cache-bust.js'],
+              text=True,
+          )
+          def is_astro_revision_line(line):
+              return 'const re = new RegExp' in line and '|/?)${escapedAsset}' in line
+          current_matches = [i for i, line in enumerate(current_lines) if is_astro_revision_line(line)]
+          proven_matches = [line for line in proven_text.splitlines() if is_astro_revision_line(line)]
+          if len(current_matches) != 1 or len(proven_matches) != 1:
+              raise SystemExit(f'cache-bust Astro line matches: current={len(current_matches)} proven={len(proven_matches)}')
+          current_lines[current_matches[0]] = proven_matches[0]
+          cache_path.write_text('\n'.join(current_lines) + '\n', encoding='utf-8')
           PY
 
       - name: Reconcile and verify revisions
