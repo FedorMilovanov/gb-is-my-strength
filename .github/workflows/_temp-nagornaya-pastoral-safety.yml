@@ -1,0 +1,161 @@
+name: TEMP Nagornaya Pastoral Safety
+
+on:
+  push:
+    branches:
+      - fix/nagornaya-pastoral-safety-2026-07-22
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-nagornaya-pastoral-safety
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: github.head_ref == 'fix/nagornaya-pastoral-safety-2026-07-22' || github.ref_name == 'fix/nagornaya-pastoral-safety-2026-07-22'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/nagornaya-pastoral-safety-2026-07-22
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.3'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Replace final-verdict wording in every canonical text layer
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          old = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Полное отсутствие плодов — смертный приговор вере</strong> — если за годы «христианства» в жизни человека нет ни покаяния, ни борьбы с грехом, ни плодов Духа — библейский пастырь обязан предупредить его: Мф 7:21 относится к нему.</span></div>'
+          new = '<div class="flex items-start gap-2 text-emerald-900 font-semibold"><span class="text-emerald-600">✓</span><span><strong>Учит: Упорное бесплодие требует серьёзного самоиспытания</strong> — если на протяжении долгого времени человек не видит ни покаяния, ни борьбы с грехом, ни направления к послушанию, пастырь обязан серьёзно предупредить его о возможности самообмана в свете Мф 7:21–23, призвать к покаянию и помочь обратиться за пастырской поддержкой. Окончательный суд о сердце принадлежит Христу; это предупреждение нельзя механически применять к сокрушённому верующему, который борется с грехом.</span></div>'
+
+          roots = [Path('src'), Path('nagornaya')]
+          changed = []
+          matches = 0
+          for root in roots:
+              for path in root.rglob('*'):
+                  if path.suffix not in {'.astro', '.html', '.mdx'}:
+                      continue
+                  text = path.read_text(encoding='utf-8')
+                  count = text.count(old)
+                  if count:
+                      matches += count
+                      path.write_text(text.replace(old, new), encoding='utf-8')
+                      changed.append((str(path), count))
+
+          if matches < 2:
+              raise SystemExit(f'expected at least active Astro + legacy matches, found {matches}')
+          print('Pastoral safety replacements:')
+          for path, count in changed:
+              print(f'  {path}: {count}')
+          PY
+
+      - name: Add permanent pastoral safety contract
+        shell: bash
+        run: |
+          cat > scripts/nagornaya-pastoral-safety-regression-test.js <<'EOF'
+          #!/usr/bin/env node
+          'use strict';
+
+          const assert = require('assert/strict');
+          const fs = require('fs');
+          const path = require('path');
+
+          const ROOT = path.resolve(__dirname, '..');
+          const ROOTS = ['src', 'nagornaya'];
+          const EXTENSIONS = new Set(['.astro', '.html', '.mdx']);
+          const banned = [
+            'Полное отсутствие плодов — смертный приговор вере',
+            'Мф 7:21 относится к нему',
+          ];
+          const required = [
+            'Упорное бесплодие требует серьёзного самоиспытания',
+            'Окончательный суд о сердце принадлежит Христу',
+            'нельзя механически применять к сокрушённому верующему',
+          ];
+
+          function collect(dir, files = []) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) collect(full, files);
+              else if (EXTENSIONS.has(path.extname(entry.name))) files.push(full);
+            }
+            return files;
+          }
+
+          const files = ROOTS.flatMap((rel) => collect(path.join(ROOT, rel)));
+          const corpus = files.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
+          for (const phrase of banned) assert(!corpus.includes(phrase), `banned pastoral verdict returned: ${phrase}`);
+          for (const phrase of required) assert(corpus.includes(phrase), `pastoral safeguard missing: ${phrase}`);
+
+          const active = fs.readFileSync(path.join(ROOT, 'src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro'), 'utf8');
+          const legacy = fs.readFileSync(path.join(ROOT, 'nagornaya/chast-5/index.html'), 'utf8');
+          for (const [name, source] of [['active Astro', active], ['legacy shadow', legacy]]) {
+            for (const phrase of required) assert(source.includes(phrase), `${name}: safeguard missing: ${phrase}`);
+          }
+
+          console.log('✅ Nagornaya pastoral safety contract passed');
+          EOF
+          chmod +x scripts/nagornaya-pastoral-safety-regression-test.js
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/shared-files-guard.yml')
+          text = p.read_text(encoding='utf-8')
+          anchor = '''      - name: Reader preferences regressions
+                run: node scripts/reader-preferences-regression-test.js
+          '''
+          insert = anchor + '''
+                - name: Nagornaya pastoral safety regressions
+                  run: node scripts/nagornaya-pastoral-safety-regression-test.js
+          '''
+          if text.count(anchor) != 1:
+              raise SystemExit(f'shared-files guard anchor count: {text.count(anchor)}')
+          p.write_text(text.replace(anchor, insert, 1), encoding='utf-8')
+          PY
+
+      - name: Remove transaction workflow
+        run: |
+          rm -f .github/workflows/_temp-nagornaya-pastoral-safety.yml
+          git add -A
+
+      - name: Pastoral safety regression
+        run: node scripts/nagornaya-pastoral-safety-regression-test.js
+
+      - name: Nagornaya and content parity
+        run: |
+          npm run nagornaya:visual-parity:audit
+          npm run content:parity
+          npm run article:qa
+
+      - name: Full static publication light barrier
+        run: npm run validate:static-publication:light
+
+      - name: Workflow and diff integrity
+        run: |
+          npm run workflows:check
+          node scripts/workflow-linkage-regression-test.js
+          git diff --check
+          test ! -e .github/workflows/_temp-nagornaya-pastoral-safety.yml
+
+      - name: Commit permanent pastoral correction
+        run: |
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(nagornaya): replace final-verdict pastoral wording'
+          git push origin HEAD:fix/nagornaya-pastoral-safety-2026-07-22
