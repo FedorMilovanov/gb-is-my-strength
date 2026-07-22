@@ -14,6 +14,20 @@ name: Visual Parity Guard — pixel-diff
 # DOM-marker gate). They create a GitHub Issue via notify-on-failure.yml.
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "articles/**"
+      - "nagornaya/**"
+      - "baptisty-rossii/**"
+      - "css/**"
+      - "js/**"
+      - "images/**"
+      - "karty/**"
+      - "data/**"
+      - "scripts/visual-parity-*.js"
+      - ".github/workflows/visual-parity.yml"
   push:
     branches: [main]
     paths:
@@ -52,7 +66,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: visual-parity-guard
+  group: visual-parity-guard-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
