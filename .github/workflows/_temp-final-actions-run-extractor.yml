@@ -1,0 +1,50 @@
+name: TEMP Final Actions Run Extractor
+
+on:
+  push:
+    branches:
+      - diagnostic/final-pages-witness-2026-07-22
+  pull_request:
+    types: [synchronize, reopened]
+    branches: [main]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: temp-final-actions-run-extractor
+  cancel-in-progress: true
+
+jobs:
+  extract:
+    if: github.head_ref == 'diagnostic/final-pages-witness-2026-07-22' || github.ref_name == 'diagnostic/final-pages-witness-2026-07-22'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_SHA: a6a783044af69b8cc019f6885368ad67aa6a19f2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diagnostic/final-pages-witness-2026-07-22
+          fetch-depth: 0
+
+      - name: Capture exact-head workflow runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${EXPECTED_SHA}&per_page=100" \
+            --jq '{total_count,workflow_runs:[.workflow_runs[]|{id,name,event,status,conclusion,run_number,head_sha,head_branch,created_at,updated_at,run_started_at,html_url,workflow_id,triggering_actor:.triggering_actor.login}]}' \
+            > .github/_temp-final-actions-runs.json
+          test "$(jq '.workflow_runs | length' .github/_temp-final-actions-runs.json)" -ge 1
+
+      - name: Remove extractor and publish evidence
+        shell: bash
+        run: |
+          rm -f .github/workflows/_temp-final-actions-run-extractor.yml
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[final-actions] capture exact-head workflow runs'
+          git push origin HEAD:diagnostic/final-pages-witness-2026-07-22
