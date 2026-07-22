@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "scope": "nagornaya",
+  "lastReviewed": "2026-07-22",
+  "sources": [
+    {
+      "id": "tmsj-green-ipsissima-vox",
+      "requestedUrl": "https://tms.edu/wp-content/uploads/2021/09/tmsj12d.pdf",
+      "resolvedUrl": "https://tms.edu/wp-content/uploads/2021/09/tmsj12d.pdf",
+      "exactObject": "tmsj12d.pdf",
+      "archiveOrFallback": null,
+      "author": "Donald E. Green",
+      "title": "Evangelicals and Ipsissima Vox",
+      "publication": "The Master's Seminary Journal",
+      "volumeIssueYear": "12/1 (Spring 2001)",
+      "pages": "49–68",
+      "extractionMethod": "text",
+      "lastChecked": "2026-07-22",
+      "claimIds": [
+        "green-ipsissima-vox-model"
+      ],
+      "sourceRole": "model",
+      "traditionOrInstitution": "The Master's Seminary Journal (publication venue)",
+      "attributionLevel": "author",
+      "supports": [
+        "green-ipsissima-vox-model"
+      ],
+      "doesNotSupport": [
+        "tms-institutional-ipsissima-vox-position",
+        "thomas-jesus-seminar-critique",
+        "nichols-davidic-kingdom-model"
+      ],
+      "status": "verified",
+      "annotation": "Faculty Associate in NT (не full professor). Критика широкого ipsissima vox. Ин 14:26 обеспечивает сверхъестественную точность."
+    },
+    {
+      "id": "tmsj-thomas-jesus-seminar",
+      "requestedUrl": "https://tms.edu/wp-content/uploads/2021/09/tmsj7d.pdf",
+      "resolvedUrl": "https://tms.edu/wp-content/uploads/2021/09/tmsj7d.pdf",
+      "exactObject": "tmsj7d.pdf",
+      "archiveOrFallback": null,
+      "author": "Robert L. Thomas",
+      "title": "Evangelical Responses to the Jesus Seminar",
+      "publication": "The Master's Seminary Journal",
+      "volumeIssueYear": "7/1 (Spring 1996)",
+      "pages": "75–105",
+      "extractionMethod": "text",
+      "lastChecked": "2026-07-22",
+      "claimIds": [
+        "thomas-jesus-seminar-critique"
+      ],
+      "sourceRole": "historical",
+      "traditionOrInstitution": "The Master's Seminary Journal (publication venue)",
+      "attributionLevel": "author",
+      "supports": [
+        "thomas-jesus-seminar-critique"
+      ],
+      "doesNotSupport": [
+        "tms-institutional-jesus-seminar-position",
+        "green-ipsissima-vox-model",
+        "nichols-davidic-kingdom-model"
+      ],
+      "status": "verified",
+      "annotation": "Критика историко-критических реконструкций."
+    },
+    {
+      "id": "tmsj-nichols-davidic-kingdom",
+      "requestedUrl": "https://tms.edu/wp-content/uploads/2021/09/tmsj7h.pdf",
+      "resolvedUrl": "https://tms.edu/wp-content/uploads/2021/09/tmsj7h.pdf",
+      "exactObject": "tmsj7h.pdf",
+      "archiveOrFallback": null,
+      "author": "Stephen J. Nichols",
+      "title": "The Dispensational View of the Davidic Kingdom",
+      "publication": "The Master's Seminary Journal",
+      "volumeIssueYear": "7/2 (Fall 1996)",
+      "pages": "213–239",
+      "extractionMethod": "text",
+      "lastChecked": "2026-07-22",
+      "claimIds": [
+        "nichols-davidic-kingdom-model"
+      ],
+      "sourceRole": "doctrinal",
+      "traditionOrInstitution": "The Master's Seminary Journal (publication venue)",
+      "attributionLevel": "author",
+      "supports": [
+        "nichols-davidic-kingdom-model"
+      ],
+      "doesNotSupport": [
+        "tms-institutional-davidic-kingdom-position",
+        "green-ipsissima-vox-model",
+        "thomas-jesus-seminar-critique"
+      ],
+      "status": "verified",
+      "annotation": "Критика прогрессивного диспенсационализма Bock/Blaising."
+    }
+  ],
+  "claims": [
+    {
+      "id": "green-ipsissima-vox-model",
+      "claim": "Green argues for a constrained use of ipsissima vox under inspiration and the promised apostolic recall of John 14:26.",
+      "layer": "literary-model",
+      "primaryEvidence": [
+        "tmsj-green-ipsissima-vox"
+      ],
+      "alternative": "A broader ipsissima vox model permits freer paraphrastic preservation of Jesus' meaning without close verbal correspondence.",
+      "seriesPosition": "The series adopts Green's narrower model while labeling both positions as literary and theological models rather than raw textual observations.",
+      "confidence": "high",
+      "changeCondition": "Revise if the exact article or stronger primary evidence shows that Green's argument or the alternative model was represented inaccurately.",
+      "attributionLevel": "author"
+    },
+    {
+      "id": "thomas-jesus-seminar-critique",
+      "claim": "Thomas critiques the Jesus Seminar and related historical-critical reconstructions of the Gospel tradition.",
+      "layer": "historical-reconstruction",
+      "primaryEvidence": [
+        "tmsj-thomas-jesus-seminar"
+      ],
+      "alternative": "Historical-critical reconstructions may assign greater explanatory weight to community tradition and redactional development.",
+      "seriesPosition": "The series cites Thomas as a named author's critique, not as proof of every later doctrinal or institutional conclusion.",
+      "confidence": "high",
+      "changeCondition": "Revise if the exact article is shown not to support the stated scope of Thomas's critique.",
+      "attributionLevel": "author"
+    },
+    {
+      "id": "nichols-davidic-kingdom-model",
+      "claim": "Nichols argues for a dispensational account of the Davidic kingdom against progressive dispensational formulations associated with Bock and Blaising.",
+      "layer": "doctrinal-synthesis",
+      "primaryEvidence": [
+        "tmsj-nichols-davidic-kingdom"
+      ],
+      "alternative": "Progressive dispensationalism describes a present inaugurated dimension alongside future fulfillment.",
+      "seriesPosition": "The source is recorded as Nichols's doctrinal argument and is not used as evidence about the Jesus Seminar or ipsissima vox.",
+      "confidence": "high",
+      "changeCondition": "Revise if the exact article or its bibliographic object is shown to have been identified incorrectly.",
+      "attributionLevel": "author"
+    },
+    {
+      "id": "tms-institutional-ipsissima-vox-position",
+      "claim": "The Master's Seminary formally adopts Green's ipsissima vox argument as an institutional doctrinal statement.",
+      "layer": "doctrinal-synthesis",
+      "primaryEvidence": [],
+      "alternative": "Treat the article as Green's argument published in TMSJ unless an official institutional statement is supplied.",
+      "seriesPosition": "Not asserted by the series.",
+      "confidence": "unsupported",
+      "changeCondition": "Only a verified official institutional statement can support this attribution level.",
+      "attributionLevel": "institution"
+    },
+    {
+      "id": "tms-institutional-jesus-seminar-position",
+      "claim": "The Master's Seminary formally adopts every conclusion in Thomas's Jesus Seminar article as an institutional doctrinal statement.",
+      "layer": "doctrinal-synthesis",
+      "primaryEvidence": [],
+      "alternative": "Treat the article as Thomas's argument published in TMSJ unless an official institutional statement is supplied.",
+      "seriesPosition": "Not asserted by the series.",
+      "confidence": "unsupported",
+      "changeCondition": "Only a verified official institutional statement can support this attribution level.",
+      "attributionLevel": "institution"
+    },
+    {
+      "id": "tms-institutional-davidic-kingdom-position",
+      "claim": "The Master's Seminary formally adopts every conclusion in Nichols's Davidic kingdom article as an institutional doctrinal statement.",
+      "layer": "doctrinal-synthesis",
+      "primaryEvidence": [],
+      "alternative": "Treat the article as Nichols's argument published in TMSJ unless an official institutional statement is supplied.",
+      "seriesPosition": "Not asserted by the series.",
+      "confidence": "unsupported",
+      "changeCondition": "Only a verified official institutional statement can support this attribution level.",
+      "attributionLevel": "institution"
+    }
+  ]
+}
