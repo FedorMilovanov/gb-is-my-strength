@@ -1,0 +1,27 @@
+name: TEMP Read Latest Pages Witness
+
+on:
+  push:
+    branches:
+      - cleanup/pages-deploy-witness-2026-07-22
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read latest issue 58 comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api --paginate repos/${{ github.repository }}/issues/58/comments \
+            --jq '.[-1] | "## Latest issue #58 witness\n\nComment ID: `\(.id)`\n\n\(.body)"' \
+            > /tmp/latest.md
+          cat /tmp/latest.md
+          gh pr comment 118 --body-file /tmp/latest.md
