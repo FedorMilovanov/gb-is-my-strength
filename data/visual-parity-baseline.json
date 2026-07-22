@@ -5,7 +5,7 @@
   "baselineType": "policy-aware-legacy-vs-dist-pixel",
   "baselineSource": "repo-root-html-vs-dist",
   "routeArchitectureAtApproval": "mixed: legacy parity + native Astro + shared series chrome + built-app maps",
-  "sourceMainSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e",
+  "sourceMainSha": "aeae401d782d769dad582395f2045fa79c020f42",
   "policy": {
     "newRouteDefault": "advisory-warn-only",
     "strictNewRoutesMode": "available via --strict-new-routes",
@@ -34,6 +34,17 @@
       ],
       "reviewedAt": "2026-07-22",
       "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
+    },
+    "/hard-texts/": {
+      "mode": "native-contract",
+      "reason": "The strict-native landing renders the current series cards and metadata from first-class Astro components; root legacy HTML is retained as historical evidence and omits the current Materials section.",
+      "requiredGuards": [
+        "scripts/hard-texts-visual-parity-audit.js",
+        "scripts/check-data-consistency.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-22",
+      "reviewedSourceSha": "aeae401d782d769dad582395f2045fa79c020f42"
     }
   },
   "routes": {
