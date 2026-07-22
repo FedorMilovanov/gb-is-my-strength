@@ -82,6 +82,9 @@ jobs:
       - name: Nagornaya epistemic UI regressions
         run: node scripts/nagornaya-epistemic-ui-regression-test.js
 
+      - name: Nagornaya PremiumControls ARIA regressions
+        run: node scripts/nagornaya-premium-controls-aria-regression-test.js
+
       - name: Series reader façade regressions
         run: npm run series:facade:guard
 
@@ -110,38 +113,3 @@ jobs:
           echo "Branch: $REF_NAME"
           echo "Event: $EVENT_NAME"
           echo "Shared files guard completed"
-
-  nagornaya-neutral-proof:
-    needs: guard
-    if: github.event_name == 'pull_request' && github.head_ref == 'agent/nagornaya-neutral-comparison-ui-2026-07-22'
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: agent/nagornaya-neutral-comparison-ui-2026-07-22
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run isolated Nagornaya proof
-        run: bash scripts/_temp-nagornaya-neutral-proof.sh
-
-      - name: Upload visual evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nagornaya-neutral-comparison-evidence-${{ github.run_id }}
-          path: reports/nagornaya-neutral-comparison
-          if-no-files-found: warn
