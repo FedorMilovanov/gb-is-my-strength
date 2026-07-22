@@ -3,13 +3,13 @@ name: Visual Parity Guard — pixel-diff
 # Pixel-level visual parity check for Astro/strangler dist vs legacy root.
 # Source-only DOM-marker checks are already in `validate:static-publication` chain
 # (see scripts/visual-parity-contract.js). THIS workflow is the heavier pixel-level
-# check that catches CSS/legacy micro-regressions invisible to DOM contracts.
+# witness for routes whose current owner still declares legacy-diff parity.
 #
-# Schedule: weekly Monday 06:00 UTC — catches gradual visual drift.
-# Trigger: workflow_dispatch — for manual visual review before deploy.
+# Screenshot generation is diagnostic and must always reach the policy-aware
+# owner-approved baseline step. Explicit native-contract routes are guarded by
+# route-specific source/dist audits plus the all-route browser matrix instead of
+# being forced to resemble retired legacy HTML.
 #
-# Closes the AGENTS-r248 "TODO after Playwright stabilizes in Actions runner".
-# Playwright system libs are installed via `npx playwright install --with-deps`.
 # Failures do NOT block deploy.yml (which uses visual:parity:production, the
 # DOM-marker gate). They create a GitHub Issue via notify-on-failure.yml.
 
@@ -26,8 +26,9 @@ on:
       - "images/**"
       - "karty/**"
       - "data/**"
+      - "scripts/visual-parity-*.js"
+      - ".github/workflows/visual-parity.yml"
   schedule:
-    # Weekly Monday morning — catches slow visual drift from CSS/legacy edits.
     - cron: '0 6 * * 1'
   workflow_dispatch:
     inputs:
@@ -37,12 +38,12 @@ on:
         type: string
         default: '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/hard-texts/,/konfessii/,/pastor-series/,/map/'
       threshold:
-        description: 'Pixel-diff threshold percent (default: 1.0).'
+        description: 'Diagnostic raw pixel-diff threshold percent (default: 1.0).'
         required: false
         type: string
         default: '1.0'
       updateBaseline:
-        description: 'If true, overwrite data/visual-parity-baseline.json with current measurements. Owner-approved only.'
+        description: 'If true, overwrite current measurements after explicit owner review.'
         required: false
         type: boolean
         default: false
@@ -77,35 +78,29 @@ jobs:
         run: node scripts/download-fonts.js || echo "Fonts download skipped"
 
       - name: Build production-like dist
-        # Reuses the existing build pipeline so screenshots compare the SAME artifact
-        # that would ship to GitHub Pages.
         run: npm run strangler:build:production-like
 
-      - name: Run pixel-diff screenshots
+      - name: Capture legacy-vs-dist pixel diagnostics
         id: screenshots
         env:
           ROUTES: ${{ github.event.inputs.routes || '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/hard-texts/,/konfessii/,/pastor-series/,/map/' }}
           THRESHOLD: ${{ github.event.inputs.threshold || '1.0' }}
         run: |
           echo "Routes: $ROUTES"
-          echo "Threshold: ${THRESHOLD}%"
+          echo "Diagnostic threshold: ${THRESHOLD}%"
           node scripts/visual-parity-screenshots.js \
             --routes "$ROUTES" \
-            --threshold "$THRESHOLD"
-        continue-on-error: false
+            --threshold "$THRESHOLD" \
+            --warn-only
 
-      - name: Verify against owner-approved baseline
+      - name: Verify against owner-approved route policy
         id: baseline
-        # Allow the baseline check to fail the job so we see CI status correctly.
         run: node scripts/visual-parity-baseline.js
-        continue-on-error: false
 
-      - name: Optionally update baseline (manual owner-approved runs only)
+      - name: Optionally update measurements (manual owner-approved runs only)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.updateBaseline == 'true'
         run: node scripts/visual-parity-baseline.js --update
         env:
-          # Require an explicit acknowledgement so AI agents cannot silently
-          # raise the allowed diff%.
           OWNER_APPROVED: 'true'
 
       - name: Upload screenshot artifacts
