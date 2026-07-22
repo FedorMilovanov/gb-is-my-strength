@@ -110,7 +110,7 @@ jobs:
 
   nagornaya-neutral-proof:
     needs: guard
-    if: github.event_name == 'pull_request' && github.event.pull_request.number == 155 && github.event.pull_request.head.ref == 'agent/nagornaya-neutral-comparison-ui-2026-07-22'
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/nagornaya-neutral-comparison-ui-2026-07-22'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -118,7 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: agent/nagornaya-neutral-comparison-ui-2026-07-22
           fetch-depth: 0
 
       - name: Check proof state
