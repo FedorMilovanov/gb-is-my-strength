@@ -26,6 +26,7 @@ function requireOrder(text, first, second, label) {
 
 const component = read('src/components/nagornaya/shared/NagornayaClaimComparison.astro');
 const projection = read('src/lib/nagornaya-claim-projection.ts');
+const browserTest = read('scripts/nagornaya-neutral-comparison-browser-test.mjs');
 const part4 = read('src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro');
 const part5 = read('src/components/nagornaya/chast-5/NagornayaChast5MainShell.astro');
 const shadow4 = read('nagornaya/chast-4/index.html');
@@ -55,10 +56,22 @@ for (const heading of [
 
 requireOrder(component, 'Альтернатива, которую нужно услышать', 'Позиция серии', 'alternative-first DOM order');
 requireText(projection, "../../data/nagornaya/source-registry.json", 'canonical registry import');
+requireText(projection, 'claimPresentationRu', 'Russian presentation layer');
+requireText(projection, 'Дональд Грин защищает ограниченное употребление модели ipsissima vox', 'Green Russian projection');
+requireText(projection, 'Роберт Томас критикует Jesus Seminar', 'Thomas Russian projection');
 forbidText(component, 'text-red-', 'neutral component palette');
 forbidText(component, 'text-emerald-', 'neutral component palette');
 forbidText(component, '✓', 'neutral component verdict glyphs');
 forbidText(component, '✗', 'neutral component verdict glyphs');
+
+for (const exactIconUrl of [
+  'https://gospod-bog.ru/apple-touch-icon.png',
+  'https://gospod-bog.ru/icons/icon-192.png',
+]) {
+  requireText(browserTest, exactIconUrl, 'exact localhost CSP exception');
+}
+requireText(browserTest, "message.includes('Content Security Policy')", 'CSP-scoped exception');
+forbidText(browserTest, "includes('favicon')", 'broad favicon console suppression');
 
 requireText(part4, 'claimId="green-ipsissima-vox-model"', 'Part IV Green projection');
 requireText(part4, 'claimId="thomas-jesus-seminar-critique"', 'Part IV Thomas projection');
@@ -87,4 +100,4 @@ if (failures.length > 0) {
 console.log('Nagornaya neutral comparison regression PASS');
 console.log(`- Part IV comparison blocks: ${part4ShadowCount}`);
 console.log(`- Part V comparison blocks: ${part5ShadowCount}`);
-console.log('- canonical registry + typed pastoral projection + neutral DOM order verified');
+console.log('- canonical registry + Russian projection + exact CSP exceptions + neutral DOM order verified');
