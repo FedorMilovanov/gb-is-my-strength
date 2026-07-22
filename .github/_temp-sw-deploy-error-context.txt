@@ -1,0 +1,675 @@
+2026-07-22T09:23:18.8507937Z   skip exists: Inter/inter-cyrillic-600
+2026-07-22T09:23:18.8508571Z   skip exists: NotoSansHebrew/notosanshebrew-400
+2026-07-22T09:23:18.8509193Z   skip exists: NotoSansGreek/notosansgreek-400
+2026-07-22T09:23:18.8509924Z Готово.
+2026-07-22T09:23:18.8606956Z ##[group]Run npm run validate:static-publication
+2026-07-22T09:23:18.8608290Z [36;1mnpm run validate:static-publication[0m
+2026-07-22T09:23:18.8668572Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:23:18.8668841Z ##[endgroup]
+2026-07-22T09:23:18.9699924Z 
+2026-07-22T09:23:18.9700751Z > gb-is-my-strength@1.6.3 validate:static-publication
+2026-07-22T09:23:18.9711821Z > npm run validate:all && npm run owner:ui-guard && npm run about:visual-parity:audit && npm run biografii:visual-parity:audit && npm run hard-texts:visual-parity:audit && npm run pastor-series:visual-parity:audit && npm run articles:visual-parity:audit && npm run gill:context:visual-parity:audit && npm run gill:spravochnik:visual-parity:audit && npm run konfessii:visual-parity:audit && npm run karty:visual-parity:audit && npm run baptisty-rossii:visual-parity:audit && npm run home:visual-parity:audit && npm run nagornaya:visual-parity:audit && npm run catalogs:visual-parity:audit && npm run baptisty:roadmap:audit && npm run baptisty:visual-atlas:audit && npm run maps:validate && npm run page-ownership:check && npm run avraam:audit && npm run tokens:check && npm run css:layer:validate && node scripts/audit-pro.js && npm run content:parity && npm run sources:hygiene && npm run article:qa && npm run readable-audit && npm run editorial:lint && npm run gill:reading-time:audit && npm run gill:pagefind:audit && npm run gill:series:data:consistency:audit && npm run data:consistency && npm run content:guard && npm run astro:audit:article-mdx:strict && npm run astro:audit:baptisty-series && npm run mdx:structure:audit && npm run contract:compare && npm run migration:metadata:check:strict && npm run sw:dist:audit
+2026-07-22T09:23:18.9719599Z 
+2026-07-22T09:23:19.0764393Z 
+2026-07-22T09:23:19.0765043Z > gb-is-my-strength@1.6.3 validate:all
+2026-07-22T09:23:19.0765726Z > npm run validate:strict && npm run seo-audit
+2026-07-22T09:23:19.0766121Z 
+2026-07-22T09:23:19.1881230Z 
+2026-07-22T09:23:19.1881811Z > gb-is-my-strength@1.6.3 validate:strict
+2026-07-22T09:23:19.1882388Z > node scripts/validate.js --strict
+2026-07-22T09:23:19.1882598Z 
+2026-07-22T09:23:19.2236182Z 
+2026-07-22T09:23:19.2236753Z 🔍  validate.js
+2026-07-22T09:23:19.2237138Z 
+2026-07-22T09:23:19.2238764Z   📁  css/
+2026-07-22T09:23:19.2256915Z   ⚠️  [css/floating-cluster.css] нестандартный брейкпоинт: 1199px
+2026-07-22T09:23:19.2290212Z   📁  js/
+---
+2026-07-22T09:23:27.8434001Z ✅ HTML span balance: all files balanced
+2026-07-22T09:23:27.8434739Z ✅ Cache-bust hashes match file content (776 references checked)
+2026-07-22T09:23:27.8435341Z ✅ SEO basics passed (53 HTML files)
+2026-07-22T09:23:27.8435694Z ✅ JSON-LD parse passed (64 blocks)
+2026-07-22T09:23:27.8436252Z ✅ Russian quote policy passed: no English direct quotes in reader-facing Russian text
+2026-07-22T09:23:27.8436863Z ✅ Attribution guard passed: Фёдор is not marked as author
+2026-07-22T09:23:27.8437651Z ✅ Local resources and internal links valid (2650 refs checked)
+2026-07-22T09:23:27.8438053Z ✅ No duplicate IDs
+2026-07-22T09:23:27.8438355Z ✅ All images have alt attributes
+2026-07-22T09:23:27.8439023Z ✅ manifest.json essentials valid
+2026-07-22T09:23:27.8440266Z ✅ SW CACHE_VERSION
+2026-07-22T09:23:27.8440632Z ✅ SW install event
+2026-07-22T09:23:27.8440931Z ✅ SW activate event
+2026-07-22T09:23:27.8441202Z ✅ SW fetch event
+2026-07-22T09:23:27.8441457Z ✅ SW skipWaiting
+2026-07-22T09:23:27.8441822Z ✅ SW clients.claim
+2026-07-22T09:23:27.8442104Z ✅ SW cache cleanup
+2026-07-22T09:23:27.8442580Z ✅ SW precache references existing repo files (35 URLs, pagefind skipped)
+2026-07-22T09:23:27.8443086Z ✅ search-manifest URLs valid (63 items)
+2026-07-22T09:23:27.8443467Z ✅ Nagornaya series structure checked
+2026-07-22T09:23:27.8443796Z ✅ CNAME is gospod-bog.ru
+2026-07-22T09:23:27.8444074Z ✅ robots.txt present
+2026-07-22T09:23:27.8444440Z ✅ sitemap.xml covers HTML pages (66 loc entries)
+2026-07-22T09:23:27.8444780Z ✅ feed.xml present
+2026-07-22T09:23:27.8445340Z ✅ Security hygiene passed (no repo path leaks / eval)
+2026-07-22T09:23:27.8445704Z ✅ deploy.yml present
+---
+2026-07-22T09:23:27.8442104Z ✅ SW cache cleanup
+2026-07-22T09:23:27.8442580Z ✅ SW precache references existing repo files (35 URLs, pagefind skipped)
+2026-07-22T09:23:27.8443086Z ✅ search-manifest URLs valid (63 items)
+2026-07-22T09:23:27.8443467Z ✅ Nagornaya series structure checked
+2026-07-22T09:23:27.8443796Z ✅ CNAME is gospod-bog.ru
+2026-07-22T09:23:27.8444074Z ✅ robots.txt present
+2026-07-22T09:23:27.8444440Z ✅ sitemap.xml covers HTML pages (66 loc entries)
+2026-07-22T09:23:27.8444780Z ✅ feed.xml present
+2026-07-22T09:23:27.8445340Z ✅ Security hygiene passed (no repo path leaks / eval)
+2026-07-22T09:23:27.8445704Z ✅ deploy.yml present
+2026-07-22T09:23:27.8446209Z ✅ notify-on-failure.yml present — failures will open/update GitHub issue
+2026-07-22T09:23:27.8446936Z ✅ No garbage files (*.py / *.patch / *.bak / *.orig / *.rej / uploads/ / OS turds) anywhere in repo
+2026-07-22T09:23:27.8447785Z ✅ Image size hygiene: no PNG/JPG > 684 KB in /images/ (allowlist: 4)
+2026-07-22T09:23:27.8448429Z ✅ Series consistency: 5 series in series.json, all published parts exist on disk
+2026-07-22T09:23:27.8448984Z ✅ Series landing pages: no cross-series contamination
+2026-07-22T09:23:27.8449430Z ✅ /articles/ catalog: 7 cards, no duplicates
+2026-07-22T09:23:27.8449990Z ✅ Unified header: all pages with h-nav-links contain the canonical 5-item set
+2026-07-22T09:23:27.8450575Z ✅ Nav semantics: no <button> inside <ul class="h-nav-links">
+2026-07-22T09:23:27.8451130Z ✅ /hard-texts/ landing: all 7 article links are members of the series
+2026-07-22T09:23:27.8451727Z ✅ Hashed asset URLs: every ?v=… reference resolves to an existing file
+2026-07-22T09:23:27.8452216Z ✅ .gitignore covers npm/node_modules/OS turds
+2026-07-22T09:23:27.8452610Z ✅ article-topnav stays buried (AGENTS §9.8)
+2026-07-22T09:23:27.8452986Z ✅ Dead classes stay dead (5 guarded)
+2026-07-22T09:23:27.8453387Z ✅ No AI-disclosure spans inside <figcaption>
+2026-07-22T09:23:27.8454162Z ✅ OG/Twitter meta: no duplicates across pages (checked: og:image, og:title, og:url, og:description, twitter:image, og:type)
+2026-07-22T09:23:27.8454806Z ✅ All <source srcset> tags wrapped in <picture>
+---
+2026-07-22T09:23:27.8451727Z ✅ Hashed asset URLs: every ?v=… reference resolves to an existing file
+2026-07-22T09:23:27.8452216Z ✅ .gitignore covers npm/node_modules/OS turds
+2026-07-22T09:23:27.8452610Z ✅ article-topnav stays buried (AGENTS §9.8)
+2026-07-22T09:23:27.8452986Z ✅ Dead classes stay dead (5 guarded)
+2026-07-22T09:23:27.8453387Z ✅ No AI-disclosure spans inside <figcaption>
+2026-07-22T09:23:27.8454162Z ✅ OG/Twitter meta: no duplicates across pages (checked: og:image, og:title, og:url, og:description, twitter:image, og:type)
+2026-07-22T09:23:27.8454806Z ✅ All <source srcset> tags wrapped in <picture>
+2026-07-22T09:23:27.8455258Z ✅ Listener syntax: no broken function(, {…}) patterns
+2026-07-22T09:23:27.8455822Z ✅ Inline scripts: none larger than 500 LOC except known/guarded map app debt
+2026-07-22T09:23:27.8456351Z ✅ @keyframes integrity: all blocks have valid stops
+2026-07-22T09:23:27.8456890Z ✅ sw.js CACHE_VERSION="gb-v191-reader-preferences-20260721" looks sane
+2026-07-22T09:23:27.8457653Z ✅ sitemap.xml: all 66 lastmod dates ≤ today
+2026-07-22T09:23:27.8458128Z ✅ Single <h1> per page: all content pages have exactly one
+2026-07-22T09:23:27.8458733Z ✅ Mixed-content: no http:// href/src (web.archive.org & w3.org whitelisted)
+2026-07-22T09:23:27.8459313Z ✅ target="_blank" links: all carry rel="noopener"
+2026-07-22T09:23:27.8459862Z ✅ Anchor href values: no href="javascript:…" and no truly-bare href="#"
+2026-07-22T09:23:27.8460328Z ✅ All content pages have <html lang="…">
+2026-07-22T09:23:27.8460766Z ✅ Anchors: every <a> has visible text / aria-label / alt
+2026-07-22T09:23:27.8461233Z ✅ Buttons: every icon-only <button> carries aria-label
+2026-07-22T09:23:27.8461678Z ✅ Tabindex hygiene: no positive tabindex values
+2026-07-22T09:23:27.8462233Z ✅ CSS variables: 302 defined; bare-usage check passed (28 runtime externals)
+2026-07-22T09:23:27.8462834Z ✅ Image references: every src/srcset URL resolves to an existing file
+2026-07-22T09:23:27.8463397Z ✅ sitemap.xml: no noindex pages listed (checked 66 URLs)
+2026-07-22T09:23:27.8463935Z ✅ Canonical URLs: present + unique + match own page (52 pages)
+2026-07-22T09:23:27.8464714Z ✅ Viewport: user zoom allowed on all pages (no user-scalable=no / maximum-scale=1)
+2026-07-22T09:23:27.8465323Z ✅ No inline event handlers (onclick/onload/…) in HTML — CSP-safe
+---
+2026-07-22T09:29:39.2740531Z ✅ Every published part and source representation has explicit provenance
+2026-07-22T09:29:39.3822613Z 
+2026-07-22T09:29:39.3823365Z > gb-is-my-strength@1.6.3 surface:registry:check
+2026-07-22T09:29:39.3823887Z > node scripts/public-surface-registry-audit.js
+2026-07-22T09:29:39.3824129Z 
+2026-07-22T09:29:39.7108182Z Public surfaces: 76
+2026-07-22T09:29:39.7109974Z Counts: {"page":9,"series":51,"special":14,"article":2}
+2026-07-22T09:29:39.7110630Z Series shapes: {"flat":27,"book":24}
+2026-07-22T09:29:39.7111804Z ✅ public-surface-registry: all ownership routes classified and cross-validated
+2026-07-22T09:29:39.8233686Z 
+2026-07-22T09:29:39.8234647Z > gb-is-my-strength@1.6.3 sw:dist:audit
+2026-07-22T09:29:39.8235156Z > node scripts/sw-dist-readiness-audit.js
+2026-07-22T09:29:39.8235381Z 
+2026-07-22T09:29:39.8514669Z SW DIST READINESS AUDIT (pagefind optional, cache bump advisory)
+2026-07-22T09:29:39.8516990Z ✅ dist/sw.js exists
+2026-07-22T09:29:39.8517709Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:29:39.8520106Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:29:39.8521972Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:29:39.8523432Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:29:39.8524856Z ℹ️ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:29:39.8527479Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:29:39.8528145Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:29:39.8537387Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind optional)
+2026-07-22T09:29:39.8547317Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:29:39.8548139Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:29:39.8548558Z ✅ sw.js activate: clients.claim()
+---
+2026-07-22T09:29:39.3823887Z > node scripts/public-surface-registry-audit.js
+2026-07-22T09:29:39.3824129Z 
+2026-07-22T09:29:39.7108182Z Public surfaces: 76
+2026-07-22T09:29:39.7109974Z Counts: {"page":9,"series":51,"special":14,"article":2}
+2026-07-22T09:29:39.7110630Z Series shapes: {"flat":27,"book":24}
+2026-07-22T09:29:39.7111804Z ✅ public-surface-registry: all ownership routes classified and cross-validated
+2026-07-22T09:29:39.8233686Z 
+2026-07-22T09:29:39.8234647Z > gb-is-my-strength@1.6.3 sw:dist:audit
+2026-07-22T09:29:39.8235156Z > node scripts/sw-dist-readiness-audit.js
+2026-07-22T09:29:39.8235381Z 
+2026-07-22T09:29:39.8514669Z SW DIST READINESS AUDIT (pagefind optional, cache bump advisory)
+2026-07-22T09:29:39.8516990Z ✅ dist/sw.js exists
+2026-07-22T09:29:39.8517709Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:29:39.8520106Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:29:39.8521972Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:29:39.8523432Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:29:39.8524856Z ℹ️ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:29:39.8527479Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:29:39.8528145Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:29:39.8537387Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind optional)
+2026-07-22T09:29:39.8547317Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:29:39.8548139Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:29:39.8548558Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:29:39.8548943Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:29:39.8549324Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:29:39.8549795Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+---
+2026-07-22T09:29:39.7110630Z Series shapes: {"flat":27,"book":24}
+2026-07-22T09:29:39.7111804Z ✅ public-surface-registry: all ownership routes classified and cross-validated
+2026-07-22T09:29:39.8233686Z 
+2026-07-22T09:29:39.8234647Z > gb-is-my-strength@1.6.3 sw:dist:audit
+2026-07-22T09:29:39.8235156Z > node scripts/sw-dist-readiness-audit.js
+2026-07-22T09:29:39.8235381Z 
+2026-07-22T09:29:39.8514669Z SW DIST READINESS AUDIT (pagefind optional, cache bump advisory)
+2026-07-22T09:29:39.8516990Z ✅ dist/sw.js exists
+2026-07-22T09:29:39.8517709Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:29:39.8520106Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:29:39.8521972Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:29:39.8523432Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:29:39.8524856Z ℹ️ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:29:39.8527479Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:29:39.8528145Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:29:39.8537387Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind optional)
+2026-07-22T09:29:39.8547317Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:29:39.8548139Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:29:39.8548558Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:29:39.8548943Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:29:39.8549324Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:29:39.8549795Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:29:39.8550295Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:29:39.8550736Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:29:39.8551319Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:29:39.8551988Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+---
+2026-07-22T09:29:39.7111804Z ✅ public-surface-registry: all ownership routes classified and cross-validated
+2026-07-22T09:29:39.8233686Z 
+2026-07-22T09:29:39.8234647Z > gb-is-my-strength@1.6.3 sw:dist:audit
+2026-07-22T09:29:39.8235156Z > node scripts/sw-dist-readiness-audit.js
+2026-07-22T09:29:39.8235381Z 
+2026-07-22T09:29:39.8514669Z SW DIST READINESS AUDIT (pagefind optional, cache bump advisory)
+2026-07-22T09:29:39.8516990Z ✅ dist/sw.js exists
+2026-07-22T09:29:39.8517709Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:29:39.8520106Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:29:39.8521972Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:29:39.8523432Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:29:39.8524856Z ℹ️ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:29:39.8527479Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:29:39.8528145Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:29:39.8537387Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind optional)
+2026-07-22T09:29:39.8547317Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:29:39.8548139Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:29:39.8548558Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:29:39.8548943Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:29:39.8549324Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:29:39.8549795Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:29:39.8550295Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:29:39.8550736Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:29:39.8551319Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:29:39.8551988Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+2026-07-22T09:29:39.8552517Z ✅ sw-register.js: registers /sw.js with root scope
+---
+2026-07-22T09:29:39.8233686Z 
+2026-07-22T09:29:39.8234647Z > gb-is-my-strength@1.6.3 sw:dist:audit
+2026-07-22T09:29:39.8235156Z > node scripts/sw-dist-readiness-audit.js
+2026-07-22T09:29:39.8235381Z 
+2026-07-22T09:29:39.8514669Z SW DIST READINESS AUDIT (pagefind optional, cache bump advisory)
+2026-07-22T09:29:39.8516990Z ✅ dist/sw.js exists
+2026-07-22T09:29:39.8517709Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:29:39.8520106Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:29:39.8521972Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:29:39.8523432Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:29:39.8524856Z ℹ️ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:29:39.8527479Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:29:39.8528145Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:29:39.8537387Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind optional)
+2026-07-22T09:29:39.8547317Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:29:39.8548139Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:29:39.8548558Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:29:39.8548943Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:29:39.8549324Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:29:39.8549795Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:29:39.8550295Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:29:39.8550736Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:29:39.8551319Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:29:39.8551988Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+2026-07-22T09:29:39.8552517Z ✅ sw-register.js: registers /sw.js with root scope
+2026-07-22T09:29:39.8552934Z ✅ sw-register.js: uses root /sw.js URL
+---
+2026-07-22T09:29:39.8549324Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:29:39.8549795Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:29:39.8550295Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:29:39.8550736Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:29:39.8551319Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:29:39.8551988Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+2026-07-22T09:29:39.8552517Z ✅ sw-register.js: registers /sw.js with root scope
+2026-07-22T09:29:39.8552934Z ✅ sw-register.js: uses root /sw.js URL
+2026-07-22T09:29:39.8553124Z 
+2026-07-22T09:29:39.8553298Z ✅ SW dist readiness audit passed
+2026-07-22T09:29:39.8553811Z ℹ️ Advisory notes are expected until the explicit deploy-switch commit.
+2026-07-22T09:29:39.8735521Z ##[group]Run npm run strangler:build:production-like
+2026-07-22T09:29:39.8735948Z [36;1mnpm run strangler:build:production-like[0m
+2026-07-22T09:29:39.8799040Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:29:39.8799308Z ##[endgroup]
+2026-07-22T09:29:39.9808462Z 
+2026-07-22T09:29:39.9809268Z > gb-is-my-strength@1.6.3 strangler:build:production-like
+2026-07-22T09:29:39.9810222Z > npm run astro:build && node scripts/copy-legacy-to-dist.js --omit-build-only && node scripts/astro-cache-bust-postbuild.js
+2026-07-22T09:29:39.9810677Z 
+2026-07-22T09:29:40.0751435Z 
+2026-07-22T09:29:40.0752148Z > gb-is-my-strength@1.6.3 astro:build
+2026-07-22T09:29:40.0753395Z > npm run dist:clean && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build
+2026-07-22T09:29:40.0754244Z 
+2026-07-22T09:29:40.1733548Z 
+2026-07-22T09:29:40.1734227Z > gb-is-my-strength@1.6.3 dist:clean
+2026-07-22T09:29:40.1734816Z > node -e "require('fs').rmSync('dist',{recursive:true,force:true})"
+---
+2026-07-22T09:39:30.9479629Z OK /karty/: content coverage 100.0% (0/143 missing)
+2026-07-22T09:39:30.9484875Z OK /konfessii/: content coverage 100.0% (0/166 missing)
+2026-07-22T09:39:30.9493975Z OK /nagornaya/: content coverage 100.0% (0/263 missing)
+2026-07-22T09:39:30.9511779Z OK /nagornaya/istochniki/: content coverage 100.0% (0/515 missing)
+2026-07-22T09:39:30.9522355Z OK /nagornaya/nakhodki/: content coverage 100.0% (0/495 missing)
+2026-07-22T09:39:30.9530118Z OK /nagornaya/seriya/: content coverage 100.0% (0/417 missing)
+2026-07-22T09:39:30.9540290Z OK /pastor-series/: content coverage 100.0% (0/298 missing)
+2026-07-22T09:39:30.9547757Z OK /baptisty-rossii/: content coverage 100.0% (0/372 missing)
+2026-07-22T09:39:30.9567837Z OK /baptisty-rossii/noch-na-kure/: content coverage 98.3% (15/873 missing)
+2026-07-22T09:39:30.9586911Z OK /baptisty-rossii/yuzhnaya-shtunda/: content coverage 98.4% (13/808 missing)
+2026-07-22T09:39:30.9608012Z WARN /baptisty-rossii/dva-sezda-1884/: 9.1% legacy words missing from dist (63/689); sample: частей, опубликовано, русска, прицка, васильевски, давление, закрытия, оргкомитет, ист, критическая — review; fail threshold 10%
+2026-07-22T09:39:30.9609522Z OK /baptisty-rossii/dva-sezda-1884/: within fail threshold
+2026-07-22T09:39:30.9633784Z OK /baptisty-rossii/peterburgskaya-liniya/: content coverage 99.0% (12/1182 missing)
+2026-07-22T09:39:30.9659727Z OK /baptisty-rossii/goneniya-i-sovest/: content coverage 99.2% (14/1719 missing)
+2026-07-22T09:39:30.9690280Z OK /baptisty-rossii/sovetskaya-noch/: content coverage 99.3% (11/1675 missing)
+2026-07-22T09:39:30.9714450Z OK /baptisty-rossii/vsehib-1944/: content coverage 99.3% (11/1544 missing)
+2026-07-22T09:39:30.9741195Z OK /baptisty-rossii/iniciativnaya-gruppa/: content coverage 98.3% (30/1781 missing)
+2026-07-22T09:39:30.9766894Z OK /baptisty-rossii/podpolnaya-pechat/: content coverage 98.9% (19/1657 missing)
+2026-07-22T09:39:30.9796879Z WARN /baptisty-rossii/spravochnik/: 3.4% legacy words missing from dist (69/2026); sample: опубликовано, русска, прицка, васильевски, ист, исследовательские, файлы, индекс, локальная, опись — review; fail threshold 10%
+2026-07-22T09:39:30.9797939Z OK /baptisty-rossii/spravochnik/: within fail threshold
+2026-07-22T09:39:30.9799628Z OK /konfessii/russkij-baptizm/: content coverage 100.0% (0/155 missing)
+2026-07-22T09:39:30.9804233Z OK /map/: content coverage 100.0% (0/271 missing)
+2026-07-22T09:39:30.9844259Z OK /nagornaya/chast-1/: content coverage 100.0% (0/2335 missing)
+2026-07-22T09:39:30.9873002Z OK /nagornaya/chast-2/: content coverage 100.0% (0/1817 missing)
+2026-07-22T09:39:30.9902149Z OK /nagornaya/chast-3/: content coverage 100.0% (0/1814 missing)
+2026-07-22T09:39:30.9955049Z OK /nagornaya/chast-4/: content coverage 100.0% (0/4217 missing)
+---
+2026-07-22T09:39:30.9484875Z OK /konfessii/: content coverage 100.0% (0/166 missing)
+2026-07-22T09:39:30.9493975Z OK /nagornaya/: content coverage 100.0% (0/263 missing)
+2026-07-22T09:39:30.9511779Z OK /nagornaya/istochniki/: content coverage 100.0% (0/515 missing)
+2026-07-22T09:39:30.9522355Z OK /nagornaya/nakhodki/: content coverage 100.0% (0/495 missing)
+2026-07-22T09:39:30.9530118Z OK /nagornaya/seriya/: content coverage 100.0% (0/417 missing)
+2026-07-22T09:39:30.9540290Z OK /pastor-series/: content coverage 100.0% (0/298 missing)
+2026-07-22T09:39:30.9547757Z OK /baptisty-rossii/: content coverage 100.0% (0/372 missing)
+2026-07-22T09:39:30.9567837Z OK /baptisty-rossii/noch-na-kure/: content coverage 98.3% (15/873 missing)
+2026-07-22T09:39:30.9586911Z OK /baptisty-rossii/yuzhnaya-shtunda/: content coverage 98.4% (13/808 missing)
+2026-07-22T09:39:30.9608012Z WARN /baptisty-rossii/dva-sezda-1884/: 9.1% legacy words missing from dist (63/689); sample: частей, опубликовано, русска, прицка, васильевски, давление, закрытия, оргкомитет, ист, критическая — review; fail threshold 10%
+2026-07-22T09:39:30.9609522Z OK /baptisty-rossii/dva-sezda-1884/: within fail threshold
+2026-07-22T09:39:30.9633784Z OK /baptisty-rossii/peterburgskaya-liniya/: content coverage 99.0% (12/1182 missing)
+2026-07-22T09:39:30.9659727Z OK /baptisty-rossii/goneniya-i-sovest/: content coverage 99.2% (14/1719 missing)
+2026-07-22T09:39:30.9690280Z OK /baptisty-rossii/sovetskaya-noch/: content coverage 99.3% (11/1675 missing)
+2026-07-22T09:39:30.9714450Z OK /baptisty-rossii/vsehib-1944/: content coverage 99.3% (11/1544 missing)
+2026-07-22T09:39:30.9741195Z OK /baptisty-rossii/iniciativnaya-gruppa/: content coverage 98.3% (30/1781 missing)
+2026-07-22T09:39:30.9766894Z OK /baptisty-rossii/podpolnaya-pechat/: content coverage 98.9% (19/1657 missing)
+2026-07-22T09:39:30.9796879Z WARN /baptisty-rossii/spravochnik/: 3.4% legacy words missing from dist (69/2026); sample: опубликовано, русска, прицка, васильевски, ист, исследовательские, файлы, индекс, локальная, опись — review; fail threshold 10%
+2026-07-22T09:39:30.9797939Z OK /baptisty-rossii/spravochnik/: within fail threshold
+2026-07-22T09:39:30.9799628Z OK /konfessii/russkij-baptizm/: content coverage 100.0% (0/155 missing)
+2026-07-22T09:39:30.9804233Z OK /map/: content coverage 100.0% (0/271 missing)
+2026-07-22T09:39:30.9844259Z OK /nagornaya/chast-1/: content coverage 100.0% (0/2335 missing)
+2026-07-22T09:39:30.9873002Z OK /nagornaya/chast-2/: content coverage 100.0% (0/1817 missing)
+2026-07-22T09:39:30.9902149Z OK /nagornaya/chast-3/: content coverage 100.0% (0/1814 missing)
+2026-07-22T09:39:30.9955049Z OK /nagornaya/chast-4/: content coverage 100.0% (0/4217 missing)
+2026-07-22T09:39:31.0010144Z OK /nagornaya/chast-5/: content coverage 100.0% (0/3883 missing)
+---
+2026-07-22T09:39:30.9567837Z OK /baptisty-rossii/noch-na-kure/: content coverage 98.3% (15/873 missing)
+2026-07-22T09:39:30.9586911Z OK /baptisty-rossii/yuzhnaya-shtunda/: content coverage 98.4% (13/808 missing)
+2026-07-22T09:39:30.9608012Z WARN /baptisty-rossii/dva-sezda-1884/: 9.1% legacy words missing from dist (63/689); sample: частей, опубликовано, русска, прицка, васильевски, давление, закрытия, оргкомитет, ист, критическая — review; fail threshold 10%
+2026-07-22T09:39:30.9609522Z OK /baptisty-rossii/dva-sezda-1884/: within fail threshold
+2026-07-22T09:39:30.9633784Z OK /baptisty-rossii/peterburgskaya-liniya/: content coverage 99.0% (12/1182 missing)
+2026-07-22T09:39:30.9659727Z OK /baptisty-rossii/goneniya-i-sovest/: content coverage 99.2% (14/1719 missing)
+2026-07-22T09:39:30.9690280Z OK /baptisty-rossii/sovetskaya-noch/: content coverage 99.3% (11/1675 missing)
+2026-07-22T09:39:30.9714450Z OK /baptisty-rossii/vsehib-1944/: content coverage 99.3% (11/1544 missing)
+2026-07-22T09:39:30.9741195Z OK /baptisty-rossii/iniciativnaya-gruppa/: content coverage 98.3% (30/1781 missing)
+2026-07-22T09:39:30.9766894Z OK /baptisty-rossii/podpolnaya-pechat/: content coverage 98.9% (19/1657 missing)
+2026-07-22T09:39:30.9796879Z WARN /baptisty-rossii/spravochnik/: 3.4% legacy words missing from dist (69/2026); sample: опубликовано, русска, прицка, васильевски, ист, исследовательские, файлы, индекс, локальная, опись — review; fail threshold 10%
+2026-07-22T09:39:30.9797939Z OK /baptisty-rossii/spravochnik/: within fail threshold
+2026-07-22T09:39:30.9799628Z OK /konfessii/russkij-baptizm/: content coverage 100.0% (0/155 missing)
+2026-07-22T09:39:30.9804233Z OK /map/: content coverage 100.0% (0/271 missing)
+2026-07-22T09:39:30.9844259Z OK /nagornaya/chast-1/: content coverage 100.0% (0/2335 missing)
+2026-07-22T09:39:30.9873002Z OK /nagornaya/chast-2/: content coverage 100.0% (0/1817 missing)
+2026-07-22T09:39:30.9902149Z OK /nagornaya/chast-3/: content coverage 100.0% (0/1814 missing)
+2026-07-22T09:39:30.9955049Z OK /nagornaya/chast-4/: content coverage 100.0% (0/4217 missing)
+2026-07-22T09:39:31.0010144Z OK /nagornaya/chast-5/: content coverage 100.0% (0/3883 missing)
+2026-07-22T09:39:31.0032731Z OK /karty/avraam/: 30.5% missing within documented threshold 40% (SVG geo labels + legacy app UI strings render client-side; narrative and sources are statically present)
+2026-07-22T09:39:31.0034165Z OK /karty/pavel/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0035694Z OK /karty/shoftim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0037467Z OK /karty/melachim/: content coverage 100.0% (0/64 missing)
+2026-07-22T09:39:31.0039294Z OK /karty/shvatim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0040757Z OK /karty/yeshua/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0042273Z OK /karty/maccabim/: content coverage 100.0% (0/62 missing)
+---
+2026-07-22T09:39:30.9586911Z OK /baptisty-rossii/yuzhnaya-shtunda/: content coverage 98.4% (13/808 missing)
+2026-07-22T09:39:30.9608012Z WARN /baptisty-rossii/dva-sezda-1884/: 9.1% legacy words missing from dist (63/689); sample: частей, опубликовано, русска, прицка, васильевски, давление, закрытия, оргкомитет, ист, критическая — review; fail threshold 10%
+2026-07-22T09:39:30.9609522Z OK /baptisty-rossii/dva-sezda-1884/: within fail threshold
+2026-07-22T09:39:30.9633784Z OK /baptisty-rossii/peterburgskaya-liniya/: content coverage 99.0% (12/1182 missing)
+2026-07-22T09:39:30.9659727Z OK /baptisty-rossii/goneniya-i-sovest/: content coverage 99.2% (14/1719 missing)
+2026-07-22T09:39:30.9690280Z OK /baptisty-rossii/sovetskaya-noch/: content coverage 99.3% (11/1675 missing)
+2026-07-22T09:39:30.9714450Z OK /baptisty-rossii/vsehib-1944/: content coverage 99.3% (11/1544 missing)
+2026-07-22T09:39:30.9741195Z OK /baptisty-rossii/iniciativnaya-gruppa/: content coverage 98.3% (30/1781 missing)
+2026-07-22T09:39:30.9766894Z OK /baptisty-rossii/podpolnaya-pechat/: content coverage 98.9% (19/1657 missing)
+2026-07-22T09:39:30.9796879Z WARN /baptisty-rossii/spravochnik/: 3.4% legacy words missing from dist (69/2026); sample: опубликовано, русска, прицка, васильевски, ист, исследовательские, файлы, индекс, локальная, опись — review; fail threshold 10%
+2026-07-22T09:39:30.9797939Z OK /baptisty-rossii/spravochnik/: within fail threshold
+2026-07-22T09:39:30.9799628Z OK /konfessii/russkij-baptizm/: content coverage 100.0% (0/155 missing)
+2026-07-22T09:39:30.9804233Z OK /map/: content coverage 100.0% (0/271 missing)
+2026-07-22T09:39:30.9844259Z OK /nagornaya/chast-1/: content coverage 100.0% (0/2335 missing)
+2026-07-22T09:39:30.9873002Z OK /nagornaya/chast-2/: content coverage 100.0% (0/1817 missing)
+2026-07-22T09:39:30.9902149Z OK /nagornaya/chast-3/: content coverage 100.0% (0/1814 missing)
+2026-07-22T09:39:30.9955049Z OK /nagornaya/chast-4/: content coverage 100.0% (0/4217 missing)
+2026-07-22T09:39:31.0010144Z OK /nagornaya/chast-5/: content coverage 100.0% (0/3883 missing)
+2026-07-22T09:39:31.0032731Z OK /karty/avraam/: 30.5% missing within documented threshold 40% (SVG geo labels + legacy app UI strings render client-side; narrative and sources are statically present)
+2026-07-22T09:39:31.0034165Z OK /karty/pavel/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0035694Z OK /karty/shoftim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0037467Z OK /karty/melachim/: content coverage 100.0% (0/64 missing)
+2026-07-22T09:39:31.0039294Z OK /karty/shvatim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0040757Z OK /karty/yeshua/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0042273Z OK /karty/maccabim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0043817Z OK /karty/early-church/: content coverage 100.0% (0/62 missing)
+---
+2026-07-22T09:39:31.0039294Z OK /karty/shvatim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0040757Z OK /karty/yeshua/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0042273Z OK /karty/maccabim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0043817Z OK /karty/early-church/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0045324Z OK /karty/revelation/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0056601Z OK /rodosloviye/: content coverage 98.8% (1/80 missing)
+2026-07-22T09:39:31.0057754Z 
+2026-07-22T09:39:31.0058314Z Content coverage audit: 51 routes compared, 24 skipped, 2 warnings, 51/51 checks passed
+2026-07-22T09:39:31.0058868Z 
+2026-07-22T09:39:31.0059088Z OK content coverage audit passed
+2026-07-22T09:39:31.0243543Z ##[group]Run npm run sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.0243912Z [36;1mnpm run sw:dist:audit:deploy-switch[0m
+2026-07-22T09:39:31.0307282Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:39:31.0307560Z ##[endgroup]
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+---
+2026-07-22T09:39:31.0040757Z OK /karty/yeshua/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0042273Z OK /karty/maccabim/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0043817Z OK /karty/early-church/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0045324Z OK /karty/revelation/: content coverage 100.0% (0/62 missing)
+2026-07-22T09:39:31.0056601Z OK /rodosloviye/: content coverage 98.8% (1/80 missing)
+2026-07-22T09:39:31.0057754Z 
+2026-07-22T09:39:31.0058314Z Content coverage audit: 51 routes compared, 24 skipped, 2 warnings, 51/51 checks passed
+2026-07-22T09:39:31.0058868Z 
+2026-07-22T09:39:31.0059088Z OK content coverage audit passed
+2026-07-22T09:39:31.0243543Z ##[group]Run npm run sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.0243912Z [36;1mnpm run sw:dist:audit:deploy-switch[0m
+2026-07-22T09:39:31.0307282Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:39:31.0307560Z ##[endgroup]
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:39:31.1653262Z ✅ PRECACHE_ASSETS has no duplicates
+---
+2026-07-22T09:39:31.0056601Z OK /rodosloviye/: content coverage 98.8% (1/80 missing)
+2026-07-22T09:39:31.0057754Z 
+2026-07-22T09:39:31.0058314Z Content coverage audit: 51 routes compared, 24 skipped, 2 warnings, 51/51 checks passed
+2026-07-22T09:39:31.0058868Z 
+2026-07-22T09:39:31.0059088Z OK content coverage audit passed
+2026-07-22T09:39:31.0243543Z ##[group]Run npm run sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.0243912Z [36;1mnpm run sw:dist:audit:deploy-switch[0m
+2026-07-22T09:39:31.0307282Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:39:31.0307560Z ##[endgroup]
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:39:31.1653262Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:39:31.1653724Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind required)
+2026-07-22T09:39:31.1654342Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:39:31.1654879Z ✅ Pagefind bootstrap is included in PRECACHE_ASSETS
+2026-07-22T09:39:31.1655274Z ✅ sw.js install: skipWaiting()
+---
+2026-07-22T09:39:31.0057754Z 
+2026-07-22T09:39:31.0058314Z Content coverage audit: 51 routes compared, 24 skipped, 2 warnings, 51/51 checks passed
+2026-07-22T09:39:31.0058868Z 
+2026-07-22T09:39:31.0059088Z OK content coverage audit passed
+2026-07-22T09:39:31.0243543Z ##[group]Run npm run sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.0243912Z [36;1mnpm run sw:dist:audit:deploy-switch[0m
+2026-07-22T09:39:31.0307282Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:39:31.0307560Z ##[endgroup]
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:39:31.1653262Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:39:31.1653724Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind required)
+2026-07-22T09:39:31.1654342Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:39:31.1654879Z ✅ Pagefind bootstrap is included in PRECACHE_ASSETS
+2026-07-22T09:39:31.1655274Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:39:31.1655609Z ✅ sw.js activate: clients.claim()
+---
+2026-07-22T09:39:31.0058868Z 
+2026-07-22T09:39:31.0059088Z OK content coverage audit passed
+2026-07-22T09:39:31.0243543Z ##[group]Run npm run sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.0243912Z [36;1mnpm run sw:dist:audit:deploy-switch[0m
+2026-07-22T09:39:31.0307282Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:39:31.0307560Z ##[endgroup]
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:39:31.1653262Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:39:31.1653724Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind required)
+2026-07-22T09:39:31.1654342Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:39:31.1654879Z ✅ Pagefind bootstrap is included in PRECACHE_ASSETS
+2026-07-22T09:39:31.1655274Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:39:31.1655609Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:39:31.1655961Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:39:31.1656312Z ✅ sw.js activate: old cache deletion
+---
+2026-07-22T09:39:31.0307282Z shell: /usr/bin/bash -e {0}
+2026-07-22T09:39:31.0307560Z ##[endgroup]
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:39:31.1653262Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:39:31.1653724Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind required)
+2026-07-22T09:39:31.1654342Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:39:31.1654879Z ✅ Pagefind bootstrap is included in PRECACHE_ASSETS
+2026-07-22T09:39:31.1655274Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:39:31.1655609Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:39:31.1655961Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:39:31.1656312Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:39:31.1656773Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:39:31.1657605Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:39:31.1658056Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:39:31.1658633Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+---
+2026-07-22T09:39:31.0307560Z ##[endgroup]
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:39:31.1653262Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:39:31.1653724Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind required)
+2026-07-22T09:39:31.1654342Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:39:31.1654879Z ✅ Pagefind bootstrap is included in PRECACHE_ASSETS
+2026-07-22T09:39:31.1655274Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:39:31.1655609Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:39:31.1655961Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:39:31.1656312Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:39:31.1656773Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:39:31.1657605Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:39:31.1658056Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:39:31.1658633Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:39:31.1659325Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+---
+2026-07-22T09:39:31.1334980Z 
+2026-07-22T09:39:31.1335446Z > gb-is-my-strength@1.6.3 sw:dist:audit:deploy-switch
+2026-07-22T09:39:31.1336314Z > node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump
+2026-07-22T09:39:31.1336655Z 
+2026-07-22T09:39:31.1613547Z SW DIST READINESS AUDIT (pagefind required, cache bump required)
+2026-07-22T09:39:31.1615859Z ✅ dist/sw.js exists
+2026-07-22T09:39:31.1633042Z ✅ dist/js/sw-register.js exists
+2026-07-22T09:39:31.1648366Z ✅ dist/sw.js is copied byte-for-byte from root sw.js
+2026-07-22T09:39:31.1649301Z ✅ sw.js CACHE_VERSION parsed: gb-v191-reader-preferences-20260721
+2026-07-22T09:39:31.1650158Z ✅ CACHE_VERSION differs from recorded pre-switch baseline (gb-v171-r62-maps-archaeology-20260612)
+2026-07-22T09:39:31.1651634Z ❌ CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1652894Z ✅ PRECACHE_ASSETS parsed (30)
+2026-07-22T09:39:31.1653262Z ✅ PRECACHE_ASSETS has no duplicates
+2026-07-22T09:39:31.1653724Z ✅ PRECACHE_ASSETS entries resolve in dist (pagefind required)
+2026-07-22T09:39:31.1654342Z ✅ PRECACHE_ASSETS does not freeze content HTML pages (only /404.html is allowed)
+2026-07-22T09:39:31.1654879Z ✅ Pagefind bootstrap is included in PRECACHE_ASSETS
+2026-07-22T09:39:31.1655274Z ✅ sw.js install: skipWaiting()
+2026-07-22T09:39:31.1655609Z ✅ sw.js activate: clients.claim()
+2026-07-22T09:39:31.1655961Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:39:31.1656312Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:39:31.1656773Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:39:31.1657605Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:39:31.1658056Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:39:31.1658633Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:39:31.1659325Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+2026-07-22T09:39:31.1659861Z ✅ sw-register.js: registers /sw.js with root scope
+---
+2026-07-22T09:39:31.1655961Z ✅ sw.js activate: caches.keys() cleanup
+2026-07-22T09:39:31.1656312Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:39:31.1656773Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:39:31.1657605Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:39:31.1658056Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:39:31.1658633Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:39:31.1659325Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+2026-07-22T09:39:31.1659861Z ✅ sw-register.js: registers /sw.js with root scope
+2026-07-22T09:39:31.1660265Z ✅ sw-register.js: uses root /sw.js URL
+2026-07-22T09:39:31.1660455Z 
+2026-07-22T09:39:31.1660667Z ❌ SW dist readiness audit failed: 1 issue(s)
+2026-07-22T09:39:31.1661797Z   - CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1780727Z ##[error]Process completed with exit code 1.
+2026-07-22T09:39:31.1920998Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-22T09:39:31.1922209Z Post job cleanup.
+2026-07-22T09:39:31.2796780Z [command]/usr/bin/git version
+2026-07-22T09:39:31.2842296Z git version 2.54.0
+2026-07-22T09:39:31.2879610Z Temporarily overriding HOME='/home/runner/work/_temp/b0d9396e-31f6-4c13-ac03-74eba00fef81' before making global git config changes
+2026-07-22T09:39:31.2881329Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-22T09:39:31.2885416Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gb-is-my-strength/gb-is-my-strength
+2026-07-22T09:39:31.2926232Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-22T09:39:31.2962812Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-22T09:39:31.3238877Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-22T09:39:31.3267550Z http.https://github.com/.extraheader
+2026-07-22T09:39:31.3279660Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-07-22T09:39:31.3316911Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+---
+2026-07-22T09:39:31.1656312Z ✅ sw.js activate: old cache deletion
+2026-07-22T09:39:31.1656773Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:39:31.1657605Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:39:31.1658056Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:39:31.1658633Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:39:31.1659325Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+2026-07-22T09:39:31.1659861Z ✅ sw-register.js: registers /sw.js with root scope
+2026-07-22T09:39:31.1660265Z ✅ sw-register.js: uses root /sw.js URL
+2026-07-22T09:39:31.1660455Z 
+2026-07-22T09:39:31.1660667Z ❌ SW dist readiness audit failed: 1 issue(s)
+2026-07-22T09:39:31.1661797Z   - CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1780727Z ##[error]Process completed with exit code 1.
+2026-07-22T09:39:31.1920998Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-22T09:39:31.1922209Z Post job cleanup.
+2026-07-22T09:39:31.2796780Z [command]/usr/bin/git version
+2026-07-22T09:39:31.2842296Z git version 2.54.0
+2026-07-22T09:39:31.2879610Z Temporarily overriding HOME='/home/runner/work/_temp/b0d9396e-31f6-4c13-ac03-74eba00fef81' before making global git config changes
+2026-07-22T09:39:31.2881329Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-22T09:39:31.2885416Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gb-is-my-strength/gb-is-my-strength
+2026-07-22T09:39:31.2926232Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-22T09:39:31.2962812Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-22T09:39:31.3238877Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-22T09:39:31.3267550Z http.https://github.com/.extraheader
+2026-07-22T09:39:31.3279660Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-07-22T09:39:31.3316911Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-07-22T09:39:31.3583110Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+---
+2026-07-22T09:39:31.1656773Z ✅ sw.js HTML strategy: HTML requests use stale-while-revalidate
+2026-07-22T09:39:31.1657605Z ✅ sw.js static strategy: static assets use cache-first
+2026-07-22T09:39:31.1658056Z ✅ sw.js image strategy: images use the image cache
+2026-07-22T09:39:31.1658633Z ✅ sw.js Pagefind data strategy: Pagefind index/fragment data uses network-first cache
+2026-07-22T09:39:31.1659325Z ✅ sw.js Pagefind static strategy: Pagefind static assets use the Pagefind cache
+2026-07-22T09:39:31.1659861Z ✅ sw-register.js: registers /sw.js with root scope
+2026-07-22T09:39:31.1660265Z ✅ sw-register.js: uses root /sw.js URL
+2026-07-22T09:39:31.1660455Z 
+2026-07-22T09:39:31.1660667Z ❌ SW dist readiness audit failed: 1 issue(s)
+2026-07-22T09:39:31.1661797Z   - CACHE_VERSION (gb-v191-reader-preferences-20260721) != baseline currentExpectedCacheVersion (gb-v189-lazy-precache-20260705) — update migration/sw-cache-version-baseline.json in the same commit as the bump
+2026-07-22T09:39:31.1780727Z ##[error]Process completed with exit code 1.
+2026-07-22T09:39:31.1920998Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-22T09:39:31.1922209Z Post job cleanup.
+2026-07-22T09:39:31.2796780Z [command]/usr/bin/git version
+2026-07-22T09:39:31.2842296Z git version 2.54.0
+2026-07-22T09:39:31.2879610Z Temporarily overriding HOME='/home/runner/work/_temp/b0d9396e-31f6-4c13-ac03-74eba00fef81' before making global git config changes
+2026-07-22T09:39:31.2881329Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-22T09:39:31.2885416Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gb-is-my-strength/gb-is-my-strength
+2026-07-22T09:39:31.2926232Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-22T09:39:31.2962812Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-22T09:39:31.3238877Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-22T09:39:31.3267550Z http.https://github.com/.extraheader
+2026-07-22T09:39:31.3279660Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-07-22T09:39:31.3316911Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-07-22T09:39:31.3583110Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-07-22T09:39:31.3636448Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+---
