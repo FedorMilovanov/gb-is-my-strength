@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gospod-bog.ru/schemas/nagornaya-source-registry.schema.json",
+  "title": "Nagornaya source-role and argument-layer registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "scope",
+    "lastReviewed",
+    "sources",
+    "claims"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "scope": {
+      "const": "nagornaya"
+    },
+    "lastReviewed": {
+      "type": "string",
+      "format": "date"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "requestedUrl",
+        "resolvedUrl",
+        "exactObject",
+        "archiveOrFallback",
+        "author",
+        "title",
+        "publication",
+        "volumeIssueYear",
+        "pages",
+        "extractionMethod",
+        "lastChecked",
+        "claimIds",
+        "sourceRole",
+        "traditionOrInstitution",
+        "attributionLevel",
+        "supports",
+        "doesNotSupport",
+        "status",
+        "annotation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "requestedUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "resolvedUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "exactObject": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archiveOrFallback": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "publication": {
+          "type": "string",
+          "minLength": 1
+        },
+        "volumeIssueYear": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pages": {
+          "type": "string",
+          "minLength": 1
+        },
+        "extractionMethod": {
+          "enum": [
+            "text",
+            "OCR",
+            "manual"
+          ]
+        },
+        "lastChecked": {
+          "type": "string",
+          "format": "date"
+        },
+        "claimIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceRole": {
+          "enum": [
+            "primary-text",
+            "historical",
+            "lexical",
+            "model",
+            "doctrinal",
+            "pastoral"
+          ]
+        },
+        "traditionOrInstitution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attributionLevel": {
+          "enum": [
+            "author",
+            "editorial-venue",
+            "institution"
+          ]
+        },
+        "supports": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "doesNotSupport": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "enum": [
+            "verified",
+            "partial",
+            "unavailable"
+          ]
+        },
+        "annotation": {
+          "type": "string"
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "claim",
+        "layer",
+        "primaryEvidence",
+        "alternative",
+        "seriesPosition",
+        "confidence",
+        "changeCondition",
+        "attributionLevel"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "layer": {
+          "enum": [
+            "textual-observation",
+            "historical-reconstruction",
+            "literary-model",
+            "doctrinal-synthesis",
+            "pastoral-application"
+          ]
+        },
+        "primaryEvidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "alternative": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seriesPosition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "unsupported"
+          ]
+        },
+        "changeCondition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attributionLevel": {
+          "enum": [
+            "author",
+            "editorial-venue",
+            "institution"
+          ]
+        }
+      }
+    }
+  }
+}
