@@ -34,6 +34,16 @@ jobs:
             echo "present=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Mark finalizer start
+        if: steps.finalizer.outputs.present == 'true' && !hashFiles('.gill-wave4-finalizer-started')
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          printf 'source_run=%s\nsource_head=%s\n' '${{ github.event.workflow_run.id }}' '${{ github.event.workflow_run.head_sha }}' > .gill-wave4-finalizer-started
+          git add .gill-wave4-finalizer-started
+          git commit -m 'chore(gill): mark wave4 finalizer start'
+          git push origin HEAD:refs/heads/agent/gill-source-marathon
+
       - name: Apply native Gill monolith corrections
         if: steps.finalizer.outputs.present == 'true'
         run: python3 scripts/gill-wave4-finalize.py
@@ -59,6 +69,7 @@ jobs:
       - name: Commit verified Gill corpus
         if: steps.finalizer.outputs.present == 'true'
         run: |
+          rm -f .gill-wave4-finalizer-started
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
