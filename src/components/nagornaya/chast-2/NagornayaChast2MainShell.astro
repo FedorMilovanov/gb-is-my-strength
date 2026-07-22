@@ -6,6 +6,8 @@
  * The markup is first-class Astro HTML (no raw imports), extracted from the
  * approved legacy main so Playwright/pixelmatch can verify exact parity.
  */
+import NagornayaClaimComparison from '../_shared/NagornayaClaimComparison.astro';
+import NagornayaModelComparison from '../_shared/NagornayaModelComparison.astro';
 ---
 <main id="main-content" class="lg:pl-64" data-pagefind-body>
     <span data-pagefind-meta="image" hidden>/images/og-nagornaya-propoved-chast-2.webp</span>
@@ -175,7 +177,7 @@
 
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Вопрос о том, насколько дословно евангелисты цитируют Иисуса, является лакмусовой бумажкой для богослова. Существует два латинских термина, описывающих крайние точки этого спектра. <span class="tooltip-trigger" data-tooltip="Лат. 'самые слова' — дословная цитата, фиксирующая оригинальные формулировки">Ipsissima verba</span> — это стенографическая точность. <span class="tooltip-trigger" data-tooltip="Лат. 'сам голос' — точная передача смысла и намерения, допускающая адаптацию">Ipsissima vox</span> — это верность смыслу и «голосу» при возможной смене слов.</p>
-<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">В радикальной редакционной критике концепция <em>vox</em> может становиться предлогом для деисторизации: «Матфей просто вложил свои мысли в уста Христа». Но внутри консервативного спектра есть и более узкие, осторожные варианты <em>ipsissima vox</em>, которые хотят сохранить историческую истинность и авторитет слов Иисуса. Семинария Мастерс занимает более строгую позицию и настаивает на очень жёстких границах свободы автора.</p>
+<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">В радикальной редакционной критике концепция <em>vox</em> может становиться предлогом для деисторизации: «Матфей просто вложил свои мысли в уста Христа». Но внутри консервативного спектра есть и более узкие, осторожные варианты <em>ipsissima vox</em>, которые хотят сохранить историческую истинность и авторитет слов Иисуса. Дональд Грин и другие названные авторы TMSJ защищают более строгую модель и проводят узкие границы авторской свободы. Публикация в журнале не превращает каждую формулировку статьи в официальное заявление учреждения.</p>
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -183,16 +185,14 @@
 <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm"><div class="font-bold text-purple-800 mb-2">Ipsissima vox</div><div class="text-stone-700">Лат. «сам голос» — точная передача содержания и намерения, допускающая лингвистическую адаптацию (например, перевод).</div></div>
 </div>
 
-<div class="space-y-2.5">
-<div class="flex items-start gap-3 p-4 rounded-xl border-2 border-red-100 bg-red-50"><span class="text-sm font-bold shrink-0 text-red-500">✗</span><div><div class="font-semibold text-stone-800 text-sm">1. Механическая стенограмма</div><div class="text-xs text-stone-600 mt-0.5">Требует современной стенографии — не согласуется с Art. VIII Chicago Statement</div></div></div>
-<div class="flex items-start gap-3 p-4 rounded-xl border-2 border-emerald-300 bg-emerald-50"><span class="text-sm font-bold shrink-0 text-emerald-600">✓</span><div><div class="font-semibold text-stone-800 text-sm">2. Узкая ipsissima vox (TMS)</div><div class="text-xs text-stone-600 mt-0.5">Точная передача смысла / намерения под сверхъестественным водительством Духа (Ин 14:26). Приемлемо.</div></div></div>
-<div class="flex items-start gap-3 p-4 rounded-xl border-2 border-amber-100 bg-amber-50"><span class="text-sm font-bold shrink-0 text-amber-600">!</span><div><div class="font-semibold text-stone-800 text-sm">3. Широкая ipsissima vox (спор внутри консервативного спектра)</div><div class="text-xs text-stone-600 mt-0.5">Может сохранять историческую истинность, если ограничена текстом; становится проблемой, когда позволяет приписывать Иисусу смысл, который канонический текст не поддерживает.</div></div></div>
-</div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-<div class="bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs"><strong class="text-stone-700">Paul Feinberg (Inerrancy, 1980, p. 301): </strong><span class="text-stone-600">«Непогрешимость не требует, чтобы изречения Иисуса содержали дословные слова (<em>ipsissima verba</em>); достаточно, чтобы они передавали подлинный голос и смысл (<em>ipsissima vox</em>)». Верифицированная формула — у Пола Файнберга, не у МакАртура.</span></div>
-<div class="bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs"><strong class="text-stone-700">Donald Green (TMSJ 12/1, 2001): </strong><span class="text-stone-600">Апеллирование к Фукидиду ошибочно. Ин 14:26 обеспечивает сверхъестественную точность, превышающую стандарты светских историков.</span></div>
-</div>
+<NagornayaClaimComparison
+  blockId="nagornaya-ipsissima-vox-models"
+  claimIds={['green-ipsissima-vox-model']}
+  title="Границы ipsissima vox: аргумент, альтернатива и позиция серии"
+  description="Вместо цветового ответа «приемлемо / неприемлемо» показаны объяснительная сила модели, её пределы и уровень атрибуции источника."
+/>
+
 
 <!-- VII. Аргумент перевода -->
 <div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-emerald-600">📣</div><h2 id="vii-аргумент-перевода-арамейский-греческий" class="text-xl font-bold text-stone-800 tracking-tight">VII. Аргумент перевода: арамейский → греческий</h2></div></div>
@@ -206,17 +206,23 @@
 <!-- VIII. Одна или две проповеди -->
 <div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-emerald-600">#</div><h2 id="viii-одна-проповедь-две-проповеди-или-антология" class="text-xl font-bold text-stone-800 tracking-tight">VIII. Одна проповедь, две проповеди или антология?</h2></div></div>
 
-<div class="space-y-3">
-<div class="border-2 border-emerald-400 bg-emerald-50 rounded-xl p-4"><div class="flex items-start justify-between gap-3 mb-3"><div class="font-bold text-stone-800 text-sm">Одна историческая проповедь (с разной полнотой у Мф и Лк)</div><span class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-200 text-emerald-800">Наиболее убедительна</span></div><ul class="space-y-1"><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>Одинаковый порядок общего материала</li><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>Общий последующий контекст: сотник (Мф 8 / Лк 7)</li><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>Calvin прямо отвергает две проповеди (CCEL/BibleHub)</li><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>MacArthur GTY 42-84: «та же проповедь, только более краткая»</li></ul></div>
-<div class="border-2 border-blue-300 bg-blue-50 rounded-xl p-4"><div class="flex items-start justify-between gap-3 mb-3"><div class="font-bold text-stone-800 text-sm">Две разные проповеди (в разных местах)</div><span class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">Богословски безопасна</span></div><ul class="space-y-1"><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>Иисус мог повторять учение в разных местах</li><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>Гора / ровное место как отдельные события</li><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>MacArthur GTY 42-90: «также возможно повторение»</li></ul></div>
-<div class="border-2 border-red-200 bg-red-50 rounded-xl p-4"><div class="flex items-start justify-between gap-3 mb-3"><div class="font-bold text-stone-800 text-sm">Антология / тематическая сборка</div><span class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700">Настороженно (TMS)</span></div><ul class="space-y-1"><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>Матфей создаёт явное впечатление единой речи (7:28: «когда Иисус окончил слова сии»)</li><li class="flex items-start gap-2 text-xs text-stone-700"><span class="text-stone-400 shrink-0 mt-0.5">→</span>Thomas (TMSJ 7/1): «если Иисус не произнёс такой речи, почему Матфей создаёт впечатление, что произнёс?»</li></ul></div>
-</div>
+
+<NagornayaModelComparison
+  blockId="nagornaya-sermon-identity-models"
+  title="Одна проповедь, повторное обучение или литературная композиция"
+  models={[
+    { id:'one-event', title:'Одно историческое событие, переданное с разной полнотой', layer:'Историческая реконструкция', explains:['Общий порядок совпадающего материала и переход к рассказу о сотнике.','Цельное речевое обрамление у Матфея.'], limits:['Композиционное единство само по себе не доказывает стенографическую единичность события.','Требуется дополнительная гармонизация места и объёма.'], assumptionCost:['Матфей и Лука отбирают и располагают материал одной речи по-разному.'], seriesPosition:'Серия считает эту модель наиболее вероятной, но обозначает её как реконструкцию, а не как прямое текстовое наблюдение.' },
+    { id:'repeated-teaching', title:'Два эпизода или повторение близкого учения', layer:'Историческая реконструкция', explains:['Различие места, адресации и объёма.','Обычную для странствующего Учителя повторяемость ключевых наставлений.'], limits:['Усложняет объяснение общего порядка и последующего контекста.','Не доказывается одним различием «гора / ровное место».'], assumptionCost:['Иисус произносил близкие по содержанию блоки в разных обстоятельствах.'], seriesPosition:'Серия признаёт модель богословски совместимой с историчностью и не использует против неё цветовой отрицательный вердикт.' },
+    { id:'literary-composition', title:'Литературная композиция из традиции и речевых единиц', layer:'Литературная модель', explains:['Сходства, перестановки, сокращения и авторские акценты.','Возможность тематической организации материала.'], limits:['Сама по себе не устанавливает, какие слова были произнесены в одном событии.','Радикальная версия может ослаблять исторический речевой акт, но умеренные версии не тождественны Иисус Семинару.'], assumptionCost:['Евангелист обладает заметной композиционной свободой при сохранении канонической истинности.'], seriesPosition:'Серия отвергает приписывание Христу неподдерживаемого содержания, но обязуется сначала представлять умеренную альтернативу без карикатуры.' },
+  ]}
+/>
+
 
 <!-- IX. Спектр консервативных позиций -->
 <div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-emerald-600">🔭</div><h2 id="ix-спектр-консервативных-позиций" class="text-xl font-bold text-stone-800 tracking-tight">IX. Спектр консервативных позиций</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Все утверждают богодухновенность и непогрешимость — расходятся в механизме</p></div>
 
 <div class="space-y-3">
-<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm"><div class="flex items-start justify-between gap-3 mb-2"><div class="font-bold text-stone-800 text-sm">Строгая позиция TMS</div><span class="shrink-0 text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">Thomas, Farnell, Green (TMSJ)</span></div><p class="text-stone-600 text-sm mb-2">Точная запись под вдохновением Духа. Дух обеспечивает не только смысл, но и подлинную точность (Ин 14:26)</p><div class="text-xs text-stone-500 italic">Критика широкого ipsissima vox: слишком большая уступка историко-критическому методу</div></div>
+<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm"><div class="flex items-start justify-between gap-3 mb-2"><div class="font-bold text-stone-800 text-sm">Аргументы Thomas, Farnell и Green</div><span class="shrink-0 text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">Авторские статьи в TMSJ</span></div><p class="text-stone-600 text-sm mb-2">Эти авторы защищают строгую историческую точность под вдохновением Духа и связывают её с Ин 14:26; уровень атрибуции — авторский, не автоматически институциональный.</p><div class="text-xs text-stone-500 italic">Критика широкого ipsissima vox: слишком большая уступка историко-критическому методу</div></div>
 <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm"><div class="flex items-start justify-between gap-3 mb-2"><div class="font-bold text-stone-800 text-sm">MacArthur / GTY</div><span class="shrink-0 text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">MacArthur (GTY sermons 42-84, 42-90)</span></div><p class="text-stone-600 text-sm mb-2">Вероятно одно историческое событие. Лука — сокращённая версия. Возможно, Иисус повторял учение в разных местах</p><div class="text-xs text-stone-500 italic">«Leaky dispensationalist» — сохранял различие Израиля и Церкви, но отверг чтение «только для будущего Царства»</div></div>
 <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm"><div class="flex items-start justify-between gap-3 mb-2"><div class="font-bold text-stone-800 text-sm">Реформатская (Ligonier / Calvin)</div><span class="shrink-0 text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">Ligonier Study Guide; Calvin, Comm. Matthew 5:1</span></div><p class="text-stone-600 text-sm mb-2">Точное краткое изложение под вдохновением Духа Святого. Calvin прямо отвергает две разные проповеди</p><div class="text-xs text-stone-500 italic">Calvin: «те, кто считает эти проповеди разными, основывают мнение на очень лёгком аргументе»</div></div>
 </div>

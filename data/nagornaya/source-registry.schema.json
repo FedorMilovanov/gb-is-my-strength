@@ -238,6 +238,72 @@
             "editorial-venue",
             "institution"
           ]
+        },
+        "presentation": {
+          "$ref": "#/$defs/claimPresentation"
+        }
+      }
+    },
+    "claimPresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "claim",
+        "explains",
+        "doesNotProve",
+        "assumptionCost",
+        "alternative",
+        "seriesPosition",
+        "changeCondition"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "explains": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "doesNotProve": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "assumptionCost": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "alternative": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seriesPosition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "changeCondition": {
+          "type": "string",
+          "minLength": 1
         }
       }
     }
