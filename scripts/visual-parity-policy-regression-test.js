@@ -40,7 +40,10 @@ const nativeBaseline = {
     '/native/': {
       mode: 'native-contract',
       reason: 'The retired legacy document is not the production render owner.',
-      requiredGuards: ['source-dist-contract', 'public-browser-matrix'],
+      requiredGuards: [
+        'scripts/articles-visual-parity-audit.js',
+        'scripts/public-surface-browser-matrix.mjs',
+      ],
     },
   },
   routes: { '/native/': { desktop: 0, mobile: 0 } },
@@ -48,6 +51,18 @@ const nativeBaseline = {
 const native = run(nativeSummary, nativeBaseline);
 assert.strictEqual(native.status, 0, `native-contract must delegate instead of failing legacy diff:\n${native.stdout}\n${native.stderr}`);
 assert.match(native.stdout, /native-contract; legacy diff is diagnostic only/);
+
+const missingGuard = run(nativeSummary, {
+  ...nativeBaseline,
+  routeModes: {
+    '/native/': {
+      ...nativeBaseline.routeModes['/native/'],
+      requiredGuards: ['scripts/articles-visual-parity-audit.js', 'scripts/does-not-exist.js'],
+    },
+  },
+});
+assert.strictEqual(missingGuard.status, 1, 'native-contract with a fake guard path must fail');
+assert.match(`${missingGuard.stdout}\n${missingGuard.stderr}`, /guard file does not exist/);
 
 const legacySummary = {
   routes: [{ route: '/legacy/', viewports: { desktop: { diffPct: 2 }, mobile: { diffPct: 0 } } }],
@@ -98,6 +113,9 @@ for (const [route, profile, label] of [
     `${label} profile and central policy must name the same blocking guards`);
   assert(profile.visualParity.requiredGuards.includes('scripts/public-surface-browser-matrix.mjs'),
     `${label} native visual ownership must retain the all-route browser guard`);
+  for (const guard of routePolicy.requiredGuards) {
+    assert(fs.statSync(path.join(ROOT, guard)).isFile(), `${label} guard must exist: ${guard}`);
+  }
 }
 
 assert.strictEqual(policy.routes['/karty/'].mobile, karty.visualParity.mobile,
@@ -106,4 +124,4 @@ assert.strictEqual(policy.tolerancePct, 0.5, 'global tolerance must remain 0.5%'
 assert.strictEqual(policy.policy.globalToleranceWasNotRaised, true);
 
 fs.rmSync(temp, { recursive: true, force: true });
-console.log('✅ Visual parity policy regression: native delegation, legacy failure, unknown-mode, strict-new-route, owner-update and articles/Baptist/Karty profile-policy SSOT witnesses passed');
+console.log('✅ Visual parity policy regression: native delegation, fake-guard rejection, legacy failure, unknown-mode, strict-new-route, owner-update and articles/Baptist/Karty SSOT witnesses passed');
