@@ -50,6 +50,7 @@ function pushPaths(text, rel) {
 const readiness = read(READINESS_PATH);
 const deploy = read(DEPLOY_PATH);
 const readinessName = workflowName(readiness, READINESS_PATH);
+const workflowRun = eventBlock(deploy, DEPLOY_PATH, 'workflow_run');
 const dependencies = workflowRunDependencies(deploy);
 const readinessPaths = pushPaths(readiness, READINESS_PATH);
 
@@ -62,6 +63,9 @@ assert.equal(
   1,
   `${DEPLOY_PATH}: readiness workflow dependency must be declared exactly once`,
 );
+assert.match(workflowRun, /^\s{4}types:\s*\[completed\]\s*$/m, `${DEPLOY_PATH}: workflow_run must listen to completed readiness runs`);
+assert.match(workflowRun, /^\s{4}branches:\s*\[main\]\s*$/m, `${DEPLOY_PATH}: workflow_run must be restricted to main`);
+assert.equal(hasEvent(deploy, 'workflow_dispatch'), true, `${DEPLOY_PATH}: manual recovery entry is missing`);
 
 const documentedProductionPaths = [
   'src/**', 'data/**', 'baptisty-rossii/**', 'scripts/**', 'css/**', 'js/**',
@@ -92,4 +96,5 @@ assert.doesNotMatch(
 
 console.log(`✅ workflow linkage: every main push → ${JSON.stringify(readinessName)} → Deploy to GitHub Pages`);
 console.log(`✅ readiness documented paths: ${documentedProductionPaths.length}; exhaustive catch-all: **`);
+console.log('✅ deploy workflow_run: completed + main; manual recovery retained');
 console.log('✅ direct automatic Pages push entry: absent');
