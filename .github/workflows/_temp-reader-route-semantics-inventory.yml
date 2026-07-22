@@ -1,0 +1,85 @@
+name: Temp Reader route semantics inventory
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inventory route profile semantics
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, collections, re
+
+          profiles=[]
+          for path in sorted(Path('data/route-profiles').glob('*.json')):
+              try: data=json.loads(path.read_text(encoding='utf-8'))
+              except Exception as exc:
+                  profiles.append({'file':str(path),'parseError':str(exc)})
+                  continue
+              profiles.append({
+                  'file':str(path),
+                  'route':data.get('route'),
+                  'routeType':data.get('routeType'),
+                  'migrationLane':data.get('migrationLane'),
+                  'section':data.get('section'),
+                  'surface':data.get('surface'),
+                  'seriesShape':data.get('seriesShape'),
+                  'scope':data.get('scope'),
+                  'migrationMode':data.get('migrationMode'),
+                  'mobileChrome':data.get('mobileChrome'),
+              })
+          counts={field:collections.Counter(str(p.get(field)) for p in profiles) for field in ['routeType','migrationLane','section','surface','seriesShape']}
+          targets={'/nagornaya/','/baptisty-rossii/','/nagornaya/seriya/','/nagornaya/istochniki/','/nagornaya/nakhodki/'}
+          target_rows=[p for p in profiles if p.get('route') in targets]
+          code_hits=[]
+          patterns={
+              'routeType':re.compile(r'routeType'),
+              'series-chapter':re.compile(r'series-chapter'),
+              'series-landing':re.compile(r'series-landing'),
+              'reference-route':re.compile(r'reference-route'),
+              'migrationLane':re.compile(r'migrationLane'),
+              'adapter':re.compile(r'\badapter\b'),
+              'seriesMode':re.compile(r'seriesMode'),
+              'surface-kind':re.compile(r'\bkind\b'),
+          }
+          for root in [Path('scripts'),Path('src/components'),Path('data')]:
+              if not root.exists(): continue
+              for path in root.rglob('*'):
+                  if path.suffix not in {'.js','.mjs','.cjs','.ts','.tsx','.astro','.json'}: continue
+                  try: lines=path.read_text(encoding='utf-8').splitlines()
+                  except Exception: continue
+                  for index,line in enumerate(lines,1):
+                      tags=[name for name,rx in patterns.items() if rx.search(line)]
+                      if tags:
+                          code_hits.append({'file':str(path),'line':index,'tags':tags,'text':line.strip()})
+          output={
+              'profiles':profiles,
+              'counts':{field:dict(counter) for field,counter in counts.items()},
+              'targets':target_rows,
+              'codeHits':code_hits,
+          }
+          Path('reader-route-semantics-inventory.json').write_text(json.dumps(output,ensure_ascii=False,indent=2),encoding='utf-8')
+          with Path('reader-route-semantics-inventory.txt').open('w',encoding='utf-8') as out:
+              out.write('TARGETS\n=======\n')
+              for row in target_rows: out.write(json.dumps(row,ensure_ascii=False)+'\n')
+              out.write('\nCOUNTS\n======\n')
+              for field,counter in counts.items(): out.write(f'{field}: {dict(counter)}\n')
+              out.write('\nCODE HITS\n=========\n')
+              for hit in code_hits: out.write(f"{hit['file']}:{hit['line']} [{','.join(hit['tags'])}] {hit['text']}\n")
+          print(f'Profiles: {len(profiles)}; code hits: {len(code_hits)}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reader-route-semantics-inventory
+          path: |
+            reader-route-semantics-inventory.json
+            reader-route-semantics-inventory.txt
+          retention-days: 3
