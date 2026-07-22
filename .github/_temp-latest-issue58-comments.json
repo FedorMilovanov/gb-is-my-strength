@@ -1,0 +1,50 @@
+[
+  {
+    "id": 5040791222,
+    "created_at": "2026-07-22T01:25:29Z",
+    "updated_at": "2026-07-22T01:25:29Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Metadata & IndexNow Readiness**\n- Conclusion: **cancelled**\n- Run: 29883010854 (#1371)\n- Head SHA: 41f78f4357c1da7fcfbeb4838a04b9e3414fbf3a\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883010854\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040791222",
+    "user": "github-actions[bot]"
+  },
+  {
+    "id": 5040791243,
+    "created_at": "2026-07-22T01:25:29Z",
+    "updated_at": "2026-07-22T01:25:29Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Deploy to GitHub Pages**\n- Conclusion: **cancelled**\n- Run: 29883010822 (#1620)\n- Head SHA: 41f78f4357c1da7fcfbeb4838a04b9e3414fbf3a\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883010822\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040791243",
+    "user": "github-actions[bot]"
+  },
+  {
+    "id": 5040791398,
+    "created_at": "2026-07-22T01:25:31Z",
+    "updated_at": "2026-07-22T01:25:31Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Deploy to GitHub Pages**\n- Conclusion: **cancelled**\n- Run: 29883038757 (#1621)\n- Head SHA: a6a783044af69b8cc019f6885368ad67aa6a19f2\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883038757\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040791398",
+    "user": "github-actions[bot]"
+  },
+  {
+    "id": 5040791631,
+    "created_at": "2026-07-22T01:25:34Z",
+    "updated_at": "2026-07-22T01:25:34Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Deploy to GitHub Pages**\n- Conclusion: **skipped**\n- Run: 29883052484 (#1622)\n- Head SHA: a6a783044af69b8cc019f6885368ad67aa6a19f2\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883052484\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040791631",
+    "user": "github-actions[bot]"
+  },
+  {
+    "id": 5040843823,
+    "created_at": "2026-07-22T01:35:29Z",
+    "updated_at": "2026-07-22T01:35:29Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Metadata & IndexNow Readiness**\n- Conclusion: **success**\n- Run: 29883038753 (#1372)\n- Head SHA: a6a783044af69b8cc019f6885368ad67aa6a19f2\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883038753\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040843823",
+    "user": "github-actions[bot]"
+  },
+  {
+    "id": 5040926431,
+    "created_at": "2026-07-22T01:51:00Z",
+    "updated_at": "2026-07-22T01:51:00Z",
+    "body": "## Automated CI/CD pipeline witness\n\n- Workflow: **Deploy to GitHub Pages**\n- Conclusion: **failure**\n- Run: 29883507330 (#1623)\n- Head SHA: a6a783044af69b8cc019f6885368ad67aa6a19f2\n- Head branch: main\n- Run URL: https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/29883507330\n\nThis comment is generated from the immutable workflow_run payload. Production closure requires a successful Deploy to GitHub Pages run and PASS for every critical source/production blob comparison.\n",
+    "html_url": "https://github.com/FedorMilovanov/gb-is-my-strength/issues/58#issuecomment-5040926431",
+    "user": "github-actions[bot]"
+  }
+]
