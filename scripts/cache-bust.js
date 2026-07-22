@@ -59,7 +59,7 @@ function rewriteAstro(source, hashes) {
   for (const [asset, hash] of Object.entries(hashes)) {
     if (!hash) continue;
     const escapedAsset = asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`, 'g');
+    const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s"'&}>]+`, 'g');
     updated = updated.replace(re, (_match, prefix) => `${prefix}${asset}?v=${hash}`);
   }
   return updated;
