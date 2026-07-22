@@ -1,26 +1,25 @@
 name: Temp Nagornaya neutral comparison orchestrator
 
 on:
-  workflow_run:
-    workflows: ["Shared Files Guard"]
-    types: [completed]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
 
 concurrency:
-  group: temp-nagornaya-neutral-comparison-${{ github.event.workflow_run.head_branch }}
+  group: temp-nagornaya-neutral-comparison-155
   cancel-in-progress: false
 
 jobs:
   transaction:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_branch == 'agent/nagornaya-neutral-comparison-ui-2026-07-22'
+    if: github.event.issue.number == 155 && github.event.issue.pull_request && github.event.comment.body == '/run-nagornaya-neutral-proof'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: agent/nagornaya-neutral-comparison-ui-2026-07-22
           fetch-depth: 0
 
       - name: Check transaction state
