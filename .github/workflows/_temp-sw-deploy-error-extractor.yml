@@ -1,0 +1,54 @@
+name: TEMP SW Deploy Failure Extractor
+
+on:
+  push:
+    branches:
+      - diagnostic/final-pages-witness-2026-07-22
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: temp-sw-deploy-error-extractor
+  cancel-in-progress: true
+
+jobs:
+  extract:
+    if: ${{ !contains(github.event.head_commit.message, '[sw-deploy-error]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      JOB_ID: '88883111246'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diagnostic/final-pages-witness-2026-07-22
+          fetch-depth: 0
+      - name: Extract SW failure context
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${JOB_ID}/logs" > /tmp/job.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          raw = Path('/tmp/job.log').read_text(encoding='utf-8-sig', errors='replace').splitlines()
+          patterns = re.compile(r'(Service Worker|sw:dist|CACHE_VERSION|cache bump|cache-bump|FAIL|Error:|Process completed|exit code|deploy-switch)', re.I)
+          indices = [i for i,line in enumerate(raw) if patterns.search(line)]
+          chunks=[]
+          for i in indices:
+              chunks.extend(raw[max(0,i-10):min(len(raw),i+16)])
+              chunks.append('---')
+          Path('.github/_temp-sw-deploy-error-context.txt').write_text('\n'.join(chunks[-700:])+'\n', encoding='utf-8')
+          PY
+      - name: Remove extractor and publish evidence
+        shell: bash
+        run: |
+          rm -f .github/workflows/_temp-sw-deploy-error-extractor.yml
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[sw-deploy-error] capture exact failure context'
+          git push origin HEAD:diagnostic/final-pages-witness-2026-07-22
