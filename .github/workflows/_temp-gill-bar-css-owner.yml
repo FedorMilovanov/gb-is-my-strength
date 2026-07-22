@@ -1,0 +1,49 @@
+name: TEMP Locate Gill Bar CSS Owner
+
+on:
+  push:
+    branches:
+      - diagnostic/gill-mobile-layout-2026-07-22
+
+permissions:
+  contents: write
+
+jobs:
+  locate:
+    if: ${{ !contains(github.event.head_commit.message, '[css-owner]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diagnostic/gill-mobile-layout-2026-07-22
+          fetch-depth: 0
+
+      - name: Capture source owners and history
+        shell: bash
+        run: |
+          {
+            echo '# Gill mobile bar CSS ownership evidence'
+            echo
+            echo '## Definitions and matching opacity literals'
+            rg -n -C 8 --glob '!node_modules/**' --glob '!dist/**' --glob '!reports/**' \
+              'mobile-bottom-bar|rgba\(253,\s*251,\s*246|rgba\(13,\s*17,\s*23|\.78\)|\.8\)' \
+              src css js scripts || true
+            echo
+            echo '## Exact history: light literal'
+            git log --all --oneline -S 'rgba(253, 251, 246, 0.8)' -- src css || true
+            git log --all --oneline -S 'rgba(253,251,246,.8)' -- src css || true
+            echo
+            echo '## Exact history: dark literal'
+            git log --all --oneline -S 'rgba(13, 17, 23, 0.78)' -- src css || true
+            git log --all --oneline -S 'rgba(13,17,23,.78)' -- src css || true
+          } > .github/_temp-gill-bar-css-owner.txt
+
+      - name: Remove workflow and publish evidence
+        run: |
+          rm -f .github/workflows/_temp-gill-bar-css-owner.yml
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[css-owner] capture Gill bar CSS ownership'
+          git push origin HEAD:diagnostic/gill-mobile-layout-2026-07-22
