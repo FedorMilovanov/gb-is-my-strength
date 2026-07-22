@@ -1,37 +1,14 @@
 name: Deploy to GitHub Pages
 
-# Запускается после успешной read-only readiness-проверки indexnow.yml.
-# Ссылки на asset revisions должны быть синхронизированы и закоммичены до deploy;
-# production workflow никогда не переписывает исходники автоматически.
+# Production deploy has one automatic entry point: a successful read-only
+# Metadata & IndexNow Readiness run. workflow_dispatch remains for explicit
+# operator recovery. The workflow never rewrites source revisions.
 on:
-  # Asset-only / infrastructure pushes that do not trigger indexnow.yml.
-  # Source/build changes deploy only via workflow_run after readiness succeeds.
-  push:
-    branches: [main]
-    paths:
-      - 'images/**'
-      - 'fonts/**'
-      - 'icons/**'
-      - 'konfessii/**'
-      - 'karty/**'
-      - 'map/**'
-      - 'biografii/**'
-      - 'hard-texts/**'
-      # Source/build paths are intentionally absent here. They enter Pages
-      # only through workflow_run after Metadata & IndexNow Readiness passes.
-      # Exact push-path disjointness is protected by a permanent regression.
-      - '.nojekyll'
-      - 'favicon*'
-      - 'apple-touch-icon.png'
-      - 'CNAME'
-      - '.github/workflows/deploy.yml'
-
   workflow_run:
     workflows: ["Metadata & IndexNow Readiness"]
     types: [completed]
     branches: [main]
 
-  # Ручной запуск (например, после изменений, не затрагивающих контент)
   workflow_dispatch:
 
 permissions:
@@ -48,13 +25,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Deploy after manual run, asset-only push, or after IndexNow metadata/gate check succeeds.
-    # Now that IndexNow submission runs post-deploy in deploy.yml, indexnow.yml only runs metadata
-    # and validation gates. If indexnow.yml FAILS, production deploy is BLOCKED (do not add a
-    # `== 'failure'` clause here — that would contradict this intent and ship unverified content).
+    # Automatic deploy is allowed only after readiness succeeds. Manual runs
+    # remain available for explicit operator recovery. A failed/cancelled
+    # readiness must never ship production.
     if: >
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
 
     environment:
@@ -74,17 +49,16 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        # Note: P1-CI-DUPE — when triggered by workflow_run, IndexNow already
-        # ran npm ci. Setup-node cache makes this <10s, so we keep it for
-        # build isolation rather than optimizing away.
+        # Note: P1-CI-DUPE — when triggered by workflow_run, readiness already
+        # ran npm ci. Setup-node cache keeps this cheap and preserves build isolation.
         run: npm ci
 
       - name: Download fonts (if not in repo)
         run: node scripts/download-fonts.js || echo "Fonts download skipped"
 
-      - name: Check asset revisions for direct deploys
-        # workflow_run already follows a successful read-only IndexNow readiness check.
-        if: github.event_name != 'workflow_run'
+      - name: Check asset revisions for manual deploys
+        # workflow_run already follows a successful read-only readiness check.
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/cache-bust.js
 
       - name: Static publication gates
@@ -166,7 +140,6 @@ jobs:
 
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
-
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
