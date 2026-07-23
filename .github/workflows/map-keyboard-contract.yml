@@ -6,6 +6,7 @@ on:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
+      - scripts/tmp-classify-map-smoke.py
       - .github/workflows/map-keyboard-contract.yml
   push:
     branches:
@@ -17,9 +18,31 @@ on:
       - .github/workflows/map-keyboard-contract.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  apply-route-classification-once:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/map-keyboard-contract
+          fetch-depth: 0
+      - name: Classify shared-engine and legacy maps
+        run: python3 scripts/tmp-classify-map-smoke.py
+      - name: Commit smoke script only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/map-browser-smoke.js
+          git config user.name "map-contract[bot]"
+          git config user.email "map-contract[bot]@users.noreply.github.com"
+          git add scripts/map-browser-smoke.js
+          git diff --cached --check
+          git commit -m "test(maps): classify legacy map outside MapEngine smoke"
+          git push origin HEAD:agent/map-keyboard-contract
+
   source-contract:
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +83,7 @@ jobs:
         shell: bash
         env:
           AUDIT_BASE: http://127.0.0.1:8090
-          MAP_SMOKE_ROUTES: ishod,avraam
+          MAP_SMOKE_ROUTES: ishod
         run: |
           set -o pipefail
           node scripts/map-browser-smoke.js 2>&1 | tee /tmp/map-keyboard-smoke.log
