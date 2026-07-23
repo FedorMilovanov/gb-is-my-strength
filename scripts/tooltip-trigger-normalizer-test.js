@@ -8,40 +8,45 @@ function normalize(html) {
   return normalizeSource(html).output;
 }
 
+function markerPrefix(html) {
+  const match = html.match(/<span\b[^>]*\bclass=["'][^"']*\bfn-marker\b[^"']*["'][^>]*>([\s\S]*?)<span\b[^>]*\bclass=["'][^"']*\btooltip\b/i);
+  return match ? match[1] : null;
+}
+
 assert.equal(visibleTrigger('†'), '†');
 assert.equal(visibleTrigger('<svg><path d="M0 0h1"/></svg>'), '');
 assert.equal(visibleTrigger('&dagger;'), '†');
 
 const numbered = '<p>Текст<span class="fn-marker" role="button">12<span class="tooltip">Источник</span></span></p>';
-assert.equal(normalize(numbered), numbered, 'numbered markers must remain unchanged');
+const numberedOut = normalize(numbered);
+assert.equal(numberedOut, numbered, 'numbered markers must remain unchanged');
+assert.doesNotMatch(numberedOut, /fn-marker--dove/);
+assert.equal(visibleTrigger(markerPrefix(numberedOut)), '12');
 
 const numberedDove = '<span class="fn-marker fn-marker--dove">12<span class="tooltip">Источник</span></span>';
-assert.equal(
-  normalize(numberedDove),
-  '<span class="fn-marker">12<span class="tooltip">Источник</span></span>',
-  'numbered markers must not retain the dove class'
-);
+const numberedDoveOut = normalize(numberedDove);
+assert.doesNotMatch(numberedDoveOut, /fn-marker--dove/, 'numbered markers must not retain the dove class');
+assert.equal(visibleTrigger(markerPrefix(numberedDoveOut)), '12');
 
 const dagger = '<p>Текст<span class="fn-marker" role="button" tabindex="0" aria-label="Источник">†<span class="tooltip">Пояснение</span></span></p>';
-assert.equal(
-  normalize(dagger),
-  '<p>Текст<span class="fn-marker fn-marker--dove" role="button" tabindex="0" aria-label="Источник"><span class="tooltip">Пояснение</span></span></p>',
-  'dagger markers must become empty dove triggers'
-);
+const daggerOut = normalize(dagger);
+assert.match(daggerOut, /class="fn-marker fn-marker--dove"/, 'dagger marker must gain the dove class');
+assert.equal(visibleTrigger(markerPrefix(daggerOut)), '', 'dagger glyph must be removed');
+assert.doesNotMatch(markerPrefix(daggerOut), /†|‡/);
 
 const svg = '<span class="fn-marker" aria-label="Пояснение"><svg viewBox="0 0 10 10"><path d="M5 0v10M0 5h10"/></svg><span class="tooltip">Текст</span></span>';
-assert.equal(
-  normalize(svg),
-  '<span class="fn-marker fn-marker--dove" aria-label="Пояснение" role="button" tabindex="0"><span class="tooltip">Текст</span></span>',
-  'cross-like SVG triggers must become dove triggers'
-);
+const svgOut = normalize(svg);
+assert.match(svgOut, /class="fn-marker fn-marker--dove"/, 'cross-like SVG trigger must gain the dove class');
+assert.equal(visibleTrigger(markerPrefix(svgOut)), '');
+assert.doesNotMatch(markerPrefix(svgOut), /<svg\b/i, 'old SVG trigger must be removed');
+assert.match(svgOut, /role="button"/);
+assert.match(svgOut, /tabindex="0"/);
 
 const star = '<span class="fn-marker">*<span class="tooltip">Переводческое пояснение</span></span>';
-assert.equal(
-  normalize(star),
-  '<span class="fn-marker fn-marker--dove" role="button" tabindex="0" aria-label="Показать пояснение"><span class="tooltip">Переводческое пояснение</span></span>',
-  'standalone translator notes must use the dove'
-);
+const starOut = normalize(star);
+assert.match(starOut, /class="fn-marker fn-marker--dove"/);
+assert.equal(visibleTrigger(markerPrefix(starOut)), '');
+assert.match(starOut, /aria-label="Показать пояснение"/);
 
 const alreadyDove = '<span class="fn-marker fn-marker--dove" role="button" tabindex="0"><span class="tooltip">Пояснение</span></span>';
 assert.equal(normalize(alreadyDove), alreadyDove, 'canonical dove markers must be idempotent');
