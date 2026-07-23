@@ -121,3 +121,5 @@ if (sourceCorpus.registeredNonProduction.length) {
           git add scripts/audit-pro.js .github/workflows/route-registry-validators.yml
           git commit -m "fix(audit): make source HTML corpus registry-owned"
           git push origin HEAD:agent/audit-pro-source-corpus
+
+# trigger materialization
