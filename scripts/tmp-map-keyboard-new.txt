@@ -1,0 +1,36 @@
+    function isEditableShortcutTarget(target){
+      if(!target||typeof target.closest!=='function')return false;
+      return !!target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]');
+    }
+
+    function visibleTabButtons(){
+      return [...panel.querySelectorAll('.me-tabs .me-tab[data-tab]')].filter(tab=>{
+        if(tab.hidden||tab.getAttribute('aria-hidden')==='true')return false;
+        const style=getComputedStyle(tab);
+        return style.display!=='none'&&style.visibility!=='hidden';
+      });
+    }
+
+    _on(document,'keydown',function kh(e){
+      if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
+      if(e.key==='Escape'){if(!overlayRuntime)close('escape');return}
+      const editableTarget=isEditableShortcutTarget(e.target)||isEditableShortcutTarget(document.activeElement);
+      if(e.isComposing||editableTarget||e.altKey||e.ctrlKey||e.metaKey)return;
+      if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
+      if(e.key==='?'||(e.key==='/'&&e.shiftKey)){e.preventDefault();toggleShortcutsHelp();return}
+      if(!activePlaceId)return;
+      // Number keys follow the actual rendered tab order; no second availability policy.
+      if(e.key>='1'&&e.key<='8'){
+        const numericTabs=visibleTabButtons();
+        const targetTab=numericTabs[parseInt(e.key,10)-1];
+        if(targetTab){e.preventDefault();targetTab.click()}
+        return;
+      }
+      const vis=visiblePlaces();const idx=placeIndexInStory();
+      if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
+      if(e.key==='ArrowLeft'&&idx>0)open(vis[idx-1].id);
+      if(e.key==='PageDown'&&idx<vis.length-1){e.preventDefault();open(vis[Math.min(idx+3,vis.length-1)].id);}
+      if(e.key==='PageUp'&&idx>0){e.preventDefault();open(vis[Math.max(idx-3,0)].id);}
+      if(e.key==='Home'&&idx>0){e.preventDefault();open(vis[0].id);}
+      if(e.key==='End'&&idx<vis.length-1){e.preventDefault();open(vis[vis.length-1].id);}
+    });
