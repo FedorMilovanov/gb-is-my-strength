@@ -5,8 +5,11 @@ on:
     types: [opened, synchronize, reopened, labeled]
     branches: [main]
     paths:
+      - "feed.xml"
       - "data/route-search-policy.json"
       - "data/search-manifest.json"
+      - "scripts/rss-feed-normalizer.js"
+      - "scripts/rss-feed-normalizer-test.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-index-policy-inventory.js"
@@ -16,8 +19,11 @@ on:
   push:
     branches: [main]
     paths:
+      - "feed.xml"
       - "data/route-search-policy.json"
       - "data/search-manifest.json"
+      - "scripts/rss-feed-normalizer.js"
+      - "scripts/rss-feed-normalizer-test.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-index-policy-inventory.js"
@@ -35,7 +41,7 @@ concurrency:
 
 jobs:
   manifest-normalizer-contract:
-    name: Manifest normalizer contract
+    name: Manifest and RSS normalizer contract
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -52,12 +58,19 @@ jobs:
         run: |
           node --check scripts/search-manifest-policy-normalizer.js
           node --check scripts/search-manifest-policy-normalizer-test.js
+          node --check scripts/rss-feed-normalizer.js
+          node --check scripts/rss-feed-normalizer-test.js
 
       - name: Test normalizer mutations and idempotence
-        run: node scripts/search-manifest-policy-normalizer-test.js
+        run: |
+          node scripts/search-manifest-policy-normalizer-test.js
+          node scripts/rss-feed-normalizer-test.js
+
+      - name: Require deterministic RSS projection
+        run: node scripts/rss-feed-normalizer.js --check
 
   search-manifest-autofix:
-    name: Search manifest autofix
+    name: Search manifest and RSS autofix
     if: >-
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.labels.*.name, 'autofix') &&
@@ -86,8 +99,10 @@ jobs:
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
-      - name: Test search manifest normalizer
-        run: node scripts/search-manifest-policy-normalizer-test.js
+      - name: Test normalizer contracts
+        run: |
+          node scripts/search-manifest-policy-normalizer-test.js
+          node scripts/rss-feed-normalizer-test.js
 
       - name: Normalize explicit RSS article membership
         run: >-
@@ -96,14 +111,20 @@ jobs:
           --promote-rss-articles
           --write
 
+      - name: Normalize deterministic RSS projection
+        run: node scripts/rss-feed-normalizer.js --write
+
       - name: Validate normalized production policy
-        run: node scripts/search-index-policy-inventory.js --dist=dist --strict
+        run: |
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
 
       - name: Validate focused diff
         shell: bash
         run: |
           git diff --check
           git diff --name-only -- . \
+            ':(exclude)feed.xml' \
             ':(exclude)data/route-search-policy.json' \
             ':(exclude)data/search-manifest.json' > /tmp/unexpected-search-autofix-paths
           if [[ -s /tmp/unexpected-search-autofix-paths ]]; then
@@ -112,17 +133,17 @@ jobs:
             exit 1
           fi
 
-      - name: Commit search policy normalization
+      - name: Commit search policy and RSS normalization
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          if git diff --quiet -- data/route-search-policy.json data/search-manifest.json; then
-            echo "No search policy normalization required."
+          if git diff --quiet -- feed.xml data/route-search-policy.json data/search-manifest.json; then
+            echo "No search policy or RSS normalization required."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/route-search-policy.json data/search-manifest.json
-          git commit -m "fix(search): align manifest with route policy"
+          git add feed.xml data/route-search-policy.json data/search-manifest.json
+          git commit -m "fix(search): align manifest and RSS with route policy"
           git push origin "HEAD:${HEAD_REF}"
