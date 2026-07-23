@@ -13,6 +13,8 @@ on:
       - "scripts/glossary-runtime-browser-test.js"
       - "scripts/reference-system-inventory.js"
       - "scripts/tooltip-icon-audit.js"
+      - "scripts/tooltip-trigger-normalizer.js"
+      - "scripts/tooltip-trigger-normalizer-test.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -34,6 +36,8 @@ on:
       - "scripts/glossary-runtime-browser-test.js"
       - "scripts/reference-system-inventory.js"
       - "scripts/tooltip-icon-audit.js"
+      - "scripts/tooltip-trigger-normalizer.js"
+      - "scripts/tooltip-trigger-normalizer-test.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -76,12 +80,18 @@ jobs:
         run: |
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/glossary-placement-normalizer-test.js
+          node --check scripts/tooltip-trigger-normalizer.js
+          node --check scripts/tooltip-trigger-normalizer-test.js
 
-      - name: Test universal normalizer
-        run: node scripts/glossary-placement-normalizer-test.js
+      - name: Test universal normalizers
+        run: |
+          node scripts/glossary-placement-normalizer-test.js
+          node scripts/tooltip-trigger-normalizer-test.js
 
-      - name: Normalize forbidden glossary placements
-        run: node scripts/glossary-placement-normalizer.js --write
+      - name: Normalize glossary placement and tooltip triggers
+        run: |
+          node scripts/glossary-placement-normalizer.js --write
+          node scripts/tooltip-trigger-normalizer.js --write
 
       - name: Synchronize standard asset revisions
         run: node scripts/cache-bust.js --write
@@ -89,6 +99,8 @@ jobs:
       - name: Validate normalized source and asset revisions
         run: |
           node scripts/glossary-contract-audit.js
+          node scripts/tooltip-trigger-normalizer.js
+          node scripts/tooltip-icon-audit.js
           node scripts/cache-bust.js
 
       - name: Commit normalized sources and revisions
@@ -104,7 +116,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
-          git commit -m "fix(glossary): normalize sources and asset revisions"
+          git commit -m "fix(content): normalize glossary and tooltip triggers"
           git push origin "HEAD:${HEAD_REF}"
 
   source-contract:
@@ -129,9 +141,13 @@ jobs:
           node --check scripts/glossary-placement-normalizer-test.js
           node --check scripts/reference-system-inventory.js
           node --check scripts/tooltip-icon-audit.js
+          node --check scripts/tooltip-trigger-normalizer.js
+          node --check scripts/tooltip-trigger-normalizer-test.js
 
-      - name: Test universal normalizer
-        run: node scripts/glossary-placement-normalizer-test.js
+      - name: Test universal normalizers
+        run: |
+          node scripts/glossary-placement-normalizer-test.js
+          node scripts/tooltip-trigger-normalizer-test.js
 
       - name: Validate dictionary, placement and shared runtime
         id: glossary-audit
