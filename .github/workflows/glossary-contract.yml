@@ -11,6 +11,7 @@ on:
       - "scripts/glossary-*.js"
       - "scripts/reference-system-inventory.js"
       - "scripts/tooltip-*.js"
+      - "scripts/finalize-tooltip-hit-test.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -72,6 +73,7 @@ jobs:
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
+          node --check scripts/finalize-tooltip-hit-test.js
 
       - name: Test glossary placement normalizer
         run: node scripts/glossary-placement-normalizer-test.js
@@ -86,6 +88,7 @@ jobs:
           node scripts/glossary-placement-normalizer.js --write
           node scripts/tooltip-trigger-normalizer.js --write
           node scripts/tooltip-style-normalizer.js --write
+          node scripts/finalize-tooltip-hit-test.js --write
           node scripts/cache-bust.js --write
 
       - name: Validate normalized tree
@@ -93,6 +96,7 @@ jobs:
           node scripts/glossary-contract-audit.js
           node scripts/tooltip-trigger-normalizer.js
           node scripts/tooltip-style-normalizer.js
+          node scripts/finalize-tooltip-hit-test.js
           node scripts/tooltip-icon-audit.js
           node scripts/cache-bust.js
 
