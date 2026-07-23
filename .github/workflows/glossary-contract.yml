@@ -142,17 +142,23 @@ jobs:
         run: node scripts/tooltip-trigger-normalizer-test.js
 
       - name: Audit glossary and references
+        shell: bash
         run: |
+          set -o pipefail
           node scripts/glossary-contract-audit.js | tee reports/glossary-contract.log
           node scripts/reference-system-inventory.js
 
       - name: Audit tooltip markers and styles
+        shell: bash
         run: |
+          set -o pipefail
           node scripts/tooltip-icon-audit.js | tee reports/tooltip-icon-audit.log
           node scripts/tooltip-style-normalizer.js | tee reports/tooltip-style.log
 
       - name: Lint workflow
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p /tmp/actionlint
           curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
             | tar xz -C /tmp/actionlint actionlint
@@ -195,7 +201,9 @@ jobs:
         run: node scripts/glossary-runtime-browser-test.js
 
       - name: Run tooltip marker interactions
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p reports
           node scripts/tooltip-marker-browser-test.js \
             | tee reports/tooltip-marker-browser.log
