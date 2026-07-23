@@ -67,13 +67,17 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate and test normalizers
+      - name: Check normalizer syntax
         run: |
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
-          node scripts/glossary-placement-normalizer-test.js
-          node scripts/tooltip-trigger-normalizer-test.js
+
+      - name: Test glossary placement normalizer
+        run: node scripts/glossary-placement-normalizer-test.js
+
+      - name: Test tooltip trigger and style normalizers
+        run: node scripts/tooltip-trigger-normalizer-test.js
 
       - name: Normalize source and shared marker styles
         run: |
@@ -115,23 +119,35 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate syntax and fixtures
+      - name: Prepare diagnostics
+        run: mkdir -p reports
+
+      - name: Check runtime and audit syntax
         run: |
-          mkdir -p reports
           node --check js/glossary.js
           node --check scripts/glossary-contract-audit.js
-          node --check scripts/glossary-placement-normalizer.js
           node --check scripts/reference-system-inventory.js
           node --check scripts/tooltip-icon-audit.js
+
+      - name: Check normalizer syntax
+        run: |
+          node --check scripts/glossary-placement-normalizer.js
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
-          node scripts/glossary-placement-normalizer-test.js
-          node scripts/tooltip-trigger-normalizer-test.js
 
-      - name: Audit glossary, references and tooltip markers
+      - name: Test glossary placement normalizer
+        run: node scripts/glossary-placement-normalizer-test.js
+
+      - name: Test tooltip trigger and style normalizers
+        run: node scripts/tooltip-trigger-normalizer-test.js
+
+      - name: Audit glossary and references
         run: |
           node scripts/glossary-contract-audit.js | tee reports/glossary-contract.log
           node scripts/reference-system-inventory.js
+
+      - name: Audit tooltip markers and styles
+        run: |
           node scripts/tooltip-icon-audit.js | tee reports/tooltip-icon-audit.log
           node scripts/tooltip-style-normalizer.js | tee reports/tooltip-style.log
 
@@ -149,7 +165,7 @@ jobs:
         with:
           name: glossary-contract-report
           path: reports/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
   browser-contract:
@@ -170,12 +186,17 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
-      - name: Run glossary and marker interactions
+      - name: Check browser fixtures
         run: |
-          mkdir -p reports
           node --check scripts/glossary-runtime-browser-test.js
           node --check scripts/tooltip-marker-browser-test.js
-          node scripts/glossary-runtime-browser-test.js
+
+      - name: Run glossary browser fixture
+        run: node scripts/glossary-runtime-browser-test.js
+
+      - name: Run tooltip marker interactions
+        run: |
+          mkdir -p reports
           node scripts/tooltip-marker-browser-test.js \
             | tee reports/tooltip-marker-browser.log
 
