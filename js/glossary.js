@@ -7,7 +7,7 @@
   const DEFAULT_POLICY = {
     rootSelectors: ["article", "main[data-pagefind-body]"],
     proseSelectors: ["p", "div.reveal", "[data-glossary-zone='prose']"],
-    forbiddenSelectors: [
+    hydrationForbiddenSelectors: [
       "a",
       "abbr",
       ".gterm",
@@ -58,6 +58,47 @@
       "script",
       "style"
     ],
+    placementForbiddenSelectors: [
+      "nav",
+      "figure",
+      "figcaption",
+      "caption",
+      "table",
+      "thead",
+      "tbody",
+      "tfoot",
+      "tr",
+      "th",
+      "td",
+      ".article-header",
+      ".author-card",
+      ".series-nav",
+      ".article-toc",
+      ".summary-card",
+      ".note-box",
+      ".context-bridge",
+      ".ancient-epigraph",
+      ".reading-list-section",
+      ".fact-card",
+      ".quick-fact",
+      ".key-point",
+      ".fn-marker",
+      ".tooltip",
+      ".btip",
+      ".quiz-wrapper",
+      ".gbs2-timeline",
+      ".gbs2-next",
+      "[data-glossary-skip]",
+      "[hidden]",
+      "[data-pagefind-meta]",
+      "[data-pagefind-ignore]",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6"
+    ],
     cadence: {
       minWordGap: 1200,
       minBlockGap: 20,
@@ -74,12 +115,12 @@
     regex: null
   });
 
+  exposeHydrator();
+
   const root =
     DEFAULT_POLICY.rootSelectors
       .map((selector) => document.querySelector(selector))
       .find(Boolean) || null;
-
-  exposeHydrator();
 
   if (!root) return;
 
@@ -125,6 +166,10 @@
       .trim();
   }
 
+  function numberOrNull(value) {
+    return Number.isFinite(Number(value)) ? Number(value) : null;
+  }
+
   function getEntryMeta(dict, canonical) {
     const entry = (dict && dict[canonical]) || {};
     const nested =
@@ -150,10 +195,6 @@
         numberOrNull(entry.maxPerArticle) ??
         numberOrNull(nested.maxPerArticle)
     };
-  }
-
-  function numberOrNull(value) {
-    return Number.isFinite(Number(value)) ? Number(value) : null;
   }
 
   function loadRuntime() {
@@ -197,6 +238,10 @@
 
   function mergePolicy(base, override) {
     const safe = override && typeof override === "object" ? override : {};
+    const legacyForbidden = Array.isArray(safe.forbiddenSelectors)
+      ? safe.forbiddenSelectors
+      : null;
+
     return {
       rootSelectors: Array.isArray(safe.rootSelectors)
         ? safe.rootSelectors
@@ -204,9 +249,16 @@
       proseSelectors: Array.isArray(safe.proseSelectors)
         ? safe.proseSelectors
         : base.proseSelectors,
-      forbiddenSelectors: Array.isArray(safe.forbiddenSelectors)
-        ? safe.forbiddenSelectors
-        : base.forbiddenSelectors,
+      hydrationForbiddenSelectors: Array.isArray(
+        safe.hydrationForbiddenSelectors
+      )
+        ? safe.hydrationForbiddenSelectors
+        : legacyForbidden || base.hydrationForbiddenSelectors,
+      placementForbiddenSelectors: Array.isArray(
+        safe.placementForbiddenSelectors
+      )
+        ? safe.placementForbiddenSelectors
+        : base.placementForbiddenSelectors,
       cadence: {
         minWordGap:
           numberOrNull(safe.cadence && safe.cadence.minWordGap) ??
@@ -285,21 +337,9 @@
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
-  function getProseBlocks(scope, policy) {
-    const selector = policy.proseSelectors.join(",");
-    return Array.from(scope.querySelectorAll(selector)).filter(
-      (element) => !isForbidden(element, policy)
-    );
-  }
-
-  function isForbidden(node, policy) {
-    const element =
-      node && node.nodeType === Node.ELEMENT_NODE
-        ? node
-        : node && node.parentElement;
-
-    if (!element) return true;
-    return policy.forbiddenSelectors.some((selector) => {
+  function matchesClosest(element, selectors) {
+    if (!element) return false;
+    return selectors.some((selector) => {
       try {
         return Boolean(element.closest(selector));
       } catch (_) {
@@ -308,10 +348,47 @@
     });
   }
 
+  function isHydrationForbidden(node, policy) {
+    const element =
+      node && node.nodeType === Node.ELEMENT_NODE
+        ? node
+        : node && node.parentElement;
+    return (
+      !element ||
+      matchesClosest(element, policy.hydrationForbiddenSelectors)
+    );
+  }
+
+  function isPlacementForbidden(node, policy) {
+    const element =
+      node && node.nodeType === Node.ELEMENT_NODE
+        ? node
+        : node && node.parentElement;
+    return (
+      !element ||
+      matchesClosest(element, policy.placementForbiddenSelectors)
+    );
+  }
+
+  function getProseBlocks(scope, policy) {
+    const selector = policy.proseSelectors.join(",");
+    const candidates = Array.from(scope.querySelectorAll(selector)).filter(
+      (element) => !isHydrationForbidden(element, policy)
+    );
+
+    return candidates.filter(
+      (element) =>
+        !candidates.some(
+          (other) => other !== element && element.contains(other)
+        )
+    );
+  }
+
   function normalizeManualTerms(scope, state) {
     const terms = Array.from(scope.querySelectorAll(".gterm"));
+
     terms.forEach((term) => {
-      if (!isForbidden(term.parentElement, state.policy)) return;
+      if (!isPlacementForbidden(term.parentElement, state.policy)) return;
 
       const clone = term.cloneNode(true);
       clone.querySelectorAll(".gtip").forEach((tip) => tip.remove());
@@ -336,7 +413,7 @@
           if (!textNode.nodeValue || !textNode.nodeValue.trim()) {
             return NodeFilter.FILTER_REJECT;
           }
-          return isForbidden(textNode, state.policy)
+          return isHydrationForbidden(textNode, state.policy)
             ? NodeFilter.FILTER_REJECT
             : NodeFilter.FILTER_ACCEPT;
         }
@@ -381,7 +458,6 @@
           fragment.appendChild(createTerm(visible, canonical, state.dict));
           lastOffset = matchStart + visible.length;
           changed = true;
-
           recordOccurrence(canonical, blockIndex, wordPosition, seen);
         }
 
@@ -448,7 +524,7 @@
     const terms = Array.from(scope.querySelectorAll(".gterm"));
 
     terms.forEach((term) => {
-      if (isForbidden(term.parentElement, state.policy)) return;
+      if (isPlacementForbidden(term.parentElement, state.policy)) return;
 
       const rawKey =
         term.getAttribute("data-term") ||
@@ -529,7 +605,6 @@
     tip.className = "gtip";
     if (meta.category) tip.dataset.category = meta.category;
     if (meta.categorySlug) tip.dataset.categorySlug = meta.categorySlug;
-
     tip.innerHTML = buildTipHtml(definition.brief, definition.detail);
 
     return tip;
