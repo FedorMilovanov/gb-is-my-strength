@@ -8,6 +8,7 @@ const {
   TARGET_HOVER_TRANSFORM,
   CLOSED_TOOLTIP_POINTER_RULE,
   LEGACY_FLOATING_TOOLTIP_POINTER_RULE,
+  PRIORITY_FLOATING_TOOLTIP_POINTER_RULE,
   FLOATING_TOOLTIP_POINTER_RULE
 } = require('./tooltip-style-normalizer.js');
 
@@ -22,7 +23,9 @@ assert.match(first.output, new RegExp(`vertical-align:${TARGET_VERTICAL_ALIGN.re
 assert.ok(first.output.includes(`transform:${TARGET_HOVER_TRANSFORM}!important;`));
 assert.ok(first.output.includes(CLOSED_TOOLTIP_POINTER_RULE));
 assert.ok(first.output.includes(FLOATING_TOOLTIP_POINTER_RULE));
-assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip,\.gtip\.gb-floating-tip\{pointer-events:none!important\}/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /body>\.tooltip\.gb-floating-tip\.is-open/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /body>\.gtip\.gb-floating-tip\.is-open/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /pointer-events:none!important/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /pointer-events:auto!important/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip a/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\[role="button"\]/);
@@ -31,11 +34,13 @@ const second = normalizeTooltipStyles(first.output);
 assert.equal(second.changes, 0, 'style normalization must be idempotent');
 assert.equal(second.output, first.output);
 
-const legacyFixture = first.output.replace(FLOATING_TOOLTIP_POINTER_RULE, LEGACY_FLOATING_TOOLTIP_POINTER_RULE);
-const upgraded = normalizeTooltipStyles(legacyFixture);
-assert.equal(upgraded.changes, 1, 'legacy non-important pointer rule must be upgraded exactly once');
-assert.ok(upgraded.output.includes(FLOATING_TOOLTIP_POINTER_RULE));
-assert.ok(!upgraded.output.includes(LEGACY_FLOATING_TOOLTIP_POINTER_RULE));
-assert.equal(normalizeTooltipStyles(upgraded.output).changes, 0, 'upgraded rule must remain idempotent');
+for (const priorRule of [LEGACY_FLOATING_TOOLTIP_POINTER_RULE, PRIORITY_FLOATING_TOOLTIP_POINTER_RULE]) {
+  const priorFixture = first.output.replace(FLOATING_TOOLTIP_POINTER_RULE, priorRule);
+  const upgraded = normalizeTooltipStyles(priorFixture);
+  assert.equal(upgraded.changes, 1, 'prior pointer rule must be upgraded exactly once');
+  assert.ok(upgraded.output.includes(FLOATING_TOOLTIP_POINTER_RULE));
+  assert.ok(!upgraded.output.includes(priorRule));
+  assert.equal(normalizeTooltipStyles(upgraded.output).changes, 0, 'upgraded rule must remain idempotent');
+}
 
 console.log('Tooltip style normalizer test: OK');
