@@ -1,6 +1,7 @@
 ---
 import SvobodaVoHristePageHead from '@/components/article-pilots/svoboda-vo-hriste/SvobodaVoHristePageHead.astro';
 import SvobodaVoHristeBody from '@/components/article-pilots/svoboda-vo-hriste/SvobodaVoHristeBody.astro';
+import HeartSeriesSocialMeta from '@/components/article-pilots/_shared/heart/HeartSeriesSocialMeta.astro';
 import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/hardTextsSeriesConfig';
 const p = HARD_TEXTS_SERIES.pages['svoboda'];
 ---
@@ -8,6 +9,7 @@ const p = HARD_TEXTS_SERIES.pages['svoboda'];
 <html lang="ru">
   <head>
     <SvobodaVoHristePageHead />
+    <HeartSeriesSocialMeta />
   </head>
   <body class="gbs-world" data-gbs2-series="hard-texts" data-gbs2-done-min={p.readingProgressDoneMin} data-gbs2-part-min={p.readingProgressPartMin} data-gbs2-total-min={p.readingProgressTotalMin}>
     <SvobodaVoHristeBody />
