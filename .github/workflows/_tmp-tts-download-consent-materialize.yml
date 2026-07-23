@@ -7,6 +7,10 @@ on:
     paths:
       - "scripts/_tmp-tts-materializer-parts/**"
       - ".github/workflows/_tmp-tts-download-consent-materialize.yml"
+  pull_request:
+    paths:
+      - "scripts/_tmp-tts-materializer-parts/**"
+      - ".github/workflows/_tmp-tts-download-consent-materialize.yml"
   workflow_dispatch:
 
 permissions:
