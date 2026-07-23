@@ -25,6 +25,8 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/audit-pro.js"
+      - "scripts/seo-audit.js"
+      - "scripts/dist-jsonld-audit.js"
       - "scripts/check-route-profiles.js"
       - "scripts/check-route-migration-matrix.js"
       - "scripts/check-content-source-coverage.js"
@@ -35,6 +37,7 @@ on:
       - "scripts/public-surface-registry-audit.js"
       - "scripts/public-surface-registry-regression-test.js"
       - "scripts/sitemap-route-contract-test.js"
+      - "scripts/seo-route-contract-test.js"
       - "scripts/public-surface-browser-matrix.mjs"
       - "scripts/public-surface-browser-diagnostics.mjs"
       - "scripts/route-semantics-browser-test.mjs"
@@ -43,6 +46,7 @@ on:
       - "scripts/nagornaya-epistemic-ui-browser-test.mjs"
       - "scripts/lib/public-surface-registry.js"
       - "scripts/lib/sitemap-route-contract.js"
+      - "scripts/lib/seo-route-contract.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
       - "scripts/lib/effective-route-registry.js"
@@ -85,7 +89,7 @@ jobs:
             scripts/route-profile-contract-audit.js --strict 2>&1 \
             | tee reports/route-profile-contract.log
 
-      - name: Public surface and sitemap registry
+      - name: Public surface, sitemap and SEO registry
         if: always()
         shell: bash
         run: |
@@ -94,6 +98,7 @@ jobs:
             npm run surface:registry:check
             npm run surface:registry:test
             node scripts/sitemap-route-contract-test.js
+            node scripts/seo-route-contract-test.js
             node scripts/audit-pro.js
           } 2>&1 | tee reports/public-surface-registry.log
 
@@ -163,6 +168,13 @@ jobs:
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
+      - name: Audit registry-derived production SEO
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/dist-jsonld-audit.js --root dist 2>&1 | tee reports/seo-dist.log
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
@@ -178,7 +190,7 @@ jobs:
         run: node scripts/nagornaya-epistemic-ui-browser-test.mjs
 
       - name: Diagnose overflowing routes
-        if: ${{ failure() }}
+        if: ${{ failure() && hashFiles('reports/public-surface-browser-matrix.json') != '' }}
         shell: bash
         run: |
           python3 -m http.server 4177 --bind 127.0.0.1 --directory dist >/tmp/public-surface-http.log 2>&1 &
@@ -190,12 +202,13 @@ jobs:
             reports/public-surface-browser-matrix.json \
             http://127.0.0.1:4177
 
-      - name: Upload browser matrix report
+      - name: Upload browser and SEO reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: public-surface-browser-matrix-${{ github.run_id }}
           path: |
+            reports/seo-dist.log
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
