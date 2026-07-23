@@ -85,6 +85,7 @@ jobs:
         run: |
           node scripts/glossary-placement-normalizer.js --write
           node scripts/tooltip-trigger-normalizer.js --write
+          node scripts/tooltip-style-normalizer.js --write
           node scripts/cache-bust.js --write
 
       - name: Validate normalized tree
