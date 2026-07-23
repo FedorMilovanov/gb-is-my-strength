@@ -34,23 +34,12 @@ function replaceRequired(text, search, replacement, label) {
   if (!text.includes(search)) throw new Error(`Required text not found: ${label}`);
   return text.replace(search, replacement);
 }
-function insertOnce(text, marker, insertion, label) {
-  if (text.includes(insertion.trim())) return text;
-  if (!text.includes(marker)) throw new Error(`Insertion marker not found: ${label}`);
-  return text.replace(marker, `${insertion}${marker}`);
-}
 
 // 1. Content schema: explicit universal distinction between rendered entries and
 // metadata-only reference entries.
 {
   const rel = 'src/content.config.ts';
   let text = read(rel);
-  text = insertOnce(
-    text,
-    '  readingTime: z.number().int().positive().optional(),\n',
-    '',
-    'article readingTime field',
-  );
   if (!text.includes("sourceMode: z.enum(['rendered', 'metadata-only'])")) {
     text = replaceRequired(
       text,
@@ -180,12 +169,9 @@ for (const slug of GILL_SLUGS) {
   const rel = 'scripts/gill-reading-time-canonical-audit.js';
   let text = read(rel);
   if (!text.includes('Gill catalog reading-time bindings')) {
-    text = replaceRequired(
-      text,
-      "for (const slug of GILL_ORDER) {\n  const rel = `articles/${slug}/index.html`;\n  const txt = read(rel);\n  const expected = canonical[slug];\n  if (new RegExp(`\\\\b${expected}\\\\s*мин`).test(txt)) ok(`${rel}: contains canonical ${expected} мин`);\n  else bad(`${rel}: missing canonical ${expected} мин`);\n}\n",
-      "for (const slug of GILL_ORDER) {\n  const rel = `articles/${slug}/index.html`;\n  const txt = read(rel);\n  const expected = canonical[slug];\n  if (new RegExp(`\\\\b${expected}\\\\s*мин`).test(txt)) ok(`${rel}: contains canonical ${expected} мин`);\n  else bad(`${rel}: missing canonical ${expected} мин`);\n}\n\n// Gill catalog reading-time bindings: the strict-native /articles/ source must\n// project canonical values from data/series.json rather than duplicate numbers.\nconst catalogMain = read('src/components/articles/ArticlesMain.astro');\nconst catalogCards = read('src/components/articles/ArticlesPublicationsSection.astro');\nif (catalogMain.includes("const gill = seriesData['dzhon-gill'];") && catalogMain.includes('gillReadingTime={gillReadingTime}')) {\n  ok('articles catalog derives Gill reading times from series.json');\n} else {\n  bad('articles catalog does not derive Gill reading times from series.json');\n}\nfor (const slug of ['dzhon-gill-istoricheskiy-kontekst', 'dzhon-gill-spravochnik']) {\n  const binding = `gillReadingTime['${slug}']`;\n  if (catalogCards.includes(binding)) ok(`articles catalog binding: ${slug}`);\n  else bad(`articles catalog missing canonical binding: ${slug}`);\n}\nif (/\\b(?:16|8)\\s*мин\\b/.test(catalogCards)) bad('articles catalog retains stale Gill 16/8 minute literal');\nelse ok('articles catalog has no stale Gill 16/8 minute literals');\n",
-      'Gill catalog contract',
-    );
+    const anchor = "for (const slug of GILL_ORDER) {\n  const rel = `articles/${slug}/index.html`;\n  const txt = read(rel);\n  const expected = canonical[slug];\n  if (new RegExp(`\\\\b${expected}\\\\s*мин`).test(txt)) ok(`${rel}: contains canonical ${expected} мин`);\n  else bad(`${rel}: missing canonical ${expected} мин`);\n}\n";
+    const extra = '\n// Gill catalog reading-time bindings: /articles/ must project data/series.json.\nconst catalogMain = read(\'src/components/articles/ArticlesMain.astro\');\nconst catalogCards = read(\'src/components/articles/ArticlesPublicationsSection.astro\');\nif (catalogMain.includes("const gill = seriesData[\'dzhon-gill\'];") && catalogMain.includes(\'gillReadingTime={gillReadingTime}\')) ok(\'articles catalog derives Gill reading times from series.json\');\nelse bad(\'articles catalog does not derive Gill reading times from series.json\');\nfor (const slug of [\'dzhon-gill-istoricheskiy-kontekst\', \'dzhon-gill-spravochnik\']) {\n  const binding = `gillReadingTime[\'${slug}\']`;\n  if (catalogCards.includes(binding)) ok(`articles catalog binding: ${slug}`);\n  else bad(`articles catalog missing canonical binding: ${slug}`);\n}\nif (/\\b(?:16|8)\\s*мин\\b/.test(catalogCards)) bad(\'articles catalog retains stale Gill 16/8 minute literal\');\nelse ok(\'articles catalog has no stale Gill 16/8 minute literals\');\n';
+    text = replaceRequired(text, anchor, `${anchor}${extra}`, 'Gill catalog contract');
   }
   apply(rel, text);
 }
