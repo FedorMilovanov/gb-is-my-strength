@@ -33,22 +33,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p reports/legacy-retirement-proof
+          : > reports/legacy-retirement-proof/reference-scan.log
           for name in \
             check-route-profiles-legacy.js \
             check-route-migration-matrix-legacy.js \
             check-content-source-coverage-legacy.js \
             docs/refactor-2026/lanes/search-legacy-lazy-init-2026-07-04.md
           do
-            if git grep -n -F "$name" -- ':!docs/archive/**'; then
+            matches="$(git grep -n -F "$name" -- \
+              ':!docs/archive/**' \
+              ':!.github/workflows/_temp-retired-legacy-audits-proof.yml' || true)"
+            if test -n "$matches"; then
+              printf '%s\n' "$matches" | tee -a reports/legacy-retirement-proof/reference-scan.log
               echo "Unexpected active reference: $name" >&2
               exit 1
             fi
           done
+          echo 'No active references to retired files.' | tee reports/legacy-retirement-proof/reference-scan.log
 
       - name: Run canonical replacement contracts
         shell: bash
         run: |
-          mkdir -p reports/legacy-retirement-proof
           set -o pipefail
           {
             node scripts/check-workflows.js
@@ -64,7 +70,11 @@ jobs:
           } 2>&1 | tee reports/legacy-retirement-proof/contracts.log
 
       - name: Build production-like dist
-        run: npm run strangler:build:production-like
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run strangler:build:production-like 2>&1 \
+            | tee reports/legacy-retirement-proof/build.log
 
       - name: Verify clean tracked source
         run: git diff --exit-code
