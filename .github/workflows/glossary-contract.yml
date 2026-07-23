@@ -1,0 +1,89 @@
+name: Glossary Contract
+
+on:
+  pull_request:
+    paths:
+      - "data/glossary.json"
+      - "data/glossary-policy.json"
+      - "js/glossary.js"
+      - "scripts/glossary-contract-audit.js"
+      - "scripts/glossary-runtime-browser-test.js"
+      - "src/**"
+      - "articles/**"
+      - "biografii/**"
+      - "hard-texts/**"
+      - "konfessii/**"
+      - "pastor-series/**"
+      - "baptisty-rossii/**"
+      - ".github/workflows/glossary-contract.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "data/glossary.json"
+      - "data/glossary-policy.json"
+      - "js/glossary.js"
+      - "scripts/glossary-contract-audit.js"
+      - "scripts/glossary-runtime-browser-test.js"
+      - "src/**"
+      - "articles/**"
+      - "biografii/**"
+      - "hard-texts/**"
+      - "konfessii/**"
+      - "pastor-series/**"
+      - "baptisty-rossii/**"
+      - ".github/workflows/glossary-contract.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: glossary-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-contract:
+    name: Source contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check runtime syntax
+        run: node --check js/glossary.js
+
+      - name: Check contract script syntax
+        run: node --check scripts/glossary-contract-audit.js
+
+      - name: Validate dictionary, placement and shared runtime
+        run: node scripts/glossary-contract-audit.js
+
+  browser-contract:
+    name: Browser contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Check browser test syntax
+        run: node --check scripts/glossary-runtime-browser-test.js
+
+      - name: Run route-independent browser fixture
+        run: node scripts/glossary-runtime-browser-test.js
