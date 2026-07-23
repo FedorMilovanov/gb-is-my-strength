@@ -39,9 +39,13 @@ on:
       - "scripts/content-source-provenance-audit.js"
       - "scripts/public-surface-registry-audit.js"
       - "scripts/public-surface-registry-regression-test.js"
+      - "scripts/rss-feed-normalizer.js"
+      - "scripts/rss-feed-normalizer-test.js"
       - "scripts/rss-route-contract-test.js"
       - "scripts/search-index-policy-contract-test.js"
       - "scripts/search-index-policy-inventory.js"
+      - "scripts/search-manifest-policy-normalizer.js"
+      - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/sitemap-route-contract-test.js"
       - "scripts/seo-route-contract-test.js"
       - "scripts/public-surface-browser-matrix.mjs"
@@ -60,6 +64,7 @@ on:
       - "scripts/lib/effective-route-registry.js"
       - "scripts/sync-route-migration-matrix.js"
       - ".github/workflows/route-registry-validators.yml"
+      - ".github/workflows/search-manifest-policy.yml"
   workflow_dispatch:
 
 concurrency:
@@ -107,6 +112,7 @@ jobs:
             npm run surface:registry:test
             node scripts/sitemap-route-contract-test.js
             node scripts/rss-route-contract-test.js
+            node scripts/rss-feed-normalizer.js --check
             node scripts/seo-route-contract-test.js
             node scripts/search-index-policy-contract-test.js
             node scripts/audit-pro.js
