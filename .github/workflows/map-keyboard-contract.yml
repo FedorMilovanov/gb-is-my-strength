@@ -57,10 +57,21 @@ jobs:
           cat /tmp/map-keyboard-http.log
           exit 1
       - name: Verify live map keyboard behavior
+        shell: bash
         env:
           AUDIT_BASE: http://127.0.0.1:8090
           MAP_SMOKE_ROUTES: ishod,avraam
-        run: node scripts/map-browser-smoke.js
+        run: |
+          set -o pipefail
+          node scripts/map-browser-smoke.js 2>&1 | tee /tmp/map-keyboard-smoke.log
+      - name: Upload keyboard smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-keyboard-smoke-${{ github.run_id }}
+          path: /tmp/map-keyboard-smoke.log
+          retention-days: 14
+          if-no-files-found: warn
       - name: Stop source server
         if: always()
         shell: bash
