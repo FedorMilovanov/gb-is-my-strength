@@ -6,13 +6,17 @@ on:
     paths:
       - "data/glossary.json"
       - "data/glossary-policy.json"
+      - "css/site.css"
       - "js/glossary.js"
+      - "js/site.js"
+      - "js/site-utils.js"
       - "scripts/glossary-contract-audit.js"
       - "scripts/glossary-placement-normalizer.js"
       - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
       - "scripts/reference-system-inventory.js"
       - "scripts/tooltip-icon-audit.js"
+      - "scripts/tooltip-marker-browser-test.js"
       - "scripts/tooltip-trigger-normalizer.js"
       - "scripts/tooltip-trigger-normalizer-test.js"
       - "src/**"
@@ -29,13 +33,17 @@ on:
     paths:
       - "data/glossary.json"
       - "data/glossary-policy.json"
+      - "css/site.css"
       - "js/glossary.js"
+      - "js/site.js"
+      - "js/site-utils.js"
       - "scripts/glossary-contract-audit.js"
       - "scripts/glossary-placement-normalizer.js"
       - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
       - "scripts/reference-system-inventory.js"
       - "scripts/tooltip-icon-audit.js"
+      - "scripts/tooltip-marker-browser-test.js"
       - "scripts/tooltip-trigger-normalizer.js"
       - "scripts/tooltip-trigger-normalizer-test.js"
       - "src/**"
@@ -235,7 +243,12 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Check browser test syntax
-        run: node --check scripts/glossary-runtime-browser-test.js
+        run: |
+          node --check scripts/glossary-runtime-browser-test.js
+          node --check scripts/tooltip-marker-browser-test.js
 
-      - name: Run route-independent browser fixture
+      - name: Run route-independent glossary fixture
         run: node scripts/glossary-runtime-browser-test.js
+
+      - name: Click and hover tooltip markers on desktop and mobile
+        run: node scripts/tooltip-marker-browser-test.js
