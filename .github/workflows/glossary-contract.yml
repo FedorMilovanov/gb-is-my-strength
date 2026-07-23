@@ -72,12 +72,29 @@ jobs:
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit 0
 
+      - name: Collect violating source files
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p reports/glossary-violation-sources
+          grep '^ERROR: ' reports/glossary-contract.log \
+            | sed -E 's/^ERROR: ([^:]+):[0-9]+:.*/\1/' \
+            | sort -u \
+            > reports/glossary-violation-files.txt || true
+
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            [ -f "$file" ] || continue
+            mkdir -p "reports/glossary-violation-sources/$(dirname "$file")"
+            cp "$file" "reports/glossary-violation-sources/$file"
+          done < reports/glossary-violation-files.txt
+
       - name: Upload complete glossary diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: glossary-contract-report
-          path: reports/glossary-contract.log
+          path: reports/
           if-no-files-found: error
           retention-days: 14
 
