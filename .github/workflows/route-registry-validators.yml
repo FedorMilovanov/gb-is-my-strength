@@ -29,7 +29,6 @@ on:
       - "package-lock.json"
       - "scripts/audit-pro.js"
       - "scripts/audit-pro-source-corpus-test.js"
-      - "scripts/materialize-audit-pro-source-corpus.py"
       - "scripts/lib/audit-pro-source-corpus.js"
       - "scripts/seo-audit.js"
       - "scripts/dist-jsonld-audit.js"
@@ -78,44 +77,6 @@ permissions:
   contents: read
 
 jobs:
-  materialize-source-corpus:
-    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'agent/audit-pro-source-corpus' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact branch
-        uses: actions/checkout@v4
-        with:
-          ref: agent/audit-pro-source-corpus
-          fetch-depth: 0
-
-      - name: Materialize registry-owned source corpus
-        shell: bash
-        run: |
-          python3 scripts/materialize-audit-pro-source-corpus.py
-          node --check scripts/audit-pro.js
-          node scripts/audit-pro-source-corpus-test.js
-          git diff --check
-          if git diff --quiet; then
-            echo 'No materialization changes required.'
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/audit-pro.js
-          git commit -m "fix(audit): make source HTML corpus registry-owned"
-          git push origin HEAD:agent/audit-pro-source-corpus
-
-      - name: Upload materializer diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: audit-pro-materializer-${{ github.run_id }}
-          path: reports/materializer-debug.txt
-          if-no-files-found: warn
-          retention-days: 2
-
   registry-contracts:
     runs-on: ubuntu-latest
     timeout-minutes: 10
