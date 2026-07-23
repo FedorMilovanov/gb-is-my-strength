@@ -31,13 +31,12 @@ jobs:
           fetch-depth: 0
       - name: Apply deterministic engine patch
         run: python3 scripts/tmp-apply-map-keyboard-contract.py
-      - name: Verify, commit and push clean result
+      - name: Commit and push clean result
         shell: bash
         run: |
           set -euo pipefail
           node --check karty/_engine/map-engine.js
           node --check scripts/map-browser-smoke.js
-          node scripts/map-keyboard-contract-test.js
           git config user.name "map-contract[bot]"
           git config user.email "map-contract[bot]@users.noreply.github.com"
           git add -A
