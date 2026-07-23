@@ -1,11 +1,11 @@
 {
   "note": "Owner-approved visual comparison policy per public route. legacy-diff measures root legacy HTML against production-like dist; native-contract routes intentionally retired legacy presentation and are blocked by the named source/dist and browser guards instead. Never promote a route to native-contract merely to silence a screenshot failure.",
   "tolerancePct": 0.5,
-  "updatedAt": "2026-07-22",
+  "updatedAt": "2026-07-23",
   "baselineType": "policy-aware-legacy-vs-dist-pixel",
   "baselineSource": "repo-root-html-vs-dist",
   "routeArchitectureAtApproval": "mixed: legacy parity + native Astro + shared series chrome + built-app maps",
-  "sourceMainSha": "aeae401d782d769dad582395f2045fa79c020f42",
+  "sourceMainSha": "7187c32a39e1d5b185dbf385f651da0906911d74",
   "policy": {
     "newRouteDefault": "advisory-warn-only",
     "strictNewRoutesMode": "available via --strict-new-routes",
@@ -14,6 +14,17 @@
     "globalToleranceWasNotRaised": true
   },
   "routeModes": {
+    "/": {
+      "mode": "native-contract",
+      "reason": "The home route is strict-native and owned by src/pages/index.astro; the root index.html is retained as historical evidence and no longer represents the approved library-first home experience.",
+      "requiredGuards": [
+        "scripts/home-visual-parity-audit.js",
+        "scripts/astro-home-pilot-audit.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-23",
+      "reviewedSourceSha": "7187c32a39e1d5b185dbf385f651da0906911d74"
+    },
     "/articles/": {
       "mode": "native-contract",
       "reason": "The strict-native catalog derives current series counters and reading metadata from native content contracts; the root legacy catalog is retained as historical evidence and contains intentionally stale values.",
