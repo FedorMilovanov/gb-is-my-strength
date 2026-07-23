@@ -46,7 +46,7 @@
     "/articles/chto-bibliya-nazyvaet-serdcem/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",
-      "searchManifestPolicy": "exclude",
+      "searchManifestPolicy": "include",
       "sitemapPolicy": "include",
       "rssPolicy": "include",
       "contentKind": "series-article",
@@ -176,7 +176,7 @@
     "/articles/novoe-serdce/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",
-      "searchManifestPolicy": "exclude",
+      "searchManifestPolicy": "include",
       "sitemapPolicy": "include",
       "rssPolicy": "include",
       "contentKind": "series-article",
@@ -226,7 +226,7 @@
     "/articles/serdce-i-duh/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",
-      "searchManifestPolicy": "exclude",
+      "searchManifestPolicy": "include",
       "sitemapPolicy": "include",
       "rssPolicy": "include",
       "contentKind": "series-article",
@@ -296,7 +296,7 @@
     "/articles/serdce-spravochnik/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",
-      "searchManifestPolicy": "exclude",
+      "searchManifestPolicy": "include",
       "sitemapPolicy": "include",
       "rssPolicy": "include",
       "contentKind": "series-article",
