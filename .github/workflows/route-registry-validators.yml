@@ -141,39 +141,6 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  materialize-sitemap-audit:
-    if: github.event_name == 'pull_request' && github.head_ref == 'agent/sitemap-registry-contract'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22.12.0"
-      - name: Materialize and validate audit integration
-        run: |
-          node scripts/_temp-materialize-sitemap-audit.js
-          node scripts/sitemap-route-contract-test.js
-          node scripts/audit-pro.js
-          git diff --check
-      - name: Commit materialized audit integration
-        run: |
-          git add scripts/audit-pro.js
-          if git diff --cached --quiet; then
-            echo 'audit-pro integration already materialized'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'fix(audit): require every canonical production route in sitemap'
-          git push origin HEAD:"$GITHUB_HEAD_REF"
-
   public-surface-browser-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 40
