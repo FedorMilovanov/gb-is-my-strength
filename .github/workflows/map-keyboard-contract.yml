@@ -68,3 +68,13 @@ jobs:
           if [[ -f /tmp/map-keyboard-http.pid ]]; then
             kill "$(cat /tmp/map-keyboard-http.pid)" 2>/dev/null || true
           fi
+
+  diagnose-actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint this workflow only
+        run: |
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            | tar xz -C /tmp actionlint
+          /tmp/actionlint -color .github/workflows/map-keyboard-contract.yml
