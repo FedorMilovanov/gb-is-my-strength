@@ -4,11 +4,121 @@
  */
 ---
 <section class="h-about h-reveal h-scroll-target" id="about" aria-labelledby="hAboutLabel">
-  <p class="h-about-label" id="hAboutLabel">О проекте</p>
-  <p class="h-about-text h-drop-cap">
-    <span class="h-drop-cap__letter" aria-hidden="true">Э</span>то не лента быстрых заметок и не коллекция удобных цитат. Здесь собраны материалы для медленного чтения: авторские статьи, переводы зарубежных богословов, экзегетические разборы и ответы на вопросы, которые нельзя честно решить одним абзацем.
-  </p>
-  <p class="h-about-small">
-    Библиотеку ведёт <a href="about/">Фёдор Милованов</a>. Переведённые материалы публикуются в ознакомительных целях и снимаются по запросу правообладателя.
-  </p>
+  <div class="h-about__copy">
+    <p class="h-about-label" id="hAboutLabel">О проекте</p>
+    <p class="h-about-text h-drop-cap">
+      <span class="h-drop-cap__letter" aria-hidden="true">Э</span>то не лента быстрых заметок и не коллекция удобных цитат. Здесь собраны материалы для медленного чтения: авторские статьи, переводы зарубежных богословов, экзегетические разборы и ответы на вопросы, которые нельзя честно решить одним абзацем.
+    </p>
+    <p class="h-about-small">
+      Библиотеку ведёт <a href="about/">Фёдор Милованов</a>. Переведённые материалы публикуются в ознакомительных целях и снимаются по запросу правообладателя.
+    </p>
+  </div>
+
+  <button class="h-lion-label" id="hLionLabel" type="button" aria-describedby="hLionHint">
+    <span class="h-lion-label__aura" aria-hidden="true"></span>
+    <svg class="h-lion-label__mark" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+      <path class="h-lion-mane h-lion-mane--left" d="M58.5 13C39 14 22.5 27.5 19 47c-2 11.5 1.5 23.5 9 32.5 7 8.5 16.5 14 27 16"/>
+      <path class="h-lion-mane h-lion-mane--right" d="M61.5 13C81 14 97.5 27.5 101 47c2 11.5-1.5 23.5-9 32.5-7 8.5-16.5 14-27 16"/>
+      <path class="h-lion-ear" d="M34 41c-6.5-9.5-4.5-17 6-22 7 4 10.5 10 10.5 18M86 41c6.5-9.5 4.5-17-6-22-7 4-10.5 10-10.5 18"/>
+      <path class="h-lion-face" d="M60 31c-17 0-27 12.5-27 31 0 22 14 39 27 39s27-17 27-39c0-18.5-10-31-27-31Z"/>
+      <path class="h-lion-eye" d="M43 59c5-4 10-4 15 0M77 59c-5-4-10-4-15 0"/>
+      <path class="h-lion-nose" d="M53 72c4.5-3.2 9.5-3.2 14 0l-7 7-7-7Z"/>
+      <path class="h-lion-mouth" d="M60 79v5m0 0c-5.5 0-9 2-11 6m11-6c5.5 0 9 2 11 6"/>
+    </svg>
+    <span class="h-lion-label__text">
+      <span>Живая метка проекта</span>
+      <strong>Разбудить льва</strong>
+    </span>
+    <span class="h-lion-label__pulse" aria-hidden="true"></span>
+  </button>
+  <span class="sr-only" id="hLionHint">По нажатию лев двигается и издаёт короткий синтезированный рык.</span>
+  <span class="sr-only" id="hLionStatus" aria-live="polite"></span>
 </section>
+
+<script is:inline>
+  (() => {
+    const lion = document.getElementById('hLionLabel');
+    const status = document.getElementById('hLionStatus');
+    if (!lion || lion.dataset.ready === 'true') return;
+    lion.dataset.ready = 'true';
+
+    const roar = () => {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const context = new AudioCtx();
+      const start = context.currentTime;
+      const duration = 1.35;
+      const master = context.createGain();
+      const compressor = context.createDynamicsCompressor();
+      master.gain.setValueAtTime(0.0001, start);
+      master.gain.exponentialRampToValueAtTime(0.22, start + 0.06);
+      master.gain.setValueAtTime(0.2, start + 0.5);
+      master.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      compressor.threshold.value = -18;
+      compressor.knee.value = 20;
+      compressor.ratio.value = 7;
+      compressor.attack.value = 0.006;
+      compressor.release.value = 0.28;
+      master.connect(compressor);
+      compressor.connect(context.destination);
+
+      const frames = Math.ceil(context.sampleRate * duration);
+      const buffer = context.createBuffer(1, frames, context.sampleRate);
+      const data = buffer.getChannelData(0);
+      let brown = 0;
+      for (let i = 0; i < frames; i += 1) {
+        const white = Math.random() * 2 - 1;
+        brown = (brown + 0.035 * white) / 1.035;
+        const pulse = 0.72 + Math.sin((i / context.sampleRate) * Math.PI * 17) * 0.12;
+        data[i] = brown * 3.2 * pulse;
+      }
+      const noise = context.createBufferSource();
+      const body = context.createBiquadFilter();
+      const throat = context.createBiquadFilter();
+      noise.buffer = buffer;
+      body.type = 'lowpass';
+      body.frequency.setValueAtTime(620, start);
+      body.frequency.exponentialRampToValueAtTime(150, start + duration);
+      body.Q.value = 1.2;
+      throat.type = 'peaking';
+      throat.frequency.value = 115;
+      throat.Q.value = 2.4;
+      throat.gain.value = 10;
+      noise.connect(body);
+      body.connect(throat);
+      throat.connect(master);
+
+      [74, 111].forEach((frequency, index) => {
+        const voice = context.createOscillator();
+        const voiceGain = context.createGain();
+        voice.type = index ? 'sawtooth' : 'triangle';
+        voice.frequency.setValueAtTime(frequency, start);
+        voice.frequency.exponentialRampToValueAtTime(frequency * 0.58, start + duration);
+        voice.detune.setValueAtTime(index ? 8 : -9, start);
+        voiceGain.gain.setValueAtTime(0.0001, start);
+        voiceGain.gain.exponentialRampToValueAtTime(index ? 0.045 : 0.075, start + 0.08);
+        voiceGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        voice.connect(voiceGain);
+        voiceGain.connect(master);
+        voice.start(start);
+        voice.stop(start + duration);
+      });
+
+      noise.start(start);
+      noise.stop(start + duration);
+      window.setTimeout(() => context.close(), 1800);
+    };
+
+    lion.addEventListener('click', () => {
+      lion.classList.remove('is-roaring');
+      void lion.offsetWidth;
+      lion.classList.add('is-roaring');
+      if (status) status.textContent = 'Лев рычит.';
+      roar();
+      window.setTimeout(() => {
+        lion.classList.remove('is-roaring');
+        if (status) status.textContent = '';
+      }, 1450);
+    });
+  })();
+</script>

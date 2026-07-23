@@ -1,70 +1,79 @@
 ---
 /**
- * Directions.astro — library formats grid for /.
+ * Directions.astro — the single, responsive library gateway for /.
+ *
+ * The marks deliberately remain free-standing: the SVG itself carries the
+ * interaction instead of being placed inside another dashboard/card system.
  */
 ---
-<section class="h-section h-reveal" aria-labelledby="hDirectionsLabel">
-      <p class="h-section-label" id="hDirectionsLabel">Форматы библиотеки</p>
-      <div class="h-section-accent" aria-hidden="true"></div>
+<section class="h-home-gateway h-reveal h-scroll-target" id="issledovat" aria-labelledby="hDirectionsLabel">
+  <header class="h-home-section-head">
+    <div>
+      <p class="h-section-label">Исследовать библиотеку</p>
+      <h2 id="hDirectionsLabel">Выберите не раздел, а способ исследования</h2>
+    </div>
+    <p>Четыре входа ведут к тем же материалам, но помогают начать с нужного масштаба: точного ответа, цельной серии, исторического контекста или визуальной карты.</p>
+  </header>
 
-      <div class="h-grid-4" role="list">
+  <nav class="h-home-routes" aria-label="Основные направления библиотеки">
+    <a class="h-home-route h-reveal h-reveal-d1" href="/articles/" data-home-route="reading">
+      <span class="h-home-route__index" aria-hidden="true">01</span>
+      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+        <path class="h-route-line h-route-line--quiet" d="M18 22.5h23c4.7 0 7 2.3 7 7V76c0-5.2-3.8-8-9.2-8H18V22.5Z"/>
+        <path class="h-route-line" d="M78 22.5H55c-4.7 0-7 2.3-7 7V76c0-5.2 3.8-8 9.2-8H78V22.5Z"/>
+        <path class="h-route-spark" d="M48 22V12m-8.5 3.5-4-7M56.5 15.5l4-7"/>
+      </svg>
+      <span class="h-home-route__copy">
+        <strong>Статьи и ответы</strong>
+        <span>Экзегеза, богословие, переводы и непростые вопросы</span>
+      </span>
+      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
+    </a>
 
-        <!-- Экзегеза и богословие -->
-        <div class="h-card-glass h-reveal h-reveal-d1" role="listitem">
-          <svg class="h-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-          <div>
-            <h3 class="h-card-title">Экзегеза и богословие</h3>
-            <p class="h-card-desc">Разбор библейских текстов с опорой на оригиналы и академические источники</p>
-          </div>
-        </div>
+    <a class="h-home-route h-reveal h-reveal-d2" href="/nagornaya/" data-home-route="series">
+      <span class="h-home-route__index" aria-hidden="true">02</span>
+      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+        <path class="h-route-line h-route-line--quiet" d="M19 72c8-11.7 16.2-17.5 24.5-17.5S60 60.3 77 72"/>
+        <path class="h-route-line" d="M25 58c7.1-14 14.8-21 23-21s15.9 7 23 21"/>
+        <path class="h-route-line" d="M34 41c4.2-10 8.8-15 14-15s9.8 5 14 15"/>
+        <circle class="h-route-spark" cx="48" cy="18" r="3"/>
+      </svg>
+      <span class="h-home-route__copy">
+        <strong>Последовательные серии</strong>
+        <span>Цельные исследования, в которых лучше идти от части к части</span>
+      </span>
+      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
+    </a>
 
-        <!-- Непростые вопросы -->
-        <div class="h-card-glass h-reveal h-reveal-d2" role="listitem">
-          <svg class="h-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-            <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2.5"/>
-          </svg>
-          <div>
-            <h3 class="h-card-title">Непростые вопросы</h3>
-            <p class="h-card-desc">О природе греха, страдании, сомнении и Божьем суверенитете</p>
-          </div>
-        </div>
+    <a class="h-home-route h-reveal h-reveal-d3" href="/biografii/" data-home-route="history">
+      <span class="h-home-route__index" aria-hidden="true">03</span>
+      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+        <circle class="h-route-line" cx="48" cy="30" r="12"/>
+        <path class="h-route-line h-route-line--quiet" d="M24 74c2.5-17 10.5-25.5 24-25.5S69.5 57 72 74"/>
+        <path class="h-route-spark" d="M18 63h10M68 63h10M22 52l8 4M66 56l8-4"/>
+      </svg>
+      <span class="h-home-route__copy">
+        <strong>Люди и история</strong>
+        <span>Биографии служителей, движения, эпохи и живой контекст</span>
+      </span>
+      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
+    </a>
 
-        <!-- Апологетика -->
-        <div class="h-card-glass h-reveal h-reveal-d3" role="listitem">
-          <svg class="h-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-          <div>
-            <h3 class="h-card-title">Апологетика и разбор заблуждений</h3>
-            <p class="h-card-desc">Исторически выверенные ответы на вызовы культуры, псевдонауки и ересей</p>
-          </div>
-        </div>
+    <a class="h-home-route h-reveal h-reveal-d4" href="/karty/" data-home-route="maps">
+      <span class="h-home-route__index" aria-hidden="true">04</span>
+      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+        <circle class="h-route-line h-route-line--quiet" cx="48" cy="48" r="27"/>
+        <path class="h-route-line" d="M48 17c10 10.4 15 20.7 15 31S58 68.6 48 79c-10-10.4-15-20.7-15-31s5-20.6 15-31Z"/>
+        <path class="h-route-line" d="M22 39h52M22 57h52"/>
+        <circle class="h-route-spark" cx="66" cy="31" r="4"/>
+      </svg>
+      <span class="h-home-route__copy">
+        <strong>Карты и связи</strong>
+        <span>Визуальные исследования, маршруты, события и временные линии</span>
+      </span>
+      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
+    </a>
+  </nav>
 
-        <!-- Переводы -->
-        <div class="h-card-glass h-reveal h-reveal-d4" role="listitem">
-          <svg class="h-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m5 8 6 6"/>
-            <path d="m4 14 6-6 2-3"/>
-            <path d="M2 5h12"/>
-            <path d="M7 2h1"/>
-            <path d="m22 22-5-10-5 10"/>
-            <path d="M14 18h6"/>
-          </svg>
-          <div>
-            <h3 class="h-card-title">Переводы зарубежных материалов</h3>
-            <p class="h-card-desc">Академические статьи с английского — то, чего ещё нет на русском</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════════
-         В ПЛАНАХ
-    ══════════════════════════════════════════════════ -->
+  <p class="h-home-gateway__hint">Наведите или нажмите на знак — он мягко меняет состояние, не превращаясь в отдельную плитку.</p>
+</section>

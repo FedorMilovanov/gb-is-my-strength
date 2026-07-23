@@ -101,7 +101,12 @@ function main() {
   if (hasNoindex(astro)) bad(`home unexpectedly noindex: ${meta(astro, 'robots')}`);
   else ok('home is indexable');
   mustContain('home pagefind body', astro, 'data-pagefind-body');
-  mustContain('home mobile hero hub', astro, 'h-mobile-hero-hub');
+  mustContain('home responsive library gateway', astro, 'h-home-gateway');
+  mustContain('home interactive Habakkuk text', astro, 'Аввакум 3:19');
+  for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths', 'h-mobile-hero-hub']) {
+    if (astro.includes(rejected)) bad(`home contains rejected mobile experiment: ${rejected}`);
+    else ok(`home has no rejected mobile experiment: ${rejected}`);
+  }
 
   const legacyWords = wordCount(legacy);
   const astroWords = wordCount(astro);
@@ -115,7 +120,7 @@ function main() {
     (astro.match(/astro-article-card/g) || []).length +
     (astro.match(/h-featured-series/g) || []).length +
     (astro.match(/h-article-card/g) || []).length +
-    (astro.match(/h-card-glass/g) || []).length;
+    (astro.match(/h-home-route/g) || []).length;
   if (cardCount < 8) note(`home card count looks thin (${cardCount}); mobile-first IA pass still recommended`);
   else ok(`home has substantial card structure (${cardCount} cards)`);
 
