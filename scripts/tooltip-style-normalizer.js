@@ -10,7 +10,8 @@ const WRITE = process.argv.includes('--write');
 const TARGET_VERTICAL_ALIGN = '.14em';
 const TARGET_HOVER_TRANSFORM = 'translateY(-.08em) scale(1.08)';
 const CLOSED_TOOLTIP_POINTER_RULE = '.fn-marker:not(.is-open)>.tooltip{pointer-events:none}.fn-marker.is-open>.tooltip{pointer-events:auto}';
-const FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip{pointer-events:none}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto}';
+const LEGACY_FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip{pointer-events:none}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto}';
+const FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}';
 
 function normalizeTooltipStyles(source) {
   let changes = 0;
@@ -36,7 +37,10 @@ function normalizeTooltipStyles(source) {
     changes += 1;
   }
 
-  if (!output.includes(FLOATING_TOOLTIP_POINTER_RULE)) {
+  if (output.includes(LEGACY_FLOATING_TOOLTIP_POINTER_RULE)) {
+    output = output.replace(LEGACY_FLOATING_TOOLTIP_POINTER_RULE, FLOATING_TOOLTIP_POINTER_RULE);
+    changes += 1;
+  } else if (!output.includes(FLOATING_TOOLTIP_POINTER_RULE)) {
     output = `${output.trimEnd()}\n${FLOATING_TOOLTIP_POINTER_RULE}\n`;
     changes += 1;
   }
@@ -54,7 +58,7 @@ function normalizeTooltipStyles(source) {
 function main() {
   const source = fs.readFileSync(CSS_FILE, 'utf8');
   const result = normalizeTooltipStyles(source);
-  console.log(`Tooltip style normalizer: ${result.changes} change(s); vertical-align=${TARGET_VERTICAL_ALIGN}; hover=${TARGET_HOVER_TRANSFORM}; closed-tooltip pointer shield=on; floating-surface pointer pass-through=on.`);
+  console.log(`Tooltip style normalizer: ${result.changes} change(s); vertical-align=${TARGET_VERTICAL_ALIGN}; hover=${TARGET_HOVER_TRANSFORM}; closed-tooltip pointer shield=on; floating-surface pointer pass-through=important.`);
 
   if (WRITE && result.output !== source) {
     fs.writeFileSync(CSS_FILE, result.output);
@@ -69,5 +73,6 @@ else module.exports = {
   TARGET_VERTICAL_ALIGN,
   TARGET_HOVER_TRANSFORM,
   CLOSED_TOOLTIP_POINTER_RULE,
+  LEGACY_FLOATING_TOOLTIP_POINTER_RULE,
   FLOATING_TOOLTIP_POINTER_RULE
 };
