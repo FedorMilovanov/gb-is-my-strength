@@ -9,6 +9,7 @@ const REPORTS = path.join(ROOT, 'reports');
 const TEXT_EXTENSIONS = new Set(['.astro', '.html', '.md', '.mdx', '.js', '.mjs', '.jsx', '.tsx', '.css']);
 const SKIP_DIRS = new Set(['.git', 'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'pagefind', '.astro']);
 const DOVE_SIGNALS = /fn-marker--dove|fn-dove-icon|fn-dove-wing/gi;
+const CROSS_GLYPHS = /[†‡✝✞✟✠✚✛✜✢✣✤✥✦✧]/gu;
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -48,6 +49,24 @@ function classValue(tag) {
   return match ? match[1] : '';
 }
 
+function stripMarkup(value) {
+  return String(value || '')
+    .replace(/<span\b[^>]*class=["'][^"']*(?:tooltip|gtip|btip)[^"']*["'][^>]*>[\s\S]*?<\/span>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function markerKind(classes, visibleText) {
+  const isDove = classes.includes('fn-marker--dove');
+  const hasNumber = /\d/.test(visibleText);
+  if (isDove && hasNumber) return 'invalid-dove-numbered';
+  if (isDove) return 'dove-unnumbered';
+  if (hasNumber) return 'numbered';
+  return 'invalid-unnumbered-without-dove';
+}
+
 function auditFile(file) {
   const source = fs.readFileSync(file, 'utf8');
   const markers = [];
@@ -55,18 +74,25 @@ function auditFile(file) {
   const closeIcons = [];
   const runtimeSnippets = [];
 
-  for (const match of source.matchAll(/<(?:span|button|a|sup)\b[^>]*\bclass=["'][^"']*\bfn-marker\b[^"']*["'][^>]*>/gi)) {
-    const tag = match[0];
-    const classes = classValue(tag).split(/\s+/).filter(Boolean);
+  const markerPattern = /<(span|button|a|sup)\b([^>]*\bclass=["'][^"']*\bfn-marker\b[^"']*["'][^>]*)>([\s\S]*?)<\/\1>/gi;
+  for (const match of source.matchAll(markerPattern)) {
+    const openingTag = `<${match[1]}${match[2]}>`;
+    const classes = classValue(openingTag).split(/\s+/).filter(Boolean);
+    const visibleText = stripMarkup(match[3]);
+    const kind = markerKind(classes, visibleText);
     markers.push({
       line: lineAt(source, match.index),
       classes,
-      isDove: classes.includes('fn-marker--dove'),
+      visibleText,
+      kind,
+      isDove: kind === 'dove-unnumbered',
+      isNumbered: kind === 'numbered',
+      valid: kind === 'dove-unnumbered' || kind === 'numbered',
       snippet: snippet(source, match.index)
     });
   }
 
-  for (const match of source.matchAll(/[†‡✝✞✟✠✚✛✜✢✣✤✥✦✧]/gu)) {
+  for (const match of source.matchAll(CROSS_GLYPHS)) {
     const local = snippet(source, match.index, 360);
     if (/fn-marker|tooltip|footnote|сноск/i.test(local)) {
       literalGlyphs.push({ glyph: match[0], line: lineAt(source, match.index), snippet: local });
@@ -90,8 +116,9 @@ function auditFile(file) {
   return {
     file: rel(file),
     markerCount: markers.length,
-    doveCount: markers.filter((item) => item.isDove).length,
-    nonDoveCount: markers.filter((item) => !item.isDove).length,
+    numberedCount: markers.filter((item) => item.kind === 'numbered').length,
+    doveCount: markers.filter((item) => item.kind === 'dove-unnumbered').length,
+    invalidCount: markers.filter((item) => !item.valid).length,
     markers,
     literalGlyphs,
     closeIcons,
@@ -104,34 +131,46 @@ function main() {
   const files = walk(ROOT).map(auditFile).filter(Boolean).sort((a, b) => a.file.localeCompare(b.file));
   const totals = files.reduce((acc, file) => {
     acc.markers += file.markerCount;
+    acc.numbered += file.numberedCount;
     acc.doves += file.doveCount;
-    acc.nonDoves += file.nonDoveCount;
+    acc.invalid += file.invalidCount;
     acc.literalGlyphs += file.literalGlyphs.length;
     acc.closeIcons += file.closeIcons.length;
     acc.runtimeSnippets += file.runtimeSnippets.length;
     return acc;
-  }, { markers: 0, doves: 0, nonDoves: 0, literalGlyphs: 0, closeIcons: 0, runtimeSnippets: 0 });
+  }, { markers: 0, numbered: 0, doves: 0, invalid: 0, literalGlyphs: 0, closeIcons: 0, runtimeSnippets: 0 });
 
-  const report = {
-    generatedAt: new Date().toISOString(),
-    totals,
-    files
-  };
+  const violations = [];
+  for (const file of files) {
+    for (const marker of file.markers.filter((item) => !item.valid)) {
+      violations.push(`${file.file}:${marker.line}: ${marker.kind} (${marker.visibleText || 'empty'})`);
+    }
+    for (const glyph of file.literalGlyphs) {
+      violations.push(`${file.file}:${glyph.line}: cross-like tooltip trigger ${glyph.glyph}`);
+    }
+  }
+
+  const report = { generatedAt: new Date().toISOString(), totals, violations, files };
   fs.mkdirSync(REPORTS, { recursive: true });
   fs.writeFileSync(path.join(REPORTS, 'tooltip-icon-audit.json'), JSON.stringify(report, null, 2) + '\n');
   fs.writeFileSync(path.join(REPORTS, 'tooltip-icon-audit.md'), [
     '# Tooltip icon audit', '',
+    'Canonical rule: numbered academic/Bible notes retain numeric markers; unnumbered standalone notes use the interactive dove.', '',
     `- Trigger markers: ${totals.markers}`,
-    `- Dove trigger markers: ${totals.doves}`,
-    `- Non-dove trigger markers: ${totals.nonDoves}`,
+    `- Valid numbered markers: ${totals.numbered}`,
+    `- Valid unnumbered dove markers: ${totals.doves}`,
+    `- Invalid marker semantics: ${totals.invalid}`,
     `- Literal cross-like trigger glyphs: ${totals.literalGlyphs}`,
     `- Close X icons (kept as close controls): ${totals.closeIcons}`,
     `- Dove runtime/CSS extracts: ${totals.runtimeSnippets}`,
+    '', '## Violations', '',
+    ...(violations.length ? violations.map((item) => `- ${item}`) : ['- none']),
     '', '## Files', '',
-    ...files.map((file) => `- \`${file.file}\`: ${file.markerCount} markers (${file.doveCount} dove, ${file.nonDoveCount} non-dove), ${file.literalGlyphs.length} cross-like glyphs, ${file.runtimeSnippets.length} runtime extracts`)
+    ...files.map((file) => `- \`${file.file}\`: ${file.markerCount} markers (${file.numberedCount} numbered, ${file.doveCount} dove, ${file.invalidCount} invalid), ${file.literalGlyphs.length} cross-like glyphs`)
   ].join('\n') + '\n');
 
-  console.log(`Tooltip icon audit: ${totals.markers} markers, ${totals.nonDoves} non-dove, ${totals.literalGlyphs} cross-like glyphs, ${totals.closeIcons} close X controls, ${totals.runtimeSnippets} runtime extracts.`);
+  console.log(`Tooltip icon audit: ${totals.markers} markers, ${totals.numbered} numbered, ${totals.doves} doves, ${totals.invalid} invalid, ${totals.literalGlyphs} cross-like glyphs.`);
+  if (violations.length) process.exitCode = 1;
 }
 
 main();
