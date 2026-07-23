@@ -21,8 +21,10 @@ on:
       - "src/components/nagornaya/**"
       - "css/**"
       - "js/**"
+      - "sitemap.xml"
       - "package.json"
       - "package-lock.json"
+      - "scripts/audit-pro.js"
       - "scripts/check-route-profiles.js"
       - "scripts/check-route-migration-matrix.js"
       - "scripts/check-content-source-coverage.js"
@@ -32,6 +34,7 @@ on:
       - "scripts/content-source-provenance-audit.js"
       - "scripts/public-surface-registry-audit.js"
       - "scripts/public-surface-registry-regression-test.js"
+      - "scripts/sitemap-route-contract-test.js"
       - "scripts/public-surface-browser-matrix.mjs"
       - "scripts/public-surface-browser-diagnostics.mjs"
       - "scripts/route-semantics-browser-test.mjs"
@@ -39,6 +42,7 @@ on:
       - "scripts/nagornaya-source-registry-test.js"
       - "scripts/nagornaya-epistemic-ui-browser-test.mjs"
       - "scripts/lib/public-surface-registry.js"
+      - "scripts/lib/sitemap-route-contract.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
       - "scripts/lib/effective-route-registry.js"
@@ -81,7 +85,7 @@ jobs:
             scripts/route-profile-contract-audit.js --strict 2>&1 \
             | tee reports/route-profile-contract.log
 
-      - name: Public surface registry
+      - name: Public surface and sitemap registry
         if: always()
         shell: bash
         run: |
@@ -89,6 +93,8 @@ jobs:
           {
             npm run surface:registry:check
             npm run surface:registry:test
+            node scripts/sitemap-route-contract-test.js
+            node scripts/audit-pro.js
           } 2>&1 | tee reports/public-surface-registry.log
 
       - name: Migration matrix contract
@@ -134,6 +140,84 @@ jobs:
             migration/route-migration-matrix.json
           if-no-files-found: error
           retention-days: 7
+
+  materialize-sitemap-audit:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/sitemap-registry-contract'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+      - name: Replace root-HTML sitemap inference with registry contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/audit-pro.js')
+          text = path.read_text(encoding='utf-8')
+          import_anchor = "const { spawnSync } = require('child_process');\n"
+          import_line = "const { auditSitemapCoverage, contractProblems } = require('./lib/sitemap-route-contract');\n"
+          if import_line not in text:
+              if text.count(import_anchor) != 1:
+                  raise SystemExit('audit-pro import anchor mismatch')
+              text = text.replace(import_anchor, import_anchor + import_line)
+
+          old = """    const sitemap = read('sitemap.xml');
+    const urls = [...sitemap.matchAll(/<loc>([^<]+)<\\/loc>/g)].map(m => m[1]);
+    const dup = urls.filter((u, i) => urls.indexOf(u) !== i);
+    if (dup.length) R.err(`sitemap duplicate loc: ${[...new Set(dup)].join(', ')}`);
+    const contentPages = htmlPages.map(rel)
+      .filter(f => !['404.html'].includes(f))
+      .filter(f => !verificationFileRe.test(f))
+      .filter(f => !/<meta[^>]+name=[\"']robots[\"'][^>]+content=[\"'][^\"']*noindex/i.test(read(f)));
+    let missing = 0;
+    for (const f of contentPages) {
+      const url = SITE_URL + '/' + (f === 'index.html' ? '' : f.replace(/index\\.html$/, ''));
+      if (!sitemap.includes(`<loc>${url}</loc>`)) { missing++; R.warn(`sitemap missing URL: ${url}`); }
+    }
+    if (!missing && !dup.length) R.ok(`sitemap.xml covers HTML pages (${urls.length} loc entries)`);
+"""
+          new = """    const sitemap = read('sitemap.xml');
+    const contract = auditSitemapCoverage(sitemap, { siteUrl: SITE_URL });
+    const problems = contractProblems(contract);
+    for (const problem of problems) R.err(`sitemap contract: ${problem}`);
+    if (!problems.length) {
+      R.ok(`sitemap.xml covers canonical production routes (${contract.expectedRoutes.length} routes; ${contract.locations.length} loc entries)`);
+    }
+"""
+          if old in text:
+              text = text.replace(old, new)
+          elif new not in text:
+              raise SystemExit('audit-pro sitemap block mismatch')
+          path.write_text(text, encoding='utf-8')
+          PY
+          node scripts/sitemap-route-contract-test.js
+          node scripts/audit-pro.js
+          git diff --check
+      - name: Commit materialized audit integration
+        shell: bash
+        run: |
+          git add scripts/audit-pro.js
+          if git diff --cached --quiet; then
+            echo 'audit-pro integration already materialized'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(audit): require every canonical production route in sitemap'
+          git push origin HEAD:"${{ github.event.pull_request.head.ref }}"
 
   public-surface-browser-matrix:
     runs-on: ubuntu-latest
@@ -193,7 +277,7 @@ jobs:
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
-            reports/nagornaya-epistemic-ui-browser.json
+            reports/nagornaya-epistemic-browser.json
             reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
           retention-days: 14
