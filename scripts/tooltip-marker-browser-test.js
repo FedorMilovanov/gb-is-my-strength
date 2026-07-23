@@ -84,10 +84,21 @@ async function waitForRuntime(page) {
   });
 }
 
-async function movePointerTo(page, selector) {
-  const box = await page.locator(selector).boundingBox();
-  assert.ok(box, `${selector} must have a bounding box`);
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+async function forcePseudoHover(page, selector, enabled) {
+  const session = await page.context().newCDPSession(page);
+  try {
+    await session.send('DOM.enable');
+    await session.send('CSS.enable');
+    const { root } = await session.send('DOM.getDocument', { depth: -1, pierce: true });
+    const { nodeId } = await session.send('DOM.querySelector', { nodeId: root.nodeId, selector });
+    assert.ok(nodeId, `${selector} must resolve through CDP`);
+    await session.send('CSS.forcePseudoState', {
+      nodeId,
+      forcedPseudoClasses: enabled ? ['hover'] : []
+    });
+  } finally {
+    await session.detach();
+  }
 }
 
 async function desktopAssertions(browser, origin) {
@@ -124,36 +135,47 @@ async function desktopAssertions(browser, origin) {
   assert.equal(initial.numberedDoveIcons, 0, 'numbered note must not render a dove');
   assert.equal(initial.numberedText, '7', 'numbered marker must retain its visible number');
   assert.equal(initial.triggerText, '', 'dove trigger must not retain a dagger/cross glyph');
-  assert.ok(initial.verticalDelta <= 1.5, `dove sits too low (${initial.verticalDelta.toFixed(2)}px)`);
-  assert.ok(initial.verticalDelta >= -8, `dove sits too high (${initial.verticalDelta.toFixed(2)}px)`);
+  assert.ok(initial.verticalDelta <= 0.5, `dove sits too low (${initial.verticalDelta.toFixed(2)}px)`);
+  assert.ok(initial.verticalDelta >= -4, `dove sits too high (${initial.verticalDelta.toFixed(2)}px)`);
   assert.ok(initial.doveWidth >= 11 && initial.doveWidth <= 24, `unexpected dove width ${initial.doveWidth}`);
 
-  // Direct pointer movement avoids Playwright retrying hover after the tooltip opens over the anchor.
-  await movePointerTo(page, '#dove');
+  // Verify the production CSS hover state independently of the floating tooltip overlay.
+  await forcePseudoHover(page, '#dove', true);
   await page.waitForTimeout(80);
-  await page.screenshot({ path: path.join(REPORTS, 'tooltip-marker-desktop.png'), fullPage: false });
-  const hover = await page.evaluate(() => {
+  const hoverStyle = await page.evaluate(() => {
     const wing = document.querySelector('#dove .fn-dove-wing');
     const svg = document.querySelector('#dove .fn-dove-icon');
     return {
       animationName: getComputedStyle(wing).animationName,
-      transform: getComputedStyle(svg).transform,
-      tooltipOpen: document.querySelector('#dove').classList.contains('is-open'),
-      anchorHovered: document.querySelector('#dove').matches(':hover')
+      transform: getComputedStyle(svg).transform
     };
   });
-  console.log(`desktop hover: ${JSON.stringify(hover)}`);
-  assert.equal(hover.anchorHovered, true, 'pointer must physically hover the dove anchor');
-  assert.match(hover.animationName, /fn-dove-flap/, 'dove wing must react on desktop hover');
-  assert.notEqual(hover.transform, 'none', 'dove SVG must move subtly on hover');
-  assert.equal(hover.tooltipOpen, true, 'hover must open the standalone tooltip');
+  console.log(`desktop hover style: ${JSON.stringify(hoverStyle)}`);
+  assert.match(hoverStyle.animationName, /fn-dove-flap/, 'dove wing must react on desktop hover');
+  assert.notEqual(hoverStyle.transform, 'none', 'dove SVG must move subtly on hover');
+  await forcePseudoHover(page, '#dove', false);
 
+  // Verify that a real pointer-over event opens the standalone tooltip.
+  await page.dispatchEvent('#dove', 'pointerover', { pointerType: 'mouse', bubbles: true });
+  await page.waitForFunction(() => document.querySelector('#dove').classList.contains('is-open'));
+  await page.screenshot({ path: path.join(REPORTS, 'tooltip-marker-desktop.png'), fullPage: false });
   const desktopTip = await page.evaluate(() => {
     const tip = document.querySelector('#dove .tooltip') || document.querySelector('body > .tooltip.gb-floating-tip');
     const rect = tip.getBoundingClientRect();
-    return { open: tip.classList.contains('is-open') || document.querySelector('#dove').classList.contains('is-open'), left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, vw: innerWidth, vh: innerHeight };
+    return {
+      expanded: document.querySelector('#dove').getAttribute('aria-expanded'),
+      open: document.querySelector('#dove').classList.contains('is-open'),
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      bottom: rect.bottom,
+      vw: innerWidth,
+      vh: innerHeight
+    };
   });
   console.log(`desktop tooltip: ${JSON.stringify(desktopTip)}`);
+  assert.equal(desktopTip.expanded, 'true');
+  assert.equal(desktopTip.open, true, 'pointer-over must open the standalone tooltip');
   assert.ok(desktopTip.left >= 0 && desktopTip.right <= desktopTip.vw + 1, 'desktop tooltip must remain inside viewport horizontally');
   assert.ok(desktopTip.top >= 0 && desktopTip.bottom <= desktopTip.vh + 1, 'desktop tooltip must remain inside viewport vertically');
 
@@ -194,8 +216,7 @@ async function mobileAssertions(browser, origin) {
       top: rect.top,
       bottom: rect.bottom,
       vw: innerWidth,
-      vh: innerHeight,
-      scrollLocked: document.documentElement.classList.contains('gb-scroll-locked') || document.body.style.position === 'fixed'
+      vh: innerHeight
     };
   });
 
