@@ -49,13 +49,17 @@ jobs:
       - name: Remove transport chunks
         run: rm -rf scripts/_tmp-tts-materializer-parts
 
-      - name: Check syntax and source mutations
+      - name: Check permanent JavaScript syntax
         run: |
           node --check js/vosk-tts-engine.js
           node --check scripts/tts-download-consent-contract-test.js
           node --check scripts/tts-download-notice-browser-test.js
-          node scripts/tts-download-consent-contract-test.js
-          node scripts/cache-bust.js
+
+      - name: Run TTS consent mutation contract
+        run: node scripts/tts-download-consent-contract-test.js
+
+      - name: Verify existing cache-bust contract remains clean
+        run: node scripts/cache-bust.js
 
       - name: Install browser dependencies
         run: |
