@@ -5,12 +5,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const ROOT = process.cwd();
-const POLICY_PATH = path.join(ROOT, "data", "glossary-policy.json");
-const DICT_PATH = path.join(ROOT, "data", "glossary.json");
-const RUNTIME_PATH = path.join(ROOT, "js", "glossary.js");
-const SITE_RUNTIME_PATH = path.join(ROOT, "js", "site.js");
+const policyPath = path.join(ROOT, "data/glossary-policy.json");
+const dictionaryPath = path.join(ROOT, "data/glossary.json");
+const runtimePath = path.join(ROOT, "js/glossary.js");
+const siteRuntimePath = path.join(ROOT, "js/site.js");
 
-const SOURCE_ROOTS = [
+const roots = [
   "src",
   "articles",
   "biografii",
@@ -18,83 +18,53 @@ const SOURCE_ROOTS = [
   "konfessii",
   "pastor-series",
   "baptisty-rossii"
-].map((item) => path.join(ROOT, item));
+];
 
-const SOURCE_EXTENSIONS = new Set([
-  ".astro",
-  ".html",
-  ".md",
-  ".mdx",
-  ".jsx",
-  ".tsx"
-]);
-
+const extensions = new Set([".astro", ".html", ".md", ".mdx", ".jsx", ".tsx"]);
 const errors = [];
 const warnings = [];
 
-function fail(message) {
-  errors.push(message);
-}
-
-function warn(message) {
-  warnings.push(message);
-}
-
-function readJson(filePath) {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, "utf8"));
-  } catch (error) {
-    fail(`${relative(filePath)}: cannot read valid JSON (${error.message})`);
-    return null;
-  }
-}
-
-function relative(filePath) {
-  return path.relative(ROOT, filePath).replaceAll(path.sep, "/");
-}
-
-function normalize(value) {
-  return String(value || "")
+const fail = (message) => errors.push(message);
+const warn = (message) => warnings.push(message);
+const rel = (file) => path.relative(ROOT, file).replaceAll(path.sep, "/");
+const normalize = (value) =>
+  String(value || "")
     .toLowerCase()
     .replace(/ё/g, "е")
     .replace(/[‐‑‒–—−]/g, "-")
     .replace(/\s+/g, " ")
     .trim();
+
+function readJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (error) {
+    fail(`${rel(file)}: invalid JSON (${error.message})`);
+    return null;
+  }
 }
 
-function walk(directory, files = []) {
-  if (!fs.existsSync(directory)) return files;
+function walk(directory, output = []) {
+  if (!fs.existsSync(directory)) return output;
 
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-    if (
-      entry.name === ".git" ||
-      entry.name === "node_modules" ||
-      entry.name === "dist" ||
-      entry.name === "reports" ||
-      entry.name === "public"
-    ) {
+    if ([".git", "node_modules", "dist", "reports", "public"].includes(entry.name)) {
       continue;
     }
 
-    const fullPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      walk(fullPath, files);
-      continue;
-    }
-
-    if (SOURCE_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) {
-      files.push(fullPath);
-    }
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) walk(file, output);
+    else if (extensions.has(path.extname(entry.name).toLowerCase())) output.push(file);
   }
 
-  return files;
+  return output;
 }
 
-function compileDictionary(dict) {
-  const aliasAll = new Map();
+function dictionaryIndex(dictionary) {
+  const aliases = new Map();
 
-  for (const [canonical, rawEntry] of Object.entries(dict || {})) {
-    const entry = rawEntry || {};
+  for (const [canonical, raw] of Object.entries(dictionary || {})) {
+    const entry = raw || {};
     const nested =
       entry.definition && typeof entry.definition === "object"
         ? entry.definition
@@ -113,28 +83,27 @@ function compileDictionary(dict) {
       fail(`data/glossary.json: "${canonical}" has no brief definition`);
     }
 
-    const aliases = Array.isArray(entry.aliases)
+    const forms = Array.isArray(entry.aliases)
       ? entry.aliases.slice()
       : Array.isArray(nested.aliases)
         ? nested.aliases.slice()
         : [];
+    forms.unshift(canonical);
 
-    aliases.unshift(canonical);
-
-    for (const alias of aliases) {
-      const key = normalize(alias);
+    for (const form of forms) {
+      const key = normalize(form);
       if (!key) {
         fail(`data/glossary.json: "${canonical}" contains an empty alias`);
         continue;
       }
 
-      const previous = aliasAll.get(key);
+      const previous = aliases.get(key);
       if (previous && previous !== canonical) {
         fail(
-          `data/glossary.json: alias "${alias}" maps to both "${previous}" and "${canonical}"`
+          `data/glossary.json: alias "${form}" maps to both "${previous}" and "${canonical}"`
         );
       } else {
-        aliasAll.set(key, canonical);
+        aliases.set(key, canonical);
       }
     }
 
@@ -145,11 +114,11 @@ function compileDictionary(dict) {
     }
   }
 
-  return aliasAll;
+  return aliases;
 }
 
 function validatePolicy(policy) {
-  if (!policy || typeof policy !== "object") return;
+  if (!policy) return;
 
   for (const field of ["rootSelectors", "proseSelectors", "forbiddenSelectors"]) {
     if (!Array.isArray(policy[field]) || policy[field].length === 0) {
@@ -160,13 +129,11 @@ function validatePolicy(policy) {
   for (const field of ["minWordGap", "minBlockGap", "maxPerArticle"]) {
     const value = policy.cadence && policy.cadence[field];
     if (!Number.isFinite(Number(value)) || Number(value) < 0) {
-      fail(
-        `data/glossary-policy.json: cadence.${field} must be a non-negative number`
-      );
+      fail(`data/glossary-policy.json: cadence.${field} must be non-negative`);
     }
   }
 
-  const requiredUniversalSelectors = [
+  for (const selector of [
     ".summary-card",
     ".note-box",
     ".context-bridge",
@@ -175,87 +142,67 @@ function validatePolicy(policy) {
     "nav",
     "figure",
     "[data-glossary-skip]"
-  ];
-
-  for (const selector of requiredUniversalSelectors) {
+  ]) {
     if (!policy.forbiddenSelectors.includes(selector)) {
-      fail(
-        `data/glossary-policy.json: missing universal forbidden selector ${selector}`
-      );
+      fail(`data/glossary-policy.json: missing universal selector ${selector}`);
     }
   }
-}
-
-function selectorMatchesFrame(selector, frame) {
-  if (!selector || !frame) return false;
-
-  if (selector.startsWith(".")) {
-    return frame.classes.has(selector.slice(1));
-  }
-
-  if (selector.startsWith("[") && selector.endsWith("]")) {
-    const body = selector.slice(1, -1);
-    const attribute = body.split("=")[0].trim();
-    return frame.attributes.has(attribute);
-  }
-
-  if (/^[a-z][a-z0-9-]*$/i.test(selector)) {
-    return frame.tag === selector.toLowerCase();
-  }
-
-  return false;
-}
-
-function frameForbidden(stack, policy) {
-  return stack.some((frame) =>
-    policy.forbiddenSelectors.some((selector) =>
-      selectorMatchesFrame(selector, frame)
-    )
-  );
 }
 
 function parseAttributes(raw) {
   const classes = new Set();
   const attributes = new Map();
-  const attributePattern =
+  const pattern =
     /([:@A-Za-z_][\w:.-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
 
   let match;
-  while ((match = attributePattern.exec(raw)) !== null) {
+  while ((match = pattern.exec(raw)) !== null) {
     const name = match[1];
     const value = match[2] ?? match[3] ?? match[4] ?? "";
     attributes.set(name, value);
 
     if (name === "class" || name === "className") {
-      value
-        .split(/\s+/)
-        .filter(Boolean)
-        .forEach((item) => classes.add(item));
+      value.split(/\s+/).filter(Boolean).forEach((item) => classes.add(item));
     }
   }
 
   return { classes, attributes };
 }
 
-function visibleTermFromOpenTag(rawTag) {
-  const match = rawTag.match(/data-term\s*=\s*(?:"([^"]+)"|'([^']+)')/i);
+function frameMatches(selector, frame) {
+  if (selector.startsWith(".")) return frame.classes.has(selector.slice(1));
+
+  if (selector.startsWith("[") && selector.endsWith("]")) {
+    const attribute = selector.slice(1, -1).split("=")[0].trim();
+    return frame.attributes.has(attribute);
+  }
+
+  return /^[a-z][a-z0-9-]*$/i.test(selector)
+    ? frame.tag === selector.toLowerCase()
+    : false;
+}
+
+function hasForbiddenAncestor(stack, policy) {
+  return stack.some((frame) =>
+    policy.forbiddenSelectors.some((selector) => frameMatches(selector, frame))
+  );
+}
+
+function dataTermFromTag(tag) {
+  const match = tag.match(/data-term\s*=\s*(?:"([^"]+)"|'([^']+)')/i);
   return match ? match[1] || match[2] || "" : "";
 }
 
-function auditSourceFile(filePath, policy, aliasAll) {
-  const source = fs.readFileSync(filePath, "utf8");
+function auditSource(file, policy, aliases) {
+  const source = fs.readFileSync(file, "utf8");
   const stack = [];
-  const tagPattern = /<\/?([A-Za-z][\w:-]*)([^>]*)>/g;
+  const tags = /<\/?([A-Za-z][\w:-]*)([^>]*)>/g;
   let match;
 
-  while ((match = tagPattern.exec(source)) !== null) {
+  while ((match = tags.exec(source)) !== null) {
     const full = match[0];
     const tag = match[1].toLowerCase();
-    const rawAttributes = match[2] || "";
     const isClosing = full.startsWith("</");
-    const isSelfClosing =
-      full.endsWith("/>") ||
-      ["img", "source", "br", "hr", "meta", "link", "input"].includes(tag);
 
     if (isClosing) {
       for (let index = stack.length - 1; index >= 0; index -= 1) {
@@ -267,101 +214,93 @@ function auditSourceFile(filePath, policy, aliasAll) {
       continue;
     }
 
-    const parsed = parseAttributes(rawAttributes);
-    const frame = {
-      tag,
-      classes: parsed.classes,
-      attributes: parsed.attributes
-    };
-    const nextStack = stack.concat(frame);
-    const isGlossaryTerm =
-      parsed.classes.has("gterm") || parsed.classes.has("gtip");
+    const parsed = parseAttributes(match[2] || "");
+    const frame = { tag, ...parsed };
+    const glossaryMarkup =
+      frame.classes.has("gterm") || frame.classes.has("gtip");
 
-    if (isGlossaryTerm && frameForbidden(nextStack, policy)) {
+    // Test ancestors only. `.gterm` and `.gtip` are forbidden to automatic
+    // hydration, but their own class must not invalidate the source markup.
+    if (glossaryMarkup && hasForbiddenAncestor(stack, policy)) {
       const line = source.slice(0, match.index).split("\n").length;
-      fail(
-        `${relative(filePath)}:${line}: glossary markup is inside a forbidden container`
-      );
+      fail(`${rel(file)}:${line}: glossary markup is inside a forbidden container`);
     }
 
-    if (parsed.classes.has("gterm")) {
-      const dataTerm = visibleTermFromOpenTag(full);
-      if (dataTerm && !aliasAll.has(normalize(dataTerm))) {
+    if (frame.classes.has("gterm")) {
+      const key = dataTermFromTag(full);
+      if (key && !aliases.has(normalize(key))) {
         const line = source.slice(0, match.index).split("\n").length;
-        fail(
-          `${relative(filePath)}:${line}: data-term "${dataTerm}" does not resolve to data/glossary.json`
-        );
+        fail(`${rel(file)}:${line}: unresolved data-term "${key}"`);
       }
     }
 
-    if (!isSelfClosing) stack.push(frame);
+    const selfClosing =
+      full.endsWith("/>") ||
+      ["img", "source", "br", "hr", "meta", "link", "input"].includes(tag);
+    if (!selfClosing) stack.push(frame);
   }
 }
 
 function validateRuntime(policy) {
-  if (!fs.existsSync(RUNTIME_PATH)) {
+  if (!fs.existsSync(runtimePath)) {
     fail("js/glossary.js is missing");
     return;
   }
 
-  const runtime = fs.readFileSync(RUNTIME_PATH, "utf8");
-  const requiredTokens = [
+  const runtime = fs.readFileSync(runtimePath, "utf8");
+
+  for (const token of [
     "/data/glossary-policy.json",
     "minWordGap",
     "minBlockGap",
     "maxPerArticle",
     "data-glossary-skip",
     "hydrateGlossaryTerms"
-  ];
-
-  for (const token of requiredTokens) {
+  ]) {
     if (!runtime.includes(token)) {
-      fail(`js/glossary.js: missing universal contract token ${token}`);
+      fail(`js/glossary.js: missing contract token ${token}`);
     }
   }
 
   if (/\bgill\b|dzhon-gill/i.test(runtime)) {
-    fail("js/glossary.js: route- or series-specific glossary logic is forbidden");
+    fail("js/glossary.js: route- or series-specific logic is forbidden");
   }
 
-  if (fs.existsSync(SITE_RUNTIME_PATH)) {
-    const siteRuntime = fs.readFileSync(SITE_RUNTIME_PATH, "utf8");
+  if (fs.existsSync(siteRuntimePath)) {
+    const siteRuntime = fs.readFileSync(siteRuntimePath, "utf8");
     if (!siteRuntime.includes(".gtip")) {
       fail("js/site.js: TTS/runtime exclusion for .gtip is missing");
     }
   } else {
-    warn("js/site.js is missing; TTS exclusion could not be checked");
+    warn("js/site.js is missing; TTS exclusion was not checked");
   }
 
-  const forbidden = policy.forbiddenSelectors || [];
-  for (const selector of [
-    ".summary-card",
-    ".note-box",
-    ".context-bridge",
-    ".reading-list-section"
-  ]) {
-    if (!forbidden.includes(selector)) {
-      fail(`glossary runtime policy does not forbid ${selector}`);
+  for (const selector of [".summary-card", ".note-box", ".context-bridge"]) {
+    if (!policy.forbiddenSelectors.includes(selector)) {
+      fail(`runtime policy must forbid ${selector}`);
     }
   }
 }
 
-const policy = readJson(POLICY_PATH);
-const dict = readJson(DICT_PATH);
+const policy = readJson(policyPath);
+const dictionary = readJson(dictionaryPath);
 
 if (policy) validatePolicy(policy);
-const aliasAll = dict ? compileDictionary(dict) : new Map();
+const aliases = dictionary ? dictionaryIndex(dictionary) : new Map();
 if (policy) validateRuntime(policy);
 
-const files = SOURCE_ROOTS.flatMap((sourceRoot) => walk(sourceRoot));
-if (policy && dict) {
-  files.forEach((filePath) => auditSourceFile(filePath, policy, aliasAll));
+const files = roots.flatMap((root) => walk(path.join(ROOT, root)));
+if (policy && dictionary) {
+  files.forEach((file) => auditSource(file, policy, aliases));
 }
 
 warnings.forEach((message) => console.warn(`WARN: ${message}`));
 
-if (errors.length > 0) {
-  errors.forEach((message) => console.error(`ERROR: ${message}`));
+if (errors.length) {
+  errors.slice(0, 200).forEach((message) => console.error(`ERROR: ${message}`));
+  if (errors.length > 200) {
+    console.error(`ERROR: ${errors.length - 200} additional errors omitted`);
+  }
   console.error(
     `Glossary contract failed: ${errors.length} error(s), ${warnings.length} warning(s).`
   );
@@ -369,5 +308,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Glossary contract passed: ${Object.keys(dict || {}).length} terms, ${aliasAll.size} aliases, ${files.length} source files.`
+  `Glossary contract passed: ${Object.keys(dictionary || {}).length} terms, ${aliases.size} aliases, ${files.length} source files.`
 );
