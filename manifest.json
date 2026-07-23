@@ -1,11 +1,12 @@
 {
   "name": "Господь Бог — Сила Моя",
   "short_name": "ГБ-СМ",
+  "id": "/",
   "description": "Богословие, экзегеза, апологетика",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fdfcf9",
-  "theme_color": "#fdfcf9",
+  "background_color": "#edf3f6",
+  "theme_color": "#087d98",
   "lang": "ru",
   "icons": [
     {
@@ -34,7 +35,6 @@
     }
   ],
   "scope": "/",
-  "orientation": "portrait-primary",
   "categories": [
     "education",
     "books"
@@ -49,6 +49,16 @@
       "name": "Статьи",
       "url": "/articles/",
       "description": "Богословские статьи и разборы"
+    },
+    {
+      "name": "Биографии",
+      "url": "/biografii/",
+      "description": "Люди, служение и исторический контекст"
+    },
+    {
+      "name": "Карты",
+      "url": "/karty/",
+      "description": "Визуальные исследования, маршруты и временные линии"
     }
   ],
   "prefer_related_applications": false

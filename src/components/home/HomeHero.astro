@@ -6,47 +6,47 @@
  */
 ---
 <section class="h-hero" aria-label="Главный заголовок">
-  <div class="h-sacred-block h-sacred-block--hero" aria-hidden="true" role="presentation">
+  <div class="h-sacred-block h-sacred-block--hero" role="group" aria-label="Интерактивный текст Аввакума 3:19. Нажмите на еврейское слово, чтобы увидеть перевод.">
     <span class="h-sacred-line h-sacred-line--1">
-      <span class="h-tetra">
+      <span class="h-tetra" role="button" tabindex="0" aria-pressed="false" aria-label="יְהוִה — показать чтение имени">
         <span class="h-tetra-label" aria-hidden="true">Священное Имя Бога</span>
         <span class="hb-front" lang="he">יְהוִה</span>
         <span class="h-tetra-back" aria-hidden="true">
           <span class="h-tetra-name">Яхве</span>
         </span>
       </span>
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="אֲדֹנָי — показать перевод: Господь">
         <span class="hb-front" lang="he">אֲדֹנָי</span>
         <span class="hb-back" aria-hidden="true">Господь</span>
       </span>
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="חֵילִי — показать перевод: сила моя">
         <span class="hb-front" lang="he">חֵילִי</span>
         <span class="hb-back" aria-hidden="true">сила моя</span>
       </span>
     </span>
 
     <span class="h-sacred-line h-sacred-line--2">
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="וַיָּשֶׂם — показать перевод: и сделает">
         <span class="hb-front" lang="he">וַיָּשֶׂם</span>
         <span class="hb-back" aria-hidden="true">и сделает</span>
       </span>
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="רַגְלַי — показать перевод: ноги мои">
         <span class="hb-front" lang="he">רַגְלַי</span>
         <span class="hb-back" aria-hidden="true">ноги мои</span>
       </span>
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="כָּאַיָּלוֹת — показать перевод: как у ланей">
         <span class="hb-front" lang="he">כָּאַיָּלוֹת</span>
         <span class="hb-back" aria-hidden="true">как у ланей</span>
       </span>
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="וְעַל — показать перевод: и на">
         <span class="hb-front" lang="he">וְעַל</span>
         <span class="hb-back" aria-hidden="true">и на</span>
       </span>
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="בָּמוֹתַי — показать перевод: высоты мои">
         <span class="hb-front" lang="he">בָּמוֹתַי</span>
         <span class="hb-back" aria-hidden="true">высоты мои</span>
       </span>
-      <span class="hb-w">
+      <span class="hb-w" role="button" tabindex="0" aria-pressed="false" aria-label="יַדְרִכֵנִי — показать перевод: даст мне ступать">
         <span class="hb-front" lang="he">יַדְרִכֵנִי</span>
         <span class="hb-back" aria-hidden="true">даст мне ступать</span>
       </span>
@@ -78,23 +78,28 @@
     </button>
   </div>
 
-  <div class="h-mobile-hero-hub" aria-label="Войти в библиотеку">
-    <div class="h-mobile-hero-hub__meta" role="list" aria-label="Ключевые форматы библиотеки">
-      <span class="h-mobile-hero-hub__stat" role="listitem">Каталог</span>
-      <span class="h-mobile-hero-hub__stat" role="listitem">Серии</span>
-      <span class="h-mobile-hero-hub__stat" role="listitem">3D-карта</span>
-    </div>
-    <div class="h-mobile-hero-hub__card">
-      <span class="h-mobile-hero-hub__kicker">Войти в библиотеку</span>
-      <strong>Выберите способ входа, а не листайте всё подряд</strong>
-      <p class="h-mobile-hero-hub__copy">Каталог — если нужен точный материал, серия — если хотите идти по порядку, 3D-карта — если нужен визуальный вход.</p>
-      <div class="h-mobile-hero-hub__actions" role="list">
-        <a href="/articles/" class="h-mobile-hero-hub__action" role="listitem">Каталог</a>
-        <a href="/nagornaya/" class="h-mobile-hero-hub__action" role="listitem">Серия</a>
-        <a href="/konfessii/russkij-baptizm/" class="h-mobile-hero-hub__action" role="listitem">3D-карта</a>
-      </div>
-    </div>
+  <div class="h-hero-cues" aria-label="Особенности библиотеки">
+    <span>Оригинальные языки</span>
+    <span>Проверяемые источники</span>
+    <span>Медленное чтение</span>
   </div>
 
   <hr class="h-rule" aria-hidden="true" />
 </section>
+
+<script is:inline>
+  (() => {
+    const words = document.querySelectorAll('.h-sacred-block--hero .hb-w, .h-sacred-block--hero .h-tetra');
+    const sync = (word) => word.setAttribute('aria-pressed', word.hasAttribute('data-toggled') ? 'true' : 'false');
+    words.forEach((word) => {
+      word.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          word.click();
+        }
+      });
+      new MutationObserver(() => sync(word)).observe(word, { attributes: true, attributeFilter: ['data-toggled'] });
+      sync(word);
+    });
+  })();
+</script>

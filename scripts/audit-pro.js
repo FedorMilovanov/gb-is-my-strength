@@ -4389,69 +4389,64 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
-// G113. Home mobile dashboard / app-like entry contract.
-(function homeMobileDashboardContract() {
-  const file = path.join(ROOT, 'index.html');
-  if (!fs.existsSync(file)) {
-    R.err('Home page missing: index.html');
+// G113. Home responsive entry contract.
+// Owner rejected the route-only bottom dock/dashboard experiment in 2026-07.
+// Guard the native Astro source so stale legacy index.html cannot redefine the
+// production contract.
+(function homeResponsiveEntryContract() {
+  const files = [
+    'src/components/home/HomeMain.astro',
+    'src/components/home/HomeHero.astro',
+    'src/components/home/HomePageChrome.astro',
+    'src/components/home/HomeSections/ResumeMobile.astro',
+    'src/components/home/HomeSections/Directions.astro',
+  ];
+  const missingFiles = files.filter((rel) => !fs.existsSync(path.join(ROOT, rel)));
+  if (missingFiles.length) {
+    R.err(`Home native source missing: ${missingFiles.join(', ')}`);
     return;
   }
-  const html = fs.readFileSync(file, 'utf8');
+  const html = files.map((rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8')).join('\n');
   if (!/<main[^>]+id=["']main-content["'][^>]+data-pagefind-body/i.test(html)) {
     R.err('Home page missing data-pagefind-body on #main-content');
   } else {
     R.ok('Home page main content is pagefind-indexable');
   }
-  if (!/class=["'][^"']*h-mobile-hero-hub[^"']*["']/i.test(html)) {
-    R.err('Home page missing h-mobile-hero-hub first-screen library chooser');
+  if (!/class=["'][^"']*h-home-gateway[^"']*["']/i.test(html)) {
+    R.err('Home page missing the responsive h-home-gateway');
   } else {
-    R.ok('Home page includes h-mobile-hero-hub first-screen library chooser');
+    R.ok('Home page includes one responsive library gateway');
   }
-  if (!/class=["'][^"']*h-mobile-dashboard[^"']*["']/i.test(html)) {
-    R.err('Home page missing h-mobile-dashboard quick-start block');
+  if (!/Аввакум 3:19/.test(html) || !/class=["'][^"']*hb-w[^"']*["']/i.test(html)) {
+    R.err('Home page missing the interactive Habakkuk 3:19 identity');
   } else {
-    R.ok('Home page includes mobile dashboard quick-start block');
+    R.ok('Home page preserves the interactive Habakkuk 3:19 identity');
   }
-  if (!/class=["'][^"']*h-mobile-rail[^"']*["']/i.test(html)) {
-    R.err('Home page missing h-mobile-rail quick-jump navigation');
+  const rejected = ['h-mobile-hero-hub', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths', 'h-mobile-dock'];
+  const presentRejected = rejected.filter((marker) => html.includes(marker));
+  if (presentRejected.length) {
+    R.err(`Home page restores rejected mobile UI: ${presentRejected.join(', ')}`);
   } else {
-    R.ok('Home page includes h-mobile-rail quick-jump navigation');
+    R.ok('Home page has no duplicated dashboard, rail, paths, hero hub, or bottom dock');
   }
-  if (!/class=["'][^"']*h-mobile-paths[^"']*["']/i.test(html)) {
-    R.err('Home page missing h-mobile-paths guided reading section');
+  const routeCount = (html.match(/class=["'][^"']*h-home-route h-reveal/gi) || []).length;
+  if (routeCount !== 4) {
+    R.err(`Home library gateway must expose exactly four primary routes (${routeCount} found)`);
   } else {
-    R.ok('Home page includes h-mobile-paths guided reading section');
+    R.ok('Home library gateway exposes exactly four primary routes');
   }
-  if (!/class=["'][^"']*h-mobile-dock[^"']*["']/i.test(html)) {
-    R.err('Home page missing h-mobile-dock bottom quick actions');
-  } else {
-    R.ok('Home page includes h-mobile-dock bottom quick actions');
-  }
-  const cardCount = (html.match(/class=["'][^"']*h-mobile-dash-card[^"']*["']/gi) || []).length;
-  if (cardCount < 4) {
-    R.err(`Home mobile dashboard has too few quick-start cards (${cardCount} < 4)`);
-  } else {
-    R.ok(`Home mobile dashboard has ${cardCount} quick-start cards`);
-  }
-  const requiredLinks = ['/articles/', '/nagornaya/', '/baptisty-rossii/', '/konfessii/russkij-baptizm/'];
+  const requiredLinks = ['/articles/', '/nagornaya/', '/biografii/', '/karty/'];
   const missing = requiredLinks.filter((href) => !html.includes(`href="${href}"`) && !html.includes(`href='${href}'`));
   if (missing.length) {
-    R.err(`Home mobile dashboard missing required quick-start links: ${missing.join(', ')}`);
+    R.err(`Home library gateway missing primary links: ${missing.join(', ')}`);
   } else {
-    R.ok('Home mobile dashboard includes required quick-start links');
+    R.ok('Home library gateway includes the four primary links');
   }
-  const pathCards = (html.match(/class=["'][^"']*h-mobile-path-card[^"']*["']/gi) || []).length;
-  if (pathCards < 3) {
-    R.err(`Home guided reading section has too few path cards (${pathCards} < 3)`);
+  const main = fs.readFileSync(path.join(ROOT, 'src/components/home/HomeMain.astro'), 'utf8');
+  if (main.indexOf('<Publications />') === -1 || main.indexOf('<Planned />') === -1 || main.indexOf('<Publications />') > main.indexOf('<Planned />')) {
+    R.err('Home must present published work before the roadmap');
   } else {
-    R.ok(`Home guided reading section has ${pathCards} path cards`);
-  }
-  const dockTargets = ['#publikacii', '/konfessii/russkij-baptizm/', '#about'];
-  const dockMissing = dockTargets.filter((href) => !html.includes(`href="${href}"`) && !html.includes(`href='${href}'`));
-  if (dockMissing.length) {
-    R.err(`Home mobile dock missing core targets: ${dockMissing.join(', ')}`);
-  } else {
-    R.ok('Home mobile dock includes core targets');
+    R.ok('Home presents published work before the roadmap');
   }
 })();
 
@@ -4578,4 +4573,3 @@ try {
 
 
 process.exit(R.errors.length ? 1 : 0);
-

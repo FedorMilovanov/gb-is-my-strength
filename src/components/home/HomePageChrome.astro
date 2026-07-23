@@ -22,14 +22,12 @@
     </a>
 
     <ul class="h-nav-links" role="list">
+      <li><a href="#issledovat" class="h-scroll-target">Исследовать</a></li>
       <li><a href="#publikacii" class="h-scroll-target">Публикации</a></li>
-      <li><a href="#razbor" class="h-scroll-target">Разбор заблуждений</a></li>
-      <li><a href="/biografii/">Биографии</a></li>
-      <li><a href="/articles/">Все статьи</a></li>
-      <li><a href="/izbrannoe/" aria-label="Избранное" title="Ваше избранное">★ Избранное</a></li>
+      <li><a href="/nagornaya/">Серии</a></li>
+      <li><a href="/biografii/">История</a></li>
       <li><a href="/karty/">Карты</a></li>
-      <li><a href="/konfessii/">Конфессии</a></li>
-      <li><a href="#about" class="h-scroll-target">О проекте</a></li>
+      <li><a href="/articles/">Каталог</a></li>
     </ul>
 
     <div class="mobile-controls">
@@ -55,14 +53,27 @@
 </nav>
 
 <div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="#publikacii" data-close-nav>Публикации</a>
-  <a href="#razbor" data-close-nav>Разбор заблуждений</a>
-  <a href="/biografii/" data-close-nav>Биографии</a>
-  <a href="/articles/" data-close-nav>Все статьи</a>
-  <a href="/izbrannoe/" data-close-nav>★ Избранное</a>
-  <a href="/karty/" data-close-nav>Карты</a>
-  <a href="/konfessii/" data-close-nav>Конфессии</a>
-  <a href="#about" data-close-nav>О проекте</a>
+  <div class="h-mobile-nav__head">
+    <p>Библиотека</p>
+    <button type="button" data-action="open-search" data-close-nav>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      Найти материал
+    </button>
+  </div>
+  <div class="h-mobile-nav__primary">
+    <a href="/articles/" data-close-nav><span>01</span>Статьи и ответы</a>
+    <a href="/nagornaya/" data-close-nav><span>02</span>Последовательные серии</a>
+    <a href="/biografii/" data-close-nav><span>03</span>Люди и история</a>
+    <a href="/karty/" data-close-nav><span>04</span>Карты и исследования</a>
+  </div>
+  <div class="h-mobile-nav__secondary">
+    <a href="#razbor" data-close-nav>Разбор заблуждений</a>
+    <a href="/konfessii/" data-close-nav>Конфессии</a>
+    <a href="/izbrannoe/" data-close-nav>Избранное</a>
+    <a href="#about" data-close-nav>О проекте</a>
+  </div>
 </div>
 
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
@@ -73,25 +84,6 @@
   </div>
 
   <slot />
-
-  <nav class="h-mobile-dock" aria-label="Быстрые действия на главной">
-    <a href="#publikacii" class="h-mobile-dock__btn" aria-label="Перейти к публикациям">
-      <span class="h-mobile-dock__icon">◫</span>
-      <span class="h-mobile-dock__label">Читать</span>
-    </a>
-    <button type="button" class="h-mobile-dock__btn h-mobile-dock__btn--action" data-action="open-search" aria-label="Открыть поиск по материалам сайта">
-      <span class="h-mobile-dock__icon">⌕</span>
-      <span class="h-mobile-dock__label">Поиск</span>
-    </button>
-    <a href="/konfessii/russkij-baptizm/" class="h-mobile-dock__btn" aria-label="Открыть 3D-карту русского баптизма">
-      <span class="h-mobile-dock__icon">◎</span>
-      <span class="h-mobile-dock__label">3D</span>
-    </a>
-    <a href="#about" class="h-mobile-dock__btn" aria-label="Перейти к разделу о проекте">
-      <span class="h-mobile-dock__icon">✦</span>
-      <span class="h-mobile-dock__label">О проекте</span>
-    </a>
-  </nav>
 </div><!-- /.home-v20 -->
 
 <button class="h-scroll-top" id="hScrollTop" type="button" aria-label="Наверх">
