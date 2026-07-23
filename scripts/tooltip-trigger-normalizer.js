@@ -3,6 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { normalizeTooltipStyles } = require('./tooltip-style-normalizer.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const WRITE = process.argv.includes('--write');
@@ -99,12 +100,23 @@ function normalizeSource(source) {
     }
 
     // Any standalone, unnumbered note uses the dove. Remove dagger/star/SVG trigger content.
-    let nextAttributes = ensureAccessibility(ensureDoveClass(attributes));
+    const nextAttributes = ensureAccessibility(ensureDoveClass(attributes));
     if (!isDove || trigger || /<svg\b/i.test(prefix)) changes += 1;
     return `<span${nextAttributes}>${tooltipStart}`;
   });
 
   return { output, changes };
+}
+
+function normalizeSharedStyles() {
+  const file = path.join(ROOT, 'css/site.css');
+  const source = fs.readFileSync(file, 'utf8');
+  const result = normalizeTooltipStyles(source);
+  if (result.output !== source && WRITE) fs.writeFileSync(file, result.output);
+  if (result.output !== source) {
+    console.log(`${WRITE ? 'WRITE' : 'WOULD WRITE'} ${rel(file)} (${result.changes} marker style change(s))`);
+  }
+  return result;
 }
 
 function main() {
@@ -122,9 +134,13 @@ function main() {
     if (WRITE) fs.writeFileSync(file, result.output);
   }
 
-  console.log(`Tooltip trigger normalizer: ${changes} marker change(s) in ${changedFiles} file(s).`);
+  const styleResult = normalizeSharedStyles();
+  changes += styleResult.changes;
+  if (styleResult.changes) changedFiles += 1;
+
+  console.log(`Tooltip contract normalizer: ${changes} change(s) in ${changedFiles} file(s).`);
   if (!WRITE && changes) process.exitCode = 1;
 }
 
 if (require.main === module) main();
-else module.exports = { normalizeSource, visibleTrigger };
+else module.exports = { normalizeSource, visibleTrigger, normalizeSharedStyles };
