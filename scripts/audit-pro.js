@@ -26,6 +26,7 @@ const crypto = require('crypto');
 const gzip = require('zlib').gzipSync;
 const vm = require('vm');
 const { spawnSync } = require('child_process');
+const { auditSitemapCoverage, contractProblems } = require('./lib/sitemap-route-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const SITE_URL = 'https://gospod-bog.ru';
@@ -865,19 +866,12 @@ const SITE_CSS_MIN_BYTES = 200_000;
   if (!exists('sitemap.xml')) R.err('sitemap.xml missing');
   else {
     const sitemap = read('sitemap.xml');
-    const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
-    const dup = urls.filter((u, i) => urls.indexOf(u) !== i);
-    if (dup.length) R.err(`sitemap duplicate loc: ${[...new Set(dup)].join(', ')}`);
-    const contentPages = htmlPages.map(rel)
-      .filter(f => !['404.html'].includes(f))
-      .filter(f => !verificationFileRe.test(f))
-      .filter(f => !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(read(f)));
-    let missing = 0;
-    for (const f of contentPages) {
-      const url = SITE_URL + '/' + (f === 'index.html' ? '' : f.replace(/index\.html$/, ''));
-      if (!sitemap.includes(`<loc>${url}</loc>`)) { missing++; R.warn(`sitemap missing URL: ${url}`); }
+    const contract = auditSitemapCoverage(sitemap, { siteUrl: SITE_URL });
+    const problems = contractProblems(contract);
+    for (const problem of problems) R.err(`sitemap contract: ${problem}`);
+    if (!problems.length) {
+      R.ok(`sitemap.xml covers canonical production routes (${contract.expectedRoutes.length} routes; ${contract.locations.length} loc entries)`);
     }
-    if (!missing && !dup.length) R.ok(`sitemap.xml covers HTML pages (${urls.length} loc entries)`);
   }
   if (!exists('feed.xml')) R.warn('feed.xml missing');
   else R.ok('feed.xml present');
