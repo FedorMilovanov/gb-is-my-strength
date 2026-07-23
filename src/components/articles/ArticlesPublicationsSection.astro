@@ -8,9 +8,10 @@
 interface Props {
   hardTextsPartsLabel: string;
   nagornayaPartsLabel: string;
+  gillReadingTime: Record<string, number>;
 }
 
-const { hardTextsPartsLabel, nagornayaPartsLabel } = Astro.props;
+const { hardTextsPartsLabel, nagornayaPartsLabel, gillReadingTime } = Astro.props;
 ---
 <!-- ПУБЛИКАЦИИ -->
     <section class="h-section h-reveal" id="publikacii" aria-labelledby="hPublicationsLabel">
@@ -39,11 +40,11 @@ const { hardTextsPartsLabel, nagornayaPartsLabel } = Astro.props;
                   <span class="h-meta-sep" aria-hidden="true">·</span>
                   <span class="h-meta-time">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    16 мин
+                    {gillReadingTime['dzhon-gill-istoricheskiy-kontekst']} мин
                   </span>
                   <span class="h-meta-tag h-meta-tag--neutral">Биография</span>
                 </div>
-                <p class="h-article-abstract">Акт о единообразии, правовое положение диссентеров, Хорслидаун, Goat’s Yard, Картер-Лейн и книжная культура — исторический фон, без которого биография Гилла теряет объём и напряжение.</p>
+                <p class="h-article-abstract">Англия после Акта о единообразии: условная терпимость, гражданские и университетские ограничения, диссентерские академии, Саутварк и книжная культура XVIII века.</p>
               </div>
             </a>
           </li>
@@ -54,8 +55,8 @@ const { hardTextsPartsLabel, nagornayaPartsLabel } = Astro.props;
               <div class="h-article-thumb"><picture><source srcset="../images/gill-library-shelf-600w.webp" type="image/webp"><img src="../images/gill-library-shelf.webp" alt="Джон Гилл: справочник — обложка" decoding="async" loading="lazy" width="160" height="108"></picture></div>
               <div class="h-article-body">
                 <h2 class="h-article-title">Джон Гилл: справочник — хронология, труды, источники</h2>
-                <div class="h-article-meta"><span class="h-meta-author">Автор-редактор: Фёдор Милованов</span><span class="h-meta-sep" aria-hidden="true">·</span><span class="h-meta-time">8 мин</span><span class="h-meta-tag h-meta-tag--neutral">Биография</span></div>
-                <p class="h-article-abstract">Справочное приложение: даты, труды, Body of Divinity, PRDL, сеть влияний и спорные темы наследия Гилла.</p>
+                <div class="h-article-meta"><span class="h-meta-author">Автор-редактор: Фёдор Милованов</span><span class="h-meta-sep" aria-hidden="true">·</span><span class="h-meta-time">{gillReadingTime['dzhon-gill-spravochnik']} мин</span><span class="h-meta-tag h-meta-tag--neutral">Биография</span></div>
+                <p class="h-article-abstract">Хронология жизни и изданий, основные труды, структура Body of Divinity, источники, спорные темы и богословский словарь эпохи.</p>
               </div>
             </a>
           </li>

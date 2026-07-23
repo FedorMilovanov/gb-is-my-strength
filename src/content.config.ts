@@ -21,6 +21,7 @@ const articleSchema = z.object({
   sourcesRequired: z.boolean().default(true),
   canonicalOverride: z.url().optional(),
   readingTime: z.number().int().positive().optional(),
+  sourceMode: z.enum(['rendered', 'metadata-only']).default('rendered'),
 }).superRefine((data, ctx) => {
   if (data.ogImage && !data.ogImageAlt) {
     ctx.addIssue({
