@@ -9,6 +9,7 @@ const CSS_FILE = path.join(ROOT, 'css/site.css');
 const WRITE = process.argv.includes('--write');
 const TARGET_VERTICAL_ALIGN = '.14em';
 const TARGET_HOVER_TRANSFORM = 'translateY(-.08em) scale(1.08)';
+const CLOSED_TOOLTIP_POINTER_RULE = '.fn-marker:not(.is-open)>.tooltip{pointer-events:none}.fn-marker.is-open>.tooltip{pointer-events:auto}';
 
 function normalizeTooltipStyles(source) {
   let changes = 0;
@@ -29,6 +30,11 @@ function normalizeTooltipStyles(source) {
     return `${prefix}${TARGET_HOVER_TRANSFORM}${suffix}`;
   });
 
+  if (!output.includes(CLOSED_TOOLTIP_POINTER_RULE)) {
+    output = `${output.trimEnd()}\n${CLOSED_TOOLTIP_POINTER_RULE}\n`;
+    changes += 1;
+  }
+
   if (verticalMatches !== 1) {
     throw new Error(`Expected exactly one .fn-marker--dove vertical-align rule, found ${verticalMatches}.`);
   }
@@ -42,7 +48,7 @@ function normalizeTooltipStyles(source) {
 function main() {
   const source = fs.readFileSync(CSS_FILE, 'utf8');
   const result = normalizeTooltipStyles(source);
-  console.log(`Tooltip style normalizer: ${result.changes} change(s); vertical-align=${TARGET_VERTICAL_ALIGN}; hover=${TARGET_HOVER_TRANSFORM}.`);
+  console.log(`Tooltip style normalizer: ${result.changes} change(s); vertical-align=${TARGET_VERTICAL_ALIGN}; hover=${TARGET_HOVER_TRANSFORM}; closed-tooltip pointer shield=on.`);
 
   if (WRITE && result.output !== source) {
     fs.writeFileSync(CSS_FILE, result.output);
@@ -52,4 +58,9 @@ function main() {
 }
 
 if (require.main === module) main();
-else module.exports = { normalizeTooltipStyles, TARGET_VERTICAL_ALIGN, TARGET_HOVER_TRANSFORM };
+else module.exports = {
+  normalizeTooltipStyles,
+  TARGET_VERTICAL_ALIGN,
+  TARGET_HOVER_TRANSFORM,
+  CLOSED_TOOLTIP_POINTER_RULE
+};
