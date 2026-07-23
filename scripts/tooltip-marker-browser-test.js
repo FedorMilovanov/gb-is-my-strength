@@ -8,6 +8,8 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
+const REPORTS = path.join(ROOT, 'reports');
+fs.mkdirSync(REPORTS, { recursive: true });
 
 function fixtureHtml() {
   return `<!doctype html>
@@ -111,6 +113,7 @@ async function desktopAssertions(browser, origin) {
     };
   });
 
+  console.log(`desktop metrics: ${JSON.stringify(initial)}`);
   assert.equal(initial.doveIcons, 1, 'unnumbered note must render exactly one dove SVG');
   assert.equal(initial.numberedDoveIcons, 0, 'numbered note must not render a dove');
   assert.equal(initial.numberedText, '7', 'numbered marker must retain its visible number');
@@ -121,6 +124,7 @@ async function desktopAssertions(browser, origin) {
 
   await page.hover('#dove');
   await page.waitForTimeout(80);
+  await page.screenshot({ path: path.join(REPORTS, 'tooltip-marker-desktop.png'), fullPage: false });
   const hover = await page.evaluate(() => {
     const wing = document.querySelector('#dove .fn-dove-wing');
     const svg = document.querySelector('#dove .fn-dove-icon');
@@ -130,15 +134,17 @@ async function desktopAssertions(browser, origin) {
       tooltipOpen: document.querySelector('#dove').classList.contains('is-open')
     };
   });
+  console.log(`desktop hover: ${JSON.stringify(hover)}`);
   assert.match(hover.animationName, /fn-dove-flap/, 'dove wing must react on desktop hover');
   assert.notEqual(hover.transform, 'none', 'dove SVG must move subtly on hover');
   assert.equal(hover.tooltipOpen, true, 'hover must open the standalone tooltip');
 
   const desktopTip = await page.evaluate(() => {
-    const tip = document.querySelector('#dove .tooltip');
+    const tip = document.querySelector('#dove .tooltip') || document.querySelector('body > .tooltip.gb-floating-tip');
     const rect = tip.getBoundingClientRect();
-    return { open: tip.classList.contains('is-open') || tip.parentElement.classList.contains('is-open'), left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, vw: innerWidth, vh: innerHeight };
+    return { open: tip.classList.contains('is-open') || document.querySelector('#dove').classList.contains('is-open'), left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, vw: innerWidth, vh: innerHeight };
   });
+  console.log(`desktop tooltip: ${JSON.stringify(desktopTip)}`);
   assert.ok(desktopTip.left >= 0 && desktopTip.right <= desktopTip.vw + 1, 'desktop tooltip must remain inside viewport horizontally');
   assert.ok(desktopTip.top >= 0 && desktopTip.bottom <= desktopTip.vh + 1, 'desktop tooltip must remain inside viewport vertically');
 
@@ -164,6 +170,8 @@ async function mobileAssertions(browser, origin) {
   await page.goto(`${origin}/fixture/`, { waitUntil: 'networkidle' });
   await waitForRuntime(page);
   await page.tap('#dove');
+  await page.waitForTimeout(80);
+  await page.screenshot({ path: path.join(REPORTS, 'tooltip-marker-mobile.png'), fullPage: false });
 
   const opened = await page.evaluate(() => {
     const anchor = document.querySelector('#dove');
@@ -182,6 +190,7 @@ async function mobileAssertions(browser, origin) {
     };
   });
 
+  console.log(`mobile tooltip: ${JSON.stringify(opened)}`);
   assert.equal(opened.expanded, 'true', 'mobile tap must open the dove tooltip');
   assert.equal(opened.open, true);
   assert.ok(opened.left >= -1 && opened.right <= opened.vw + 1, 'mobile tooltip must fit viewport width');
