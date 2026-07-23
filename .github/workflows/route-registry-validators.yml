@@ -5,7 +5,6 @@ on:
     branches:
       - lane/system-route-registry-validators-v2-2026-07-09
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
     branches: [main]
     paths:
       - "data/route-profiles/**"
@@ -43,8 +42,6 @@ on:
       - "scripts/rss-route-contract-test.js"
       - "scripts/search-index-policy-contract-test.js"
       - "scripts/search-index-policy-inventory.js"
-      - "scripts/search-manifest-policy-normalizer.js"
-      - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/sitemap-route-contract-test.js"
       - "scripts/seo-route-contract-test.js"
       - "scripts/public-surface-browser-matrix.mjs"
@@ -73,75 +70,6 @@ permissions:
   contents: read
 
 jobs:
-  search-manifest-autofix:
-    name: Search manifest autofix
-    if: >-
-      github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.labels.*.name, 'search-policy-autofix') &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout pull request branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
-      - name: Set up Node 22.12
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22.12.0"
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
-
-      - name: Test search manifest normalizer
-        run: node scripts/search-manifest-policy-normalizer-test.js
-
-      - name: Normalize explicit RSS article membership
-        run: >-
-          node scripts/search-manifest-policy-normalizer.js
-          --dist=dist
-          --promote-rss-articles
-          --write
-
-      - name: Validate normalized production policy
-        run: node scripts/search-index-policy-inventory.js --dist=dist --strict
-
-      - name: Validate focused diff
-        shell: bash
-        run: |
-          git diff --check
-          unexpected=$(git diff --name-only -- . ':!data/route-search-policy.json' ':!data/search-manifest.json')
-          if [[ -n "$unexpected" ]]; then
-            echo "Unexpected autofix paths:" >&2
-            echo "$unexpected" >&2
-            exit 1
-          fi
-
-      - name: Commit search policy normalization
-        shell: bash
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          if git diff --quiet -- data/route-search-policy.json data/search-manifest.json; then
-            echo "No search policy normalization required."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/route-search-policy.json data/search-manifest.json
-          git commit -m "fix(search): align manifest with route policy"
-          git push origin "HEAD:${HEAD_REF}"
-
   registry-contracts:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -181,7 +109,6 @@ jobs:
             node scripts/rss-route-contract-test.js
             node scripts/seo-route-contract-test.js
             node scripts/search-index-policy-contract-test.js
-            node scripts/search-manifest-policy-normalizer-test.js
             node scripts/audit-pro.js
           } 2>&1 | tee reports/public-surface-registry.log
 
@@ -238,7 +165,7 @@ jobs:
 
     steps:
       - name: Checkout exact head
-        uses: actions/checkout(v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
