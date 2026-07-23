@@ -125,6 +125,8 @@ function parseGlossary() {
       term,
       category,
       categorySlug: entry.categorySlug || entry.category_slug || '',
+      definition,
+      detail,
       definitionLength: definition.length,
       detailLength: detail.length,
       aliasCount: list.length,
@@ -171,7 +173,14 @@ function main() {
     md.push('', '## Glossary entries', '');
     for (const entry of glossary.entries) {
       const refs = entry.bibleReferences.length ? `; refs: ${entry.bibleReferences.join(', ')}` : '';
-      md.push(`- **${entry.term}** — ${entry.category}; aliases: ${entry.aliasCount}; definition/detail: ${entry.definitionLength}/${entry.detailLength}${refs}`);
+      md.push(`### ${entry.term}`, '');
+      md.push(`- Category: ${entry.category}`);
+      md.push(`- Aliases: ${entry.aliases.join(', ')}`);
+      md.push(`- Auto hydrate: ${entry.autoHydrate ? 'yes' : 'no'}`);
+      md.push(`- Definition: ${entry.definition}`);
+      md.push(`- Detail: ${entry.detail}`);
+      if (refs) md.push(`- Bible references${refs.slice(6)}`);
+      md.push('');
     }
   }
   md.push('', '## Matched files', '');
