@@ -6,7 +6,6 @@ on:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
-      - scripts/tmp-apply-map-keyboard-contract.py
       - .github/workflows/map-keyboard-contract.yml
   push:
     branches:
@@ -18,32 +17,9 @@ on:
       - .github/workflows/map-keyboard-contract.yml
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply-contract-once:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout exact branch
-        uses: actions/checkout@v4
-        with:
-          ref: agent/map-keyboard-contract
-          fetch-depth: 0
-      - name: Apply deterministic engine patch
-        run: python3 scripts/tmp-apply-map-keyboard-contract.py
-      - name: Commit and push engine only
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check karty/_engine/map-engine.js
-          node --check scripts/map-browser-smoke.js
-          git config user.name "map-contract[bot]"
-          git config user.email "map-contract[bot]@users.noreply.github.com"
-          git add karty/_engine/map-engine.js
-          git diff --cached --check
-          git commit -m "fix(maps): isolate typing from keyboard shortcuts"
-          git push origin HEAD:agent/map-keyboard-contract
-
   source-contract:
     runs-on: ubuntu-latest
     steps:
