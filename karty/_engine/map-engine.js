@@ -2719,36 +2719,32 @@ container.appendChild(panel);
       if (slowerBtn) _on(slowerBtn, 'click', (e) => { e.stopPropagation(); adjTourSpeed(500); });
     }, 100);
 
+    function isEditableShortcutTarget(target){
+      if(!target||typeof target.closest!=='function')return false;
+      return !!target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]');
+    }
+
+    function visibleTabButtons(){
+      return [...panel.querySelectorAll('.me-tabs .me-tab[data-tab]')].filter(tab=>{
+        if(tab.hidden||tab.getAttribute('aria-hidden')==='true')return false;
+        const style=getComputedStyle(tab);
+        return style.display!=='none'&&style.visibility!=='hidden';
+      });
+    }
+
     _on(document,'keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
       if(e.key==='Escape'){if(!overlayRuntime)close('escape');return}
+      const editableTarget=isEditableShortcutTarget(e.target)||isEditableShortcutTarget(document.activeElement);
+      if(e.isComposing||editableTarget||e.altKey||e.ctrlKey||e.metaKey)return;
       if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
       if(e.key==='?'||(e.key==='/'&&e.shiftKey)){e.preventDefault();toggleShortcutsHelp();return}
       if(!activePlaceId)return;
-      // Number keys 1-7 for tab switching
+      // Number keys follow the actual rendered tab order; no second availability policy.
       if(e.key>='1'&&e.key<='8'){
-        e.preventDefault();
-        const availTabs = TAB_KEYS.filter(k => {
-          const place = getActivePlace();
-          if (!place) return false;
-          if (k==='bible') return !!place.bible;
-          if (k==='arch') return !!place.arch;
-          if (k==='he') return !!place.he_deep;
-          if (k==='dispute') return !!place.dispute;
-          if (k==='photos') return !!(place.photos&&place.photos.length);
-          if (k==='extra') return !!place.bible_extra;
-          return k==='story';
-        });
-        const ti = parseInt(e.key)-1;
-        if (ti < availTabs.length) {
-          const tabKey = availTabs[ti];
-          const tabsEl = panel.querySelector('.me-tabs');
-          if (tabsEl) {
-            tabsEl.querySelectorAll('.me-tab').forEach(b => b.classList.remove('me-tab--active'));
-            const targetTab = tabsEl.querySelector('[data-tab="'+tabKey+'"]');
-            if (targetTab) { targetTab.classList.add('me-tab--active'); renderTabContent(tabKey, getActivePlace()); }
-          }
-        }
+        const numericTabs=visibleTabButtons();
+        const targetTab=numericTabs[parseInt(e.key,10)-1];
+        if(targetTab){e.preventDefault();targetTab.click()}
         return;
       }
       const vis=visiblePlaces();const idx=placeIndexInStory();
