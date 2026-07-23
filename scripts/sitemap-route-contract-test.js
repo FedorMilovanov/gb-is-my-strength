@@ -18,17 +18,35 @@ const loaded = loadRouteRecords();
 const expectedRoutes = expectedSitemapRoutes({ loaded });
 const baseline = auditSitemapCoverage(sitemap, { loaded });
 
-assert.equal(expectedRoutes.length, 75, 'canonical production sitemap surface must contain 75 routes');
+assert.equal(expectedRoutes.length, 66, 'canonical indexable production sitemap surface must contain 66 routes');
 assert.ok(!expectedRoutes.includes('/konfessii/russkij-baptizm/_app/'), 'built app asset must not be a public sitemap route');
+const explicitNoindexRoutes = loaded.records
+  .filter((record) => record.owner?.status === 'production-dist' && record.profile?.seo?.indexable === false)
+  .map((record) => record.route)
+  .sort();
+assert.deepEqual(explicitNoindexRoutes, [
+  '/izbrannoe/',
+  '/karty/early-church/',
+  '/karty/maccabim/',
+  '/karty/melachim/',
+  '/karty/pavel/',
+  '/karty/revelation/',
+  '/karty/shoftim/',
+  '/karty/shvatim/',
+  '/karty/yeshua/',
+]);
+for (const route of explicitNoindexRoutes) {
+  assert.ok(!expectedRoutes.includes(route), `${route}: explicit noindex route must stay out of sitemap obligations`);
+}
 assert.deepEqual(contractProblems(baseline), [], contractProblems(baseline).join('\n'));
-assert.equal(baseline.localRoutes.length, 75, 'sitemap must contain exactly the canonical public route count');
+assert.equal(baseline.localRoutes.length, 66, 'sitemap must contain exactly the canonical indexable route count');
 
 function rootHtmlForRoute(route) {
   return path.join(ROOT, route === '/' ? 'index.html' : route.replace(/^\//, '') + 'index.html');
 }
 
 const astroOnlyRoute = expectedRoutes.find((route) => !fs.existsSync(rootHtmlForRoute(route)));
-assert.ok(astroOnlyRoute, 'fixture must include at least one production route without committed root HTML');
+assert.ok(astroOnlyRoute, 'fixture must include at least one indexable production route without committed root HTML');
 const astroOnlyUrl = routeToUrl(astroOnlyRoute);
 const withoutAstroOnly = sitemap.replace(`<loc>${astroOnlyUrl}</loc>`, '');
 assert.notEqual(withoutAstroOnly, sitemap, `fixture loc must exist for ${astroOnlyRoute}`);
@@ -50,7 +68,7 @@ const syntheticLoaded = {
         source: 'src/pages/__mutation-astro-only-route__/index.astro',
         status: 'production-dist',
       },
-      profile: null,
+      profile: { seo: { indexable: true } },
       matrix: null,
       inspection: { exists: false, imports: [] },
     },
@@ -59,7 +77,23 @@ const syntheticLoaded = {
 const syntheticResult = auditSitemapCoverage(sitemap, { loaded: syntheticLoaded });
 assert.ok(
   syntheticResult.missingRoutes.includes(syntheticRoute),
-  'a newly registered Astro-only production route must be required without adding a second route list'
+  'a newly registered indexable Astro-only production route must be required without adding a second route list'
+);
+
+const syntheticNoindexLoaded = {
+  ...loaded,
+  records: [
+    ...loaded.records,
+    {
+      route: '/__mutation-noindex-route__/',
+      owner: { owner: 'astro', status: 'production-dist' },
+      profile: { seo: { indexable: false } },
+    },
+  ],
+};
+assert.ok(
+  !expectedSitemapRoutes({ loaded: syntheticNoindexLoaded }).includes('/__mutation-noindex-route__/'),
+  'only explicit profile.seo.indexable=false may exempt a production route from sitemap obligations'
 );
 
 const knownUrl = routeToUrl(expectedRoutes[0]);
@@ -84,5 +118,5 @@ const foreignResult = auditSitemapCoverage(
 assert.ok(foreignResult.foreignUrls.includes(foreignUrl), 'foreign sitemap URL must fail');
 
 console.log(
-  `✅ sitemap route contract: ${baseline.expectedRoutes.length} registry routes, Astro-only mutation ${astroOnlyRoute} blocked`
+  `✅ sitemap route contract: ${baseline.expectedRoutes.length} indexable registry routes, Astro-only mutation ${astroOnlyRoute} blocked`
 );
