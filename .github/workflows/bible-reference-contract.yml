@@ -1,0 +1,72 @@
+name: Bible Reference Contract
+
+on:
+  pull_request:
+    paths:
+      - "data/bible/**"
+      - "data/verses.json"
+      - "scripts/bible-reference-audit.js"
+      - "scripts/reference-tooltips-browser-test.js"
+      - "js/site.js"
+      - "js/site-utils.js"
+      - "css/site.css"
+      - "src/**"
+      - "articles/**"
+      - ".github/workflows/bible-reference-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/bible/**"
+      - "data/verses.json"
+      - "scripts/bible-reference-audit.js"
+      - "scripts/reference-tooltips-browser-test.js"
+      - "js/site.js"
+      - "js/site-utils.js"
+      - "css/site.css"
+      - "src/**"
+      - "articles/**"
+      - ".github/workflows/bible-reference-contract.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bible-reference-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-audit:
+    name: Canonical corpus and source audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate audit syntax
+        run: node --check scripts/bible-reference-audit.js
+
+      - name: Audit translations, ranges and page payloads
+        run: node scripts/bible-reference-audit.js
+
+      - name: Upload Bible reference diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bible-reference-audit
+          path: |
+            reports/bible-reference-audit.json
+            reports/bible-reference-audit.md
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Lint workflow
+        shell: bash
+        run: |
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            | tar xz -C /tmp actionlint
+          /tmp/actionlint -no-color .github/workflows/bible-reference-contract.yml
