@@ -5,8 +5,10 @@ on:
     paths:
       - "data/bible/**"
       - "data/verses.json"
-      - "scripts/bible-reference-audit.js"
-      - "scripts/reference-tooltips-browser-test.js"
+      - "src/lib/bible-reference-core.mjs"
+      - "src/components/**/BibleRefsPayload.astro"
+      - "scripts/bible-reference-contract.mjs"
+      - "scripts/reference-tooltips-browser-test.mjs"
       - "js/site.js"
       - "js/site-utils.js"
       - "css/site.css"
@@ -18,8 +20,10 @@ on:
     paths:
       - "data/bible/**"
       - "data/verses.json"
-      - "scripts/bible-reference-audit.js"
-      - "scripts/reference-tooltips-browser-test.js"
+      - "src/lib/bible-reference-core.mjs"
+      - "src/components/**/BibleRefsPayload.astro"
+      - "scripts/bible-reference-contract.mjs"
+      - "scripts/reference-tooltips-browser-test.mjs"
       - "js/site.js"
       - "js/site-utils.js"
       - "css/site.css"
@@ -47,11 +51,13 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate audit syntax
-        run: node --check scripts/bible-reference-audit.js
+      - name: Validate resolver and contract syntax
+        run: |
+          node --check src/lib/bible-reference-core.mjs
+          node --check scripts/bible-reference-contract.mjs
 
       - name: Audit translations, ranges and page payloads
-        run: node scripts/bible-reference-audit.js
+        run: node scripts/bible-reference-contract.mjs
 
       - name: Upload Bible reference diagnostics
         if: always()
