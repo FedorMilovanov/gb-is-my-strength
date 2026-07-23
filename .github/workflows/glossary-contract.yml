@@ -61,7 +61,30 @@ jobs:
         run: node --check scripts/glossary-contract-audit.js
 
       - name: Validate dictionary, placement and shared runtime
-        run: node scripts/glossary-contract-audit.js
+        id: glossary-audit
+        shell: bash
+        run: |
+          mkdir -p reports
+          set +e
+          node scripts/glossary-contract-audit.js > reports/glossary-contract.log 2>&1
+          status=$?
+          cat reports/glossary-contract.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload complete glossary diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: glossary-contract-report
+          path: reports/glossary-contract.log
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Enforce glossary contract result
+        if: always()
+        shell: bash
+        run: test "${{ steps.glossary-audit.outputs.status }}" = "0"
 
   browser-contract:
     name: Browser contract
