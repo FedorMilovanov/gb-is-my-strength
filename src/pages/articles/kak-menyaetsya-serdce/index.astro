@@ -3,11 +3,13 @@ import KakMenyaetsyaPageHead from '@/components/article-pilots/kak-menyaetsya/Ka
 import KakMenyaetsyaBody from '@/components/article-pilots/kak-menyaetsya/KakMenyaetsyaBody.astro';
 import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/hardTextsSeriesConfig';
 const p = HARD_TEXTS_SERIES.pages['menyaetsya'];
+import HeartSeriesSocialImageMeta from '@/components/seo/HeartSeriesSocialImageMeta.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <KakMenyaetsyaPageHead />
+    <HeartSeriesSocialImageMeta />
   </head>
   <body class="gbs-world" data-gbs2-series="hard-texts" data-gbs2-done-min={p.readingProgressDoneMin} data-gbs2-part-min={p.readingProgressPartMin} data-gbs2-total-min={p.readingProgressTotalMin}>
     <KakMenyaetsyaBody />

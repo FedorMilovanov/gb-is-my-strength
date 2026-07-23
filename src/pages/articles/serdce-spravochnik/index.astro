@@ -3,11 +3,13 @@ import SerdceSpravochnikPageHead from '@/components/article-pilots/serdce-spravo
 import SerdceSpravochnikBody from '@/components/article-pilots/serdce-spravochnik/SerdceSpravochnikBody.astro';
 import { heartProgress } from '@/components/article-pilots/_shared/heartSeriesData';
 const hp = heartProgress('spravochnik');
+import HeartSeriesSocialImageMeta from '@/components/seo/HeartSeriesSocialImageMeta.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <SerdceSpravochnikPageHead />
+    <HeartSeriesSocialImageMeta />
   </head>
   <body class="gbs-world" data-gbs2-series="hard-texts" data-gbs2-done-min={hp.doneMin} data-gbs2-part-min={hp.partMin} data-gbs2-total-min={hp.totalMin}>
     <SerdceSpravochnikBody />
