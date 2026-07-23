@@ -1,0 +1,73 @@
+name: Gill Reading Time Recalibration
+
+on:
+  push:
+    branches:
+      - agent/gill-source-marathon
+    paths:
+      - "scripts/gill-reading-time-recalibration.js"
+      - ".github/workflows/gill-reading-time-recalibration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gill-reading-time-recalibration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recalibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/gill-source-marathon
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate recalibration script
+        run: node --check scripts/gill-reading-time-recalibration.js
+
+      - name: Apply atomic reading-time recalibration
+        run: node scripts/gill-reading-time-recalibration.js --write
+
+      - name: Validate focused source changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          node scripts/gill-reading-time-canonical-audit.js
+          node scripts/gill-series-data-consistency-audit.js
+
+      - name: Commit recalibrated sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "Reading times are already canonical."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            src/content/articles/dzhon-gill-*.mdx \
+            data/series.json \
+            data/search-manifest.json \
+            data/links-graph.json \
+            src/components/article-pilots/gill-* \
+            articles/dzhon-gill-* \
+            scripts/gill-reading-time-canonical-audit.js \
+            scripts/gill-series-data-consistency-audit.js
+          git commit -m "fix(gill): recalibrate canonical reading times"
+          git push origin HEAD:agent/gill-source-marathon
