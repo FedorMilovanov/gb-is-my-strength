@@ -11,6 +11,7 @@ on:
       - "scripts/glossary-placement-normalizer.js"
       - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
+      - "scripts/reference-system-inventory.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -30,6 +31,7 @@ on:
       - "scripts/glossary-placement-normalizer.js"
       - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
+      - "scripts/reference-system-inventory.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -118,11 +120,12 @@ jobs:
       - name: Check runtime syntax
         run: node --check js/glossary.js
 
-      - name: Check contract and normalizer syntax
+      - name: Check contract, inventory and normalizer syntax
         run: |
           node --check scripts/glossary-contract-audit.js
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/glossary-placement-normalizer-test.js
+          node --check scripts/reference-system-inventory.js
 
       - name: Test universal normalizer
         run: node scripts/glossary-placement-normalizer-test.js
@@ -138,6 +141,9 @@ jobs:
           cat reports/glossary-contract.log
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit 0
+
+      - name: Build repository-wide reference inventory
+        run: node scripts/reference-system-inventory.js
 
       - name: Lint glossary workflow
         id: glossary-actionlint
