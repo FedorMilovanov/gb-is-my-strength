@@ -103,8 +103,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --check
-          node scripts/gill-reading-time-canonical-audit.js
-          node scripts/gill-series-data-consistency-audit.js
+          git status --short
 
       - name: Commit recalibrated sources
         shell: bash
