@@ -1,12 +1,16 @@
 const { chromium } = require('playwright');
 const BASE = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
-const DEFAULT_LIVE_MAPS = ['ishod','avraam'];
+const DEFAULT_MAP_ENGINE_MAPS = ['ishod'];
+const LEGACY_BESPOKE_MAPS = ['avraam'];
 const HOLDING_MAPS = ['pavel','melachim','shoftim','shvatim','yeshua','maccabim','early-church','revelation'];
-const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_LIVE_MAPS.join(','))
+const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
 (async () => {
+  if (!process.env.MAP_SMOKE_ROUTES && LEGACY_BESPOKE_MAPS.length) {
+    console.log(`ℹ️ Skipping bespoke legacy maps outside the shared MapEngine contract: ${LEGACY_BESPOKE_MAPS.join(', ')}`);
+  }
   if (!process.env.MAP_SMOKE_ROUTES && HOLDING_MAPS.length) {
     console.log(`ℹ️ Skipping holding map routes until owner-approved live MapEngine launch: ${HOLDING_MAPS.join(', ')}`);
   }
