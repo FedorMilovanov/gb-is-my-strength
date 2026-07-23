@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "rootSelectors": [
     "article",
     "main[data-pagefind-body]"
@@ -9,7 +9,7 @@
     "div.reveal",
     "[data-glossary-zone='prose']"
   ],
-  "forbiddenSelectors": [
+  "hydrationForbiddenSelectors": [
     "a",
     "abbr",
     ".gterm",
@@ -59,6 +59,47 @@
     "h6",
     "script",
     "style"
+  ],
+  "placementForbiddenSelectors": [
+    "nav",
+    "figure",
+    "figcaption",
+    "caption",
+    "table",
+    "thead",
+    "tbody",
+    "tfoot",
+    "tr",
+    "th",
+    "td",
+    ".article-header",
+    ".author-card",
+    ".series-nav",
+    ".article-toc",
+    ".summary-card",
+    ".note-box",
+    ".context-bridge",
+    ".ancient-epigraph",
+    ".reading-list-section",
+    ".fact-card",
+    ".quick-fact",
+    ".key-point",
+    ".fn-marker",
+    ".tooltip",
+    ".btip",
+    ".quiz-wrapper",
+    ".gbs2-timeline",
+    ".gbs2-next",
+    "[data-glossary-skip]",
+    "[hidden]",
+    "[data-pagefind-meta]",
+    "[data-pagefind-ignore]",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6"
   ],
   "cadence": {
     "minWordGap": 1200,
