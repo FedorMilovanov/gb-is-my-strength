@@ -1,6 +1,6 @@
 ---
 /**
- * ResumeMobile.astro — resume + mobile quick-start IA blocks for /.
+ * ResumeMobile.astro — conditional reading-resume blocks for /.
  */
 ---
 <section class="resume-reading-block" id="resumeReadingBlock" hidden>
@@ -22,69 +22,3 @@
       <div class="resume-list-head"><h3>Недочитанные статьи</h3></div>
       <div class="resume-list" id="resumeList"></div>
     </section>
-
-    <section class="h-mobile-dashboard" aria-labelledby="hMobileDashLabel">
-      <p class="h-section-label" id="hMobileDashLabel">Быстрый старт</p>
-      <div class="h-section-accent" aria-hidden="true"></div>
-      <div class="h-mobile-dash-grid" role="list">
-        <a href="/articles/" class="h-mobile-dash-card" role="listitem" data-icon="◫">
-          <span class="h-mobile-dash-kicker">Читать</span>
-          <strong>Все статьи</strong>
-          <span>Экзегеза, апологетика, переводы и справочные тексты.</span>
-          <span class="h-mobile-dash-meta">Каталог · быстрый вход</span>
-        </a>
-        <a href="/nagornaya/" class="h-mobile-dash-card" role="listitem" data-icon="✦">
-          <span class="h-mobile-dash-kicker">Серия</span>
-          <strong>Нагорная проповедь</strong>
-          <span>Пять частей исследования Матфея 5–7 и Луки 6.</span>
-          <span class="h-mobile-dash-meta">5 частей · 120+ источников</span>
-        </a>
-        <a href="/baptisty-rossii/" class="h-mobile-dash-card" role="listitem" data-icon="◌">
-          <span class="h-mobile-dash-kicker">История</span>
-          <strong>Баптисты России</strong>
-          <span>Десять частей, справочник и связка с 3D-картой.</span>
-          <span class="h-mobile-dash-meta">10 частей · справочник</span>
-        </a>
-        <a href="/konfessii/russkij-baptizm/" class="h-mobile-dash-card" role="listitem" data-icon="◎">
-          <span class="h-mobile-dash-kicker">3D</span>
-          <strong>Карта Русского Баптизма</strong>
-          <span>Маршруты, Timeline, события, люди и связи между статьями.</span>
-          <span class="h-mobile-dash-meta">timeline · маршруты · связи</span>
-        </a>
-      </div>
-    </section>
-
-    <nav class="h-mobile-rail" aria-label="Быстрые переходы по главной">
-      <a href="#publikacii" class="h-mobile-rail__chip">Публикации</a>
-      <a href="#razbor" class="h-mobile-rail__chip">Разбор</a>
-      <a href="/articles/" class="h-mobile-rail__chip">Каталог</a>
-      <a href="/konfessii/russkij-baptizm/" class="h-mobile-rail__chip">3D-карта</a>
-      <a href="#about" class="h-mobile-rail__chip">О проекте</a>
-    </nav>
-
-    <section class="h-mobile-paths" aria-labelledby="hMobilePathsLabel">
-      <p class="h-section-label" id="hMobilePathsLabel">Маршруты чтения</p>
-      <div class="h-section-accent" aria-hidden="true"></div>
-      <div class="h-mobile-paths__rail" role="list" data-home-rail="paths">
-        <a href="/nagornaya/" class="h-mobile-path-card" role="listitem" data-path="01">
-          <span class="h-mobile-path-card__kicker">Если хотите курс</span>
-          <strong>Начните с серии</strong>
-          <span>Нагорная проповедь — цельный маршрут чтения, где лучше идти по порядку.</span>
-        </a>
-        <a href="/articles/" class="h-mobile-path-card" role="listitem" data-path="02">
-          <span class="h-mobile-path-card__kicker">Если нужен точный ответ</span>
-          <strong>Откройте каталог</strong>
-          <span>Экзегеза, апологетика, переводы и спорные вопросы — без необходимости читать всё подряд.</span>
-        </a>
-        <a href="/konfessii/russkij-baptizm/" class="h-mobile-path-card" role="listitem" data-path="03">
-          <span class="h-mobile-path-card__kicker">Если нужен визуальный вход</span>
-          <strong>Идите в 3D-карту</strong>
-          <span>История русского баптизма, события, маршруты, фигуры и связи между статьями.</span>
-        </a>
-      </div>
-    </section>
-
-
-    <!-- ══════════════════════════════════════════════════
-         DIRECTIONS GRID
-    ══════════════════════════════════════════════════ -->

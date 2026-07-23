@@ -4,8 +4,9 @@
  *
  * 2026-06-23 visual-fix-home lane removes loadLegacyFullDocument(), ?raw
  * imports and src/components/home/_legacy/*.html. The home page must now be
- * composed from named Astro components only while preserving legacy SEO/body
- * markers for visual parity.
+ * composed from named Astro components only. The 2026-07 owner-approved home
+ * direction preserves the sacred text/content but deliberately replaces the
+ * rejected mobile dashboard/dock experiment with one responsive gateway.
  */
 'use strict';
 
@@ -32,18 +33,6 @@ function mustExist(rel, label) {
 }
 function mustNotExist(rel, label) {
   !exists(rel) ? ok(`deleted ${label || rel}`) : bad(`forbidden file still exists: ${label || rel}`);
-}
-
-const legacy = read('index.html');
-for (const marker of [
-  '<main id="main-content" data-pagefind-body', 'class="home-v20"',
-  'h-hero', 'h-mobile-hero-hub', 'h-mobile-dashboard', 'h-mobile-rail',
-  'h-mobile-paths', 'h-featured', 'h-card-glass', 'h-card-planned',
-  'h-article-list', 'h-about', 'h-quote-section',
-  'h-mobile-dock', 'gb-accuracy-block', 'resume-reading-block',
-  'Господь Бог — Сила Моя',
-]) {
-  must(legacy, marker, `legacy / marker: ${marker}`);
 }
 
 const page = read('src/pages/index.astro');
@@ -93,11 +82,14 @@ for (const marker of [
 const chrome = read('src/components/home/HomePageChrome.astro');
 for (const marker of [
   'class="skip-link"', 'class="h-navbar"', 'id="hMobileNav"',
-  'class="home-v20"', 'id="hScriptureBg"', 'class="h-mobile-dock"',
+  'class="home-v20"', 'id="hScriptureBg"', 'h-mobile-nav__primary',
   'id="hScrollTop"', 'window.SITE_CONFIG', 'js/site.js', 'js/search.js',
   'mc.yandex.ru/metrika/tag.js',
 ]) {
   must(chrome, marker, `HomePageChrome marker: ${marker}`);
+}
+for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths']) {
+  mustNot(chrome, rejected, `rejected home chrome: ${rejected}`);
 }
 mustNot(chrome, 'set:html', 'HomePageChrome set:html');
 mustNot(chrome, '?raw', 'HomePageChrome raw imports');
@@ -112,17 +104,22 @@ for (const comp of [
 ]) {
   must(main, comp, `HomeMain uses ${comp}`);
 }
+if (main.indexOf('<Publications />') < main.indexOf('<Planned />')) {
+  ok('HomeMain publishes real materials before roadmap');
+} else {
+  bad('HomeMain must place Publications before Planned');
+}
 mustNot(main, 'set:html', 'HomeMain set:html transport');
 mustNot(main, '?raw', 'HomeMain raw imports');
 
 for (const [rel, markers] of Object.entries({
-  'src/components/home/HomeHero.astro': ['h-hero-title', 'heroSearchBar', 'h-mobile-hero-hub'],
-  'src/components/home/HomeSections/ResumeMobile.astro': ['resume-reading-block', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths'],
-  'src/components/home/HomeSections/Directions.astro': ['hDirectionsLabel', 'h-grid-4'],
-  'src/components/home/HomeSections/Planned.astro': ['hPlannedLabel', 'h-grid-3'],
+  'src/components/home/HomeHero.astro': ['h-hero-title', 'heroSearchBar', 'Аввакум 3:19', 'h-hero-cues', 'aria-pressed'],
+  'src/components/home/HomeSections/ResumeMobile.astro': ['resume-reading-block', 'resume-list-block'],
+  'src/components/home/HomeSections/Directions.astro': ['hDirectionsLabel', 'h-home-gateway', 'h-home-routes', 'h-home-route__mark'],
+  'src/components/home/HomeSections/Planned.astro': ['hPlannedLabel', 'h-home-roadmap'],
   'src/components/home/HomeSections/Publications.astro': ['id="publikacii"', 'h-featured-series', 'h-article-list'],
   'src/components/home/HomeSections/Refutations.astro': ['id="razbor"', 'h-article-list--grid'],
-  'src/components/home/HomeSections/About.astro': ['id="about"', 'h-drop-cap__letter'],
+  'src/components/home/HomeSections/About.astro': ['id="about"', 'h-drop-cap__letter', 'h-lion-label', 'AudioContext'],
   'src/components/home/HomeSections/Quote.astro': ['h-quote-section', 'Аввакум 3:19'],
   'src/components/home/HomeSections/Accuracy.astro': ['gb-accuracy-block', 'fedormilovanov'],
   'src/components/home/HomePageFooter.astro': ['h-footer', 'Об авторе'],
@@ -132,6 +129,23 @@ for (const [rel, markers] of Object.entries({
   for (const marker of markers) must(file, marker, `${path.basename(rel)} marker: ${marker}`);
   mustNot(file, 'set:html', `${path.basename(rel)} set:html`);
   mustNot(file, '?raw', `${path.basename(rel)} raw import`);
+}
+for (const rel of [
+  'src/components/home/HomeHero.astro',
+  'src/components/home/HomeSections/ResumeMobile.astro',
+  'src/components/home/HomeSections/Directions.astro',
+]) {
+  const file = read(rel);
+  for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths', 'h-mobile-hero-hub']) {
+    mustNot(file, rejected, `${path.basename(rel)} rejected marker: ${rejected}`);
+  }
+}
+
+const directions = read('src/components/home/HomeSections/Directions.astro');
+const routeCount = (directions.match(/class="h-home-route /g) || []).length;
+routeCount === 4 ? ok('single library gateway has exactly four primary routes') : bad(`single library gateway route count: ${routeCount} (expected 4)`);
+for (const href of ['/articles/', '/nagornaya/', '/biografii/', '/karty/']) {
+  must(directions, `href="${href}"`, `library gateway link: ${href}`);
 }
 
 for (const marker of [
@@ -144,8 +158,11 @@ for (const marker of [
 
 const dist = exists('dist/index.html') ? read('dist/index.html') : '';
 if (dist) {
-  for (const marker of ['home-v20', 'h-hero', 'h-mobile-dashboard', 'main-content', 'gb-accuracy-block']) {
+  for (const marker of ['home-v20', 'h-hero', 'h-home-gateway', 'main-content', 'gb-accuracy-block']) {
     must(dist, marker, `dist / marker: ${marker}`);
+  }
+  for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths', 'h-mobile-hero-hub']) {
+    mustNot(dist, rejected, `dist / rejected home marker: ${rejected}`);
   }
   mustNot(dist, 'class="astro-shell"', 'dist / has no astro-shell chrome');
   mustNot(dist, '_legacy/', 'dist / no legacy path leaks');
@@ -158,5 +175,5 @@ if (problems.length) {
   console.log(`❌ ${problems.length} problem(s). / fully-native contract violated.`);
   process.exit(1);
 }
-console.log('✅ / Astro migration is fully-native guarded (no legacy loader, no raw imports, no _legacy HTML)');
+console.log('✅ / native home contract guarded: sacred identity + one responsive gateway + no rejected mobile dock');
 if (warnings.length) console.log(`ℹ️ ${warnings.length} advisory warning(s) remain.`);
