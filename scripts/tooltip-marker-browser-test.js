@@ -110,6 +110,32 @@ async function forcePseudoHover(session, selector, enabled) {
   });
 }
 
+async function openByPointer(page, selector) {
+  await page.dispatchEvent(selector, 'pointerover', { pointerType: 'mouse', bubbles: true });
+  await page.waitForFunction((target) => document.querySelector(target)?.classList.contains('is-open'), selector);
+  return page.evaluate((target) => {
+    const anchor = document.querySelector(target);
+    const tip = document.querySelector('body > .tooltip.gb-floating-tip.is-open, body > .gtip.gb-floating-tip.is-open');
+    const rect = tip.getBoundingClientRect();
+    return {
+      expanded: anchor.getAttribute('aria-expanded'),
+      open: anchor.classList.contains('is-open'),
+      pointerEvents: getComputedStyle(tip).pointerEvents,
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      bottom: rect.bottom,
+      vw: innerWidth,
+      vh: innerHeight
+    };
+  }, selector);
+}
+
+async function closeWithEscape(page, selector) {
+  await page.keyboard.press('Escape');
+  await page.waitForFunction((target) => document.querySelector(target)?.getAttribute('aria-expanded') === 'false', selector);
+}
+
 async function desktopAssertions(browser, origin) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
   const page = await context.newPage();
@@ -156,50 +182,37 @@ async function desktopAssertions(browser, origin) {
 
     await forcePseudoHover(cssSession, '#dove', true);
     await page.waitForTimeout(80);
-    const hoverStyle = await page.evaluate(() => {
-      const wing = document.querySelector('#dove .fn-dove-wing');
-      const svg = document.querySelector('#dove .fn-dove-icon');
-      return {
-        animationName: getComputedStyle(wing).animationName,
-        transform: getComputedStyle(svg).transform
-      };
-    });
+    const hoverStyle = await page.evaluate(() => ({
+      animationName: getComputedStyle(document.querySelector('#dove .fn-dove-wing')).animationName,
+      transform: getComputedStyle(document.querySelector('#dove .fn-dove-icon')).transform
+    }));
     console.log(`desktop hover style: ${JSON.stringify(hoverStyle)}`);
     assert.match(hoverStyle.animationName, /fn-dove-flap/, 'dove wing must react on desktop hover');
     assert.notEqual(hoverStyle.transform, 'none', 'dove SVG must move subtly on hover');
     await forcePseudoHover(cssSession, '#dove', false);
 
-    await page.dispatchEvent('#dove', 'pointerover', { pointerType: 'mouse', bubbles: true });
-    await page.waitForFunction(() => document.querySelector('#dove').classList.contains('is-open'));
+    const doveTip = await openByPointer(page, '#dove');
+    console.log(`desktop dove tooltip: ${JSON.stringify(doveTip)}`);
+    assert.equal(doveTip.expanded, 'true');
+    assert.equal(doveTip.open, true);
+    assert.equal(doveTip.pointerEvents, 'none', 'portaled dove tooltip surface must not intercept adjacent clicks');
+    assert.ok(doveTip.left >= 0 && doveTip.right <= doveTip.vw + 1);
+    assert.ok(doveTip.top >= 0 && doveTip.bottom <= doveTip.vh + 1);
     await page.screenshot({ path: path.join(REPORTS, 'tooltip-marker-desktop.png'), fullPage: false });
-    const desktopTip = await page.evaluate(() => {
-      const tip = document.querySelector('#dove .tooltip') || document.querySelector('body > .tooltip.gb-floating-tip');
-      const rect = tip.getBoundingClientRect();
-      return {
-        expanded: document.querySelector('#dove').getAttribute('aria-expanded'),
-        open: document.querySelector('#dove').classList.contains('is-open'),
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        bottom: rect.bottom,
-        vw: innerWidth,
-        vh: innerHeight
-      };
-    });
-    console.log(`desktop tooltip: ${JSON.stringify(desktopTip)}`);
-    assert.equal(desktopTip.expanded, 'true');
-    assert.equal(desktopTip.open, true, 'pointer-over must open the standalone tooltip');
-    assert.ok(desktopTip.left >= 0 && desktopTip.right <= desktopTip.vw + 1, 'desktop tooltip must remain inside viewport horizontally');
-    assert.ok(desktopTip.top >= 0 && desktopTip.bottom <= desktopTip.vh + 1, 'desktop tooltip must remain inside viewport vertically');
+    await closeWithEscape(page, '#dove');
 
-    await page.keyboard.press('Escape');
+    const numberedTip = await openByPointer(page, '#numbered');
+    console.log(`desktop numbered tooltip: ${JSON.stringify(numberedTip)}`);
+    assert.equal(numberedTip.pointerEvents, 'none', 'portaled numbered tooltip surface must not intercept its trigger click');
+    await closeWithEscape(page, '#numbered');
+
     await page.click('#numbered');
     const numberedOpen = await page.evaluate(() => ({
       expanded: document.querySelector('#numbered').getAttribute('aria-expanded'),
       hasDove: Boolean(document.querySelector('#numbered .fn-dove-icon')),
       visibleNumber: Array.from(document.querySelector('#numbered').childNodes).find((node) => node.nodeType === Node.TEXT_NODE)?.textContent.trim()
     }));
-    assert.equal(numberedOpen.expanded, 'true', 'numbered source must still open');
+    assert.equal(numberedOpen.expanded, 'true', 'numbered source must still open through a real click');
     assert.equal(numberedOpen.hasDove, false);
     assert.equal(numberedOpen.visibleNumber, '7');
     assert.deepEqual(errors, [], `desktop page errors: ${errors.join('; ')}`);
@@ -222,11 +235,12 @@ async function mobileAssertions(browser, origin) {
 
   const opened = await page.evaluate(() => {
     const anchor = document.querySelector('#dove');
-    const tip = document.querySelector('#dove .tooltip') || document.querySelector('body > .tooltip.gb-floating-tip');
+    const tip = document.querySelector('body > .tooltip.gb-floating-tip.is-open, body > .gtip.gb-floating-tip.is-open');
     const rect = tip.getBoundingClientRect();
     return {
       expanded: anchor.getAttribute('aria-expanded'),
       open: anchor.classList.contains('is-open'),
+      pointerEvents: getComputedStyle(tip).pointerEvents,
       left: rect.left,
       right: rect.right,
       top: rect.top,
@@ -239,13 +253,13 @@ async function mobileAssertions(browser, origin) {
   console.log(`mobile tooltip: ${JSON.stringify(opened)}`);
   assert.equal(opened.expanded, 'true', 'mobile tap must open the dove tooltip');
   assert.equal(opened.open, true);
-  assert.ok(opened.left >= -1 && opened.right <= opened.vw + 1, 'mobile tooltip must fit viewport width');
-  assert.ok(opened.top >= -1 && opened.bottom <= opened.vh + 1, 'mobile tooltip must fit viewport height');
+  assert.equal(opened.pointerEvents, 'none', 'mobile floating surface must not block outside dismissal');
+  assert.ok(opened.left >= -1 && opened.right <= opened.vw + 1);
+  assert.ok(opened.top >= -1 && opened.bottom <= opened.vh + 1);
 
   await page.tap('#outside');
   await page.waitForTimeout(50);
-  const closed = await page.evaluate(() => document.querySelector('#dove').getAttribute('aria-expanded'));
-  assert.equal(closed, 'false', 'outside tap must close mobile tooltip');
+  assert.equal(await page.evaluate(() => document.querySelector('#dove').getAttribute('aria-expanded')), 'false');
   assert.deepEqual(errors, [], `mobile page errors: ${errors.join('; ')}`);
   await context.close();
 }
