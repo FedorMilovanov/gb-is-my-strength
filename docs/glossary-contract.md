@@ -73,6 +73,8 @@ A desktop tooltip is portaled to `document.body` and positioned above or below i
 
 The shared style normalizer enforces the surface and descendant rules with cascade priority so older runtime declarations cannot restore background hit interception. It also upgrades the earlier non-priority form deterministically and remains idempotent. This must not be replaced by a route-specific z-index adjustment or by weakening the interaction assertion.
 
+On mobile, outside dismissal is tested with a fixed viewport touch point that is known to lie outside the bottom sheet and trigger. A locator-based tap on a distant document element is forbidden in this fixture because Playwright may auto-scroll first and thereby test scroll suppression rather than outside-touch dismissal.
+
 ## Required validation
 
 ```bash
