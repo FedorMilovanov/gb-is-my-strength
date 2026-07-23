@@ -48,7 +48,7 @@ concurrency:
 
 jobs:
   placement-autofix:
-    name: Placement autofix
+    name: Placement and asset autofix
     if: >-
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.labels.*.name, 'autofix') &&
@@ -79,23 +79,26 @@ jobs:
       - name: Normalize forbidden glossary placements
         run: node scripts/glossary-placement-normalizer.js --write
 
-      - name: Validate normalized source tree
-        run: node scripts/glossary-contract-audit.js
+      - name: Synchronize standard asset revisions
+        run: node scripts/cache-bust.js --write
 
-      - name: Commit normalized sources
+      - name: Validate normalized source and asset revisions
+        run: |
+          node scripts/glossary-contract-audit.js
+          node scripts/cache-bust.js
+
+      - name: Commit normalized sources and revisions
         shell: bash
         run: |
-          if git diff --quiet -- \
-            src articles biografii hard-texts konfessii pastor-series baptisty-rossii; then
-            echo "No glossary placement changes are required."
+          if git diff --quiet; then
+            echo "No normalization or asset revision changes are required."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- \
-            src articles biografii hard-texts konfessii pastor-series baptisty-rossii
-          git commit -m "fix(glossary): normalize forbidden source placements"
+          git add -u
+          git commit -m "fix(glossary): normalize sources and asset revisions"
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
 
   source-contract:
