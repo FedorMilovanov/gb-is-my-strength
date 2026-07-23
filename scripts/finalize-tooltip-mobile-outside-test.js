@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
+// Temporary deterministic mutator; removed before merge.
 const fs = require('node:fs');
 const path = require('node:path');
 
