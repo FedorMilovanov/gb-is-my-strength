@@ -67,6 +67,12 @@ The first command reports pending source changes and exits non-zero. The second 
 
 The `autofix` pull-request label is an explicit opt-in. For same-repository branches, the workflow may run the universal normalizer, validate the complete source tree and commit only deterministic source changes. When the shared runtime hash changes, the same opt-in job uses the repository's existing `scripts/cache-bust.js --write` contract and immediately verifies it again in read-only mode. Without the label, all jobs remain read-only.
 
+## Floating tooltip hit testing
+
+A desktop tooltip is portaled to `document.body` and positioned above or below its trigger. Its decorative surface must not intercept a click intended for adjacent prose or another footnote marker. Therefore the floating `.tooltip` / `.gtip` container uses pointer pass-through, while links, buttons, form controls, `summary`, explicit focus targets, `role="button"` controls and editable descendants remain interactive.
+
+This rule is part of the shared style normalizer and is covered by the marker browser fixture. It must not be replaced by a route-specific z-index adjustment or by weakening the interaction assertion.
+
 ## Required validation
 
 ```bash
@@ -74,7 +80,8 @@ node --check js/glossary.js
 node scripts/glossary-placement-normalizer-test.js
 node scripts/glossary-contract-audit.js
 node scripts/glossary-runtime-browser-test.js
+node scripts/tooltip-marker-browser-test.js
 node scripts/cache-bust.js
 ```
 
-The browser fixture does not load a production route. It verifies the generic contract: allowed prose hydration, forbidden compact blocks, Russian inflection resolution, combined cadence and integration with the shared tooltip initializer.
+The browser fixture does not load a production route. It verifies the generic contract: allowed prose hydration, forbidden compact blocks, Russian inflection resolution, combined cadence and integration with the shared tooltip initializer. The marker fixture separately verifies dove geometry, hover/focus behavior, viewport containment, mobile dismissal and pointer-safe transitions between adjacent markers.
