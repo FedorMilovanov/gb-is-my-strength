@@ -93,6 +93,15 @@ for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 
 }
 mustNot(chrome, 'set:html', 'HomePageChrome set:html');
 mustNot(chrome, '?raw', 'HomePageChrome raw imports');
+must(chrome, 'backToTop: { enabled: true', 'HomePageChrome back-to-top config matches rendered control');
+must(chrome, 'readingProgress: { enabled: true }', 'HomePageChrome progress config matches rendered control');
+must(chrome, 'hidden aria-hidden="true" data-home-scroll-hook', 'HomePageChrome keeps a non-visual scroll runtime hook');
+mustNot(chrome, 'class="h-reading-progress"', 'HomePageChrome has no competing top progress bar');
+must(chrome, 'data-search-shortcut-label="Поиск"', 'HomePageChrome has platform-aware search label hook');
+must(chrome, 'event.altKey || event.shiftKey || (event.metaKey && event.ctrlKey)', 'HomePageChrome rejects modified search shortcuts');
+must(chrome, 'if (window.GBSearch?.__ready) return;', 'HomePageChrome avoids duplicate ready-search shortcut handling');
+must(chrome, "closest?.('[data-close-nav]')", 'HomePageChrome closes the mobile sheet for marked actions');
+must(chrome, 'is:inline src="js/site.js', 'HomePageChrome external home runtime script has explicit Astro directive');
 
 const main = read('src/components/home/HomeMain.astro');
 must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain semantic wrapper');
@@ -147,6 +156,10 @@ routeCount === 4 ? ok('single library gateway has exactly four primary routes') 
 for (const href of ['/articles/', '/nagornaya/', '/biografii/', '/karty/']) {
   must(directions, `href="${href}"`, `library gateway link: ${href}`);
 }
+
+const hero = read('src/components/home/HomeHero.astro');
+must(hero, 'data-search-shortcut-modifier', 'HomeHero has platform-aware shortcut hint');
+mustNot(hero, '<kbd>⌘</kbd><kbd>K</kbd>', 'HomeHero no longer hardcodes an Apple-only shortcut');
 
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-card-grid',
