@@ -48,8 +48,10 @@ assert.match(starOut, /class="fn-marker fn-marker--dove"/);
 assert.equal(visibleTrigger(markerPrefix(starOut)), '');
 assert.match(starOut, /aria-label="Показать пояснение"/);
 
-const alreadyDove = '<span class="fn-marker fn-marker--dove" role="button" tabindex="0"><span class="tooltip">Пояснение</span></span>';
-assert.equal(normalize(alreadyDove), alreadyDove, 'canonical dove markers must be idempotent');
+const incompleteDove = '<span class="fn-marker fn-marker--dove" role="button" tabindex="0"><span class="tooltip">Пояснение</span></span>';
+const canonicalDove = normalize(incompleteDove);
+assert.match(canonicalDove, /aria-label="Показать пояснение"/, 'existing doves must receive an accessible name');
+assert.equal(normalize(canonicalDove), canonicalDove, 'canonical dove markers must be idempotent after accessibility normalization');
 
 require('./tooltip-style-normalizer-test.js');
 console.log('Tooltip trigger normalizer test: OK');
