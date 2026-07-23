@@ -16,8 +16,12 @@ on:
       - "scripts/article-mdx-pilot-audit.js"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
+      - "scripts/html-surface-contract-audit.js"
+      - "scripts/html-surface-contract-test.js"
       - "scripts/route-source-contract-audit.js"
       - "scripts/sync-route-migration-matrix.js"
+      - "scripts/lib/html-surface-contract.js"
+      - "scripts/lib/public-surface-registry.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
       - "scripts/lib/effective-route-registry.js"
@@ -39,8 +43,12 @@ on:
       - "scripts/article-mdx-pilot-audit.js"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
+      - "scripts/html-surface-contract-audit.js"
+      - "scripts/html-surface-contract-test.js"
       - "scripts/route-source-contract-audit.js"
       - "scripts/sync-route-migration-matrix.js"
+      - "scripts/lib/html-surface-contract.js"
+      - "scripts/lib/public-surface-registry.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
       - "scripts/lib/effective-route-registry.js"
@@ -88,6 +96,13 @@ jobs:
           node scripts/route-source-contract-audit.js --strict 2>&1 \
             | tee reports/native-source-contract-source.log
 
+      - name: Validate HTML surface mutation contract
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/html-surface-contract-test.js 2>&1 \
+            | tee reports/native-source-contract-html-test.log
+
       - name: Install dependencies
         run: npm ci
 
@@ -110,6 +125,16 @@ jobs:
           set -o pipefail
           node scripts/article-native-effective-contract-audit.js --no-build --require-content-parity 2>&1 \
             | tee reports/native-source-contract-dist.log
+
+      - name: Validate every production HTML surface
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/html-surface-contract-audit.js \
+            --root dist \
+            --strict \
+            --report reports/html-surface-contract.json 2>&1 \
+            | tee reports/native-source-contract-html.log
 
       - name: Validate migration metadata coherence
         shell: bash
@@ -135,6 +160,7 @@ jobs:
           name: native-source-contract-${{ github.run_id }}
           path: |
             reports/native-source-contract-*.log
+            reports/html-surface-contract.json
             migration/route-migration-matrix.json
           if-no-files-found: error
           retention-days: 7
