@@ -9,7 +9,7 @@
  * - deploy-safety checks for GitHub Pages
  * - strict project structure from AGENTS.md
  * - cache-bust hash integrity
- * - SEO/PWA/resource/link basics
+ * - source-shadow contracts; production breadth is delegated to mandatory registry/dist gates
  * - theological attribution guard: Фёдор = редактор, not "Автор"
  *
  * Usage:
@@ -27,6 +27,8 @@ const gzip = require('zlib').gzipSync;
 const vm = require('vm');
 const { spawnSync } = require('child_process');
 const { auditSitemapCoverage, contractProblems } = require('./lib/sitemap-route-contract');
+const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
+const { buildAuditProSourceCorpus } = require('./lib/audit-pro-source-corpus');
 
 const ROOT = path.resolve(__dirname, '..');
 const SITE_URL = 'https://gospod-bog.ru';
@@ -133,8 +135,33 @@ function walk(dir, out = []) {
 }
 
 const allFiles = walk(ROOT);
-const htmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\\/]scripts[\\/]/.test(p)).sort();
-const htmlPages = htmlFiles.filter(p => !verificationFileRe.test(rel(p)));
+const allHtmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\/]scripts[\/]/.test(p)).sort();
+const surfaceRegistry = buildPublicSurfaceRegistry();
+for (const error of surfaceRegistry.errors) R.err(`Public surface registry: ${error}`);
+const sourceCorpus = buildAuditProSourceCorpus({
+  root: ROOT,
+  entries: surfaceRegistry.entries,
+  allHtmlFiles,
+});
+const htmlFiles = sourceCorpus.sourcePages.map((item) => item.file).sort();
+const htmlPages = htmlFiles;
+
+if (sourceCorpus.duplicateRootMappings.length) {
+  for (const item of sourceCorpus.duplicateRootMappings) {
+    R.err(`Duplicate route-to-root mapping: ${item.routes.join(' + ')} -> ${rel(item.file)}`);
+  }
+}
+if (sourceCorpus.unregisteredRootHtml.length) {
+  R.err(`Unregistered root HTML outside the canonical route registry:
+  - ${sourceCorpus.unregisteredRootHtml.map((item) => item.relative).join('\n  - ')}`);
+} else {
+  R.ok(`Source HTML corpus is registry-owned (${htmlPages.length} committed production shadows)`);
+}
+R.note(`Production HTML corpus: ${sourceCorpus.productionRoutes} routes = ${htmlPages.length} committed source shadows + ${sourceCorpus.distOnly.length} dist-only routes delegated to mandatory production contracts`);
+if (sourceCorpus.registeredNonProduction.length) {
+  R.note(`Registered non-production root HTML excluded from public source checks: ${sourceCorpus.registeredNonProduction.map((item) => item.route).join(', ')}`);
+}
+
 
 function getMeta(html, attr, name) {
   const re1 = new RegExp(`<meta\\s+[^>]*${attr}=["']${escapeRe(name)}["'][^>]*content=["']([^"']*)["'][^>]*>`, 'i');
@@ -692,9 +719,10 @@ const SITE_CSS_MIN_BYTES = 200_000;
     else if (value && typeof value === 'object') Object.values(value).forEach(v => walkStrings(label, v));
   }
 
-  for (const file of htmlFiles) {
+  for (const page of htmlFiles) {
+    const file = rel(page);
     if (!file.startsWith('articles/') && !file.startsWith('nagornaya/')) continue;
-    const html = read(file);
+    const html = fs.readFileSync(page, 'utf8');
     const body = (html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || html)
       .replace(/<script\b[\s\S]*?<\/script>/gi, '')
       .replace(/<style\b[\s\S]*?<\/style>/gi, '')
@@ -1118,7 +1146,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   so the header was inconsistent between pages.
 (function unifiedHeaderGuard() {
   const REQUIRED = ['Публикации', 'Разбор заблуждений', 'Биографии', 'Все статьи', 'О проекте'];
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1144,7 +1172,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   list. This breaks semantics AND made the icon inherit link color (looked
 //   black while the moon was grey) — see AGENTS §9.7.
 (function navListSemanticsGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1184,7 +1212,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // G9. Hashed CSS/JS URLs in HTML must point to files that actually exist.
 //   (Catches a half-finished cache-bust run that left stale ?v=… hashes.)
 (function hashedAssetExistenceGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const missing = new Set();
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1229,7 +1257,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   from all 8 articles; AGENTS §9.8 says: "не возвращать". Multiple agents
 //   keep trying to re-introduce it.
 (function topnavExorcismGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1288,7 +1316,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Incident: AGENTS table line 289 — figcaption никогда не должна
 //   нести AI-disclosure. SEO fix commit 8512f82f removed it once already.
 (function aiNoteInFigcaptionGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1314,7 +1342,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Attribute order is normalized: `<meta property=… content=…>` and the
 //   reverse both count. We also tolerate single/double quotes.
 (function ogMetaDuplicateGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const KEYS = ['og:image', 'og:title', 'og:url', 'og:description', 'twitter:image', 'og:type'];
   const offenders = [];
   for (const f of files) {
@@ -1344,7 +1372,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Incident: PLAN-07 (ebf52955) — agent inserted bare <source> tags without
 //   <picture> wrappers. Browser silently ignores them.
 (function pictureSourceWrapperGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1391,7 +1419,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   THIS guard is an extra layer: flag inline scripts longer than 50 LOC,
 //   which AGENTS philosophy says belong in /js/ not inline.
 (function bigInlineScriptGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1506,7 +1534,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Incident: SEO standard. Multiple <h1> confuse crawlers and screen readers.
 //   We skip robot-verification files (google*.html, yandex_*.html).
 (function singleH1Guard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -1551,7 +1579,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // G23. target="_blank" links must have rel including 'noopener'.
 //   Without it, the opened page gets window.opener access — security/perf risk.
 (function targetBlankRelGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1578,7 +1606,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   indicate JS will fill the href dynamically (data-resume-link, data-action,
 //   data-target, role="tab", etc.) — legitimate progressive-enhancement pattern.
 (function badAnchorHrefGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1605,7 +1633,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Incident: SEO/a11y require explicit language. Catch agents copying
 //   templates without lang attribute. Skip robot-verification stubs.
 (function htmlLangGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -1626,7 +1654,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Catches "naked" links like <a href="…"><img …></a> with no accessible text.
 //   We allow <a> wrapping <img alt="…"> because alt provides the accessible name.
 (function linkAccessibleNameGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1662,7 +1690,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Incident: AGENTS-r74 said theme/search buttons must be clean SVG —
 //   but they MUST still carry aria-label. Same for h-mobile-menu-btn.
 (function buttonAccessibleNameGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1689,7 +1717,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // G28. Tab-index hygiene: tabindex > 0 is an anti-pattern (creates manual
 // keyboard-order hell). tabindex="0" or "-1" are fine.
 (function tabindexAntiPatternGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1769,7 +1797,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   For each `<img src="foo.jpg">`, the corresponding `foo.webp` (and `*-600w.webp`,
 //   `*-900w.webp` if referenced in srcset) must exist.
 (function imageResponsiveSetGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const missing = new Set();
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1839,7 +1867,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   (c) match its own page's actual URL (e.g. /articles/foo/ has
 //   canonical https://gospod-bog.ru/articles/foo/).
 (function canonicalSanityGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const seen = new Map(); // canonical url → first file that used it
   const problems = [];
   for (const f of files) {
@@ -1891,7 +1919,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // G33. <meta name="viewport"> must NOT block user zoom.
 //   `user-scalable=no` or `maximum-scale=1` is an a11y violation.
 (function viewportZoomGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -1913,7 +1941,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   They would silently break in production while running fine in DevTools.
 //   We allow `onerror=""` on Yandex Metrika noscript <img> since it has no JS.
 (function inlineEventHandlerGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const HANDLERS = /\bon(?:click|change|submit|load|error|mouseover|mouseout|mouseenter|mouseleave|focus|blur|keydown|keyup|keypress|input|scroll|wheel|touchstart|touchend|touchmove)\s*=\s*["'][^"']/i;
   const offenders = [];
   for (const f of files) {
@@ -1937,7 +1965,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // G35. <meta charset="…"> must appear in the first 1024 bytes of <head>.
 //   Otherwise the browser may guess wrong, then re-parse — visible text flash.
 (function charsetEarlyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -1988,7 +2016,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Incident: CSP added wss/Yandex but agents added new Wikimedia/web.archive
 //   <img> without updating img-src — browser silently blocks images.
 (function cspExternalHostCoverageGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const problems = [];
   for (const f of files) {
     const r = rel(f);
@@ -2049,7 +2077,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   - require @context = "https://schema.org" (or "schema.org/")
 //   - require @type field exists (or @graph)
 (function jsonLdShapeGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const problems = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -2079,7 +2107,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   but we are bilingual UTF-8; use Russian-friendly cap ~300 chars).
 //   Pure warning — not all sites care. Skip 404, robot stubs.
 (function descriptionLengthGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const fat = [];
   for (const f of files) {
     const r = rel(f);
@@ -2128,7 +2156,7 @@ const NOINDEX_ALLOWLIST = new Set([
   'karty/yeshua/index.html',
 ]);
 (function noindexAllowlistGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -2269,7 +2297,7 @@ const JS_SIZE_FLOORS = {
 //   to update its `url` field — both pages then claim the same Article URL,
 //   confusing rich-results.
 (function jsonLdUrlConsistencyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const problems = [];
   for (const f of files) {
     const r = rel(f);
@@ -2319,7 +2347,7 @@ const JS_SIZE_FLOORS = {
 //   Otherwise it wastes bandwidth (preload triggers download even if image
 //   never appears). Owner cares about Core Web Vitals.
 (function preloadUsageGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -2435,7 +2463,7 @@ const JS_SIZE_FLOORS = {
 //   Affects mobile address-bar tinting. We require BOTH `light` and `dark`
 //   media variants.
 (function themeColorGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -2473,7 +2501,7 @@ const JS_SIZE_FLOORS = {
 //   is legitimate (one resource, two declarations) and should NOT trigger.
 //   We flag only when ≥2 DIFFERENT URLs are marked high-priority.
 (function fetchPriorityHighGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -2598,7 +2626,7 @@ const JS_SIZE_FLOORS = {
 // G55. <html lang="…"> must be either "ru" or "ru-RU" — not "en".
 //   Catches agents who default to English templates and forget to localize.
 (function htmlLangIsRussianGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -2622,7 +2650,7 @@ const JS_SIZE_FLOORS = {
 // G56. Each <link rel="alternate" type="application/rss+xml"> must point to
 //   the SAME feed.xml URL across all pages (no fragmented RSS endpoints).
 (function rssAlternateConsistencyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const seen = new Map(); // url → first-file
   const conflicts = [];
   for (const f of files) {
@@ -2653,7 +2681,7 @@ const JS_SIZE_FLOORS = {
 //   - <img> inside <picture> if the <picture>'s <source> has width/height
 //   - Decorative images (alt="" + aria-hidden / role=presentation)
 (function imageDimensionsCLSGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -2793,7 +2821,7 @@ const JS_SIZE_FLOORS = {
 //   The existing image-references guard handles <img>/srcset, but og:image
 //   only appears in meta and was previously missed.
 (function ogImageExistsGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const missing = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -2909,7 +2937,7 @@ const JS_SIZE_FLOORS = {
 //   that file. We flag (info) any version < 10 since real versions are
 //   Unix timestamps in the billions.
 (function siteConfigVersionFreshnessGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const stale = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -2937,7 +2965,7 @@ const JS_SIZE_FLOORS = {
 //   We follow trailing-slash convention everywhere (/articles/foo/), so
 //   internal `<a href>` should match. Trailing slashes prevent a 301 hop.
 (function trailingSlashConsistencyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const noSlashOffenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -2998,7 +3026,7 @@ const JS_SIZE_FLOORS = {
 //   SVG inline in 5+ HTML files, that's wasted bytes (~1KB each) — warn so
 //   they consider extracting to /icons/ or shared component.
 (function duplicateSvgBodyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const svgMap = new Map(); // hash → list of files
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3028,7 +3056,7 @@ const JS_SIZE_FLOORS = {
 //   The cache-bust script uses md5 first-8-chars. Detect ?v= values that
 //   are too short/long (broken cache-bust scripts have been a pain point).
 (function cacheBustHashFormatGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const bad = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3060,7 +3088,7 @@ const JS_SIZE_FLOORS = {
 //   Rule: <img> declared with height/width attrs where height >= 1.4*width
 //   MUST sit in a figure with class containing 'article-img--vertical'.
 (function verticalImageClassGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -3103,7 +3131,7 @@ const JS_SIZE_FLOORS = {
 //   Best practice: every embedded image carries semantic caption for a11y
 //   AND SEO. Some agents drop caption when copy-pasting.
 (function figureCaptionGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3129,7 +3157,7 @@ const JS_SIZE_FLOORS = {
 //   We don't require strip-right-after-h1 (both <header><h1></header><strip>
 //   and <article><strip><summary-card> patterns are legitimate).
 (function seriesStripPlacementGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3151,7 +3179,7 @@ const JS_SIZE_FLOORS = {
 // G74. Image alt text quality: not empty, not redundant ("image of…", "picture of…"),
 //   not the filename itself ("gill-portret.jpg").
 (function altTextQualityGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3188,7 +3216,7 @@ const JS_SIZE_FLOORS = {
 //   E.g. <source srcset="…-600w.webp 600w"> ought to point at a 600px-wide file.
 //   Wrong descriptor confuses the browser image selector → wrong file loaded.
 (function srcsetDescriptorAccuracyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const mismatches = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3230,7 +3258,7 @@ const JS_SIZE_FLOORS = {
 //   JSON-LD. Found today: 4 pages had the HTML attribute but no schema entry —
 //   Google Assistant / voice search wouldn't know what to read.
 (function speakableConsistencyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -3308,7 +3336,7 @@ const JS_SIZE_FLOORS = {
 //   Modified must be ≥ published. Owner edits articles over time;
 //   if dateModified is BEFORE datePublished, Google flags as suspicious.
 (function articleDatesConsistencyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3414,7 +3442,7 @@ const JS_SIZE_FLOORS = {
 //   of body) should NOT be loading=lazy (kills LCP). Below-fold should BE
 //   loading=lazy (bandwidth saving).
 (function lazyLoadingHeuristicGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const aboveLazy = [];
   for (const f of files) {
     const r = rel(f);
@@ -3579,7 +3607,7 @@ const JS_SIZE_FLOORS = {
 //   the file exists, but this is a dedicated guard that's noisier and
 //   easier to debug than the generic asset-existence check.
 (function preloadedFontsExistGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const missing = new Set();
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3658,7 +3686,7 @@ const JS_SIZE_FLOORS = {
 //   candidates. Add a sanity check: the page's og:image SHOULD match a
 //   fetchpriority="high" / preloaded image on the page (alignment signal).
 (function ogImageHeroAlignmentGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -3696,7 +3724,7 @@ const JS_SIZE_FLOORS = {
 //   Rule: every content page that ships the noscript pixel MUST also
 //   call ym(108353327, 'init', …) — they are a matched pair.
 (function yandexMetrikaConsistencyGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
@@ -3741,7 +3769,7 @@ const JS_SIZE_FLOORS = {
 //   Surgical: catches the broken pattern where a refactor leaves <picture>
 //   with only <source> children — browser shows nothing.
 (function pictureNeedsImgFallbackGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3764,7 +3792,7 @@ const JS_SIZE_FLOORS = {
 //   variants). G62 already does this for <meta og:image>; G89 does
 //   <image:loc> in sitemap. This is the third gap: schema-graph images.
 (function jsonLdImageReferencesGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const missing = new Set();
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3809,7 +3837,7 @@ const JS_SIZE_FLOORS = {
 //   chunk of <body> markup mid-<head>. Browser parses it as malformed,
 //   silently moves it, and breaks layout.
 (function headIntegrityGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3865,7 +3893,7 @@ const JS_SIZE_FLOORS = {
 //   Mobile screens are ≥320px. Any inline width >300px without max-width
 //   creates overflow. Detect and flag.
 (function inlineWidthOverflowGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -3929,7 +3957,7 @@ const JS_SIZE_FLOORS = {
 //   also have #hMobileNav AND #hMobileBackdrop in HTML — otherwise the
 //   menu button shows but does nothing.
 (function mobileMenuWiringGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
@@ -4154,7 +4182,7 @@ const JS_SIZE_FLOORS = {
 
 // G106. Summary cards must not contain active glossary terms/tooltips.
 (function summaryCardNoGlossaryGuard() {
-  const htmlFiles = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const htmlFiles = htmlPages;
   const offenders = [];
   for (const f of htmlFiles) {
     const html = fs.readFileSync(f, 'utf8');
@@ -4464,7 +4492,7 @@ console.log(`\n${sep}\nGB-IS-MY-STRENGTH — PROFESSIONAL AUDIT\n${new Date().to
 //   Any CDN compromise would silently execute malicious code on the page.
 //   Fix: add sha384 integrity= + crossorigin=anonymous to every external script.
 (function cdnSriGuard() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/]scripts[\\/]/.test(f));
+  const files = htmlPages;
   const offenders = [];
   for (const f of files) {
     const r = rel(f);
