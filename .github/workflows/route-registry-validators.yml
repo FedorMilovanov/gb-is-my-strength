@@ -28,6 +28,8 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/audit-pro.js"
+      - "scripts/audit-pro-source-corpus-test.js"
+      - "scripts/lib/audit-pro-source-corpus.js"
       - "scripts/seo-audit.js"
       - "scripts/dist-jsonld-audit.js"
       - "scripts/check-route-profiles.js"
@@ -115,6 +117,7 @@ jobs:
             node scripts/rss-feed-normalizer.js --check
             node scripts/seo-route-contract-test.js
             node scripts/search-index-policy-contract-test.js
+            node scripts/audit-pro-source-corpus-test.js
             node scripts/audit-pro.js
           } 2>&1 | tee reports/public-surface-registry.log
 
