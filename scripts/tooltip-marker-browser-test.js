@@ -279,7 +279,7 @@ async function mobileAssertions(browser, origin) {
   assert.ok(opened.left >= -1 && opened.right <= opened.vw + 1);
   assert.ok(opened.top >= -1 && opened.bottom <= opened.vh + 1);
 
-  await page.tap('#outside');
+  await page.touchscreen.tap(20, 300);
   await page.waitForTimeout(50);
   assert.equal(await page.evaluate(() => document.querySelector('#dove').getAttribute('aria-expanded')), 'false');
   assert.deepEqual(errors, [], `mobile page errors: ${errors.join('; ')}`);
