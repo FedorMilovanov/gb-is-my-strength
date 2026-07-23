@@ -162,6 +162,5 @@ jobs:
             reports/native-source-contract-*.log
             reports/html-surface-contract.json
             migration/route-migration-matrix.json
-            src/components/baptisty-rossii/BaptistyRossiiBody.astro
           if-no-files-found: error
           retention-days: 7
