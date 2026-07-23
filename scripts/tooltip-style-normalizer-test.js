@@ -21,7 +21,7 @@ assert.match(first.output, new RegExp(`vertical-align:${TARGET_VERTICAL_ALIGN.re
 assert.ok(first.output.includes(`transform:${TARGET_HOVER_TRANSFORM}!important;`));
 assert.ok(first.output.includes(CLOSED_TOOLTIP_POINTER_RULE));
 assert.ok(first.output.includes(FLOATING_TOOLTIP_POINTER_RULE));
-assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip\{pointer-events:none\}/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip,\.gtip\.gb-floating-tip\{pointer-events:none\}/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip a/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\[role="button"\]/);
 
