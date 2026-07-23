@@ -25,6 +25,8 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/audit-pro.js"
+      - "scripts/seo-audit.js"
+      - "scripts/seo-audit-dist-regression-test.js"
       - "scripts/check-route-profiles.js"
       - "scripts/check-route-migration-matrix.js"
       - "scripts/check-content-source-coverage.js"
@@ -43,6 +45,7 @@ on:
       - "scripts/nagornaya-epistemic-ui-browser-test.mjs"
       - "scripts/lib/public-surface-registry.js"
       - "scripts/lib/sitemap-route-contract.js"
+      - "scripts/lib/seo-route-targets.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
       - "scripts/lib/effective-route-registry.js"
@@ -95,6 +98,7 @@ jobs:
             npm run surface:registry:test
             node scripts/sitemap-route-contract-test.js
             node scripts/audit-pro.js
+            node scripts/seo-audit.js
           } 2>&1 | tee reports/public-surface-registry.log
 
       - name: Migration matrix contract
@@ -143,7 +147,7 @@ jobs:
 
   public-surface-browser-matrix:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
 
     steps:
       - name: Checkout exact head
@@ -162,6 +166,16 @@ jobs:
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
+
+      - name: Audit every production route SEO contract
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/seo-audit.js --root dist --registry 2>&1 \
+            | tee reports/seo-dist-audit.log
+          node scripts/seo-audit-dist-regression-test.js 2>&1 \
+            | tee reports/seo-dist-regression.log
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
@@ -200,6 +214,8 @@ jobs:
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
             reports/nagornaya-epistemic-ui-browser.json
+            reports/seo-dist-audit.log
+            reports/seo-dist-regression.log
             reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
           retention-days: 14
