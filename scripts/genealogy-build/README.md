@@ -2,7 +2,7 @@
 
 Генерирует производный датасет `data/genealogy/v2/` из открытых источников.
 Стратегия и контракт: `docs/GENEALOGY-FOUNDATION-2026-07-11.md` +
-AuditRepo `projects/gb-is-my-strength/incoming/claude-genealogy-atlas-strategy/2026-07-11/`.
+`FedorMilovanov/AuditRepo` → `projects/gb-is-my-strength/incoming/claude-genealogy-atlas-strategy/2026-07-11/`.
 
 ## Запуск
 

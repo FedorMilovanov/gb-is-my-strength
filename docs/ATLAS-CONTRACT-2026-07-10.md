@@ -1,7 +1,7 @@
 # ATLAS CONTRACT v1.0 — контракт Библейского Атласа
 
 **Дата:** 2026-07-10 · **Статус:** принят владельцем («делать как знаешь», 2026-07-10) · **Владелец файла:** этот документ — единственный источник правды по контрактам Атласа (Single-Writer-Per-Fact).
-**Основание:** глубокий аудит `AuditRepo/projects/gb-is-my-strength/incoming/claude-atlas-deep-audit/2026-07-10/ATLAS_DEEP_AUDIT_AND_MASTER_PLAN.md` (верификация GPT-исследования + собственный анализ кода + интернет-верификация референсов/лицензий).
+**Основание:** глубокий аудит `FedorMilovanov/AuditRepo` → `projects/gb-is-my-strength/incoming/claude-atlas-deep-audit/2026-07-10/ATLAS_DEEP_AUDIT_AND_MASTER_PLAN.md` (верификация GPT-исследования + собственный анализ кода + интернет-верификация референсов/лицензий).
 **Кому читать:** любому агенту перед ЛЮБОЙ работой в `/karty/**`, `data/atlas/**`, `src/atlas/**` — после обязательных документов из AGENTS.md §🚦.
 
 ---

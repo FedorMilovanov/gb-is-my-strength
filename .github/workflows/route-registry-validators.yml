@@ -8,6 +8,8 @@ on:
     branches: [main]
     paths:
       - "data/route-profiles/**"
+      - "data/route-search-policy.json"
+      - "data/search-manifest.json"
       - "data/series.json"
       - "data/nagornaya/source-registry*.json"
       - "migration/page-ownership.json"
@@ -21,8 +23,13 @@ on:
       - "src/components/nagornaya/**"
       - "css/**"
       - "js/**"
+      - "feed.xml"
+      - "sitemap.xml"
       - "package.json"
       - "package-lock.json"
+      - "scripts/audit-pro.js"
+      - "scripts/seo-audit.js"
+      - "scripts/dist-jsonld-audit.js"
       - "scripts/check-route-profiles.js"
       - "scripts/check-route-migration-matrix.js"
       - "scripts/check-content-source-coverage.js"
@@ -32,6 +39,15 @@ on:
       - "scripts/content-source-provenance-audit.js"
       - "scripts/public-surface-registry-audit.js"
       - "scripts/public-surface-registry-regression-test.js"
+      - "scripts/rss-feed-normalizer.js"
+      - "scripts/rss-feed-normalizer-test.js"
+      - "scripts/rss-route-contract-test.js"
+      - "scripts/search-index-policy-contract-test.js"
+      - "scripts/search-index-policy-inventory.js"
+      - "scripts/search-manifest-policy-normalizer.js"
+      - "scripts/search-manifest-policy-normalizer-test.js"
+      - "scripts/sitemap-route-contract-test.js"
+      - "scripts/seo-route-contract-test.js"
       - "scripts/public-surface-browser-matrix.mjs"
       - "scripts/public-surface-browser-diagnostics.mjs"
       - "scripts/route-semantics-browser-test.mjs"
@@ -39,11 +55,16 @@ on:
       - "scripts/nagornaya-source-registry-test.js"
       - "scripts/nagornaya-epistemic-ui-browser-test.mjs"
       - "scripts/lib/public-surface-registry.js"
+      - "scripts/lib/rss-route-contract.js"
+      - "scripts/lib/search-index-policy-contract.js"
+      - "scripts/lib/sitemap-route-contract.js"
+      - "scripts/lib/seo-route-contract.js"
       - "scripts/lib/route-source-contract.js"
       - "scripts/lib/route-matrix-normalizer.js"
       - "scripts/lib/effective-route-registry.js"
       - "scripts/sync-route-migration-matrix.js"
       - ".github/workflows/route-registry-validators.yml"
+      - ".github/workflows/search-manifest-policy.yml"
   workflow_dispatch:
 
 concurrency:
@@ -81,7 +102,7 @@ jobs:
             scripts/route-profile-contract-audit.js --strict 2>&1 \
             | tee reports/route-profile-contract.log
 
-      - name: Public surface registry
+      - name: Public surface, sitemap, RSS, SEO and policy mutations
         if: always()
         shell: bash
         run: |
@@ -89,6 +110,12 @@ jobs:
           {
             npm run surface:registry:check
             npm run surface:registry:test
+            node scripts/sitemap-route-contract-test.js
+            node scripts/rss-route-contract-test.js
+            node scripts/rss-feed-normalizer.js --check
+            node scripts/seo-route-contract-test.js
+            node scripts/search-index-policy-contract-test.js
+            node scripts/audit-pro.js
           } 2>&1 | tee reports/public-surface-registry.log
 
       - name: Migration matrix contract
@@ -131,6 +158,9 @@ jobs:
           name: route-registry-validators-${{ github.run_id }}
           path: |
             reports/*.log
+            reports/rss-route-contract.json
+            data/route-search-policy.json
+            data/search-manifest.json
             migration/route-migration-matrix.json
           if-no-files-found: error
           retention-days: 7
@@ -157,6 +187,18 @@ jobs:
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
+      - name: Audit registry-derived production SEO
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/dist-jsonld-audit.js --root dist 2>&1 | tee reports/seo-dist.log
+
+      - name: Enforce production search and index policy
+        env:
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/search-index-policy-inventory.js --dist=dist --strict
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
@@ -172,7 +214,7 @@ jobs:
         run: node scripts/nagornaya-epistemic-ui-browser-test.mjs
 
       - name: Diagnose overflowing routes
-        if: ${{ failure() }}
+        if: ${{ failure() && hashFiles('reports/public-surface-browser-matrix.json') != '' }}
         shell: bash
         run: |
           python3 -m http.server 4177 --bind 127.0.0.1 --directory dist >/tmp/public-surface-http.log 2>&1 &
@@ -184,12 +226,15 @@ jobs:
             reports/public-surface-browser-matrix.json \
             http://127.0.0.1:4177
 
-      - name: Upload browser matrix report
+      - name: Upload browser, SEO and search-policy reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: public-surface-browser-matrix-${{ github.run_id }}
           path: |
+            reports/seo-dist.log
+            reports/search-index-policy-inventory.json
+            reports/search-index-policy-inventory.md
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
