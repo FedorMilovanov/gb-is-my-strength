@@ -128,14 +128,12 @@ for (const rel of [...new Set(scanFiles)]) {
   }
 }
 
-for (const rel of GILL_ORDER.map((slug) => `articles/${slug}/index.html`)) {
+for (const slug of GILL_ORDER) {
+  const rel = `articles/${slug}/index.html`;
   const txt = read(rel);
-  // v16: reading times can be in old format or new format (separate roman + time)
-  // v16 format: times appear as "<small>N мин</small>" separately from roman numerals
-  for (const required of ['16 мин', '32 мин', '39 мин', '54 мин']) {
-    if (txt.includes(required)) ok(`${rel}: contains ${required}`);
-    else bad(`${rel}: missing ${required}`);
-  }
+  const expected = canonical[slug];
+  if (new RegExp(`\\b${expected}\\s*мин`).test(txt)) ok(`${rel}: contains canonical ${expected} мин`);
+  else bad(`${rel}: missing canonical ${expected} мин`);
 }
 
 if (problems.length) {
