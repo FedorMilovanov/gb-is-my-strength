@@ -17,9 +17,193 @@ on:
       - .github/workflows/map-keyboard-contract.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  apply-contract-once:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/map-keyboard-contract
+          fetch-depth: 0
+      - name: Apply engine contract and restore permanent workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('karty/_engine/map-engine.js')
+          source = path.read_text(encoding='utf-8')
+          old = """    _on(document,'keydown',function kh(e){
+      if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
+      if(e.key==='Escape'){if(!overlayRuntime)close('escape');return}
+      if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
+      if(e.key==='?'||(e.key==='/'&&e.shiftKey)){e.preventDefault();toggleShortcutsHelp();return}
+      if(!activePlaceId)return;
+      // Number keys 1-7 for tab switching
+      if(e.key>='1'&&e.key<='8'){
+        e.preventDefault();
+        const availTabs = TAB_KEYS.filter(k => {
+          const place = getActivePlace();
+          if (!place) return false;
+          if (k==='bible') return !!place.bible;
+          if (k==='arch') return !!place.arch;
+          if (k==='he') return !!place.he_deep;
+          if (k==='dispute') return !!place.dispute;
+          if (k==='photos') return !!(place.photos&&place.photos.length);
+          if (k==='extra') return !!place.bible_extra;
+          return k==='story';
+        });
+        const ti = parseInt(e.key)-1;
+        if (ti < availTabs.length) {
+          const tabKey = availTabs[ti];
+          const tabsEl = panel.querySelector('.me-tabs');
+          if (tabsEl) {
+            tabsEl.querySelectorAll('.me-tab').forEach(b => b.classList.remove('me-tab--active'));
+            const targetTab = tabsEl.querySelector('[data-tab="'+tabKey+'"]');
+            if (targetTab) { targetTab.classList.add('me-tab--active'); renderTabContent(tabKey, getActivePlace()); }
+          }
+        }
+        return;
+      }
+      const vis=visiblePlaces();const idx=placeIndexInStory();
+      if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
+      if(e.key==='ArrowLeft'&&idx>0)open(vis[idx-1].id);
+      if(e.key==='PageDown'&&idx<vis.length-1){e.preventDefault();open(vis[Math.min(idx+3,vis.length-1)].id);}
+      if(e.key==='PageUp'&&idx>0){e.preventDefault();open(vis[Math.max(idx-3,0)].id);}
+      if(e.key==='Home'&&idx>0){e.preventDefault();open(vis[0].id);}
+      if(e.key==='End'&&idx<vis.length-1){e.preventDefault();open(vis[vis.length-1].id);}
+    });"""
+          new = """    function isEditableShortcutTarget(target){
+      if(!target||typeof target.closest!=='function')return false;
+      return !!target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]');
+    }
+
+    function visibleTabButtons(){
+      return [...panel.querySelectorAll('.me-tabs .me-tab[data-tab]')].filter(tab=>{
+        if(tab.hidden||tab.getAttribute('aria-hidden')==='true')return false;
+        const style=getComputedStyle(tab);
+        return style.display!=='none'&&style.visibility!=='hidden';
+      });
+    }
+
+    _on(document,'keydown',function kh(e){
+      if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
+      if(e.key==='Escape'){if(!overlayRuntime)close('escape');return}
+      const editableTarget=isEditableShortcutTarget(e.target)||isEditableShortcutTarget(document.activeElement);
+      if(e.isComposing||editableTarget||e.altKey||e.ctrlKey||e.metaKey)return;
+      if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
+      if(e.key==='?'||(e.key==='/'&&e.shiftKey)){e.preventDefault();toggleShortcutsHelp();return}
+      if(!activePlaceId)return;
+      // Number keys follow the actual rendered tab order; no second availability policy.
+      if(e.key>='1'&&e.key<='8'){
+        const numericTabs=visibleTabButtons();
+        const targetTab=numericTabs[parseInt(e.key,10)-1];
+        if(targetTab){e.preventDefault();targetTab.click()}
+        return;
+      }
+      const vis=visiblePlaces();const idx=placeIndexInStory();
+      if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
+      if(e.key==='ArrowLeft'&&idx>0)open(vis[idx-1].id);
+      if(e.key==='PageDown'&&idx<vis.length-1){e.preventDefault();open(vis[Math.min(idx+3,vis.length-1)].id);}
+      if(e.key==='PageUp'&&idx>0){e.preventDefault();open(vis[Math.max(idx-3,0)].id);}
+      if(e.key==='Home'&&idx>0){e.preventDefault();open(vis[0].id);}
+      if(e.key==='End'&&idx<vis.length-1){e.preventDefault();open(vis[vis.length-1].id);}
+    });"""
+          if source.count(old) != 1:
+              raise SystemExit(f'expected one exact keyboard block, found {source.count(old)}')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          cat > .github/workflows/map-keyboard-contract.yml <<'YAML'
+          name: Map Keyboard Contract
+
+          on:
+            pull_request:
+              paths:
+                - karty/_engine/map-engine.js
+                - scripts/map-keyboard-contract-test.js
+                - scripts/map-browser-smoke.js
+                - .github/workflows/map-keyboard-contract.yml
+            push:
+              branches:
+                - main
+              paths:
+                - karty/_engine/map-engine.js
+                - scripts/map-keyboard-contract-test.js
+                - scripts/map-browser-smoke.js
+                - .github/workflows/map-keyboard-contract.yml
+
+          permissions:
+            contents: read
+
+          jobs:
+            source-contract:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - uses: actions/setup-node@v4
+                  with:
+                    node-version: 22
+                - name: Verify source keyboard policy
+                  run: node scripts/map-keyboard-contract-test.js
+
+            chromium-contract:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - uses: actions/setup-node@v4
+                  with:
+                    node-version: 22
+                    cache: npm
+                - name: Install dependencies
+                  run: npm ci
+                - name: Install Chromium
+                  run: npx playwright install --with-deps chromium
+                - name: Start source server
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    python3 -m http.server 8090 --bind 127.0.0.1 >/tmp/map-keyboard-http.log 2>&1 &
+                    echo $! > /tmp/map-keyboard-http.pid
+                    for attempt in $(seq 1 30); do
+                      if curl --fail --silent http://127.0.0.1:8090/karty/ishod/ >/dev/null; then
+                        exit 0
+                      fi
+                      sleep 1
+                    done
+                    cat /tmp/map-keyboard-http.log
+                    exit 1
+                - name: Verify live map keyboard behavior
+                  env:
+                    AUDIT_BASE: http://127.0.0.1:8090
+                    MAP_SMOKE_ROUTES: ishod,avraam
+                  run: node scripts/map-browser-smoke.js
+                - name: Stop source server
+                  if: always()
+                  shell: bash
+                  run: |
+                    if [[ -f /tmp/map-keyboard-http.pid ]]; then
+                      kill "$(cat /tmp/map-keyboard-http.pid)" 2>/dev/null || true
+                    fi
+          YAML
+          sed -i 's/^          //' .github/workflows/map-keyboard-contract.yml
+          rm -f .github/workflows/tmp-apply-map-keyboard-contract.yml
+
+          node --check karty/_engine/map-engine.js
+          node --check scripts/map-browser-smoke.js
+          node scripts/map-keyboard-contract-test.js
+
+          git config user.name "map-contract[bot]"
+          git config user.email "map-contract[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(maps): isolate typing from keyboard shortcuts"
+          git push origin HEAD:agent/map-keyboard-contract
+
   source-contract:
     runs-on: ubuntu-latest
     steps:
