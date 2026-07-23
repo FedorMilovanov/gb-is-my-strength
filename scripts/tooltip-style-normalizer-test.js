@@ -6,7 +6,8 @@ const {
   normalizeTooltipStyles,
   TARGET_VERTICAL_ALIGN,
   TARGET_HOVER_TRANSFORM,
-  CLOSED_TOOLTIP_POINTER_RULE
+  CLOSED_TOOLTIP_POINTER_RULE,
+  FLOATING_TOOLTIP_POINTER_RULE
 } = require('./tooltip-style-normalizer.js');
 
 const fixture = [
@@ -15,10 +16,14 @@ const fixture = [
 ].join('\n');
 
 const first = normalizeTooltipStyles(fixture);
-assert.equal(first.changes, 3);
+assert.equal(first.changes, 4);
 assert.match(first.output, new RegExp(`vertical-align:${TARGET_VERTICAL_ALIGN.replace('.', '\\.')}`));
 assert.ok(first.output.includes(`transform:${TARGET_HOVER_TRANSFORM}!important;`));
 assert.ok(first.output.includes(CLOSED_TOOLTIP_POINTER_RULE));
+assert.ok(first.output.includes(FLOATING_TOOLTIP_POINTER_RULE));
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip\{pointer-events:none\}/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip a/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\[role="button"\]/);
 
 const second = normalizeTooltipStyles(first.output);
 assert.equal(second.changes, 0, 'style normalization must be idempotent');
