@@ -120,7 +120,12 @@ function dictionaryIndex(dictionary) {
 function validatePolicy(policy) {
   if (!policy) return;
 
-  for (const field of ["rootSelectors", "proseSelectors", "forbiddenSelectors"]) {
+  for (const field of [
+    "rootSelectors",
+    "proseSelectors",
+    "hydrationForbiddenSelectors",
+    "placementForbiddenSelectors"
+  ]) {
     if (!Array.isArray(policy[field]) || policy[field].length === 0) {
       fail(`data/glossary-policy.json: ${field} must be a non-empty array`);
     }
@@ -143,8 +148,18 @@ function validatePolicy(policy) {
     "figure",
     "[data-glossary-skip]"
   ]) {
-    if (!policy.forbiddenSelectors.includes(selector)) {
-      fail(`data/glossary-policy.json: missing universal selector ${selector}`);
+    if (!policy.placementForbiddenSelectors.includes(selector)) {
+      fail(
+        `data/glossary-policy.json: placement policy is missing ${selector}`
+      );
+    }
+  }
+
+  for (const selector of ["a", "abbr", ".gterm", ".gtip", "code", "pre"]) {
+    if (!policy.hydrationForbiddenSelectors.includes(selector)) {
+      fail(
+        `data/glossary-policy.json: hydration policy is missing ${selector}`
+      );
     }
   }
 }
@@ -182,9 +197,9 @@ function frameMatches(selector, frame) {
     : false;
 }
 
-function hasForbiddenAncestor(stack, policy) {
+function hasForbiddenAncestor(stack, selectors) {
   return stack.some((frame) =>
-    policy.forbiddenSelectors.some((selector) => frameMatches(selector, frame))
+    selectors.some((selector) => frameMatches(selector, frame))
   );
 }
 
@@ -219,9 +234,10 @@ function auditSource(file, policy, aliases) {
     const glossaryMarkup =
       frame.classes.has("gterm") || frame.classes.has("gtip");
 
-    // Test ancestors only. `.gterm` and `.gtip` are forbidden to automatic
-    // hydration, but their own class must not invalidate the source markup.
-    if (glossaryMarkup && hasForbiddenAncestor(stack, policy)) {
+    if (
+      glossaryMarkup &&
+      hasForbiddenAncestor(stack, policy.placementForbiddenSelectors)
+    ) {
       const line = source.slice(0, match.index).split("\n").length;
       fail(`${rel(file)}:${line}: glossary markup is inside a forbidden container`);
     }
@@ -251,6 +267,8 @@ function validateRuntime(policy) {
 
   for (const token of [
     "/data/glossary-policy.json",
+    "hydrationForbiddenSelectors",
+    "placementForbiddenSelectors",
     "minWordGap",
     "minBlockGap",
     "maxPerArticle",
@@ -276,8 +294,8 @@ function validateRuntime(policy) {
   }
 
   for (const selector of [".summary-card", ".note-box", ".context-bridge"]) {
-    if (!policy.forbiddenSelectors.includes(selector)) {
-      fail(`runtime policy must forbid ${selector}`);
+    if (!policy.placementForbiddenSelectors.includes(selector)) {
+      fail(`placement policy must forbid ${selector}`);
     }
   }
 }
