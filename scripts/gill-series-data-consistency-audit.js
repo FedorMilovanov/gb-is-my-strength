@@ -172,6 +172,7 @@ if (searchManifest && Array.isArray(searchManifest.items)) {
 }
 
 // 6. Progress coherence
+const expectedTotal = seriesItems.reduce((sum, item) => sum + item.readingTimeMin, 0);
 // Reading order (2026-07-09 display reorder): exegete (part4) now displays as
 // «Часть III» and precedes legacy (part3) which displays as «Часть IV».
 // Internal ids/slugs unchanged; only display order/numbering swapped.
@@ -180,14 +181,14 @@ let cumulative = 0;
 expectedOrder.forEach((pid, idx) => {
   const pd = pageData[pid];
   if (!pd) { bad('pageData missing', pid); return; }
-  if (pd.totalMin !== 220) bad('totalMin must be 220', `${pid}: got ${pd.totalMin}`);
-  else ok(`totalMin OK ${pid}: 220`);
+  if (pd.totalMin !== expectedTotal) bad('totalMin mismatch', `${pid}: expected ${expectedTotal}, got ${pd.totalMin}`);
+  else ok(`totalMin OK ${pid}: ${expectedTotal}`);
   if (pd.doneMin !== cumulative) bad('progress doneMin drift', `${pid}: expected done=${cumulative}, got ${pd.doneMin}`);
   else ok(`progress doneMin OK ${pid}: ${pd.doneMin}`);
   cumulative += pd.partMin;
 });
-if (cumulative !== 220) bad('cumulative progress sum != 220', `got ${cumulative}`);
-else ok(`cumulative progress sum = 220 ✅`);
+if (cumulative !== expectedTotal) bad('cumulative progress sum mismatch', `expected ${expectedTotal}, got ${cumulative}`);
+else ok(`cumulative progress sum = ${expectedTotal} ✅`);
 
 // Verify partMin matches series readingTime
 expectedOrder.forEach(pid => {
