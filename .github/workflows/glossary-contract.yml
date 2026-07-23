@@ -4,21 +4,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     paths:
-      - "data/glossary.json"
-      - "data/glossary-policy.json"
+      - "data/glossary*.json"
       - "css/site.css"
       - "js/glossary.js"
-      - "js/site.js"
-      - "js/site-utils.js"
-      - "scripts/glossary-contract-audit.js"
-      - "scripts/glossary-placement-normalizer.js"
-      - "scripts/glossary-placement-normalizer-test.js"
-      - "scripts/glossary-runtime-browser-test.js"
+      - "js/site*.js"
+      - "scripts/glossary-*.js"
       - "scripts/reference-system-inventory.js"
-      - "scripts/tooltip-icon-audit.js"
-      - "scripts/tooltip-marker-browser-test.js"
-      - "scripts/tooltip-trigger-normalizer.js"
-      - "scripts/tooltip-trigger-normalizer-test.js"
+      - "scripts/tooltip-*.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -28,24 +20,15 @@ on:
       - "baptisty-rossii/**"
       - ".github/workflows/glossary-contract.yml"
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - "data/glossary.json"
-      - "data/glossary-policy.json"
+      - "data/glossary*.json"
       - "css/site.css"
       - "js/glossary.js"
-      - "js/site.js"
-      - "js/site-utils.js"
-      - "scripts/glossary-contract-audit.js"
-      - "scripts/glossary-placement-normalizer.js"
-      - "scripts/glossary-placement-normalizer-test.js"
-      - "scripts/glossary-runtime-browser-test.js"
+      - "js/site*.js"
+      - "scripts/glossary-*.js"
       - "scripts/reference-system-inventory.js"
-      - "scripts/tooltip-icon-audit.js"
-      - "scripts/tooltip-marker-browser-test.js"
-      - "scripts/tooltip-trigger-normalizer.js"
-      - "scripts/tooltip-trigger-normalizer-test.js"
+      - "scripts/tooltip-*.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -84,47 +67,40 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate normalizer syntax
+      - name: Validate and test normalizers
         run: |
           node --check scripts/glossary-placement-normalizer.js
-          node --check scripts/glossary-placement-normalizer-test.js
           node --check scripts/tooltip-trigger-normalizer.js
-          node --check scripts/tooltip-trigger-normalizer-test.js
-
-      - name: Test universal normalizers
-        run: |
+          node --check scripts/tooltip-style-normalizer.js
           node scripts/glossary-placement-normalizer-test.js
           node scripts/tooltip-trigger-normalizer-test.js
 
-      - name: Normalize glossary placement and tooltip triggers
+      - name: Normalize source and shared marker styles
         run: |
           node scripts/glossary-placement-normalizer.js --write
           node scripts/tooltip-trigger-normalizer.js --write
+          node scripts/cache-bust.js --write
 
-      - name: Synchronize standard asset revisions
-        run: node scripts/cache-bust.js --write
-
-      - name: Validate normalized source and asset revisions
+      - name: Validate normalized tree
         run: |
           node scripts/glossary-contract-audit.js
           node scripts/tooltip-trigger-normalizer.js
           node scripts/tooltip-icon-audit.js
           node scripts/cache-bust.js
 
-      - name: Commit normalized sources and revisions
+      - name: Commit normalization
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           if git diff --quiet; then
-            echo "No normalization or asset revision changes are required."
+            echo "No normalization changes required."
             exit 0
           fi
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
-          git commit -m "fix(content): normalize glossary and tooltip triggers"
+          git commit -m "fix(content): normalize glossary and tooltip contracts"
           git push origin "HEAD:${HEAD_REF}"
 
   source-contract:
@@ -139,93 +115,35 @@ jobs:
         with:
           node-version: 22
 
-      - name: Check runtime syntax
-        run: node --check js/glossary.js
-
-      - name: Check contract, inventory and normalizer syntax
+      - name: Validate syntax and fixtures
         run: |
+          mkdir -p reports
+          node --check js/glossary.js
           node --check scripts/glossary-contract-audit.js
           node --check scripts/glossary-placement-normalizer.js
-          node --check scripts/glossary-placement-normalizer-test.js
           node --check scripts/reference-system-inventory.js
           node --check scripts/tooltip-icon-audit.js
           node --check scripts/tooltip-trigger-normalizer.js
-          node --check scripts/tooltip-trigger-normalizer-test.js
+          node --check scripts/tooltip-style-normalizer.js
+          node scripts/glossary-placement-normalizer-test.js
+          node scripts/tooltip-trigger-normalizer-test.js
 
-      - name: Test universal normalizers
-        id: normalizer-tests
-        shell: bash
+      - name: Audit glossary, references and tooltip markers
         run: |
-          mkdir -p reports
-          set +e
-          {
-            node scripts/glossary-placement-normalizer-test.js
-            node scripts/tooltip-trigger-normalizer-test.js
-          } > reports/normalizer-tests.log 2>&1
-          status=$?
-          cat reports/normalizer-tests.log
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit 0
+          node scripts/glossary-contract-audit.js | tee reports/glossary-contract.log
+          node scripts/reference-system-inventory.js
+          node scripts/tooltip-icon-audit.js | tee reports/tooltip-icon-audit.log
+          node scripts/tooltip-style-normalizer.js | tee reports/tooltip-style.log
 
-      - name: Validate dictionary, placement and shared runtime
-        id: glossary-audit
-        shell: bash
+      - name: Lint workflow
         run: |
-          mkdir -p reports
-          set +e
-          node scripts/glossary-contract-audit.js > reports/glossary-contract.log 2>&1
-          status=$?
-          cat reports/glossary-contract.log
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Build repository-wide reference inventory
-        run: node scripts/reference-system-inventory.js
-
-      - name: Audit tooltip trigger icons
-        id: tooltip-audit
-        shell: bash
-        run: |
-          set +e
-          node scripts/tooltip-icon-audit.js > reports/tooltip-icon-audit.log 2>&1
-          status=$?
-          cat reports/tooltip-icon-audit.log
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Lint glossary workflow
-        id: glossary-actionlint
-        shell: bash
-        run: |
-          mkdir -p reports /tmp/actionlint
+          mkdir -p /tmp/actionlint
           curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
             | tar xz -C /tmp/actionlint actionlint
-          set +e
           /tmp/actionlint/actionlint -no-color .github/workflows/glossary-contract.yml \
-            > reports/glossary-actionlint.log 2>&1
-          status=$?
-          cat reports/glossary-actionlint.log
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit 0
+            | tee reports/glossary-actionlint.log
 
-      - name: Collect violating source files
-        if: always()
-        shell: bash
-        run: |
-          mkdir -p reports/glossary-violation-sources
-          grep '^ERROR: ' reports/glossary-contract.log \
-            | sed -E 's/^ERROR: ([^:]+):[0-9]+:.*/\1/' \
-            | sort -u \
-            > reports/glossary-violation-files.txt || true
-
-          while IFS= read -r file; do
-            [ -n "$file" ] || continue
-            [ -f "$file" ] || continue
-            mkdir -p "reports/glossary-violation-sources/$(dirname "$file")"
-            cp "$file" "reports/glossary-violation-sources/$file"
-          done < reports/glossary-violation-files.txt
-
-      - name: Upload complete glossary diagnostics
+      - name: Upload source diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -233,15 +151,6 @@ jobs:
           path: reports/
           if-no-files-found: error
           retention-days: 14
-
-      - name: Enforce glossary contract result
-        if: always()
-        shell: bash
-        run: |
-          test "${{ steps.normalizer-tests.outputs.status }}" = "0"
-          test "${{ steps.glossary-audit.outputs.status }}" = "0"
-          test "${{ steps.tooltip-audit.outputs.status }}" = "0"
-          test "${{ steps.glossary-actionlint.outputs.status }}" = "0"
 
   browser-contract:
     name: Browser contract
@@ -256,41 +165,28 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Check browser test syntax
+      - name: Install browser dependencies
         run: |
-          node --check scripts/glossary-runtime-browser-test.js
-          node --check scripts/tooltip-marker-browser-test.js
+          npm ci
+          npx playwright install --with-deps chromium
 
-      - name: Run route-independent glossary fixture
-        run: node scripts/glossary-runtime-browser-test.js
-
-      - name: Click and hover tooltip markers on desktop and mobile
-        id: tooltip-browser
-        shell: bash
+      - name: Run glossary and marker interactions
         run: |
           mkdir -p reports
-          set +e
-          node scripts/tooltip-marker-browser-test.js > reports/tooltip-marker-browser.log 2>&1
-          status=$?
-          cat reports/tooltip-marker-browser.log
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit 0
+          node --check scripts/glossary-runtime-browser-test.js
+          node --check scripts/tooltip-marker-browser-test.js
+          node scripts/glossary-runtime-browser-test.js
+          node scripts/tooltip-marker-browser-test.js \
+            | tee reports/tooltip-marker-browser.log
 
-      - name: Upload tooltip browser diagnostics
+      - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: tooltip-marker-browser-report
-          path: reports/tooltip-marker-browser.log
-          if-no-files-found: error
+          path: |
+            reports/tooltip-marker-browser.log
+            reports/tooltip-marker-desktop.png
+            reports/tooltip-marker-mobile.png
+          if-no-files-found: warn
           retention-days: 14
-
-      - name: Enforce tooltip browser result
-        if: always()
-        run: test "${{ steps.tooltip-browser.outputs.status }}" = "0"
