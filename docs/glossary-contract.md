@@ -65,7 +65,7 @@ node scripts/glossary-placement-normalizer.js --write
 
 The first command reports pending source changes and exits non-zero. The second writes normalized sources. The algorithm is covered by a route-independent fixture.
 
-The `autofix` pull-request label is an explicit opt-in. For same-repository branches, the workflow may run the universal normalizer, validate the complete source tree and commit only normalized article sources. Without the label, all jobs remain read-only.
+The `autofix` pull-request label is an explicit opt-in. For same-repository branches, the workflow may run the universal normalizer, validate the complete source tree and commit only deterministic source changes. When the shared runtime hash changes, the same opt-in job uses the repository's existing `scripts/cache-bust.js --write` contract and immediately verifies it again in read-only mode. Without the label, all jobs remain read-only.
 
 ## Required validation
 
@@ -74,6 +74,7 @@ node --check js/glossary.js
 node scripts/glossary-placement-normalizer-test.js
 node scripts/glossary-contract-audit.js
 node scripts/glossary-runtime-browser-test.js
+node scripts/cache-bust.js
 ```
 
 The browser fixture does not load a production route. It verifies the generic contract: allowed prose hydration, forbidden compact blocks, Russian inflection resolution, combined cadence and integration with the shared tooltip initializer.
