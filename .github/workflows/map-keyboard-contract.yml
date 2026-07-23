@@ -72,9 +72,9 @@ jobs:
   diagnose-actionlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Lint this workflow only
+      - name: Fetch and lint this workflow only
         run: |
+          curl -fsSL "https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/agent/map-keyboard-contract/.github/workflows/map-keyboard-contract.yml" -o /tmp/map-keyboard-contract.yml
           curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
             | tar xz -C /tmp actionlint
-          /tmp/actionlint -color .github/workflows/map-keyboard-contract.yml
+          /tmp/actionlint -color /tmp/map-keyboard-contract.yml
