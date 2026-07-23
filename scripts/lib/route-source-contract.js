@@ -126,6 +126,15 @@ function stripComments(source) {
     .replace(/(^|[^:])\/\/.*$/gm, '$1 ');
 }
 
+function inspectReferenceContent(rel) {
+  if (!existsRel(rel)) return null;
+  const source = fs.readFileSync(path.join(ROOT, rel), 'utf8').replace(/\r\n/g, '\n');
+  const match = source.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!match) return { sourceMode: '', body: source, validFrontmatter: false };
+  const sourceMode = match[1].match(/^sourceMode:\s*["']([^"']+)["']\s*$/m)?.[1] || '';
+  return { sourceMode, body: match[2], validFrontmatter: true };
+}
+
 function hasUnsafeSetHtml(source) {
   const withoutJsonLdSerialization = String(source || '').replace(
     /<script\b(?=[^>]*\btype=["']application\/ld\+json["'])(?=[^>]*\bset:html\s*=)[^>]*\/?>/gi,
@@ -351,6 +360,11 @@ function validateRecord(record, options = {}) {
       if (inspection.mdxImports.some((item) => item.resolved === profile.mdxPath)) {
         issue('reference-only MDX is imported by the public route graph');
       }
+      const referenceContent = inspectReferenceContent(profile.mdxPath);
+      if (referenceContent?.sourceMode === 'metadata-only') {
+        if (!referenceContent.validFrontmatter) issue('metadata-only reference MDX has invalid frontmatter envelope');
+        if (stripComments(referenceContent.body).trim()) issue('metadata-only reference MDX contains substantive body content');
+      }
     }
 
     if (profile.legacyStatus === 'reference-only') {
@@ -377,6 +391,7 @@ module.exports = {
   existsRel,
   findProfileFile,
   inspectRouteSource,
+  inspectReferenceContent,
   loadRouteRecords,
   validateRecord,
 };

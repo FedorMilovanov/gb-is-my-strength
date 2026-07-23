@@ -136,6 +136,19 @@ for (const slug of GILL_ORDER) {
   else bad(`${rel}: missing canonical ${expected} мин`);
 }
 
+// Gill catalog reading-time bindings: /articles/ must project data/series.json.
+const catalogMain = read('src/components/articles/ArticlesMain.astro');
+const catalogCards = read('src/components/articles/ArticlesPublicationsSection.astro');
+if (catalogMain.includes("const gill = seriesData['dzhon-gill'];") && catalogMain.includes('gillReadingTime={gillReadingTime}')) ok('articles catalog derives Gill reading times from series.json');
+else bad('articles catalog does not derive Gill reading times from series.json');
+for (const slug of ['dzhon-gill-istoricheskiy-kontekst', 'dzhon-gill-spravochnik']) {
+  const binding = `gillReadingTime['${slug}']`;
+  if (catalogCards.includes(binding)) ok(`articles catalog binding: ${slug}`);
+  else bad(`articles catalog missing canonical binding: ${slug}`);
+}
+if (/\b(?:16|8)\s*мин\b/.test(catalogCards)) bad('articles catalog retains stale Gill 16/8 minute literal');
+else ok('articles catalog has no stale Gill 16/8 minute literals');
+
 if (problems.length) {
   console.log(`\n❌ Gill reading-time canonical audit failed: ${problems.length} issue(s)`);
   process.exit(1);
