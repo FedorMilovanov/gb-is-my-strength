@@ -107,7 +107,6 @@ jobs:
           old_require = "const { auditSitemapCoverage, contractProblems } = require('./lib/sitemap-route-contract');\n"
           debug.append(f'require count={source.count(old_require)}')
           if source.count(old_require) != 1:
-              Path('reports/materializer-debug.txt').write_text('\n'.join(debug) + '\n', encoding='utf-8')
               raise SystemExit('unexpected sitemap require count')
           source = source.replace(
               old_require,
@@ -115,14 +114,16 @@ jobs:
               1,
           )
 
-          old_corpus = """const allFiles = walk(ROOT);
-          const htmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\\/]scripts[\\/]/.test(p)).sort();
-          const htmlPages = htmlFiles.filter(p => !verificationFileRe.test(rel(p)));
-          """
-          debug.append(f'corpus count={source.count(old_corpus)}')
-          if source.count(old_corpus) != 1:
-              Path('reports/materializer-debug.txt').write_text('\n'.join(debug) + '\n', encoding='utf-8')
-              raise SystemExit('unexpected legacy HTML corpus block count')
+          start_marker = 'const allFiles = walk(ROOT);'
+          end_marker = '\n\nfunction getMeta'
+          start = source.index(start_marker)
+          end = source.index(end_marker, start)
+          legacy_corpus = source[start:end]
+          debug.append('legacy corpus=' + repr(legacy_corpus))
+          for required in ['const htmlFiles = allFiles.filter', 'const htmlPages = htmlFiles.filter', 'verificationFileRe']:
+              if required not in legacy_corpus:
+                  raise SystemExit(f'legacy corpus missing expected token: {required}')
+
           new_corpus = """const allFiles = walk(ROOT);
           const allHtmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\\/]scripts[\\/]/.test(p)).sort();
           const surfaceRegistry = buildPublicSurfaceRegistry();
@@ -150,33 +151,28 @@ jobs:
             R.note(`Registered non-production root HTML excluded from public source checks: ${sourceCorpus.registeredNonProduction.map((item) => item.route).join(', ')}`);
           }
           """
-          source = source.replace(old_corpus, new_corpus, 1)
+          source = source[:start] + new_corpus + source[end:]
 
           walk_expr = r"walk(ROOT).filter(f => f.endsWith('.html') && !/[\/]scripts[\/]/.test(f))"
           walk_count = source.count(walk_expr)
           debug.append(f'repeated HTML walk count={walk_count}')
           if walk_count < 1:
-              Path('reports/materializer-debug.txt').write_text('\n'.join(debug) + '\n', encoding='utf-8')
               raise SystemExit('repeated HTML walk matcher found nothing')
           source = source.replace(walk_expr, 'htmlPages')
 
-          old_quote = """  for (const file of htmlFiles) {
-            if (!file.startsWith('articles/') && !file.startsWith('nagornaya/')) continue;
-            const html = read(file);
-          """
-          debug.append(f'quote loop count={source.count(old_quote)}')
-          if source.count(old_quote) != 1:
-              Path('reports/materializer-debug.txt').write_text('\n'.join(debug) + '\n', encoding='utf-8')
-              raise SystemExit('unexpected Russian quote policy loop count')
-          source = source.replace(
-              old_quote,
-              """  for (const page of htmlFiles) {
+          quote_start = source.index('  for (const file of htmlFiles) {', source.index('(function russianQuotePolicyGuard()'))
+          quote_end = source.index("    const body =", quote_start)
+          legacy_quote = source[quote_start:quote_end]
+          debug.append('legacy quote=' + repr(legacy_quote))
+          for required in ["file.startsWith('articles/')", 'const html = read(file);']:
+              if required not in legacy_quote:
+                  raise SystemExit(f'quote loop missing expected token: {required}')
+          replacement_quote = """  for (const page of htmlFiles) {
             const file = rel(page);
             if (!file.startsWith('articles/') && !file.startsWith('nagornaya/')) continue;
             const html = fs.readFileSync(page, 'utf8');
-          """,
-              1,
-          )
+          """
+          source = source[:quote_start] + replacement_quote + source[quote_end:]
           source = source.replace(
               ' * - SEO/PWA/resource/link basics\n',
               ' * - source-shadow contracts; production breadth is delegated to mandatory registry/dist gates\n',
