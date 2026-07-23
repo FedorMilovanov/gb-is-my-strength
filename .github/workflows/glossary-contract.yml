@@ -153,9 +153,19 @@ jobs:
           node --check scripts/tooltip-trigger-normalizer-test.js
 
       - name: Test universal normalizers
+        id: normalizer-tests
+        shell: bash
         run: |
-          node scripts/glossary-placement-normalizer-test.js
-          node scripts/tooltip-trigger-normalizer-test.js
+          mkdir -p reports
+          set +e
+          {
+            node scripts/glossary-placement-normalizer-test.js
+            node scripts/tooltip-trigger-normalizer-test.js
+          } > reports/normalizer-tests.log 2>&1
+          status=$?
+          cat reports/normalizer-tests.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Validate dictionary, placement and shared runtime
         id: glossary-audit
@@ -173,7 +183,15 @@ jobs:
         run: node scripts/reference-system-inventory.js
 
       - name: Audit tooltip trigger icons
-        run: node scripts/tooltip-icon-audit.js
+        id: tooltip-audit
+        shell: bash
+        run: |
+          set +e
+          node scripts/tooltip-icon-audit.js > reports/tooltip-icon-audit.log 2>&1
+          status=$?
+          cat reports/tooltip-icon-audit.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Lint glossary workflow
         id: glossary-actionlint
@@ -220,7 +238,9 @@ jobs:
         if: always()
         shell: bash
         run: |
+          test "${{ steps.normalizer-tests.outputs.status }}" = "0"
           test "${{ steps.glossary-audit.outputs.status }}" = "0"
+          test "${{ steps.tooltip-audit.outputs.status }}" = "0"
           test "${{ steps.glossary-actionlint.outputs.status }}" = "0"
 
   browser-contract:
@@ -251,4 +271,26 @@ jobs:
         run: node scripts/glossary-runtime-browser-test.js
 
       - name: Click and hover tooltip markers on desktop and mobile
-        run: node scripts/tooltip-marker-browser-test.js
+        id: tooltip-browser
+        shell: bash
+        run: |
+          mkdir -p reports
+          set +e
+          node scripts/tooltip-marker-browser-test.js > reports/tooltip-marker-browser.log 2>&1
+          status=$?
+          cat reports/tooltip-marker-browser.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload tooltip browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tooltip-marker-browser-report
+          path: reports/tooltip-marker-browser.log
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Enforce tooltip browser result
+        if: always()
+        run: test "${{ steps.tooltip-browser.outputs.status }}" = "0"
