@@ -51,4 +51,5 @@ assert.match(starOut, /aria-label="Показать пояснение"/);
 const alreadyDove = '<span class="fn-marker fn-marker--dove" role="button" tabindex="0"><span class="tooltip">Пояснение</span></span>';
 assert.equal(normalize(alreadyDove), alreadyDove, 'canonical dove markers must be idempotent');
 
+require('./tooltip-style-normalizer-test.js');
 console.log('Tooltip trigger normalizer test: OK');
