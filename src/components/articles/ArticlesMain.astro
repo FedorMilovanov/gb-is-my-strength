@@ -16,6 +16,10 @@ import ArticlesArticleEndBlock from './ArticlesArticleEndBlock.astro';
 
 const hardTexts = seriesData['hard-texts'];
 const nagornaya = seriesData.nagornaya;
+const gill = seriesData['dzhon-gill'];
+const gillReadingTime = Object.fromEntries(
+  gill.parts.map((part) => [part.slug, part.readingTime]),
+);
 const hardTextsPublished = hardTexts.parts.filter((part) => part.status === 'published').length;
 const hardTextsPartsLabel = `${hardTexts.parts.length} части (${hardTextsPublished} опубликованы)`;
 const nagornayaPublished = nagornaya.parts.filter((part) => part.status === 'published').length;
@@ -42,6 +46,7 @@ const nagornayaPartsLabel = `${nagornayaPublished} частей`;
 <ArticlesPublicationsSection
   hardTextsPartsLabel={hardTextsPartsLabel}
   nagornayaPartsLabel={nagornayaPartsLabel}
+  gillReadingTime={gillReadingTime}
 />
 <ArticlesRefutationsSection />
 <ArticlesArticleEndBlock />
