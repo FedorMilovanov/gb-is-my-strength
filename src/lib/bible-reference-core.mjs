@@ -17,7 +17,7 @@ export function normalizeBookAlias(value) {
 
 export function normalizeVerseKey(value) {
   return String(value || '')
-    .replace(/[‐‑‒—−-]/g, '–')
+    .replace(/[‐‑‒–—−-]/g, '–')
     .replace(/\s+/g, '')
     .trim();
 }
@@ -46,7 +46,7 @@ export function parseBibleReference(input, registry) {
   const original = String(input || '').trim();
   const normalized = original
     .replace(/\u00a0/g, ' ')
-    .replace(/[‐‑‒—−]/g, '-')
+    .replace(/[‐‑‒–—−]/g, '-')
     .replace(/\s+/g, ' ')
     .trim();
 
