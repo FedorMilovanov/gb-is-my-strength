@@ -147,39 +147,6 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  materialize-heart-social-meta:
-    if: github.event_name == 'pull_request' && github.head_ref == 'agent/seo-dist-registry-contract'
-    needs: registry-contracts
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22.12.0"
-      - name: Materialize shared series image metadata
-        run: |
-          node scripts/_temp-materialize-heart-social-meta.js
-          test "$(git diff --name-only -- src/pages/articles | wc -l)" -eq 22
-          git diff --check
-      - name: Commit Astro entry integration
-        run: |
-          git add src/pages/articles/*/index.astro
-          if git diff --cached --quiet; then
-            echo 'Heart social meta is already materialized.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'fix(seo): share canonical social image across heart series'
-          git push origin HEAD:"$GITHUB_HEAD_REF"
-
   public-surface-browser-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -248,7 +215,7 @@ jobs:
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
-            reports/nagornaya-epistemic-browser.json
+            reports/nagornaya-epistemic-ui-browser.json
             reports/seo-dist-audit.log
             reports/seo-dist-regression.log
             reports/public-surface-browser-diagnostics/**
