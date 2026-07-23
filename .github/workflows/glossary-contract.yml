@@ -12,6 +12,7 @@ on:
       - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
       - "scripts/reference-system-inventory.js"
+      - "scripts/tooltip-icon-audit.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -32,6 +33,7 @@ on:
       - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
       - "scripts/reference-system-inventory.js"
+      - "scripts/tooltip-icon-audit.js"
       - "src/**"
       - "articles/**"
       - "biografii/**"
@@ -126,6 +128,7 @@ jobs:
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/glossary-placement-normalizer-test.js
           node --check scripts/reference-system-inventory.js
+          node --check scripts/tooltip-icon-audit.js
 
       - name: Test universal normalizer
         run: node scripts/glossary-placement-normalizer-test.js
@@ -144,6 +147,9 @@ jobs:
 
       - name: Build repository-wide reference inventory
         run: node scripts/reference-system-inventory.js
+
+      - name: Audit tooltip trigger icons
+        run: node scripts/tooltip-icon-audit.js
 
       - name: Lint glossary workflow
         id: glossary-actionlint
