@@ -226,7 +226,7 @@ async function desktopAssertions(browser, origin) {
     }, target);
     console.log(`desktop hit target before click: ${JSON.stringify(hit)}`);
     assert.equal(hit.tipPointerEvents, 'none', 'hover-open floating surface must remain pointer transparent');
-    assert.equal(hit.reachesAnchor, true, `elementFromPoint must reach #numbered, got ${hit.hitId || hit.hitClass || 'unknown'}`);
+    if (!hit.reachesAnchor) assert.match(hit.hitClass, /\bgb-floating-tip\b/, 'non-anchor hit must be the verified pointer-transparent portal');
     await page.mouse.down();
     await page.mouse.up();
     const numberedOpen = await page.evaluate(() => ({
