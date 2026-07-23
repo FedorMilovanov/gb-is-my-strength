@@ -29,7 +29,6 @@ on:
       - "package-lock.json"
       - "scripts/audit-pro.js"
       - "scripts/audit-pro-source-corpus-test.js"
-      - "scripts/materialize-audit-pro-language-guard.py"
       - "scripts/lib/audit-pro-source-corpus.js"
       - "scripts/seo-audit.js"
       - "scripts/dist-jsonld-audit.js"
@@ -78,30 +77,6 @@ permissions:
   contents: read
 
 jobs:
-  materialize-language-guard:
-    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'agent/audit-pro-source-corpus' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact branch
-        uses: actions/checkout@v4
-        with:
-          ref: agent/audit-pro-source-corpus
-          fetch-depth: 0
-
-      - name: Materialize generic non-English quote guard
-        shell: bash
-        run: |
-          python3 scripts/materialize-audit-pro-language-guard.py
-          node --check scripts/audit-pro.js
-          git diff --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/audit-pro.js
-          git commit -m "fix(audit): distinguish accented non-English quotations"
-          git push origin HEAD:agent/audit-pro-source-corpus
-
   registry-contracts:
     runs-on: ubuntu-latest
     timeout-minutes: 10
