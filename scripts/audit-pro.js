@@ -694,6 +694,9 @@ const SITE_CSS_MIN_BYTES = 200_000;
   }
   function hasEnglishDirectQuote(fragment) {
     const clean = stripHtmlLite(fragment);
+    // Latin-script diacritics strongly indicate a French/Latin/non-English quotation.
+    // Keep this language rule generic; do not add route- or phrase-specific exceptions.
+    if (/[À-ÖØ-öø-ÿ]/.test(clean)) return false;
     const latinWords = clean.match(/[A-Za-z]{4,}/g) || [];
     if (latinWords.length < 3) return false;
     if (isAllowedEnglishQuoteFragment(clean)) return false;
