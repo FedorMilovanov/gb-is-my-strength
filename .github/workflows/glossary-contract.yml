@@ -2,11 +2,14 @@ name: Glossary Contract
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - "data/glossary.json"
       - "data/glossary-policy.json"
       - "js/glossary.js"
       - "scripts/glossary-contract-audit.js"
+      - "scripts/glossary-placement-normalizer.js"
+      - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
       - "src/**"
       - "articles/**"
@@ -24,6 +27,8 @@ on:
       - "data/glossary-policy.json"
       - "js/glossary.js"
       - "scripts/glossary-contract-audit.js"
+      - "scripts/glossary-placement-normalizer.js"
+      - "scripts/glossary-placement-normalizer-test.js"
       - "scripts/glossary-runtime-browser-test.js"
       - "src/**"
       - "articles/**"
@@ -42,6 +47,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  placement-autofix:
+    name: Placement autofix
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate normalizer syntax
+        run: |
+          node --check scripts/glossary-placement-normalizer.js
+          node --check scripts/glossary-placement-normalizer-test.js
+
+      - name: Test universal normalizer
+        run: node scripts/glossary-placement-normalizer-test.js
+
+      - name: Normalize forbidden glossary placements
+        run: node scripts/glossary-placement-normalizer.js --write
+
+      - name: Validate normalized source tree
+        run: node scripts/glossary-contract-audit.js
+
+      - name: Commit normalized sources
+        shell: bash
+        run: |
+          if git diff --quiet -- \
+            src articles biografii hard-texts konfessii pastor-series baptisty-rossii; then
+            echo "No glossary placement changes are required."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            src articles biografii hard-texts konfessii pastor-series baptisty-rossii
+          git commit -m "fix(glossary): normalize forbidden source placements"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+
   source-contract:
     name: Source contract
     runs-on: ubuntu-latest
@@ -57,8 +113,14 @@ jobs:
       - name: Check runtime syntax
         run: node --check js/glossary.js
 
-      - name: Check contract script syntax
-        run: node --check scripts/glossary-contract-audit.js
+      - name: Check contract and normalizer syntax
+        run: |
+          node --check scripts/glossary-contract-audit.js
+          node --check scripts/glossary-placement-normalizer.js
+          node --check scripts/glossary-placement-normalizer-test.js
+
+      - name: Test universal normalizer
+        run: node scripts/glossary-placement-normalizer-test.js
 
       - name: Validate dictionary, placement and shared runtime
         id: glossary-audit
