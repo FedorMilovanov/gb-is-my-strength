@@ -20,11 +20,15 @@ function routeToUrl(route, siteUrl = DEFAULT_SITE_URL) {
   return base + normalizeRoute(route);
 }
 
+function isIndexableProductionRoute(record) {
+  return record.owner?.status === PUBLIC_ROUTE_STATUS && record.profile?.seo?.indexable !== false;
+}
+
 function expectedSitemapRoutes(options = {}) {
   const loaded = options.loaded || loadRouteRecords();
   const records = options.records || loaded.records || [];
   return [...new Set(records
-    .filter((record) => record.owner?.status === PUBLIC_ROUTE_STATUS)
+    .filter(isIndexableProductionRoute)
     .map((record) => normalizeRoute(record.route)))]
     .sort();
 }
@@ -107,7 +111,7 @@ function contractProblems(result) {
     ...result.nonCanonicalUrls.map((url) => `non-canonical sitemap URL: ${url}`),
     ...result.duplicateUrls.map((url) => `duplicate sitemap URL: ${url}`),
     ...result.duplicateRoutes.map((route) => `duplicate sitemap route: ${route}`),
-    ...result.missingRoutes.map((route) => `missing canonical production route: ${route}`),
+    ...result.missingRoutes.map((route) => `missing canonical indexable production route: ${route}`),
     ...result.unexpectedRoutes.map((route) => `unregistered sitemap route: ${route}`),
   ];
 }
@@ -117,6 +121,7 @@ module.exports = {
   PUBLIC_ROUTE_STATUS,
   normalizeRoute,
   routeToUrl,
+  isIndexableProductionRoute,
   expectedSitemapRoutes,
   parseSitemapLocations,
   auditSitemapCoverage,
