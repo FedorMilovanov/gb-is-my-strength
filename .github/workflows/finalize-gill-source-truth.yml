@@ -1,0 +1,73 @@
+name: Finalize Gill Source Truth
+
+on:
+  push:
+    branches:
+      - fix/gill-source-truth-final-2026-07-23
+    paths:
+      - "scripts/finalize-metadata-only-source-truth.js"
+      - ".github/workflows/finalize-gill-source-truth.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-gill-source-truth-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/gill-source-truth-final-2026-07-23
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate finalizer syntax
+        run: node --check scripts/finalize-metadata-only-source-truth.js
+
+      - name: Apply source-truth normalization
+        run: node scripts/finalize-metadata-only-source-truth.js --write
+
+      - name: Validate focused contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          node --check scripts/lib/route-source-contract.js
+          node scripts/route-source-contract-audit.js --strict
+          node scripts/gill-reading-time-canonical-audit.js
+          npm run astro:check
+
+      - name: Commit permanent source-truth changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "Source truth is already canonical."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            src/content.config.ts \
+            src/content/articles/dzhon-gill-*.mdx \
+            src/components/articles/ArticlesMain.astro \
+            src/components/articles/ArticlesPublicationsSection.astro \
+            scripts/lib/route-source-contract.js \
+            scripts/gill-reading-time-canonical-audit.js
+          git commit -m "fix(gill): enforce single editorial source truth"
+          git push origin HEAD:fix/gill-source-truth-final-2026-07-23
