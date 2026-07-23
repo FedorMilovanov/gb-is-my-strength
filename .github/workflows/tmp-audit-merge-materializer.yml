@@ -1,0 +1,40 @@
+name: Temporary audit merge materializer
+
+on:
+  push:
+    branches:
+      - agent/audit-pro-source-corpus
+    paths:
+      - .github/workflows/tmp-audit-merge-materializer.yml
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Materialize three-way merge inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tmp-audit-merge
+          git show 7187c32a39e1d5b185dbf385f651da0906911d74:scripts/audit-pro.js > tmp-audit-merge/audit-base.js
+          git show 77aead111ad38eaf09697821513890c5ebf6deb0:scripts/audit-pro.js > tmp-audit-merge/audit-branch.js
+          git show 4ee73bb2fd9568c107f5c62ab2d96da38e21aa6f:scripts/audit-pro.js > tmp-audit-merge/audit-main.js
+          git diff --no-index -- tmp-audit-merge/audit-base.js tmp-audit-merge/audit-main.js > tmp-audit-merge/main.patch || true
+          git diff --no-index -- tmp-audit-merge/audit-base.js tmp-audit-merge/audit-branch.js > tmp-audit-merge/branch.patch || true
+          sha256sum tmp-audit-merge/* > tmp-audit-merge/SHA256SUMS
+
+      - name: Upload merge inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: temporary-audit-merge-inputs-${{ github.run_id }}
+          path: tmp-audit-merge/
+          retention-days: 1
+          if-no-files-found: error
