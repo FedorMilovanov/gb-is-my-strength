@@ -7,22 +7,63 @@
  *
  * Run:
  *   node scripts/seo-audit.js
+ *   node scripts/seo-audit.js --root dist --registry
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const { auditSeoRouteFiles } = require('./lib/seo-route-contract');
 
-const ROOT = path.resolve(__dirname, '..');
+const REPO_ROOT = path.resolve(__dirname, '..');
 const BASE = 'https://gospod-bog.ru';
 const ORG_ID = `${BASE}/#organization`;
 const WEBSITE_ID = `${BASE}/#website`;
 
+function parseArgs(argv) {
+  let root = REPO_ROOT;
+  let registry = false;
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--registry') {
+      registry = true;
+      continue;
+    }
+    if (arg === '--root') {
+      const value = argv[index + 1];
+      if (!value) throw new Error('--root requires a path');
+      root = path.resolve(REPO_ROOT, value);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--root=')) {
+      root = path.resolve(REPO_ROOT, arg.slice('--root='.length));
+      continue;
+    }
+    throw new Error(`unknown argument: ${arg}`);
+  }
+  return { root, registry };
+}
+
+let options;
+try {
+  options = parseArgs(process.argv.slice(2));
+} catch (error) {
+  console.error(`SEO audit argument error: ${error.message}`);
+  process.exit(2);
+}
+
+const AUDIT_ROOT = options.root;
+if (!fs.existsSync(AUDIT_ROOT) || !fs.statSync(AUDIT_ROOT).isDirectory()) {
+  console.error(`SEO audit root does not exist: ${AUDIT_ROOT}`);
+  process.exit(2);
+}
+
 let errors = 0;
 let warnings = 0;
 
-function read(file) { return fs.readFileSync(path.join(ROOT, file), 'utf8'); }
-function rel(p) { return path.relative(ROOT, p).replace(/\\/g, '/'); }
+function read(file) { return fs.readFileSync(path.join(AUDIT_ROOT, file), 'utf8'); }
+function rel(p) { return path.relative(AUDIT_ROOT, p).replace(/\\/g, '/'); }
 function err(file, msg) { console.log(`❌ ${file}: ${msg}`); errors++; }
 function warn(file, msg) { console.log(`⚠️  ${file}: ${msg}`); warnings++; }
 function ok(msg) { console.log(`✅ ${msg}`); }
@@ -66,8 +107,20 @@ function extractFaq(html) {
   return out;
 }
 
-const htmlFiles = walk(ROOT).filter(p => p.endsWith('.html') && !/google|yandex/.test(rel(p)));
-const allTextFiles = walk(ROOT).filter(p => /\.(html|js|css|json|xml|md|txt)$/.test(p));
+const walkedFiles = walk(AUDIT_ROOT);
+let htmlFiles;
+let routeAudit = null;
+if (options.registry) {
+  routeAudit = auditSeoRouteFiles(AUDIT_ROOT);
+  for (const problem of routeAudit.errors) err('route-registry', problem);
+  htmlFiles = routeAudit.files.map((entry) => entry.absolute);
+  if (!routeAudit.errors.length) {
+    ok(`registry covers ${routeAudit.counts.production} production routes (${routeAudit.counts.indexable} indexable, ${routeAudit.counts.noindex} noindex)`);
+  }
+} else {
+  htmlFiles = walkedFiles.filter(p => p.endsWith('.html') && !/google|yandex/.test(rel(p)));
+}
+const allTextFiles = walkedFiles.filter(p => /\.(html|js|css|json|xml|md|txt)$/.test(p));
 
 // SEO-01: no repository base path leakage.
 for (const p of allTextFiles) {
@@ -115,7 +168,7 @@ for (const p of htmlFiles) {
     if (!type) warn(file, 'og:image:type missing');
     if ((w && w !== '1200') || (h && h !== '630')) warn(file, `og:image dimensions are ${w}x${h}, recommended 1200x630`);
     if (ogImage.startsWith(`${BASE}/`)) {
-      const imgPath = path.join(ROOT, ogImage.slice(BASE.length + 1));
+      const imgPath = path.join(AUDIT_ROOT, ogImage.slice(BASE.length + 1));
       if (!fs.existsSync(imgPath)) err(file, `og:image file missing: ${ogImage}`);
     }
   }
@@ -158,30 +211,39 @@ for (const p of htmlFiles) {
 }
 
 // robots policy.
-const robots = read('robots.txt');
-for (const ua of ['OAI-SearchBot', 'Claude-SearchBot', 'Claude-User', 'PerplexityBot']) {
-  const block = robots.match(new RegExp(`User-agent:\\s*${ua}[\\s\\S]*?(?=\\nUser-agent:|\\nSitemap:|$)`, 'i'))?.[0] || '';
-  if (!/Allow:\s*\//i.test(block)) err('robots.txt', `${ua} is not explicitly allowed for retrieval`);
-}
-for (const ua of ['GPTBot', 'Bytespider', 'Applebot-Extended', 'ClaudeBot', 'Meta-ExternalAgent']) {
-  const block = robots.match(new RegExp(`User-agent:\\s*${ua}[\\s\\S]*?(?=\\nUser-agent:|\\nSitemap:|$)`, 'i'))?.[0] || '';
-  if (!/Disallow:\s*\//i.test(block)) err('robots.txt', `${ua} is not blocked as training/bulk crawler`);
+if (!fs.existsSync(path.join(AUDIT_ROOT, 'robots.txt'))) {
+  err('robots.txt', 'missing');
+} else {
+  const robots = read('robots.txt');
+  for (const ua of ['OAI-SearchBot', 'Claude-SearchBot', 'Claude-User', 'PerplexityBot']) {
+    const block = robots.match(new RegExp(`User-agent:\\s*${ua}[\\s\\S]*?(?=\\nUser-agent:|\\nSitemap:|$)`, 'i'))?.[0] || '';
+    if (!/Allow:\s*\//i.test(block)) err('robots.txt', `${ua} is not explicitly allowed for retrieval`);
+  }
+  for (const ua of ['GPTBot', 'Bytespider', 'Applebot-Extended', 'ClaudeBot', 'Meta-ExternalAgent']) {
+    const block = robots.match(new RegExp(`User-agent:\\s*${ua}[\\s\\S]*?(?=\\nUser-agent:|\\nSitemap:|$)`, 'i'))?.[0] || '';
+    if (!/Disallow:\s*\//i.test(block)) err('robots.txt', `${ua} is not blocked as training/bulk crawler`);
+  }
 }
 
 // sitemap image namespace and unique loc.
-const sitemap = read('sitemap.xml');
-if (!/xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/.test(sitemap)) err('sitemap.xml', 'missing image namespace');
-const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
-const dupLocs = [...new Set(locs.filter((x, i) => locs.indexOf(x) !== i))];
-if (dupLocs.length) err('sitemap.xml', `duplicate loc entries: ${dupLocs.join(', ')}`);
-for (const block of sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
-  const loc = block[1].match(/<loc>([^<]+)<\/loc>/)?.[1];
-  if (!loc) continue;
-  if (!/<image:image>/.test(block[1])) warn('sitemap.xml', `URL without image:image: ${loc}`);
+if (!fs.existsSync(path.join(AUDIT_ROOT, 'sitemap.xml'))) {
+  err('sitemap.xml', 'missing');
+} else {
+  const sitemap = read('sitemap.xml');
+  if (!/xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/.test(sitemap)) err('sitemap.xml', 'missing image namespace');
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+  const dupLocs = [...new Set(locs.filter((x, i) => locs.indexOf(x) !== i))];
+  if (dupLocs.length) err('sitemap.xml', `duplicate loc entries: ${dupLocs.join(', ')}`);
+  for (const block of sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+    const loc = block[1].match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (!loc) continue;
+    if (!/<image:image>/.test(block[1])) warn('sitemap.xml', `URL without image:image: ${loc}`);
+  }
 }
 
+const mode = options.registry ? 'registry/dist' : 'root';
 if (errors) {
-  console.log(`\nSEO audit failed: ${errors} errors, ${warnings} warnings.`);
+  console.log(`\nSEO audit failed (${mode}, ${rel(AUDIT_ROOT) || '.'}): ${errors} errors, ${warnings} warnings.`);
   process.exit(1);
 }
-console.log(`\nSEO audit passed: 0 errors, ${warnings} warnings.`);
+console.log(`\nSEO audit passed (${mode}, ${rel(AUDIT_ROOT) || '.'}): 0 errors, ${warnings} warnings.`);
