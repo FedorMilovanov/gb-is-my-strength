@@ -101,7 +101,6 @@ const MAX_DESC = 180;
 // audit-pro skips them — pixel parity for the rendered route is guarded by
 // scripts/visual-parity-screenshots.js instead.
 const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports', 'dist', 'out', 'build', '.astro', '_legacy']);
-const verificationFileRe = /^(google|yandex)[^/]*\.html$/i;
 
 const R = {
   errors: [],
@@ -135,7 +134,7 @@ function walk(dir, out = []) {
 }
 
 const allFiles = walk(ROOT);
-const allHtmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\/]scripts[\/]/.test(p)).sort();
+const allHtmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\\/]scripts[\\/]/.test(p)).sort();
 const surfaceRegistry = buildPublicSurfaceRegistry();
 for (const error of surfaceRegistry.errors) R.err(`Public surface registry: ${error}`);
 const sourceCorpus = buildAuditProSourceCorpus({
