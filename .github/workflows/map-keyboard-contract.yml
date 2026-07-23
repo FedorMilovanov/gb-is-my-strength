@@ -48,7 +48,7 @@ jobs:
           set -euo pipefail
           python3 -m http.server 8090 --bind 127.0.0.1 >/tmp/map-keyboard-http.log 2>&1 &
           echo $! > /tmp/map-keyboard-http.pid
-          for attempt in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8090/karty/ishod/ >/dev/null; then
               exit 0
             fi
@@ -68,13 +68,3 @@ jobs:
           if [[ -f /tmp/map-keyboard-http.pid ]]; then
             kill "$(cat /tmp/map-keyboard-http.pid)" 2>/dev/null || true
           fi
-
-  diagnose-actionlint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fetch and lint this workflow only
-        run: |
-          curl -fsSL "https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/agent/map-keyboard-contract/.github/workflows/map-keyboard-contract.yml" -o /tmp/map-keyboard-contract.yml
-          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
-            | tar xz -C /tmp actionlint
-          /tmp/actionlint -color /tmp/map-keyboard-contract.yml
