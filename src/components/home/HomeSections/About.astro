@@ -43,7 +43,7 @@
     lion.dataset.ready = 'true';
 
     const roar = () => {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const AudioCtx = window.AudioContext || Reflect.get(window, 'webkitAudioContext');
       if (!AudioCtx) return;
       const context = new AudioCtx();
       const start = context.currentTime;
