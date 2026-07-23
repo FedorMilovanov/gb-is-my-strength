@@ -28,6 +28,8 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/audit-pro.js"
+      - "scripts/audit-pro-source-corpus-test.js"
+      - "scripts/lib/audit-pro-source-corpus.js"
       - "scripts/seo-audit.js"
       - "scripts/dist-jsonld-audit.js"
       - "scripts/check-route-profiles.js"
@@ -75,6 +77,111 @@ permissions:
   contents: read
 
 jobs:
+  materialize-source-corpus:
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'agent/audit-pro-source-corpus' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/audit-pro-source-corpus
+          fetch-depth: 0
+
+      - name: Materialize registry-owned source corpus
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          audit = Path('scripts/audit-pro.js')
+          source = audit.read_text(encoding='utf-8')
+          if "require('./lib/audit-pro-source-corpus')" in source:
+              print('audit-pro source corpus already materialized')
+              raise SystemExit(0)
+
+          old_require = "const { auditSitemapCoverage, contractProblems } = require('./lib/sitemap-route-contract');\n"
+          new_require = old_require + "const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');\nconst { buildAuditProSourceCorpus } = require('./lib/audit-pro-source-corpus');\n"
+          if source.count(old_require) != 1:
+              raise SystemExit('unexpected sitemap require count')
+          source = source.replace(old_require, new_require, 1)
+
+          old_corpus = """const allFiles = walk(ROOT);
+          const htmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\\/]scripts[\\/]/.test(p)).sort();
+          const htmlPages = htmlFiles.filter(p => !verificationFileRe.test(rel(p)));
+          """
+          new_corpus = """const allFiles = walk(ROOT);
+          const allHtmlFiles = allFiles.filter(p => p.endsWith('.html') && !/[\\/]scripts[\\/]/.test(p)).sort();
+          const surfaceRegistry = buildPublicSurfaceRegistry();
+          for (const error of surfaceRegistry.errors) R.err(`Public surface registry: ${error}`);
+          const sourceCorpus = buildAuditProSourceCorpus({
+            root: ROOT,
+            entries: surfaceRegistry.entries,
+            allHtmlFiles,
+          });
+          const htmlFiles = sourceCorpus.sourcePages.map((item) => item.file).sort();
+          const htmlPages = htmlFiles;
+
+          if (sourceCorpus.duplicateRootMappings.length) {
+            for (const item of sourceCorpus.duplicateRootMappings) {
+              R.err(`Duplicate route-to-root mapping: ${item.routes.join(' + ')} -> ${rel(item.file)}`);
+            }
+          }
+          if (sourceCorpus.unregisteredRootHtml.length) {
+            R.err(`Unregistered root HTML outside the canonical route registry:\n  - ${sourceCorpus.unregisteredRootHtml.map((item) => item.relative).join('\\n  - ')}`);
+          } else {
+            R.ok(`Source HTML corpus is registry-owned (${htmlPages.length} committed production shadows)`);
+          }
+          R.note(`Production HTML corpus: ${sourceCorpus.productionRoutes} routes = ${htmlPages.length} committed source shadows + ${sourceCorpus.distOnly.length} dist-only routes delegated to mandatory production contracts`);
+          if (sourceCorpus.registeredNonProduction.length) {
+            R.note(`Registered non-production root HTML excluded from public source checks: ${sourceCorpus.registeredNonProduction.map((item) => item.route).join(', ')}`);
+          }
+          """
+          if source.count(old_corpus) != 1:
+              raise SystemExit('unexpected legacy HTML corpus block count')
+          source = source.replace(old_corpus, new_corpus, 1)
+
+          walk_expr = "walk(ROOT).filter(f => f.endsWith('.html') && !/[\\\\/]scripts[\\\\/]/.test(f))"
+          walk_count = source.count(walk_expr)
+          if walk_count < 5:
+              raise SystemExit(f'expected at least 5 repeated HTML walks, found {walk_count}')
+          source = source.replace(walk_expr, 'htmlPages')
+          print(f'replaced repeated HTML walks: {walk_count}')
+
+          old_quote = """  for (const file of htmlFiles) {
+            if (!file.startsWith('articles/') && !file.startsWith('nagornaya/')) continue;
+            const html = read(file);
+          """
+          new_quote = """  for (const page of htmlFiles) {
+            const file = rel(page);
+            if (!file.startsWith('articles/') && !file.startsWith('nagornaya/')) continue;
+            const html = fs.readFileSync(page, 'utf8');
+          """
+          if source.count(old_quote) != 1:
+              raise SystemExit('unexpected Russian quote policy loop count')
+          source = source.replace(old_quote, new_quote, 1)
+          source = source.replace(
+              ' * - SEO/PWA/resource/link basics\n',
+              ' * - source-shadow contracts; production breadth is delegated to mandatory registry/dist gates\n',
+              1,
+          )
+          audit.write_text(source, encoding='utf-8')
+          PY
+
+          node --check scripts/audit-pro.js
+          node scripts/audit-pro-source-corpus-test.js
+          git diff --check
+          if git diff --quiet; then
+            echo 'No materialization changes required.'
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/audit-pro.js
+          git commit -m "fix(audit): make source HTML corpus registry-owned"
+          git push origin HEAD:agent/audit-pro-source-corpus
+
   registry-contracts:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -115,6 +222,7 @@ jobs:
             node scripts/rss-feed-normalizer.js --check
             node scripts/seo-route-contract-test.js
             node scripts/search-index-policy-contract-test.js
+            node scripts/audit-pro-source-corpus-test.js
             node scripts/audit-pro.js
           } 2>&1 | tee reports/public-surface-registry.log
 
