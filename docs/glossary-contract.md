@@ -71,7 +71,7 @@ The `autofix` pull-request label is an explicit opt-in. For same-repository bran
 
 A desktop tooltip is portaled to `document.body` and positioned above or below its trigger. Its decorative surface must not intercept a click intended for adjacent prose or another footnote marker. Therefore the floating `.tooltip` / `.gtip` container uses pointer pass-through, while links, buttons, form controls, `summary`, explicit focus targets, `role="button"` controls and editable descendants remain interactive.
 
-This rule is part of the shared style normalizer and is covered by the marker browser fixture. It must not be replaced by a route-specific z-index adjustment or by weakening the interaction assertion.
+The shared style normalizer enforces the surface and descendant rules with cascade priority so older runtime declarations cannot restore background hit interception. It also upgrades the earlier non-priority form deterministically and remains idempotent. This must not be replaced by a route-specific z-index adjustment or by weakening the interaction assertion.
 
 ## Required validation
 
