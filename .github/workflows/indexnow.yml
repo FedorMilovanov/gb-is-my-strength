@@ -77,6 +77,14 @@ jobs:
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
+      - name: Audit every production route SEO contract
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/seo-audit.js --root dist --registry 2>&1 \
+            | tee reports/seo-dist-audit.log
+
       - name: Verify frozen editorial projections
         shell: bash
         run: |
@@ -91,12 +99,12 @@ jobs:
       - name: Ensure validation left tracked sources clean
         run: git diff --exit-code
 
-      - name: Upload metadata diagnostics
+      - name: Upload readiness diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: editorial-metadata-${{ github.run_id }}
-          path: reports/editorial-metadata-*.log
+          name: readiness-diagnostics-${{ github.run_id }}
+          path: reports/*.log
           if-no-files-found: ignore
           retention-days: 7
 
