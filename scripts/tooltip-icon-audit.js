@@ -8,8 +8,7 @@ const ROOT = path.resolve(__dirname, '..');
 const REPORTS = path.join(ROOT, 'reports');
 const TEXT_EXTENSIONS = new Set(['.astro', '.html', '.md', '.mdx', '.js', '.mjs', '.jsx', '.tsx', '.css']);
 const SKIP_DIRS = new Set(['.git', 'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'pagefind', '.astro']);
-const TRIGGER_GLYPHS = /[†‡✝✞✟✠✚✛✜✢✣✤✥✦✧]/u;
-const CLOSE_X_PATH = /M1\s+1L13\s+13M13\s+1L1\s+13/i;
+const DOVE_SIGNALS = /fn-marker--dove|fn-dove-icon|fn-dove-wing/gi;
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -31,9 +30,17 @@ function lineAt(source, index) {
   return source.slice(0, index).split('\n').length;
 }
 
-function snippet(source, index, width = 520) {
+function sourceWindow(source, index, width = 2600) {
   const start = Math.max(0, index - Math.floor(width / 3));
-  return source.slice(start, start + width).replace(/\s+/g, ' ').trim();
+  return {
+    start,
+    line: lineAt(source, index),
+    text: source.slice(start, start + width)
+  };
+}
+
+function snippet(source, index, width = 520) {
+  return sourceWindow(source, index, width).text.replace(/\s+/g, ' ').trim();
 }
 
 function classValue(tag) {
@@ -46,6 +53,7 @@ function auditFile(file) {
   const markers = [];
   const literalGlyphs = [];
   const closeIcons = [];
+  const runtimeSnippets = [];
 
   for (const match of source.matchAll(/<(?:span|button|a|sup)\b[^>]*\bclass=["'][^"']*\bfn-marker\b[^"']*["'][^>]*>/gi)) {
     const tag = match[0];
@@ -69,7 +77,16 @@ function auditFile(file) {
     closeIcons.push({ line: lineAt(source, match.index), snippet: snippet(source, match.index) });
   }
 
-  if (!markers.length && !literalGlyphs.length && !closeIcons.length && !/fn-dove|fn-marker--dove/.test(source)) return null;
+  const doveRe = new RegExp(DOVE_SIGNALS.source, DOVE_SIGNALS.flags);
+  let doveMatch;
+  let captured = 0;
+  while ((doveMatch = doveRe.exec(source)) !== null && captured < 6) {
+    runtimeSnippets.push({ signal: doveMatch[0], ...sourceWindow(source, doveMatch.index) });
+    captured += 1;
+    if (doveMatch[0].length === 0) doveRe.lastIndex += 1;
+  }
+
+  if (!markers.length && !literalGlyphs.length && !closeIcons.length && !runtimeSnippets.length) return null;
   return {
     file: rel(file),
     markerCount: markers.length,
@@ -78,7 +95,8 @@ function auditFile(file) {
     markers,
     literalGlyphs,
     closeIcons,
-    containsDoveRuntime: /fn-dove-icon|fn-dove-wing|fn-marker--dove/.test(source)
+    runtimeSnippets,
+    containsDoveRuntime: runtimeSnippets.length > 0
   };
 }
 
@@ -90,8 +108,9 @@ function main() {
     acc.nonDoves += file.nonDoveCount;
     acc.literalGlyphs += file.literalGlyphs.length;
     acc.closeIcons += file.closeIcons.length;
+    acc.runtimeSnippets += file.runtimeSnippets.length;
     return acc;
-  }, { markers: 0, doves: 0, nonDoves: 0, literalGlyphs: 0, closeIcons: 0 });
+  }, { markers: 0, doves: 0, nonDoves: 0, literalGlyphs: 0, closeIcons: 0, runtimeSnippets: 0 });
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -107,11 +126,12 @@ function main() {
     `- Non-dove trigger markers: ${totals.nonDoves}`,
     `- Literal cross-like trigger glyphs: ${totals.literalGlyphs}`,
     `- Close X icons (kept as close controls): ${totals.closeIcons}`,
+    `- Dove runtime/CSS extracts: ${totals.runtimeSnippets}`,
     '', '## Files', '',
-    ...files.map((file) => `- \`${file.file}\`: ${file.markerCount} markers (${file.doveCount} dove, ${file.nonDoveCount} non-dove), ${file.literalGlyphs.length} cross-like glyphs`)
+    ...files.map((file) => `- \`${file.file}\`: ${file.markerCount} markers (${file.doveCount} dove, ${file.nonDoveCount} non-dove), ${file.literalGlyphs.length} cross-like glyphs, ${file.runtimeSnippets.length} runtime extracts`)
   ].join('\n') + '\n');
 
-  console.log(`Tooltip icon audit: ${totals.markers} markers, ${totals.nonDoves} non-dove, ${totals.literalGlyphs} cross-like glyphs, ${totals.closeIcons} close X controls.`);
+  console.log(`Tooltip icon audit: ${totals.markers} markers, ${totals.nonDoves} non-dove, ${totals.literalGlyphs} cross-like glyphs, ${totals.closeIcons} close X controls, ${totals.runtimeSnippets} runtime extracts.`);
 }
 
 main();
