@@ -3,7 +3,9 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const ENGINE = path.join(ROOT, 'karty', '_engine', 'map-engine.js');
+const SMOKE = path.join(ROOT, 'scripts', 'map-browser-smoke.js');
 const source = fs.readFileSync(ENGINE, 'utf8');
+const smoke = fs.readFileSync(SMOKE, 'utf8');
 
 const failures = [];
 const requireSource = (condition, message) => {
@@ -55,6 +57,18 @@ requireSource(
   !/renderTabContent\(tabKey/.test(handler),
   'keyboard handler must not bypass canonical tab click behavior',
 );
+requireSource(
+  /const DEFAULT_MAP_ENGINE_MAPS = \['ishod'\];/.test(smoke),
+  'shared MapEngine smoke must keep ishod as its canonical live fixture',
+);
+requireSource(
+  /const LEGACY_BESPOKE_MAPS = \['avraam'\];/.test(smoke),
+  'bespoke Avraam map must remain explicitly classified outside the shared MapEngine contract',
+);
+requireSource(
+  !/const DEFAULT_MAP_ENGINE_MAPS = \[[^\]]*'avraam'/.test(smoke),
+  'bespoke Avraam map must not re-enter shared MapEngine selectors',
+);
 
 if (failures.length) {
   console.error('❌ Map keyboard source contract failed:');
@@ -63,4 +77,4 @@ if (failures.length) {
 }
 
 console.log('✅ Map keyboard source contract passed');
-console.log('   editable fields/modifiers isolated; numeric tabs are DOM-derived and click-driven');
+console.log('   editable fields/modifiers isolated; numeric tabs are DOM-derived and map fixtures are engine-classified');
