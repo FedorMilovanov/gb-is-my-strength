@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 /**
- * dist-jsonld-audit.js — parse every JSON-LD block in a built artifact.
+ * dist-jsonld-audit.js — parse every JSON-LD block in a built artifact and
+ * run the canonical registry-driven SEO audit over the same production root.
  *
  * Why this exists: root/source SEO checks can pass while Astro-owned dist pages
- * ship malformed inline JSON-LD strings. The production artifact is `dist/`, so
- * deployment readiness must validate every HTML file in `dist/` directly.
+ * ship malformed inline JSON-LD strings or disappear from SEO coverage. The
+ * production artifact is `dist/`, so deployment readiness must validate every
+ * registered production route in that artifact directly.
  *
  * Usage:
  *   node scripts/dist-jsonld-audit.js [--root dist]
@@ -13,6 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const rootArg = process.argv.includes('--root')
@@ -66,10 +69,21 @@ console.log(`DIST JSON-LD AUDIT (${path.relative(ROOT, auditRoot) || '.'})`);
 console.log(`HTML files scanned: ${htmlFiles}`);
 console.log(`JSON-LD blocks: ${blocks}`);
 
+const seoAudit = spawnSync(
+  process.execPath,
+  [path.join(ROOT, 'scripts/seo-audit.js'), '--root', auditRoot, '--registry'],
+  { cwd: ROOT, stdio: 'inherit' }
+);
+if (seoAudit.error) {
+  errors.push(`registry SEO audit could not start: ${seoAudit.error.message}`);
+} else if (seoAudit.status !== 0) {
+  errors.push(`registry SEO audit exited with status ${seoAudit.status}`);
+}
+
 if (errors.length) {
-  console.error(`\n❌ Dist JSON-LD audit failed: ${errors.length} issue(s)`);
+  console.error(`\n❌ Dist JSON-LD/SEO audit failed: ${errors.length} issue(s)`);
   errors.forEach((e) => console.error(`- ${e}`));
   process.exit(1);
 }
 
-console.log('\n✅ Dist JSON-LD audit passed');
+console.log('\n✅ Dist JSON-LD/SEO audit passed');
