@@ -57,6 +57,17 @@ function compactSnippet(source, index, width = 180) {
   return source.slice(start, end).replace(/\s+/g, ' ').trim();
 }
 
+function sourceWindow(source, index, width = 2600) {
+  const start = Math.max(0, index - Math.floor(width / 3));
+  const end = Math.min(source.length, start + width);
+  return {
+    start,
+    end,
+    line: lineNumberAt(source, index),
+    text: source.slice(start, end)
+  };
+}
+
 function scanFile(file) {
   const source = fs.readFileSync(file, 'utf8');
   const matches = [];
@@ -78,6 +89,29 @@ function scanFile(file) {
     if (count > 8) matches.push({ kind, line: null, snippet: `… ${count - 8} additional match(es)` });
   }
   return matches.length ? { file: rel(file), size: Buffer.byteLength(source), matches } : null;
+}
+
+function collectRuntimeExtracts(references) {
+  const extracts = [];
+  for (const item of references) {
+    if (!/^(?:js|css|scripts|src\/lib)\//.test(item.file)) continue;
+    const kinds = [...new Set(item.matches.map((match) => match.kind))];
+    if (kinds.length < 2) continue;
+    const file = path.join(ROOT, item.file);
+    if (!fs.existsSync(file)) continue;
+    const source = fs.readFileSync(file, 'utf8');
+    for (const [kind, template] of PATTERNS) {
+      const re = new RegExp(template.source, template.flags);
+      let match;
+      let count = 0;
+      while ((match = re.exec(source)) !== null && count < 2) {
+        extracts.push({ file: item.file, kind, ...sourceWindow(source, match.index) });
+        count += 1;
+        if (match[0].length === 0) re.lastIndex += 1;
+      }
+    }
+  }
+  return extracts;
 }
 
 function parseGlossary() {
@@ -150,11 +184,13 @@ function main() {
   const files = walk(ROOT);
   const references = files.map(scanFile).filter(Boolean).sort((a, b) => a.file.localeCompare(b.file));
   const glossary = parseGlossary();
+  const runtimeExtracts = collectRuntimeExtracts(references);
   const inventory = {
     generatedAt: new Date().toISOString(),
     scannedFiles: files.length,
     matchedFiles: references.length,
     glossary,
+    runtimeExtracts,
     references
   };
 
@@ -165,6 +201,7 @@ function main() {
   md.push('# Reference system inventory', '');
   md.push(`- Scanned text files: ${inventory.scannedFiles}`);
   md.push(`- Files with glossary/Bible-reference signals: ${inventory.matchedFiles}`);
+  md.push(`- Shared-runtime extracts: ${runtimeExtracts.length}`);
   if (glossary) {
     md.push(`- Glossary terms: ${glossary.termCount}`);
     md.push(`- Glossary structural issues: ${glossary.issues.length}`, '');
@@ -183,6 +220,8 @@ function main() {
       md.push('');
     }
   }
+  md.push('', '## Shared runtime extracts', '');
+  for (const item of runtimeExtracts) md.push(`- \`${item.file}\` — ${item.kind}, line ${item.line}`);
   md.push('', '## Matched files', '');
   for (const item of references) {
     const kinds = [...new Set(item.matches.map((match) => match.kind))].join(', ');
@@ -191,6 +230,7 @@ function main() {
   fs.writeFileSync(path.join(OUT_DIR, 'reference-system-inventory.md'), md.join('\n') + '\n');
 
   console.log(`Reference system inventory: ${files.length} files scanned, ${references.length} matched.`);
+  console.log(`Shared runtime extracts: ${runtimeExtracts.length}.`);
   if (glossary) console.log(`Glossary: ${glossary.termCount} terms, ${glossary.issues.length} structural issue(s).`);
 }
 
