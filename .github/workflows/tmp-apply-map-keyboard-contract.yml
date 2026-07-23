@@ -130,3 +130,5 @@ jobs:
           git diff --cached --check
           git commit -m "fix(maps): isolate typing from keyboard shortcuts"
           git push origin HEAD:agent/map-keyboard-contract
+
+# PR synchronization trigger after workflow registration.
