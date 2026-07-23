@@ -18,7 +18,7 @@ export const ASSET_VERSIONS = {
   'js/bookmark-engine.js': 'fdfb2ed7',
   'js/enhancements.js': 'cbbdb283',
   'js/floating-cluster-controller.js': 'f746adb1',
-  'js/glossary.js': 'ae46a35b',
+  'js/glossary.js': '7223058f',
   'js/highlights.js': '25484760',
   'js/nagornaya-bar-extras.js': '3c7e0bdd',
   'js/nagornaya-mobile-toc.js': '649d9217',
