@@ -62,10 +62,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Set up Node
+      - name: Set up Node 22.12
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "22.12.0"
 
       - name: Check normalizer syntax
         run: |
@@ -76,8 +76,10 @@ jobs:
       - name: Test glossary placement normalizer
         run: node scripts/glossary-placement-normalizer-test.js
 
-      - name: Test tooltip trigger and style normalizers
-        run: node scripts/tooltip-trigger-normalizer-test.js
+      - name: Test tooltip normalizers
+        run: |
+          node scripts/tooltip-trigger-normalizer-test.js
+          node scripts/tooltip-style-normalizer-test.js
 
       - name: Normalize source and shared marker styles
         run: |
@@ -89,6 +91,7 @@ jobs:
         run: |
           node scripts/glossary-contract-audit.js
           node scripts/tooltip-trigger-normalizer.js
+          node scripts/tooltip-style-normalizer.js
           node scripts/tooltip-icon-audit.js
           node scripts/cache-bust.js
 
@@ -97,10 +100,12 @@ jobs:
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
+          set -euo pipefail
           if git diff --quiet; then
             echo "No normalization changes required."
             exit 0
           fi
+          git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
@@ -114,10 +119,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node 22.12
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "22.12.0"
 
       - name: Prepare diagnostics
         run: mkdir -p reports
@@ -138,22 +143,24 @@ jobs:
       - name: Test glossary placement normalizer
         run: node scripts/glossary-placement-normalizer-test.js
 
-      - name: Test tooltip trigger and style normalizers
-        run: node scripts/tooltip-trigger-normalizer-test.js
+      - name: Test tooltip normalizers
+        run: |
+          node scripts/tooltip-trigger-normalizer-test.js
+          node scripts/tooltip-style-normalizer-test.js
 
       - name: Audit glossary and references
         shell: bash
         run: |
           set -o pipefail
-          node scripts/glossary-contract-audit.js | tee reports/glossary-contract.log
-          node scripts/reference-system-inventory.js
+          node scripts/glossary-contract-audit.js 2>&1 | tee reports/glossary-contract.log
+          node scripts/reference-system-inventory.js 2>&1 | tee reports/reference-system-inventory.log
 
       - name: Audit tooltip markers and styles
         shell: bash
         run: |
           set -o pipefail
-          node scripts/tooltip-icon-audit.js | tee reports/tooltip-icon-audit.log
-          node scripts/tooltip-style-normalizer.js | tee reports/tooltip-style.log
+          node scripts/tooltip-icon-audit.js 2>&1 | tee reports/tooltip-icon-audit.log
+          node scripts/tooltip-style-normalizer.js 2>&1 | tee reports/tooltip-style.log
 
       - name: Lint workflow
         shell: bash
@@ -163,7 +170,7 @@ jobs:
           curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
             | tar xz -C /tmp/actionlint actionlint
           /tmp/actionlint/actionlint -no-color .github/workflows/glossary-contract.yml \
-            | tee reports/glossary-actionlint.log
+            2>&1 | tee reports/glossary-actionlint.log
 
       - name: Upload source diagnostics
         if: always()
@@ -181,10 +188,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node 22.12
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "22.12.0"
           cache: npm
 
       - name: Install browser dependencies
@@ -206,7 +213,7 @@ jobs:
           set -o pipefail
           mkdir -p reports
           node scripts/tooltip-marker-browser-test.js \
-            | tee reports/tooltip-marker-browser.log
+            2>&1 | tee reports/tooltip-marker-browser.log
 
       - name: Upload browser evidence
         if: always()
