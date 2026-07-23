@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "defaultTranslations": {
+    "OT": "synodal",
+    "NT": "kassian"
+  },
+  "translations": {
+    "synodal": {
+      "label": "Синодальный перевод",
+      "testaments": ["OT"]
+    },
+    "kassian": {
+      "label": "Перевод еп. Кассиана (Безобразова)",
+      "testaments": ["NT"]
+    }
+  },
+  "books": {
+    "gen": {"testament":"OT","file":"synodal/bytie.json","aliases":["Быт","Быт.","Бытие","Gen","Genesis"]},
+    "exod": {"testament":"OT","file":"synodal/ishod.json","aliases":["Исх","Исх.","Исход","Ex","Exod","Exodus"]},
+    "lev": {"testament":"OT","file":"synodal/levit.json","aliases":["Лев","Лев.","Левит","Lev","Leviticus"]},
+    "num": {"testament":"OT","file":"synodal/chisla.json","aliases":["Чис","Чис.","Числ","Числ.","Числа","Num","Numbers"]},
+    "deut": {"testament":"OT","file":"synodal/vtorozakonie.json","aliases":["Втор","Втор.","Второзаконие","Deut","Deuteronomy"]},
+    "josh": {"testament":"OT","file":"synodal/iisus-navin.json","aliases":["Нав","Нав.","Иис Нав","Иис. Нав.","Иисус Навин","Josh","Joshua"]},
+    "judg": {"testament":"OT","file":"synodal/sudei.json","aliases":["Суд","Суд.","Судьи","Книга Судей","Judg","Judges"]},
+    "1sam": {"testament":"OT","file":"synodal/1tsarstv.json","aliases":["1 Цар","1 Цар.","1 Царств","1 Sam","1 Samuel"]},
+    "2sam": {"testament":"OT","file":"synodal/2tsarstv.json","aliases":["2 Цар","2 Цар.","2 Царств","2 Sam","2 Samuel"]},
+    "1kgs": {"testament":"OT","file":"synodal/3tsarstv.json","aliases":["3 Цар","3 Цар.","3 Царств","1 Kgs","1 Kings"]},
+    "2kgs": {"testament":"OT","file":"synodal/4tsarstv.json","aliases":["4 Цар","4 Цар.","4 Царств","2 Kgs","2 Kings"]},
+    "esth": {"testament":"OT","file":"synodal/esfir.json","aliases":["Есф","Есф.","Есфирь","Esth","Esther"]},
+    "neh": {"testament":"OT","file":"synodal/neemiya.json","aliases":["Неем","Неем.","Неемия","Neh","Nehemiah"]},
+    "ps": {"testament":"OT","file":"synodal/psaltir.json","aliases":["Пс","Пс.","Псалом","Псалтирь","Ps","Psalm","Psalms"]},
+    "prov": {"testament":"OT","file":"synodal/pritchi.json","aliases":["Притч","Притч.","Притчи","Prov","Proverbs"]},
+    "isa": {"testament":"OT","file":"synodal/isaiya.json","aliases":["Ис","Ис.","Исаия","Isa","Isaiah"]},
+    "jer": {"testament":"OT","file":"synodal/ieremiya.json","aliases":["Иер","Иер.","Иеремия","Jer","Jeremiah"]},
+    "ezek": {"testament":"OT","file":"synodal/iezekiil.json","aliases":["Иез","Иез.","Иезекииль","Ezek","Ezekiel"]},
+    "dan": {"testament":"OT","file":"synodal/daniil.json","aliases":["Дан","Дан.","Даниил","Dan","Daniel"]},
+    "hos": {"testament":"OT","file":"synodal/osiya.json","aliases":["Ос","Ос.","Осия","Hos","Hosea"]},
+    "amos": {"testament":"OT","file":"synodal/amos.json","aliases":["Ам","Ам.","Амос","Amos"]},
+    "mic": {"testament":"OT","file":"synodal/mihei.json","aliases":["Мих","Мих.","Михей","Mic","Micah"]},
+    "hab": {"testament":"OT","file":"synodal/avvakum.json","aliases":["Авв","Авв.","Аввакум","Hab","Habakkuk"]},
+    "zech": {"testament":"OT","file":"synodal/zahariya.json","aliases":["Зах","Зах.","Захария","Zech","Zechariah"]},
+
+    "matt": {"testament":"NT","file":"kassian/matfeya.json","aliases":["Мф","Мф.","Матфея","От Матфея","Matt","Matthew"]},
+    "mark": {"testament":"NT","file":"kassian/marka.json","aliases":["Мк","Мк.","Марка","От Марка","Mark"]},
+    "luke": {"testament":"NT","file":"kassian/luki.json","aliases":["Лк","Лк.","Луки","От Луки","Luke"]},
+    "john": {"testament":"NT","file":"kassian/ioanna.json","aliases":["Ин","Ин.","Иоанна","От Иоанна","John"]},
+    "acts": {"testament":"NT","file":"kassian/deyaniya.json","aliases":["Деян","Деян.","Деяния","Деяния Апостолов","Acts"]},
+    "rom": {"testament":"NT","file":"kassian/rimlyanam.json","aliases":["Рим","Рим.","Римлянам","Rom","Romans"]},
+    "1cor": {"testament":"NT","file":"kassian/1korinfyanam.json","aliases":["1 Кор","1 Кор.","1 Коринфянам","1 Cor","1 Corinthians"]},
+    "2cor": {"testament":"NT","file":"kassian/2korinfyanam.json","aliases":["2 Кор","2 Кор.","2 Коринфянам","2 Cor","2 Corinthians"]},
+    "gal": {"testament":"NT","file":"kassian/galatam.json","aliases":["Гал","Гал.","Галатам","Gal","Galatians"]},
+    "eph": {"testament":"NT","file":"kassian/efesyanam.json","aliases":["Еф","Еф.","Ефесянам","Eph","Ephesians"]},
+    "col": {"testament":"NT","file":"kassian/kolossyanam.json","aliases":["Кол","Кол.","Колоссянам","Col","Colossians"]},
+    "2thess": {"testament":"NT","file":"kassian/2fessalonikiytsam.json","aliases":["2 Фес","2 Фес.","2 Фессалоникийцам","2 Thess","2 Thessalonians"]},
+    "1tim": {"testament":"NT","file":"kassian/1timofeyu.json","aliases":["1 Тим","1 Тим.","1 Тимофею","1 Tim","1 Timothy"]},
+    "2tim": {"testament":"NT","file":"kassian/2timofeyu.json","aliases":["2 Тим","2 Тим.","2 Тимофею","2 Tim","2 Timothy"]},
+    "heb": {"testament":"NT","file":"kassian/evreyam.json","aliases":["Евр","Евр.","Евреям","Heb","Hebrews"]},
+    "jas": {"testament":"NT","file":"kassian/iakova.json","aliases":["Иак","Иак.","Иакова","Jas","James"]},
+    "1pet": {"testament":"NT","file":"kassian/1petra.json","aliases":["1 Пет","1 Пет.","1 Петра","1 Pet","1 Peter"]},
+    "2pet": {"testament":"NT","file":"kassian/2petra.json","aliases":["2 Пет","2 Пет.","2 Петра","2 Pet","2 Peter"]},
+    "1john": {"testament":"NT","file":"kassian/1ioanna.json","aliases":["1 Ин","1 Ин.","1 Иоанна","1 John"]},
+    "jude": {"testament":"NT","file":"kassian/iudy.json","aliases":["Иуд","Иуд.","Иуды","Jude"]},
+    "rev": {"testament":"NT","file":"kassian/otkrovenie.json","aliases":["Откр","Откр.","Откровение","Откровение Иоанна","Rev","Revelation"]}
+  }
+}
