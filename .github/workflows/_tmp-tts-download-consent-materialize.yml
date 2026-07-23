@@ -1,0 +1,91 @@
+name: Temporary TTS Download Consent Materializer
+
+on:
+  push:
+    branches:
+      - "agent/tts-download-cancel-notice"
+    paths:
+      - "scripts/_tmp-tts-materializer-parts/**"
+      - ".github/workflows/_tmp-tts-download-consent-materialize.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-tts-download-consent-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/tts-download-cancel-notice
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Reconstruct materializer
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat scripts/_tmp-tts-materializer-parts/part-*.b64 | base64 --decode > scripts/_tmp-tts-download-consent-materialize.js
+          node --check scripts/_tmp-tts-download-consent-materialize.js
+
+      - name: Materialize permanent TTS consent contract
+        run: node scripts/_tmp-tts-download-consent-materialize.js
+
+      - name: Remove transport chunks
+        run: rm -rf scripts/_tmp-tts-materializer-parts
+
+      - name: Check syntax and source mutations
+        run: |
+          node --check js/vosk-tts-engine.js
+          node --check scripts/tts-download-consent-contract-test.js
+          node --check scripts/tts-download-notice-browser-test.js
+          node scripts/tts-download-consent-contract-test.js
+          node scripts/cache-bust.js
+
+      - name: Install browser dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Verify cancellable download notice in Chromium
+        run: node scripts/tts-download-notice-browser-test.js
+
+      - name: Lint permanent workflow
+        run: |
+          mkdir -p /tmp/actionlint
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            | tar xz -C /tmp/actionlint actionlint
+          /tmp/actionlint/actionlint -no-color .github/workflows/tts-download-consent.yml
+
+      - name: Verify clean permanent scope
+        run: |
+          test ! -e scripts/_tmp-tts-download-consent-materialize.js
+          test ! -e scripts/_tmp-tts-materializer-parts
+          test ! -e .github/workflows/_tmp-tts-download-consent-materialize.yml
+          git diff --check
+          git status --short
+
+      - name: Commit permanent changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No materialized changes to commit."
+            exit 0
+          fi
+          git commit -m "fix(tts): make model download cancellable"
+          git push origin HEAD:agent/tts-download-cancel-notice
