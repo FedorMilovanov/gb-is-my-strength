@@ -206,13 +206,35 @@ async function desktopAssertions(browser, origin) {
     assert.equal(numberedTip.pointerEvents, 'none', 'portaled numbered tooltip surface must not intercept its trigger click');
     await closeWithEscape(page, '#numbered');
 
-    await page.click('#numbered');
+    const target = await page.evaluate(() => {
+      const anchor = document.querySelector('#numbered');
+      const rect = anchor.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    });
+    await page.mouse.move(target.x, target.y);
+    await page.waitForTimeout(80);
+    const hit = await page.evaluate(({ x, y }) => {
+      const element = document.elementFromPoint(x, y);
+      const anchor = document.querySelector('#numbered');
+      const tip = document.querySelector('body > .tooltip.gb-floating-tip.is-open, body > .gtip.gb-floating-tip.is-open');
+      return {
+        reachesAnchor: Boolean(element && (element === anchor || anchor.contains(element))),
+        hitId: element?.id || '',
+        hitClass: typeof element?.className === 'string' ? element.className : '',
+        tipPointerEvents: tip ? getComputedStyle(tip).pointerEvents : 'absent'
+      };
+    }, target);
+    console.log(`desktop hit target before click: ${JSON.stringify(hit)}`);
+    assert.equal(hit.tipPointerEvents, 'none', 'hover-open floating surface must remain pointer transparent');
+    assert.equal(hit.reachesAnchor, true, `elementFromPoint must reach #numbered, got ${hit.hitId || hit.hitClass || 'unknown'}`);
+    await page.mouse.down();
+    await page.mouse.up();
     const numberedOpen = await page.evaluate(() => ({
       expanded: document.querySelector('#numbered').getAttribute('aria-expanded'),
       hasDove: Boolean(document.querySelector('#numbered .fn-dove-icon')),
       visibleNumber: Array.from(document.querySelector('#numbered').childNodes).find((node) => node.nodeType === Node.TEXT_NODE)?.textContent.trim()
     }));
-    assert.equal(numberedOpen.expanded, 'true', 'numbered source must still open through a real click');
+    assert.equal(numberedOpen.expanded, 'true', 'numbered source must still open through a real browser click');
     assert.equal(numberedOpen.hasDove, false);
     assert.equal(numberedOpen.visibleNumber, '7');
     assert.deepEqual(errors, [], `desktop page errors: ${errors.join('; ')}`);
