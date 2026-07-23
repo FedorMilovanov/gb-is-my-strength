@@ -1,0 +1,42 @@
+name: Materialize Baptist Research Link Fix
+
+on:
+  push:
+    branches:
+      - agent/html-surface-contract
+    paths:
+      - ".github/workflows/materialize-baptist-research-link-fix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/html-surface-contract
+          fetch-depth: 0
+      - name: Remove non-public research href
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          file = Path('src/components/baptisty-rossii/BaptistyRossiiBody.astro')
+          source = file.read_text(encoding='utf-8')
+          old = '<a href="research/00-master-source-index-glossary-map.md">исследовательской папке серии</a>'
+          new = 'исследовательской папке серии'
+          count = source.count(old)
+          if count != 1:
+              raise SystemExit(f'expected exactly one non-public research link, found {count}')
+          file.write_text(source.replace(old, new), encoding='utf-8')
+          PY
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/baptisty-rossii/BaptistyRossiiBody.astro
+          git commit -m "fix(content): remove nonpublic Baptist research link"
+          git push origin HEAD:agent/html-surface-contract
