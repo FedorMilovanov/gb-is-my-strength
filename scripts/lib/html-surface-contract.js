@@ -18,6 +18,13 @@ function stripSvg(html) {
   return String(html || '').replace(/<svg\b[\s\S]*?<\/svg>/gi, ' ');
 }
 
+function stripNonMarkupBlocks(html) {
+  return String(html || '')
+    .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<template\b[\s\S]*?<\/template>/gi, ' ');
+}
+
 function getAttr(tag, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return tag.match(new RegExp(`\\b${escaped}\\s*=\\s*(["'])(.*?)\\1`, 'i'))?.[2] ?? null;
@@ -127,7 +134,7 @@ function auditInlineScripts(html, issue) {
   }
 }
 
-function auditFaqParity(html, issue) {
+function auditFaqParity(html, markup, issue) {
   const ldQuestions = [];
   for (const raw of extractJsonLdBlocks(html)) {
     let parsed;
@@ -147,7 +154,7 @@ function auditFaqParity(html, issue) {
     }
   }
 
-  const accordionQuestions = [...String(html || '').matchAll(
+  const accordionQuestions = [...String(markup || '').matchAll(
     /<button[^>]*class=["'][^"']*faq-accordion__q[^"']*["'][^>]*>([\s\S]*?)(?:<span[^>]*class=["'][^"']*faq-accordion__icon|<\/button>)/gi
   )].map((match) => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
 
@@ -178,6 +185,7 @@ function auditHtmlDocument({ html, route, entry, root, knownRoutes = new Set() }
   const issues = [];
   const issue = (severity, contract, detail) => issues.push({ route, severity, contract, detail: String(detail || '') });
   const source = String(html || '');
+  const markup = stripNonMarkupBlocks(source);
   const surface = entry?.surface || null;
   const routeRole = entry?.routeRole || null;
 
@@ -195,11 +203,11 @@ function auditHtmlDocument({ html, route, entry, root, knownRoutes = new Set() }
   }
 
   if (surface !== 'special') {
-    const h1Count = (source.match(/<h1\b/gi) || []).length;
+    const h1Count = (markup.match(/<h1\b/gi) || []).length;
     if (h1Count !== 1) issue('error', 'document-h1', `expected 1 h1, found ${h1Count}`);
   }
 
-  const noSvg = stripSvg(source);
+  const noSvg = stripSvg(markup);
   const ids = [...noSvg.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)].map((match) => match[2]).filter(Boolean);
   const seen = new Set();
   for (const id of ids) {
@@ -207,11 +215,11 @@ function auditHtmlDocument({ html, route, entry, root, knownRoutes = new Set() }
     seen.add(id);
   }
 
-  for (const tag of tags(source, 'img')) {
+  for (const tag of tags(markup, 'img')) {
     if (getAttr(tag, 'alt') == null) issue('error', 'img-alt', tag.slice(0, 180));
   }
 
-  const mediaTags = [...tags(source, 'img'), ...tags(source, 'source')];
+  const mediaTags = [...tags(markup, 'img'), ...tags(markup, 'source')];
   for (const tag of mediaTags) {
     const refs = [];
     const src = getAttr(tag, 'src');
@@ -226,7 +234,7 @@ function auditHtmlDocument({ html, route, entry, root, knownRoutes = new Set() }
     }
   }
 
-  for (const tag of tags(source, 'a')) {
+  for (const tag of tags(markup, 'a')) {
     const href = getAttr(tag, 'href');
     if (href == null) continue;
     const resolved = resolveLocalReference(href, route);
@@ -240,16 +248,16 @@ function auditHtmlDocument({ html, route, entry, root, knownRoutes = new Set() }
     if (!localPathExists(root, pathname)) issue('error', 'link-target', `${href} -> ${pathname}`);
   }
 
-  if (/javascript:void\s*\(\s*0\s*\)/i.test(source)) issue('warning', 'javascript-void', 'javascript:void(0) present');
+  if (/javascript:void\s*\(\s*0\s*\)/i.test(markup)) issue('warning', 'javascript-void', 'javascript:void(0) present');
   auditInlineScripts(source, issue);
-  auditFaqParity(source, issue);
+  auditFaqParity(source, markup, issue);
 
   if (routeRole === 'reading') {
     const ogType = metaContent(source, 'og:type');
     if (ogType && ogType !== 'article') issue('warning', 'reading-og-type', ogType);
     if (!metaContent(source, 'article:modified_time')) issue('warning', 'article-modified-time', 'missing article:modified_time');
     if (!metaContent(source, 'article:section') && !entry?.section) issue('warning', 'article-section', 'missing article:section/profile section');
-    if (!/class=["'][^"']*(?:article-byline|byline)[^"']*["']/i.test(source)) issue('warning', 'article-byline', 'no byline marker');
+    if (!/class=["'][^"']*(?:article-byline|byline)[^"']*["']/i.test(markup)) issue('warning', 'article-byline', 'no byline marker');
   }
 
   return issues;
