@@ -84,6 +84,12 @@ async function waitForRuntime(page) {
   });
 }
 
+async function movePointerTo(page, selector) {
+  const box = await page.locator(selector).boundingBox();
+  assert.ok(box, `${selector} must have a bounding box`);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+}
+
 async function desktopAssertions(browser, origin) {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const errors = [];
@@ -122,7 +128,8 @@ async function desktopAssertions(browser, origin) {
   assert.ok(initial.verticalDelta >= -8, `dove sits too high (${initial.verticalDelta.toFixed(2)}px)`);
   assert.ok(initial.doveWidth >= 11 && initial.doveWidth <= 24, `unexpected dove width ${initial.doveWidth}`);
 
-  await page.hover('#dove');
+  // Direct pointer movement avoids Playwright retrying hover after the tooltip opens over the anchor.
+  await movePointerTo(page, '#dove');
   await page.waitForTimeout(80);
   await page.screenshot({ path: path.join(REPORTS, 'tooltip-marker-desktop.png'), fullPage: false });
   const hover = await page.evaluate(() => {
@@ -131,10 +138,12 @@ async function desktopAssertions(browser, origin) {
     return {
       animationName: getComputedStyle(wing).animationName,
       transform: getComputedStyle(svg).transform,
-      tooltipOpen: document.querySelector('#dove').classList.contains('is-open')
+      tooltipOpen: document.querySelector('#dove').classList.contains('is-open'),
+      anchorHovered: document.querySelector('#dove').matches(':hover')
     };
   });
   console.log(`desktop hover: ${JSON.stringify(hover)}`);
+  assert.equal(hover.anchorHovered, true, 'pointer must physically hover the dove anchor');
   assert.match(hover.animationName, /fn-dove-flap/, 'dove wing must react on desktop hover');
   assert.notEqual(hover.transform, 'none', 'dove SVG must move subtly on hover');
   assert.equal(hover.tooltipOpen, true, 'hover must open the standalone tooltip');
