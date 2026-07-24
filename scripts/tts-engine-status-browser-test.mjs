@@ -99,6 +99,7 @@ async function snapshot(page) {
 }
 
 async function runOptOutRetry(browser, origin, label) {
+  console.log(`[scenario] ${label}: desktop opt-out + retry`);
   const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
   await page.goto(origin, { waitUntil: 'domcontentloaded' });
   await waitForApi(page);
@@ -127,7 +128,8 @@ async function runOptOutRetry(browser, origin, label) {
   await page.close();
 }
 
-async function runReady(browser, origin) {
+async function runReady(browser, origin, label) {
+  console.log(`[scenario] ${label}: enhanced ready`);
   const page = await browser.newPage({ viewport: { width: 1024, height: 720 } });
   await page.addInitScript(() => {
     window.VoskTTSEngine = { isReady: () => true, isSupported: () => true };
@@ -143,12 +145,13 @@ async function runReady(browser, origin) {
 }
 
 async function runMobileSaveData(browser, origin, label) {
-  const page = await browser.newPage({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true });
+  console.log(`[scenario] ${label}: mobile Save-Data`);
+  const page = await browser.newPage({ viewport: { width: 360, height: 740 }, hasTouch: true });
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'connection', { configurable: true, value: { saveData: true } });
-    document.documentElement.classList.add('dark');
   });
   await page.goto(origin, { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => document.documentElement.classList.add('dark'));
   await waitForApi(page);
   await dispatchPlaying(page);
   const state = await snapshot(page);
@@ -164,6 +167,7 @@ async function runMobileSaveData(browser, origin, label) {
 }
 
 async function runErrorRetry(browser, origin) {
+  console.log('[scenario] chromium: error + retry');
   const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
   await page.goto(origin, { waitUntil: 'domcontentloaded' });
   await waitForApi(page);
@@ -191,11 +195,11 @@ async function runErrorRetry(browser, origin) {
   const webkitBrowser = await webkit.launch({ headless: true });
   try {
     await runOptOutRetry(chromiumBrowser, origin, 'chromium');
-    await runReady(chromiumBrowser, origin);
+    await runReady(chromiumBrowser, origin, 'chromium');
     await runMobileSaveData(chromiumBrowser, origin, 'chromium');
     await runErrorRetry(chromiumBrowser, origin);
     await runOptOutRetry(webkitBrowser, origin, 'webkit');
-    await runReady(webkitBrowser, origin);
+    await runReady(webkitBrowser, origin, 'webkit');
     await runMobileSaveData(webkitBrowser, origin, 'webkit');
     console.log('TTS engine status browser contract: PASS (Chromium + WebKit, desktop + mobile, opt-out + save-data + retry + ready).');
   } finally {
@@ -204,6 +208,8 @@ async function runErrorRetry(browser, origin) {
     await new Promise((resolve) => server.close(resolve));
   }
 })().catch((error) => {
+  const failure = error && error.stack ? error.stack : String(error);
+  fs.writeFileSync(path.join(REPORTS, 'tts-engine-status-failure.txt'), failure + '\n', 'utf8');
   console.error(error);
   process.exit(1);
 });
