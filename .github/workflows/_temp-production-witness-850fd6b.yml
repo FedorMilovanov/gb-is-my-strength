@@ -1,4 +1,4 @@
-name: Temporary Gill Manifest-Matched Publisher
+name: Temporary Gill Manifest Mismatch Extract
 
 on:
   pull_request:
@@ -7,84 +7,41 @@ on:
       - '.github/workflows/_temp-production-witness-850fd6b.yml'
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 jobs:
-  publish:
+  extract:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     env:
-      PROVEN_ARTIFACT_ID: '8608502179'
-      PROVEN_BASE: 'cb378b1d086156d46d89769d73050dc6f54e2bd3'
+      FAILED_JOB_ID: '89584523956'
     steps:
-      - name: Checkout exact PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
-      - name: Recreate manifest-matched transaction
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git fetch origin main fix/gill-readerstate-submenu-release-2026-07-24
-          test "$(git rev-parse origin/main)" = "$PROVEN_BASE"
-          git merge --no-edit origin/main
-          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:src/components/article-pilots/gill-series/gillSeriesData.ts \
-            > src/components/article-pilots/gill-series/gillSeriesData.ts
-          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-release-materialize.py \
-            > /tmp/gill-release-materialize.py
-          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-visibility-materialize.py \
-            > /tmp/gill-visibility-materialize.py
-          python /tmp/gill-release-materialize.py
-          python /tmp/gill-visibility-materialize.py
-          node scripts/cache-bust.js --write
-          node scripts/cache-bust.js
-          git diff --check
-
-      - name: Verify every tracked file against proven SHA-256 manifest
+      - name: Extract exact manifest mismatch
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/proven
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${PROVEN_ARTIFACT_ID}/zip" > /tmp/proven.zip
-          unzip -q /tmp/proven.zip -d /tmp/proven
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FAILED_JOB_ID}/logs" > failed.log
           python - <<'PY'
           from pathlib import Path
-          import hashlib, json, os, subprocess
-
-          manifest=json.loads(Path('/tmp/proven/manifest.json').read_text(encoding='utf-8'))
-          if manifest['base'] != os.environ['PROVEN_BASE']:
-              raise SystemExit(f"manifest base {manifest['base']} != {os.environ['PROVEN_BASE']}")
-          expected={row['path']:row for row in manifest['files']}
-          actual=subprocess.check_output(
-              ['git','diff','--name-only','--diff-filter=ACMRT','origin/main'], text=True
-          ).splitlines()
-          if set(actual) != set(expected):
-              raise SystemExit('tracked scope mismatch\nactual='+repr(sorted(actual))+'\nexpected='+repr(sorted(expected)))
-          for path,row in expected.items():
-              data=Path(path).read_bytes()
-              digest=hashlib.sha256(data).hexdigest()
-              if digest != row['sha256'] or len(data) != row['bytes']:
-                  raise SystemExit(f"{path}: {digest}/{len(data)} != {row['sha256']}/{row['bytes']}")
-          print(f"manifest matched: {len(expected)} tracked files")
+          import re
+          lines=Path('failed.log').read_text(encoding='utf-8-sig',errors='replace').splitlines()
+          clean=[re.sub(r'^\d{4}-\d{2}-\d{2}T[^ ]+Z\s+','',x) for x in lines]
+          keys=('manifest base','scope mismatch','tracked scope mismatch',' != ','##[error]','SystemExit','Traceback')
+          hits=[i for i,x in enumerate(clean) if any(k.lower() in x.lower() for k in keys)]
+          selected=set()
+          for i in hits:selected.update(range(max(0,i-4),min(len(clean),i+7)))
+          text='\n'.join(f'{i+1}: {clean[i]}' for i in sorted(selected))+'\n'
+          Path('failure.txt').write_text(text,encoding='utf-8')
+          print(text)
+          if not hits: raise SystemExit('no manifest mismatch markers found')
           PY
-
-      - name: Commit and push tracked files only
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Deliberately exclude both workflow paths. The GitHub connector will
-          # replace the temporary workflow with the permanent read-only contract.
-          rm -f .github/workflows/gill-pre-v16-submenu.yml
-          git add -u
-          git diff --cached --check
-          test -z "$(git diff --cached --name-only | grep '^\.github/workflows/' || true)"
-          git commit -m "fix(gill): restore ReaderState submenu traversal"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gill-manifest-mismatch-${{ github.run_id }}
+          path: failure.txt
+          if-no-files-found: error
+          retention-days: 7
