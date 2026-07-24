@@ -52,6 +52,10 @@ assert.match(compact, /#main-content \.overflow-x-auto[\s\S]*?overflow-y:\s*hidd
 assert.match(compact, /#main-content \.overflow-x-auto > table\.min-w-96[\s\S]*?min-inline-size:\s*100%\s*!important/, `${COMPACT_COMPONENT}: legacy 384px comparison tables must collapse to the available width on iPhone 320`);
 assert.match(compact, /#main-content \.overflow-x-auto > table\.min-w-96[\s\S]*?table-layout:\s*fixed/, `${COMPACT_COMPONENT}: narrow two-column comparison tables need deterministic column geometry`);
 assert.match(compact, /table\.min-w-96 th,[\s\S]*?table\.min-w-96 td[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: narrow comparison cells must wrap rather than enlarge the root document`);
+assert.match(compact, /#main-content \.grid\.grid-cols-3 > \*[\s\S]*?min-inline-size:\s*0[\s\S]*?padding-inline:\s*8px\s*!important[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: three-column comparison cells need compact intrinsic geometry on iPhone 320`);
+assert.match(compact, /#main-content \.space-y-4\.text-base > \.flex[\s\S]*?flex-direction:\s*column[\s\S]*?min-inline-size:\s*0/, `${COMPACT_COMPONENT}: conclusion rows must stack vertically at <=359px`);
+assert.match(compact, /#main-content \.space-y-4\.text-base > \.flex > \.w-32\.shrink-0[\s\S]*?inline-size:\s*auto\s*!important[\s\S]*?flex:\s*none/, `${COMPACT_COMPONENT}: conclusion labels must release the desktop fixed width`);
+assert.match(compact, /#main-content \.space-y-4\.text-base > \.flex > :last-child[\s\S]*?max-inline-size:\s*100%[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: conclusion text must wrap inside the card`);
 assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?min-width:\s*0/, `${COMPACT_COMPONENT}: long flex headings must be shrinkable`);
 assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: long section headings need a narrow-screen wrap fallback`);
 assert.match(compact, /#main-content \.group > p\.ml-14[\s\S]*?margin-left:\s*0\s*!important/, `${COMPACT_COMPONENT}: decorative subtitle indentation must collapse on iPhone 320`);
@@ -90,4 +94,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/responsive-table containment, priority and speed-sheet contracts, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/table/grid/conclusion reflow, priority and speed-sheet contracts, adversarial v=1 rejected`);

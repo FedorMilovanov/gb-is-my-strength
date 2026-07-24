@@ -13,6 +13,11 @@
  * wrapped cells. Other genuinely wide tables may still use the wrapper as a
  * local horizontal scrollport. Page-root clipping is never used.
  *
+ * Three-column comparison grids retain their logical columns but shed desktop
+ * padding and intrinsic minimums. Compact conclusion rows stack their fixed
+ * label over the explanatory text at this breakpoint, which is both more
+ * readable and independent of WebKit's anonymous flex-item width calculation.
+ *
  * Decorative section-subtitle indentation is removed at the same breakpoint.
  * On an iPhone 320 the subtitle receives the full content width, including when
  * glossary markup is injected, instead of enlarging the document.
@@ -52,6 +57,33 @@
       min-inline-size: 0;
       overflow-wrap: anywhere;
       word-break: normal;
+    }
+
+    body.nagornaya-page #main-content .grid.grid-cols-3 > * {
+      min-inline-size: 0;
+      padding-inline: 8px !important;
+      gap: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    body.nagornaya-page #main-content .space-y-4.text-base > .flex {
+      flex-direction: column;
+      align-items: flex-start;
+      min-inline-size: 0;
+      gap: 3px;
+    }
+
+    body.nagornaya-page #main-content .space-y-4.text-base > .flex > .w-32.shrink-0 {
+      inline-size: auto !important;
+      min-inline-size: 0;
+      flex: none;
+      overflow-wrap: anywhere;
+    }
+
+    body.nagornaya-page #main-content .space-y-4.text-base > .flex > :last-child {
+      min-inline-size: 0;
+      max-inline-size: 100%;
+      overflow-wrap: anywhere;
     }
 
     body.nagornaya-page #main-content .group,
