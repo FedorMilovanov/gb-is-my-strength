@@ -1,0 +1,60 @@
+name: Temporary TTS Production Proof
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/_temp-tts-production-proof.yml"
+      - "scripts/_temp-tts-production-proof.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-tts-production-proof-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-proof:
+    name: Chromium and WebKit live TTS proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout proof head
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Validate temporary proof source
+        run: |
+          node --check scripts/_temp-tts-production-proof.mjs
+          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-tts-production-proof.yml
+
+      - name: Run production TTS matrix
+        run: |
+          set -o pipefail
+          node scripts/_temp-tts-production-proof.mjs 2>&1 | tee reports/tts-production-proof.log
+
+      - name: Upload live evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-live-production-proof-${{ github.run_id }}
+          path: |
+            reports/tts-production-proof.json
+            reports/tts-production-proof.log
+            reports/chromium-*.png
+            reports/webkit-*.png
+          if-no-files-found: error
+          retention-days: 14
