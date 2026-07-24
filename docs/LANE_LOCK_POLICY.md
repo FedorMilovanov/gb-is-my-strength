@@ -1,78 +1,78 @@
 # Lane Lock Policy — FAST / LANE / SYSTEM
 
-**Дата:** 2026-06-23
-**Версия:** 2.0 (упрощено по `AGENT_PROTECTION_SIMPLE_v3_0`)
+**Updated:** 2026-07-24  
+**Policy version:** 3.0  
+See also: [WORK_MODES.md](WORK_MODES.md).
 
-См. также: [docs/WORK_MODES.md](WORK_MODES.md)
+## 1. Purpose
 
----
+Lane lock prevents parallel agents from overwriting the same route, shared file or release boundary. It also prevents a closed branch from being deleted before its unique content is understood.
 
-## 0. Зачем lane lock
+A lane is an ownership transaction, not merely a branch-name convention.
 
-Без lane lock параллельные агенты перезаписывают друг друга в shared/route файлах → регрессия, CI падает, сайт ломается.
+## 2. Modes and branch boundary
 
----
+- **FAST** — one small low-risk change; still uses a short-lived branch and PR.
+- **LANE** — route/feature/refactor work with bounded file ownership.
+- **SYSTEM** — shared/global/control-plane work isolated from route content.
 
-## 1. Три режима
+Direct changes to `main` are not a normal FAST path. An emergency direct-main operation requires an explicit owner decision, exact post-push CI inspection and AuditRepo reconciliation where applicable.
 
-- **FAST** — один агент, маленькая правка, без shared/system файлов. Можно в main.
-- **LANE** — route/refactor/много файлов. Ветка `lane/<name>`.
-- **SYSTEM** — shared/global/high-risk. Ветка `lane/system-<name>` или `lane/protection-*`.
-
----
-
-## 2. Branch naming
+Suggested names:
 
 ```text
-lane/<route-or-feature>-<phase>
-lane/system-<task>
-lane/shared-<data-fix>
-lane/protection-<version>
+lane/fast-<task>-YYYY-MM-DD
+lane/<route-or-feature>-<phase>-YYYY-MM-DD
+lane/system-<task>-YYYY-MM-DD
+lane/shared-<data-fix>-YYYY-MM-DD
 ```
 
-Примеры:
+Archive refs use a separate namespace:
 
 ```text
-lane/nagornaya-componentization
-lane/system-astro-head-native
-lane/shared-readtime-sync
-lane/protection-simple-v3-0
+archive/forensic-<origin>-<purpose>-YYYY-MM-DD
 ```
 
----
+An archive ref is provenance only and must not be treated as an active lane or merged wholesale.
 
 ## 3. Lane declaration
 
-Перед работой объявить в первом commit message или в PR:
+Record this in the issue or PR before substantive work:
 
-```text
-Lane: lane/<name>
-Routes: <list>
-Files allowed: <list>
+```md
+Lane: <branch>
+Issue/PR: <number>
+Routes: <bounded list>
+Files allowed: <bounded list>
 Files forbidden: <list>
-Source of truth: <file>
-Required checks before commit: <list>
-Rollback point: <commit>
+Source of truth: <files / exact SHA>
+Required checks: <commands / browser profiles>
+Rollback point: <exact main SHA>
+Dependencies: <issues / PRs / owner decisions>
 ```
 
-Каждый commit в lane должен содержать:
+Commit messages should identify the lane when multiple agents are active:
 
 ```text
-[LANE lane/<name>] <type>(<scope>): <message>
+[LANE <branch>] <type>(<scope>): <message>
 ```
 
----
+The PR description and actual diff are authoritative if an old commit message contains a stale declaration.
 
-## 3.5 Checks discipline: FAST loop and FULL barrier
+## 4. Ownership rules
 
-Lane work uses two layers of verification:
+1. One route or shared surface has one active owner at a time.
+2. A second agent either takes a non-overlapping sub-lane or waits.
+3. A route lane does not change system files.
+4. A system lane does not absorb route content or visual redesign.
+5. Shared data uses a declared shared/system lane.
+6. Out-of-lane findings are recorded, not silently repaired.
+7. “Superseded” is a claim to verify against current blobs, not permission to delete a branch.
+8. No temporary workflow, trigger, writer or patcher survives the transaction that needed it.
 
-```text
-FAST loop     — quick relevant checks while iterating
-FULL barrier  — validate:static-publication before final commit/merge/push of production/system/refactor lanes
-```
+## 5. Verification discipline
 
-Recommended FAST loop:
+### Iteration loop
 
 ```bash
 git diff --check
@@ -82,99 +82,97 @@ npm run migration:metadata:check
 npm run native:runtime:audit:strict
 ```
 
-Add targeted checks for the touched area (`content:parity`, `mdx:structure:audit`, `workflows:check`, route visual audit, etc.).
+Select only relevant commands while iterating, then add the route-specific browser/visual/source contracts.
 
-Required FULL barrier for production/system/refactor lanes:
+### System/control-plane loop
+
+```bash
+git diff --check
+npm run guard:shared-files
+npm run workflows:check
+npm run control-plane:audit
+npm run workflows:lint
+```
+
+### Final barrier
+
+Production, shared, refactor and system lanes require:
 
 ```bash
 npm run validate:static-publication
 npm run guard:shared-files
 ```
 
-Arena note: do not run the full gate after every tiny edit; it includes Astro check/build and is expensive in 2 CPU / ~2 GB RAM sandbox. But the lane report must record the final full gate result, or the exact blocker if sandbox limits made it impossible.
+A docs-only PR may use a narrower barrier when it cannot affect runtime/build, but Shared Files Guard and reference integrity remain mandatory. Record the exact-head run IDs or artifacts.
 
----
-
-## 4. Правила lane
-
-1. Один route — один владелец lane.
-2. Если два агента хотят один route — второй берёт под-lane или ждёт.
-3. Route lane не трогает SYSTEM files.
-4. SYSTEM lane не трогает production routes/content.
-5. Shared data — только через `lane/shared-*` или `lane/system-*`.
-6. Out-of-lane проблемы записываем, не исправляем сразу.
-
----
-
-## 5. Out-of-lane finding
+## 6. Out-of-lane finding
 
 ```md
 ## Out-of-lane finding
 
-Lane: lane/my-lane
-
-Нашёл:
-- data/series.json: возможно устарел readTime.
-
-Не исправлял:
-- это shared data.
-
-Предложение:
-- lane/shared-readtime-sync
+Observed at: <exact SHA / file / route>
+Evidence: <source, test or artifact>
+Not changed because: <ownership boundary>
+Proposed lane: <name>
+Recovery risk: <none / possible unique branch material>
 ```
 
----
+Do not copy code from an old branch until its replacement history and current owner contracts are understood.
 
-## 6. Lane index
+## 7. Lane index and current truth
 
-Активные lanes ведутся в:
+Use this order:
+
+1. open GitHub issues and pull requests;
+2. current `main` and exact-head CI;
+3. AuditRepo canonical matrix and reverify evidence;
+4. `docs/refactor-2026/lanes/README.md` as navigation.
+
+The lane index is not an independent backlog. A branch does not become active merely because it exists remotely.
+
+## 8. Pre-work checklist
 
 ```text
-docs/refactor-2026/lanes/README.md
+□ Search open PRs/issues for overlapping scope
+□ Inspect current main and exact rollback SHA
+□ Inspect branch/archive refs relevant to the task
+□ Read the current lane index and audit index
+□ Declare allowed and forbidden files
+□ Choose targeted iteration checks
+□ Plan the final exact-head barrier
+□ Separate source completion from production witness
 ```
 
-Шаблон отчёта:
+## 9. Merge and cleanup
+
+### Merge acceptance
 
 ```text
-docs/refactor-2026/lanes/TEMPLATE.md
+□ Actual diff matches declared scope
+□ Exact PR head passed required checks
+□ Review threads are resolved
+□ Temporary automation is absent from the final tree
+□ Production is not claimed without an exact deploy/live witness
+□ AuditRepo update is prepared when canonical status changed
 ```
 
----
+### Branch disposition before deletion
 
-## 7. Чеклист перед началом
+Inspect actual content, not only merge status:
 
-```text
-□ Проверить существующие branches: git branch -a | grep lane/
-□ Проверить lane index: docs/refactor-2026/lanes/README.md
-□ Проверить живой аудит: docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md
-□ Выбрать свободный lane name
-□ Определить files allowed / forbidden
-□ Знать source of truth и rollback point
-□ [LANE lane/<name>] в каждом commit message
-□ Выбрать FAST checks по зоне риска
-□ Запланировать FULL barrier перед commit/merge/push
-```
+| Classification | Action |
+|---|---|
+| Fully present in `main` | Safe to delete after recording replacement SHA. |
+| Trigger/probe/diagnostic only | Safe to delete when its intended result and cleanup are verified. |
+| Superseded | Verify the replacement file-by-file, then delete or archive. |
+| Unique evidence/prototype | Preserve in AuditRepo or an `archive/forensic-*` ref. |
+| Selective recovery candidate | Keep/archive; rebuild only the justified delta from fresh `main`. |
+| Unknown | Do not delete. Add to the forensic register. |
 
----
+Never automatically run `git push origin --delete <branch>` immediately after merge without this disposition.
 
-## 8. Merge и cleanup
+## 10. Current forensic lesson
 
-```bash
-# 1. Checks зелёные
-npm run data:consistency
-npm run validate:static-publication
-npm run guard:shared-files
+The 2026-07-24 audit found `_temp-gill-source-marathon-orchestrator.yml` still on `main` after its owning transaction, with `contents: write` and a call to a deleted script. It also found useful closed heads that were not represented in `main`. The permanent control-plane audit and archive-ref procedure exist to prevent both failure modes.
 
-# 2. Merge в main
-git checkout main
-git merge lane/<name> --no-ff
-
-# 3. Lane report (не AGENTS.md!)
-# docs/refactor-2026/lanes/<lane-name>.md
-
-# 4. Удалить branch
-git branch -d lane/<name>
-git push origin --delete lane/<name>
-```
-
-`AGENTS.md` обновляет только интегратор после волны lanes.
+The previous policy remains in Git history at blob `d49ffa0887eabbf39f0dcba8212d7b11c06dd8b2`; its direct-main FAST permission and unconditional branch-deletion recipe are retired.
