@@ -150,6 +150,24 @@ function routeSlug(route) {
   return route.replace(/^\//, '').replace(/\/$/, '').replace(/[^a-z0-9\-_]+/gi, '_') || 'root';
 }
 
+async function primeHomeRevealObservers(page, route) {
+  if (route !== '/') return null;
+  return page.evaluate(async () => {
+    const reveals = Array.from(document.querySelectorAll('.h-reveal'));
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    for (const element of reveals) {
+      element.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await pause(120);
+    }
+    window.scrollTo(0, 0);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    // Delayed reveal variants reach roughly 1.2s; retain margin for CI runners.
+    await pause(1500);
+    return { total: reveals.length };
+  });
+}
+
 async function settleHomeRevealState(page, route) {
   if (route !== '/') return null;
 
@@ -277,6 +295,10 @@ async function screenshot(page, baseUrl, route, viewport, outFile) {
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     await new Promise((r) => setTimeout(r, 500));
   }).catch(() => {});
+
+  // A coarse scroll can skip IntersectionObserver delivery on long mobile pages.
+  // Visit every home reveal section like a real reader before proving visibility.
+  await primeHomeRevealObservers(page, route);
 
   // Fail closed on a real hidden-home state. Only already-visible reveal sections
   // receive a capture marker, so the screenshot harness cannot mask a runtime bug.
