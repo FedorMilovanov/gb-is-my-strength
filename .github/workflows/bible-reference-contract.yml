@@ -63,10 +63,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          mkdir -p /tmp/actionlint
-          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
-            | tar xz -C /tmp/actionlint actionlint
-          /tmp/actionlint/actionlint -no-color .github/workflows/bible-reference-contract.yml \
+          node scripts/run-actionlint.mjs -no-color .github/workflows/bible-reference-contract.yml \
             2>&1 | tee reports/bible-reference-actionlint.log
 
       - name: Ensure validators are read-only
