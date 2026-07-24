@@ -10,13 +10,15 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'visual-parity', 'home-progressive-enhancement');
-const HEAD_SOURCE = fs.readFileSync(path.join(ROOT, 'src/components/home/HomePageHead.astro'), 'utf8');
+const PROGRESSIVE_SOURCE = fs.readFileSync(path.join(ROOT, 'src/components/home/HomeProgressiveEnhancementHead.astro'), 'utf8');
+const PAGE_SOURCE = fs.readFileSync(path.join(ROOT, 'src/pages/index.astro'), 'utf8');
 const WORKFLOW_SOURCE = fs.readFileSync(path.join(ROOT, '.github/workflows/visual-parity.yml'), 'utf8');
 
 fs.mkdirSync(REPORT_DIR, { recursive: true });
 
-assert.match(HEAD_SOURCE, /<noscript>[\s\S]*?\.home-page \.h-reveal[\s\S]*?opacity:\s*1\s*!important/, 'no-JS source must force home reveal content visible');
-assert.match(HEAD_SOURCE, /@media print[\s\S]*?\.home-page \.h-reveal[\s\S]*?opacity:\s*1\s*!important/, 'print source must force home reveal content visible');
+assert.match(PROGRESSIVE_SOURCE, /<noscript>[\s\S]*?\.home-page \.h-reveal[\s\S]*?opacity:\s*1\s*!important/, 'no-JS source must force home reveal content visible');
+assert.match(PROGRESSIVE_SOURCE, /@media print[\s\S]*?\.home-page \.h-reveal[\s\S]*?opacity:\s*1\s*!important/, 'print source must force home reveal content visible');
+assert.match(PAGE_SOURCE, /<HomeProgressiveEnhancementHead\s*\/>/, 'native homepage must mount progressive rendering guarantees');
 assert.match(WORKFLOW_SOURCE, /node scripts\/home-progressive-enhancement-browser-test\.js/, 'Visual Parity workflow must run the home progressive-enhancement browser contract');
 
 function contentType(filePath) {
