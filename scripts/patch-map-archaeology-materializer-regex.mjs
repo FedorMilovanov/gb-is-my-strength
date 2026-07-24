@@ -11,6 +11,14 @@ const replacements = [
     'assert.doesNotMatch(bootstrap,/map-archaeology-adapter\\.js|set:html|fetch\\(/);',
     "assert.ok(!bootstrap.includes('map-archaeology-adapter.js'));assert.ok(!bootstrap.includes('set:html'));assert.ok(!bootstrap.includes('fetch('));",
   ],
+  [
+    'assert.match(fallback,/archaeologyMapId\\?: string/);',
+    "assert.ok(fallback.includes('archaeologyMapId?: string'));",
+  ],
+  [
+    'assert.match(fallback,/mapId=\\{archaeologyMapId\\}/);',
+    "assert.ok(fallback.includes('mapId={archaeologyMapId}'));",
+  ],
 ];
 for (const [search, replacement] of replacements) {
   const count = source.split(search).length - 1;
