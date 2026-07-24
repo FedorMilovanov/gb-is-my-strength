@@ -64,9 +64,15 @@ jobs:
             | tee reports/editorial-metadata-freeze.log
 
       - name: Capture current observations without mutating the freeze contract
+        if: always()
         shell: bash
         run: |
           set -o pipefail
+          if [[ ! -f reports/editorial-metadata-frozen.json || ! -d dist ]]; then
+            echo 'Committed freeze or production-like dist is unavailable; observation capture cannot run.' >&2
+            exit 1
+          fi
+
           restore_registry() {
             cp reports/editorial-metadata-frozen.json data/editorial-metadata.json
           }
