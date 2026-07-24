@@ -53,4 +53,11 @@ assert(readingTimeAudit.includes('authoritativeLegacyRel'), 'reading-time stale-
 assert(/if \(!legacyIsAuthoritative\(profile\)\)[\s\S]*?enforced through native\/data sources/.test(readingTimeAudit), 'reference-only mirrors must not be blocking reading-time oracles');
 assert(!/\.\.\.GILL_ORDER\.map\(\(slug\) => `articles\/\$\{slug\}\/index\.html`\)/.test(readingTimeAudit), 'reading-time scan must not blindly include every legacy mirror');
 
-console.log('✅ Legacy source authority contract passed for Gill parity and reading-time audits');
+const pagefindAudit = fs.readFileSync(path.join(ROOT, 'scripts/gill-pagefind-body-audit.js'), 'utf8');
+assert(pagefindAudit.includes('Array.isArray(requirement)'), 'Pagefind audit must support semantic marker alternatives');
+assert(pagefindAudit.includes("['Кларендонским кодексом','Кларендонского кодекса','Кларендонский кодекс']"), 'Clarendon marker alternatives missing');
+assert(pagefindAudit.includes("['Goat Yard','Goat’s Yard',\"Goat's Yard\",'Goat&rsquo;s Yard']"), 'Goat Yard marker alternatives missing');
+assert(pagefindAudit.includes("['Corporation Act','Акт о корпорациях','Корпоративный акт']"), 'Corporation marker alternatives missing');
+assert(!pagefindAudit.includes("['Кларендонский кодекс','Солтерс-Холл'"), 'stale exact Pagefind marker list must not return');
+
+console.log('✅ Gill source authority, reading-time and semantic Pagefind contracts passed');
