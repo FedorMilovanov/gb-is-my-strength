@@ -1,4 +1,4 @@
-name: Temporary Production Snapshot 83a13a0
+name: Temporary Gill Deploy Failure Extract
 
 on:
   pull_request:
@@ -9,163 +9,67 @@ on:
 permissions:
   contents: read
   actions: read
-  deployments: read
 
 jobs:
-  snapshot:
+  extract:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      TARGET_SHA: 83a13a0755b37296ccec053987654ceefbca349e
+      FAILED_JOB_ID: '89565412548'
     steps:
-      - name: Snapshot exact readiness, Pages and deployment state
-        id: snapshot
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const target = process.env.TARGET_SHA;
-            const { owner, repo } = context.repo;
-            fs.mkdirSync('reports', { recursive: true });
-
-            async function workflowRuns(workflowId, event) {
-              const response = await github.request(
-                'GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs',
-                {
-                  owner,
-                  repo,
-                  workflow_id: workflowId,
-                  branch: 'main',
-                  event,
-                  head_sha: target,
-                  per_page: 100,
-                  headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-                },
-              );
-              return response.data.workflow_runs
-                .filter((run) => run.head_sha === target && run.event === event)
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                .map((run) => ({
-                  id: run.id,
-                  runNumber: run.run_number,
-                  event: run.event,
-                  headSha: run.head_sha,
-                  status: run.status,
-                  conclusion: run.conclusion,
-                  createdAt: run.created_at,
-                  updatedAt: run.updated_at,
-                  htmlUrl: run.html_url,
-                }));
-            }
-
-            const readiness = await workflowRuns('indexnow.yml', 'push');
-            const pages = await workflowRuns('deploy.yml', 'workflow_run');
-            const deploymentsResponse = await github.request(
-              'GET /repos/{owner}/{repo}/deployments',
-              {
-                owner,
-                repo,
-                sha: target,
-                environment: 'github-pages',
-                per_page: 100,
-                headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-              },
-            );
-            const deployments = [];
-            for (const deployment of deploymentsResponse.data) {
-              const statusesResponse = await github.request(
-                'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
-                {
-                  owner,
-                  repo,
-                  deployment_id: deployment.id,
-                  per_page: 100,
-                  headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-                },
-              );
-              deployments.push({
-                id: deployment.id,
-                sha: deployment.sha,
-                ref: deployment.ref,
-                environment: deployment.environment,
-                createdAt: deployment.created_at,
-                updatedAt: deployment.updated_at,
-                statuses: statusesResponse.data.map((status) => ({
-                  id: status.id,
-                  state: status.state,
-                  environmentUrl: status.environment_url,
-                  createdAt: status.created_at,
-                  updatedAt: status.updated_at,
-                })),
-              });
-            }
-
-            const readinessSuccess = readiness.find(
-              (run) => run.status === 'completed' && run.conclusion === 'success',
-            );
-            const pagesSuccess = pages.find(
-              (run) => run.status === 'completed' && run.conclusion === 'success',
-            );
-            const deploymentSuccess = deployments.find((deployment) =>
-              deployment.statuses.some((status) => status.state === 'success'),
-            );
-            const productionReady = Boolean(readinessSuccess && pagesSuccess && deploymentSuccess);
-            const report = {
-              targetSha: target,
-              capturedAt: new Date().toISOString(),
-              productionReady,
-              readiness,
-              pages,
-              deployments,
-            };
-            fs.writeFileSync(
-              'reports/production-state-snapshot.json',
-              `${JSON.stringify(report, null, 2)}\n`,
-            );
-            fs.writeFileSync(
-              'reports/production-state-snapshot.md',
-              [
-                '# Exact production state snapshot',
-                '',
-                `- target: \`${target}\``,
-                `- production ready: **${productionReady}**`,
-                `- readiness runs: ${readiness.length}`,
-                `- Pages runs: ${pages.length}`,
-                `- deployments: ${deployments.length}`,
-                '',
-              ].join('\n'),
-            );
-            core.setOutput('production_ready', String(productionReady));
-            core.info(JSON.stringify(report, null, 2));
-
-      - name: Capture live hashes only after exact deployment proof
-        if: steps.snapshot.outputs.production_ready == 'true'
-        shell: bash
+      - name: Download exact failed Pages job log
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          cache_buster="${TARGET_SHA:0:12}-$(date +%s)"
-          curl -fsSL --retry 5 --retry-delay 3 -D reports/home.headers \
-            -o reports/home.html "https://gospod-bog.ru/?production-snapshot=${cache_buster}"
-          curl -fsSL --retry 5 --retry-delay 3 -D reports/sitemap.headers \
-            -o reports/sitemap.xml "https://gospod-bog.ru/sitemap.xml?production-snapshot=${cache_buster}"
-          {
-            echo "target_sha=${TARGET_SHA}"
-            echo "captured_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "home_sha256=$(sha256sum reports/home.html | awk '{print $1}')"
-            echo "sitemap_sha256=$(sha256sum reports/sitemap.xml | awk '{print $1}')"
-            echo "sitemap_loc_count=$(grep -o '<loc>' reports/sitemap.xml | wc -l | tr -d ' ')"
-            echo "home_bytes=$(wc -c < reports/home.html | tr -d ' ')"
-            echo "sitemap_bytes=$(wc -c < reports/sitemap.xml | tr -d ' ')"
-          } | tee reports/live-witness.env
-          grep -qi '<!doctype html' reports/home.html
-          grep -q '<urlset' reports/sitemap.xml
+          mkdir -p reports
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FAILED_JOB_ID}/logs" > reports/pages-deploy.log
+          test -s reports/pages-deploy.log
 
-      - name: Upload exact production snapshot
+      - name: Extract Gill failure context
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          source = Path('reports/pages-deploy.log')
+          lines = source.read_text(encoding='utf-8-sig', errors='replace').splitlines()
+          cleaned = [re.sub(r'^\d{4}-\d{2}-\d{2}T[^ ]+Z\s+', '', line) for line in lines]
+          patterns = [
+              re.compile(r'\bFAIL\b', re.I),
+              re.compile(r'browser audit error', re.I),
+              re.compile(r'scrollspy', re.I),
+              re.compile(r'Gill pre-v16 submenu audit:', re.I),
+              re.compile(r'Process completed with exit code', re.I),
+          ]
+          hits = []
+          for index, line in enumerate(cleaned):
+              if any(pattern.search(line) for pattern in patterns):
+                  hits.append(index)
+          selected = set()
+          for index in hits:
+              selected.update(range(max(0, index - 3), min(len(cleaned), index + 4)))
+          output = []
+          previous = None
+          for index in sorted(selected):
+              if previous is not None and index > previous + 1:
+                  output.append('---')
+              output.append(f'{index + 1}: {cleaned[index]}')
+              previous = index
+          Path('reports/gill-failure-context.txt').write_text('\n'.join(output) + '\n', encoding='utf-8')
+          print('\n'.join(output))
+          if not hits:
+              raise SystemExit('No Gill failure markers found in job log')
+          PY
+
+      - name: Upload extracted diagnostic
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: production-snapshot-83a13a0-${{ github.run_id }}
-          path: reports/
+          name: gill-pages-failure-${{ github.run_id }}
+          path: |
+            reports/gill-failure-context.txt
+            reports/pages-deploy.log
           if-no-files-found: error
           retention-days: 14
