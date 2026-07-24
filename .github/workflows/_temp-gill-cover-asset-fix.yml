@@ -1,0 +1,81 @@
+name: Temporary Gill Cover Asset Fix
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-gill-cover-asset-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Replace only the missing Gill cover derivative
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          old='og-dzhon-gill-spravochnik-600w.webp'
+          new='og-dzhon-gill-spravochnik.webp'
+          paths=[]
+          for path in Path('.').rglob('*'):
+              if not path.is_file() or any(part in {'.git','node_modules','dist','reports'} for part in path.parts):
+                  continue
+              try:
+                  text=path.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+              if old in text:
+                  paths.append(path.as_posix())
+                  path.write_text(text.replace(old,new),encoding='utf-8')
+          expected={
+              'src/components/article-pilots/gill-series/gillSeriesData.ts',
+              'articles/dzhon-gill-spravochnik/index.html',
+          }
+          if set(paths) != expected:
+              raise SystemExit(f'old cover reference scope {sorted(paths)} != {sorted(expected)}')
+          print('updated:', ', '.join(sorted(paths)))
+          PY
+          test -f images/og-dzhon-gill-spravochnik.webp
+          git diff --check
+          test "$(git diff --name-only | wc -l | tr -d ' ')" = '2'
+
+      - name: Install and prove production dist asset
+        run: |
+          npm ci
+          node scripts/cache-bust.js
+          npm run strangler:build:production-like
+          test -f dist/images/og-dzhon-gill-spravochnik.webp
+          ! grep -R 'og-dzhon-gill-spravochnik-600w.webp' dist/articles/dzhon-gill-spravochnik/index.html
+          grep -q 'og-dzhon-gill-spravochnik.webp' dist/articles/dzhon-gill-spravochnik/index.html
+          git diff --check
+
+      - name: Commit exact two-file fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/components/article-pilots/gill-series/gillSeriesData.ts articles/dzhon-gill-spravochnik/index.html
+          test "$(git diff --cached --name-only | wc -l | tr -d ' ')" = '2'
+          git diff --cached --check
+          git commit -m 'fix(gill): use canonical spravochnik cover asset'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
