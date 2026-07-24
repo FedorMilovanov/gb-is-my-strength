@@ -3,12 +3,26 @@
  * HomeProgressiveEnhancementHead.astro
  *
  * Progressive rendering guarantees for the native homepage. Scroll reveal is
- * an enhancement: disabling JavaScript or switching to print must never hide
- * substantive sections from the reader.
+ * an enhancement: disabling JavaScript, printing, or using a browser without
+ * IntersectionObserver must never hide substantive sections from the reader.
  */
 ---
 
+<script is:inline>
+  if (typeof window.IntersectionObserver !== 'function') {
+    document.documentElement.classList.add('home-no-intersection-observer');
+  }
+</script>
+
 <style is:global>
+  html.home-no-intersection-observer .home-page .h-reveal {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    animation: none !important;
+    content-visibility: visible !important;
+  }
+
   @media print {
     .home-page .h-reveal {
       opacity: 1 !important;
