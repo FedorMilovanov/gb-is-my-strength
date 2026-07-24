@@ -2,45 +2,45 @@
 
 import fs from 'node:fs';
 
-const file = 'data/gill-submenu-anchor-reconciliation.json';
-const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-data.relabels ||= {};
+const file = 'src/components/article-pilots/gill-series/gillSeriesData.ts';
+let source = fs.readFileSync(file, 'utf8');
 
-const currentNativeLabels = {
-  'articles/dzhon-gill-istoricheskiy-kontekst/index.html': {
-    '#sec-from-puritans-to-baptists': 'I. От пуритан к диссентерам: путь в полтора века',
-    '#sec-particular-vs-general': 'II. Партикулярные и генеральные баптисты: почему это важно',
-    '#sec-great-ejection': 'III. Тень 1662 года: Великое изгнание',
-    '#sec-clarendon': 'IV. Кларендонский кодекс и позднейшие религиозные тесты',
-    '#sec-academies': 'V. Диссентерские академии: образование вне Оксфорда и Кембриджа',
-    '#sec-salters-hall': 'VI. Солтерс-Холл (1719): спор о подписке',
-    '#sec-coffee-house': 'VII. Кофейни как публичные пространства',
-    '#sec-southwark': 'VIII. Саутварк: социальная среда служения',
-    '#sec-books': 'IX. Кеттеринг и книжная лавка',
-    '#sec-conclusion': 'X. Итог: диссентерский пастор, тринитарный полемист и самоучка',
-  },
-  'articles/dzhon-gill-chast-1-chelovek/index.html': {
-    '#sec-birth-prophecy': 'Утро рождения: три пророчества',
-    '#sec-education': 'Книжная лавка вместо грамматической школы',
-    '#sec-evangelism': 'Евангельская активность: свидетельства и границы',
-    '#sec-personal-credo': 'Три личных высказывания: человек за богословом',
-    '#sec-context-southwark': 'Исторический контекст: Саутварк, джиновая лихорадка, правовое бесправие',
-  },
-  'articles/dzhon-gill-chast-2-uchenyi/index.html': {
-    '#sec-systematics': 'Догматический и практический «Свод богословия»',
-  },
-  'articles/dzhon-gill-chast-3-nasledie/index.html': {
-    '#sec-church-gov': 'Управление церковью: пасторы, дьяконы и выбор общины',
-    '#sec-america': 'Американская рецепция и архивные границы',
-    '#sec-contemporaries': 'Современники и поздняя биографическая память',
-    '#sec-gill-muller-rediscovery': 'Современная переоценка и цифровые проекты',
-  },
-};
-
-for (const [route, labels] of Object.entries(currentNativeLabels)) {
-  data.relabels[route] = { ...(data.relabels[route] || {}), ...labels };
+function replaceOnce(before, after) {
+  const first = source.indexOf(before);
+  if (first < 0) throw new Error(`Missing canonical Gill label: ${before}`);
+  if (source.indexOf(before, first + before.length) >= 0) throw new Error(`Duplicate canonical Gill label: ${before}`);
+  source = source.slice(0, first) + after + source.slice(first + before.length);
 }
 
-data.reconciledAt = '2026-07-25';
-fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n', 'utf8');
-console.log('Corrected 20 stale PR #231 labels to current native headings.');
+replaceOnce(
+  '/** Exact historical pre-v16 GBS submenu label. Roman prefix appears only on real top-level rows. */',
+  '/** Current rendered submenu label. Historical wording remains immutable in the pre-v16 reference manifest; documented editorial relabels must match the current target heading. */',
+);
+
+const labelReplacements = [
+  ['label: "I. От пуритан к диссентерам: путь в полтора века"', 'label: "I. От пуританского спора к устойчивому миру диссента"'],
+  ['label: "II. Партикулярные и генеральные баптисты: почему это важно"', 'label: "II. Партикулярные и генеральные баптисты: две традиции, а не две монолитные партии"'],
+  ['label: "III. Тень 1662 года: Великое изгнание"', 'label: "III. 1662 год и рождение устойчивого нонконформизма"'],
+  ['label: "IV. Кларендонский кодекс и позднейшие религиозные тесты"', 'label: "IV. После терпимости: три разных стены"'],
+  ['label: "V. Диссентерские академии: образование вне Оксфорда и Кембриджа"', 'label: "V. Диссентерские академии: не один подпольный университет, а целая экосистема"'],
+  ['label: "VI. Солтерс-Холл (1719): спор о подписке"', 'label: "VI. Солтерс-Холл, 1719: Троица, подписка и власть церковной формулы"'],
+  ['label: "VII. Кофейни как публичные пространства"', 'label: "VII. Лондонские сети: кофейни, письма, фонды и лекции"'],
+  ['label: "VIII. Саутварк: социальная среда служения"', 'label: "VIII. Саутварк: пасторство на южном берегу"'],
+  ['label: "IX. Кеттеринг и книжная лавка"', 'label: "IX. Кеттерингская книжная лавка: что действительно сообщает Риппон"'],
+  ['label: "X. Итог: диссентерский пастор, тринитарный полемист и самоучка"', 'label: "X. Итог: что исторический контекст объясняет — и чего не объясняет"'],
+  ['label: "Утро рождения: три пророчества"', 'label: "Риппоновское предание об утре рождения"'],
+  ['label: "Книжная лавка вместо грамматической школы"', 'label: "Грамматическая школа, книжная лавка и самообразование"'],
+  ['label: "Евангельская активность: свидетельства и границы"', 'label: "Евангельская активность: свидетельства и границы доказательства"'],
+  ['label: "Три личных высказывания: человек за богословом"', 'label: "Личные высказывания: только с прослеживаемой передачей"'],
+  ['label: "Исторический контекст: Саутварк, джиновая лихорадка, правовое бесправие"', 'label: "Кеттеринг, Саутварк и правовой мир диссентеров"'],
+  ['label: "Догматический и практический «Свод богословия»"', 'label: "«Полный свод богословия» — первая баптистская сумма"'],
+  ['label: "Управление церковью: пасторы, дьяконы и выбор общины"', 'label: "Управление церковью: один пастор и власть общины"'],
+  ['label: "Американская рецепция и архивные границы"', 'label: "Влияние на Америку и Фонд партикулярных баптистов"'],
+  ['label: "Современники и поздняя биографическая память"', 'label: "Как современники видели Гилла: портрет из первых уст"'],
+  ['label: "Современная переоценка и цифровые проекты"', 'label: "Современное переиздание и новый этап исследований: «Проект Джона Гилла»"'],
+];
+
+for (const [before, after] of labelReplacements) replaceOnce(before, after);
+
+fs.writeFileSync(file, source, 'utf8');
+console.log(`Updated ${labelReplacements.length} canonical Gill rail labels to current native headings.`);
