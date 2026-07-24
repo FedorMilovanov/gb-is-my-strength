@@ -4,8 +4,7 @@ import path from 'node:path';
 import {
   DEFAULT_REPOSITORY_ROOT,
   createBibleResolver,
-  normalizeBibleRecord,
-  normalizeVerseKey
+  normalizeBibleRecord
 } from '../src/lib/bible-reference-core.mjs';
 
 const ROOT = DEFAULT_REPOSITORY_ROOT;
@@ -28,9 +27,19 @@ function walk(directory, output = []) {
   return output;
 }
 
-function extractFrontmatter(source) {
-  const match = String(source || '').replace(/\r\n/g, '\n').match(/^---\n([\s\S]*?)\n---/);
-  return match ? match[1] : '';
+function inspectRegistry(resolver) {
+  const books = Object.entries(resolver.registry.books || {});
+  if (books.length !== 66) fail(`canonical Protestant book registry must contain 66 books, found ${books.length}`);
+  for (const [bookId, book] of books) {
+    if (!book.testament) fail(`registry book ${bookId} lacks testament`);
+    if (!Array.isArray(book.aliases) || !book.aliases.length) fail(`registry book ${bookId} lacks aliases`);
+    if (!book.file) {
+      fail(`registry book ${bookId} lacks corpus file path`);
+      continue;
+    }
+    const corpusFile = path.join(ROOT, 'data/bible', book.file);
+    if (!fs.existsSync(corpusFile)) warn(`registry book ${bookId}: corpus file is not populated yet (${rel(corpusFile)})`);
+  }
 }
 
 function inspectInlinePayloads(files) {
@@ -48,8 +57,7 @@ function inspectInlinePayloads(files) {
         const raw = match[1].trim();
         if (!raw) continue;
         try {
-          const value = JSON.parse(raw);
-          payloads.push({ file: rel(file), value });
+          payloads.push({ file: rel(file), value: JSON.parse(raw) });
         } catch (error) {
           fail(`${rel(file)}: invalid inline Bible JSON (${error.message})`);
         }
@@ -67,19 +75,11 @@ function inspectCorpus(resolver) {
     if (!meta.rights) warn(`${rel(file)}: missing _meta.rights`);
 
     for (const entry of entries) {
-      if (!/^\d+(?::\d+[а-яa-z]?(?:–\d+[а-яa-z]?)?)?$/iu.test(entry.key)) {
-        fail(`${entry.file}: invalid verse key ${entry.key}`);
-      }
+      if (!/^\d+(?::\d+[а-яa-z]?(?:–\d+[а-яa-z]?)?)?$/iu.test(entry.key)) fail(`${entry.file}: invalid verse key ${entry.key}`);
       if (!entry.text) fail(`${entry.file} ${entry.key}: empty text`);
-      if (/\.\.\.|…/.test(entry.text) && entry.completeness !== 'excerpt') {
-        fail(`${entry.file} ${entry.key}: ellipsis requires completeness=excerpt`);
-      }
-      if (entry.completeness === 'excerpt' && !entry.note) {
-        fail(`${entry.file} ${entry.key}: excerpt requires explanatory note`);
-      }
-      if (entry.translation && meta.translation && entry.translation !== meta.translation) {
-        fail(`${entry.file} ${entry.key}: record translation differs from book metadata`);
-      }
+      if (/\.\.\.|…/.test(entry.text) && entry.completeness !== 'excerpt') fail(`${entry.file} ${entry.key}: ellipsis requires completeness=excerpt`);
+      if (entry.completeness === 'excerpt' && !entry.note) fail(`${entry.file} ${entry.key}: excerpt requires explanatory note`);
+      if (entry.translation && meta.translation && entry.translation !== meta.translation) fail(`${entry.file} ${entry.key}: record translation differs from book metadata`);
       if (!book.testament) fail(`${entry.file}: registry book ${bookId} lacks testament`);
     }
   }
@@ -98,15 +98,9 @@ function compareInlinePayloads(resolver, payloads) {
         continue;
       }
       const inline = normalizeBibleRecord(value, {}, parsed.key);
-      if (inline.text && inline.text !== record.text) {
-        fail(`${payload.file}: inline text conflicts with canonical ${reference}`);
-      }
-      if (inline.translation && record.translation && inline.translation !== record.translation) {
-        fail(`${payload.file}: inline translation conflicts with canonical ${reference}`);
-      }
-      if (/\.\.\.|…/.test(inline.text) && inline.completeness !== 'excerpt') {
-        fail(`${payload.file}: inline ellipsis for ${reference} requires completeness=excerpt`);
-      }
+      if (inline.text && inline.text !== record.text) fail(`${payload.file}: inline text conflicts with canonical ${reference}`);
+      if (inline.translation && record.translation && inline.translation !== record.translation) fail(`${payload.file}: inline translation conflicts with canonical ${reference}`);
+      if (/\.\.\.|…/.test(inline.text) && inline.completeness !== 'excerpt') fail(`${payload.file}: inline ellipsis for ${reference} requires completeness=excerpt`);
     }
   }
 }
@@ -125,27 +119,24 @@ function inspectLegacyVerses(resolver) {
       warn(`data/verses.json: no canonical record for ${reference}`);
       continue;
     }
-    if (String(text || '').trim() !== record.text) {
-      warn(`data/verses.json: deprecated value differs from canonical ${reference}`);
-    }
+    if (String(text || '').trim() !== record.text) warn(`data/verses.json: deprecated value differs from canonical ${reference}`);
   }
 }
 
 function runFixtures(resolver) {
   const parsed = resolver.parse('Бытие 1:26–28');
-  if (!parsed.ok || parsed.bookId !== 'bytie' || parsed.key !== '1:26–28') {
-    fail('parser fixture failed for Бытие 1:26–28');
-  }
+  if (!parsed.ok || parsed.bookId !== 'bytie' || parsed.key !== '1:26–28') fail('parser fixture failed for Бытие 1:26–28');
+
   const abbreviated = resolver.parse('2 Цар. 12:11-14');
-  if (!abbreviated.ok || abbreviated.bookId !== '2tsarstv' || abbreviated.key !== '12:11–14') {
-    fail('parser fixture failed for 2 Цар. 12:11-14');
-  }
+  if (!abbreviated.ok || abbreviated.bookId !== '2tsarstv' || abbreviated.key !== '12:11–14') fail('parser fixture failed for 2 Цар. 12:11-14');
+
   const excerpt = resolver.resolve('2 Царств 12:11–14').record;
-  if (!excerpt || excerpt.completeness !== 'excerpt' || !excerpt.note) {
-    fail('resolver fixture failed to preserve excerpt semantics');
+  if (!excerpt || excerpt.completeness !== 'excerpt' || !excerpt.note) fail('resolver fixture failed to preserve excerpt semantics');
+
+  for (const [reference, expectedBook] of [['Руфь 1:1', 'ruf'], ['Есф. 1:1', 'esfir'], ['Плач 1:1', 'plach-ieremii']]) {
+    const fixture = resolver.parse(reference);
+    if (!fixture.ok || fixture.bookId !== expectedBook) fail(`registry/parser fixture failed for ${reference}`);
   }
-  const escaped = JSON.stringify({ html: '</script><x>&' });
-  if (!escaped.includes('</script>')) fail('JSON fixture precondition failed');
 }
 
 let resolver;
@@ -156,6 +147,7 @@ try {
 }
 
 if (resolver) {
+  inspectRegistry(resolver);
   inspectCorpus(resolver);
   const sourceFiles = [
     path.join(ROOT, 'src'),
@@ -178,5 +170,4 @@ if (resolver) {
 for (const message of warnings) console.warn(`WARN: ${message}`);
 for (const message of errors) console.error(`ERROR: ${message}`);
 console.log(`Bible reference contract: ${errors.length} error(s), ${warnings.length} warning(s)`);
-
 if (errors.length && STRICT) process.exit(1);
