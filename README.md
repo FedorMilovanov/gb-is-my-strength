@@ -10,7 +10,7 @@ Production публикуется GitHub Pages из **production-like `dist/`**,
 - Редакционная правда и источники: [`docs/EDITORIAL-SOURCE-POLICY.md`](docs/EDITORIAL-SOURCE-POLICY.md), [`docs/CONTENT-QUALITY-STANDARD.md`](docs/CONTENT-QUALITY-STANDARD.md).
 - Владелецкие инварианты: [`docs/OWNER-INVARIANTS.md`](docs/OWNER-INVARIANTS.md).
 - Текущие lanes и recovery: [`docs/refactor-2026/lanes/README.md`](docs/refactor-2026/lanes/README.md), [`docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`](docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md).
-- Каноническая bug-матрица, source/deploy witnesses и глубокие аудиты: [`FedorMilovanov/AuditRepo`](https://github.com/FedorMilovanov/AuditRepo), проект `projects/gb-is-my-strength/`.
+- Каноническая bug-матрица, source/deploy witnesses и глубокие аудиты: [`FedorMilovanov/AuditRepo`](https://github.com/FedorMilovanov/AuditRepo), раздел проекта этого сайта.
 
 Перед исправлением старого отчёта проверяйте текущий `main`, фактический diff и AuditRepo: закрытый PR или удалённая ветка не доказывают ни наличие, ни отсутствие нужного кода.
 
