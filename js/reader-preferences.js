@@ -23,7 +23,7 @@
   var TEXT_MODES = ['rich', 'plain'];
   var MOTIONS = ['system', 'reduced'];
   var LINE_VALUES = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  var MEASURE_VALUES = { narrow: '36rem', normal: '43rem', wide: '50rem' };
+  var MEASURE_VALUES = { narrow: '36rem', normal: '43rem', wide: '46rem' };
   var DEFAULTS = Object.freeze({
     version: 1,
     theme: 'light',
@@ -160,6 +160,7 @@
     root.setAttribute('data-reader-theme', state.theme);
     root.setAttribute('data-reader-text-mode', state.textMode);
     root.setAttribute('data-reader-motion', state.motion);
+    root.setAttribute('data-reader-measure', state.measure);
     root.classList.toggle('dark', state.theme === 'dark');
     root.style.setProperty('--gb-reader-font-scale', String(state.fontScale));
     root.style.setProperty('--gb-reader-line-height', LINE_VALUES[state.lineHeight]);

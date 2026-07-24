@@ -4976,3 +4976,94 @@ html.dark .gb-floater .gbs-rail-spdbadge {
   }
   [data-gill-v16] .gill-settings-overlay .toc-sheet__handle { display: none; }
 }
+
+/* =========================================================
+   READER UI SYSTEM POLISH 2026-07-24
+   Shared fixes for every series/standalone surface.
+   ========================================================= */
+/* The old border-right lived on a circular button, so CSS painted a curved
+   arc around the hamburger SVG. Keep concern separation as a straight hairline
+   OUTSIDE the hit target; keyboard focus outline remains untouched. */
+.gbs-rail-foot .gbs-rail-foot__btn.gbs-rail-menu-btn {
+  margin-right: 8px;
+  padding-right: 0;
+  border-right: 0;
+  box-shadow: none;
+}
+.gbs-rail-foot .gbs-rail-foot__btn.gbs-rail-menu-btn::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  right: -5px;
+  bottom: 9px;
+  width: 1px;
+  border-radius: 1px;
+  background: rgba(255,255,255,.10);
+  pointer-events: none;
+}
+
+/* Selected-rate echo: anchor at the corner and offset by its OWN dimensions.
+   Long values (1.25×/1.75×) therefore grow outward instead of back across the
+   PLAY glyph. 'translate' composes with the existing transform:scale bounce. */
+@media (min-width: 64em) {
+  .gbs-theme-corner .gbs-rail-spdbadge,
+  .gb-floater .gbs-rail-spdbadge {
+    right: 0;
+    bottom: 0;
+    translate: 30% 30%;
+  }
+
+  /* The measure selector is now a real desktop reader preference too. */
+  [data-gill-v16] .gill-settings-overlay .setting-group--measure {
+    display: block;
+  }
+}
+
+/* =========================================================
+   READER UI FOLLOW-UP 2026-07-24
+   Evidence-driven compact-desktop safety.
+   ========================================================= */
+@media (min-width: 64em) and (max-width: 99.99em) {
+  /* At 1024–1599px the fixed rail and horizontal speed row compete for the
+     same lane. Reserve a real control corridor and clamp the page itself, not
+     individual paragraphs, so figures/headings cannot recreate overflow. */
+  .gbs2-world[data-gill-v16] {
+    --gb-measure: min(
+      var(--gb-reader-measure, 43rem),
+      calc(100vw - var(--gb-rail-reserve) - 204px)
+    );
+  }
+
+  /* Compact desktop: same speed choices and controller, responsive geometry
+     only. A slim vertical rail remains beside PLAY instead of crossing prose. */
+  .gbs-theme-corner .gb-ember-expand,
+  .gb-floater .gb-ember-expand {
+    right: calc(100% + 9px);
+    left: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%) translateX(var(--gb-ember-shift, 0px));
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 5px 4px;
+    border-radius: 14px;
+    white-space: normal;
+    clip-path: circle(16px at 100% 50%);
+  }
+  .gbs-theme-corner .gb-ember-expand.is-open,
+  .gb-floater .gb-ember-expand.is-open,
+  .gb-ember-wrap:hover > .gb-ember-expand,
+  .gb-ember-wrap:focus-within > .gb-ember-expand {
+    clip-path: inset(0 round 14px);
+  }
+  .gbs-theme-corner .gb-ember-expand__btn,
+  .gb-floater .gb-ember-expand__btn {
+    min-width: 44px;
+    height: 26px;
+    padding: 0 5px;
+    font-size: 12px;
+  }
+}
+
+/* READER UI SELECTOR SCOPE CLEANUP 2026-07-24 */

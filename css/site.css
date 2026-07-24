@@ -198,7 +198,14 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
   }
 
   /* --- 2. Heavy Cleaning --- */
-  .h-navbar, .theme-toggle, .toc-sidebar, .bottom-bar, .h-mobile-nav, 
+  .h-navbar, .theme-toggle, .toc-sidebar, .bottom-bar, .h-mobile-nav,
+  .gb-floater, .gbs-theme-corner, .gbs-rail, .hrail,
+  .mobile-chrome, .mobile-top-bar, .mobile-bottom-bar,
+  .toc-overlay, .btoc-overlay, .bookmark-toast, .gbs2-resume,
+  .gbs2-peek, .gbs2-swipetip, .gbx-tts, #selection-share-popup,
+  .article-end-actions, [data-fc-root], [data-fc-controls] {
+    display: none;
+  }
 
   /* --- 3. Layout Stabilization --- */
   .page-wrap, main, article, .article-main, .article-body {
@@ -680,3 +687,166 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 @media (prefers-reduced-motion:reduce){.article-figure img:not(.img-loaded),.article-hero img:not(.img-loaded),.card-cover:not(.img-loaded),.related-articles__img:not(.img-loaded){animation:none}.ehrman-block,.info-box,.opusdei-note,.quote-box,.warn-box{opacity:1;transform:none;transition:none}.resume-list-item{transform:none;transition:none}.article-figure::after{animation:none;transform:none}.error-flip-card:not(.flipped),.flip-card:not(.flipped),.flip-finger::before,.heart-flip-card:not(.flipped),.heart-flip-hint-icon{animation:none}.heart-flip-card.flipped .heart-flip-hint{transition:none}.error-flip-inner,.flip-card-inner,.heart-flip-inner{transition:none;transform:none}.heart-flip-card{transition:none}.timeline-anim li{opacity:1;transform:none;transition:none}.quiz-option.shake{animation:none}.quiz-progress-fill{transition:none}.faq-accordion__body{transition:none}.faq-accordion__body-inner{transition:none}.faq-accordion__icon{transition:none}.error-flip-card.flipped .error-flip-inner,.flip-card.flipped .flip-card-inner,.heart-flip-card.flipped .heart-flip-inner{transform:none}.error-flip-back,.error-flip-front,.flip-card-back,.flip-card-front,.heart-flip-back,.heart-flip-front{position:static;transform:none;visibility:visible;backface-visibility:visible;width:auto;height:auto;inset:auto}.gb-accuracy-btn,.gb-accuracy-btn:hover{transform:none;transition:none}[data-series-cards] .series-card,[data-series-cards] .series-card:hover{transform:none;transition:none}.bottom-bar,.btoc-link,.h-article-card,.quiz-option{transition:none;animation:none}}
 .fn-marker:not(.is-open)>.tooltip{pointer-events:none}.fn-marker.is-open>.tooltip{pointer-events:auto}
 .tooltip.gb-floating-tip,.gtip.gb-floating-tip,body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}
+
+/* =========================================================
+   GB PRINT CONTRACT v2.1 — 2026-07-24
+   One A4/PDF contract for series, books and standalone articles.
+   ========================================================= */
+@page { size: A4; margin: 15mm 14mm 17mm; }
+@media print {
+  html, body {
+    width: auto;
+    min-width: 0;
+    height: auto;
+    overflow: visible;
+    background: #fff;
+    color: #111;
+  }
+
+  html.gb-print-preparing,
+  html.gb-print-preparing body {
+    scroll-behavior: auto;
+  }
+
+  /* Interactive chrome never belongs to the document. */
+  .h-navbar, .theme-toggle, .toc-sidebar, .bottom-bar, .h-mobile-nav,
+  .gb-floater, .gbs-theme-corner, .gbs-rail, .gbs2-rail, .hrail,
+  .mobile-chrome, .mobile-top-bar, .mobile-bottom-bar,
+  .toc-overlay, .btoc-overlay, .hmsheet, .bookmark-toast,
+  .gbs2-resume, .gbs2-peek, .gbs2-swipetip, .gbx-tts,
+  #selection-share-popup, .selection-share-popup, .article-end-actions,
+  [data-fc-root], [data-fc-controls], [data-overlay-root],
+  [role="dialog"], [aria-modal="true"] {
+    display: none !important;
+  }
+
+  /* Collapse every screen shell to one normal-flow paper column. */
+  .gbs2-world, .gbs2-scope, [data-gill-v16], [data-reader-root],
+  .page-wrap, main, article, .article-main, .article-body {
+    display: block;
+    position: static;
+    inset: auto;
+    width: auto !important;
+    min-width: 0;
+    max-width: none;
+    min-height: 0;
+    height: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    contain: none;
+    content-visibility: visible;
+    transform: none;
+    filter: none;
+  }
+
+  .article-body > *,
+  [data-reader-root] .article-body > *,
+  [data-gill-v16] .article-body > * {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Scroll/reveal states must never produce pale or missing PDF pages. */
+  .reveal, [data-reveal], [class*="reveal"],
+  .h-phrase--float, .h-phrase--ambient, .timeline-anim li,
+  .article-body, .article-body > *, .article-header, .article-figure {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    filter: none;
+  }
+
+  /* Stable media: no fixed/parallax image can bleed across pages. */
+  figure, .article-img, .article-figure, .article-hero, .gbs2-hero,
+  figure img, .article-img img, .article-figure img, .article-hero img, .gbs2-hero img {
+    position: static !important;
+    inset: auto;
+    float: none !important;
+    transform: none !important;
+    filter: none;
+    clip-path: none;
+  }
+  figure, .article-img, .article-figure, .article-hero, .gbs2-hero {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    overflow: visible;
+    margin: 5mm 0;
+  }
+  figure img, .article-img img, .article-figure img, .article-hero img, .gbs2-hero img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto !important;
+    max-height: 235mm !important;
+    margin: 0 auto;
+    object-fit: contain !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  p, li { orphans: 3; widows: 3; }
+  .summary-card, .quote-box, .info-box, .warn-box, .author-card,
+  blockquote, table, pre { break-inside: auto; page-break-inside: auto; }
+
+  /* Clean printed typography without browser-screen opacity tokens. */
+  .article-body, .article-body p, .article-body li, .article-body td,
+  .article-desc, .article-byline, figcaption {
+    color: #111;
+  }
+  a, a:visited { color: #111; text-decoration: underline; }
+  a[href^="http"]::after { content: none; }
+  body::after { content: none; }
+  body::before {
+    position: static;
+    color: #111;
+    background: transparent;
+    margin: 0 0 9mm;
+    padding: 0 0 4mm;
+  }
+  .article-end-sdg {
+    margin: 18mm auto 0;
+    padding: 8mm 0 0;
+  }
+}
+
+/* GB PRINT CONTRACT v2.2 — hero normalization after rendered-PDF inspection. */
+@media print {
+  .gbs2-hero, .article-hero, .article-header, .hero, [class*="hero-wrap"] {
+    min-height: 0;
+    height: auto;
+    aspect-ratio: auto;
+    padding: 0;
+    background: transparent !important;
+    background-image: none;
+    box-shadow: none;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .gbs2-hero::before, .gbs2-hero::after,
+  .article-hero::before, .article-hero::after,
+  .article-header::before, .article-header::after,
+  .hero::before, .hero::after,
+  [class*="hero-wrap"]::before, [class*="hero-wrap"]::after {
+    content: none;
+    display: none;
+    background: none;
+  }
+  .gbs2-hero img, .article-hero img {
+    margin-top: 0;
+  }
+  .gbs2-kinetic, .gbs2-hero-badge, .gbs2-cover-badge,
+  .article-hero__badge, .article-hero-badge {
+    display: none;
+  }
+}
+
+/* GB PRINT CONTRACT v2.3 — screen-only hero caption has no paper role. */
+@media print {
+  .gbs2-hero-cap {
+    display: none;
+  }
+}
