@@ -3,8 +3,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  legacyIsAuthoritative,
+  loadRouteProfile,
+} = require('./lib/legacy-source-authority');
 
 const ROOT = path.join(__dirname, '..');
+const ROUTE = '/articles/dzhon-gill-spravochnik/';
 const LEGACY_REL = 'articles/dzhon-gill-spravochnik/index.html';
 const PAGE_REL = 'src/pages/articles/dzhon-gill-spravochnik/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-spravochnik';
@@ -119,6 +124,18 @@ for (const [label, rel] of Object.entries(REQUIRED)) mustExist(label, rel);
 mustNotExist('legacy spravochnik directory retired', `${BASE_REL}/_legacy`);
 for (const comp of SECTION_COMPONENTS) mustExist(`section component ${comp}`, `${BASE_REL}/${comp}`);
 
+const { file: profileFile, profile } = loadRouteProfile(ROUTE);
+if (!profileFile || !profile) {
+  bad(`route profile missing for ${ROUTE}`);
+} else {
+  const profileRel = path.relative(ROOT, profileFile).replace(/\\/g, '/');
+  ok(`route profile: ${profileRel}`);
+  profile.route === ROUTE ? ok('route profile path matches') : bad(`route profile path mismatch: ${profile.route}`);
+  profile.renderSource === PAGE_REL ? ok('route profile render source matches native entry') : bad(`route profile render source mismatch: ${profile.renderSource}`);
+  profile.legacyPath === LEGACY_REL ? ok('route profile legacy reference matches') : bad(`route profile legacy path mismatch: ${profile.legacyPath}`);
+  profile.migrationMode === 'strict-native' ? ok('route profile is strict-native') : bad(`route profile migration mode is ${profile.migrationMode}`);
+}
+
 if (!problems.length) {
   const page = read(PAGE_REL);
   const pageHead = read(REQUIRED.pageHead);
@@ -180,9 +197,23 @@ if (!problems.length) {
     mustContain('reconstructed body marker', reconstructed, marker);
   }
   if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed body matches legacy body after normalization');
-  else { console.log('⚠ reconstructed body differs from legacy body after normalization (non-blocking — word-count and markers match)'); }
-  const lw = wordCount(legacyBody), rw = wordCount(reconstructed);
-  var drift = Math.abs(lw - rw); drift <= 200 ? ok(`word-count within tolerance: legacy=${lw}, reconstructed=${rw}, drift=${drift}`) : bad(`word-count drift: legacy=${lw}, reconstructed=${rw}`);
+  else console.log(`⚠ reconstructed body differs from legacy reference (legacyStatus=${profile.legacyStatus}; exact equality is non-blocking)`);
+
+  const lw = wordCount(legacyBody);
+  const rw = wordCount(reconstructed);
+  if (legacyIsAuthoritative(profile)) {
+    const drift = Math.abs(lw - rw);
+    drift <= 200
+      ? ok(`authoritative legacy word-count within tolerance: legacy=${lw}, reconstructed=${rw}, drift=${drift}`)
+      : bad(`authoritative legacy word-count drift: legacy=${lw}, reconstructed=${rw}`);
+  } else if (profile.legacyStatus === 'reference-only') {
+    rw >= lw
+      ? ok(`reference-only legacy is a lower-bound safeguard: legacy=${lw}, native=${rw}`)
+      : bad(`strict-native source regressed below reference-only snapshot: legacy=${lw}, native=${rw}`);
+  } else {
+    bad(`unsupported non-authoritative legacy status: ${profile.legacyStatus || 'missing'}`);
+  }
+
   const lh = h2Count(legacyBody);
   if (distHtml) {
     const dh = h2Count(bodyInner(distHtml));

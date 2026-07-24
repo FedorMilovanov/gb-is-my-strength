@@ -30,9 +30,12 @@ function auditComponent(slug, componentRel, sectionRels, minWords, terms){
   const wc = words(text);
   if (wc >= minWords) ok(`${slug}: indexed body word count ${wc} >= ${minWords}`);
   else bad(`${slug}: indexed body word count ${wc} < ${minWords}`);
-  for (const term of terms) {
-    if (text.includes(term)) ok(`${slug}: Pagefind body contains ${term}`);
-    else bad(`${slug}: Pagefind body missing ${term}`);
+  for (const requirement of terms) {
+    const options = Array.isArray(requirement) ? requirement : [requirement];
+    const match = options.find((term) => text.includes(term));
+    const label = options.join(' | ');
+    if (match) ok(`${slug}: Pagefind body contains ${match}`);
+    else bad(`${slug}: Pagefind body missing semantic marker (${label})`);
   }
 }
 
@@ -56,7 +59,13 @@ auditComponent(
   'src/components/article-pilots/gill-context/GillContextArticleBody.astro',
   contextSections,
   1200,
-  ['Кларендонский кодекс','Солтерс-Холл','Диссентерские академии','Саутварк','Кеттеринг','Goat&rsquo;s Yard','Корпоративный акт','Акт о единообразии']
+  [
+    ['Кларендонским кодексом','Кларендонского кодекса','Кларендонский кодекс'],
+    'Солтерс-Холл','Диссентерские академии','Саутварк','Кеттеринг',
+    ['Goat Yard','Goat’s Yard',"Goat's Yard",'Goat&rsquo;s Yard'],
+    ['Corporation Act','Акт о корпорациях','Корпоративный акт'],
+    'Акт о единообразии'
+  ]
 );
 const sprBase = 'src/components/article-pilots/gill-spravochnik';
 const sprSections = [

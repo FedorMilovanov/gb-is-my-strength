@@ -16,7 +16,10 @@
 // Usage: node scripts/content-coverage-audit.js   (requires built dist/)
 const fs = require('fs');
 const path = require('path');
-const { findProfileFile } = require('./lib/route-source-contract');
+const {
+  legacyIsAuthoritative,
+  loadRouteProfile,
+} = require('./lib/legacy-source-authority');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
@@ -65,17 +68,6 @@ function loadOwnership() {
   return j.routes || j.pages || j;
 }
 
-function loadProfile(route) {
-  const file = findProfileFile(route);
-  if (!file) return null;
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
-}
-
-function legacyIsAuthoritative(profile) {
-  if (!profile) return true; // preserve coverage for unprofiled historical routes
-  return profile.legacyStatus === 'canonical' || profile.legacyStatus === 'runtime-required';
-}
-
 let failures = 0, checks = 0, warns = 0;
 const ok = m => { checks++; console.log('OK ' + m); };
 const bad = m => { checks++; failures++; console.log('FAIL ' + m); };
@@ -91,7 +83,7 @@ let covered = 0, skipped = 0;
 for (const [route, meta] of Object.entries(ownership)) {
   if (!meta || meta.owner !== 'astro') continue;
 
-  const profile = loadProfile(route);
+  const { profile } = loadRouteProfile(route);
   if (!legacyIsAuthoritative(profile)) {
     skipped++;
     const status = profile?.legacyStatus || 'unknown';

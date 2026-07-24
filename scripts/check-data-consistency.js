@@ -6,6 +6,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { legacyIsAuthoritative, loadRouteProfile } = require('./lib/legacy-source-authority');
 const ROOT = path.resolve(__dirname, '..');
 const issues = [];
 function fail(kind, detail) { issues.push({ kind, detail }); }
@@ -44,6 +45,13 @@ function extractHtmlReadTimes(file) {
 function canonicalFromHtml(file, fallback) {
   const t = extractHtmlReadTimes(file) || {};
   return t.config ?? t.pagefind ?? t.visible ?? fallback ?? null;
+}
+function canonicalForRoute(url, file, fallback) {
+  const { profile } = loadRouteProfile(url);
+  if (!legacyIsAuthoritative(profile)) {
+    return Number.isFinite(fallback) ? fallback : null;
+  }
+  return canonicalFromHtml(file, fallback);
 }
 function assertEqual(label, values) {
   const present = Object.entries(values).filter(([,v]) => Number.isFinite(v));
@@ -155,11 +163,15 @@ for (const item of searchItems) {
       if (!hCore.every(w => nt.includes(w))) fail('search-title-h1-drift', `${item.url}: h1="${h1}", manifest="${item.title}"`);
     }
   }
+  const { profile } = loadRouteProfile(url);
+  const authoritativeLegacy = legacyIsAuthoritative(profile);
   const htmlTimes = extractHtmlReadTimes(file) || {};
-  const canonical = canonicalFromHtml(file, item.readTime);
-  assertEqual(`${file}`, { ...htmlTimes, search: item.readTime });
-  if (Number.isFinite(canonical) && Number.isFinite(item.readTime) && item.readTime !== canonical) {
-    fail('search-manifest-read-time-drift', `${url}: search=${item.readTime}, html=${canonical}`);
+  const canonical = canonicalForRoute(url, file, item.readTime);
+  if (authoritativeLegacy) {
+    assertEqual(`${file}`, { ...htmlTimes, search: item.readTime });
+    if (Number.isFinite(canonical) && Number.isFinite(item.readTime) && item.readTime !== canonical) {
+      fail('search-manifest-read-time-drift', `${url}: search=${item.readTime}, html=${canonical}`);
+    }
   }
 }
 
@@ -227,7 +239,11 @@ for (const [key, info] of Object.entries(series)) {
     const url = `${base}${part.slug}/`;
     const file = routeToFile(url);
     const search = searchByUrl.get(url);
-    const canonical = canonicalFromHtml(file, search && search.readTime);
+    const { profile } = loadRouteProfile(url);
+    const projectionFallback = !legacyIsAuthoritative(profile) && Number.isFinite(part.readingTime)
+      ? part.readingTime
+      : (search && search.readTime);
+    const canonical = canonicalForRoute(url, file, projectionFallback);
     if (Number.isFinite(canonical)) {
       total += canonical;
       if (Number.isFinite(part.readingTime) && part.readingTime !== canonical) {
