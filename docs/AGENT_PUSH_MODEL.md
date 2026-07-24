@@ -1,60 +1,116 @@
-# Arena LM Coding — Agent Push Model
-**Repo:** `FedorMilovanov/gb-is-my-strength`  
-**Updated:** 2026-06-29  
-**Main:** `93059323f980c3120f6e539d3a6e4fd6daa1d657`
+# Agent Push Model
 
-## Truth
-- GitHub repository secrets (`${{ secrets.NAME }}`) доступны **только внутри GitHub Actions**.
-- Внешний Arena LM Coding **НЕ видит** `secrets.ARENA_AGENT`, `GITHUB_TOKEN`, PAT и т.п., если Arena runtime сам не предоставляет secure env / secrets UI.
-- Наличие `ARENA_AGENT` в repo secrets ≠ наличие `$GH_TOKEN` у внешнего агента.
+**Repository:** `FedorMilovanov/gb-is-my-strength`  
+**Updated:** 2026-07-24  
+**Current rule:** branch + pull request; direct `main` push is forbidden outside an explicit owner-approved emergency.
 
-## Разрешённые пути пуша
-- Прямой push из Arena: **только если** Arena runtime уже аутентифицирован (проверка: `git push origin HEAD:refs/heads/test/arena-push-probe-... --dry-run` / реальный empty branch).
-- Разрешённые ветки: `lane/**`, `agent/**`, `arena/**`
-- Запрещено: `main`, `gh-pages`, `release`, `production`, force-push в чужие lane без rebase-check
-- Прямой `main` push — **FORBIDDEN**. Только PR.
-- Никогда: PAT в чат / TXT / gist / issue / PR body / commit message / ссылку.
+## 1. Authentication truth
 
-## Write-пути, которые есть в репо
-- `.github/workflows/indexnow.yml` — единственный workflow с `contents: write`, делает `git commit` + `git push` метаданных IndexNow изнутри GitHub Actions, использует `${{ secrets.ARENA_AGENT || secrets.GITHUB_TOKEN }}` — **это внутри Actions, безопасно**.
-- Все остальные workflows: `deploy.yml`, `shared-files-guard.yml`, `visual-parity.yml`, `interactive-audit.yml`, `source-links.yml` — **read-only**, используют default `GITHUB_TOKEN`, `ARENA_AGENT` удалён (2026-06-28, commit a417d9c / cc9957b8).
+- GitHub repository secrets (`${{ secrets.NAME }}`) exist only inside GitHub Actions.
+- An external coding runtime does not inherit `GITHUB_TOKEN`, PAT or repository secrets unless that runtime provides its own authenticated connector or secure environment.
+- The presence of `ARENA_AGENT` or another repository secret does not imply that `$GH_TOKEN` exists in an agent shell.
+- Never request, paste or store a PAT in chat, text files, issues, PR descriptions, commits, gists or example environment files.
 
-## Безопасная проверка из Arena
+## 2. Allowed write paths
+
+Normal work:
+
+```text
+lane/**
+agent/**
+arena/**
+```
+
+Protected destinations:
+
+```text
+main
+gh-pages
+release
+production
+```
+
+Rules:
+
+- push a named branch and open a PR;
+- never force-push another owner’s branch;
+- verify the remote branch SHA after push;
+- a statement such as “я запушил” is not evidence.
+
+An emergency direct-main operation requires an explicit owner decision, exact post-push workflow inspection, a rollback SHA and follow-up AuditRepo reconciliation when canonical status changes.
+
+## 3. Current write-capable workflows
+
+The filesystem-derived control-plane audit classifies two continuing same-repository autofix writers:
+
+- `.github/workflows/glossary-contract.yml`;
+- `.github/workflows/search-manifest-policy.yml`.
+
+They are accepted only because their write paths are label-gated and require the PR head repository to equal the target repository. Other `contents: write` workflows are warnings until an explicit continuing owner is documented.
+
+Do not rely on a static list in this document. Run:
+
+```bash
+npm run control-plane:audit
+```
+
+and inspect `reports/repository-control-plane-audit.{json,md}` for the exact current inventory.
+
+## 4. Safe capability probe
+
+When using a shell-based external runtime:
+
 ```bash
 git fetch --all --prune
 git rev-parse origin/main
-git checkout -b lane/arena-test-YYYY-MM-DD
-touch .arena-push-probe && git add .arena-push-probe
-git commit -m "test: arena push probe"
+git checkout -b lane/push-probe-YYYY-MM-DD
+# create a harmless commit only when the owner approved a real probe
 git push -u origin HEAD
-# success → push работает
-# 403 → нет секрета в Arena runtime → используем patch-relay через owner
-git push origin --delete lane/arena-test-YYYY-MM-DD
 ```
 
-## Если секрета нет
-- Direct external Arena push — **NOT SUPPORTED**
-- Использовать: patch relay / PR через owner / GitHub connector
-- Не просить PAT в чате. Не класть PAT в .txt / .md / env-примеры.
+A `403` means the runtime has no usable credential. Use the GitHub connector, owner patch relay or another approved authenticated path. Do not work around it by exposing credentials.
 
-## CI gates, обязательные перед пушем
-```
-npm run astro:check
-npm run strangler:build:production-like
-npm run audit:premium-controls
-npm run gill:context:visual-parity:audit -- --require-dist
-npm run gill:spravochnik:visual-parity:audit -- --require-dist
-npm run gill:mobile-play:smoke
-npm run gill:series:data:consistency:audit
-npm run validate:static-publication:light
+Delete a probe branch only after confirming it contains no unique content and recording its disposition. Branch cleanup follows `docs/LANE_LOCK_POLICY.md`.
+
+## 5. Verification before push and merge
+
+Choose checks from `docs/WORK_MODES.md` according to actual scope.
+
+For workflow/system changes, at minimum:
+
+```bash
+git diff --check
+npm run guard:shared-files
 npm run workflows:check
+npm run control-plane:audit
+npm run workflows:lint
 ```
 
-## Контакты truth-источников
-- Production truth: `dist/articles/dzhon-gill-*/index.html`
-- Source truth: `src/pages/**`, `src/components/article-pilots/gill-series/**`, `src/components/article-pilots/gill-series/gillSeriesData.ts`
-- Current main SHA: см. README / `git rev-parse origin/main`
-- Open PRs: должно быть 0 (PR #20 closed 2026-06-28 superseded)
+For production/shared/refactor changes, the final barrier normally includes:
 
----
-**Never trust “я запушил”. Trust only:** `origin/<branch>`, GitHub PR SHA, built `dist/`, smoke-артефакты.
+```bash
+npm run validate:static-publication
+npm run guard:shared-files
+```
+
+Add route/browser/visual/source contracts for the touched surface. Do not use a Gill-specific smoke suite as a universal substitute for current scoped contracts.
+
+## 6. Post-push evidence
+
+Trust only:
+
+- `origin/<branch>` at an exact SHA;
+- the GitHub PR head SHA and actual diff;
+- exact-head workflow runs and artifacts;
+- built `dist` when build output is the claim;
+- exact Pages/live witness when production is the claim.
+
+A green check on an earlier commit does not validate a moved head. A merged source commit does not prove that production serves the same bytes.
+
+## 7. Dynamic state
+
+Never hard-code “open PRs must be 0” or a current `main` SHA in this document. Query GitHub and `git rev-parse origin/main` at the start of the task. Use `docs/refactor-2026/lanes/README.md` only as navigation and AuditRepo for canonical source/production boundaries.
+
+## Historical policy
+
+The 2026-06-29 version remains in Git history at blob `93e8e0d86f0ce2adf119a678d00d8bfad48a6cfa`. Its fixed main SHA, one-writer claim, static zero-PR assertion and Gill-specific universal gate list are retired.
