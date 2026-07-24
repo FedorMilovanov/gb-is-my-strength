@@ -95,7 +95,7 @@ jobs:
       - name: Build production-like routes
         run: |
           set -o pipefail
-          npm run build 2>&1 | tee reports/tts-production-build.log
+          npm run strangler:build:production-like 2>&1 | tee reports/tts-production-build.log
 
       - name: Run real-route status matrix
         run: |
