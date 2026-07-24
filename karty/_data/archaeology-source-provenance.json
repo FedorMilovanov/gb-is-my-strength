@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "updatedAt": "2026-07-24",
-  "catalogBoundary": "184d7ed1b50161ec5fa1418ca24539e33977e2a8",
+  "catalogBoundary": "83a13a0755b37296ccec053987654ceefbca349e",
   "policy": {
     "purpose": "Keep bibliographic identity, verification observations and evidence eligibility separate from editorial claims and worldview interpretation.",
     "verifiedMeaning": "A human or deterministic check resolved the canonical resource and its identifying metadata; verification does not make a source primary or high-evidence.",
