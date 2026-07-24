@@ -22,7 +22,7 @@ replaceOnce(
   'dynamic cancel label contract'
 );
 replaceOnce(
-  /engine: engine\.replace\('>Не загружать<\\\/button>', '>Скрыть<\\\/button>'\)/,
+  /engine: engine\.replace\('>Не загружать<\/button>', '>Скрыть<\/button>'\)/,
   "engine: engine.replace(\"actionLabel = 'Не загружать'\", \"actionLabel = 'Скрыть'\")",
   'dynamic cancel label mutation'
 );
