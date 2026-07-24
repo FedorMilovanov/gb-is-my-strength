@@ -1,0 +1,46 @@
+name: Source Authority Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/lib/legacy-source-authority.js'
+      - 'scripts/lib/route-source-contract.js'
+      - 'scripts/content-coverage-audit.js'
+      - 'scripts/gill-context-visual-parity-audit.js'
+      - 'scripts/legacy-source-authority-regression-test.js'
+      - 'data/route-profiles/**'
+      - '.github/workflows/source-authority-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/lib/legacy-source-authority.js'
+      - 'scripts/lib/route-source-contract.js'
+      - 'scripts/content-coverage-audit.js'
+      - 'scripts/gill-context-visual-parity-audit.js'
+      - 'scripts/legacy-source-authority-regression-test.js'
+      - 'data/route-profiles/**'
+      - '.github/workflows/source-authority-contract.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-authority-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Source authority regression
+        run: node scripts/legacy-source-authority-regression-test.js
+
+      - name: Gill strict-native source audit
+        run: node scripts/gill-context-visual-parity-audit.js
