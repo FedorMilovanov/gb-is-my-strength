@@ -20,7 +20,9 @@ on:
       - "src/components/article-pilots/_shared/mobileChromeRegistry.ts"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
       - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
+      - "src/components/konfessii/russkij-baptizm/**"
       - "src/components/nagornaya/**"
+      - "konfessii/russkij-baptizm/index.html"
       - "css/**"
       - "js/**"
       - "feed.xml"
@@ -50,6 +52,7 @@ on:
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/sitemap-route-contract-test.js"
       - "scripts/seo-route-contract-test.js"
+      - "scripts/konfessii-map-audit.js"
       - "scripts/public-surface-browser-matrix.mjs"
       - "scripts/public-surface-browser-diagnostics.mjs"
       - "scripts/route-semantics-browser-test.mjs"
@@ -205,6 +208,9 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Test Russian Baptist 3D shell across desktop and mobile
+        run: npm run konfessii:audit
+
       - name: Test every public surface in Chromium
         env:
           GB_MATRIX_WORKERS: "4"
@@ -241,7 +247,7 @@ jobs:
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
-            reports/nagornaya-epistemic-ui-browser.json
+            reports/nagornaya-epistem-ui-browser.json
             reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
           retention-days: 14
