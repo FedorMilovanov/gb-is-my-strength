@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.53 — reusable biblical map rendering engine. Signature controls + story focus halo.
+ * map-engine.js v0.54 — reusable biblical map rendering engine. Viewport-bound panels + signature controls + story focus halo.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -633,7 +633,7 @@ const MapEngine = (function() {
 .me-stage-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
 
 /* Panel */
-.me-panel{position:absolute;bottom:0;left:0;right:0;background:rgba(13,17,26,.95);backdrop-filter:blur(16px);border-top:1px solid rgba(232,200,121,.2);z-index:20;transition:transform .35s cubic-bezier(.4,0,.2,1);transform:translateY(105%);display:flex;flex-direction:column;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.4)}
+.me-panel{position:absolute;bottom:0;left:0;right:0;box-sizing:border-box;max-height:calc(100% - 8px);max-height:calc(100% - max(8px,env(safe-area-inset-top)));overflow:hidden;background:rgba(13,17,26,.95);backdrop-filter:blur(16px);border-top:1px solid rgba(232,200,121,.2);z-index:20;transition:transform .35s cubic-bezier(.4,0,.2,1);transform:translateY(105%);display:flex;flex-direction:column;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.4)}
 .me-panel--open{transform:translateY(0)}
 .me-panel__close{position:absolute;top:8px;right:10px;z-index:5;background:none;border:none;font-size:20px;color:#9aa2ae;cursor:pointer;padding:10px;min-width:44px;min-height:44px;border-radius:10px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .me-panel__close:hover{color:#fff;background:rgba(255,255,255,.05)}
@@ -651,6 +651,7 @@ const MapEngine = (function() {
 .me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
 .me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
 .me-panel__stage-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}
 
 /* Tabs */
 .me-tabs{display:flex;gap:0;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);overflow-x:auto}
@@ -660,7 +661,7 @@ const MapEngine = (function() {
 .me-tab--active{color:#e8c879;border-bottom-color:#e8c879;background:linear-gradient(to top,rgba(232,200,121,.08),transparent)}
 
 /* Content */
-.me-content{padding:12px 16px;overflow-y:auto;flex:1;font-size:13px;line-height:1.65;color:#9aa2ae;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.me-content *{will-change:auto}
+.me-content{padding:12px 16px;min-height:0;overflow-y:auto;overscroll-behavior:contain;flex:1;font-size:13px;line-height:1.65;color:#9aa2ae;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.me-content *{will-change:auto}
 .me-content::-webkit-scrollbar{width:4px}
 .me-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 .me-content::-webkit-scrollbar-track{background:transparent}
@@ -920,7 +921,7 @@ const MapEngine = (function() {
 /* Media queries */
 @media(min-width:640px){
   .me-title{font-size:28px}
-  .me-panel{left:12px;right:auto;bottom:12px;width:420px;border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
+  .me-panel{left:12px;right:auto;bottom:12px;width:420px;max-height:calc(100% - 24px);border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
   .me-panel--open{transform:translateX(0)}
   .me-header{padding:16px 20px}
   .me-life{display:block}
