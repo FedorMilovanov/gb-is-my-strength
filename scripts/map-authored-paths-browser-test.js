@@ -58,13 +58,16 @@ async function collectRenderedPaths(page, rootSelector) {
         text: label.textContent || '',
         layerAll: label.getAttribute('data-layer-all') || '',
       })),
+      hasIntro: Boolean(root.querySelector('.me-intro')),
+      hasLoading: Boolean(root.querySelector('.me-loading')),
+      hasBaseGeo: Boolean(root.querySelector('#me-base-geo')),
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
   }, rootSelector);
 }
 
-async function mountFixture(page, fixtureId, { routePath = null, routeData = null } = {}) {
-  return page.evaluate(async ({ id, url, inlineRoute }) => {
+async function mountFixture(page, fixtureId, { routePath = null, routeData = null, baseGeoUrl = null } = {}) {
+  return page.evaluate(async ({ id, url, inlineRoute, geoUrl }) => {
     let route = inlineRoute;
     if (!route) {
       const response = await fetch(url, { cache: 'no-store' });
@@ -85,11 +88,15 @@ async function mountFixture(page, fixtureId, { routePath = null, routeData = nul
     document.body.appendChild(fixture);
 
     if (!window.MapEngine?.createMap) throw new Error('shared MapEngine fixture is unavailable');
-    const instance = window.MapEngine.createMap(fixture, route, { backUrl: '/karty/' });
+    const instance = window.MapEngine.createMap(fixture, route, {
+      backUrl: '/karty/',
+      showIntro: false,
+      ...(geoUrl ? { baseGeoUrl: geoUrl } : {}),
+    });
     if (!instance) throw new Error('shared MapEngine did not create the fixture');
     window.__mapAuthoredFixture = instance;
     return route;
-  }, { id: fixtureId, url: routePath, inlineRoute: routeData });
+  }, { id: fixtureId, url: routePath, inlineRoute: routeData, geoUrl: baseGeoUrl });
 }
 
 async function run() {
@@ -105,10 +112,22 @@ async function run() {
     runtimeErrors.push(`console: ${text}`);
   });
 
-  const report = { browser: BROWSER_NAME, fallback: null, authored: null, invalidFallback: null, failures: [] };
+  const report = {
+    browser: BROWSER_NAME,
+    engineVersion: null,
+    fallback: null,
+    authored: null,
+    invalidFallback: null,
+    highStageFallback: null,
+    visualEvidence: null,
+    failures: [],
+  };
   try {
     await page.goto(`${BASE}/karty/ishod/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('#stage #me-paths .me-route-main')), null, { timeout: 20000 });
+
+    report.engineVersion = await page.evaluate(() => window.MapEngine?.version || null);
+    assert(report.engineVersion === '0.55.0', 'MapEngine public version is not synchronized with v0.55 renderer', report);
 
     const fallback = await collectRenderedPaths(page, '#stage');
     assert(fallback.main.length > 0, 'Ishod generated fallback paths are missing', fallback);
@@ -121,8 +140,13 @@ async function run() {
     report.fallback = { generated: fallback.main.length, stages: fallback.stageLabels.length };
 
     const fixtureId = 'map-authored-fixture';
-    const route = await mountFixture(page, fixtureId, { routePath: '/karty/avraam/route.json' });
+    const route = await mountFixture(page, fixtureId, {
+      routePath: '/karty/avraam/route.json',
+      baseGeoUrl: '/karty/avraam/base.svg',
+    });
     await page.waitForFunction((id) => document.querySelectorAll(`#${id} #me-paths .me-route-main[data-route-source="authored"]`).length > 0, fixtureId, { timeout: 10000 });
+    await page.waitForFunction((id) => Boolean(document.querySelector(`#${id} #me-base-geo`)), fixtureId, { timeout: 10000 });
+    await page.waitForFunction((id) => !document.querySelector(`#${id} .me-loading`), fixtureId, { timeout: 10000 });
     await page.waitForTimeout(180);
 
     const expected = [];
@@ -148,6 +172,7 @@ async function run() {
     assert(rendered.authoredMarkers.length === expected.length, 'authored arrow marker count drift', rendered.authoredMarkers);
     assert(rendered.stageLabels.length === route.stages.length, 'stage labels were duplicated or lost', rendered.stageLabels);
     assert(new Set(rendered.stageLabels.map((entry) => entry.stageIndex)).size === route.stages.length, 'stage label indexes are not unique', rendered.stageLabels);
+    assert(!rendered.hasIntro && !rendered.hasLoading && rendered.hasBaseGeo, 'visual evidence surface is not the fully rendered Avraam map', rendered);
     assert(rendered.overflow <= 1, 'Avraam fixture has horizontal overflow', rendered);
 
     for (let index = 0; index < expected.length; index += 1) {
@@ -192,9 +217,36 @@ async function run() {
     assert(invalidFallback.authoredMarkers.length === 0, 'invalid authored geometry created authored markers', invalidFallback.authoredMarkers);
     report.invalidFallback = { generated: invalidFallback.main.length, d: invalidFallback.main[0].d };
 
-    await mountFixture(page, fixtureId, { routePath: '/karty/avraam/route.json' });
+    const highStageRoute = {
+      meta: { id: 'high-stage-fallback', title: 'High stage fallback', viewport_init: { cx: 200, cy: 120, w: 500 } },
+      stories: [{ id: 'main', label: 'Весь путь', places: null, stages: null }],
+      places: [
+        { id: 'a7', name: 'A7', x: 100, y: 100, stage: 7 },
+        { id: 'b7', name: 'B7', x: 300, y: 160, stage: 7 },
+      ],
+      stages: Array.from({ length: 8 }, (_, index) => ({ n: String(index + 1), t: `Stage ${index + 1}` })),
+    };
+    await mountFixture(page, fixtureId, { routeData: highStageRoute });
+    await page.waitForFunction((id) => document.querySelectorAll(`#${id} #me-paths .me-route-main`).length === 1, fixtureId, { timeout: 10000 });
+    const highStageFallback = await collectRenderedPaths(page, `#${fixtureId}`);
+    assert(highStageFallback.main[0].stageIndex === 7 && highStageFallback.main[0].source === 'generated', 'high-stage generated fallback metadata drift', highStageFallback);
+    assert(normalizeColor(highStageFallback.main[0].stroke) === normalizeColor(COLOR_TOKENS.gold), 'high-stage generated fallback changed legacy gold color', highStageFallback.main[0]);
+    assert(highStageFallback.main[0].markerEnd === 'url(#me-arrow-0)', 'high-stage generated fallback arrow is missing or mismatched', highStageFallback.main[0]);
+    report.highStageFallback = {
+      stage: highStageFallback.main[0].stageIndex,
+      stroke: highStageFallback.main[0].stroke,
+      markerEnd: highStageFallback.main[0].markerEnd,
+    };
+
+    await mountFixture(page, fixtureId, {
+      routePath: '/karty/avraam/route.json',
+      baseGeoUrl: '/karty/avraam/base.svg',
+    });
     await page.waitForFunction((id) => document.querySelectorAll(`#${id} #me-paths .me-route-main[data-route-source="authored"]`).length === 15, fixtureId, { timeout: 10000 });
+    await page.waitForFunction((id) => Boolean(document.querySelector(`#${id} #me-base-geo`)) && !document.querySelector(`#${id} .me-loading`), fixtureId, { timeout: 10000 });
+    await page.waitForTimeout(250);
     await page.locator(`#${fixtureId}`).screenshot({ path: path.join(EVIDENCE, `${BROWSER_NAME}-avraam-authored-paths.png`) });
+    report.visualEvidence = { intro: false, loading: false, baseGeo: true };
 
     assert(runtimeErrors.length === 0, 'runtime errors detected', { runtimeErrors });
     report.authored = {
@@ -207,7 +259,7 @@ async function run() {
       colors: [...new Set(expected.map((entry) => entry.colorKey))],
     };
     fs.writeFileSync(path.join(EVIDENCE, `${BROWSER_NAME}-report.json`), JSON.stringify(report, null, 2));
-    console.log(`PASS ${BROWSER_NAME}: fallback=${fallback.main.length}, authored=${rendered.main.length}, invalidFallback=${invalidFallback.main.length}, dashed=${report.authored.dashed}`);
+    console.log(`PASS ${BROWSER_NAME}: version=${report.engineVersion}, fallback=${fallback.main.length}, authored=${rendered.main.length}, invalidFallback=${invalidFallback.main.length}, highStage=${highStageFallback.main.length}`);
   } catch (error) {
     report.failures.push({ message: error.message, details: error.details || null, stack: error.stack, runtimeErrors });
     fs.writeFileSync(path.join(EVIDENCE, `${BROWSER_NAME}-report.json`), JSON.stringify(report, null, 2));
