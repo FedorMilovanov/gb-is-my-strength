@@ -78,9 +78,13 @@ jobs:
 
       - name: Verify current source revisions are read-only clean
         if: steps.patch.outputs.present == 'true' && steps.checker.outputs.status == '0'
+        shell: bash
         run: |
+          set -euo pipefail
+          before="$(git diff --binary | sha256sum | awk '{print $1}')"
           node scripts/cache-bust.js
-          git diff --exit-code
+          after="$(git diff --binary | sha256sum | awk '{print $1}')"
+          test "$before" = "$after"
 
       - name: Prove stale asset mutation fails without rewriting
         if: steps.patch.outputs.present == 'true' && steps.checker.outputs.status == '0'
@@ -89,6 +93,7 @@ jobs:
           set -euo pipefail
           cp js/search.js /tmp/search.js.baseline
           printf '\n/* adversarial cache-bust drift */\n' >> js/search.js
+          before="$(sha256sum js/search.js | awk '{print $1}')"
           set +e
           node scripts/cache-bust.js > /tmp/cache-bust-mutation.log 2>&1
           status=$?
@@ -96,7 +101,8 @@ jobs:
           cat /tmp/cache-bust-mutation.log
           test "$status" -ne 0
           grep -q 'Stale files:' /tmp/cache-bust-mutation.log
-          cmp -s js/search.js <(cat /tmp/search.js.baseline; printf '\n/* adversarial cache-bust drift */\n')
+          after="$(sha256sum js/search.js | awk '{print $1}')"
+          test "$before" = "$after"
           mv /tmp/search.js.baseline js/search.js
           git diff --exit-code -- js/search.js
 
