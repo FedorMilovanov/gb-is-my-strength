@@ -3,9 +3,10 @@ import registry from '../../../../karty/_data/archaeology-source-registry.json';
 import provenance from '../../../../karty/_data/archaeology-source-provenance.json';
 import { buildMapArchaeologyProjection } from '@/lib/karty/map-archaeology-projection.mjs';
 
-const projection = buildMapArchaeologyProjection('avraam', registry, provenance);
+interface Props { mapId: string; }
+const { mapId } = Astro.props;
+const projection = buildMapArchaeologyProjection(mapId, registry, provenance);
 const projectionJson = JSON.stringify(projection);
 ---
 
-<div id="map-archaeology-projection" hidden data-projection={projectionJson}></div>
-<script is:inline src="../_engine/map-archaeology-adapter.js"></script>
+<div id="map-archaeology-projection" hidden data-map-id={mapId} data-projection={projectionJson}></div>

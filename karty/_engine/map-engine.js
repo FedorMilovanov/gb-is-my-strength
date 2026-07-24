@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.55 — reusable biblical map rendering engine. Authored route geometry + viewport-bound panels + signature controls.
+ * map-engine.js v0.56 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -36,137 +36,6 @@ const MapEngine = (function() {
   let mapOverlaySequence = 0;
 
   // Verified Archaeological References (2024-2026 discoveries)
-  const ARCHAEOLOGY_REFERENCES = {
-    // Exodus route
-    exodus_route: {
-      title: "Маршрут Исхода: археологические свидетельства",
-      items: [
-        {ref:"Tell el-Kharouba fortress (2026)", text:"3,500-летняя крепость Тутмоса I на «Пути Хора» с 11 башнями — объясняет, почему Исход пошёл южным путём (Исх 13:17)", src:"Egyptian Ministry of Tourism & Antiquities, Nov 2025"},
-        {ref:"Wadi Tumilat sediment study (2014-2019)", text:"Спутниковые исследования подтвердили поселенческие слои поздней бронзы вдоль Вади-Тумилат — путь из Рамсеса в Суккот", src:"Egyptian Antiquities Authority"},
-        {ref:"Tell el-Retaba ash layer (c.1450 BC)", text:"Слой разрушения и заброшенности ок. 1450 г. до н.э. в Телль эль-Ретаба (библ. Рамсес/Суккот) — соответствует ранней дате Исхода", src:"Polish-Slovak Archaeological Mission"},
-        {ref:"Papyrus Anastasi VI", text:"Папирус Нового Царства: «беглецы прошли крепость Чекy (Суккот) на пути к озёрам Пи-Атума» — прямая параллель Исх 12:37", src:"Papyrus Anastasi VI, 23:7-24:6"},
-        {ref:"Jabal al-Lawz survey", text:"Обследование горы в Саудовской Аравии: обожжённая вершина, 12-колонный жертвенник, петроглифы золотого тельца, пещеры с надписями о Мусе", src:"BASE Institute; CBN News 2025"},
-      ]
-    },
-    // Jerusalem First Temple
-    jerusalem_first_temple: {
-      title: "Иерусалим эпохи Первого Храма",
-      items: [
-        {ref:"Assyrian inscription Jerusalem (2025)", text:"Первый ассирийский клинописный фрагмент в Иерусалиме: «Пришли дань до 1 Ава» — возможная переписка с Езекией о мятеже (4Цар 18:7)", src:"IAA, Oct 2025; Christianity Today Top 10 of 2025"},
-        {ref:"City of David ritual structure (2025)", text:"8-комнатная структура VIII в. до н.э. с алтарём, маслодавильней и винодавильней — культовый центр до реформы Езекии", src:"IAA; Fox News Jan 2025"},
-        {ref:"Monumental moat (2024)", text:"70-метровый ров между Храмовой горой и Градом Давида — соответствует библейскому «Милло» (3Цар 11:27)", src:"IAA; Times of Israel Jul 2024"},
-        {ref:"Broad Wall redating (2024)", text:"Радиоуглерод + дендрохронология: «Широкая стена» — не Езекии, а Озии (2Пар 26:9), построена до нашествия ассирийцев", src:"Weizmann Institute; Tel Aviv University 2024"},
-        {ref:"Hezekiah's tax bulla", text:"Глиняная булла с надписью «принадлежит царю» и упоминанием Хеврона — административная система Езекии", src:"Jewish Museum NY; IAA"},
-      ]
-    },
-    // Maccabees
-    maccabees: {
-      title: "Маккавейские войны: археология",
-      items: [
-        {ref:"Bet Zecharia sling bullets (2025)", text:"Первое материальное свидетельство битвы Маккавеев: свинцовые снаряды и монета из Сиды у Хорбат Бет-Захария — место битвы Иуды Маккавея со слонами (1Мак 6:32-46)", src:"Dr. Dvir Raviv, Bar-Ilan University; TPS Dec 2025"},
-        {ref:"Hasmonean coin hoard Modiin", text:"Клад серебряных монет (126 г. до н.э.) в Модиине — на родине Маккавеев", src:"IAA"},
-        {ref:"Hasmonean fortress (2021)", text:"Крепость Хасмонеев, уничтоженная греками — линия укреплений против Маккавейского восстания", src:"IAA; LiveScience 2021"},
-      ]
-    },
-    // Early Church
-    early_church: {
-      title: "Ранняя Церковь и апостолы",
-      items: [
-        {ref:"Laodicea Roman hall (2025)", text:"Римский зал совета (50 г. до н.э.) в Лаодикии с христианскими символами: крест, хризма (ΧΡ), греческие надписи — свидетельство раннехристианского присутствия", src:"Anadolu Agency; Fox News Sep 2025"},
-        {ref:"Ephesus marble bathtub (2026)", text:"Мраморная ванна I в. н.э. и фрагмент статуи в Эфесе — город, где Павел проповедовал 2 года (Деян 19:10)", src:"Anadolu Agency; Fox News Jan 2026"},
-        {ref:"Pilgrimage Road opened (2025-2026)", text:"600-метровая «Дорога паломников» от Силоамской купели к Храмовой горе — под монетами Понтия Пилата (30-31 гг. н.э.). Путь, которым ходил Иисус", src:"City of David; IAA; Times of Israel Jan-Feb 2026"},
-        {ref:"Bethsaida church mosaic", text:"Византийская церковь V в. с мозаикой: «Пётр — глава и вождь небесных апостолов» — древнейшее археологическое свидетельство примата Петра", src:"Dr. Steven Notley; Christian Media Center 2025"},
-        {ref:"Peter's house Capernaum", text:"Дом-церковь в Капернауме (I в.) — одна из трёх известных до-Константиновых церквей, традиционно считается домом апостола Петра", src:"Southgate Baptist 2025"},
-      ]
-    },
-    // Davidic Kingdom
-    davidic_kingdom: {
-      title: "Царство Давида: внебиблейские свидетельства",
-      items: [
-        {ref:"Tel Dan Stele (9th c. BC)", text:"Древнейшее внебиблейское упоминание «Дома Давидова» — арамейский царь Азаил хвастается победой над царём «дома Давидова». Экспонировался в Музее Библии (2025)", src:"Museum of the Bible; Jewish Museum NY 2024-2025"},
-        {ref:"Mesha Stele re-examination (2025)", text:"Проф. Ланглуа подтвердил чтение 'bt[d]wd' ('Дом Давида') на стеле Меши методами RTI-фотографии — второе подтверждение династии Давида", src:"André Lemaire; Michael Langlois; BAR 2022; IEJ 2025"},
-        {ref:"Khirbet Qeiyafa (2007-2012)", text:"Укреплённый город Железного века в долине Эла (где Давид сразил Голиафа) с монументальными воротами и раннееврейскими надписями — свидетельство государственности при Давиде", src:"Yosef Garfinkel; Hebrew University"},
-        {ref:"Siloam Pool dam (2025)", text:"Дамба Силоамской купели (805-795 гг. до н.э.) — 12×8×21 м, крупнейшая в Израиле. Построена при Иоасе/Амасии. Радиоуглеродная датировка ±10 лет", src:"PNAS; Hoshen Tours May 2026"},
-      ]
-    },
-    // General
-    general: {
-      title: "Ключевые археологические подтверждения",
-      items: [
-        {ref:"Ketef Hinnom scrolls (7th c. BC)", text:"Два серебряных амулета с благословением из Числ 6:24-26 — древнейший известный библейский текст, на 400 лет старше свитков Мёртвого моря", src:"IAA; Jerusalem Post 2025"},
-        {ref:"House of David inscription", text:"Стела Тель-Дан + стела Меши: два независимых внебиблейских источника IX в. до н.э. подтверждают династию Давида", src:"Multiple scholarly sources"},
-        {ref:"Hezekiah's Tunnel inscription", text:"Силоамская надпись (VIII в. до н.э.) — древнейшая еврейская монументальная надпись, описывающая прокладку тоннеля Езекии (4Цар 20:20)", src:"Istanbul Archaeological Museum"},
-        {ref:"Gallio inscription Delphi", text:"Надпись Галлиона в Дельфах (52 г. н.э.) — упоминает проконсула Ахайи Галлиона, перед которым судили Павла (Деян 18:12) — одна из точнейших датировок НЗ", src:"Delphi Museum"},
-        {ref:"Pilate stone Caesarea", text:"Камень с надписью «Понтий Пилат, префект Иудеи» — единственное археологическое подтверждение историчности Пилата", src:"Israel Museum, Jerusalem"},
-      ]
-    },
-    judges_period: {
-      title: "Эпоха Судей: археология",
-      items: [
-        {ref:"Shiloh gate complex (2025-2026)", text:"Раскопки воротного комплекса Силома — места, где священник Илий упал и умер (1Цар 4:18). ABR продолжает раскопки в 2026.", src:"ABR Shiloh Excavation 2025-2026"},
-        {ref:"Timnah (Tel Batash)", text:"Тель-Баташ = Фимнафа Самсона. Поселение железного века I (XII-XI вв. до н.э.) — период Судей. Место загадки Самсона о льве и мёде (Суд 14).", src:"Kelm & Mazar"},
-        {ref:"Philistine Pentapolis", text:"Газа, Аскалон, Ашдод, Екрон и Геф — пять городов филистимской конфедерации. Керамика с эгейскими мотивами XII-XI вв. до н.э.", src:"Multiple excavations"},
-      ]
-    },
-    kings_period: {
-      title: "Эпоха Царей: археология",
-      items: [
-        {ref:"Samaria ivories (500+ pieces)", text:"Дворец Амврия/Ахава: 500+ фрагментов резной слоновой кости. Сосуд Осоркона (874-850 гг. до н.э.) — современник Ахава. 'Дом украшенный слоновой костью' (3Цар 22:39).", src:"Harvard Semitic Museum"},
-        {ref:"Megiddo water tunnel", text:"65-метровый тоннель к источнику — инженерное чудо IX-VIII вв. до н.э. Армагеддон = Хар-Мегиддо (Откр 16:16).", src:"University of Chicago; Tel Aviv University"},
-        {ref:"Jezreel fortress (1990-1996)", text:"Крепость IX в. до н.э.: 5-метровые стены, шестикамерные ворота, ров 6 м. Виноградник Навуфея? (3Цар 21:1). Летний дворец Ахава и Иезавели.", src:"Ussishkin & Woodhead"},
-        {ref:"Lachish letters", text:"21 остракон с перепиской коменданта перед падением (588 г. до н.э.). Рельефы Сеннахирима (701 г. до н.э.) в Ниневии изображают осаду.", src:"British Museum; IAA"},
-        {ref:"Beersheba horned altar", text:"Четырёхрогий жертвенник, разобранный и заложенный в стену — реформа Езекии (4Цар 18:4). (Aharoni 1969-1976).", src:"Tel Aviv University"},
-        {ref:"Hezekiah bulla (Ophel 2015)", text:"Первая царская печать из научных раскопок: 'Езекии, сыну Ахаза, царю Иудеи'. В 3 м — возможная печать пророка Исайи.", src:"Eilat Mazar; Hebrew University"},
-      ]
-    },
-    jesus_ministry: {
-      title: "Служение Иисуса: археология",
-      items: [
-        {ref:"Magdala Stone (2009)", text:"Камень из синагоги I в. с Менорой и Храмом. Одна из 7 синагог I в. Экспонируется в Музее Библии (2025).", src:"IAA; Museum of the Bible"},
-        {ref:"Nazareth house (2009)", text:"Дом I в. н.э. в Назарете. Надпись из Кесарии (1962) о священническом курсе в Назарете. Население ~400 в I в.", src:"IAA"},
-        {ref:"Capernaum synagogue & Peter's house", text:"Синагога IV в. на основании синагоги I в. — где проповедовал Иисус (Мк 1:21). Дом Петра — октагональная церковь V в.", src:"Franciscan excavations"},
-        {ref:"Jesus Boat (1986)", text:"Лодка I в. (8.2×2.3 м) из Галилейского моря. Радиоуглерод: 40 г. до н.э. — 70 г. н.э.", src:"Yigal Allon Museum"},
-        {ref:"Pool of Bethesda (John 5:2)", text:"Двойной бассейн с пятью колоннадами. Точное соответствие Ин 5:2: 'купальня у Овечьих ворот... пять крытых ходов'.", src:"White Fathers; IAA"},
-      ]
-    },
-    dead_sea_scrolls: {
-      title: "Свитки Мёртвого моря",
-      items: [
-        {ref:"Museum of the Bible exhibition (2025-2026)", text:"Выставка в Музее Библии: Бытие, Иов, Псалмы, Храмовый свиток. 200+ артефактов IAA. 75-летие открытия свитков.", src:"Museum of the Bible; IAA"},
-        {ref:"Cave of Horror fragments (2021)", text:"Новые фрагменты Захарии и Наума (греческий) из Пещеры ужаса. Радиоуглерод: II в. н.э. — время Бар-Кохбы.", src:"IAA"},
-        {ref:"Qumran Cave 12 (2017)", text:"12-я пещера Кумрана: найдены jar-фрагменты, кожаные ремни, ткань. Операция 'Свиток'.", src:"Hebrew University; IAA"},
-      ]
-    },
-    babylonian_exile: {
-      title: "Вавилонский плен: археология",
-      items: [
-        {ref:"Babylonian Chronicle (BM 21946)", text:"Вавилонская хроника: «В седьмой год [Навуходоносора] он захватил город Иуды и назначил царя по своему выбору» — 597 г. до н.э. Точное соответствие 4Цар 24:10-17.", src:"British Museum"},
-        {ref:"Jehoiachin ration tablets", text:"4 клинописные таблички из хранилищ Навуходоносора: «Яу-кину, царь земли Яхуд», получал масляный паёк с 5 сыновьями. 561-560 гг. до н.э. — 4Цар 25:27-30.", src:"British Museum BM 115338"},
-        {ref:"Lachish Letters (ostraca)", text:"21 остракон из сторожки ворот Лахиса. Письмо IV: «Мы не видим сигналов Азеки» — последние дни перед падением (588 г.). Иер 34:7: только Лахис и Азека оставались.", src:"Israel Museum; British Museum"},
-        {ref:"Jerusalem destruction layer", text:"Метровый слой пепла в Городе Давида. Карбонизированные балки, наконечники стрел вавилонского типа. 51 булла, закалённая огнём: «Гемарьяху сын Шафана» (Иер 36:10-12). 50 лет археологической тишины = плен.", src:"Yigal Shiloh 1978-82; Hebrew University"},
-        {ref:"Kish cylinders of Nebuchadnezzar (2025)", text:"Два цилиндра из Киша (Ирак) с 50+ строками клинописи. Навуходоносор: «Я восстановил обрушившиеся части... украсил внешний вид». Опубликовано в IRAQ (декабрь 2025). Соответствует Дан 4:27.", src:"Iraq Museum; Cambridge University Press 2025"},
-        {ref:"Al-Yahudu tablets", text:"100+ экономических текстов из центрального Ирака: иудейские семьи с еврейскими именами (Гедальягу сын Пашхура). Доказывают сохранение идентичности в плену.", src:"Multiple collections"},
-      ]
-    },
-    persian_return: {
-      title: "Возвращение из плена: археология",
-      items: [
-        {ref:"Cyrus Cylinder (539 BC)", text:"Цилиндр Кира (Британский музей BM 90920): политика возвращения изгнанников и восстановления храмов. Хотя конкретно иудеи не названы, общая политика точно соответствует Езд 1:1-4. Копия — в штаб-квартире ООН.", src:"British Museum"},
-        {ref:"Tattenai tablet (502 BC)", text:"Клинописная табличка VAS 4 152: свидетель сделки — слуга 'Таттанну, правителя Заречья'. Тот самый Таттенай, который спрашивал у иудеев: «Кто дал вам разрешение строить этот дом?» (Езд 5:3).", src:"Vorderasiatisches Museum, Berlin"},
-        {ref:"Elephantine papyri (5th c. BC)", text:"Арамейская переписка иудейского гарнизона на о. Элефантина (Египет). Письмо к Багохию, правителю Иудеи, и Иехоханану, первосвященнику в Иерусалиме. Упоминает 'сыновей Санаваллата' (Неем 2:10).", src:"Multiple museums"},
-        {ref:"Nehemiah's wall", text:"Сегменты стены Неемии с персидской керамикой под и внутри кладки — археологическое свидетельство масштабной восстановительной программы, описанной в Неем 2-6.", src:"IAA; City of David"},
-        {ref:"Yehud stamp impressions", text:"Сотни ручек сосудов с оттисками 'Yehud' (Иудея) персидского периода — административная система провинции Йехуд после возвращения из плена.", src:"IAA; multiple excavations"},
-      ]
-    },
-    jericho_ai: {
-      title: "Иерихон и Гай: дискуссия о завоевании",
-      items: [
-        {ref:"Jericho wall collapse", text:"Гарстанг (1930-е): стены рухнули НАРУЖУ — создав рампу для восхождения (Ис Нав 6:20). Кеньон (1950-е): «разрушение было полным», но датировала 1550 г. Б. Вуд (1990): Кеньон игнорировала кипрскую бихромную керамику. 3-футовый слой пепла. Запасы зерна = короткая осада.", src:"Garstang; Kenyon; Wood BAR 1990"},
-        {ref:"Jericho City V (2025-2026)", text:"Bryan Windle: 572 артефакта LB, включая 174 сосуда. Город V был укреплён: mudbrick стена на циклопической основе. Нигро (Sapienza): LB I-II mudbrick стена подтверждена. Новая книга: 'Joshua's Jericho' (Trowel Press, декабрь 2025).", src:"Bryan Windle; Lorenzo Nigro"},
-        {ref:"Ai debate: et-Tell vs Khirbet el-Maqatir", text:"Традиционно Гай = эт-Телль, но нет следов LB заселения. ABR раскопала Хирбет эль-Макатир: пережжённая керамика, пепел, византийский монастырь. Иоиль Крамер (2025): эт-Телль всё же может быть Гаем — нашёл LB I керамику и разрушение огнём.", src:"ABR; Joel Kramer Expedition Bible 2025"},
-      ]
-    }
-  };
   const STAGE_COLORS = ['#e8c879','#e0813f','#4a9e6e','#cf5b6b','#8b6b4a','#4a80b4'];
   const ROUTE_PATH_COLORS=Object.freeze({gold:STAGE_COLORS[0],lot:STAGE_COLORS[1],war:STAGE_COLORS[3]});
   const TAB_LABELS = {story:'Сюжет',bible:'Писание',arch:'Археология',he:'Иврит',dispute:'Дискуссия',sci:'Наука',photos:'Фото',extra:'Библ.контекст'};
@@ -867,6 +736,29 @@ const MapEngine = (function() {
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
 .me-sci-sources{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
 .me-sci-source{font-size:8px;color:rgba(232,200,121,.65);border:1px solid rgba(232,200,121,.16);border-radius:999px;padding:1px 6px;background:rgba(232,200,121,.04)}
+
+/* Governed archaeology projection */
+.map-arch-projection{margin-top:18px;padding:14px 0 4px;border-top:1px solid rgba(232,200,121,.2)}
+.map-arch-projection__eyebrow{display:flex;align-items:center;gap:7px;color:var(--me-accent,#e8c879);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.map-arch-projection__eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 10px rgba(232,200,121,.55)}
+.map-arch-projection__title{margin:7px 0 2px;color:var(--me-text,#e9e4d6);font-family:Georgia,serif;font-size:16px}
+.map-arch-projection__note{color:var(--me-muted,#9aa2ae);font-size:10px;line-height:1.5}
+.map-arch-card{padding:12px 0;border-top:1px solid rgba(255,255,255,.07)}
+.map-arch-card:first-of-type{margin-top:8px}
+.map-arch-card__badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.map-arch-badge{padding:2px 7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;color:var(--me-muted,#9aa2ae);font-size:8px;line-height:1.4}
+.map-arch-badge--accepted-context,.map-arch-badge--primary-identification,.map-arch-badge--high,.map-arch-badge--supporting{border-color:rgba(74,222,128,.28);color:rgba(134,239,172,.92)}
+.map-arch-badge--project-interpretation,.map-arch-badge--interpretation,.map-arch-badge--methodological-guardrail{border-color:rgba(232,200,121,.3);color:var(--me-accent,#e8c879)}
+.map-arch-badge--candidate,.map-arch-badge--disputed{border-color:rgba(250,204,21,.3);color:rgba(253,224,71,.9)}
+.map-arch-badge--rejected,.map-arch-badge--negative,.map-arch-badge--retracted{border-color:rgba(248,113,113,.3);color:rgba(252,165,165,.94)}
+.map-arch-card__statement{color:var(--me-text,#e9e4d6);font-size:12px;line-height:1.55}
+.map-arch-card__limitations{margin-top:6px;color:var(--me-muted,#9aa2ae);font-size:10px;line-height:1.5}
+.map-arch-sources{display:grid;gap:7px;margin-top:9px}
+.map-arch-source{display:block;padding-left:9px;border-left:2px solid rgba(232,200,121,.22)}
+.map-arch-source__link{color:var(--me-accent,#e8c879);font-size:10px;line-height:1.4;text-decoration:none}
+.map-arch-source__link:hover{text-decoration:underline}
+.map-arch-source__meta{display:block;margin-top:2px;color:var(--me-muted,#9aa2ae);font-size:9px;line-height:1.4;overflow-wrap:anywhere}
+.map-arch-source__id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:color-mix(in srgb,var(--me-muted,#9aa2ae) 80%,transparent)}
 
 /* Life timeline */
 .me-life{position:absolute;bottom:0;left:0;right:0;z-index:6;padding:4px 8px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(to top,rgba(7,10,16,.95),rgba(7,10,16,.4));pointer-events:none;display:none}
@@ -2011,7 +1903,7 @@ container.appendChild(panel);
       // Check available tabs
       const availTabs=TAB_KEYS.filter(k=>{
         if(k==='bible')return!!place.bible;
-        if(k==='arch')return!!place.arch;
+        if(k==='arch')return!!place.arch||_hasArchaeologyProjection(place.id);
         if(k==='he')return!!place.he_deep;
         if(k==='dispute')return!!place.dispute;
         if(k==='sci')return!!(route.scientific_variants||route.variants||{})[place.id];
@@ -2172,96 +2064,68 @@ container.appendChild(panel);
       }else{
         content.innerHTML='';
       }
-      // Add archaeology reference footer for relevant places
-      _renderArchaeologyFooter(place);
+      _renderArchaeologyProjection(tab, place);
     }
 
-    function _classifySource(item) {
-      const hay = `${item.ref || ''} ${item.src || ''}`.toLowerCase();
-      if (/papyrus|inscription|stele|bulla|tablet|cylinder|ostraca|coin|scroll|siloam|pilate stone|tel dan/.test(hay)) return {kind:'primary',label:'первичный'};
-      if (/excavation|dig|mission|iaa|survey|field|shiloh|pool|gate|tunnel|stratigraphy/.test(hay)) return {kind:'field',label:'раскопки'};
-      if (/university|journal|pnas|bar |bas |biblical archaeology society|atiqot|hebrew university|tel aviv/.test(hay)) return {kind:'academic',label:'научн.'};
-      if (/abr|associates for biblical research|aig|answers|creation|bible archaeology report|bibleplaces|base institute/.test(hay)) return {kind:'conservative',label:'консерв.'};
-      return {kind:'heritage',label:'heritage'};
-    }
+    const ARCHAEOLOGY_LABELS = Object.freeze({
+      'accepted-context':'принятый контекст','primary-identification':'основная идентификация',
+      'project-interpretation':'позиция проекта','methodological-guardrail':'методологическая оговорка',
+      candidate:'кандидат',disputed:'дискуссионно',rejected:'отвергнуто',high:'сильная опора',
+      supporting:'поддерживающая опора',interpretation:'интерпретация',negative:'отрицательное свидетельство',
+      verified:'проверено',imported:'очередь проверки',active:'действующий источник',retracted:'отозвано'
+    });
 
-    function _sourceBadges(items) {
-      const seen = new Map();
-      (items || []).forEach(item => {
-        const cls = _classifySource(item);
-        if (!seen.has(cls.kind)) seen.set(cls.kind, cls.label);
+    function _archSafeUrl(value){
+      try{const url=new URL(String(value||''),location.href);return url.protocol==='https:'?url.href:''}catch(_){return''}
+    }
+    function _archText(tag,className,value){const node=document.createElement(tag);if(className)node.className=className;node.textContent=String(value||'');return node}
+    function _archBadge(value){const normalized=String(value||'unknown').replace(/[^a-z0-9_-]+/gi,'-').toLowerCase();return _archText('span',`map-arch-badge map-arch-badge--${normalized}`,ARCHAEOLOGY_LABELS[value]||String(value||'неизвестно'))}
+    function _archSourceNode(source){
+      const node=document.createElement('div');node.className='map-arch-source';
+      node.dataset.sourceId=source.id;node.dataset.evidenceUse=source.evidenceUse;node.dataset.sourceStatus=source.status;
+      node.dataset.sourceVerification=source.verification;node.dataset.sourcePerspective=source.perspective;
+      const href=_archSafeUrl(source.url);
+      if(href){const link=_archText('a','map-arch-source__link',source.title);link.href=href;link.target='_blank';link.rel='noopener noreferrer';node.appendChild(link)}
+      else node.appendChild(_archText('span','map-arch-source__link',source.title));
+      const details=[source.organization,Number.isInteger(source.year)?String(source.year):'',ARCHAEOLOGY_LABELS[source.evidenceUse]||source.evidenceUse,
+        source.perspective==='yec'?'YEC-интерпретация':source.perspective,ARCHAEOLOGY_LABELS[source.status]||source.status,
+        ARCHAEOLOGY_LABELS[source.verification]||source.verification,source.accessedAt?`проверено ${source.accessedAt}`:''].filter(Boolean).join(' · ');
+      node.appendChild(_archText('span','map-arch-source__meta',details));
+      node.appendChild(_archText('span','map-arch-source__meta map-arch-source__id',`source: ${source.id}`));
+      return node;
+    }
+    function _archProjectionCards(placeId){
+      const projection=cfg.archaeologyProjection;
+      if(!projection||typeof projection!=='object')return[];
+      const cards=[...(Array.isArray(projection.mapCards)?projection.mapCards:[]),...(Array.isArray(projection.byPlace?.[placeId])?projection.byPlace[placeId]:[])];
+      const seen=new Set();return cards.filter(card=>card&&card.claimId&&!seen.has(card.claimId)&&seen.add(card.claimId));
+    }
+    function _hasArchaeologyProjection(placeId){return _archProjectionCards(placeId).length>0}
+    function _archProjectionNode(placeId,cards,projection){
+      const root=document.createElement('section');root.className='map-arch-projection';root.dataset.archaeologyProjectionRoot='1';
+      root.dataset.placeId=placeId;root.dataset.projectionVersion=projection.schemaVersion||'1.0.0';
+      root.appendChild(_archText('div','map-arch-projection__eyebrow','Проверенный аппарат источников'));
+      root.appendChild(_archText('h3','map-arch-projection__title','Археология и исторический контекст'));
+      root.appendChild(_archText('p','map-arch-projection__note','Материальные данные, академическая оценка и YEC-интерпретация показаны раздельно.'));
+      cards.forEach(card=>{
+        const article=document.createElement('article');article.className='map-arch-card';article.dataset.claimId=card.claimId;article.dataset.claimStatus=card.status;
+        if(card.category)article.dataset.runtimeCategory=card.category;
+        const badges=document.createElement('div');badges.className='map-arch-card__badges';badges.appendChild(_archBadge(card.status));article.appendChild(badges);
+        article.appendChild(_archText('div','map-arch-card__statement',card.statement));
+        if(card.limitations)article.appendChild(_archText('div','map-arch-card__limitations',`Ограничение: ${card.limitations}`));
+        const ids=[...new Set([...(card.evidenceSourceIds||[]),...(card.interpretationSourceIds||[])])];
+        if(ids.length){const sources=document.createElement('div');sources.className='map-arch-sources';ids.forEach(id=>{const source=projection.sourceMeta?.[id];if(!source)return;badges.appendChild(_archBadge(source.evidenceUse));sources.appendChild(_archSourceNode(source))});article.appendChild(sources)}
+        root.appendChild(article);
       });
-      return [...seen.entries()].slice(0,4).map(([kind,label]) => `<span class="me-source-badge me-source-badge--${kind}">${label}</span>`).join('');
+      return root;
     }
-
-    function _renderArchaeologyFooter(place) {
-      // Determine which archaeology category this place belongs to
-      let cat = null;
-      // Exodus places
-      const exodusIds = ['rameses','succoth','etham','pihahiroth','migdol','marah','elim','rephidim','sinai','kadesh','eziongeber'];
-      if (exodusIds.includes(place.id)) cat = 'exodus_route';
-      // Jerusalem/Temple/David
-      const jerusalemIds = ['jerusalem','jerusalem_kings','cityofdavid','temple','hebron','lachish','beersheba'];
-      if (jerusalemIds.includes(place.id)) cat = 'jerusalem_first_temple';
-      // Maccabees
-      const maccabeeIds = ['modiin','jerusalem_meet','antioch_syria','betzecharia','bethzur','emmaus','elasa'];
-      if (maccabeeIds.includes(place.id)) cat = 'maccabees';
-      // Early Church
-      const churchIds = ['jerusalem_upper','temple_early','damascus','antioch','ephesus','laodicea','philadelphia','sardis','thyatira','smyrna','pergamos','philippi','corinth','athens','thessaloniki','capernaum','bethsaida'];
-      if (churchIds.includes(place.id)) cat = 'early_church';
-      // Judges
-      const judgesIds = ['shiloh','timnath','gaza','ashkelon','ashdod','ekron','gath','hazor','bethel','shechem'];
-      if (judgesIds.includes(place.id)) cat = 'judges_period';
-      // Kings
-      const kingsIds = ['samaria','megiddo','jezreel','dan','beersheba','hazor','lachish'];
-      if (kingsIds.includes(place.id)) cat = 'kings_period';
-      // Jesus ministry
-      const jesusIds = ['nazareth','capernaum','magdala','bethlehem','jericho','jerusalem','bethany','cana','tabgha','bethebara'];
-      if (jesusIds.includes(place.id)) cat = 'jesus_ministry';
-      // Dead Sea Scrolls
-      const dssIds = ['qumran','masada','jericho'];
-      if (dssIds.includes(place.id)) cat = 'dead_sea_scrolls';
-      // Babylonian exile
-      const exileIds = ['babylon','jerusalem','lachish','azekah'];
-      if (exileIds.includes(place.id) && !cat) cat = 'babylonian_exile';
-      // Persian return
-      const persianIds = ['jerusalem','babylon','elephantine'];
-      if (persianIds.includes(place.id) && !cat) cat = 'persian_return';
-      // Jericho/Ai
-      const conquestIds = ['jericho','ai','gai','hazor','gilgal'];
-      if (conquestIds.includes(place.id) && !cat) cat = 'jericho_ai';
-      // Davidic
-      const davidIds = ['jerusalem','hebron','bethlehem'];
-      if (davidIds.includes(place.id) && !cat) cat = 'davidic_kingdom';
-      
-      if (cat && ARCHAEOLOGY_REFERENCES[cat]) {
-        const refs = ARCHAEOLOGY_REFERENCES[cat];
-        const content = panel.querySelector('.me-content');
-        if (!content) return;
-        const footer = document.createElement('div');
-        const items = refs.items || [];
-        const hiddenCount = Math.max(0, items.length - 2);
-        footer.className = 'me-arch-footer';
-        footer.innerHTML = `
-          <div class="me-arch-eyebrow"><span class="me-arch-eyebrow-dot"></span>Археологические открытия 2024–2026</div>
-          <div class="me-arch-title">${esc(refs.title)}</div>
-          <div class="me-source-badges">${_sourceBadges(items)}</div>
-          ${items.map((item,idx) => `
-            <div class="me-arch-item${idx>=2?' me-arch-item--extra':''}">
-              <div class="me-arch-text">${esc(item.text)}</div>
-              <div class="me-arch-meta"><span class="me-arch-meta-mark">◆</span><span>${esc(item.ref)}</span><span>${esc(item.src)}</span></div>
-            </div>
-          `).join('')}
-          ${hiddenCount?`<button class="me-arch-more" type="button" aria-expanded="false">Ещё ${hiddenCount} свидетельств</button>`:''}
-        `;
-        const more = footer.querySelector('.me-arch-more');
-        if (more) more.addEventListener('click', () => {
-          const open = footer.classList.toggle('me-arch-footer--expanded');
-          more.setAttribute('aria-expanded', open ? 'true' : 'false');
-          more.textContent = open ? 'Скрыть свидетельства' : `Ещё ${hiddenCount} свидетельств`;
-        });
-        content.appendChild(footer);
-      }
+    function _renderArchaeologyProjection(tab,place){
+      const projection=cfg.archaeologyProjection;const content=panel.querySelector('.me-content');if(!content)return;
+      content.querySelectorAll('[data-archaeology-projection-root]').forEach(node=>node.remove());
+      if(!projection||typeof projection!=='object')return;
+      const allowed=Array.isArray(projection.allowedTabs)?projection.allowedTabs:['arch','sci'];if(!allowed.includes(tab))return;
+      const cards=_archProjectionCards(place.id);if(!cards.length)return;
+      content.appendChild(_archProjectionNode(place.id,cards,projection));
     }
 
     // ── Public API ──
@@ -3008,7 +2872,7 @@ container.appendChild(panel);
     normalizeLayerTokens,getPlaceLayerMembership,getStageLayerMembership,getMapThemePalette,
     // v0.3 rendering
     createMap,
-    version:'0.55.0',buildDate:'2026-07-24'
+    version:'0.56.0',buildDate:'2026-07-25'
   };
 })();
 
