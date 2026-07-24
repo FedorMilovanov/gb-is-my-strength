@@ -1,48 +1,85 @@
-# Active Lanes
+# Lane index and current-work policy
 
-Индекс активных и недавно закрытых lanes. Обновляется вручную интегратором или владельцем lane.
+This file is the **navigation contract for current work**, not a permanent backlog and not a substitute for GitHub state.
 
-## Статусы
+**Current source boundary:** `main` at `5636a6a1911c7eb0e7637406e87e749dd65dbaaf` (PR #205, 2026-07-24).
 
-```text
-merged     — в работе
-merged     — готов к merged/merge
-blocked    — заблокирован (ждёт другой lane или решение)
-stale      — неактивен более 3 дней, нужен статус
-merged     — слит в main
-abandoned  — отменён
-```
+## Sources of truth
+
+Use these in order:
+
+1. open pull requests and issues in `FedorMilovanov/gb-is-my-strength`;
+2. the exact current `main` tree and its CI artifacts;
+3. `FedorMilovanov/AuditRepo` for verified backlog, source authority and production-witness boundaries;
+4. this file only as a compact navigation aid.
+
+A branch name alone does not prove that work is active, correct, mergeable or still needed.
+
+## Status vocabulary
+
+| Status | Meaning |
+|---|---|
+| `active` | Work has a current owner, bounded scope and an open issue or PR. |
+| `review` | Implementation is complete and waiting for exact-head checks or review. |
+| `blocked` | Work is intentionally waiting for a named dependency or owner decision. |
+| `merged` | The lane reached `main`; it is historical, not active. |
+| `superseded` | A newer PR or implementation replaced this lane. |
+| `archived` | Preserved for provenance or possible selective recovery; never merge wholesale. |
+| `abandoned` | Explicitly rejected or disposable work with no recovery value. |
 
 ## Active lanes
 
-| Branch | Scope | Mode | Status | Merge? | Owner |
-|---|---|---|---|---|---|
-| `lane/system-premiumcontrols-main-flaws-reconciliation-2026-06-27` | Reconcile remote-main flaws (asset-version sync, no-build alias, mobile smoke) | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-visual-audit-height-reconciliation-2026-06-27` | Reconcile `visual-audit.js` height expectations for desktop vs mobile | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-premiumcontrols-bulletproof-guards-2026-06-27` | Enhance `premium-controls-rollout-audit` and `owner-ui-regression-guard` with bulletproof assertions | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-gill-parts-2-3-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-chast-2/3` and Astro reconstructions | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-gill-part1-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-chast-1-chelovek` and Astro reconstruction | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-gill-spravochnik-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-spravochnik` and Astro reconstruction | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-lane-report-leak-fix-2026-06-27` | Fix base path leak in previous lane report | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-audit-pro-clean-reconciliation-2026-06-27` | Fix `audit-pro.js` errors/warnings (AGENTS leak, izbrannoe local ref, z-index, bare CSS vars) | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-download-fonts-syntax-fix-2026-06-27` | Fix `download-fonts.js` SPECS outer array syntax | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-premiumcontrols-reconciliation-2026-06-27` | PremiumControls reconciliation & Control plane parity | SYSTEM | merged | ✅ | arena-surgical-surgeon |
-| `lane/system-ci-contract-reconciliation-2026-06-24` | Fix CI checks, issues, guard behavior and stale docs | SYSTEM | active | ⏳ | Arena Agent |
-| `lane/system-protection-simple-v3-0` | Упрощение защиты агентов | SYSTEM | merged | ✅ | Arena Agent |
-| `lane/nagornaya-componentization` | Componentize chast-2..5 | LANE | merged | ✅ | Arena Agent |
-| `lane/gill-full-native-closeout-2026-06-23` | Strict-native closeout for Gill cluster | LANE | merged | ✅ | Arena Agent |
-| `lane/kod-da-vinchi-final-section-native-2026-06-23` | Kod Da Vinci: promote final raw article section to Astro | LANE | merged | ✅ | Arena Agent |
-| `lane/system-native-runtime-taxonomy-audit-2026-06-23` | Native runtime taxonomy audit + Nagornaya branch verification | SYSTEM | merged | ✅ | Arena Agent |
-| `lane/system-native-head-closeout-2026-06-23` | Remove last legacy-head routes (`/about/`, `kod-da-vinchi`) | SYSTEM | merged | ✅ | Arena Agent |
-| `lane/baptisty-total-closeout-2026-06-23` | Strict-native closeout for the full baptisty-rossii route family | LANE | merged | ✅ | Arena Agent |
-| `lane/system-final-hybrid-closeout-2026-06-23` | Close the remaining non-app hybrid landing/catalog/article routes | SYSTEM | merged | ✅ | Arena Agent |
+At the source boundary above, GitHub reports **no open pull requests**. A local or remote branch does not enter this table until it has a current owner and an open issue or PR.
 
-## Recently merged
+| Lane | Scope | Owner | Tracking | Status |
+|---|---|---|---|---|
+| — | No registered active source lane | — | AuditRepo forensic issue #40 remains the audit record | — |
 
-| Branch | Scope | Date | PR/Commit |
-|---|---|---|---|
-| `lane/phase3-protection-v1-5` | Protection sync | 2026-06-22 | 6ee6258 |
+## Recently merged control-plane closures
 
-## Abandoned / stale
+| PR | Merge | Result |
+|---|---|---|
+| #203 | `0461faa8` | Map failures render a recovery surface instead of a black screen. |
+| #204 | `f11749ee` | Removed the surviving temporary Gill writer workflow and added a filesystem-derived control-plane audit. |
+| #205 | `5636a6a1` | Converged long-lived workflow linting and removed stale editorial branch triggers. |
+| #200 | `c8b47201` | Added all-route Android and WebKit browser coverage. |
+| #199 | `0d352415` | Closed route-owned iPhone 320 overflow in Nagornaya Part III. |
 
-None.
+## Forensic archive refs — not active lanes
+
+These refs preserve unique closed-PR heads against eventual PR-ref garbage collection. They are evidence and selective-recovery sources only.
+
+| Archive ref | Original work | Disposition |
+|---|---|---|
+| `archive/forensic-pr-79-gill-witness-2026-07-24` | Parked Gill editorial phase, including `GillWitness.astro` | Re-evaluate component separately; do not restore the old article rewrite wholesale. |
+| `archive/forensic-pr-52-gill-image-polish-2026-07-24` | Gill image/crop/rail experiments | Requires fresh visual verification against current owner preferences. |
+| `archive/forensic-pr-66-submenu-showcase-2026-07-24` | Five long-series submenu prototypes | Design provenance only; choose and rebuild from current shared series engine if needed. |
+
+AuditRepo also preserves `archive/forensic-pr-3-vosk-tts-report-2026-07-24`; the Vosk runtime itself remains in source history and current code.
+
+## Opening a lane
+
+Before changing code, record:
+
+```md
+Lane: <branch>
+Issue/PR: <number>
+Routes: <bounded list>
+Files allowed: <bounded list>
+Files forbidden: <list>
+Source of truth: <files / exact SHA>
+Required checks: <commands / browser profiles>
+Rollback point: <exact main SHA>
+```
+
+Rules:
+
+- one route owner at a time unless the owners explicitly coordinate;
+- no stale branch is merged wholesale merely because it contains unique files;
+- replacement claims must be verified against current blobs, not PR descriptions;
+- temporary workflow, trigger or writer files must be removed inside the same transaction;
+- after merge, move the lane out of the active table and record its PR/merge SHA.
+
+## Historical note
+
+The former table mixed active and merged work from June 2026 and even defined three different states as `merged`. Its full text remains available in Git history at blob `f225fb76e1ed5c495340145b7f025960916b3e91`; it is not current operational guidance.
