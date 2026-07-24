@@ -77,8 +77,31 @@ jobs:
           npm ci
           npx playwright install chromium
 
-      - name: Verify cancellable download notice in Chromium
-        run: node scripts/tts-download-notice-browser-test.js
+      - name: Run cancellable download notice Chromium fixture
+        id: browser
+        shell: bash
+        run: |
+          set +e
+          node scripts/tts-download-notice-browser-test.js > /tmp/tts-browser-output.txt 2>&1
+          status=$?
+          cat /tmp/tts-browser-output.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Persist exact Chromium diagnostic
+        if: steps.browser.outputs.status != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/tts-browser-output.txt TTS_BROWSER_ERROR.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f TTS_BROWSER_ERROR.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(tts): capture browser diagnostic"
+            git push origin HEAD:agent/tts-download-cancel-notice
+          fi
+          exit 1
 
       - name: Verify clean permanent scope
         run: |
