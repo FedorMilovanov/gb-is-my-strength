@@ -2,16 +2,16 @@
 /**
  * check-agents-rev-uniqueness.js
  *
- * Гарантирует, что каждый `AGENTS-rNNN` в таблице ревизий AGENTS.md уникален.
- * Дубликаты разных commit-сообщений под одним номером ломают traceability.
+ * Permanent governance guard:
+ * - every `AGENTS-rNNN` table entry is unique;
+ * - AGENTS / WORK_MODES / LANE_LOCK_POLICY / OWNER_INVARIANTS agree on the
+ *   current FAST / LANE / SYSTEM branch+PR model;
+ * - the concrete stale instructions retired by owner issue #219 cannot return.
  *
- * Inline references вида "См. AGENTS-r252" не считаются дубликатами —
- * проверяем только записи таблицы (формат `| **AGENTS-rNNN** |`).
+ * Inline references such as "См. AGENTS-r252" do not count as table entries.
  *
- * Closes BUG-B3 / AuditRepo recommendation 2026-06-26.
- *
- * Запуск: node scripts/check-agents-rev-uniqueness.js
- * Exit 0 = clean, exit 1 = duplicates found.
+ * Run: node scripts/check-agents-rev-uniqueness.js
+ * Exit 0 = clean, exit 1 = governance drift.
  */
 'use strict';
 
@@ -19,36 +19,105 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const AGENTS_MD = path.join(ROOT, 'AGENTS.md');
+const FILES = {
+  agents: path.join(ROOT, 'AGENTS.md'),
+  workModes: path.join(ROOT, 'docs', 'WORK_MODES.md'),
+  lanePolicy: path.join(ROOT, 'docs', 'LANE_LOCK_POLICY.md'),
+  owner: path.join(ROOT, 'docs', 'OWNER-INVARIANTS.md'),
+};
 
-if (!fs.existsSync(AGENTS_MD)) {
-  console.error('❌ AGENTS.md not found at', AGENTS_MD);
-  process.exit(1);
+const errors = [];
+const sources = {};
+
+for (const [key, filePath] of Object.entries(FILES)) {
+  if (!fs.existsSync(filePath)) {
+    errors.push(`${key}: missing ${path.relative(ROOT, filePath)}`);
+    continue;
+  }
+  sources[key] = fs.readFileSync(filePath, 'utf8');
 }
 
-const src = fs.readFileSync(AGENTS_MD, 'utf8');
+const agents = sources.agents || '';
 
-// Match only table-row entries, not inline references
+// Match only table-row entries, not inline references.
 const entryRe = /\|\s*\*\*AGENTS-r(\d+)\*\*\s*\|/g;
 const counts = new Map();
-let m;
-while ((m = entryRe.exec(src)) !== null) {
-  const id = m[1];
+let match;
+while ((match = entryRe.exec(agents)) !== null) {
+  const id = match[1];
   counts.set(id, (counts.get(id) || 0) + 1);
 }
 
-const dups = [...counts.entries()].filter(([, n]) => n > 1);
-
-if (dups.length === 0) {
-  console.log('✅ AGENTS-rNNN entries are unique (' + counts.size + ' total)');
-  process.exit(0);
+for (const [id, count] of [...counts.entries()].filter(([, n]) => n > 1).sort()) {
+  errors.push(`AGENTS-r${id}: ${count} table entries`);
 }
 
-console.error('❌ AGENTS-rNNN duplicate entries found:');
-for (const [id, n] of dups.sort()) {
-  console.error(`   r${id}: ${n} entries`);
+const required = {
+  agents: [
+    'Канонические режимы: `FAST`, `LANE`, `SYSTEM`',
+    'Любая mutation выполняется в отдельной ветке и PR',
+    '`migration/route-migration-matrix.json` — производный артефакт',
+    'checksum-verified actionlint',
+    'live-discovery в текущей сессии',
+    '| **AGENTS-r324** |',
+  ],
+  workModes: [
+    '# Work Modes — FAST / LANE / SYSTEM',
+    'All repository changes use a branch and PR.',
+    'A docs file is not automatically safe',
+  ],
+  lanePolicy: [
+    '# Lane Lock Policy — FAST / LANE / SYSTEM',
+    'Direct changes to `main` are not a normal FAST path.',
+    'No temporary workflow, trigger, writer or patcher survives',
+  ],
+  owner: [
+    'PremiumControls / Floating Cluster / Gill остаются owner-sensitive',
+    'исторический `pre-v16` submenu',
+    'Среда определяется live-discovery',
+    'Временная автоматика не переживает свою транзакцию',
+  ],
+};
+
+for (const [key, snippets] of Object.entries(required)) {
+  const source = sources[key] || '';
+  for (const snippet of snippets) {
+    if (!source.includes(snippet)) {
+      errors.push(`${key}: required governance text missing: ${JSON.stringify(snippet)}`);
+    }
+  }
 }
-console.error('');
-console.error('Fix: renumber the later occurrence(s) to the next free `r{N+1}` value');
-console.error('     and add a note "(was duplicate of rNNN)" in the new entry.');
-process.exit(1);
+
+const forbidden = {
+  agents: [
+    'SOLO/MULTI-AGENT/HIGH-RISK/EMERGENCY',
+    'Один → SOLO (main разрешён',
+    '**Всегда разрешено:** docs/',
+    'actionlint, osv-scanner — известные проблемы',
+    '2 CPU ~2 GB RAM',
+    'Файлы сохраняются между сессиями (ext4)',
+    'native / native-with-legacy-head / strict-native',
+    '10-14 day freeze after sign-off',
+  ],
+  owner: [
+    'Исторический pre-v16 submenu-контракт и rounded frame охраняются',
+    'Каноническая правда аудита — AuditRepo (`MASTER_BUG_MATRIX.md` +',
+  ],
+};
+
+for (const [key, snippets] of Object.entries(forbidden)) {
+  const source = sources[key] || '';
+  for (const snippet of snippets) {
+    if (source.includes(snippet)) {
+      errors.push(`${key}: retired governance text returned: ${JSON.stringify(snippet)}`);
+    }
+  }
+}
+
+if (errors.length > 0) {
+  console.error('❌ Governance contract drift detected:');
+  for (const error of errors) console.error(`   - ${error}`);
+  process.exit(1);
+}
+
+console.log(`✅ Governance contract is consistent; AGENTS revisions unique (${counts.size} total)`);
