@@ -4,23 +4,7 @@
     "avraam": {
       "status": "active",
       "categoryIds": [],
-      "routePlaceIds": [
-        "ur",
-        "haran",
-        "damascus",
-        "shechem",
-        "bethel",
-        "ai",
-        "egypt",
-        "hebron",
-        "dan",
-        "hammam",
-        "babedra",
-        "zoar",
-        "gerar",
-        "beersheba",
-        "moriah"
-      ],
+      "routePlaceIds": [],
       "claimPlaces": {},
       "topicPlaces": {},
       "categoryPlaces": {}
