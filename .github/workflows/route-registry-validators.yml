@@ -1,9 +1,6 @@
 name: Route Registry Validators
 
 on:
-  push:
-    branches:
-      - lane/system-route-registry-validators-v2-2026-07-09
   pull_request:
     branches: [main]
     paths:
