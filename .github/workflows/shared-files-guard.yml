@@ -35,7 +35,7 @@ jobs:
         run: npm run workflows:check
 
       - name: Repository control-plane integrity
-        run: node scripts/repository-control-plane-audit.mjs
+        run: npm run control-plane:audit
 
       - name: Readiness-to-deploy workflow linkage
         run: node scripts/workflow-linkage-regression-test.js
@@ -102,7 +102,7 @@ jobs:
 
       - name: Lint workflow YAML (actionlint)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
-        run: node scripts/run-actionlint.mjs
+        run: npm run workflows:lint
 
       - name: Upload control-plane audit
         if: always()
