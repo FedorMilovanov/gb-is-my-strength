@@ -24,46 +24,72 @@ function normalizeColor(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '');
 }
 
-async function collectRenderedPaths(page) {
-  return page.evaluate(() => {
+async function collectRenderedPaths(page, rootSelector) {
+  return page.evaluate((selector) => {
+    const root = document.querySelector(selector);
+    if (!root) throw new Error(`map root not found: ${selector}`);
     const read = (node) => ({
       d: node.getAttribute('d') || '',
       source: node.getAttribute('data-route-source') || '',
+      stage: Number(node.getAttribute('data-stage')),
       stageIndex: Number(node.getAttribute('data-stage-index')),
       pathIndex: Number(node.getAttribute('data-route-path-index')),
+      kind: node.getAttribute('data-route-kind') || '',
       colorKey: node.getAttribute('data-route-color-key') || '',
       stroke: node.getAttribute('stroke') || '',
-      dash: node.getAttribute('stroke-dasharray') || '',
+      dashFlag: node.getAttribute('data-route-dash') || '',
+      dashArray: node.getAttribute('stroke-dasharray') || '',
       markerEnd: node.getAttribute('marker-end') || '',
+      layer: node.getAttribute('data-layer') || '',
       layerAll: node.getAttribute('data-layer-all') || '',
       layerAny: node.getAttribute('data-layer-any') || '',
+      className: node.getAttribute('class') || '',
     });
     return {
-      main: [...document.querySelectorAll('#me-paths .me-route')].map(read),
-      under: [...document.querySelectorAll('#me-paths .me-route-under')].map(read),
-      authoredMarkers: [...document.querySelectorAll('defs marker[id^="me-arrow-authored-"]')].map((marker) => ({
+      main: [...root.querySelectorAll('#me-paths .me-route-main')].map(read),
+      under: [...root.querySelectorAll('#me-paths .me-route-underlay')].map(read),
+      authoredMarkers: [...root.querySelectorAll('defs marker[id^="me-arrow-authored-"]')].map((marker) => ({
         id: marker.id,
         fill: marker.querySelector('path')?.getAttribute('fill') || '',
       })),
-      stageLabels: [...document.querySelectorAll('#me-paths .me-stage-label')].map((label) => Number(label.getAttribute('data-stage-index'))),
+      stageLabels: [...root.querySelectorAll('#me-paths .me-route-label')].map((label) => ({
+        stage: Number(label.getAttribute('data-stage')),
+        stageIndex: Number(label.getAttribute('data-stage-index')),
+        text: label.textContent || '',
+        layerAll: label.getAttribute('data-layer-all') || '',
+      })),
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
-  });
+  }, rootSelector);
 }
 
-async function mountRoute(page, routePath) {
-  return page.evaluate(async (url) => {
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`route fetch failed: ${response.status} ${response.statusText}`);
-    const route = await response.json();
-    const stage = document.querySelector('#stage');
-    if (!stage || !window.MapEngine?.createMap) throw new Error('shared MapEngine fixture is unavailable');
-    stage.replaceChildren();
-    const instance = window.MapEngine.createMap(stage, route, { backUrl: '/karty/' });
+async function mountFixture(page, fixtureId, { routePath = null, routeData = null } = {}) {
+  return page.evaluate(async ({ id, url, inlineRoute }) => {
+    let route = inlineRoute;
+    if (!route) {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`route fetch failed: ${response.status} ${response.statusText}`);
+      route = await response.json();
+    }
+
+    try { window.__mapAuthoredFixture?.destroy?.(); } catch (_) {}
+    document.getElementById(id)?.remove();
+
+    const fixture = document.createElement('div');
+    fixture.id = id;
+    fixture.style.width = '1000px';
+    fixture.style.maxWidth = '100%';
+    fixture.style.height = '700px';
+    fixture.style.margin = '0 auto';
+    fixture.style.position = 'relative';
+    document.body.appendChild(fixture);
+
+    if (!window.MapEngine?.createMap) throw new Error('shared MapEngine fixture is unavailable');
+    const instance = window.MapEngine.createMap(fixture, route, { backUrl: '/karty/' });
     if (!instance) throw new Error('shared MapEngine did not create the fixture');
     window.__mapAuthoredFixture = instance;
     return route;
-  }, routePath);
+  }, { id: fixtureId, url: routePath, inlineRoute: routeData });
 }
 
 async function run() {
@@ -79,22 +105,25 @@ async function run() {
     runtimeErrors.push(`console: ${text}`);
   });
 
-  const report = { browser: BROWSER_NAME, fallback: null, authored: null, failures: [] };
+  const report = { browser: BROWSER_NAME, fallback: null, authored: null, invalidFallback: null, failures: [] };
   try {
     await page.goto(`${BASE}/karty/ishod/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('#me-paths .me-route')), null, { timeout: 20000 });
+    await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('#stage #me-paths .me-route-main')), null, { timeout: 20000 });
 
-    const fallback = await collectRenderedPaths(page);
-    const generated = fallback.main.filter((entry) => entry.source === 'generated');
-    assert(generated.length > 0, 'Ishod generated fallback paths are missing', fallback);
+    const fallback = await collectRenderedPaths(page, '#stage');
+    assert(fallback.main.length > 0, 'Ishod generated fallback paths are missing', fallback);
     assert(fallback.main.every((entry) => entry.source === 'generated'), 'Ishod unexpectedly rendered authored paths', fallback);
-    assert(generated.every((entry) => /^M[-+.\d]/.test(entry.d) && /\sL[-+.\d]/.test(entry.d)), 'Ishod fallback is not generated M/L geometry', generated);
+    assert(fallback.main.every((entry) => /^M[-+.\d]/.test(entry.d) && /\sL[-+.\d]/.test(entry.d) && !/[CQAST]/i.test(entry.d)), 'Ishod fallback is not generated M/L geometry', fallback.main);
+    assert(fallback.main.length === fallback.under.length, 'Ishod main/underlay path count drift', fallback);
+    assert(fallback.main.every((entry) => entry.className.includes('me-route-main') && entry.kind === 'main'), 'Ishod main compatibility classes/metadata drift', fallback.main);
+    assert(fallback.under.every((entry) => entry.className.includes('me-route-underlay') && entry.kind === 'underlay'), 'Ishod underlay compatibility classes/metadata drift', fallback.under);
     assert(fallback.overflow <= 1, 'Ishod fixture has horizontal overflow', fallback);
-    report.fallback = { generated: generated.length, stages: fallback.stageLabels.length };
+    report.fallback = { generated: fallback.main.length, stages: fallback.stageLabels.length };
 
-    const route = await mountRoute(page, '/karty/avraam/route.json');
-    await page.waitForFunction(() => document.querySelectorAll('#me-paths .me-route[data-route-source="authored"]').length > 0, null, { timeout: 10000 });
-    await page.waitForTimeout(120);
+    const fixtureId = 'map-authored-fixture';
+    const route = await mountFixture(page, fixtureId, { routePath: '/karty/avraam/route.json' });
+    await page.waitForFunction((id) => document.querySelectorAll(`#${id} #me-paths .me-route-main[data-route-source="authored"]`).length > 0, fixtureId, { timeout: 10000 });
+    await page.waitForTimeout(180);
 
     const expected = [];
     (route.stages || []).forEach((stage, stageIndex) => {
@@ -111,49 +140,74 @@ async function run() {
     assert(expected.length === 15, 'Avraam source no longer contains the canonical 15 authored paths', { expected: expected.length });
     assert(expected.every((entry) => /\bC[-+.\d]/.test(entry.d)), 'Avraam source contains a non-Bezier authored route', expected);
 
-    const rendered = await collectRenderedPaths(page);
-    const authored = rendered.main.filter((entry) => entry.source === 'authored');
-    const under = rendered.under.filter((entry) => entry.source === 'authored');
-    assert(authored.length === expected.length, 'authored main path count drift', { expected: expected.length, actual: authored.length, authored });
-    assert(under.length === expected.length, 'authored underlay path count drift', { expected: expected.length, actual: under.length, under });
+    const rendered = await collectRenderedPaths(page, `#${fixtureId}`);
+    assert(rendered.main.length === expected.length, 'authored main path count drift', { expected: expected.length, actual: rendered.main.length, rendered });
+    assert(rendered.under.length === expected.length, 'authored underlay path count drift', { expected: expected.length, actual: rendered.under.length, rendered });
     assert(rendered.main.every((entry) => entry.source === 'authored'), 'Avraam retained generated fallback paths despite authored geometry', rendered.main);
+    assert(rendered.under.every((entry) => entry.source === 'authored'), 'Avraam retained generated underlays despite authored geometry', rendered.under);
     assert(rendered.authoredMarkers.length === expected.length, 'authored arrow marker count drift', rendered.authoredMarkers);
     assert(rendered.stageLabels.length === route.stages.length, 'stage labels were duplicated or lost', rendered.stageLabels);
+    assert(new Set(rendered.stageLabels.map((entry) => entry.stageIndex)).size === route.stages.length, 'stage label indexes are not unique', rendered.stageLabels);
     assert(rendered.overflow <= 1, 'Avraam fixture has horizontal overflow', rendered);
 
     for (let index = 0; index < expected.length; index += 1) {
       const source = expected[index];
-      const main = authored[index];
-      const shadow = under[index];
-      assert(main.stageIndex === source.stageIndex && main.pathIndex === source.pathIndex, 'authored path order/index drift', { index, source, main });
-      assert(main.d === source.d, 'authored SVG d was not preserved exactly', { index, source: source.d, rendered: main.d });
-      assert(shadow.d === source.d, 'authored underlay d was not preserved exactly', { index, source: source.d, rendered: shadow.d });
-      assert(main.colorKey === source.colorKey, 'authored color token drift', { index, source, main });
+      const main = rendered.main[index];
+      const shadow = rendered.under[index];
+      assert(main.stage === source.stageIndex && main.stageIndex === source.stageIndex && main.pathIndex === source.pathIndex, 'authored main path order/index drift', { index, source, main });
+      assert(shadow.stage === source.stageIndex && shadow.stageIndex === source.stageIndex && shadow.pathIndex === source.pathIndex, 'authored underlay order/index drift', { index, source, shadow });
+      assert(main.d === source.d && shadow.d === source.d, 'authored SVG d was not preserved exactly', { index, source: source.d, main: main.d, under: shadow.d });
+      assert(main.kind === 'main' && shadow.kind === 'underlay', 'route kind compatibility metadata drift', { index, main, shadow });
+      assert(main.className.includes('me-route-main') && shadow.className.includes('me-route-underlay'), 'route compatibility class drift', { index, main, shadow });
+      assert(main.colorKey === source.colorKey && shadow.colorKey === source.colorKey, 'authored color token drift', { index, source, main, shadow });
       assert(normalizeColor(main.stroke) === normalizeColor(COLOR_TOKENS[source.colorKey]), 'authored path color was not resolved canonically', { index, source, main });
-      assert(main.layerAll.split(/\s+/).includes(`stage-${source.stageIndex}`), 'stage layer membership missing from authored path', { index, source, main });
+      assert(normalizeColor(shadow.stroke) === normalizeColor(main.stroke), 'authored underlay color does not match main path', { index, main, shadow });
+      assert(main.layerAll.split(/\s+/).includes(`stage-${source.stageIndex}`), 'stage layer membership missing from authored main path', { index, source, main });
+      assert(shadow.layerAll === main.layerAll && shadow.layerAny === main.layerAny && shadow.layer === main.layer, 'main/underlay layer membership drift', { index, main, shadow });
       assert(main.markerEnd === `url(#me-arrow-authored-${source.stageIndex}-${source.pathIndex})`, 'authored marker binding drift', { index, source, main });
       const marker = rendered.authoredMarkers.find((entry) => entry.id === `me-arrow-authored-${source.stageIndex}-${source.pathIndex}`);
       assert(marker && normalizeColor(marker.fill) === normalizeColor(main.stroke), 'authored arrow color does not match route stroke', { index, source, main, marker });
+      assert(main.dashFlag === (source.dash ? '1' : '0') && shadow.dashFlag === (source.dash ? '1' : '0'), 'authored dash metadata drift', { index, source, main, shadow });
       if (source.dash) {
-        assert(main.dash === '10 8' && shadow.dash === '10 8', 'authored dashed route lost its dash contract', { index, source, main, shadow });
+        assert(main.dashArray === '10 8' && shadow.dashArray === '10 8', 'authored dashed route lost its dash contract', { index, source, main, shadow });
       } else {
-        assert(main.dash !== '10 8' && shadow.dash !== '10 8', 'solid authored route was converted to source dash styling', { index, source, main, shadow });
+        assert(main.dashArray !== '10 8' && shadow.dashArray !== '10 8', 'solid authored route was converted to source dash styling', { index, source, main, shadow });
       }
     }
 
-    const screenshot = path.join(EVIDENCE, `${BROWSER_NAME}-avraam-authored-paths.png`);
-    await page.screenshot({ path: screenshot, fullPage: false });
+    const invalidRoute = {
+      meta: { id: 'invalid-authored-fallback', title: 'Invalid authored fallback', viewport_init: { cx: 200, cy: 120, w: 500 } },
+      stories: [{ id: 'main', label: 'Весь путь', places: null, stages: null }],
+      places: [
+        { id: 'a', name: 'A', x: 100, y: 100, stage: 0 },
+        { id: 'b', name: 'B', x: 300, y: 160, stage: 0 },
+      ],
+      stages: [{ n: 'I', t: 'Fallback', paths: [{ d: 'not-svg-path', c: 'gold' }] }],
+    };
+    await mountFixture(page, fixtureId, { routeData: invalidRoute });
+    await page.waitForFunction((id) => document.querySelectorAll(`#${id} #me-paths .me-route-main`).length === 1, fixtureId, { timeout: 10000 });
+    const invalidFallback = await collectRenderedPaths(page, `#${fixtureId}`);
+    assert(invalidFallback.main.length === 1 && invalidFallback.main[0].source === 'generated', 'invalid authored geometry did not fail closed to generated fallback', invalidFallback);
+    assert(/^M100,100 L300,160$/.test(invalidFallback.main[0].d), 'invalid authored fallback geometry drift', invalidFallback.main[0]);
+    assert(invalidFallback.authoredMarkers.length === 0, 'invalid authored geometry created authored markers', invalidFallback.authoredMarkers);
+    report.invalidFallback = { generated: invalidFallback.main.length, d: invalidFallback.main[0].d };
+
+    await mountFixture(page, fixtureId, { routePath: '/karty/avraam/route.json' });
+    await page.waitForFunction((id) => document.querySelectorAll(`#${id} #me-paths .me-route-main[data-route-source="authored"]`).length === 15, fixtureId, { timeout: 10000 });
+    await page.locator(`#${fixtureId}`).screenshot({ path: path.join(EVIDENCE, `${BROWSER_NAME}-avraam-authored-paths.png`) });
+
     assert(runtimeErrors.length === 0, 'runtime errors detected', { runtimeErrors });
     report.authored = {
       expected: expected.length,
-      rendered: authored.length,
-      underlays: under.length,
+      rendered: rendered.main.length,
+      underlays: rendered.under.length,
       markers: rendered.authoredMarkers.length,
+      stages: rendered.stageLabels.length,
       dashed: expected.filter((entry) => entry.dash).length,
       colors: [...new Set(expected.map((entry) => entry.colorKey))],
     };
     fs.writeFileSync(path.join(EVIDENCE, `${BROWSER_NAME}-report.json`), JSON.stringify(report, null, 2));
-    console.log(`PASS ${BROWSER_NAME}: fallback=${generated.length}, authored=${authored.length}, dashed=${report.authored.dashed}, markers=${rendered.authoredMarkers.length}`);
+    console.log(`PASS ${BROWSER_NAME}: fallback=${fallback.main.length}, authored=${rendered.main.length}, invalidFallback=${invalidFallback.main.length}, dashed=${report.authored.dashed}`);
   } catch (error) {
     report.failures.push({ message: error.message, details: error.details || null, stack: error.stack, runtimeErrors });
     fs.writeFileSync(path.join(EVIDENCE, `${BROWSER_NAME}-report.json`), JSON.stringify(report, null, 2));
