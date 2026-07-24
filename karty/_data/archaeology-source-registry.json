@@ -32,12 +32,12 @@
       "id": "aig-have-we-found-sodom",
       "title": "Have We Found Sodom?",
       "organization": "Answers in Genesis",
-      "year": null,
+      "year": 2017,
       "url": "https://answersingenesis.org/archaeology/have-we-found-sodom/",
       "tier": "yec-analysis",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
@@ -45,8 +45,8 @@
         "sodom",
         "hammam"
       ],
-      "note": "YEC evaluation of proposed Sodom sites; requires independent excavation sources for factual claims.",
-      "accessedAt": "2026-06-14"
+      "note": "YEC evaluation of proposed Sodom sites; published 2017-09-01. Interpretation only; independent excavation sources remain required for factual claims.",
+      "accessedAt": "2026-07-24"
     },
     {
       "id": "arj-abraham-chronology",
@@ -558,28 +558,29 @@
       "id": "creation-chronogenealogies",
       "title": "Biblical chronogenealogies",
       "organization": "Creation Ministries International",
-      "year": null,
-      "url": "https://creation.com/biblical-chronogenealogies",
+      "year": 2003,
+      "url": "https://creation.com/en/articles/biblical-chronogenealogies",
       "tier": "yec-analysis",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
       "places": [],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "YEC chronological interpretation; underlying article first appeared in Journal of Creation 17(3), pages 14–18, December 2003; current web edition published 2023-10-07."
     },
     {
       "id": "creation-times-abraham",
       "title": "The Times of Abraham",
       "organization": "Creation Ministries International",
-      "year": null,
-      "url": "https://creation.com/the-times-of-abraham",
+      "year": 1986,
+      "url": "https://creation.com/en/articles/the-times-of-abraham",
       "tier": "yec-analysis",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
@@ -587,7 +588,8 @@
         "ur",
         "harran"
       ],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "YEC chronological interpretation; underlying article first appeared in Journal of Creation 2(1), pages 77–87, April 1986; current web edition published 2006-03-30."
     },
     {
       "id": "custodia-capernaum",
@@ -1122,19 +1124,20 @@
     },
     {
       "id": "icr-biblical-age",
-      "title": "Biblical age overview",
+      "title": "Biblical Age of the Earth",
       "organization": "Institute for Creation Research",
       "year": null,
       "url": "https://www.icr.org/biblical-age",
       "tier": "yec-analysis",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
       "places": [],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "Institutional YEC chronology overview. The current resource exposes no reliable article byline or publication date; interpretation only."
     },
     {
       "id": "imj-cradle-christianity",
@@ -1273,14 +1276,14 @@
     },
     {
       "id": "loc-mamre",
-      "title": "Mamre excavations photograph",
-      "organization": "Library of Congress, Matson Collection",
-      "year": 1930,
-      "url": "https://www.loc.gov/resource/matpc.22876/",
+      "title": "Southern Palestine, Hebron, Beersheba and Gaza area. Ramet el-Khalil, Mamre excavations. Gen. 25:9",
+      "organization": "Library of Congress, Matson Photo Service",
+      "year": null,
+      "url": "https://www.loc.gov/pictures/item/2019705536/",
       "tier": "visual-archive",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
@@ -1288,25 +1291,27 @@
         "mamre",
         "hebron"
       ],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "Library of Congress visual record; created/published between 1950 and 1977. Visual context only, not archaeological identification evidence."
     },
     {
       "id": "loc-shur-el-raha",
-      "title": "El Raha Plain / Sinai context photograph",
-      "organization": "Library of Congress, Matson Collection",
-      "year": 1900,
-      "url": "https://tile.loc.gov/storage-services/service/pnp/matpc/01900/01946v.jpg",
+      "title": "To Sinai via the desert. Wilderness of Shur",
+      "organization": "Library of Congress, American Colony (Jerusalem). Photo Department",
+      "year": null,
+      "url": "https://www.loc.gov/pictures/item/2019695634/",
       "tier": "visual-archive",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
       "places": [
         "shur"
       ],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "Library of Congress visual record; created/published approximately 1900–1920. Visual context only, not route-identification evidence."
     },
     {
       "id": "louvre-mesha-stele",
@@ -1559,8 +1564,8 @@
       "url": "https://www.ritmeyer.com/2010/10/12/mamre-and-the-temple-mount-in-jerusalem/",
       "tier": "scholarly-reference",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "needs-review",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
@@ -1568,7 +1573,8 @@
         "mamre",
         "moriah"
       ],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "Needs review: the dated URL redirects without exposing the claimed article, and current independent search did not recover exact publication metadata. Keep as conservative interpretation only; do not use as excavation evidence."
     },
     {
       "id": "sapienza-jericho-2019-2023",
@@ -1747,15 +1753,16 @@
       "url": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/beerscheba",
       "tier": "scholarly-reference",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
       "places": [
         "beersheba"
       ],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "Direct WiBiLex scholarly encyclopedia article under Deutsche Bibelgesellschaft editorial governance; interpretation/reference layer, not excavation report."
     },
     {
       "id": "wibilex-bethel",
@@ -1765,15 +1772,16 @@
       "url": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/bethel-ort",
       "tier": "scholarly-reference",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
       "places": [
         "bethel"
       ],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "Direct WiBiLex scholarly encyclopedia article under Deutsche Bibelgesellschaft editorial governance; Bethel identification remains an interpretation/candidate layer."
     },
     {
       "id": "wibilex-hebron",
@@ -1783,15 +1791,16 @@
       "url": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/hebron",
       "tier": "scholarly-reference",
       "status": "active",
-      "verification": "imported",
-      "verifiedAt": "2026-06-14",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
       "maps": [
         "avraam"
       ],
       "places": [
         "hebron"
       ],
-      "accessedAt": "2026-06-14"
+      "accessedAt": "2026-07-24",
+      "note": "Direct WiBiLex scholarly encyclopedia article under Deutsche Bibelgesellschaft editorial governance; interpretation/reference layer, not excavation report."
     }
   ],
   "claims": [
