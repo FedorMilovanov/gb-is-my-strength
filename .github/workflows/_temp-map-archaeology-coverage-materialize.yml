@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - scripts/_temp-map-archaeology-coverage-materialize.mjs
+      - scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
+      - scripts/map-archaeology-source-registry-audit.js
       - scripts/map-archaeology-category-coverage-audit.js
       - karty/_data/archaeology-source-registry.json
       - karty/_data/archaeology-source-provenance.json
@@ -34,29 +36,44 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
+      - name: Materialize declared multiscope audit
+        run: node scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs --write
       - name: Materialize explicit catalog and provenance decisions
         run: node scripts/_temp-map-archaeology-coverage-materialize.mjs --write
       - name: Verify source syntax
         run: |
+          node --check scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
           node --check scripts/_temp-map-archaeology-coverage-materialize.mjs
           node --check scripts/map-archaeology-source-registry-audit.js
           node --check scripts/map-archaeology-category-coverage-audit.js
+          node scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-provenance.json','utf8'))"
       - name: Run independent provenance and category contracts
         run: |
           node scripts/map-archaeology-source-registry-audit.js
           node scripts/map-archaeology-category-coverage-audit.js
-      - name: Verify exact data-only diff
+      - name: Upload transaction diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-archaeology-materialize-${{ github.run_id }}
+          path: |
+            reports/map-archaeology-source-registry.json
+            reports/map-archaeology-category-coverage.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify exact three-file diff
         shell: bash
         run: |
           set -euo pipefail
           git diff --check
           mapfile -t changed < <(git diff --name-only)
           printf 'changed[%s]=%s\n' "${#changed[@]}" "${changed[*]}"
-          test "${#changed[@]}" -eq 2
+          test "${#changed[@]}" -eq 3
           test "${changed[0]}" = "karty/_data/archaeology-source-provenance.json"
           test "${changed[1]}" = "karty/_data/archaeology-source-registry.json"
+          test "${changed[2]}" = "scripts/map-archaeology-source-registry-audit.js"
           node - <<'NODE'
           const fs = require('node:fs');
           const catalog = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-registry.json','utf8'));
@@ -67,7 +84,7 @@ jobs:
           if (catalog.sources.some((source) => Number.isFinite(source.year) && source.year < 1800)) throw new Error('ancient publication year remains');
           console.log('PASS exact 94/94 sources and 12 categories');
           NODE
-      - name: Commit exact data transaction
+      - name: Commit exact provenance transaction
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -75,7 +92,10 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add karty/_data/archaeology-source-registry.json karty/_data/archaeology-source-provenance.json
+          git add \
+            karty/_data/archaeology-source-registry.json \
+            karty/_data/archaeology-source-provenance.json \
+            scripts/map-archaeology-source-registry-audit.js
           git diff --cached --check
           git commit -m "research(karty): materialize provenance-complete category corpus"
           git push origin "HEAD:${HEAD_REF}"
