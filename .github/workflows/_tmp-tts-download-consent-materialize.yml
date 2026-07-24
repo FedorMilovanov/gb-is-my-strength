@@ -59,7 +59,31 @@ jobs:
         run: node --check scripts/tts-download-notice-browser-test.js
 
       - name: Run TTS consent mutation contract
-        run: node scripts/tts-download-consent-contract-test.js
+        id: mutation
+        shell: bash
+        run: |
+          set +e
+          node scripts/tts-download-consent-contract-test.js > /tmp/tts-mutation-output.txt 2>&1
+          status=$?
+          cat /tmp/tts-mutation-output.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Persist exact mutation diagnostic
+        if: steps.mutation.outputs.status != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          cp /tmp/tts-mutation-output.txt reports/_tmp-tts-mutation-error.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/_tmp-tts-mutation-error.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(tts): capture mutation diagnostic"
+            git push origin HEAD:agent/tts-download-cancel-notice
+          fi
+          exit 1
 
       - name: Verify existing cache-bust contract remains clean
         run: node scripts/cache-bust.js
@@ -84,6 +108,7 @@ jobs:
           test ! -e scripts/_tmp-tts-download-consent-materialize.js
           test ! -e scripts/_tmp-tts-materializer-parts
           test ! -e .github/workflows/_tmp-tts-download-consent-materialize.yml
+          test ! -e reports/_tmp-tts-mutation-error.txt
           git diff --check
           git status --short
 
