@@ -74,11 +74,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p reports
-          cp /tmp/tts-mutation-output.txt reports/_tmp-tts-mutation-error.txt
+          cp /tmp/tts-mutation-output.txt TTS_MUTATION_ERROR.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/_tmp-tts-mutation-error.txt
+          git add -f TTS_MUTATION_ERROR.txt
           if ! git diff --cached --quiet; then
             git commit -m "chore(tts): capture mutation diagnostic"
             git push origin HEAD:agent/tts-download-cancel-notice
@@ -108,7 +107,7 @@ jobs:
           test ! -e scripts/_tmp-tts-download-consent-materialize.js
           test ! -e scripts/_tmp-tts-materializer-parts
           test ! -e .github/workflows/_tmp-tts-download-consent-materialize.yml
-          test ! -e reports/_tmp-tts-mutation-error.txt
+          test ! -e TTS_MUTATION_ERROR.txt
           git diff --check
           git status --short
 
