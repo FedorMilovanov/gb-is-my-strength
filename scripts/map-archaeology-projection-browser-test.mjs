@@ -32,11 +32,15 @@ const projection = {
   },
 };
 
+fs.mkdirSync('reports', { recursive: true });
+const reportPath = `reports/map-archaeology-projection-${browserName}.json`;
+const screenshotPath = `reports/map-archaeology-projection-${browserName}.png`;
 const launched = await browserType.launch({ headless: true });
 const page = await launched.newPage({ viewport: { width: 390, height: 844 } });
 const errors = [];
 page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
 page.on('pageerror', error => errors.push(error.message));
+let checkpoint = 'launch';
 
 try {
   await page.route('https://example.test/**', request => request.fulfill({
@@ -44,13 +48,16 @@ try {
     contentType: 'text/html',
     body: `<!doctype html><html><body><div id="stage" style="width:100vw;height:100vh"></div><script>${engine}<\/script><script>window.projectionTest=MapEngine.createMap(document.getElementById('stage'),${JSON.stringify(route)},{showIntro:false,archaeologyProjection:${JSON.stringify(projection)}});window.projectionTest.open('ur');<\/script></body></html>`,
   }));
+  checkpoint = 'navigate';
   await page.goto('https://example.test/karty/test/?place=ur');
   const panel = page.locator('.me-panel');
   await page.waitForSelector('.me-panel--open');
+  checkpoint = 'initial-panel';
   assert.equal(await panel.getAttribute('inert'), null, 'standalone open panel must not remain inert');
   assert.equal(await panel.getAttribute('aria-hidden'), 'false');
   assert.equal(await page.locator('[data-archaeology-projection-root]').count(), 0, 'story tab must not render archaeology');
 
+  checkpoint = 'open-archaeology';
   await page.locator('[data-tab="arch"]').click();
   await page.waitForSelector('[data-claim-id="ur-context"]');
   assert.equal(await page.locator('[data-claim-id="map-context"]').count(), 1);
@@ -62,6 +69,7 @@ try {
   assert.equal(await page.locator('[data-source-id="field-source"] a').first().getAttribute('href'), 'https://example.test/report');
   assert.match(await page.locator('[data-source-id="field-source"] .map-arch-source__meta').first().textContent(), /академическая рамка/);
 
+  checkpoint = 'close-panel';
   await page.locator('[data-tab="story"]').click();
   await page.waitForFunction(() => !document.querySelector('[data-archaeology-projection-root]'));
   await page.evaluate(() => window.projectionTest.close());
@@ -69,6 +77,7 @@ try {
   assert.notEqual(await panel.getAttribute('inert'), null, 'closed standalone panel must be inert');
   assert.equal(await panel.getAttribute('aria-hidden'), 'true');
 
+  checkpoint = 'reopen-retracted';
   await page.evaluate(() => window.projectionTest.open('hammam'));
   await page.waitForSelector('.me-panel--open');
   assert.equal(await panel.getAttribute('inert'), null, 'reopened standalone panel must be interactive');
@@ -78,7 +87,21 @@ try {
   assert.equal(await page.locator('[data-source-id="retracted-source"][data-evidence-use="negative"][data-source-status="retracted"]').count(), 1);
   assert.equal(await page.locator('.me-arch-footer').count(), 0);
   assert.deepEqual(errors, []);
+
+  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: true, checkpoint: 'complete', standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, errors }, null, 2));
   console.log(JSON.stringify({ browser: browserName, standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, errors: 0 }, null, 2));
+} catch (error) {
+  const panelState = await page.locator('.me-panel').evaluate(element => ({
+    className: element.className,
+    inert: element.hasAttribute('inert'),
+    ariaHidden: element.getAttribute('aria-hidden'),
+    activeTab: element.querySelector('.me-tab--active')?.getAttribute('data-tab') || null,
+    tabs: [...element.querySelectorAll('.me-tab')].map(tab => tab.getAttribute('data-tab')),
+    claims: [...element.querySelectorAll('[data-claim-id]')].map(node => node.getAttribute('data-claim-id')),
+  })).catch(() => null);
+  await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
+  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: false, checkpoint, error: error?.stack || String(error), errors, panelState }, null, 2));
+  throw error;
 } finally {
   await launched.close();
 }
