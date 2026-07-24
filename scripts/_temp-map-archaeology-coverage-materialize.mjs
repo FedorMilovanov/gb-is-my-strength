@@ -37,17 +37,17 @@ const p = (publicationYear, locatorType, workType, authority, review, evidenceUs
 
 const PROVENANCE = {
   'biu-gath-final-report': p(2012,'publication-record','excavation-report','primary','institutional','high',{}),
-  'biu-gath-overview': p(2017,'journal-article','archaeological-synthesis','secondary','peer-reviewed','high',{}),
+  'biu-gath-overview': p(2017,'journal-article','archaeological-synthesis','secondary','peer-reviewed','high',{doi:'10.5615/neareastarch.80.4.0212'}),
   'biu-gath-project': p(null,'project-page','research-project','secondary','institutional','supporting',{}),
-  'biu-hurbat-husham-thamnata': p(2025,'journal-article','journal-article','secondary','peer-reviewed','high',{}),
+  'biu-hurbat-husham-thamnata': p(2025,'journal-article','journal-article','secondary','peer-reviewed','high',{doi:'10.46535/ca.32.1.04'}),
   'bm-babylonian-chronicle-21946': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'W_1896-0409-51'},subject('late 7th–early 6th century BCE',-625,-580)),
   'bm-cyrus-cylinder-object': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'W_1880-0617-1941'},subject('539 BCE',-539)),
   'bm-kenyon-jericho-publication': p(1981,'publication-record','excavation-report','primary','institutional','high',{catalog:'BIB11226'}),
   'bm-lachish-relief': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'W_1856-0909-14_7'},subject('c. 700 BCE',-710,-690)),
-  'bm-nebusarsekim-tablet': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'W_1920-1213-81'},subject('c. 595 BCE',-600,-590)),
+  'bm-nebusarsekim-tablet': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'W_1920-1213-81'},subject('Neo-Babylonian, 605–562 BCE',-605,-562)),
   'bm-papyrus-anastasi-v': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'Y_EA10244-2'},subject('New Kingdom, conventional c. 1250 BCE',-1275,-1225)),
-  'bm-taylor-prism': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'W_1855-1003-1'},subject('c. 691 BCE',-700,-680)),
-  'brooklyn-elephantine-marriage': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'3488'},subject('449 BCE',-449)),
+  'bm-taylor-prism': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'W_1855-1003-1'},subject('691 BCE',-691)),
+  'brooklyn-elephantine-marriage': p(null,'collection-page','collection-record','primary','institutional','high',{museumObject:'3488',accession:'47.218.89'},subject('3 July 449 BCE',-449)),
   'custodia-capernaum': p(null,'project-page','archaeological-synthesis','secondary','institutional','supporting',{}),
   'egypt-sinai-fortifications': p(2025,'news-item','archaeological-synthesis','secondary','institutional','supporting',{}),
   'elephantine-yaho-tax-list': p(null,'collection-page','collection-record','primary','institutional','high',{object:'306605'},subject('c. 420 BCE',-425,-415)),
@@ -69,7 +69,7 @@ const PROVENANCE = {
   'imj-shrine-book': p(null,'collection-page','collection-record','secondary','institutional','supporting',{}),
   'imj-temple-scroll': p(null,'collection-page','collection-record','primary','institutional','high',{},subject('Second Temple period',-150,50)),
   'louvre-mesha-stele': p(null,'collection-page','collection-record','primary','institutional','high',{ark:'53355/cl010120339'},subject('9th century BCE',-875,-825)),
-  'oeai-ephesos-branch': p(null,'project-page','research-project','secondary','institutional','supporting',{}),
+  'oeai-ephesos-branch': p(null,'project-page','research-project','secondary','institutional','high',{}),
   'oeai-forschungen-ephesos': p(null,'collection-page','bibliographic-index','secondary','institutional','supporting',{}),
   'pcma-retaba-2011': p(2011,'field-report','excavation-report','primary','institutional','high',{}),
   'pcma-retaba-pam23': p(2014,'journal-article','excavation-report','secondary','peer-reviewed','high',{}),
@@ -100,7 +100,7 @@ const CATEGORIES = [
   {id:'persian_return',label:'Persian return and Elephantine',mapScopes:['vozvrashchenie'],sourceIds:['bm-cyrus-cylinder-object','brooklyn-elephantine-marriage','elephantine-yaho-tax-list','elephantine-yaho-temple-letter'],claimIds:['persian-return-context']},
   {id:'maccabees',label:'Maccabean period',mapScopes:['maccabim'],sourceIds:['biu-hurbat-husham-thamnata','iaa-horbat-ha-gardi','imj-heliodorus-stele','iaa-givati-2019-2020'],claimIds:['maccabean-context']},
   {id:'jesus_ministry',label:'Jesus ministry material context',mapScopes:['iisus'],sourceIds:['custodia-capernaum','iaa-migdal-2013','iaa-migdal-2015','iaa-siloam-silwan-2014','imj-cradle-christianity'],claimIds:['jesus-ministry-context']},
-  {id:'early_church',label:'Early church material context',mapScopes:['early-church','pavel'],sourceIds:['imj-cradle-christianity','custodia-capernaum','oeai-ephesos-branch','oeai-forschungen-ephesos'],claimIds:['early-church-context']},
+  {id:'early_church',label:'Early church material context',mapScopes:['early-church','pavel'],sourceIds:['imj-cradle-christianity','custodia-capernaum','oeai-ephesos-branch','oeai-forschungen-ephesos','iaa-siloam-silwan-2014'],claimIds:['early-church-context']},
   {id:'dead_sea_scrolls',label:'Dead Sea Scrolls corpus',mapScopes:['qumran'],sourceIds:['iaa-dss-digital-library','iaa-dss-discovery-sites','imj-great-isaiah-scroll','imj-shrine-book','imj-temple-scroll'],claimIds:['dead-sea-scrolls-context']}
 ];
 
@@ -115,7 +115,7 @@ const CLAIMS = [
   {id:'persian-return-context',category:'persian_return',map:'vozvrashchenie',places:[],topics:['babylon','persia','elephantine'],status:'accepted-context',statement:'The Cyrus Cylinder and Elephantine Aramaic records illuminate Persian imperial policy and Jewish communal life in the broader return-period world.',evidenceSources:['bm-cyrus-cylinder-object','brooklyn-elephantine-marriage','elephantine-yaho-tax-list','elephantine-yaho-temple-letter'],interpretationSources:[],limitations:'The Cyrus Cylinder does not mention Judah directly, and Elephantine evidence reflects a distinct diaspora community.'},
   {id:'maccabean-context',category:'maccabees',map:'maccabim',places:[],topics:['thamnata','modiin','jerusalem'],status:'candidate',statement:'Jerusalem records, the Heliodorus Stele and current excavations provide Maccabean-period context while proposed identifications of Thamnata and the Maccabean tombs remain candidates.',evidenceSources:['biu-hurbat-husham-thamnata','iaa-horbat-ha-gardi','imj-heliodorus-stele','iaa-givati-2019-2020'],interpretationSources:[],limitations:'Neither Thamnata nor Horbat Ha-Gardi should be presented as conclusively identified beyond the reporting sources.'},
   {id:'jesus-ministry-context',category:'jesus_ministry',map:'iisus',places:[],topics:['capernaum','magdala','siloam','caesarea','jerusalem'],status:'accepted-context',statement:'Excavated and institutional records from Capernaum, Magdala, Siloam and Jerusalem provide material context for the geography of Jesus’ ministry.',evidenceSources:['iaa-migdal-2013','iaa-migdal-2015','iaa-siloam-silwan-2014'],interpretationSources:[],limitations:'Material context is not an archaeological authentication of each Gospel miracle or speech.'},
-  {id:'early-church-context',category:'early_church',map:'early-church',places:[],topics:['capernaum','caesarea','jerusalem','ephesus'],status:'accepted-context',statement:'Museum collections and long-running excavation programs provide material context for the Jewish and Greco-Roman settings of the earliest church.',evidenceSources:['imj-cradle-christianity','custodia-capernaum','oeai-ephesos-branch','oeai-forschungen-ephesos'],interpretationSources:[],limitations:'Institutional syntheses support context; claims about specific apostolic events require textual and site-specific analysis.'},
+  {id:'early-church-context',category:'early_church',map:'early-church',places:[],topics:['capernaum','caesarea','jerusalem','ephesus','siloam'],status:'accepted-context',statement:'Museum collections, Jerusalem fieldwork and the long-running Ephesos excavation program provide material context for Jewish and Greco-Roman settings of the earliest church.',evidenceSources:['imj-cradle-christianity','custodia-capernaum','oeai-ephesos-branch','oeai-forschungen-ephesos','iaa-siloam-silwan-2014'],interpretationSources:[],limitations:'Institutional and field evidence supports historical context; claims about specific apostolic events require textual and site-specific analysis.'},
   {id:'dead-sea-scrolls-context',category:'dead_sea_scrolls',map:'qumran',places:[],topics:['qumran','nahal-hever','qumran-cave-1','qumran-cave-11'],status:'accepted-context',statement:'The IAA and Israel Museum digital collections provide authoritative access to manuscript objects, discovery contexts and institutional metadata for the Dead Sea Scrolls.',evidenceSources:['iaa-dss-digital-library','iaa-dss-discovery-sites','imj-great-isaiah-scroll','imj-shrine-book','imj-temple-scroll'],interpretationSources:[],limitations:'Institutional presentation does not settle every question of authorship, community identity, palaeographic dating or textual reconstruction.'}
 ];
 
@@ -140,6 +140,10 @@ const normalizedSources = NEW_IDS.map((id) => {
   source.verifiedAt = TODAY;
   source.places = [];
   source.topics = topics;
+  if (id === 'brooklyn-elephantine-marriage') {
+    source.url = 'https://www.brooklynmuseum.org/objects/3488.';
+    source.note = 'Official object identity verified by accession 47.218.89; the public route may reject automated clients.';
+  }
   if (record.workType === 'collection-record') source.tier = 'official-collection';
   else if (record.workType === 'excavation-report' && record.review !== 'peer-reviewed') source.tier = 'primary-excavation';
   else if (record.review === 'peer-reviewed') source.tier = 'peer-reviewed';
