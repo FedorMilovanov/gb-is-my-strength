@@ -54,6 +54,7 @@ for (const rel of [
   'src/components/home/HomeArticleEndBlock.astro',
   'src/components/home/HomeSections/ResumeMobile.astro',
   'src/components/home/HomeSections/Directions.astro',
+  'src/components/home/HomeSections/Favorites.astro',
   'src/components/home/HomeSections/Planned.astro',
   'src/components/home/HomeSections/Publications.astro',
   'src/components/home/HomeSections/Refutations.astro',
@@ -101,6 +102,11 @@ must(chrome, 'data-search-shortcut-label="Поиск"', 'HomePageChrome has plat
 must(chrome, 'event.altKey || event.shiftKey || (event.metaKey && event.ctrlKey)', 'HomePageChrome rejects modified search shortcuts');
 must(chrome, 'if (window.GBSearch?.__ready) return;', 'HomePageChrome avoids duplicate ready-search shortcut handling');
 must(chrome, "closest?.('[data-close-nav]')", 'HomePageChrome closes the mobile sheet for marked actions');
+must(chrome, 'role="dialog" aria-modal="true" aria-labelledby="hMobileNavTitle"', 'HomePageChrome exposes the mobile sheet as a labelled modal');
+must(chrome, 'aria-controls="hMobileNav"', 'HomePageChrome connects the menu trigger to its sheet');
+must(chrome, "event.shiftKey && (active === first || !panel.contains(active))", 'HomePageChrome traps reverse focus inside the mobile sheet');
+must(chrome, "!event.shiftKey && (active === last || !panel.contains(active))", 'HomePageChrome traps forward focus inside the mobile sheet');
+must(chrome, "trigger.focus({ preventScroll: true })", 'HomePageChrome restores focus when the mobile sheet closes');
 must(chrome, 'is:inline src="js/site.js', 'HomePageChrome external home runtime script has explicit Astro directive');
 
 const main = read('src/components/home/HomeMain.astro');
@@ -159,7 +165,15 @@ for (const href of ['/articles/', '/nagornaya/', '/biografii/', '/karty/']) {
 
 const hero = read('src/components/home/HomeHero.astro');
 must(hero, 'data-search-shortcut-modifier', 'HomeHero has platform-aware shortcut hint');
+must(hero, 'role="list" aria-label="Особенности библиотеки"', 'HomeHero exposes feature cues as a named list');
 mustNot(hero, '<kbd>⌘</kbd><kbd>K</kbd>', 'HomeHero no longer hardcodes an Apple-only shortcut');
+
+const favorites = read('src/components/home/HomeSections/Favorites.astro');
+must(favorites, "node.textContent = String(value == null ? '' : value)", 'Favorites renders stored copy as text');
+must(favorites, "imageUrl.protocol === 'http:' || imageUrl.protocol === 'https:'", 'Favorites accepts only web image protocols');
+must(favorites, 'if (!Array.isArray(favs) || !favs.length) return;', 'Favorites rejects malformed storage roots');
+must(favorites, "if (!f || typeof f !== 'object' || Array.isArray(f)) return;", 'Favorites skips malformed stored entries');
+mustNot(favorites, 'card.innerHTML', 'Favorites does not inject stored HTML');
 
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-card-grid',

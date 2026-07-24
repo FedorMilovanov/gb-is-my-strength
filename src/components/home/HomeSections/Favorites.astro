@@ -20,15 +20,18 @@
   if (!block || !list) return;
   var favs = [];
   try { favs = JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) {}
-  if (!favs.length) return;
+  if (!Array.isArray(favs) || !favs.length) return;
 
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
+  function textNode(className, value) {
+    var node = document.createElement('span');
+    node.className = className;
+    node.textContent = String(value == null ? '' : value);
+    return node;
   }
 
   favs.slice(0, 8).forEach(function(f) {
+    if (!f || typeof f !== 'object' || Array.isArray(f)) return;
+
     var rawPath = f.path ? String(f.path) : '/';
     var safePath = /^\/(?!\/)/.test(rawPath) ? rawPath : '/';
     var card = document.createElement('a');
@@ -36,25 +39,29 @@
     card.href = safePath.endsWith('/') ? safePath : safePath + '/';
     card.setAttribute('data-fav-path', safePath);
 
-    var safeImg = f.image && /^(https?:)?\//i.test(f.image) ? esc(f.image) : '';
-    var imgHtml = safeImg
-      ? '<div class="favorites-card__img" style="background-image:url(\'' + safeImg + '\')"></div>'
-      : '';
-    var section = f.section
-      ? '<span class="favorites-card__section">' + esc(f.section) + '</span>'
-      : '';
+    if (f.image) {
+      try {
+        var imageUrl = new URL(String(f.image), window.location.origin);
+        if (imageUrl.protocol === 'http:' || imageUrl.protocol === 'https:') {
+          var image = document.createElement('div');
+          image.className = 'favorites-card__img';
+          image.style.backgroundImage = 'url("' + imageUrl.href.replace(/"/g, '%22') + '")';
+          card.appendChild(image);
+        }
+      } catch(e) {}
+    }
 
-    card.innerHTML = imgHtml +
-      '<div class="favorites-card__body">' +
-        section +
-        '<span class="favorites-card__title">' + esc(f.title || 'Статья') + '</span>' +
-        (f.description ? '<span class="favorites-card__desc">' + esc(f.description) + '</span>' : '') +
-      '</div>';
+    var body = document.createElement('div');
+    body.className = 'favorites-card__body';
+    if (f.section) body.appendChild(textNode('favorites-card__section', f.section));
+    body.appendChild(textNode('favorites-card__title', f.title || 'Статья'));
+    if (f.description) body.appendChild(textNode('favorites-card__desc', f.description));
+    card.appendChild(body);
 
     list.appendChild(card);
   });
 
-  block.hidden = false;
+  if (list.children.length) block.hidden = false;
 
 })();
 </script>
