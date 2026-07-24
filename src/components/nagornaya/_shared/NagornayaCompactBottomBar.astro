@@ -7,11 +7,14 @@
  * tooltip controller moves a card to <body> and adds .gb-floating-tip before
  * it becomes visible.
  *
- * At <=359px WebKit may otherwise expose a wide table's min-content width at
- * the document root even when the table is inside overflow-x-auto. The main
- * shell clips only escaped root overflow while the local table wrapper remains
- * horizontally scrollable. Indented section subtitles also receive an explicit
- * remaining width so glossary-enhanced text cannot enlarge the page.
+ * At <=359px a wide table remains intentionally wider than the viewport, but
+ * its wrapper owns that overflow as a local horizontal scrollport. Inline-size,
+ * layout and paint containment prevent WebKit from leaking the table's
+ * min-content width into the document root without hiding page-level content.
+ *
+ * Decorative section-subtitle indentation is removed at the same breakpoint.
+ * On an iPhone 320 the subtitle receives the full content width, including when
+ * glossary markup is injected, instead of enlarging the document.
  *
  * The mobile TOC keeps progress and sharing available, so at <=359px the
  * persistent bar may drop those duplicate controls (plus the redundant Up
@@ -24,21 +27,15 @@
   }
 
   @media (max-width: 359px) {
-    body.nagornaya-page,
-    body.nagornaya-page #main-content,
-    body.nagornaya-page #main-content > div {
-      max-width: 100%;
-      overflow-x: hidden;
-      overflow-x: clip;
-    }
-
     body.nagornaya-page #main-content .overflow-x-auto {
       display: block;
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      overflow-x: auto;
-      contain: inline-size;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      min-inline-size: 0;
+      overflow-x: auto !important;
+      overflow-y: hidden;
+      contain: inline-size layout paint;
+      isolation: isolate;
       overscroll-behavior-inline: contain;
       -webkit-overflow-scrolling: touch;
     }
@@ -55,9 +52,11 @@
     }
 
     body.nagornaya-page #main-content .group > p.ml-14 {
-      width: calc(100% - 3.5rem);
-      max-width: calc(100% - 3.5rem);
-      min-width: 0;
+      margin-left: 0 !important;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      min-inline-size: 0;
+      box-sizing: border-box;
       overflow-wrap: anywhere;
     }
 
