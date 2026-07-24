@@ -1,0 +1,113 @@
+name: Temporary Gill Current-Main Sync
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-sync-gill-main.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-gill-current-main-sync-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'lane/system-gill-readerstate-deploy-unblock-2026-07-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Merge current main with fail-closed conflict ownership
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          set +e
+          git merge --no-commit --no-ff origin/main
+          merge_status=$?
+          set -e
+          if [ ! -f .git/MERGE_HEAD ]; then
+            echo "merge did not enter a valid merge transaction (status=${merge_status})" >&2
+            exit 1
+          fi
+          mapfile -t conflicts < <(git diff --name-only --diff-filter=U)
+          printf 'conflicts (%s):\n' "${#conflicts[@]}"
+          printf '  %s\n' "${conflicts[@]}"
+          for file in "${conflicts[@]}"; do
+            case "$file" in
+              *.html|*.astro|src/lib/asset-version.js|src/components/article-pilots/gill-series/gillSeriesData.ts)
+                git checkout --theirs -- "$file"
+                git add "$file"
+                ;;
+              *)
+                echo "unexpected product conflict: $file" >&2
+                exit 1
+                ;;
+            esac
+          done
+          if git diff --name-only --diff-filter=U | grep -q .; then
+            echo 'unresolved merge conflicts remain' >&2
+            git diff --name-only --diff-filter=U >&2
+            exit 1
+          fi
+          node scripts/cache-bust.js --write
+          grep -q 'var railLine = scrollY + 140;' js/floating-cluster-controller.js
+          grep -q '"reconciledAt": "2026-07-25"' data/gill-submenu-anchor-reconciliation.json
+          test -f .github/workflows/gill-pre-v16-submenu.yml
+          node --check js/floating-cluster-controller.js
+          node scripts/run-actionlint.mjs -no-color .github/workflows/gill-pre-v16-submenu.yml
+          git add -A
+          git diff --cached --check
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Require full Gill traversal
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
+        run: npm run gill:pre-v16-submenu:audit
+      - name: Re-run TTS controller compatibility contracts
+        run: |
+          node scripts/tts-download-consent-contract-test.js
+          node scripts/tts-engine-status-contract-test.js
+          node scripts/tts-download-notice-browser-test.js
+          node scripts/tts-engine-lifecycle-browser-test.js
+          node scripts/tts-status-route-browser-test.js
+      - name: Verify synchronized revisions are read-only clean
+        run: |
+          node scripts/cache-bust.js
+          git diff --check
+          git diff --name-only --diff-filter=U --exit-code
+      - name: Commit and publish synchronized merge tree
+        env:
+          TARGET_BRANCH: lane/system-gill-readerstate-deploy-unblock-2026-07-25
+        run: |
+          set -euo pipefail
+          git add -A
+          git diff --cached --check
+          git commit -m 'chore(sync): merge current main into Gill deploy lane'
+          git push origin "HEAD:${TARGET_BRANCH}"
+      - name: Upload synchronized proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gill-current-main-sync-${{ github.run_id }}
+          path: reports/gill-pre-v16-submenu-audit/
+          if-no-files-found: warn
+          retention-days: 14
