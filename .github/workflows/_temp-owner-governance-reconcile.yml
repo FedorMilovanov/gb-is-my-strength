@@ -1,0 +1,78 @@
+name: TEMP Owner Governance Reconcile
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temp-owner-governance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Detect reconciled governance
+        id: state
+        shell: bash
+        run: |
+          if grep -q 'AGENTS-r324' AGENTS.md; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate temporary patcher
+        if: steps.state.outputs.ready != 'true'
+        run: python3 -m py_compile scripts/_temp-owner-governance-reconcile.py
+
+      - name: Apply owner-authorized reconciliation
+        if: steps.state.outputs.ready != 'true'
+        run: python3 scripts/_temp-owner-governance-reconcile.py
+
+      - name: Enforce transaction scope
+        if: steps.state.outputs.ready != 'true'
+        shell: bash
+        run: |
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | sort)
+          printf '%s\n' "${changed[@]}"
+          expected=$'AGENTS.md\ndocs/OWNER-INVARIANTS.md'
+          actual="$(printf '%s\n' "${changed[@]}")"
+          test "$actual" = "$expected"
+          grep -q 'Канонические режимы: `FAST`, `LANE`, `SYSTEM`' AGENTS.md
+          grep -q 'historical `pre-v16` submenu' docs/OWNER-INVARIANTS.md
+          ! grep -q 'SOLO/MULTI-AGENT/HIGH-RISK/EMERGENCY' AGENTS.md
+          ! grep -q 'Всегда разрешено:.*docs/' AGENTS.md
+
+      - name: Commit reconciled governance
+        if: steps.state.outputs.ready != 'true'
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add AGENTS.md docs/OWNER-INVARIANTS.md
+          git commit -m 'docs(governance): reconcile owner contract [issue-219]'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Verify reconciled state
+        if: steps.state.outputs.ready == 'true'
+        shell: bash
+        run: |
+          grep -q 'AGENTS-r324' AGENTS.md
+          grep -q 'Канонические режимы: `FAST`, `LANE`, `SYSTEM`' AGENTS.md
+          grep -q 'historical `pre-v16` submenu' docs/OWNER-INVARIANTS.md
+          ! grep -q 'SOLO/MULTI-AGENT/HIGH-RISK/EMERGENCY' AGENTS.md
+          ! grep -q 'Всегда разрешено:.*docs/' AGENTS.md
