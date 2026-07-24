@@ -13,7 +13,7 @@
  * Без браузера/WebGL — мягкий SKIP (exit 0).
  *
  * ИНВАРИАНТЫ (если падает — НЕ упрощать тест, а чинить страницу/пересобирать _app):
- *  I1  Обёртка грузится: 0 pageerror, 0 h-overflow, есть iframe#appframe.
+ *  I1  Обёртка грузится: 0 pageerror, 0 overflow, есть iframe#appframe.
  *  I2  iframe указывает на ./_app/index.html и приложение бутстрапится (React root).
  *  I3  Лоадер обёртки скрывается после load iframe.
  *  I4  Внутри приложения видна навигация (Главная/Истоки/3D Карта/…).
@@ -26,6 +26,8 @@
  *  I10 3D-режим содержит тихий learning coach «Как читать карту» для первого входа.
  *  I11 3D-режим не возвращает нативные белые title-tooltip на Timeline и не даёт document-scrollbar мешать zoom.
  *  I14 Физика 3D не откатывается к jitter/tension constants (drag должен быть мягким).
+ *  I15 SEO-fallback живёт только в noscript, а stage/iframe занимают весь остаток viewport
+ *      на desktop, Android- и iPhone-подобных размерах без внешних полос прокрутки.
  */
 'use strict';
 const path = require('path');
@@ -39,11 +41,17 @@ const WRAP_REL = path.join('konfessii', 'russkij-baptizm', 'index.html');
 const APP_REL = path.join('konfessii', 'russkij-baptizm', '_app', 'index.html');
 const SRC_REL = path.join('_build-tools', 'konfessii-baptizm', 'MindMap3D.tsx');
 const NAV_SRC_REL = path.join('_build-tools', 'konfessii-baptizm', 'Navigation.tsx');
+const NATIVE_BODY_REL = path.join('src', 'components', 'konfessii', 'russkij-baptizm', 'Baptizm3DBody.astro');
+const NATIVE_STYLE_REL = path.join('src', 'components', 'konfessii', 'russkij-baptizm', 'Baptizm3DStyles.astro');
 const WRAP = 'file://' + path.join(ROOT, WRAP_REL);
 
 const fails = [];
 const ok = (m) => console.log('  ✔ ' + m);
 const bad = (m) => { fails.push(m); console.log('  ❌ ' + m); };
+
+function withoutNoscript(source) {
+  return source.replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, '');
+}
 
 // ---------- static checks (always run, no browser) ----------
 console.log('\n🌍 KONFESSII 3D-MAP AUDIT (регресс-защита отдела)\n');
@@ -51,6 +59,8 @@ const wrap = fs.readFileSync(path.join(ROOT, WRAP_REL), 'utf8');
 const app = fs.existsSync(path.join(ROOT, APP_REL)) ? fs.readFileSync(path.join(ROOT, APP_REL), 'utf8') : '';
 const src = fs.existsSync(path.join(ROOT, SRC_REL)) ? fs.readFileSync(path.join(ROOT, SRC_REL), 'utf8') : '';
 const navSrc = fs.existsSync(path.join(ROOT, NAV_SRC_REL)) ? fs.readFileSync(path.join(ROOT, NAV_SRC_REL), 'utf8') : '';
+const nativeBody = fs.existsSync(path.join(ROOT, NATIVE_BODY_REL)) ? fs.readFileSync(path.join(ROOT, NATIVE_BODY_REL), 'utf8') : '';
+const nativeStyles = fs.existsSync(path.join(ROOT, NATIVE_STYLE_REL)) ? fs.readFileSync(path.join(ROOT, NATIVE_STYLE_REL), 'utf8') : '';
 
 // I7 wrapper SEO
 /rel="canonical"/.test(wrap) ? ok('I7 обёртка: canonical') : bad('I7 обёртка: нет canonical');
@@ -60,6 +70,21 @@ const navSrc = fs.existsSync(path.join(ROOT, NAV_SRC_REL)) ? fs.readFileSync(pat
 /name="theme-color"/.test(wrap) ? ok('I7 обёртка: theme-color') : bad('I7 обёртка: нет theme-color');
 /frame-src 'self'/.test(wrap) ? ok('I7 обёртка: CSP frame-src self') : bad('I7 обёртка: CSP без frame-src self');
 /<iframe[^>]+id="appframe"[^>]+src="\.\/_app\/index\.html"/.test(wrap) ? ok('I2 iframe → ./_app/index.html') : bad('I2 iframe src не указывает на ./_app/index.html');
+
+// I15 shell/layout source contract: the SEO prose must never become a visible flex sibling.
+for (const [label, source] of [['legacy', wrap], ['native', nativeBody]]) {
+  const noscriptHasSeo = /<noscript\b[^>]*>[\s\S]*?Три истока русского баптизма[\s\S]*?<\/noscript>/i.test(source);
+  const visibleHasSeo = /Три истока русского баптизма/.test(withoutNoscript(source));
+  noscriptHasSeo ? ok(`I15 ${label}: SEO fallback находится внутри noscript`) : bad(`I15 ${label}: SEO fallback отсутствует внутри noscript`);
+  !visibleHasSeo ? ok(`I15 ${label}: SEO prose не участвует в JS-layout`) : bad(`I15 ${label}: SEO prose остался видимым flex-соседом`);
+  !/#fafaf9|#e7e5e4/.test(source) ? ok(`I15 ${label}: белые fallback-карточки удалены`) : bad(`I15 ${label}: остались светлые hardcoded-карточки`);
+}
+/flex:\s*1\s+1\s+0/.test(nativeStyles) && /\.stage\{[^}]*min-width:\s*0[^}]*min-height:\s*0[^}]*overflow:\s*hidden/.test(nativeStyles)
+  ? ok('I15 native styles: stage защищён от flex-shrink/overflow')
+  : bad('I15 native styles: stage viewport contract отсутствует');
+/@supports\s*\(height:\s*100dvh\)/.test(nativeStyles)
+  ? ok('I15 native styles: dynamic mobile viewport поддержан')
+  : bad('I15 native styles: нет 100dvh mobile viewport fallback');
 
 // I6 app bundle integrity
 if (!app) { bad('I6 _app/index.html отсутствует — бандл не собран!'); }
@@ -173,7 +198,15 @@ if (chromium) (async () => {
   try { browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--ignore-gpu-blocklist'] }); }
   catch (e) { console.log('\n⏭  live-проверки пропущены: chromium не запускается (' + e.message.split('\n')[0] + ').'); finish(); return; }
 
-  for (const vp of [{ w: 1366, h: 900, label: 'desktop' }, { w: 390, h: 844, label: 'mobile', mobile: true }]) {
+  const viewports = [
+    { w: 1366, h: 900, label: 'desktop' },
+    { w: 430, h: 932, label: 'android-430', mobile: true },
+    { w: 390, h: 844, label: 'iphone-390', mobile: true },
+    { w: 360, h: 800, label: 'android-360', mobile: true },
+    { w: 320, h: 760, label: 'mobile-320', mobile: true },
+  ];
+
+  for (const vp of viewports) {
     const ctx = await browser.newContext(vp.mobile ? { viewport: { width: vp.w, height: vp.h }, isMobile: true, hasTouch: true } : { viewport: { width: vp.w, height: vp.h } });
     const page = await ctx.newPage();
     const errs = [];
@@ -182,8 +215,41 @@ if (chromium) (async () => {
     await page.goto(WRAP, { waitUntil: 'load' });
     await page.waitForTimeout(3500);
 
-    const ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    ov === 0 ? ok(`I1 [${vp.label}] 0 h-overflow`) : bad(`I1 [${vp.label}] overflow=${ov}`);
+    const shell = await page.evaluate(() => {
+      const html = document.documentElement;
+      const body = document.body;
+      const bar = document.querySelector('.bar');
+      const stage = document.querySelector('.stage');
+      const iframe = document.getElementById('appframe');
+      const barRect = bar?.getBoundingClientRect();
+      const stageRect = stage?.getBoundingClientRect();
+      const frameRect = iframe?.getBoundingClientRect();
+      const seoVisible = [...document.querySelectorAll('h2')].some((node) => {
+        if (!/Три истока русского баптизма/.test(node.textContent || '')) return false;
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      });
+      return {
+        horizontalOverflow: Math.max(html.scrollWidth, body.scrollWidth) - html.clientWidth,
+        verticalOverflow: Math.max(html.scrollHeight, body.scrollHeight) - html.clientHeight,
+        viewport: { width: innerWidth, height: innerHeight },
+        bar: barRect ? { top: barRect.top, bottom: barRect.bottom, height: barRect.height } : null,
+        stage: stageRect ? { left: stageRect.left, top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom, width: stageRect.width, height: stageRect.height } : null,
+        frame: frameRect ? { left: frameRect.left, top: frameRect.top, right: frameRect.right, bottom: frameRect.bottom, width: frameRect.width, height: frameRect.height } : null,
+        seoVisible,
+        bodyOverflow: getComputedStyle(body).overflow,
+      };
+    });
+
+    shell.horizontalOverflow <= 1 ? ok(`I1 [${vp.label}] 0 h-overflow`) : bad(`I1 [${vp.label}] h-overflow=${shell.horizontalOverflow}`);
+    shell.verticalOverflow <= 1 ? ok(`I15 [${vp.label}] 0 outer vertical overflow`) : bad(`I15 [${vp.label}] outer v-overflow=${shell.verticalOverflow}`);
+    !shell.seoVisible ? ok(`I15 [${vp.label}] SEO fallback не виден при JS`) : bad(`I15 [${vp.label}] SEO fallback видим поверх приложения`);
+    const expectedStageHeight = shell.viewport.height - (shell.bar?.bottom || 0);
+    const stageFits = shell.stage && shell.stage.width >= shell.viewport.width - 2 && shell.stage.height >= expectedStageHeight - 2 && shell.stage.bottom <= shell.viewport.height + 2;
+    stageFits ? ok(`I15 [${vp.label}] stage заполняет viewport (${Math.round(shell.stage.height)}px)`) : bad(`I15 [${vp.label}] stage geometry=${JSON.stringify(shell.stage)} expectedHeight≈${Math.round(expectedStageHeight)}`);
+    const frameFits = shell.stage && shell.frame && Math.abs(shell.frame.left - shell.stage.left) <= 1 && Math.abs(shell.frame.top - shell.stage.top) <= 1 && Math.abs(shell.frame.width - shell.stage.width) <= 1 && Math.abs(shell.frame.height - shell.stage.height) <= 1;
+    frameFits ? ok(`I15 [${vp.label}] iframe совпадает со stage`) : bad(`I15 [${vp.label}] iframe/stage mismatch frame=${JSON.stringify(shell.frame)} stage=${JSON.stringify(shell.stage)}`);
     (await page.$('#appframe')) ? ok(`I1 [${vp.label}] iframe#appframe present`) : bad(`I1 [${vp.label}] нет iframe`);
     const loaderHidden = await page.evaluate(() => { const l = document.getElementById('loader'); return !l || l.classList.contains('hidden') || l.style.display === 'none'; });
     loaderHidden ? ok(`I3 [${vp.label}] лоадер скрыт`) : bad(`I3 [${vp.label}] лоадер завис`);
