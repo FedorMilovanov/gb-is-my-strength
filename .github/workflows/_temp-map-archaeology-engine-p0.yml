@@ -5,11 +5,13 @@ on:
     branches: [agent/map-archaeology-engine-p0]
     paths:
       - 'scripts/materialize-map-archaeology-engine-p0.mjs'
+      - 'scripts/patch-map-archaeology-materializer-regex.mjs'
       - '.github/workflows/_temp-map-archaeology-engine-p0.yml'
   pull_request:
     branches: [main]
     paths:
       - 'scripts/materialize-map-archaeology-engine-p0.mjs'
+      - 'scripts/patch-map-archaeology-materializer-regex.mjs'
       - '.github/workflows/_temp-map-archaeology-engine-p0.yml'
 
 permissions:
@@ -37,6 +39,8 @@ jobs:
           node-version: '22.12.0'
       - name: Apply fail-closed migration
         run: |
+          node --check scripts/patch-map-archaeology-materializer-regex.mjs
+          node scripts/patch-map-archaeology-materializer-regex.mjs
           node --check scripts/materialize-map-archaeology-engine-p0.mjs
           node scripts/materialize-map-archaeology-engine-p0.mjs
       - name: Validate generated source
@@ -80,6 +84,7 @@ jobs:
       - name: Remove one-shot machinery and diagnostics
         run: |
           rm scripts/materialize-map-archaeology-engine-p0.mjs
+          rm scripts/patch-map-archaeology-materializer-regex.mjs
           rm .github/workflows/_temp-map-archaeology-engine-p0.yml
           rm reports/_temp-map-archaeology-engine-validation.log
           rm reports/_temp-map-archaeology-engine-validation.status
@@ -96,6 +101,7 @@ jobs:
             'scripts/map-archaeology-projection-browser-test.mjs',
             'scripts/map-archaeology-projection-contract-test.mjs',
             'scripts/materialize-map-archaeology-engine-p0.mjs',
+            'scripts/patch-map-archaeology-materializer-regex.mjs',
             'src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro',
             'src/components/karty/_shared/MapRuntimeFallback.astro',
             'src/components/karty/avraam/AvraamMap.astro',
