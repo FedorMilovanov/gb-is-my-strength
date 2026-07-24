@@ -48,15 +48,36 @@ jobs:
           const jsonPath = 'reports/repository-history-forensic-audit.json';
           const mdPath = 'reports/repository-history-forensic-audit.md';
           const report = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+          const evidenceLanePattern = /(?:evidence[- ]lane|evidence[- ]only|not\s+(?:a\s+)?(?:merge\s+)?candidate|must\s+not\s+be\s+merged|не\s+кандидат\s+на\s+merge|не\s+будет\s+(?:см[её]ржен|опубликован)|не\s+сливать)/i;
 
           for (const pr of report.closedUnmerged || []) {
             const candidates = (pr.referencedPullRequests || []).filter((item) => item.mergedAt);
             pr.referencedMergedPrCandidates = candidates;
             delete pr.verifiedMergedReplacement;
+
+            const evidence = [
+              pr.title || '',
+              ...(pr.closureComments || []).map((comment) => comment.body || ''),
+            ].join('\n');
+            if (pr.category === 'unclassified' && evidenceLanePattern.test(evidence)) {
+              pr.category = 'diagnostic';
+              pr.reviewPriority = 0;
+            }
           }
 
+          const closedByNumber = new Map((report.closedUnmerged || []).map((pr) => [pr.number, pr]));
           for (const branch of report.branches || []) {
+            for (const associated of branch.associatedPrs || []) {
+              const closed = closedByNumber.get(associated.number);
+              if (closed) associated.category = closed.category;
+            }
+
             if (
+              branch.reconciliation === 'closed-unclassified-pr-head' &&
+              (branch.associatedPrs || []).some((pr) => pr.category === 'diagnostic')
+            ) {
+              branch.reconciliation = 'closed-diagnostic-pr-head';
+            } else if (
               branch.reconciliation === 'orphan-branch' &&
               /(?:trigger|materializ|diagnostic|verification|reconcile|_temp|temp-)/i.test(`${branch.name} ${branch.subject || ''}`)
             ) {
@@ -70,6 +91,7 @@ jobs:
           report.summary.explainedClosedBranches = (report.branches || []).filter((branch) =>
             branch.reconciliation.startsWith('closed-') || branch.reconciliation === 'diagnostic-transaction-branch'
           ).length;
+          report.summary.manualReviewCandidates = (report.closedUnmerged || []).filter((pr) => pr.reviewPriority > 0).length;
 
           let md = fs.readFileSync(mdPath, 'utf8');
           md = md.replace(
@@ -79,6 +101,10 @@ jobs:
           md = md.replace(
             /- Closed\/superseded\/diagnostic\/prototype branch refs: \d+/,
             `- Closed/superseded/diagnostic/prototype branch refs: ${report.summary.explainedClosedBranches}`
+          );
+          md = md.replace(
+            /- Manual review candidates: \d+/,
+            `- Manual review candidates: ${report.summary.manualReviewCandidates}`
           );
           md = md.replace(/Verified merged replacement/g, 'Referenced merged PR candidates');
 
@@ -90,7 +116,9 @@ jobs:
               const pr = prByNumber.get(prMatch[1]);
               if (pr) {
                 const parts = line.split('|');
+                parts[2] = ` ${pr.category} `;
                 parts[6] = ` ${(pr.referencedMergedPrCandidates || []).map((item) => `#${item.number}`).join(', ') || '—'} `;
+                parts[7] = ` ${pr.reviewPriority} `;
                 return parts.join('|');
               }
             }
@@ -117,8 +145,12 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const report = JSON.parse(fs.readFileSync('reports/repository-history-forensic-audit.json', 'utf8'));
+          const evidenceLanePattern = /(?:evidence[- ]lane|evidence[- ]only|not\s+(?:a\s+)?(?:merge\s+)?candidate|must\s+not\s+be\s+merged|не\s+кандидат\s+на\s+merge|не\s+будет\s+(?:см[её]ржен|опубликован)|не\s+сливать)/i;
           if ((report.closedUnmerged || []).some((pr) => 'verifiedMergedReplacement' in pr)) {
             throw new Error('stale verifiedMergedReplacement field survived normalization');
+          }
+          if ((report.closedUnmerged || []).some((pr) => pr.category === 'unclassified' && evidenceLanePattern.test([pr.title || '', ...(pr.closureComments || []).map((comment) => comment.body || '')].join('\n')))) {
+            throw new Error('closed evidence lane remains classified as unclassified');
           }
           if ((report.branches || []).some((branch) => branch.reconciliation === 'orphan-branch' && /(?:trigger|materializ|diagnostic|verification|reconcile|_temp|temp-)/i.test(`${branch.name} ${branch.subject || ''}`))) {
             throw new Error('diagnostic transaction branch remains classified as orphan');
