@@ -1,0 +1,55 @@
+name: Repository History Forensic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/repository-history-forensic-audit.mjs"
+      - ".github/workflows/repository-history-forensic.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: repository-history-forensic-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  history-forensic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact head with complete history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+
+      - name: Validate audit syntax
+        run: node --check scripts/repository-history-forensic-audit.mjs
+
+      - name: Inventory branches and closed PR heads
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/repository-history-forensic-audit.mjs --strict
+
+      - name: Verify tracked tree is unchanged
+        run: git diff --exit-code
+
+      - name: Upload forensic inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-history-forensic-${{ github.run_id }}
+          path: |
+            reports/repository-history-forensic-audit.json
+            reports/repository-history-forensic-audit.md
+          if-no-files-found: error
+          retention-days: 30
