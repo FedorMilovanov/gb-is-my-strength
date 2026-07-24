@@ -61,8 +61,13 @@ jobs:
         run: git diff --exit-code
 
   browser:
+    name: Projection lifecycle (${{ matrix.browser }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit, firefox]
     steps:
       - name: Checkout exact head
         uses: actions/checkout@v4
@@ -74,8 +79,11 @@ jobs:
           node-version: '22.12.0'
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Install browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Exercise tab, place and legacy replacement lifecycle
+        env:
+          MAP_ARCHAEOLOGY_BROWSER: ${{ matrix.browser }}
         run: node scripts/map-archaeology-projection-browser-test.mjs
       - name: Ensure browser proof is read-only
         run: git diff --exit-code
