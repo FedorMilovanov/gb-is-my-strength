@@ -26,8 +26,8 @@ function validate(engine, css) {
     ['cancel exported', /cancelLoading:\s*cancelLoading/],
     ['cache-miss notice', /showModelDownloadNotice\(\)/],
     ['legacy toast suppressed', /function suppressLegacyDownloadToast\(\)/],
-    ['compact action label', />Не загружать<\/button>/],
-    ['ordinary voice reassurance', /Обычный голос уже работает/],
+    ['compact action label', /actionLabel = 'Не загружать'/],
+    ['ordinary voice reassurance', /Системный голос уже работает/],
     ['success lifecycle', /gb:vosk-model-download-complete/],
     ['cancel lifecycle', /gb:vosk-model-download-cancelled/],
     ['error lifecycle', /gb:vosk-model-download-error/],
@@ -86,7 +86,7 @@ const mutations = [
   },
   {
     name: 'cancel button is removed',
-    engine: engine.replace('>Не загружать</button>', '>Скрыть</button>'),
+    engine: engine.replace("actionLabel = 'Не загружать'", "actionLabel = 'Скрыть'"),
     css,
   },
   {
