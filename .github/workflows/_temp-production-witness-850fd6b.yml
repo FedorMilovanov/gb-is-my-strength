@@ -1,4 +1,4 @@
-name: Temporary Gill Materializer Failure Extract
+name: Temporary Gill Release Materializer
 
 on:
   pull_request:
@@ -7,41 +7,96 @@ on:
       - '.github/workflows/_temp-production-witness-850fd6b.yml'
 
 permissions:
-  contents: read
-  actions: read
+  contents: write
 
 jobs:
-  extract:
+  materialize:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      FAILED_JOB_ID: '89577052661'
+    timeout-minutes: 50
     steps:
-      - name: Download failed job log and extract patch precondition
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Reconcile current main and apply reviewed source transaction
+        shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FAILED_JOB_ID}/logs" > failed.log
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch origin main fix/gill-readerstate-submenu-release-2026-07-24
+          git merge --no-edit origin/main
+          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:src/components/article-pilots/gill-series/gillSeriesData.ts \
+            > src/components/article-pilots/gill-series/gillSeriesData.ts
+          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-release-materialize.py \
+            > /tmp/gill-release-materialize.py
+          python /tmp/gill-release-materialize.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate, synchronize revisions and require exact live traversal
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
+        run: |
+          node --check js/floating-cluster-controller.js
+          node -e "JSON.parse(require('fs').readFileSync('data/gill-submenu-anchor-reconciliation.json','utf8'))"
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          git diff --check
+          npm run strangler:build:production-like
+          npx playwright install --with-deps chromium
+          npm run gill:pre-v16-submenu:audit
+
+      - name: Verify complete final scope
+        shell: bash
+        run: |
+          set -euo pipefail
           python - <<'PY'
-          from pathlib import Path
-          import re
-          lines=Path('failed.log').read_text(encoding='utf-8-sig',errors='replace').splitlines()
-          clean=[re.sub(r'^\d{4}-\d{2}-\d{2}T[^ ]+Z\s+','',x) for x in lines]
-          keys=('controller active block count','controller counter block count','controller part block count','SystemExit','Traceback','##[error]')
-          hits=[i for i,x in enumerate(clean) if any(k.lower() in x.lower() for k in keys)]
-          selected=set()
-          for i in hits:selected.update(range(max(0,i-3),min(len(clean),i+4)))
-          text='\n'.join(f'{i+1}: {clean[i]}' for i in sorted(selected))+'\n'
-          Path('failure.txt').write_text(text,encoding='utf-8')
-          print(text)
-          if not hits: raise SystemExit('no patch failure markers found')
+          import subprocess
+          allowed_exact={
+            'js/floating-cluster-controller.js',
+            'data/gill-submenu-anchor-reconciliation.json',
+            'src/components/article-pilots/gill-series/gillSeriesData.ts',
+            '.github/workflows/gill-pre-v16-submenu.yml',
+            'src/lib/asset-version.js',
+          }
+          paths=subprocess.check_output(['git','diff','--name-only','origin/main'],text=True).splitlines()
+          bad=[]
+          for path in paths:
+            if path == '.github/workflows/_temp-production-witness-850fd6b.yml':
+              continue
+            if not (path in allowed_exact or path.endswith('.html') or (path.startswith('src/') and path.endswith('.astro'))):
+              bad.append(path)
+          if bad:
+            raise SystemExit('unexpected final-scope files: '+', '.join(bad))
+          print('final scope files:', len(paths)-1)
           PY
-      - uses: actions/upload-artifact@v4
+
+      - name: Commit proven self-cleaning transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/_temp-production-witness-850fd6b.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(gill): restore ReaderState submenu traversal"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Upload proof
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: gill-materializer-failure-${{ github.run_id }}
-          path: failure.txt
-          if-no-files-found: error
-          retention-days: 7
+          name: gill-release-materializer-${{ github.run_id }}
+          path: reports/gill-pre-v16-submenu-audit/
+          if-no-files-found: warn
+          retention-days: 14
