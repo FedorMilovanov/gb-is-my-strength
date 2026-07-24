@@ -1,13 +1,8 @@
 name: Editorial Metadata v3
 
 on:
-  push:
-    branches:
-      - lane/system-editorial-metadata-v3-2026-07-09
   pull_request:
-    branches:
-      - main
-      - lane/system-native-source-contract-v1-2026-07-09
+    branches: [main]
     paths:
       - 'data/editorial-metadata.json'
       - 'scripts/editorial-metadata-*.js'
