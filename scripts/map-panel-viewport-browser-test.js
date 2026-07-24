@@ -98,6 +98,42 @@ function assertBounded(snapshot, label, { requireScroll = false } = {}) {
   }
 }
 
+async function waitForStablePanelGeometry(page, placeId) {
+  const result = await page.evaluate(async (id) => {
+    const deadline = performance.now() + 5000;
+    const samples = [];
+    let previous = null;
+    let stableFrames = 0;
+
+    while (performance.now() < deadline) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const panel = document.querySelector('.me-panel.me-panel--open');
+      if (!panel) continue;
+      const rect = panel.getBoundingClientRect();
+      const sample = {
+        top: rect.top,
+        bottom: rect.bottom,
+        height: rect.height,
+        viewportHeight: innerHeight,
+        transform: getComputedStyle(panel).transform,
+      };
+      samples.push(sample);
+      if (samples.length > 12) samples.shift();
+
+      const inside = rect.top >= -1 && rect.bottom <= innerHeight + 1 && rect.height <= innerHeight + 1;
+      const unchanged = previous &&
+        Math.abs(rect.top - previous.top) <= 0.25 &&
+        Math.abs(rect.bottom - previous.bottom) <= 0.25 &&
+        Math.abs(rect.height - previous.height) <= 0.25;
+      stableFrames = inside && unchanged ? stableFrames + 1 : 0;
+      if (stableFrames >= 3) return { ok: true, placeId: id, stableFrames, samples };
+      previous = sample;
+    }
+    return { ok: false, placeId: id, stableFrames, samples };
+  }, placeId);
+  assert(result.ok, `panel for ${placeId} did not settle inside viewport`, result);
+}
+
 async function openPlace(page, id) {
   const opened = await page.evaluate((placeId) => {
     const marker = document.querySelector(`[data-place-id="${CSS.escape(placeId)}"]`);
@@ -107,13 +143,7 @@ async function openPlace(page, id) {
   }, id);
   assert(opened, `marker ${id} is missing`);
   await page.waitForFunction(() => document.querySelector('.me-panel')?.classList.contains('me-panel--open'), null, { timeout: 5000 });
-  await page.waitForFunction(() => {
-    const panel = document.querySelector('.me-panel.me-panel--open');
-    if (!panel) return false;
-    const rect = panel.getBoundingClientRect();
-    return rect.bottom <= innerHeight + 1;
-  }, null, { timeout: 2000 });
-  await page.waitForTimeout(40);
+  await waitForStablePanelGeometry(page, id);
 }
 
 async function mountSharedEngineRoute(page, route) {
