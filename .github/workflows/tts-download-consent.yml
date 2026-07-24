@@ -99,5 +99,6 @@ jobs:
             reports/tts-download-notice-desktop.png
             reports/tts-download-notice-mobile-dark.png
             reports/tts-engine-status-*.png
+            reports/tts-engine-status-failure.txt
           if-no-files-found: warn
           retention-days: 14
