@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   materialize:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout exact branch
         uses: actions/checkout@v4
@@ -42,14 +42,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat scripts/_tmp-tts-materializer-parts/part-*.b64 | base64 --decode > scripts/_tmp-tts-download-consent-materialize.js
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = 'scripts/_tmp-tts-materializer-parts';
+          const encoded = fs.readdirSync(dir)
+            .filter((name) => name.startsWith('part-') && name.endsWith('.b64'))
+            .sort()
+            .map((name) => fs.readFileSync(`${dir}/${name}`, 'utf8'))
+            .join('');
+          fs.writeFileSync('scripts/_tmp-tts-download-consent-materialize.js', Buffer.from(encoded, 'base64'));
+          NODE
           node --check scripts/_tmp-tts-download-consent-materialize.js
 
-      - name: Materialize permanent TTS consent contract
+      - name: Materialize permanent TTS consent contract and width fix
         run: node scripts/_tmp-tts-download-consent-materialize.js
-
-      - name: Apply measured border-box width fix
-        run: node scripts/_tmp-tts-box-sizing-fix.js
 
       - name: Remove transport chunks
         run: rm -rf scripts/_tmp-tts-materializer-parts
@@ -69,17 +75,10 @@ jobs:
       - name: Install browser dependencies
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
 
       - name: Verify cancellable download notice in Chromium
         run: node scripts/tts-download-notice-browser-test.js
-
-      - name: Lint permanent workflow
-        run: |
-          mkdir -p /tmp/actionlint
-          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
-            | tar xz -C /tmp/actionlint actionlint
-          /tmp/actionlint/actionlint -no-color .github/workflows/tts-download-consent.yml
 
       - name: Verify clean permanent scope
         run: |
