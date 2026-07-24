@@ -55,7 +55,6 @@ section(
   (block) => {
     for (const declaration of [
       '    width: auto',
-      '    max-width: none',
       '    margin: 0',
       '    padding: 0',
       '    overflow: visible',
@@ -112,7 +111,7 @@ section(
 css = prefix + print;
 const newTotal = (css.match(/!important/g) || []).length;
 const newPrint = (print.match(/!important/g) || []).length;
-if (newPrint !== 16) throw new Error(`Expected 16 print-contract !important declarations, got ${newPrint}`);
+if (newPrint !== 15) throw new Error(`Expected 15 print-contract !important declarations, got ${newPrint}`);
 if (newTotal > 200) throw new Error(`site.css !important ratchet still exceeded: ${newTotal} > 200`);
 if (newTotal >= oldTotal) throw new Error(`No ratchet improvement: ${oldTotal} -> ${newTotal}`);
 
