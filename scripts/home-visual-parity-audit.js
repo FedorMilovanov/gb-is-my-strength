@@ -54,6 +54,7 @@ for (const rel of [
   'src/components/home/HomeArticleEndBlock.astro',
   'src/components/home/HomeSections/ResumeMobile.astro',
   'src/components/home/HomeSections/Directions.astro',
+  'src/components/home/HomeSections/Favorites.astro',
   'src/components/home/HomeSections/Planned.astro',
   'src/components/home/HomeSections/Publications.astro',
   'src/components/home/HomeSections/Refutations.astro',
@@ -159,7 +160,14 @@ for (const href of ['/articles/', '/nagornaya/', '/biografii/', '/karty/']) {
 
 const hero = read('src/components/home/HomeHero.astro');
 must(hero, 'data-search-shortcut-modifier', 'HomeHero has platform-aware shortcut hint');
+must(hero, 'role="list" aria-label="Особенности библиотеки"', 'HomeHero exposes feature cues as a named list');
 mustNot(hero, '<kbd>⌘</kbd><kbd>K</kbd>', 'HomeHero no longer hardcodes an Apple-only shortcut');
+
+const favorites = read('src/components/home/HomeSections/Favorites.astro');
+must(favorites, "node.textContent = String(value == null ? '' : value)", 'Favorites renders stored copy as text');
+must(favorites, "imageUrl.protocol === 'http:' || imageUrl.protocol === 'https:'", 'Favorites accepts only web image protocols');
+must(favorites, "if (!f || typeof f !== 'object' || Array.isArray(f)) return;", 'Favorites skips malformed stored entries');
+mustNot(favorites, 'card.innerHTML', 'Favorites does not inject stored HTML');
 
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-card-grid',
