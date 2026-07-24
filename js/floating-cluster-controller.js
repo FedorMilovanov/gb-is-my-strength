@@ -337,16 +337,106 @@
   }
 
   var _voskEngineScriptPromise = null;
-  // js/vosk-tts-engine.js сам по себе не подключён ни одним <script> тегом —
-  // ленивая загрузка ровно по первому клику «Слушать», как и модель внутри него.
+  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=87bfc44a';
+  var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=1cdbee44';
+  var fallbackTtsNoticeTimer = null;
+
+  function ensureFallbackTtsNoticeStyles() {
+    if (document.querySelector('link[data-gb-tts-download-notice]')) return;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = TTS_NOTICE_CSS_SRC;
+    link.setAttribute('data-gb-tts-download-notice', 'true');
+    document.head.appendChild(link);
+  }
+
+  function getFallbackTtsNotice() {
+    var el = qs('.gb-tts-download-notice');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'gb-tts-download-notice';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      el.setAttribute('aria-atomic', 'true');
+      el.innerHTML =
+        '<span class="gb-tts-download-notice__icon" aria-hidden="true"></span>' +
+        '<span class="gb-tts-download-notice__copy">' +
+          '<strong class="gb-tts-download-notice__title"></strong>' +
+          '<span class="gb-tts-download-notice__meta"></span>' +
+        '</span>' +
+        '<button class="gb-tts-download-notice__action" type="button" hidden></button>';
+      document.body.appendChild(el);
+    }
+    var action = el.querySelector('.gb-tts-download-notice__action');
+    if (action && action.getAttribute('data-gb-tts-action-bound') !== 'true') {
+      action.setAttribute('data-gb-tts-action-bound', 'true');
+      action.addEventListener('click', function () {
+        var mode = action.getAttribute('data-action') || '';
+        if (mode === 'cancel' && window.VoskTTSEngine) {
+          window.VoskTTSEngine.cancelLoading({ persist: true });
+        } else if (mode === 'switch') {
+          window.dispatchEvent(new CustomEvent('gb:vosk-switch-request', { detail: { handled: false } }));
+        } else if (mode === 'retry' || mode === 'enable' || mode === 'manual') {
+          window.dispatchEvent(new CustomEvent('gb:vosk-retry-request', { detail: { mode: mode, handled: false } }));
+        }
+      });
+    }
+    return el;
+  }
+
+  function showFallbackTtsStatus(stateName, options) {
+    options = options || {};
+    ensureFallbackTtsNoticeStyles();
+    clearTimeout(fallbackTtsNoticeTimer);
+    var el = getFallbackTtsNotice();
+    var title = el.querySelector('.gb-tts-download-notice__title');
+    var meta = el.querySelector('.gb-tts-download-notice__meta');
+    var action = el.querySelector('.gb-tts-download-notice__action');
+    var map = {
+      browser: ['Сейчас системный голос', 'Улучшенный голос проверяется в фоне', null, ''],
+      preparing: ['Проверяем улучшенный голос', 'Системный голос уже работает', null, ''],
+      disabled: ['Улучшенный голос отключён', 'Сейчас используется системный голос', 'enable', 'Включить'],
+      'save-data': ['Включена экономия трафика', 'Системный голос работает · модель около 280 МБ', 'manual', 'Загрузить'],
+      error: ['Улучшенный голос не запустился', 'Системный голос продолжает работать', 'retry', 'Повторить'],
+      selected: ['Работает улучшенный голос', 'Локальная модель · текст никуда не отправляется', null, '']
+    };
+    var row = map[stateName] || map.error;
+    el.setAttribute('data-state', stateName);
+    if (title) title.textContent = options.title || row[0];
+    if (meta) meta.textContent = options.meta || row[1];
+    if (action) {
+      var actionMode = options.actionMode !== undefined ? options.actionMode : row[2];
+      var actionLabel = options.actionLabel !== undefined ? options.actionLabel : row[3];
+      action.hidden = !actionMode;
+      action.setAttribute('data-action', actionMode || '');
+      action.textContent = actionLabel || '';
+      action.setAttribute('aria-label', options.actionAria || actionLabel || '');
+    }
+    requestAnimationFrame(function () { el.classList.add('is-visible'); });
+    if (options.autoHide) {
+      fallbackTtsNoticeTimer = setTimeout(function () { el.classList.remove('is-visible'); }, options.autoHide);
+    }
+    return el;
+  }
+
+  function showVoskStatus(stateName, options) {
+    if (window.VoskTTSEngine && typeof window.VoskTTSEngine.showStatus === 'function') {
+      return window.VoskTTSEngine.showStatus(stateName, options || {});
+    }
+    return showFallbackTtsStatus(stateName, options || {});
+  }
+
   function loadVoskEngineScript() {
     if (window.VoskTTSEngine) return Promise.resolve();
     if (_voskEngineScriptPromise) return _voskEngineScriptPromise;
     _voskEngineScriptPromise = new Promise(function (resolve, reject) {
       var s = document.createElement('script');
-      s.src = '/js/vosk-tts-engine.js';
+      s.src = VOSK_ENGINE_SRC;
       s.onload = function () { resolve(); };
-      s.onerror = function () { _voskEngineScriptPromise = null; reject(new Error('vosk-tts-engine.js load failed')); };
+      s.onerror = function () {
+        _voskEngineScriptPromise = null;
+        reject(new Error('vosk-tts-engine.js load failed'));
+      };
       document.head.appendChild(s);
     });
     return _voskEngineScriptPromise;
@@ -363,36 +453,90 @@
   // подсказка (ограниченная поддержка), поэтому это НЕ запрет улучшенного
   // голоса, а лишь отказ от автоматической тяжёлой загрузки без спроса.
   var VOSK_WARMUP_OPTOUT_KEY = 'gbx-vosk-warmup';
-  function voskWarmupOptedOut() {
-    try { if (localStorage.getItem(VOSK_WARMUP_OPTOUT_KEY) === 'off') return true; } catch (_) {}
+  function voskWarmupBlockReason() {
+    try { if (localStorage.getItem(VOSK_WARMUP_OPTOUT_KEY) === 'off') return 'disabled'; } catch (_) {}
     try {
       var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      if (c && c.saveData === true) return true;
+      if (c && c.saveData === true) return 'save-data';
     } catch (_) {}
-    return false;
+    return null;
   }
 
-  var _voskWarmupStarted = false;
-  function warmVoskInBackground() {
-    if (_voskWarmupStarted) return;
-    _voskWarmupStarted = true;
-    if (voskWarmupOptedOut()) return;
-    // Прозрачность: если движок реально начнёт СЕТЕВУЮ загрузку модели (кэш-мисс,
-    // ~280 МБ) — покажем один ненавязчивый тост. На повторных визитах модель уже
-    // в IndexedDB, события нет, тост не мозолит глаза. Событие шлёт сам движок из
-    // fetchModelFiles() ровно в ветке кэш-мисса.
-    addCleanListener(window, 'gb:vosk-model-download-start', function () {
-      showToast('Готовим улучшенный голос — один раз качаем ~280 МБ', false);
-    }, { once: true });
-    loadVoskEngineScript().then(function () {
-      if (window.VoskTTSEngine && window.VoskTTSEngine.isSupported() && !window.VoskTTSEngine.isReady()) {
-        return window.VoskTTSEngine.ensureLoaded();
+  var _voskWarmupPromise = null;
+
+  function warmVoskInBackground(options) {
+    options = options || {};
+    var manual = options.manual === true;
+    var retry = options.retry === true;
+    var blockReason = voskWarmupBlockReason();
+
+    if (!manual && blockReason) {
+      showVoskStatus(blockReason);
+      return Promise.resolve(null);
+    }
+    if (_voskWarmupPromise && !retry) return _voskWarmupPromise;
+
+    showVoskStatus('preparing');
+    _voskWarmupPromise = loadVoskEngineScript().then(function () {
+      if (!(window.VoskTTSEngine && window.VoskTTSEngine.isSupported())) {
+        throw new Error('enhanced voice is not supported by this browser');
       }
-    }).catch(function (err) {
+      if (window.VoskTTSEngine.isReady()) {
+        showVoskStatus(ttsState.engine === 'webspeech' ? 'ready' : 'selected');
+        return 'vosk';
+      }
+      if ((manual || retry) && typeof window.VoskTTSEngine.retryLoading === 'function') {
+        return window.VoskTTSEngine.retryLoading({ clearOptOut: true }).then(function () { return 'vosk'; });
+      }
+      return window.VoskTTSEngine.ensureLoaded().then(function () { return 'vosk'; });
+    }).then(function (result) {
+      _voskWarmupPromise = null;
+      return result;
+    }, function (err) {
+      _voskWarmupPromise = null;
+      if (err && err.userCancelled) {
+        if (voskWarmupBlockReason() === 'disabled') showVoskStatus('disabled');
+        return null;
+      }
       console.warn('[gbx-tts] background Vosk warm-up failed, staying on Web Speech:', err);
+      showVoskStatus('error', { reason: (err && err.message) || String(err) });
       reportTtsIssue('background_warmup: ' + ((err && err.message) || err));
+      return null;
     });
+    return _voskWarmupPromise;
   }
+
+  function switchCurrentSessionToVosk() {
+    if (!(window.VoskTTSEngine && window.VoskTTSEngine.isReady())) {
+      warmVoskInBackground({ manual: true, retry: true });
+      return;
+    }
+    if (ttsState.engine === 'webspeech' && ttsState.chunks.length) {
+      ttsState.runId += 1;
+      ttsState.suppressEnd = true;
+      cancelActiveEngine();
+      ttsState.utterance = null;
+      ttsState.engine = 'vosk';
+      ttsState.suppressEnd = false;
+      reportTtsOutcome('vosk');
+      showVoskStatus('selected', { autoHide: 1800 });
+      if (!ttsState.paused && ttsState.chunkIdx < ttsState.chunks.length) {
+        setEmberState('playing');
+        speakNextChunk();
+      }
+      return;
+    }
+    showVoskStatus('selected', { autoHide: 1800 });
+  }
+
+  addCleanListener(window, 'gb:vosk-retry-request', function (event) {
+    if (event && event.detail) event.detail.handled = true;
+    warmVoskInBackground({ manual: true, retry: true });
+  });
+  addCleanListener(window, 'gb:vosk-switch-request', function (event) {
+    if (event && event.detail) event.detail.handled = true;
+    switchCurrentSessionToVosk();
+  });
 
   // Решает, каким движком озвучивать текущую сессию. Воспроизведение обязано
   // начинаться мгновенно (PremiumControls contract — data-state/speak не ждут
@@ -401,24 +545,20 @@
   // и прогреваем Vosk в фоне для следующего раза. Ждём загрузку Vosk синхронно
   // только если Web Speech в браузере вообще отсутствует (иначе играть нечем).
   function resolveTtsEngine() {
-    if (window.VoskTTSEngine && window.VoskTTSEngine.isReady()) return Promise.resolve('vosk');
+    if (window.VoskTTSEngine && window.VoskTTSEngine.isReady()) {
+      showVoskStatus('selected', { autoHide: 1800 });
+      return Promise.resolve('vosk');
+    }
     if ('speechSynthesis' in window) {
+      showVoskStatus('browser');
       warmVoskInBackground();
       return Promise.resolve('webspeech');
     }
-    return loadVoskEngineScript().catch(function (err) {
-      console.warn('[gbx-tts] failed to load vosk-tts-engine.js:', err);
-      reportTtsIssue('script_load: ' + ((err && err.message) || err));
-    }).then(function () {
-      if (!(window.VoskTTSEngine && window.VoskTTSEngine.isSupported())) return null;
-      showToast('Готовим озвучку (в первый раз — дольше, дальше из кэша браузера)…', false);
-      return window.VoskTTSEngine.ensureLoaded().then(function () {
-        return 'vosk';
-      }).catch(function (err) {
-        console.warn('[gbx-tts] Vosk engine unavailable:', err);
-        reportTtsIssue('ensure_loaded: ' + ((err && err.message) || err));
-        return null;
-      });
+    showVoskStatus('preparing');
+    return warmVoskInBackground({ manual: true }).then(function (engine) {
+      if (engine === 'vosk' && window.VoskTTSEngine && window.VoskTTSEngine.isReady()) return 'vosk';
+      showVoskStatus('error', { meta: 'В этом браузере нет доступного запасного голоса' });
+      return null;
     });
   }
 
