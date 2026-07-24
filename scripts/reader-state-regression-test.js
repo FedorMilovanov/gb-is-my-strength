@@ -250,6 +250,7 @@ assert(source.includes("'before-content'"));
 assert(source.includes("'after-content'"));
 assert(source.includes("'gb:reader-state-change'"));
 assert(source.includes("'gb:reader-state:v1:'"));
+assert(source.includes("style.setProperty('--gb-read-pct', String(ratio))"), 'ReaderState must publish the shared CSS progress contract');
 assert.strictEqual((listeners.get('scroll') || []).length, 0, 'no root means no runtime scroll owner');
 
 
@@ -327,6 +328,7 @@ assert(!/addEventListener\(['"]scroll['"]/.test(railSource), 'desktop rail must 
 assert(!seriesControllerSource.includes("addCleanListener(window, 'scroll'"), 'series/book chrome must not install a scroll owner');
 assert(!seriesControllerSource.includes('gb-series-pos:'), 'series/book chrome must not write legacy position keys');
 assert(!seriesControllerSource.includes('gb-resume-offered:'), 'series/book chrome must not own a legacy resume-session key');
+assert(!seriesControllerSource.includes("style.setProperty('--gb-read-pct'"), 'series/book chrome must not own the shared CSS progress contract');
 assert(headSource.includes("assetUrl('js/reader-state.js')"), 'shared reader head must load ReaderState');
 assert(cacheAssetsSource.includes("'js/reader-state.js'"), 'ReaderState must be cache-bust managed');
 assert(auditSource.includes("'js/reader-state.js'"), 'ReaderState must be in the central JS allowlist');
