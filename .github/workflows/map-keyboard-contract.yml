@@ -6,6 +6,7 @@ on:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
+      - scripts/map-panel-viewport-browser-test.js
       - .github/workflows/map-keyboard-contract.yml
   push:
     branches:
@@ -14,10 +15,15 @@ on:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
+      - scripts/map-panel-viewport-browser-test.js
       - .github/workflows/map-keyboard-contract.yml
 
 permissions:
   contents: read
+
+concurrency:
+  group: map-keyboard-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   source-contract:
@@ -26,9 +32,31 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22.12.0'
       - name: Verify source keyboard policy
         run: node scripts/map-keyboard-contract-test.js
+      - name: Verify viewport contract sources
+        run: |
+          node --check scripts/map-panel-viewport-browser-test.js
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
+          const required = [
+            'map-engine.js v0.54',
+            'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
+            '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
+            'min-height:0;overflow-y:auto;overscroll-behavior:contain',
+            'width:420px;max-height:calc(100% - 24px)'
+          ];
+          const missing = required.filter((needle) => !source.includes(needle));
+          if (missing.length) {
+            console.error('Missing map panel viewport contract:', missing);
+            process.exit(1);
+          }
+          console.log('PASS source map panel viewport contract');
+          NODE
+      - name: Lint workflow
+        run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml
 
   chromium-contract:
     runs-on: ubuntu-latest
@@ -36,7 +64,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22.12.0'
           cache: npm
       - name: Install dependencies
         run: npm ci
@@ -78,4 +106,62 @@ jobs:
         run: |
           if [[ -f /tmp/map-keyboard-http.pid ]]; then
             kill "$(cat /tmp/map-keyboard-http.pid)" 2>/dev/null || true
+          fi
+
+  panel-viewport-contract:
+    name: Panel viewport contract (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Start source server
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8090 --bind 127.0.0.1 >/tmp/map-panel-http.log 2>&1 &
+          echo $! > /tmp/map-panel-http.pid
+          for _ in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8090/karty/ishod/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/map-panel-http.log
+          exit 1
+      - name: Verify mobile panel geometry
+        shell: bash
+        env:
+          AUDIT_BASE: http://127.0.0.1:8090
+          MAP_PANEL_BROWSER: ${{ matrix.browser }}
+          MAP_PANEL_EVIDENCE: /tmp/map-panel-evidence
+        run: |
+          set -o pipefail
+          node scripts/map-panel-viewport-browser-test.js 2>&1 | tee /tmp/map-panel-${{ matrix.browser }}.log
+      - name: Upload panel evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-panel-${{ matrix.browser }}-${{ github.run_id }}
+          path: |
+            /tmp/map-panel-evidence/**
+            /tmp/map-panel-${{ matrix.browser }}.log
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Stop source server
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/map-panel-http.pid ]]; then
+            kill "$(cat /tmp/map-panel-http.pid)" 2>/dev/null || true
           fi
