@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
+const { existsSync } = require('node:fs');
 const { chromium } = require('playwright');
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -91,7 +92,8 @@ const CATALOGS = ['/articles/', '/biografii/', '/karty/', '/konfessii/', '/hard-
 const { srv, base } = await serve();
 let browser;
 try {
-  browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const pinnedChromium = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
+  browser = await chromium.launch(existsSync(pinnedChromium) ? { executablePath: pinnedChromium } : {});
   browser.on('disconnected', () => console.error('[engine:sweep] browser disconnected'));
 
 async function newPage(vp, { speech = false } = {}) {
