@@ -49,15 +49,59 @@ jobs:
           test ! -e scripts/_temp-print-important-ratchet-fix.mjs
           git diff --check
 
-      - name: Static architecture gates
+      - name: Syntax checks
         run: |
           node --check js/site.js
           node --check scripts/engine-sweep.mjs
-          node scripts/reader-preferences-regression-test.js
-          npm run gill:chrome:guard
-          npm run audit:premium-controls
-          npm run css:layer:validate
-          node scripts/audit-pro.js
+
+      - name: Reader preferences regression
+        id: reader
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          node scripts/reader-preferences-regression-test.js 2>&1 | tee reports/reader-ui-pdf/reader-preferences.log
+
+      - name: Gill chrome guard
+        id: gill
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run gill:chrome:guard 2>&1 | tee reports/reader-ui-pdf/gill-chrome.log
+
+      - name: Premium controls audit
+        id: premium
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run audit:premium-controls 2>&1 | tee reports/reader-ui-pdf/premium-controls.log
+
+      - name: CSS layer validation
+        id: layers
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run css:layer:validate 2>&1 | tee reports/reader-ui-pdf/css-layer.log
+
+      - name: Professional audit
+        id: pro
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          node scripts/audit-pro.js 2>&1 | tee reports/reader-ui-pdf/audit-pro.log
+
+      - name: Enforce all static gates
+        if: always()
+        run: |
+          echo "reader=${{ steps.reader.outcome }}"
+          echo "gill=${{ steps.gill.outcome }}"
+          echo "premium=${{ steps.premium.outcome }}"
+          echo "layers=${{ steps.layers.outcome }}"
+          echo "pro=${{ steps.pro.outcome }}"
+          test "${{ steps.reader.outcome }}" = success
+          test "${{ steps.gill.outcome }}" = success
+          test "${{ steps.premium.outcome }}" = success
+          test "${{ steps.layers.outcome }}" = success
+          test "${{ steps.pro.outcome }}" = success
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
