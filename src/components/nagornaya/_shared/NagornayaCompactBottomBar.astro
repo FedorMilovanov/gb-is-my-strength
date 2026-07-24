@@ -1,11 +1,17 @@
 ---
 /**
  * Shared narrow-viewport contract for the native Nagornaya chapter bar,
- * glossary cards and long section headings.
+ * glossary cards, long section headings and WebKit intrinsic-width isolation.
  *
  * Closed glossary cards must not contribute intrinsic width. The canonical
  * tooltip controller moves a card to <body> and adds .gb-floating-tip before
  * it becomes visible.
+ *
+ * At <=359px WebKit may otherwise expose a wide table's min-content width at
+ * the document root even when the table is inside overflow-x-auto. The main
+ * shell clips only escaped root overflow while the local table wrapper remains
+ * horizontally scrollable. Indented section subtitles also receive an explicit
+ * remaining width so glossary-enhanced text cannot enlarge the page.
  *
  * The mobile TOC keeps progress and sharing available, so at <=359px the
  * persistent bar may drop those duplicate controls (plus the redundant Up
@@ -18,6 +24,25 @@
   }
 
   @media (max-width: 359px) {
+    body.nagornaya-page,
+    body.nagornaya-page #main-content,
+    body.nagornaya-page #main-content > div {
+      max-width: 100%;
+      overflow-x: hidden;
+      overflow-x: clip;
+    }
+
+    body.nagornaya-page #main-content .overflow-x-auto {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      contain: inline-size;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
     body.nagornaya-page #main-content .group,
     body.nagornaya-page #main-content .group > .flex,
     body.nagornaya-page #main-content .group > .flex > h2 {
@@ -26,6 +51,13 @@
     }
 
     body.nagornaya-page #main-content .group > .flex > h2 {
+      overflow-wrap: anywhere;
+    }
+
+    body.nagornaya-page #main-content .group > p.ml-14 {
+      width: calc(100% - 3.5rem);
+      max-width: calc(100% - 3.5rem);
+      min-width: 0;
       overflow-wrap: anywhere;
     }
 
