@@ -7,6 +7,7 @@ on:
       - 'scripts/lib/legacy-source-authority.js'
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/content-coverage-audit.js'
+      - 'scripts/check-data-consistency.js'
       - 'scripts/gill-context-visual-parity-audit.js'
       - 'scripts/gill-spravochnik-visual-parity-audit.js'
       - 'scripts/gill-reading-time-canonical-audit.js'
@@ -20,6 +21,7 @@ on:
       - 'scripts/lib/legacy-source-authority.js'
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/content-coverage-audit.js'
+      - 'scripts/check-data-consistency.js'
       - 'scripts/gill-context-visual-parity-audit.js'
       - 'scripts/gill-spravochnik-visual-parity-audit.js'
       - 'scripts/gill-reading-time-canonical-audit.js'
@@ -67,6 +69,7 @@ jobs:
           node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
           node scripts/gill-reading-time-canonical-audit.js
           node scripts/gill-pagefind-body-audit.js
+          node scripts/check-data-consistency.js
 
       - name: Full static publication gate
         shell: bash
