@@ -90,5 +90,16 @@ jobs:
         env:
           MAP_ARCHAEOLOGY_BROWSER: ${{ matrix.browser }}
         run: node scripts/map-archaeology-projection-browser-test.mjs
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-archaeology-projection-${{ matrix.browser }}-${{ github.run_id }}
+          path: |
+            reports/map-archaeology-projection-${{ matrix.browser }}.json
+            reports/map-archaeology-projection-${{ matrix.browser }}.png
+          if-no-files-found: warn
+          retention-days: 14
       - name: Ensure browser proof is read-only
+        if: success()
         run: git diff --exit-code
