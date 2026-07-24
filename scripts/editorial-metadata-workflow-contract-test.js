@@ -15,22 +15,16 @@ function requireFirst(marker) {
   return index;
 }
 
-function requireLast(marker) {
-  const index = text.lastIndexOf(marker);
-  if (index < 0) failures.push(`missing marker: ${marker}`);
-  return index;
-}
-
 const build = requireFirst('npm run strangler:build:production-like');
 const preserve = requireFirst('cp data/editorial-metadata.json reports/editorial-metadata-frozen.json');
 const structure = requireFirst('node scripts/editorial-metadata-registry.js --check');
 const freeze = requireFirst('node scripts/editorial-metadata-freeze-audit.js');
 const observe = requireFirst('node scripts/editorial-metadata-registry.js --write');
 const observedCopy = requireFirst('cp data/editorial-metadata.json reports/editorial-metadata-observed.json');
-const restore = requireLast('cp reports/editorial-metadata-frozen.json data/editorial-metadata.json');
+const restoreCall = requireFirst('restore_registry\n          trap - EXIT');
 const cleanDiff = requireFirst('git diff --exit-code -- data/editorial-metadata.json');
 
-const ordered = [build, preserve, structure, freeze, observe, observedCopy, restore, cleanDiff];
+const ordered = [build, preserve, structure, freeze, observe, observedCopy, restoreCall, cleanDiff];
 if (ordered.every((value) => value >= 0)) {
   for (let index = 1; index < ordered.length; index++) {
     if (ordered[index] <= ordered[index - 1]) {
@@ -42,6 +36,9 @@ if (ordered.every((value) => value >= 0)) {
 
 if (/editorial-metadata-registry\.js\s+--write\s+--build/.test(text)) {
   failures.push('workflow must not refresh the registry before auditing the committed freeze');
+}
+if (!text.includes('restore_registry() {\n            cp reports/editorial-metadata-frozen.json data/editorial-metadata.json\n          }')) {
+  failures.push('restore function must replace the generated registry with the committed freeze');
 }
 if (!text.includes('reports/editorial-metadata-frozen.json')) {
   failures.push('artifact must preserve the committed freeze snapshot');
