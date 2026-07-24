@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import json
+
+controller_path = Path('js/floating-cluster-controller.js')
+controller = controller_path.read_text(encoding='utf-8')
+
+old_active = "\n".join([
+    "        var activeIdx = -1;",
+    "        for (var ri = 0; ri < represented.length; ri++) {",
+    "          if (represented[ri].id === reader.sectionId) { activeIdx = ri; break; }",
+    "        }",
+    "        represented.forEach(function (row, idx) {",
+    "          var isActive = phase === 'active-section' && idx === activeIdx;",
+    "          var isPassed = phase === 'after-content' || (activeIdx >= 0 && idx < activeIdx);",
+])
+new_active = "\n".join([
+    "        // ReaderState remains the sole scroll/rAF owner, but its global heading",
+    "        // selector is intentionally broader than the historical Gill rail: the",
+    "        // rail is a curated subset and may target a paragraph. Derive the rail",
+    "        // index from its own real targets and the shared scroll snapshot instead",
+    "        // of requiring reader.sectionId to be one of the represented rows.",
+    "        // 140px is the canonical Gill anchor offset used by rail navigation and",
+    "        // the pre-v16 live traversal contract.",
+    "        var railLine = scrollY + 140;",
+    "        var activeIdx = phase === 'after-content' ? represented.length - 1 : 0;",
+    "        if (phase !== 'before-content' && phase !== 'after-content') {",
+    "          for (var ri = 0; ri < represented.length; ri++) {",
+    "            var targetTop = represented[ri].target.getBoundingClientRect().top + (window.scrollY || 0);",
+    "            if (targetTop <= railLine + 2) activeIdx = ri;",
+    "            else break;",
+    "          }",
+    "        }",
+    "        represented.forEach(function (row, idx) {",
+    "          var isActive = idx === activeIdx;",
+    "          var isPassed = idx < activeIdx;",
+])
+if controller.count(old_active) != 1:
+    raise SystemExit(f'controller active block count={controller.count(old_active)}')
+controller = controller.replace(old_active, new_active)
+
+old_count = "\n".join([
+    "        var countEl = qs('#gbs2Count');",
+    "        if (countEl) countEl.textContent = phase === 'before-content'",
+    "          ? 'Введение'",
+    "          : phase === 'after-content'",
+    "            ? 'Готово'",
+    "            : (activeIdx + 1) + ' / ' + represented.length;",
+])
+new_count = "\n".join([
+    "        var countEl = qs('#gbs2Count');",
+    "        if (countEl) countEl.textContent = (activeIdx + 1) + ' / ' + represented.length;",
+])
+if controller.count(old_count) != 1:
+    raise SystemExit(f'controller counter block count={controller.count(old_count)}')
+controller = controller.replace(old_count, new_count)
+
+old_part = "\n".join([
+    "            var isActive = phase === 'active-section' && idx === activeIdx;",
+    "            var isPassed = phase === 'after-content' || (activeIdx >= 0 && idx < activeIdx);",
+])
+new_part = "\n".join([
+    "            var isActive = idx === activeIdx;",
+    "            var isPassed = idx < activeIdx;",
+])
+if controller.count(old_part) != 1:
+    raise SystemExit(f'controller part block count={controller.count(old_part)}')
+controller = controller.replace(old_part, new_part)
+controller_path.write_text(controller, encoding='utf-8')
+
+recon_path = Path('data/gill-submenu-anchor-reconciliation.json')
+recon = json.loads(recon_path.read_text(encoding='utf-8'))
+recon['reconciledAt'] = '2026-07-24'
+recon['policy'] = (
+    'The pre-v16 GBS submenu reference at bcf6389f29ee0c89e9e96e7587e0226ecf251ae0 remains the immutable '
+    'design witness for route coverage, item count, hierarchy and historical wording. Current submenu labels '
+    'follow the owner-approved label-semantics rule and must match the current rendered target heading; every '
+    'legitimate editorial change is recorded in the relabels map. Seven Astro migration anchor-ID renames remain '
+    'documented separately in renames, while reorders record current document order required by the scrollspy.'
+)
+recon['relabels'] = {
+    'articles/dzhon-gill-istoricheskiy-kontekst/index.html': {
+        '#sec-from-puritans-to-baptists': 'I. От пуританского спора к устойчивому миру диссента',
+        '#sec-particular-vs-general': 'II. Партикулярные и генеральные баптисты: две традиции, а не две монолитные партии',
+        '#sec-great-ejection': 'III. 1662 год и рождение устойчивого нонконформизма',
+        '#sec-clarendon': 'IV. После терпимости: три разных стены',
+        '#sec-academies': 'V. Диссентерские академии: не один подпольный университет, а целая экосистема',
+        '#sec-salters-hall': 'VI. Солтерс-Холл, 1719: Троица, подписка и власть церковной формулы',
+        '#sec-coffee-house': 'VII. Лондонские сети: кофейни, письма, фонды и лекции',
+        '#sec-southwark': 'VIII. Саутварк: пасторство на южном берегу',
+        '#sec-books': 'IX. Кеттерингская книжная лавка: что действительно сообщает Риппон',
+        '#sec-conclusion': 'X. Итог: что исторический контекст объясняет — и чего не объясняет',
+    },
+    'articles/dzhon-gill-chast-1-chelovek/index.html': {
+        '#part-calling': 'I. Становление и призвание',
+        '#sec-intro': 'Самообразование вне университетской траектории',
+        '#sec-birth-prophecy': 'Риппоновское предание об утре рождения',
+        '#sec-education': 'Грамматическая школа, книжная лавка и самообразование',
+        '#sec-evangelism': 'Евангельская активность: свидетельства и границы доказательства',
+        '#sec-family-deep': 'Семья: дети, зять-издатель и богословие в деталях',
+        '#sec-ordination-1720': 'Рукоположение 22 марта 1720 года: свидетельства Кросби и Риппона',
+        '#sec-personal-credo': 'Личные высказывания: только с прослеживаемой передачей',
+        '#sec-context-southwark': 'Кеттеринг, Саутварк и правовой мир диссентеров',
+    },
+    'articles/dzhon-gill-chast-2-uchenyi/index.html': {
+        '#sec-hebrew': 'Раввинист — христианин с Мишной в руках',
+        '#sec-canticles': 'Песнь Песней: самый личный труд Гилла',
+        '#sec-systematics': '«Полный свод богословия» — первая баптистская сумма',
+        '#sec-ordinances': 'Церковные установления: крещение и Вечеря',
+    },
+    'articles/dzhon-gill-chast-3-nasledie/index.html': {
+        '#part-legacy': 'V. Историческое влияние и память',
+        '#sec-church-gov': 'Управление церковью: один пастор и власть общины',
+        '#sec-toplady-memoir': 'Топлэди о Гилле: Чёрный Принц и Мальборо',
+        '#sec-church-gov-polity': 'О вступлении в членство и права поместной общины',
+        '#sec-america': 'Влияние на Америку и Фонд партикулярных баптистов',
+        '#sec-spurgeon-legacy': 'Сперджен — наследник и независимый критик',
+        '#sec-gill-last-pages': 'Последние страницы: «10 000!» и Nunc Dimittis',
+        '#sec-ordination-rippon': 'Риппон: «Столь великого плача в мире»',
+        '#sec-gill-muller-rediscovery': 'Современное переиздание и новый этап исследований: «Проект Джона Гилла»',
+        '#sec-contemporaries': 'Как современники видели Гилла: портрет из первых уст',
+        '#sec-terms': 'Словарь эпохи: ключевые богословские понятия',
+    },
+}
+recon['relabelsPolicy'] = (
+    'Owner decision 2026-07-05 (UI-GILL-SUBMENU-LABEL-SEMANTICS-09): a submenu label MUST match the CURRENT '
+    'rendered target heading verbatim, or be its prefix for a decorated heading. The native Gill articles evolved '
+    'editorially after the historical witness; 34/56 represented labels now differ from the historical wording and '
+    'are explicitly reconciled here. Historical labels remain immutable in data/gill-pre-v16-submenu-reference.json; '
+    'entries below document anchor-rename decisions.'
+)
+recon_path.write_text(json.dumps(recon, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+workflow = '''name: Gill pre-v16 submenu contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'js/floating-cluster-controller.js'
+      - 'js/reader-state.js'
+      - 'data/gill-pre-v16-submenu-reference.json'
+      - 'data/gill-submenu-anchor-reconciliation.json'
+      - 'src/components/article-pilots/gill-series/**'
+      - 'src/components/article-pilots/gill-context/**'
+      - 'src/components/article-pilots/gill-part1/**'
+      - 'src/components/article-pilots/gill-part2/**'
+      - 'src/components/article-pilots/gill-part3/**'
+      - 'src/components/article-pilots/gill-spravochnik/**'
+      - 'scripts/gill-pre-v16-submenu-regression-audit.js'
+      - '.github/workflows/gill-pre-v16-submenu.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'js/floating-cluster-controller.js'
+      - 'js/reader-state.js'
+      - 'data/gill-pre-v16-submenu-reference.json'
+      - 'data/gill-submenu-anchor-reconciliation.json'
+      - 'src/components/article-pilots/gill-series/**'
+      - 'src/components/article-pilots/gill-context/**'
+      - 'src/components/article-pilots/gill-part1/**'
+      - 'src/components/article-pilots/gill-part2/**'
+      - 'src/components/article-pilots/gill-part3/**'
+      - 'src/components/article-pilots/gill-spravochnik/**'
+      - 'scripts/gill-pre-v16-submenu-regression-audit.js'
+      - '.github/workflows/gill-pre-v16-submenu.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-submenu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run strangler:build:production-like
+      - run: npx playwright install --with-deps chromium
+      - name: Require full live Gill traversal
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
+        run: npm run gill:pre-v16-submenu:audit
+      - name: Ensure checks left tracked sources clean
+        run: git diff --exit-code
+      - name: Upload machine-readable traversal facts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gill-pre-v16-submenu-${{ github.run_id }}
+          path: reports/gill-pre-v16-submenu-audit/
+          if-no-files-found: warn
+          retention-days: 14
+'''
+Path('.github/workflows/gill-pre-v16-submenu.yml').write_text(workflow, encoding='utf-8')
