@@ -1,0 +1,75 @@
+name: TEMP Map Keyboard v0.56 Follow-up
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/materialize-map-keyboard-v056-followup.mjs'
+      - '.github/workflows/_temp-map-keyboard-v056-followup.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-map-keyboard-v056-followup
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/map-archaeology-engine-p0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/map-archaeology-engine-p0
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Apply exact reconciliation
+        run: |
+          node --check scripts/materialize-map-keyboard-v056-followup.mjs
+          node scripts/materialize-map-keyboard-v056-followup.mjs
+      - name: Validate generated oracles
+        run: |
+          node --check scripts/map-browser-smoke.js
+          node --check scripts/map-authored-paths-browser-test.js
+          node --check scripts/map-keyboard-contract-test.js
+          node scripts/map-layers-theme-regression-test.js
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const engine=fs.readFileSync('karty/_engine/map-engine.js','utf8');
+          const workflow=fs.readFileSync('.github/workflows/map-keyboard-contract.yml','utf8');
+          if(!workflow.includes('map-engine.js v0.56')||!workflow.includes("version:'0.56.0',buildDate:'2026-07-25'"))process.exit(1);
+          if(!workflow.includes('staleLegacyArchaeology'))process.exit(1);
+          if(/ARCHAEOLOGY_REFERENCES|_classifySource|_renderArchaeologyFooter/.test(engine))process.exit(1);
+          NODE
+      - name: Remove one-shot machinery
+        run: |
+          rm scripts/materialize-map-keyboard-v056-followup.mjs
+          rm .github/workflows/_temp-map-keyboard-v056-followup.yml
+      - name: Enforce exact generated scope
+        run: |
+          node - <<'NODE'
+          const {execFileSync}=require('node:child_process');
+          const actual=execFileSync('git',['diff','--name-only'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
+          const expected=[
+            '.github/workflows/_temp-map-keyboard-v056-followup.yml',
+            '.github/workflows/map-keyboard-contract.yml',
+            'scripts/map-authored-paths-browser-test.js',
+            'scripts/map-browser-smoke.js',
+            'scripts/materialize-map-keyboard-v056-followup.mjs'
+          ].sort();
+          if(JSON.stringify(actual)!==JSON.stringify(expected)){console.error({actual,expected});process.exit(1)}
+          NODE
+      - name: Commit and push non-workflow product tree
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A -- scripts/map-authored-paths-browser-test.js scripts/map-browser-smoke.js scripts/materialize-map-keyboard-v056-followup.mjs
+          git commit -m "test(karty): reconcile v0.56 map browser contracts"
+          git push origin HEAD:agent/map-archaeology-engine-p0
