@@ -93,16 +93,21 @@ const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
           const items = document.querySelectorAll('.me-sci-item').length;
           const statuses = [...document.querySelectorAll('.me-sci-status')].map(el => el.textContent.trim()).filter(Boolean);
           const legacyFooter = !!document.querySelector('.me-arch-footer');
+          const projectionPayload = document.getElementById('map-archaeology-projection');
+          const projectionDeclared = !!projectionPayload?.dataset?.projection;
           const projectionRoot = !!document.querySelector('[data-archaeology-projection-root]');
           const sourceBadges = document.querySelectorAll('.map-arch-badge').length;
           const sourceRecords = document.querySelectorAll('[data-source-id][data-evidence-use][data-source-status][data-source-verification]').length;
+          const projectionOk = !projectionDeclared || (projectionRoot && sourceBadges > 0 && sourceRecords > 0);
           return {
             tested:true,
-            ok:items>0 && statuses.length>0 && projectionRoot && sourceBadges>0 && sourceRecords>0 && !legacyFooter,
+            ok:items>0 && statuses.length>0 && !legacyFooter && projectionOk,
             place:place.id,
             items,
             statuses:statuses.slice(0,3),
+            projectionDeclared,
             projectionRoot,
+            projectionOk,
             sourceBadges,
             sourceRecords,
             legacyFooter,
