@@ -35,6 +35,7 @@ const CLAIM_STATUSES = new Set([
   'accepted-context',
   'primary-identification',
   'candidate',
+  'disputed',
   'rejected',
   'project-interpretation',
   'methodological-guardrail',
@@ -71,6 +72,11 @@ const routeCollections = {
   scientific_variants: new Set(Object.keys(route.scientific_variants || {})),
 };
 const sites = provenance.sites || {};
+const declaredMapScopes = new Set(['avraam', ...(catalog.mapScopes || []).map((scope) => scope?.id).filter(Boolean)]);
+for (const scope of catalog.mapScopes || []) {
+  if (!scope || !/^[a-z0-9][a-z0-9-]+$/.test(scope.id || '')) fail('map-scope-id', JSON.stringify(scope));
+  if (scope.kind !== 'runtime-scope') fail('map-scope-kind', `${scope?.id}: ${scope?.kind}`);
+}
 for (const [siteId, site] of Object.entries(sites)) {
   if (!/^[a-z0-9][a-z0-9-]+$/.test(siteId)) fail('site-id', siteId);
   const ref = site?.routeRef;
@@ -103,7 +109,8 @@ for (const [index, source] of sources.entries()) {
   catalogUrls.set(source.url, source.id);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(source.verifiedAt || '')) fail('source-verified-at', `${source.id}: invalid verifiedAt`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(source.accessedAt || '')) fail('source-accessed-at', `${source.id}: invalid accessedAt`);
-  if (!Array.isArray(source.maps) || !source.maps.includes('avraam')) fail('source-map-scope', `${source.id}: expected avraam`);
+  if (!Array.isArray(source.maps) || !source.maps.length) fail('source-map-scope', `${source.id}: at least one map scope required`);
+  for (const scope of source.maps || []) if (!declaredMapScopes.has(scope)) fail('source-map-scope-unknown', `${source.id}: ${scope}`);
   if (!Array.isArray(source.places)) fail('source-place-tags', `${source.id}: places must be an array`);
   for (const place of source.places || []) if (!sites[place]) fail('source-place-unknown', `${source.id}: ${place}`);
   if (source.tier === 'retraction-record' && source.status !== 'retracted') fail('retraction-status', `${source.id}: retraction record must be retracted`);
@@ -171,7 +178,7 @@ for (const [index, claim] of claims.entries()) {
   if (!/^[a-z0-9][a-z0-9-]+$/.test(claim.id || '')) fail('claim-id', `${label}: invalid id`);
   if (claimIds.has(claim.id)) fail('claim-id-duplicate', claim.id);
   claimIds.add(claim.id);
-  if (claim.map !== 'avraam') fail('claim-map', `${claim.id}: expected avraam`);
+  if (!declaredMapScopes.has(claim.map)) fail('claim-map-scope', `${claim.id}: ${claim.map}`);
   if (!CLAIM_STATUSES.has(claim.status)) fail('claim-status', `${claim.id}: ${claim.status}`);
   if (!claim.statement || !claim.limitations) fail('claim-text', `${claim.id}: statement and limitations are required`);
   if (!Array.isArray(claim.places) || !Array.isArray(claim.evidenceSources) || !Array.isArray(claim.interpretationSources)) fail('claim-arrays', `${claim.id}: places/evidenceSources/interpretationSources must be arrays`);
@@ -189,7 +196,7 @@ for (const [index, claim] of claims.entries()) {
       if (!source || !record || source.status !== 'active' || !EVIDENCE_ROLES.has(record.evidenceUse)) fail('accepted-evidence-role', `${claim.id}: ${id}/${record?.evidenceUse}`);
     }
   }
-  if (claim.status === 'candidate' && !/candidate|requires|future|not an identification/i.test(claim.limitations)) fail('candidate-limitation', `${claim.id}: candidate limitation must remain explicit`);
+  if (['candidate', 'disputed'].includes(claim.status) && !/candidate|disputed|debate|requires|future|not (?:an )?identification|not settled/i.test(claim.limitations)) fail('candidate-limitation', `${claim.id}: candidate/disputed limitation must remain explicit`);
   if (claim.status === 'project-interpretation') {
     if (claim.evidenceSources.length) fail('project-interpretation-evidence', `${claim.id}: YEC chronology must not masquerade as excavation evidence`);
     if (!interpretation.some(({ record }) => record?.perspective === 'yec' && record.evidenceUse === 'interpretation')) fail('project-interpretation-yec', claim.id);
@@ -224,6 +231,8 @@ const summary = {
   yecInterpretation: yecInterpretation.length,
   negativeEvidence: negative.length,
   sites: Object.keys(sites).length,
+  mapScopes: declaredMapScopes.size,
+  topics: Object.keys(catalog.topicVocabulary || {}).length,
   claims: claims.length,
   problems: problems.length,
   warnings: warnings.length,
