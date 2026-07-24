@@ -4,17 +4,25 @@ on:
   pull_request:
     paths:
       - "js/vosk-tts-engine.js"
+      - "js/tts-engine-status.mjs"
       - "css/tts-download-notice.css"
+      - "src/components/reader-platform/ReaderPreferencesHead.astro"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
+      - "scripts/tts-engine-status-contract-test.mjs"
+      - "scripts/tts-engine-status-browser-test.mjs"
       - ".github/workflows/tts-download-consent.yml"
   push:
     branches: [main]
     paths:
       - "js/vosk-tts-engine.js"
+      - "js/tts-engine-status.mjs"
       - "css/tts-download-notice.css"
+      - "src/components/reader-platform/ReaderPreferencesHead.astro"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
+      - "scripts/tts-engine-status-contract-test.mjs"
+      - "scripts/tts-engine-status-browser-test.mjs"
       - ".github/workflows/tts-download-consent.yml"
 
 permissions:
@@ -40,11 +48,17 @@ jobs:
       - name: Check syntax
         run: |
           node --check js/vosk-tts-engine.js
+          node --check js/tts-engine-status.mjs
           node --check scripts/tts-download-consent-contract-test.js
           node --check scripts/tts-download-notice-browser-test.js
+          node --check scripts/tts-engine-status-contract-test.mjs
+          node --check scripts/tts-engine-status-browser-test.mjs
 
       - name: Enforce cancellable download contract
         run: node scripts/tts-download-consent-contract-test.js
+
+      - name: Enforce visible engine-state contract
+        run: node scripts/tts-engine-status-contract-test.mjs
 
       - name: Verify existing asset revisions remain read-only clean
         run: node scripts/cache-bust.js
@@ -53,7 +67,7 @@ jobs:
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml
 
   browser-contract:
-    name: Compact notice browser contract
+    name: Desktop and mobile engine-state browser contract
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -68,18 +82,22 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
 
-      - name: Run desktop and mobile cancellation fixture
+      - name: Run download cancellation fixture
         run: node scripts/tts-download-notice-browser-test.js
+
+      - name: Run desktop and mobile engine-state fixture
+        run: node scripts/tts-engine-status-browser-test.mjs
 
       - name: Upload interaction evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tts-download-consent-browser-${{ github.run_id }}
+          name: tts-engine-status-browser-${{ github.run_id }}
           path: |
             reports/tts-download-notice-desktop.png
             reports/tts-download-notice-mobile-dark.png
+            reports/tts-engine-status-*.png
           if-no-files-found: warn
           retention-days: 14
