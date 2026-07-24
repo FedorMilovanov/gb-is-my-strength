@@ -1,0 +1,113 @@
+name: Editorial Freeze Reconcile Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/editorial-freeze-reconcile-proof.yml'
+      - 'data/editorial-metadata.json'
+      - 'scripts/editorial-metadata-*.js'
+      - 'scripts/lib/editorial-metadata.js'
+      - 'feed.xml'
+      - 'data/search-manifest.json'
+      - 'src/**'
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile-proof:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Preserve editorial decisions
+        run: cp data/editorial-metadata.json /tmp/editorial-metadata-before.json
+
+      - name: Build current production projections
+        run: npm run strangler:build:production-like
+
+      - name: Refresh observed projections only
+        env:
+          OBSERVED_SOURCE_SHA: 5636a6a1911c7eb0e7637406e87e749dd65dbaaf
+        run: |
+          node scripts/editorial-metadata-registry.js --write
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = 'data/editorial-metadata.json';
+          const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+          data.sourceCommit = process.env.OBSERVED_SOURCE_SHA;
+          fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+          NODE
+
+      - name: Prove statuses were not promoted
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const before = JSON.parse(fs.readFileSync('/tmp/editorial-metadata-before.json', 'utf8'));
+          const after = JSON.parse(fs.readFileSync('data/editorial-metadata.json', 'utf8'));
+          const problems = [];
+          const beforeRoutes = Object.keys(before.records || {}).sort();
+          const afterRoutes = Object.keys(after.records || {}).sort();
+          if (JSON.stringify(beforeRoutes) !== JSON.stringify(afterRoutes)) {
+            problems.push(`record set changed: ${beforeRoutes.length} -> ${afterRoutes.length}`);
+          }
+          for (const route of beforeRoutes) {
+            const oldStatus = before.records[route]?.reviewStatus;
+            const newStatus = after.records[route]?.reviewStatus;
+            if (oldStatus !== 'approved' && newStatus === 'approved') {
+              problems.push(`${route}: unreviewed record was promoted to approved`);
+            }
+            if (oldStatus === 'approved' && newStatus !== 'approved') {
+              problems.push(`${route}: approved record lost approval`);
+            }
+          }
+          if (after.sourceCommit !== '5636a6a1911c7eb0e7637406e87e749dd65dbaaf') {
+            problems.push(`unexpected sourceCommit ${after.sourceCommit}`);
+          }
+          if (problems.length) {
+            console.error(problems.join('\n'));
+            process.exit(1);
+          }
+          console.log(`Editorial decisions preserved for ${afterRoutes.length} records`);
+          NODE
+
+      - name: Validate refreshed registry and projections
+        run: |
+          node scripts/editorial-metadata-registry.js --check
+          node scripts/editorial-metadata-freeze-audit.js
+          npm run validate:static-publication:light
+
+      - name: Prove generated scope
+        run: |
+          git diff --check
+          test "$(git diff --name-only | tr -d '\r')" = "data/editorial-metadata.json"
+          mkdir -p reports
+          git diff --stat > reports/editorial-freeze-diff-stat.txt
+          git diff -- data/editorial-metadata.json > reports/editorial-freeze.patch
+
+      - name: Upload verified registry candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-freeze-reconciled-${{ github.run_id }}
+          path: |
+            data/editorial-metadata.json
+            reports/editorial-freeze-diff-stat.txt
+            reports/editorial-freeze.patch
+          if-no-files-found: error
+          retention-days: 14
