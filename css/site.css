@@ -1244,3 +1244,51 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 }
 
 /* GB PRINT CONTRACT v2.7 — balanced A4 margins, no phantom trailing sheet. */
+
+/* GB PRINT CONTRACT v2.8 — Gill series overview pagination. */
+@media print {
+  /* Part I uses the first page as a clean title sheet. The series overview is
+     one semantic section and must never leave its label orphaned below the byline. */
+  html body [data-gill-v16="part1"] .article-body > .note-box:first-child {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  html body [data-gill-v16="part1"] .article-body > .note-box:first-child > :first-child {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+
+  html body [data-gill-v16="part1"] .article-body > .note-box:first-child > .grid {
+    break-before: avoid-page;
+    page-break-before: avoid;
+  }
+
+  html body [data-gill-v16="part1"] .article-body > .note-box:first-child .gill-card {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+}
+
+/* GB PRINT CONTRACT v2.9 — balanced Gill series overview grid. */
+@media print {
+  html body [data-gill-v16="part1"] .article-body > .note-box:first-child {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  html body [data-gill-v16="part1"] .article-body > .note-box:first-child > .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5mm;
+    align-items: stretch;
+  }
+
+  html body [data-gill-v16="part1"] .article-body > .note-box:first-child .gill-card {
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+  }
+}
