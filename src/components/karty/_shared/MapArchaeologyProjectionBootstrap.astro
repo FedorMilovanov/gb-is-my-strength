@@ -7,5 +7,5 @@ const projection = buildMapArchaeologyProjection('avraam', registry, provenance)
 const projectionJson = JSON.stringify(projection).replace(/</g, '\\u003c');
 ---
 
-<script id="map-archaeology-projection" type="application/json" set:html={projectionJson}></script>
+<script is:inline id="map-archaeology-projection" type="application/json" set:html={projectionJson}></script>
 <script is:inline src="../_engine/map-archaeology-adapter.js"></script>
