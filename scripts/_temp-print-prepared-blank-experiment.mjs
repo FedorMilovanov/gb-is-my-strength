@@ -48,7 +48,7 @@ const browser = await chromium.launch();
 const results = [];
 try {
   for (const variant of variants) {
-    const context = await browser.newContext({ viewport: { width: 794, height: 1123 } });
+    const context = await browser.newContext({ viewport: { width: 1035, height: 851 } });
     const page = await context.newPage();
     await page.route(/gospod-bog\.ru|mc\.yandex/, (route) => route.abort());
     await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
@@ -60,6 +60,7 @@ try {
     await page.click('.gbs-rail-foot [data-action="print"]');
     await page.waitForFunction(() => window.__printCalls === 1 && window.GBPrintEngine?.getReport?.(), null, { timeout: 12000 });
     await page.waitForTimeout(300);
+    await page.setViewportSize({ width: 794, height: 1123 });
     await page.emulateMedia({ media: 'print' });
 
     if (variant.action === 'world-main-only') {
