@@ -2,7 +2,7 @@
 
 This file is the **navigation contract for current work**, not a permanent backlog and not a substitute for GitHub state.
 
-**Current source boundary:** `main` at `5636a6a1911c7eb0e7637406e87e749dd65dbaaf` (PR #205, 2026-07-24).
+**Forensic baseline examined:** `main@5636a6a1911c7eb0e7637406e87e749dd65dbaaf` (PR #205, 2026-07-24). Always query the current default-branch SHA before starting work.
 
 ## Sources of truth
 
@@ -29,13 +29,11 @@ A branch name alone does not prove that work is active, correct, mergeable or st
 
 ## Active lanes
 
-At the source boundary above, GitHub reports **no open pull requests**. A local or remote branch does not enter this table until it has a current owner and an open issue or PR.
+The current active-lane register is the repository's **open pull-request and issue state**. Do not copy a static PR count or branch table into this file: it becomes false as soon as another lane opens, merges or closes.
 
-| Lane | Scope | Owner | Tracking | Status |
-|---|---|---|---|---|
-| — | No registered active source lane | — | AuditRepo forensic issue #40 remains the audit record | — |
+A remote branch is not active merely because it exists. It enters active ownership only when its current scope, owner and tracking issue/PR are explicit.
 
-## Recently merged control-plane closures
+## Recent baseline closures
 
 | PR | Merge | Result |
 |---|---|---|
@@ -44,6 +42,8 @@ At the source boundary above, GitHub reports **no open pull requests**. A local 
 | #205 | `5636a6a1` | Converged long-lived workflow linting and removed stale editorial branch triggers. |
 | #200 | `c8b47201` | Added all-route Android and WebKit browser coverage. |
 | #199 | `0d352415` | Closed route-owned iPhone 320 overflow in Nagornaya Part III. |
+
+These are historical baseline entries, not a claim that no later work exists. Query GitHub and the current tree for the live boundary.
 
 ## Forensic archive refs — not active lanes
 
@@ -78,7 +78,7 @@ Rules:
 - no stale branch is merged wholesale merely because it contains unique files;
 - replacement claims must be verified against current blobs, not PR descriptions;
 - temporary workflow, trigger or writer files must be removed inside the same transaction;
-- after merge, move the lane out of the active table and record its PR/merge SHA.
+- after merge, close or update the tracking PR/issue and record the merge SHA in the relevant durable audit surface.
 
 ## Historical note
 
