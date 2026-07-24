@@ -1,0 +1,43 @@
+name: TEMP Reader Cache Bust Materializer
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-reader-cache-bust-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Write managed asset revisions
+        run: |
+          set -euo pipefail
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          git rm .github/workflows/_temp-reader-cache-bust-materializer.yml
+          git diff --check
+          test ! -e .github/workflows/_temp-reader-cache-bust-materializer.yml
+      - name: Commit revision projections
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "chore(assets): project reader UI revisions across managed sources"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
