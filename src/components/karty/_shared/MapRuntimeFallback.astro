@@ -1,0 +1,208 @@
+---
+/**
+ * Shared fail-visible contract for the two live strict-native MapEngine routes.
+ *
+ * The interactive map is an enhancement. If JavaScript is disabled, route data
+ * fails to load, the engine asset is unavailable, or createMap throws/returns
+ * null, the reader must receive a visible, keyboard-accessible recovery surface
+ * instead of an opaque full-screen stage.
+ */
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<noscript>
+  <style is:global>
+    [data-map-stage] {
+      display: none !important;
+    }
+
+    .map-text-fallback.sr-only {
+      position: static !important;
+      width: min(760px, calc(100% - 32px)) !important;
+      height: auto !important;
+      margin: 24px auto !important;
+      padding: clamp(20px, 5vw, 40px) !important;
+      overflow: visible !important;
+      clip: auto !important;
+      clip-path: none !important;
+      white-space: normal !important;
+      border: 1px solid rgba(232, 200, 121, 0.28) !important;
+      border-radius: 20px !important;
+      background: #10151d !important;
+      color: #e9e4d6 !important;
+      box-sizing: border-box !important;
+      font: 16px/1.7 Georgia, "Times New Roman", serif !important;
+    }
+
+    .map-text-fallback h2,
+    .map-text-fallback h3 {
+      color: #f3d98b !important;
+      line-height: 1.25 !important;
+    }
+
+    .map-text-fallback a {
+      color: #9fd7ff !important;
+    }
+  </style>
+  <section class="map-runtime-noscript" role="status" aria-label="Текстовая замена интерактивной карты">
+    <p class="map-runtime-kicker">Текстовый режим</p>
+    <h2>{title}</h2>
+    <p>{description}</p>
+    <a href="/karty/">Вернуться к разделу карт</a>
+  </section>
+</noscript>
+
+<style is:global>
+  .map-runtime-noscript,
+  .me-error {
+    box-sizing: border-box;
+    width: min(620px, calc(100% - 32px));
+    margin: max(24px, env(safe-area-inset-top, 0px)) auto 24px;
+    padding: clamp(22px, 5vw, 38px);
+    border: 1px solid rgba(232, 200, 121, 0.32);
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 80% 0%, rgba(58, 139, 194, 0.16), transparent 42%),
+      linear-gradient(145deg, rgba(22, 30, 42, 0.98), rgba(8, 12, 18, 0.98));
+    color: #e9e4d6;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    text-align: left;
+  }
+
+  .map-runtime-noscript h2,
+  .me-error h2 {
+    margin: 6px 0 12px;
+    color: #f5df9f;
+    font: 700 clamp(24px, 6vw, 38px)/1.12 Georgia, "Times New Roman", serif;
+  }
+
+  .map-runtime-noscript p,
+  .me-error p {
+    margin: 0 0 18px;
+  }
+
+  .map-runtime-kicker,
+  .me-error__kicker {
+    color: #91d5ff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .map-runtime-noscript a,
+  .me-error a,
+  .me-error button {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 750;
+    text-decoration: none;
+  }
+
+  .map-runtime-noscript a,
+  .me-error__back {
+    padding: 10px 16px;
+    border: 1px solid rgba(145, 213, 255, 0.45);
+    color: #b9e5ff;
+    background: rgba(52, 116, 157, 0.16);
+  }
+
+  .me-error__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .me-error__retry {
+    padding: 10px 18px;
+    border: 1px solid rgba(232, 200, 121, 0.6);
+    color: #111820;
+    background: #e8c879;
+    cursor: pointer;
+  }
+
+  [data-map-stage][data-map-state="error"] {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: auto;
+    padding: 16px 0;
+    background: #070a10;
+  }
+
+  @media (max-width: 420px) {
+    .map-runtime-noscript,
+    .me-error {
+      width: calc(100% - 20px);
+      border-radius: 17px;
+    }
+
+    .me-error__actions > * {
+      width: 100%;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (window.GBMapRuntime && typeof window.GBMapRuntime.renderFailure === 'function') return;
+
+    function text(node, value) {
+      node.textContent = String(value || '');
+      return node;
+    }
+
+    function renderFailure(container, options) {
+      if (!container) return null;
+      var config = options || {};
+      var title = config.title || 'Интерактивная карта временно недоступна';
+      var message = config.message || 'Не удалось загрузить данные карты. Можно повторить попытку или вернуться к списку карт.';
+
+      container.replaceChildren();
+      container.setAttribute('data-map-state', 'error');
+      container.setAttribute('aria-busy', 'false');
+
+      var card = document.createElement('section');
+      card.className = 'me-error';
+      card.setAttribute('role', 'alert');
+      card.setAttribute('aria-live', 'assertive');
+
+      var kicker = text(document.createElement('p'), 'Режим восстановления');
+      kicker.className = 'me-error__kicker';
+
+      var heading = text(document.createElement('h2'), title);
+      var body = text(document.createElement('p'), message);
+      var actions = document.createElement('div');
+      actions.className = 'me-error__actions';
+
+      var retry = text(document.createElement('button'), 'Повторить загрузку');
+      retry.type = 'button';
+      retry.className = 'me-error__retry';
+      retry.addEventListener('click', function () { window.location.reload(); });
+
+      var back = text(document.createElement('a'), 'К списку карт');
+      back.className = 'me-error__back';
+      back.href = '/karty/';
+
+      actions.append(retry, back);
+      card.append(kicker, heading, body, actions);
+      container.appendChild(card);
+      retry.focus({ preventScroll: true });
+      return card;
+    }
+
+    window.GBMapRuntime = Object.freeze({ renderFailure: renderFailure });
+  })();
+</script>
