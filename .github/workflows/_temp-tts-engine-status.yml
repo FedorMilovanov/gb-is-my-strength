@@ -1,0 +1,78 @@
+name: TEMP TTS Engine Status Materializer
+
+on:
+  push:
+    branches:
+      - fix/tts-engine-status-retry-2026-07-24
+    paths:
+      - scripts/_temp-tts-engine-status-patcher.js
+      - scripts/_temp-tts-engine-status-test-patcher.js
+      - .github/workflows/_temp-tts-engine-status.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-tts-engine-status-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.ref == 'refs/heads/fix/tts-engine-status-retry-2026-07-24'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact lane
+        uses: actions/checkout@v4
+        with:
+          ref: fix/tts-engine-status-retry-2026-07-24
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Apply guarded TTS transaction
+        run: |
+          set -euo pipefail
+          node scripts/_temp-tts-engine-status-patcher.js
+          node scripts/_temp-tts-engine-status-test-patcher.js
+
+      - name: Verify source contracts before revision write
+        run: |
+          set -euo pipefail
+          node --check js/vosk-tts-engine.js
+          node --check js/floating-cluster-controller.js
+          node --check scripts/tts-download-consent-contract-test.js
+          node --check scripts/tts-engine-status-contract-test.js
+          node --check scripts/tts-engine-lifecycle-browser-test.js
+          node --check scripts/tts-status-route-browser-test.js
+          node scripts/tts-download-consent-contract-test.js
+          node scripts/tts-engine-status-contract-test.js
+
+      - name: Synchronize shared asset revisions
+        run: |
+          set -euo pipefail
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Prove temporary files are gone
+        run: |
+          set -euo pipefail
+          test ! -e scripts/_temp-tts-engine-status-patcher.js
+          test ! -e scripts/_temp-tts-engine-status-test-patcher.js
+          test ! -e .github/workflows/_temp-tts-engine-status.yml
+          git diff --check
+
+      - name: Commit permanent TTS scope
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes materialized' >&2
+            exit 1
+          fi
+          git commit -m 'fix(tts): expose engine state and retry silent fallback'
+          git push origin HEAD:fix/tts-engine-status-retry-2026-07-24
