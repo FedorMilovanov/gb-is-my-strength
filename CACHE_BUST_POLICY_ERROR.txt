@@ -1,0 +1,5 @@
+
+GB WORKFLOW POLICY CHECK
+❌ 2 issue(s):
+- cache-bust fail-closed policy: .github/workflows/glossary-contract.yml: workflows must not auto-write source revisions over concurrent agents
+- cache-bust policy mutation: baseline invalid: .github/workflows/glossary-contract.yml: workflows must not auto-write source revisions over concurrent agents
