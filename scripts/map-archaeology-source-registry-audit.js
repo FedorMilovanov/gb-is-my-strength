@@ -230,6 +230,7 @@ const summary = {
   catalogSources: sources.length,
   provenanceRecords: Object.keys(records).length,
   verified: verified.length,
+  needsReview: sources.filter((source) => source.verification === 'needs-review').length,
   imported: sources.filter((source) => source.verification === 'imported').length,
   highEvidence: highEvidence.length,
   supportingEvidence: supportingEvidence.length,
