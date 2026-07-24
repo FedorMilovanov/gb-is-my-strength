@@ -119,10 +119,11 @@ const browser = createBrowser({
 browser.run('js/reader-preferences-head.js');
 assert.strictEqual(browser.attrs.get('data-reader-theme'), 'sepia');
 assert.strictEqual(browser.attrs.get('data-reader-text-mode'), 'rich');
+assert.strictEqual(browser.attrs.get('data-reader-measure'), 'wide');
 assert.strictEqual(browser.classes.has('dark'), false);
 assert.strictEqual(browser.styles.get('--gb-reader-font-scale'), '1.1');
 assert.strictEqual(browser.styles.get('--gb-reader-line-height'), '1.85');
-assert.strictEqual(browser.styles.get('--gb-reader-measure'), '50rem');
+assert.strictEqual(browser.styles.get('--gb-reader-measure'), '46rem');
 assert.strictEqual(browser.window.__GB_READER_PREFS_BOOTSTRAP__.theme, 'sepia');
 
 browser.run('js/reader-preferences.js');

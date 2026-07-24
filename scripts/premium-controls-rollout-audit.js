@@ -73,17 +73,35 @@ function walk(dir, out=[]) {
 const routeOf = (file) =>
   path.relative(DIST, path.dirname(file)).split(path.sep).join('/');
 
+// Audit rendered controls, not JavaScript/CSS selector literals. Home and other
+// app shells legitimately mention [data-fc-action] inside inline event-delegation
+// code; those strings are not DOM controls and must not trigger rollout policy.
+function markupOnly(html) {
+  return html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<template\b[^>]*>[\s\S]*?<\/template>/gi, '');
+}
+
 const files = walk(DIST);
 
 const CONTROL_RE = /\b(gb-ember|gb-save)\b|data-fc-action=/;
 const SCOPE_RE   = /data-fc-root|data-fc-controls=/;
+
+const selectorLiteralFixture = '<script>document.querySelector(\'[data-fc-action="search"]\')</script>';
+if (CONTROL_RE.test(markupOnly(selectorLiteralFixture))) {
+  bad('script selector literals are misclassified as controls', 'markupOnly() must exclude inline script contents');
+} else {
+  ok('script selector literals do not count as rendered PremiumControls');
+}
 
 let pagesWithControls = 0;
 
 for (const f of files) {
   const route = routeOf(f);
   const html = fs.readFileSync(f, 'utf8');
-  const hasControls = CONTROL_RE.test(html);
+  const markup = markupOnly(html);
+  const hasControls = CONTROL_RE.test(markup);
   if (!hasControls) continue;
   pagesWithControls++;
 
@@ -98,7 +116,7 @@ for (const f of files) {
   // ALLOWED route: every control must be inside a scope. Cheap structural proof:
   // the page must contain at least one [data-fc-root]/[data-fc-controls], AND the
   // controller must be loaded.
-  const hasScope = SCOPE_RE.test(html);
+  const hasScope = SCOPE_RE.test(markup);
   const controllerLoaded = /floating-cluster-controller\.js/.test(html);
 
   if (!hasScope) {
@@ -172,8 +190,9 @@ const RAW_GILL_ROMAN_RE = /class="(?:gbs-rail-card__num|toc-item__num|toc-part-i
 for (const f of files) {
   const route = routeOf(f);
   const html = fs.readFileSync(f, 'utf8');
+  const markup = markupOnly(html);
   const isAstro = html.includes('data-astro-cid-') || html.includes('data-pc-anchor') || html.includes('FloatingCluster');
-  if (CONTROL_RE.test(html)) {
+  if (CONTROL_RE.test(markup)) {
     if (html.includes('aria-haspopup') && html.includes('aria-expanded')) {
       ok(`/${route}/ ARIA / accessibility parity OK`);
     } else {

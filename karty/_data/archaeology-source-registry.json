@@ -1,7 +1,8 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "updatedAt": "2026-07-24",
-  "sourceBoundary": "c27176bf6cc61dcc4ca3411f38c307ab38002161",
+  "sourceBoundary": "83a13a0755b37296ccec053987654ceefbca349e",
+  "provenanceRegistry": "karty/_data/archaeology-source-provenance.json",
   "worldview": {
     "position": "young-earth-creationism",
     "scriptureAuthority": "The canonical biblical text is the highest interpretive authority for the map narrative.",
@@ -18,6 +19,8 @@
     "official-collection",
     "peer-reviewed",
     "institutional-synthesis",
+    "institutional-notice",
+    "institutional-directory",
     "scholarly-reference",
     "conservative-analysis",
     "yec-analysis",
@@ -25,70 +28,2581 @@
     "retraction-record"
   ],
   "sources": [
-    {"id":"penn-ur-overview","title":"Ur, Iraq — Penn Museum collections overview","organization":"Penn Museum","year":2026,"url":"https://collections.penn.museum/collections/highlights/neareast/location/ur.php","tier":"official-collection","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["ur"],"note":"Official collection context for the 1922–1934 joint Penn/British Museum expedition; not evidence for a personal Abraham artefact."},
-    {"id":"bm-ur-1925-26","title":"The excavations at Ur, 1925–6","organization":"British Museum / Society of Antiquaries","year":1926,"url":"https://www.britishmuseum.org/collection/term/BIB1109","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["ur"]},
-    {"id":"bm-ur-royal-cemetery","title":"Ur Excavations II: The Royal Cemetery","organization":"British Museum","year":1934,"url":"https://www.britishmuseum.org/collection/term/BIB1124","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["ur"]},
-    {"id":"bm-ur-old-babylonian","title":"Ur Excavations VII: The Old Babylonian Period","organization":"British Museum","year":1976,"url":"https://www.britishmuseum.org/collection/term/BIB1106","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["ur"]},
-    {"id":"bm-ur-1923-24","title":"Excavations at Ur, 1923–1924","organization":"British Museum","year":1925,"url":"https://www.britishmuseum.org/collection/term/BIB2792","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["ur"]},
-    {"id":"bm-carchemish-ii","title":"Carchemish II: The Town Defences","organization":"British Museum","year":1921,"url":"https://www.britishmuseum.org/collection/term/BIB1108","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["carchemish"]},
-    {"id":"bm-carchemish-iii","title":"Carchemish III: The Inner Town and Hittite Inscriptions","organization":"British Museum","year":1952,"url":"https://www.britishmuseum.org/collection/term/BIB1104","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["carchemish"]},
-    {"id":"unibo-karkemish-overview","title":"Karkemish excavations","organization":"University of Bologna","year":2026,"url":"https://disci.unibo.it/en/research/archaeological-missions/achaeological-missions-abroad/karkemish-turkey/excavations","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["carchemish"]},
-    {"id":"unibo-karkemish-2023-report","title":"The 2023 Joint Turco-Italian Excavations at Karkemish","organization":"University of Bologna / Turkish Ministry of Culture and Tourism","year":2025,"url":"https://cris.unibo.it/handle/11585/1050456","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["carchemish"]},
-    {"id":"mari-official-overview","title":"Mari — a major site for archaeological research","organization":"French Ministry of Culture","year":2026,"url":"https://archeologie.culture.gouv.fr/en/mari","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["mari"]},
-    {"id":"mari-excavation-history","title":"Excavation history of Mari","organization":"French Ministry of Culture","year":2026,"url":"https://archeologie.culture.gouv.fr/mari/en/excavation-history","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["mari"]},
-    {"id":"mari-palace","title":"Discovery and excavation of the Great Royal Palace of Mari","organization":"French Ministry of Culture","year":2026,"url":"https://archeologie.culture.gouv.fr/mari/en/discovery-and-excavation","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["mari"]},
-    {"id":"mari-archives","title":"Archives texts from Mari","organization":"French Ministry of Culture","year":2026,"url":"https://archeologie.culture.gouv.fr/mari/en/archives-texts","tier":"official-collection","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["mari"]},
-    {"id":"mari-current-research","title":"Current research at Mari","organization":"French Ministry of Culture","year":2026,"url":"https://archeologie.culture.gouv.fr/mari/en/current-research","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["mari"]},
-    {"id":"harran-department","title":"Harran University Department of Archaeology","organization":"Harran University","year":2026,"url":"https://harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["harran"]},
-    {"id":"harran-excavations-2025","title":"2025 Harran excavation presentations","organization":"Harran University","year":2025,"url":"https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/haberler/2025-yili-turkiye-kultur-yolu-festivali-kapsaminda-bolum-hocalarimiz-kazi-calismalarini-anlatacaklar","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["harran"]},
-    {"id":"harran-fieldwork","title":"Harran archaeology fieldwork and excavations","organization":"Harran University","year":2026,"url":"https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/menuler/bilgilendirme/akreditasyon/is-yeri-uygulamalari","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["harran"]},
-    {"id":"leiden-tell-balata","title":"Tell Balata Archaeological Park Project","organization":"Leiden University / Palestinian MOTA-DACH / UNESCO","year":2010,"url":"https://www.universiteitleiden.nl/en/research/research-projects/archaeology/tell-balata-archaeologcial-park-project","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["shechem"]},
-    {"id":"unesco-canaanite-city-states","title":"Canaanite city-states tentative nomination","organization":"UNESCO World Heritage Centre","year":2026,"url":"https://whc.unesco.org/en/tentativelists/6949/","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["shechem","hebron"]},
-    {"id":"oeaw-tell-balata","title":"The Austrian excavations at Tell Balata in 1913 and 1914","organization":"Austrian Archaeological Institute","year":2022,"url":"https://www.oeaw.ac.at/en/oeai/media/news-archive/news-detail/bericht","tier":"official-collection","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["shechem"]},
-    {"id":"hup-tell-balata-2023","title":"Community Archaeology at Tell Balata, Palestine","organization":"Helsinki University Press","year":2023,"url":"https://www.hup.fi/en/chapters/e/10.33134/HUP-19-6","tier":"peer-reviewed","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["shechem"]},
-    {"id":"unesco-hebron","title":"Hebron/Al-Khalil Old Town","organization":"UNESCO World Heritage Centre","year":2017,"url":"https://whc.unesco.org/en/list/1565","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["hebron","mamre"],"note":"Separates Tell Rumeida archaeology from the later monumental enclosure marking the traditional Machpelah site."},
-    {"id":"unesco-biblical-tels","title":"Biblical Tels — Megiddo, Hazor, Beer Sheba","organization":"UNESCO World Heritage Centre","year":2005,"url":"https://whc.unesco.org/en/list/1108/","tier":"institutional-synthesis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"iaa-esi-series","title":"Excavations and Surveys in Israel — English series","organization":"Israel Antiquities Authority","year":2026,"url":"https://publications.iaa.org.il/esi_english_series/","tier":"official-collection","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba","hebron","dan","gerar"]},
-    {"id":"iaa-tel-sheva-2025","title":"Tel Sheva‘ trial excavation","organization":"Israel Antiquities Authority","year":2025,"url":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26636","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"iaa-tel-sheva-campus-2025","title":"Tel Sheva‘, Educational Campus","organization":"Israel Antiquities Authority","year":2025,"url":"https://hadashot.iaa.org.il/report_detail_eng.aspx?id=26647&mag_id=139","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"iaa-beersheba-hadassah-2025","title":"Be’er Sheva‘, Hadassah Street","organization":"Israel Antiquities Authority","year":2025,"url":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=27693","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"iaa-beersheba-trumpeldor-2024","title":"Be’er Sheva‘, Trumpeldor Street","organization":"Israel Antiquities Authority","year":2024,"url":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26486","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"iaa-tel-sheva-chalcolithic","title":"A Chalcolithic Settlement at Tel Sheva‘","organization":"Israel Antiquities Authority","year":2017,"url":"https://publications.iaa.org.il/atiqot/vol87/iss1/3/","tier":"peer-reviewed","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"iaa-nahal-beersheba-2013","title":"Nahal Be’er Sheva‘","organization":"Israel Antiquities Authority","year":2013,"url":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=2233&mag_id=120","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"iaa-nahal-beersheba-west-2015","title":"Nahal Be’er Sheva‘ (West)","organization":"Israel Antiquities Authority","year":2015,"url":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=24835&mag_id=122","tier":"primary-excavation","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"scientific-reports-tall-retraction","title":"Retraction Note: A Tunguska sized airburst destroyed Tall el-Hammam","organization":"Scientific Reports","year":2025,"url":"https://www.nature.com/srep/articles?type=Retraction&year=2025","tier":"retraction-record","status":"retracted","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["hammam"],"note":"The airburst claim must not be used as positive evidence."},
-    {"id":"pubmed-tall-retraction","title":"Retraction Note: Tall el-Hammam airburst article","organization":"PubMed / Scientific Reports","year":2025,"url":"https://pubmed.ncbi.nlm.nih.gov/40275027/","tier":"retraction-record","status":"retracted","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["hammam"]},
-    {"id":"arj-abraham-chronology","title":"Abraham and the Chronology of Ancient Mesopotamia","organization":"Answers Research Journal","year":2012,"url":"https://answersresearchjournal.org/abraham-chronology-ancient-mesopotamia/","tier":"yec-analysis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["ur","harran"],"note":"Interpretive chronology layer; not an excavation report."},
-    {"id":"arj-volume-5","title":"Answers Research Journal, Volume 5","organization":"Answers Research Journal","year":2012,"url":"https://answersresearchjournal.org/volumes/v5/","tier":"yec-analysis","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":[]},
-    {"id":"aig-have-we-found-sodom","title":"Have We Found Sodom?","organization":"Answers in Genesis","year":2026,"url":"https://answersingenesis.org/archaeology/have-we-found-sodom/","tier":"yec-analysis","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["sodom","hammam"],"note":"YEC evaluation of proposed Sodom sites; requires independent excavation sources for factual claims."},
-    {"id":"creation-times-abraham","title":"The Times of Abraham","organization":"Creation Ministries International","year":2026,"url":"https://creation.com/the-times-of-abraham","tier":"yec-analysis","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["ur","harran"]},
-    {"id":"creation-chronogenealogies","title":"Biblical chronogenealogies","organization":"Creation Ministries International","year":2026,"url":"https://creation.com/biblical-chronogenealogies","tier":"yec-analysis","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":[]},
-    {"id":"icr-biblical-age","title":"Biblical age overview","organization":"Institute for Creation Research","year":2026,"url":"https://www.icr.org/biblical-age","tier":"yec-analysis","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":[]},
-    {"id":"bibleplaces-haran","title":"Haran","organization":"BiblePlaces","year":2026,"url":"https://www.bibleplaces.com/haran/","tier":"scholarly-reference","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["harran"]},
-    {"id":"bibleplaces-shechem","title":"Shechem","organization":"BiblePlaces","year":2026,"url":"https://www.bibleplaces.com/shechem/","tier":"scholarly-reference","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["shechem"]},
-    {"id":"bibleplaces-bethel","title":"Bethel","organization":"BiblePlaces","year":2026,"url":"https://www.bibleplaces.com/bethel/","tier":"scholarly-reference","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["bethel"]},
-    {"id":"bibleplaces-dan","title":"Dan","organization":"BiblePlaces","year":2026,"url":"https://www.bibleplaces.com/dan/","tier":"scholarly-reference","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["dan"]},
-    {"id":"bibleplaces-beersheba","title":"Beersheba","organization":"BiblePlaces","year":2026,"url":"https://www.bibleplaces.com/beersheba/","tier":"scholarly-reference","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["beersheba"]},
-    {"id":"bibleplaces-bab-edh-dhra","title":"Bab edh-Dhra","organization":"BiblePlaces","year":2026,"url":"https://www.bibleplaces.com/babedhdhra/","tier":"scholarly-reference","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["sodom"]},
-    {"id":"bibleplaces-numeira","title":"Numeira","organization":"BiblePlaces","year":2026,"url":"https://www.bibleplaces.com/numeira/","tier":"scholarly-reference","status":"active","verification":"verified","verifiedAt":"2026-07-24","maps":["avraam"],"places":["sodom"]},
-    {"id":"loc-mamre","title":"Mamre excavations photograph","organization":"Library of Congress, Matson Collection","year":1930,"url":"https://www.loc.gov/resource/matpc.22876/","tier":"visual-archive","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["mamre","hebron"]},
-    {"id":"loc-shur-el-raha","title":"El Raha Plain / Sinai context photograph","organization":"Library of Congress, Matson Collection","year":1900,"url":"https://tile.loc.gov/storage-services/service/pnp/matpc/01900/01946v.jpg","tier":"visual-archive","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["shur"]},
-    {"id":"ritmeyer-mamre","title":"Mamre and the Temple Mount in Jerusalem","organization":"Ritmeyer Archaeological Design","year":2010,"url":"https://www.ritmeyer.com/2010/10/12/mamre-and-the-temple-mount-in-jerusalem/","tier":"scholarly-reference","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["mamre","moriah"]},
-    {"id":"wibilex-bethel","title":"Bethel (Ort)","organization":"WiBiLex / Deutsche Bibelgesellschaft","year":2026,"url":"https://www.die-bibel.de/ressourcen/wibilex/altes-testament/bethel-ort","tier":"scholarly-reference","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["bethel"]},
-    {"id":"wibilex-hebron","title":"Hebron","organization":"WiBiLex / Deutsche Bibelgesellschaft","year":2026,"url":"https://www.die-bibel.de/ressourcen/wibilex/altes-testament/hebron","tier":"scholarly-reference","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["hebron"]},
-    {"id":"wibilex-beersheba","title":"Beerscheba","organization":"WiBiLex / Deutsche Bibelgesellschaft","year":2026,"url":"https://www.die-bibel.de/ressourcen/wibilex/altes-testament/beerscheba","tier":"scholarly-reference","status":"active","verification":"imported","verifiedAt":"2026-06-14","maps":["avraam"],"places":["beersheba"]}
+    {
+      "id": "aig-have-we-found-sodom",
+      "title": "Have We Found Sodom?",
+      "organization": "Answers in Genesis",
+      "year": null,
+      "url": "https://answersingenesis.org/archaeology/have-we-found-sodom/",
+      "tier": "yec-analysis",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "sodom",
+        "hammam"
+      ],
+      "note": "YEC evaluation of proposed Sodom sites; requires independent excavation sources for factual claims.",
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "arj-abraham-chronology",
+      "title": "Abraham and the Chronology of Ancient Mesopotamia",
+      "organization": "Answers Research Journal",
+      "year": 2012,
+      "url": "https://answersresearchjournal.org/abraham-chronology-ancient-mesopotamia/",
+      "tier": "yec-analysis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "ur",
+        "harran"
+      ],
+      "note": "Interpretive chronology layer; not an excavation report.",
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "arj-volume-5",
+      "title": "Answers Research Journal, Volume 5",
+      "organization": "Answers Research Journal",
+      "year": 2012,
+      "url": "https://answersresearchjournal.org/volumes/v5/",
+      "tier": "yec-analysis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bibleplaces-bab-edh-dhra",
+      "title": "Bab edh-Dhra",
+      "organization": "BiblePlaces",
+      "year": null,
+      "url": "https://www.bibleplaces.com/babedhdhra/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "sodom"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bibleplaces-beersheba",
+      "title": "Beersheba",
+      "organization": "BiblePlaces",
+      "year": null,
+      "url": "https://www.bibleplaces.com/beersheba/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bibleplaces-bethel",
+      "title": "Bethel",
+      "organization": "BiblePlaces",
+      "year": null,
+      "url": "https://www.bibleplaces.com/bethel/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "bethel"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bibleplaces-dan",
+      "title": "Dan",
+      "organization": "BiblePlaces",
+      "year": null,
+      "url": "https://www.bibleplaces.com/dan/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "dan"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bibleplaces-haran",
+      "title": "Haran",
+      "organization": "BiblePlaces",
+      "year": null,
+      "url": "https://www.bibleplaces.com/haran/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "harran"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bibleplaces-numeira",
+      "title": "Numeira",
+      "organization": "BiblePlaces",
+      "year": null,
+      "url": "https://www.bibleplaces.com/numeira/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "sodom"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bibleplaces-shechem",
+      "title": "Shechem",
+      "organization": "BiblePlaces",
+      "year": null,
+      "url": "https://www.bibleplaces.com/shechem/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "shechem"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "biu-gath-final-report",
+      "title": "Tell es-Safi/Gath I: The 1996–2005 Seasons",
+      "organization": "Bar-Ilan University",
+      "year": 2012,
+      "url": "https://cris.biu.ac.il/en/publications/tell-es-safigath-i-the-1996-2005-seasons/",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "shoftim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "gath"
+      ]
+    },
+    {
+      "id": "biu-gath-overview",
+      "title": "The Tell es-Safi/Gath Archaeological Project: Overview",
+      "organization": "Bar-Ilan University",
+      "year": 2017,
+      "url": "https://cris.biu.ac.il/en/publications/the-tell-e%E1%B9%A3-%E1%B9%A3%C3%A2figath-archaeological-project-overview-overview/",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "shoftim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "gath"
+      ]
+    },
+    {
+      "id": "biu-gath-project",
+      "title": "Tell es-Safi/Gath Archaeological Project",
+      "organization": "Bar-Ilan University",
+      "year": null,
+      "url": "https://lisa.biu.ac.il/en/node/1378",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "shoftim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "gath"
+      ]
+    },
+    {
+      "id": "biu-hurbat-husham-thamnata",
+      "title": "Between Text and Trowel: Hurbat Husham and the identification of Thamnata",
+      "organization": "Bar-Ilan University",
+      "year": 2025,
+      "url": "https://cris.biu.ac.il/en/publications/between-text-and-trowel-archaeological-investigations-at-hurbat-h/",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "maccabim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "thamnata"
+      ]
+    },
+    {
+      "id": "bm-babylonian-chronicle-21946",
+      "title": "Babylonian Chronicle BM 21946",
+      "organization": "British Museum",
+      "year": null,
+      "url": "https://www.britishmuseum.org/collection/object/W_1896-0409-51",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "plenenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "babylon",
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "bm-carchemish-ii",
+      "title": "Carchemish II: The Town Defences",
+      "organization": "British Museum",
+      "year": 1921,
+      "url": "https://www.britishmuseum.org/collection/term/BIB1108",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "carchemish"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bm-carchemish-iii",
+      "title": "Carchemish III: The Inner Town and Hittite Inscriptions",
+      "organization": "British Museum",
+      "year": 1952,
+      "url": "https://www.britishmuseum.org/collection/term/BIB1104",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "carchemish"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bm-cyrus-cylinder-object",
+      "title": "Cyrus Cylinder",
+      "organization": "British Museum",
+      "year": null,
+      "url": "https://www.britishmuseum.org/collection/object/W_1880-0617-1941",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "vozvrashchenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "babylon",
+        "persia"
+      ]
+    },
+    {
+      "id": "bm-kenyon-jericho-publication",
+      "title": "Excavations at Jericho — Kenyon publication record",
+      "organization": "British Museum",
+      "year": 1981,
+      "url": "https://www.britishmuseum.org/collection/term/BIB11226",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ierrihon"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jericho"
+      ]
+    },
+    {
+      "id": "bm-lachish-relief",
+      "title": "Sennacherib watches the capture of Lachish",
+      "organization": "British Museum",
+      "year": null,
+      "url": "https://www.britishmuseum.org/collection/object/W_1856-0909-14_7",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "tsari",
+        "ierusalim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "lachish"
+      ]
+    },
+    {
+      "id": "bm-nebusarsekim-tablet",
+      "title": "Tablet naming Nebo-Sarsekim, a Babylonian official",
+      "organization": "British Museum",
+      "year": null,
+      "url": "https://www.britishmuseum.org/collection/object/W_1920-1213-81",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "plenenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "babylon",
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "bm-papyrus-anastasi-v",
+      "title": "Papyrus Anastasi V",
+      "organization": "British Museum",
+      "year": null,
+      "url": "https://www.britishmuseum.org/collection/object/Y_EA10244-2",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ishod"
+      ],
+      "places": [],
+      "note": "New Kingdom scribal papyrus; historical context, not direct proof of the biblical Exodus.",
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "egypt"
+      ]
+    },
+    {
+      "id": "bm-taylor-prism",
+      "title": "Taylor Prism of Sennacherib",
+      "organization": "British Museum",
+      "year": null,
+      "url": "https://www.britishmuseum.org/collection/object/W_1855-1003-1",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "tsari",
+        "ierusalim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jerusalem",
+        "lachish"
+      ]
+    },
+    {
+      "id": "bm-ur-1923-24",
+      "title": "Excavations at Ur, 1923–1924",
+      "organization": "British Museum",
+      "year": 1925,
+      "url": "https://www.britishmuseum.org/collection/term/BIB2792",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "ur"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bm-ur-1925-26",
+      "title": "The excavations at Ur, 1925–6",
+      "organization": "British Museum / Society of Antiquaries",
+      "year": 1926,
+      "url": "https://www.britishmuseum.org/collection/term/BIB1109",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "ur"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bm-ur-old-babylonian",
+      "title": "Ur Excavations VII: The Old Babylonian Period",
+      "organization": "British Museum",
+      "year": 1976,
+      "url": "https://www.britishmuseum.org/collection/term/BIB1106",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "ur"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "bm-ur-royal-cemetery",
+      "title": "Ur Excavations II: The Royal Cemetery",
+      "organization": "British Museum",
+      "year": 1934,
+      "url": "https://www.britishmuseum.org/collection/term/BIB1124",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "ur"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "brooklyn-elephantine-marriage",
+      "title": "Aramaic Marriage Document from Elephantine",
+      "organization": "Brooklyn Museum",
+      "year": null,
+      "url": "https://www.brooklynmuseum.org/objects/3488.",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "vozvrashchenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "elephantine"
+      ],
+      "note": "Official object identity verified by accession 47.218.89; the public route may reject automated clients."
+    },
+    {
+      "id": "creation-chronogenealogies",
+      "title": "Biblical chronogenealogies",
+      "organization": "Creation Ministries International",
+      "year": null,
+      "url": "https://creation.com/biblical-chronogenealogies",
+      "tier": "yec-analysis",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "creation-times-abraham",
+      "title": "The Times of Abraham",
+      "organization": "Creation Ministries International",
+      "year": null,
+      "url": "https://creation.com/the-times-of-abraham",
+      "tier": "yec-analysis",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "ur",
+        "harran"
+      ],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "custodia-capernaum",
+      "title": "Capernaum: history and archaeology",
+      "organization": "Custodia Terrae Sanctae",
+      "year": null,
+      "url": "https://www.custodia.org/en/sanctuaries/capernaum/",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "iisus",
+        "early-church"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "capernaum"
+      ]
+    },
+    {
+      "id": "egypt-sinai-fortifications",
+      "title": "New archaeological discoveries in Sinai",
+      "organization": "Egyptian Ministry of Tourism and Antiquities",
+      "year": 2025,
+      "url": "https://egymonuments.gov.eg/news/new-archaeological-discoveries-in-sinai/",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ishod"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "sinai"
+      ]
+    },
+    {
+      "id": "elephantine-yaho-tax-list",
+      "title": "Tax list for the Yaho Temple at Elephantine",
+      "organization": "Staatliche Museen zu Berlin — Elephantine project",
+      "year": null,
+      "url": "https://elephantine.smb.museum/objects/object.php?o=306605",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "vozvrashchenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "elephantine"
+      ]
+    },
+    {
+      "id": "elephantine-yaho-temple-letter",
+      "title": "Letter concerning damage to the Temple of Yaho at Elephantine",
+      "organization": "Staatliche Museen zu Berlin — Elephantine project",
+      "year": null,
+      "url": "https://elephantine.smb.museum/objects/object.php?o=100282",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "vozvrashchenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "elephantine"
+      ]
+    },
+    {
+      "id": "harran-department",
+      "title": "Harran University Department of Archaeology",
+      "organization": "Harran University",
+      "year": null,
+      "url": "https://harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji",
+      "tier": "institutional-directory",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "harran"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "harran-excavations-2025",
+      "title": "2025 Harran excavation presentations",
+      "organization": "Harran University",
+      "year": 2025,
+      "url": "https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/haberler/2025-yili-turkiye-kultur-yolu-festivali-kapsaminda-bolum-hocalarimiz-kazi-calismalarini-anlatacaklar",
+      "tier": "institutional-notice",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "harran"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "harran-fieldwork",
+      "title": "Harran archaeology fieldwork and excavations",
+      "organization": "Harran University",
+      "year": null,
+      "url": "https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/menuler/bilgilendirme/akreditasyon/is-yeri-uygulamalari",
+      "tier": "institutional-directory",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "harran"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "harran-plain-survey-2021",
+      "title": "Preliminary Assessment on the Archaeological Survey of the Harran Plain in 2020",
+      "organization": "Karadeniz Uluslararası Bilimsel Dergi / DergiPark",
+      "year": 2021,
+      "url": "https://dergipark.org.tr/en/pub/kdeniz/article/1015403",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "accessedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "harran"
+      ],
+      "note": "Peer-reviewed regional archaeological survey; supports Harran Plain settlement context rather than a traced Abraham itinerary."
+    },
+    {
+      "id": "hu-qeiyafa-project",
+      "title": "Khirbet Qeiyafa excavation project",
+      "organization": "Hebrew University of Jerusalem",
+      "year": null,
+      "url": "https://khirbet-qeiyafa.huji.ac.il/",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "david"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "qeiyafa"
+      ]
+    },
+    {
+      "id": "hu-qeiyafa-vol1",
+      "title": "Khirbet Qeiyafa Vol. 1: Excavation Report 2007–2008",
+      "organization": "Hebrew University of Jerusalem",
+      "year": 2009,
+      "url": "https://cris.huji.ac.il/en/publications/khirbet-qeiyafa-vol-1-excavation-report-2007-2008/",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "david"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "qeiyafa"
+      ]
+    },
+    {
+      "id": "hu-qeiyafa-vol2",
+      "title": "Khirbet Qeiyafa Vol. 2: Stratigraphy and Architecture",
+      "organization": "Hebrew University of Jerusalem",
+      "year": 2014,
+      "url": "https://cris.huji.ac.il/en/publications/khirbet-qeiyafa-vol-2-excavation-report-2009-2013-stratigraphy-an/",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "david"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "qeiyafa"
+      ]
+    },
+    {
+      "id": "hup-tell-balata-2023",
+      "title": "Community Archaeology at Tell Balata, Palestine",
+      "organization": "Helsinki University Press",
+      "year": 2023,
+      "url": "https://www.hup.fi/en/chapters/e/10.33134/HUP-19-6",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "shechem"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-beersheba-hadassah-2025",
+      "title": "Be’er Sheva‘, Hadassah Street",
+      "organization": "Israel Antiquities Authority",
+      "year": 2025,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=27693",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-beersheba-trumpeldor-2024",
+      "title": "Be’er Sheva‘, Trumpeldor Street",
+      "organization": "Israel Antiquities Authority",
+      "year": 2024,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26486",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-dss-digital-library",
+      "title": "Leon Levy Dead Sea Scrolls Digital Library",
+      "organization": "Israel Antiquities Authority",
+      "year": null,
+      "url": "https://www.deadseascrolls.org.il/about-the-project/the-digital-library?locale=en_US",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "qumran"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "qumran"
+      ]
+    },
+    {
+      "id": "iaa-dss-discovery-sites",
+      "title": "Dead Sea Scrolls discovery sites",
+      "organization": "Israel Antiquities Authority",
+      "year": null,
+      "url": "https://www.deadseascrolls.org.il/learn-about-the-scrolls/discovery-sites",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "qumran"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "nahal-hever",
+        "qumran"
+      ]
+    },
+    {
+      "id": "iaa-esi-series",
+      "title": "Excavations and Surveys in Israel — English series",
+      "organization": "Israel Antiquities Authority",
+      "year": null,
+      "url": "https://publications.iaa.org.il/esi_english_series/",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba",
+        "hebron",
+        "dan",
+        "gerar"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-givati-2017-2018",
+      "title": "Jerusalem, Giv‘ati Parking Lot 2017–2018",
+      "organization": "Israel Antiquities Authority",
+      "year": 2021,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26089",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ierusalim",
+        "maccabim",
+        "plenenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "iaa-givati-2019-2020",
+      "title": "Jerusalem, Giv‘ati Parking Lot 2019–2020",
+      "organization": "Israel Antiquities Authority",
+      "year": 2024,
+      "url": "https://hadashot.iaa.org.il/report_detail_eng.aspx?id=26474&mag_id=137",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ierusalim",
+        "maccabim",
+        "plenenie"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "iaa-horbat-ha-gardi",
+      "title": "Horbat Ha-Gardi reexamination",
+      "organization": "Israel Antiquities Authority",
+      "year": 2024,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26469",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "maccabim"
+      ],
+      "places": [],
+      "note": "The report evaluates, but does not prove, identification with the tombs of the Maccabees.",
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "modiin"
+      ]
+    },
+    {
+      "id": "iaa-migdal-2013",
+      "title": "Migdal excavation 2009–2013",
+      "organization": "Israel Antiquities Authority",
+      "year": 2013,
+      "url": "https://hadashot.iaa.org.il/report_detail_eng.aspx?id=2304",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "iisus"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "magdala"
+      ]
+    },
+    {
+      "id": "iaa-migdal-2015",
+      "title": "Migdal 2015 excavation",
+      "organization": "Israel Antiquities Authority",
+      "year": 2017,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=25336",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "iisus"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "magdala"
+      ]
+    },
+    {
+      "id": "iaa-nahal-beersheba-2013",
+      "title": "Nahal Be’er Sheva‘",
+      "organization": "Israel Antiquities Authority",
+      "year": 2013,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=2233&mag_id=120",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-nahal-beersheba-west-2015",
+      "title": "Nahal Be’er Sheva‘ (West)",
+      "organization": "Israel Antiquities Authority",
+      "year": 2015,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=24835&mag_id=122",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-siloam-silwan-2014",
+      "title": "Jerusalem, Silwan — excavation south of the Pool of Siloam",
+      "organization": "Israel Antiquities Authority",
+      "year": 2014,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=10572&mag_id=121&print=nopic",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "iisus",
+        "ierusalim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "siloam"
+      ]
+    },
+    {
+      "id": "iaa-tel-sheva-2025",
+      "title": "Tel Sheva‘ trial excavation",
+      "organization": "Israel Antiquities Authority",
+      "year": 2025,
+      "url": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26636",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-tel-sheva-campus-2025",
+      "title": "Tel Sheva‘, Educational Campus",
+      "organization": "Israel Antiquities Authority",
+      "year": 2025,
+      "url": "https://hadashot.iaa.org.il/report_detail_eng.aspx?id=26647&mag_id=139",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "iaa-tel-sheva-chalcolithic",
+      "title": "A Chalcolithic Settlement at Tel Sheva‘",
+      "organization": "Israel Antiquities Authority",
+      "year": 2017,
+      "url": "https://publications.iaa.org.il/atiqot/vol87/iss1/3/",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "icr-biblical-age",
+      "title": "Biblical age overview",
+      "organization": "Institute for Creation Research",
+      "year": null,
+      "url": "https://www.icr.org/biblical-age",
+      "tier": "yec-analysis",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "imj-cradle-christianity",
+      "title": "The Cradle of Christianity",
+      "organization": "Israel Museum",
+      "year": 2000,
+      "url": "https://www.imj.org.il/en/exhibitions/cradle-christianity",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "iisus",
+        "early-church"
+      ],
+      "places": [],
+      "note": "Museum synthesis includes the Pilate inscription and Caiaphas ossuary; it does not authenticate every Gospel event.",
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "caesarea",
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "imj-great-isaiah-scroll",
+      "title": "Great Isaiah Scroll",
+      "organization": "Israel Museum",
+      "year": null,
+      "url": "https://dss.collections.imj.org.il/isaiah",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "qumran"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "qumran-cave-1"
+      ]
+    },
+    {
+      "id": "imj-heliodorus-stele",
+      "title": "Heliodorus Stele",
+      "organization": "Israel Museum",
+      "year": 2007,
+      "url": "https://www.imj.org.il/en/exhibitions/heliodorus-stele",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "maccabim"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jerusalem"
+      ]
+    },
+    {
+      "id": "imj-shrine-book",
+      "title": "Shrine of the Book",
+      "organization": "Israel Museum",
+      "year": null,
+      "url": "https://dss.collections.imj.org.il/shrine",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "qumran"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "qumran"
+      ]
+    },
+    {
+      "id": "imj-temple-scroll",
+      "title": "Temple Scroll",
+      "organization": "Israel Museum",
+      "year": null,
+      "url": "https://dss.collections.imj.org.il/temple?id=0",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "qumran"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "qumran-cave-11"
+      ]
+    },
+    {
+      "id": "leiden-tell-balata",
+      "title": "Tell Balata Archaeological Park Project",
+      "organization": "Leiden University / Palestinian MOTA-DACH / UNESCO",
+      "year": 2010,
+      "url": "https://www.universiteitleiden.nl/en/research/research-projects/archaeology/tell-balata-archaeologcial-park-project",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "shechem"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "lloyd-brice-harran-1951",
+      "title": "Harran",
+      "organization": "Anatolian Studies / British Institute at Ankara; CDLI bibliographic record",
+      "year": 1951,
+      "url": "https://cdli.earth/publications/1787105",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "accessedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "harran"
+      ],
+      "note": "Peer-reviewed excavation and topographic study; JSTOR stable identifier 3642359."
+    },
+    {
+      "id": "loc-mamre",
+      "title": "Mamre excavations photograph",
+      "organization": "Library of Congress, Matson Collection",
+      "year": 1930,
+      "url": "https://www.loc.gov/resource/matpc.22876/",
+      "tier": "visual-archive",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "mamre",
+        "hebron"
+      ],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "loc-shur-el-raha",
+      "title": "El Raha Plain / Sinai context photograph",
+      "organization": "Library of Congress, Matson Collection",
+      "year": 1900,
+      "url": "https://tile.loc.gov/storage-services/service/pnp/matpc/01900/01946v.jpg",
+      "tier": "visual-archive",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "shur"
+      ],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "louvre-mesha-stele",
+      "title": "Mesha Stele",
+      "organization": "Musée du Louvre",
+      "year": null,
+      "url": "https://collections.louvre.fr/en/ark%3A/53355/cl010120339",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "david",
+        "tsari"
+      ],
+      "places": [],
+      "note": "Official object record preserves the inscription and bibliography; disputed line readings remain disputed.",
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "moab"
+      ]
+    },
+    {
+      "id": "mari-archives",
+      "title": "Archives texts from Mari",
+      "organization": "French Ministry of Culture",
+      "year": null,
+      "url": "https://archeologie.culture.gouv.fr/mari/en/archives-texts",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "mari"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "mari-current-research",
+      "title": "Current research at Mari",
+      "organization": "French Ministry of Culture",
+      "year": null,
+      "url": "https://archeologie.culture.gouv.fr/mari/en/current-research",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "mari"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "mari-excavation-history",
+      "title": "Excavation history of Mari",
+      "organization": "French Ministry of Culture",
+      "year": null,
+      "url": "https://archeologie.culture.gouv.fr/mari/en/excavation-history",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "mari"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "mari-official-overview",
+      "title": "Mari — a major site for archaeological research",
+      "organization": "French Ministry of Culture",
+      "year": null,
+      "url": "https://archeologie.culture.gouv.fr/en/mari",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "mari"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "mari-palace",
+      "title": "Discovery and excavation of the Great Royal Palace of Mari",
+      "organization": "French Ministry of Culture",
+      "year": null,
+      "url": "https://archeologie.culture.gouv.fr/mari/en/discovery-and-excavation",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "mari"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "oeai-ephesos-branch",
+      "title": "Ephesos excavation branch",
+      "organization": "Austrian Archaeological Institute",
+      "year": null,
+      "url": "https://www.oeaw.ac.at/en/oeai/institute/branches/ephesos",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "pavel"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "ephesus"
+      ]
+    },
+    {
+      "id": "oeai-forschungen-ephesos",
+      "title": "Forschungen in Ephesos publication series",
+      "organization": "Austrian Academy of Sciences",
+      "year": null,
+      "url": "https://www.oeaw.ac.at/en/oeai/publishing/series/forschungen-in-ephesos",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "pavel"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "ephesus"
+      ]
+    },
+    {
+      "id": "oeaw-tell-balata",
+      "title": "The Austrian excavations at Tell Balata in 1913 and 1914",
+      "organization": "Austrian Archaeological Institute",
+      "year": 2022,
+      "url": "https://www.oeaw.ac.at/en/oeai/media/news-archive/news-detail/bericht",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "shechem"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "pcma-retaba-2011",
+      "title": "Tell el-Retaba, season 2011",
+      "organization": "Polish Centre of Mediterranean Archaeology, University of Warsaw",
+      "year": 2011,
+      "url": "https://pcma.uw.edu.pl/en/research/season-by-season/tell-el-retaba-egypt-2011/",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ishod"
+      ],
+      "places": [],
+      "note": "Field report for Wadi Tumilat archaeology; it does not establish an Exodus event.",
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "retaba"
+      ]
+    },
+    {
+      "id": "pcma-retaba-pam23",
+      "title": "Tell el-Retaba excavation report in Polish Archaeology in the Mediterranean 23/1",
+      "organization": "Polish Centre of Mediterranean Archaeology, University of Warsaw",
+      "year": 2014,
+      "url": "https://pcma.uw.edu.pl/2018/02/28/pam-23-1/",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ishod"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "retaba"
+      ]
+    },
+    {
+      "id": "penn-ur-overview",
+      "title": "Ur, Iraq — Penn Museum collections overview",
+      "organization": "Penn Museum",
+      "year": null,
+      "url": "https://collections.penn.museum/collections/highlights/neareast/location/ur.php",
+      "tier": "official-collection",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "ur"
+      ],
+      "note": "Official collection context for the 1922–1934 joint Penn/British Museum expedition; not evidence for a personal Abraham artefact.",
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "pubmed-tall-retraction",
+      "title": "Retraction Note: Tall el-Hammam airburst article",
+      "organization": "PubMed / Scientific Reports",
+      "year": 2025,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40275027/",
+      "tier": "retraction-record",
+      "status": "retracted",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "hammam"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "ritmeyer-mamre",
+      "title": "Mamre and the Temple Mount in Jerusalem",
+      "organization": "Ritmeyer Archaeological Design",
+      "year": 2010,
+      "url": "https://www.ritmeyer.com/2010/10/12/mamre-and-the-temple-mount-in-jerusalem/",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "mamre",
+        "moriah"
+      ],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "sapienza-jericho-2019-2023",
+      "title": "Interim report on Tell es-Sultan excavations 2019–2023",
+      "organization": "Sapienza University of Rome",
+      "year": 2024,
+      "url": "https://iris.uniroma1.it/handle/11573/1729743",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ierrihon"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jericho"
+      ]
+    },
+    {
+      "id": "sapienza-jericho-project",
+      "title": "Jericho — Tell es-Sultan excavation project",
+      "organization": "Sapienza University of Rome / Palestinian MOTA-DACH",
+      "year": null,
+      "url": "https://www.antichita.uniroma1.it/eng/jericho-tell-es-sultan",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ierrihon"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jericho"
+      ]
+    },
+    {
+      "id": "sapienza-jericho-urban-diversity",
+      "title": "Jericho from the Neolithic to the Bronze and Iron Ages",
+      "organization": "Sapienza University of Rome",
+      "year": 2022,
+      "url": "https://iris.uniroma1.it/handle/11573/1680717",
+      "tier": "peer-reviewed",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "ierrihon"
+      ],
+      "places": [],
+      "accessedAt": "2026-07-24",
+      "topics": [
+        "jericho"
+      ]
+    },
+    {
+      "id": "scientific-reports-tall-retraction",
+      "title": "Retraction Note: A Tunguska sized airburst destroyed Tall el-Hammam",
+      "organization": "Scientific Reports",
+      "year": 2025,
+      "url": "https://www.nature.com/articles/s41598-025-99265-5",
+      "tier": "retraction-record",
+      "status": "retracted",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "hammam"
+      ],
+      "note": "The airburst claim must not be used as positive evidence.",
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "unesco-biblical-tels",
+      "title": "Biblical Tels — Megiddo, Hazor, Beer Sheba",
+      "organization": "UNESCO World Heritage Centre",
+      "year": 2005,
+      "url": "https://whc.unesco.org/en/list/1108/",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "unesco-canaanite-city-states",
+      "title": "Canaanite city-states tentative nomination",
+      "organization": "UNESCO World Heritage Centre",
+      "year": null,
+      "url": "https://whc.unesco.org/en/tentativelists/6949/",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "shechem",
+        "hebron"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "unesco-hebron",
+      "title": "Hebron/Al-Khalil Old Town",
+      "organization": "UNESCO World Heritage Centre",
+      "year": 2017,
+      "url": "https://whc.unesco.org/en/list/1565",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "hebron",
+        "mamre"
+      ],
+      "note": "Separates Tell Rumeida archaeology from the later monumental enclosure marking the traditional Machpelah site.",
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "unibo-karkemish-2023-report",
+      "title": "The 2023 Joint Turco-Italian Excavations at Karkemish",
+      "organization": "University of Bologna / Turkish Ministry of Culture and Tourism",
+      "year": 2025,
+      "url": "https://cris.unibo.it/handle/11585/1050456",
+      "tier": "primary-excavation",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "carchemish"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "unibo-karkemish-overview",
+      "title": "Karkemish excavations",
+      "organization": "University of Bologna",
+      "year": null,
+      "url": "https://disci.unibo.it/en/research/archaeological-missions/achaeological-missions-abroad/karkemish-turkey/excavations",
+      "tier": "institutional-synthesis",
+      "status": "active",
+      "verification": "verified",
+      "verifiedAt": "2026-07-24",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "carchemish"
+      ],
+      "accessedAt": "2026-07-24"
+    },
+    {
+      "id": "wibilex-beersheba",
+      "title": "Beerscheba",
+      "organization": "WiBiLex / Deutsche Bibelgesellschaft",
+      "year": null,
+      "url": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/beerscheba",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "beersheba"
+      ],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "wibilex-bethel",
+      "title": "Bethel (Ort)",
+      "organization": "WiBiLex / Deutsche Bibelgesellschaft",
+      "year": null,
+      "url": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/bethel-ort",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "bethel"
+      ],
+      "accessedAt": "2026-06-14"
+    },
+    {
+      "id": "wibilex-hebron",
+      "title": "Hebron",
+      "organization": "WiBiLex / Deutsche Bibelgesellschaft",
+      "year": null,
+      "url": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/hebron",
+      "tier": "scholarly-reference",
+      "status": "active",
+      "verification": "imported",
+      "verifiedAt": "2026-06-14",
+      "maps": [
+        "avraam"
+      ],
+      "places": [
+        "hebron"
+      ],
+      "accessedAt": "2026-06-14"
+    }
   ],
   "claims": [
-    {"id":"avraam-chronology-yec","map":"avraam","places":[],"status":"project-interpretation","statement":"The project presents Abraham near 2166 BCE within its classical Ussher/YEC chronology, while preserving conventional archaeological period labels in evidence records.","evidenceSources":[],"interpretationSources":["arj-abraham-chronology","creation-times-abraham","creation-chronogenealogies","icr-biblical-age"],"limitations":"This is the project’s theological-chronological framework, not an independently excavated absolute date for Abraham."},
-    {"id":"ur-ancient-city-context","map":"avraam","places":["ur"],"status":"accepted-context","statement":"Tell el-Muqayyar is securely identified as ancient Ur and supplies the urban Mesopotamian context used by the map.","evidenceSources":["penn-ur-overview","bm-ur-1925-26","bm-ur-royal-cemetery","bm-ur-old-babylonian","bm-ur-1923-24"],"interpretationSources":["arj-abraham-chronology"],"limitations":"The excavations do not identify a personal house or artefact belonging to Abraham."},
-    {"id":"euphrates-corridor-context","map":"avraam","places":["ur","mari","carchemish","harran"],"status":"accepted-context","statement":"Ur, Mari, Carchemish and Harran form archaeologically documented nodes suitable for the map’s Euphrates corridor context.","evidenceSources":["penn-ur-overview","mari-official-overview","mari-archives","bm-carchemish-ii","unibo-karkemish-overview","unibo-karkemish-2023-report","harran-department","harran-excavations-2025"],"interpretationSources":["arj-abraham-chronology"],"limitations":"The exact itinerary between nodes remains a historical reconstruction rather than a traced Abrahamic road."},
-    {"id":"mari-amorite-context","map":"avraam","places":["mari"],"status":"accepted-context","statement":"Mari’s palace, archives and excavation history document early-second-millennium urban, administrative and tribal contexts relevant to comparative patriarchal study.","evidenceSources":["mari-excavation-history","mari-palace","mari-archives","mari-current-research"],"interpretationSources":[],"limitations":"Comparative context is not proof that Abraham visited Mari."},
-    {"id":"shechem-tell-balata","map":"avraam","places":["shechem"],"status":"primary-identification","statement":"Tell Balata is the principal archaeological identification of ancient Shechem used by the map.","evidenceSources":["leiden-tell-balata","unesco-canaanite-city-states","oeaw-tell-balata","hup-tell-balata-2023"],"interpretationSources":["bibleplaces-shechem"],"limitations":"The Oak of Moreh and Abraham’s altar are not point-located archaeological finds."},
-    {"id":"hebron-tell-rumeida","map":"avraam","places":["hebron"],"status":"primary-identification","statement":"Tell Rumeida preserves the ancient urban mound associated with Hebron; the later monumental enclosure marks the traditional Machpelah location.","evidenceSources":["unesco-hebron","unesco-canaanite-city-states"],"interpretationSources":["wibilex-hebron"],"limitations":"Tradition surrounding Machpelah is not equivalent to excavation of the patriarchal burials."},
-    {"id":"beersheba-regional-context","map":"avraam","places":["beersheba"],"status":"accepted-context","statement":"The Beersheba basin preserves long settlement and water-use history, while Tel Be’er Sheva’s principal monumental remains are later than the patriarchal narrative.","evidenceSources":["unesco-biblical-tels","iaa-tel-sheva-2025","iaa-tel-sheva-campus-2025","iaa-beersheba-hadassah-2025","iaa-beersheba-trumpeldor-2024","iaa-tel-sheva-chalcolithic","iaa-nahal-beersheba-2013","iaa-nahal-beersheba-west-2015"],"interpretationSources":["bibleplaces-beersheba","wibilex-beersheba"],"limitations":"The Iron Age tell must not be presented as Abraham’s excavated town or well."},
-    {"id":"bethel-beitin-candidate","map":"avraam","places":["bethel"],"status":"candidate","statement":"Beitin remains the map’s principal Bethel candidate, with alternatives retained as explicit scholarly caveats.","evidenceSources":[],"interpretationSources":["bibleplaces-bethel","wibilex-bethel"],"limitations":"This candidate requires a future primary excavation bibliography before promotion to accepted identification."},
-    {"id":"sodom-southern-basin-candidate","map":"avraam","places":["sodom"],"status":"candidate","statement":"Bab edh-Dhra and Numeira remain southern-basin candidates considered by the project’s conservative/YEC layer.","evidenceSources":[],"interpretationSources":["bibleplaces-bab-edh-dhra","bibleplaces-numeira","aig-have-we-found-sodom"],"limitations":"A candidate status is not an identification; primary excavation publications must be added before stronger wording."},
-    {"id":"tall-el-hammam-airburst-rejected","map":"avraam","places":["hammam"],"status":"rejected","statement":"The retracted Tall el-Hammam cosmic-airburst paper is not admissible as positive support for destruction or identification claims.","evidenceSources":["scientific-reports-tall-retraction","pubmed-tall-retraction"],"interpretationSources":["aig-have-we-found-sodom"],"limitations":"The site may still be discussed archaeologically, but the retracted airburst conclusion cannot be presented as established evidence."},
-    {"id":"no-personal-abraham-artefact","map":"avraam","places":["ur","harran","shechem","bethel","hebron","beersheba"],"status":"methodological-guardrail","statement":"No current registry source establishes a personal artefact, house, altar or inscription belonging to Abraham.","evidenceSources":["penn-ur-overview","harran-department","leiden-tell-balata","unesco-hebron","iaa-esi-series"],"interpretationSources":[],"limitations":"The map may present period and landscape context, not invented direct archaeological proof."}
+    {
+      "id": "assyrian-kingdoms-context",
+      "category": "kings_period",
+      "map": "tsari",
+      "places": [],
+      "topics": [
+        "lachish",
+        "jerusalem",
+        "moab"
+      ],
+      "status": "accepted-context",
+      "statement": "Assyrian royal records, the Lachish reliefs and the Mesha Stele provide independent inscriptional and visual context for the kingdoms period.",
+      "evidenceSources": [
+        "bm-lachish-relief",
+        "bm-taylor-prism",
+        "louvre-mesha-stele"
+      ],
+      "interpretationSources": [],
+      "limitations": "Royal inscriptions are partisan ancient sources and disputed readings must remain identified as disputed."
+    },
+    {
+      "id": "avraam-chronology-yec",
+      "map": "avraam",
+      "places": [],
+      "status": "project-interpretation",
+      "statement": "The project presents Abraham near 2166 BCE within its classical Ussher/YEC chronology, while preserving conventional archaeological period labels in evidence records.",
+      "evidenceSources": [],
+      "interpretationSources": [
+        "arj-abraham-chronology",
+        "creation-times-abraham",
+        "creation-chronogenealogies",
+        "icr-biblical-age"
+      ],
+      "limitations": "This is the project’s theological-chronological framework, not an independently excavated absolute date for Abraham."
+    },
+    {
+      "id": "babylonian-exile-context",
+      "category": "babylonian_exile",
+      "map": "plenenie",
+      "places": [],
+      "topics": [
+        "babylon",
+        "jerusalem"
+      ],
+      "status": "accepted-context",
+      "statement": "The Babylonian Chronicle, administrative tablets and Jerusalem excavation reports provide primary context for the Neo-Babylonian conquest and exile period.",
+      "evidenceSources": [
+        "bm-babylonian-chronicle-21946",
+        "bm-nebusarsekim-tablet",
+        "iaa-givati-2017-2018",
+        "iaa-givati-2019-2020"
+      ],
+      "interpretationSources": [],
+      "limitations": "Object identifications and translations follow museum records; they do not by themselves reconstruct every event in Kings, Chronicles or Jeremiah."
+    },
+    {
+      "id": "beersheba-regional-context",
+      "map": "avraam",
+      "places": [
+        "beersheba"
+      ],
+      "status": "accepted-context",
+      "statement": "The Beersheba basin preserves long settlement and water-use history, while Tel Be’er Sheva’s principal monumental remains are later than the patriarchal narrative.",
+      "evidenceSources": [
+        "unesco-biblical-tels",
+        "iaa-tel-sheva-2025",
+        "iaa-tel-sheva-campus-2025",
+        "iaa-beersheba-hadassah-2025",
+        "iaa-beersheba-trumpeldor-2024",
+        "iaa-tel-sheva-chalcolithic",
+        "iaa-nahal-beersheba-2013",
+        "iaa-nahal-beersheba-west-2015"
+      ],
+      "interpretationSources": [
+        "bibleplaces-beersheba",
+        "wibilex-beersheba"
+      ],
+      "limitations": "The Iron Age tell must not be presented as Abraham’s excavated town or well."
+    },
+    {
+      "id": "bethel-beitin-candidate",
+      "map": "avraam",
+      "places": [
+        "bethel"
+      ],
+      "status": "candidate",
+      "statement": "Beitin remains the map’s principal Bethel candidate, with alternatives retained as explicit scholarly caveats.",
+      "evidenceSources": [],
+      "interpretationSources": [
+        "bibleplaces-bethel",
+        "wibilex-bethel"
+      ],
+      "limitations": "This candidate requires a future primary excavation bibliography before promotion to accepted identification."
+    },
+    {
+      "id": "dead-sea-scrolls-context",
+      "category": "dead_sea_scrolls",
+      "map": "qumran",
+      "places": [],
+      "topics": [
+        "qumran",
+        "nahal-hever",
+        "qumran-cave-1",
+        "qumran-cave-11"
+      ],
+      "status": "accepted-context",
+      "statement": "The IAA and Israel Museum digital collections provide authoritative access to manuscript objects, discovery contexts and institutional metadata for the Dead Sea Scrolls.",
+      "evidenceSources": [
+        "iaa-dss-digital-library",
+        "iaa-dss-discovery-sites",
+        "imj-great-isaiah-scroll",
+        "imj-shrine-book",
+        "imj-temple-scroll"
+      ],
+      "interpretationSources": [],
+      "limitations": "Institutional presentation does not settle every question of authorship, community identity, palaeographic dating or textual reconstruction."
+    },
+    {
+      "id": "early-church-context",
+      "category": "early_church",
+      "map": "early-church",
+      "places": [],
+      "topics": [
+        "capernaum",
+        "caesarea",
+        "jerusalem",
+        "ephesus",
+        "siloam"
+      ],
+      "status": "accepted-context",
+      "statement": "Museum collections, Jerusalem fieldwork and the long-running Ephesos excavation program provide material context for Jewish and Greco-Roman settings of the earliest church.",
+      "evidenceSources": [
+        "imj-cradle-christianity",
+        "custodia-capernaum",
+        "oeai-ephesos-branch",
+        "oeai-forschungen-ephesos",
+        "iaa-siloam-silwan-2014"
+      ],
+      "interpretationSources": [],
+      "limitations": "Institutional and field evidence supports historical context; claims about specific apostolic events require textual and site-specific analysis."
+    },
+    {
+      "id": "euphrates-corridor-context",
+      "map": "avraam",
+      "places": [
+        "ur",
+        "mari",
+        "carchemish",
+        "harran"
+      ],
+      "status": "accepted-context",
+      "statement": "Ur, Mari, Carchemish and Harran form archaeologically documented nodes suitable for the map’s Euphrates corridor context.",
+      "evidenceSources": [
+        "penn-ur-overview",
+        "mari-official-overview",
+        "mari-archives",
+        "bm-carchemish-ii",
+        "unibo-karkemish-overview",
+        "unibo-karkemish-2023-report",
+        "lloyd-brice-harran-1951",
+        "harran-plain-survey-2021"
+      ],
+      "interpretationSources": [
+        "arj-abraham-chronology"
+      ],
+      "limitations": "The exact itinerary between nodes remains a historical reconstruction rather than a traced Abrahamic road."
+    },
+    {
+      "id": "exodus-route-context",
+      "category": "exodus_route",
+      "map": "ishod",
+      "places": [],
+      "topics": [
+        "egypt",
+        "sinai",
+        "retaba"
+      ],
+      "status": "accepted-context",
+      "statement": "Egyptian textual, Sinai frontier and Wadi Tumilat excavation records provide historical-geographical context for evaluating proposed Exodus routes.",
+      "evidenceSources": [
+        "bm-papyrus-anastasi-v",
+        "egypt-sinai-fortifications",
+        "pcma-retaba-2011",
+        "pcma-retaba-pam23"
+      ],
+      "interpretationSources": [],
+      "limitations": "These records do not independently prove the biblical Exodus event or identify every itinerary station."
+    },
+    {
+      "id": "gath-philistine-context",
+      "category": "judges_period",
+      "map": "shoftim",
+      "places": [],
+      "topics": [
+        "gath"
+      ],
+      "status": "accepted-context",
+      "statement": "Tell es-Safi/Gath provides a major excavated Philistine urban context relevant to Judges-period geography.",
+      "evidenceSources": [
+        "biu-gath-final-report",
+        "biu-gath-overview",
+        "biu-gath-project"
+      ],
+      "interpretationSources": [],
+      "limitations": "The excavated city context does not authenticate every narrative episode associated with Gath."
+    },
+    {
+      "id": "hebron-tell-rumeida",
+      "map": "avraam",
+      "places": [
+        "hebron"
+      ],
+      "status": "primary-identification",
+      "statement": "Tell Rumeida preserves the ancient urban mound associated with Hebron; the later monumental enclosure marks the traditional Machpelah location.",
+      "evidenceSources": [
+        "unesco-hebron",
+        "unesco-canaanite-city-states"
+      ],
+      "interpretationSources": [
+        "wibilex-hebron"
+      ],
+      "limitations": "Tradition surrounding Machpelah is not equivalent to excavation of the patriarchal burials."
+    },
+    {
+      "id": "jericho-archaeology-disputed",
+      "category": "jericho_ai",
+      "map": "ierrihon",
+      "places": [],
+      "topics": [
+        "jericho"
+      ],
+      "status": "disputed",
+      "statement": "Tell es-Sultan is securely Jericho, while the relationship between its destruction layers, absolute chronology and the biblical conquest remains disputed.",
+      "evidenceSources": [
+        "bm-kenyon-jericho-publication",
+        "sapienza-jericho-2019-2023",
+        "sapienza-jericho-project",
+        "sapienza-jericho-urban-diversity"
+      ],
+      "interpretationSources": [],
+      "limitations": "The destruction chronology remains disputed; the registry preserves excavation data and conventional dating without treating one scholarly reconstruction as settled biblical synchronism."
+    },
+    {
+      "id": "jerusalem-first-temple-context",
+      "category": "jerusalem_first_temple",
+      "map": "ierusalim",
+      "places": [],
+      "topics": [
+        "jerusalem",
+        "lachish"
+      ],
+      "status": "accepted-context",
+      "statement": "Giv‘ati excavations and Assyrian records document Jerusalem and Judah across the First Temple and imperial-conflict contexts.",
+      "evidenceSources": [
+        "iaa-givati-2017-2018",
+        "iaa-givati-2019-2020",
+        "bm-taylor-prism",
+        "bm-lachish-relief"
+      ],
+      "interpretationSources": [],
+      "limitations": "Individual architectural phases require report-level dating and cannot be assigned to a named biblical figure without direct evidence."
+    },
+    {
+      "id": "jesus-ministry-context",
+      "category": "jesus_ministry",
+      "map": "iisus",
+      "places": [],
+      "topics": [
+        "capernaum",
+        "magdala",
+        "siloam",
+        "caesarea",
+        "jerusalem"
+      ],
+      "status": "accepted-context",
+      "statement": "Excavated and institutional records from Capernaum, Magdala, Siloam and Jerusalem provide material context for the geography of Jesus’ ministry.",
+      "evidenceSources": [
+        "iaa-migdal-2013",
+        "iaa-migdal-2015",
+        "iaa-siloam-silwan-2014"
+      ],
+      "interpretationSources": [],
+      "limitations": "Material context is not an archaeological authentication of each Gospel miracle or speech."
+    },
+    {
+      "id": "maccabean-context",
+      "category": "maccabees",
+      "map": "maccabim",
+      "places": [],
+      "topics": [
+        "thamnata",
+        "modiin",
+        "jerusalem"
+      ],
+      "status": "candidate",
+      "statement": "Jerusalem records, the Heliodorus Stele and current excavations provide Maccabean-period context while proposed identifications of Thamnata and the Maccabean tombs remain candidates.",
+      "evidenceSources": [
+        "biu-hurbat-husham-thamnata",
+        "iaa-horbat-ha-gardi",
+        "imj-heliodorus-stele",
+        "iaa-givati-2019-2020"
+      ],
+      "interpretationSources": [],
+      "limitations": "Both Thamnata and Horbat Ha-Gardi identifications remain candidates and must not be presented as conclusive beyond the reporting sources."
+    },
+    {
+      "id": "mari-amorite-context",
+      "map": "avraam",
+      "places": [
+        "mari"
+      ],
+      "status": "accepted-context",
+      "statement": "Mari’s palace, archives and excavation history document early-second-millennium urban, administrative and tribal contexts relevant to comparative patriarchal study.",
+      "evidenceSources": [
+        "mari-excavation-history",
+        "mari-palace",
+        "mari-archives",
+        "mari-current-research"
+      ],
+      "interpretationSources": [],
+      "limitations": "Comparative context is not proof that Abraham visited Mari."
+    },
+    {
+      "id": "no-personal-abraham-artefact",
+      "map": "avraam",
+      "places": [
+        "ur",
+        "harran",
+        "shechem",
+        "bethel",
+        "hebron",
+        "beersheba"
+      ],
+      "status": "methodological-guardrail",
+      "statement": "No current registry source establishes a personal artefact, house, altar or inscription belonging to Abraham.",
+      "evidenceSources": [
+        "penn-ur-overview",
+        "lloyd-brice-harran-1951",
+        "leiden-tell-balata",
+        "unesco-hebron",
+        "iaa-esi-series"
+      ],
+      "interpretationSources": [],
+      "limitations": "The map may present period and landscape context, not invented direct archaeological proof."
+    },
+    {
+      "id": "persian-return-context",
+      "category": "persian_return",
+      "map": "vozvrashchenie",
+      "places": [],
+      "topics": [
+        "babylon",
+        "persia",
+        "elephantine"
+      ],
+      "status": "accepted-context",
+      "statement": "The Cyrus Cylinder and Elephantine Aramaic records illuminate Persian imperial policy and Jewish communal life in the broader return-period world.",
+      "evidenceSources": [
+        "bm-cyrus-cylinder-object",
+        "brooklyn-elephantine-marriage",
+        "elephantine-yaho-tax-list",
+        "elephantine-yaho-temple-letter"
+      ],
+      "interpretationSources": [],
+      "limitations": "The Cyrus Cylinder does not mention Judah directly, and Elephantine evidence reflects a distinct diaspora community."
+    },
+    {
+      "id": "qeiyafa-davidic-context",
+      "category": "davidic_kingdom",
+      "map": "david",
+      "places": [],
+      "topics": [
+        "qeiyafa",
+        "moab"
+      ],
+      "status": "accepted-context",
+      "statement": "Khirbet Qeiyafa documents a fortified early Iron Age polity in the Shephelah relevant to debates about the scale and administration of the early Judahite kingdom.",
+      "evidenceSources": [
+        "hu-qeiyafa-vol1",
+        "hu-qeiyafa-vol2",
+        "hu-qeiyafa-project"
+      ],
+      "interpretationSources": [],
+      "limitations": "Its political attribution and direct relationship to David remain debated; the Mesha Stele belongs to a later kingdom context."
+    },
+    {
+      "id": "shechem-tell-balata",
+      "map": "avraam",
+      "places": [
+        "shechem"
+      ],
+      "status": "primary-identification",
+      "statement": "Tell Balata is the principal archaeological identification of ancient Shechem used by the map.",
+      "evidenceSources": [
+        "leiden-tell-balata",
+        "unesco-canaanite-city-states",
+        "oeaw-tell-balata",
+        "hup-tell-balata-2023"
+      ],
+      "interpretationSources": [
+        "bibleplaces-shechem"
+      ],
+      "limitations": "The Oak of Moreh and Abraham’s altar are not point-located archaeological finds."
+    },
+    {
+      "id": "sodom-southern-basin-candidate",
+      "map": "avraam",
+      "places": [
+        "sodom"
+      ],
+      "status": "candidate",
+      "statement": "Bab edh-Dhra and Numeira remain southern-basin candidates considered by the project’s conservative/YEC layer.",
+      "evidenceSources": [],
+      "interpretationSources": [
+        "bibleplaces-bab-edh-dhra",
+        "bibleplaces-numeira",
+        "aig-have-we-found-sodom"
+      ],
+      "limitations": "A candidate status is not an identification; primary excavation publications must be added before stronger wording."
+    },
+    {
+      "id": "tall-el-hammam-airburst-rejected",
+      "map": "avraam",
+      "places": [
+        "hammam"
+      ],
+      "status": "rejected",
+      "statement": "The retracted Tall el-Hammam cosmic-airburst paper is not admissible as positive support for destruction or identification claims.",
+      "evidenceSources": [
+        "scientific-reports-tall-retraction",
+        "pubmed-tall-retraction"
+      ],
+      "interpretationSources": [
+        "aig-have-we-found-sodom"
+      ],
+      "limitations": "The site may still be discussed archaeologically, but the retracted airburst conclusion cannot be presented as established evidence."
+    },
+    {
+      "id": "ur-ancient-city-context",
+      "map": "avraam",
+      "places": [
+        "ur"
+      ],
+      "status": "accepted-context",
+      "statement": "Tell el-Muqayyar is securely identified as ancient Ur and supplies the urban Mesopotamian context used by the map.",
+      "evidenceSources": [
+        "penn-ur-overview",
+        "bm-ur-1925-26",
+        "bm-ur-royal-cemetery",
+        "bm-ur-old-babylonian",
+        "bm-ur-1923-24"
+      ],
+      "interpretationSources": [
+        "arj-abraham-chronology"
+      ],
+      "limitations": "The excavations do not identify a personal house or artefact belonging to Abraham."
+    }
+  ],
+  "coverageSchemaVersion": "1.0.0",
+  "coveragePolicy": {
+    "runtimeCategoryMeaning": "A governed evidence bundle used to replace hardcoded runtime references; it does not assert that a dedicated route or every biblical event is archaeologically proven.",
+    "mapScopeMeaning": "A UI/data scope identifier. Only route-profile contracts may promote a scope to a concrete route.",
+    "topicMeaning": "An archaeological location or evidence cluster not yet bound by this registry to a route marker.",
+    "minimumCategoryEvidence": "Each category requires at least three active sources, at least two high-evidence provenance records and an explicit limited claim."
+  },
+  "mapScopes": [
+    {
+      "id": "david",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "early-church",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "ierrihon",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "ierusalim",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "iisus",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "ishod",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "maccabim",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "pavel",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "plenenie",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "qumran",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "shoftim",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "tsari",
+      "kind": "runtime-scope"
+    },
+    {
+      "id": "vozvrashchenie",
+      "kind": "runtime-scope"
+    }
+  ],
+  "topicVocabulary": {
+    "babylon": {
+      "kind": "topic",
+      "concept": "Babylon and Neo-Babylonian evidence cluster"
+    },
+    "caesarea": {
+      "kind": "topic",
+      "concept": "Caesarea early-Christian material context"
+    },
+    "capernaum": {
+      "kind": "topic",
+      "concept": "Capernaum archaeology"
+    },
+    "egypt": {
+      "kind": "topic",
+      "concept": "Egyptian textual context"
+    },
+    "elephantine": {
+      "kind": "topic",
+      "concept": "Elephantine Jewish community and Yaho temple archive"
+    },
+    "ephesus": {
+      "kind": "topic",
+      "concept": "Ephesus excavation and publication corpus"
+    },
+    "gath": {
+      "kind": "topic",
+      "concept": "Tell es-Safi/Gath evidence cluster"
+    },
+    "jericho": {
+      "kind": "topic",
+      "concept": "Tell es-Sultan / Jericho evidence cluster"
+    },
+    "jerusalem": {
+      "kind": "topic",
+      "concept": "Jerusalem evidence cluster"
+    },
+    "lachish": {
+      "kind": "topic",
+      "concept": "Lachish evidence cluster"
+    },
+    "magdala": {
+      "kind": "topic",
+      "concept": "Magdala/Migdal archaeology"
+    },
+    "moab": {
+      "kind": "topic",
+      "concept": "Moabite inscriptional context"
+    },
+    "modiin": {
+      "kind": "topic",
+      "concept": "Modiin/Maccabean tomb candidate cluster"
+    },
+    "nahal-hever": {
+      "kind": "topic",
+      "concept": "Nahal Hever discovery context"
+    },
+    "persia": {
+      "kind": "topic",
+      "concept": "Persian imperial context"
+    },
+    "qeiyafa": {
+      "kind": "topic",
+      "concept": "Khirbet Qeiyafa evidence cluster"
+    },
+    "qumran": {
+      "kind": "topic",
+      "concept": "Qumran and Dead Sea Scrolls institutional corpus"
+    },
+    "qumran-cave-1": {
+      "kind": "topic",
+      "concept": "Qumran Cave 1 manuscript context"
+    },
+    "qumran-cave-11": {
+      "kind": "topic",
+      "concept": "Qumran Cave 11 manuscript context"
+    },
+    "retaba": {
+      "kind": "topic",
+      "concept": "Tell el-Retaba / Wadi Tumilat archaeology"
+    },
+    "siloam": {
+      "kind": "topic",
+      "concept": "Pool of Siloam and Silwan archaeology"
+    },
+    "sinai": {
+      "kind": "topic",
+      "concept": "Sinai frontier archaeology"
+    },
+    "thamnata": {
+      "kind": "topic",
+      "concept": "Proposed Thamnata identification cluster"
+    }
+  },
+  "runtimeCategories": [
+    {
+      "id": "exodus_route",
+      "label": "Exodus route context",
+      "mapScopes": [
+        "ishod"
+      ],
+      "sourceIds": [
+        "bm-papyrus-anastasi-v",
+        "egypt-sinai-fortifications",
+        "pcma-retaba-2011",
+        "pcma-retaba-pam23"
+      ],
+      "claimIds": [
+        "exodus-route-context"
+      ]
+    },
+    {
+      "id": "jericho_ai",
+      "label": "Jericho and conquest chronology",
+      "mapScopes": [
+        "ierrihon"
+      ],
+      "sourceIds": [
+        "bm-kenyon-jericho-publication",
+        "sapienza-jericho-2019-2023",
+        "sapienza-jericho-project",
+        "sapienza-jericho-urban-diversity"
+      ],
+      "claimIds": [
+        "jericho-archaeology-disputed"
+      ]
+    },
+    {
+      "id": "judges_period",
+      "label": "Judges-period Philistine context",
+      "mapScopes": [
+        "shoftim"
+      ],
+      "sourceIds": [
+        "biu-gath-final-report",
+        "biu-gath-overview",
+        "biu-gath-project"
+      ],
+      "claimIds": [
+        "gath-philistine-context"
+      ]
+    },
+    {
+      "id": "davidic_kingdom",
+      "label": "Davidic kingdom context",
+      "mapScopes": [
+        "david"
+      ],
+      "sourceIds": [
+        "hu-qeiyafa-project",
+        "hu-qeiyafa-vol1",
+        "hu-qeiyafa-vol2",
+        "louvre-mesha-stele"
+      ],
+      "claimIds": [
+        "qeiyafa-davidic-context"
+      ]
+    },
+    {
+      "id": "kings_period",
+      "label": "Kingdoms and Assyrian campaigns",
+      "mapScopes": [
+        "tsari"
+      ],
+      "sourceIds": [
+        "bm-lachish-relief",
+        "bm-taylor-prism",
+        "louvre-mesha-stele",
+        "iaa-givati-2017-2018"
+      ],
+      "claimIds": [
+        "assyrian-kingdoms-context"
+      ]
+    },
+    {
+      "id": "jerusalem_first_temple",
+      "label": "Jerusalem First Temple context",
+      "mapScopes": [
+        "ierusalim"
+      ],
+      "sourceIds": [
+        "iaa-givati-2017-2018",
+        "iaa-givati-2019-2020",
+        "bm-taylor-prism",
+        "bm-lachish-relief"
+      ],
+      "claimIds": [
+        "jerusalem-first-temple-context"
+      ]
+    },
+    {
+      "id": "babylonian_exile",
+      "label": "Babylonian exile context",
+      "mapScopes": [
+        "plenenie"
+      ],
+      "sourceIds": [
+        "bm-babylonian-chronicle-21946",
+        "bm-nebusarsekim-tablet",
+        "iaa-givati-2017-2018",
+        "iaa-givati-2019-2020"
+      ],
+      "claimIds": [
+        "babylonian-exile-context"
+      ]
+    },
+    {
+      "id": "persian_return",
+      "label": "Persian return and Elephantine",
+      "mapScopes": [
+        "vozvrashchenie"
+      ],
+      "sourceIds": [
+        "bm-cyrus-cylinder-object",
+        "brooklyn-elephantine-marriage",
+        "elephantine-yaho-tax-list",
+        "elephantine-yaho-temple-letter"
+      ],
+      "claimIds": [
+        "persian-return-context"
+      ]
+    },
+    {
+      "id": "maccabees",
+      "label": "Maccabean period",
+      "mapScopes": [
+        "maccabim"
+      ],
+      "sourceIds": [
+        "biu-hurbat-husham-thamnata",
+        "iaa-horbat-ha-gardi",
+        "imj-heliodorus-stele",
+        "iaa-givati-2019-2020"
+      ],
+      "claimIds": [
+        "maccabean-context"
+      ]
+    },
+    {
+      "id": "jesus_ministry",
+      "label": "Jesus ministry material context",
+      "mapScopes": [
+        "iisus"
+      ],
+      "sourceIds": [
+        "custodia-capernaum",
+        "iaa-migdal-2013",
+        "iaa-migdal-2015",
+        "iaa-siloam-silwan-2014",
+        "imj-cradle-christianity"
+      ],
+      "claimIds": [
+        "jesus-ministry-context"
+      ]
+    },
+    {
+      "id": "early_church",
+      "label": "Early church material context",
+      "mapScopes": [
+        "early-church",
+        "pavel"
+      ],
+      "sourceIds": [
+        "imj-cradle-christianity",
+        "custodia-capernaum",
+        "oeai-ephesos-branch",
+        "oeai-forschungen-ephesos",
+        "iaa-siloam-silwan-2014"
+      ],
+      "claimIds": [
+        "early-church-context"
+      ]
+    },
+    {
+      "id": "dead_sea_scrolls",
+      "label": "Dead Sea Scrolls corpus",
+      "mapScopes": [
+        "qumran"
+      ],
+      "sourceIds": [
+        "iaa-dss-digital-library",
+        "iaa-dss-discovery-sites",
+        "imj-great-isaiah-scroll",
+        "imj-shrine-book",
+        "imj-temple-scroll"
+      ],
+      "claimIds": [
+        "dead-sea-scrolls-context"
+      ]
+    }
   ]
 }
