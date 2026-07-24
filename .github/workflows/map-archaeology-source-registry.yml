@@ -41,12 +41,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
-      - name: Validate source syntax
+      - name: Validate source syntax and shared boundary
         run: |
           node --check scripts/map-archaeology-source-registry-audit.js
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-provenance.json','utf8'))"
           node -e "JSON.parse(require('node:fs').readFileSync('karty/avraam/route.json','utf8'))"
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const catalog = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-registry.json', 'utf8'));
+          const provenance = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-provenance.json', 'utf8'));
+          if (catalog.sourceBoundary !== provenance.catalogBoundary) {
+            throw new Error(`catalog/provenance boundary drift: ${catalog.sourceBoundary} !== ${provenance.catalogBoundary}`);
+          }
+          if (catalog.updatedAt !== provenance.updatedAt) {
+            throw new Error(`catalog/provenance revision date drift: ${catalog.updatedAt} !== ${provenance.updatedAt}`);
+          }
+          console.log(`PASS shared archaeology boundary ${catalog.sourceBoundary}`);
+          NODE
       - name: Enforce provenance, route and YEC separation
         run: node scripts/map-archaeology-source-registry-audit.js
       - name: Lint workflow
