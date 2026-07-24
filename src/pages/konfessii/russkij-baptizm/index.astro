@@ -5,6 +5,8 @@
  * Interactive 3D visualization. Very fragile runtime.
  * Native Baptizm3DPageHead (SEO/JSON-LD/meta) + Native Baptizm3DBody.
  * Uses iframe to embed the complex Three.js application safely.
+ * The shell is full-viewport: indexable prose belongs only to the in-stage noscript fallback
+ * and must never become a visible flex sibling of the iframe stage.
  * Does NOT use global site.css/site.js.
  */
 import Baptizm3DPageHead from '@/components/konfessii/russkij-baptizm/Baptizm3DPageHead.astro';
