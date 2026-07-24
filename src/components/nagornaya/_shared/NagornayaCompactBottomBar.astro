@@ -7,10 +7,11 @@
  * tooltip controller moves a card to <body> and adds .gb-floating-tip before
  * it becomes visible.
  *
- * At <=359px a wide table remains intentionally wider than the viewport, but
- * its wrapper owns that overflow as a local horizontal scrollport. Inline-size,
- * layout and paint containment prevent WebKit from leaking the table's
- * min-content width into the document root without hiding page-level content.
+ * At <=359px every overflow wrapper owns its width locally. Two-column
+ * comparison tables that carry the legacy min-w-96 utility no longer demand a
+ * 384px canvas: they use the available inline size, fixed column geometry and
+ * wrapped cells. Other genuinely wide tables may still use the wrapper as a
+ * local horizontal scrollport. Page-root clipping is never used.
  *
  * Decorative section-subtitle indentation is removed at the same breakpoint.
  * On an iPhone 320 the subtitle receives the full content width, including when
@@ -38,6 +39,19 @@
       isolation: isolate;
       overscroll-behavior-inline: contain;
       -webkit-overflow-scrolling: touch;
+    }
+
+    body.nagornaya-page #main-content .overflow-x-auto > table.min-w-96 {
+      inline-size: 100%;
+      min-inline-size: 100% !important;
+      table-layout: fixed;
+    }
+
+    body.nagornaya-page #main-content .overflow-x-auto > table.min-w-96 th,
+    body.nagornaya-page #main-content .overflow-x-auto > table.min-w-96 td {
+      min-inline-size: 0;
+      overflow-wrap: anywhere;
+      word-break: normal;
     }
 
     body.nagornaya-page #main-content .group,
