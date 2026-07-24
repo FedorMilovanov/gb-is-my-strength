@@ -2,6 +2,19 @@ name: Map Archaeology Projection
 
 on:
   pull_request:
+    branches: [main]
+    paths:
+      - 'karty/_data/archaeology-source-registry.json'
+      - 'karty/_data/archaeology-source-provenance.json'
+      - 'karty/_engine/map-archaeology-adapter.js'
+      - 'src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro'
+      - 'src/components/karty/_shared/MapRuntimeFallback.astro'
+      - 'src/lib/karty/map-archaeology-projection.mjs'
+      - 'scripts/map-archaeology-projection-contract-test.mjs'
+      - 'scripts/map-archaeology-projection-browser-test.mjs'
+      - '.github/workflows/map-archaeology-projection.yml'
+  push:
+    branches: [main]
     paths:
       - 'karty/_data/archaeology-source-registry.json'
       - 'karty/_data/archaeology-source-provenance.json'
@@ -17,14 +30,23 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: map-archaeology-projection-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   contract:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout exact head
+        uses: actions/checkout@v4
         with:
-          node-version: 22
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
       - name: Validate registry and projection contract
         run: |
           node --check karty/_engine/map-archaeology-adapter.js
@@ -34,17 +56,26 @@ jobs:
           node scripts/map-archaeology-source-registry-audit.js
           node scripts/map-archaeology-projection-contract-test.mjs
       - name: Lint workflow
-        run: node scripts/run-actionlint.mjs .github/workflows/map-archaeology-projection.yml
+        run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-archaeology-projection.yml
+      - name: Ensure proof is read-only
+        run: git diff --exit-code
 
   browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout exact head
+        uses: actions/checkout@v4
         with:
-          node-version: 22
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Exercise tab, place and legacy replacement lifecycle
         run: node scripts/map-archaeology-projection-browser-test.mjs
+      - name: Ensure browser proof is read-only
+        run: git diff --exit-code
