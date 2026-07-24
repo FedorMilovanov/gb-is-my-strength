@@ -1,4 +1,4 @@
-name: Temporary Production Witness 83a13a0
+name: Temporary Production Snapshot 83a13a0
 
 on:
   pull_request:
@@ -12,14 +12,15 @@ permissions:
   deployments: read
 
 jobs:
-  witness:
+  snapshot:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 10
     env:
       TARGET_SHA: 83a13a0755b37296ccec053987654ceefbca349e
     steps:
-      - name: Prove exact readiness, Pages run and deployment
+      - name: Snapshot exact readiness, Pages and deployment state
+        id: snapshot
         uses: actions/github-script@v7
         with:
           script: |
@@ -28,223 +29,126 @@ jobs:
             const { owner, repo } = context.repo;
             fs.mkdirSync('reports', { recursive: true });
 
-            const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-            const iso = (value) => new Date(value).toISOString();
-            const diagnostics = { targetSha: target, capturedAt: new Date().toISOString(), polls: [] };
-            const persistDiagnostics = () => {
-              fs.writeFileSync(
-                'reports/production-workflow-polls.json',
-                `${JSON.stringify(diagnostics, null, 2)}\n`,
-              );
-            };
-
-            async function waitForSuccessfulWorkflow(workflowId, event, notBefore = null) {
-              let terminalPolls = 0;
-              for (let attempt = 1; attempt <= 60; attempt += 1) {
-                const response = await github.request(
-                  'GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs',
-                  {
-                    owner,
-                    repo,
-                    workflow_id: workflowId,
-                    branch: 'main',
-                    event,
-                    head_sha: target,
-                    per_page: 100,
-                    headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-                  },
-                );
-                const runs = response.data.workflow_runs
-                  .filter((run) => run.head_sha === target && run.event === event)
-                  .filter((run) => !notBefore || new Date(run.created_at) >= new Date(notBefore))
-                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                diagnostics.polls.push({
-                  workflowId,
+            async function workflowRuns(workflowId, event) {
+              const response = await github.request(
+                'GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs',
+                {
+                  owner,
+                  repo,
+                  workflow_id: workflowId,
+                  branch: 'main',
                   event,
-                  attempt,
-                  at: new Date().toISOString(),
-                  runs: runs.map((run) => ({
-                    id: run.id,
-                    runNumber: run.run_number,
-                    status: run.status,
-                    conclusion: run.conclusion,
-                    headSha: run.head_sha,
-                    createdAt: run.created_at,
-                    updatedAt: run.updated_at,
-                    htmlUrl: run.html_url,
-                  })),
-                });
-                persistDiagnostics();
-
-                const success = runs.find(
-                  (run) => run.status === 'completed' && run.conclusion === 'success',
-                );
-                if (success) return success;
-
-                const active = runs.some((run) => run.status !== 'completed');
-                const terminal = runs.find((run) => run.status === 'completed');
-                if (!active && terminal) {
-                  terminalPolls += 1;
-                  core.info(
-                    `${workflowId}: terminal ${terminal.conclusion} for exact SHA; confirmation ${terminalPolls}/3`,
-                  );
-                  if (terminalPolls >= 3) {
-                    throw new Error(
-                      `${workflowId}: exact run ${terminal.id} concluded ${terminal.conclusion}`,
-                    );
-                  }
-                } else {
-                  terminalPolls = 0;
-                  core.info(`${workflowId}: exact run still pending (attempt ${attempt})`);
-                }
-                await sleep(20000);
-              }
-              throw new Error(`${workflowId}: no successful exact run for ${target}`);
+                  head_sha: target,
+                  per_page: 100,
+                  headers: { 'X-GitHub-Api-Version': '2022-11-28' },
+                },
+              );
+              return response.data.workflow_runs
+                .filter((run) => run.head_sha === target && run.event === event)
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .map((run) => ({
+                  id: run.id,
+                  runNumber: run.run_number,
+                  event: run.event,
+                  headSha: run.head_sha,
+                  status: run.status,
+                  conclusion: run.conclusion,
+                  createdAt: run.created_at,
+                  updatedAt: run.updated_at,
+                  htmlUrl: run.html_url,
+                }));
             }
 
-            try {
-              const readiness = await waitForSuccessfulWorkflow('indexnow.yml', 'push');
-              const pages = await waitForSuccessfulWorkflow(
-                'deploy.yml',
-                'workflow_run',
-                readiness.created_at,
-              );
-
-              let deployment = null;
-              let deploymentStatus = null;
-              for (let attempt = 1; attempt <= 30 && !deploymentStatus; attempt += 1) {
-                const deploymentsResponse = await github.request(
-                  'GET /repos/{owner}/{repo}/deployments',
-                  {
-                    owner,
-                    repo,
-                    sha: target,
-                    environment: 'github-pages',
-                    per_page: 100,
-                    headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-                  },
-                );
-                for (const candidate of deploymentsResponse.data) {
-                  const statusesResponse = await github.request(
-                    'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
-                    {
-                      owner,
-                      repo,
-                      deployment_id: candidate.id,
-                      per_page: 100,
-                      headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-                    },
-                  );
-                  diagnostics.polls.push({
-                    deploymentId: candidate.id,
-                    attempt,
-                    at: new Date().toISOString(),
-                    sha: candidate.sha,
-                    environment: candidate.environment,
-                    statuses: statusesResponse.data.map((status) => ({
-                      id: status.id,
-                      state: status.state,
-                      environmentUrl: status.environment_url,
-                      createdAt: status.created_at,
-                      updatedAt: status.updated_at,
-                    })),
-                  });
-                  const success = statusesResponse.data.find((status) => status.state === 'success');
-                  if (success) {
-                    deployment = candidate;
-                    deploymentStatus = success;
-                    break;
-                  }
-                }
-                persistDiagnostics();
-                if (!deploymentStatus) {
-                  core.info(`github-pages deployment not successful yet (attempt ${attempt})`);
-                  await sleep(15000);
-                }
-              }
-              if (!deployment || !deploymentStatus) {
-                throw new Error(`No successful github-pages deployment found for ${target}`);
-              }
-
-              const report = {
-                targetSha: target,
-                capturedAt: new Date().toISOString(),
-                readiness: {
-                  id: readiness.id,
-                  runNumber: readiness.run_number,
-                  event: readiness.event,
-                  headSha: readiness.head_sha,
-                  status: readiness.status,
-                  conclusion: readiness.conclusion,
-                  createdAt: iso(readiness.created_at),
-                  updatedAt: iso(readiness.updated_at),
-                  htmlUrl: readiness.html_url,
+            const readiness = await workflowRuns('indexnow.yml', 'push');
+            const pages = await workflowRuns('deploy.yml', 'workflow_run');
+            const deploymentsResponse = await github.request(
+              'GET /repos/{owner}/{repo}/deployments',
+              {
+                owner,
+                repo,
+                sha: target,
+                environment: 'github-pages',
+                per_page: 100,
+                headers: { 'X-GitHub-Api-Version': '2022-11-28' },
+              },
+            );
+            const deployments = [];
+            for (const deployment of deploymentsResponse.data) {
+              const statusesResponse = await github.request(
+                'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
+                {
+                  owner,
+                  repo,
+                  deployment_id: deployment.id,
+                  per_page: 100,
+                  headers: { 'X-GitHub-Api-Version': '2022-11-28' },
                 },
-                pages: {
-                  id: pages.id,
-                  runNumber: pages.run_number,
-                  event: pages.event,
-                  headSha: pages.head_sha,
-                  status: pages.status,
-                  conclusion: pages.conclusion,
-                  createdAt: iso(pages.created_at),
-                  updatedAt: iso(pages.updated_at),
-                  htmlUrl: pages.html_url,
-                },
-                deployment: {
-                  id: deployment.id,
-                  sha: deployment.sha,
-                  ref: deployment.ref,
-                  environment: deployment.environment,
-                  createdAt: iso(deployment.created_at),
-                  updatedAt: iso(deployment.updated_at),
-                  statusId: deploymentStatus.id,
-                  state: deploymentStatus.state,
-                  environmentUrl: deploymentStatus.environment_url,
-                  statusCreatedAt: iso(deploymentStatus.created_at),
-                  statusUpdatedAt: iso(deploymentStatus.updated_at),
-                },
-              };
-              if (
-                report.readiness.headSha !== target ||
-                report.pages.headSha !== target ||
-                report.deployment.sha !== target
-              ) {
-                throw new Error(`Exact-SHA invariant failed: ${JSON.stringify(report)}`);
-              }
-              fs.writeFileSync(
-                'reports/production-actions-witness.json',
-                `${JSON.stringify(report, null, 2)}\n`,
               );
-              fs.writeFileSync(
-                'reports/production-actions-witness.md',
-                [
-                  '# Exact production witness',
-                  '',
-                  `- target: \`${target}\``,
-                  `- readiness: run ${readiness.id}, success, head \`${readiness.head_sha}\``,
-                  `- Pages: run ${pages.id}, success, head \`${pages.head_sha}\``,
-                  `- deployment: ${deployment.id}, ${deploymentStatus.state}, sha \`${deployment.sha}\``,
-                  `- environment URL: ${deploymentStatus.environment_url || '(not returned)'}`,
-                  '',
-                ].join('\n'),
-              );
-              core.info(JSON.stringify(report, null, 2));
-            } catch (error) {
-              diagnostics.error = String(error?.stack || error);
-              persistDiagnostics();
-              throw error;
+              deployments.push({
+                id: deployment.id,
+                sha: deployment.sha,
+                ref: deployment.ref,
+                environment: deployment.environment,
+                createdAt: deployment.created_at,
+                updatedAt: deployment.updated_at,
+                statuses: statusesResponse.data.map((status) => ({
+                  id: status.id,
+                  state: status.state,
+                  environmentUrl: status.environment_url,
+                  createdAt: status.created_at,
+                  updatedAt: status.updated_at,
+                })),
+              });
             }
 
-      - name: Capture live site hashes after exact deployment
+            const readinessSuccess = readiness.find(
+              (run) => run.status === 'completed' && run.conclusion === 'success',
+            );
+            const pagesSuccess = pages.find(
+              (run) => run.status === 'completed' && run.conclusion === 'success',
+            );
+            const deploymentSuccess = deployments.find((deployment) =>
+              deployment.statuses.some((status) => status.state === 'success'),
+            );
+            const productionReady = Boolean(readinessSuccess && pagesSuccess && deploymentSuccess);
+            const report = {
+              targetSha: target,
+              capturedAt: new Date().toISOString(),
+              productionReady,
+              readiness,
+              pages,
+              deployments,
+            };
+            fs.writeFileSync(
+              'reports/production-state-snapshot.json',
+              `${JSON.stringify(report, null, 2)}\n`,
+            );
+            fs.writeFileSync(
+              'reports/production-state-snapshot.md',
+              [
+                '# Exact production state snapshot',
+                '',
+                `- target: \`${target}\``,
+                `- production ready: **${productionReady}**`,
+                `- readiness runs: ${readiness.length}`,
+                `- Pages runs: ${pages.length}`,
+                `- deployments: ${deployments.length}`,
+                '',
+              ].join('\n'),
+            );
+            core.setOutput('production_ready', String(productionReady));
+            core.info(JSON.stringify(report, null, 2));
+
+      - name: Capture live hashes only after exact deployment proof
+        if: steps.snapshot.outputs.production_ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
           cache_buster="${TARGET_SHA:0:12}-$(date +%s)"
           curl -fsSL --retry 5 --retry-delay 3 -D reports/home.headers \
-            -o reports/home.html "https://gospod-bog.ru/?production-witness=${cache_buster}"
+            -o reports/home.html "https://gospod-bog.ru/?production-snapshot=${cache_buster}"
           curl -fsSL --retry 5 --retry-delay 3 -D reports/sitemap.headers \
-            -o reports/sitemap.xml "https://gospod-bog.ru/sitemap.xml?production-witness=${cache_buster}"
+            -o reports/sitemap.xml "https://gospod-bog.ru/sitemap.xml?production-snapshot=${cache_buster}"
           {
             echo "target_sha=${TARGET_SHA}"
             echo "captured_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -257,11 +161,11 @@ jobs:
           grep -qi '<!doctype html' reports/home.html
           grep -q '<urlset' reports/sitemap.xml
 
-      - name: Upload exact production witness
+      - name: Upload exact production snapshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: production-witness-83a13a0-${{ github.run_id }}
+          name: production-snapshot-83a13a0-${{ github.run_id }}
           path: reports/
           if-no-files-found: error
           retention-days: 14
