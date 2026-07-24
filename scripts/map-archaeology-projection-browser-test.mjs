@@ -78,7 +78,7 @@ await page.route('https://example.test/karty/avraam/**', async (route) => {
     status: 200,
     contentType: 'text/html',
     body: `<!doctype html><html><head></head><body>
-      <script id="map-archaeology-projection" type="application/json">${JSON.stringify(projection).replace(/</g, '\\u003c')}</script>
+      <div id="map-archaeology-projection" hidden></div>
       <div id="stage">
         <div class="me-tabs">
           <button class="me-tab me-tab--active" data-tab="story">Story</button>
@@ -88,6 +88,7 @@ await page.route('https://example.test/karty/avraam/**', async (route) => {
         <div class="me-content"><p>Story body</p><div class="me-arch-footer">legacy</div></div>
       </div>
       <script>
+        document.getElementById('map-archaeology-projection').dataset.projection = ${JSON.stringify(JSON.stringify(projection))};
         document.querySelectorAll('.me-tab').forEach(function(button){
           button.addEventListener('click', function(){
             document.querySelectorAll('.me-tab').forEach(function(item){ item.classList.remove('me-tab--active'); });
