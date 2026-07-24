@@ -11,6 +11,8 @@ The implementation is split into four independent layers:
 3. `js/glossary.js` — progressive-enhancement runtime. It reads the dictionary and policy but contains no article-specific rules.
 4. `scripts/glossary-*.js` plus `.github/workflows/glossary-contract.yml` — source, normalization and browser contracts.
 
+The shared runtime also remains below the repository's 12,000-byte hard ceiling. Compactness may not remove the declarative selector policy, Russian alias resolution, combined word/block cadence, manual-term normalization or tooltip initialization.
+
 ## Two different selector policies
 
 `hydrationForbiddenSelectors` describes where the automatic text walker must not enter. It includes links, existing glossary elements, code and interface containers.
