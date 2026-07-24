@@ -69,7 +69,7 @@ The first command reports pending source changes and exits non-zero. The second 
 
 The `autofix` pull-request label is an explicit opt-in. For same-repository branches, the workflow may run the universal normalizer, validate the complete source tree and commit only deterministic source changes. When the shared runtime hash changes, the same opt-in job uses the repository's existing `scripts/cache-bust.js --write` contract and immediately verifies it again in read-only mode. Without the label, all jobs remain read-only.
 
-The final v2 branch was reconstructed directly on the then-current default branch before this opt-in pass. Its bot commit contains only deterministic placement normalization and asset-revision propagation; the label was removed before exact-head acceptance, so all final jobs are read-only.
+The final v3 branch was reconstructed directly on the current default branch after the home polishing waves. Its bot commit contains only deterministic placement normalization and asset-revision propagation; the `autofix` label was removed before exact-head acceptance, so all final jobs are read-only.
 
 ## Floating tooltip hit testing
 
