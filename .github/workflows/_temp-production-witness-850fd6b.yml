@@ -1,4 +1,4 @@
-name: Temporary Gill Commit Failure Extract
+name: Temporary Gill Proven Tree Packager
 
 on:
   pull_request:
@@ -8,40 +8,95 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 jobs:
-  extract:
+  package:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      FAILED_JOB_ID: '89580448527'
+    timeout-minutes: 20
     steps:
-      - name: Extract exact commit and push failure
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Recreate the exact proven transaction on current main
+        shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FAILED_JOB_ID}/logs" > failed.log
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch origin main fix/gill-readerstate-submenu-release-2026-07-24
+          git merge --no-edit origin/main
+          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:src/components/article-pilots/gill-series/gillSeriesData.ts \
+            > src/components/article-pilots/gill-series/gillSeriesData.ts
+          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-release-materialize.py \
+            > /tmp/gill-release-materialize.py
+          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-visibility-materialize.py \
+            > /tmp/gill-visibility-materialize.py
+          python /tmp/gill-release-materialize.py
+          python /tmp/gill-visibility-materialize.py
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          git rm .github/workflows/_temp-production-witness-850fd6b.yml
+          git diff --check origin/main
+
+      - name: Package exact changed files and hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/tree/files
           python - <<'PY'
           from pathlib import Path
-          import re
-          lines=Path('failed.log').read_text(encoding='utf-8-sig',errors='replace').splitlines()
-          clean=[re.sub(r'^\d{4}-\d{2}-\d{2}T[^ ]+Z\s+','',x) for x in lines]
-          keys=('Commit proven self-cleaning transaction','git rm ','git add ','git diff --cached','git commit ','git push ','##[error]','fatal:','error:','rejected','nothing to commit')
-          hits=[i for i,x in enumerate(clean) if any(k.lower() in x.lower() for k in keys)]
-          selected=set()
-          for i in hits:selected.update(range(max(0,i-5),min(len(clean),i+8)))
-          text='\n'.join(f'{i+1}: {clean[i]}' for i in sorted(selected))+'\n'
-          Path('failure.txt').write_text(text,encoding='utf-8')
-          print(text)
-          if not hits: raise SystemExit('no commit failure markers found')
+          import hashlib, json, shutil, subprocess
+
+          paths = subprocess.check_output(
+              ['git','diff','--name-only','--diff-filter=ACMRT','origin/main'], text=True
+          ).splitlines()
+          expected_exact = {
+              'js/floating-cluster-controller.js',
+              'data/gill-submenu-anchor-reconciliation.json',
+              'src/components/article-pilots/gill-series/gillSeriesData.ts',
+              '.github/workflows/gill-pre-v16-submenu.yml',
+              'src/lib/asset-version.js',
+          }
+          bad=[]
+          rows=[]
+          root=Path('reports/tree/files')
+          for raw in paths:
+              path=Path(raw)
+              allowed=(raw in expected_exact or raw.endswith('.html') or (raw.startswith('src/') and raw.endswith('.astro')))
+              if not allowed: bad.append(raw)
+              data=path.read_bytes()
+              dst=root/path
+              dst.parent.mkdir(parents=True,exist_ok=True)
+              dst.write_bytes(data)
+              rows.append({'path':raw,'mode':'100644','sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)})
+          deleted=subprocess.check_output(
+              ['git','diff','--name-only','--diff-filter=D','origin/main'], text=True
+          ).splitlines()
+          if deleted:
+              raise SystemExit('unexpected deletions relative to main: '+', '.join(deleted))
+          if bad:
+              raise SystemExit('unexpected packaged files: '+', '.join(bad))
+          manifest={
+              'base':subprocess.check_output(['git','rev-parse','origin/main'],text=True).strip(),
+              'sourceProofRun':30123196860,
+              'sourceProofLocalCommit':'21f9f1670',
+              'fileCount':len(rows),
+              'files':rows,
+          }
+          Path('reports/tree/manifest.json').write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          Path('reports/tree/changed-files.txt').write_text('\n'.join(paths)+'\n',encoding='utf-8')
+          subprocess.run(['git','diff','--binary','origin/main','--'],stdout=open('reports/tree/proven.patch','wb'),check=True)
+          print(json.dumps(manifest,indent=2,ensure_ascii=False))
           PY
-      - uses: actions/upload-artifact@v4
-        if: always()
+
+      - name: Upload exact proven tree
+        uses: actions/upload-artifact@v4
         with:
-          name: gill-commit-failure-${{ github.run_id }}
-          path: failure.txt
+          name: gill-proven-tree-${{ github.run_id }}
+          path: reports/tree/
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
