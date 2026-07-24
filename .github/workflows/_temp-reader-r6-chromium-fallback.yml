@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/_temp-reader-r6-chromium-fallback.yml"
+      - "scripts/_temp_apply_r6_chromium.py"
       - "scripts/_temp_reader_r6_chromium.patch"
 
 permissions:
@@ -21,13 +22,12 @@ jobs:
           ref: lane/reader-r6-state-platform-2026-07-24
           fetch-depth: 0
 
-      - name: Apply exact Chromium fallback patch
+      - name: Apply exact Chromium fallback replacement
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s  %s\n' '8fa88ce7a01a44726f0379df3b11f0926e20480b5f7e5e903ac156a1a2188386' 'scripts/_temp_reader_r6_chromium.patch' | sha256sum -c -
-          patch -p1 --batch --forward < scripts/_temp_reader_r6_chromium.patch
-          rm scripts/_temp_reader_r6_chromium.patch
+          python3 scripts/_temp_apply_r6_chromium.py
+          rm scripts/_temp_apply_r6_chromium.py scripts/_temp_reader_r6_chromium.patch
           node --check scripts/engine-sweep.mjs
           grep -F "existsSync(pinnedChromium) ? { executablePath: pinnedChromium } : {}" scripts/engine-sweep.mjs
           git diff --check
@@ -38,7 +38,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/engine-sweep.mjs scripts/_temp_reader_r6_chromium.patch
+          git add -A scripts/engine-sweep.mjs scripts/_temp_apply_r6_chromium.py scripts/_temp_reader_r6_chromium.patch
           git diff --cached --check
           git commit -m "[LANE lane/reader-r6-state-platform-2026-07-24][ALLOW_SHARED] fix(ci): launch installed Chromium in engine sweep"
           git push origin HEAD:lane/reader-r6-state-platform-2026-07-24
