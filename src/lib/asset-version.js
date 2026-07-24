@@ -7,7 +7,7 @@ export const ASSET_VERSIONS = {
   'css/enhancements-runtime.css': '97a3e924',
   'css/floating-cluster.css': '896f0c4d',
   'css/highlights-runtime.css': '9f42844a',
-  'css/home.css': '5075c8b5',
+  'css/home.css': 'a4c21e0e',
   'css/mobile-hotfix.css': 'a6a3187a',
   'css/nagornaya-mobile-toc.css': '282d8fe8',
   'css/reader-preferences.css': '2b0b76ce',
