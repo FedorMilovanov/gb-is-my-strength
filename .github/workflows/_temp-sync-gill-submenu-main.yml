@@ -1,0 +1,55 @@
+name: TEMP Sync Gill Submenu Main
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-sync-gill-submenu-main.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-sync-gill-submenu-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/prod-witness-850fd6b-2026-07-24'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/prod-witness-850fd6b-2026-07-24
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch exact current main
+        run: |
+          git fetch --no-tags origin main
+          test "$(git rev-parse origin/main)" = "01116d82126e5aadda79cf803449d9f816015cc6"
+          test "$(git merge-base HEAD origin/main)" = "e7f07567171fe9d689f40a0229191c1af6eb84c1"
+      - name: Merge current main without rewriting history
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if ! git merge --no-ff --no-edit origin/main; then
+            echo 'Conflicted paths:'
+            git diff --name-only --diff-filter=U
+            exit 1
+          fi
+      - name: Preserve settled map and archaeology architecture
+        run: |
+          test ! -e karty/_engine/map-archaeology-adapter.js
+          grep -F "map-engine.js v0.56" karty/_engine/map-engine.js
+          grep -F "version:'0.56.0'" karty/_engine/map-engine.js
+          node scripts/map-archaeology-source-registry-audit.js
+          node scripts/map-archaeology-projection-contract-test.mjs
+      - name: Preserve Gill static contract
+        run: |
+          node --check js/floating-cluster-controller.js
+          node --check scripts/gill-pre-v16-submenu-regression-audit.js
+          npm run gill:pre-v16-submenu:audit -- --static-only
+      - name: Push merge commit
+        run: git push origin HEAD:agent/prod-witness-850fd6b-2026-07-24
