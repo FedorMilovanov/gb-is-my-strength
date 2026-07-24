@@ -1,4 +1,5 @@
 /* GB Reader Preferences — synchronous first-paint bootstrap. */
+/* The measure token is part of the shared first-paint contract and is regression-tested before hydration. */
 (function (w, d) {
   'use strict';
   if (!w || !d || !d.documentElement) return;
