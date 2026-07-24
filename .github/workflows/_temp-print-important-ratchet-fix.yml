@@ -68,13 +68,6 @@ jobs:
           set -o pipefail
           npm run gill:chrome:guard 2>&1 | tee reports/reader-ui-pdf/gill-chrome.log
 
-      - name: Premium controls audit
-        id: premium
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          npm run audit:premium-controls 2>&1 | tee reports/reader-ui-pdf/premium-controls.log
-
       - name: CSS layer validation
         id: layers
         continue-on-error: true
@@ -89,7 +82,17 @@ jobs:
           set -o pipefail
           node scripts/audit-pro.js 2>&1 | tee reports/reader-ui-pdf/audit-pro.log
 
-      - name: Enforce all static gates
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Premium controls audit
+        id: premium
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run audit:premium-controls 2>&1 | tee reports/reader-ui-pdf/premium-controls.log
+
+      - name: Enforce all architecture gates
         if: always()
         run: |
           echo "reader=${{ steps.reader.outcome }}"
@@ -105,9 +108,6 @@ jobs:
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
 
       - name: Playwright reader and A4 marathon
         env:
