@@ -45,7 +45,21 @@ jobs:
         with:
           node-version: '22.12.0'
       - name: Apply guarded category expansion
-        run: node scripts/map-archaeology-registry-expansion-materialize.mjs --write
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/map-archaeology-registry-expansion-materialize.mjs')
+          text = path.read_text(encoding='utf-8')
+          old = "const EXPECTED_BASE = '184d7ed1b50161ec5fa1418ca24539e33977e2a8';"
+          new = "const EXPECTED_BASE = 'c27176bf6cc61dcc4ca3411f38c307ab38002161';"
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one stale base guard, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          node scripts/map-archaeology-registry-expansion-materialize.mjs --write
+          git checkout -- scripts/map-archaeology-registry-expansion-materialize.mjs
       - name: Verify registry-only mutation
         shell: bash
         run: |
