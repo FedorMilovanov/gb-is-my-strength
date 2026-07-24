@@ -1,0 +1,199 @@
+name: Temporary Production Witness 850fd6b
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-production-witness-850fd6b.yml'
+
+permissions:
+  contents: read
+  actions: read
+  deployments: read
+
+jobs:
+  witness:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      TARGET_SHA: 850fd6b56c0311bde6cb6a331cfc33454eaeebff
+    steps:
+      - name: Prove exact readiness, Pages run and deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const target = process.env.TARGET_SHA;
+            const { owner, repo } = context.repo;
+            fs.mkdirSync('reports', { recursive: true });
+
+            const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+            const iso = (value) => new Date(value).toISOString();
+
+            async function waitForWorkflow(workflowId, event, notBefore = null) {
+              for (let attempt = 1; attempt <= 45; attempt += 1) {
+                const response = await github.request(
+                  'GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs',
+                  {
+                    owner,
+                    repo,
+                    workflow_id: workflowId,
+                    branch: 'main',
+                    event,
+                    head_sha: target,
+                    per_page: 100,
+                    headers: { 'X-GitHub-Api-Version': '2022-11-28' },
+                  },
+                );
+                const runs = response.data.workflow_runs
+                  .filter((run) => run.head_sha === target && run.event === event)
+                  .filter((run) => !notBefore || new Date(run.created_at) >= new Date(notBefore))
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                const run = runs[0];
+                if (run?.status === 'completed') return run;
+                core.info(`${workflowId}: exact run not completed yet (attempt ${attempt})`);
+                await sleep(30000);
+              }
+              throw new Error(`${workflowId}: no completed exact run for ${target}`);
+            }
+
+            const readiness = await waitForWorkflow('indexnow.yml', 'push');
+            if (readiness.conclusion !== 'success') {
+              throw new Error(`Readiness ${readiness.id} concluded ${readiness.conclusion}`);
+            }
+
+            const pages = await waitForWorkflow('deploy.yml', 'workflow_run', readiness.created_at);
+            if (pages.conclusion !== 'success') {
+              throw new Error(`Pages ${pages.id} concluded ${pages.conclusion}`);
+            }
+
+            let deployment = null;
+            let deploymentStatus = null;
+            for (let attempt = 1; attempt <= 20 && !deploymentStatus; attempt += 1) {
+              const deploymentsResponse = await github.request(
+                'GET /repos/{owner}/{repo}/deployments',
+                {
+                  owner,
+                  repo,
+                  sha: target,
+                  environment: 'github-pages',
+                  per_page: 100,
+                  headers: { 'X-GitHub-Api-Version': '2022-11-28' },
+                },
+              );
+              for (const candidate of deploymentsResponse.data) {
+                const statusesResponse = await github.request(
+                  'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
+                  {
+                    owner,
+                    repo,
+                    deployment_id: candidate.id,
+                    per_page: 100,
+                    headers: { 'X-GitHub-Api-Version': '2022-11-28' },
+                  },
+                );
+                const success = statusesResponse.data.find((status) => status.state === 'success');
+                if (success) {
+                  deployment = candidate;
+                  deploymentStatus = success;
+                  break;
+                }
+              }
+              if (!deploymentStatus) {
+                core.info(`github-pages deployment not successful yet (attempt ${attempt})`);
+                await sleep(15000);
+              }
+            }
+            if (!deployment || !deploymentStatus) {
+              throw new Error(`No successful github-pages deployment found for ${target}`);
+            }
+
+            const report = {
+              targetSha: target,
+              capturedAt: new Date().toISOString(),
+              readiness: {
+                id: readiness.id,
+                runNumber: readiness.run_number,
+                event: readiness.event,
+                headSha: readiness.head_sha,
+                status: readiness.status,
+                conclusion: readiness.conclusion,
+                createdAt: iso(readiness.created_at),
+                updatedAt: iso(readiness.updated_at),
+                htmlUrl: readiness.html_url,
+              },
+              pages: {
+                id: pages.id,
+                runNumber: pages.run_number,
+                event: pages.event,
+                headSha: pages.head_sha,
+                status: pages.status,
+                conclusion: pages.conclusion,
+                createdAt: iso(pages.created_at),
+                updatedAt: iso(pages.updated_at),
+                htmlUrl: pages.html_url,
+              },
+              deployment: {
+                id: deployment.id,
+                sha: deployment.sha,
+                ref: deployment.ref,
+                environment: deployment.environment,
+                createdAt: iso(deployment.created_at),
+                updatedAt: iso(deployment.updated_at),
+                statusId: deploymentStatus.id,
+                state: deploymentStatus.state,
+                environmentUrl: deploymentStatus.environment_url,
+                statusCreatedAt: iso(deploymentStatus.created_at),
+                statusUpdatedAt: iso(deploymentStatus.updated_at),
+              },
+            };
+            if (report.readiness.headSha !== target || report.pages.headSha !== target || report.deployment.sha !== target) {
+              throw new Error(`Exact-SHA invariant failed: ${JSON.stringify(report)}`);
+            }
+            fs.writeFileSync('reports/production-actions-witness.json', `${JSON.stringify(report, null, 2)}\n`);
+            fs.writeFileSync(
+              'reports/production-actions-witness.md',
+              [
+                '# Exact production witness',
+                '',
+                `- target: \`${target}\``,
+                `- readiness: run ${readiness.id}, success, head \`${readiness.head_sha}\``,
+                `- Pages: run ${pages.id}, success, head \`${pages.head_sha}\``,
+                `- deployment: ${deployment.id}, ${deploymentStatus.state}, sha \`${deployment.sha}\``,
+                `- environment URL: ${deploymentStatus.environment_url || '(not returned)'}`,
+                '',
+              ].join('\n'),
+            );
+            core.info(JSON.stringify(report, null, 2));
+
+      - name: Capture live site hashes after exact deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          cache_buster="${TARGET_SHA:0:12}-$(date +%s)"
+          curl -fsSL --retry 5 --retry-delay 3 -D reports/home.headers \
+            -o reports/home.html "https://gospod-bog.ru/?production-witness=${cache_buster}"
+          curl -fsSL --retry 5 --retry-delay 3 -D reports/sitemap.headers \
+            -o reports/sitemap.xml "https://gospod-bog.ru/sitemap.xml?production-witness=${cache_buster}"
+          {
+            echo "target_sha=${TARGET_SHA}"
+            echo "captured_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "home_sha256=$(sha256sum reports/home.html | awk '{print $1}')"
+            echo "sitemap_sha256=$(sha256sum reports/sitemap.xml | awk '{print $1}')"
+            echo "sitemap_loc_count=$(grep -o '<loc>' reports/sitemap.xml | wc -l | tr -d ' ')"
+            echo "home_bytes=$(wc -c < reports/home.html | tr -d ' ')"
+            echo "sitemap_bytes=$(wc -c < reports/sitemap.xml | tr -d ' ')"
+          } | tee reports/live-witness.env
+          grep -qi '<!doctype html' reports/home.html
+          grep -q '<urlset' reports/sitemap.xml
+
+      - name: Upload exact production witness
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-witness-850fd6b-${{ github.run_id }}
+          path: reports/
+          if-no-files-found: error
+          retention-days: 14
