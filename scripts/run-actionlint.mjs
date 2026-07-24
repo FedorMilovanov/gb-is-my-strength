@@ -24,6 +24,7 @@ if (!platform || !arch) {
 const isWindows = process.platform === 'win32';
 const extension = isWindows ? 'zip' : 'tar.gz';
 const archiveName = `actionlint_${VERSION}_${platform}_${arch}.${extension}`;
+const checksumName = `actionlint_${VERSION}_checksums.txt`;
 const releaseRoot = `https://github.com/rhysd/actionlint/releases/download/v${VERSION}`;
 const cacheDir = path.join(ROOT, '.cache', 'actionlint', `v${VERSION}`, `${platform}-${arch}`);
 const binary = path.join(cacheDir, isWindows ? 'actionlint.exe' : 'actionlint');
@@ -49,7 +50,7 @@ async function install() {
   fs.mkdirSync(cacheDir, { recursive: true });
   const [archive, checksums] = await Promise.all([
     download(`${releaseRoot}/${archiveName}`),
-    download(`${releaseRoot}/checksums.txt`),
+    download(`${releaseRoot}/${checksumName}`),
   ]);
   const checksumText = checksums.toString('utf8');
   const line = checksumText.split(/\r?\n/).find((item) => item.trim().endsWith(archiveName));
@@ -71,7 +72,7 @@ async function install() {
         `Expand-Archive -LiteralPath '${escapedArchive}' -DestinationPath '${escapedTarget}' -Force`,
       ]);
     } else {
-      run('tar', ['-xzf', archivePath, '-C', cacheDir, isWindows ? 'actionlint.exe' : 'actionlint']);
+      run('tar', ['-xzf', archivePath, '-C', cacheDir, 'actionlint']);
       fs.chmodSync(binary, 0o755);
     }
   } finally {
