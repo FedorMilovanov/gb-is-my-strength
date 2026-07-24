@@ -6,10 +6,12 @@ on:
       - "agent/tts-download-cancel-notice"
     paths:
       - "scripts/_tmp-tts-materializer-parts/**"
+      - "scripts/_tmp-tts-box-sizing-fix.js"
       - ".github/workflows/_tmp-tts-download-consent-materialize.yml"
   pull_request:
     paths:
       - "scripts/_tmp-tts-materializer-parts/**"
+      - "scripts/_tmp-tts-box-sizing-fix.js"
       - ".github/workflows/_tmp-tts-download-consent-materialize.yml"
   workflow_dispatch:
 
@@ -46,17 +48,17 @@ jobs:
       - name: Materialize permanent TTS consent contract
         run: node scripts/_tmp-tts-download-consent-materialize.js
 
+      - name: Apply measured border-box width fix
+        run: node scripts/_tmp-tts-box-sizing-fix.js
+
       - name: Remove transport chunks
         run: rm -rf scripts/_tmp-tts-materializer-parts
 
-      - name: Check Vosk engine syntax
-        run: node --check js/vosk-tts-engine.js
-
-      - name: Check static contract syntax
-        run: node --check scripts/tts-download-consent-contract-test.js
-
-      - name: Check browser contract syntax
-        run: node --check scripts/tts-download-notice-browser-test.js
+      - name: Check permanent JavaScript syntax
+        run: |
+          node --check js/vosk-tts-engine.js
+          node --check scripts/tts-download-consent-contract-test.js
+          node --check scripts/tts-download-notice-browser-test.js
 
       - name: Run TTS consent mutation contract
         run: node scripts/tts-download-consent-contract-test.js
@@ -69,31 +71,8 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
-      - name: Run cancellable download notice Chromium fixture
-        id: browser
-        shell: bash
-        run: |
-          set +e
-          node scripts/tts-download-notice-browser-test.js > /tmp/tts-browser-output.txt 2>&1
-          status=$?
-          cat /tmp/tts-browser-output.txt
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Persist exact Chromium diagnostic
-        if: steps.browser.outputs.status != '0'
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp /tmp/tts-browser-output.txt TTS_BROWSER_ERROR.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f TTS_BROWSER_ERROR.txt
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(tts): capture Chromium diagnostic"
-            git push origin HEAD:agent/tts-download-cancel-notice
-          fi
-          exit 1
+      - name: Verify cancellable download notice in Chromium
+        run: node scripts/tts-download-notice-browser-test.js
 
       - name: Lint permanent workflow
         run: |
@@ -105,9 +84,11 @@ jobs:
       - name: Verify clean permanent scope
         run: |
           test ! -e scripts/_tmp-tts-download-consent-materialize.js
+          test ! -e scripts/_tmp-tts-box-sizing-fix.js
           test ! -e scripts/_tmp-tts-materializer-parts
           test ! -e .github/workflows/_tmp-tts-download-consent-materialize.yml
           test ! -e TTS_BROWSER_ERROR.txt
+          test ! -e TTS_MUTATION_ERROR.txt
           git diff --check
           git status --short
 
