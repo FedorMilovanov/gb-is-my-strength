@@ -116,6 +116,34 @@ async function openPlace(page, id) {
   await page.waitForTimeout(40);
 }
 
+async function mountSharedEngineRoute(page, route) {
+  await page.goto(`${BASE}/karty/ishod/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('.me-map [data-place-id]')), null, { timeout: 20000 });
+
+  if (route === 'ishod') return 'public-page';
+
+  const mounted = await page.evaluate(async (routeName) => {
+    const response = await fetch(`/karty/${routeName}/route.json`, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`fixture route fetch failed: ${response.status} ${response.statusText}`);
+    }
+    const routeData = await response.json();
+    const stage = document.querySelector('#stage');
+    if (!stage) throw new Error('fixture stage is missing');
+    stage.replaceChildren();
+    window.__mapPanelFixture = window.MapEngine.createMap(stage, routeData, { backUrl: '/karty/' });
+    return {
+      id: routeData.meta?.id || routeName,
+      places: Array.isArray(routeData.places) ? routeData.places.length : 0,
+      stages: Array.isArray(routeData.stages) ? routeData.stages.length : 0,
+    };
+  }, route);
+
+  assert(mounted.id === route, `${route}: mounted fixture has unexpected id`, mounted);
+  assert(mounted.places > 0, `${route}: mounted fixture has no places`, mounted);
+  return 'route-json-fixture';
+}
+
 async function waitForMapDom(page, route, viewport, runtimeErrors) {
   try {
     await page.waitForFunction(() => {
@@ -162,6 +190,7 @@ async function runScenario(browser, route, viewport) {
     browser: BROWSER_NAME,
     route,
     viewport,
+    source: null,
     places: 0,
     worstTop: Infinity,
     worstHeight: 0,
@@ -169,7 +198,7 @@ async function runScenario(browser, route, viewport) {
   };
 
   try {
-    await page.goto(`${BASE}/karty/${route}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    result.source = await mountSharedEngineRoute(page, route);
     await waitForMapDom(page, route, viewport, runtimeErrors);
     await page.evaluate(() => {
       document.querySelector('.me-intro')?.remove();
@@ -224,7 +253,7 @@ async function runScenario(browser, route, viewport) {
     result.resized = resizedSnapshot;
 
     assert(runtimeErrors.length === 0, `${route}/${viewport.id}: runtime errors detected`, { runtimeErrors });
-    console.log(`PASS ${BROWSER_NAME} ${route} ${viewport.width}x${viewport.height}: places=${ids.length}, worstTop=${result.worstTop.toFixed(1)}, worstHeight=${result.worstHeight.toFixed(1)}, resized=${reducedHeight}`);
+    console.log(`PASS ${BROWSER_NAME} ${route} ${viewport.width}x${viewport.height}: source=${result.source}, places=${ids.length}, worstTop=${result.worstTop.toFixed(1)}, worstHeight=${result.worstHeight.toFixed(1)}, resized=${reducedHeight}`);
     return result;
   } finally {
     await context.close();
