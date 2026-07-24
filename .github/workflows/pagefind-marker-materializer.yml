@@ -1,0 +1,85 @@
+name: Pagefind Marker Materializer
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/pagefind-marker-materializer.yml'
+      - 'scripts/gill-pagefind-body-audit.js'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(github.event.pull_request.labels.*.name, 'autofix')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Apply exact semantic-marker patch
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = 'scripts/gill-pagefind-body-audit.js';
+          let text = fs.readFileSync(file, 'utf8');
+          const oldLoop = `  for (const term of terms) {
+              if (text.includes(term)) ok(\`${'${slug}'}: Pagefind body contains ${'${term}'}\`);
+              else bad(\`${'${slug}'}: Pagefind body missing ${'${term}'}\`);
+            }`;
+          const newLoop = `  for (const requirement of terms) {
+              const options = Array.isArray(requirement) ? requirement : [requirement];
+              const match = options.find((term) => text.includes(term));
+              const label = options.join(' | ');
+              if (match) ok(\`${'${slug}'}: Pagefind body contains ${'${match}'}\`);
+              else bad(\`${'${slug}'}: Pagefind body missing semantic marker (${'${label}'})\`);
+            }`;
+          const oldTerms = `  ['Кларендонский кодекс','Солтерс-Холл','Диссентерские академии','Саутварк','Кеттеринг','Goat&rsquo;s Yard','Корпоративный акт','Акт о единообразии']`;
+          const newTerms = `  [
+              ['Кларендонским кодексом','Кларендонского кодекса','Кларендонский кодекс'],
+              'Солтерс-Холл','Диссентерские академии','Саутварк','Кеттеринг',
+              ['Goat Yard','Goat’s Yard',"Goat's Yard",'Goat&rsquo;s Yard'],
+              ['Corporation Act','Акт о корпорациях','Корпоративный акт'],
+              'Акт о единообразии'
+            ]`;
+          for (const [label, before, after] of [
+            ['marker loop', oldLoop, newLoop],
+            ['context marker list', oldTerms, newTerms],
+          ]) {
+            const count = text.split(before).length - 1;
+            if (count !== 1) throw new Error(`${label}: expected one exact match, found ${count}`);
+            text = text.replace(before, after);
+          }
+          fs.writeFileSync(file, text);
+          NODE
+
+      - name: Verify semantic marker behavior
+        run: |
+          node scripts/gill-pagefind-body-audit.js
+          node - <<'NODE'
+          const fs = require('fs');
+          const text = fs.readFileSync('scripts/gill-pagefind-body-audit.js','utf8');
+          if (!text.includes('Array.isArray(requirement)')) throw new Error('alternative markers not installed');
+          if (!text.includes("['Corporation Act','Акт о корпорациях','Корпоративный акт']")) throw new Error('Corporation marker alternatives missing');
+          if (/\['Кларендонский кодекс','Солтерс-Холл'/.test(text)) throw new Error('stale exact marker list remains');
+          NODE
+          git diff --check
+          test "$(git diff --name-only)" = "scripts/gill-pagefind-body-audit.js"
+
+      - name: Commit one permanent file
+        run: |
+          if git diff --quiet -- scripts/gill-pagefind-body-audit.js; then
+            echo 'Already materialized'; exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/gill-pagefind-body-audit.js
+          git commit -m 'fix(gill): make Pagefind markers semantically stable'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
