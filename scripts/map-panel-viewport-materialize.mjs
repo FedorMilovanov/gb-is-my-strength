@@ -8,6 +8,19 @@ const TARGET = path.join(ROOT, 'karty/_engine/map-engine.js');
 const write = process.argv.includes('--write');
 let source = fs.readFileSync(TARGET, 'utf8');
 
+const installed = [
+  'map-engine.js v0.54',
+  'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
+  '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
+  'min-height:0;overflow-y:auto;overscroll-behavior:contain',
+  'width:420px;max-height:calc(100% - 24px)'
+].every((needle) => source.includes(needle));
+
+if (installed) {
+  console.log('PASS karty/_engine/map-engine.js already has the viewport-bound panel contract');
+  process.exit(0);
+}
+
 const replacements = [
   [
     ' * map-engine.js v0.53 — reusable biblical map rendering engine. Signature controls + story focus halo.',
