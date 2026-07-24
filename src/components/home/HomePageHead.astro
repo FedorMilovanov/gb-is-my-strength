@@ -147,4 +147,108 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 <link rel="stylesheet" href="css/home.css?v=a4c21e0e">
 <link rel="stylesheet" href="css/command-palette.css?v=afe33045">
 <link rel="stylesheet" href="css/mobile-hotfix.css?v=a6a3187a">
+<noscript>
+  <style>
+    .home-page #gbSearchBtn,
+    .home-page #themeToggle,
+    .home-page #hMobileMenuBtn {
+      display: none !important;
+    }
+
+    .home-page .h-nojs-nav {
+      display: none;
+    }
+
+    @media (max-width: 760px) {
+      .home-page .h-nojs-nav {
+        display: block;
+        position: relative;
+        color: var(--h-ink);
+        font-family: var(--f-ui);
+      }
+
+      .home-page .h-nojs-nav > summary {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        color: var(--h-muted);
+        cursor: pointer;
+        list-style: none;
+        touch-action: manipulation;
+      }
+
+      .home-page .h-nojs-nav > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .home-page .h-nojs-nav > summary::before,
+      .home-page .h-nojs-nav > summary::after,
+      .home-page .h-nojs-nav__burger {
+        content: "";
+        display: block;
+        width: 20px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+
+      .home-page .h-nojs-nav > summary {
+        gap: 4px;
+      }
+
+      .home-page .h-nojs-nav__sheet {
+        position: fixed;
+        top: 58px;
+        left: 0;
+        right: 0;
+        z-index: var(--z-tooltip-low, 70);
+        max-height: calc(100dvh - 58px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 16px max(20px, env(safe-area-inset-right, 20px)) max(24px, env(safe-area-inset-bottom, 24px)) max(20px, env(safe-area-inset-left, 20px));
+        border-bottom: 1px solid var(--h-border);
+        background: var(--h-bg);
+        box-shadow: 0 22px 60px rgba(2, 12, 20, 0.24);
+      }
+
+      .home-page .h-nojs-nav__title {
+        margin: 0 0 10px;
+        color: var(--h-muted);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .home-page .h-nojs-nav__links {
+        display: grid;
+        gap: 4px;
+      }
+
+      .home-page .h-nojs-nav__links a {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 11px 12px;
+        border-radius: 9px;
+        color: var(--h-ink);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.35;
+        text-decoration: none;
+      }
+
+      .home-page .h-nojs-nav__links a:focus-visible {
+        outline: 2px solid var(--h-accent);
+        outline-offset: 2px;
+      }
+
+      .home-page .h-nojs-nav[open] > summary {
+        color: var(--h-accent);
+      }
+    }
+  </style>
+</noscript>
 <link rel="preload" as="image" type="image/webp" fetchpriority="high" imagesrcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 1200w" imagesizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
