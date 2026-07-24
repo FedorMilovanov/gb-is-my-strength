@@ -5,12 +5,8 @@
     "NT": "kassian"
   },
   "translations": {
-    "synodal": {
-      "label": "Синодальный перевод"
-    },
-    "kassian": {
-      "label": "Перевод еп. Кассиана (Безобразова)"
-    }
+    "synodal": { "label": "Синодальный перевод" },
+    "kassian": { "label": "Перевод еп. Кассиана (Безобразова)" }
   },
   "books": {
     "bytie": { "testament": "OT", "file": "synodal/bytie.json", "aliases": ["Бытие", "Быт", "Быт."] },
@@ -20,6 +16,7 @@
     "vtorozakonie": { "testament": "OT", "file": "synodal/vtorozakonie.json", "aliases": ["Второзаконие", "Втор", "Втор."] },
     "iisus-navin": { "testament": "OT", "file": "synodal/iisus-navin.json", "aliases": ["Иисус Навин", "Навин", "Нав", "Нав."] },
     "sudey": { "testament": "OT", "file": "synodal/sudey.json", "aliases": ["Судей", "Суд", "Суд."] },
+    "ruf": { "testament": "OT", "file": "synodal/ruf.json", "aliases": ["Руфь", "Руф", "Руф."] },
     "1tsarstv": { "testament": "OT", "file": "synodal/1tsarstv.json", "aliases": ["1 Царств", "1Цар", "1 Цар", "1 Цар."] },
     "2tsarstv": { "testament": "OT", "file": "synodal/2tsarstv.json", "aliases": ["2 Царств", "2Цар", "2 Цар", "2 Цар."] },
     "3tsarstv": { "testament": "OT", "file": "synodal/3tsarstv.json", "aliases": ["3 Царств", "3Цар", "3 Цар", "3 Цар."] },
@@ -28,6 +25,7 @@
     "2paralipomenon": { "testament": "OT", "file": "synodal/2paralipomenon.json", "aliases": ["2 Паралипоменон", "2Пар", "2 Пар", "2 Пар."] },
     "ezdra": { "testament": "OT", "file": "synodal/ezdra.json", "aliases": ["Ездра", "Ездр", "Ездр."] },
     "neemiya": { "testament": "OT", "file": "synodal/neemiya.json", "aliases": ["Неемия", "Неем", "Неем."] },
+    "esfir": { "testament": "OT", "file": "synodal/esfir.json", "aliases": ["Есфирь", "Есф", "Есф."] },
     "iov": { "testament": "OT", "file": "synodal/iov.json", "aliases": ["Иов", "Иов."] },
     "psaltir": { "testament": "OT", "file": "synodal/psaltir.json", "aliases": ["Псалтирь", "Псалом", "Псалмы", "Пс", "Пс."] },
     "pritchi": { "testament": "OT", "file": "synodal/pritchi.json", "aliases": ["Притчи", "Притч", "Притч."] },
@@ -35,6 +33,7 @@
     "pesn-pesney": { "testament": "OT", "file": "synodal/pesn-pesney.json", "aliases": ["Песнь Песней", "Песн", "Песн."] },
     "isaiya": { "testament": "OT", "file": "synodal/isaiya.json", "aliases": ["Исаия", "Ис", "Ис."] },
     "ieremiya": { "testament": "OT", "file": "synodal/ieremiya.json", "aliases": ["Иеремия", "Иер", "Иер."] },
+    "plach-ieremii": { "testament": "OT", "file": "synodal/plach-ieremii.json", "aliases": ["Плач Иеремии", "Плач", "Плач."] },
     "iizikil": { "testament": "OT", "file": "synodal/iizikil.json", "aliases": ["Иезекииль", "Иез", "Иез."] },
     "daniil": { "testament": "OT", "file": "synodal/daniil.json", "aliases": ["Даниил", "Дан", "Дан."] },
     "osiya": { "testament": "OT", "file": "synodal/osiya.json", "aliases": ["Осия", "Ос", "Ос."] },
