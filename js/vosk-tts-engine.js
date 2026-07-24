@@ -51,7 +51,7 @@
   var audioEl = null;
 
   var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
-  var DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=d873f651';
+  var DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=d75cee36';
   var modelDownloadController = null;
   var modelDownloadNotice = null;
   var modelDownloadNoticeTimer = null;

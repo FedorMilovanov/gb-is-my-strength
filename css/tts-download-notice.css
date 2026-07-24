@@ -70,7 +70,7 @@ body.has-bottom-bar .gb-tts-download-notice{
   border-radius:50%;
   background:currentColor;
   box-shadow:0 0 0 0 color-mix(in srgb,currentColor 28%,transparent);
-  animation:wb-tts-download-pulse 1.8s ease-out infinite;
+  animation:gb-tts-download-pulse 1.8s ease-out infinite;
 }
 .gb-tts-download-notice__copy{
   min-width:0;
