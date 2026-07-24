@@ -17,6 +17,7 @@ const WORKFLOW_DIR = path.join(ROOT, '.github', 'workflows');
 const issues = [];
 const warnings = [];
 const references = [];
+const acceptedWriteWorkflows = [];
 
 function exists(repoPath) {
   return fs.existsSync(path.join(ROOT, repoPath));
@@ -63,6 +64,11 @@ function workflowFiles() {
     .sort();
 }
 
+function triggerSection(text) {
+  const boundary = text.search(/^\s*(?:concurrency|permissions|jobs):\s*$/m);
+  return boundary >= 0 ? text.slice(0, boundary) : text;
+}
+
 let pkg;
 try {
   pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
@@ -100,12 +106,19 @@ for (const name of workflowFiles()) {
     if (!exists(target)) addIssue(`${file}: local action/workflow reference is missing: ${target}`);
   }
 
-  for (const match of text.matchAll(/\b(?:lane|agent)\/(?!\*\*)[A-Za-z0-9._/-]+/g)) {
+  for (const match of triggerSection(text).matchAll(/\b(?:lane|agent)\/(?!\*\*)[A-Za-z0-9._/-]+/g)) {
     addWarning(`${file}: long-lived workflow still targets one-off branch ${match[0]}`);
   }
 
   if (/permissions:[\s\S]{0,240}?contents:\s*write/.test(text)) {
-    addWarning(`${file}: contents: write requires an explicit continuing owner`);
+    const guardedAutofix = /contains\(github\.event\.pull_request\.labels\.\*\.name,\s*['"]autofix['"]\)/.test(text)
+      && /github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository/.test(text);
+    if (guardedAutofix) acceptedWriteWorkflows.push(file);
+    else addWarning(`${file}: contents: write requires an explicit continuing owner`);
+  }
+
+  if (/releases\/download\/v[0-9.]+\/actionlint_/.test(text)) {
+    addWarning(`${file}: inline actionlint installer should converge on scripts/run-actionlint.mjs`);
   }
 }
 
@@ -114,7 +127,7 @@ const requiredDocs = [
   'docs/WORK_MODES.md',
   'docs/LANE_LOCK_POLICY.md',
   'docs/AGENT_PUSH_MODEL.md',
-  'docs/OWNER_INVARIANTS.md',
+  'docs/OWNER-INVARIANTS.md',
   'docs/SANDBOX-ENV-2026-06-21.md',
   'docs/refactor-2026/lanes/README.md',
   'docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md',
@@ -144,6 +157,7 @@ const report = {
   workflows: workflowFiles().length,
   packageScripts: Object.keys(scripts).length,
   localReferences: references.length,
+  acceptedWriteWorkflows,
   issues,
   warnings,
 };
@@ -159,11 +173,15 @@ fs.writeFileSync(
     `- Workflows: ${report.workflows}`,
     `- Package scripts: ${report.packageScripts}`,
     `- Static local references checked: ${report.localReferences}`,
+    `- Accepted same-repository autofix writers: ${acceptedWriteWorkflows.length}`,
     `- Issues: ${issues.length}`,
     `- Warnings: ${warnings.length}`,
     '',
     '## Issues',
     ...(issues.length ? issues.map((item) => `- ${item}`) : ['- None']),
+    '',
+    '## Accepted write workflows',
+    ...(acceptedWriteWorkflows.length ? acceptedWriteWorkflows.map((item) => `- ${item}`) : ['- None']),
     '',
     '## Warnings',
     ...(warnings.length ? warnings.map((item) => `- ${item}`) : ['- None']),
