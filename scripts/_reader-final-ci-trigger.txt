@@ -1,1 +1,0 @@
-ratchet-safe final exact-head verification
