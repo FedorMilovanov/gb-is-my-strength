@@ -45,8 +45,13 @@ assert.match(compact, /@media\s*\(max-width:\s*359px\)/, `${COMPACT_COMPONENT}: 
 for (const selector of ['.bar-progress', '.bar-divider', '#barUpBtn', '#barShareBtn']) {
   assert(compact.includes(selector), `${COMPACT_COMPONENT}: compact priority rule is missing ${selector}`);
 }
+assert.match(compact, /#main-content[\s\S]*?overflow-x:\s*clip/, `${COMPACT_COMPONENT}: WebKit root overflow must be clipped at the Nagornaya shell`);
+assert.match(compact, /#main-content \.overflow-x-auto[\s\S]*?contain:\s*inline-size/, `${COMPACT_COMPONENT}: wide table wrappers must isolate min-content width in WebKit`);
+assert.match(compact, /#main-content \.overflow-x-auto[\s\S]*?overflow-x:\s*auto/, `${COMPACT_COMPONENT}: local wide tables must remain horizontally scrollable`);
 assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?min-width:\s*0/, `${COMPACT_COMPONENT}: long flex headings must be shrinkable`);
 assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: long section headings need a narrow-screen wrap fallback`);
+assert.match(compact, /#main-content \.group > p\.ml-14[\s\S]*?width:\s*calc\(100% - 3\.5rem\)/, `${COMPACT_COMPONENT}: indented subtitles must consume only the remaining inline width`);
+assert.match(compact, /#main-content \.group > p\.ml-14[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: glossary-enhanced subtitles must wrap on iPhone 320`);
 assert.match(compact, /\.nag-bar-controls[\s\S]*?padding:\s*0\s*!important/, `${COMPACT_COMPONENT}: cloned controls must shed sidebar padding`);
 assert.match(compact, /\.gb-ember-expand[\s\S]*?position:\s*fixed\s*!important/, `${COMPACT_COMPONENT}: narrow speed sheet must be viewport-fixed`);
 assert.match(compact, /\.gb-ember-expand[\s\S]*?left:[\s\S]*?right:/, `${COMPACT_COMPONENT}: narrow speed sheet must be bounded on both viewport edges`);
@@ -80,4 +85,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading, priority and speed-sheet contracts, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/table isolation, priority and speed-sheet contracts, adversarial v=1 rejected`);
