@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0.0",
+  "profiles": {
+    "avraam": {
+      "status": "active",
+      "categoryIds": [],
+      "routePlaceIds": [
+        "ur",
+        "haran",
+        "damascus",
+        "shechem",
+        "bethel",
+        "ai",
+        "egypt",
+        "hebron",
+        "dan",
+        "hammam",
+        "babedra",
+        "zoar",
+        "gerar",
+        "beersheba",
+        "moriah"
+      ],
+      "claimPlaces": {},
+      "topicPlaces": {},
+      "categoryPlaces": {}
+    },
+    "ishod": {
+      "status": "active",
+      "categoryIds": [
+        "exodus_route"
+      ],
+      "routePlaceIds": [
+        "rameses",
+        "succoth",
+        "etham",
+        "pihahiroth",
+        "marah",
+        "elim",
+        "rephidim",
+        "sinai",
+        "kadesh_barnea",
+        "aaron_mount",
+        "plains_moab"
+      ],
+      "claimPlaces": {
+        "exodus-route-context": [
+          "rameses",
+          "succoth",
+          "etham",
+          "sinai"
+        ]
+      },
+      "topicPlaces": {
+        "egypt": [
+          "rameses"
+        ],
+        "retaba": [
+          "succoth",
+          "etham"
+        ],
+        "sinai": [
+          "sinai"
+        ]
+      },
+      "categoryPlaces": {
+        "exodus_route": [
+          "rameses",
+          "succoth",
+          "etham",
+          "sinai"
+        ]
+      }
+    }
+  }
+}
