@@ -14,7 +14,7 @@ on:
       - 'src/**'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   refresh-proof:
@@ -129,3 +129,14 @@ jobs:
             reports/editorial-baseline.patch
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish verified baseline to PR branch
+        env:
+          TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-metadata.json
+          test "$(git diff --cached --name-only)" = "data/editorial-metadata.json"
+          git commit -m "fix(editorial): refresh frozen projection baseline"
+          git push origin "HEAD:${TARGET_BRANCH}"
