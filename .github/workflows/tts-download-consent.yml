@@ -1,0 +1,91 @@
+name: TTS Download Consent
+
+on:
+  pull_request:
+    paths:
+      - "js/vosk-tts-engine.js"
+      - "css/tts-download-notice.css"
+      - "scripts/tts-download-consent-contract-test.js"
+      - "scripts/tts-download-notice-browser-test.js"
+      - ".github/workflows/tts-download-consent.yml"
+  push:
+    branches: [main]
+    paths:
+      - "js/vosk-tts-engine.js"
+      - "css/tts-download-notice.css"
+      - "scripts/tts-download-consent-contract-test.js"
+      - "scripts/tts-download-notice-browser-test.js"
+      - ".github/workflows/tts-download-consent.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tts-download-consent-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-contract:
+    name: Source and mutation contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+
+      - name: Check syntax
+        run: |
+          node --check js/vosk-tts-engine.js
+          node --check scripts/tts-download-consent-contract-test.js
+          node --check scripts/tts-download-notice-browser-test.js
+
+      - name: Enforce cancellable download contract
+        run: node scripts/tts-download-consent-contract-test.js
+
+      - name: Verify existing asset revisions remain read-only clean
+        run: node scripts/cache-bust.js
+
+      - name: Lint workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/actionlint
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            | tar xz -C /tmp/actionlint actionlint
+          /tmp/actionlint/actionlint -no-color .github/workflows/tts-download-consent.yml
+
+  browser-contract:
+    name: Compact notice browser contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run desktop and mobile cancellation fixture
+        run: node scripts/tts-download-notice-browser-test.js
+
+      - name: Upload interaction evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-download-consent-browser-${{ github.run_id }}
+          path: |
+            reports/tts-download-notice-desktop.png
+            reports/tts-download-notice-mobile-dark.png
+          if-no-files-found: warn
+          retention-days: 14
