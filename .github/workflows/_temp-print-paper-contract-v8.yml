@@ -36,6 +36,8 @@ jobs:
         run: |
           mkdir -p reports/print-paper
           node scripts/_temp-print-paper-comment-fix.mjs
+          node --check scripts/_temp-print-template-fix.mjs
+          node scripts/_temp-print-template-fix.mjs
           for script in \
             scripts/_temp-print-paper-contract.mjs \
             scripts/_temp-print-paper-followup.mjs \
@@ -54,8 +56,8 @@ jobs:
       - name: Remove all temporary print infrastructure
         run: |
           find .github/workflows -maxdepth 1 \( -name '_temp-print-paper*.yml' -o -name '_temp-print-tail*.yml' \) -print0 | xargs -0 -r git rm -f
-          find scripts -maxdepth 1 \( -name '_temp-print-paper*.mjs' -o -name '_temp-print-overflow*.mjs' -o -name '_temp-print-tail*.mjs' \) -print0 | xargs -0 -r git rm -f
-          test -z "$(find .github/workflows scripts -maxdepth 1 \( -name '_temp-print-paper*' -o -name '_temp-print-overflow*' -o -name '_temp-print-tail*' \) -print)"
+          find scripts -maxdepth 1 \( -name '_temp-print-paper*.mjs' -o -name '_temp-print-overflow*.mjs' -o -name '_temp-print-tail*.mjs' -o -name '_temp-print-template*.mjs' \) -print0 | xargs -0 -r git rm -f
+          test -z "$(find .github/workflows scripts -maxdepth 1 \( -name '_temp-print-paper*' -o -name '_temp-print-overflow*' -o -name '_temp-print-tail*' -o -name '_temp-print-template*' \) -print)"
           git diff --check
 
       - name: Static architecture gates
