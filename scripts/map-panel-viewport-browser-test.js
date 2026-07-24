@@ -5,7 +5,7 @@ const playwright = require('playwright');
 
 const BASE = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
 const BROWSER_NAME = process.env.MAP_PANEL_BROWSER || 'chromium';
-const ROUTES = (process.env.MAP_PANEL_ROUTES || 'ishod,avraam')
+const ROUTES = (process.env.MAP_PANEL_ROUTES || 'ishod,maccabim')
   .split(',')
   .map((value) => value.trim())
   .filter(Boolean);
@@ -107,7 +107,13 @@ async function openPlace(page, id) {
   }, id);
   assert(opened, `marker ${id} is missing`);
   await page.waitForFunction(() => document.querySelector('.me-panel')?.classList.contains('me-panel--open'), null, { timeout: 5000 });
-  await page.waitForTimeout(90);
+  await page.waitForFunction(() => {
+    const panel = document.querySelector('.me-panel.me-panel--open');
+    if (!panel) return false;
+    const rect = panel.getBoundingClientRect();
+    return rect.bottom <= innerHeight + 1;
+  }, null, { timeout: 2000 });
+  await page.waitForTimeout(40);
 }
 
 async function waitForMapDom(page, route, viewport, runtimeErrors) {
