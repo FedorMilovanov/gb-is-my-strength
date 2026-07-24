@@ -1,0 +1,106 @@
+name: Temporary Gill ReaderState Materializer
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-materialize-gill-readerstate-fix.yml'
+      - 'scripts/_temp-materialize-gill-readerstate-fix.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-gill-readerstate-materializer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'lane/system-gill-readerstate-deploy-unblock-2026-07-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout exact source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply guarded Gill transaction
+        env:
+          GITHUB_HEAD_REF: lane/system-gill-readerstate-deploy-unblock-2026-07-25
+        run: node scripts/_temp-materialize-gill-readerstate-fix.mjs
+
+      - name: Validate syntax and workflow policy
+        run: |
+          node --check js/floating-cluster-controller.js
+          node --check scripts/gill-pre-v16-submenu-regression-audit.js
+          node scripts/run-actionlint.mjs -no-color .github/workflows/gill-pre-v16-submenu.yml
+          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-gill-readerstate-fix.yml
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Require full Gill traversal
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
+        run: |
+          set -o pipefail
+          mkdir -p reports/gill-readerstate-materializer
+          npm run gill:pre-v16-submenu:audit 2>&1 | tee reports/gill-readerstate-materializer/gill-live.log
+
+      - name: Re-run TTS controller compatibility contracts
+        run: |
+          set -o pipefail
+          {
+            node scripts/tts-download-consent-contract-test.js
+            node scripts/tts-engine-status-contract-test.js
+            node scripts/tts-download-notice-browser-test.js
+            node scripts/tts-engine-lifecycle-browser-test.js
+            node scripts/tts-status-route-browser-test.js
+          } 2>&1 | tee reports/gill-readerstate-materializer/tts-compatibility.log
+
+      - name: Verify revisions and tracked diff
+        run: |
+          node scripts/cache-bust.js
+          git diff --check
+          git status --short
+
+      - name: Remove one-time materializer and publish reviewed branch
+        env:
+          TARGET_BRANCH: lane/system-gill-readerstate-deploy-unblock-2026-07-25
+        run: |
+          set -euo pipefail
+          rm .github/workflows/_temp-materialize-gill-readerstate-fix.yml
+          rm scripts/_temp-materialize-gill-readerstate-fix.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'fix(gill): restore curated ReaderState submenu traversal'
+          git push origin "HEAD:${TARGET_BRANCH}"
+
+      - name: Upload guarded evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gill-readerstate-materializer-${{ github.run_id }}
+          path: |
+            reports/gill-pre-v16-submenu-audit/
+            reports/gill-readerstate-materializer/
+          if-no-files-found: warn
+          retention-days: 14
