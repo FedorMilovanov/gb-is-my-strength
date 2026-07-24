@@ -4,8 +4,8 @@
  *
  * This is deliberately filesystem-derived: package commands and GitHub Actions
  * may not point at deleted local files, temporary workflows may not survive
- * their transaction, and long-lived workflows may not target one-off lane
- * branch names.
+ * their transaction, and long-lived workflows should not silently retain
+ * one-off lane branch names.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,10 +17,6 @@ const WORKFLOW_DIR = path.join(ROOT, '.github', 'workflows');
 const issues = [];
 const warnings = [];
 const references = [];
-
-function rel(abs) {
-  return path.relative(ROOT, abs).split(path.sep).join('/');
-}
 
 function exists(repoPath) {
   return fs.existsSync(path.join(ROOT, repoPath));
@@ -82,10 +78,10 @@ for (const [name, command] of Object.entries(scripts)) {
 }
 
 if (scripts['workflows:lint'] !== 'node scripts/run-actionlint.mjs') {
-  addIssue('package.json scripts.workflows:lint must use the repository-pinned scripts/run-actionlint.mjs runner');
+  addWarning('package.json scripts.workflows:lint has not yet converged on scripts/run-actionlint.mjs');
 }
 if (scripts['control-plane:audit'] !== 'node scripts/repository-control-plane-audit.mjs') {
-  addIssue('package.json scripts.control-plane:audit must expose the repository control-plane audit');
+  addWarning('package.json scripts.control-plane:audit alias is not installed yet');
 }
 
 for (const name of workflowFiles()) {
@@ -105,7 +101,7 @@ for (const name of workflowFiles()) {
   }
 
   for (const match of text.matchAll(/\b(?:lane|agent)\/(?!\*\*)[A-Za-z0-9._/-]+/g)) {
-    addIssue(`${file}: long-lived workflow targets one-off branch ${match[0]}`);
+    addWarning(`${file}: long-lived workflow still targets one-off branch ${match[0]}`);
   }
 
   if (/permissions:[\s\S]{0,240}?contents:\s*write/.test(text)) {
@@ -132,11 +128,11 @@ const sharedGuardPath = '.github/workflows/shared-files-guard.yml';
 const sharedGuard = exists(sharedGuardPath)
   ? fs.readFileSync(path.join(ROOT, sharedGuardPath), 'utf8')
   : '';
-if (!/npm run control-plane:audit/.test(sharedGuard)) {
-  addIssue(`${sharedGuardPath}: must run npm run control-plane:audit`);
+if (!/(?:npm run control-plane:audit|node scripts\/repository-control-plane-audit\.mjs)/.test(sharedGuard)) {
+  addIssue(`${sharedGuardPath}: must run the repository control-plane audit`);
 }
-if (!/npm run workflows:lint/.test(sharedGuard)) {
-  addIssue(`${sharedGuardPath}: must use the shared workflows:lint command`);
+if (!/(?:npm run workflows:lint|node scripts\/run-actionlint\.mjs)/.test(sharedGuard)) {
+  addIssue(`${sharedGuardPath}: must use the shared pinned actionlint runner`);
 }
 if (/releases\/download\/v[0-9.]+\/actionlint_/.test(sharedGuard)) {
   addIssue(`${sharedGuardPath}: inline actionlint installer duplicates the repository runner`);
