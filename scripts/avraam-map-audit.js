@@ -10,6 +10,8 @@ const htmlPath = path.join(ROOT, 'karty/avraam/index.html');
 const routePath = path.join(ROOT, 'karty/avraam/route.json');
 const enginePath = path.join(ROOT, 'karty/_engine/map-engine.js');
 const researchPath = path.join(ROOT, 'docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md');
+const astroPath = path.join(ROOT, 'src/components/karty/avraam/AvraamMap.astro');
+const fallbackPath = path.join(ROOT, 'src/components/karty/_shared/MapRuntimeFallback.astro');
 
 const html = fs.readFileSync(htmlPath, 'utf8');
 const appJsPath = path.join(__dirname, '..', 'karty/avraam/avraam-app.js');
@@ -17,6 +19,8 @@ const appJs = fs.existsSync(appJsPath) ? fs.readFileSync(appJsPath, 'utf8') : ''
 const allCode = html + '\n' + appJs;
 const route = JSON.parse(fs.readFileSync(routePath, 'utf8'));
 const research = fs.readFileSync(researchPath, 'utf8');
+const astro = fs.readFileSync(astroPath, 'utf8');
+const fallback = fs.readFileSync(fallbackPath, 'utf8');
 const MapEngine = require(enginePath);
 
 const checks = [];
@@ -72,15 +76,6 @@ try {
 
 const routeAudit = MapEngine.validateRoute(route);
 assert('MapEngine.validateRoute(route.json) ok', routeAudit.ok, JSON.stringify(routeAudit.errors));
- //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
 
 if (PLACES) {
   const ids = PLACES.map(p => p.id);
@@ -88,8 +83,6 @@ if (PLACES) {
   assert('HTML PLACES count = 19', PLACES.length === 19, String(PLACES.length));
   assert('route places count = 19 (без ctx/region)', routeIds.length === 19, String(routeIds.length));
   assert('HTML and route place IDs match (set)', JSON.stringify([...ids].sort()) === JSON.stringify([...routeIds].sort()), `${ids.join(',')} :: ${routeIds.join(',')}`);
-  // Coordinate drift: every shared place must have identical x,y in inline data and route.json.
-  // Closes the last data-sync gap (compareRouteData checks this at runtime; now enforced in CI).
   if (ids.join(',') === routeIds.join(',')) {
     const drift = PLACES
       .map(p => {
@@ -134,13 +127,26 @@ assert('ABRAHAM research doc is compact', research.split(/\r?\n/).length <= 320,
 assert('ABRAHAM research doc has source index', research.includes('## 5. Source index') && research.includes('WiBiLex') && research.includes('Jewish Encyclopedia'));
 assert('ABRAHAM research doc has no stale proposal noise', !/(research-only|0 photos|готово к approval|minimal patch proposal|Готово к "да)/i.test(research));
 
+// Native fail-visible contract: full editorial text becomes readable without JS,
+// while all runtime failures render one shared accessible recovery card.
+assert('native Avraam imports shared runtime fallback', astro.includes("import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.astro'"));
+assert('native Avraam preserves complete text fallback marker', /class="sr-only map-text-fallback"/.test(astro));
+assert('native Avraam stage owns loading/busy state', astro.includes('data-map-state="loading"') && astro.includes('aria-busy="true"'));
+assert('native Avraam rejects absent engine', /!window\.MapEngine[\s\S]*?throw new Error\('движок карты не загрузился'\)/.test(astro));
+assert('native Avraam rejects null map instance', /if \(!inst\) throw new Error\('движок не создал карту'\)/.test(astro));
+assert('native Avraam reports failures through shared renderer', /GBMapRuntime\.renderFailure\(container/.test(astro));
+assert('native Avraam marks successful stage ready', /data-map-state', 'ready'/.test(astro));
+assert('shared no-JS CSS hides opaque stage', /<noscript>[\s\S]*?\[data-map-stage\][\s\S]*?display:\s*none\s*!important/.test(fallback));
+assert('shared no-JS CSS reveals Avraam full text', /\.map-text-fallback\.sr-only[\s\S]*?position:\s*static\s*!important/.test(fallback));
+assert('shared failure card is an alert', /card\.className = 'me-error'[\s\S]*?role', 'alert'/.test(fallback));
+assert('shared failure card uses textContent not innerHTML', /node\.textContent = String/.test(fallback) && !/innerHTML\s*=/.test(fallback));
+assert('shared recovery controls are at least 44px', /min-height:\s*44px/.test(fallback));
+
 // ── MapEngine lifecycle checks (РЕФАКТОРИНГ 5.0 closing hole #2) ──
 const engineSrc = fs.readFileSync(enginePath, 'utf8');
 assert('MapEngine exposes destroy() method', /\bdestroy\s*:\s*\{[^}]*_cleanupAll/.test(engineSrc) || /destroy\(\)\{[\s\S]*?_cleanupAll/.test(engineSrc));
 assert('MapEngine tracks listeners via _on() helper', /function _on\s*\([^)]*\)\s*\{[^}]*_listeners\.push/.test(engineSrc));
 assert('MapEngine has _cleanupAll() that removes listeners', /function _cleanupAll\s*\(\s*\)\s*\{[\s\S]*?_listeners\.forEach\s*\(\s*l\s*=>\s*\{[^}]*removeEventListener/.test(engineSrc));
-// The only known real leak was document-level pointermove/pointerup during panel resize.
-// After fix, both should be routed through _on(document, ...) so they are tracked.
 const docListenersAreTracked = !/document\.addEventListener\(\s*['"]pointer(move|up)['"]/.test(engineSrc);
 assert('document.pointermove/pointerup use _on() (no raw addEventListener)', docListenersAreTracked);
 

@@ -26,7 +26,7 @@
     "overlay:runtime:test": "node scripts/runtime-integrity-test.js && node scripts/overlay-runtime-contract-test.js",
     "overlay:browser:test": "node scripts/overlay-runtime-browser-test.js",
     "engine:contracts": "node scripts/check-engine-contracts.js && npm run series:facade:guard && npm run nagornaya:bar-asset:contract",
-    "engine:sweep": "node scripts/engine-sweep.mjs",
+    "engine:sweep": "node scripts/engine-sweep.mjs && node scripts/map-runtime-fallback-browser-test.mjs",
     "engine:guard": "npm run engine:contracts && npm run gill:chrome:guard && npm run engine:sweep",
     "visual-audit": "node scripts/visual-audit.js",
     "interactive-audit": "node scripts/interactive-audit.js",

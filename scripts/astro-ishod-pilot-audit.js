@@ -10,6 +10,8 @@ const DIST = path.join(ROOT, 'dist');
 const NO_BUILD = process.argv.includes('--no-build');
 const ROUTE = 'karty/ishod/index.html';
 const URL = 'https://gospod-bog.ru/karty/ishod/';
+const COMPONENT = 'src/components/karty/ishod/IshodMap.astro';
+const FALLBACK = 'src/components/karty/_shared/MapRuntimeFallback.astro';
 
 const problems = [];
 const notes = [];
@@ -62,6 +64,10 @@ function mustContain(label, html, needle) {
   if (String(html || '').includes(needle)) ok(`${label}: contains ${needle}`);
   else bad(`${label}: missing ${needle}`);
 }
+function mustMatch(label, value, pattern) {
+  if (pattern.test(String(value || ''))) ok(label);
+  else bad(`${label}: pattern ${pattern} missing`);
+}
 
 function main() {
   console.log(`ASTRO ISHOD SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'})`);
@@ -69,29 +75,51 @@ function main() {
 
   const legacyPath = path.join(ROOT, ROUTE);
   const distPath = path.join(DIST, ROUTE);
+  const componentPath = path.join(ROOT, COMPONENT);
+  const fallbackPath = path.join(ROOT, FALLBACK);
   if (!fs.existsSync(legacyPath)) return bad(`legacy route missing: ${ROUTE}`);
   if (!fs.existsSync(distPath)) return bad(`dist route missing: ${ROUTE}`);
+  if (!fs.existsSync(componentPath)) return bad(`Ishod component missing: ${COMPONENT}`);
+  if (!fs.existsSync(fallbackPath)) return bad(`shared map fallback missing: ${FALLBACK}`);
 
   const legacy = read(legacyPath);
   const astro = read(distPath);
+  const component = read(componentPath);
+  const fallback = read(fallbackPath);
 
   mustEqual('ishod canonical', canonical(astro), URL);
   mustEqual('ishod title mirrors legacy', title(astro), title(legacy));
-  
+
   const robotsTag = meta(astro, 'robots');
   if (/\bnoindex\b/i.test(robotsTag)) bad(`ishod unexpectedly noindex: ${robotsTag}`);
   else ok('ishod is indexable');
 
   mustContain('ishod sr-only SEO text', astro, 'Исход из Египта');
+  if (!/map-engine.js/.test(astro)) bad('ishod must load map-engine.js (live map, not holding page)');
+  else ok('ishod loads map-engine.js (live map)');
+  if (!/route.json/.test(astro)) bad('ishod must reference route.json (live map data)');
+  else ok('ishod references route.json (live map data)');
+  if (!/class="sr-only"/.test(astro)) bad('ishod must have sr-only h1 for SEO/a11y');
+  else ok('ishod has sr-only h1 for SEO/a11y');
 
-  // ishod is a LIVE map (map-engine v1) — not a holding page since it has route.json + map-engine.js.
-  // Verified: h1 sr-only, map-engine.js loaded, route.json referenced.
-  if (!/map-engine.js/.test(astro)) bad("ishod must load map-engine.js (live map, not holding page)");
-  else ok("ishod loads map-engine.js (live map)");
-  if (!/route.json/.test(astro)) bad("ishod must reference route.json (live map data)");
-  else ok("ishod references route.json (live map data)");
-  if (!/class="sr-only"/.test(astro)) bad("ishod must have sr-only h1 for SEO/a11y");
-  else ok("ishod has sr-only h1 for SEO/a11y");
+  mustContain('ishod imports shared fallback', component, 'MapRuntimeFallback');
+  mustContain('ishod stage owns runtime state', component, 'data-map-state="loading"');
+  mustContain('ishod stage exposes busy state', component, 'aria-busy="true"');
+  mustMatch('ishod throws when engine is absent', component, /!window\.MapEngine[\s\S]*?throw new Error\('движок карты не загрузился'\)/);
+  mustMatch('ishod rejects null map instances', component, /if \(!inst\) throw new Error\('движок не создал карту'\)/);
+  mustMatch('ishod routes failures to visible renderer', component, /GBMapRuntime\.renderFailure\(container/);
+  mustMatch('ishod marks successful stage ready', component, /data-map-state', 'ready'/);
+
+  mustContain('fallback includes no-JS surface', fallback, 'map-runtime-noscript');
+  mustMatch('fallback hides only the stage without JS', fallback, /<noscript>[\s\S]*?\[data-map-stage\][\s\S]*?display:\s*none\s*!important/);
+  mustMatch('fallback creates visible alert card', fallback, /card\.className = 'me-error'[\s\S]*?role', 'alert'/);
+  mustContain('fallback has reload recovery', fallback, 'Повторить загрузку');
+  mustContain('fallback has maps back-link', fallback, "back.href = '/karty/'");
+  mustMatch('fallback recovery targets are at least 44px', fallback, /min-height:\s*44px/);
+  mustMatch('fallback avoids unsafe HTML injection', fallback, /node\.textContent = String/);
+  if (/innerHTML\s*=/.test(fallback)) bad('shared map fallback must not use innerHTML');
+  else ok('shared map fallback avoids innerHTML');
+
   console.log('');
   if (problems.length) {
     console.log(`❌ astro ishod shadow audit failed: ${problems.length} issue(s)`);
