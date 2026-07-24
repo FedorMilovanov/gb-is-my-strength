@@ -22,6 +22,11 @@ replaceOnce(
   'dynamic cancel label contract'
 );
 replaceOnce(
+  /\['ordinary voice reassurance',\s*\/Обычный голос уже работает\/\]/,
+  "['ordinary voice reassurance', /Системный голос уже работает/]",
+  'system voice reassurance contract'
+);
+replaceOnce(
   /engine: engine\.replace\('>Не загружать<\/button>', '>Скрыть<\/button>'\)/,
   "engine: engine.replace(\"actionLabel = 'Не загружать'\", \"actionLabel = 'Скрыть'\")",
   'dynamic cancel label mutation'
