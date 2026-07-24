@@ -196,55 +196,40 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
     if(!toc) return;
     const rows = Array.from(toc.querySelectorAll('li'));
     const links = rows.map((li) => li.querySelector('a'));
-    const targets = links.map((a) => a ? document.querySelector(a.getAttribute('href') || '') : null);
     const track = toc.querySelector('.hrail-track') as HTMLElement | null;
     const trackFill = track ? track.querySelector('i') as HTMLElement | null : null;
 
-    function setActive(idx: number){
+    function setActive(idx: number, phase = 'active-section'){
       rows.forEach((li, i) => {
-        li.classList.toggle('hrail-act', i === idx);
-        li.classList.toggle('hrail-passed', i < idx);
+        const active = i === idx;
+        li.classList.toggle('hrail-act', active);
+        li.classList.toggle('hrail-passed', idx >= 0 && i < idx);
+        const link = links[i];
+        if (link) {
+          if (active) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        }
       });
-      if(countEl) countEl.textContent = `${idx + 1} / ${rows.length}`;
+      if(countEl) {
+        countEl.textContent = phase === 'before-content'
+          ? 'Введение'
+          : phase === 'after-content'
+            ? 'Готово'
+            : `${idx + 1} / ${rows.length}`;
+      }
     }
 
-    // Bug fixed: the old fill was a step function — (idx+1)/rows.length only
-    // moved when scroll crossed the NEXT heading, so it sat frozen through
-    // long sections ("не всегда начинает идти") and started at 1/N instead
-    // of 0 on load ("начинается не с начала"). This interpolates continuously
-    // between the active heading and the next one (or the document's bottom
-    // edge for the last heading), so the line tracks scroll position smoothly
-    // and starts empty at the very top of the article.
-    function updateTrackFill(idx: number, line: number){
-      if(!trackFill) return;
-      const scrollY = window.scrollY;
-      const positions = targets.map((el) => el ? el.getBoundingClientRect().top + scrollY : null);
-      const curPos = positions[idx] ?? 0;
-      const docBottom = document.documentElement.scrollHeight - window.innerHeight + line;
-      const nextPos = (idx + 1 < positions.length && positions[idx + 1] !== null) ? (positions[idx + 1] as number) : docBottom;
-      const span = nextPos - curPos;
-      const frac = span > 0 ? Math.max(0, Math.min(1, (scrollY + line - curPos) / span)) : 0;
-      const progress = Math.max(0, Math.min(1, (idx + frac) / rows.length));
-      trackFill.style.setProperty('--track-progress', String(progress));
-    }
-
-    let ticking = false;
-    function onScroll(){
-      if(ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        let idx = 0;
-        const line = window.innerHeight * 0.3;
-        targets.forEach((el, i) => {
-          if(el && el.getBoundingClientRect().top <= line) idx = i;
-        });
-        setActive(idx);
-        updateTrackFill(idx, line);
+    const readerState = (window as any).GBReaderState || (window as any).ReaderState;
+    if (readerState?.configure && readerState?.subscribe) {
+      readerState.configure({ headingSelector: 'h2[id], h3[id]' }).init();
+      readerState.subscribe((reader: any) => {
+        const sectionId = String(reader?.sectionId || '');
+        const idx = links.findIndex((link) => !!link && (link.getAttribute('href') || '').replace(/^#/, '') === sectionId);
+        setActive(idx, String(reader?.phase || 'before-content'));
+        if(trackFill) trackFill.style.setProperty('--track-progress', String(Math.max(0, Math.min(1, Number(reader?.progressRatio) || 0))));
       });
     }
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+
 
     // Share (Web Share API + clipboard fallback + "Ссылка скопирована" tip) —
     // общий контракт data-action="share" в floating-cluster-controller.js

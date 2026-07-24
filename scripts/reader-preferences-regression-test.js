@@ -159,10 +159,11 @@ assert.strictEqual(canonical.attrs.get('data-reader-motion'), 'reduced');
 const component = read('src/components/reader-platform/ReaderPreferencesHead.astro');
 assert(component.includes("assetUrl('js/reader-preferences-head.js')"));
 assert(component.includes("assetUrl('js/reader-preferences.js')"));
+assert(component.includes("assetUrl('js/reader-state.js')"));
 assert(component.includes("assetUrl('css/reader-preferences.css')"));
 
 const assetList = read('scripts/cache-bust-assets.js');
-for (const asset of ['css/reader-preferences.css', 'js/reader-preferences-head.js', 'js/reader-preferences.js']) {
+for (const asset of ['css/reader-preferences.css', 'js/reader-preferences-head.js', 'js/reader-preferences.js', 'js/reader-state.js']) {
   assert(assetList.includes(`'${asset}'`), `${asset} must be cache-bust managed`);
 }
 
@@ -245,3 +246,5 @@ function walk(start, suffix, skip = new Set()) {
 }
 
 console.log(`✅ reader preference foundation guard passed (${astroTargets.length} Astro heads, ${legacyTargets.length} legacy documents)`);
+
+require('./reader-state-regression-test.js');
