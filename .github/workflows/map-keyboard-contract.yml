@@ -2,13 +2,11 @@ name: Map Keyboard Contract
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
     paths:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
       - scripts/map-panel-viewport-browser-test.js
-      - scripts/map-panel-viewport-materialize.mjs
       - .github/workflows/map-keyboard-contract.yml
   push:
     branches:
@@ -28,63 +26,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  materialize-panel-p0:
-    if: >-
-      github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.labels.*.name, 'autofix') &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.head_ref == 'agent/map-panel-viewport-p0'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact pull request branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
-      - name: Set up Node 22.12
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.12.0'
-
-      - name: Apply guarded viewport patch
-        run: node scripts/map-panel-viewport-materialize.mjs --write
-
-      - name: Verify materialized scope
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check karty/_engine/map-engine.js
-          node scripts/map-panel-viewport-materialize.mjs
-          git diff --check
-          mapfile -t changed < <(git diff --name-only)
-          if [[ ${#changed[@]} -eq 0 ]]; then
-            echo "Viewport contract already materialized."
-            exit 0
-          fi
-          printf 'changed[%s]=%s\n' "${#changed[@]}" "${changed[*]}"
-          test "${#changed[@]}" -eq 1
-          test "${changed[0]}" = "karty/_engine/map-engine.js"
-
-      - name: Commit exact engine patch
-        shell: bash
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          set -euo pipefail
-          if git diff --quiet; then
-            echo "No materializer commit required."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add karty/_engine/map-engine.js
-          git diff --cached --check
-          git commit -m "fix(karty): keep mobile map panels inside viewport"
-          git push origin "HEAD:${HEAD_REF}"
-
   source-contract:
     runs-on: ubuntu-latest
     steps:
@@ -97,8 +38,23 @@ jobs:
       - name: Verify viewport contract sources
         run: |
           node --check scripts/map-panel-viewport-browser-test.js
-          node --check scripts/map-panel-viewport-materialize.mjs
-          node scripts/map-panel-viewport-materialize.mjs
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
+          const required = [
+            'map-engine.js v0.54',
+            'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
+            '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
+            'min-height:0;overflow-y:auto;overscroll-behavior:contain',
+            'width:420px;max-height:calc(100% - 24px)'
+          ];
+          const missing = required.filter((needle) => !source.includes(needle));
+          if (missing.length) {
+            console.error('Missing map panel viewport contract:', missing);
+            process.exit(1);
+          }
+          console.log('PASS source map panel viewport contract');
+          NODE
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml
 
