@@ -1,25 +1,38 @@
-name: TEMP Print Paper Contract v8
+name: TEMP Print Paper Contract Final
 
 on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: temp-print-paper-v8-${{ github.event.pull_request.number || github.ref }}
+  group: temp-print-paper-final-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   materialize-and-verify:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 235
     runs-on: ubuntu-latest
-    timeout-minutes: 80
+    timeout-minutes: 90
+    env:
+      TARGET_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
     steps:
       - name: Checkout exact branch head
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
           fetch-depth: 0
+
+      - name: Merge current main before materialization
+        run: |
+          git fetch origin main
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git merge --no-edit origin/main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -40,22 +53,21 @@ jobs:
             scripts/_temp-print-paper-contract.mjs \
             scripts/_temp-print-paper-followup.mjs \
             scripts/_temp-print-overflow-contract.mjs \
-            scripts/_temp-print-tail-fix.mjs; do
+            scripts/_temp-print-a4-final.mjs; do
             node --check "$script"
           done
           set -o pipefail
           node scripts/_temp-print-paper-contract.mjs 2>&1 | tee reports/print-paper/materializer.log
           node scripts/_temp-print-paper-followup.mjs 2>&1 | tee reports/print-paper/followup.log
           node scripts/_temp-print-overflow-contract.mjs 2>&1 | tee reports/print-paper/overflow-contract.log
-          node scripts/_temp-print-tail-fix.mjs 2>&1 | tee reports/print-paper/tail-fix.log
+          node scripts/_temp-print-a4-final.mjs 2>&1 | tee reports/print-paper/a4-final.log
           node scripts/cache-bust.js --write
           node scripts/cache-bust.js
 
-      - name: Remove all temporary print infrastructure
+      - name: Remove temporary scripts from product commit
         run: |
-          find .github/workflows -maxdepth 1 \( -name '_temp-print-paper*.yml' -o -name '_temp-print-tail*.yml' \) -print0 | xargs -0 -r git rm -f
-          find scripts -maxdepth 1 \( -name '_temp-print-paper*.mjs' -o -name '_temp-print-overflow*.mjs' -o -name '_temp-print-tail*.mjs' -o -name '_temp-print-template*.mjs' \) -print0 | xargs -0 -r git rm -f
-          test -z "$(find .github/workflows scripts -maxdepth 1 \( -name '_temp-print-paper*' -o -name '_temp-print-overflow*' -o -name '_temp-print-tail*' -o -name '_temp-print-template*' \) -print)"
+          find scripts -maxdepth 1 -name '_temp-print-*.mjs' -print0 | xargs -0 -r git rm -f
+          test -z "$(find scripts -maxdepth 1 -name '_temp-print-*.mjs' -print)"
           git diff --check
 
       - name: Static architecture gates
@@ -90,19 +102,24 @@ jobs:
       - name: Permanent raster and pagination audit
         run: python3 scripts/print-paper-pdf-audit.py reports/print-paper/reader-print-a4.pdf --out reports/print-paper
 
+      - name: Verify permanent scope before commit
+        run: |
+          test -z "$(find scripts -maxdepth 1 -name '_temp-print-*.mjs' -print)"
+          test "$(git diff -- css/site.css | grep -c 'margin: 14mm')" -ge 1
+          git diff --check
+          git status --short | tee reports/print-paper/product-status.txt
+
       - name: Commit permanent contract
         run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
-          git commit -m "fix(print): enforce neutral paper palette and pagination"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git commit -m "fix(print): enforce neutral A4 paper contract"
+          git push origin HEAD:"$TARGET_BRANCH"
 
       - name: Upload print proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: print-paper-proof-v8-${{ github.sha }}
+          name: print-paper-proof-final-${{ github.sha }}
           path: reports/print-paper
           if-no-files-found: warn
           retention-days: 7
