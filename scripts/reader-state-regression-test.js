@@ -258,6 +258,26 @@ const measured = loadMeasuredApi({
   'gb-series-pos:test-series:part-one': JSON.stringify({ y: 1200, pc: 44, t: 2000 }),
 });
 assert.strictEqual((measured.windowListeners.get('scroll') || []).length, 1, 'measured ReaderState must install exactly one scroll listener');
+
+const forcedAtTop = loadMeasuredApi();
+forcedAtTop.api.saveSnapshot(true);
+assert.strictEqual(
+  forcedAtTop.storage.has('gb:reader-state:v1:gb-strength:/series/part-one'),
+  false,
+  'forced lifecycle save must not create a passive top-of-article snapshot',
+);
+
+const forcedDeep = loadMeasuredApi();
+forcedDeep.window.scrollY = 900;
+forcedDeep.window.pageYOffset = 900;
+forcedDeep.api.measure();
+forcedDeep.api.saveSnapshot(true);
+assert.strictEqual(
+  forcedDeep.storage.has('gb:reader-state:v1:gb-strength:/series/part-one'),
+  true,
+  'forced lifecycle save must preserve a meaningful deep position without a prior pointer event',
+);
+
 const firstMigrated = measured.api.getSaved();
 assert.strictEqual(firstMigrated.progress, 44, 'legacy series progress must migrate through the route slug key');
 assert.strictEqual(firstMigrated.source, 'series-position');

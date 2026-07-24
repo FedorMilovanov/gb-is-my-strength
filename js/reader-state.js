@@ -395,7 +395,7 @@
   function shouldPersist(snapshot, options) {
     if (!snapshot) return false;
     options = options || {};
-    if (!userInteracted && !options.allowPassive) return false;
+    if (!userInteracted && !options.allowPassive && !options.force) return false;
     if (snapshot.progress < Number(config.minProgressToSave || 4) && !snapshot.completed) return false;
     if (snapshot.progress > Number(config.maxProgressToSave || 99) && !snapshot.completed) return false;
     return true;
