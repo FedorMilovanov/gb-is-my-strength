@@ -84,6 +84,27 @@ def main() -> int:
     if not date_pages or not name_pages or not set(date_pages) & set(name_pages):
         failures.append(f"biography masthead split across pages: dates={date_pages}, name={name_pages}")
 
+    series_label_pages = [
+        i for i, value in enumerate(text_pages)
+        if "СЕРИЯ О ДЖОНЕ ГИЛЛЕ" in normalize(value)
+    ]
+    series_intro_pages = [
+        i for i, value in enumerate(text_pages)
+        if (
+            "СЕРИЯ О ДЖОНЕ ГИЛЛЕ СОСТОИТ" in normalize(value)
+            or "БИОГРАФИЯ ДЖОНА ГИЛЛА" in normalize(value)
+        )
+    ]
+    if (
+        not series_label_pages
+        or not series_intro_pages
+        or not set(series_label_pages) & set(series_intro_pages)
+    ):
+        failures.append(
+            "series overview split across pages: "
+            f"label={series_label_pages}, intro={series_intro_pages}"
+        )
+
     known_headings = {
         "I. СТАНОВЛЕНИЕ И ПРИЗВАНИЕ",
         "ОТКУДА РОЖДАЮТСЯ ГЕНИИ БЕЗ УНИВЕРСИТЕТОВ",
