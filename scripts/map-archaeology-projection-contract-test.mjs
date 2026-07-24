@@ -41,7 +41,10 @@ assert.match(adapter, /allowedTabs\.has\(activeTab\)/);
 assert.match(adapter, /data-source-id|dataset\.sourceId/);
 assert.match(adapter, /dataset\.evidenceUse/);
 assert.match(adapter, /dataset\.sourceStatus/);
+assert.match(adapter, /dataset\.sourceVerification/);
 assert.match(adapter, /dataset\.sourcePerspective/);
+assert.match(adapter, /source: \$\{source\.id\}/);
+assert.match(adapter, /source\.accessedAt/);
 assert.match(adapter, /url\.protocol === 'https:'/);
 assert.match(adapter, /textContent/);
 assert.doesNotMatch(adapter, /innerHTML\s*=/);
@@ -49,6 +52,7 @@ assert.doesNotMatch(adapter, /_classifySource|keyword|regex/i);
 
 const bootstrap = fs.readFileSync('src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro', 'utf8');
 assert.match(bootstrap, /buildMapArchaeologyProjection\('avraam'/);
+assert.match(bootstrap, /is:inline id="map-archaeology-projection"/);
 assert.match(bootstrap, /type="application\/json"/);
 assert.match(bootstrap, /map-archaeology-adapter\.js/);
 assert.doesNotMatch(bootstrap, /fetch\(/);
