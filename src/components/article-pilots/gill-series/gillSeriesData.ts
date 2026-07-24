@@ -263,7 +263,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     readingProgressPartMin: 15,
     readingProgressTotalMin: 239,
     railNowTitle: "Справочник по Гиллу",
-    railCover: "../../images/og-dzhon-gill-spravochnik-600w.webp",
+    railCover: "../../images/og-dzhon-gill-spravochnik.webp",
     partDialogLabel: "Справочник по Гиллу",
     partToc: [
       { href: "#sec-prdl", label: "I. Масштаб корпуса", level: 2, current: true, summary: "Краткая карта объёма и основных направлений литературного наследия Гилла." },
