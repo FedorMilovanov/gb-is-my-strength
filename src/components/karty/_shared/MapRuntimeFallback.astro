@@ -7,13 +7,18 @@
  * null, the reader must receive a visible, keyboard-accessible recovery surface
  * instead of an opaque full-screen stage.
  */
+import MapArchaeologyProjectionBootstrap from '@/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro';
+
 interface Props {
   title: string;
   description: string;
+  archaeologyMapId?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, archaeologyMapId } = Astro.props;
 ---
+
+{archaeologyMapId && <MapArchaeologyProjectionBootstrap mapId={archaeologyMapId} />}
 
 <noscript>
   <style is:global>

@@ -24,6 +24,17 @@ function normalizeColor(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '');
 }
 
+function toSerializable(value) {
+  const seen = new WeakSet();
+  return JSON.parse(JSON.stringify(value, (_key, item) => {
+    if (item && typeof item === 'object') {
+      if (seen.has(item)) return '[Circular]';
+      seen.add(item);
+    }
+    return item;
+  }));
+}
+
 async function collectRenderedPaths(page, rootSelector) {
   return page.evaluate((selector) => {
     const root = document.querySelector(selector);
@@ -127,7 +138,7 @@ async function run() {
     await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('#stage #me-paths .me-route-main')), null, { timeout: 20000 });
 
     report.engineVersion = await page.evaluate(() => window.MapEngine?.version || null);
-    assert(report.engineVersion === '0.55.0', 'MapEngine public version is not synchronized with v0.55 renderer', report);
+    assert(report.engineVersion === '0.56.0', 'MapEngine public version is not synchronized with v0.56 renderer', { engineVersion: report.engineVersion });
 
     const fallback = await collectRenderedPaths(page, '#stage');
     assert(fallback.main.length > 0, 'Ishod generated fallback paths are missing', fallback);
@@ -261,7 +272,7 @@ async function run() {
     fs.writeFileSync(path.join(EVIDENCE, `${BROWSER_NAME}-report.json`), JSON.stringify(report, null, 2));
     console.log(`PASS ${BROWSER_NAME}: version=${report.engineVersion}, fallback=${fallback.main.length}, authored=${rendered.main.length}, invalidFallback=${invalidFallback.main.length}, highStage=${highStageFallback.main.length}`);
   } catch (error) {
-    report.failures.push({ message: error.message, details: error.details || null, stack: error.stack, runtimeErrors });
+    report.failures.push({ message: error.message, details: toSerializable(error.details || null), stack: error.stack, runtimeErrors });
     fs.writeFileSync(path.join(EVIDENCE, `${BROWSER_NAME}-report.json`), JSON.stringify(report, null, 2));
     await page.screenshot({ path: path.join(EVIDENCE, `${BROWSER_NAME}-failure.png`), fullPage: false }).catch(() => {});
     throw error;

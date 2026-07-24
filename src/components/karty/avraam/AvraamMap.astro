@@ -84,6 +84,7 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
 <MapRuntimeFallback
   title="Путь Авраама доступен в текстовом режиме"
   description="Для свободного исследования карты нужен JavaScript. Полная текстовая версия маршрута, этапов и источников раскрыта на этой странице."
+  archaeologyMapId="avraam"
 />
 <div
   id="stage"
@@ -107,6 +108,13 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
       });
     }
     console.error('[avraam] MapEngine init failed:', error);
+  }
+
+  function readArchaeologyProjection() {
+    var payload = document.getElementById('map-archaeology-projection');
+    if (!payload) return null;
+    try { return JSON.parse(payload.dataset.projection || 'null'); }
+    catch (error) { console.error('[map-archaeology] invalid projection payload:', error); return null; }
   }
 
   function init() {
@@ -143,7 +151,8 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
           throw new Error('движок карты не загрузился');
         }
         var inst = window.MapEngine.createMap(container, route, {
-          baseGeoUrl: 'base.svg'
+          baseGeoUrl: 'base.svg',
+          archaeologyProjection: readArchaeologyProjection()
         });
         if (!inst) throw new Error('движок не создал карту');
         container.setAttribute('data-map-state', 'ready');
