@@ -4,17 +4,25 @@ on:
   pull_request:
     paths:
       - "js/vosk-tts-engine.js"
+      - "js/floating-cluster-controller.js"
       - "css/tts-download-notice.css"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
+      - "scripts/tts-engine-status-contract-test.js"
+      - "scripts/tts-engine-lifecycle-browser-test.js"
+      - "scripts/tts-status-route-browser-test.js"
       - ".github/workflows/tts-download-consent.yml"
   push:
     branches: [main]
     paths:
       - "js/vosk-tts-engine.js"
+      - "js/floating-cluster-controller.js"
       - "css/tts-download-notice.css"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
+      - "scripts/tts-engine-status-contract-test.js"
+      - "scripts/tts-engine-lifecycle-browser-test.js"
+      - "scripts/tts-status-route-browser-test.js"
       - ".github/workflows/tts-download-consent.yml"
 
 permissions:
@@ -40,11 +48,17 @@ jobs:
       - name: Check syntax
         run: |
           node --check js/vosk-tts-engine.js
+          node --check js/floating-cluster-controller.js
           node --check scripts/tts-download-consent-contract-test.js
           node --check scripts/tts-download-notice-browser-test.js
+          node --check scripts/tts-engine-status-contract-test.js
+          node --check scripts/tts-engine-lifecycle-browser-test.js
+          node --check scripts/tts-status-route-browser-test.js
 
-      - name: Enforce cancellable download contract
-        run: node scripts/tts-download-consent-contract-test.js
+      - name: Enforce TTS source contracts
+        run: |
+          node scripts/tts-download-consent-contract-test.js
+          node scripts/tts-engine-status-contract-test.js
 
       - name: Verify existing asset revisions remain read-only clean
         run: node scripts/cache-bust.js
@@ -53,7 +67,7 @@ jobs:
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml
 
   browser-contract:
-    name: Compact notice browser contract
+    name: Engine and real-route browser contract
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -68,18 +82,28 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
 
-      - name: Run desktop and mobile cancellation fixture
-        run: node scripts/tts-download-notice-browser-test.js
+      - name: Run engine lifecycle fixtures
+        run: |
+          node scripts/tts-download-notice-browser-test.js
+          node scripts/tts-engine-lifecycle-browser-test.js
+
+      - name: Build production-like routes
+        run: npm run build
+
+      - name: Run real-route status matrix
+        run: node scripts/tts-status-route-browser-test.js
 
       - name: Upload interaction evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tts-download-consent-browser-${{ github.run_id }}
+          name: tts-engine-status-browser-${{ github.run_id }}
           path: |
             reports/tts-download-notice-desktop.png
             reports/tts-download-notice-mobile-dark.png
+            reports/tts-lifecycle-*.png
+            reports/tts-route-*.png
           if-no-files-found: warn
           retention-days: 14
