@@ -1,0 +1,82 @@
+name: Data Consistency Authority Materializer
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/data-consistency-authority-materializer.yml'
+      - 'scripts/check-data-consistency.js'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(github.event.pull_request.labels.*.name, 'autofix')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Apply exact source-authority patch
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = 'scripts/check-data-consistency.js';
+          let text = fs.readFileSync(file, 'utf8');
+          const patches = [
+            [
+              "const path = require('path');\nconst ROOT = path.resolve(__dirname, '..');",
+              "const path = require('path');\nconst { legacyIsAuthoritative, loadRouteProfile } = require('./lib/legacy-source-authority');\nconst ROOT = path.resolve(__dirname, '..');"
+            ],
+            [
+              "function canonicalFromHtml(file, fallback) {\n  const t = extractHtmlReadTimes(file) || {};\n  return t.config ?? t.pagefind ?? t.visible ?? fallback ?? null;\n}",
+              "function canonicalFromHtml(file, fallback) {\n  const t = extractHtmlReadTimes(file) || {};\n  return t.config ?? t.pagefind ?? t.visible ?? fallback ?? null;\n}\nfunction canonicalForRoute(url, file, fallback) {\n  const { profile } = loadRouteProfile(url);\n  if (!legacyIsAuthoritative(profile)) {\n    return Number.isFinite(fallback) ? fallback : null;\n  }\n  return canonicalFromHtml(file, fallback);\n}"
+            ],
+            [
+              "  const htmlTimes = extractHtmlReadTimes(file) || {};\n  const canonical = canonicalFromHtml(file, item.readTime);\n  assertEqual(`${file}`, { ...htmlTimes, search: item.readTime });\n  if (Number.isFinite(canonical) && Number.isFinite(item.readTime) && item.readTime !== canonical) {\n    fail('search-manifest-read-time-drift', `${url}: search=${item.readTime}, html=${canonical}`);\n  }",
+              "  const { profile } = loadRouteProfile(url);\n  const authoritativeLegacy = legacyIsAuthoritative(profile);\n  const htmlTimes = extractHtmlReadTimes(file) || {};\n  const canonical = canonicalForRoute(url, file, item.readTime);\n  if (authoritativeLegacy) {\n    assertEqual(`${file}`, { ...htmlTimes, search: item.readTime });\n    if (Number.isFinite(canonical) && Number.isFinite(item.readTime) && item.readTime !== canonical) {\n      fail('search-manifest-read-time-drift', `${url}: search=${item.readTime}, html=${canonical}`);\n    }\n  }"
+            ],
+            [
+              "    const search = searchByUrl.get(url);\n    const canonical = canonicalFromHtml(file, search && search.readTime);",
+              "    const search = searchByUrl.get(url);\n    const { profile } = loadRouteProfile(url);\n    const projectionFallback = !legacyIsAuthoritative(profile) && Number.isFinite(part.readingTime)\n      ? part.readingTime\n      : (search && search.readTime);\n    const canonical = canonicalForRoute(url, file, projectionFallback);"
+            ]
+          ];
+          for (const [before, after] of patches) {
+            const count = text.split(before).length - 1;
+            if (count !== 1) throw new Error(`expected one exact patch anchor, found ${count}: ${before.slice(0,80)}`);
+            text = text.replace(before, after);
+          }
+          fs.writeFileSync(file, text);
+          NODE
+
+      - name: Verify data consistency and mutation shape
+        run: |
+          node scripts/check-data-consistency.js
+          node - <<'NODE'
+          const fs = require('fs');
+          const text = fs.readFileSync('scripts/check-data-consistency.js','utf8');
+          if (!text.includes("require('./lib/legacy-source-authority')")) throw new Error('shared authority helper missing');
+          if (!text.includes('function canonicalForRoute')) throw new Error('route-aware canonical helper missing');
+          if (!text.includes('const authoritativeLegacy = legacyIsAuthoritative(profile)')) throw new Error('manifest authority branch missing');
+          if (!text.includes('const projectionFallback = !legacyIsAuthoritative(profile)')) throw new Error('series authority branch missing');
+          NODE
+          git diff --check
+          test "$(git diff --name-only)" = "scripts/check-data-consistency.js"
+
+      - name: Commit one permanent file
+        run: |
+          if git diff --quiet -- scripts/check-data-consistency.js; then
+            echo 'Already materialized'; exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/check-data-consistency.js
+          git commit -m 'fix(data): respect strict-native source authority'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
