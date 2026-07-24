@@ -1,0 +1,131 @@
+name: Editorial Baseline Refresh Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/editorial-baseline-refresh-proof.yml'
+      - 'data/editorial-metadata.json'
+      - 'scripts/editorial-metadata-*.js'
+      - 'scripts/lib/editorial-metadata.js'
+      - 'feed.xml'
+      - 'sitemap.xml'
+      - 'data/search-manifest.json'
+      - 'src/**'
+
+permissions:
+  contents: read
+
+jobs:
+  refresh-proof:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Preserve committed editorial decisions
+        run: |
+          mkdir -p reports
+          cp data/editorial-metadata.json reports/editorial-metadata-before.json
+
+      - name: Build current production projections
+        run: npm run strangler:build:production-like
+
+      - name: Refresh observed projections only
+        env:
+          OBSERVED_SOURCE_SHA: 37e4a199ef7e19ba9a14967b57672b3734f2d687
+        run: |
+          node scripts/editorial-metadata-registry.js --write
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = 'data/editorial-metadata.json';
+          const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+          data.sourceCommit = process.env.OBSERVED_SOURCE_SHA;
+          fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+          NODE
+
+      - name: Prove editorial decisions are unchanged
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const before = JSON.parse(fs.readFileSync('reports/editorial-metadata-before.json', 'utf8'));
+          const after = JSON.parse(fs.readFileSync('data/editorial-metadata.json', 'utf8'));
+          const problems = [];
+          const beforeRoutes = Object.keys(before.records || {}).sort();
+          const afterRoutes = Object.keys(after.records || {}).sort();
+          if (JSON.stringify(beforeRoutes) !== JSON.stringify(afterRoutes)) {
+            problems.push(`record set changed: ${beforeRoutes.length} -> ${afterRoutes.length}`);
+          }
+          const reviewFields = ['reviewStatus','reviewNote','reviewedAt','reviewedBy'];
+          const approvedDecisionFields = [
+            'editorialPublishedAt','editorialModifiedAt','originalWorkPublishedAt','provenance'
+          ];
+          for (const route of beforeRoutes) {
+            const oldRecord = before.records[route] || {};
+            const newRecord = after.records[route] || {};
+            for (const field of reviewFields) {
+              if (JSON.stringify(oldRecord[field] ?? null) !== JSON.stringify(newRecord[field] ?? null)) {
+                problems.push(`${route}: review field ${field} changed`);
+              }
+            }
+            if (oldRecord.reviewStatus === 'approved') {
+              for (const field of approvedDecisionFields) {
+                if (JSON.stringify(oldRecord[field] ?? null) !== JSON.stringify(newRecord[field] ?? null)) {
+                  problems.push(`${route}: approved editorial field ${field} changed`);
+                }
+              }
+            }
+          }
+          if (after.sourceCommit !== process.env.OBSERVED_SOURCE_SHA) {
+            problems.push(`sourceCommit=${after.sourceCommit}`);
+          }
+          if (problems.length) {
+            console.error(problems.join('\n'));
+            process.exit(1);
+          }
+          const approved = beforeRoutes.filter((route) => before.records[route]?.reviewStatus === 'approved').length;
+          console.log(`Preserved ${beforeRoutes.length} records and ${approved} approved decisions`);
+          NODE
+        env:
+          OBSERVED_SOURCE_SHA: 37e4a199ef7e19ba9a14967b57672b3734f2d687
+
+      - name: Validate refreshed registry
+        run: |
+          node scripts/editorial-metadata-registry.js --check
+          node scripts/editorial-metadata-freeze-audit.js
+
+      - name: Run static publication gates
+        run: npm run validate:static-publication:light
+
+      - name: Prove generated scope
+        run: |
+          git diff --check
+          test "$(git diff --name-only | tr -d '\r')" = "data/editorial-metadata.json"
+          git diff --stat > reports/editorial-baseline-diff-stat.txt
+          git diff -- data/editorial-metadata.json > reports/editorial-baseline.patch
+
+      - name: Upload verified baseline candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-baseline-${{ github.run_id }}
+          path: |
+            data/editorial-metadata.json
+            reports/editorial-metadata-before.json
+            reports/editorial-baseline-diff-stat.txt
+            reports/editorial-baseline.patch
+          if-no-files-found: error
+          retention-days: 14
