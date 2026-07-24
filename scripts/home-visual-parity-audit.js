@@ -102,6 +102,11 @@ must(chrome, 'data-search-shortcut-label="Поиск"', 'HomePageChrome has plat
 must(chrome, 'event.altKey || event.shiftKey || (event.metaKey && event.ctrlKey)', 'HomePageChrome rejects modified search shortcuts');
 must(chrome, 'if (window.GBSearch?.__ready) return;', 'HomePageChrome avoids duplicate ready-search shortcut handling');
 must(chrome, "closest?.('[data-close-nav]')", 'HomePageChrome closes the mobile sheet for marked actions');
+must(chrome, 'role="dialog" aria-modal="true" aria-labelledby="hMobileNavTitle"', 'HomePageChrome exposes the mobile sheet as a labelled modal');
+must(chrome, 'aria-controls="hMobileNav"', 'HomePageChrome connects the menu trigger to its sheet');
+must(chrome, "event.shiftKey && (active === first || !panel.contains(active))", 'HomePageChrome traps reverse focus inside the mobile sheet');
+must(chrome, "!event.shiftKey && (active === last || !panel.contains(active))", 'HomePageChrome traps forward focus inside the mobile sheet');
+must(chrome, "trigger.focus({ preventScroll: true })", 'HomePageChrome restores focus when the mobile sheet closes');
 must(chrome, 'is:inline src="js/site.js', 'HomePageChrome external home runtime script has explicit Astro directive');
 
 const main = read('src/components/home/HomeMain.astro');
