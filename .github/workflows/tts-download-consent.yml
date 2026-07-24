@@ -50,13 +50,7 @@ jobs:
         run: node scripts/cache-bust.js
 
       - name: Lint workflow
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p /tmp/actionlint
-          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
-            | tar xz -C /tmp/actionlint actionlint
-          /tmp/actionlint/actionlint -no-color .github/workflows/tts-download-consent.yml
+        run: node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml
 
   browser-contract:
     name: Compact notice browser contract
