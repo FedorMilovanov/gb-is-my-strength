@@ -6,7 +6,7 @@
     "approvedRecordsRequireProjectionConvergence": true,
     "technicalCommitsMayChangeEditorialDates": false
   },
-  "sourceCommit": "e9faea5b1cc33e877a5971dcb2ad6a99209270de",
+  "sourceCommit": "37e4a199ef7e19ba9a14967b57672b3734f2d687",
   "records": {
     "/articles/20-antisovetov-pastoru/": {
       "route": "/articles/20-antisovetov-pastoru/",
@@ -29,7 +29,7 @@
         "searchPublishedAt": "2026-05-12T21:00:00.000Z",
         "searchModifiedAt": "2026-05-21T20:09:05.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/chto-bibliya-nazyvaet-serdcem/": {
@@ -38,7 +38,7 @@
       "title": "Библейская кардиология: что Библия называет сердцем | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/chto-bibliya-nazyvaet-serdcem/ChtoBibliyaPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -50,10 +50,10 @@
         "metaModifiedAt": "2026-07-10T21:00:00.000Z",
         "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
         "jsonLdModifiedAt": "2026-07-10T21:00:00.000Z",
-        "searchPublishedAt": null,
-        "searchModifiedAt": null,
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/dzhon-gill-chast-1-chelovek/": {
@@ -62,7 +62,7 @@
       "title": "Джон Гилл (1697–1771). Часть I: Человек — детство, призвание, семья",
       "metadataSource": "src/components/article-pilots/gill-part1/GillPart1PageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-08T23:34:58.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -77,7 +77,7 @@
         "searchPublishedAt": "2026-05-25T21:00:00.000Z",
         "searchModifiedAt": "2026-06-09T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/dzhon-gill-chast-2-uchenyi/": {
@@ -86,7 +86,7 @@
       "title": "Джон Гилл (1697–1771). Часть II: Учёный — экзегеза, система, иврит",
       "metadataSource": "src/components/article-pilots/gill-part2/GillPart2PageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-08T23:34:58.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -101,7 +101,7 @@
         "searchPublishedAt": "2026-05-25T21:00:00.000Z",
         "searchModifiedAt": "2026-06-09T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/dzhon-gill-chast-3-nasledie/": {
@@ -110,7 +110,7 @@
       "title": "Джон Гилл (1697–1771). Часть IV: Наследие — полемика, память, наука",
       "metadataSource": "src/components/article-pilots/gill-part3/GillPart3PageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-08T23:34:58.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -125,7 +125,7 @@
         "searchPublishedAt": "2026-05-25T21:00:00.000Z",
         "searchModifiedAt": "2026-06-09T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/dzhon-gill-chast-4-ekzeget/": {
@@ -134,7 +134,7 @@
       "title": "Джон Гилл (1697–1771). Часть III: Экзегет — экзегеза, полемика, отвержение",
       "metadataSource": "src/components/article-pilots/gill-part4/GillPart4PageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-09T09:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -149,7 +149,7 @@
         "searchPublishedAt": "2026-07-08T21:00:00.000Z",
         "searchModifiedAt": "2026-07-08T21:00:00.000Z",
         "sitemapLastmod": "2026-07-09T09:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/dzhon-gill-istoricheskiy-kontekst/": {
@@ -173,7 +173,7 @@
         "searchPublishedAt": "2026-05-31T21:00:00.000Z",
         "searchModifiedAt": "2026-06-09T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/dzhon-gill-spravochnik/": {
@@ -197,7 +197,7 @@
         "searchPublishedAt": "2026-05-31T21:00:00.000Z",
         "searchModifiedAt": "2026-06-09T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
@@ -221,7 +221,7 @@
         "searchPublishedAt": "2016-08-31T21:00:00.000Z",
         "searchModifiedAt": "2026-05-21T20:09:05.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/kak-hranit-serdce/": {
@@ -230,7 +230,7 @@
       "title": "Как хранить сердце: Притчи 4:23 и средства благодати | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/kak-hranit/KakHranitPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -245,7 +245,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/kak-menyaetsya-serdce/": {
@@ -254,7 +254,7 @@
       "title": "Как меняется сердце: умерщвление греха и новая любовь | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/kak-menyaetsya/KakMenyaetsyaPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -269,7 +269,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/kod-da-vinchi/": {
@@ -293,7 +293,7 @@
         "searchPublishedAt": "2026-03-31T21:00:00.000Z",
         "searchModifiedAt": "2026-05-21T20:09:05.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/krajne-li-isporcheno-serdce/": {
@@ -317,7 +317,7 @@
         "searchPublishedAt": "2026-03-31T21:00:00.000Z",
         "searchModifiedAt": "2026-06-03T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/myslennaya-zhizn-serdca/": {
@@ -326,7 +326,7 @@
       "title": "Мысленная жизнь сердца: поток мыслей и библейская медитация | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/myslennaya/MyslennayaPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -341,7 +341,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/novoe-serdce/": {
@@ -350,7 +350,7 @@
       "title": "Новое сердце: как Бог меняет то, что мы не смогли исправить | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/novoe-serdce/NovoeSerdcePageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -362,10 +362,10 @@
         "metaModifiedAt": "2026-07-11T21:00:00.000Z",
         "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
         "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
-        "searchPublishedAt": null,
-        "searchModifiedAt": null,
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/osvobozhdennoe-serdce/": {
@@ -374,7 +374,7 @@
       "title": "Конец войне: сердце, освобождённое навсегда | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/osvobozhdennoe/OsvobozhdennoePageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -389,7 +389,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/religioznoe-serdce/": {
@@ -398,7 +398,7 @@
       "title": "Религиозное сердце: когда благочестие становится маской | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/religioznoe/ReligioznoePageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -413,7 +413,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
@@ -422,7 +422,7 @@
       "title": "Римлянам 7: верующий, неверующий или человек под законом? | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/rimlyanam7/Rimlyanam7PageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -437,7 +437,7 @@
         "searchPublishedAt": "2026-06-01T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-08T23:34:58.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-hrista-k-nemoshchnym/": {
@@ -446,7 +446,7 @@
       "title": "Сердце Христа: образ Отца, Спаситель врагов, сила немощным | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-hrista/SerdceHristaPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -461,7 +461,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-i-duh/": {
@@ -470,7 +470,7 @@
       "title": "Сердце и Дух: как Бог живёт в том, что Сам оживил | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-iduh/SerdceIDuhPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -482,10 +482,10 @@
         "metaModifiedAt": "2026-07-11T21:00:00.000Z",
         "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
         "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
-        "searchPublishedAt": null,
-        "searchModifiedAt": null,
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-i-iskushenie/": {
@@ -494,7 +494,7 @@
       "title": "Когда сердце ведёт переговоры с искушением | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-iskushenie/SerdceIskusheniePageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -509,7 +509,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-i-sokrovishche/": {
@@ -518,7 +518,7 @@
       "title": "Сердце и сокровище: деньги, статус и довольство | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-sokrovishche/SerdceSokrovishchePageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -533,7 +533,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-i-telo/": {
@@ -542,7 +542,7 @@
       "title": "Сердце и тело: члены как орудия, комфорт и аппетиты | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-telo/SerdceTeloPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -557,7 +557,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-i-yazyk/": {
@@ -566,7 +566,7 @@
       "title": "Сердце и язык: первый выход сердца наружу | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-yazyk/SerdceYazykPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -581,7 +581,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-ne-v-odinochku/": {
@@ -590,7 +590,7 @@
       "title": "Сердце не исцеляется в одиночку: церковь, исповедь, восстановление | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/ne-v-odinochku/NeVOdinochkuPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -605,7 +605,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-pod-skorbyu/": {
@@ -614,7 +614,7 @@
       "title": "Сердце под скорбью: страдание, провидение и плач | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-skorb/SerdceSkorbPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -629,7 +629,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/serdce-spravochnik/": {
@@ -638,7 +638,7 @@
       "title": "Сердце: библейский справочник | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/serdce-spravochnik/SerdceSpravochnikPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -650,10 +650,10 @@
         "metaModifiedAt": "2026-07-11T21:00:00.000Z",
         "jsonLdPublishedAt": "2026-07-11T21:00:00.000Z",
         "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
-        "searchPublishedAt": null,
-        "searchModifiedAt": null,
+        "searchPublishedAt": "2026-07-11T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/skrytye-idoly-serdca/": {
@@ -662,7 +662,7 @@
       "title": "Скрытые идолы сердца: чему мы поклоняемся, не замечая | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/skrytye-idoly/SkrytyeIdolyPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -677,7 +677,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/sovest-vnutrenniy-sud/": {
@@ -686,7 +686,7 @@
       "title": "Совесть: судья, с которым сердце торгуется | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/sovest/SovestPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -701,7 +701,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/starye-dorozhki-serdca/": {
@@ -710,7 +710,7 @@
       "title": "Старые дорожки сердца: привычка, «вторая натура», детство и стыд | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/starye-dorozhki/StaryeDorozhkiPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -725,7 +725,7 @@
         "searchPublishedAt": "2026-07-11T21:00:00.000Z",
         "searchModifiedAt": "2026-07-11T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/strah-bozhij-rabskij-ili-synovnij/": {
@@ -734,7 +734,7 @@
       "title": "Страх Божий: рабский или сыновний | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/strah-bozhij/StrahBozhijPageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -749,7 +749,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/svoboda-vo-hriste/": {
@@ -758,7 +758,7 @@
       "title": "Свобода во Христе: почему освобождённые ещё воюют | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/svoboda-vo-hriste/SvobodaVoHristePageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -773,7 +773,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/articles/tma-na-serdce/": {
@@ -782,7 +782,7 @@
       "title": "Тьма на сердце: всегда ли уныние — это грех? | Господь Бог — Сила Моя",
       "metadataSource": "src/components/article-pilots/tma-na-serdce/TmaNaSerdcePageHead.astro",
       "contentType": "article",
-      "editorialPublishedAt": "2026-07-14T18:00:00.000Z",
+      "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
       "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "inconsistent-needs-review",
@@ -797,7 +797,7 @@
         "searchPublishedAt": "2026-07-10T21:00:00.000Z",
         "searchModifiedAt": "2026-07-10T21:00:00.000Z",
         "sitemapLastmod": "2026-07-14T18:00:00.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/dva-sezda-1884/": {
@@ -821,7 +821,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/goneniya-i-sovest/": {
@@ -845,7 +845,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/iniciativnaya-gruppa/": {
@@ -869,7 +869,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/noch-na-kure/": {
@@ -893,7 +893,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/peterburgskaya-liniya/": {
@@ -917,7 +917,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/podpolnaya-pechat/": {
@@ -941,7 +941,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/sovetskaya-noch/": {
@@ -965,7 +965,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/spravochnik/": {
@@ -989,7 +989,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/vsehib-1944/": {
@@ -1013,7 +1013,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     },
     "/baptisty-rossii/yuzhnaya-shtunda/": {
@@ -1037,7 +1037,7 @@
         "searchPublishedAt": "2026-06-17T21:00:00.000Z",
         "searchModifiedAt": "2026-06-18T18:00:00.000Z",
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
-        "rssPublishedAt": "2026-07-14T18:00:00.000Z"
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
     }
   }
