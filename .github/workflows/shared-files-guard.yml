@@ -17,7 +17,7 @@ permissions:
 jobs:
   guard:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,6 +33,9 @@ jobs:
 
       - name: Workflow policy contracts
         run: npm run workflows:check
+
+      - name: Repository control-plane integrity
+        run: node scripts/repository-control-plane-audit.mjs
 
       - name: Readiness-to-deploy workflow linkage
         run: node scripts/workflow-linkage-regression-test.js
@@ -99,10 +102,18 @@ jobs:
 
       - name: Lint workflow YAML (actionlint)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
-        run: |
-          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
-            | tar xz -C /tmp actionlint
-          /tmp/actionlint -color
+        run: node scripts/run-actionlint.mjs
+
+      - name: Upload control-plane audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-control-plane-audit-${{ github.run_id }}
+          path: |
+            reports/repository-control-plane-audit.json
+            reports/repository-control-plane-audit.md
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Report shared files touched
         if: always()

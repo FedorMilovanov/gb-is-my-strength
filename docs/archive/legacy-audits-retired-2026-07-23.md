@@ -22,5 +22,11 @@ The retired scripts remain recoverable from Git history. They were not copied in
 - `scripts/copy-legacy-to-dist.js` — active strangler/deploy dependency;
 - route-profile `legacyPath` values — parity and migration references, not runtime imports;
 - current legacy-shadow/parity audit tooling that still has package/document references;
-- archival research and historical documentation under existing `archive/` directories;
-- `.github/workflows/_temp-gill-source-marathon-orchestrator.yml` — active transaction owner for draft PR #156, to be removed when that lane finishes.
+- archival research and historical documentation under existing `archive/` directories.
+
+## Settled temporary transaction
+
+The Gill source marathon completed through merged PR #156. Its one-off
+`_temp-gill-source-marathon-orchestrator.yml` and `gill-native-finalize.js`
+transaction surface is no longer part of the default branch. The permanent
+source, registry and publication contracts remain in the normal read-only CI.
