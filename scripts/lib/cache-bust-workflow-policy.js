@@ -1,5 +1,8 @@
 'use strict';
 
+const GLOSSARY_WORKFLOW = '.github/workflows/glossary-contract.yml';
+const WRITER_PATTERN = /(?:node\s+)?scripts\/cache-bust\.js\s+--write\b/;
+
 function validateCacheBustWorkflowPolicy(input) {
   const shared = input.sharedFiles || '';
   const readiness = input.readiness || '';
@@ -64,9 +67,42 @@ function validateCacheBustWorkflowPolicy(input) {
   requireMatch('cache-bust.js', cacheBust, /console\.error\(['"]Run explicitly to regenerate:[^\n]*--write['"]\);[\s\S]{0,80}?process\.exit\(1\);/,
     'detected drift must fail instead of silently rewriting');
 
-  for (const [name, text] of Object.entries(workflowTexts)) {
-    forbidMatch(name, text, /(?:node\s+)?scripts\/cache-bust\.js\s+--write\b/,
-      'workflows must not auto-write source revisions over concurrent agents');
+  const writerWorkflows = Object.entries(workflowTexts)
+    .filter(([, text]) => WRITER_PATTERN.test(text))
+    .map(([name]) => name);
+  for (const name of writerWorkflows) {
+    if (name !== GLOSSARY_WORKFLOW) {
+      issues.push(`${name}: only the explicitly labeled same-repository glossary normalizer may use cache-bust --write`);
+    }
+  }
+
+  const glossary = workflowTexts[GLOSSARY_WORKFLOW] || '';
+  if (WRITER_PATTERN.test(glossary)) {
+    const writerCount = (glossary.match(/(?:node\s+)?scripts\/cache-bust\.js\s+--write\b/g) || []).length;
+    if (writerCount !== 1) {
+      issues.push(`${GLOSSARY_WORKFLOW}: expected exactly one constrained cache-bust writer, found ${writerCount}`);
+    }
+    requireMatch(GLOSSARY_WORKFLOW, glossary, /^permissions:\s*$[\s\S]{0,80}?contents:\s*read\b/m,
+      'top-level workflow permissions must remain read-only');
+    requireMatch(GLOSSARY_WORKFLOW, glossary,
+      /placement-autofix:[\s\S]{0,520}?github\.event_name\s*==\s*['"]pull_request['"][\s\S]{0,240}?contains\(github\.event\.pull_request\.labels\.\*\.name,\s*['"]autofix['"]\)[\s\S]{0,240}?github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository/,
+      'writer must require pull_request, the explicit autofix label and a same-repository head');
+    requireMatch(GLOSSARY_WORKFLOW, glossary,
+      /placement-autofix:[\s\S]{0,760}?permissions:\s*$[\s\S]{0,80}?contents:\s*write\b/m,
+      'write permission must stay scoped to the guarded autofix job');
+    requireMatch(GLOSSARY_WORKFLOW, glossary,
+      /name:\s*Checkout pull request branch[\s\S]{0,180}?ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.ref\s*\}\}/,
+      'writer must checkout the explicit pull-request head branch');
+    requireBefore(GLOSSARY_WORKFLOW, glossary,
+      /node scripts\/cache-bust\.js --write/,
+      /node scripts\/cache-bust\.js\s*$/m,
+      'writer output must be followed by the default read-only validation');
+    requireMatch(GLOSSARY_WORKFLOW, glossary, /git add -u\s*$/m,
+      'writer may stage only already tracked normalized files');
+    forbidMatch(GLOSSARY_WORKFLOW, glossary, /git add -A\b|git add --all\b/,
+      'writer must not stage unrelated or newly created files');
+    requireMatch(GLOSSARY_WORKFLOW, glossary, /git push origin ["']HEAD:\$\{HEAD_REF\}["']/,
+      'writer must push only back to the requesting pull-request branch');
   }
 
   return issues;
@@ -83,6 +119,11 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
     return text.replace(first, marker).replace(second, first).replace(marker, second);
   }
 
+  function withWorkflow(input, name, text) {
+    return { ...input, workflowTexts: { ...input.workflowTexts, [name]: text } };
+  }
+
+  const glossary = baseline.workflowTexts[GLOSSARY_WORKFLOW] || '';
   const mutations = [
     {
       name: 'PR trigger removed',
@@ -97,12 +138,12 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
       value: { ...baseline, sharedFiles: baseline.sharedFiles.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust-disabled.js') },
     },
     {
-      name: 'workflow auto-writer introduced',
-      value: {
-        ...baseline,
-        sharedFiles: baseline.sharedFiles.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust.js --write'),
-        workflowTexts: { ...baseline.workflowTexts, '.github/workflows/shared-files-guard.yml': baseline.sharedFiles.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust.js --write') },
-      },
+      name: 'unauthorized workflow writer introduced',
+      value: withWorkflow(
+        { ...baseline, sharedFiles: baseline.sharedFiles.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust.js --write') },
+        '.github/workflows/shared-files-guard.yml',
+        baseline.sharedFiles.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust.js --write')
+      ),
     },
     {
       name: 'readiness catch-all removed',
@@ -144,6 +185,31 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
       value: { ...baseline, cacheBust: baseline.cacheBust.replace("const WRITE = process.argv.includes('--write');", 'const WRITE = true;') },
     },
   ];
+
+  if (WRITER_PATTERN.test(glossary)) {
+    mutations.push(
+      {
+        name: 'glossary writer loses explicit label guard',
+        value: withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace("'autofix'", "'unreviewed'")),
+      },
+      {
+        name: 'glossary writer accepts fork heads',
+        value: withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('github.event.pull_request.head.repo.full_name == github.repository', 'true')),
+      },
+      {
+        name: 'glossary writer stages untracked files',
+        value: withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('git add -u', 'git add -A')),
+      },
+      {
+        name: 'glossary writer loses read-only validation',
+        value: withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace(/node scripts\/cache-bust\.js\n/, 'node scripts/cache-bust-disabled.js\n')),
+      },
+      {
+        name: 'glossary writer pushes to main',
+        value: withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('git push origin "HEAD:${HEAD_REF}"', 'git push origin HEAD:main')),
+      }
+    );
+  }
 
   const escaped = [];
   for (const mutation of mutations) {
