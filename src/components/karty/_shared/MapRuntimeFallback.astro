@@ -12,13 +12,13 @@ import MapArchaeologyProjectionBootstrap from '@/components/karty/_shared/MapArc
 interface Props {
   title: string;
   description: string;
+  archaeologyMapId?: string;
 }
 
-const { title, description } = Astro.props;
-const isAvraamRoute = Astro.url.pathname === '/karty/avraam/' || Astro.url.pathname === '/karty/avraam';
+const { title, description, archaeologyMapId } = Astro.props;
 ---
 
-{isAvraamRoute && <MapArchaeologyProjectionBootstrap />}
+{archaeologyMapId && <MapArchaeologyProjectionBootstrap mapId={archaeologyMapId} />}
 
 <noscript>
   <style is:global>
