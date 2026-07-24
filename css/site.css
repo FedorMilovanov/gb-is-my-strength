@@ -204,7 +204,7 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
   .toc-overlay, .btoc-overlay, .bookmark-toast, .gbs2-resume,
   .gbs2-peek, .gbs2-swipetip, .gbx-tts, #selection-share-popup,
   .article-end-actions, [data-fc-root], [data-fc-controls] {
-    display: none !important;
+    display: none;
   }
 
   /* --- 3. Layout Stabilization --- */
@@ -695,17 +695,17 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 @page { size: A4; margin: 15mm 14mm 17mm; }
 @media print {
   html, body {
-    width: auto !important;
-    min-width: 0 !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: #fff !important;
-    color: #111 !important;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    overflow: visible;
+    background: #fff;
+    color: #111;
   }
 
   html.gb-print-preparing,
   html.gb-print-preparing body {
-    scroll-behavior: auto !important;
+    scroll-behavior: auto;
   }
 
   /* Interactive chrome never belongs to the document. */
@@ -723,29 +723,29 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   /* Collapse every screen shell to one normal-flow paper column. */
   .gbs2-world, .gbs2-scope, [data-gill-v16], [data-reader-root],
   .page-wrap, main, article, .article-main, .article-body {
-    display: block !important;
-    position: static !important;
-    inset: auto !important;
+    display: block;
+    position: static;
+    inset: auto;
     width: auto !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    height: auto !important;
+    min-width: 0;
+    max-width: none;
+    min-height: 0;
+    height: auto;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
-    contain: none !important;
-    content-visibility: visible !important;
-    transform: none !important;
-    filter: none !important;
+    contain: none;
+    content-visibility: visible;
+    transform: none;
+    filter: none;
   }
 
   .article-body > *,
   [data-reader-root] .article-body > *,
   [data-gill-v16] .article-body > * {
-    max-width: none !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   /* Scroll/reveal states must never produce pale or missing PDF pages. */
@@ -755,32 +755,32 @@ html:not(.dark) .gtip.gb-floating-tip::before {
     opacity: 1 !important;
     visibility: visible !important;
     transform: none !important;
-    filter: none !important;
+    filter: none;
   }
 
   /* Stable media: no fixed/parallax image can bleed across pages. */
   figure, .article-img, .article-figure, .article-hero, .gbs2-hero,
   figure img, .article-img img, .article-figure img, .article-hero img, .gbs2-hero img {
     position: static !important;
-    inset: auto !important;
+    inset: auto;
     float: none !important;
     transform: none !important;
-    filter: none !important;
-    clip-path: none !important;
+    filter: none;
+    clip-path: none;
   }
   figure, .article-img, .article-figure, .article-hero, .gbs2-hero {
     break-inside: avoid-page;
     page-break-inside: avoid;
-    overflow: visible !important;
-    margin: 5mm 0 !important;
+    overflow: visible;
+    margin: 5mm 0;
   }
   figure img, .article-img img, .article-figure img, .article-hero img, .gbs2-hero img {
-    display: block !important;
-    width: auto !important;
-    max-width: 100% !important;
+    display: block;
+    width: auto;
+    max-width: 100%;
     height: auto !important;
     max-height: 235mm !important;
-    margin: 0 auto !important;
+    margin: 0 auto;
     object-fit: contain !important;
   }
 
@@ -795,58 +795,58 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   /* Clean printed typography without browser-screen opacity tokens. */
   .article-body, .article-body p, .article-body li, .article-body td,
   .article-desc, .article-byline, figcaption {
-    color: #111 !important;
+    color: #111;
   }
-  a, a:visited { color: #111 !important; text-decoration: underline; }
-  a[href^="http"]::after { content: none !important; }
-  body::after { content: none !important; }
+  a, a:visited { color: #111; text-decoration: underline; }
+  a[href^="http"]::after { content: none; }
+  body::after { content: none; }
   body::before {
-    position: static !important;
-    color: #111 !important;
-    background: transparent !important;
-    margin: 0 0 9mm !important;
-    padding: 0 0 4mm !important;
+    position: static;
+    color: #111;
+    background: transparent;
+    margin: 0 0 9mm;
+    padding: 0 0 4mm;
   }
   .article-end-sdg {
-    margin: 18mm auto 0 !important;
-    padding: 8mm 0 0 !important;
+    margin: 18mm auto 0;
+    padding: 8mm 0 0;
   }
 }
 
 /* GB PRINT CONTRACT v2.2 — hero normalization after rendered-PDF inspection. */
 @media print {
   .gbs2-hero, .article-hero, .article-header, .hero, [class*="hero-wrap"] {
-    min-height: 0 !important;
-    height: auto !important;
-    aspect-ratio: auto !important;
-    padding: 0 !important;
+    min-height: 0;
+    height: auto;
+    aspect-ratio: auto;
+    padding: 0;
     background: transparent !important;
-    background-image: none !important;
-    box-shadow: none !important;
-    mask-image: none !important;
-    -webkit-mask-image: none !important;
+    background-image: none;
+    box-shadow: none;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
   .gbs2-hero::before, .gbs2-hero::after,
   .article-hero::before, .article-hero::after,
   .article-header::before, .article-header::after,
   .hero::before, .hero::after,
   [class*="hero-wrap"]::before, [class*="hero-wrap"]::after {
-    content: none !important;
-    display: none !important;
-    background: none !important;
+    content: none;
+    display: none;
+    background: none;
   }
   .gbs2-hero img, .article-hero img {
-    margin-top: 0 !important;
+    margin-top: 0;
   }
   .gbs2-kinetic, .gbs2-hero-badge, .gbs2-cover-badge,
   .article-hero__badge, .article-hero-badge {
-    display: none !important;
+    display: none;
   }
 }
 
 /* GB PRINT CONTRACT v2.3 — screen-only hero caption has no paper role. */
 @media print {
   .gbs2-hero-cap {
-    display: none !important;
+    display: none;
   }
 }
