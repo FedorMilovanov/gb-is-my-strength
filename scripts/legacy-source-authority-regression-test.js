@@ -60,4 +60,12 @@ assert(pagefindAudit.includes("['Goat Yard','Goat’s Yard',\"Goat's Yard\",'Goa
 assert(pagefindAudit.includes("['Corporation Act','Акт о корпорациях','Корпоративный акт']"), 'Corporation marker alternatives missing');
 assert(!pagefindAudit.includes("['Кларендонский кодекс','Солтерс-Холл'"), 'stale exact Pagefind marker list must not return');
 
-console.log('✅ Gill source authority, reading-time and semantic Pagefind contracts passed');
+const dataConsistency = fs.readFileSync(path.join(ROOT, 'scripts/check-data-consistency.js'), 'utf8');
+assert(dataConsistency.includes("require('./lib/legacy-source-authority')"), 'data consistency must use shared source authority');
+assert(dataConsistency.includes('function canonicalForRoute'), 'data consistency must have a route-aware canonical helper');
+assert(dataConsistency.includes('const authoritativeLegacy = legacyIsAuthoritative(profile)'), 'manifest/HTML comparison must branch on legacy authority');
+assert(dataConsistency.includes('const projectionFallback = !legacyIsAuthoritative(profile)'), 'series comparison must prefer canonical projections for strict-native routes');
+assert(!/const canonical = canonicalFromHtml\(file, item\.readTime\);\s*assertEqual/.test(dataConsistency), 'unconditional manifest-vs-root HTML oracle must not return');
+assert(!/const canonical = canonicalFromHtml\(file, search && search\.readTime\)/.test(dataConsistency), 'unconditional series-vs-root HTML oracle must not return');
+
+console.log('✅ Gill source authority, reading-time, Pagefind and data-consistency contracts passed');
