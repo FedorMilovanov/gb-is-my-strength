@@ -1,4 +1,4 @@
-name: Temporary Gill Deploy Failure Extract
+name: Temporary Gill Source Diagnostic Pack
 
 on:
   pull_request:
@@ -8,68 +8,65 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 jobs:
-  extract:
+  collect:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      FAILED_JOB_ID: '89565412548'
     steps:
-      - name: Download exact failed Pages job log
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Checkout exact current main
+        uses: actions/checkout@v4
+        with:
+          ref: 83a13a0755b37296ccec053987654ceefbca349e
+          fetch-depth: 1
+
+      - name: Locate Gill controller, TOC and heading sources
+        shell: bash
         run: |
           set -euo pipefail
-          mkdir -p reports
-          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FAILED_JOB_ID}/logs" > reports/pages-deploy.log
-          test -s reports/pages-deploy.log
+          mkdir -p reports diagnostic-pack
+          grep -RInE --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist \
+            'initGbs2Controls|gbs2-active|gbs2Count|aria-current|Самообразование вне университетской траектории|sec-academies|sec-from-puritans-to-baptists' \
+            . > reports/gill-source-locations.txt || true
+          cat reports/gill-source-locations.txt
 
-      - name: Extract Gill failure context
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
+          for path in \
+            js/site.js \
+            js/reader-preferences.js \
+            js/reader-preferences-head.js \
+            data/gill-pre-v16-submenu-reference.json \
+            data/gill-submenu-anchor-reconciliation.json \
+            scripts/gill-pre-v16-submenu-regression-audit.js \
+            src/components/article-pilots/gill-series/GillSeriesChrome.astro \
+            src/components/article-pilots/gill-context/GillContextPageHead.astro \
+            src/components/article-pilots/gill-part1/GillPart1PageHead.astro \
+            src/components/article-pilots/gill-part2/GillPart2PageHead.astro \
+            src/components/article-pilots/gill-part3/GillPart3PageHead.astro \
+            articles/dzhon-gill-istoricheskiy-kontekst/index.html \
+            articles/dzhon-gill-chast-1-chelovek/index.html \
+            articles/dzhon-gill-chast-2-uchenyi/index.html \
+            articles/dzhon-gill-chast-3-nasledie/index.html; do
+            if [[ -f "$path" ]]; then
+              mkdir -p "diagnostic-pack/$(dirname "$path")"
+              cp "$path" "diagnostic-pack/$path"
+            fi
+          done
 
-          source = Path('reports/pages-deploy.log')
-          lines = source.read_text(encoding='utf-8-sig', errors='replace').splitlines()
-          cleaned = [re.sub(r'^\d{4}-\d{2}-\d{2}T[^ ]+Z\s+', '', line) for line in lines]
-          patterns = [
-              re.compile(r'\bFAIL\b', re.I),
-              re.compile(r'browser audit error', re.I),
-              re.compile(r'scrollspy', re.I),
-              re.compile(r'Gill pre-v16 submenu audit:', re.I),
-              re.compile(r'Process completed with exit code', re.I),
-          ]
-          hits = []
-          for index, line in enumerate(cleaned):
-              if any(pattern.search(line) for pattern in patterns):
-                  hits.append(index)
-          selected = set()
-          for index in hits:
-              selected.update(range(max(0, index - 3), min(len(cleaned), index + 4)))
-          output = []
-          previous = None
-          for index in sorted(selected):
-              if previous is not None and index > previous + 1:
-                  output.append('---')
-              output.append(f'{index + 1}: {cleaned[index]}')
-              previous = index
-          Path('reports/gill-failure-context.txt').write_text('\n'.join(output) + '\n', encoding='utf-8')
-          print('\n'.join(output))
-          if not hits:
-              raise SystemExit('No Gill failure markers found in job log')
-          PY
+          while IFS=: read -r path line rest; do
+            [[ -f "$path" ]] || continue
+            clean="${path#./}"
+            mkdir -p "diagnostic-pack/$(dirname "$clean")"
+            cp "$clean" "diagnostic-pack/$clean"
+          done < reports/gill-source-locations.txt
 
-      - name: Upload extracted diagnostic
-        if: always()
+          find diagnostic-pack -type f -print | sort > reports/gill-diagnostic-file-list.txt
+          tar -czf reports/gill-source-diagnostic-pack.tar.gz -C diagnostic-pack .
+
+      - name: Upload source diagnostic pack
         uses: actions/upload-artifact@v4
         with:
-          name: gill-pages-failure-${{ github.run_id }}
-          path: |
-            reports/gill-failure-context.txt
-            reports/pages-deploy.log
+          name: gill-source-diagnostic-${{ github.run_id }}
+          path: reports/
           if-no-files-found: error
           retention-days: 14
