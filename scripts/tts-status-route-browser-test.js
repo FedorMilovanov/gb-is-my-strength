@@ -183,12 +183,24 @@ async function blockedScenario(browserType, origin, kind, label) {
 async function scriptFailure(origin) {
   const browser = await chromium.launch({ headless: true });
   const page = await makePage(browser, origin, { width: 1440, height: 900 }, false);
-  await page.route('**/js/vosk-tts-engine.js*', (route) => route.abort());
+  await page.addInitScript(() => {
+    window.__engineScriptBlocked = 0;
+    const nativeAppendChild = HTMLHeadElement.prototype.appendChild;
+    HTMLHeadElement.prototype.appendChild = function appendChild(node) {
+      if (node && node.tagName === 'SCRIPT' && /\/js\/vosk-tts-engine\.js(?:\?|$)/.test(String(node.src || ''))) {
+        window.__engineScriptBlocked += 1;
+        setTimeout(() => node.dispatchEvent(new Event('error')), 0);
+        return node;
+      }
+      return nativeAppendChild.call(this, node);
+    };
+  });
   try {
     await page.goto(origin + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'domcontentloaded' });
     await resetStorage(page, false);
     await clickPlay(page);
     await page.waitForSelector('.gb-tts-download-notice[data-state="error"].is-visible');
+    assert.equal(await page.evaluate(() => window.__engineScriptBlocked), 1);
     assert.equal(await page.locator('.gb-tts-download-notice__action').textContent(), 'Повторить');
     await page.screenshot({ path: path.join(REPORTS, 'tts-route-chromium-script-error.png') });
   } finally {
