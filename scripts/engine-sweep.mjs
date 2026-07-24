@@ -13,7 +13,7 @@
  * Запуск: npm run engine:sweep   (входит в npm run engine:guard)
  */
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, stat, mkdir } from 'node:fs/promises';
 import { join, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -75,6 +75,8 @@ const SPEECH_STUB = `
 `;
 
 const results = [];
+const ARTIFACT_DIR = process.env.GB_READER_UI_ARTIFACT_DIR || '';
+if (ARTIFACT_DIR) await mkdir(ARTIFACT_DIR, { recursive: true });
 const R = (page, name, ok, detail) => results.push({ page, name, ok, detail: detail || '' });
 
 const SERIES = [
@@ -147,11 +149,33 @@ for (const [id, url] of SERIES) {
   R(id, 'desk: контур PLAY в покое', !!ring && +ring.op === 1 && +ring.tr > 0.3, JSON.stringify(ring));
 
   const badge = await page.evaluate(() => {
-    const e = (document.querySelector('.gbs-theme-corner .gbs-rail-playwrap') || document.querySelector('.gbs-theme-corner .gb-ember'))?.getBoundingClientRect();
-    const b = document.querySelector('.gbs-theme-corner .gbs-rail-spdbadge')?.getBoundingClientRect();
-    return e && b ? { br: Math.round(b.right - e.right), bb: Math.round(b.bottom - e.bottom) } : null;
+    const wrap = document.querySelector('.gbs-theme-corner .gbs-rail-playwrap') || document.querySelector('.gbs-theme-corner .gb-ember')?.parentElement;
+    const badge = document.querySelector('.gbs-theme-corner .gbs-rail-spdbadge');
+    if (!wrap || !badge) return null;
+    badge.textContent = '1.75×';
+    const e = wrap.getBoundingClientRect();
+    const b = badge.getBoundingClientRect();
+    return {
+      dx: Math.round((b.left + b.width / 2) - (e.left + e.width / 2)),
+      dy: Math.round((b.top + b.height / 2) - (e.top + e.height / 2)),
+      right: Math.round(b.right), viewport: innerWidth
+    };
   });
-  R(id, 'desk: «1×» в круге', !!badge && badge.br <= 4 && badge.bb <= 4, JSON.stringify(badge));
+  R(id, 'desk: «1.75×» закреплён справа-снизу PLAY',
+    !!badge && badge.dx >= 8 && badge.dx <= 18 && badge.dy >= 8 && badge.dy <= 18 && badge.right <= badge.viewport,
+    JSON.stringify(badge));
+
+  await page.hover('.gbs-rail-menu-btn');
+  const menuChrome = await page.evaluate(() => {
+    const button = document.querySelector('.gbs-rail-menu-btn');
+    if (!button) return null;
+    const style = getComputedStyle(button);
+    const before = getComputedStyle(button, '::before');
+    return { borderRight: style.borderRightWidth, beforeWidth: before.width, beforeHeight: before.height, beforeRadius: before.borderRadius };
+  });
+  R(id, 'desk: menu SVG без круглой рамки',
+    !!menuChrome && menuChrome.borderRight === '0px' && parseFloat(menuChrome.beforeWidth) <= 2 && parseFloat(menuChrome.beforeHeight) >= 8,
+    JSON.stringify(menuChrome));
 
   const settingsHit = await clickVisibleCenter(page, '#railSettingsBtn');
   R(id, 'desk: rail ⚙ hit-target', !!settingsHit && settingsHit.visible && settingsHit.hit, JSON.stringify(settingsHit));
@@ -167,6 +191,30 @@ for (const [id, url] of SERIES) {
     return { cx: Math.round(r.x + r.width / 2), vw: innerWidth, vis: ov && getComputedStyle(ov).visibility !== 'hidden' };
   });
   R(id, 'desk: настройки поповером слева-снизу', !!pop && pop.vis && pop.cx < pop.vw / 2 - 60, JSON.stringify(pop));
+
+  const measure = await page.evaluate(async () => {
+    const button = document.querySelector('#gillSettingsOverlay [data-measure="wide"]');
+    const target = [...document.querySelectorAll('[data-gill-v16] .article-body p, [data-reader-root] .article-body p, main p')]
+      .find((node) => (node.textContent || '').trim().length > 120 && node.getBoundingClientRect().width > 180);
+    if (!button || !target) return null;
+    const before = target.getBoundingClientRect().width;
+    button.click();
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const after = target.getBoundingClientRect().width;
+    return {
+      before: Math.round(before), after: Math.round(after), delta: Math.round(after - before),
+      rootMeasure: document.documentElement.getAttribute('data-reader-measure'),
+      cssMeasure: getComputedStyle(document.documentElement).getPropertyValue('--gb-reader-measure').trim(),
+      visible: getComputedStyle(button.closest('.setting-group')).display !== 'none'
+    };
+  });
+  R(id, 'desk: настройка «Шире» доступна и ограничена 46rem',
+    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '46rem' &&
+      (id !== 'gill3' || measure.delta >= 24),
+    JSON.stringify(measure));
+  if (ARTIFACT_DIR && id === 'gill3') {
+    await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-settings-wide-1440.png'), fullPage: false });
+  }
 
   const sepiaBtn = await page.$('#gillSettingsOverlay [data-theme="sepia"]');
   if (sepiaBtn) {
@@ -247,6 +295,15 @@ for (const [id, url] of SINGLES) {
   await page.goto(base + url, { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
   R(id, 'desk: ReaderRail', !!(await page.$('.hrail')));
+  const singleBadge = await page.evaluate(() => {
+    const wrap = document.querySelector('.gb-floater .gb-ember-playwrap');
+    const badge = document.querySelector('.gb-floater .gbs-rail-spdbadge');
+    if (!wrap || !badge) return null;
+    badge.textContent = '1.75×';
+    const e = wrap.getBoundingClientRect(), b = badge.getBoundingClientRect();
+    return { dx: Math.round((b.left+b.width/2)-(e.left+e.width/2)), dy: Math.round((b.top+b.height/2)-(e.top+e.height/2)) };
+  });
+  R(id, 'desk: standalone «1.75×» справа-снизу', !!singleBadge && singleBadge.dx >= 8 && singleBadge.dy >= 8, JSON.stringify(singleBadge));
   await page.evaluate(() => document.querySelector('.hrail [data-hm-settings], .hrail button[aria-label*="астрой"]')?.click());
   await page.waitForTimeout(450);
   const hs = await page.evaluate(() => {
@@ -282,6 +339,88 @@ for (const [id, url] of SINGLES) {
     return { open: s.classList.contains('is-open'), w: Math.round(r.width), gap: Math.round(innerHeight - r.bottom), vw: innerWidth };
   });
   R(id, 'mob: настройки bottom-sheet', opened && !!msheet && msheet.open && msheet.w >= msheet.vw * 0.9 && msheet.gap <= 8, JSON.stringify(msheet));
+  await ctx.close();
+}
+
+/* ============ READER WIDTH + PDF/PRINT — СИСТЕМНЫЙ КОНТРАКТ ============ */
+{
+  const { ctx, page } = await newPage({ width: 1035, height: 851 });
+  await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    const current = window.GBReaderPreferences?.get?.() || {};
+    window.GBReaderPreferences?.set?.({ ...current, measure: 'wide' }, { source: 'engine-sweep' });
+  });
+  await page.waitForTimeout(250);
+  await page.evaluate(() => {
+    const paragraph = [...document.querySelectorAll('[data-gill-v16] .article-body p')]
+      .find((node) => (node.textContent || '').trim().length > 180);
+    if (paragraph) scrollTo(0, Math.max(0, paragraph.getBoundingClientRect().top + scrollY - 110));
+  });
+  await page.waitForTimeout(250);
+  await page.hover('.gbs-theme-corner .gbs-rail-playwrap');
+  await page.waitForTimeout(400);
+  const safe = await page.evaluate(() => {
+    const panel = document.querySelector('.gbs-theme-corner .gb-ember-expand');
+    const badge = document.querySelector('.gbs-theme-corner .gbs-rail-spdbadge');
+    const paragraph = [...document.querySelectorAll('[data-gill-v16] .article-body p')]
+      .find((node) => { const r = node.getBoundingClientRect(); return (node.textContent || '').trim().length > 180 && r.bottom > 0 && r.top < innerHeight; });
+    if (badge) badge.textContent = '1.75×';
+    const pr = panel?.getBoundingClientRect();
+    const ar = paragraph?.getBoundingClientRect();
+    return pr && ar ? {
+      articleRight: Math.round(ar.right), panelLeft: Math.round(pr.left),
+      panelWidth: Math.round(pr.width), panelHeight: Math.round(pr.height),
+      open: panel.classList.contains('is-open'),
+      scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth
+    } : null;
+  });
+  R('reader-width', '1035px: «Шире» сохраняет коридор у speed-rail',
+    !!safe && safe.open && safe.panelHeight > safe.panelWidth * 2 &&
+      safe.articleRight <= safe.panelLeft - 12 && safe.scrollWidth <= safe.viewport + 1,
+    JSON.stringify(safe));
+  if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-1035.png'), fullPage: false });
+
+  await page.evaluate(() => { window.print = () => { window.__printCalls = (window.__printCalls || 0) + 1; }; });
+  const printHit = await clickVisibleCenter(page, '.gbs-rail-foot [data-action="print"]');
+  R('print', 'PDF button hit-target', !!printHit && printHit.visible && printHit.hit, JSON.stringify(printHit));
+  await page.waitForFunction(() => window.__printCalls === 1 && window.GBPrintEngine?.getReport?.(), null, { timeout: 8000 });
+  const report = await page.evaluate(() => window.GBPrintEngine.getReport());
+  R('print', 'single shared print engine prepares once', report?.version === 2.1 && report?.source === 'button', JSON.stringify(report));
+
+  await page.emulateMedia({ media: 'print' });
+  await page.waitForTimeout(250);
+  const printLayout = await page.evaluate(() => {
+    const known = ['.gbs-rail','.gbs-theme-corner','.mobile-top-bar','.mobile-bottom-bar','.toc-overlay','.gb-floater','.hrail'];
+    const visibleChrome = known.filter((selector) => {
+      const node = document.querySelector(selector);
+      if (!node) return false;
+      const style = getComputedStyle(node);
+      return style.display !== 'none' && style.visibility !== 'hidden';
+    });
+    const body = document.querySelector('.article-body');
+    const hero = document.querySelector('.gbs2-hero img, .article-hero img, .article-figure img');
+    const bs = body ? getComputedStyle(body) : null;
+    const hs = hero ? getComputedStyle(hero) : null;
+    return {
+      visibleChrome,
+      bodyOpacity: bs?.opacity, bodyColor: bs?.color,
+      heroPosition: hs?.position, heroTransform: hs?.transform,
+      heroBefore: getComputedStyle(document.querySelector('.gbs2-hero'), '::before').display,
+      heroAfter: getComputedStyle(document.querySelector('.gbs2-hero'), '::after').display,
+      heroPaddingTop: getComputedStyle(document.querySelector('.gbs2-hero')).paddingTop,
+      heroCapDisplay: getComputedStyle(document.querySelector('.gbs2-hero-cap')).display,
+      worldDisplay: getComputedStyle(document.querySelector('.gbs2-world')).display
+    };
+  });
+  R('print', 'A4 media hides chrome and restores readable normal flow',
+    !!printLayout && printLayout.visibleChrome.length === 0 && Number(printLayout.bodyOpacity) === 1 &&
+    printLayout.heroPosition !== 'fixed' && printLayout.heroBefore === 'none' && printLayout.heroAfter === 'none' &&
+    printLayout.heroPaddingTop === '0px' && printLayout.heroCapDisplay === 'none' && printLayout.worldDisplay === 'block',
+    JSON.stringify(printLayout));
+  if (ARTIFACT_DIR) {
+    await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-print-preview.png'), fullPage: false });
+    await page.pdf({ path: join(ARTIFACT_DIR, 'reader-print-a4.pdf'), format: 'A4', printBackground: true, preferCSSPageSize: true });
+  }
   await ctx.close();
 }
 

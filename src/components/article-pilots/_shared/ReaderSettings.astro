@@ -55,11 +55,11 @@
     </div>
 
     <div class="hmset-group">
-      <span class="hmset-label">Ширина текста</span>
+      <span class="hmset-label">Ширина статьи</span>
       <div class="hmset-segment" id="hmMeasureGroup">
         <button type="button" class="hmset-btn" data-hm-measure="narrow" aria-pressed="false">Узкая</button>
         <button type="button" class="hmset-btn" data-hm-measure="normal" aria-pressed="true">Обычная</button>
-        <button type="button" class="hmset-btn" data-hm-measure="wide" aria-pressed="false">Широкая</button>
+        <button type="button" class="hmset-btn" data-hm-measure="wide" aria-pressed="false">Шире</button>
       </div>
     </div>
   </div>
@@ -188,7 +188,7 @@
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '50rem' };
+  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '46rem' };
 
   function readerPreferences() {
     return (window as any).GBReaderPreferences || null;

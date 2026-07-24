@@ -56,15 +56,15 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
           <button type="button" class="reader-setting-btn" data-line="relaxed" aria-pressed="false">Свободный</button>
         </div>
       </div>
-      <!-- Ширина текста — мобильная настройка. На десктопе спрятана (owner:
-           «не меняем» ширину статьи там; наезд флайаута скорости справа
-           сверху на текст — риск, которым сознательно не занимаемся сейчас). -->
+      <!-- Ширина статьи — единая настройка всех reader surfaces. Значение
+           «Шире» намеренно ограничено 46rem: заметно просторнее обычного, но
+           сохраняет безопасный коридор для desktop speed-morph. -->
       <div class="setting-group setting-group--measure">
-        <span class="setting-label">Ширина текста</span>
+        <span class="setting-label">Ширина статьи</span>
         <div class="setting-segment" id="gillMeasureGroup">
           <button type="button" class="reader-setting-btn" data-measure="narrow" aria-pressed="false">Узкая</button>
           <button type="button" class="reader-setting-btn" data-measure="normal" aria-pressed="true">Обычная</button>
-          <button type="button" class="reader-setting-btn" data-measure="wide" aria-pressed="false">Широкая</button>
+          <button type="button" class="reader-setting-btn" data-measure="wide" aria-pressed="false">Шире</button>
         </div>
       </div>
     </div>
@@ -73,7 +73,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '50rem' };
+  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '46rem' };
 
   function initGillReaderSettings() {
     const overlay = document.getElementById('gillSettingsOverlay');
@@ -99,9 +99,8 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       const measure = preferences.measure || 'normal';
       if (gillRoot) {
         gillRoot.style.setProperty('--gbs2-article-line', LINE_VALUES[line] || LINE_VALUES.normal);
-        if (window.matchMedia('(max-width: 64em)').matches) {
-          gillRoot.style.setProperty('--gbs2-article-measure', MEASURE_VALUES[measure] || MEASURE_VALUES.normal);
-        }
+        const measureValue = MEASURE_VALUES[measure] || MEASURE_VALUES.normal;
+        gillRoot.style.setProperty('--gbs2-article-measure', `min(${measureValue}, var(--gb-measure, ${measureValue}))`);
         if (preferences.theme === 'sepia') gillRoot.setAttribute('data-gill-reader-theme', 'sepia');
         else gillRoot.removeAttribute('data-gill-reader-theme');
       }
