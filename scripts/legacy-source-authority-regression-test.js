@@ -47,4 +47,10 @@ for (const item of GILL_ROUTES) {
   assert(!/var drift = Math\.abs\(lw - rw\);\s*drift <= 200 \?/.test(audit), `${item.audit}: unconditional legacy oracle must not return`);
 }
 
-console.log('✅ Legacy source authority contract passed for both strict-native Gill audits');
+const readingTimeAudit = fs.readFileSync(path.join(ROOT, 'scripts/gill-reading-time-canonical-audit.js'), 'utf8');
+assert(readingTimeAudit.includes("require('./lib/legacy-source-authority')"), 'reading-time audit must use shared source authority');
+assert(readingTimeAudit.includes('authoritativeLegacyRel'), 'reading-time stale-literal scan must be authority-aware');
+assert(/if \(!legacyIsAuthoritative\(profile\)\)[\s\S]*?enforced through native\/data sources/.test(readingTimeAudit), 'reference-only mirrors must not be blocking reading-time oracles');
+assert(!/\.\.\.GILL_ORDER\.map\(\(slug\) => `articles\/\$\{slug\}\/index\.html`\)/.test(readingTimeAudit), 'reading-time scan must not blindly include every legacy mirror');
+
+console.log('✅ Legacy source authority contract passed for Gill parity and reading-time audits');
