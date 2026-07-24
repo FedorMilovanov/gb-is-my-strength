@@ -3,6 +3,25 @@
 (function (global) {
   const STYLE_ID = 'map-archaeology-projection-css';
   const ROOT_SELECTOR = '[data-archaeology-projection-root]';
+  const LABELS = Object.freeze({
+    'accepted-context': 'принятый контекст',
+    'primary-identification': 'основная идентификация',
+    'project-interpretation': 'позиция проекта',
+    candidate: 'кандидат',
+    rejected: 'отвергнуто',
+    high: 'сильная опора',
+    supporting: 'поддерживающая опора',
+    interpretation: 'интерпретация',
+    negative: 'отрицательное свидетельство',
+    verified: 'проверено',
+    imported: 'очередь проверки',
+    active: 'действующий источник',
+    retracted: 'отозвано',
+  });
+
+  function label(value) {
+    return LABELS[value] || String(value || 'неизвестно');
+  }
 
   function safeUrl(value) {
     try {
@@ -36,7 +55,8 @@
       .map-arch-source{display:block;padding-left:9px;border-left:2px solid rgba(232,200,121,.22)}
       .map-arch-source__link{color:var(--me-accent,#e8c879);font-size:10px;line-height:1.4;text-decoration:none}
       .map-arch-source__link:hover{text-decoration:underline}
-      .map-arch-source__meta{display:block;margin-top:2px;color:var(--me-muted,#9aa2ae);font-size:9px;line-height:1.4}
+      .map-arch-source__meta{display:block;margin-top:2px;color:var(--me-muted,#9aa2ae);font-size:9px;line-height:1.4;overflow-wrap:anywhere}
+      .map-arch-source__id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:color-mix(in srgb,var(--me-muted,#9aa2ae) 80%,transparent)}
     `;
     document.head.appendChild(style);
   }
@@ -50,7 +70,7 @@
 
   function badge(value) {
     const normalized = String(value || 'unknown').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
-    return text('span', `map-arch-badge map-arch-badge--${normalized}`, value);
+    return text('span', `map-arch-badge map-arch-badge--${normalized}`, label(value));
   }
 
   function sourceNode(source) {
@@ -59,6 +79,7 @@
     node.dataset.sourceId = source.id;
     node.dataset.evidenceUse = source.evidenceUse;
     node.dataset.sourceStatus = source.status;
+    node.dataset.sourceVerification = source.verification;
     node.dataset.sourcePerspective = source.perspective;
 
     const href = safeUrl(source.url);
@@ -75,11 +96,14 @@
     const details = [
       source.organization,
       Number.isInteger(source.year) ? String(source.year) : '',
-      source.evidenceUse,
+      label(source.evidenceUse),
       source.perspective === 'yec' ? 'YEC-интерпретация' : source.perspective,
-      source.status,
+      label(source.status),
+      label(source.verification),
+      source.accessedAt ? `проверено ${source.accessedAt}` : '',
     ].filter(Boolean).join(' · ');
     node.appendChild(text('span', 'map-arch-source__meta', details));
+    node.appendChild(text('span', 'map-arch-source__meta map-arch-source__id', `source: ${source.id}`));
     return node;
   }
 
