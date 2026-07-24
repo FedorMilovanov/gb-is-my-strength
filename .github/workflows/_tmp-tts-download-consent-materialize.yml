@@ -136,6 +136,10 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Hold permanent workflow for connector publication
+        if: steps.transport.outputs.present == 'true'
+        run: rm -f .github/workflows/tts-download-consent.yml
+
       - name: Restore transport workflow for connector cleanup
         if: steps.transport.outputs.present == 'true'
         run: git checkout HEAD -- .github/workflows/_tmp-tts-download-consent-materialize.yml
