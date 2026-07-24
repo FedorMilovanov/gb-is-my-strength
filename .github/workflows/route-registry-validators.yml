@@ -54,6 +54,7 @@ on:
       - "scripts/seo-route-contract-test.js"
       - "scripts/konfessii-map-audit.js"
       - "scripts/public-surface-browser-matrix.mjs"
+      - "scripts/public-surface-cross-browser-matrix.mjs"
       - "scripts/public-surface-browser-diagnostics.mjs"
       - "scripts/engine-sweep.mjs"
       - "scripts/route-semantics-browser-test.mjs"
@@ -261,4 +262,51 @@ jobs:
             reports/nagornaya-epistemic-ui-browser.json
             reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
+          retention-days: 14
+
+  public-surface-cross-browser:
+    name: Public surfaces — ${{ matrix.engine }} touch/scroll
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install Playwright ${{ matrix.engine }}
+        run: npx playwright install --with-deps ${{ matrix.engine }}
+
+      - name: Test every public surface in ${{ matrix.engine }}
+        env:
+          GB_CROSS_BROWSER: ${{ matrix.engine }}
+          GB_CROSS_BROWSER_WORKERS: "2"
+        run: node scripts/public-surface-cross-browser-matrix.mjs
+
+      - name: Upload ${{ matrix.engine }} cross-browser report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-surface-cross-browser-${{ matrix.engine }}-${{ github.run_id }}
+          path: |
+            reports/public-surface-cross-browser-${{ matrix.engine }}.json
+            reports/public-surface-cross-browser-${{ matrix.engine }}.md
+          if-no-files-found: warn
           retention-days: 14
