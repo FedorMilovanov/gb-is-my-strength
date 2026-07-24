@@ -51,11 +51,13 @@
   var audioEl = null;
 
   var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
-  var DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=d75cee36';
+  var DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=1cdbee44';
   var modelDownloadController = null;
   var modelDownloadNotice = null;
   var modelDownloadNoticeTimer = null;
   var modelDownloadCancelled = false;
+  var modelDownloadNoticeAction = null;
+  var engineStatus = { phase: 'idle', ready: false, loading: false, optedOut: false };
 
   function modelDownloadOptedOut() {
     try { return localStorage.getItem(MODEL_DOWNLOAD_OPTOUT_KEY) === 'off'; }
@@ -88,52 +90,174 @@
     }
   }
 
+  function dispatchEngineStatus(phase, detail) {
+    var next = {
+      phase: phase,
+      ready: !!state.ready,
+      loading: !!state.loading,
+      optedOut: modelDownloadOptedOut()
+    };
+    if (detail) {
+      Object.keys(detail).forEach(function (key) { next[key] = detail[key]; });
+    }
+    engineStatus = next;
+    try { window.dispatchEvent(new CustomEvent('gb:vosk-status', { detail: next })); } catch (_) {}
+    return next;
+  }
+
+  function getStatus() {
+    var copy = {};
+    Object.keys(engineStatus).forEach(function (key) { copy[key] = engineStatus[key]; });
+    copy.ready = !!state.ready;
+    copy.loading = !!state.loading;
+    copy.optedOut = modelDownloadOptedOut();
+    return copy;
+  }
+
+  function bindDownloadNoticeAction(el) {
+    var action = el && el.querySelector('.gb-tts-download-notice__action');
+    if (!action || action.getAttribute('data-gb-tts-action-bound') === 'true') return;
+    action.setAttribute('data-gb-tts-action-bound', 'true');
+    action.addEventListener('click', function () {
+      var mode = action.getAttribute('data-action') || '';
+      if (mode === 'cancel') {
+        cancelLoading({ persist: true });
+        return;
+      }
+      if (mode === 'switch') {
+        var switchDetail = { handled: false };
+        try { window.dispatchEvent(new CustomEvent('gb:vosk-switch-request', { detail: switchDetail })); } catch (_) {}
+        return;
+      }
+      if (mode === 'retry' || mode === 'enable' || mode === 'manual') {
+        var retryDetail = { mode: mode, handled: false };
+        try { window.dispatchEvent(new CustomEvent('gb:vosk-retry-request', { detail: retryDetail })); } catch (_) {}
+        if (!retryDetail.handled) retryLoading({ clearOptOut: true });
+      }
+    });
+  }
+
   function getModelDownloadNotice() {
     if (modelDownloadNotice && document.documentElement.contains(modelDownloadNotice)) {
+      bindDownloadNoticeAction(modelDownloadNotice);
       return modelDownloadNotice;
+    }
+    var existing = document.querySelector('.gb-tts-download-notice');
+    if (existing) {
+      modelDownloadNotice = existing;
+      bindDownloadNoticeAction(existing);
+      return existing;
     }
     var el = document.createElement('div');
     el.className = 'gb-tts-download-notice';
     el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
     el.setAttribute('aria-atomic', 'true');
-    el.setAttribute('data-state', 'loading');
+    el.setAttribute('data-state', 'preparing');
     el.innerHTML =
       '<span class="gb-tts-download-notice__icon" aria-hidden="true"></span>' +
       '<span class="gb-tts-download-notice__copy">' +
-        '<strong class="gb-tts-download-notice__title">Улучшенный голос загружается</strong>' +
-        '<span class="gb-tts-download-notice__meta">Обычный голос уже работает · около 280 МБ</span>' +
+        '<strong class="gb-tts-download-notice__title">Проверяем улучшенный голос</strong>' +
+        '<span class="gb-tts-download-notice__meta">Системный голос уже работает</span>' +
       '</span>' +
-      '<button class="gb-tts-download-notice__action" type="button" aria-label="Остановить загрузку улучшенного голоса">Не загружать</button>';
-    var action = el.querySelector('.gb-tts-download-notice__action');
-    action.addEventListener('click', function () {
-      cancelLoading({ persist: true });
-    });
+      '<button class="gb-tts-download-notice__action" type="button" hidden></button>';
     document.body.appendChild(el);
     modelDownloadNotice = el;
+    bindDownloadNoticeAction(el);
     return el;
   }
 
-  function setModelDownloadNoticeState(stateName) {
-    var el = modelDownloadNotice;
-    if (!el) return;
+  function setNoticeAction(el, mode, label, ariaLabel) {
+    var action = el.querySelector('.gb-tts-download-notice__action');
+    modelDownloadNoticeAction = mode || null;
+    if (!action) return;
+    action.hidden = !mode;
+    action.setAttribute('data-action', mode || '');
+    action.textContent = label || '';
+    action.setAttribute('aria-label', ariaLabel || label || '');
+  }
+
+  function showStatus(stateName, options) {
+    options = options || {};
+    ensureDownloadNoticeStyles();
+    clearTimeout(modelDownloadNoticeTimer);
+    var el = getModelDownloadNotice();
     var title = el.querySelector('.gb-tts-download-notice__title');
     var meta = el.querySelector('.gb-tts-download-notice__meta');
-    var action = el.querySelector('.gb-tts-download-notice__action');
-    el.setAttribute('data-state', stateName);
-    if (stateName === 'success') {
-      if (title) title.textContent = 'Улучшенный голос готов';
-      if (meta) meta.textContent = 'Сохранён в браузере — повторно не загружается';
-      if (action) action.hidden = true;
+    var titleText = '';
+    var metaText = '';
+    var actionMode = null;
+    var actionLabel = '';
+    var actionAria = '';
+
+    if (stateName === 'browser') {
+      titleText = 'Сейчас системный голос';
+      metaText = 'Улучшенный голос проверяется в фоне';
+    } else if (stateName === 'preparing') {
+      titleText = 'Проверяем улучшенный голос';
+      metaText = 'Системный голос уже работает';
+    } else if (stateName === 'loading') {
+      titleText = 'Улучшенный голос загружается';
+      metaText = 'Системный голос уже работает · около 280 МБ';
+      actionMode = 'cancel';
+      actionLabel = 'Не загружать';
+      actionAria = 'Остановить загрузку улучшенного голоса';
+    } else if (stateName === 'initializing') {
+      titleText = 'Запускаем улучшенный голос';
+      metaText = 'Модель получена · подготавливаем в браузере';
+    } else if (stateName === 'ready' || stateName === 'success') {
+      stateName = 'ready';
+      titleText = 'Улучшенный голос готов';
+      metaText = 'Можно включить без перезагрузки страницы';
+      actionMode = 'switch';
+      actionLabel = 'Включить сейчас';
+      actionAria = 'Перейти на улучшенный голос с текущего места';
+    } else if (stateName === 'selected') {
+      titleText = 'Работает улучшенный голос';
+      metaText = 'Локальная модель · текст никуда не отправляется';
+    } else if (stateName === 'disabled') {
+      titleText = 'Улучшенный голос отключён';
+      metaText = 'Сейчас используется системный голос';
+      actionMode = 'enable';
+      actionLabel = 'Включить';
+      actionAria = 'Снова разрешить загрузку улучшенного голоса';
+    } else if (stateName === 'save-data') {
+      titleText = 'Включена экономия трафика';
+      metaText = 'Системный голос работает · модель около 280 МБ';
+      actionMode = 'manual';
+      actionLabel = 'Загрузить';
+      actionAria = 'Загрузить улучшенный голос несмотря на экономию трафика';
     } else if (stateName === 'cancelled') {
-      if (title) title.textContent = 'Загрузка остановлена';
-      if (meta) meta.textContent = 'Обычный голос продолжает работать';
-      if (action) action.hidden = true;
-    } else if (stateName === 'error') {
-      if (title) title.textContent = 'Улучшенный голос пока недоступен';
-      if (meta) meta.textContent = 'Остаётся обычный голос';
-      if (action) action.hidden = true;
+      titleText = 'Загрузка остановлена';
+      metaText = 'Системный голос продолжает работать';
+    } else {
+      stateName = 'error';
+      titleText = 'Улучшенный голос не запустился';
+      metaText = 'Системный голос продолжает работать';
+      actionMode = 'retry';
+      actionLabel = 'Повторить';
+      actionAria = 'Повторить запуск улучшенного голоса';
     }
+
+    if (options.title) titleText = options.title;
+    if (options.meta) metaText = options.meta;
+    if (options.actionMode !== undefined) actionMode = options.actionMode;
+    if (options.actionLabel !== undefined) actionLabel = options.actionLabel;
+    if (options.actionAria !== undefined) actionAria = options.actionAria;
+
+    el.setAttribute('data-state', stateName);
+    if (title) title.textContent = titleText;
+    if (meta) meta.textContent = metaText;
+    setNoticeAction(el, actionMode, actionLabel, actionAria);
+    requestAnimationFrame(function () { el.classList.add('is-visible'); });
+    dispatchEngineStatus(stateName, {
+      title: titleText,
+      message: metaText,
+      action: actionMode,
+      reason: options.reason || null
+    });
+    if (options.autoHide) hideModelDownloadNotice(options.autoHide);
+    return el;
   }
 
   function hideModelDownloadNotice(delay) {
@@ -150,24 +274,18 @@
   }
 
   function showModelDownloadNotice() {
-    ensureDownloadNoticeStyles();
-    // Keep the historical event for telemetry/compatibility. The legacy
-    // 2.2-second toast is suppressed synchronously and replaced by the
-    // cancellable compact card below.
-    try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-start')); } catch (_) {}
-    suppressLegacyDownloadToast();
-    clearTimeout(modelDownloadNoticeTimer);
-    var el = getModelDownloadNotice();
-    el.setAttribute('data-state', 'loading');
-    var action = el.querySelector('.gb-tts-download-notice__action');
-    if (action) action.hidden = false;
-    requestAnimationFrame(function () { el.classList.add('is-visible'); });
+    return showStatus('loading');
   }
 
   function finishModelDownloadNotice(stateName) {
-    if (!modelDownloadNotice) return;
-    setModelDownloadNoticeState(stateName);
-    hideModelDownloadNotice(stateName === 'error' ? 2600 : 1700);
+    var autoHide = stateName === 'cancelled' ? 1900 : stateName === 'selected' ? 1800 : 0;
+    return showStatus(stateName, { autoHide: autoHide });
+  }
+
+  function clearModelDownloadOptOut() {
+    try { localStorage.removeItem(MODEL_DOWNLOAD_OPTOUT_KEY); } catch (_) {}
+    modelDownloadCancelled = false;
+    dispatchEngineStatus('enabled');
   }
 
   function cancelLoading(options) {
@@ -181,8 +299,18 @@
       try { modelDownloadController.abort(); aborted = true; } catch (_) {}
     }
     finishModelDownloadNotice('cancelled');
+    dispatchEngineStatus('cancelled', { reason: 'user' });
     try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-cancelled')); } catch (_) {}
     return aborted;
+  }
+
+  function retryLoading(options) {
+    options = options || {};
+    if (options.clearOptOut !== false) clearModelDownloadOptOut();
+    modelDownloadCancelled = false;
+    state.loading = null;
+    showStatus('preparing');
+    return ensureLoaded();
   }
 
   function fetchStressLookup() {
@@ -291,9 +419,18 @@
   // returning visitors automatically re-fetch instead of playing back a
   // stale/mismatched cached model from IndexedDB under the old URL's entry.
   function fetchModelFiles() {
-    return idbGet(MODEL_URL).then(function (cached) {
-      if (cached) return cached;
+    return idbGet(MODEL_URL).catch(function (err) {
+      console.warn('[vosk-tts] IndexedDB read unavailable, continuing without warm cache:', err);
+      dispatchEngineStatus('cache-unavailable', { reason: 'indexeddb-read' });
+      return null;
+    }).then(function (cached) {
+      if (cached) {
+        dispatchEngineStatus('cache-hit');
+        showStatus('initializing', { meta: 'Модель найдена в браузере · запускаем' });
+        return cached;
+      }
       if (modelDownloadOptedOut()) {
+        showStatus('disabled', { reason: 'optout' });
         throw createDownloadCancelledError('enhanced voice download disabled by user');
       }
 
@@ -301,6 +438,8 @@
       modelDownloadController = typeof AbortController !== 'undefined'
         ? new AbortController()
         : null;
+      try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-start')); } catch (_) {}
+      suppressLegacyDownloadToast();
       showModelDownloadNotice();
 
       var fetchOptions = modelDownloadController
@@ -313,11 +452,14 @@
       }).then(function (buf) {
         return verifyModelIntegrity(buf).then(function () {
           var files = extractZip(new Uint8Array(buf));
-          return idbSet(MODEL_URL, files).then(function () { return files; });
+          return idbSet(MODEL_URL, files).catch(function (err) {
+            console.warn('[vosk-tts] model cache write unavailable; current session can still use the model:', err);
+            dispatchEngineStatus('cache-unavailable', { reason: 'indexeddb-write' });
+          }).then(function () { return files; });
         });
       }).then(function (files) {
         modelDownloadController = null;
-        finishModelDownloadNotice('success');
+        showStatus('initializing');
         try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-complete')); } catch (_) {}
         return files;
       }).catch(function (err) {
@@ -326,12 +468,6 @@
           finishModelDownloadNotice('cancelled');
           throw createDownloadCancelledError('model download cancelled by user');
         }
-        finishModelDownloadNotice('error');
-        try {
-          window.dispatchEvent(new CustomEvent('gb:vosk-model-download-error', {
-            detail: { message: (err && err.message) || String(err) }
-          }));
-        } catch (_) {}
         throw err;
       });
     });
@@ -340,16 +476,21 @@
   function sliceBuf(u8) { return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength); }
 
   function ensureLoaded() {
-    if (state.ready) return Promise.resolve();
+    if (state.ready) {
+      finishModelDownloadNotice('ready');
+      return Promise.resolve(true);
+    }
     if (state.loading) return state.loading;
+    modelDownloadCancelled = false;
+    showStatus('preparing');
     state.loading = Promise.all([
       window.VoskTTSCore ? Promise.resolve() : loadScript(CORE_SRC),
       window.VoskStressLookup ? Promise.resolve() : loadScript(STRESS_LOOKUP_SRC),
       window.fflate ? Promise.resolve() : loadScript(FFLATE_SRC),
       window.ort ? Promise.resolve() : loadScript(ORT_SRC)
     ]).then(function () {
-      // single-threaded WASM: no SharedArrayBuffer / COOP-COEP headers required
       ort.env.wasm.numThreads = 1;
+      dispatchEngineStatus('dependencies-ready');
       return Promise.all([fetchModelFiles(), fetchStressLookup()]);
     }).then(function (results) {
       var files = results[0];
@@ -358,6 +499,7 @@
       state.config = JSON.parse(td.decode(files['config.json']));
       state.dic = VoskTTSCore.parseDictionary(td.decode(files['dictionary']));
       var hasBert = files['bert/model.onnx'] && files['bert/vocab.txt'];
+      showStatus('initializing');
       return Promise.all([
         ort.InferenceSession.create(sliceBuf(files['model.onnx']), { executionProviders: ['wasm'] }),
         hasBert
@@ -368,9 +510,28 @@
         state.bertSess = sessions[1];
         if (state.bertSess) state.tok = new VoskTTSCore.WordPieceTokenizer(td.decode(files['bert/vocab.txt']));
         state.ready = true;
+        state.loading = null;
+        finishModelDownloadNotice('ready');
+        dispatchEngineStatus('ready');
+        try { window.dispatchEvent(new CustomEvent('gb:vosk-model-ready')); } catch (_) {}
+        return true;
       });
     }).catch(function (err) {
-      state.loading = null; // allow retry on the next play click
+      state.loading = null;
+      if (err && err.userCancelled) {
+        if (modelDownloadOptedOut() && !modelDownloadCancelled) {
+          showStatus('disabled', { reason: 'optout' });
+        } else if (modelDownloadCancelled) {
+          finishModelDownloadNotice('cancelled');
+        }
+      } else {
+        showStatus('error', { reason: (err && err.message) || String(err) });
+        try {
+          window.dispatchEvent(new CustomEvent('gb:vosk-model-download-error', {
+            detail: { message: (err && err.message) || String(err) }
+          }));
+        } catch (_) {}
+      }
       throw err;
     });
     return state.loading;
@@ -684,7 +845,11 @@
   window.VoskTTSEngine = {
     isSupported: isSupported,
     isReady: isReady,
+    getStatus: getStatus,
+    showStatus: showStatus,
     ensureLoaded: ensureLoaded,
+    retryLoading: retryLoading,
+    clearModelDownloadOptOut: clearModelDownloadOptOut,
     cancelLoading: cancelLoading,
     speak: speak,
     cancel: cancel
