@@ -90,6 +90,36 @@ async function assertCsp(page) {
   assert.match(csp || '', /cdn\.jsdelivr\.net/);
 }
 
+async function settledNoticeSnapshot(page) {
+  await page.waitForFunction(() => Array.from(document.styleSheets).some((sheet) => String(sheet.href || '').includes('tts-download-notice.css')));
+  await page.waitForTimeout(420);
+  return page.locator('.gb-tts-download-notice').evaluate((el) => {
+    const rect = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
+    const viewport = window.visualViewport;
+    return {
+      title: el.querySelector('.gb-tts-download-notice__title').textContent,
+      meta: el.querySelector('.gb-tts-download-notice__meta').textContent,
+      action: el.querySelector('.gb-tts-download-notice__action').textContent,
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      bottom: rect.bottom,
+      width: viewport ? viewport.width : innerWidth,
+      height: viewport ? viewport.height : innerHeight,
+      innerWidth,
+      innerHeight,
+      scrollWidth: document.documentElement.scrollWidth,
+      position: style.position,
+      cssLeft: style.left,
+      cssBottom: style.bottom,
+      transform: style.transform,
+      opacity: style.opacity,
+      visibility: style.visibility,
+    };
+  });
+}
+
 async function coldScenario(browserType, origin, route, viewport, label) {
   const browser = await browserType.launch({ headless: true });
   const page = await makePage(browser, origin, viewport, false);
@@ -99,23 +129,18 @@ async function coldScenario(browserType, origin, route, viewport, label) {
     await assertCsp(page);
     await clickPlay(page);
     await page.waitForSelector('.gb-tts-download-notice[data-state="loading"].is-visible');
-    const snapshot = await page.locator('.gb-tts-download-notice').evaluate((el) => {
-      const rect = el.getBoundingClientRect();
-      return {
-        title: el.querySelector('.gb-tts-download-notice__title').textContent,
-        meta: el.querySelector('.gb-tts-download-notice__meta').textContent,
-        action: el.querySelector('.gb-tts-download-notice__action').textContent,
-        left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
-        width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth,
-      };
-    });
+    const snapshot = await settledNoticeSnapshot(page);
+    console.log('[tts-route]', label, JSON.stringify(snapshot));
+    await page.screenshot({ path: path.join(REPORTS, 'tts-route-' + label + '.png'), fullPage: false });
     assert.equal(snapshot.title, 'Улучшенный голос загружается');
     assert.match(snapshot.meta, /Системный голос уже работает/);
     assert.equal(snapshot.action, 'Не загружать');
-    assert.ok(snapshot.left >= 0 && snapshot.right <= snapshot.width + 0.5);
-    assert.ok(snapshot.top >= 0 && snapshot.bottom <= snapshot.height + 0.5);
-    assert.ok(snapshot.scrollWidth <= snapshot.width);
-    await page.screenshot({ path: path.join(REPORTS, 'tts-route-' + label + '.png'), fullPage: false });
+    assert.equal(snapshot.position, 'fixed');
+    assert.equal(snapshot.opacity, '1');
+    assert.equal(snapshot.visibility, 'visible');
+    assert.ok(snapshot.left >= -0.5 && snapshot.right <= snapshot.width + 0.5, `notice horizontal bounds failed: ${JSON.stringify(snapshot)}`);
+    assert.ok(snapshot.top >= -0.5 && snapshot.bottom <= snapshot.height + 0.5, `notice vertical bounds failed: ${JSON.stringify(snapshot)}`);
+    assert.ok(snapshot.scrollWidth <= snapshot.innerWidth, `horizontal overflow: ${JSON.stringify(snapshot)}`);
     await page.locator('.gb-tts-download-notice__action').click();
     await page.waitForFunction(() => window.__modelFetchAborted === true);
   } finally {
