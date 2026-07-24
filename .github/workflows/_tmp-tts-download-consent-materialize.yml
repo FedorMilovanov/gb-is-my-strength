@@ -120,16 +120,17 @@ jobs:
           git diff --check
           git status --short
 
-      - name: Commit permanent changes
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No materialized changes to commit."
-            exit 0
-          fi
-          git commit -m "fix(tts): make model download cancellable"
-          git push origin HEAD:agent/tts-download-cancel-notice
+      - name: Upload verified permanent scope
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-permanent-scope-${{ github.run_id }}
+          path: |
+            js/vosk-tts-engine.js
+            css/tts-download-notice.css
+            scripts/tts-download-consent-contract-test.js
+            scripts/tts-download-notice-browser-test.js
+            .github/workflows/tts-download-consent.yml
+            reports/tts-download-notice-desktop.png
+            reports/tts-download-notice-mobile-dark.png
+          if-no-files-found: error
+          retention-days: 14
