@@ -6,6 +6,7 @@ on:
     paths:
       - 'karty/_data/archaeology-source-registry.json'
       - 'karty/_data/archaeology-source-provenance.json'
+      # Site provenance resolves live IDs from places, waypoints, context points and variant clusters.
       - 'karty/avraam/route.json'
       - 'scripts/map-archaeology-source-registry-audit.js'
       - '.github/workflows/map-archaeology-source-registry.yml'
@@ -14,6 +15,7 @@ on:
     paths:
       - 'karty/_data/archaeology-source-registry.json'
       - 'karty/_data/archaeology-source-provenance.json'
+      # Keep push validation symmetric when route IDs or collections change on main.
       - 'karty/avraam/route.json'
       - 'scripts/map-archaeology-source-registry-audit.js'
       - '.github/workflows/map-archaeology-source-registry.yml'
