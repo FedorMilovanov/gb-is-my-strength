@@ -131,27 +131,50 @@ async function findVisible(page, selectors) {
   return null;
 }
 
+async function inspectTrigger(trigger) {
+  return trigger.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const top = document.elementFromPoint(point.x, point.y);
+    const style = getComputedStyle(node);
+    return {
+      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+      point,
+      position: style.position,
+      fullyInViewport: rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.top >= 0 &&
+        rect.right <= innerWidth && rect.bottom <= innerHeight,
+      centerInViewport: point.x >= 0 && point.y >= 0 && point.x <= innerWidth && point.y <= innerHeight,
+      hitTarget: Boolean(top && (top === node || node.contains(top))),
+      top: top ? `${top.tagName.toLowerCase()}#${top.id || ''}.${String(top.className || '').slice(0, 100)}` : null,
+    };
+  }).catch(() => null);
+}
+
 async function exerciseOverlay(page, entry, profile, name, selectors) {
   const trigger = await findVisible(page, selectors);
   if (!trigger) return;
   const controls = await trigger.getAttribute('aria-controls');
+  let hit = await inspectTrigger(trigger);
+  let activation = 'locator';
   try {
-    await trigger.scrollIntoViewIfNeeded({ timeout: 3000 });
-    await page.waitForTimeout(80);
-    await trigger.click({ timeout: 4000 });
+    const fixedOwner = ['fixed', 'sticky'].includes(hit?.position);
+    if (!hit?.fullyInViewport && !fixedOwner) {
+      await trigger.scrollIntoViewIfNeeded({ timeout: 3000 });
+      await page.waitForTimeout(80);
+      hit = await inspectTrigger(trigger);
+    }
+    try {
+      await trigger.click({ timeout: 4000 });
+    } catch (locatorError) {
+      hit = await inspectTrigger(trigger);
+      if (!hit?.centerInViewport || !hit?.hitTarget) throw locatorError;
+      activation = 'mouse';
+      await page.mouse.click(hit.point.x, hit.point.y);
+    }
   } catch (error) {
-    const hit = await trigger.evaluate((node) => {
-      const rect = node.getBoundingClientRect();
-      const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-      const top = document.elementFromPoint(point.x, point.y);
-      return {
-        rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-        point,
-        top: top ? `${top.tagName.toLowerCase()}#${top.id || ''}.${String(top.className || '').slice(0, 100)}` : null,
-      };
-    }).catch(() => null);
+    hit = await inspectTrigger(trigger);
     const shot = await capture(page, entry, profile, `${name}-click-failure`);
-    record(entry, profile, `interaction:${name}:trigger`, false, JSON.stringify({ error: error.message, hit, shot }));
+    record(entry, profile, `interaction:${name}:trigger`, false, JSON.stringify({ error: error.message, hit, activation, shot }));
     return;
   }
   await page.waitForTimeout(180);
@@ -176,7 +199,7 @@ async function exerciseOverlay(page, entry, profile, name, selectors) {
       viewport: { width: innerWidth, height: innerHeight },
     };
   }, { controls });
-  record(entry, profile, `interaction:${name}:opens`, Boolean(state?.found), JSON.stringify(state));
+  record(entry, profile, `interaction:${name}:opens`, Boolean(state?.found), JSON.stringify({ ...state, activation }));
   if (state?.found) {
     const inside = state.rect.left >= -6 && state.rect.top >= -6 &&
       state.rect.right <= state.viewport.width + 6 && state.rect.bottom <= state.viewport.height + 6;
