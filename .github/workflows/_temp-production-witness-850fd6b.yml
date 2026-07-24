@@ -1,4 +1,4 @@
-name: Temporary Gill Proven Tree Packager
+name: Temporary Gill Tree Metadata Packager
 
 on:
   pull_request:
@@ -10,93 +10,38 @@ permissions:
   contents: read
 
 jobs:
-  package:
+  metadata:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
-      - name: Checkout exact PR branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
-
-      - name: Recreate the exact proven transaction on current main
+      - name: Capture exact main tree and permanent workflow
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch origin main fix/gill-readerstate-submenu-release-2026-07-24
-          git merge --no-edit origin/main
-          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:src/components/article-pilots/gill-series/gillSeriesData.ts \
-            > src/components/article-pilots/gill-series/gillSeriesData.ts
-          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-release-materialize.py \
-            > /tmp/gill-release-materialize.py
-          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-visibility-materialize.py \
-            > /tmp/gill-visibility-materialize.py
-          python /tmp/gill-release-materialize.py
-          python /tmp/gill-visibility-materialize.py
-          node scripts/cache-bust.js --write
-          node scripts/cache-bust.js
-          git rm .github/workflows/_temp-production-witness-850fd6b.yml
-          git diff --check origin/main
-
-      - name: Package exact changed files and hashes
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p reports/tree/files
+          mkdir -p reports/meta/.github/workflows
+          printf 'base_commit=%s\nbase_tree=%s\n' \
+            "$(git rev-parse origin/main)" \
+            "$(git rev-parse 'origin/main^{tree}')" \
+            | tee reports/meta/base.env
+          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-release-materialize.py > /tmp/materialize.py
           python - <<'PY'
           from pathlib import Path
-          import hashlib, json, shutil, subprocess
-
-          paths = subprocess.check_output(
-              ['git','diff','--name-only','--diff-filter=ACMRT','origin/main'], text=True
-          ).splitlines()
-          expected_exact = {
-              'js/floating-cluster-controller.js',
-              'data/gill-submenu-anchor-reconciliation.json',
-              'src/components/article-pilots/gill-series/gillSeriesData.ts',
-              '.github/workflows/gill-pre-v16-submenu.yml',
-              'src/lib/asset-version.js',
-          }
-          bad=[]
-          rows=[]
-          root=Path('reports/tree/files')
-          for raw in paths:
-              path=Path(raw)
-              allowed=(raw in expected_exact or raw.endswith('.html') or (raw.startswith('src/') and raw.endswith('.astro')))
-              if not allowed: bad.append(raw)
-              data=path.read_bytes()
-              dst=root/path
-              dst.parent.mkdir(parents=True,exist_ok=True)
-              dst.write_bytes(data)
-              rows.append({'path':raw,'mode':'100644','sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)})
-          deleted=subprocess.check_output(
-              ['git','diff','--name-only','--diff-filter=D','origin/main'], text=True
-          ).splitlines()
-          if deleted:
-              raise SystemExit('unexpected deletions relative to main: '+', '.join(deleted))
-          if bad:
-              raise SystemExit('unexpected packaged files: '+', '.join(bad))
-          manifest={
-              'base':subprocess.check_output(['git','rev-parse','origin/main'],text=True).strip(),
-              'sourceProofRun':30123196860,
-              'sourceProofLocalCommit':'21f9f1670',
-              'fileCount':len(rows),
-              'files':rows,
-          }
-          Path('reports/tree/manifest.json').write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
-          Path('reports/tree/changed-files.txt').write_text('\n'.join(paths)+'\n',encoding='utf-8')
-          subprocess.run(['git','diff','--binary','origin/main','--'],stdout=open('reports/tree/proven.patch','wb'),check=True)
-          print(json.dumps(manifest,indent=2,ensure_ascii=False))
+          text=Path('/tmp/materialize.py').read_text(encoding='utf-8')
+          start=text.index("workflow = '''") + len("workflow = '''")
+          end=text.index("'''\nPath('.github/workflows/gill-pre-v16-submenu.yml')", start)
+          Path('reports/meta/.github/workflows/gill-pre-v16-submenu.yml').write_text(text[start:end],encoding='utf-8')
           PY
-
-      - name: Upload exact proven tree
-        uses: actions/upload-artifact@v4
+          sha256sum reports/meta/.github/workflows/gill-pre-v16-submenu.yml | tee reports/meta/workflow.sha256
+      - uses: actions/upload-artifact@v4
         with:
-          name: gill-proven-tree-${{ github.run_id }}
-          path: reports/tree/
+          name: gill-tree-metadata-${{ github.run_id }}
+          path: reports/meta/
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
