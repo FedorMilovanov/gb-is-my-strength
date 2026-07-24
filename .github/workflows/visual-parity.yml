@@ -27,6 +27,7 @@ on:
       - "karty/**"
       - "data/**"
       - "scripts/visual-parity-*.js"
+      - "scripts/home-progressive-enhancement-browser-test.js"
       - ".github/workflows/visual-parity.yml"
   push:
     branches: [main]
@@ -41,6 +42,7 @@ on:
       - "karty/**"
       - "data/**"
       - "scripts/visual-parity-*.js"
+      - "scripts/home-progressive-enhancement-browser-test.js"
       - ".github/workflows/visual-parity.yml"
   schedule:
     - cron: '0 6 * * 1'
@@ -82,6 +84,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Verify screenshot settle ordering
+        run: node scripts/visual-parity-screenshot-settle-contract-test.js
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
@@ -93,6 +98,9 @@ jobs:
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
+
+      - name: Verify home progressive enhancement
+        run: node scripts/home-progressive-enhancement-browser-test.js
 
       - name: Capture legacy-vs-dist pixel diagnostics
         id: screenshots

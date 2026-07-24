@@ -150,20 +150,120 @@ function routeSlug(route) {
   return route.replace(/^\//, '').replace(/\/$/, '').replace(/[^a-z0-9\-_]+/gi, '_') || 'root';
 }
 
+async function primeHomeRevealObservers(page, route) {
+  if (route !== '/') return null;
+  return page.evaluate(async () => {
+    const reveals = Array.from(document.querySelectorAll('.h-reveal'));
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    for (const element of reveals) {
+      element.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await pause(120);
+    }
+    window.scrollTo(0, 0);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    // Delayed reveal variants reach roughly 1.2s; retain margin for CI runners.
+    await pause(1500);
+    return { total: reveals.length };
+  });
+}
+
+async function settleHomeRevealState(page, route) {
+  if (route !== '/') return null;
+
+  const state = await page.evaluate(() => {
+    const reveals = Array.from(document.querySelectorAll('.h-reveal'));
+    const snapshots = reveals.map((element) => {
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return {
+        element,
+        id: element.id || element.getAttribute('aria-labelledby') || element.className,
+        opacity: Number.parseFloat(style.opacity || '1'),
+        visibility: style.visibility,
+        display: style.display,
+        contentVisibility: style.contentVisibility,
+        width: rect.width,
+        height: rect.height,
+      };
+    });
+    const hidden = snapshots.filter((item) => (
+      item.opacity < 0.98
+      || item.visibility === 'hidden'
+      || item.display === 'none'
+      || item.contentVisibility === 'hidden'
+      || item.width <= 0
+      || item.height <= 0
+    ));
+    if (!hidden.length) {
+      snapshots.forEach((item) => item.element.setAttribute('data-visual-parity-settled', '1'));
+    }
+    return {
+      total: snapshots.length,
+      settled: hidden.length ? 0 : snapshots.length,
+      hidden: hidden.map(({ id, opacity, visibility, display, contentVisibility, width, height }) => ({
+        id: String(id).slice(0, 120),
+        opacity,
+        visibility,
+        display,
+        contentVisibility,
+        width,
+        height,
+      })),
+      bodyTextLength: document.body.innerText.length,
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    };
+  });
+
+  if (state.total < 6) {
+    throw new Error(`home reveal inventory incomplete before capture: ${state.total} (expected at least 6)`);
+  }
+  if (state.hidden.length) {
+    throw new Error(`home reveal content hidden before animation freeze: ${JSON.stringify(state.hidden)}`);
+  }
+  if (state.bodyTextLength < 4000) {
+    throw new Error(`home body text unexpectedly short before capture: ${state.bodyTextLength}`);
+  }
+  if (state.scrollWidth > state.viewportWidth) {
+    throw new Error(`home horizontal overflow before capture: ${state.scrollWidth} > ${state.viewportWidth}`);
+  }
+  return state;
+}
+
+async function validateHomeCaptureState(page, route) {
+  if (route !== '/') return null;
+  const state = await page.evaluate(() => {
+    const reveals = Array.from(document.querySelectorAll('[data-visual-parity-settled="1"]'));
+    const hidden = reveals.filter((element) => {
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return Number.parseFloat(style.opacity || '1') < 0.98
+        || style.visibility === 'hidden'
+        || style.display === 'none'
+        || style.contentVisibility === 'hidden'
+        || rect.width <= 0
+        || rect.height <= 0;
+    });
+    return {
+      total: reveals.length,
+      visible: reveals.length - hidden.length,
+      hidden: hidden.map((element) => element.id || element.getAttribute('aria-labelledby') || element.className),
+    };
+  });
+  if (state.total < 6 || state.visible !== state.total) {
+    throw new Error(`home capture state lost after animation freeze: ${JSON.stringify(state)}`);
+  }
+  return state;
+}
+
 async function screenshot(page, baseUrl, route, viewport, outFile) {
   await page.setViewportSize({ width: viewport.width, height: viewport.height });
   const url = baseUrl.replace(/\/$/, '') + route;
   await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 }).catch((e) => {
     throw new Error(`goto ${url} failed: ${e.message}`);
   });
-  // freeze animations + transitions to make diff deterministic
-  await page.addStyleTag({
-    content: `
-      *, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
-      .lazyload, [data-lazy], img[loading="lazy"] { animation: none !important; }
-    `,
-  }).catch(() => {});
-  // Force eager loading for ALL images and decode them
+  // Force eager loading for ALL images and decode them before the warm-scroll pass.
   await page.evaluate(async () => {
     const imgs = Array.from(document.querySelectorAll('img'));
     imgs.forEach((img) => { try { img.loading = 'eager'; } catch {} });
@@ -195,12 +295,38 @@ async function screenshot(page, baseUrl, route, viewport, outFile) {
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     await new Promise((r) => setTimeout(r, 500));
   }).catch(() => {});
+
+  // A coarse scroll can skip IntersectionObserver delivery on long mobile pages.
+  // Visit every home reveal section like a real reader before proving visibility.
+  await primeHomeRevealObservers(page, route);
+
+  // Fail closed on a real hidden-home state. Only already-visible reveal sections
+  // receive a capture marker, so the screenshot harness cannot mask a runtime bug.
+  await settleHomeRevealState(page, route);
+
+  // Freeze only after observers, lazy media and reveal animations have reached
+  // their final state. The capture marker preserves that proven state while
+  // removing timing variance from the screenshot itself.
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
+      .lazyload, [data-lazy], img[loading="lazy"] { animation: none !important; }
+      [data-visual-parity-settled="1"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        content-visibility: visible !important;
+      }
+    `,
+  }).catch(() => {});
+
   await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
   await page.waitForFunction(() => {
     const imgs = Array.from(document.querySelectorAll('img'));
     return imgs.every((img) => img.complete && (img.naturalWidth > 0 || img.dataset.brokenOk === '1'));
   }, { timeout: 15_000 }).catch(() => {});
   await page.waitForTimeout(400);
+  await validateHomeCaptureState(page, route);
   // Always ensure outFile dir exists (defensive for retry)
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   await page.screenshot({ path: outFile, fullPage: FULL_PAGE });
