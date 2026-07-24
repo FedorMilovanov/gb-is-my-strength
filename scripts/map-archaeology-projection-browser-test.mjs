@@ -32,6 +32,7 @@ const projection = {
       organization: 'Museum',
       url: 'https://example.test/report',
       year: 2025,
+      accessedAt: '2026-07-24',
       status: 'active',
       verification: 'verified',
       evidenceUse: 'high',
@@ -43,6 +44,7 @@ const projection = {
       organization: 'Research journal',
       url: 'https://example.test/interpretation',
       year: 2012,
+      accessedAt: '2026-07-24',
       status: 'active',
       verification: 'verified',
       evidenceUse: 'interpretation',
@@ -54,6 +56,7 @@ const projection = {
       organization: 'Journal',
       url: 'javascript:alert(1)',
       year: 2025,
+      accessedAt: '2026-07-24',
       status: 'retracted',
       verification: 'verified',
       evidenceUse: 'negative',
@@ -106,9 +109,11 @@ await page.locator('[data-tab="arch"]').click();
 await page.waitForSelector('[data-archaeology-projection-root][data-place-id="ur"]');
 assert.equal(await page.locator('.me-arch-footer').count(), 0);
 assert.equal(await page.locator('[data-claim-id="ur-ancient-city-context"]').count(), 1);
-assert.equal(await page.locator('[data-source-id="field-source"][data-evidence-use="high"]').count(), 1);
-assert.equal(await page.locator('[data-source-id="yec-source"][data-source-perspective="yec"]').count(), 1);
+assert.equal(await page.locator('[data-source-id="field-source"][data-evidence-use="high"][data-source-verification="verified"]').count(), 1);
+assert.equal(await page.locator('[data-source-id="yec-source"][data-source-perspective="yec"][data-source-verification="verified"]').count(), 1);
 assert.equal(await page.locator('[data-source-id="field-source"] a').getAttribute('href'), 'https://example.test/report');
+assert.match(await page.locator('[data-source-id="field-source"]').innerText(), /source: field-source/);
+assert.match(await page.locator('[data-source-id="field-source"]').innerText(), /проверено 2026-07-24/);
 
 await page.locator('[data-tab="story"]').click();
 await page.waitForFunction(() => document.querySelectorAll('[data-archaeology-projection-root], .me-arch-footer').length === 0);
@@ -122,7 +127,8 @@ await page.evaluate(() => {
 await page.waitForSelector('[data-claim-id="tall-el-hammam-airburst-rejected"]');
 assert.equal(await page.locator('.me-arch-footer').count(), 0);
 assert.equal(await page.locator('[data-source-id="retracted-source"] a').count(), 0, 'non-HTTPS source must not become a link');
-assert.equal(await page.locator('[data-source-id="retracted-source"][data-evidence-use="negative"][data-source-status="retracted"]').count(), 1);
+assert.equal(await page.locator('[data-source-id="retracted-source"][data-evidence-use="negative"][data-source-status="retracted"][data-source-verification="verified"]').count(), 1);
+assert.match(await page.locator('[data-source-id="retracted-source"]').innerText(), /source: retracted-source/);
 assert.deepEqual(consoleErrors, []);
 
 await browser.close();
