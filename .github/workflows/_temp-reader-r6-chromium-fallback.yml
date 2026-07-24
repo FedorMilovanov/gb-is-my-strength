@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s  %s\n' '1186f55c4681edec3cd9ee6622be9fddcd48eb503d72562fe3174b0a1c08c6dc' 'scripts/_temp_reader_r6_chromium.patch' | sha256sum -c -
+          printf '%s  %s\n' '8fa88ce7a01a44726f0379df3b11f0926e20480b5f7e5e903ac156a1a2188386' 'scripts/_temp_reader_r6_chromium.patch' | sha256sum -c -
           patch -p1 --batch --forward < scripts/_temp_reader_r6_chromium.patch
           rm scripts/_temp_reader_r6_chromium.patch
           node --check scripts/engine-sweep.mjs
