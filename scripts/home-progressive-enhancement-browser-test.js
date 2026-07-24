@@ -10,6 +10,7 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'visual-parity', 'home-progressive-enhancement');
+const REPORT_FILE = path.join(REPORT_DIR, 'report.json');
 const PROGRESSIVE_SOURCE = fs.readFileSync(path.join(ROOT, 'src/components/home/HomeProgressiveEnhancementHead.astro'), 'utf8');
 const PAGE_SOURCE = fs.readFileSync(path.join(ROOT, 'src/pages/index.astro'), 'utf8');
 const WORKFLOW_SOURCE = fs.readFileSync(path.join(ROOT, '.github/workflows/visual-parity.yml'), 'utf8');
@@ -151,14 +152,15 @@ async function runNormal(browser, origin, report) {
   await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
   await warmScroll(page);
   const reveals = await revealSnapshot(page);
-  assertRevealVisible(reveals, 'normal JS after full warm scroll');
   const health = await collectPageHealth(page);
+  const screenshot = path.join(REPORT_DIR, 'normal-mobile-full.png');
+  await page.screenshot({ path: screenshot, fullPage: true });
+  report.normal = { reveals, health, runtimeErrors, screenshot: path.relative(ROOT, screenshot) };
+
+  assertRevealVisible(reveals, 'normal JS after full warm scroll');
   assert.ok(health.scrollWidth <= health.viewport, `normal JS horizontal overflow: ${health.scrollWidth} > ${health.viewport}`);
   assert.ok(health.bodyTextLength > 4000, `normal JS body text unexpectedly short: ${health.bodyTextLength}`);
   assert.deepEqual(runtimeErrors, [], `normal JS runtime errors: ${runtimeErrors.join('\n')}`);
-  const screenshot = path.join(REPORT_DIR, 'normal-mobile-full.png');
-  await page.screenshot({ path: screenshot, fullPage: true });
-  report.normal = { reveals, health, screenshot: path.relative(ROOT, screenshot) };
   await context.close();
 }
 
@@ -173,8 +175,6 @@ async function runNoJavaScript(browser, origin, report) {
   await page.goto(`${origin}/`, { waitUntil: 'load' });
 
   const reveals = await revealSnapshot(page);
-  assertRevealVisible(reveals, 'no-JS');
-
   const controls = await page.evaluate(() => {
     const display = (selector) => {
       const element = document.querySelector(selector);
@@ -191,25 +191,35 @@ async function runNoJavaScript(browser, origin, report) {
       linkHeights: links.map((link) => link.getBoundingClientRect().height),
     };
   });
+
+  await page.locator('.h-nojs-nav > summary').click();
+  const openAttribute = await page.locator('.h-nojs-nav').getAttribute('open');
+  const sheetVisible = await page.locator('.h-nojs-nav__sheet').isVisible();
+  await page.locator('.h-nojs-nav > summary').click();
+
+  const health = await collectPageHealth(page);
+  const screenshot = path.join(REPORT_DIR, 'no-js-mobile-full.png');
+  await page.screenshot({ path: screenshot, fullPage: true });
+  report.noJavaScript = {
+    reveals,
+    controls,
+    openAttribute,
+    sheetVisible,
+    health,
+    screenshot: path.relative(ROOT, screenshot),
+  };
+
+  assertRevealVisible(reveals, 'no-JS');
   assert.equal(controls.search, 'none', 'no-JS search control must be hidden');
   assert.equal(controls.theme, 'none', 'no-JS theme control must be hidden');
   assert.equal(controls.burger, 'none', 'no-JS burger control must be hidden');
   assert.notEqual(controls.fallback, 'none', 'native no-JS navigation must be visible');
   assert.equal(controls.linkCount, 8, 'native no-JS navigation must expose eight routes');
   assert.ok(controls.linkHeights.every((height) => height >= 44), `no-JS link targets below 44px: ${controls.linkHeights.join(', ')}`);
-
-  await page.locator('.h-nojs-nav > summary').click();
-  assert.equal(await page.locator('.h-nojs-nav').getAttribute('open'), '', 'native details menu must open without JavaScript');
-  const sheetVisible = await page.locator('.h-nojs-nav__sheet').isVisible();
+  assert.equal(openAttribute, '', 'native details menu must open without JavaScript');
   assert.equal(sheetVisible, true, 'no-JS navigation sheet must become visible');
-  await page.locator('.h-nojs-nav > summary').click();
-
-  const health = await collectPageHealth(page);
   assert.ok(health.scrollWidth <= health.viewport, `no-JS horizontal overflow: ${health.scrollWidth} > ${health.viewport}`);
   assert.ok(health.bodyTextLength > 4000, `no-JS body text unexpectedly short: ${health.bodyTextLength}`);
-  const screenshot = path.join(REPORT_DIR, 'no-js-mobile-full.png');
-  await page.screenshot({ path: screenshot, fullPage: true });
-  report.noJavaScript = { reveals, controls, health, screenshot: path.relative(ROOT, screenshot) };
   await context.close();
 }
 
@@ -222,43 +232,67 @@ async function runPrint(browser, origin, report) {
   await page.emulateMedia({ media: 'print' });
   await page.waitForTimeout(100);
   const reveals = await revealSnapshot(page);
-  assertRevealVisible(reveals, 'print media before scrolling');
-  assert.deepEqual(runtimeErrors, [], `print runtime errors: ${runtimeErrors.join('\n')}`);
+  const health = await collectPageHealth(page);
   const screenshot = path.join(REPORT_DIR, 'print-desktop-full.png');
   await page.screenshot({ path: screenshot, fullPage: true });
-  report.print = { reveals, health: await collectPageHealth(page), screenshot: path.relative(ROOT, screenshot) };
+  report.print = { reveals, health, runtimeErrors, screenshot: path.relative(ROOT, screenshot) };
+
+  assertRevealVisible(reveals, 'print media before scrolling');
+  assert.deepEqual(runtimeErrors, [], `print runtime errors: ${runtimeErrors.join('\n')}`);
   await context.close();
 }
 
 async function runWithoutIntersectionObserver(browser, origin, report) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await context.addInitScript(() => {
-    Object.defineProperty(window, 'IntersectionObserver', { configurable: true, value: undefined });
+    delete window.IntersectionObserver;
   });
   const page = await context.newPage();
   const runtimeErrors = [];
   monitorRuntime(page, runtimeErrors);
   await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(300);
+
+  const support = await page.evaluate(() => typeof window.IntersectionObserver);
   const reveals = await revealSnapshot(page);
+  const health = await collectPageHealth(page);
+  const screenshot = path.join(REPORT_DIR, 'no-intersection-observer-mobile-full.png');
+  await page.screenshot({ path: screenshot, fullPage: true });
+  report.noIntersectionObserver = {
+    support,
+    reveals,
+    health,
+    runtimeErrors,
+    screenshot: path.relative(ROOT, screenshot),
+  };
+
+  assert.equal(support, 'undefined', 'IntersectionObserver fallback fixture must remove the API entirely');
   assertRevealVisible(reveals, 'IntersectionObserver unavailable');
   assert.deepEqual(runtimeErrors, [], `observer fallback runtime errors: ${runtimeErrors.join('\n')}`);
-  report.noIntersectionObserver = { reveals, health: await collectPageHealth(page) };
   await context.close();
 }
 
 (async () => {
   const { server, origin } = await startServer();
   const browser = await chromium.launch({ headless: true });
-  const report = { generatedAt: new Date().toISOString(), origin };
+  const report = { generatedAt: new Date().toISOString(), origin, status: 'running' };
   try {
     await runNormal(browser, origin, report);
     await runNoJavaScript(browser, origin, report);
     await runPrint(browser, origin, report);
     await runWithoutIntersectionObserver(browser, origin, report);
-    fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify(report, null, 2));
+    report.status = 'pass';
     console.log('Home progressive-enhancement browser contract: PASS (normal, no-JS, print, no IntersectionObserver).');
+  } catch (error) {
+    report.status = 'failure';
+    report.failure = {
+      name: error?.name || 'Error',
+      message: error?.message || String(error),
+      stack: error?.stack || '',
+    };
+    throw error;
   } finally {
+    fs.writeFileSync(REPORT_FILE, JSON.stringify(report, null, 2));
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
   }
