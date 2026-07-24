@@ -1,0 +1,82 @@
+name: Bible Reference Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "data/bible/**"
+      - "data/verses.json"
+      - "src/lib/bible-reference-core.mjs"
+      - "scripts/bible-reference-contract.mjs"
+      - "docs/REFERENCE-TOOLTIP-CONTRACT.md"
+      - ".github/workflows/bible-reference-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/bible/**"
+      - "data/verses.json"
+      - "src/lib/bible-reference-core.mjs"
+      - "scripts/bible-reference-contract.mjs"
+      - "docs/REFERENCE-TOOLTIP-CONTRACT.md"
+      - ".github/workflows/bible-reference-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bible-reference-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bible-reference-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+
+      - name: Prepare diagnostics
+        run: mkdir -p reports
+
+      - name: Validate syntax
+        run: |
+          node --check src/lib/bible-reference-core.mjs
+          node --check scripts/bible-reference-contract.mjs
+
+      - name: Enforce strict Bible reference contract
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/bible-reference-contract.mjs --strict 2>&1 \
+            | tee reports/bible-reference-contract.log
+
+      - name: Lint workflow
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p /tmp/actionlint
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            | tar xz -C /tmp/actionlint actionlint
+          /tmp/actionlint/actionlint -no-color .github/workflows/bible-reference-contract.yml \
+            2>&1 | tee reports/bible-reference-actionlint.log
+
+      - name: Ensure validators are read-only
+        run: git diff --exit-code
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bible-reference-contract-${{ github.run_id }}
+          path: reports/
+          if-no-files-found: error
+          retention-days: 14
