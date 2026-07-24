@@ -14,84 +14,1458 @@
     ]
   },
   "dimensions": {
-    "locatorTypes": ["publication-record", "project-page", "field-report", "journal-article", "heritage-record", "reference-entry", "news-item", "department-page", "visual-record", "retraction-notice", "volume-index", "archive-description", "collection-page"],
-    "workTypes": ["excavation-report", "archaeological-synthesis", "collection-record", "journal-article", "heritage-synthesis", "scholarly-reference", "theological-analysis", "visual-document", "retraction-notice", "institutional-directory", "event-notice", "research-project", "bibliographic-index"],
-    "authorities": ["primary", "secondary", "tertiary"],
-    "reviews": ["peer-reviewed", "institutional", "editorial", "none"],
-    "perspectives": ["general", "conservative", "yec"],
-    "evidenceUses": ["high", "supporting", "interpretation", "visual", "negative", "none"]
+    "locatorTypes": [
+      "publication-record",
+      "project-page",
+      "field-report",
+      "journal-article",
+      "heritage-record",
+      "reference-entry",
+      "news-item",
+      "department-page",
+      "visual-record",
+      "retraction-notice",
+      "volume-index",
+      "archive-description",
+      "collection-page"
+    ],
+    "workTypes": [
+      "excavation-report",
+      "archaeological-synthesis",
+      "collection-record",
+      "journal-article",
+      "heritage-synthesis",
+      "scholarly-reference",
+      "theological-analysis",
+      "visual-document",
+      "retraction-notice",
+      "institutional-directory",
+      "event-notice",
+      "research-project",
+      "bibliographic-index"
+    ],
+    "authorities": [
+      "primary",
+      "secondary",
+      "tertiary"
+    ],
+    "reviews": [
+      "peer-reviewed",
+      "institutional",
+      "editorial",
+      "none"
+    ],
+    "perspectives": [
+      "general",
+      "conservative",
+      "yec"
+    ],
+    "evidenceUses": [
+      "high",
+      "supporting",
+      "interpretation",
+      "visual",
+      "negative",
+      "none"
+    ]
   },
   "sites": {
-    "ur": {"routeRef":{"collection":"places","id":"ur"}},
-    "harran": {"routeRef":{"collection":"places","id":"harran"}},
-    "carchemish": {"routeRef":{"collection":"verified_waypoints","id":"carchemish"}},
-    "mari": {"routeRef":{"collection":"ctx_index","id":"мари"}},
-    "shechem": {"routeRef":{"collection":"places","id":"shechem"}},
-    "hebron": {"routeRef":{"collection":"places","id":"hebron"}},
-    "mamre": {"routeRef":{"collection":"scientific_variants","id":"hebron"},"concept":"Mamre candidate within the Hebron evidence cluster"},
-    "beersheba": {"routeRef":{"collection":"places","id":"beersheba"}},
-    "dan": {"routeRef":{"collection":"places","id":"dan"}},
-    "gerar": {"routeRef":{"collection":"places","id":"gerar"}},
-    "hammam": {"routeRef":{"collection":"places","id":"hammam"}},
-    "sodom": {"routeRef":{"collection":"places","id":"sodom"}},
-    "bethel": {"routeRef":{"collection":"places","id":"bethel"}},
-    "shur": {"routeRef":{"collection":"places","id":"shur"}},
-    "moriah": {"routeRef":{"collection":"places","id":"salem"},"concept":"Moriah/Jerusalem interpretation cluster"}
+    "ur": {
+      "routeRef": {
+        "collection": "places",
+        "id": "ur"
+      }
+    },
+    "harran": {
+      "routeRef": {
+        "collection": "places",
+        "id": "harran"
+      }
+    },
+    "carchemish": {
+      "routeRef": {
+        "collection": "verified_waypoints",
+        "id": "carchemish"
+      }
+    },
+    "mari": {
+      "routeRef": {
+        "collection": "ctx_index",
+        "id": "мари"
+      }
+    },
+    "shechem": {
+      "routeRef": {
+        "collection": "places",
+        "id": "shechem"
+      }
+    },
+    "hebron": {
+      "routeRef": {
+        "collection": "places",
+        "id": "hebron"
+      }
+    },
+    "mamre": {
+      "routeRef": {
+        "collection": "scientific_variants",
+        "id": "hebron"
+      },
+      "concept": "Mamre candidate within the Hebron evidence cluster"
+    },
+    "beersheba": {
+      "routeRef": {
+        "collection": "places",
+        "id": "beersheba"
+      }
+    },
+    "dan": {
+      "routeRef": {
+        "collection": "places",
+        "id": "dan"
+      }
+    },
+    "gerar": {
+      "routeRef": {
+        "collection": "places",
+        "id": "gerar"
+      }
+    },
+    "hammam": {
+      "routeRef": {
+        "collection": "places",
+        "id": "hammam"
+      }
+    },
+    "sodom": {
+      "routeRef": {
+        "collection": "places",
+        "id": "sodom"
+      }
+    },
+    "bethel": {
+      "routeRef": {
+        "collection": "places",
+        "id": "bethel"
+      }
+    },
+    "shur": {
+      "routeRef": {
+        "collection": "places",
+        "id": "shur"
+      }
+    },
+    "moriah": {
+      "routeRef": {
+        "collection": "places",
+        "id": "salem"
+      },
+      "concept": "Moriah/Jerusalem interpretation cluster"
+    }
   },
   "records": {
-    "penn-ur-overview": {"canonicalUrl":"https://collections.penn.museum/collections/highlights/neareast/location/ur.php","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"collection-page","workType":"collection-record","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{}},
-    "bm-ur-1925-26": {"canonicalUrl":"https://www.britishmuseum.org/collection/term/BIB1109","accessedAt":"2026-07-24","publicationYear":1926,"locatorType":"publication-record","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"catalog":"BIB1109"}},
-    "bm-ur-royal-cemetery": {"canonicalUrl":"https://www.britishmuseum.org/collection/term/BIB1124","accessedAt":"2026-07-24","publicationYear":1934,"locatorType":"publication-record","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"catalog":"BIB1124"}},
-    "bm-ur-old-babylonian": {"canonicalUrl":"https://www.britishmuseum.org/collection/term/BIB1106","accessedAt":"2026-07-24","publicationYear":1976,"locatorType":"publication-record","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"catalog":"BIB1106"}},
-    "bm-ur-1923-24": {"canonicalUrl":"https://www.britishmuseum.org/collection/term/BIB2792","accessedAt":"2026-07-24","publicationYear":1925,"locatorType":"publication-record","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"catalog":"BIB2792"}},
-    "bm-carchemish-ii": {"canonicalUrl":"https://www.britishmuseum.org/collection/term/BIB1108","accessedAt":"2026-07-24","publicationYear":1921,"locatorType":"publication-record","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"catalog":"BIB1108"}},
-    "bm-carchemish-iii": {"canonicalUrl":"https://www.britishmuseum.org/collection/term/BIB1104","accessedAt":"2026-07-24","publicationYear":1952,"locatorType":"publication-record","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"catalog":"BIB1104"}},
-    "unibo-karkemish-overview": {"canonicalUrl":"https://disci.unibo.it/en/research/archaeological-missions/achaeological-missions-abroad/karkemish-turkey/excavations","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"project-page","workType":"research-project","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{}},
-    "unibo-karkemish-2023-report": {"canonicalUrl":"https://cris.unibo.it/handle/11585/1050456","accessedAt":"2026-07-24","publicationYear":2025,"locatorType":"publication-record","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"handle":"11585/1050456"}},
-    "mari-official-overview": {"canonicalUrl":"https://archeologie.culture.gouv.fr/en/mari","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"project-page","workType":"archaeological-synthesis","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{}},
-    "mari-excavation-history": {"canonicalUrl":"https://archeologie.culture.gouv.fr/mari/en/excavation-history","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"project-page","workType":"archaeological-synthesis","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"supporting","identifiers":{}},
-    "mari-palace": {"canonicalUrl":"https://archeologie.culture.gouv.fr/mari/en/discovery-and-excavation","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"project-page","workType":"archaeological-synthesis","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"supporting","identifiers":{}},
-    "mari-archives": {"canonicalUrl":"https://archeologie.culture.gouv.fr/mari/en/archives-texts","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"collection-page","workType":"collection-record","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{}},
-    "mari-current-research": {"canonicalUrl":"https://archeologie.culture.gouv.fr/mari/en/current-research","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"project-page","workType":"research-project","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"supporting","identifiers":{}},
-    "harran-department": {"canonicalUrl":"https://harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"department-page","workType":"institutional-directory","authority":"tertiary","review":"institutional","perspective":"general","evidenceUse":"none","identifiers":{}},
-    "harran-excavations-2025": {"canonicalUrl":"https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/haberler/2025-yili-turkiye-kultur-yolu-festivali-kapsaminda-bolum-hocalarimiz-kazi-calismalarini-anlatacaklar","accessedAt":"2026-07-24","publicationYear":2025,"locatorType":"news-item","workType":"event-notice","authority":"tertiary","review":"institutional","perspective":"general","evidenceUse":"none","identifiers":{}},
-    "harran-fieldwork": {"canonicalUrl":"https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/menuler/bilgilendirme/akreditasyon/is-yeri-uygulamalari","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"department-page","workType":"institutional-directory","authority":"tertiary","review":"institutional","perspective":"general","evidenceUse":"none","identifiers":{}},
-    "leiden-tell-balata": {"canonicalUrl":"https://www.universiteitleiden.nl/en/research/research-projects/archaeology/tell-balata-archaeologcial-park-project","accessedAt":"2026-07-24","publicationYear":2010,"locatorType":"project-page","workType":"research-project","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{}},
-    "unesco-canaanite-city-states": {"canonicalUrl":"https://whc.unesco.org/en/tentativelists/6949/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"heritage-record","workType":"heritage-synthesis","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"unesco":"6949"}},
-    "oeaw-tell-balata": {"canonicalUrl":"https://www.oeaw.ac.at/en/oeai/media/news-archive/news-detail/bericht","accessedAt":"2026-07-24","publicationYear":2022,"locatorType":"news-item","workType":"archaeological-synthesis","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"supporting","identifiers":{}},
-    "hup-tell-balata-2023": {"canonicalUrl":"https://www.hup.fi/en/chapters/e/10.33134/HUP-19-6","accessedAt":"2026-07-24","publicationYear":2023,"locatorType":"journal-article","workType":"journal-article","authority":"secondary","review":"peer-reviewed","perspective":"general","evidenceUse":"high","identifiers":{"doi":"10.33134/HUP-19-6"}},
-    "unesco-hebron": {"canonicalUrl":"https://whc.unesco.org/en/list/1565","accessedAt":"2026-07-24","publicationYear":2017,"locatorType":"heritage-record","workType":"heritage-synthesis","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"unesco":"1565"}},
-    "unesco-biblical-tels": {"canonicalUrl":"https://whc.unesco.org/en/list/1108/","accessedAt":"2026-07-24","publicationYear":2005,"locatorType":"heritage-record","workType":"heritage-synthesis","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"unesco":"1108"}},
-    "iaa-esi-series": {"canonicalUrl":"https://publications.iaa.org.il/esi_english_series/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"collection-page","workType":"collection-record","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{}},
-    "iaa-tel-sheva-2025": {"canonicalUrl":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26636","accessedAt":"2026-07-24","publicationYear":2025,"locatorType":"field-report","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"iaaReport":"26636"}},
-    "iaa-tel-sheva-campus-2025": {"canonicalUrl":"https://hadashot.iaa.org.il/report_detail_eng.aspx?id=26647&mag_id=139","accessedAt":"2026-07-24","publicationYear":2025,"locatorType":"field-report","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"iaaReport":"26647"}},
-    "iaa-beersheba-hadassah-2025": {"canonicalUrl":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=27693","accessedAt":"2026-07-24","publicationYear":2025,"locatorType":"field-report","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"iaaReport":"27693"}},
-    "iaa-beersheba-trumpeldor-2024": {"canonicalUrl":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26486","accessedAt":"2026-07-24","publicationYear":2024,"locatorType":"field-report","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"iaaReport":"26486"}},
-    "iaa-tel-sheva-chalcolithic": {"canonicalUrl":"https://publications.iaa.org.il/atiqot/vol87/iss1/3/","accessedAt":"2026-07-24","publicationYear":2017,"locatorType":"journal-article","workType":"journal-article","authority":"secondary","review":"peer-reviewed","perspective":"general","evidenceUse":"high","identifiers":{"atiqot":"87.3"}},
-    "iaa-nahal-beersheba-2013": {"canonicalUrl":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=2233&mag_id=120","accessedAt":"2026-07-24","publicationYear":2013,"locatorType":"field-report","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"iaaReport":"2233"}},
-    "iaa-nahal-beersheba-west-2015": {"canonicalUrl":"https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=24835&mag_id=122","accessedAt":"2026-07-24","publicationYear":2015,"locatorType":"field-report","workType":"excavation-report","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"high","identifiers":{"iaaReport":"24835"}},
-    "scientific-reports-tall-retraction": {"canonicalUrl":"https://www.nature.com/articles/s41598-025-99265-5","accessedAt":"2026-07-24","publicationYear":2025,"locatorType":"retraction-notice","workType":"retraction-notice","authority":"primary","review":"editorial","perspective":"general","evidenceUse":"negative","identifiers":{"doi":"10.1038/s41598-025-99265-5"}},
-    "pubmed-tall-retraction": {"canonicalUrl":"https://pubmed.ncbi.nlm.nih.gov/40275027/","accessedAt":"2026-07-24","publicationYear":2025,"locatorType":"publication-record","workType":"retraction-notice","authority":"secondary","review":"institutional","perspective":"general","evidenceUse":"negative","identifiers":{"doi":"10.1038/s41598-025-99265-5","pmid":"40275027"}},
-    "arj-abraham-chronology": {"canonicalUrl":"https://answersresearchjournal.org/abraham-chronology-ancient-mesopotamia/","accessedAt":"2026-07-24","publicationYear":2012,"locatorType":"journal-article","workType":"theological-analysis","authority":"secondary","review":"editorial","perspective":"yec","evidenceUse":"interpretation","identifiers":{}},
-    "arj-volume-5": {"canonicalUrl":"https://answersresearchjournal.org/volumes/v5/","accessedAt":"2026-07-24","publicationYear":2012,"locatorType":"volume-index","workType":"bibliographic-index","authority":"tertiary","review":"editorial","perspective":"yec","evidenceUse":"none","identifiers":{}},
-    "aig-have-we-found-sodom": {"canonicalUrl":"https://answersingenesis.org/archaeology/have-we-found-sodom/","accessedAt":"2026-06-14","publicationYear":null,"locatorType":"reference-entry","workType":"theological-analysis","authority":"secondary","review":"editorial","perspective":"yec","evidenceUse":"interpretation","identifiers":{}},
-    "creation-times-abraham": {"canonicalUrl":"https://creation.com/the-times-of-abraham","accessedAt":"2026-06-14","publicationYear":null,"locatorType":"reference-entry","workType":"theological-analysis","authority":"secondary","review":"editorial","perspective":"yec","evidenceUse":"interpretation","identifiers":{}},
-    "creation-chronogenealogies": {"canonicalUrl":"https://creation.com/biblical-chronogenealogies","accessedAt":"2026-06-14","publicationYear":null,"locatorType":"reference-entry","workType":"theological-analysis","authority":"secondary","review":"editorial","perspective":"yec","evidenceUse":"interpretation","identifiers":{}},
-    "icr-biblical-age": {"canonicalUrl":"https://www.icr.org/biblical-age","accessedAt":"2026-06-14","publicationYear":null,"locatorType":"reference-entry","workType":"theological-analysis","authority":"secondary","review":"editorial","perspective":"yec","evidenceUse":"interpretation","identifiers":{}},
-    "bibleplaces-haran": {"canonicalUrl":"https://www.bibleplaces.com/haran/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"tertiary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "bibleplaces-shechem": {"canonicalUrl":"https://www.bibleplaces.com/shechem/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"tertiary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "bibleplaces-bethel": {"canonicalUrl":"https://www.bibleplaces.com/bethel/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"tertiary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "bibleplaces-dan": {"canonicalUrl":"https://www.bibleplaces.com/dan/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"tertiary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "bibleplaces-beersheba": {"canonicalUrl":"https://www.bibleplaces.com/beersheba/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"tertiary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "bibleplaces-bab-edh-dhra": {"canonicalUrl":"https://www.bibleplaces.com/babedhdhra/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"tertiary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "bibleplaces-numeira": {"canonicalUrl":"https://www.bibleplaces.com/numeira/","accessedAt":"2026-07-24","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"tertiary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "loc-mamre": {"canonicalUrl":"https://www.loc.gov/resource/matpc.22876/","accessedAt":"2026-06-14","publicationYear":1930,"locatorType":"visual-record","workType":"visual-document","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"visual","identifiers":{"loc":"matpc.22876"}},
-    "loc-shur-el-raha": {"canonicalUrl":"https://tile.loc.gov/storage-services/service/pnp/matpc/01900/01946v.jpg","accessedAt":"2026-06-14","publicationYear":1900,"locatorType":"visual-record","workType":"visual-document","authority":"primary","review":"institutional","perspective":"general","evidenceUse":"visual","identifiers":{"loc":"matpc.01946"}},
-    "ritmeyer-mamre": {"canonicalUrl":"https://www.ritmeyer.com/2010/10/12/mamre-and-the-temple-mount-in-jerusalem/","accessedAt":"2026-06-14","publicationYear":2010,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"secondary","review":"editorial","perspective":"conservative","evidenceUse":"interpretation","identifiers":{}},
-    "wibilex-bethel": {"canonicalUrl":"https://www.die-bibel.de/ressourcen/wibilex/altes-testament/bethel-ort","accessedAt":"2026-06-14","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"secondary","review":"editorial","perspective":"general","evidenceUse":"interpretation","identifiers":{}},
-    "wibilex-hebron": {"canonicalUrl":"https://www.die-bibel.de/ressourcen/wibilex/altes-testament/hebron","accessedAt":"2026-06-14","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"secondary","review":"editorial","perspective":"general","evidenceUse":"interpretation","identifiers":{}},
-    "wibilex-beersheba": {"canonicalUrl":"https://www.die-bibel.de/ressourcen/wibilex/altes-testament/beerscheba","accessedAt":"2026-06-14","publicationYear":null,"locatorType":"reference-entry","workType":"scholarly-reference","authority":"secondary","review":"editorial","perspective":"general","evidenceUse":"interpretation","identifiers":{}},
-    "lloyd-brice-harran-1951": {"canonicalUrl":"https://cdli.earth/publications/1787105","accessedAt":"2026-07-24","publicationYear":1951,"locatorType":"publication-record","workType":"journal-article","authority":"primary","review":"peer-reviewed","perspective":"general","evidenceUse":"high","identifiers":{"jstor":"3642359"}},
-    "harran-plain-survey-2021": {"canonicalUrl":"https://dergipark.org.tr/en/pub/kdeniz/article/1015403","accessedAt":"2026-07-24","publicationYear":2021,"locatorType":"journal-article","workType":"journal-article","authority":"primary","review":"peer-reviewed","perspective":"general","evidenceUse":"high","identifiers":{}}
+    "penn-ur-overview": {
+      "canonicalUrl": "https://collections.penn.museum/collections/highlights/neareast/location/ur.php",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "bm-ur-1925-26": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/term/BIB1109",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1926,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "catalog": "BIB1109"
+      }
+    },
+    "bm-ur-royal-cemetery": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/term/BIB1124",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1934,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "catalog": "BIB1124"
+      }
+    },
+    "bm-ur-old-babylonian": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/term/BIB1106",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1976,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "catalog": "BIB1106"
+      }
+    },
+    "bm-ur-1923-24": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/term/BIB2792",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1925,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "catalog": "BIB2792"
+      }
+    },
+    "bm-carchemish-ii": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/term/BIB1108",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1921,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "catalog": "BIB1108"
+      }
+    },
+    "bm-carchemish-iii": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/term/BIB1104",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1952,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "catalog": "BIB1104"
+      }
+    },
+    "unibo-karkemish-overview": {
+      "canonicalUrl": "https://disci.unibo.it/en/research/archaeological-missions/achaeological-missions-abroad/karkemish-turkey/excavations",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "research-project",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "unibo-karkemish-2023-report": {
+      "canonicalUrl": "https://cris.unibo.it/handle/11585/1050456",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "handle": "11585/1050456"
+      }
+    },
+    "mari-official-overview": {
+      "canonicalUrl": "https://archeologie.culture.gouv.fr/en/mari",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "mari-excavation-history": {
+      "canonicalUrl": "https://archeologie.culture.gouv.fr/mari/en/excavation-history",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "mari-palace": {
+      "canonicalUrl": "https://archeologie.culture.gouv.fr/mari/en/discovery-and-excavation",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "mari-archives": {
+      "canonicalUrl": "https://archeologie.culture.gouv.fr/mari/en/archives-texts",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "mari-current-research": {
+      "canonicalUrl": "https://archeologie.culture.gouv.fr/mari/en/current-research",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "research-project",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "harran-department": {
+      "canonicalUrl": "https://harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "department-page",
+      "workType": "institutional-directory",
+      "authority": "tertiary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "none",
+      "identifiers": {}
+    },
+    "harran-excavations-2025": {
+      "canonicalUrl": "https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/haberler/2025-yili-turkiye-kultur-yolu-festivali-kapsaminda-bolum-hocalarimiz-kazi-calismalarini-anlatacaklar",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "news-item",
+      "workType": "event-notice",
+      "authority": "tertiary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "none",
+      "identifiers": {}
+    },
+    "harran-fieldwork": {
+      "canonicalUrl": "https://www.harran.edu.tr/akademik/lisans-programlarimiz/arkeoloji/menuler/bilgilendirme/akreditasyon/is-yeri-uygulamalari",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "department-page",
+      "workType": "institutional-directory",
+      "authority": "tertiary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "none",
+      "identifiers": {}
+    },
+    "leiden-tell-balata": {
+      "canonicalUrl": "https://www.universiteitleiden.nl/en/research/research-projects/archaeology/tell-balata-archaeologcial-park-project",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2010,
+      "locatorType": "project-page",
+      "workType": "research-project",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "unesco-canaanite-city-states": {
+      "canonicalUrl": "https://whc.unesco.org/en/tentativelists/6949/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "heritage-record",
+      "workType": "heritage-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "unesco": "6949"
+      }
+    },
+    "oeaw-tell-balata": {
+      "canonicalUrl": "https://www.oeaw.ac.at/en/oeai/media/news-archive/news-detail/bericht",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2022,
+      "locatorType": "news-item",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "hup-tell-balata-2023": {
+      "canonicalUrl": "https://www.hup.fi/en/chapters/e/10.33134/HUP-19-6",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2023,
+      "locatorType": "journal-article",
+      "workType": "journal-article",
+      "authority": "secondary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "doi": "10.33134/HUP-19-6"
+      }
+    },
+    "unesco-hebron": {
+      "canonicalUrl": "https://whc.unesco.org/en/list/1565",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2017,
+      "locatorType": "heritage-record",
+      "workType": "heritage-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "unesco": "1565"
+      }
+    },
+    "unesco-biblical-tels": {
+      "canonicalUrl": "https://whc.unesco.org/en/list/1108/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2005,
+      "locatorType": "heritage-record",
+      "workType": "heritage-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "unesco": "1108"
+      }
+    },
+    "iaa-esi-series": {
+      "canonicalUrl": "https://publications.iaa.org.il/esi_english_series/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "iaa-tel-sheva-2025": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26636",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "26636"
+      }
+    },
+    "iaa-tel-sheva-campus-2025": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/report_detail_eng.aspx?id=26647&mag_id=139",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "26647"
+      }
+    },
+    "iaa-beersheba-hadassah-2025": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=27693",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "27693"
+      }
+    },
+    "iaa-beersheba-trumpeldor-2024": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26486",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2024,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "26486"
+      }
+    },
+    "iaa-tel-sheva-chalcolithic": {
+      "canonicalUrl": "https://publications.iaa.org.il/atiqot/vol87/iss1/3/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2017,
+      "locatorType": "journal-article",
+      "workType": "journal-article",
+      "authority": "secondary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "atiqot": "87.3"
+      }
+    },
+    "iaa-nahal-beersheba-2013": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=2233&mag_id=120",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2013,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "2233"
+      }
+    },
+    "iaa-nahal-beersheba-west-2015": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=24835&mag_id=122",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2015,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "24835"
+      }
+    },
+    "scientific-reports-tall-retraction": {
+      "canonicalUrl": "https://www.nature.com/articles/s41598-025-99265-5",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "retraction-notice",
+      "workType": "retraction-notice",
+      "authority": "primary",
+      "review": "editorial",
+      "perspective": "general",
+      "evidenceUse": "negative",
+      "identifiers": {
+        "doi": "10.1038/s41598-025-99265-5"
+      }
+    },
+    "pubmed-tall-retraction": {
+      "canonicalUrl": "https://pubmed.ncbi.nlm.nih.gov/40275027/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "publication-record",
+      "workType": "retraction-notice",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "negative",
+      "identifiers": {
+        "doi": "10.1038/s41598-025-99265-5",
+        "pmid": "40275027"
+      }
+    },
+    "arj-abraham-chronology": {
+      "canonicalUrl": "https://answersresearchjournal.org/abraham-chronology-ancient-mesopotamia/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2012,
+      "locatorType": "journal-article",
+      "workType": "theological-analysis",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "yec",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "arj-volume-5": {
+      "canonicalUrl": "https://answersresearchjournal.org/volumes/v5/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2012,
+      "locatorType": "volume-index",
+      "workType": "bibliographic-index",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "yec",
+      "evidenceUse": "none",
+      "identifiers": {}
+    },
+    "aig-have-we-found-sodom": {
+      "canonicalUrl": "https://answersingenesis.org/archaeology/have-we-found-sodom/",
+      "accessedAt": "2026-06-14",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "theological-analysis",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "yec",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "creation-times-abraham": {
+      "canonicalUrl": "https://creation.com/the-times-of-abraham",
+      "accessedAt": "2026-06-14",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "theological-analysis",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "yec",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "creation-chronogenealogies": {
+      "canonicalUrl": "https://creation.com/biblical-chronogenealogies",
+      "accessedAt": "2026-06-14",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "theological-analysis",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "yec",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "icr-biblical-age": {
+      "canonicalUrl": "https://www.icr.org/biblical-age",
+      "accessedAt": "2026-06-14",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "theological-analysis",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "yec",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "bibleplaces-haran": {
+      "canonicalUrl": "https://www.bibleplaces.com/haran/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "bibleplaces-shechem": {
+      "canonicalUrl": "https://www.bibleplaces.com/shechem/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "bibleplaces-bethel": {
+      "canonicalUrl": "https://www.bibleplaces.com/bethel/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "bibleplaces-dan": {
+      "canonicalUrl": "https://www.bibleplaces.com/dan/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "bibleplaces-beersheba": {
+      "canonicalUrl": "https://www.bibleplaces.com/beersheba/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "bibleplaces-bab-edh-dhra": {
+      "canonicalUrl": "https://www.bibleplaces.com/babedhdhra/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "bibleplaces-numeira": {
+      "canonicalUrl": "https://www.bibleplaces.com/numeira/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "tertiary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "loc-mamre": {
+      "canonicalUrl": "https://www.loc.gov/resource/matpc.22876/",
+      "accessedAt": "2026-06-14",
+      "publicationYear": 1930,
+      "locatorType": "visual-record",
+      "workType": "visual-document",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "visual",
+      "identifiers": {
+        "loc": "matpc.22876"
+      }
+    },
+    "loc-shur-el-raha": {
+      "canonicalUrl": "https://tile.loc.gov/storage-services/service/pnp/matpc/01900/01946v.jpg",
+      "accessedAt": "2026-06-14",
+      "publicationYear": 1900,
+      "locatorType": "visual-record",
+      "workType": "visual-document",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "visual",
+      "identifiers": {
+        "loc": "matpc.01946"
+      }
+    },
+    "ritmeyer-mamre": {
+      "canonicalUrl": "https://www.ritmeyer.com/2010/10/12/mamre-and-the-temple-mount-in-jerusalem/",
+      "accessedAt": "2026-06-14",
+      "publicationYear": 2010,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "conservative",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "wibilex-bethel": {
+      "canonicalUrl": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/bethel-ort",
+      "accessedAt": "2026-06-14",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "general",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "wibilex-hebron": {
+      "canonicalUrl": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/hebron",
+      "accessedAt": "2026-06-14",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "general",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "wibilex-beersheba": {
+      "canonicalUrl": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/beerscheba",
+      "accessedAt": "2026-06-14",
+      "publicationYear": null,
+      "locatorType": "reference-entry",
+      "workType": "scholarly-reference",
+      "authority": "secondary",
+      "review": "editorial",
+      "perspective": "general",
+      "evidenceUse": "interpretation",
+      "identifiers": {}
+    },
+    "lloyd-brice-harran-1951": {
+      "canonicalUrl": "https://cdli.earth/publications/1787105",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1951,
+      "locatorType": "publication-record",
+      "workType": "journal-article",
+      "authority": "primary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "jstor": "3642359"
+      }
+    },
+    "harran-plain-survey-2021": {
+      "canonicalUrl": "https://dergipark.org.tr/en/pub/kdeniz/article/1015403",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2021,
+      "locatorType": "journal-article",
+      "workType": "journal-article",
+      "authority": "primary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "biu-gath-final-report": {
+      "canonicalUrl": "https://cris.biu.ac.il/en/publications/tell-es-safigath-i-the-1996-2005-seasons/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2012,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "biu-gath-overview": {
+      "canonicalUrl": "https://cris.biu.ac.il/en/publications/the-tell-e%E1%B9%A3-%E1%B9%A3%C3%A2figath-archaeological-project-overview-overview/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2017,
+      "locatorType": "journal-article",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "doi": "10.5615/neareastarch.80.4.0212"
+      }
+    },
+    "biu-gath-project": {
+      "canonicalUrl": "https://lisa.biu.ac.il/en/node/1378",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "research-project",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "biu-hurbat-husham-thamnata": {
+      "canonicalUrl": "https://cris.biu.ac.il/en/publications/between-text-and-trowel-archaeological-investigations-at-hurbat-h/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "journal-article",
+      "workType": "journal-article",
+      "authority": "secondary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "doi": "10.46535/ca.32.1.04"
+      }
+    },
+    "bm-babylonian-chronicle-21946": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/object/W_1896-0409-51",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "museumObject": "W_1896-0409-51"
+      },
+      "subjectDate": {
+        "label": "late 7th–early 6th century BCE",
+        "startYear": -625,
+        "endYear": -580,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "bm-cyrus-cylinder-object": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/object/W_1880-0617-1941",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "museumObject": "W_1880-0617-1941"
+      },
+      "subjectDate": {
+        "label": "539 BCE",
+        "startYear": -539,
+        "endYear": -539,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "bm-kenyon-jericho-publication": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/term/BIB11226",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1981,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "catalog": "BIB11226"
+      }
+    },
+    "bm-lachish-relief": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/object/W_1856-0909-14_7",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "museumObject": "W_1856-0909-14_7"
+      },
+      "subjectDate": {
+        "label": "c. 700 BCE",
+        "startYear": -710,
+        "endYear": -690,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "bm-nebusarsekim-tablet": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/object/W_1920-1213-81",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "museumObject": "W_1920-1213-81"
+      },
+      "subjectDate": {
+        "label": "Neo-Babylonian, 605–562 BCE",
+        "startYear": -605,
+        "endYear": -562,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "bm-papyrus-anastasi-v": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/object/Y_EA10244-2",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "museumObject": "Y_EA10244-2"
+      },
+      "subjectDate": {
+        "label": "New Kingdom, conventional c. 1250 BCE",
+        "startYear": -1275,
+        "endYear": -1225,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "bm-taylor-prism": {
+      "canonicalUrl": "https://www.britishmuseum.org/collection/object/W_1855-1003-1",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "museumObject": "W_1855-1003-1"
+      },
+      "subjectDate": {
+        "label": "691 BCE",
+        "startYear": -691,
+        "endYear": -691,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "brooklyn-elephantine-marriage": {
+      "canonicalUrl": "https://www.brooklynmuseum.org/objects/3488.",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "museumObject": "3488",
+        "accession": "47.218.89"
+      },
+      "subjectDate": {
+        "label": "3 July 449 BCE",
+        "startYear": -449,
+        "endYear": -449,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "custodia-capernaum": {
+      "canonicalUrl": "https://www.custodia.org/en/sanctuaries/capernaum/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "egypt-sinai-fortifications": {
+      "canonicalUrl": "https://egymonuments.gov.eg/news/new-archaeological-discoveries-in-sinai/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2025,
+      "locatorType": "news-item",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "elephantine-yaho-tax-list": {
+      "canonicalUrl": "https://elephantine.smb.museum/objects/object.php?o=306605",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "object": "306605"
+      },
+      "subjectDate": {
+        "label": "c. 420 BCE",
+        "startYear": -425,
+        "endYear": -415,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "elephantine-yaho-temple-letter": {
+      "canonicalUrl": "https://elephantine.smb.museum/objects/object.php?o=100282",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "object": "100282"
+      },
+      "subjectDate": {
+        "label": "407 BCE",
+        "startYear": -407,
+        "endYear": -407,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "hu-qeiyafa-project": {
+      "canonicalUrl": "https://khirbet-qeiyafa.huji.ac.il/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "research-project",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "hu-qeiyafa-vol1": {
+      "canonicalUrl": "https://cris.huji.ac.il/en/publications/khirbet-qeiyafa-vol-1-excavation-report-2007-2008/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2009,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "hu-qeiyafa-vol2": {
+      "canonicalUrl": "https://cris.huji.ac.il/en/publications/khirbet-qeiyafa-vol-2-excavation-report-2009-2013-stratigraphy-an/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2014,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "iaa-dss-digital-library": {
+      "canonicalUrl": "https://www.deadseascrolls.org.il/about-the-project/the-digital-library?locale=en_US",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "iaa-dss-discovery-sites": {
+      "canonicalUrl": "https://www.deadseascrolls.org.il/learn-about-the-scrolls/discovery-sites",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "iaa-givati-2017-2018": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26089",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2021,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "26089"
+      }
+    },
+    "iaa-givati-2019-2020": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/report_detail_eng.aspx?id=26474&mag_id=137",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2024,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "26474"
+      }
+    },
+    "iaa-horbat-ha-gardi": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=26469",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2024,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "26469"
+      }
+    },
+    "iaa-migdal-2013": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/report_detail_eng.aspx?id=2304",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2013,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "2304"
+      }
+    },
+    "iaa-migdal-2015": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=25336",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2017,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "25336"
+      }
+    },
+    "iaa-siloam-silwan-2014": {
+      "canonicalUrl": "https://hadashot.iaa.org.il/Report_Detail_Eng.aspx?id=10572&mag_id=121&print=nopic",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2014,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "iaaReport": "10572"
+      }
+    },
+    "imj-cradle-christianity": {
+      "canonicalUrl": "https://www.imj.org.il/en/exhibitions/cradle-christianity",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2000,
+      "locatorType": "collection-page",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "imj-great-isaiah-scroll": {
+      "canonicalUrl": "https://dss.collections.imj.org.il/isaiah",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {},
+      "subjectDate": {
+        "label": "conventional late 2nd century BCE",
+        "startYear": -150,
+        "endYear": -100,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "imj-heliodorus-stele": {
+      "canonicalUrl": "https://www.imj.org.il/en/exhibitions/heliodorus-stele",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2007,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {},
+      "subjectDate": {
+        "label": "178 BCE",
+        "startYear": -178,
+        "endYear": -178,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "imj-shrine-book": {
+      "canonicalUrl": "https://dss.collections.imj.org.il/shrine",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "imj-temple-scroll": {
+      "canonicalUrl": "https://dss.collections.imj.org.il/temple?id=0",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {},
+      "subjectDate": {
+        "label": "Second Temple period",
+        "startYear": -150,
+        "endYear": 50,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "louvre-mesha-stele": {
+      "canonicalUrl": "https://collections.louvre.fr/en/ark%3A/53355/cl010120339",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "collection-record",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "ark": "53355/cl010120339"
+      },
+      "subjectDate": {
+        "label": "9th century BCE",
+        "startYear": -875,
+        "endYear": -825,
+        "convention": "conventional-archaeological"
+      }
+    },
+    "oeai-ephesos-branch": {
+      "canonicalUrl": "https://www.oeaw.ac.at/en/oeai/institute/branches/ephesos",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "research-project",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "oeai-forschungen-ephesos": {
+      "canonicalUrl": "https://www.oeaw.ac.at/en/oeai/publishing/series/forschungen-in-ephesos",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "collection-page",
+      "workType": "bibliographic-index",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "pcma-retaba-2011": {
+      "canonicalUrl": "https://pcma.uw.edu.pl/en/research/season-by-season/tell-el-retaba-egypt-2011/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2011,
+      "locatorType": "field-report",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "pcma-retaba-pam23": {
+      "canonicalUrl": "https://pcma.uw.edu.pl/2018/02/28/pam-23-1/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2014,
+      "locatorType": "journal-article",
+      "workType": "excavation-report",
+      "authority": "secondary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {}
+    },
+    "sapienza-jericho-2019-2023": {
+      "canonicalUrl": "https://iris.uniroma1.it/handle/11573/1729743",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2024,
+      "locatorType": "publication-record",
+      "workType": "excavation-report",
+      "authority": "primary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "handle": "11573/1729743"
+      }
+    },
+    "sapienza-jericho-project": {
+      "canonicalUrl": "https://www.antichita.uniroma1.it/eng/jericho-tell-es-sultan",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
+      "locatorType": "project-page",
+      "workType": "research-project",
+      "authority": "secondary",
+      "review": "institutional",
+      "perspective": "general",
+      "evidenceUse": "supporting",
+      "identifiers": {}
+    },
+    "sapienza-jericho-urban-diversity": {
+      "canonicalUrl": "https://iris.uniroma1.it/handle/11573/1680717",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2022,
+      "locatorType": "journal-article",
+      "workType": "archaeological-synthesis",
+      "authority": "secondary",
+      "review": "peer-reviewed",
+      "perspective": "general",
+      "evidenceUse": "high",
+      "identifiers": {
+        "handle": "11573/1680717"
+      }
+    }
+  },
+  "coverageSchemaVersion": "1.0.0",
+  "coveragePolicy": {
+    "publicationYear": "Date of publication or institutional release; never an ancient artefact date.",
+    "subjectDate": "Conventional archaeological/object dating stored independently of publication year.",
+    "topic": "A non-route-bound evidence cluster; route bindings require a separate route contract.",
+    "worldview": "YEC is the project interpretation framework; evidence identity and conventional dating remain unaltered."
   }
 }
