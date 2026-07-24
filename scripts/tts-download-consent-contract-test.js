@@ -46,6 +46,7 @@ function validate(engine, css) {
     ['mobile layout', /@media \(max-width:480px\)/],
     ['reduced motion', /@media \(prefers-reduced-motion:reduce\)/],
     ['keyboard focus', /\.gb-tts-download-notice__action:focus-visible/],
+    ['loading pulse animation wired', /\.gb-tts-download-notice__icon::before\{[\s\S]{0,320}animation:gb-tts-download-pulse[\s\S]*?@keyframes gb-tts-download-pulse\{/],
   ];
   for (const [label, pattern] of requireCss) {
     if (!pattern.test(css)) problems.push(`css: ${label}`);
@@ -97,6 +98,11 @@ const mutations = [
     name: 'stylesheet revision drifts',
     engine: engine.replace(/\?v=[a-f0-9]{8}/, '?v=00000000'),
     css,
+  },
+  {
+    name: 'loading pulse keyframe disconnects',
+    engine,
+    css: css.replace('animation:gb-tts-download-pulse', 'animation:missing-tts-download-pulse'),
   },
 ];
 
