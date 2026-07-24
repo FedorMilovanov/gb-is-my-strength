@@ -246,6 +246,20 @@
     return true;
   }
 
+  function publishCssContract(next) {
+    var ratio = clamp(next && next.progressRatio, 0, 1);
+    var active = next && Number(next.progress) > 2 ? '1' : '0';
+    try {
+      if (document.documentElement && document.documentElement.style) {
+        document.documentElement.style.setProperty('--gb-read-pct', String(ratio));
+        document.documentElement.style.setProperty('--gb-read-active', active);
+      }
+      if (document.body && document.body.style) {
+        document.body.style.setProperty('--gb-read-pct', String(ratio));
+      }
+    } catch (_) {}
+  }
+
   function createState() {
     if (!root) return null;
     var scrollY = Math.round(window.scrollY || window.pageYOffset || 0);
@@ -285,6 +299,7 @@
     if (!next) return;
     var previous = state;
     state = next;
+    publishCssContract(next);
     if (!force && sameState(previous, next)) return;
     var snapshot = Object.assign({}, next);
     try { window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: snapshot })); } catch (_) {}

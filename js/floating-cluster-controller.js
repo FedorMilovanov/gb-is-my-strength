@@ -2277,13 +2277,7 @@
     function renderReaderState(reader) {
       if (!reader) return;
       var pct = Math.max(0, Math.min(100, Math.round(Number(reader.progress) || 0)));
-      var pctF = Math.max(0, Math.min(1, Number(reader.progressRatio) || 0));
       var phase = reader.phase || 'before-content';
-      try {
-        document.documentElement.style.setProperty('--gb-read-pct', String(pctF));
-        document.documentElement.style.setProperty('--gb-read-active', pct > 2 ? '1' : '0');
-        document.body.style.setProperty('--gb-read-pct', String(pctF));
-      } catch (_) {}
 
       var doneMin = Number(document.body.getAttribute('data-gbs2-done-min') || 0);
       var partMin = Number(document.body.getAttribute('data-gbs2-part-min') || 0);
