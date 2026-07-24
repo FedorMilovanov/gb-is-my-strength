@@ -230,6 +230,7 @@ async function runScenario(browser, route, viewport) {
       probe.style.minHeight = '1500px';
       probe.style.pointerEvents = 'none';
       content.appendChild(probe);
+      content.style.scrollBehavior = 'auto';
       content.scrollTop = content.scrollHeight;
     });
     await page.waitForTimeout(120);
@@ -241,7 +242,10 @@ async function runScenario(browser, route, viewport) {
     await page.waitForTimeout(180);
     await page.evaluate(() => {
       const content = document.querySelector('.me-panel.me-panel--open .me-content');
-      if (content) content.scrollTop = content.scrollHeight;
+      if (content) {
+        content.style.scrollBehavior = 'auto';
+        content.scrollTop = content.scrollHeight;
+      }
     });
     await page.waitForTimeout(80);
     const resizedSnapshot = await panelSnapshot(page);
