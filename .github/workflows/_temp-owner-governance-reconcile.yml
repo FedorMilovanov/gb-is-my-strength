@@ -40,7 +40,10 @@ jobs:
 
       - name: Apply owner-authorized reconciliation
         if: steps.state.outputs.ready != 'true'
-        run: python3 scripts/_temp-owner-governance-reconcile.py
+        shell: bash
+        run: |
+          python3 scripts/_temp-owner-governance-reconcile.py
+          sed -i 's/[[:blank:]]\+$//' AGENTS.md docs/OWNER-INVARIANTS.md
 
       - name: Enforce transaction scope
         if: steps.state.outputs.ready != 'true'
@@ -71,6 +74,7 @@ jobs:
         if: steps.state.outputs.ready == 'true'
         shell: bash
         run: |
+          git diff --check
           grep -q 'AGENTS-r324' AGENTS.md
           grep -q 'Канонические режимы: `FAST`, `LANE`, `SYSTEM`' AGENTS.md
           grep -q 'исторический `pre-v16` submenu' docs/OWNER-INVARIANTS.md
