@@ -205,7 +205,7 @@
     const payload = document.getElementById('map-archaeology-projection');
     if (!container || !payload || container.dataset.archaeologyAdapter === 'attached') return;
     try {
-      const projection = JSON.parse(payload.textContent || 'null');
+      const projection = JSON.parse(payload.dataset.projection || 'null');
       const instance = attach(container, projection);
       if (instance) {
         container.dataset.archaeologyAdapter = 'attached';
