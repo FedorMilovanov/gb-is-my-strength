@@ -627,43 +627,60 @@
     },
     "aig-have-we-found-sodom": {
       "canonicalUrl": "https://answersingenesis.org/archaeology/have-we-found-sodom/",
-      "accessedAt": "2026-06-14",
-      "publicationYear": null,
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2017,
       "locatorType": "reference-entry",
       "workType": "theological-analysis",
       "authority": "secondary",
       "review": "editorial",
       "perspective": "yec",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "author": "Mike Matthews",
+        "publishedDate": "2017-09-01"
+      }
     },
     "creation-times-abraham": {
-      "canonicalUrl": "https://creation.com/the-times-of-abraham",
-      "accessedAt": "2026-06-14",
-      "publicationYear": null,
+      "canonicalUrl": "https://creation.com/en/articles/the-times-of-abraham",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 1986,
       "locatorType": "reference-entry",
       "workType": "theological-analysis",
       "authority": "secondary",
       "review": "editorial",
       "perspective": "yec",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "author": "A.J.M. Osgood",
+        "journal": "Journal of Creation",
+        "volume": "2(1)",
+        "pages": "77-87",
+        "originalYear": 1986,
+        "webPublishedDate": "2006-03-30"
+      }
     },
     "creation-chronogenealogies": {
-      "canonicalUrl": "https://creation.com/biblical-chronogenealogies",
-      "accessedAt": "2026-06-14",
-      "publicationYear": null,
+      "canonicalUrl": "https://creation.com/en/articles/biblical-chronogenealogies",
+      "accessedAt": "2026-07-24",
+      "publicationYear": 2003,
       "locatorType": "reference-entry",
       "workType": "theological-analysis",
       "authority": "secondary",
       "review": "editorial",
       "perspective": "yec",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "author": "Jonathan Sarfati",
+        "journal": "Journal of Creation",
+        "volume": "17(3)",
+        "pages": "14-18",
+        "originalYear": 2003,
+        "webPublishedDate": "2023-10-07"
+      }
     },
     "icr-biblical-age": {
       "canonicalUrl": "https://www.icr.org/biblical-age",
-      "accessedAt": "2026-06-14",
+      "accessedAt": "2026-07-24",
       "publicationYear": null,
       "locatorType": "reference-entry",
       "workType": "theological-analysis",
@@ -671,7 +688,9 @@
       "review": "editorial",
       "perspective": "yec",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "resourceSlug": "biblical-age"
+      }
     },
     "bibleplaces-haran": {
       "canonicalUrl": "https://www.bibleplaces.com/haran/",
@@ -758,9 +777,9 @@
       "identifiers": {}
     },
     "loc-mamre": {
-      "canonicalUrl": "https://www.loc.gov/resource/matpc.22876/",
-      "accessedAt": "2026-06-14",
-      "publicationYear": 1930,
+      "canonicalUrl": "https://www.loc.gov/pictures/item/2019705536/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
       "locatorType": "visual-record",
       "workType": "visual-document",
       "authority": "primary",
@@ -768,13 +787,18 @@
       "perspective": "general",
       "evidenceUse": "visual",
       "identifiers": {
-        "loc": "matpc.22876"
+        "loc": "matpc.22876",
+        "locItem": "2019705536",
+        "digitalId": "matpc.22876",
+        "reproduction": "LC-DIG-matpc-22876",
+        "creator": "Matson Photo Service",
+        "dateCreatedPublished": "between 1950 and 1977"
       }
     },
     "loc-shur-el-raha": {
-      "canonicalUrl": "https://tile.loc.gov/storage-services/service/pnp/matpc/01900/01946v.jpg",
-      "accessedAt": "2026-06-14",
-      "publicationYear": 1900,
+      "canonicalUrl": "https://www.loc.gov/pictures/item/2019695634/",
+      "accessedAt": "2026-07-24",
+      "publicationYear": null,
       "locatorType": "visual-record",
       "workType": "visual-document",
       "authority": "primary",
@@ -782,12 +806,17 @@
       "perspective": "general",
       "evidenceUse": "visual",
       "identifiers": {
-        "loc": "matpc.01946"
+        "loc": "matpc.01946",
+        "locItem": "2019695634",
+        "digitalId": "matpc.01946",
+        "reproduction": "LC-DIG-matpc-01946",
+        "creator": "American Colony (Jerusalem). Photo Department",
+        "dateCreatedPublished": "approximately 1900 to 1920"
       }
     },
     "ritmeyer-mamre": {
       "canonicalUrl": "https://www.ritmeyer.com/2010/10/12/mamre-and-the-temple-mount-in-jerusalem/",
-      "accessedAt": "2026-06-14",
+      "accessedAt": "2026-07-24",
       "publicationYear": 2010,
       "locatorType": "reference-entry",
       "workType": "scholarly-reference",
@@ -795,11 +824,14 @@
       "review": "editorial",
       "perspective": "conservative",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "urlDate": "2010-10-12",
+        "reviewReason": "exact article metadata unresolved on current site"
+      }
     },
     "wibilex-bethel": {
       "canonicalUrl": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/bethel-ort",
-      "accessedAt": "2026-06-14",
+      "accessedAt": "2026-07-24",
       "publicationYear": null,
       "locatorType": "reference-entry",
       "workType": "scholarly-reference",
@@ -807,11 +839,13 @@
       "review": "editorial",
       "perspective": "general",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "wibilexSlug": "bethel-ort"
+      }
     },
     "wibilex-hebron": {
       "canonicalUrl": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/hebron",
-      "accessedAt": "2026-06-14",
+      "accessedAt": "2026-07-24",
       "publicationYear": null,
       "locatorType": "reference-entry",
       "workType": "scholarly-reference",
@@ -819,11 +853,13 @@
       "review": "editorial",
       "perspective": "general",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "wibilexSlug": "hebron"
+      }
     },
     "wibilex-beersheba": {
       "canonicalUrl": "https://www.die-bibel.de/ressourcen/wibilex/altes-testament/beerscheba",
-      "accessedAt": "2026-06-14",
+      "accessedAt": "2026-07-24",
       "publicationYear": null,
       "locatorType": "reference-entry",
       "workType": "scholarly-reference",
@@ -831,7 +867,9 @@
       "review": "editorial",
       "perspective": "general",
       "evidenceUse": "interpretation",
-      "identifiers": {}
+      "identifiers": {
+        "wibilexSlug": "beerscheba"
+      }
     },
     "lloyd-brice-harran-1951": {
       "canonicalUrl": "https://cdli.earth/publications/1787105",

@@ -104,6 +104,12 @@ for (const [index, source] of sources.entries()) {
   if (!LEGACY_TIERS.has(source.tier)) fail('source-tier', `${source.id}: ${source.tier}`);
   if (!STATUSES.has(source.status)) fail('source-status', `${source.id}: ${source.status}`);
   if (!VERIFICATIONS.has(source.verification)) fail('source-verification', `${source.id}: ${source.verification}`);
+  if (source.verification === 'imported') fail('source-imported-unreviewed', source.id);
+  if (source.verification === 'needs-review') {
+    const reviewRecord = records[source.id];
+    if (!source.note || !/review|unresolved|redirect|metadata|access|recover/i.test(source.note)) fail('source-needs-review-note', source.id);
+    if (reviewRecord?.evidenceUse === 'high') fail('source-needs-review-high', source.id);
+  }
   if (!/^https:\/\//.test(source.url || '')) fail('source-url', `${source.id}: HTTPS URL required`);
   if (catalogUrls.has(source.url)) fail('source-url-duplicate', `${source.id} duplicates ${catalogUrls.get(source.url)}`);
   catalogUrls.set(source.url, source.id);
@@ -224,6 +230,7 @@ const summary = {
   catalogSources: sources.length,
   provenanceRecords: Object.keys(records).length,
   verified: verified.length,
+  needsReview: sources.filter((source) => source.verification === 'needs-review').length,
   imported: sources.filter((source) => source.verification === 'imported').length,
   highEvidence: highEvidence.length,
   supportingEvidence: supportingEvidence.length,
