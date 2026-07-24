@@ -2,12 +2,14 @@ name: Map Keyboard Contract
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
       - scripts/map-panel-viewport-browser-test.js
       - scripts/map-authored-paths-browser-test.js
+      - scripts/map-engine-v055-sync-materialize.mjs
       - .github/workflows/map-keyboard-contract.yml
   push:
     branches:
@@ -28,6 +30,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  materialize-v055-sync:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'agent/map-authored-paths-p0'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Apply guarded v0.55 synchronization
+        run: node scripts/map-engine-v055-sync-materialize.mjs --write
+      - name: Verify engine-only scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check karty/_engine/map-engine.js
+          node scripts/map-engine-v055-sync-materialize.mjs
+          git diff --check
+          mapfile -t changed < <(git diff --name-only)
+          if [[ ${#changed[@]} -eq 0 ]]; then
+            echo "MapEngine v0.55 synchronization already materialized."
+            exit 0
+          fi
+          printf 'changed[%s]=%s\n' "${#changed[@]}" "${changed[*]}"
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "karty/_engine/map-engine.js"
+      - name: Commit exact engine synchronization
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add karty/_engine/map-engine.js
+          git diff --cached --check
+          git commit -m "fix(karty): synchronize MapEngine v0.55 contracts"
+          git push origin "HEAD:${HEAD_REF}"
+
   source-contract:
     runs-on: ubuntu-latest
     steps:
@@ -41,16 +94,21 @@ jobs:
         run: |
           node --check scripts/map-panel-viewport-browser-test.js
           node --check scripts/map-authored-paths-browser-test.js
+          node --check scripts/map-engine-v055-sync-materialize.mjs
+          node scripts/map-engine-v055-sync-materialize.mjs
           node - <<'NODE'
           const fs = require('node:fs');
           const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
           const required = [
             'map-engine.js v0.55',
+            "version:'0.55.0',buildDate:'2026-07-24'",
             'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
             '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
             'min-height:0;overflow-y:auto;overscroll-behavior:contain',
             'width:420px;max-height:calc(100% - 24px)',
             'const ROUTE_PATH_COLORS=Object.freeze',
+            "const fallback=STAGE_COLORS[stageIndex]||STAGE_COLORS[0]",
+            ":'me-arrow-'+(STAGE_COLORS[stageIndex]?stageIndex:0)",
             "source:'authored'",
             "source:'generated'",
             'data-route-source',
@@ -60,11 +118,11 @@ jobs:
             'me-arrow-authored-'
           ];
           const missing = required.filter((needle) => !source.includes(needle));
-          if (missing.length) {
-            console.error('Missing map source contract:', missing);
+          if (missing.length || source.includes('stageIndex%STAGE_COLORS.length')) {
+            console.error('Missing or stale map source contract:', {missing, staleModulo: source.includes('stageIndex%STAGE_COLORS.length')});
             process.exit(1);
           }
-          console.log('PASS source map viewport and authored-path contracts');
+          console.log('PASS source map viewport, authored-path and version contracts');
           NODE
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml
@@ -183,7 +241,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, webkit]
+        browser: [chromium, webkit, firefox]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
