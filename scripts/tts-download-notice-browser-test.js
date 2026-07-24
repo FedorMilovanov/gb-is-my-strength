@@ -105,7 +105,7 @@ async function verifyCard(page, expectedWidth) {
     };
   });
   assert.equal(snapshot.title, 'Улучшенный голос загружается');
-  assert.match(snapshot.meta, /Обычный голос уже работает/);
+  assert.match(snapshot.meta, /Системный голос уже работает/);
   assert.match(snapshot.meta, /280 МБ/);
   assert.equal(snapshot.action, 'Не загружать');
   assert.match(snapshot.actionLabel, /Остановить загрузку/);
