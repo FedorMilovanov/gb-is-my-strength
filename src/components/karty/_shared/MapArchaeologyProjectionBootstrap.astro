@@ -1,0 +1,11 @@
+---
+import registry from '../../../../karty/_data/archaeology-source-registry.json';
+import provenance from '../../../../karty/_data/archaeology-source-provenance.json';
+import { buildMapArchaeologyProjection } from '@/lib/karty/map-archaeology-projection.mjs';
+
+const projection = buildMapArchaeologyProjection('avraam', registry, provenance);
+const projectionJson = JSON.stringify(projection).replace(/</g, '\\u003c');
+---
+
+<script id="map-archaeology-projection" type="application/json" set:html={projectionJson}></script>
+<script is:inline src="../_engine/map-archaeology-adapter.js"></script>
