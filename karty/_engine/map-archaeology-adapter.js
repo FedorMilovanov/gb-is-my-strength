@@ -176,5 +176,26 @@
     });
   }
 
+  function autoAttach() {
+    const container = document.getElementById('stage');
+    const payload = document.getElementById('map-archaeology-projection');
+    if (!container || !payload || container.dataset.archaeologyAdapter === 'attached') return;
+    try {
+      const projection = JSON.parse(payload.textContent || 'null');
+      const instance = attach(container, projection);
+      if (instance) {
+        container.dataset.archaeologyAdapter = 'attached';
+        global.MapArchaeologyAdapterInstance = instance;
+      }
+    } catch (error) {
+      console.error('[map-archaeology] projection bootstrap failed:', error);
+    }
+  }
+
   global.MapArchaeologyAdapter = Object.freeze({ attach });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoAttach, { once: true });
+  } else {
+    queueMicrotask(autoAttach);
+  }
 })(window);
