@@ -2,10 +2,13 @@ name: Map Keyboard Contract
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
+      - scripts/map-panel-viewport-browser-test.js
+      - scripts/map-panel-viewport-materialize.mjs
       - .github/workflows/map-keyboard-contract.yml
   push:
     branches:
@@ -14,21 +17,90 @@ on:
       - karty/_engine/map-engine.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
+      - scripts/map-panel-viewport-browser-test.js
       - .github/workflows/map-keyboard-contract.yml
 
 permissions:
   contents: read
 
+concurrency:
+  group: map-keyboard-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  materialize-panel-p0:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'agent/map-panel-viewport-p0'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Apply guarded viewport patch
+        run: node scripts/map-panel-viewport-materialize.mjs --write
+
+      - name: Verify materialized scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check karty/_engine/map-engine.js
+          node scripts/map-panel-viewport-materialize.mjs
+          git diff --check
+          mapfile -t changed < <(git diff --name-only)
+          if [[ ${#changed[@]} -eq 0 ]]; then
+            echo "Viewport contract already materialized."
+            exit 0
+          fi
+          printf 'changed[%s]=%s\n' "${#changed[@]}" "${changed[*]}"
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "karty/_engine/map-engine.js"
+
+      - name: Commit exact engine patch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No materializer commit required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add karty/_engine/map-engine.js
+          git diff --cached --check
+          git commit -m "fix(karty): keep mobile map panels inside viewport"
+          git push origin "HEAD:${HEAD_REF}"
+
   source-contract:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22.12.0'
       - name: Verify source keyboard policy
         run: node scripts/map-keyboard-contract-test.js
+      - name: Verify viewport contract sources
+        run: |
+          node --check scripts/map-panel-viewport-browser-test.js
+          node --check scripts/map-panel-viewport-materialize.mjs
+          node scripts/map-panel-viewport-materialize.mjs
+      - name: Lint workflow
+        run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml
 
   chromium-contract:
     runs-on: ubuntu-latest
@@ -36,7 +108,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22.12.0'
           cache: npm
       - name: Install dependencies
         run: npm ci
@@ -78,4 +150,62 @@ jobs:
         run: |
           if [[ -f /tmp/map-keyboard-http.pid ]]; then
             kill "$(cat /tmp/map-keyboard-http.pid)" 2>/dev/null || true
+          fi
+
+  panel-viewport-contract:
+    name: Panel viewport contract (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Start source server
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8090 --bind 127.0.0.1 >/tmp/map-panel-http.log 2>&1 &
+          echo $! > /tmp/map-panel-http.pid
+          for _ in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8090/karty/ishod/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/map-panel-http.log
+          exit 1
+      - name: Verify mobile panel geometry
+        shell: bash
+        env:
+          AUDIT_BASE: http://127.0.0.1:8090
+          MAP_PANEL_BROWSER: ${{ matrix.browser }}
+          MAP_PANEL_EVIDENCE: /tmp/map-panel-evidence
+        run: |
+          set -o pipefail
+          node scripts/map-panel-viewport-browser-test.js 2>&1 | tee /tmp/map-panel-${{ matrix.browser }}.log
+      - name: Upload panel evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-panel-${{ matrix.browser }}-${{ github.run_id }}
+          path: |
+            /tmp/map-panel-evidence/**
+            /tmp/map-panel-${{ matrix.browser }}.log
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Stop source server
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/map-panel-http.pid ]]; then
+            kill "$(cat /tmp/map-panel-http.pid)" 2>/dev/null || true
           fi
