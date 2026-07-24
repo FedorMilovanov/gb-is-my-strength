@@ -1,32 +1,27 @@
 name: TEMP TTS Engine Status Materializer
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/tts-engine-status-retry-2026-07-24
-    paths:
-      - scripts/_temp-tts-engine-status-patcher.js
-      - scripts/_temp-tts-engine-status-test-patcher.js
-      - .github/workflows/_temp-tts-engine-status.yml
+      - temp/tts-status-materializer-base-2026-07-24
+    types: [opened]
 
 permissions:
   contents: write
 
 concurrency:
-  group: temp-tts-engine-status-${{ github.ref }}
+  group: temp-tts-engine-status-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   materialize:
-    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.ref == 'refs/heads/fix/tts-engine-status-retry-2026-07-24'
+    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/tts-engine-status-retry-run-2026-07-24'
     runs-on: ubuntu-latest
-    env:
-      TRANSACTION_REVISION: '2'
     steps:
-      - name: Checkout exact lane
+      - name: Checkout exact head lane
         uses: actions/checkout@v4
         with:
-          ref: fix/tts-engine-status-retry-2026-07-24
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Set up Node
@@ -67,6 +62,8 @@ jobs:
           git diff --check
 
       - name: Commit permanent TTS scope
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
@@ -77,4 +74,4 @@ jobs:
             exit 1
           fi
           git commit -m 'fix(tts): expose engine state and retry silent fallback'
-          git push origin HEAD:fix/tts-engine-status-retry-2026-07-24
+          git push origin "HEAD:${HEAD_BRANCH}"
