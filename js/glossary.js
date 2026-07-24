@@ -1,1 +1,665 @@
-!function(){"use strict";if(window.SiteUtils&&"function"==typeof window.SiteUtils.getConfig&&!window.__gbGlossaryInitialized){window.__gbGlossaryInitialized=!0;var t,e=document.querySelector("article")||document.querySelector("main[data-pagefind-body]"),i=window.__gbGlossaryRuntime||{promise:null,dict:null,aliasToCanonical:null,regex:null};window.__gbGlossaryRuntime=i,SiteUtils.hydrateGlossaryTerms=l,window.SiteUtils&&window.SiteUtils!==SiteUtils&&(window.SiteUtils.hydrateGlossaryTerms=l),e?(t=e,t&&t.querySelectorAll?a().then(function(e){if(e&&e.regex){var i={},a=0;t.querySelectorAll("p, div.reveal").forEach(function(t){t.dataset.pIdx=String(a++)});for(var l=document.createTreeWalker(t,NodeFilter.SHOW_TEXT,{acceptNode:function(t){var e=t.parentElement;return e?e.closest("a, abbr, .gterm, code, pre, kbd, samp, nav, figcaption, caption, th, td, .article-header, .author-card, .series-nav, .article-toc, .summary-card, .fn-marker, .tooltip, .btip, .gtip, h1, h2, h3, h4, h5, h6, .quiz-wrapper, script, style, [hidden], [data-pagefind-meta], [data-pagefind-ignore]")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}}),c=[];l.nextNode();)c.push(l.currentNode);c.forEach(function(t){var a=e.regex;if(a&&a.test(t.nodeValue)){a.lastIndex=0;for(var l,c=document.createDocumentFragment(),s=0,d=!1;null!==(l=a.exec(t.nodeValue));){var u=l[1]||"",g=l[2]||"",f=e.aliasToCanonical[r(g)];if(f){for(var y=t.parentElement;y&&"P"!==y.tagName&&("DIV"!==y.tagName||!y.classList.contains("reveal"));)y=y.parentElement;var p=y?parseInt(y.dataset.pIdx||"0",10):0;if(!(void 0!==i[f]&&p-i[f]<=40)){i[f]=p,d=!0;var m=l.index+u.length;c.appendChild(document.createTextNode(t.nodeValue.slice(s,m)));var w=document.createElement("abbr");w.className="gterm",w.dataset.term=f,w.setAttribute("tabindex","0"),w.setAttribute("data-term-title",f.replace(/^[а-яё]/,function(ch){return ch.toUpperCase()}));var h=n(e.dict,f);h.category&&w.setAttribute("data-category",h.category),h.categorySlug&&w.setAttribute("data-category-slug",h.categorySlug),w.textContent=g,w.appendChild(o(e.dict,f)),c.appendChild(w),s=m+g.length}}}d&&(c.appendChild(document.createTextNode(t.nodeValue.slice(s))),t.parentNode.replaceChild(c,t))}}),window.SiteUtils&&"function"==typeof window.SiteUtils.initGlossaryTooltips&&window.SiteUtils.initGlossaryTooltips(t)}}):Promise.resolve()).then(function(){l(e)}):l(document),document.addEventListener("gb:quiz-rendered",function(t){l(t&&t.detail&&t.detail.root?t.detail.root:document)})}function r(t){return String(t||"").toLowerCase().replace(/ё/g,"е").replace(/\s+/g," ").trim()}function n(t,e){var i=t&&t[e]||{},r=i.definition&&"object"==typeof i.definition?i.definition:{};return{category:i.category||r.category||"",categorySlug:i.categorySlug||i.category_slug||r.categorySlug||r.category_slug||""}}function a(){return i.dict&&i.aliasToCanonical&&i.regex?Promise.resolve(i):(i.promise||(i.promise=fetch("/data/glossary.json").then(function(t){return t.ok?t.json():null}).then(function(t){return t&&"object"==typeof t?function(t){var e={},eAll={},n=[];for(var a in t)if(Object.prototype.hasOwnProperty.call(t,a)){var o=t[a],l=[],u=!(o&&(!1===o.autoHydrate||o.definition&&"object"==typeof o.definition&&!1===o.definition.autoHydrate));Array.isArray(o&&o.aliases)?l=o.aliases.slice():o&&o.definition&&Array.isArray(o.definition.aliases)&&(l=o.definition.aliases.slice()),-1===l.indexOf(a)&&l.unshift(a),l.forEach(function(t){var i=r(t);i&&(eAll[i]||(eAll[i]=a),u&&(e[i]||(e[i]=a),-1===n.indexOf(t)&&n.push(t)))})}n.sort(function(t,e){return e.length-t.length});var c=n.map(function(t){return t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}).join("|"),s=null;if(c)try{s=new RegExp("(^|[^\\p{L}\\p{N}_])("+c+")(?=$|[^\\p{L}\\p{N}_])","giu")}catch(t){try{s=new RegExp("(^|[^а-яёА-ЯЁa-zA-Z0-9_])("+c+")(?=$|[^а-яёА-ЯЁa-zA-Z0-9_])","gi")}catch(t){s=null}}return i.dict=t,i.aliasToCanonical=e,i.aliasAll=eAll,i.regex=s,i}(t):null}).catch(function(){return null})),i.promise)}function o(t,e,i){var r=n(t,e),a=document.createElement("span");return a.className="gtip",r.category&&a.setAttribute("data-category",r.category),r.categorySlug&&a.setAttribute("data-category-slug",r.categorySlug),a.innerHTML=function(t,e){var i=t&&t[e];if(!i)return e;var b="";if("string"==typeof i)b=i;else if(i.definition){b="string"==typeof i.definition?i.definition:"string"==typeof i.definition.definition?i.definition.definition:e}else b=e;var d=i&&i.detail?i.detail:"";if(d){b='<span class="gtip-brief">'+b+'</span><button type="button" class="gtip-expand-btn" aria-label="Подробнее" aria-expanded="false" data-gtip-expand><span class="gtip-expand-txt">Подробнее</span><svg class="gtip-expand-ico" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="gtip-detail-wrap" aria-hidden="true"><span class="gtip-detail"><span class="gtip-papyrus">'+d+'</span></span></span>'}return b}(t,e),a}function l(t){var e=t&&t.querySelectorAll?t:document;return a().then(function(t){if(t&&t.dict&&t.aliasToCanonical){var i=e.querySelectorAll(".gterm[data-term]");Array.prototype.forEach.call(i,function(e){if(e.closest&&e.closest(".summary-card"))return;if(!e.querySelector(".gtip")){var i=r(e.getAttribute("data-term")||e.getAttribute("data-term-title")||e.textContent||""),a=t.aliasToCanonical[i];if(a){var l=a.replace(/^[а-яё]/,function(ch){return ch.toUpperCase()}),c=n(t.dict,a);e.classList.add("gterm"),e.hasAttribute("tabindex")||e.setAttribute("tabindex","0"),e.setAttribute("data-term-title",l),c.category&&e.setAttribute("data-category",c.category),c.categorySlug&&e.setAttribute("data-category-slug",c.categorySlug),e.appendChild(o(t.dict,a))}}});var st=e.querySelectorAll(".gterm:not([data-term])");Array.prototype.forEach.call(st,function(el){if(el.closest&&el.closest(".summary-card"))return;if(el.dataset.gtipUpgraded)return;var tip=el.querySelector(".gtip");if(!tip||tip.querySelector(".gtip-brief"))return;var host=tip.querySelector(".gtip-luxury__definition")||tip;el.dataset.gtipUpgraded="1";var briefTxt=(host.textContent||"").trim();var key=r(el.getAttribute("data-term-title")||el.childNodes[0]&&el.childNodes[0].textContent||"");var canon=(t.aliasAll||t.aliasToCanonical)[key];var detail=canon&&t.dict[canon]&&t.dict[canon].detail||"";if(canon){el.setAttribute("data-term-title",canon.replace(/^[а-яё]/,function(ch){return ch.toUpperCase()}))}if(!detail)return;var cat=canon?n(t.dict,canon):null;host.innerHTML='<span class="gtip-brief"></span><button type="button" class="gtip-expand-btn" aria-label="Подробнее" aria-expanded="false" data-gtip-expand><span class="gtip-expand-txt">Подробнее</span><svg class="gtip-expand-ico" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="gtip-detail-wrap" aria-hidden="true"><span class="gtip-detail"><span class="gtip-papyrus"></span></span></span>';host.querySelector(".gtip-brief").textContent=briefTxt;host.querySelector(".gtip-papyrus").innerHTML=detail;if(cat&&cat.category&&!el.getAttribute("data-category")){el.setAttribute("data-category",cat.category);cat.categorySlug&&el.setAttribute("data-category-slug",cat.categorySlug)}});window.SiteUtils&&"function"==typeof window.SiteUtils.initGlossaryTooltips&&window.SiteUtils.initGlossaryTooltips(e)}})}}();;!function(){"use strict";function fix(){document.querySelectorAll('abbr.gterm,.gterm[data-term],.gterm[aria-expanded],.gterm[aria-describedby]').forEach(function(el){if(!el.getAttribute('role'))el.setAttribute('role','button');if(!el.getAttribute('tabindex'))el.setAttribute('tabindex','0');});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);else fix();document.addEventListener('gb:quiz-rendered',fix);setTimeout(fix,1200);}();
+(function () {
+  "use strict";
+
+  if (window.__gbGlossaryInitialized) return;
+  window.__gbGlossaryInitialized = true;
+
+  const DEFAULT_POLICY = {
+    rootSelectors: ["article", "main[data-pagefind-body]"],
+    proseSelectors: ["p", "div.reveal", "[data-glossary-zone='prose']"],
+    hydrationForbiddenSelectors: [
+      "a",
+      "abbr",
+      ".gterm",
+      "code",
+      "pre",
+      "kbd",
+      "samp",
+      "nav",
+      "figure",
+      "figcaption",
+      "caption",
+      "table",
+      "thead",
+      "tbody",
+      "tfoot",
+      "tr",
+      "th",
+      "td",
+      ".article-header",
+      ".author-card",
+      ".series-nav",
+      ".article-toc",
+      ".summary-card",
+      ".note-box",
+      ".context-bridge",
+      ".ancient-epigraph",
+      ".reading-list-section",
+      ".fact-card",
+      ".quick-fact",
+      ".key-point",
+      ".fn-marker",
+      ".tooltip",
+      ".btip",
+      ".gtip",
+      ".quiz-wrapper",
+      ".gbs2-timeline",
+      ".gbs2-next",
+      "[data-glossary-skip]",
+      "[hidden]",
+      "[data-pagefind-meta]",
+      "[data-pagefind-ignore]",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "script",
+      "style"
+    ],
+    placementForbiddenSelectors: [
+      "nav",
+      "figure",
+      "figcaption",
+      "caption",
+      "table",
+      "thead",
+      "tbody",
+      "tfoot",
+      "tr",
+      "th",
+      "td",
+      ".article-header",
+      ".author-card",
+      ".series-nav",
+      ".article-toc",
+      ".summary-card",
+      ".note-box",
+      ".context-bridge",
+      ".ancient-epigraph",
+      ".reading-list-section",
+      ".fact-card",
+      ".quick-fact",
+      ".key-point",
+      ".fn-marker",
+      ".tooltip",
+      ".btip",
+      ".quiz-wrapper",
+      ".gbs2-timeline",
+      ".gbs2-next",
+      "[data-glossary-skip]",
+      "[hidden]",
+      "[data-pagefind-meta]",
+      "[data-pagefind-ignore]",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6"
+    ],
+    cadence: {
+      minWordGap: 1200,
+      minBlockGap: 20,
+      maxPerArticle: 3
+    }
+  };
+
+  const runtime = (window.__gbGlossaryRuntime = window.__gbGlossaryRuntime || {
+    promise: null,
+    dict: null,
+    policy: null,
+    aliasToCanonical: null,
+    aliasAll: null,
+    regex: null
+  });
+
+  exposeHydrator();
+
+  const root =
+    DEFAULT_POLICY.rootSelectors
+      .map((selector) => document.querySelector(selector))
+      .find(Boolean) || null;
+
+  if (!root) return;
+
+  loadRuntime()
+    .then((state) => {
+      if (!state || !state.dict || !state.regex) return;
+      normalizeManualTerms(root, state);
+      hydrateAutomaticTerms(root, state);
+      hydrateManualTerms(root, state);
+      initializeTooltips(root);
+    })
+    .catch(() => {
+      // Glossary is progressive enhancement. Article reading must never fail.
+    });
+
+  document.addEventListener("gb:quiz-rendered", (event) => {
+    const quizRoot = event && event.detail && event.detail.root;
+    hydrateGlossaryTerms(quizRoot || document);
+  });
+
+  function exposeHydrator() {
+    window.SiteUtils = window.SiteUtils || {};
+    window.SiteUtils.hydrateGlossaryTerms = hydrateGlossaryTerms;
+  }
+
+  function hydrateGlossaryTerms(scope) {
+    const target = scope && scope.querySelectorAll ? scope : document;
+    return loadRuntime().then((state) => {
+      if (!state || !state.dict) return;
+      normalizeManualTerms(target, state);
+      hydrateAutomaticTerms(target, state);
+      hydrateManualTerms(target, state);
+      initializeTooltips(target);
+    });
+  }
+
+  function normalize(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/ё/g, "е")
+      .replace(/[‐‑‒–—−]/g, "-")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function numberOrNull(value) {
+    return Number.isFinite(Number(value)) ? Number(value) : null;
+  }
+
+  function getEntryMeta(dict, canonical) {
+    const entry = (dict && dict[canonical]) || {};
+    const nested =
+      entry.definition && typeof entry.definition === "object"
+        ? entry.definition
+        : {};
+
+    return {
+      category: entry.category || nested.category || "",
+      categorySlug:
+        entry.categorySlug ||
+        entry.category_slug ||
+        nested.categorySlug ||
+        nested.category_slug ||
+        "",
+      autoHydrate:
+        entry.autoHydrate !== false && nested.autoHydrate !== false,
+      minWordGap:
+        numberOrNull(entry.minWordGap) ?? numberOrNull(nested.minWordGap),
+      minBlockGap:
+        numberOrNull(entry.minBlockGap) ?? numberOrNull(nested.minBlockGap),
+      maxPerArticle:
+        numberOrNull(entry.maxPerArticle) ??
+        numberOrNull(nested.maxPerArticle)
+    };
+  }
+
+  function loadRuntime() {
+    if (
+      runtime.dict &&
+      runtime.policy &&
+      runtime.aliasToCanonical &&
+      runtime.regex
+    ) {
+      return Promise.resolve(runtime);
+    }
+
+    if (runtime.promise) return runtime.promise;
+
+    runtime.promise = Promise.all([
+      fetch("/data/glossary.json").then((response) =>
+        response.ok ? response.json() : null
+      ),
+      fetch("/data/glossary-policy.json")
+        .then((response) => (response.ok ? response.json() : null))
+        .catch(() => null)
+    ])
+      .then(([dict, policy]) => {
+        if (!dict || typeof dict !== "object") return null;
+
+        const mergedPolicy = mergePolicy(DEFAULT_POLICY, policy);
+        const compiled = compileDictionary(dict);
+
+        runtime.dict = dict;
+        runtime.policy = mergedPolicy;
+        runtime.aliasToCanonical = compiled.aliasToCanonical;
+        runtime.aliasAll = compiled.aliasAll;
+        runtime.regex = compiled.regex;
+
+        return runtime;
+      })
+      .catch(() => null);
+
+    return runtime.promise;
+  }
+
+  function mergePolicy(base, override) {
+    const safe = override && typeof override === "object" ? override : {};
+    const legacyForbidden = Array.isArray(safe.forbiddenSelectors)
+      ? safe.forbiddenSelectors
+      : null;
+
+    return {
+      rootSelectors: Array.isArray(safe.rootSelectors)
+        ? safe.rootSelectors
+        : base.rootSelectors,
+      proseSelectors: Array.isArray(safe.proseSelectors)
+        ? safe.proseSelectors
+        : base.proseSelectors,
+      hydrationForbiddenSelectors: Array.isArray(
+        safe.hydrationForbiddenSelectors
+      )
+        ? safe.hydrationForbiddenSelectors
+        : legacyForbidden || base.hydrationForbiddenSelectors,
+      placementForbiddenSelectors: Array.isArray(
+        safe.placementForbiddenSelectors
+      )
+        ? safe.placementForbiddenSelectors
+        : base.placementForbiddenSelectors,
+      cadence: {
+        minWordGap:
+          numberOrNull(safe.cadence && safe.cadence.minWordGap) ??
+          base.cadence.minWordGap,
+        minBlockGap:
+          numberOrNull(safe.cadence && safe.cadence.minBlockGap) ??
+          base.cadence.minBlockGap,
+        maxPerArticle:
+          numberOrNull(safe.cadence && safe.cadence.maxPerArticle) ??
+          base.cadence.maxPerArticle
+      }
+    };
+  }
+
+  function compileDictionary(dict) {
+    const aliasToCanonical = {};
+    const aliasAll = {};
+    const autoAliases = [];
+
+    Object.keys(dict).forEach((canonical) => {
+      const entry = dict[canonical] || {};
+      const nested =
+        entry.definition && typeof entry.definition === "object"
+          ? entry.definition
+          : {};
+      const aliases = Array.isArray(entry.aliases)
+        ? entry.aliases.slice()
+        : Array.isArray(nested.aliases)
+          ? nested.aliases.slice()
+          : [];
+
+      if (!aliases.includes(canonical)) aliases.unshift(canonical);
+
+      const meta = getEntryMeta(dict, canonical);
+
+      aliases.forEach((alias) => {
+        const key = normalize(alias);
+        if (!key) return;
+
+        if (!aliasAll[key]) aliasAll[key] = canonical;
+
+        if (meta.autoHydrate && !aliasToCanonical[key]) {
+          aliasToCanonical[key] = canonical;
+          if (!autoAliases.includes(alias)) autoAliases.push(alias);
+        }
+      });
+    });
+
+    autoAliases.sort((a, b) => b.length - a.length);
+
+    const source = autoAliases.map(escapeRegExp).join("|");
+    let regex = null;
+
+    if (source) {
+      try {
+        regex = new RegExp(
+          `(^|[^\\p{L}\\p{N}_])(${source})(?=$|[^\\p{L}\\p{N}_])`,
+          "giu"
+        );
+      } catch (_) {
+        try {
+          regex = new RegExp(
+            `(^|[^а-яёА-ЯЁa-zA-Z0-9_])(${source})(?=$|[^а-яёА-ЯЁa-zA-Z0-9_])`,
+            "gi"
+          );
+        } catch (_) {
+          regex = null;
+        }
+      }
+    }
+
+    return { aliasToCanonical, aliasAll, regex };
+  }
+
+  function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function matchesClosest(element, selectors) {
+    if (!element) return false;
+    return selectors.some((selector) => {
+      try {
+        return Boolean(element.closest(selector));
+      } catch (_) {
+        return false;
+      }
+    });
+  }
+
+  function isHydrationForbidden(node, policy) {
+    const element =
+      node && node.nodeType === Node.ELEMENT_NODE
+        ? node
+        : node && node.parentElement;
+    return (
+      !element ||
+      matchesClosest(element, policy.hydrationForbiddenSelectors)
+    );
+  }
+
+  function isPlacementForbidden(node, policy) {
+    const element =
+      node && node.nodeType === Node.ELEMENT_NODE
+        ? node
+        : node && node.parentElement;
+    return (
+      !element ||
+      matchesClosest(element, policy.placementForbiddenSelectors)
+    );
+  }
+
+  function getProseBlocks(scope, policy) {
+    const selector = policy.proseSelectors.join(",");
+    const candidates = Array.from(scope.querySelectorAll(selector)).filter(
+      (element) => !isHydrationForbidden(element, policy)
+    );
+
+    return candidates.filter(
+      (element) =>
+        !candidates.some(
+          (other) => other !== element && element.contains(other)
+        )
+    );
+  }
+
+  function normalizeManualTerms(scope, state) {
+    const terms = Array.from(scope.querySelectorAll(".gterm"));
+
+    terms.forEach((term) => {
+      if (!isPlacementForbidden(term.parentElement, state.policy)) return;
+
+      const clone = term.cloneNode(true);
+      clone.querySelectorAll(".gtip").forEach((tip) => tip.remove());
+      term.replaceWith(document.createTextNode(clone.textContent || ""));
+    });
+  }
+
+  function hydrateAutomaticTerms(scope, state) {
+    if (!state.regex) return;
+
+    const blocks = getProseBlocks(scope, state.policy);
+    const seen = {};
+    let cumulativeWords = 0;
+
+    blocks.forEach((block, blockIndex) => {
+      const blockWordStart = cumulativeWords;
+      const blockText = block.textContent || "";
+      cumulativeWords += countWords(blockText);
+
+      const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, {
+        acceptNode(textNode) {
+          if (!textNode.nodeValue || !textNode.nodeValue.trim()) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return isHydrationForbidden(textNode, state.policy)
+            ? NodeFilter.FILTER_REJECT
+            : NodeFilter.FILTER_ACCEPT;
+        }
+      });
+
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+      let wordsBeforeNode = 0;
+
+      textNodes.forEach((textNode) => {
+        const sourceText = textNode.nodeValue;
+        const regex = state.regex;
+        regex.lastIndex = 0;
+
+        let lastOffset = 0;
+        let changed = false;
+        let match;
+        const fragment = document.createDocumentFragment();
+
+        while ((match = regex.exec(sourceText)) !== null) {
+          const prefix = match[1] || "";
+          const visible = match[2] || "";
+          const canonical = state.aliasToCanonical[normalize(visible)];
+          if (!canonical) continue;
+
+          const matchStart = match.index + prefix.length;
+          const wordPosition =
+            blockWordStart +
+            wordsBeforeNode +
+            countWords(sourceText.slice(0, matchStart));
+
+          if (
+            !shouldHydrate(canonical, blockIndex, wordPosition, seen, state)
+          ) {
+            continue;
+          }
+
+          fragment.appendChild(
+            document.createTextNode(sourceText.slice(lastOffset, matchStart))
+          );
+          fragment.appendChild(createTerm(visible, canonical, state.dict));
+          lastOffset = matchStart + visible.length;
+          changed = true;
+          recordOccurrence(canonical, blockIndex, wordPosition, seen);
+        }
+
+        if (changed) {
+          fragment.appendChild(
+            document.createTextNode(sourceText.slice(lastOffset))
+          );
+          textNode.replaceWith(fragment);
+        }
+
+        wordsBeforeNode += countWords(sourceText);
+      });
+    });
+  }
+
+  function shouldHydrate(canonical, blockIndex, wordPosition, seen, state) {
+    const previous = seen[canonical];
+    const meta = getEntryMeta(state.dict, canonical);
+    const cadence = state.policy.cadence;
+
+    const maxPerArticle = meta.maxPerArticle ?? cadence.maxPerArticle;
+    const minBlockGap = meta.minBlockGap ?? cadence.minBlockGap;
+    const minWordGap = meta.minWordGap ?? cadence.minWordGap;
+
+    if (!previous) return maxPerArticle > 0;
+    if (previous.count >= maxPerArticle) return false;
+
+    return (
+      blockIndex - previous.blockIndex >= minBlockGap &&
+      wordPosition - previous.wordPosition >= minWordGap
+    );
+  }
+
+  function recordOccurrence(canonical, blockIndex, wordPosition, seen) {
+    const previous = seen[canonical];
+    seen[canonical] = {
+      count: previous ? previous.count + 1 : 1,
+      blockIndex,
+      wordPosition
+    };
+  }
+
+  function countWords(value) {
+    const matches = String(value || "").match(/[\p{L}\p{N}]+/gu);
+    return matches ? matches.length : 0;
+  }
+
+  function createTerm(visible, canonical, dict) {
+    const term = document.createElement("abbr");
+    term.className = "gterm";
+    term.dataset.term = canonical;
+    term.tabIndex = 0;
+    term.setAttribute("role", "button");
+    term.setAttribute("data-term-title", titleCase(canonical));
+
+    applyCategory(term, canonical, dict);
+    term.appendChild(document.createTextNode(visible));
+    term.appendChild(createTip(dict, canonical));
+
+    return term;
+  }
+
+  function hydrateManualTerms(scope, state) {
+    const terms = Array.from(scope.querySelectorAll(".gterm"));
+
+    terms.forEach((term) => {
+      if (isPlacementForbidden(term.parentElement, state.policy)) return;
+
+      const rawKey =
+        term.getAttribute("data-term") ||
+        term.getAttribute("data-term-title") ||
+        firstText(term);
+
+      const canonical =
+        state.aliasAll[normalize(rawKey)] ||
+        state.aliasToCanonical[normalize(rawKey)];
+
+      if (!canonical) return;
+
+      term.classList.add("gterm");
+      term.dataset.term = canonical;
+      term.setAttribute("data-term-title", titleCase(canonical));
+      term.setAttribute("role", "button");
+      if (!term.hasAttribute("tabindex")) term.tabIndex = 0;
+
+      applyCategory(term, canonical, state.dict);
+
+      if (!term.querySelector(".gtip")) {
+        term.appendChild(createTip(state.dict, canonical));
+      } else {
+        upgradeStaticTip(term, canonical, state.dict);
+      }
+    });
+  }
+
+  function firstText(element) {
+    const first = Array.from(element.childNodes).find(
+      (node) =>
+        node.nodeType === Node.TEXT_NODE &&
+        String(node.textContent || "").trim()
+    );
+    return first ? first.textContent : element.textContent;
+  }
+
+  function titleCase(value) {
+    return String(value || "").replace(/^[а-яёa-z]/u, (char) =>
+      char.toUpperCase()
+    );
+  }
+
+  function applyCategory(term, canonical, dict) {
+    const meta = getEntryMeta(dict, canonical);
+    if (meta.category) term.dataset.category = meta.category;
+    if (meta.categorySlug) term.dataset.categorySlug = meta.categorySlug;
+  }
+
+  function getDefinition(dict, canonical) {
+    const entry = dict && dict[canonical];
+    if (!entry) return { brief: canonical, detail: "" };
+
+    let brief = canonical;
+    if (typeof entry === "string") {
+      brief = entry;
+    } else if (typeof entry.definition === "string") {
+      brief = entry.definition;
+    } else if (
+      entry.definition &&
+      typeof entry.definition.definition === "string"
+    ) {
+      brief = entry.definition.definition;
+    }
+
+    return {
+      brief,
+      detail:
+        entry && typeof entry.detail === "string" ? entry.detail : ""
+    };
+  }
+
+  function createTip(dict, canonical) {
+    const meta = getEntryMeta(dict, canonical);
+    const definition = getDefinition(dict, canonical);
+    const tip = document.createElement("span");
+
+    tip.className = "gtip";
+    if (meta.category) tip.dataset.category = meta.category;
+    if (meta.categorySlug) tip.dataset.categorySlug = meta.categorySlug;
+    tip.innerHTML = buildTipHtml(definition.brief, definition.detail);
+
+    return tip;
+  }
+
+  function buildTipHtml(brief, detail) {
+    if (!detail) return escapeHtml(brief);
+
+    return (
+      `<span class="gtip-brief">${escapeHtml(brief)}</span>` +
+      '<button type="button" class="gtip-expand-btn" aria-label="Подробнее" aria-expanded="false" data-gtip-expand>' +
+      '<span class="gtip-expand-txt">Подробнее</span>' +
+      '<svg class="gtip-expand-ico" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">' +
+      '<path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg></button>" +
+      '<span class="gtip-detail-wrap" aria-hidden="true">' +
+      '<span class="gtip-detail"><span class="gtip-papyrus">' +
+      detail +
+      "</span></span></span>"
+    );
+  }
+
+  function escapeHtml(value) {
+    const element = document.createElement("div");
+    element.textContent = String(value || "");
+    return element.innerHTML;
+  }
+
+  function upgradeStaticTip(term, canonical, dict) {
+    if (term.dataset.gtipUpgraded === "1") return;
+
+    const tip = term.querySelector(".gtip");
+    if (!tip) return;
+
+    const definition = getDefinition(dict, canonical);
+    const host = tip.querySelector(".gtip-luxury__definition") || tip;
+
+    if (host.querySelector(".gtip-brief")) {
+      term.dataset.gtipUpgraded = "1";
+      return;
+    }
+
+    const originalBrief =
+      String(host.textContent || "").trim() || definition.brief;
+
+    host.innerHTML = buildTipHtml(originalBrief, definition.detail);
+    term.dataset.gtipUpgraded = "1";
+  }
+
+  function initializeTooltips(scope) {
+    if (
+      window.SiteUtils &&
+      typeof window.SiteUtils.initGlossaryTooltips === "function"
+    ) {
+      window.SiteUtils.initGlossaryTooltips(scope);
+    }
+  }
+})();
