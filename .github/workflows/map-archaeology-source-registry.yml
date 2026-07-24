@@ -1,0 +1,61 @@
+name: Map Archaeology Source Registry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'karty/_data/archaeology-source-registry.json'
+      - 'scripts/map-archaeology-source-registry-audit.js'
+      - '.github/workflows/map-archaeology-source-registry.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'karty/_data/archaeology-source-registry.json'
+      - 'scripts/map-archaeology-source-registry-audit.js'
+      - '.github/workflows/map-archaeology-source-registry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: map-archaeology-source-registry-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  registry-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Validate source syntax
+        run: |
+          node --check scripts/map-archaeology-source-registry-audit.js
+          node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
+
+      - name: Enforce evidence hierarchy and YEC separation
+        run: node scripts/map-archaeology-source-registry-audit.js
+
+      - name: Lint workflow
+        run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-archaeology-source-registry.yml
+
+      - name: Upload registry audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-archaeology-source-registry-${{ github.run_id }}
+          path: reports/map-archaeology-source-registry.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Ensure proof is read-only
+        run: git diff --exit-code
