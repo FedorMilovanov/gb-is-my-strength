@@ -40,18 +40,49 @@ jobs:
           node --check scripts/materialize-map-archaeology-engine-p0.mjs
           node scripts/materialize-map-archaeology-engine-p0.mjs
       - name: Validate generated source
+        id: validation
+        continue-on-error: true
         run: |
-          node --check karty/_engine/map-engine.js
-          node --check src/lib/karty/map-archaeology-projection.mjs
-          node --check scripts/map-archaeology-projection-contract-test.mjs
-          node --check scripts/map-archaeology-projection-browser-test.mjs
-          node scripts/map-archaeology-source-registry-audit.js
-          node scripts/map-archaeology-category-coverage-audit.js
-          node scripts/map-archaeology-projection-contract-test.mjs
-      - name: Remove one-shot machinery
+          set +e
+          {
+            echo '== map-engine syntax =='
+            node --check karty/_engine/map-engine.js
+            echo '== projection builder syntax =='
+            node --check src/lib/karty/map-archaeology-projection.mjs
+            echo '== contract syntax =='
+            node --check scripts/map-archaeology-projection-contract-test.mjs
+            echo '== browser syntax =='
+            node --check scripts/map-archaeology-projection-browser-test.mjs
+            echo '== registry audit =='
+            node scripts/map-archaeology-source-registry-audit.js
+            echo '== category coverage =='
+            node scripts/map-archaeology-category-coverage-audit.js
+            echo '== direct projection contract =='
+            node scripts/map-archaeology-projection-contract-test.mjs
+          } > reports/_temp-map-archaeology-engine-validation.log 2>&1
+          status=$?
+          echo "$status" > reports/_temp-map-archaeology-engine-validation.status
+          tail -80 reports/_temp-map-archaeology-engine-validation.log
+          exit 0
+      - name: Upload validation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: temp-map-archaeology-engine-validation-${{ github.run_id }}
+          path: |
+            reports/_temp-map-archaeology-engine-validation.log
+            reports/_temp-map-archaeology-engine-validation.status
+          if-no-files-found: error
+          retention-days: 3
+      - name: Stop on validation failure
+        run: |
+          test "$(cat reports/_temp-map-archaeology-engine-validation.status)" = "0"
+      - name: Remove one-shot machinery and diagnostics
         run: |
           rm scripts/materialize-map-archaeology-engine-p0.mjs
           rm .github/workflows/_temp-map-archaeology-engine-p0.yml
+          rm reports/_temp-map-archaeology-engine-validation.log
+          rm reports/_temp-map-archaeology-engine-validation.status
       - name: Enforce exact permanent scope
         run: |
           node - <<'NODE'
