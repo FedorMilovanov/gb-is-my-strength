@@ -1,0 +1,48 @@
+name: TEMP Map Archaeology Expansion Inventory
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/_temp-map-archaeology-expansion-inventory.mjs
+      - .github/workflows/_temp-map-archaeology-expansion-inventory.yml
+      - docs/refactor-2026/lanes/map-archaeology-coverage-provenance-v2-2026-07-24.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-map-archaeology-expansion-inventory-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Syntax
+        run: node --check scripts/_temp-map-archaeology-expansion-inventory.mjs
+      - name: Build exact inventory
+        run: node scripts/_temp-map-archaeology-expansion-inventory.mjs
+      - name: Verify read-only source tree
+        run: |
+          git diff --exit-code -- . ':(exclude)reports/**'
+          test -s reports/map-archaeology-expansion-inventory.json
+      - name: Lint workflow
+        run: node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-map-archaeology-expansion-inventory.yml
+      - name: Upload exact inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-archaeology-expansion-inventory-${{ github.run_id }}
+          path: reports/map-archaeology-expansion-inventory.json
+          if-no-files-found: error
+          retention-days: 14
