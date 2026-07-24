@@ -1,0 +1,35 @@
+name: Map Archaeology Projection
+
+on:
+  pull_request:
+    paths:
+      - 'karty/_data/archaeology-source-registry.json'
+      - 'karty/_data/archaeology-source-provenance.json'
+      - 'karty/_engine/map-archaeology-adapter.js'
+      - 'src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro'
+      - 'src/components/karty/_shared/MapRuntimeFallback.astro'
+      - 'src/lib/karty/map-archaeology-projection.mjs'
+      - 'scripts/map-archaeology-projection-contract-test.mjs'
+      - '.github/workflows/map-archaeology-projection.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate registry and projection contract
+        run: |
+          node --check karty/_engine/map-archaeology-adapter.js
+          node --check src/lib/karty/map-archaeology-projection.mjs
+          node --check scripts/map-archaeology-projection-contract-test.mjs
+          node scripts/map-archaeology-source-registry-audit.js
+          node scripts/map-archaeology-projection-contract-test.mjs
+      - name: Lint workflow
+        run: node scripts/run-actionlint.mjs .github/workflows/map-archaeology-projection.yml
