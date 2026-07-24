@@ -20,7 +20,7 @@
   if (!block || !list) return;
   var favs = [];
   try { favs = JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) {}
-  if (!favs.length) return;
+  if (!Array.isArray(favs) || !favs.length) return;
 
   function textNode(className, value) {
     var node = document.createElement('span');

@@ -171,6 +171,7 @@ mustNot(hero, '<kbd>⌘</kbd><kbd>K</kbd>', 'HomeHero no longer hardcodes an App
 const favorites = read('src/components/home/HomeSections/Favorites.astro');
 must(favorites, "node.textContent = String(value == null ? '' : value)", 'Favorites renders stored copy as text');
 must(favorites, "imageUrl.protocol === 'http:' || imageUrl.protocol === 'https:'", 'Favorites accepts only web image protocols');
+must(favorites, 'if (!Array.isArray(favs) || !favs.length) return;', 'Favorites rejects malformed storage roots');
 must(favorites, "if (!f || typeof f !== 'object' || Array.isArray(f)) return;", 'Favorites skips malformed stored entries');
 mustNot(favorites, 'card.innerHTML', 'Favorites does not inject stored HTML');
 
