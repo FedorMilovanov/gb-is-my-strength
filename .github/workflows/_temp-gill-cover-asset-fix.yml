@@ -35,9 +35,10 @@ jobs:
           from pathlib import Path
           old='og-dzhon-gill-spravochnik-600w.webp'
           new='og-dzhon-gill-spravochnik.webp'
+          self_path='.github/workflows/_temp-gill-cover-asset-fix.yml'
           paths=[]
           for path in Path('.').rglob('*'):
-              if not path.is_file() or any(part in {'.git','node_modules','dist','reports'} for part in path.parts):
+              if not path.is_file() or path.as_posix() == self_path or any(part in {'.git','node_modules','dist','reports'} for part in path.parts):
                   continue
               try:
                   text=path.read_text(encoding='utf-8')
