@@ -39,7 +39,10 @@ jobs:
             > src/components/article-pilots/gill-series/gillSeriesData.ts
           git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-release-materialize.py \
             > /tmp/gill-release-materialize.py
+          git show origin/fix/gill-readerstate-submenu-release-2026-07-24:scripts/_temp-gill-visibility-materialize.py \
+            > /tmp/gill-visibility-materialize.py
           python /tmp/gill-release-materialize.py
+          python /tmp/gill-visibility-materialize.py
 
       - name: Install dependencies
         run: npm ci
