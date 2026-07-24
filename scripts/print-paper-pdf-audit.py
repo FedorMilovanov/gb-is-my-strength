@@ -79,10 +79,34 @@ def main() -> int:
     text = text_path.read_text("utf-8", errors="ignore")
     text_pages = text.split("\f")
     normalize = lambda value: re.sub(r"\s+", " ", value).strip().upper()
-    date_pages = [i for i, value in enumerate(text_pages) if "23 НОЯБРЯ 1697" in normalize(value)]
-    name_pages = [i for i, value in enumerate(text_pages) if "JOHN GILL" in normalize(value)]
+    normalized_pages = [normalize(value) for value in text_pages]
+    date_pages = [i for i, value in enumerate(normalized_pages) if "23 НОЯБРЯ 1697" in value]
+    name_pages = [i for i, value in enumerate(normalized_pages) if "JOHN GILL" in value]
     if not date_pages or not name_pages or not set(date_pages) & set(name_pages):
         failures.append(f"biography masthead split across pages: dates={date_pages}, name={name_pages}")
+
+    # The series eyebrow is a styled div rather than a semantic heading, so the
+    # generic heading-orphan check cannot protect it. Bind it to its intro text.
+    series_label_pages = [
+        i for i, value in enumerate(normalized_pages)
+        if "СЕРИЯ О ДЖОНЕ ГИЛЛЕ" in value
+    ]
+    series_intro_pages = [
+        i for i, value in enumerate(normalized_pages)
+        if (
+            "СЕРИЯ О ДЖОНЕ ГИЛЛЕ СОСТОИТ" in value
+            or "БИОГРАФИЯ ДЖОНА ГИЛЛА" in value
+        )
+    ]
+    if (
+        not series_label_pages
+        or not series_intro_pages
+        or not set(series_label_pages) & set(series_intro_pages)
+    ):
+        failures.append(
+            "series overview split across pages: "
+            f"label={series_label_pages}, intro={series_intro_pages}"
+        )
 
     known_headings = {
         "I. СТАНОВЛЕНИЕ И ПРИЗВАНИЕ",
