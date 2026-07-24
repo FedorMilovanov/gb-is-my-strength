@@ -1,6 +1,13 @@
 name: TEMP Map Archaeology Expansion Inventory
 
 on:
+  push:
+    branches:
+      - agent/map-archaeology-coverage-provenance-v2
+    paths:
+      - scripts/_temp-map-archaeology-expansion-inventory.mjs
+      - .github/workflows/_temp-map-archaeology-expansion-inventory.yml
+      - docs/refactor-2026/lanes/map-archaeology-coverage-provenance-v2-2026-07-24.md
   pull_request:
     branches: [main]
     paths:
