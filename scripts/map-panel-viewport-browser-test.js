@@ -110,6 +110,31 @@ async function openPlace(page, id) {
   await page.waitForTimeout(90);
 }
 
+async function waitForMapDom(page, route, viewport, runtimeErrors) {
+  try {
+    await page.waitForFunction(() => {
+      const map = document.querySelector('.me-map');
+      const panel = document.querySelector('.me-panel');
+      const marker = document.querySelector('.me-map [data-place-id]');
+      return Boolean(map && panel && marker);
+    }, null, { timeout: 20000 });
+  } catch (error) {
+    const readiness = await page.evaluate(() => ({
+      readyState: document.readyState,
+      stageChildren: document.querySelector('#stage')?.childElementCount || 0,
+      mapCount: document.querySelectorAll('.me-map').length,
+      panelCount: document.querySelectorAll('.me-panel').length,
+      markerCount: document.querySelectorAll('.me-map [data-place-id]').length,
+      stageText: (document.querySelector('#stage')?.textContent || '').trim().slice(0, 300),
+      scripts: [...document.scripts].map((script) => script.src || '[inline]').slice(-8),
+    }));
+    const screenshot = path.join(EVIDENCE, `${BROWSER_NAME}-${route}-${viewport.id}-readiness-failure.png`);
+    await page.screenshot({ path: screenshot, fullPage: false }).catch(() => {});
+    error.details = { readiness, runtimeErrors: [...runtimeErrors] };
+    throw error;
+  }
+}
+
 async function runScenario(browser, route, viewport) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
   await context.route('**/*', async (requestRoute) => {
@@ -139,8 +164,7 @@ async function runScenario(browser, route, viewport) {
 
   try {
     await page.goto(`${BASE}/karty/${route}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForFunction(() => document.querySelector('[data-map-stage]')?.getAttribute('data-map-state') === 'ready', null, { timeout: 20000 });
-    await page.waitForSelector('.me-map [data-place-id]', { timeout: 10000 });
+    await waitForMapDom(page, route, viewport, runtimeErrors);
     await page.evaluate(() => {
       document.querySelector('.me-intro')?.remove();
       document.querySelector('.me-loading')?.remove();
@@ -174,7 +198,7 @@ async function runScenario(browser, route, viewport) {
       content.scrollTop = content.scrollHeight;
     });
     await page.waitForTimeout(120);
-    let longSnapshot = await panelSnapshot(page);
+    const longSnapshot = await panelSnapshot(page);
     assertBounded(longSnapshot, `${route}/${viewport.id}/forced-long-content`, { requireScroll: true });
 
     const reducedHeight = Math.min(480, viewport.height - 40);
