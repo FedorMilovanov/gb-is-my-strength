@@ -7,6 +7,10 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const {
+  validateCacheBustWorkflowPolicy,
+  runCacheBustWorkflowPolicyMutationSuite,
+} = require('./lib/cache-bust-workflow-policy');
 const ROOT = path.resolve(__dirname, '..');
 const issues = [];
 function read(rel) {
@@ -224,6 +228,29 @@ must('.github/workflows/visual-parity.yml', visualParity, /visual-parity-screens
 const sharedFiles = read('.github/workflows/shared-files-guard.yml');
 must('.github/workflows/shared-files-guard.yml', sharedFiles, /^name:\s*.+/m, 'shared-files-guard must have a name');
 must('.github/workflows/shared-files-guard.yml', sharedFiles, /guard-shared-files\.js/, 'shared-files-guard must run guard-shared-files.js');
+
+const workflowDir = path.join(ROOT, '.github/workflows');
+const workflowTexts = Object.fromEntries(
+  fs.readdirSync(workflowDir)
+    .filter((name) => name.endsWith('.yml') || name.endsWith('.yaml'))
+    .map((name) => {
+      const rel = `.github/workflows/${name}`;
+      return [rel, fs.readFileSync(path.join(workflowDir, name), 'utf8')];
+    })
+);
+const cacheBustPolicyInput = {
+  sharedFiles,
+  readiness: indexnow,
+  deploy,
+  cacheBust: read('scripts/cache-bust.js'),
+  workflowTexts,
+};
+for (const issue of validateCacheBustWorkflowPolicy(cacheBustPolicyInput)) {
+  issues.push(`cache-bust fail-closed policy: ${issue}`);
+}
+for (const issue of runCacheBustWorkflowPolicyMutationSuite(cacheBustPolicyInput)) {
+  issues.push(`cache-bust policy mutation: ${issue}`);
+}
 
 must('.github/workflows/notify-on-failure.yml', notify, /Visual Parity Guard/, 'notify workflow must listen for Visual Parity Guard');
 must('.github/workflows/notify-on-failure.yml', notify, /Shared Files Guard/, 'notify workflow must listen for Shared Files Guard');
