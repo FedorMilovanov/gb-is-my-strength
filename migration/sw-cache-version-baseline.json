@@ -3,7 +3,7 @@
   "captured": "2026-07-22",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
   "lastReviewedDistProductionCacheVersion": "gb-v173-r64-astro-runtime-hub-20260618",
-  "currentDistProductionCacheVersion": "gb-v191-reader-preferences-20260721",
-  "currentExpectedCacheVersion": "gb-v191-reader-preferences-20260721",
-  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times (enforced fatally by sw:dist:audit:deploy-switch since 2026-07-05 — BUG-SW-BASELINE-DRIFT fix); update this file in the same commit as any intentional bump. Historical pre-switch value: gb-v171 (never reintroduce). Last reviewed dist production: gb-v182 (2026-07-02) -> gb-v187 (2026-07-03, pagefind bootstrap) -> gb-v191 (2026-07-21, reader preferences). Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis."
+  "currentDistProductionCacheVersion": "gb-v192-reader-state-20260724",
+  "currentExpectedCacheVersion": "gb-v192-reader-state-20260724",
+  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times (enforced fatally by sw:dist:audit:deploy-switch since 2026-07-05 — BUG-SW-BASELINE-DRIFT fix); update this file in the same commit as any intentional bump. Historical pre-switch value: gb-v171 (never reintroduce). Last reviewed dist production: gb-v182 (2026-07-02) -> gb-v187 (2026-07-03, pagefind bootstrap) -> gb-v191 (2026-07-21, reader preferences) -> gb-v192 (2026-07-24, ReaderState R6). Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis."
 }
