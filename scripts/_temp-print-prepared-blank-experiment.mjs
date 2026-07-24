@@ -7,7 +7,7 @@ import { chromium } from 'playwright';
 
 const DIST = join(process.cwd(), 'dist');
 const OUT = join(process.cwd(), 'reports', 'print-prepared-blank-experiment');
-const MIME = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.woff2':'font/woff2' };
+const MIME = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.woff2':'font/woff2', '.jpg':'image/jpeg', '.jpeg':'image/jpeg' };
 await mkdir(OUT, { recursive: true });
 
 const server = createServer(async (req, res) => {
@@ -18,27 +18,56 @@ const server = createServer(async (req, res) => {
     const body = await readFile(file);
     res.writeHead(200, { 'content-type': MIME[extname(file)] || 'application/octet-stream' });
     res.end(body);
-  } catch { res.writeHead(404); res.end('nf'); }
+  } catch {
+    res.writeHead(404);
+    res.end('nf');
+  }
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
 
 const variants = [
-  ['prepared-baseline', ''],
-  ['break-auto', '@media print {.article-end-sdg-wrap,.article-end-sdg{break-inside:auto!important;page-break-inside:auto!important}}'],
-  ['body-minus-1px', '@media print {body{margin-bottom:-1px!important}}'],
-  ['body-minus-4px', '@media print {body{margin-bottom:-4px!important}}'],
-  ['world-minus-4px', '@media print {.gbs2-world{margin-bottom:-4px!important}}'],
-  ['wrap-minus-4px', '@media print {.article-end-sdg-wrap{margin-bottom:-4px!important}}'],
-  ['hide-signature', '@media print {.article-end-sdg-wrap{display:none!important}}'],
-  ['no-svg-filter', '@media print {.article-end-sdg svg{filter:none!important;box-shadow:none!important}}'],
-  ['page-bottom-16-9', '@page{size:A4;margin:15mm 14mm 16.9mm}'],
-  ['page-bottom-16-5', '@page{size:A4;margin:15mm 14mm 16.5mm}'],
-  ['page-all-14-9-14-16-9', '@page{size:A4;margin:14.9mm 14mm 16.9mm}'],
-  ['zoom-9999', '@media print {html{zoom:.9999}}'],
-  ['zoom-999', '@media print {html{zoom:.999}}'],
-  ['images-230mm', '@media print {figure img,.article-img img,.article-figure img,.article-hero img,.gbs2-hero img{max-height:230mm!important}}'],
-  ['body-before-none', '@media print {body::before{display:none!important;content:none!important;margin:0!important;padding:0!important}}'],
+  { name: 'prepared-baseline' },
+  {
+    name: 'all-breaks-auto',
+    css: '@media print {*{break-before:auto!important;break-after:auto!important;page-break-before:auto!important;page-break-after:auto!important}}',
+  },
+  {
+    name: 'all-breaks-auto-pseudos',
+    css: '@media print {*{break-before:auto!important;break-after:auto!important;page-break-before:auto!important;page-break-after:auto!important}*::before,*::after{break-before:auto!important;break-after:auto!important;page-break-before:auto!important;page-break-after:auto!important}}',
+  },
+  {
+    name: 'no-pseudo-content',
+    css: '@media print {*::before,*::after{content:none!important;display:none!important}}',
+  },
+  {
+    name: 'page-zero-margins',
+    css: '@page{size:A4;margin:0}',
+  },
+  {
+    name: 'prefer-browser-page-size',
+    pdf: { preferCSSPageSize: false },
+  },
+  {
+    name: 'body-world-only',
+    css: '@media print {body>:not(.gbs2-world):not(script):not(style):not(link){display:none!important}}',
+  },
+  {
+    name: 'remove-after-main',
+    action: 'remove-after-main',
+  },
+  {
+    name: 'main-only',
+    action: 'main-only',
+  },
+  {
+    name: 'remove-fixed-sticky',
+    action: 'remove-fixed-sticky',
+  },
+  {
+    name: 'remove-empty-tail',
+    action: 'remove-empty-tail',
+  },
 ];
 
 function countPages(pdfPath) {
@@ -49,40 +78,132 @@ function countPages(pdfPath) {
 const browser = await chromium.launch();
 const results = [];
 try {
-  for (const [name, css] of variants) {
+  for (const variant of variants) {
     const context = await browser.newContext({ viewport: { width: 1035, height: 851 } });
     const page = await context.newPage();
     await page.route(/gospod-bog\.ru|mc\.yandex/, (route) => route.abort());
     await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
-    await page.evaluate(() => { window.print = () => { window.__printCalls = (window.__printCalls || 0) + 1; }; });
+    await page.evaluate(() => {
+      window.print = () => {
+        window.__printCalls = (window.__printCalls || 0) + 1;
+      };
+    });
     await page.click('.gbs-rail-foot [data-action="print"]');
     await page.waitForFunction(() => window.__printCalls === 1 && window.GBPrintEngine?.getReport?.(), null, { timeout: 12000 });
     await page.waitForTimeout(300);
     await page.emulateMedia({ media: 'print' });
-    if (css) await page.addStyleTag({ content: css });
+
+    if (variant.action) {
+      await page.evaluate((action) => {
+        const main = document.querySelector('main');
+        if (!main) throw new Error('main missing');
+        if (action === 'remove-after-main') {
+          let node = main;
+          while (node && node !== document.body) {
+            let sibling = node.nextSibling;
+            while (sibling) {
+              const next = sibling.nextSibling;
+              sibling.remove();
+              sibling = next;
+            }
+            node = node.parentElement;
+          }
+        } else if (action === 'main-only') {
+          document.body.replaceChildren(main);
+        } else if (action === 'remove-fixed-sticky') {
+          for (const node of [...document.body.querySelectorAll('*')]) {
+            if (node === main || node.contains(main) || main.contains(node)) continue;
+            const style = getComputedStyle(node);
+            if (style.position === 'fixed' || style.position === 'sticky') node.remove();
+          }
+        } else if (action === 'remove-empty-tail') {
+          const mainRect = main.getBoundingClientRect();
+          for (const node of [...document.body.querySelectorAll('*')]) {
+            if (node === main || node.contains(main) || main.contains(node)) continue;
+            const style = getComputedStyle(node);
+            const rect = node.getBoundingClientRect();
+            const empty = !(node.textContent || '').trim() && !node.querySelector('img,svg,canvas,video,iframe');
+            if (empty && (rect.top >= mainRect.bottom - 1 || rect.width === 0 || rect.height === 0 || style.opacity === '0' || style.visibility === 'hidden')) node.remove();
+          }
+        }
+      }, variant.action);
+    }
+
+    if (variant.css) await page.addStyleTag({ content: variant.css });
     await page.waitForTimeout(200);
 
-    const pdfPath = join(OUT, `${name}.pdf`);
-    await page.pdf({ path: pdfPath, format: 'A4', printBackground: true, preferCSSPageSize: true });
-    const pages = countPages(pdfPath);
-    execFileSync('pdftoppm', ['-f', String(pages), '-singlefile', '-png', '-r', '72', pdfPath, join(OUT, `${name}-last`)]);
-    const geometry = await page.evaluate(() => {
-      const end = document.querySelector('.article-end-sdg');
-      const wrap = document.querySelector('.article-end-sdg-wrap');
+    const diagnostics = await page.evaluate(() => {
       const pick = (node) => {
         if (!node) return null;
-        const r = node.getBoundingClientRect(); const s = getComputedStyle(node);
-        return { top:r.top,bottom:r.bottom,height:r.height,marginTop:s.marginTop,marginBottom:s.marginBottom,paddingTop:s.paddingTop,paddingBottom:s.paddingBottom,breakInside:s.breakInside,display:s.display };
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return {
+          tag: node.tagName,
+          id: node.id || '',
+          cls: String(node.className || '').slice(0, 160),
+          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+          top: Math.round(rect.top * 1000) / 1000,
+          bottom: Math.round(rect.bottom * 1000) / 1000,
+          width: Math.round(rect.width * 1000) / 1000,
+          height: Math.round(rect.height * 1000) / 1000,
+          display: style.display,
+          visibility: style.visibility,
+          opacity: style.opacity,
+          position: style.position,
+          breakBefore: style.breakBefore,
+          breakAfter: style.breakAfter,
+          breakInside: style.breakInside,
+          pageBreakBefore: style.pageBreakBefore,
+          pageBreakAfter: style.pageBreakAfter,
+          pageBreakInside: style.pageBreakInside,
+        };
       };
+      const nodes = [...document.body.querySelectorAll('*')];
+      const forcedBreaks = nodes.map(pick).filter((item) =>
+        item && [item.breakBefore, item.breakAfter, item.pageBreakBefore, item.pageBreakAfter]
+          .some((value) => value && !['auto', 'avoid', 'avoid-page'].includes(value))
+      ).slice(0, 100);
+      const positioned = nodes.map(pick).filter((item) =>
+        item && ['fixed', 'sticky', 'absolute'].includes(item.position) && item.display !== 'none'
+      ).slice(-80);
+      const docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      const tail = nodes.map(pick).filter((item) =>
+        item && item.display !== 'none' && item.visibility !== 'hidden' && Number(item.opacity) > 0 && item.bottom >= docHeight - 1600
+      ).slice(-120);
+      const pseudoBreaks = [];
+      for (const node of nodes) {
+        for (const pseudo of ['::before', '::after']) {
+          const style = getComputedStyle(node, pseudo);
+          const content = style.content;
+          const values = [style.breakBefore, style.breakAfter, style.pageBreakBefore, style.pageBreakAfter];
+          if (content && content !== 'none' && content !== 'normal' && values.some((value) => value && value !== 'auto')) {
+            pseudoBreaks.push({ host: pick(node), pseudo, content: content.slice(0, 120), breakBefore: style.breakBefore, breakAfter: style.breakAfter, pageBreakBefore: style.pageBreakBefore, pageBreakAfter: style.pageBreakAfter, display: style.display });
+          }
+        }
+      }
       return {
         doc: document.documentElement.scrollHeight,
         body: document.body.scrollHeight,
-        pageSize: getComputedStyle(document.documentElement).getPropertyValue('--unused'),
-        end: pick(end), wrap: pick(wrap),
+        bodyChildren: [...document.body.children].map(pick),
+        forcedBreaks,
+        pseudoBreaks: pseudoBreaks.slice(0, 100),
+        positioned,
+        tail,
         report: window.GBPrintEngine?.getReport?.() || null,
       };
     });
-    results.push({ name, pages, geometry });
+
+    const pdfPath = join(OUT, `${variant.name}.pdf`);
+    await page.pdf({
+      path: pdfPath,
+      format: 'A4',
+      printBackground: true,
+      preferCSSPageSize: variant.pdf?.preferCSSPageSize ?? true,
+    });
+    const pages = countPages(pdfPath);
+    execFileSync('pdftoppm', ['-f', String(pages), '-singlefile', '-png', '-r', '72', pdfPath, join(OUT, `${variant.name}-last`)]);
+    results.push({ name: variant.name, pages, diagnostics });
+    await writeFile(join(OUT, `${variant.name}-diagnostics.json`), JSON.stringify(diagnostics, null, 2));
     await context.close();
   }
 } finally {
@@ -90,4 +211,13 @@ try {
   await new Promise((resolve) => server.close(resolve));
 }
 await writeFile(join(OUT, 'results.json'), JSON.stringify(results, null, 2));
-console.log(JSON.stringify(results, null, 2));
+console.log(JSON.stringify(results.map(({ name, pages, diagnostics }) => ({
+  name,
+  pages,
+  doc: diagnostics.doc,
+  body: diagnostics.body,
+  forcedBreaks: diagnostics.forcedBreaks.length,
+  pseudoBreaks: diagnostics.pseudoBreaks.length,
+  bodyChildren: diagnostics.bodyChildren.length,
+  tail: diagnostics.tail.length,
+})), null, 2));
