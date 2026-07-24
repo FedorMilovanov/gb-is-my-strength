@@ -1,0 +1,22 @@
+---
+import registry from '../../../../karty/_data/archaeology-source-registry.json';
+import provenance from '../../../../karty/_data/archaeology-source-provenance.json';
+import routeProfiles from '../../../../karty/_data/archaeology-route-profiles.json';
+import { buildMapArchaeologyProjection } from '@/lib/karty/map-archaeology-projection.mjs';
+
+interface Props {
+  mapId: string;
+}
+
+const { mapId } = Astro.props;
+const profile = routeProfiles.profiles[mapId as keyof typeof routeProfiles.profiles] || {};
+const projection = buildMapArchaeologyProjection(mapId, registry, provenance, profile);
+const projectionJson = JSON.stringify(projection);
+---
+
+<div
+  id="map-archaeology-projection"
+  hidden
+  data-map-id={mapId}
+  data-projection={projectionJson}
+></div>
