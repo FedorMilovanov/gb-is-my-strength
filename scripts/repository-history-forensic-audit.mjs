@@ -74,10 +74,10 @@ function classifyClosedPr(pr, comments = []) {
   if (/(?:prototype|прототип|showcase|вариант(?:ы|ов)?\s+подменю)/i.test(text)) {
     return 'prototype';
   }
-  if (/(?:do not merge|не\s+сливать|diagnostic|диагност|\bprobe\b|evidence[- ]only|temporary|временн(?:ый|ая|ое)|эксперимент|production\s+verification\s+only)/i.test(text)) {
+  if (/(?:do not merge|must not be merged|не\s+сливать|diagnostic|диагност|\bprobe\b|evidence[- ]only|temporary|временн(?:ый|ая|ое)|эксперимент|production\s+verification\s+only|read[- ]only\s+verification)/i.test(text)) {
     return 'diagnostic';
   }
-  if (/(?:parked|deferred|\bon hold\b|follow[- ]?up|later|запаркован|отложен|позже|не\s+готов)/i.test(text)) {
+  if (/(?:parked|deferred|\bon hold\b|follow[- ]?up|later|recreate\s+from\s+fresh\s+main|запаркован|отложен|позже|не\s+готов)/i.test(text)) {
     return 'parked';
   }
   return 'unclassified';
@@ -96,10 +96,10 @@ function currentPathExists(filename) {
 }
 
 function missingPathKind(filename) {
+  if (/^(?:src\/components|src\/lib|js\/)/.test(filename)) return 'product-source';
   if (/(?:^|\/)(?:_temp|_verification)|(?:proof|witness|diagnostic)(?:\.|-|\/)/i.test(filename)) return 'temporary-evidence';
   if (filename.startsWith('_build-tools/')) return 'prototype';
   if (filename.includes('/legacy-audits/')) return 'retired-legacy';
-  if (/^(?:src\/components|src\/lib|js\/)/.test(filename)) return 'product-source';
   if (/^\.github\/workflows\//.test(filename)) return 'workflow';
   if (/^scripts\//.test(filename)) return 'audit-or-tooling';
   return 'other';
@@ -119,12 +119,20 @@ function associatedPrSnapshot(pr, closedByNumber) {
 
 function branchInventory(prs, closedByNumber) {
   const byHeadRef = new Map();
+  const byHeadSha = new Map();
   for (const pr of prs) {
-    if (pr.head?.repo?.full_name !== REPOSITORY || !pr.head?.ref) continue;
-    const key = `origin/${pr.head.ref}`;
-    const list = byHeadRef.get(key) || [];
-    list.push(pr);
-    byHeadRef.set(key, list);
+    if (pr.head?.repo?.full_name !== REPOSITORY) continue;
+    if (pr.head?.ref) {
+      const key = `origin/${pr.head.ref}`;
+      const list = byHeadRef.get(key) || [];
+      list.push(pr);
+      byHeadRef.set(key, list);
+    }
+    if (pr.head?.sha) {
+      const list = byHeadSha.get(pr.head.sha) || [];
+      list.push(pr);
+      byHeadSha.set(pr.head.sha, list);
+    }
   }
 
   const rows = git([
@@ -147,11 +155,16 @@ function branchInventory(prs, closedByNumber) {
       if (counts.status === 0) {
         [mainOnly, branchOnly] = counts.stdout.split(/\s+/).map(Number);
       }
-      const associatedPrs = (byHeadRef.get(branch.name) || [])
+      const associated = new Map();
+      for (const pr of [...(byHeadRef.get(branch.name) || []), ...(byHeadSha.get(branch.sha) || [])]) {
+        associated.set(pr.number, pr);
+      }
+      const associatedPrs = [...associated.values()]
         .map((pr) => associatedPrSnapshot(pr, closedByNumber))
         .sort((a, b) => b.number - a.number);
       let reconciliation = 'orphan-branch';
       if (branch.name === 'origin/main') reconciliation = 'main';
+      else if (branch.name.startsWith('origin/archive/')) reconciliation = 'archived-recovery-branch';
       else if (mergedIntoMain) reconciliation = 'git-ancestor-of-main';
       else if (associatedPrs.some((pr) => pr.mergedAt)) reconciliation = 'merged-pr-head-squash-or-rebase';
       else if (associatedPrs.some((pr) => pr.state === 'open')) reconciliation = 'open-pr-head';
@@ -252,7 +265,7 @@ async function closedUnmergedInventory(prs, prsByNumber) {
 
 function markdown(report) {
   const branchRows = report.branches
-    .filter((branch) => branch.name !== 'origin/main' && !['git-ancestor-of-main', 'merged-pr-head-squash-or-rebase'].includes(branch.reconciliation))
+    .filter((branch) => branch.name !== 'origin/main' && !['git-ancestor-of-main', 'merged-pr-head-squash-or-rebase', 'archived-recovery-branch'].includes(branch.reconciliation))
     .map((branch) => `| \`${branch.name}\` | ${branch.reconciliation} | ${branch.branchOnly ?? '?'} | ${branch.mainOnly ?? '?'} | ${branch.associatedPrs.map((pr) => `#${pr.number}`).join(', ') || '—'} |`);
   const prRows = report.closedUnmerged.map((pr) =>
     `| #${pr.number} | ${pr.category} | ${pr.headAccessible ? 'yes' : '**NO**'} | ${pr.missingProductPaths.length} | ${pr.missingIntroducedPaths.length} | ${pr.verifiedMergedReplacement ? `#${pr.verifiedMergedReplacement.number}` : '—'} | ${pr.reviewPriority} | ${pr.title.replace(/\|/g, '\\|')} |`
@@ -269,6 +282,7 @@ function markdown(report) {
     `- Main SHA: \`${report.mainSha}\``,
     `- Remote branches: ${report.summary.remoteBranches}`,
     `- Branch refs reconciled by Git ancestry or merged PR: ${report.summary.reconciledMergedBranches}`,
+    `- Archived recovery refs: ${report.summary.archivedRecoveryBranches}`,
     `- Open PR branch refs: ${report.summary.openPrBranches}`,
     `- Closed/superseded/diagnostic/prototype branch refs: ${report.summary.explainedClosedBranches}`,
     `- Orphan or unclassified remote branch refs: ${report.summary.unexplainedRemoteBranches}`,
@@ -324,6 +338,7 @@ async function main() {
     summary: {
       remoteBranches: branches.length,
       reconciledMergedBranches: branches.filter((branch) => reconciledMerged.has(branch.reconciliation)).length,
+      archivedRecoveryBranches: branches.filter((branch) => branch.reconciliation === 'archived-recovery-branch').length,
       openPrBranches: branches.filter((branch) => branch.reconciliation === 'open-pr-head').length,
       explainedClosedBranches: branches.filter((branch) => explainedClosed.has(branch.reconciliation)).length,
       unexplainedRemoteBranches: branches.filter((branch) => ['orphan-branch', 'closed-parked-pr-head', 'closed-unclassified-pr-head'].includes(branch.reconciliation)).length,
@@ -354,7 +369,7 @@ async function main() {
 
   console.log(`Repository history: ${report.summary.remoteBranches} branches, ${report.summary.pullRequests} PRs, ${report.summary.closedUnmergedPrs} closed-unmerged PRs`);
   console.log(`Recoverability: ${report.summary.inaccessibleClosedHeads} inaccessible heads; ${report.summary.manualReviewCandidates} manual candidates`);
-  console.log(`Branch reconciliation: ${report.summary.reconciledMergedBranches} merged, ${report.summary.openPrBranches} open, ${report.summary.explainedClosedBranches} explained closed, ${report.summary.unexplainedRemoteBranches} unexplained`);
+  console.log(`Branch reconciliation: ${report.summary.reconciledMergedBranches} merged, ${report.summary.archivedRecoveryBranches} archived, ${report.summary.openPrBranches} open, ${report.summary.explainedClosedBranches} explained closed, ${report.summary.unexplainedRemoteBranches} unexplained`);
   for (const problem of problems) console.error(`ERROR ${problem}`);
   if (strict && problems.length) process.exit(1);
   console.log('✅ Repository history forensic inventory completed');
