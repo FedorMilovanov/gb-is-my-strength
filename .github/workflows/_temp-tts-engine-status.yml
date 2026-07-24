@@ -20,6 +20,8 @@ jobs:
   materialize:
     if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.ref == 'refs/heads/fix/tts-engine-status-retry-2026-07-24'
     runs-on: ubuntu-latest
+    env:
+      TRANSACTION_REVISION: '2'
     steps:
       - name: Checkout exact lane
         uses: actions/checkout@v4
