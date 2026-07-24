@@ -5,136 +5,70 @@
 
 ---
 
-## 🚦 Читать перед работой — порядок обязательных документов
+## 🚦 Читать перед работой — единый pre-flight
 
-**Каждый агент (Arena Agent / Cursor / Copilot Workspace / Kilo / Cline / любой) ОБЯЗАН прочитать ВСЕ документы в этом порядке ДО начала любой правки.**
+> Этот раздел определяет порядок входа в задачу. Подробные правила находятся в
+> `docs/WORK_MODES.md`, `docs/LANE_LOCK_POLICY.md` и `docs/OWNER-INVARIANTS.md`.
+> При расхождении старой формулировки с этими документами действует более новый
+> owner-approved контракт и текущий `main`.
 
-### ❗ ЖЕЛЕЗОБЕТОННОЕ ПРАВИЛО (нарушение = регрессия на проде)
+### Обязательная последовательность
 
-```
-Любой агент, который:
-┌──────────────────────────────────────────────────────────────┐
-│ • НЕ прочитал ВСЕ 5 обязательных документов                   │
-│ • НЕ прочитал SANDBOX-ENV (если работает в Arena)            │
-│ • НЕ прочитал audit/external-checks/README.md (если задача    │
-│   касается внешних проверок)                                 │
-│                                                              │
-│ = НАРУШАЕТ КОНТРАКТ и создаёт регрессии на проде             │
-└──────────────────────────────────────────────────────────────┘
-```
+Перед любой правкой агент обязан:
 
-### 📋 Обязательный pre-flight checklist (отметь每一项 перед работой)
+1. **Проверить живое состояние GitHub:** открытые issues/PR, активные ветки, текущий
+   `main`, точные файлы пересечения и rollback SHA. Старое имя ветки, закрытый PR или
+   сохранённый lane-report сами по себе не означают активное владение.
+2. **Прочитать `docs/WORK_MODES.md`.** Канонические режимы: `FAST`, `LANE`, `SYSTEM`.
+   Любая mutation выполняется в отдельной ветке и PR; FAST определяет объём проверки,
+   а не разрешение писать прямо в `main`.
+3. **Прочитать `AGENTS.md` полностью.** Особенно архитектурные ограничения,
+   protected-подсистемы и владельческие инварианты.
+4. **Прочитать `docs/LANE_LOCK_POLICY.md`.** Объявить владельца, разрешённые и
+   запрещённые файлы, проверки, зависимости и rollback point.
+5. **Прочитать `docs/OWNER-INVARIANTS.md`.** Owner-sensitive контент, данные и UI
+   нельзя переопределять по историческому снимку или личному вкусу агента.
+6. **Для route/registry-задачи проверить первичные источники:**
+   `migration/page-ownership.json` и соответствующий `data/route-profiles/*.json`.
+   `migration/route-migration-matrix.json` — производный артефакт; его не редактируют
+   вручную для добавления или изменения route.
+7. **Для внешних проверок прочитать `audit/external-checks/README.md`.** Текущий
+   `npm run workflows:lint` с checksum-verified actionlint является каноническим
+   blocking gate; решения по другим инструментам берутся из актуального registry.
+8. **Проверить среду фактически.** Версия Node, доступные CPU/RAM/диск, сеть,
+   Playwright-браузеры, сохранность файлов и возможности редактора определяются
+   live-discovery в текущей сессии. `SANDBOX-ENV-2026-06-21.md` — исторический
+   справочник по известным ловушкам, а не универсальная спецификация любой среды.
 
-Перед тем как написать ANY код, агент должен явно подтвердить:
+### Минимальная декларация lane
 
-```
-✅ Прочитал WORK_MODES.md (docs/WORK_MODES.md)
-   → Режимы: SOLO / LANE / SYSTEM
-   → Risk levels 0-3
-   → FAST loop vs FULL gate
-   → Когда lane обязателен
-
-✅ Прочитал AGENTS.md (этот файл, полностью)
-   → Архитектура, CSS/JS правила
-   → Protected-блоки (секция 3.10 PremiumControls)
-   → UI-инварианты, которые нельзя нарушать
-   → Проверки перед push
-
-✅ Прочитал LANE_LOCK_POLICY.md (docs/LANE_LOCK_POLICY.md)
-   → Когда lane обязателен по риску
-   → Когда можно работать без lane
-   → Merge-порядок, out-of-lane reporting
-
-✅ Проверил СВОЙ route в migration/route-migration-matrix.json
-   → Режим миграции: native / native-with-legacy-head / strict-native
-   → Если route НЕ в матрице — он excluded, проверь список exclude
-
-✅ [ЕСЛИ Arena Agent Mode] Прочитал SANDBOX-ENV-2026-06-21.md
-   (docs/SANDBOX-ENV-2026-06-21.md в AuditRepo)
-   → Node 22 требуется, а не 20
-   → Файлы сохраняются между сессиями (ext4)
-   → edit_file падает на крупных блоках → используй sed/python3
-   → CI-регрессии: всегда гоняй Playwright локально перед push
-   → Build-mode trap: прод = strangler-build, не plain astro build
-   → Токен в открытом чате = СКОМПРОМЕТИРОВАН
-
-✅ [ЕСЛИ задача про внешние проверки] Прочитал external-checks/README.md
-   (audit/external-checks/README.md)
-   → Какие инструменты reject/approved/config-first/advisory
-   → actionlint, osv-scanner — известные проблемы
-   → Не плодить отдельные MD-отчёты
+```md
+Mode: FAST | LANE | SYSTEM
+Lane: <branch>
+Issue/PR: <number>
+Routes: <bounded list or none>
+Files allowed: <bounded list>
+Files forbidden: <list>
+Source of truth: <current files / exact SHA>
+Required checks: <commands / browser profiles>
+Rollback point: <exact main SHA>
+Dependencies: <open PRs / owner decisions>
 ```
 
-### 📖 Порядок обязательного чтения (подробно)
+### Три уровня доказательства
 
-Каждый агент должен прочитать документы **ИМЕННО В ЭТОМ ПОРЯДКЕ:**
+1. **Iteration evidence** — `git diff --check` и релевантные быстрые контракты.
+2. **Exact-head PR evidence** — обязательные checks именно на финальном SHA PR.
+3. **Production witness** — отдельное подтверждение deploy/live SHA; зелёный PR не
+   является автоматически доказательством продакшена.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. docs/WORK_MODES.md         ← ⭐ ГЛАВНЫЙ SANDBOX-контекст      │
-│    Режимы работы, Risk levels, lane policy, shared files.        │
-│    ⚠️ ЕСЛИ НЕ ПРОЧИТАЛ — НЕ НАЧИНАЙ РАБОТУ                       │
-│                                                                  │
-│ 2. AGENTS.md (этот файл)      ← ОБЯЗАТЕЛЬНЫЙ КОНТРАКТ            │
-│    Архитектура, CSS/JS правила, protected-блоки, секция 3.10     │
-│    ⚠️ ПРОЧТИ ПОЛНОСТЬЮ — секция 3.10 PremiumControls критична   │
-│                                                                  │
-│ 3. docs/LANE_LOCK_POLICY.md   ← Lane-дисциплина                  │
-│    Когда lane обязателен, merge-порядок.                         │
-│    ⚠️ НАРУШЕНИЕ = конфликты и регрессии                          │
-│                                                                  │
-│ 4. migration/route-migration-matrix.json ← Migration contract    │
-│    Режим миграции твоего route.                                  │
-│    ⚠️ НЕПРАВИЛЬНЫЙ РЕЖИМ = регрессия                             │
-│                                                                  │
-│ 5. docs/SANDBOX-ENV-2026-06-21.md  ← Arena Agent Mode survival   │
-│    (из AuditRepo)                                                │
-│    ⚠️ ОБЯЗАТЕЛЕН для Arena.ai                                    │
-│                                                                  │
-│ 6. audit/external-checks/README.md ← External checks registry    │
-│    ⚠️ ОБЯЗАТЕЛЕН если задача про внешние проверки                │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 🚨 Что будет, если НЕ прочитать
-
-| Нарушение | Последствия |
-|-----------|-------------|
-| Не прочитал WORK_MODES.md | Работа в SOLO вместо LANE → конфликт с другим агентом → потеря изменений |
-| Не прочитал AGENTS.md §3.10 | Изменил позицию герменевтики/контролы → POS-01 регрессия (было 3 раза) |
-| Не прочитал SANDBOX-ENV | Сборка на Node 20 → Astro 6 падает. Не запустил Playwright → CI красный (7 из 8 коммитов). Не сохранил токен → пиши в чат заново |
-| Не проверил route-matrix | Режим native-on-legacy → dist перезаписан, Visual Parity красный |
-| Не прочитал external-checks | Добавил actionlint в CI → известная проблема, зря потратил время |
-
-### ⚡ FAST loop vs FULL gate (из WORK_MODES.md, кратко)
-
-```
-FAST loop — после каждой мелкой правки: git diff --check + npm run guard:shared-files
-FULL gate — перед commit/merge/push: npm run validate:static-publication + guard:shared-files
-```
-
-> **В Arena Agent Mode:** не гоняй полный `validate:static-publication` после каждой правки
-> (2 CPU ~2 GB RAM — долго). Используй FAST loop, но финальный FULL gate обязателен.
+Для docs-only SYSTEM PR допустим суженный final barrier, если diff не может влиять
+на runtime/build. При этом обязательны Shared Files Guard, проверка ссылок/согласованности
+политик и явное описание границы проверки в PR.
 
 ---
 
-> **⚠️ Если ты работаешь в Arena Agent Mode (Arena.ai):**
-> `docs/SANDBOX-ENV-2026-06-21.md` — **ОБЯЗАТЕЛЕН К ПРОЧТЕНИЮ.** Без него ты:
-> - Потеряешь файлы (на самом деле нет — ext4 сохраняет, но важно знать)
-> - Сломаешь CI (не запустив Playwright)
-> - Забудёшь про Node 22
-> - Попадёшь в build-mode trap
-> - Напишешь токен в чат (скомпрометируешь)
->
-> **Arena speed/quality rule:** работай через FAST loop, но перед финальным
-> commit/merge/push обязательно прогони `npm run validate:static-publication`
-> + `npm run guard:shared-files`.
-
----
-
-> **⚡ External checks rule:** если задача про Lighthouse/Pa11y/Semgrep/Checkov/Retire/actionlint/OSV/Gitleaks/HTML validation — **СНАЧАЛА** прочитай `audit/external-checks/README.md`. Там записаны решения по каждому инструменту (approved/rejected/config-first/advisory). Не предлагай то, что уже rejected. Не плоди отдельные MD-отчёты; verified external findings добавляются в общий bug report.
-
----
+| **AGENTS-r324** | 2026-07-24 | **Owner governance reconciliation (#219).** Установлен единый контракт FAST/LANE/SYSTEM с обязательными branch+PR, live GitHub ownership discovery, первичностью `page-ownership` + route profiles над производной route matrix, live-discovery среды, checksum-verified actionlint и разделением iteration / exact-head CI / production witness. Исторические sandbox-снимки и pre-v16 UI-детали больше не трактуются как универсальная текущая архитектура; owner-sensitive защиты и data hard-lock сохранены. |
 
 | **AGENTS-r323** | 2026-07-09 | **Derived route-registry stack merged + doc drift fixed.** Влиты 3 системных лейна (`native-source-contract-v1` + `route-registry-validators-v2` + `editorial-metadata-v3`): `route-migration-matrix.json` теперь **материализуется** из `page-ownership.json` + `route-profiles/*` (движок `scripts/lib/effective-route-registry.js`); режимы свёрнуты 8→3 (`strict-native`/`strict-native-app`/`legacy-shadow-app`); registry-driven чекеры заменили прямые (оригиналы → `scripts/legacy-audits/*`); добавлен editorial-freeze baseline `data/editorial-metadata.json`. Закрывает **AUDIT-P2-MATRIX-DRIFT**. Doc-drift из r322 исправлен: JS-файлов **14** (11 базовых + 3 vosk-TTS), не 11/12; §0/§2 синхронизированы. `izbrannoe`/`BaseLayout` рантайм переведён на нативные `<script>` (strict-native clean, мёртвые `headHtml`/`bodyEndHtml` пропсы удалены). См. блок «Матрица теперь ПРОИЗВОДНАЯ» в Work Modes. |
 | **AGENTS-r322** | 2026-07-06 | **Super-audit sync.** «Верификационная дисциплина» дополнена п.8–12: канон системного бэклога — AuditRepo `verified/SUPER_AUDIT_2026-07-06_14a49be8.md` (волны W0–W10 + опровергнутые формулировки); три идентичности релиза (FUNCTIONAL/BOT/DEPLOYED SHA); «паритет ≠ правда»; in-flight зоны (PremiumControls, глоссарий); создан `docs/OWNER-INVARIANTS.md`. Известный doc-drift для будущей правки: §0/§2 расходятся «11 vs 12 JS-файлов» (факт на 14a49be8: 11); README §1.1 shadow-wrap описание — HISTORICAL (см. page-ownership.json). |
@@ -144,105 +78,118 @@ FULL gate — перед commit/merge/push: npm run validate:static-publication 
 
 ## Work Modes — определи режим перед работой
 
-**Полная политика:**
+Канонические документы:
 
-- [docs/WORK_MODES.md](docs/WORK_MODES.md) — SOLO/MULTI-AGENT/HIGH-RISK/EMERGENCY, Risk levels, shared files, когда lane обязателен
-- [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md) — подробная lane-политика, out-of-lane reporting, merge-порядок
-- [migration/route-migration-matrix.json](migration/route-migration-matrix.json) — официальный migration contract: какой режим миграции у каждого route
+- [docs/WORK_MODES.md](docs/WORK_MODES.md) — режимы и объём проверок;
+- [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md) — владение, пересечения,
+  merge/cleanup и forensic disposition;
+- [docs/OWNER-INVARIANTS.md](docs/OWNER-INVARIANTS.md) — неизменяемые без решения
+  владельца требования;
+- [docs/refactor-2026/lanes/README.md](docs/refactor-2026/lanes/README.md) — навигация,
+  но не самостоятельный backlog;
+- открытые GitHub issues/PR и текущий `main` — живая операционная правда.
 
-**⚠️ Перед любой работой проверь свой route в `migration/route-migration-matrix.json`.**
-Неправильный migration mode = регрессия (как blanket shadow-wrap в r260).
+### Режимы
 
-**🔑 Матрица теперь ПРОИЗВОДНАЯ (derived registry, `native-source-contract-v1`, 2026-07-09).**
-`route-migration-matrix.json` больше не правится руками для набора routes — он **материализуется из `migration/page-ownership.json` + `data/route-profiles/*.json`** движком `scripts/lib/effective-route-registry.js` (+ `route-matrix-normalizer.js`, `route-source-contract.js`). Практика для агентов:
-- Меняешь ownership/профиль route → перегенерируй: `node scripts/sync-route-migration-matrix.js --write`. НЕ дописывай routes в матрицу вручную (ветки-лейны так уже уронили секцию `/karty/*` — david/isus вместо 11 реальных; исправлено регенерацией).
-- Единый набор режимов: **`strict-native`**, **`strict-native-app`**, **`legacy-shadow-app`** (было 8 разрозненных — свёрнуто в 3). Профиль production-Astro route обязан иметь `migrationMode` из этого набора; `scope` — либо отсутствует, либо `excluded-semantic-lane`.
-- Registry-driven чекеры (заменили старые прямые проверки; оригиналы → `scripts/legacy-audits/*`): `route-profile-contract-audit.js`, `route-migration-matrix-contract-audit.js`, `content-source-provenance-audit.js`, `route-source-contract-audit.js` (все с `--strict`). Гоняются через `npm run migration:metadata:check:strict`.
-- Editorial-freeze: `data/editorial-metadata.json` — замороженный baseline проекций (даты/тайтлы). Дрейф ловит `scripts/editorial-metadata-freeze-audit.js` (блокирующий в `indexnow.yml`); при легитимном изменении дат — `node scripts/editorial-metadata-registry.js --write` + ревью.
+| Mode | Назначение | Branch/PR | Минимальная граница |
+|---|---|---|---|
+| **FAST** | Одна ограниченная low-risk правка без shared runtime ownership | обязательно | `git diff --check` + целевой контракт |
+| **LANE** | Route/feature/refactor с именованным владельцем | обязательно | targeted checks + route/browser/visual evidence |
+| **SYSTEM** | Shared/global/control-plane/governance | обязательно, отдельно от контента | shared/control-plane gates + exact-head barrier |
 
-**«Одна матрица» — не путать два смысла:** (1) `route-migration-matrix.json` — контракт routes (выше, в этом репо); (2) AuditRepo `verified/MASTER_BUG_MATRIX.md` — канон баг-бэклога (внешний репо). Плодить матрицы нельзя; закрывать — только эти две.
+Прямой push в `main` не является обычным FAST-путём. Он допустим только как явно
+разрешённая владельцем emergency-операция с немедленной exact-head проверкой и
+последующей reconciliation-записью.
 
-### Work Mode Decision Tree
+### Перед началом
 
-```
-1. Сколько агентов?
-   → Один → SOLO (main разрешён для Risk 0–1 без shared файлов)
-   → Несколько → MULTI-AGENT (только lane branches, main запрещён)
-
-2. Что затрагивается?
-   → Docs / контент → Risk 0–1 (легко)
-   → Route components, Astro shells → Risk 2 (нужен lane)
-   → AGENTS.md, package.json, workflows, data, layouts → Risk 3 / HIGH-RISK
-
-3. Lane обязателен если:
-   → MULTI-AGENT режим
-   → Production route refactor
-   → Более 3 файлов
-   → Shared/high-risk файл
-   → Задача называется refactor/migration/stabilization
-   → Есть риск пересечения с другим агентом
-
-Lane НЕ обязателен:
-   → SOLO + docs-only
-   → Один агент + одна текстовая правка
-   → Нет shared/high-risk файлов
+```text
+□ Проверить открытые PR/issues и пересекающиеся файлы
+□ Зафиксировать текущий main и rollback SHA
+□ Объявить allowed / forbidden files
+□ Выбрать FAST, LANE или SYSTEM
+□ Указать первичный source of truth
+□ Назначить iteration checks и final exact-head barrier
+□ Отделить source completion от production witness
 ```
 
-### Режимы работы
+### Route authority
 
-| Mode | Когда | main | Lane |
-|------|-------|------|------|
-| **SOLO** | Один агент | ✅ Risk 0–1 | ✅ для Risk 2–3 |
-| **MULTI-AGENT** | >1 агент | ❌ | ✅ всегда |
-| **HIGH-RISK** | Shared/system файлы | ❌ | ✅ обязательно |
-| **EMERGENCY** | Owner hotfix | ✅ | Ретроспектива |
+Для route-режима первичны `migration/page-ownership.json` и
+`data/route-profiles/*.json`. `migration/route-migration-matrix.json` генерируется
+через `node scripts/sync-route-migration-matrix.js --write` и не правится вручную.
+Канонический набор migration modes: `strict-native`, `strict-native-app`,
+`legacy-shadow-app`.
 
-### Кратко — работа в lane:
+### Проверки
 
+```bash
+# FAST iteration
+
+git diff --check
+# + один или несколько релевантных контрактов
+
+# LANE / shared iteration
+
+git diff --check
+npm run guard:shared-files
+npm run data:consistency
+npm run migration:metadata:check
+# + route/browser/visual/source checks
+
+# SYSTEM / control plane
+
+git diff --check
+npm run guard:shared-files
+npm run workflows:check
+npm run control-plane:audit
+npm run workflows:lint
+
+# Final barrier для production/shared/refactor/system impact
+npm run validate:static-publication
+npm run guard:shared-files
 ```
-Перед работой:  git fetch && git branch -a | grep lane/
-Создать branch: git checkout -b lane/my-lane-name
 
-Во время работы: [LANE lane/my-lane-name] в каждом commit message.
-FAST loop:      git diff --check && релевантные быстрые gates из docs/WORK_MODES.md
-Перед commit:   npm run validate:static-publication  # если production/system/refactor impact
-Перед push:     npm run guard:shared-files
-Перед merge:    npm run data:consistency && npm run validate:static-publication
-После:          Merge в main, записать результат в docs/refactor-2026/lanes/<lane>.md
-                НЕ редактировать AGENTS.md после каждого lane (только интегратор)
-                Удалить branch: git branch -d lane/my-lane-name
+Docs-only SYSTEM PR может не запускать полный production build, когда это технически
+не связано с diff. Тогда PR обязан доказать отсутствие runtime/workflow изменений,
+пройти Shared Files Guard и все применимые governance/control-plane checks.
+
+### Shared / High-Risk поверхность
+
+К SYSTEM относятся как минимум:
+
+```text
+AGENTS.md
+README.md
+package.json / package-lock.json
+.github/workflows/**
+docs/WORK_MODES.md
+docs/LANE_LOCK_POLICY.md
+docs/OWNER-INVARIANTS.md
+docs/AGENT_PUSH_MODEL.md
+migration/**
+data/series.json
+data/search-manifest.json
+data/public-content-baseline.json
+src/layouts/**
+css/** / js/**
+sw.js
+karty/_engine/**
+scripts, определяющие repository/release policy
 ```
 
-### Shared / High-Risk файлы (без lane — ❌)
+Каталог `docs/` не является автоматически свободной зоной: устаревшая инструкция
+может направить следующих агентов на разрушительную операцию.
 
-```
-AGENTS.md, README.md, package.json, package-lock.json
-.github/workflows/** (любой)
-data/series.json, data/search-manifest.json, data/public-content-baseline.json
-src/layouts/**, css/site.css, js/site.js, js/search.js, sw.js
-scripts/guard-shared-files.js, scripts/cache-bust.js, scripts/copy-legacy-to-dist.js
-scripts/check-data-consistency.js, scripts/audit-pro.js, scripts/visual-parity-screenshots.js
-scripts/check-workflows.js
-karty/_engine/**, karty/ishod/**, karty/avraam/**
-```
+### Пересечения и cleanup
 
-**Всегда разрешено:** docs/, reports/, audit/, sitemap.xml, robots.txt, CNAME
-
-### Что нельзя делать:
-
-- ❌ Работать в одном route без lane declaration
-- ❌ Одновременно менять data/series.json двум агентам
-- ❌ Перезаписывать _legacy файлы чужого route без координации
-- ❌ Игнорировать активный аудит документ (`docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`)
-- ❌ Пушить без `npm run guard:shared-files` и `npm run data:consistency`
-- ❌ Обычному агенту редактировать AGENTS.md после своего lane
-
-### Если два агента хотят один route:
-
-Тот кто начал позже — либо берёт sub-lane, либо ждёт завершения первого.
-Пример: Agent A → `lane/gill-spravochnik`, Agent B → `lane/gill-spravochnik-body`
-**Historical note:** 2026-06-15 also included a 3D Russian Baptist map UX pass: Timeline landmark-mode, softer map highlight, wheel-capture and no native button titles. That work was completed in the iframe app and guarded by `konfessii:audit`; it remains part of project history but is intentionally kept outside the AGENTS changelog table so the table stays machine-readable.
-
+- Один route/shared surface — один активный владелец.
+- Второй агент берёт непересекающийся sub-lane или ждёт.
+- Out-of-lane дефект фиксируется в issue/forensic register, а не чинится попутно.
+- Перед удалением ветки её содержимое классифицируется: represented, diagnostic,
+  superseded with verified chain, archive-worthy или selective recovery.
+- В финальном дереве не остаются временные workflow, trigger, writer или patcher.
+- `AGENTS.md` меняется только в owner-authorized SYSTEM lane, а не после каждой задачи.
 
 Older changelog rows **AGENTS-r77–r131** and older 2026-06-13 map-wave rows **r131–r139** archived to `docs/AGENTS-CHANGELOG-ARCHIVE-2026-06-14.md` to keep this instruction file scannable; normative rules below remain authoritative.
 
@@ -568,7 +515,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 ### 3.10 PremiumControls / Floating Cluster (protected subsystem)
 
 **PremiumControls / Floating Cluster — Protected Subsystem Truths & Forbids**
-**Source of truth:** `AuditRepo/projects/<project>/PremiumControls/README.md` + owner instructions + VR history
+**Source of truth:** current `main`, current owner decision and exact-head browser/visual guards. AuditRepo and VR history provide provenance and reverify evidence; they do not override newer owner-approved source contracts.
 
 #### Core Truths (never violate)
 - Roman numerals **MUST** use `<RomanNumeral value="II" />` (`src/components/ui/floating-cluster/RomanNumeral.astro`) → renders `<span class="gb-roman">` (`css/floating-cluster.css`).
@@ -598,7 +545,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 - Visual parity + rollout-audit (28/28 + PC-007) is blocking gate.
 
 #### Explicit Forbids (high-regression history)
-**DO NOT (without owner + full visual gate + 14-day freeze):**
+**DO NOT without a dedicated owner-authorized LANE/SYSTEM PR and exact-head visual/browser evidence:**
 - Change any calc/position/top/right on `.gb-floater`, `.gb-floater--hermeneutics`, `.gb-floater--series-lite`.
 - Touch speed panel morph, viewport guard, tab trap, stagger, pill sizes (360-390px mobile).
 - Edit `floating-cluster.css` sizes, icon 40px, ember ring, or add new rules for `.gb-roman` / `.gb-icon`.
@@ -616,7 +563,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 - `scripts/premium-controls-rollout-audit.js` (PC-006 + PC-007)
 - `npm run strangler:build:production-like` + rollout-audit (blocking)
 - `visual-parity` on Gill + Herm (`gill-context-visual-parity-audit` etc.)
-- 10-14 day freeze after sign-off on positioning/sizes.
+- После owner sign-off защищается точный одобренный baseline и текущие guards; дальнейшее изменение требует новой доказательной серии, а не ожидания произвольного календарного срока.
 
 **Owner note (verbatim):** "PremiumControls и т п не доделано... углублись в него еще серьезно... много регрессий было, пришлось откатывать снова... будь аккуратен"
 
