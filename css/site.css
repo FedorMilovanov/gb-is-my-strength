@@ -198,7 +198,14 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
   }
 
   /* --- 2. Heavy Cleaning --- */
-  .h-navbar, .theme-toggle, .toc-sidebar, .bottom-bar, .h-mobile-nav, 
+  .h-navbar, .theme-toggle, .toc-sidebar, .bottom-bar, .h-mobile-nav,
+  .gb-floater, .gbs-theme-corner, .gbs-rail, .hrail,
+  .mobile-chrome, .mobile-top-bar, .mobile-bottom-bar,
+  .toc-overlay, .btoc-overlay, .bookmark-toast, .gbs2-resume,
+  .gbs2-peek, .gbs2-swipetip, .gbx-tts, #selection-share-popup,
+  .article-end-actions, [data-fc-root], [data-fc-controls] {
+    display: none !important;
+  }
 
   /* --- 3. Layout Stabilization --- */
   .page-wrap, main, article, .article-main, .article-body {
@@ -680,3 +687,166 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 @media (prefers-reduced-motion:reduce){.article-figure img:not(.img-loaded),.article-hero img:not(.img-loaded),.card-cover:not(.img-loaded),.related-articles__img:not(.img-loaded){animation:none}.ehrman-block,.info-box,.opusdei-note,.quote-box,.warn-box{opacity:1;transform:none;transition:none}.resume-list-item{transform:none;transition:none}.article-figure::after{animation:none;transform:none}.error-flip-card:not(.flipped),.flip-card:not(.flipped),.flip-finger::before,.heart-flip-card:not(.flipped),.heart-flip-hint-icon{animation:none}.heart-flip-card.flipped .heart-flip-hint{transition:none}.error-flip-inner,.flip-card-inner,.heart-flip-inner{transition:none;transform:none}.heart-flip-card{transition:none}.timeline-anim li{opacity:1;transform:none;transition:none}.quiz-option.shake{animation:none}.quiz-progress-fill{transition:none}.faq-accordion__body{transition:none}.faq-accordion__body-inner{transition:none}.faq-accordion__icon{transition:none}.error-flip-card.flipped .error-flip-inner,.flip-card.flipped .flip-card-inner,.heart-flip-card.flipped .heart-flip-inner{transform:none}.error-flip-back,.error-flip-front,.flip-card-back,.flip-card-front,.heart-flip-back,.heart-flip-front{position:static;transform:none;visibility:visible;backface-visibility:visible;width:auto;height:auto;inset:auto}.gb-accuracy-btn,.gb-accuracy-btn:hover{transform:none;transition:none}[data-series-cards] .series-card,[data-series-cards] .series-card:hover{transform:none;transition:none}.bottom-bar,.btoc-link,.h-article-card,.quiz-option{transition:none;animation:none}}
 .fn-marker:not(.is-open)>.tooltip{pointer-events:none}.fn-marker.is-open>.tooltip{pointer-events:auto}
 .tooltip.gb-floating-tip,.gtip.gb-floating-tip,body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}
+
+/* =========================================================
+   GB PRINT CONTRACT v2.1 — 2026-07-24
+   One A4/PDF contract for series, books and standalone articles.
+   ========================================================= */
+@page { size: A4; margin: 15mm 14mm 17mm; }
+@media print {
+  html, body {
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  html.gb-print-preparing,
+  html.gb-print-preparing body {
+    scroll-behavior: auto !important;
+  }
+
+  /* Interactive chrome never belongs to the document. */
+  .h-navbar, .theme-toggle, .toc-sidebar, .bottom-bar, .h-mobile-nav,
+  .gb-floater, .gbs-theme-corner, .gbs-rail, .gbs2-rail, .hrail,
+  .mobile-chrome, .mobile-top-bar, .mobile-bottom-bar,
+  .toc-overlay, .btoc-overlay, .hmsheet, .bookmark-toast,
+  .gbs2-resume, .gbs2-peek, .gbs2-swipetip, .gbx-tts,
+  #selection-share-popup, .selection-share-popup, .article-end-actions,
+  [data-fc-root], [data-fc-controls], [data-overlay-root],
+  [role="dialog"], [aria-modal="true"] {
+    display: none !important;
+  }
+
+  /* Collapse every screen shell to one normal-flow paper column. */
+  .gbs2-world, .gbs2-scope, [data-gill-v16], [data-reader-root],
+  .page-wrap, main, article, .article-main, .article-body {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    contain: none !important;
+    content-visibility: visible !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .article-body > *,
+  [data-reader-root] .article-body > *,
+  [data-gill-v16] .article-body > * {
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Scroll/reveal states must never produce pale or missing PDF pages. */
+  .reveal, [data-reveal], [class*="reveal"],
+  .h-phrase--float, .h-phrase--ambient, .timeline-anim li,
+  .article-body, .article-body > *, .article-header, .article-figure {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  /* Stable media: no fixed/parallax image can bleed across pages. */
+  figure, .article-img, .article-figure, .article-hero, .gbs2-hero,
+  figure img, .article-img img, .article-figure img, .article-hero img, .gbs2-hero img {
+    position: static !important;
+    inset: auto !important;
+    float: none !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+  figure, .article-img, .article-figure, .article-hero, .gbs2-hero {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    overflow: visible !important;
+    margin: 5mm 0 !important;
+  }
+  figure img, .article-img img, .article-figure img, .article-hero img, .gbs2-hero img {
+    display: block !important;
+    width: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 235mm !important;
+    margin: 0 auto !important;
+    object-fit: contain !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  p, li { orphans: 3; widows: 3; }
+  .summary-card, .quote-box, .info-box, .warn-box, .author-card,
+  blockquote, table, pre { break-inside: auto; page-break-inside: auto; }
+
+  /* Clean printed typography without browser-screen opacity tokens. */
+  .article-body, .article-body p, .article-body li, .article-body td,
+  .article-desc, .article-byline, figcaption {
+    color: #111 !important;
+  }
+  a, a:visited { color: #111 !important; text-decoration: underline; }
+  a[href^="http"]::after { content: none !important; }
+  body::after { content: none !important; }
+  body::before {
+    position: static !important;
+    color: #111 !important;
+    background: transparent !important;
+    margin: 0 0 9mm !important;
+    padding: 0 0 4mm !important;
+  }
+  .article-end-sdg {
+    margin: 18mm auto 0 !important;
+    padding: 8mm 0 0 !important;
+  }
+}
+
+/* GB PRINT CONTRACT v2.2 — hero normalization after rendered-PDF inspection. */
+@media print {
+  .gbs2-hero, .article-hero, .article-header, .hero, [class*="hero-wrap"] {
+    min-height: 0 !important;
+    height: auto !important;
+    aspect-ratio: auto !important;
+    padding: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+  }
+  .gbs2-hero::before, .gbs2-hero::after,
+  .article-hero::before, .article-hero::after,
+  .article-header::before, .article-header::after,
+  .hero::before, .hero::after,
+  [class*="hero-wrap"]::before, [class*="hero-wrap"]::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+  }
+  .gbs2-hero img, .article-hero img {
+    margin-top: 0 !important;
+  }
+  .gbs2-kinetic, .gbs2-hero-badge, .gbs2-cover-badge,
+  .article-hero__badge, .article-hero-badge {
+    display: none !important;
+  }
+}
+
+/* GB PRINT CONTRACT v2.3 — screen-only hero caption has no paper role. */
+@media print {
+  .gbs2-hero-cap {
+    display: none !important;
+  }
+}
