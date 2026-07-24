@@ -1,0 +1,79 @@
+name: Temporary Exact Production Boundary Observer
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/_temp-exact-production-boundary-observer.yml"
+
+permissions:
+  contents: read
+  actions: read
+  deployments: read
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record exact current-main linkage
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EXPECTED_MAIN: c8b47201f5b7210d69809c38808bfbda15695dcd
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/live
+          ACTUAL_MAIN="$(gh api "repos/${REPO}/git/ref/heads/main" --jq '.object.sha')"
+          printf 'expected_main=%s\nactual_main=%s\n' "$EXPECTED_MAIN" "$ACTUAL_MAIN" | tee reports/boundary.txt
+          test "$ACTUAL_MAIN" = "$EXPECTED_MAIN"
+
+          gh api "repos/${REPO}/actions/runs?head_sha=${ACTUAL_MAIN}&per_page=100" > reports/runs.json
+          jq '[.workflow_runs[] | {id,name,event,status,conclusion,head_sha,run_number,created_at,updated_at,html_url}]' reports/runs.json | tee reports/runs-summary.json
+
+          jq -e --arg sha "$ACTUAL_MAIN" '
+            [.workflow_runs[] | select(.name == "Metadata & IndexNow Readiness" and .head_sha == $sha and .status == "completed" and .conclusion == "success")] | length >= 1
+          ' reports/runs.json
+          jq -e --arg sha "$ACTUAL_MAIN" '
+            [.workflow_runs[] | select(.name == "Deploy to GitHub Pages" and .head_sha == $sha and .status == "completed" and .conclusion == "success")] | length >= 1
+          ' reports/runs.json
+
+          READINESS_ID="$(jq -r --arg sha "$ACTUAL_MAIN" '[.workflow_runs[] | select(.name == "Metadata & IndexNow Readiness" and .head_sha == $sha and .conclusion == "success")] | sort_by(.created_at) | last | .id' reports/runs.json)"
+          PAGES_ID="$(jq -r --arg sha "$ACTUAL_MAIN" '[.workflow_runs[] | select(.name == "Deploy to GitHub Pages" and .head_sha == $sha and .conclusion == "success")] | sort_by(.created_at) | last | .id' reports/runs.json)"
+          printf 'readiness_run=%s\npages_run=%s\n' "$READINESS_ID" "$PAGES_ID" | tee -a reports/boundary.txt
+
+          gh api "repos/${REPO}/actions/runs/${READINESS_ID}/jobs?per_page=100" > reports/readiness-jobs.json
+          gh api "repos/${REPO}/actions/runs/${PAGES_ID}/jobs?per_page=100" > reports/pages-jobs.json
+          jq '[.jobs[] | {id,name,status,conclusion,started_at,completed_at,html_url}]' reports/readiness-jobs.json > reports/readiness-jobs-summary.json
+          jq '[.jobs[] | {id,name,status,conclusion,started_at,completed_at,html_url}]' reports/pages-jobs.json > reports/pages-jobs-summary.json
+
+          gh api "repos/${REPO}/deployments?sha=${ACTUAL_MAIN}&environment=github-pages&per_page=100" > reports/deployments.json
+          jq '[.[] | {id,sha,ref,environment,created_at,updated_at,statuses_url}]' reports/deployments.json | tee reports/deployments-summary.json
+          jq -e --arg sha "$ACTUAL_MAIN" '[.[] | select(.sha == $sha and .environment == "github-pages")] | length >= 1' reports/deployments.json
+
+          DEPLOYMENT_ID="$(jq -r --arg sha "$ACTUAL_MAIN" '[.[] | select(.sha == $sha and .environment == "github-pages")] | sort_by(.created_at) | last | .id' reports/deployments.json)"
+          gh api "repos/${REPO}/deployments/${DEPLOYMENT_ID}/statuses?per_page=100" > reports/deployment-statuses.json
+          jq '[.[] | {id,state,environment_url,log_url,created_at,updated_at}]' reports/deployment-statuses.json | tee reports/deployment-statuses-summary.json
+          jq -e '[.[] | select(.state == "success")] | length >= 1' reports/deployment-statuses.json
+
+          for url in \
+            https://gospod-bog.ru/ \
+            https://gospod-bog.ru/about/ \
+            https://gospod-bog.ru/gill/predopredelenie-chast-1/ \
+            https://gospod-bog.ru/js/reader-state.js; do
+            key="$(printf '%s' "$url" | sed 's#https://##; s#[^A-Za-z0-9._-]#_#g')"
+            curl --fail --silent --show-error --location --retry 3 "$url" -o "reports/live/${key}"
+            printf '%s  %s\n' "$(sha256sum "reports/live/${key}" | awk '{print $1}')" "$url" | tee -a reports/live-sha256.txt
+          done
+
+          grep -F "gb:reader-state:v1:" reports/live/gospod-bog.ru_js_reader-state.js
+          grep -F "--gb-read-pct" reports/live/gospod-bog.ru_js_reader-state.js
+
+      - name: Upload exact boundary witness
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exact-production-boundary-${{ github.run_id }}
+          path: reports
+          if-no-files-found: error
+          retention-days: 14
