@@ -1,143 +1,108 @@
-# GB is My Strength — живой аудит рефакторинга
+# GB is My Strength — current refactor audit index
 
-**Файл:** `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`  
-**Обновление:** 2026-06-22 (сессия восстановления)  
-**Политика:** один живой MD-файл. Новые сессии добавлять в этот же документ.
+**Current source boundary:** `5636a6a1911c7eb0e7637406e87e749dd65dbaaf` (`main`, PR #205, 2026-07-24).  
+**Forensic tracking:** `FedorMilovanov/AuditRepo#40`.  
+**Purpose:** record current architecture and unresolved recovery decisions without duplicating the canonical AuditRepo matrix.
 
----
+## Authority model
 
-## Правило ведения документа
+This document is a source-repository navigation layer. It does not independently declare production deployment.
 
-1. Все новые находки добавлять под новой секцией `## Сессия YYYY-MM-DD`.
-2. Не переносить неподтверждённые догадки в список багов — статус `НУЖНО ПРОВЕРИТЬ`.
-3. Не закрывать пункт, пока не указаны: коммит/PR, команда проверки, что именно проверено.
-4. Lane lock: не давать двум агентам один route без явного владельца.
+- **Current source truth:** exact `gb-is-my-strength/main` tree and exact-head CI.
+- **Verified backlog and closure counters:** `AuditRepo/projects/gb-is-my-strength/verified/MASTER_BUG_MATRIX.md`.
+- **Last exact production truth:** the latest immutable AuditRepo production witness; never infer it from a source merge alone.
+- **Active work:** open GitHub issues and pull requests, then `docs/refactor-2026/lanes/README.md`.
 
----
+When these surfaces disagree, stop and reconcile them rather than copying the newest-looking text.
 
-## 0. Статус после сессии восстановления 2026-06-22
+## Current architecture state
 
-### Исправлено (f5d36772)
+### Public surface
 
-| Что | Файл | Суть |
-|-----|------|------|
-| Home stale reading times | `src/components/home/_legacy/publications.html` | Gill I: 21→28, Hermenevtika: 35→50 |
-| Home stale reading time | `src/components/home/_legacy/refutations.html` | Kod da Vinci: 22→30 |
-| Guard: alias-conflict | `scripts/check-data-consistency.js` | Добавлена секция 0c — ловит `readTime` vs `readingTime` конфликт |
-| karty-avraam конфликт | `data/search-manifest.json` | Убран `readingTime=15`, оставлен `readTime=5` |
-| Visual Parity CI gate | `scripts/visual-parity-screenshots.js` | OUT_DIR создаётся до async body; `writeSummary()`; chromium try/catch |
+- 75 production routes are registry-owned.
+- Every public route has production-like Chromium coverage.
+- All routes additionally have Android/Chromium and iPhone/desktop WebKit coverage through PR #200.
+- Maps and special applications remain explicit capability adapters rather than a fourth reader engine.
+- Reader progress/resume is unified through ReaderState R6 (PR #191).
 
-### Закрытые CI issues
+### Control plane
 
-| Issue | Суть | Статус |
-|-------|------|--------|
-| #10 | Deploy to GitHub Pages (Visual Parity Guard failure chain) | ✅ Закрыт |
-| #9 | IndexNow (зависит от Visual Parity Guard) | ✅ Закрыт |
-| #7 | Visual Parity Guard — pixel-diff (41 комментарий) | ✅ Закрыт |
-| #8 | Runtime Interactive Audit (12ч без реактивации) | ✅ Закрыт (recheck needed) |
-| #6 | Source Link Audit (1 неделя без реактивации) | ✅ Закрыт (recheck needed) |
+PR #204 introduced a filesystem-derived repository audit that checks:
 
----
+- npm and workflow references to local files;
+- local `uses: ./...` targets;
+- `_temp-*` workflows on the default branch;
+- required governance documents;
+- duplicated inline actionlint installers;
+- write-capable workflows and stale one-off branch triggers.
 
+The audit found and removed a real residue: `_temp-gill-source-marathon-orchestrator.yml` had survived its transaction, retained `contents: write` and called a deleted script. PR #205 reduced the exact-head report to three non-product warnings: two package aliases and one retired route-registry rollout trigger. These remain an isolated control-plane convergence task; they are not product defects.
 
+### Recent verified closures
 
-### P0-X — "20 антисоветов" 40 vs 67 мин ✅ ЗАКРЫТ
+| Area | PR / merge | Result |
+|---|---|---|
+| Map recovery | #203 / `0461faa8` | Black-screen failures receive a recoverable error UI. |
+| Control-plane integrity | #204 / `f11749ee` | Dead writer workflow removed; local-reference audit made permanent. |
+| Workflow convergence | #205 / `5636a6a1` | Stale editorial branch triggers and duplicated actionlint installers reduced. |
+| Cross-browser routes | #200 / `c8b47201` | Android 1828/1828 and WebKit 2660/2660 contracts passed on exact head. |
+| Nagornaya narrow layout | #197 and #199 | iPhone 320 overflow closed with route-owned responsive geometry. |
+| Reader state | #191 / `a4372707` | Progress, resume and completion unified through ReaderState R6. |
 
-**Статус:** закрыт в 1e378efd. Canonical = 67 мин (series.json, pagefind meta).
-- `articles/20-antisovetov-pastoru/index.html`: byline 40→67 мин
-- `index.html`: planned-series card 40+→67 мин
-- Все три источника (series.json, pagefind, visible) теперь согласованы.
+## Forensic recovery register
 
-### P2-30 — ci:check порядок ✅ ЗАКРЫТ
+Closed or deleted branches are not assumed safe merely because a later PR says “superseded”. The current marathon compares their actual files with current `main`.
 
-**Статус:** закрыт в 1e378efd.
-- `ci:check`: был validate→cache-bust, стал cache-bust→validate.
-- Теперь порядок идентичен deploy.yml и indexnow.yml.
-- Предотвращает ложную зелень когда cache-bust меняет файлы после validation.
+### Preserved unique heads
 
-### P2-29 — Dist Strangler Dry Run в notify ✅ УЖЕ ЕСТЬ
+| Archive ref | Unique material | Current decision |
+|---|---|---|
+| `archive/forensic-pr-79-gill-witness-2026-07-24` | `GillWitness.astro` and an older Gill editorial rewrite | Component is a recovery candidate. Article rewrite is stale against later fact-checking and must not be restored wholesale. |
+| `archive/forensic-pr-52-gill-image-polish-2026-07-24` | Alternative panorama crops and rail-cover composition | Fresh Playwright/visual owner review required before selective recovery. Boxed captions were intentionally superseded by minimal captions. |
+| `archive/forensic-pr-66-submenu-showcase-2026-07-24` | 1717-line five-variant submenu showcase | Prototype provenance, not production code. Rebuild any chosen pattern against the current generic series engine. |
+| AuditRepo `archive/forensic-pr-3-vosk-tts-report-2026-07-24` | Full historical Vosk integration report | Runtime is not lost; report is preserved as evidence. |
 
-**Статус:** подтверждено — проверка в `scripts/check-workflows.js` строке 161.
-`notify-on-failure.yml` уже содержит 'Dist Strangler Dry Run' в workflows list (c56f213).
+### Proven safe replacement chains
 
----
-## 1. Сессия 2026-06-22 — восстановление направления
+- Nagornaya pastoral PR #121: zero-diff publication failure was rebuilt from its verified artifact and merged as PR #138 / `5650c96b`.
+- Gill glossary/source coverage drafts #161, #175, #178 and #180 were replaced by the merged #183/#185/#186 chain.
+- Old cross-browser PR #194 was superseded by clean PR #200.
+- Old Nagornaya broad CSS proposal #201 was superseded by route-owned PR #199.
+- Old route/editorial stack PR #63/#65 is represented by the current effective-route registry, metadata library and permanent validators.
 
-### Контекст
+### Disposable classes
 
-Агенты провели 2 недели активного рефакторинга (Nagornaya componentization, Gill Spravochnik promotion, Home fragment decomposition) но:
-- Visual Parity Guard систематически падал, блокируя deploy
-- Home page тянула stale reading times из Astro raw fragments
-- CI failure issues накапливались без закрытия
-- Аудит-документ (`gb-refactor-audit-living.md`) не был принят агентами как приоритет
+These do not merit recovery branches:
 
-### Root cause: Visual Parity Guard
+- probe and diagnostic PRs explicitly marked `DO NOT MERGE`;
+- trigger-only PRs whose validated result was committed directly to the target SSOT and whose writer removed itself;
+- temporary observers that made no source claim;
+- stale whole-branch overlays whose useful evidence is already preserved in AuditRepo.
 
-Скрипт `scripts/visual-parity-screenshots.js` мог упасть до создания `reports/visual-parity/` если:
-1. `chromium.launch()` падал (браузер не установлен)
-2. Fatal error внутри async body
+## Open forensic work
 
-Результат: CI upload step не находил файлов → "No files were found", deploy skipping через `workflow_run` trigger.
+1. Complete a closed-unmerged PR disposition table for both repositories.
+2. Verify every claimed replacement by current blob or exact ancestry.
+3. Finish the governance/document sweep beyond the two files corrected in this lane.
+4. Close or explicitly accept the remaining control-plane warnings.
+5. Publish an immutable final report and recovery register in AuditRepo.
+6. Keep source authority separate from the last exact deployed/live authority.
 
-### Исправления применены
+No archived head may be merged wholesale. Any recovery begins from fresh `main`, copies only the justified semantic delta and passes the current source, browser and visual contracts.
 
-1. `OUT_DIR` создаётся **до** async body — CI upload всегда найдёт папку
-2. `writeSummary()` helper — `summary.json` пишется даже при chromium failure
-3. Chromium launch обёрнут в try/catch с диагностикой + sentinel `failed=-1`
-4. Retry loop делает `mkdirSync` defensive
-5. Home stale reading times синхронизированы с canonical values (series.json, search-manifest.json)
+## Historical June session
 
----
+The previous version of this file documented the 2026-06-22 recovery around visual-parity diagnostics, stale reading times and lane locking. It later became internally contradictory: the same reading-time item appeared both closed and open, and its “active lanes” remained frozen after completion. The full historical text remains immutable in Git at blob `de164cf3e9b3b37235c48d58f75bb0e156d41596`; this current file no longer presents that snapshot as live status.
 
-## 2. Актуальные P0 (незакрытые после f5d36772)
+## Update rule
 
-### P0-X — "20 антисоветов" 40 vs 67 минут
+For each new session, change the current boundary and add only durable facts:
 
-**Статус:** частично исправлен. На live-странице article hero показывает 40 мин (article frontmatter), но catalog/related cards показывают 67 мин.
+- exact source SHA;
+- PR/merge SHA;
+- exact command or CI artifact;
+- what was verified;
+- what remains unresolved;
+- whether production was actually witnessed.
 
-**Source-of-truth:** `data/series.json` → `pastor-series.parts[0].readingTime = 67`
-
-**Что делать:** выбрать canonical value и синхронизировать. Рекомендация: 67 мин (серия total time), обновить article frontmatter.
-
-**Команда:**
-```bash
-grep -rn "40.*мин\|67.*мин\|readTime.*40\|readTime.*67" articles/20-antisovetov-pastoru data/search-manifest.json
-```
-
-### P1 — "Э то" опечатка
-
-**Статус:** ✅ НЕ ЯВЛЯЕТСЯ ОПЕЧАТКОЙ. В `about.html` используется drop-cap эффект: `<span class="h-drop-cap__letter" aria-hidden="true">Э</span>то не лента...`. Это корректная разметка. Видимое "Э то" на live — артефакт рендеринга drop-cap, не баг.
-
----
-
-## 3. Следующие шаги (lane policy)
-
-```
-STOP: Параллельные componentization lanes без координации
-START: Lane lock перед любым route
-
-Active lanes после восстановления:
-- lane/p0-antisovetov-time: синхронизировать 20-antisovetov readTime
-- lane/visual-parity-fix: Visual Parity Guard CI восстановлен (f5d36772)
-- lane/source-link-recheck: Source Link Audit (manual workflow_dispatch)
-- lane/runtime-audit-recheck: Runtime Interactive Audit (manual workflow_dispatch)
-```
-
----
-
-## 4. Правила lane lock (обновлено)
-
-Перед любой работой агент объявляет:
-
-```md
-Lane: <name>
-Routes: <list>
-Files allowed: <list>
-Files forbidden: <list>
-Source of truth: <file>
-Required checks before commit: <list>
-Rollback point: <commit>
-```
-
-**Запрещено:** ручное размножение readTime, titles, image src, script hash.
-**Обязательно:** `npm run data:consistency` зелёный перед push.
+Do not copy temporary run diaries, speculative defects or stale branch tables into this document.
