@@ -1,0 +1,79 @@
+name: TEMP Map Archaeology Engine P0
+
+on:
+  push:
+    branches: [agent/map-archaeology-engine-p0]
+    paths:
+      - 'scripts/materialize-map-archaeology-engine-p0.mjs'
+      - '.github/workflows/_temp-map-archaeology-engine-p0.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-map-archaeology-engine-p0
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.ref == 'refs/heads/agent/map-archaeology-engine-p0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/map-archaeology-engine-p0
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Apply fail-closed migration
+        run: |
+          node --check scripts/materialize-map-archaeology-engine-p0.mjs
+          node scripts/materialize-map-archaeology-engine-p0.mjs
+      - name: Validate generated source
+        run: |
+          node --check karty/_engine/map-engine.js
+          node --check src/lib/karty/map-archaeology-projection.mjs
+          node --check scripts/map-archaeology-projection-contract-test.mjs
+          node --check scripts/map-archaeology-projection-browser-test.mjs
+          node scripts/map-archaeology-source-registry-audit.js
+          node scripts/map-archaeology-category-coverage-audit.js
+          node scripts/map-archaeology-projection-contract-test.mjs
+      - name: Remove one-shot machinery
+        run: |
+          rm scripts/materialize-map-archaeology-engine-p0.mjs
+          rm .github/workflows/_temp-map-archaeology-engine-p0.yml
+      - name: Enforce exact permanent scope
+        run: |
+          node - <<'NODE'
+          const {execFileSync}=require('node:child_process');
+          const actual=execFileSync('git',['diff','--name-only'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
+          const expected=[
+            '.github/workflows/_temp-map-archaeology-engine-p0.yml',
+            '.github/workflows/map-archaeology-projection.yml',
+            'karty/_engine/map-archaeology-adapter.js',
+            'karty/_engine/map-engine.js',
+            'scripts/map-archaeology-projection-browser-test.mjs',
+            'scripts/map-archaeology-projection-contract-test.mjs',
+            'scripts/materialize-map-archaeology-engine-p0.mjs',
+            'src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro',
+            'src/components/karty/_shared/MapRuntimeFallback.astro',
+            'src/components/karty/avraam/AvraamMap.astro',
+            'src/components/karty/ishod/IshodMap.astro',
+            'src/lib/karty/map-archaeology-projection.mjs'
+          ].sort();
+          if(JSON.stringify(actual)!==JSON.stringify(expected)){
+            console.error({actual,expected});process.exit(1);
+          }
+          NODE
+      - name: Commit exact product tree
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix(karty): move archaeology projection into MapEngine"
+          git push origin HEAD:agent/map-archaeology-engine-p0
