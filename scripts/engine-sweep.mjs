@@ -283,6 +283,83 @@ for (const [id, url] of SINGLES) {
   await ctx.close();
 }
 
+/* ============ READERSTATE R6 — ЕДИНЫЙ ДИАПАЗОН/ПРОГРЕСС/RESUME ============ */
+for (const [id, url, uiSelector] of [
+  ['r6-gill', SERIES[0][1], '#gbs2MobPct'],
+  ['r6-book', SERIES[1][1], '#gbs2MobPct'],
+  ['r6-herm', SINGLES[0][1], '#hmProgressText'],
+]) {
+  const { ctx, page } = await newPage({ width: 390, height: 844 });
+  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => window.GBReaderState?.version === 1 && window.GBReaderState.getSnapshot(), null, { timeout: 12000 });
+
+  const bootstrap = await page.evaluate(() => {
+    const api = window.GBReaderState;
+    const state = api.getSnapshot();
+    const range = api.getRange();
+    const script = [...document.scripts].find((item) => String(item.src || '').includes('/js/reader-state.js'));
+    const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body');
+    const rootRect = root?.getBoundingClientRect();
+    const rootBottom = rootRect ? rootRect.bottom + scrollY : null;
+    return {
+      script: !!script,
+      state,
+      range,
+      rootBottom,
+      documentBottom: document.documentElement.scrollHeight,
+      canonicalKeys: Object.keys(localStorage).filter((key) => key.startsWith('gb:reader-state:v1:')),
+    };
+  });
+  R(id, 'R6: runtime + explicit article range', bootstrap.script && bootstrap.range.end > bootstrap.range.start && bootstrap.rootBottom !== null, JSON.stringify(bootstrap));
+  R(id, 'R6: article ends before document footer', bootstrap.documentBottom - bootstrap.range.end > 80, JSON.stringify({ doc: bootstrap.documentBottom, end: bootstrap.range.end }));
+
+  const middle = Math.round((bootstrap.range.start + bootstrap.range.end) / 2);
+  await page.evaluate((top) => {
+    window.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    window.scrollTo(0, top);
+  }, middle);
+  await page.waitForFunction(() => {
+    const value = window.GBReaderState?.getProgress?.() || 0;
+    return value >= 42 && value <= 58;
+  }, null, { timeout: 8000 });
+  await page.waitForTimeout(180);
+  const midpoint = await page.evaluate((selector) => {
+    window.GBReaderState.saveSnapshot(true);
+    const state = window.GBReaderState.getSnapshot();
+    const ui = document.querySelector(selector)?.textContent?.trim() || '';
+    const css = getComputedStyle(document.documentElement).getPropertyValue('--gb-read-pct').trim();
+    const keys = Object.keys(localStorage).filter((key) => key.startsWith('gb:reader-state:v1:'));
+    const persisted = keys.length ? JSON.parse(localStorage.getItem(keys[0])) : null;
+    return { state, ui, css, persisted, keys };
+  }, uiSelector);
+  R(id, 'R6: midpoint is shared by state, UI and canonical storage',
+    midpoint.state.progress >= 42 && midpoint.state.progress <= 58 &&
+    midpoint.ui.includes(String(midpoint.state.progress)) &&
+    Math.abs(Number(midpoint.css) - midpoint.state.progressRatio) < 0.03 &&
+    midpoint.persisted?.progress === midpoint.state.progress,
+    JSON.stringify(midpoint));
+
+  await page.evaluate((top) => window.scrollTo(0, top + 8), bootstrap.range.end);
+  await page.waitForFunction(() => window.GBReaderState?.getSnapshot?.().phase === 'after-content', null, { timeout: 8000 });
+  const finished = await page.evaluate(() => window.GBReaderState.getSnapshot());
+  R(id, 'R6: after-content is 100% without pretending last heading',
+    finished.progress === 100 && finished.sectionId === '' && finished.sectionTitle === 'Завершено',
+    JSON.stringify(finished));
+
+  if (id === 'r6-gill') {
+    const migrated = await page.evaluate(() => {
+      const canonical = Object.keys(localStorage).find((key) => key.startsWith('gb:reader-state:v1:'));
+      if (canonical) localStorage.removeItem(canonical);
+      localStorage.setItem('gb-series-pos:dzhon-gill:dzhon-gill-chast-3-nasledie', JSON.stringify({ y: 1320, pc: 47, t: Date.now() - 1000 }));
+      return window.GBReaderState.getSaved();
+    });
+    R(id, 'R6: legacy series position migrates through canonical API',
+      migrated?.progress === 47 && migrated?.scrollY === 1320 && migrated?.source === 'series-position',
+      JSON.stringify(migrated));
+  }
+  await ctx.close();
+}
+
 /* ============ PAGE-ДВИЖОК — МОБИЛА ============ */
 for (const url of CATALOGS) {
   const { ctx, page } = await newPage({ width: 390, height: 844 });

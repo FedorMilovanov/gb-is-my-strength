@@ -28,6 +28,7 @@ const ASSETS = [
   'js/site.js',
   'js/reader-preferences-head.js',
   'js/reader-preferences.js',
+  'js/reader-state.js',
   'js/site-utils.js',
   'js/scroll-perf.js',
   'js/bookmark-engine.js',

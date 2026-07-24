@@ -51,7 +51,7 @@
      bottom-bar, TOC overlay, bookmark toast, share dialog, TTS, etc.).
      Phase 6 JS decomposition will extract these modules one by one.
      is:inline prevents Astro from resolving/bundling these paths. -->
-<script is:inline defer src="../../js/bookmark-engine.js?v=fdfb2ed7"></script>
+<script is:inline defer src="../../js/bookmark-engine.js?v=fba4e559"></script>
 <script is:inline defer src="../../js/site-utils.js?v=30ed46cf"></script>
 <script is:inline defer src="../../js/scroll-perf.js?v=454d6f7b"></script>
 <script is:inline defer src="../../js/site.js?v=6099e55d"></script>
@@ -60,5 +60,5 @@
 <script is:inline>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src="../../js/search.js?v=b0fd43b8";function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function key(e){(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()==="k"&&(e.preventDefault(),load(true))}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("keydown",key,true);document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>
 <script is:inline src="../../js/highlights.js?v=25484760" defer></script>
 <script is:inline src="../../js/enhancements.js?v=cbbdb283" defer></script>
-<script is:inline src="../../js/floating-cluster-controller.js?v=f746adb1" defer></script>
+<script is:inline src="../../js/floating-cluster-controller.js?v=6b0a4aae" defer></script>
 

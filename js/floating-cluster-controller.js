@@ -2237,45 +2237,23 @@
       })();
     }
 
-    // --- Reading-position memory + smart resume (Gill v16) ---
-    // enhancements.js phase-2 owns this on legacy GBS pages; on v16 pages its
-    // paint() driver never ran, so positions froze and «Вы здесь были» nagged
-    // with a stale percent on every visit. The v16 controller owns it now:
-    //   • save only after a real user scroll and y>120;
-    //   • offer resume only for a meaningful position (pc 8–92, y>1200);
-    //   • at most once per page per browser session; dismissal (×) mutes the
-    //     offer for 24h; finishing the article (pc≥95) clears the position.
-    var _resumeV16 = !!qs('[data-gill-v16]');
-    var _posKey = 'gb-series-pos:' + ((document.body && document.body.getAttribute('data-gbs2-series')) || 'page') + ':' +
-                  (location.pathname.replace(/\/+$/, '/').split('/').filter(Boolean).pop() || '');
-    var _userScrolled = false, _lastPosWrite = 0;
-    ['wheel', 'touchmove', 'keydown'].forEach(function (t) {
-      addCleanListener(window, t, function () { _userScrolled = true; }, { passive: true });
-    });
-    function _jget(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (_) { return d; } }
-    function _jset(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
-    function saveReadingPos(pct) {
-      if (!_resumeV16 || !_userScrolled) return;
-      if (pct >= 95) { if (_jget(_posKey, null)) _jset(_posKey, null); return; }
-      var y = window.scrollY || 0, now = Date.now();
-      if (y <= 120 || now - _lastPosWrite < 1200) return;
-      _lastPosWrite = now;
-      var prev = _jget(_posKey, null) || {};
-      _jset(_posKey, { y: y, pc: pct, t: now, dismissedAt: prev.dismissedAt });
-    }
+    // --- ReaderState R6: one progress/section/resume owner ---
+    // The shared ReaderState service owns geometry, persistence and legacy-key
+    // migration. This controller only renders series/book chrome from snapshots.
+    var readerState = window.GBReaderState || window.ReaderState || null;
+
     function maybeOfferResume() {
-      if (!_resumeV16) return;
-      var saved = _jget(_posKey, null);
-      if (!saved || !(saved.y > 1200) || !(saved.pc >= 8) || saved.pc > 92) return;
+      if (!readerState || !qs('[data-gill-v16]')) return;
+      var saved = readerState.getSaved && readerState.getSaved();
+      if (!saved || !(saved.scrollY > 1200) || !(saved.progress >= 8) || saved.progress > 92 || saved.completed) return;
       if ((window.scrollY || 0) > 200) return;
       if (saved.dismissedAt && Date.now() - saved.dismissedAt < 86400000) return;
-      var sessionKey = 'gb-resume-offered:' + _posKey;
-      try { if (sessionStorage.getItem(sessionKey)) return; sessionStorage.setItem(sessionKey, '1'); } catch (_) {}
-      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (readerState.isResumeAcknowledged && readerState.isResumeAcknowledged()) return;
+
       var toast = document.createElement('div');
       toast.className = 'gbs2-resume';
       toast.setAttribute('role', 'status');
-      toast.innerHTML = '<span><small>Вы здесь были</small>Вы остановились на ' + Math.round(saved.pc) + '%</span>' +
+      toast.innerHTML = '<span><small>Вы здесь были</small>Вы остановились на ' + Math.round(saved.progress) + '%</span>' +
         '<button type="button" class="gbs2-resume-go">Продолжить</button>' +
         '<button type="button" class="gbs2-resume-x" aria-label="Скрыть">×</button>';
       document.body.appendChild(toast);
@@ -2283,12 +2261,12 @@
       function hide(mute) {
         toast.classList.remove('gbs2-on');
         clearTimeout(hideT);
-        if (mute) { var cur = _jget(_posKey, null); if (cur) { cur.dismissedAt = Date.now(); _jset(_posKey, cur); } }
+        if (readerState.markResumeAcknowledged) readerState.markResumeAcknowledged();
+        if (mute && readerState.dismissResumeForDay) readerState.dismissResumeForDay();
         setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 400);
       }
       toast.querySelector('.gbs2-resume-go').addEventListener('click', function () {
-        _userScrolled = true;
-        window.scrollTo({ top: saved.y, behavior: reduced ? 'auto' : 'smooth' });
+        if (readerState.restoreSnapshot) readerState.restoreSnapshot(saved);
         hide(false);
       });
       toast.querySelector('.gbs2-resume-x').addEventListener('click', function () { hide(true); });
@@ -2296,29 +2274,17 @@
       hideT = setTimeout(function () { hide(false); }, 6500);
     }
 
-    // --- Scroll Progress ---
-    // GILL UI POLISH 2026-06-29 — gold progress + scrollspy
-    function updateScrollProgress() {
-      var docH = document.documentElement.scrollHeight - window.innerHeight;
-      if (docH <= 0) return;
-      var pct = Math.min(100, Math.round((window.scrollY / docH) * 100));
-      var pctF = pct / 100;
-      // CSS custom properties for gold progress bar (owner screenshots fix)
+    function renderReaderState(reader) {
+      if (!reader) return;
+      var pct = Math.max(0, Math.min(100, Math.round(Number(reader.progress) || 0)));
+      var pctF = Math.max(0, Math.min(1, Number(reader.progressRatio) || 0));
+      var phase = reader.phase || 'before-content';
       try {
         document.documentElement.style.setProperty('--gb-read-pct', String(pctF));
         document.documentElement.style.setProperty('--gb-read-active', pct > 2 ? '1' : '0');
-        // also mirror to body for [data-gill-v16] descendant rules
         document.body.style.setProperty('--gb-read-pct', String(pctF));
-      } catch(_){}
-      saveReadingPos(pct);
-      // Прогресс СЕРИИ (не только текущей части): та же формула, что раньше
-      // считал js/enhancements.js (window.__gbs2SeriesPct fallback) — done-min
-      // ранее прочитанных частей + доля прочитанного в текущей части, из
-      // total-min всей серии. enhancements.js гасит себя на [data-gill-v16]
-      // страницах, поэтому там это число раньше не считалось вообще; здесь
-      // формула восстановлена универсально — работает на любой странице,
-      // где выставлены эти три body-атрибута (Gill и krajne/«Сердце» — уже
-      // сейчас, без доп. правок разметки).
+      } catch (_) {}
+
       var doneMin = Number(document.body.getAttribute('data-gbs2-done-min') || 0);
       var partMin = Number(document.body.getAttribute('data-gbs2-part-min') || 0);
       var totalMin = Number(document.body.getAttribute('data-gbs2-total-min') || 0);
@@ -2327,19 +2293,13 @@
         : pct;
       var pctSidebar = qs('#gbs2Pct');
       if (pctSidebar) pctSidebar.textContent = seriesPc + '%';
-      // Текущая ЧАСТЬ (не вся серия) — отдельная полоса под «Сейчас читаете»
       var curbar = qs('#gbs2Curbar');
       if (curbar) curbar.style.width = pct + '%';
-      // Кольцо прогресса СЕРИИ (r=18, circ=113 — тот же r, что и в разметке)
       var ring = qs('#gbs2Ring');
       if (ring) {
-        var circ = 2 * Math.PI * 18; // r=18
+        var circ = 2 * Math.PI * 18;
         ring.style.strokeDashoffset = circ - (circ * seriesPc / 100);
       }
-      // Мобильный dual-progress (bar-progress.dual-progress, референс
-      // gbs_series_mobile_v4_refined_no_accuracy.html): внутренний текст/
-      // кольцо — % ТЕКУЩЕЙ статьи (pct), внешнее кольцо — % ВСЕЙ серии
-      // (seriesPc). r=16/12.5 — те же радиусы, что в референсной разметке.
       var mobPctEl = qs('#gbs2MobPct');
       if (mobPctEl) mobPctEl.textContent = pct + '%';
       var mobArticleRing = qs('#gbs2MobArticleRing');
@@ -2354,55 +2314,42 @@
       }
       var mobDualBtn = qs('#gbs2DualProgress');
       if (mobDualBtn) mobDualBtn.setAttribute('aria-label', 'Статья ' + pct + '%, серия ' + seriesPc + '%');
-      // Update mobile bottom bar section
       var mobSec = qs('#gbs2MobSec');
-      if (mobSec) {
-        var current = getCurrentHeading();
-        if (current) mobSec.textContent = current;
-      }
-      // Historical paint(): hero parallax + kinetic numeral drift. The old
-      // enhancements pilot owned these vars; it is guarded off on v16 pages,
-      // so the controller feeds them (site.css transforms consume the vars).
+      if (mobSec) mobSec.textContent = reader.sectionTitle || (phase === 'after-content' ? 'Завершено' : 'Введение');
+
+      // Historical kinetic visuals remain renderers of the shared scroll snapshot.
+      var scrollY = Number(reader.scrollY) || 0;
       var heroImgEl = qs('.gbs2-hero img');
-      if (heroImgEl) heroImgEl.style.setProperty('--gbs2-par', String(Math.round(window.scrollY * 0.035)));
+      if (heroImgEl) heroImgEl.style.setProperty('--gbs2-par', String(Math.round(scrollY * 0.035)));
       var kineticEl = qs('.gbs2-kinetic');
-      if (kineticEl) kineticEl.style.setProperty('--gbs2-kin-y', Math.round(window.scrollY * -0.018) + 'px');
-      // === Pre-v16 GBS Gill submenu scroll-spy restore ===
-      var article = qs('article.article-body') || qs('main');
-      if (article) {
-        var represented = qsa('.gbs2-toc a[href^="#"]').map(function(a) {
-          var href = a.getAttribute('href') || '';
-          var id = href.slice(1);
-          var target = id ? document.getElementById(id) : null;
-          return target ? { a: a, target: target } : null;
-        }).filter(Boolean);
-        // The active-index walk below assumes targets are in document order.
-        // Sort defensively by DOM position so an out-of-order menu row can
-        // degrade gracefully instead of freezing the walk.  [spec §9.5]
-        represented.sort(function(x, y) {
-          if (x.target === y.target) return 0;
-          return (x.target.compareDocumentPosition(y.target) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+      if (kineticEl) kineticEl.style.setProperty('--gbs2-kin-y', Math.round(scrollY * -0.018) + 'px');
+
+      var represented = qsa('.gbs2-toc a[href^="#"]').map(function (a) {
+        var id = (a.getAttribute('href') || '').slice(1);
+        var target = id ? document.getElementById(id) : null;
+        return target ? { a: a, target: target, id: id } : null;
+      }).filter(Boolean);
+      represented.sort(function (x, y) {
+        if (x.target === y.target) return 0;
+        return (x.target.compareDocumentPosition(y.target) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+      });
+
+      if (represented.length) {
+        var activeIdx = -1;
+        for (var ri = 0; ri < represented.length; ri++) {
+          if (represented[ri].id === reader.sectionId) { activeIdx = ri; break; }
+        }
+        represented.forEach(function (row, idx) {
+          var isActive = phase === 'active-section' && idx === activeIdx;
+          var isPassed = phase === 'after-content' || (activeIdx >= 0 && idx < activeIdx);
+          row.a.classList.toggle('gbs2-active', isActive);
+          row.a.classList.toggle('gbs2-passed', isPassed);
+          if (isActive) row.a.setAttribute('aria-current', 'location');
+          else row.a.removeAttribute('aria-current');
         });
-        if (represented.length) {
-          var scrollY = window.scrollY + 140;
-          var activeIdx = 0;
-          for (var ri = 0; ri < represented.length; ri++) {
-            if (represented[ri].target.offsetTop <= scrollY) activeIdx = ri;
-            else break;
-          }
-          var submenuActiveIdx = activeIdx; // captured for rail-fill (see §9.2)
-          represented.forEach(function(row, idx) {
-            row.a.classList.toggle('gbs2-active', idx === activeIdx);
-            row.a.classList.toggle('gbs2-passed', idx < activeIdx);
-            // Rail rows carry aria-current="location" on the active row only;
-            // never write aria-current="false".  [spec §9.4]
-            if (idx === activeIdx) row.a.setAttribute('aria-current', 'location');
-            else row.a.removeAttribute('aria-current');
-          });
-          // Historical paint(): while a sub-row is active, keep its parent H2
-          // row softly lit. Own class (gbs2-hold) — exactly ONE row may carry
-          // gbs2-active per audit §9.4, and passed counts must stay untouched.
-          var holdA = null;
+
+        var holdA = null;
+        if (activeIdx >= 0) {
           var activeSubLi = represented[activeIdx].a.closest('li.gbs2-sub');
           if (activeSubLi) {
             var holdGrp = activeSubLi.getAttribute('data-gbs2-grp');
@@ -2411,113 +2358,89 @@
             })[0];
             holdA = h2Li ? qs('a', h2Li) : null;
           }
-          qsa('.gbs2-toc a.gbs2-hold').forEach(function (a) {
-            if (a !== holdA) a.classList.remove('gbs2-hold');
+        }
+        qsa('.gbs2-toc a.gbs2-hold').forEach(function (a) { if (a !== holdA) a.classList.remove('gbs2-hold'); });
+        if (holdA && !holdA.classList.contains('gbs2-active')) holdA.classList.add('gbs2-hold');
+
+        var activeLi = activeIdx >= 0 ? represented[activeIdx].a.closest('li') : null;
+        var activeGrp = activeLi ? activeLi.getAttribute('data-gbs2-grp') : null;
+        if (activeGrp !== _gbs2ActiveGrp) {
+          _gbs2ActiveGrp = activeGrp;
+          qsa('.gbs2-toc li.gbs2-sub').forEach(function (li) {
+            var open = !!activeGrp && li.getAttribute('data-gbs2-grp') === activeGrp;
+            var collapsed = li.classList.contains('gbs2-collapsed');
+            if (open && collapsed) {
+              li.classList.remove('gbs2-collapsed');
+              li.style.maxHeight = '240px';
+            } else if (!open && !collapsed) {
+              li.style.maxHeight = li.getBoundingClientRect().height + 'px';
+              void li.offsetHeight;
+              li.classList.add('gbs2-collapsed');
+              li.style.maxHeight = '0px';
+            }
           });
-          if (holdA && !holdA.classList.contains('gbs2-active')) holdA.classList.add('gbs2-hold');
-          // Collapsible sub-groups (historical gbs2-subg behaviour): expand the
-          // active section's sub-rows and collapse the rest. On a group change,
-          // toggle max-height with an explicit start height so the transition
-          // runs, then kick the geometry loop so the spine + fill follow the
-          // animation frame-by-frame.
-          var activeLi = represented[activeIdx].a.closest('li');
-          var activeGrp = activeLi ? activeLi.getAttribute('data-gbs2-grp') : null;
-          if (activeGrp !== _gbs2ActiveGrp) {
-            _gbs2ActiveGrp = activeGrp;
-            qsa('.gbs2-toc li.gbs2-sub').forEach(function (li) {
-              var open = li.getAttribute('data-gbs2-grp') === activeGrp;
-              var collapsed = li.classList.contains('gbs2-collapsed');
-              if (open && collapsed) {
-                li.classList.remove('gbs2-collapsed');
-                li.style.maxHeight = '240px';
-              } else if (!open && !collapsed) {
-                li.style.maxHeight = li.getBoundingClientRect().height + 'px';
-                void li.offsetHeight; // reflow so the collapse animates from the real height
-                li.classList.add('gbs2-collapsed');
-                li.style.maxHeight = '0px';
-              }
-            });
-            railKick(560);
-          }
-          // Track + fill geometry ("metro line"), skipping collapsed dots.
-          computeRailFill();
-          var countEl = qs('#gbs2Count');
-          if (countEl) countEl.textContent = (activeIdx + 1) + ' / ' + represented.length;
-          var activeRow = represented[activeIdx];
-          var scroller = qs('.gbs2-tocscroll');
-          if (activeRow && scroller) {
-            var ar = activeRow.a.getBoundingClientRect();
-            var sr = scroller.getBoundingClientRect();
-            // Keep only the internal rail scroller in view — never scroll the page
-          // itself just because the rail keeps an item visible.  [spec §9.3]
+          railKick(560);
+        }
+
+        var countEl = qs('#gbs2Count');
+        if (countEl) countEl.textContent = phase === 'before-content'
+          ? 'Введение'
+          : phase === 'after-content'
+            ? 'Готово'
+            : (activeIdx + 1) + ' / ' + represented.length;
+
+        var railFill = qs('.gbs2-track i');
+        if (phase === 'before-content' && railFill) railFill.style.height = '0px';
+        else if (phase === 'after-content' && railFill) railFill.style.height = 'var(--gbs2-track-height)';
+        else computeRailFill();
+
+        var activeRow = activeIdx >= 0 ? represented[activeIdx] : null;
+        var scroller = qs('.gbs2-tocscroll');
+        if (activeRow && scroller) {
+          var ar = activeRow.a.getBoundingClientRect();
+          var sr = scroller.getBoundingClientRect();
           if (ar.top < sr.top + 18 || ar.bottom > sr.bottom - 18) {
             var desired = activeRow.a.offsetTop - scroller.clientHeight / 2 + activeRow.a.offsetHeight / 2;
             scroller.scrollTo({ top: Math.max(0, desired), behavior: 'smooth' });
           }
-          }
-          // The v2.9 «Оглавление части» overlay lists the SERIES PARTS (cross-
-          // page nav), not the current article's sections — its rows carry
-          // #gbs2PartToc[data-gill-parts-nav]. There the current part stays
-          // statically highlighted (.is-current from markup); the section
-          // scroll-spy must NOT roam the active class across the part rows.
-          if (!qs('#gbs2PartToc[data-gill-parts-nav]')) {
-            qsa('.toc-part-item').forEach(function(el, idx) {
-              var isActive = (idx === activeIdx);
-              var isPassed = (idx < activeIdx);
-              el.classList.toggle('is-active', !!isActive);
-              el.classList.toggle('is-done', !!isPassed);
-              // aria-current must be "location" on the active row only; never
-              // write the invalid aria-current="false".  [spec §9.4]
-              if (isActive) el.setAttribute('aria-current', 'location'); else el.removeAttribute('aria-current');
-            });
-          }
         }
-      }
-        // update Part TOC progress bar
-        var partItems = qsa('.toc-part-item');
-        var activeIdx = -1;
-        if (partItems.length) {
-          partItems.forEach(function(el, idx) {
-            if (el.classList.contains('is-active') || el.classList.contains('is-current')) activeIdx = idx;
+
+        if (!qs('#gbs2PartToc[data-gill-parts-nav]')) {
+          qsa('.toc-part-item').forEach(function (el, idx) {
+            var isActive = phase === 'active-section' && idx === activeIdx;
+            var isPassed = phase === 'after-content' || (activeIdx >= 0 && idx < activeIdx);
+            el.classList.toggle('is-active', isActive);
+            el.classList.toggle('is-done', isPassed);
+            if (isActive) el.setAttribute('aria-current', 'location');
+            else el.removeAttribute('aria-current');
           });
-          var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
-          var scrollBar = qs('.toc-sheet__scroll-bar i');
-          if (scrollBar) scrollBar.style.width = partPct + '%';
-          // Rail fill is driven directly from the represented rows in the
-          // submenu scroll-spy block above (smooth interpolated "metro line"),
-          // NOT from part-overlay items — keep the two independent.  [spec §9.2]
-        }
-    }
-
-    function getCurrentHeading() {
-      var article = qs('article.article-body') || qs('#main-content article') || qs('main');
-      if (!article) return '';
-      var headings = qsa('h2[id]', article);
-      var last = '';
-      for (var i = 0; i < headings.length; i++) {
-        if (headings[i].getBoundingClientRect().top < 120) {
-          last = headings[i].textContent.trim();
         }
       }
-      return last;
+
+      var partItems = qsa('.toc-part-item');
+      var partActiveIdx = -1;
+      partItems.forEach(function (el, idx) {
+        if (el.classList.contains('is-active') || el.classList.contains('is-current')) partActiveIdx = idx;
+      });
+      var partPct = partActiveIdx >= 0 ? Math.round(((partActiveIdx + 1) / Math.max(1, partItems.length)) * 100) : pct;
+      var scrollBar = qs('.toc-sheet__scroll-bar i');
+      if (scrollBar) scrollBar.style.width = partPct + '%';
     }
 
-    // Throttled scroll handler
-    var scrollTick = false;
-    addCleanListener(window, 'scroll', function() {
-      if (!scrollTick) {
-        scrollTick = true;
-        requestAnimationFrame(function() {
-          updateScrollProgress();
-          scrollTick = false;
-        });
-      }
-    }, { passive: true });
+    if (readerState && readerState.configure && readerState.subscribe) {
+      var seriesRoot = qs('[data-gill-v16]');
+      readerState.configure({
+        surface: 'series',
+        seriesId: (document.body && document.body.getAttribute('data-gbs2-series')) || '',
+        pageId: seriesRoot ? seriesRoot.getAttribute('data-gill-v16') || '' : '',
+        headingSelector: 'h2[id], h3[id]'
+      }).init();
+      readerState.subscribe(renderReaderState);
+    }
 
     // Initial population
     populateToc();
-    updateScrollProgress();
-    maybeOfferResume();
+    if (readerState) setTimeout(maybeOfferResume, 0);
   }
 
 })();

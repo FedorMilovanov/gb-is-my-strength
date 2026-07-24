@@ -1,1 +1,290 @@
-!function(){if(!window.BookmarkEngine||!window.BookmarkEngine._initialized){var e=window.SITE_CONFIG||{},t=e.features&&e.features.bookmarks||{};if(!1!==t.enabled){var n={siteId:e.site&&e.site.id||e.siteId||"default-site",articleSelector:t.articleSelector||"article",headingSelector:t.headingSelector||"h2[id]",minScrollToSave:"number"==typeof t.minScrollToSave?t.minScrollToSave:320,minProgressToSave:"number"==typeof t.minProgressToSave?t.minProgressToSave:6,maxProgressToSave:"number"==typeof t.maxProgressToSave?t.maxProgressToSave:96,completedAtProgress:"number"==typeof t.completedAtProgress?t.completedAtProgress:97,minTimeOnPage:"number"==typeof t.minTimeOnPage?t.minTimeOnPage:1e4,scrollThrottle:"number"==typeof t.scrollThrottle?t.scrollThrottle:600,periodicSaveInterval:"number"==typeof t.periodicSaveInterval?t.periodicSaveInterval:15e3,maxAgeDays:"number"==typeof t.maxAgeDays?t.maxAgeDays:14,cleanupAgeDays:"number"==typeof t.cleanupAgeDays?t.cleanupAgeDays:45,cleanupIntervalHours:"number"==typeof t.cleanupIntervalHours?t.cleanupIntervalHours:24,promptDelay:"number"==typeof t.promptDelay?t.promptDelay:900,promptAutoHide:"number"==typeof t.promptAutoHide?t.promptAutoHide:12e3,showPrompt:!1!==t.showPrompt,dismissForSession:!1!==t.dismissForSession,respectHashNavigation:!1!==t.respectHashNavigation,minDocumentHeightRatio:"number"==typeof t.minDocumentHeightRatio?t.minDocumentHeightRatio:2,debug:!!t.debug},o=document.querySelector(n.articleSelector);if(o){var r=Array.prototype.slice.call(o.querySelectorAll(n.headingSelector)).filter(function(e){return!!e.id});if(r.length&&!(document.documentElement.scrollHeight/Math.max(window.innerHeight,1)<n.minDocumentHeightRatio)){var i,a=function(e){if(!e)return"/";var t=e.split("?")[0].split("#")[0].replace(/index\.html$/,"");return"/"!==t&&/\/$/.test(t)&&(t=t.slice(0,-1)),t||"/"}(window.location.pathname),s="bookmark:"+n.siteId+":"+a,l="bookmark-dismissed:"+n.siteId+":"+a,c="bookmark-cleanup:"+n.siteId,u=Date.now(),m="",d=null,g=null,f=!1,p=document.getElementById("bookmarkToast"),v=document.getElementById("bookmarkToastTitle"),h=document.getElementById("bookmarkToastMeta"),w=document.getElementById("bookmarkToastProgress"),k=document.getElementById("bookmarkToastClose"),y=document.getElementById("bookmarkToastResume"),S=document.getElementById("bookmarkToastRestart"),I=!!(p&&v&&h&&w&&k&&y&&S),E=[];window.addEventListener("load",D,{passive:!0}),window.addEventListener("resize",function(){setTimeout(D,150)},{passive:!0}),window.addEventListener("storage",function(e){if(e.key===s&&e.newValue)try{var t=JSON.parse(e.newValue);t&&t.progress>x()&&(m=JSON.stringify([t.sectionId,t.sectionTitle,t.progress,t.scrollY,t.completed]))}catch(e){}}),function(){if(function(){var e=A(c);if(!e)return!0;var t=parseInt(e,10);return!t||Date.now()-t>60*n.cleanupIntervalHours*60*1e3}()){var e="bookmark:"+n.siteId+":",t=24*n.cleanupAgeDays*60*60*1e3;try{var _keys=[];for(var o=0;o<localStorage.length;o++){var r=localStorage.key(o);if(r&&0===r.indexOf(e))_keys.push(r)}_keys.forEach(function(r){try{var i=JSON.parse(localStorage.getItem(r));i&&i.savedAt&&i.path&&!(Date.now()-i.savedAt>t)||localStorage.removeItem(r)}catch(e){localStorage.removeItem(r)}})}catch(e){}T(c,String(Date.now()))}}(),C(),n.showPrompt&&I&&(I&&(p.addEventListener("mouseenter",function(){f=!0,H()}),p.addEventListener("mouseleave",function(){f=!1,L()}),p.addEventListener("focusin",function(){f=!0,H()}),p.addEventListener("focusout",function(){f=!1,L()})),function(){if(n.showPrompt&&I){var e=N();e&&_(e)&&setTimeout(function(){var e,t=N();t&&_(t)&&(e=t,I&&(k.onclick=function(){R(),F()},S.onclick=function(){R(),B(s),F()},y.onclick=function(){R(),F(),J(e)}),function(e){I&&n.showPrompt&&(f=!1,v.textContent=e.sectionTitle||"Последнее место чтения",h.textContent=O(e),w.style.width=Math.max(0,Math.min(100,e.progress||0))+"%",p.hidden=!1,requestAnimationFrame(function(){requestAnimationFrame(function(){p.classList.add("show")})}),L())}(t))},n.promptDelay)}}()),window.addEventListener("scroll",function(){C(),d||(d=setTimeout(function(){d=null,M(!1)},n.scrollThrottle))},{passive:!0}),i=setInterval(function(){M(!1)},n.periodicSaveInterval),document.addEventListener("visibilitychange",function(){"hidden"===document.visibilityState&&M(!0)}),window.addEventListener("beforeunload",function(){M(!0)}),window.BookmarkEngine=window.BookmarkEngine||{},window.BookmarkEngine._initialized=!0,window.BookmarkEngine.saveNow=function(){M(!0)},window.BookmarkEngine.clearCurrent=function(){B(s)},window.BookmarkEngine.getCurrent=function(){return N()},window.BookmarkEngine.getAllForSite=function(){var e="bookmark:"+n.siteId+":",t=[];try{for(var o=0;o<localStorage.length;o++){var r=localStorage.key(o);if(r&&0===r.indexOf(e))try{var i=JSON.parse(localStorage.getItem(r));i&&i.path&&i.savedAt&&"number"==typeof i.progress&&t.push(i)}catch(e){}}}catch(e){}return t.sort(function(e,t){return(t.savedAt||0)-(e.savedAt||0)})},window.BookmarkEngine.getInProgressArticles=function(){return window.BookmarkEngine.getAllForSite().filter(function(e){return!e.completed})},window.BookmarkEngine.getCompletedArticles=function(){return window.BookmarkEngine.getAllForSite().filter(function(e){return!!e.completed})},window.BookmarkEngine.getResumeCandidate=function(){var e=window.BookmarkEngine.getInProgressArticles();return e.length?e[0]:null},window.BookmarkEngine.markCompleted=function(){try{if(Date.now()-u<n.minTimeOnPage)return;var e=N();if(!e)return;e.completed=!0,e.completedAt=Date.now(),localStorage.setItem(s,JSON.stringify(e))}catch(e){}},window.BookmarkEngine.clearAllForSite=function(){var e="bookmark:"+n.siteId+":";try{for(var t=[],o=0;o<localStorage.length;o++){var r=localStorage.key(o);r&&0===r.indexOf(e)&&t.push(r)}t.forEach(function(e){localStorage.removeItem(e)})}catch(e){}},window.BookmarkEngine.destroy=function(){H(),d&&clearTimeout(d),i&&clearInterval(i)}}}}}function T(e,t){try{return localStorage.setItem(e,t),!0}catch(n){try{return sessionStorage.setItem(e,t),!0}catch(e){return!1}}}function A(e){try{return localStorage.getItem(e)||sessionStorage.getItem(e)}catch(e){return null}}function B(e){try{localStorage.removeItem(e)}catch(e){}}function b(){return Math.max(0,document.documentElement.scrollHeight-window.innerHeight)}function x(){var e=b();return e<=0?0:Math.max(0,Math.min(100,Math.round(window.scrollY/e*100)))}function P(e){return(e||"").replace(/\s+/g," ").replace(/[«»"']/g,"").replace(/[—–-]/g,"-").trim().toLowerCase()}function D(){E=r.map(function(e){return{el:e,top:e.offsetTop}})}function C(){E.length||D();for(var e=window.scrollY+function(){var e="";try{e=getComputedStyle(document.documentElement).scrollPaddingTop}catch(e){}var t=parseFloat(e);return Number.isFinite(t)?t:0}()+.25*window.innerHeight,t=E[0],n=0;n<E.length&&E[n].top<=e;n++)t=E[n];return t?t.el:r[0]}function M(e){var t=function(){var e=C();if(!e)return null;var t=x();return{version:4,siteId:n.siteId,path:a,title:document.title||"",sectionId:e.id||"",sectionTitle:(e.textContent||"").trim(),progress:t,scrollY:Math.round(window.scrollY),completed:t>=n.completedAtProgress,savedAt:Date.now()}}();if(t&&(e||function(e){return!(!e||Date.now()-u<n.minTimeOnPage||window.scrollY<n.minScrollToSave||e.progress<n.minProgressToSave||e.progress>n.maxProgressToSave)}(t))){var o=JSON.stringify([t.sectionId,t.sectionTitle,t.progress,t.scrollY,t.completed]);if(e||o!==m)T(s,JSON.stringify(t))&&(m=o,function(){if(n.debug)try{console.log.apply(console,["[bookmark]"].concat([].slice.call(arguments)))}catch(e){}}("saved",t))}}function N(){var e=A(s);if(!e)return null;try{var t=JSON.parse(e);return t&&"object"==typeof t&&(t.path&&t.savedAt)?t:null}catch(e){return null}}function O(e){var t,n,o,r,i="number"==typeof e.progress?e.progress:0,a=e.savedAt?(t=e.savedAt,n=Date.now()-t,r=24*(o=36e5),n<o?Math.max(1,Math.round(n/6e4))+" мин назад":n<r?Math.round(n/o)+" ч назад":n<2*r?"вчера":Math.round(n/r)+" дн назад"):"";return i>0&&a?"Остановились примерно на "+i+"% · "+a:i>0?"Вы остановились примерно на "+i+"%":"Продолжить с места, где остановились"}function H(){g&&(clearTimeout(g),g=null)}function F(){I&&!p.hidden&&(H(),p.classList.remove("show"),setTimeout(function(){p.hidden=!0},400))}function L(){H(),n.promptAutoHide<=0||f||(g=setTimeout(function(){F()},n.promptAutoHide))}function R(){n.dismissForSession&&function(e,t){try{sessionStorage.setItem(e,t)}catch(e){}}(l,"1")}function Y(){return!!n.dismissForSession&&"1"===function(e){try{return sessionStorage.getItem(e)}catch(e){return null}}(l)}function J(e){var t=function(e){if(!e)return null;if(e.sectionId){var t=document.getElementById(e.sectionId);if(t)return t}if(e.sectionTitle){for(var n=P(e.sectionTitle),o=null,i=0;i<r.length;i++){var a=P(r[i].textContent);if(a===n)return r[i];(a.includes(n)||n.includes(a))&&(o=o||r[i])}if(o)return o}return null}(e);if(t)return t.scrollIntoView({behavior:"smooth",block:"start"}),setTimeout(function(){M(!0)},1200),!0;if("number"==typeof e.scrollY&&e.scrollY>0){var n=Math.max(0,Math.min(e.scrollY,b()));return window.scrollTo({top:n,behavior:"smooth"}),setTimeout(function(){M(!0)},1200),!0}return!1}function _(e){return!!e&&(!!function(e){return!(!e||!e.savedAt)&&Date.now()-e.savedAt<=24*n.maxAgeDays*60*60*1e3}(e)&&(!Y()&&((!n.respectHashNavigation||!window.location.hash)&&(!(x()>4)&&(!((e.progress||0)<n.minProgressToSave)&&(!((e.progress||0)>n.maxProgressToSave)&&!e.completed))))))}}()
+/**
+ * BookmarkEngine — persistence/resume adapter for GBReaderState.
+ *
+ * Measurement belongs exclusively to js/reader-state.js. This adapter keeps
+ * the established BookmarkEngine API and resume toast without a second scroll,
+ * resize, rAF or whole-document progress owner.
+ */
+(function () {
+  'use strict';
+
+  if (window.BookmarkEngine && window.BookmarkEngine._initialized) return;
+
+  var siteConfig = window.SITE_CONFIG || {};
+  var featureConfig = (siteConfig.features && siteConfig.features.bookmarks) || {};
+  if (featureConfig.enabled === false) return;
+
+  var config = {
+    siteId: (siteConfig.site && siteConfig.site.id) || siteConfig.siteId || 'default-site',
+    articleSelector: featureConfig.articleSelector || 'article',
+    headingSelector: featureConfig.headingSelector || 'h2[id]',
+    minProgressToSave: typeof featureConfig.minProgressToSave === 'number' ? featureConfig.minProgressToSave : 6,
+    maxProgressToSave: typeof featureConfig.maxProgressToSave === 'number' ? featureConfig.maxProgressToSave : 96,
+    maxAgeDays: typeof featureConfig.maxAgeDays === 'number' ? featureConfig.maxAgeDays : 14,
+    cleanupAgeDays: typeof featureConfig.cleanupAgeDays === 'number' ? featureConfig.cleanupAgeDays : 45,
+    cleanupIntervalHours: typeof featureConfig.cleanupIntervalHours === 'number' ? featureConfig.cleanupIntervalHours : 24,
+    promptDelay: typeof featureConfig.promptDelay === 'number' ? featureConfig.promptDelay : 900,
+    promptAutoHide: typeof featureConfig.promptAutoHide === 'number' ? featureConfig.promptAutoHide : 12000,
+    showPrompt: featureConfig.showPrompt !== false,
+    dismissForSession: featureConfig.dismissForSession !== false,
+    respectHashNavigation: featureConfig.respectHashNavigation !== false,
+    debug: !!featureConfig.debug
+  };
+
+  function normalizePath(value) {
+    var path = String(value || '/').split('?')[0].split('#')[0].replace(/index\.html$/i, '');
+    if (path !== '/') path = path.replace(/\/+$/, '');
+    return path || '/';
+  }
+
+  var routePath = normalizePath(window.location && window.location.pathname);
+  var legacyPrefix = 'bookmark:' + config.siteId + ':';
+  var legacyKey = legacyPrefix + routePath;
+  var canonicalPrefix = 'gb:reader-state:v1:' + config.siteId + ':';
+  var canonicalKey = canonicalPrefix + routePath;
+  var dismissKey = 'bookmark-dismissed:' + config.siteId + ':' + routePath;
+  var cleanupKey = 'bookmark-cleanup:' + config.siteId;
+  var reader = window.GBReaderState || window.ReaderState || null;
+  var autoHideTimer = 0;
+  var promptHovered = false;
+
+  function getStorage(key) {
+    try { return localStorage.getItem(key) || sessionStorage.getItem(key); } catch (_) { return null; }
+  }
+
+  function setStorage(key, value) {
+    try { localStorage.setItem(key, value); return true; }
+    catch (_) {
+      try { sessionStorage.setItem(key, value); return true; } catch (_) { return false; }
+    }
+  }
+
+  function removeStorage(key) {
+    try { localStorage.removeItem(key); } catch (_) {}
+    try { sessionStorage.removeItem(key); } catch (_) {}
+  }
+
+  function parse(value) {
+    try { return value ? JSON.parse(value) : null; } catch (_) { return null; }
+  }
+
+  function getCurrent() {
+    if (reader && typeof reader.getSaved === 'function') {
+      var saved = reader.getSaved();
+      if (saved) return saved;
+    }
+    return parse(getStorage(canonicalKey)) || parse(getStorage(legacyKey));
+  }
+
+  function saveNow(force) {
+    if (reader && typeof reader.saveSnapshot === 'function') return reader.saveSnapshot(force !== false);
+    return null;
+  }
+
+  function clearCurrent() {
+    removeStorage(canonicalKey);
+    removeStorage(legacyKey);
+  }
+
+  function scanPrefix(prefix) {
+    var rows = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (!key || key.indexOf(prefix) !== 0) continue;
+        var value = parse(localStorage.getItem(key));
+        if (!value || typeof value !== 'object') continue;
+        var path = normalizePath(value.routePath || value.path || key.slice(prefix.length));
+        var progress = Number(value.progress != null ? value.progress : value.pc);
+        var savedAt = Number(value.savedAt || value.t);
+        if (!path || !Number.isFinite(progress) || !Number.isFinite(savedAt)) continue;
+        rows.push(Object.assign({}, value, {
+          path: path,
+          routePath: path,
+          progress: progress,
+          savedAt: savedAt,
+          completed: !!value.completed
+        }));
+      }
+    } catch (_) {}
+    return rows;
+  }
+
+  function getAllForSite() {
+    var byPath = new Map();
+    scanPrefix(legacyPrefix).concat(scanPrefix(canonicalPrefix)).forEach(function (row) {
+      var previous = byPath.get(row.path);
+      if (!previous || Number(row.savedAt) > Number(previous.savedAt)) byPath.set(row.path, row);
+    });
+    return Array.from(byPath.values()).sort(function (a, b) { return Number(b.savedAt || 0) - Number(a.savedAt || 0); });
+  }
+
+  function cleanupOld() {
+    var previous = Number(getStorage(cleanupKey));
+    if (previous && Date.now() - previous < config.cleanupIntervalHours * 3600000) return;
+    var cutoff = Date.now() - config.cleanupAgeDays * 86400000;
+    [legacyPrefix, canonicalPrefix].forEach(function (prefix) {
+      try {
+        var keys = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (key && key.indexOf(prefix) === 0) keys.push(key);
+        }
+        keys.forEach(function (key) {
+          var value = parse(localStorage.getItem(key));
+          var savedAt = value && Number(value.savedAt || value.t);
+          if (!savedAt || savedAt < cutoff) localStorage.removeItem(key);
+        });
+      } catch (_) {}
+    });
+    setStorage(cleanupKey, String(Date.now()));
+  }
+
+  function relativeTime(savedAt) {
+    var age = Date.now() - Number(savedAt || 0);
+    var hour = 3600000;
+    var day = 24 * hour;
+    if (age < hour) return Math.max(1, Math.round(age / 60000)) + ' мин назад';
+    if (age < day) return Math.round(age / hour) + ' ч назад';
+    if (age < 2 * day) return 'вчера';
+    return Math.round(age / day) + ' дн назад';
+  }
+
+  function promptEligible(saved) {
+    if (!saved || !saved.savedAt || saved.completed) return false;
+    if (Date.now() - saved.savedAt > config.maxAgeDays * 86400000) return false;
+    if (saved.progress < config.minProgressToSave || saved.progress > config.maxProgressToSave) return false;
+    if (config.respectHashNavigation && window.location.hash) return false;
+    if (reader && typeof reader.getProgress === 'function' && reader.getProgress() > 4) return false;
+    if (config.dismissForSession) {
+      try { if (sessionStorage.getItem(dismissKey) === '1') return false; } catch (_) {}
+    }
+    if (reader && typeof reader.isResumeAcknowledged === 'function' && reader.isResumeAcknowledged()) return false;
+    if (saved.dismissedAt && Date.now() - saved.dismissedAt < 86400000) return false;
+    return true;
+  }
+
+  function promptElements() {
+    var toast = document.getElementById('bookmarkToast');
+    var title = document.getElementById('bookmarkToastTitle');
+    var meta = document.getElementById('bookmarkToastMeta');
+    var progress = document.getElementById('bookmarkToastProgress');
+    var close = document.getElementById('bookmarkToastClose');
+    var resume = document.getElementById('bookmarkToastResume');
+    var restart = document.getElementById('bookmarkToastRestart');
+    if (!toast || !title || !meta || !progress || !close || !resume || !restart) return null;
+    return { toast: toast, title: title, meta: meta, progress: progress, close: close, resume: resume, restart: restart };
+  }
+
+  function clearAutoHide() {
+    if (autoHideTimer) clearTimeout(autoHideTimer);
+    autoHideTimer = 0;
+  }
+
+  function hidePrompt(elements) {
+    if (!elements || elements.toast.hidden) return;
+    clearAutoHide();
+    elements.toast.classList.remove('show');
+    setTimeout(function () { elements.toast.hidden = true; }, 400);
+  }
+
+  function scheduleAutoHide(elements) {
+    clearAutoHide();
+    if (config.promptAutoHide <= 0 || promptHovered) return;
+    autoHideTimer = setTimeout(function () { hidePrompt(elements); }, config.promptAutoHide);
+  }
+
+  function acknowledgeResume() {
+    if (config.dismissForSession) {
+      try { sessionStorage.setItem(dismissKey, '1'); } catch (_) {}
+    }
+    if (reader && typeof reader.markResumeAcknowledged === 'function') reader.markResumeAcknowledged();
+  }
+
+  function showPrompt(saved) {
+    var elements = promptElements();
+    if (!elements || !promptEligible(saved)) return;
+
+    elements.title.textContent = saved.sectionTitle || 'Последнее место чтения';
+    elements.meta.textContent = 'Остановились примерно на ' + Math.round(saved.progress) + '% · ' + relativeTime(saved.savedAt);
+    elements.progress.style.width = Math.max(0, Math.min(100, saved.progress || 0)) + '%';
+    elements.toast.hidden = false;
+    requestAnimationFrame(function () { requestAnimationFrame(function () { elements.toast.classList.add('show'); }); });
+
+    elements.close.onclick = function () {
+      acknowledgeResume();
+      if (reader && typeof reader.dismissResumeForDay === 'function') reader.dismissResumeForDay();
+      hidePrompt(elements);
+    };
+    elements.restart.onclick = function () {
+      acknowledgeResume();
+      clearCurrent();
+      hidePrompt(elements);
+    };
+    elements.resume.onclick = function () {
+      acknowledgeResume();
+      hidePrompt(elements);
+      if (reader && typeof reader.restoreSnapshot === 'function') reader.restoreSnapshot(saved);
+    };
+
+    elements.toast.addEventListener('mouseenter', function () { promptHovered = true; clearAutoHide(); });
+    elements.toast.addEventListener('mouseleave', function () { promptHovered = false; scheduleAutoHide(elements); });
+    elements.toast.addEventListener('focusin', function () { promptHovered = true; clearAutoHide(); });
+    elements.toast.addEventListener('focusout', function () { promptHovered = false; scheduleAutoHide(elements); });
+    scheduleAutoHide(elements);
+  }
+
+  function init() {
+    var article = document.querySelector(config.articleSelector);
+    if (!article || !reader) return;
+    reader.configure({
+      siteId: config.siteId,
+      headingSelector: config.headingSelector,
+      minProgressToSave: config.minProgressToSave,
+      maxProgressToSave: config.maxProgressToSave,
+      debug: config.debug
+    }).init();
+    cleanupOld();
+    if (config.showPrompt) {
+      setTimeout(function () {
+        var saved = getCurrent();
+        if (promptEligible(saved)) showPrompt(saved);
+      }, config.promptDelay);
+    }
+  }
+
+  var api = window.BookmarkEngine || {};
+  api._initialized = true;
+  api.saveNow = saveNow;
+  api.clearCurrent = clearCurrent;
+  api.getCurrent = getCurrent;
+  api.getAllForSite = getAllForSite;
+  api.getInProgressArticles = function () { return getAllForSite().filter(function (row) { return !row.completed; }); };
+  api.getCompletedArticles = function () { return getAllForSite().filter(function (row) { return !!row.completed; }); };
+  api.getResumeCandidate = function () { return api.getInProgressArticles()[0] || null; };
+  api.markCompleted = function () {
+    var saved = saveNow(true) || getCurrent();
+    if (!saved) return;
+    saved.completed = true;
+    saved.completedAt = Date.now();
+    saved.savedAt = Date.now();
+    setStorage(canonicalKey, JSON.stringify(saved));
+  };
+  api.clearAllForSite = function () {
+    [legacyPrefix, canonicalPrefix].forEach(function (prefix) {
+      try {
+        var keys = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (key && key.indexOf(prefix) === 0) keys.push(key);
+        }
+        keys.forEach(function (key) { localStorage.removeItem(key); });
+      } catch (_) {}
+    });
+  };
+  api.destroy = function () { clearAutoHide(); };
+  window.BookmarkEngine = api;
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
+})();
