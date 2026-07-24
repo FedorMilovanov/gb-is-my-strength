@@ -1,0 +1,40 @@
+name: TEMP Reader Rebase Latest Main
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-reader-rebase-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact reader branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Rebase onto current main and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH=${{ github.event.pull_request.head.ref }}
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch origin main
+          echo "Rebasing onto $(git rev-parse origin/main)"
+          git rebase origin/main
+          git rm .github/workflows/_temp-reader-rebase-latest-main.yml
+          git commit -m "chore(reader): remove temporary latest-main rebase helper"
+          git diff origin/main...HEAD --check
+          test ! -e .github/workflows/_temp-reader-rebase-latest-main.yml
+          git push --force-with-lease origin HEAD:"$BRANCH"
