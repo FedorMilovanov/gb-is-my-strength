@@ -30,17 +30,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  contract:
+  production-like-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 35
     steps:
       - name: Checkout exact head
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Source authority regression
         run: node scripts/legacy-source-authority-regression-test.js
 
-      - name: Gill strict-native source audit
-        run: node scripts/gill-context-visual-parity-audit.js
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Gill strict-native dist audit
+        run: node scripts/gill-context-visual-parity-audit.js --require-dist
+
+      - name: Full static publication gate
+        run: npm run validate:static-publication:light
+
+      - name: Ensure proof is read-only
+        run: git diff --exit-code
