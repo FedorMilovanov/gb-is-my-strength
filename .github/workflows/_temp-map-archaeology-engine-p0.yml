@@ -6,6 +6,11 @@ on:
     paths:
       - 'scripts/materialize-map-archaeology-engine-p0.mjs'
       - '.github/workflows/_temp-map-archaeology-engine-p0.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/materialize-map-archaeology-engine-p0.mjs'
+      - '.github/workflows/_temp-map-archaeology-engine-p0.yml'
 
 permissions:
   contents: write
@@ -16,7 +21,7 @@ concurrency:
 
 jobs:
   materialize:
-    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.ref == 'refs/heads/agent/map-archaeology-engine-p0'
+    if: github.repository == 'FedorMilovanov/gb-is-my-strength' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/map-archaeology-engine-p0'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
