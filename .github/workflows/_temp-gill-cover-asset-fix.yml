@@ -47,17 +47,14 @@ jobs:
               if old in text:
                   paths.append(path.as_posix())
                   path.write_text(text.replace(old,new),encoding='utf-8')
-          expected={
-              'src/components/article-pilots/gill-series/gillSeriesData.ts',
-              'articles/dzhon-gill-spravochnik/index.html',
-          }
+          expected={'src/components/article-pilots/gill-series/gillSeriesData.ts'}
           if set(paths) != expected:
               raise SystemExit(f'old cover reference scope {sorted(paths)} != {sorted(expected)}')
           print('updated:', ', '.join(sorted(paths)))
           PY
           test -f images/og-dzhon-gill-spravochnik.webp
           git diff --check
-          test "$(git diff --name-only | wc -l | tr -d ' ')" = '2'
+          test "$(git diff --name-only | wc -l | tr -d ' ')" = '1'
 
       - name: Install and prove production dist asset
         run: |
@@ -69,14 +66,14 @@ jobs:
           grep -q 'og-dzhon-gill-spravochnik.webp' dist/articles/dzhon-gill-spravochnik/index.html
           git diff --check
 
-      - name: Commit exact two-file fix
+      - name: Commit exact one-file fix
         shell: bash
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/components/article-pilots/gill-series/gillSeriesData.ts articles/dzhon-gill-spravochnik/index.html
-          test "$(git diff --cached --name-only | wc -l | tr -d ' ')" = '2'
+          git add src/components/article-pilots/gill-series/gillSeriesData.ts
+          test "$(git diff --cached --name-only | wc -l | tr -d ' ')" = '1'
           git diff --cached --check
           git commit -m 'fix(gill): use canonical spravochnik cover asset'
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
