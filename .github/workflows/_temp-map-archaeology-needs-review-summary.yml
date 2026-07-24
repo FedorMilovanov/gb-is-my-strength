@@ -1,0 +1,68 @@
+name: TEMP Map Archaeology Needs Review Summary
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches: [main]
+    paths:
+      - scripts/_temp-map-archaeology-needs-review-summary.mjs
+      - scripts/map-archaeology-source-registry-audit.js
+      - .github/workflows/_temp-map-archaeology-needs-review-summary.yml
+
+concurrency:
+  group: temp-map-archaeology-needs-review-summary-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'agent/map-archaeology-imported-verification' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Materialize needs-review summary counter
+        run: node scripts/_temp-map-archaeology-needs-review-summary.mjs --write
+      - name: Verify exact audit-only change
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/_temp-map-archaeology-needs-review-summary.mjs
+          node --check scripts/map-archaeology-source-registry-audit.js
+          node scripts/_temp-map-archaeology-needs-review-summary.mjs
+          node scripts/map-archaeology-source-registry-audit.js
+          node scripts/map-archaeology-category-coverage-audit.js
+          git diff --check
+          mapfile -t changed < <(git diff --name-only)
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "scripts/map-archaeology-source-registry-audit.js"
+          node - <<'NODE'
+          const report = require('./reports/map-archaeology-source-registry.json');
+          if (report.summary.verified !== 93) throw new Error(`verified=${report.summary.verified}`);
+          if (report.summary.needsReview !== 1) throw new Error(`needsReview=${report.summary.needsReview}`);
+          if (report.summary.imported !== 0) throw new Error(`imported=${report.summary.imported}`);
+          console.log('PASS 93 verified / 1 needs-review / 0 imported');
+          NODE
+      - name: Commit exact audit summary change
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/map-archaeology-source-registry-audit.js
+          git diff --cached --check
+          git commit -m "audit(karty): expose needs-review source count"
+          git push origin "HEAD:${HEAD_REF}"
