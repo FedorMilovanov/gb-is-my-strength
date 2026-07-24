@@ -92,10 +92,21 @@ const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
           await new Promise(r => setTimeout(r, 120));
           const items = document.querySelectorAll('.me-sci-item').length;
           const statuses = [...document.querySelectorAll('.me-sci-status')].map(el => el.textContent.trim()).filter(Boolean);
-          const archFooter = !!document.querySelector('.me-arch-footer');
-          const sourceBadges = document.querySelectorAll('.me-source-badge').length;
-          const moreButton = !!document.querySelector('.me-arch-more');
-          return {tested:true, ok:items>0 && statuses.length>0 && archFooter && sourceBadges>0, place:place.id, items, statuses:statuses.slice(0,3), archFooter, sourceBadges, moreButton};
+          const legacyFooter = !!document.querySelector('.me-arch-footer');
+          const projectionRoot = !!document.querySelector('[data-archaeology-projection-root]');
+          const sourceBadges = document.querySelectorAll('.map-arch-badge').length;
+          const sourceRecords = document.querySelectorAll('[data-source-id][data-evidence-use][data-source-status][data-source-verification]').length;
+          return {
+            tested:true,
+            ok:items>0 && statuses.length>0 && projectionRoot && sourceBadges>0 && sourceRecords>0 && !legacyFooter,
+            place:place.id,
+            items,
+            statuses:statuses.slice(0,3),
+            projectionRoot,
+            sourceBadges,
+            sourceRecords,
+            legacyFooter,
+          };
         } catch (e) { return {tested:true, ok:false, reason:String(e && e.message || e)}; }
       }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const keyboard = await page.evaluate(async () => {
