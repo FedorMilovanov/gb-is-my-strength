@@ -2,19 +2,19 @@ name: Map Archaeology Source Registry
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
     branches: [main]
     paths:
       - 'karty/_data/archaeology-source-registry.json'
       - 'karty/_data/archaeology-source-provenance.json'
+      - 'karty/avraam/route.json'
       - 'scripts/map-archaeology-source-registry-audit.js'
-      - 'scripts/map-archaeology-provenance-materialize.mjs'
       - '.github/workflows/map-archaeology-source-registry.yml'
   push:
     branches: [main]
     paths:
       - 'karty/_data/archaeology-source-registry.json'
       - 'karty/_data/archaeology-source-provenance.json'
+      - 'karty/avraam/route.json'
       - 'scripts/map-archaeology-source-registry-audit.js'
       - '.github/workflows/map-archaeology-source-registry.yml'
   workflow_dispatch:
@@ -27,59 +27,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  materialize-provenance:
-    if: >-
-      github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.labels.*.name, 'autofix') &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.head_ref == 'agent/map-archaeology-provenance-v2'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact pull request branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 1
-      - name: Set up Node 22.12
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.12.0'
-      - name: Apply guarded catalog migration
-        run: node scripts/map-archaeology-provenance-materialize.mjs --write
-      - name: Verify exact registry-only scope
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check scripts/map-archaeology-provenance-materialize.mjs
-          node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
-          node scripts/map-archaeology-source-registry-audit.js
-          git diff --check
-          mapfile -t changed < <(git diff --name-only)
-          if [[ ${#changed[@]} -eq 0 ]]; then
-            echo 'Catalog migration already materialized.'
-            exit 0
-          fi
-          printf 'changed[%s]=%s\n' "${#changed[@]}" "${changed[*]}"
-          test "${#changed[@]}" -eq 1
-          test "${changed[0]}" = 'karty/_data/archaeology-source-registry.json'
-      - name: Commit exact catalog migration
-        shell: bash
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          set -euo pipefail
-          if git diff --quiet; then
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add karty/_data/archaeology-source-registry.json
-          git diff --cached --check
-          git commit -m 'research(karty): align archaeology catalog with provenance'
-          git push origin "HEAD:${HEAD_REF}"
-
   registry-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -95,9 +42,9 @@ jobs:
       - name: Validate source syntax
         run: |
           node --check scripts/map-archaeology-source-registry-audit.js
-          node --check scripts/map-archaeology-provenance-materialize.mjs
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-provenance.json','utf8'))"
+          node -e "JSON.parse(require('node:fs').readFileSync('karty/avraam/route.json','utf8'))"
       - name: Enforce provenance, route and YEC separation
         run: node scripts/map-archaeology-source-registry-audit.js
       - name: Lint workflow
