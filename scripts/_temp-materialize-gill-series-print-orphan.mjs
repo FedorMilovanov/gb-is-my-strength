@@ -16,7 +16,7 @@ let audit = fs.readFileSync(auditPath, 'utf8');
 const auditMarker = 'series overview split across pages';
 if (!audit.includes(auditMarker)) {
   const needle = '    known_headings = {\n';
-  const insertion = `    series_label_pages = [\n        i for i, value in enumerate(text_pages)\n        if \"СЕРИЯ О ДЖОНЕ ГИЛЛЕ\" in normalize(value)\n    ]\n    series_intro_pages = [\n        i for i, value in enumerate(text_pages)\n        if \"БИОГРАФИЯ ДЖОНА ГИЛЛА\" in normalize(value)\n    ]\n    if (\n        not series_label_pages\n        or not series_intro_pages\n        or not set(series_label_pages) & set(series_intro_pages)\n    ):\n        failures.append(\n            \"series overview split across pages: \"\n            f\"label={series_label_pages}, intro={series_intro_pages}\"\n        )\n\n`;
+  const insertion = `    series_label_pages = [\n        i for i, value in enumerate(text_pages)\n        if \"СЕРИЯ О ДЖОНЕ ГИЛЛЕ\" in normalize(value)\n    ]\n    series_intro_pages = [\n        i for i, value in enumerate(text_pages)\n        if (\n            \"СЕРИЯ О ДЖОНЕ ГИЛЛЕ СОСТОИТ\" in normalize(value)\n            or \"БИОГРАФИЯ ДЖОНА ГИЛЛА\" in normalize(value)\n        )\n    ]\n    if (\n        not series_label_pages\n        or not series_intro_pages\n        or not set(series_label_pages) & set(series_intro_pages)\n    ):\n        failures.append(\n            \"series overview split across pages: \"\n            f\"label={series_label_pages}, intro={series_intro_pages}\"\n        )\n\n`;
   if (!audit.includes(needle)) throw new Error('Audit insertion point not found');
   audit = audit.replace(needle, insertion + needle);
   fs.writeFileSync(auditPath, audit, 'utf8');
