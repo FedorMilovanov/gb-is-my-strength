@@ -17,6 +17,11 @@
  * On an iPhone 320 the subtitle receives the full content width, including when
  * glossary markup is injected, instead of enlarging the document.
  *
+ * Part III has two additional route-owned narrow layouts: the opening
+ * three-column audience matrix and the final summary rows. At iPhone 320 the
+ * matrix body becomes a vertical record list while its compact header remains
+ * three equal shrinkable columns; final summary labels stack over their text.
+ *
  * The mobile TOC keeps progress and sharing available, so at <=359px the
  * persistent bar may drop those duplicate controls (plus the redundant Up
  * action) instead of forcing Play/Save and Share outside the viewport.
@@ -52,6 +57,42 @@
       min-inline-size: 0;
       overflow-wrap: anywhere;
       word-break: normal;
+    }
+
+    body.nagornaya-chast-3-page #main-content .grid.grid-cols-3.bg-stone-900 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.nagornaya-chast-3-page #main-content .grid.grid-cols-3.bg-stone-900 > * {
+      min-inline-size: 0;
+      padding-inline: 8px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    body.nagornaya-chast-3-page #main-content .grid.grid-cols-3:not(.bg-stone-900) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.nagornaya-chast-3-page #main-content .grid.grid-cols-3:not(.bg-stone-900) > * {
+      min-inline-size: 0;
+      padding-inline: 16px;
+      overflow-wrap: anywhere;
+    }
+
+    body.nagornaya-chast-3-page #main-content .bg-purple-800 .space-y-4 > .flex {
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    body.nagornaya-chast-3-page #main-content .bg-purple-800 .space-y-4 > .flex > span {
+      min-inline-size: 0;
+      max-inline-size: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    body.nagornaya-chast-3-page #main-content .bg-purple-800 .space-y-4 > .flex > .w-32 {
+      inline-size: auto;
     }
 
     body.nagornaya-page #main-content .group,

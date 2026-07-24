@@ -10,6 +10,7 @@ const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const ASSET = 'js/nagornaya-bar-extras.js';
 const COMPACT_COMPONENT = 'src/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';
+const CHAST3_PAGE = 'src/pages/nagornaya/chast-3/index.astro';
 const COMPACT_IMPORT = "import NagornayaCompactBottomBar from '@/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';";
 const assetAbs = path.join(ROOT, ASSET);
 const expectedHash = crypto.createHash('md5').update(fs.readFileSync(assetAbs)).digest('hex').slice(0, 8);
@@ -40,6 +41,8 @@ function assertCompactFooterContract(rel) {
 }
 
 const compact = read(COMPACT_COMPONENT);
+const chast3Page = read(CHAST3_PAGE);
+assert.match(chast3Page, /<body\s+class="[^"]*\bnagornaya-chast-3-page\b/, `${CHAST3_PAGE}: Part III route owner class is missing`);
 assert.match(compact, /\.gtip:not\(\.gb-floating-tip\)[\s\S]*?display:\s*none\s*!important/, `${COMPACT_COMPONENT}: closed glossary cards must not contribute layout width`);
 assert.match(compact, /@media\s*\(max-width:\s*359px\)/, `${COMPACT_COMPONENT}: 320px media contract is missing`);
 for (const selector of ['.bar-progress', '.bar-divider', '#barUpBtn', '#barShareBtn']) {
@@ -52,6 +55,13 @@ assert.match(compact, /#main-content \.overflow-x-auto[\s\S]*?overflow-y:\s*hidd
 assert.match(compact, /#main-content \.overflow-x-auto > table\.min-w-96[\s\S]*?min-inline-size:\s*100%\s*!important/, `${COMPACT_COMPONENT}: legacy 384px comparison tables must collapse to the available width on iPhone 320`);
 assert.match(compact, /#main-content \.overflow-x-auto > table\.min-w-96[\s\S]*?table-layout:\s*fixed/, `${COMPACT_COMPONENT}: narrow two-column comparison tables need deterministic column geometry`);
 assert.match(compact, /table\.min-w-96 th,[\s\S]*?table\.min-w-96 td[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: narrow comparison cells must wrap rather than enlarge the root document`);
+assert.match(compact, /body\.nagornaya-chast-3-page #main-content \.grid\.grid-cols-3\.bg-stone-900[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, `${COMPACT_COMPONENT}: Part III matrix header must use three shrinkable columns`);
+assert.match(compact, /body\.nagornaya-chast-3-page #main-content \.grid\.grid-cols-3\.bg-stone-900 > \*[\s\S]*?padding-inline:\s*8px[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: Part III matrix header cells must shrink and wrap at 320px`);
+assert.match(compact, /body\.nagornaya-chast-3-page #main-content \.grid\.grid-cols-3:not\(\.bg-stone-900\)[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/, `${COMPACT_COMPONENT}: Part III matrix records must stack to one column at 320px`);
+assert.match(compact, /body\.nagornaya-chast-3-page #main-content \.grid\.grid-cols-3:not\(\.bg-stone-900\) > \*[\s\S]*?min-inline-size:\s*0[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: Part III stacked matrix cells must own and wrap their inline width`);
+assert.match(compact, /body\.nagornaya-chast-3-page #main-content \.bg-purple-800 \.space-y-4 > \.flex[\s\S]*?flex-direction:\s*column[\s\S]*?gap:\s*4px/, `${COMPACT_COMPONENT}: Part III summary rows must stack at 320px`);
+assert.match(compact, /body\.nagornaya-chast-3-page #main-content \.bg-purple-800 \.space-y-4 > \.flex > span[\s\S]*?max-inline-size:\s*100%[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: Part III summary text must remain within the viewport`);
+assert.match(compact, /body\.nagornaya-chast-3-page #main-content \.bg-purple-800 \.space-y-4 > \.flex > \.w-32[\s\S]*?inline-size:\s*auto/, `${COMPACT_COMPONENT}: Part III summary labels must release their fixed 128px width`);
 assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?min-width:\s*0/, `${COMPACT_COMPONENT}: long flex headings must be shrinkable`);
 assert.match(compact, /#main-content \.group > \.flex > h2[\s\S]*?overflow-wrap:\s*anywhere/, `${COMPACT_COMPONENT}: long section headings need a narrow-screen wrap fallback`);
 assert.match(compact, /#main-content \.group > p\.ml-14[\s\S]*?margin-left:\s*0\s*!important/, `${COMPACT_COMPONENT}: decorative subtitle indentation must collapse on iPhone 320`);
@@ -90,4 +100,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/responsive-table containment, priority and speed-sheet contracts, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/table containment, Part III matrix/summary stacking, priority and speed-sheet contracts, adversarial v=1 rejected`);
