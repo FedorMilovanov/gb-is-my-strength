@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
+
+const browserName = process.env.MAP_ARCHAEOLOGY_BROWSER || 'chromium';
+const browserType = { chromium, firefox, webkit }[browserName];
+if (!browserType) throw new Error(`unsupported MAP_ARCHAEOLOGY_BROWSER=${browserName}`);
 
 const adapter = fs.readFileSync('karty/_engine/map-archaeology-adapter.js', 'utf8');
 const projection = {
@@ -65,7 +69,7 @@ const projection = {
   },
 };
 
-const browser = await chromium.launch({ headless: true });
+const browser = await browserType.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 const consoleErrors = [];
 page.on('console', (message) => {
@@ -133,4 +137,4 @@ assert.match(await page.locator('[data-source-id="retracted-source"]').innerText
 assert.deepEqual(consoleErrors, []);
 
 await browser.close();
-console.log(JSON.stringify({ browser: 'chromium', viewport: '390x844', tabs: ['story', 'arch', 'sci'], consoleErrors: 0 }, null, 2));
+console.log(JSON.stringify({ browser: browserName, viewport: '390x844', tabs: ['story', 'arch', 'sci'], consoleErrors: 0 }, null, 2));
