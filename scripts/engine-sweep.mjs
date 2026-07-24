@@ -424,6 +424,110 @@ for (const [id, url] of SINGLES) {
   await ctx.close();
 }
 
+
+/* ============ PRINT PAPER PALETTE + PAGINATION — REGRESSION CONTRACT ============ */
+for (const [id, url] of [
+  ['paper-gill', '/articles/dzhon-gill-chast-1-chelovek/'],
+  ['paper-book', '/articles/novoe-serdce/'],
+  ['paper-single', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],
+]) {
+  const { ctx, page } = await newPage({ width: 1240, height: 900 });
+  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await page.emulateMedia({ media: 'print' });
+  await page.waitForTimeout(300);
+
+  const paper = await page.evaluate(() => {
+    const root = document.querySelector('[data-gill-v16] .article-body, [data-reader-root] .article-body, article.article-body, article');
+    if (!root) return null;
+    const color = (value) => {
+      const nums = String(value || '').match(/[\d.]+/g)?.map(Number) || [];
+      if (nums.length < 3) return null;
+      const [r, g, b] = nums;
+      const a = nums.length > 3 ? nums[3] : 1;
+      const max = Math.max(r, g, b) / 255;
+      const min = Math.min(r, g, b) / 255;
+      const light = (max + min) / 2;
+      const delta = max - min;
+      const sat = delta === 0 ? 0 : delta / (1 - Math.abs(2 * light - 1));
+      return { r, g, b, a, sat, light, chroma: max - min };
+    };
+    const saturated = [];
+    const gradients = [];
+    for (const node of root.querySelectorAll('*')) {
+      if (/^(IMG|PICTURE|SOURCE|SVG|PATH|CANVAS|VIDEO)$/.test(node.tagName)) continue;
+      const rect = node.getBoundingClientRect();
+      if (rect.width * rect.height < 5000) continue;
+      const style = getComputedStyle(node);
+      const bg = color(style.backgroundColor);
+      if (bg && bg.a > .05 && bg.chroma > .12 && bg.sat > .28 && bg.light > .08 && bg.light < .92) {
+        saturated.push({ cls: String(node.className || node.tagName).slice(0, 90), bg: style.backgroundColor, area: Math.round(rect.width * rect.height) });
+      }
+      if (style.backgroundImage !== 'none' && /gradient\(/.test(style.backgroundImage)) {
+        gradients.push({ cls: String(node.className || node.tagName).slice(0, 90), image: style.backgroundImage.slice(0, 110) });
+      }
+    }
+    const title = root.querySelector('.biography-title');
+    const first = title ? getComputedStyle(title, '::first-letter') : null;
+    const titleStyle = title ? getComputedStyle(title) : null;
+    const hero = root.querySelector('.biography-hero');
+    const rootRect = root.getBoundingClientRect();
+    const overflowNodes = [...root.querySelectorAll('*')].map((node) => {
+      const rect = node.getBoundingClientRect();
+      return {
+        cls: String(node.className || node.tagName).slice(0, 90),
+        left: Math.round(rect.left - rootRect.left),
+        right: Math.round(rect.right - rootRect.right),
+        width: Math.round(rect.width),
+      };
+    }).filter((item) => item.left < -1 || item.right > 1).slice(0, 12);
+    const headings = [...root.querySelectorAll('h2, h3, h4')].slice(0, 20).map((node) => ({
+      text: (node.textContent || '').trim().slice(0, 60),
+      breakAfter: getComputedStyle(node).breakAfter,
+      hyphens: getComputedStyle(node).hyphens,
+      wordBreak: getComputedStyle(node).wordBreak,
+    }));
+    const tableHead = root.querySelector('table thead');
+    const tableRow = root.querySelector('table tbody tr');
+    const hebrew = root.querySelector('.hebrew-line, [lang="he"]');
+    return {
+      saturated: saturated.slice(0, 12),
+      gradients: gradients.slice(0, 12),
+      overflow: root.scrollWidth - root.clientWidth,
+      overflowNodes,
+      heroBreak: hero ? getComputedStyle(hero).breakInside : null,
+      firstLetterRatio: first && titleStyle ? Number.parseFloat(first.fontSize) / Number.parseFloat(titleStyle.fontSize) : null,
+      firstLetterFloat: first?.float || null,
+      titleHyphens: titleStyle?.hyphens || null,
+      titleWordBreak: titleStyle?.wordBreak || null,
+      headingBad: headings.filter((item) => !String(item.breakAfter).includes('avoid') || item.hyphens !== 'none' || item.wordBreak !== 'normal'),
+      tableHead: tableHead ? getComputedStyle(tableHead).display : null,
+      tableRowBreak: tableRow ? getComputedStyle(tableRow).breakInside : null,
+      hebrewDirection: hebrew ? getComputedStyle(hebrew).direction : null,
+      hebrewBidi: hebrew ? getComputedStyle(hebrew).unicodeBidi : null,
+    };
+  });
+
+  R(id, 'print: no saturated screen surfaces or decorative gradients',
+    !!paper && paper.saturated.length === 0 && paper.gradients.length === 0,
+    JSON.stringify({ saturated: paper?.saturated, gradients: paper?.gradients }));
+  R(id, 'print: normal line breaking and no horizontal overflow',
+    !!paper && paper.overflow <= 3 && paper.overflowNodes.length === 0 && paper.headingBad.length === 0,
+    JSON.stringify({ overflow: paper?.overflow, overflowNodes: paper?.overflowNodes, headingBad: paper?.headingBad }));
+  R(id, 'print: tables and RTL lines remain atomic and directional',
+    !!paper && (!paper.tableHead || paper.tableHead === 'table-header-group') &&
+      (!paper.tableRowBreak || String(paper.tableRowBreak).includes('avoid')) &&
+      (!paper.hebrewDirection || paper.hebrewDirection === 'rtl'),
+    JSON.stringify({ tableHead: paper?.tableHead, tableRowBreak: paper?.tableRowBreak, hebrewDirection: paper?.hebrewDirection, hebrewBidi: paper?.hebrewBidi }));
+  if (id === 'paper-gill') {
+    R(id, 'print: biography masthead stays together without decorative drop cap',
+      !!paper && String(paper.heroBreak).includes('avoid') &&
+        paper.firstLetterRatio !== null && paper.firstLetterRatio <= 1.2 && paper.firstLetterFloat === 'none' &&
+        paper.titleHyphens === 'none' && paper.titleWordBreak === 'normal',
+      JSON.stringify({ heroBreak: paper?.heroBreak, ratio: paper?.firstLetterRatio, float: paper?.firstLetterFloat, hyphens: paper?.titleHyphens, wordBreak: paper?.titleWordBreak }));
+  }
+  await ctx.close();
+}
+
 /* ============ READERSTATE R6 — ЕДИНЫЙ ДИАПАЗОН/ПРОГРЕСС/RESUME ============ */
 for (const [id, url, uiSelector] of [
   ['r6-gill', SERIES[0][1], '#gbs2MobPct'],
