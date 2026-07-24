@@ -1,0 +1,108 @@
+name: TEMP Print Paper Contract v8
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-print-paper-v8-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply final neutral paper contract
+        run: |
+          mkdir -p reports/print-paper
+          node scripts/_temp-print-paper-comment-fix.mjs
+          for script in \
+            scripts/_temp-print-paper-contract.mjs \
+            scripts/_temp-print-paper-followup.mjs \
+            scripts/_temp-print-overflow-contract.mjs \
+            scripts/_temp-print-tail-fix.mjs; do
+            node --check "$script"
+          done
+          set -o pipefail
+          node scripts/_temp-print-paper-contract.mjs 2>&1 | tee reports/print-paper/materializer.log
+          node scripts/_temp-print-paper-followup.mjs 2>&1 | tee reports/print-paper/followup.log
+          node scripts/_temp-print-overflow-contract.mjs 2>&1 | tee reports/print-paper/overflow-contract.log
+          node scripts/_temp-print-tail-fix.mjs 2>&1 | tee reports/print-paper/tail-fix.log
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Remove all temporary print infrastructure
+        run: |
+          find .github/workflows -maxdepth 1 \( -name '_temp-print-paper*.yml' -o -name '_temp-print-tail*.yml' \) -print0 | xargs -0 -r git rm -f
+          find scripts -maxdepth 1 \( -name '_temp-print-paper*.mjs' -o -name '_temp-print-overflow*.mjs' -o -name '_temp-print-tail*.mjs' \) -print0 | xargs -0 -r git rm -f
+          test -z "$(find .github/workflows scripts -maxdepth 1 \( -name '_temp-print-paper*' -o -name '_temp-print-overflow*' -o -name '_temp-print-tail*' \) -print)"
+          git diff --check
+
+      - name: Static architecture gates
+        run: |
+          node --check scripts/engine-sweep.mjs
+          node --check js/site.js
+          python3 -m py_compile scripts/print-paper-pdf-audit.py
+          node scripts/reader-preferences-regression-test.js
+          npm run gill:chrome:guard
+          npm run css:layer:validate
+          node scripts/audit-pro.js
+
+      - name: Install Chromium and PDF tools
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Premium controls audit
+        run: npm run audit:premium-controls
+
+      - name: Playwright reader and print marathon
+        env:
+          GB_READER_UI_ARTIFACT_DIR: reports/print-paper
+        run: |
+          set -o pipefail
+          node scripts/engine-sweep.mjs 2>&1 | tee reports/print-paper/engine-sweep.log
+
+      - name: Permanent raster and pagination audit
+        run: python3 scripts/print-paper-pdf-audit.py reports/print-paper/reader-print-a4.pdf --out reports/print-paper
+
+      - name: Commit permanent contract
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix(print): enforce neutral paper palette and pagination"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Upload print proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: print-paper-proof-v8-${{ github.sha }}
+          path: reports/print-paper
+          if-no-files-found: warn
+          retention-days: 7
