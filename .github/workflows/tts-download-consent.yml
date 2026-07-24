@@ -86,14 +86,19 @@ jobs:
 
       - name: Run engine lifecycle fixtures
         run: |
-          node scripts/tts-download-notice-browser-test.js
-          node scripts/tts-engine-lifecycle-browser-test.js
+          set -o pipefail
+          {
+            node scripts/tts-download-notice-browser-test.js
+            node scripts/tts-engine-lifecycle-browser-test.js
+          } 2>&1 | tee reports/tts-engine-lifecycle.log
 
       - name: Build production-like routes
         run: npm run build
 
       - name: Run real-route status matrix
-        run: node scripts/tts-status-route-browser-test.js
+        run: |
+          set -o pipefail
+          node scripts/tts-status-route-browser-test.js 2>&1 | tee reports/tts-route-status.log
 
       - name: Upload interaction evidence
         if: always()
@@ -105,5 +110,7 @@ jobs:
             reports/tts-download-notice-mobile-dark.png
             reports/tts-lifecycle-*.png
             reports/tts-route-*.png
+            reports/tts-engine-lifecycle.log
+            reports/tts-route-status.log
           if-no-files-found: warn
           retention-days: 14
