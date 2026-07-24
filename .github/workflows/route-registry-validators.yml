@@ -247,7 +247,7 @@ jobs:
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
-            reports/nagornaya-epistem-ui-browser.json
+            reports/nagornaya-epistemic-ui-browser.json
             reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
           retention-days: 14
