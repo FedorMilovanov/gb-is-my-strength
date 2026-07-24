@@ -1,0 +1,188 @@
+name: TEMP Print Paper Contract v4
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-print-paper-v4-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply neutral paper contract
+        run: |
+          mkdir -p reports/print-paper
+          node --check scripts/_temp-print-paper-comment-fix.mjs
+          node scripts/_temp-print-paper-comment-fix.mjs
+          node --check scripts/_temp-print-paper-contract.mjs
+          set -o pipefail
+          node scripts/_temp-print-paper-contract.mjs 2>&1 | tee reports/print-paper/materializer.log
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Remove temporary infrastructure before proof
+        run: |
+          git rm -f .github/workflows/_temp-print-paper-contract.yml
+          git rm -f .github/workflows/_temp-print-paper-contract-v2.yml
+          git rm -f .github/workflows/_temp-print-paper-contract-v3.yml
+          git rm -f .github/workflows/_temp-print-paper-contract-v4.yml
+          git rm -f scripts/_temp-print-paper-contract.mjs
+          git rm -f scripts/_temp-print-paper-ratchet-relief.mjs
+          git rm -f scripts/_temp-print-paper-comment-fix.mjs
+          test ! -e .github/workflows/_temp-print-paper-contract.yml
+          test ! -e .github/workflows/_temp-print-paper-contract-v2.yml
+          test ! -e .github/workflows/_temp-print-paper-contract-v3.yml
+          test ! -e .github/workflows/_temp-print-paper-contract-v4.yml
+          test ! -e scripts/_temp-print-paper-contract.mjs
+          test ! -e scripts/_temp-print-paper-ratchet-relief.mjs
+          test ! -e scripts/_temp-print-paper-comment-fix.mjs
+          git diff --check
+
+      - name: Static architecture gates
+        run: |
+          node --check scripts/engine-sweep.mjs
+          node --check js/site.js
+          node scripts/reader-preferences-regression-test.js
+          npm run gill:chrome:guard
+          npm run css:layer:validate
+          node scripts/audit-pro.js
+
+      - name: Install Chromium and PDF tools
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Premium controls audit
+        run: npm run audit:premium-controls
+
+      - name: Playwright reader and print marathon
+        env:
+          GB_READER_UI_ARTIFACT_DIR: reports/print-paper
+        run: |
+          set -o pipefail
+          node scripts/engine-sweep.mjs 2>&1 | tee reports/print-paper/engine-sweep.log
+
+      - name: Render and audit actual A4 PDF
+        run: |
+          test -s reports/print-paper/reader-print-a4.pdf
+          mkdir -p reports/print-paper/rendered
+          pdftoppm -png -r 120 reports/print-paper/reader-print-a4.pdf reports/print-paper/rendered/page
+          pdftotext -layout reports/print-paper/reader-print-a4.pdf reports/print-paper/reader-print-a4.txt
+          python3 - <<'PY'
+          from collections import Counter
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          import colorsys, json, math, re
+
+          root = Path('reports/print-paper')
+          pages = sorted((root / 'rendered').glob('page-*.png'))
+          if not pages:
+              raise SystemExit('no rendered PDF pages')
+
+          diagnostics = []
+          failures = []
+          thumbs = []
+          for index, path in enumerate(pages, 1):
+              image = Image.open(path).convert('RGB')
+              preview = image.copy()
+              preview.thumbnail((280, 390))
+              thumbs.append((index, preview))
+
+              sample = image.copy()
+              sample.thumbnail((700, 1000))
+              quantized = sample.quantize(colors=96).convert('RGB')
+              counts = Counter(quantized.getdata())
+              total = quantized.width * quantized.height
+              flat_saturated = []
+              for rgb, count in counts.most_common(96):
+                  r, g, b = [value / 255 for value in rgb]
+                  _, saturation, value = colorsys.rgb_to_hsv(r, g, b)
+                  fraction = count / total
+                  if saturation > 0.30 and 0.18 < value < 0.98 and fraction > 0.018:
+                      flat_saturated.append({'rgb': rgb, 'fraction': round(fraction, 4)})
+              non_white = sum(count for rgb, count in counts.items() if min(rgb) < 242) / total
+              diagnostics.append({'page': index, 'nonWhiteFraction': round(non_white, 4), 'flatSaturated': flat_saturated})
+              if non_white < 0.004:
+                  failures.append(f'page {index}: effectively blank ({non_white:.4f})')
+              if flat_saturated:
+                  failures.append(f'page {index}: large saturated flat fill {flat_saturated}')
+
+          text = (root / 'reader-print-a4.txt').read_text('utf-8', errors='ignore')
+          text_pages = text.split('\f')
+          normalize = lambda value: re.sub(r'\s+', ' ', value).strip().upper()
+          date_pages = [i for i, value in enumerate(text_pages) if '23 НОЯБРЯ 1697' in normalize(value)]
+          name_pages = [i for i, value in enumerate(text_pages) if 'JOHN GILL' in normalize(value)]
+          if not date_pages or not name_pages or not set(date_pages) & set(name_pages):
+              failures.append(f'biography masthead split across pages: dates={date_pages}, name={name_pages}')
+
+          known_headings = {
+              'I. СТАНОВЛЕНИЕ И ПРИЗВАНИЕ',
+              'ОТКУДА РОЖДАЮТСЯ ГЕНИИ БЕЗ УНИВЕРСИТЕТОВ',
+              'БЫТИЕ 3:9 — ВОПРОС, ИЗМЕНИВШИЙ ЖИЗНЬ',
+              'КРЕЩЕНИЕ И ПЕРВЫЕ ШАГИ СЛУЖЕНИЯ',
+          }
+          for page_index, value in enumerate(text_pages[:-1], 1):
+              lines = [normalize(line) for line in value.splitlines() if normalize(line)]
+              if lines and lines[-1] in known_headings:
+                  failures.append(f'page {page_index}: orphan heading at page bottom: {lines[-1]}')
+
+          columns = 4
+          rows = math.ceil(len(thumbs) / columns)
+          cell_w, cell_h = 310, 430
+          sheet = Image.new('RGB', (columns * cell_w, rows * cell_h), 'white')
+          draw = ImageDraw.Draw(sheet)
+          for slot, (number, thumb) in enumerate(thumbs):
+              x = (slot % columns) * cell_w + (cell_w - thumb.width) // 2
+              y = (slot // columns) * cell_h + 26
+              sheet.paste(thumb, (x, y))
+              draw.text((slot % columns * cell_w + 10, slot // columns * cell_h + 6), f'Page {number}', fill='black')
+          sheet.save(root / 'pdf-contact-sheet-paper.png')
+          (root / 'pdf-visual-audit.json').write_text(json.dumps({'pages': len(pages), 'diagnostics': diagnostics, 'failures': failures}, ensure_ascii=False, indent=2), 'utf-8')
+          print(json.dumps({'pages': len(pages), 'failures': failures}, ensure_ascii=False, indent=2))
+          if failures:
+              raise SystemExit(1)
+          PY
+
+      - name: Commit permanent contract
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix(print): enforce neutral paper palette and pagination"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Upload print proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: print-paper-proof-v4-${{ github.sha }}
+          path: reports/print-paper
+          if-no-files-found: warn
+          retention-days: 7
