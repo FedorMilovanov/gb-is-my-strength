@@ -288,6 +288,7 @@ for (const [id, url, uiSelector] of [
   ['r6-gill', SERIES[0][1], '#gbs2MobPct'],
   ['r6-book', SERIES[1][1], '#gbs2MobPct'],
   ['r6-herm', SINGLES[0][1], '#hmProgressText'],
+  ['r6-page', '/about/', null],
 ]) {
   const { ctx, page } = await newPage({ width: 390, height: 844 });
   await page.goto(base + url, { waitUntil: 'networkidle' });
@@ -326,15 +327,16 @@ for (const [id, url, uiSelector] of [
   const midpoint = await page.evaluate((selector) => {
     window.GBReaderState.saveSnapshot(true);
     const state = window.GBReaderState.getSnapshot();
-    const ui = document.querySelector(selector)?.textContent?.trim() || '';
+    const uiRequired = Boolean(selector);
+    const ui = selector ? (document.querySelector(selector)?.textContent?.trim() || '') : '';
     const css = getComputedStyle(document.documentElement).getPropertyValue('--gb-read-pct').trim();
     const keys = Object.keys(localStorage).filter((key) => key.startsWith('gb:reader-state:v1:'));
     const persisted = keys.length ? JSON.parse(localStorage.getItem(keys[0])) : null;
-    return { state, ui, css, persisted, keys };
+    return { state, uiRequired, ui, css, persisted, keys };
   }, uiSelector);
-  R(id, 'R6: midpoint is shared by state, UI and canonical storage',
+  R(id, 'R6: midpoint is shared by state, chrome and canonical storage',
     midpoint.state.progress >= 42 && midpoint.state.progress <= 58 &&
-    midpoint.ui.includes(String(midpoint.state.progress)) &&
+    (!midpoint.uiRequired || midpoint.ui.includes(String(midpoint.state.progress))) &&
     Math.abs(Number(midpoint.css) - midpoint.state.progressRatio) < 0.03 &&
     midpoint.persisted?.progress === midpoint.state.progress,
     JSON.stringify(midpoint));
