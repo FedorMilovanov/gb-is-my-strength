@@ -1,0 +1,65 @@
+name: Gill pre-v16 submenu contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'js/floating-cluster-controller.js'
+      - 'js/reader-state.js'
+      - 'data/gill-pre-v16-submenu-reference.json'
+      - 'data/gill-submenu-anchor-reconciliation.json'
+      - 'src/components/article-pilots/gill-series/**'
+      - 'src/components/article-pilots/gill-context/**'
+      - 'src/components/article-pilots/gill-part1/**'
+      - 'src/components/article-pilots/gill-part2/**'
+      - 'src/components/article-pilots/gill-part3/**'
+      - 'src/components/article-pilots/gill-spravochnik/**'
+      - 'scripts/gill-pre-v16-submenu-regression-audit.js'
+      - '.github/workflows/gill-pre-v16-submenu.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'js/floating-cluster-controller.js'
+      - 'js/reader-state.js'
+      - 'data/gill-pre-v16-submenu-reference.json'
+      - 'data/gill-submenu-anchor-reconciliation.json'
+      - 'src/components/article-pilots/gill-series/**'
+      - 'src/components/article-pilots/gill-context/**'
+      - 'src/components/article-pilots/gill-part1/**'
+      - 'src/components/article-pilots/gill-part2/**'
+      - 'src/components/article-pilots/gill-part3/**'
+      - 'src/components/article-pilots/gill-spravochnik/**'
+      - 'scripts/gill-pre-v16-submenu-regression-audit.js'
+      - '.github/workflows/gill-pre-v16-submenu.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-submenu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run strangler:build:production-like
+      - run: npx playwright install --with-deps chromium
+      - name: Require full live Gill traversal
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
+        run: npm run gill:pre-v16-submenu:audit
+      - name: Ensure checks left tracked sources clean
+        run: git diff --exit-code
+      - name: Upload machine-readable traversal facts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gill-pre-v16-submenu-${{ github.run_id }}
+          path: reports/gill-pre-v16-submenu-audit/
+          if-no-files-found: warn
+          retention-days: 14
