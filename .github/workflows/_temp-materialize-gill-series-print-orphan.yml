@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/gill-series-print-orphan-2026-07-25
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
@@ -14,6 +17,7 @@ concurrency:
 
 jobs:
   materialize-and-prove:
+    if: github.event_name == 'push' || github.event.pull_request.number == 257
     runs-on: ubuntu-latest
     timeout-minutes: 70
     steps:
