@@ -1,0 +1,47 @@
+name: TEMP Print Prepare Diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: temp-print-prepare-diagnostic-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - name: Materialize current print candidate
+        run: |
+          node scripts/_temp-print-paper-comment-fix.mjs
+          node scripts/_temp-print-template-fix.mjs
+          node scripts/_temp-print-paper-contract.mjs
+          node scripts/_temp-print-paper-followup.mjs
+          node scripts/_temp-print-overflow-contract.mjs
+          node scripts/_temp-print-tail-fix.mjs
+          node scripts/cache-bust.js --write
+      - run: npm run strangler:build:production-like
+      - run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+      - name: Compare DOM before, during and after print preparation
+        run: node scripts/_temp-print-prepare-diagnostic.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: print-prepare-diagnostic-${{ github.sha }}
+          path: reports/print-prepare-diagnostic
+          if-no-files-found: error
+          retention-days: 7
