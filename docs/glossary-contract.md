@@ -67,13 +67,15 @@ The first command reports pending source changes and exits non-zero. The second 
 
 The `autofix` pull-request label is an explicit opt-in. For same-repository branches, the workflow may run the universal normalizer, validate the complete source tree and commit only deterministic source changes. When the shared runtime hash changes, the same opt-in job uses the repository's existing `scripts/cache-bust.js --write` contract and immediately verifies it again in read-only mode. Without the label, all jobs remain read-only.
 
+The final v2 branch was reconstructed directly on the then-current default branch before this opt-in pass. Its bot commit contains only deterministic placement normalization and asset-revision propagation; the label was removed before exact-head acceptance, so all final jobs are read-only.
+
 ## Floating tooltip hit testing
 
 A desktop tooltip is portaled to `document.body` and positioned above or below its trigger. Its decorative surface must not intercept a click intended for adjacent prose or another footnote marker. Therefore the floating `.tooltip` / `.gtip` container uses pointer pass-through, while links, buttons, form controls, `summary`, explicit focus targets, `role="button"` controls and editable descendants remain interactive.
 
 The shared style normalizer enforces the surface and descendant rules with cascade priority so older runtime declarations cannot restore background hit interception. It also upgrades the earlier non-priority form deterministically and remains idempotent. This must not be replaced by a route-specific z-index adjustment or by weakening the interaction assertion.
 
-On mobile, outside dismissal is tested with a fixed viewport touch point that is known to lie outside the bottom sheet and trigger. A locator-based tap on a distant document element is forbidden in this fixture because Playwright may auto-scroll first and thereby test scroll suppression rather than outside-touch dismissal.
+On mobile, outside dismissal is tested with a fixed viewport touch point that is known to lie outside the bottom sheet and trigger. A locator-based tap on a distant document element is forbidden in this fixture because Playwright may auto-scroll first and thereby test scroll suppression rather than outside-touch dismissal. The shared runtime force-closes on a genuine outside `touchend`; the short `justOpened` guard remains limited to suppressing the original opening event.
 
 ## Required validation
 
