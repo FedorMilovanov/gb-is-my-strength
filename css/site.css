@@ -692,7 +692,7 @@ html:not(.dark) .gtip.gb-floating-tip::before {
    GB PRINT CONTRACT v2.1 — 2026-07-24
    One A4/PDF contract for series, books and standalone articles.
    ========================================================= */
-@page { size: A4; margin: 15mm 14mm 17mm; }
+@page { size: A4; margin: 14mm; }
 @media print {
   html, body {
     width: auto;
@@ -850,3 +850,397 @@ html:not(.dark) .gtip.gb-floating-tip::before {
     display: none;
   }
 }
+
+
+/* GB PRINT CONTRACT v2.4 — neutral paper surfaces and pagination integrity. */
+@media print {
+  /* The route themes remain expressive on screen, but paper is intentionally
+     neutral. High-specificity selectors beat later route styles without
+     increasing the repository priority ratchet. */
+  html body [data-gill-v16],
+  html body [data-reader-root] {
+    color-scheme: light;
+    --color-bg: #fff;
+    --color-surface: #fff;
+    --color-surface-alt: #f4f4f2;
+    --color-text: #111;
+    --color-text-muted: #444;
+    --color-text-faint: #666;
+    --color-border: #b9b9b4;
+    --color-accent: #333;
+    --color-accent-strong: #111;
+  }
+
+  html body [data-gill-v16] .article-body,
+  html body [data-reader-root] .article-body,
+  html body [data-gill-v16] .article-body :where(p, li, td, th, figcaption, small, span, strong, em),
+  html body [data-reader-root] .article-body :where(p, li, td, th, figcaption, small, span, strong, em) {
+    color: #111;
+    text-shadow: none;
+  }
+
+  html body [data-gill-v16] .article-body :where(
+    .biography-hero, .biography-meta, .biography-info, .biography-dates,
+    .biography-epigraph, .biography-stats, .stat-item, .hebrew-inscription,
+    .manuscript-quote, .manuscript-quote-text, .manuscript-quote-source,
+    .summary-card, .quote-box, .info-box, .warn-box, .author-card,
+    .foliant-mark, .timeline-card, .fact-card, .source-card, .callout,
+    details, summary, pre, code
+  ),
+  html body [data-reader-root] .article-body :where(
+    .biography-hero, .biography-meta, .biography-info, .biography-dates,
+    .biography-epigraph, .biography-stats, .stat-item, .hebrew-inscription,
+    .manuscript-quote, .manuscript-quote-text, .manuscript-quote-source,
+    .summary-card, .quote-box, .info-box, .warn-box, .author-card,
+    .foliant-mark, .timeline-card, .fact-card, .source-card, .callout,
+    details, summary, pre, code
+  ) {
+    background: #fff;
+    background-image: none;
+    color: #111;
+    border-color: #b9b9b4;
+    box-shadow: none;
+    text-shadow: none;
+    filter: none;
+  }
+
+  html body [data-gill-v16] .article-body :where(
+    .biography-hero, .biography-meta, .biography-info, .biography-dates,
+    .biography-epigraph, .biography-stats, .hebrew-inscription,
+    .manuscript-quote, .summary-card, .quote-box, .info-box, .warn-box,
+    .author-card, .foliant-mark
+  )::before,
+  html body [data-gill-v16] .article-body :where(
+    .biography-hero, .biography-meta, .biography-info, .biography-dates,
+    .biography-epigraph, .biography-stats, .hebrew-inscription,
+    .manuscript-quote, .summary-card, .quote-box, .info-box, .warn-box,
+    .author-card, .foliant-mark
+  )::after,
+  html body [data-reader-root] .article-body :where(
+    .biography-hero, .biography-meta, .biography-info, .biography-dates,
+    .biography-epigraph, .biography-stats, .hebrew-inscription,
+    .manuscript-quote, .summary-card, .quote-box, .info-box, .warn-box,
+    .author-card, .foliant-mark
+  )::before,
+  html body [data-reader-root] .article-body :where(
+    .biography-hero, .biography-meta, .biography-info, .biography-dates,
+    .biography-epigraph, .biography-stats, .hebrew-inscription,
+    .manuscript-quote, .summary-card, .quote-box, .info-box, .warn-box,
+    .author-card, .foliant-mark
+  )::after {
+    background: none;
+    box-shadow: none;
+    text-shadow: none;
+  }
+
+  /* A biography masthead is one semantic unit. The date strip may never be
+     orphaned at the bottom of one sheet while the name starts on the next. */
+  html body [data-gill-v16] .article-body .biography-hero,
+  html body [data-gill-v16] .article-body .biography-meta,
+  html body [data-gill-v16] .article-body .biography-info,
+  html body [data-reader-root] .article-body .biography-hero,
+  html body [data-reader-root] .article-body .biography-meta,
+  html body [data-reader-root] .article-body .biography-info {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  html body [data-gill-v16] .article-body .biography-hero,
+  html body [data-reader-root] .article-body .biography-hero {
+    margin: 0 0 8mm;
+  }
+
+  html body [data-gill-v16] .article-body .biography-dates,
+  html body [data-reader-root] .article-body .biography-dates {
+    display: block;
+    margin: 0 0 4mm;
+    padding: 3mm 4mm;
+    border: 1px solid #b9b9b4;
+    border-left: 3px solid #666;
+    border-radius: 0;
+    break-after: avoid-page;
+    page-break-after: avoid;
+    font-size: 10pt;
+    line-height: 1.35;
+    letter-spacing: .02em;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  html body [data-gill-v16] .article-body .biography-info,
+  html body [data-reader-root] .article-body .biography-info {
+    padding: 5mm 6mm;
+    border: 1px solid #b9b9b4;
+    border-radius: 0;
+  }
+
+  html body [data-gill-v16] .article-body .biography-title,
+  html body [data-reader-root] .article-body .biography-title {
+    margin: 0 0 3mm;
+    font-size: 24pt;
+    line-height: 1.12;
+    letter-spacing: .01em;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: balance;
+  }
+
+  html body [data-gill-v16] .article-body .biography-title::first-letter,
+  html body [data-reader-root] .article-body .biography-title::first-letter {
+    float: none;
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
+
+  html body [data-gill-v16] .article-body .biography-subtitle,
+  html body [data-reader-root] .article-body .biography-subtitle {
+    margin: 0 0 3mm;
+    font-size: 12pt;
+    line-height: 1.35;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: balance;
+  }
+
+  html body [data-gill-v16] .article-body .biography-epigraph,
+  html body [data-reader-root] .article-body .biography-epigraph {
+    margin: 4mm 0;
+    padding: 3mm 4mm;
+    border: 0;
+    border-left: 2px solid #777;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+
+  html body [data-gill-v16] .article-body .biography-stats,
+  html body [data-reader-root] .article-body .biography-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3mm 6mm;
+    margin: 4mm 0 0;
+    padding: 4mm 0 0;
+    border-top: 1px solid #b9b9b4;
+  }
+
+  html body [data-gill-v16] .article-body .stat-item,
+  html body [data-reader-root] .article-body .stat-item {
+    min-width: 0;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  html body [data-gill-v16] .article-body .stat-value,
+  html body [data-reader-root] .article-body .stat-value {
+    font-size: 17pt;
+    line-height: 1.1;
+  }
+
+  html body [data-gill-v16] .article-body .stat-label,
+  html body [data-reader-root] .article-body .stat-label {
+    white-space: normal;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+    font-size: 8.5pt;
+    line-height: 1.25;
+  }
+
+  html body [data-gill-v16] .article-body .hebrew-inscription,
+  html body [data-reader-root] .article-body .hebrew-inscription {
+    margin: 6mm 0;
+    padding: 5mm 0;
+    border-top: 1px solid #c9c9c4;
+    border-bottom: 1px solid #c9c9c4;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    isolation: isolate;
+  }
+
+  html body [data-gill-v16] .article-body :where(.hebrew-line, [lang="he"]),
+  html body [data-reader-root] .article-body :where(.hebrew-line, [lang="he"]) {
+    direction: rtl;
+    unicode-bidi: isolate;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  html body [data-gill-v16] .article-body :where(h1, h2, h3, h4, h5, h6),
+  html body [data-reader-root] .article-body :where(h1, h2, h3, h4, h5, h6) {
+    color: #111;
+    background: transparent;
+    text-shadow: none;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: balance;
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+
+  html body [data-gill-v16] .article-body :where(h2, h3, h4) + *,
+  html body [data-reader-root] .article-body :where(h2, h3, h4) + * {
+    break-before: avoid-page;
+    page-break-before: avoid;
+  }
+
+  html body [data-gill-v16] .article-body :where(p, li, blockquote),
+  html body [data-reader-root] .article-body :where(p, li, blockquote) {
+    orphans: 3;
+    widows: 3;
+    word-break: normal;
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+  }
+
+  html body [data-gill-v16] .article-body table,
+  html body [data-reader-root] .article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    color: #111;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  html body [data-gill-v16] .article-body thead,
+  html body [data-reader-root] .article-body thead {
+    display: table-header-group;
+  }
+
+  html body [data-gill-v16] .article-body tr,
+  html body [data-reader-root] .article-body tr {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  html body [data-gill-v16] .article-body th,
+  html body [data-reader-root] .article-body th {
+    background: #f1f1ef;
+    color: #111;
+  }
+}
+
+
+/* GB PRINT CONTRACT v2.5 — terminal navigation, headings and box geometry. */
+@media print {
+  /* End-of-reader navigation is application chrome, not article content. */
+  html body [data-gill-v16] :where(.gbs2-next-card, .gbs2-next-cover),
+  html body [data-reader-root] :where(.gbs2-next-card, .gbs2-next-cover),
+  html body :where(.gbs2-next-card, .gbs2-next-cover) {
+    display: none;
+    background: none;
+    background-image: none;
+  }
+
+  /* Some book routes place their headings outside .article-body. The paper
+     line-breaking contract therefore belongs to the semantic article itself. */
+  html body article :where(h1, h2, h3, h4, h5, h6),
+  html body main :where(h1, h2, h3, h4, h5, h6) {
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: balance;
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+
+  html body article :where(h2, h3, h4) + *,
+  html body main :where(h2, h3, h4) + * {
+    break-before: avoid-page;
+    page-break-before: avoid;
+  }
+
+  /* Neutralise the remaining low-contrast route cards without flattening
+     photographs. This also removes the 3px scroll-width drift caused by
+     decorated card borders/pseudo-surfaces in print media. */
+  html body article :where(
+    .summary-card, .note-box, .flip-card-front, .flip-card-back,
+    .info-box, .warn-box, .quote-box, .author-card,
+    .timeline-card, .fact-card, .source-card, .callout
+  ),
+  html body main article :where(
+    .summary-card, .note-box, .flip-card-front, .flip-card-back,
+    .info-box, .warn-box, .quote-box, .author-card,
+    .timeline-card, .fact-card, .source-card, .callout
+  ) {
+    max-width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    background-image: none;
+    color: #111;
+    box-shadow: none;
+    text-shadow: none;
+  }
+
+  html body article,
+  html body article.article-body,
+  html body .article-body {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: visible;
+  }
+
+  html body article > *,
+  html body .article-body > * {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+}
+
+
+/* GB PRINT CONTRACT v2.6 — compact terminal signature without phantom sheet. */
+@media print {
+  html body .article-end-sdg-wrap {
+    display: block;
+    min-height: 0;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  html body .article-end-sdg {
+    display: block;
+    min-height: 0;
+    height: auto;
+    margin: 10mm auto 0;
+    padding: 4mm 0 0;
+    line-height: 1.2;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  html body .article-end-sdg span {
+    display: block;
+    margin: 0 0 2mm;
+  }
+
+  html body .article-end-sdg svg {
+    display: block;
+    width: 22pt;
+    height: 28pt;
+    margin: 0 auto;
+    overflow: visible;
+  }
+
+  html body :where(.gbs2-world, .page-wrap, main, article, .article-body) > :last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    break-after: auto;
+    page-break-after: auto;
+  }
+}
+
+/* GB PRINT CONTRACT v2.7 — balanced A4 margins, no phantom trailing sheet. */
