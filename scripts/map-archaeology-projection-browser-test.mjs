@@ -45,13 +45,14 @@ let checkpoint = 'launch';
 try {
   await page.route('https://example.test/**', request => request.fulfill({
     status: 200,
-    contentType: 'text/html',
-    body: `<!doctype html><html><body><div id="stage" style="width:100vw;height:100vh"></div><script>${engine}<\/script><script>window.projectionTest=MapEngine.createMap(document.getElementById('stage'),${JSON.stringify(route)},{showIntro:false,archaeologyProjection:${JSON.stringify(projection)}});window.projectionTest.open('ur');<\/script></body></html>`,
+    contentType: 'text/html; charset=utf-8',
+    body: `<!doctype html><html><head><meta charset="utf-8"></head><body><div id="stage" style="width:100vw;height:100vh"></div><script>${engine}<\/script><script>window.projectionTest=MapEngine.createMap(document.getElementById('stage'),${JSON.stringify(route)},{showIntro:false,archaeologyProjection:${JSON.stringify(projection)}});<\/script></body></html>`,
   }));
   checkpoint = 'navigate';
   await page.goto('https://example.test/karty/test/?place=ur');
   const panel = page.locator('.me-panel');
   await page.waitForSelector('.me-panel--open');
+  await page.waitForFunction(() => !document.querySelector('.me-loading'));
   checkpoint = 'initial-panel';
   assert.equal(await panel.getAttribute('inert'), null, 'standalone open panel must not remain inert');
   assert.equal(await panel.getAttribute('aria-hidden'), 'false');
