@@ -1,0 +1,29 @@
+name: README Audit Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - '.github/workflows/readme-audit-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit-pro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Professional audit
+        run: node scripts/audit-pro.js
+
+      - name: Prove one-line documentation scope
+        run: |
+          git diff --check origin/${{ github.base_ref }}...HEAD
+          test "$(git diff --name-only origin/${{ github.base_ref }}...HEAD | tr -d '\r')" = $'.github/workflows/readme-audit-proof.yml\nREADME.md'
