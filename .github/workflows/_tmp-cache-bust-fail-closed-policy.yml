@@ -46,21 +46,44 @@ jobs:
         if: steps.patch.outputs.present == 'true'
         run: node scripts/_tmp-wire-cache-bust-policy.js
 
-      - name: Verify syntax and permanent policy mutations
+      - name: Run syntax and permanent policy mutations
         if: steps.patch.outputs.present == 'true'
+        id: checker
+        shell: bash
         run: |
-          node --check scripts/lib/cache-bust-workflow-policy.js
-          node --check scripts/check-workflows.js
-          node scripts/check-workflows.js
+          set +e
+          {
+            node --check scripts/lib/cache-bust-workflow-policy.js &&
+            node --check scripts/check-workflows.js &&
+            node scripts/check-workflows.js
+          } > /tmp/cache-bust-policy-output.txt 2>&1
+          status=$?
+          set -e
+          cat /tmp/cache-bust-policy-output.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Persist exact policy diagnostic
+        if: steps.patch.outputs.present == 'true' && steps.checker.outputs.status != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/cache-bust-policy-output.txt CACHE_BUST_POLICY_ERROR.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f CACHE_BUST_POLICY_ERROR.txt
+          git commit -m "chore(ci): capture cache-bust policy diagnostic"
+          git push origin HEAD:agent/cache-bust-fail-closed-policy
+          exit 1
 
       - name: Verify current source revisions are read-only clean
-        if: steps.patch.outputs.present == 'true'
+        if: steps.patch.outputs.present == 'true' && steps.checker.outputs.status == '0'
         run: |
           node scripts/cache-bust.js
           git diff --exit-code
 
       - name: Prove stale asset mutation fails without rewriting
-        if: steps.patch.outputs.present == 'true'
+        if: steps.patch.outputs.present == 'true' && steps.checker.outputs.status == '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -78,14 +101,15 @@ jobs:
           git diff --exit-code -- js/search.js
 
       - name: Verify clean permanent scope
-        if: steps.patch.outputs.present == 'true'
+        if: steps.patch.outputs.present == 'true' && steps.checker.outputs.status == '0'
         run: |
           test ! -e scripts/_tmp-wire-cache-bust-policy.js
+          test ! -e CACHE_BUST_POLICY_ERROR.txt
           git diff --check
           git status --short
 
       - name: Commit permanent policy
-        if: steps.patch.outputs.present == 'true'
+        if: steps.patch.outputs.present == 'true' && steps.checker.outputs.status == '0'
         shell: bash
         run: |
           set -euo pipefail
