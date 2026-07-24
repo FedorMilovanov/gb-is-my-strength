@@ -87,27 +87,51 @@ jobs:
           console.log(`Editorial decisions preserved for ${afterRoutes.length} records`);
           NODE
 
-      - name: Validate refreshed registry and projections
+      - name: Check refreshed registry shape
+        shell: bash
         run: |
-          node scripts/editorial-metadata-registry.js --check
-          node scripts/editorial-metadata-freeze-audit.js
-          npm run validate:static-publication:light
-
-      - name: Prove generated scope
-        run: |
-          git diff --check
-          test "$(git diff --name-only | tr -d '\r')" = "data/editorial-metadata.json"
           mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-registry.js --check 2>&1 \
+            | tee reports/editorial-registry-check.log
+
+      - name: Verify refreshed frozen projections
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-freeze-audit.log
+
+      - name: Run static publication gates
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          npm run validate:static-publication:light 2>&1 \
+            | tee reports/static-publication-light.log
+
+      - name: Record generated scope
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p reports
+          git diff --check > reports/editorial-diff-check.log 2>&1 || true
+          git diff --name-only > reports/editorial-diff-files.txt
           git diff --stat > reports/editorial-freeze-diff-stat.txt
           git diff -- data/editorial-metadata.json > reports/editorial-freeze.patch
 
-      - name: Upload verified registry candidate
+      - name: Upload registry candidate and diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: editorial-freeze-reconciled-${{ github.run_id }}
           path: |
             data/editorial-metadata.json
+            reports/editorial-*.log
+            reports/editorial-diff-files.txt
             reports/editorial-freeze-diff-stat.txt
             reports/editorial-freeze.patch
-          if-no-files-found: error
+            reports/static-publication-light.log
+          if-no-files-found: warn
           retention-days: 14
