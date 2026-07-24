@@ -7,11 +7,13 @@ on:
     paths:
       - "scripts/_tmp-tts-materializer-parts/**"
       - "scripts/_tmp-tts-box-sizing-fix.js"
+      - "scripts/_tmp-tts-browser-fixture-fix.js"
       - ".github/workflows/_tmp-tts-download-consent-materialize.yml"
   pull_request:
     paths:
       - "scripts/_tmp-tts-materializer-parts/**"
       - "scripts/_tmp-tts-box-sizing-fix.js"
+      - "scripts/_tmp-tts-browser-fixture-fix.js"
       - ".github/workflows/_tmp-tts-download-consent-materialize.yml"
   workflow_dispatch:
 
@@ -56,6 +58,9 @@ jobs:
 
       - name: Materialize permanent TTS consent contract and width fix
         run: node scripts/_tmp-tts-download-consent-materialize.js
+
+      - name: Apply real mobile viewport to browser fixture
+        run: node scripts/_tmp-tts-browser-fixture-fix.js
 
       - name: Remove transport chunks
         run: rm -rf scripts/_tmp-tts-materializer-parts
@@ -107,6 +112,7 @@ jobs:
         run: |
           test ! -e scripts/_tmp-tts-download-consent-materialize.js
           test ! -e scripts/_tmp-tts-box-sizing-fix.js
+          test ! -e scripts/_tmp-tts-browser-fixture-fix.js
           test ! -e scripts/_tmp-tts-materializer-parts
           test ! -e .github/workflows/_tmp-tts-download-consent-materialize.yml
           test ! -e TTS_BROWSER_ERROR.txt
