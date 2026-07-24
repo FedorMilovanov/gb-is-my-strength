@@ -5,13 +5,21 @@ on:
     branches: [main]
     paths:
       - 'karty/_data/archaeology-source-registry.json'
+      - 'karty/_data/archaeology-source-provenance.json'
+      # Site provenance resolves live IDs from places, waypoints, context points and variant clusters.
+      - 'karty/avraam/route.json'
       - 'scripts/map-archaeology-source-registry-audit.js'
+      - 'scripts/map-archaeology-category-coverage-audit.js'
       - '.github/workflows/map-archaeology-source-registry.yml'
   push:
     branches: [main]
     paths:
       - 'karty/_data/archaeology-source-registry.json'
+      - 'karty/_data/archaeology-source-provenance.json'
+      # Keep push validation symmetric when route IDs or collections change on main.
+      - 'karty/avraam/route.json'
       - 'scripts/map-archaeology-source-registry-audit.js'
+      - 'scripts/map-archaeology-category-coverage-audit.js'
       - '.github/workflows/map-archaeology-source-registry.yml'
   workflow_dispatch:
 
@@ -31,31 +39,44 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
       - name: Set up Node 22.12
         uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
-
-      - name: Validate source syntax
+      - name: Validate source syntax and shared boundary
         run: |
           node --check scripts/map-archaeology-source-registry-audit.js
+          node --check scripts/map-archaeology-category-coverage-audit.js
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
-
-      - name: Enforce evidence hierarchy and YEC separation
+          node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-provenance.json','utf8'))"
+          node -e "JSON.parse(require('node:fs').readFileSync('karty/avraam/route.json','utf8'))"
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const catalog = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-registry.json', 'utf8'));
+          const provenance = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-provenance.json', 'utf8'));
+          if (catalog.sourceBoundary !== provenance.catalogBoundary) {
+            throw new Error(`catalog/provenance boundary drift: ${catalog.sourceBoundary} !== ${provenance.catalogBoundary}`);
+          }
+          if (catalog.updatedAt !== provenance.updatedAt) {
+            throw new Error(`catalog/provenance revision date drift: ${catalog.updatedAt} !== ${provenance.updatedAt}`);
+          }
+          console.log(`PASS shared archaeology boundary ${catalog.sourceBoundary}`);
+          NODE
+      - name: Enforce provenance, route and YEC separation
         run: node scripts/map-archaeology-source-registry-audit.js
-
+      - name: Enforce 12-category provenance-aware coverage
+        run: node scripts/map-archaeology-category-coverage-audit.js
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-archaeology-source-registry.yml
-
-      - name: Upload registry audit
+      - name: Upload registry audits
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: map-archaeology-source-registry-${{ github.run_id }}
-          path: reports/map-archaeology-source-registry.json
+          path: |
+            reports/map-archaeology-source-registry.json
+            reports/map-archaeology-category-coverage.json
           if-no-files-found: error
           retention-days: 30
-
       - name: Ensure proof is read-only
         run: git diff --exit-code
