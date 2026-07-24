@@ -9,20 +9,26 @@ const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'editorial-metadata-v3.
 const text = fs.readFileSync(WORKFLOW, 'utf8');
 const failures = [];
 
-function requireMarker(marker) {
+function requireFirst(marker) {
   const index = text.indexOf(marker);
   if (index < 0) failures.push(`missing marker: ${marker}`);
   return index;
 }
 
-const build = requireMarker('npm run strangler:build:production-like');
-const preserve = requireMarker('cp data/editorial-metadata.json reports/editorial-metadata-frozen.json');
-const structure = requireMarker('node scripts/editorial-metadata-registry.js --check');
-const freeze = requireMarker('node scripts/editorial-metadata-freeze-audit.js');
-const observe = requireMarker('node scripts/editorial-metadata-registry.js --write');
-const observedCopy = requireMarker('cp data/editorial-metadata.json reports/editorial-metadata-observed.json');
-const restore = requireMarker('cp reports/editorial-metadata-frozen.json data/editorial-metadata.json');
-const cleanDiff = requireMarker('git diff --exit-code -- data/editorial-metadata.json');
+function requireLast(marker) {
+  const index = text.lastIndexOf(marker);
+  if (index < 0) failures.push(`missing marker: ${marker}`);
+  return index;
+}
+
+const build = requireFirst('npm run strangler:build:production-like');
+const preserve = requireFirst('cp data/editorial-metadata.json reports/editorial-metadata-frozen.json');
+const structure = requireFirst('node scripts/editorial-metadata-registry.js --check');
+const freeze = requireFirst('node scripts/editorial-metadata-freeze-audit.js');
+const observe = requireFirst('node scripts/editorial-metadata-registry.js --write');
+const observedCopy = requireFirst('cp data/editorial-metadata.json reports/editorial-metadata-observed.json');
+const restore = requireLast('cp reports/editorial-metadata-frozen.json data/editorial-metadata.json');
+const cleanDiff = requireFirst('git diff --exit-code -- data/editorial-metadata.json');
 
 const ordered = [build, preserve, structure, freeze, observe, observedCopy, restore, cleanDiff];
 if (ordered.every((value) => value >= 0)) {
