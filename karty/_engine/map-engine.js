@@ -1574,7 +1574,7 @@ container.appendChild(panel);
       }
 
       function resolveRoutePathColor(colorKey,stageIndex){
-        const fallback=STAGE_COLORS[stageIndex%STAGE_COLORS.length]||STAGE_COLORS[0];
+        const fallback=STAGE_COLORS[stageIndex]||STAGE_COLORS[0];
         const key=String(colorKey||'').trim();
         if(!key||key==='stage')return fallback;
         if(ROUTE_PATH_COLORS[key])return ROUTE_PATH_COLORS[key];
@@ -1605,7 +1605,7 @@ container.appendChild(panel);
         const sourceKind=spec.source||'generated';
         const markerId=sourceKind==='authored'
           ?ensureAuthoredArrowMarker(stageIndex,pathIndex,color)
-          :'me-arrow-'+(stageIndex%STAGE_COLORS.length);
+          :'me-arrow-'+(STAGE_COLORS[stageIndex]?stageIndex:0);
         const common=(element,kind,className)=>{
           element.setAttribute('d',spec.d);element.setAttribute('fill','none');element.setAttribute('stroke',color);
           element.setAttribute('stroke-linecap','round');element.setAttribute('stroke-linejoin','round');
@@ -3008,7 +3008,7 @@ container.appendChild(panel);
     normalizeLayerTokens,getPlaceLayerMembership,getStageLayerMembership,getMapThemePalette,
     // v0.3 rendering
     createMap,
-    version:'0.54.0',buildDate:'2026-07-21'
+    version:'0.55.0',buildDate:'2026-07-24'
   };
 })();
 
