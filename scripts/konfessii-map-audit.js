@@ -10,7 +10,10 @@
  * валидаторов сайта (skipDirs).
  *
  * Запуск: node scripts/konfessii-map-audit.js   (нужен playwright + chromium с WebGL)
- * Без браузера/WebGL — мягкий SKIP (exit 0).
+ * После production-like build браузерные проверки обязаны идти через локальный HTTP,
+ * а не file://: только так реально исполняются CSP frame-src 'self', относительные URL
+ * и тот же origin-контракт, что на GitHub Pages.
+ * Без браузера/WebGL — мягкий SKIP (exit 0), если CI явно не требует browser-run.
  *
  * ИНВАРИАНТЫ (если падает — НЕ упрощать тест, а чинить страницу/пересобирать _app):
  *  I1  Обёртка грузится: 0 pageerror, 0 overflow, есть iframe#appframe.
@@ -32,18 +35,37 @@
 'use strict';
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 process.env.PLAYWRIGHT_BROWSERS_PATH =
   process.env.PLAYWRIGHT_BROWSERS_PATH ||
   path.join(process.env.HOME || process.cwd(), '.cache', 'ms-playwright');
 
 const ROOT = path.join(__dirname, '..');
+const DIST = path.join(ROOT, 'dist');
 const WRAP_REL = path.join('konfessii', 'russkij-baptizm', 'index.html');
 const APP_REL = path.join('konfessii', 'russkij-baptizm', '_app', 'index.html');
 const SRC_REL = path.join('_build-tools', 'konfessii-baptizm', 'MindMap3D.tsx');
 const NAV_SRC_REL = path.join('_build-tools', 'konfessii-baptizm', 'Navigation.tsx');
 const NATIVE_BODY_REL = path.join('src', 'components', 'konfessii', 'russkij-baptizm', 'Baptizm3DBody.astro');
 const NATIVE_STYLE_REL = path.join('src', 'components', 'konfessii', 'russkij-baptizm', 'Baptizm3DStyles.astro');
-const WRAP = 'file://' + path.join(ROOT, WRAP_REL);
+const REQUIRE_DIST = process.env.KONFESSII_AUDIT_REQUIRE_DIST === '1';
+const REQUIRE_BROWSER = process.env.KONFESSII_AUDIT_REQUIRE_BROWSER === '1';
+
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.woff2': 'font/woff2',
+  '.ico': 'image/x-icon',
+};
 
 const fails = [];
 const ok = (m) => console.log('  ✔ ' + m);
@@ -51,6 +73,48 @@ const bad = (m) => { fails.push(m); console.log('  ❌ ' + m); };
 
 function withoutNoscript(source) {
   return source.replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, '');
+}
+
+function chooseLiveRoot() {
+  const explicit = process.env.KONFESSII_AUDIT_ROOT;
+  if (explicit) return path.resolve(explicit);
+  const distWrap = path.join(DIST, WRAP_REL);
+  if (fs.existsSync(distWrap)) return DIST;
+  if (REQUIRE_DIST) throw new Error(`production-like dist is required but missing: ${distWrap}`);
+  return ROOT;
+}
+
+function startStaticServer(rootDir) {
+  const absoluteRoot = path.resolve(rootDir);
+  const server = http.createServer((req, res) => {
+    try {
+      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
+      let rel = pathname.replace(/^\/+/, '');
+      if (!rel || pathname.endsWith('/')) rel = path.join(rel, 'index.html');
+      const file = path.resolve(absoluteRoot, rel);
+      if (file !== absoluteRoot && !file.startsWith(absoluteRoot + path.sep)) {
+        res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end('forbidden');
+        return;
+      }
+      const body = fs.readFileSync(file);
+      res.writeHead(200, {
+        'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
+        'cache-control': 'no-store',
+      });
+      res.end(body);
+    } catch {
+      res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+      res.end('not found');
+    }
+  });
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      resolve({ server, base: `http://127.0.0.1:${address.port}` });
+    });
+  });
 }
 
 // ---------- static checks (always run, no browser) ----------
@@ -191,12 +255,36 @@ if (src) {
 // ---------- live checks (browser, optional) ----------
 let chromium;
 try { ({ chromium } = require('playwright')); }
-catch (e) { console.log('\n⏭  live-проверки пропущены: playwright не установлен (статические инварианты пройдены).'); finish(); }
+catch (e) {
+  if (REQUIRE_BROWSER) {
+    console.error('\n❌ playwright обязателен для этого CI-run: ' + e.message);
+    process.exit(1);
+  }
+  console.log('\n⏭  live-проверки пропущены: playwright не установлен (статические инварианты пройдены).');
+  finish();
+}
 
 if (chromium) (async () => {
+  const liveRoot = chooseLiveRoot();
+  const { server, base } = await startStaticServer(liveRoot);
+  const wrapUrl = `${base}/konfessii/russkij-baptizm/`;
+  console.log(`\n  ℹ browser source: ${path.relative(ROOT, liveRoot) || '.'} → ${wrapUrl}`);
+
   let browser;
-  try { browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--ignore-gpu-blocklist'] }); }
-  catch (e) { console.log('\n⏭  live-проверки пропущены: chromium не запускается (' + e.message.split('\n')[0] + ').'); finish(); return; }
+  try {
+    browser = await chromium.launch({
+      args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
+    });
+  } catch (e) {
+    await new Promise((resolve) => server.close(resolve));
+    if (REQUIRE_BROWSER) {
+      console.error('\n❌ chromium обязателен для этого CI-run: ' + e.message.split('\n')[0]);
+      process.exit(1);
+    }
+    console.log('\n⏭  live-проверки пропущены: chromium не запускается (' + e.message.split('\n')[0] + ').');
+    finish();
+    return;
+  }
 
   const viewports = [
     { w: 1366, h: 900, label: 'desktop' },
@@ -207,12 +295,17 @@ if (chromium) (async () => {
   ];
 
   for (const vp of viewports) {
-    const ctx = await browser.newContext(vp.mobile ? { viewport: { width: vp.w, height: vp.h }, isMobile: true, hasTouch: true } : { viewport: { width: vp.w, height: vp.h } });
+    const ctx = await browser.newContext(vp.mobile ? {
+      viewport: { width: vp.w, height: vp.h },
+      isMobile: true,
+      hasTouch: true,
+    } : { viewport: { width: vp.w, height: vp.h } });
     const page = await ctx.newPage();
     const errs = [];
     page.on('pageerror', e => errs.push(e.message));
-    page.on('console', m => { if (m.type() === 'error' && !m.text().includes('manifest')) errs.push(m.text().slice(0, 90)); });
-    await page.goto(WRAP, { waitUntil: 'load' });
+    page.on('console', m => { if (m.type() === 'error' && !m.text().includes('manifest')) errs.push(m.text().slice(0, 140)); });
+    const response = await page.goto(wrapUrl, { waitUntil: 'load', timeout: 30000 });
+    response?.status() === 200 ? ok(`I1 [${vp.label}] wrapper HTTP 200`) : bad(`I1 [${vp.label}] wrapper HTTP status=${response?.status() || 'none'}`);
     await page.waitForTimeout(3500);
 
     const shell = await page.evaluate(() => {
@@ -238,7 +331,6 @@ if (chromium) (async () => {
         stage: stageRect ? { left: stageRect.left, top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom, width: stageRect.width, height: stageRect.height } : null,
         frame: frameRect ? { left: frameRect.left, top: frameRect.top, right: frameRect.right, bottom: frameRect.bottom, width: frameRect.width, height: frameRect.height } : null,
         seoVisible,
-        bodyOverflow: getComputedStyle(body).overflow,
       };
     });
 
@@ -257,19 +349,22 @@ if (chromium) (async () => {
     const frame = page.frames().find(fr => fr.url().includes('/_app/'));
     if (!frame) { bad(`I2 [${vp.label}] iframe-приложение не загрузилось`); }
     else {
-      const navTxt = await frame.evaluate(() => document.body.innerText.slice(0, 220));
-      // на десктопе видна полная навигация (3D Карта); на мобиле нав за бургером — проверяем бренд+контент
+      const navTxt = await frame.evaluate(() => document.body.innerText.slice(0, 320));
       const appOk = vp.mobile
         ? (/РУССКИЙ БАПТИЗМ/.test(navTxt) && /Баптизма/.test(navTxt))
         : (/РУССКИЙ БАПТИЗМ/.test(navTxt) && /3D/.test(navTxt));
-      appOk ? ok(`I4 [${vp.label}] приложение загрузилось (бренд+контент)`) : bad(`I4 [${vp.label}] приложение не распознано: ${JSON.stringify(navTxt.slice(0, 60))}`);
-      // activate 3D on desktop (mobile launcher behaves same but heavier)
+      appOk ? ok(`I4 [${vp.label}] приложение загрузилось (бренд+контент)`) : bad(`I4 [${vp.label}] приложение не распознано: ${JSON.stringify(navTxt.slice(0, 100))}`);
       if (!vp.mobile) {
         await frame.evaluate(() => { const b = [...document.querySelectorAll('button,a')].find(x => /3D Карта|3D-карта/i.test(x.textContent)); if (b) b.click(); });
         await page.waitForTimeout(2500);
         await frame.evaluate(() => { const b = [...document.querySelectorAll('button,a')].find(x => /Войти в 3D/i.test(x.textContent)); if (b) b.click(); });
         await page.waitForTimeout(6000);
-        const gl = await frame.evaluate(() => { const c = document.querySelector('canvas'); if (!c) return false; try { return !!(c.getContext('webgl2') || c.getContext('webgl')) || c.width > 100; } catch (e) { return c.width > 100; } });
+        const gl = await frame.evaluate(() => {
+          const c = document.querySelector('canvas');
+          if (!c) return false;
+          try { return !!(c.getContext('webgl2') || c.getContext('webgl')) || c.width > 100; }
+          catch { return c.width > 100; }
+        });
         gl ? ok(`I5 [${vp.label}] 3D WebGL canvas активируется`) : bad(`I5 [${vp.label}] 3D canvas не создан`);
         await frame.evaluate(() => { const b = [...document.querySelectorAll('button,a')].find(x => /Начать исследование/i.test(x.textContent)); if (b) b.click(); });
         await page.waitForTimeout(900);
@@ -285,12 +380,13 @@ if (chromium) (async () => {
           : bad(`I10 [${vp.label}] нет тихой подсказки «Как читать карту»`);
       }
     }
-    errs.length === 0 ? ok(`I1 [${vp.label}] 0 pageerror`) : bad(`I1 [${vp.label}] errors: ${errs.slice(0, 2).join(' | ')}`);
+    errs.length === 0 ? ok(`I1 [${vp.label}] 0 pageerror`) : bad(`I1 [${vp.label}] errors: ${errs.slice(0, 3).join(' | ')}`);
     await ctx.close();
   }
   await browser.close();
+  await new Promise((resolve) => server.close(resolve));
   finish();
-})().catch(e => { console.error('konfessii-map-audit ERROR:', e.message); process.exit(1); });
+})().catch(e => { console.error('konfessii-map-audit ERROR:', e.stack || e.message); process.exit(1); });
 
 function finish() {
   console.log('');
