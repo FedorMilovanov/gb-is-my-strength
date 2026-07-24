@@ -27,47 +27,16 @@ await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
 
 const variants = [
-  { name: 'prepared-baseline' },
-  {
-    name: 'all-breaks-auto',
-    css: '@media print {*{break-before:auto!important;break-after:auto!important;page-break-before:auto!important;page-break-after:auto!important}}',
-  },
-  {
-    name: 'all-breaks-auto-pseudos',
-    css: '@media print {*{break-before:auto!important;break-after:auto!important;page-break-before:auto!important;page-break-after:auto!important}*::before,*::after{break-before:auto!important;break-after:auto!important;page-break-before:auto!important;page-break-after:auto!important}}',
-  },
-  {
-    name: 'no-pseudo-content',
-    css: '@media print {*::before,*::after{content:none!important;display:none!important}}',
-  },
-  {
-    name: 'page-zero-margins',
-    css: '@page{size:A4;margin:0}',
-  },
-  {
-    name: 'prefer-browser-page-size',
-    pdf: { preferCSSPageSize: false },
-  },
-  {
-    name: 'body-world-only',
-    css: '@media print {body>:not(.gbs2-world):not(script):not(style):not(link){display:none!important}}',
-  },
-  {
-    name: 'remove-after-main',
-    action: 'remove-after-main',
-  },
-  {
-    name: 'main-only',
-    action: 'main-only',
-  },
-  {
-    name: 'remove-fixed-sticky',
-    action: 'remove-fixed-sticky',
-  },
-  {
-    name: 'remove-empty-tail',
-    action: 'remove-empty-tail',
-  },
+  { name: 'a4-baseline' },
+  { name: 'body-reset', css: '@media print {html,body{margin:0!important;padding:0!important;min-height:0!important;height:auto!important}}' },
+  { name: 'all-shells-reset', css: '@media print {html,body,.gbs2-world,.gbs2-scope,[data-gill-v16],[data-reader-root],main,article,.article-body{margin-bottom:0!important;padding-bottom:0!important;min-height:0!important;height:auto!important}}' },
+  { name: 'world-main-only', action: 'world-main-only' },
+  { name: 'world-display-contents', css: '@media print {.gbs2-world{display:contents!important}}' },
+  { name: 'page-14-14', css: '@page{size:A4;margin:14mm}' },
+  { name: 'page-12-14-14', css: '@page{size:A4;margin:12mm 14mm 14mm}' },
+  { name: 'page-12-14-12', css: '@page{size:A4;margin:12mm 14mm}' },
+  { name: 'page-10-14-12', css: '@page{size:A4;margin:10mm 14mm 12mm}' },
+  { name: 'compact-media', css: '@media print {figure,.article-img,.article-figure,.article-hero,.gbs2-hero{margin:4mm 0!important}.article-end-sdg{margin-top:6mm!important}}' },
 ];
 
 function countPages(pdfPath) {
@@ -79,7 +48,7 @@ const browser = await chromium.launch();
 const results = [];
 try {
   for (const variant of variants) {
-    const context = await browser.newContext({ viewport: { width: 1035, height: 851 } });
+    const context = await browser.newContext({ viewport: { width: 794, height: 1123 } });
     const page = await context.newPage();
     await page.route(/gospod-bog\.ru|mc\.yandex/, (route) => route.abort());
     await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
@@ -93,47 +62,21 @@ try {
     await page.waitForTimeout(300);
     await page.emulateMedia({ media: 'print' });
 
-    if (variant.action) {
-      await page.evaluate((action) => {
-        const main = document.querySelector('main');
-        if (!main) throw new Error('main missing');
-        if (action === 'remove-after-main') {
-          let node = main;
-          while (node && node !== document.body) {
-            let sibling = node.nextSibling;
-            while (sibling) {
-              const next = sibling.nextSibling;
-              sibling.remove();
-              sibling = next;
-            }
-            node = node.parentElement;
-          }
-        } else if (action === 'main-only') {
-          document.body.replaceChildren(main);
-        } else if (action === 'remove-fixed-sticky') {
-          for (const node of [...document.body.querySelectorAll('*')]) {
-            if (node === main || node.contains(main) || main.contains(node)) continue;
-            const style = getComputedStyle(node);
-            if (style.position === 'fixed' || style.position === 'sticky') node.remove();
-          }
-        } else if (action === 'remove-empty-tail') {
-          const mainRect = main.getBoundingClientRect();
-          for (const node of [...document.body.querySelectorAll('*')]) {
-            if (node === main || node.contains(main) || main.contains(node)) continue;
-            const style = getComputedStyle(node);
-            const rect = node.getBoundingClientRect();
-            const empty = !(node.textContent || '').trim() && !node.querySelector('img,svg,canvas,video,iframe');
-            if (empty && (rect.top >= mainRect.bottom - 1 || rect.width === 0 || rect.height === 0 || style.opacity === '0' || style.visibility === 'hidden')) node.remove();
-          }
+    if (variant.action === 'world-main-only') {
+      await page.evaluate(() => {
+        const world = document.querySelector('.gbs2-world');
+        const main = world?.querySelector('main');
+        if (!world || !main) throw new Error('world/main missing');
+        for (const child of [...world.children]) {
+          if (child !== main && !child.contains(main)) child.remove();
         }
-      }, variant.action);
+      });
     }
-
     if (variant.css) await page.addStyleTag({ content: variant.css });
     await page.waitForTimeout(200);
 
     const diagnostics = await page.evaluate(() => {
-      const pick = (node) => {
+      const describe = (node) => {
         if (!node) return null;
         const rect = node.getBoundingClientRect();
         const style = getComputedStyle(node);
@@ -141,65 +84,43 @@ try {
           tag: node.tagName,
           id: node.id || '',
           cls: String(node.className || '').slice(0, 160),
-          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120),
-          top: Math.round(rect.top * 1000) / 1000,
-          bottom: Math.round(rect.bottom * 1000) / 1000,
-          width: Math.round(rect.width * 1000) / 1000,
-          height: Math.round(rect.height * 1000) / 1000,
+          top: rect.top,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
           display: style.display,
-          visibility: style.visibility,
-          opacity: style.opacity,
           position: style.position,
+          margin: style.margin,
+          padding: style.padding,
+          minHeight: style.minHeight,
+          maxHeight: style.maxHeight,
+          overflow: style.overflow,
           breakBefore: style.breakBefore,
           breakAfter: style.breakAfter,
           breakInside: style.breakInside,
-          pageBreakBefore: style.pageBreakBefore,
-          pageBreakAfter: style.pageBreakAfter,
-          pageBreakInside: style.pageBreakInside,
         };
       };
-      const nodes = [...document.body.querySelectorAll('*')];
-      const forcedBreaks = nodes.map(pick).filter((item) =>
-        item && [item.breakBefore, item.breakAfter, item.pageBreakBefore, item.pageBreakAfter]
-          .some((value) => value && !['auto', 'avoid', 'avoid-page'].includes(value))
-      ).slice(0, 100);
-      const positioned = nodes.map(pick).filter((item) =>
-        item && ['fixed', 'sticky', 'absolute'].includes(item.position) && item.display !== 'none'
-      ).slice(-80);
-      const docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-      const tail = nodes.map(pick).filter((item) =>
-        item && item.display !== 'none' && item.visibility !== 'hidden' && Number(item.opacity) > 0 && item.bottom >= docHeight - 1600
-      ).slice(-120);
-      const pseudoBreaks = [];
-      for (const node of nodes) {
-        for (const pseudo of ['::before', '::after']) {
-          const style = getComputedStyle(node, pseudo);
-          const content = style.content;
-          const values = [style.breakBefore, style.breakAfter, style.pageBreakBefore, style.pageBreakAfter];
-          if (content && content !== 'none' && content !== 'normal' && values.some((value) => value && value !== 'auto')) {
-            pseudoBreaks.push({ host: pick(node), pseudo, content: content.slice(0, 120), breakBefore: style.breakBefore, breakAfter: style.breakAfter, pageBreakBefore: style.pageBreakBefore, pageBreakAfter: style.pageBreakAfter, display: style.display });
-          }
-        }
-      }
+      const main = document.querySelector('main');
+      const world = document.querySelector('.gbs2-world');
+      const ancestors = [];
+      for (let node = main; node; node = node.parentElement) ancestors.push(describe(node));
+      const mainChildren = main ? [...main.children].map(describe) : [];
+      const worldChildren = world ? [...world.children].map(describe) : [];
       return {
+        viewport: { width: innerWidth, height: innerHeight },
         doc: document.documentElement.scrollHeight,
         body: document.body.scrollHeight,
-        bodyChildren: [...document.body.children].map(pick),
-        forcedBreaks,
-        pseudoBreaks: pseudoBreaks.slice(0, 100),
-        positioned,
-        tail,
+        htmlStyle: describe(document.documentElement),
+        bodyStyle: describe(document.body),
+        ancestors,
+        worldChildren,
+        mainChildren,
         report: window.GBPrintEngine?.getReport?.() || null,
       };
     });
 
     const pdfPath = join(OUT, `${variant.name}.pdf`);
-    await page.pdf({
-      path: pdfPath,
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: variant.pdf?.preferCSSPageSize ?? true,
-    });
+    await page.pdf({ path: pdfPath, format: 'A4', printBackground: true, preferCSSPageSize: true });
     const pages = countPages(pdfPath);
     execFileSync('pdftoppm', ['-f', String(pages), '-singlefile', '-png', '-r', '72', pdfPath, join(OUT, `${variant.name}-last`)]);
     results.push({ name: variant.name, pages, diagnostics });
@@ -216,8 +137,8 @@ console.log(JSON.stringify(results.map(({ name, pages, diagnostics }) => ({
   pages,
   doc: diagnostics.doc,
   body: diagnostics.body,
-  forcedBreaks: diagnostics.forcedBreaks.length,
-  pseudoBreaks: diagnostics.pseudoBreaks.length,
-  bodyChildren: diagnostics.bodyChildren.length,
-  tail: diagnostics.tail.length,
+  bodyPadding: diagnostics.bodyStyle?.padding,
+  bodyMinHeight: diagnostics.bodyStyle?.minHeight,
+  worldChildren: diagnostics.worldChildren.length,
+  mainChildren: diagnostics.mainChildren.length,
 })), null, 2));
