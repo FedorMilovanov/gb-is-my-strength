@@ -209,7 +209,13 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Test Russian Baptist 3D shell across desktop and mobile
-        run: npm run konfessii:audit
+        env:
+          KONFESSII_AUDIT_REQUIRE_DIST: "1"
+          KONFESSII_AUDIT_REQUIRE_BROWSER: "1"
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run konfessii:audit 2>&1 | tee reports/konfessii-map-audit.log
 
       - name: Test every public surface in Chromium
         env:
@@ -244,6 +250,7 @@ jobs:
             reports/seo-dist.log
             reports/search-index-policy-inventory.json
             reports/search-index-policy-inventory.md
+            reports/konfessii-map-audit.log
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
