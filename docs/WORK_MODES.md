@@ -1,377 +1,236 @@
 # Work Modes — FAST / LANE / SYSTEM
 
-**Дата:** 2026-06-23
-**Версия:** 2.0 (упрощено по `AGENT_PROTECTION_SIMPLE_v3_0`)
+**Updated:** 2026-07-24  
+**Current policy version:** 3.0
 
-Цель:
+Purpose: keep iteration proportionate without letting small changes bypass ownership, review or permanent contracts.
 
-```text
-не утонуть в защите,
-но не дать агентам ломать проект shared-файлами, main и параллельной работой.
-```
+## 1. Authority before mode
 
----
+Before choosing a mode, inspect:
 
-## 0. Проверки: FAST loop vs FULL gate
+1. open issues and pull requests;
+2. current `main` and the exact files being changed;
+3. `docs/refactor-2026/lanes/README.md` for navigation;
+4. AuditRepo for verified backlog and production-witness boundaries.
 
-**Не гоняй полный `validate:static-publication` после каждой мелкой правки в Arena.**
-Это не повышает качество, а сжигает лимит времени/контекста: полный gate включает Astro check/build и десятки route/content audits.
+A branch name, old lane report or closed PR description is not current authority by itself.
 
-### FAST loop — после маленькой правки / перед следующим шагом
+All repository changes use a branch and PR. `FAST` means a small verification scope, **not direct mutation of `main`**. An emergency direct-main operation requires an explicit owner decision and immediate post-push verification/reconciliation.
 
-Используй быстрые, точные проверки по зоне риска:
+## 2. Verification layers
+
+### FAST loop
+
+Run the smallest checks that directly cover the current risk while iterating:
 
 ```bash
-# всегда, если есть diff
 git diff --check
 
-# metadata / refactor / route contracts
+# route / registry / metadata
 npm run migration:metadata:check
 npm run native:runtime:audit:strict
 
-# контент / MDX / search / series
+# content / MDX / shared data
 npm run data:consistency
 npm run content:parity
 npm run mdx:structure:audit
 
-# shared/system/workflows
+# system / workflows / shared files
 npm run guard:shared-files
 npm run workflows:check
+npm run control-plane:audit
+npm run workflows:lint
 ```
 
-Выбирай не всё подряд, а релевантный набор. Для system/refactor lanes минимум обычно:
+Do not run every command after every edit. Record why the selected checks cover the touched surface.
 
-```bash
-git diff --check
-npm run guard:shared-files
-npm run data:consistency
-npm run migration:metadata:check
-npm run native:runtime:audit:strict
-```
+### Final barrier
 
-### FULL gate — перед commit / merge / push production-impact lane
-
-Перед финальным commit/merge/push, если менялись production route, migration matrix, scripts, package/workflows, shared data или refactor contracts:
+Before a production, shared, refactor or system PR is merged:
 
 ```bash
 npm run validate:static-publication
 npm run guard:shared-files
 ```
 
-Docs-only typo FAST может не требовать full gate. Но **любой refactor/system/shared lane** должен иметь full gate в lane report или явное объяснение, почему он невозможен.
+Add current route/browser/visual contracts for the affected surface. A docs-only PR may use a narrower barrier when its scope cannot affect build/runtime; the PR must state that boundary and still pass Shared Files Guard.
 
-### Почему так
+A failed or unavailable check is never silently omitted: record the exact blocker and do not convert it into a green claim.
 
-- быстрые проверки дают feedback за секунды и ловят локальные ошибки;
-- полный gate остаётся обязательным release-barrier;
-- в Arena sandbox 2 CPU / ~2 GB RAM, поэтому частые Astro build/full gates тормозят работу и иногда провоцируют OOM в fresh worktree;
-- качество не теряется, если full gate обязательно проходит перед финальным commit/merge/push.
-
----
-
-## 1. Три режима
+## 3. Modes
 
 ### FAST
 
-Один агент. Маленькая правка. Нет shared/system файлов.
+Use for one bounded, low-risk change with no shared runtime ownership:
 
-Примеры:
+- typo or factual wording correction;
+- one current documentation file;
+- route-local text with no metadata/schema impact;
+- a small test expectation that does not weaken coverage.
+
+Branch example:
 
 ```text
-опечатка
-один docs-файл
-небольшая правка текста
-route-local report
+lane/fast-<task>-YYYY-MM-DD
 ```
 
-Проверки FAST:
+Minimum:
 
 ```bash
 git diff --check
-npm run data:consistency # если менялся контент/search/series
+# plus one targeted contract when applicable
 ```
 
-Если правка затрагивает route metadata/contracts, добавь:
-
-```bash
-npm run migration:metadata:check
-npm run native:runtime:audit:strict
-```
-
----
+FAST must not change workflows, package files, global CSS/JS, migration registries, shared layouts or broad data.
 
 ### LANE
 
-Route/refactor/много файлов/параллельная работа.
+Use for route/feature work, multi-file refactors or any surface that needs a named owner.
 
-Примеры:
+Branch example:
 
 ```text
-Gill route
-Nagornaya route
-Heart series
-Pagefind audit route
-Astro shell
-_legacy split
+lane/<route-or-feature>-<phase>-YYYY-MM-DD
 ```
 
-Ветка:
+Declaration:
 
-```bash
-git checkout -b lane/<task>
+```md
+Lane: <branch>
+Issue/PR: <number>
+Routes: <bounded list>
+Files allowed: <bounded list>
+Files forbidden: <list>
+Source of truth: <files / exact SHA>
+Required checks: <commands / browser profiles>
+Rollback point: <exact main SHA>
 ```
 
-FAST loop во время работы:
-
-```bash
-git diff --check
-npm run guard:shared-files
-npm run data:consistency
-npm run migration:metadata:check
-npm run native:runtime:audit:strict
-```
-
-Перед commit/merge/push:
-
-```bash
-npm run validate:static-publication
-npm run guard:shared-files
-```
-
----
+A route lane does not absorb unrelated shared/system fixes. Record those as out-of-lane findings.
 
 ### SYSTEM
 
-Shared/global/high-risk.
-
-Примеры:
+Use for shared/global/control-plane work, including:
 
 ```text
 AGENTS.md
-package.json
-package-lock.json
+package.json / package-lock.json
 .github/workflows/**
-astro.config.*
-tsconfig.*
+astro.config.* / tsconfig.*
 sw.js
 migration/**
-scripts/cache-bust.js
-scripts/copy-legacy-to-dist.js
-scripts/check-workflows.js
+scripts that define repository or release policy
 src/layouts/**
-css/**
-js/**
+shared reader/overlay services
+css/** / js/**
 karty/_engine/**
 ```
 
-Ветка:
+Branch example:
 
-```bash
-git checkout -b lane/system-<task>
-# или lane/protection-*
+```text
+lane/system-<task>-YYYY-MM-DD
 ```
 
-FAST loop во время работы:
+SYSTEM work must remain separate from route content and visual redesign. It must run:
 
 ```bash
-git diff --check
 npm run guard:shared-files
 npm run workflows:check
-npm run migration:metadata:check
-npm run native:runtime:audit:strict
+npm run control-plane:audit
+npm run workflows:lint
 ```
 
-Перед commit/merge/push:
+and the final barrier appropriate to the changed control plane.
 
-```bash
-npm run validate:static-publication
-npm run guard:shared-files
-```
+## 4. Shared data and documents
 
-SYSTEM нельзя совмещать с route/content refactor.
-
----
-
-## 2. Два запрета
-
-### Запрет 1
-
-```text
-Route lane не трогает SYSTEM files.
-```
-
-То есть `lane/gill-*` не должен менять:
-
-```text
-package.json
-package-lock.json
-.github/workflows/**
-AGENTS.md
-src/layouts/**
-css/**
-js/**
-karty/_engine/**
-sw.js
-migration/**
-```
-
-Даже если commit message содержит `[LANE lane/gill-*]`.
-
----
-
-### Запрет 2
-
-```text
-Обычный агент не обновляет AGENTS.md.
-```
-
-Он пишет:
-
-```text
-docs/refactor-2026/lanes/<lane-name>.md
-```
-
-`AGENTS.md` обновляет только интегратор/system lane.
-
----
-
-## 3. Группы файлов
-
-### SYSTEM files
-
-```text
-AGENTS.md
-package.json
-package-lock.json
-.github/workflows/**
-astro.config.*
-tsconfig.*
-sw.js
-migration/**
-scripts/cache-bust.js
-scripts/copy-legacy-to-dist.js
-scripts/check-workflows.js
-src/layouts/**
-css/**
-js/**
-karty/_engine/**
-```
-
-Только:
-
-```text
-lane/system-*
-lane/protection-*
-```
-
----
-
-### SHARED data / shared docs
+Shared data/documents include, at minimum:
 
 ```text
 docs/WORK_MODES.md
 docs/LANE_LOCK_POLICY.md
+docs/AGENT_PUSH_MODEL.md
 data/series.json
 data/search-manifest.json
 data/public-content-baseline.json
 scripts/guard-shared-files.js
 scripts/check-data-consistency.js
 scripts/audit-pro.js
-scripts/visual-parity-screenshots.js
+scripts/repository-control-plane-audit.mjs
 ```
 
-Только:
+Change them only in a declared shared/system lane. A docs file is not automatically safe merely because it cannot execute: stale governance can direct later agents into destructive operations.
 
-```text
-lane/shared-*
-lane/system-*
-lane/protection-*
-```
+## 5. Out-of-lane findings
 
----
-
-### SAFE
-
-```text
-docs/refactor-2026/lanes/**
-docs/research/**
-reports/**
-audit/**
-sitemap.xml
-robots.txt
-CNAME
-```
-
-Всегда можно.
-
----
-
-## 4. Главное правило поведения
-
-```text
-Если нашёл проблему вне своей зоны — не исправляй.
-Запиши Out-of-lane finding.
-```
-
-Пример:
+Do not opportunistically repair a different owner’s surface.
 
 ```md
-## 4.1 Out-of-lane finding
+## Out-of-lane finding
 
-Lane: lane/gill-spravochnik-gs7
-
-Нашёл:
-- data/series.json, возможно устарел readTime.
-
-Не исправлял:
-- это shared data.
-
-Предложение:
-- lane/shared-readtime-sync
+Observed in: <file / route / exact SHA>
+Evidence: <what proves it>
+Not changed because: <ownership boundary>
+Proposed lane: <name>
 ```
 
----
+For a likely lost branch or file, add it to the forensic/recovery register before deleting or recreating anything.
 
-## 5. Lane index
+## 6. Branch and PR lifecycle
 
-Активные lanes фиксируются в:
+### Before work
 
-```text
-docs/refactor-2026/lanes/README.md
-```
+- inspect open PRs/issues and current branches;
+- choose a unique owner and bounded scope;
+- declare allowed/forbidden files and rollback SHA;
+- identify current tests, not historical tests from the old branch.
 
----
+### Before merge
 
-## 6. Lane report
+- confirm the PR diff contains only declared scope;
+- verify exact head, not an earlier commit;
+- resolve review threads;
+- preserve source authority separately from deployed/live authority;
+- ensure no temporary workflow, trigger, writer or patcher remains.
 
-Шаблон:
+### Before branch deletion
 
-```text
-docs/refactor-2026/lanes/TEMPLATE.md
-```
+Do **not** delete a branch solely because its PR closed or a newer PR says “superseded”. First classify its actual content:
 
----
+- byte-equivalent or fully represented in `main`;
+- diagnostic/trigger-only and intentionally disposable;
+- superseded with a verified replacement chain;
+- unique prototype/evidence worth archiving;
+- selective recovery candidate.
 
-## 7. Команды для агента
+For unique material that should not enter `main`, create an explicit `archive/forensic-*` ref or preserve it in governed AuditRepo evidence. Archive refs are never merged wholesale.
 
-### FAST
+## 7. Current commands by mode
 
 ```bash
+# FAST
 git diff --check
-npm run data:consistency
-```
 
-### LANE
-
-```bash
+# LANE
+git diff --check
 npm run guard:shared-files
 npm run data:consistency
-```
+npm run migration:metadata:check
+# plus route/browser/visual checks
 
-### SYSTEM
-
-```bash
+# SYSTEM
+git diff --check
 npm run guard:shared-files
 npm run workflows:check
+npm run control-plane:audit
+npm run workflows:lint
 npm run validate:static-publication
 ```
+
+The current lane index is `docs/refactor-2026/lanes/README.md`. The current architecture/recovery summary is `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`.
+
+## Historical policy
+
+Version 2.0 remains available in Git history at blob `4d934372cae4c3deb3f0df10cfb5d20a74cdbe6e`. It reflected the June 2026 sandbox and permitted direct-main FAST work; that permission is retired by this version.
