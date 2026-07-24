@@ -31,8 +31,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch origin main fix/gill-readerstate-submenu-release-2026-07-24
-          git merge --no-commit --no-ff origin/main
+          git merge --no-edit origin/main
           git show origin/fix/gill-readerstate-submenu-release-2026-07-24:src/components/article-pilots/gill-series/gillSeriesData.ts \
             > src/components/article-pilots/gill-series/gillSeriesData.ts
 
@@ -265,12 +267,11 @@ jobs:
             raise SystemExit('unexpected final-scope files: '+', '.join(bad))
           PY
 
-      - name: Commit proven transaction
+      - name: Commit proven self-cleaning transaction
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/_temp-production-witness-850fd6b.yml
           git add -u
           git add .github/workflows/gill-pre-v16-submenu.yml
           git diff --cached --check
