@@ -1,0 +1,65 @@
+name: Temporary Reader R6 Engine Log Wiring
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/_temp-reader-r6-engine-log.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact R6 branch
+        uses: actions/checkout@v4
+        with:
+          ref: lane/reader-r6-state-platform-2026-07-24
+          fetch-depth: 0
+
+      - name: Preserve engine sweep diagnostics permanently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/route-registry-validators.yml')
+          text = path.read_text()
+          old_step = '''      - name: Test reader engines and ReaderState R6 in Chromium
+        run: npm run engine:sweep
+'''
+          new_step = '''      - name: Test reader engines and ReaderState R6 in Chromium
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run engine:sweep 2>&1 | tee reports/engine-sweep.log
+'''
+          old_artifact = '''            reports/konfessii-map-audit.log
+            reports/public-surface-browser-matrix.json
+'''
+          new_artifact = '''            reports/konfessii-map-audit.log
+            reports/engine-sweep.log
+            reports/public-surface-browser-matrix.json
+'''
+          if text.count(old_step) != 1:
+              raise SystemExit('engine sweep step contract drifted')
+          if text.count(old_artifact) != 1:
+              raise SystemExit('artifact list contract drifted')
+          path.write_text(text.replace(old_step, new_step).replace(old_artifact, new_artifact))
+          PY
+          git diff --check
+          grep -F 'npm run engine:sweep 2>&1 | tee reports/engine-sweep.log' .github/workflows/route-registry-validators.yml
+          grep -F 'reports/engine-sweep.log' .github/workflows/route-registry-validators.yml
+
+      - name: Commit permanent diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/route-registry-validators.yml
+          git diff --cached --check
+          git commit -m "[LANE lane/reader-r6-state-platform-2026-07-24][ALLOW_SHARED] ci(reader): retain engine sweep diagnostics"
+          git push origin HEAD:lane/reader-r6-state-platform-2026-07-24
