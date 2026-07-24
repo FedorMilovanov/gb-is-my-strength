@@ -1,0 +1,103 @@
+name: TEMP Map Archaeology Imported Decisions
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches: [main]
+    paths:
+      - scripts/_temp-map-archaeology-verification-policy-materialize.mjs
+      - scripts/_temp-map-archaeology-imported-decisions-materialize.mjs
+      - scripts/map-archaeology-source-registry-audit.js
+      - karty/_data/archaeology-source-registry.json
+      - karty/_data/archaeology-source-provenance.json
+      - .github/workflows/_temp-map-archaeology-imported-decisions.yml
+
+concurrency:
+  group: temp-map-archaeology-imported-decisions-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'agent/map-archaeology-imported-verification' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Materialize fail-closed verification policy
+        run: node scripts/_temp-map-archaeology-verification-policy-materialize.mjs --write
+      - name: Materialize explicit source decisions
+        run: node scripts/_temp-map-archaeology-imported-decisions-materialize.mjs --write
+      - name: Verify source syntax and decision guards
+        run: |
+          node --check scripts/_temp-map-archaeology-verification-policy-materialize.mjs
+          node --check scripts/_temp-map-archaeology-imported-decisions-materialize.mjs
+          node --check scripts/map-archaeology-source-registry-audit.js
+          node scripts/_temp-map-archaeology-verification-policy-materialize.mjs
+          node scripts/_temp-map-archaeology-imported-decisions-materialize.mjs
+          node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
+          node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-provenance.json','utf8'))"
+      - name: Run independent provenance and category contracts
+        run: |
+          node scripts/map-archaeology-source-registry-audit.js
+          node scripts/map-archaeology-category-coverage-audit.js
+      - name: Verify exact three-file transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          mapfile -t changed < <(git diff --name-only)
+          printf 'changed[%s]=%s\n' "${#changed[@]}" "${changed[*]}"
+          test "${#changed[@]}" -eq 3
+          test "${changed[0]}" = "karty/_data/archaeology-source-provenance.json"
+          test "${changed[1]}" = "karty/_data/archaeology-source-registry.json"
+          test "${changed[2]}" = "scripts/map-archaeology-source-registry-audit.js"
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const catalog = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-registry.json','utf8'));
+          const queue = catalog.sources.filter((source) => [
+            'aig-have-we-found-sodom','creation-chronogenealogies','creation-times-abraham','icr-biblical-age',
+            'loc-mamre','loc-shur-el-raha','ritmeyer-mamre','wibilex-beersheba','wibilex-bethel','wibilex-hebron'
+          ].includes(source.id));
+          if (catalog.sources.some((source) => source.verification === 'imported')) throw new Error('imported queue remains');
+          if (queue.filter((source) => source.verification === 'verified').length !== 9) throw new Error('verified decision count drift');
+          const needs = queue.filter((source) => source.verification === 'needs-review').map((source) => source.id);
+          if (needs.join(',') !== 'ritmeyer-mamre') throw new Error(`needs-review drift: ${needs.join(',')}`);
+          console.log('PASS 9 verified / 1 needs-review / 0 imported');
+          NODE
+      - name: Upload decision diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-archaeology-imported-decisions-${{ github.run_id }}
+          path: |
+            reports/map-archaeology-source-registry.json
+            reports/map-archaeology-category-coverage.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Commit exact verification transaction
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            karty/_data/archaeology-source-registry.json \
+            karty/_data/archaeology-source-provenance.json \
+            scripts/map-archaeology-source-registry-audit.js
+          git diff --cached --check
+          git commit -m "research(karty): resolve imported verification queue"
+          git push origin "HEAD:${HEAD_REF}"
