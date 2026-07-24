@@ -38,6 +38,11 @@ assert.match(engine,/dataset.sourcePerspective/);
 assert.match(engine,/url.protocol==='https:'/);
 assert.match(engine,/textContent/);
 assert.match(engine,/version:'0.56.0'/);
+assert.ok(engine.includes('const fallbackOverlayStates = new Map()'));
+assert.ok(engine.includes("element.removeAttribute('inert')"));
+assert.ok(engine.includes("overlayState.element.setAttribute('inert', '')"));
+assert.ok(engine.includes('const badgeUses=new Set()'));
+assert.ok(engine.includes("general:'академическая рамка'"));
 assert.doesNotMatch(engine,/ARCHAEOLOGY_REFERENCES|_classifySource|_sourceBadges|_renderArchaeologyFooter/);
 assert.equal(fs.existsSync('karty/_engine/map-archaeology-adapter.js'),false,'transition adapter must be retired');
 

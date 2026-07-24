@@ -35,7 +35,7 @@ const MapEngine = (function() {
   const EASE = { outCubic: p => 1 - Math.pow(1 - p, 3) };
   let mapOverlaySequence = 0;
 
-  // Verified Archaeological References (2024-2026 discoveries)
+  // Shared route palette and tab vocabulary.
   const STAGE_COLORS = ['#e8c879','#e0813f','#4a9e6e','#cf5b6b','#8b6b4a','#4a80b4'];
   const ROUTE_PATH_COLORS=Object.freeze({gold:STAGE_COLORS[0],lot:STAGE_COLORS[1],war:STAGE_COLORS[3]});
   const TAB_LABELS = {story:'Сюжет',bible:'Писание',arch:'Археология',he:'Иврит',dispute:'Дискуссия',sci:'Наука',photos:'Фото',extra:'Библ.контекст'};
@@ -364,6 +364,7 @@ const MapEngine = (function() {
     const photoOverlayOwner = `${mapOwnerStem}:photo`;
     const fallbackOverlayOpeners = new Map();
     const fallbackOverlayOwners = new Set();
+    const fallbackOverlayStates = new Map();
 
     function specialInertTargets(exclusions = []) {
       const excluded = new Set(exclusions.filter(Boolean));
@@ -384,8 +385,24 @@ const MapEngine = (function() {
       const wasOpen = fallbackOverlayOwners.has(ownerId);
       fallbackOverlayOwners.add(ownerId);
       if (!wasOpen && options.lockScroll !== false) window.SiteUtils?.lockScroll?.(ownerId);
+      const element = options.element || null;
+      const inertTargets = Array.isArray(options.inertTargets) ? options.inertTargets.filter(Boolean) : [];
+      const targetStates = inertTargets.map(target => ({
+        target,
+        hadInert: target.hasAttribute('inert'),
+        ariaHidden: target.getAttribute('aria-hidden'),
+      }));
+      targetStates.forEach(({target}) => {
+        target.setAttribute('inert', '');
+        target.setAttribute('aria-hidden', 'true');
+      });
+      if (element) {
+        element.removeAttribute('inert');
+        element.setAttribute('aria-hidden', 'false');
+      }
+      fallbackOverlayStates.set(ownerId, {element, targetStates});
       setTimeout(() => focusSpecialTarget(options.focusTarget), 0);
-      return {ownerId, element:options.element || null};
+      return {ownerId, element};
     }
 
     function closeSpecialOverlay(ownerId, reason = 'close', options = {}) {
@@ -393,6 +410,16 @@ const MapEngine = (function() {
       if (!fallbackOverlayOwners.has(ownerId)) return false;
       fallbackOverlayOwners.delete(ownerId);
       window.SiteUtils?.unlockScroll?.(ownerId);
+      const overlayState = fallbackOverlayStates.get(ownerId);
+      fallbackOverlayStates.delete(ownerId);
+      if (overlayState?.element) {
+        overlayState.element.setAttribute('aria-hidden', 'true');
+        overlayState.element.setAttribute('inert', '');
+      }
+      (overlayState?.targetStates || []).forEach(({target, hadInert, ariaHidden}) => {
+        if (hadInert) target.setAttribute('inert', ''); else target.removeAttribute('inert');
+        if (ariaHidden === null) target.removeAttribute('aria-hidden'); else target.setAttribute('aria-hidden', ariaHidden);
+      });
       const opener = fallbackOverlayOpeners.get(ownerId);
       fallbackOverlayOpeners.delete(ownerId);
       if (options.restoreFocus !== false && opener) setTimeout(() => focusSpecialTarget(opener), 0);
@@ -2072,7 +2099,8 @@ container.appendChild(panel);
       'project-interpretation':'позиция проекта','methodological-guardrail':'методологическая оговорка',
       candidate:'кандидат',disputed:'дискуссионно',rejected:'отвергнуто',high:'сильная опора',
       supporting:'поддерживающая опора',interpretation:'интерпретация',negative:'отрицательное свидетельство',
-      verified:'проверено',imported:'очередь проверки',active:'действующий источник',retracted:'отозвано'
+      verified:'проверено',imported:'очередь проверки',active:'действующий источник',retracted:'отозвано',
+      general:'академическая рамка',conservative:'консервативная интерпретация',yec:'YEC-интерпретация'
     });
 
     function _archSafeUrl(value){
@@ -2088,7 +2116,7 @@ container.appendChild(panel);
       if(href){const link=_archText('a','map-arch-source__link',source.title);link.href=href;link.target='_blank';link.rel='noopener noreferrer';node.appendChild(link)}
       else node.appendChild(_archText('span','map-arch-source__link',source.title));
       const details=[source.organization,Number.isInteger(source.year)?String(source.year):'',ARCHAEOLOGY_LABELS[source.evidenceUse]||source.evidenceUse,
-        source.perspective==='yec'?'YEC-интерпретация':source.perspective,ARCHAEOLOGY_LABELS[source.status]||source.status,
+        ARCHAEOLOGY_LABELS[source.perspective]||source.perspective,ARCHAEOLOGY_LABELS[source.status]||source.status,
         ARCHAEOLOGY_LABELS[source.verification]||source.verification,source.accessedAt?`проверено ${source.accessedAt}`:''].filter(Boolean).join(' · ');
       node.appendChild(_archText('span','map-arch-source__meta',details));
       node.appendChild(_archText('span','map-arch-source__meta map-arch-source__id',`source: ${source.id}`));
@@ -2114,7 +2142,16 @@ container.appendChild(panel);
         article.appendChild(_archText('div','map-arch-card__statement',card.statement));
         if(card.limitations)article.appendChild(_archText('div','map-arch-card__limitations',`Ограничение: ${card.limitations}`));
         const ids=[...new Set([...(card.evidenceSourceIds||[]),...(card.interpretationSourceIds||[])])];
-        if(ids.length){const sources=document.createElement('div');sources.className='map-arch-sources';ids.forEach(id=>{const source=projection.sourceMeta?.[id];if(!source)return;badges.appendChild(_archBadge(source.evidenceUse));sources.appendChild(_archSourceNode(source))});article.appendChild(sources)}
+        if(ids.length){
+          const sources=document.createElement('div');sources.className='map-arch-sources';
+          const badgeUses=new Set();
+          ids.forEach(id=>{
+            const source=projection.sourceMeta?.[id];if(!source)return;
+            if(!badgeUses.has(source.evidenceUse)){badgeUses.add(source.evidenceUse);badges.appendChild(_archBadge(source.evidenceUse))}
+            sources.appendChild(_archSourceNode(source));
+          });
+          article.appendChild(sources);
+        }
         root.appendChild(article);
       });
       return root;
