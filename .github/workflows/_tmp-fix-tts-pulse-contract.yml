@@ -1,0 +1,77 @@
+name: Temporary TTS Pulse Contract Fix
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/_tmp-fix-tts-pulse-contract.yml"
+      - "scripts/_tmp-fix-tts-pulse-contract.js"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-fix-tts-pulse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/tts-download-cancel-notice
+          fetch-depth: 0
+
+      - name: Detect patch payload
+        id: patch
+        shell: bash
+        run: |
+          if test -f scripts/_tmp-fix-tts-pulse-contract.js; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "Pulse patch is already applied."
+          fi
+
+      - name: Set up Node 22.12
+        if: steps.patch.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Apply pulse fix and regression contract
+        if: steps.patch.outputs.present == 'true'
+        run: node scripts/_tmp-fix-tts-pulse-contract.js
+
+      - name: Verify syntax, contracts and cache revisions
+        if: steps.patch.outputs.present == 'true'
+        run: |
+          node --check js/vosk-tts-engine.js
+          node --check scripts/tts-download-consent-contract-test.js
+          node scripts/tts-download-consent-contract-test.js
+          node scripts/cache-bust.js
+          git diff --check
+
+      - name: Install Chromium dependencies
+        if: steps.patch.outputs.present == 'true'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Verify desktop and mobile interaction fixture
+        if: steps.patch.outputs.present == 'true'
+        run: node scripts/tts-download-notice-browser-test.js
+
+      - name: Commit pulse fix and remove patch payload
+        if: steps.patch.outputs.present == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(tts): wire loading pulse animation"
+          git push origin HEAD:agent/tts-download-cancel-notice
