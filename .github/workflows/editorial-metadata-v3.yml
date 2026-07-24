@@ -41,23 +41,44 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Capture production metadata observations in disposable worktree
+      - name: Validate editorial workflow transaction contract
+        run: node scripts/editorial-metadata-workflow-contract-test.js
+
+      - name: Build production metadata surface and preserve committed freeze
         shell: bash
         run: |
           mkdir -p reports
           set -o pipefail
-          node scripts/editorial-metadata-registry.js --write --build 2>&1 \
-            | tee reports/editorial-metadata-capture.log
+          npm run strangler:build:production-like 2>&1 \
+            | tee reports/editorial-metadata-build.log
+          cp data/editorial-metadata.json reports/editorial-metadata-frozen.json
 
-      - name: Validate generated registry structure
+      - name: Validate committed registry structure
         run: node scripts/editorial-metadata-registry.js --check
 
-      - name: Validate frozen projections against generated registry
+      - name: Validate current projections against committed freeze
         shell: bash
         run: |
           set -o pipefail
           node scripts/editorial-metadata-freeze-audit.js 2>&1 \
             | tee reports/editorial-metadata-freeze.log
+
+      - name: Capture current observations without mutating the freeze contract
+        shell: bash
+        run: |
+          set -o pipefail
+          restore_registry() {
+            cp reports/editorial-metadata-frozen.json data/editorial-metadata.json
+          }
+          trap restore_registry EXIT
+
+          node scripts/editorial-metadata-registry.js --write 2>&1 \
+            | tee reports/editorial-metadata-capture.log
+          cp data/editorial-metadata.json reports/editorial-metadata-observed.json
+
+          restore_registry
+          trap - EXIT
+          git diff --exit-code -- data/editorial-metadata.json
 
       - name: Validate asset revisions without writing
         if: always()
@@ -67,14 +88,15 @@ jobs:
           node scripts/cache-bust.js 2>&1 \
             | tee reports/asset-revision-drift.log
 
-      - name: Upload exact generated registry and diagnostics
+      - name: Upload frozen baseline, observed snapshot and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: editorial-metadata-v3-${{ github.run_id }}
           path: |
             reports/editorial-metadata-*.log
+            reports/editorial-metadata-frozen.json
+            reports/editorial-metadata-observed.json
             reports/asset-revision-drift.log
-            data/editorial-metadata.json
           if-no-files-found: error
           retention-days: 7
