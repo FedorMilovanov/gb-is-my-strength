@@ -1,0 +1,44 @@
+name: Temporary Reader R6 Chromium Fallback
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/_temp-reader-r6-chromium-fallback.yml"
+      - "scripts/_temp_reader_r6_chromium.patch"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact R6 branch
+        uses: actions/checkout@v4
+        with:
+          ref: lane/reader-r6-state-platform-2026-07-24
+          fetch-depth: 0
+
+      - name: Apply exact Chromium fallback patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '1186f55c4681edec3cd9ee6622be9fddcd48eb503d72562fe3174b0a1c08c6dc' 'scripts/_temp_reader_r6_chromium.patch' | sha256sum -c -
+          patch -p1 --batch --forward < scripts/_temp_reader_r6_chromium.patch
+          rm scripts/_temp_reader_r6_chromium.patch
+          node --check scripts/engine-sweep.mjs
+          grep -F "existsSync(pinnedChromium) ? { executablePath: pinnedChromium } : {}" scripts/engine-sweep.mjs
+          git diff --check
+
+      - name: Commit permanent compatibility fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/engine-sweep.mjs scripts/_temp_reader_r6_chromium.patch
+          git diff --cached --check
+          git commit -m "[LANE lane/reader-r6-state-platform-2026-07-24][ALLOW_SHARED] fix(ci): launch installed Chromium in engine sweep"
+          git push origin HEAD:lane/reader-r6-state-platform-2026-07-24
