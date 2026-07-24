@@ -8,6 +8,7 @@ on:
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/content-coverage-audit.js'
       - 'scripts/gill-context-visual-parity-audit.js'
+      - 'scripts/gill-spravochnik-visual-parity-audit.js'
       - 'scripts/legacy-source-authority-regression-test.js'
       - 'data/route-profiles/**'
       - '.github/workflows/source-authority-contract.yml'
@@ -18,6 +19,7 @@ on:
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/content-coverage-audit.js'
       - 'scripts/gill-context-visual-parity-audit.js'
+      - 'scripts/gill-spravochnik-visual-parity-audit.js'
       - 'scripts/legacy-source-authority-regression-test.js'
       - 'data/route-profiles/**'
       - '.github/workflows/source-authority-contract.yml'
@@ -55,8 +57,10 @@ jobs:
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
-      - name: Gill strict-native dist audit
-        run: node scripts/gill-context-visual-parity-audit.js --require-dist
+      - name: Gill strict-native dist audits
+        run: |
+          node scripts/gill-context-visual-parity-audit.js --require-dist
+          node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
 
       - name: Full static publication gate
         shell: bash
