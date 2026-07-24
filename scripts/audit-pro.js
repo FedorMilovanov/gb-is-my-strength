@@ -46,7 +46,8 @@ const ALLOWED_CSS = new Set([
   'css/sw-toast.css',
   'css/nagornaya-mobile-toc.css',
   'css/series-samizdat.css',
-  'css/reader-preferences.css'
+  'css/reader-preferences.css',
+  'css/tts-download-notice.css'
 ]);
 
 const REQUIRED_EXTRA_CSS = new Set([
@@ -251,8 +252,8 @@ function extractSiteConfig(html, fileLabel) {
   if (missingJs.length) R.err(`Missing JS files: ${missingJs.join(', ')}`);
   for (const f of REQUIRED_EXTRA_CSS) if (!exists(f)) R.err(`Missing required stylesheet: ${f}`);
 
-  if (!extraCss.length && !missingCss.length) R.ok('Structure: exactly 7 CSS files in /css');
-  if (!extraJs.length && !missingJs.length) R.ok('Structure: exactly 11 JS files in /js');
+  if (!extraCss.length && !missingCss.length) R.ok(`Structure: exactly ${ALLOWED_CSS.size} CSS files in /css`);
+  if (!extraJs.length && !missingJs.length) R.ok(`Structure: exactly ${ALLOWED_JS.size} JS files in /js`);
   if ([...REQUIRED_EXTRA_CSS].every(exists)) R.ok('Structure: fonts/fonts.css and nagornaya/tw.min.css exist');
 })();
 
