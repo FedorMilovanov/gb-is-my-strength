@@ -45,8 +45,9 @@ jobs:
           const fs = require('node:fs');
           const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
           const required = [
-            'map-engine.js v0.55',
-            "version:'0.55.0',buildDate:'2026-07-24'",
+            'map-engine.js v0.56',
+            "version:'0.56.0',buildDate:'2026-07-25'",
+            'cfg.archaeologyProjection',
             'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
             '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
             'min-height:0;overflow-y:auto;overscroll-behavior:contain',
@@ -63,11 +64,12 @@ jobs:
             'me-arrow-authored-'
           ];
           const missing = required.filter((needle) => !source.includes(needle));
-          if (missing.length || source.includes('stageIndex%STAGE_COLORS.length')) {
-            console.error('Missing or stale map source contract:', {missing, staleModulo: source.includes('stageIndex%STAGE_COLORS.length')});
+          const staleLegacyArchaeology = /ARCHAEOLOGY_REFERENCES|_classifySource|_renderArchaeologyFooter/.test(source);
+          if (missing.length || source.includes('stageIndex%STAGE_COLORS.length') || staleLegacyArchaeology) {
+            console.error('Missing or stale map source contract:', {missing, staleModulo: source.includes('stageIndex%STAGE_COLORS.length'), staleLegacyArchaeology});
             process.exit(1);
           }
-          console.log('PASS source map viewport, authored-path and version contracts');
+          console.log('PASS source map viewport, authored-path and v0.56 projection contracts');
           NODE
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml

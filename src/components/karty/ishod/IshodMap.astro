@@ -14,6 +14,7 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
 <MapRuntimeFallback
   title="Карта Исхода доступна в текстовом режиме"
   description="Для интерактивного маршрута нужен JavaScript. Основные сведения о карте доступны в заголовке страницы; можно вернуться к разделу карт и выбрать другой материал."
+  archaeologyMapId="ishod"
 />
 <div
   id="stage"
@@ -39,6 +40,13 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
     console.error('[ishod] MapEngine init failed:', error);
   }
 
+  function readArchaeologyProjection() {
+    var payload = document.getElementById('map-archaeology-projection');
+    if (!payload) return null;
+    try { return JSON.parse(payload.dataset.projection || 'null'); }
+    catch (error) { console.error('[map-archaeology] invalid projection payload:', error); return null; }
+  }
+
   function init() {
     var container = document.getElementById('stage');
     if (!container) return;
@@ -48,7 +56,7 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
         if (!window.MapEngine || typeof window.MapEngine.createMap !== 'function') {
           throw new Error('движок карты не загрузился');
         }
-        var inst = window.MapEngine.createMap(container, route, {});
+        var inst = window.MapEngine.createMap(container, route, { archaeologyProjection: readArchaeologyProjection() });
         if (!inst) throw new Error('движок не создал карту');
         container.setAttribute('data-map-state', 'ready');
         container.setAttribute('aria-busy', 'false');
