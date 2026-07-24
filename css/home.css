@@ -547,9 +547,9 @@ html.dark .home-page .favorites-card{background:rgba(32,27,22,.85)}
 body.home-page{
   --h-bg:#edf3f6;
   --h-ink:#102431;
-  --h-accent:#087d98;
+  --h-accent:#087890;
   --h-accent-dim:#35a8bd;
-  --h-muted:#607984;
+  --h-muted:#566f7a;
   --h-border:rgba(20,71,88,.15);
   --h-surface:rgba(255,255,255,.58);
   --h-glass:rgba(237,243,246,.78);
@@ -676,11 +676,21 @@ body.home-page .h-mobile-nav{
   max-height:calc(100vh - 66px);
   max-height:calc(100dvh - 66px);
   overflow-y:auto;
+  overscroll-behavior:contain;
   padding:22px max(22px,env(safe-area-inset-right,22px)) max(30px,calc(env(safe-area-inset-bottom,0px) + 22px)) max(22px,env(safe-area-inset-left,22px));
-  background:rgba(237,243,246,.96);
+  background:linear-gradient(180deg,#edf3f6 0%,#e8f1f4 100%);
+  box-shadow:0 30px 72px -48px rgba(4,34,47,.55);
 }
 html.dark body.home-page .h-mobile-nav{
-  background:rgba(5,16,24,.97);
+  background:linear-gradient(180deg,#06111a 0%,#071821 100%);
+  box-shadow:0 30px 72px -42px rgba(0,0,0,.92);
+}
+body.home-page .h-navbar:has(.h-mobile-menu-btn.is-open){
+  background:#edf3f6;
+  border-color:var(--h-border);
+}
+html.dark body.home-page .h-navbar:has(.h-mobile-menu-btn.is-open){
+  background:#06111a;
 }
 body.home-page .h-mobile-nav__head{
   display:flex;
@@ -1350,7 +1360,7 @@ body.home-page .h-mobile-hero-hub{display:none!important}
     margin-bottom:38px;
     overflow:visible;
   }
-  body.home-page .h-sacred-block--hero::before{margin-bottom:17px;font-size:7px}
+  body.home-page .h-sacred-block--hero::before{margin-bottom:17px;font-size:8px;opacity:1}
   body.home-page .h-sacred-line--1{
     font-size:clamp(1.12rem,5.8vw,1.48rem);
     margin-bottom:9px;
@@ -1367,7 +1377,7 @@ body.home-page .h-mobile-hero-hub{display:none!important}
     font-size:clamp(1.7rem,9vw,2.35rem);
   }
   body.home-page .h-sacred-ref{margin-top:15px;font-size:13px}
-  body.home-page .h-hero-tagline{margin-bottom:13px;font-size:8px}
+  body.home-page .h-hero-tagline{margin-bottom:13px;font-size:9px}
   body.home-page .h-hero-title{
     white-space:normal;
     max-width:360px;
@@ -1394,7 +1404,7 @@ body.home-page .h-mobile-hero-hub{display:none!important}
     max-width:340px;
     gap:7px 13px;
     margin-top:19px;
-    font-size:8.5px;
+    font-size:9.5px;
   }
   body.home-page .h-hero-cues span + span::before{display:none}
   body.home-page .h-rule{margin-top:46px}
