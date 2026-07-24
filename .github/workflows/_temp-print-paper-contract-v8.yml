@@ -1,8 +1,6 @@
 name: TEMP Print Paper Contract v8
 
 on:
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
