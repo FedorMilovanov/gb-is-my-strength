@@ -84,12 +84,12 @@ jobs:
           git diff --check
           git status --short
 
-      - name: Remove one-time materializer and publish reviewed branch
+      - name: Publish product tree without protected workflow mutation
         env:
           TARGET_BRANCH: lane/system-gill-readerstate-deploy-unblock-2026-07-25
         run: |
           set -euo pipefail
-          rm .github/workflows/_temp-materialize-gill-readerstate-fix.yml
+          rm .github/workflows/gill-pre-v16-submenu.yml
           rm scripts/_temp-materialize-gill-readerstate-fix.mjs
           rm scripts/_temp-correct-gill-current-labels.mjs
           git config user.name 'github-actions[bot]'
