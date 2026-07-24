@@ -1,0 +1,90 @@
+name: TEMP Print Important Ratchet Fix
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-print-ratchet-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply fail-closed print specificity refactor
+        run: |
+          mkdir -p reports/reader-ui-pdf
+          node --check scripts/_temp-print-important-ratchet-fix.mjs
+          set -o pipefail
+          node scripts/_temp-print-important-ratchet-fix.mjs 2>&1 | tee reports/reader-ui-pdf/print-ratchet.log
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+
+      - name: Remove temporary infrastructure before proof
+        run: |
+          git rm .github/workflows/_temp-print-important-ratchet-fix.yml
+          git rm scripts/_temp-print-important-ratchet-fix.mjs
+          test ! -e .github/workflows/_temp-print-important-ratchet-fix.yml
+          test ! -e scripts/_temp-print-important-ratchet-fix.mjs
+          git diff --check
+
+      - name: Static architecture gates
+        run: |
+          node --check js/site.js
+          node --check scripts/engine-sweep.mjs
+          node scripts/reader-preferences-regression-test.js
+          npm run gill:chrome:guard
+          npm run audit:premium-controls
+          npm run css:layer:validate
+          node scripts/audit-pro.js
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Playwright reader and A4 marathon
+        env:
+          GB_READER_UI_ARTIFACT_DIR: reports/reader-ui-pdf
+        run: |
+          set -o pipefail
+          node scripts/engine-sweep.mjs 2>&1 | tee reports/reader-ui-pdf/engine-sweep.log
+
+      - name: Commit ratchet-safe contract
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "refactor(print): meet CSS specificity ratchet without weakening A4 output"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Upload final proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-print-ratchet-proof-${{ github.sha }}
+          path: reports/reader-ui-pdf
+          if-no-files-found: warn
+          retention-days: 7
