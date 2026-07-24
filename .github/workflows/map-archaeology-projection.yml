@@ -10,6 +10,7 @@ on:
       - 'src/components/karty/_shared/MapRuntimeFallback.astro'
       - 'src/lib/karty/map-archaeology-projection.mjs'
       - 'scripts/map-archaeology-projection-contract-test.mjs'
+      - 'scripts/map-archaeology-projection-browser-test.mjs'
       - '.github/workflows/map-archaeology-projection.yml'
   workflow_dispatch:
 
@@ -29,7 +30,21 @@ jobs:
           node --check karty/_engine/map-archaeology-adapter.js
           node --check src/lib/karty/map-archaeology-projection.mjs
           node --check scripts/map-archaeology-projection-contract-test.mjs
+          node --check scripts/map-archaeology-projection-browser-test.mjs
           node scripts/map-archaeology-source-registry-audit.js
           node scripts/map-archaeology-projection-contract-test.mjs
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs .github/workflows/map-archaeology-projection.yml
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Exercise tab, place and legacy replacement lifecycle
+        run: node scripts/map-archaeology-projection-browser-test.mjs
