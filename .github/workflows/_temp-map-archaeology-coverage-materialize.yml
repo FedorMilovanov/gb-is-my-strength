@@ -5,9 +5,7 @@ on:
     types: [opened, synchronize, reopened, labeled]
     branches: [main]
     paths:
-      - scripts/_temp-map-archaeology-coverage-materialize.mjs
-      - scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
-      - scripts/_temp-map-archaeology-claim-limits-materialize.mjs
+      - scripts/_temp-map-archaeology-boundary-materialize.mjs
       - scripts/map-archaeology-source-registry-audit.js
       - scripts/map-archaeology-category-coverage-audit.js
       - karty/_data/archaeology-source-registry.json
@@ -15,17 +13,17 @@ on:
       - .github/workflows/_temp-map-archaeology-coverage-materialize.yml
 
 concurrency:
-  group: temp-map-archaeology-coverage-${{ github.event.pull_request.number }}
+  group: temp-map-archaeology-boundary-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  materialize:
+  materialize-boundary:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.head_ref == 'agent/map-archaeology-registry-expansion' &&
       contains(github.event.pull_request.labels.*.name, 'autofix')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
@@ -37,59 +35,44 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
-      - name: Materialize declared multiscope audit
-        run: node scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs --write
-      - name: Materialize explicit catalog and provenance decisions
-        run: node scripts/_temp-map-archaeology-coverage-materialize.mjs --write
-      - name: Materialize explicit disputed/candidate limitations
-        run: node scripts/_temp-map-archaeology-claim-limits-materialize.mjs --write
-      - name: Verify source syntax
+      - name: Materialize exact provenance foundation boundary
+        run: node scripts/_temp-map-archaeology-boundary-materialize.mjs --write
+      - name: Verify syntax and independent contracts
         run: |
-          node --check scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
-          node --check scripts/_temp-map-archaeology-coverage-materialize.mjs
-          node --check scripts/_temp-map-archaeology-claim-limits-materialize.mjs
-          node --check scripts/map-archaeology-source-registry-audit.js
-          node --check scripts/map-archaeology-category-coverage-audit.js
-          node scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
-          node scripts/_temp-map-archaeology-claim-limits-materialize.mjs
-          node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
-          node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-provenance.json','utf8'))"
-      - name: Run independent provenance and category contracts
-        run: |
+          node --check scripts/_temp-map-archaeology-boundary-materialize.mjs
+          node scripts/_temp-map-archaeology-boundary-materialize.mjs
           node scripts/map-archaeology-source-registry-audit.js
           node scripts/map-archaeology-category-coverage-audit.js
-      - name: Upload transaction diagnostics
+      - name: Upload boundary diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: map-archaeology-materialize-${{ github.run_id }}
+          name: map-archaeology-boundary-${{ github.run_id }}
           path: |
             reports/map-archaeology-source-registry.json
             reports/map-archaeology-category-coverage.json
           if-no-files-found: warn
           retention-days: 14
-      - name: Verify exact three-file diff
+      - name: Verify exact two-file boundary diff
         shell: bash
         run: |
           set -euo pipefail
           git diff --check
           mapfile -t changed < <(git diff --name-only)
           printf 'changed[%s]=%s\n' "${#changed[@]}" "${changed[*]}"
-          test "${#changed[@]}" -eq 3
+          test "${#changed[@]}" -eq 2
           test "${changed[0]}" = "karty/_data/archaeology-source-provenance.json"
           test "${changed[1]}" = "karty/_data/archaeology-source-registry.json"
-          test "${changed[2]}" = "scripts/map-archaeology-source-registry-audit.js"
           node - <<'NODE'
           const fs = require('node:fs');
           const catalog = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-registry.json','utf8'));
           const provenance = JSON.parse(fs.readFileSync('karty/_data/archaeology-source-provenance.json','utf8'));
-          if (catalog.sources.length !== 94) throw new Error(`catalog=${catalog.sources.length}`);
-          if (Object.keys(provenance.records).length !== 94) throw new Error(`provenance=${Object.keys(provenance.records).length}`);
-          if (catalog.runtimeCategories.length !== 12) throw new Error(`categories=${catalog.runtimeCategories.length}`);
-          if (catalog.sources.some((source) => Number.isFinite(source.year) && source.year < 1800)) throw new Error('ancient publication year remains');
-          console.log('PASS exact 94/94 sources and 12 categories');
+          const expected = '83a13a0755b37296ccec053987654ceefbca349e';
+          if (catalog.sourceBoundary !== expected || provenance.catalogBoundary !== expected) throw new Error('boundary drift');
+          if (catalog.sources.length !== 94 || Object.keys(provenance.records).length !== 94) throw new Error('corpus drift');
+          console.log(`PASS shared archaeology boundary ${expected}`);
           NODE
-      - name: Commit exact provenance transaction
+      - name: Commit exact boundary transaction
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -97,10 +80,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            karty/_data/archaeology-source-registry.json \
-            karty/_data/archaeology-source-provenance.json \
-            scripts/map-archaeology-source-registry-audit.js
+          git add karty/_data/archaeology-source-registry.json karty/_data/archaeology-source-provenance.json
           git diff --cached --check
-          git commit -m "research(karty): materialize provenance-complete category corpus"
+          git commit -m "research(karty): pin provenance foundation boundary"
           git push origin "HEAD:${HEAD_REF}"
