@@ -9,7 +9,7 @@ const MapEngine = require('../karty/_engine/map-engine.js');
 const root = path.join(__dirname, '..');
 const readRoute = (slug) => JSON.parse(fs.readFileSync(path.join(root, 'karty', slug, 'route.json'), 'utf8'));
 
-assert.strictEqual(MapEngine.version, '0.55.0', 'layers/theme contract belongs to map-engine v0.55.0');
+assert.strictEqual(MapEngine.version, '0.56.0', 'layers/theme contract belongs to map-engine v0.56.0');
 
 const avraam = readRoute('avraam');
 const warStage = (avraam.stages || []).findIndex((stage) => stage && stage.cls === 'war');
@@ -76,5 +76,9 @@ assert(source.includes("common(path,'main','me-route-main')"));
 assert(source.includes("element.setAttribute('data-route-source',sourceKind)"));
 assert(source.includes("element.setAttribute('data-route-dash',spec.dash?'1':'0')"));
 assert(!source.includes('layer.selector || `[data-layer="${layer.id}"]`'), 'exact-equality layer selector must not return');
+assert(source.includes('cfg.archaeologyProjection'), 'v0.56 must consume the governed archaeology projection directly');
+assert(!source.includes('ARCHAEOLOGY_REFERENCES'), 'hardcoded archaeology corpus must not return to the generic engine');
+assert(!source.includes('_classifySource'), 'keyword-based source classification must not return');
+assert(!source.includes('_renderArchaeologyFooter'), 'legacy archaeology footer must not return');
 
-console.log('✅ map layer membership/theme/authored-route regression guard passed');
+console.log('✅ map layer membership/theme/authored-route/projection regression guard passed');
