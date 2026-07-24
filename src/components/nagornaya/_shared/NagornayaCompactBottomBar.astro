@@ -1,11 +1,20 @@
 ---
 /**
  * Shared narrow-viewport contract for the native Nagornaya chapter bar,
- * glossary cards and long section headings.
+ * glossary cards, long section headings and WebKit intrinsic-width isolation.
  *
  * Closed glossary cards must not contribute intrinsic width. The canonical
  * tooltip controller moves a card to <body> and adds .gb-floating-tip before
  * it becomes visible.
+ *
+ * At <=359px a wide table remains intentionally wider than the viewport, but
+ * its wrapper owns that overflow as a local horizontal scrollport. Inline-size,
+ * layout and paint containment prevent WebKit from leaking the table's
+ * min-content width into the document root without hiding page-level content.
+ *
+ * Decorative section-subtitle indentation is removed at the same breakpoint.
+ * On an iPhone 320 the subtitle receives the full content width, including when
+ * glossary markup is injected, instead of enlarging the document.
  *
  * The mobile TOC keeps progress and sharing available, so at <=359px the
  * persistent bar may drop those duplicate controls (plus the redundant Up
@@ -18,6 +27,19 @@
   }
 
   @media (max-width: 359px) {
+    body.nagornaya-page #main-content .overflow-x-auto {
+      display: block;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      min-inline-size: 0;
+      overflow-x: auto !important;
+      overflow-y: hidden;
+      contain: inline-size layout paint;
+      isolation: isolate;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
     body.nagornaya-page #main-content .group,
     body.nagornaya-page #main-content .group > .flex,
     body.nagornaya-page #main-content .group > .flex > h2 {
@@ -26,6 +48,15 @@
     }
 
     body.nagornaya-page #main-content .group > .flex > h2 {
+      overflow-wrap: anywhere;
+    }
+
+    body.nagornaya-page #main-content .group > p.ml-14 {
+      margin-left: 0 !important;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      min-inline-size: 0;
+      box-sizing: border-box;
       overflow-wrap: anywhere;
     }
 
