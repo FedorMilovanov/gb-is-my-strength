@@ -6,9 +6,11 @@ on:
     paths:
       - 'karty/_data/archaeology-source-registry.json'
       - 'karty/_data/archaeology-source-provenance.json'
-      - 'karty/_engine/map-archaeology-adapter.js'
+      - 'karty/_engine/map-engine.js'
       - 'src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro'
       - 'src/components/karty/_shared/MapRuntimeFallback.astro'
+      - 'src/components/karty/ishod/IshodMap.astro'
+      - 'src/components/karty/avraam/AvraamMap.astro'
       - 'src/lib/karty/map-archaeology-projection.mjs'
       - 'scripts/map-archaeology-projection-contract-test.mjs'
       - 'scripts/map-archaeology-projection-browser-test.mjs'
@@ -18,9 +20,11 @@ on:
     paths:
       - 'karty/_data/archaeology-source-registry.json'
       - 'karty/_data/archaeology-source-provenance.json'
-      - 'karty/_engine/map-archaeology-adapter.js'
+      - 'karty/_engine/map-engine.js'
       - 'src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro'
       - 'src/components/karty/_shared/MapRuntimeFallback.astro'
+      - 'src/components/karty/ishod/IshodMap.astro'
+      - 'src/components/karty/avraam/AvraamMap.astro'
       - 'src/lib/karty/map-archaeology-projection.mjs'
       - 'scripts/map-archaeology-projection-contract-test.mjs'
       - 'scripts/map-archaeology-projection-browser-test.mjs'
@@ -47,13 +51,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
-      - name: Validate registry and projection contract
+      - name: Validate direct engine projection contract
         run: |
-          node --check karty/_engine/map-archaeology-adapter.js
+          node --check karty/_engine/map-engine.js
           node --check src/lib/karty/map-archaeology-projection.mjs
           node --check scripts/map-archaeology-projection-contract-test.mjs
           node --check scripts/map-archaeology-projection-browser-test.mjs
           node scripts/map-archaeology-source-registry-audit.js
+          node scripts/map-archaeology-category-coverage-audit.js
           node scripts/map-archaeology-projection-contract-test.mjs
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-archaeology-projection.yml
@@ -61,7 +66,7 @@ jobs:
         run: git diff --exit-code
 
   browser:
-    name: Projection lifecycle (${{ matrix.browser }})
+    name: Direct projection lifecycle (${{ matrix.browser }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -81,7 +86,7 @@ jobs:
       - run: npm ci
       - name: Install browser
         run: npx playwright install --with-deps ${{ matrix.browser }}
-      - name: Exercise tab, place and legacy replacement lifecycle
+      - name: Exercise direct engine tab and source lifecycle
         env:
           MAP_ARCHAEOLOGY_BROWSER: ${{ matrix.browser }}
         run: node scripts/map-archaeology-projection-browser-test.mjs
