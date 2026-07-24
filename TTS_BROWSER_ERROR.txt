@@ -1,0 +1,10 @@
+AssertionError [ERR_ASSERTION]: notice width 454 exceeds 430.5
+    at verifyCard (/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/tts-download-notice-browser-test.js:113:10)
+    at async runDesktop (/home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/tts-download-notice-browser-test.js:122:20)
+    at async /home/runner/work/gb-is-my-strength/gb-is-my-strength/scripts/tts-download-notice-browser-test.js:186:5 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '=='
+}
