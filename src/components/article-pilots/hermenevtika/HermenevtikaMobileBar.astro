@@ -389,7 +389,6 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
 
     const rows = Array.from(document.querySelectorAll('#hmSheetList li[data-idx]')) as HTMLElement[];
     const links = rows.map((li) => li.querySelector('a') as HTMLAnchorElement | null);
-    const targets = links.map((a) => a ? document.querySelector(a.getAttribute('href') || '') as HTMLElement | null : null);
     const sectionName = document.getElementById('hmSectionName');
     const progressFill = document.getElementById('hmProgressFill') as HTMLElement | null;
     const progressText = document.getElementById('hmProgressText');
@@ -400,32 +399,34 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
     const readingMinutesAttr = document.getElementById('hmSheet')?.getAttribute('data-reading-minutes');
     const READING_MINUTES = readingMinutesAttr ? parseInt(readingMinutesAttr, 10) : 50;
 
-    function setActive(idx: number){
-      rows.forEach((li, i) => li.classList.toggle('hm-current', i === idx));
-      if (sectionName && links[idx]) sectionName.textContent = (links[idx] as HTMLAnchorElement).dataset.name || '';
+    function setActive(idx: number, sectionTitle = ''){
+      rows.forEach((li, i) => {
+        const active = i === idx;
+        li.classList.toggle('hm-current', active);
+        const link = links[i];
+        if (link) {
+          if (active) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        }
+      });
+      if (sectionName) sectionName.textContent = sectionTitle || (idx >= 0 && links[idx] ? (links[idx] as HTMLAnchorElement).dataset.name || '' : 'Введение');
     }
 
-    let ticking = false;
-    function onScroll(){
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        let idx = 0;
-        const line = window.innerHeight * 0.3;
-        targets.forEach((el, i) => { if (el && el.getBoundingClientRect().top <= line) idx = i; });
-        setActive(idx);
-        const docH = document.documentElement.scrollHeight - window.innerHeight;
-        const pct = docH > 0 ? Math.min(100, Math.max(0, Math.round((window.scrollY / docH) * 100))) : 0;
+    const readerState = (window as any).GBReaderState || (window as any).ReaderState;
+    if (readerState?.configure && readerState?.subscribe) {
+      readerState.configure({ readingMinutes: READING_MINUTES }).init();
+      readerState.subscribe((reader: any) => {
+        const pct = Math.max(0, Math.min(100, Math.round(Number(reader?.progress) || 0)));
+        const sectionId = String(reader?.sectionId || '');
+        const idx = links.findIndex((link) => !!link && (link.getAttribute('href') || '').replace(/^#/, '') === sectionId);
+        setActive(idx, String(reader?.sectionTitle || (reader?.phase === 'after-content' ? 'Завершено' : 'Введение')));
         if (progressFill) progressFill.style.strokeDashoffset = String(CIRC * (1 - pct / 100));
         if (progressText) progressText.textContent = pct + '%';
         if (sheetProgressFill) (sheetProgressFill as HTMLElement).style.width = pct + '%';
         if (sheetProgressPct) sheetProgressPct.textContent = pct + '%';
-        if (sheetTimeLeft) sheetTimeLeft.textContent = 'Осталось: ~' + Math.max(0, Math.round(READING_MINUTES - READING_MINUTES * pct / 100)) + ' мин';
+        if (sheetTimeLeft) sheetTimeLeft.textContent = 'Осталось: ~' + Math.max(0, Number(reader?.remainingMinutes) || 0) + ' мин';
       });
     }
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
 
     // local TOC search filter (own feature — not the sitewide command palette).
     // Референс: одно и то же поле фильтрации — в топбаре (#hmTocSearch,
