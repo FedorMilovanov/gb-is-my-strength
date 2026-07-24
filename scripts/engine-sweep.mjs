@@ -299,7 +299,7 @@ for (const [id, url, uiSelector] of [
     const state = api.getSnapshot();
     const range = api.getRange();
     const script = [...document.scripts].find((item) => String(item.src || '').includes('/js/reader-state.js'));
-    const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body');
+    const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body, article[data-pagefind-body], main article, article');
     const rootRect = root?.getBoundingClientRect();
     const rootBottom = rootRect ? rootRect.bottom + scrollY : null;
     return {
