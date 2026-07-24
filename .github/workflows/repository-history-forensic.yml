@@ -40,6 +40,91 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/repository-history-forensic-audit.mjs --strict
 
+      - name: Normalize evidence semantics
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const jsonPath = 'reports/repository-history-forensic-audit.json';
+          const mdPath = 'reports/repository-history-forensic-audit.md';
+          const report = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+
+          for (const pr of report.closedUnmerged || []) {
+            const candidates = (pr.referencedPullRequests || []).filter((item) => item.mergedAt);
+            pr.referencedMergedPrCandidates = candidates;
+            delete pr.verifiedMergedReplacement;
+          }
+
+          for (const branch of report.branches || []) {
+            if (
+              branch.reconciliation === 'orphan-branch' &&
+              /(?:trigger|materializ|diagnostic|verification|reconcile|_temp|temp-)/i.test(`${branch.name} ${branch.subject || ''}`)
+            ) {
+              branch.reconciliation = 'diagnostic-transaction-branch';
+            }
+          }
+
+          report.summary.unexplainedRemoteBranches = (report.branches || []).filter((branch) =>
+            ['orphan-branch', 'closed-unclassified-pr-head'].includes(branch.reconciliation)
+          ).length;
+          report.summary.explainedClosedBranches = (report.branches || []).filter((branch) =>
+            branch.reconciliation.startsWith('closed-') || branch.reconciliation === 'diagnostic-transaction-branch'
+          ).length;
+
+          let md = fs.readFileSync(mdPath, 'utf8');
+          md = md.replace(
+            /- Orphan or unclassified remote branch refs: \d+/,
+            `- Orphan or unclassified remote branch refs: ${report.summary.unexplainedRemoteBranches}`
+          );
+          md = md.replace(
+            /- Closed\/superseded\/diagnostic\/prototype branch refs: \d+/,
+            `- Closed/superseded/diagnostic/prototype branch refs: ${report.summary.explainedClosedBranches}`
+          );
+          md = md.replace(/Verified merged replacement/g, 'Referenced merged PR candidates');
+
+          const prByNumber = new Map((report.closedUnmerged || []).map((pr) => [String(pr.number), pr]));
+          const branchByName = new Map((report.branches || []).map((branch) => [branch.name, branch]));
+          md = md.split('\n').map((line) => {
+            const prMatch = line.match(/^\| #(\d+) \|/);
+            if (prMatch) {
+              const pr = prByNumber.get(prMatch[1]);
+              if (pr) {
+                const parts = line.split('|');
+                parts[6] = ` ${(pr.referencedMergedPrCandidates || []).map((item) => `#${item.number}`).join(', ') || '—'} `;
+                return parts.join('|');
+              }
+            }
+
+            const branchMatch = line.match(/^\| `([^`]+)` \|/);
+            if (branchMatch) {
+              const branch = branchByName.get(branchMatch[1]);
+              if (branch) {
+                const parts = line.split('|');
+                parts[2] = ` ${branch.reconciliation} `;
+                return parts.join('|');
+              }
+            }
+            return line;
+          }).join('\n');
+
+          fs.writeFileSync(jsonPath, `${JSON.stringify(report, null, 2)}\n`);
+          fs.writeFileSync(mdPath, md);
+          NODE
+
+      - name: Verify normalized report semantics
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('reports/repository-history-forensic-audit.json', 'utf8'));
+          if ((report.closedUnmerged || []).some((pr) => 'verifiedMergedReplacement' in pr)) {
+            throw new Error('stale verifiedMergedReplacement field survived normalization');
+          }
+          if ((report.branches || []).some((branch) => branch.reconciliation === 'orphan-branch' && /(?:trigger|materializ|diagnostic|verification|reconcile|_temp|temp-)/i.test(`${branch.name} ${branch.subject || ''}`))) {
+            throw new Error('diagnostic transaction branch remains classified as orphan');
+          }
+          NODE
+
       - name: Verify tracked tree is unchanged
         run: git diff --exit-code
 
