@@ -3,13 +3,19 @@
  * Gill reading-time canonical audit.
  *
  * Canonical source: src/content/articles/dzhon-gill-*.mdx frontmatter.
- * Ensures public HTML, data/series.json, search manifest, links graph, and
- * Gill Astro chrome/components do not keep stale series reading-time values.
+ * Ensures production-authoritative HTML, native components, data/series.json,
+ * search manifest and links graph do not keep stale series reading-time values.
+ * Reference-only legacy mirrors are deliberately not promoted into a blocking
+ * publication oracle.
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const {
+  legacyIsAuthoritative,
+  loadRouteProfile,
+} = require('./lib/legacy-source-authority');
 
 const ROOT = path.join(__dirname, '..');
 const GILL_ORDER = [
@@ -44,6 +50,14 @@ function filesUnder(rel, exts) {
   }
   walk(root);
   return out;
+}
+function routeForSlug(slug) {
+  return `/articles/${slug}/`;
+}
+function authoritativeLegacyRel(slug) {
+  const route = routeForSlug(slug);
+  const { profile } = loadRouteProfile(route);
+  return legacyIsAuthoritative(profile) ? `articles/${slug}/index.html` : null;
 }
 
 console.log('GILL READING-TIME CANONICAL AUDIT');
@@ -87,8 +101,11 @@ for (const node of graph.nodes || []) {
   }
 }
 
+const authoritativeLegacyFiles = GILL_ORDER
+  .map(authoritativeLegacyRel)
+  .filter(Boolean);
 const scanFiles = [
-  ...GILL_ORDER.map((slug) => `articles/${slug}/index.html`),
+  ...authoritativeLegacyFiles,
   ...filesUnder('src/components/article-pilots/gill-context', ['.astro', '.html']),
   ...filesUnder('src/components/article-pilots/gill-spravochnik', ['.astro', '.html']),
   'index.html',
@@ -129,9 +146,15 @@ for (const rel of [...new Set(scanFiles)]) {
 }
 
 for (const slug of GILL_ORDER) {
+  const route = routeForSlug(slug);
+  const { profile } = loadRouteProfile(route);
   const rel = `articles/${slug}/index.html`;
-  const txt = read(rel);
   const expected = canonical[slug];
+  if (!legacyIsAuthoritative(profile)) {
+    ok(`${rel}: legacyStatus=${profile?.legacyStatus || 'unknown'}; canonical ${expected} мин enforced through native/data sources`);
+    continue;
+  }
+  const txt = read(rel);
   if (new RegExp(`\\b${expected}\\s*мин`).test(txt)) ok(`${rel}: contains canonical ${expected} мин`);
   else bad(`${rel}: missing canonical ${expected} мин`);
 }
