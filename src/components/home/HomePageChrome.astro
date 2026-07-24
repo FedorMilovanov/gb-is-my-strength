@@ -55,6 +55,26 @@
           <line class="burger-bottom" x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
+      <noscript>
+        <details class="h-nojs-nav">
+          <summary aria-label="Открыть меню без JavaScript">
+            <span class="h-nojs-nav__burger" aria-hidden="true"></span>
+          </summary>
+          <div class="h-nojs-nav__sheet">
+            <p class="h-nojs-nav__title">Библиотека</p>
+            <nav class="h-nojs-nav__links" aria-label="Навигация без JavaScript">
+              <a href="/articles/">Статьи и ответы</a>
+              <a href="/nagornaya/">Последовательные серии</a>
+              <a href="/biografii/">Люди и история</a>
+              <a href="/karty/">Карты и исследования</a>
+              <a href="#razbor">Разбор заблуждений</a>
+              <a href="/konfessii/">Конфессии</a>
+              <a href="/izbrannoe/">Избранное</a>
+              <a href="#about">О проекте</a>
+            </nav>
+          </div>
+        </details>
+      </noscript>
     </div>
   </div>
 </nav>
@@ -143,6 +163,8 @@ window.SITE_CONFIG = {
       panel.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
     ).filter((control) => control.getAttribute('aria-hidden') !== 'true');
     const isOpen = () => trigger.getAttribute('aria-expanded') === 'true' && panel.classList.contains('open');
+    const desktopMedia = window.matchMedia('(min-width: 761px)');
+    const desktopFocusTarget = document.querySelector('.h-nav-links a');
     let wasOpen = false;
 
     const syncFocus = () => {
@@ -155,9 +177,23 @@ window.SITE_CONFIG = {
       wasOpen = open;
     };
 
+    const closeAtDesktopBreakpoint = () => {
+      if (!desktopMedia.matches || !isOpen()) return;
+      const shouldMoveFocus = panel.contains(document.activeElement) || document.activeElement === trigger;
+      window.closeMobileNav?.();
+      if (shouldMoveFocus) {
+        requestAnimationFrame(() => desktopFocusTarget?.focus({ preventScroll: true }));
+      }
+    };
+
     new MutationObserver(syncFocus).observe(trigger, {
       attributes: true,
       attributeFilter: ['aria-expanded'],
+    });
+
+    desktopMedia.addEventListener('change', closeAtDesktopBreakpoint);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) window.closeMobileNav?.();
     });
 
     document.addEventListener('keydown', (event) => {
