@@ -92,7 +92,19 @@ async function assertCsp(page) {
 
 async function settledNoticeSnapshot(page) {
   await page.waitForFunction(() => Array.from(document.styleSheets).some((sheet) => String(sheet.href || '').includes('tts-download-notice.css')));
-  await page.waitForTimeout(420);
+  await page.waitForFunction(() => {
+    const el = document.querySelector('.gb-tts-download-notice.is-visible');
+    if (!el) return false;
+    const style = getComputedStyle(el);
+    if (style.visibility !== 'visible' || Number.parseFloat(style.opacity) < 0.99) return false;
+    const transform = style.transform;
+    if (!transform || transform === 'none') return true;
+    const values = transform.match(/matrix\(([^)]+)\)/);
+    if (!values) return false;
+    const parts = values[1].split(',').map(Number);
+    return Math.abs(parts[0] - 1) < 0.002 && Math.abs(parts[3] - 1) < 0.002 && Math.abs(parts[5]) < 0.5;
+  }, null, { timeout: 4000 });
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   return page.locator('.gb-tts-download-notice').evaluate((el) => {
     const rect = el.getBoundingClientRect();
     const style = getComputedStyle(el);
