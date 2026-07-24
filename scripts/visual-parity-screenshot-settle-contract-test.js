@@ -12,23 +12,27 @@ const WORKFLOW_PATH = path.join(ROOT, '.github', 'workflows', 'visual-parity.yml
 function validate(source) {
   const problems = [];
   const warm = source.indexOf('Warm up long pages twice');
+  const prime = source.indexOf('await primeHomeRevealObservers(page, route);');
   const settle = source.indexOf('await settleHomeRevealState(page, route);');
   const freeze = source.indexOf('// Freeze only after observers');
   const validateCapture = source.indexOf('await validateHomeCaptureState(page, route);');
   const screenshot = source.indexOf('await page.screenshot({ path: outFile');
 
   if (warm === -1) problems.push('warm-scroll marker missing');
+  if (prime === -1) problems.push('per-section observer priming call missing');
   if (settle === -1) problems.push('home reveal settle call missing');
   if (freeze === -1) problems.push('post-settle animation freeze marker missing');
   if (validateCapture === -1) problems.push('post-freeze home capture validation missing');
   if (screenshot === -1) problems.push('screenshot call missing');
-  if (![warm, settle, freeze, validateCapture, screenshot].some((index) => index === -1)
-      && !(warm < settle && settle < freeze && freeze < validateCapture && validateCapture < screenshot)) {
-    problems.push('required order is warm-scroll → settle → freeze → validate → screenshot');
+  if (![warm, prime, settle, freeze, validateCapture, screenshot].some((index) => index === -1)
+      && !(warm < prime && prime < settle && settle < freeze && freeze < validateCapture && validateCapture < screenshot)) {
+    problems.push('required order is warm-scroll → per-section prime → settle → freeze → validate → screenshot');
   }
 
   for (const marker of [
     "document.querySelectorAll('.h-reveal')",
+    "element.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' })",
+    'Delayed reveal variants reach roughly 1.2s',
     "element.setAttribute('data-visual-parity-settled', '1')",
     'home reveal content hidden before animation freeze',
     '[data-visual-parity-settled="1"]',
@@ -54,6 +58,7 @@ assert.deepEqual(validate(source), [], 'current screenshot pipeline must settle 
 assert.match(workflow, /node scripts\/visual-parity-screenshot-settle-contract-test\.js/, 'Visual Parity workflow must run the settle-order contract');
 
 const mutations = [
+  source.replace('await primeHomeRevealObservers(page, route);', '// mutation: per-section priming removed'),
   source.replace('await settleHomeRevealState(page, route);', '// mutation: settle removed'),
   source.replace('// Freeze only after observers', '// mutation: marker removed'),
   source.replace('await validateHomeCaptureState(page, route);', '// mutation: validation removed'),
@@ -65,4 +70,4 @@ mutations.forEach((mutation, index) => {
   assert.ok(validate(mutation).length > 0, `mutation ${index + 1} must be rejected`);
 });
 
-console.log('Visual parity screenshot settle contract: PASS (order, fail-closed state, 5 mutations).');
+console.log('Visual parity screenshot settle contract: PASS (prime/order, fail-closed state, 6 mutations).');
