@@ -84,6 +84,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Verify screenshot settle ordering
+        run: node scripts/visual-parity-screenshot-settle-contract-test.js
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
