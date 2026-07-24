@@ -45,6 +45,7 @@ assert.match(adapter, /dataset\.sourceVerification/);
 assert.match(adapter, /dataset\.sourcePerspective/);
 assert.match(adapter, /source: \$\{source\.id\}/);
 assert.match(adapter, /source\.accessedAt/);
+assert.match(adapter, /payload\.dataset\.projection/);
 assert.match(adapter, /url\.protocol === 'https:'/);
 assert.match(adapter, /textContent/);
 assert.doesNotMatch(adapter, /innerHTML\s*=/);
@@ -52,10 +53,10 @@ assert.doesNotMatch(adapter, /_classifySource|keyword|regex/i);
 
 const bootstrap = fs.readFileSync('src/components/karty/_shared/MapArchaeologyProjectionBootstrap.astro', 'utf8');
 assert.match(bootstrap, /buildMapArchaeologyProjection\('avraam'/);
-assert.match(bootstrap, /is:inline id="map-archaeology-projection"/);
-assert.match(bootstrap, /type="application\/json"/);
+assert.match(bootstrap, /id="map-archaeology-projection"/);
+assert.match(bootstrap, /data-projection=\{projectionJson\}/);
 assert.match(bootstrap, /map-archaeology-adapter\.js/);
-assert.doesNotMatch(bootstrap, /fetch\(/);
+assert.doesNotMatch(bootstrap, /set:html|type="application\/json"|fetch\(/);
 
 const fallback = fs.readFileSync('src/components/karty/_shared/MapRuntimeFallback.astro', 'utf8');
 assert.match(fallback, /isAvraamRoute/);
