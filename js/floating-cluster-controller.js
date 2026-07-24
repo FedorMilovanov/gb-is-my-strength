@@ -2329,13 +2329,25 @@
       });
 
       if (represented.length) {
-        var activeIdx = -1;
-        for (var ri = 0; ri < represented.length; ri++) {
-          if (represented[ri].id === reader.sectionId) { activeIdx = ri; break; }
+        // ReaderState remains the sole scroll/rAF owner, but its global heading
+        // selector is intentionally broader than the historical Gill rail: the
+        // rail is a curated subset and may target a paragraph. Derive the rail
+        // index from its own real targets and the shared scroll snapshot instead
+        // of requiring reader.sectionId to be one of the represented rows.
+        // 140px is the canonical Gill anchor offset used by rail navigation and
+        // the pre-v16 live traversal contract.
+        var railLine = scrollY + 140;
+        var activeIdx = phase === 'after-content' ? represented.length - 1 : 0;
+        if (phase !== 'before-content' && phase !== 'after-content') {
+          for (var ri = 0; ri < represented.length; ri++) {
+            var targetTop = represented[ri].target.getBoundingClientRect().top + (window.scrollY || 0);
+            if (targetTop <= railLine + 2) activeIdx = ri;
+            else break;
+          }
         }
         represented.forEach(function (row, idx) {
-          var isActive = phase === 'active-section' && idx === activeIdx;
-          var isPassed = phase === 'after-content' || (activeIdx >= 0 && idx < activeIdx);
+          var isActive = idx === activeIdx;
+          var isPassed = idx < activeIdx;
           row.a.classList.toggle('gbs2-active', isActive);
           row.a.classList.toggle('gbs2-passed', isPassed);
           if (isActive) row.a.setAttribute('aria-current', 'location');
@@ -2358,7 +2370,8 @@
 
         var activeLi = activeIdx >= 0 ? represented[activeIdx].a.closest('li') : null;
         var activeGrp = activeLi ? activeLi.getAttribute('data-gbs2-grp') : null;
-        if (activeGrp !== _gbs2ActiveGrp) {
+        var activeGroupChanged = activeGrp !== _gbs2ActiveGrp;
+        if (activeGroupChanged) {
           _gbs2ActiveGrp = activeGrp;
           qsa('.gbs2-toc li.gbs2-sub').forEach(function (li) {
             var open = !!activeGrp && li.getAttribute('data-gbs2-grp') === activeGrp;
@@ -2377,11 +2390,7 @@
         }
 
         var countEl = qs('#gbs2Count');
-        if (countEl) countEl.textContent = phase === 'before-content'
-          ? 'Введение'
-          : phase === 'after-content'
-            ? 'Готово'
-            : (activeIdx + 1) + ' / ' + represented.length;
+        if (countEl) countEl.textContent = (activeIdx + 1) + ' / ' + represented.length;
 
         var railFill = qs('.gbs2-track i');
         if (phase === 'before-content' && railFill) railFill.style.height = '0px';
@@ -2390,19 +2399,30 @@
 
         var activeRow = activeIdx >= 0 ? represented[activeIdx] : null;
         var scroller = qs('.gbs2-tocscroll');
-        if (activeRow && scroller) {
+        function keepActiveRowVisible(behavior) {
+          if (!activeRow || !scroller) return;
           var ar = activeRow.a.getBoundingClientRect();
           var sr = scroller.getBoundingClientRect();
           if (ar.top < sr.top + 18 || ar.bottom > sr.bottom - 18) {
             var desired = activeRow.a.offsetTop - scroller.clientHeight / 2 + activeRow.a.offsetHeight / 2;
-            scroller.scrollTo({ top: Math.max(0, desired), behavior: 'smooth' });
+            scroller.scrollTo({ top: Math.max(0, desired), behavior: behavior || 'auto' });
           }
+        }
+        if (activeRow && scroller) {
+          keepActiveRowVisible('smooth');
+          // Expanding the new sub-group and collapsing the previous one can
+          // move the active row after the immediate scroll has completed.
+          // Re-check once the 560ms rail follow loop has settled, but only
+          // if this row is still the canonical active row.
+          if (activeGroupChanged) window.setTimeout(function () {
+            if (activeRow.a.classList.contains('gbs2-active')) keepActiveRowVisible('auto');
+          }, 620);
         }
 
         if (!qs('#gbs2PartToc[data-gill-parts-nav]')) {
           qsa('.toc-part-item').forEach(function (el, idx) {
-            var isActive = phase === 'active-section' && idx === activeIdx;
-            var isPassed = phase === 'after-content' || (activeIdx >= 0 && idx < activeIdx);
+            var isActive = idx === activeIdx;
+            var isPassed = idx < activeIdx;
             el.classList.toggle('is-active', isActive);
             el.classList.toggle('is-done', isPassed);
             if (isActive) el.setAttribute('aria-current', 'location');
