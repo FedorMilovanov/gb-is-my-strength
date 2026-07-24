@@ -39,11 +39,22 @@ const page = read('src/pages/index.astro');
 must(page, 'HomePageHead', 'Astro / uses HomePageHead component');
 must(page, 'HomePageChrome', 'Astro / uses HomePageChrome component');
 must(page, 'HomeMain', 'Astro / uses HomeMain component');
+must(page, 'HomePageFooter', 'Astro / owns footer outside the main landmark');
+must(page, 'HomeArticleEndBlock', 'Astro / owns the final Soli Deo Gloria block');
 must(page, '<body class="home-page">', 'Astro / preserves body class');
 mustNot(page, 'loadLegacyFullDocument', 'loadLegacyFullDocument');
 mustNot(page, 'set:html', 'set:html transport');
 mustNot(page, '?raw', '?raw import transport');
 mustNot(page, '_legacy/', '_legacy imports');
+
+const mainPos = page.indexOf('<HomeMain />');
+const footerPos = page.indexOf('<HomePageFooter />');
+const endPos = page.indexOf('<HomeArticleEndBlock />');
+if (mainPos !== -1 && footerPos > mainPos && endPos > footerPos) {
+  ok('Astro / preserves main → footer → Soli Deo Gloria order');
+} else {
+  bad('Astro / must render main → footer → Soli Deo Gloria');
+}
 
 for (const rel of [
   'src/components/home/HomePageHead.astro',
@@ -76,6 +87,8 @@ for (const marker of [
   'fonts/fonts.css',
   'css/home.css',
   'theme-color',
+  '.home-page .h-nojs-nav__sheet',
+  '.home-page #hMobileMenuBtn',
 ]) {
   must(head, marker, `HomePageHead marker: ${marker}`);
 }
@@ -85,7 +98,8 @@ for (const marker of [
   'class="skip-link"', 'class="h-navbar"', 'id="hMobileNav"',
   'class="home-v20"', 'id="hScriptureBg"', 'h-mobile-nav__primary',
   'id="hScrollTop"', 'window.SITE_CONFIG', 'js/site.js', 'js/search.js',
-  'mc.yandex.ru/metrika/tag.js',
+  'mc.yandex.ru/metrika/tag.js', 'class="h-nojs-nav"',
+  'aria-label="Навигация без JavaScript"',
 ]) {
   must(chrome, marker, `HomePageChrome marker: ${marker}`);
 }
@@ -107,15 +121,28 @@ must(chrome, 'aria-controls="hMobileNav"', 'HomePageChrome connects the menu tri
 must(chrome, "event.shiftKey && (active === first || !panel.contains(active))", 'HomePageChrome traps reverse focus inside the mobile sheet');
 must(chrome, "!event.shiftKey && (active === last || !panel.contains(active))", 'HomePageChrome traps forward focus inside the mobile sheet');
 must(chrome, "trigger.focus({ preventScroll: true })", 'HomePageChrome restores focus when the mobile sheet closes');
+must(chrome, "window.matchMedia('(min-width: 761px)')", 'HomePageChrome watches the exact mobile-to-desktop boundary');
+must(chrome, "desktopMedia.addEventListener('change', closeAtDesktopBreakpoint)", 'HomePageChrome closes the mobile sheet when desktop navigation becomes visible');
+must(chrome, "desktopFocusTarget?.focus({ preventScroll: true })", 'HomePageChrome moves focus to visible desktop navigation after resize');
+must(chrome, "window.addEventListener('pageshow'", 'HomePageChrome handles BFCache restoration');
+must(chrome, 'if (event.persisted) window.closeMobileNav?.();', 'HomePageChrome clears stale BFCache navigation state');
+mustNot(chrome, '.addListener(', 'deprecated MediaQueryList.addListener fallback');
 must(chrome, 'is:inline src="js/site.js', 'HomePageChrome external home runtime script has explicit Astro directive');
+
+const noJsStart = chrome.indexOf('<nav class="h-nojs-nav__links"');
+const noJsEnd = chrome.indexOf('</nav>', noJsStart);
+const noJsBlock = noJsStart === -1 || noJsEnd === -1 ? '' : chrome.slice(noJsStart, noJsEnd);
+const noJsLinkCount = (noJsBlock.match(/<a href=/g) || []).length;
+noJsLinkCount === 8
+  ? ok('HomePageChrome no-JS menu exposes exactly eight routes')
+  : bad(`HomePageChrome no-JS route count: ${noJsLinkCount} (expected 8)`);
 
 const main = read('src/components/home/HomeMain.astro');
 must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain semantic wrapper');
 must(main, '<div class="home-content">', 'HomeMain home-content wrapper');
 for (const comp of [
   'HomeHero', 'ResumeMobile', 'Directions', 'Planned', 'Publications',
-  'Refutations', 'About', 'Quote', 'Accuracy', 'HomePageFooter',
-  'HomeArticleEndBlock',
+  'Refutations', 'About', 'Quote', 'Accuracy',
 ]) {
   must(main, comp, `HomeMain uses ${comp}`);
 }
@@ -124,6 +151,9 @@ if (main.indexOf('<Publications />') < main.indexOf('<Planned />')) {
 } else {
   bad('HomeMain must place Publications before Planned');
 }
+mustNot(main, 'HomePageFooter', 'HomeMain nested footer ownership');
+mustNot(main, 'HomeArticleEndBlock', 'HomeMain nested end-block ownership');
+mustNot(main, '<footer', 'HomeMain contentinfo landmark');
 mustNot(main, 'set:html', 'HomeMain set:html transport');
 mustNot(main, '?raw', 'HomeMain raw imports');
 
@@ -175,6 +205,11 @@ must(favorites, 'if (!Array.isArray(favs) || !favs.length) return;', 'Favorites 
 must(favorites, "if (!f || typeof f !== 'object' || Array.isArray(f)) return;", 'Favorites skips malformed stored entries');
 mustNot(favorites, 'card.innerHTML', 'Favorites does not inject stored HTML');
 
+const accuracy = read('src/components/home/HomeSections/Accuracy.astro');
+mustNot(accuracy, 'role="list"', 'feedback pseudo-list role');
+mustNot(accuracy, 'role="listitem"', 'feedback link pseudo-listitem roles');
+mustNot(accuracy, 'role="button"', 'feedback link pseudo-button roles');
+
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-card-grid',
   'class="astro-home"', 'class="astro-page"', 'astro-shell',
@@ -190,6 +225,14 @@ if (dist) {
   }
   for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths', 'h-mobile-hero-hub']) {
     mustNot(dist, rejected, `dist / rejected home marker: ${rejected}`);
+  }
+  const distMainClose = dist.indexOf('</main>');
+  const distFooter = dist.indexOf('<footer');
+  const distSoli = dist.indexOf('Soli Deo Gloria');
+  if (distMainClose !== -1 && distFooter > distMainClose && distSoli > distFooter) {
+    ok('dist / preserves main → footer → Soli Deo Gloria landmark order');
+  } else {
+    bad('dist / must preserve main → footer → Soli Deo Gloria landmark order');
   }
   mustNot(dist, 'class="astro-shell"', 'dist / has no astro-shell chrome');
   mustNot(dist, '_legacy/', 'dist / no legacy path leaks');
