@@ -7,6 +7,7 @@ on:
     paths:
       - scripts/_temp-map-archaeology-coverage-materialize.mjs
       - scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
+      - scripts/_temp-map-archaeology-claim-limits-materialize.mjs
       - scripts/map-archaeology-source-registry-audit.js
       - scripts/map-archaeology-category-coverage-audit.js
       - karty/_data/archaeology-source-registry.json
@@ -40,13 +41,17 @@ jobs:
         run: node scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs --write
       - name: Materialize explicit catalog and provenance decisions
         run: node scripts/_temp-map-archaeology-coverage-materialize.mjs --write
+      - name: Materialize explicit disputed/candidate limitations
+        run: node scripts/_temp-map-archaeology-claim-limits-materialize.mjs --write
       - name: Verify source syntax
         run: |
           node --check scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
           node --check scripts/_temp-map-archaeology-coverage-materialize.mjs
+          node --check scripts/_temp-map-archaeology-claim-limits-materialize.mjs
           node --check scripts/map-archaeology-source-registry-audit.js
           node --check scripts/map-archaeology-category-coverage-audit.js
           node scripts/_temp-map-archaeology-multiscope-audit-materialize.mjs
+          node scripts/_temp-map-archaeology-claim-limits-materialize.mjs
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-registry.json','utf8'))"
           node -e "JSON.parse(require('node:fs').readFileSync('karty/_data/archaeology-source-provenance.json','utf8'))"
       - name: Run independent provenance and category contracts
