@@ -1,6 +1,6 @@
 # GB is My Strength â€” current refactor audit index
 
-**Current source boundary:** `5636a6a1911c7eb0e7637406e87e749dd65dbaaf` (`main`, PR #205, 2026-07-24).  
+**Recorded source boundary:** `b81780312e82f51d584251581d31745f01903867` (`main`, PR #211, 2026-07-24). Query the current default-branch SHA before using this as operational state.  
 **Forensic tracking:** `FedorMilovanov/AuditRepo#40`.  
 **Purpose:** record current architecture and unresolved recovery decisions without duplicating the canonical AuditRepo matrix.
 
@@ -36,12 +36,15 @@ PR #204 introduced a filesystem-derived repository audit that checks:
 - duplicated inline actionlint installers;
 - write-capable workflows and stale one-off branch triggers.
 
-The audit found and removed a real residue: `_temp-gill-source-marathon-orchestrator.yml` had survived its transaction, retained `contents: write` and called a deleted script. PR #205 reduced the exact-head report to three non-product warnings: two package aliases and one retired route-registry rollout trigger. These remain an isolated control-plane convergence task; they are not product defects.
+The audit found and removed a real residue: `_temp-gill-source-marathon-orchestrator.yml` had survived its transaction, retained `contents: write` and called a deleted script. PR #205 reduced the report to three bounded warnings. PR #211 then closed all three, exposed canonical local npm commands and converted every settled warning class into a hard failure.
+
+At `main@b8178031`, the accepted model is zero control-plane issues, zero warnings and exactly two same-repository label-gated autofix writers. Re-run `npm run control-plane:audit` on the current tree instead of treating this recorded result as permanent state.
 
 ### Recent verified closures
 
 | Area | PR / merge | Result |
 |---|---|---|
+| Control-plane warning closure | #211 / `b8178031` | Canonical npm interfaces, final stale branch trigger removed, settled drift fails closed. |
 | Map recovery | #203 / `0461faa8` | Black-screen failures receive a recoverable error UI. |
 | Control-plane integrity | #204 / `f11749ee` | Dead writer workflow removed; local-reference audit made permanent. |
 | Workflow convergence | #205 / `5636a6a1` | Stale editorial branch triggers and duplicated actionlint installers reduced. |
@@ -64,6 +67,8 @@ Closed or deleted branches are not assumed safe merely because a later PR says â
 
 ### Proven safe replacement chains
 
+- Nagornaya neutral-comparison PR #155 was replaced by merged PR #154 / `f1946b52`.
+- SEO dist-contract PR #164 was replaced by merged PR #165 / `3baf6a3f`.
 - Nagornaya pastoral PR #121: zero-diff publication failure was rebuilt from its verified artifact and merged as PR #138 / `5650c96b`.
 - Gill glossary/source coverage drafts #161, #175, #178 and #180 were replaced by the merged #183/#185/#186 chain.
 - Old cross-browser PR #194 was superseded by clean PR #200.
@@ -79,14 +84,18 @@ These do not merit recovery branches:
 - temporary observers that made no source claim;
 - stale whole-branch overlays whose useful evidence is already preserved in AuditRepo.
 
+## Machine inventory checkpoint
+
+The first PR #212 history-forensic artifact for `main@5636a6a1` inspected 110 remote branches and all 177 pull requests. It found 31 closed-without-merge PRs, **zero inaccessible closed PR heads**, and 34 introduced paths absent from current `main`. Missing paths are review candidates, not automatic evidence of lost production code; most were temporary diagnostics, while #52, #66 and #79 remain deliberate manual-review items.
+
 ## Open forensic work
 
-1. Complete a closed-unmerged PR disposition table for both repositories.
-2. Verify every claimed replacement by current blob or exact ancestry.
-3. Finish the governance/document sweep beyond the two files corrected in this lane.
-4. Close or explicitly accept the remaining control-plane warnings.
-5. Publish an immutable final report and recovery register in AuditRepo.
-6. Keep source authority separate from the last exact deployed/live authority.
+1. Refine PR #212 classifications using closing comments and verified replacement chains; the first pass intentionally over-reports candidates.
+2. Complete the equivalent branch/closed-PR inventory for AuditRepo.
+3. Reconcile AuditRepo issue #40 and the canonical matrix with the final source merge boundaries.
+4. Verify that AuditRepo's one-time `reconcile-source-boundary-5636.yml` writer completes and is removed from `main`.
+5. Record owner/integrator review items in `AGENTS.md` and `docs/OWNER-INVARIANTS.md` without changing owner-sensitive policy automatically.
+6. Publish an immutable final forensic report and recovery register while keeping source authority separate from the last exact deployed/live authority.
 
 No archived head may be merged wholesale. Any recovery begins from fresh `main`, copies only the justified semantic delta and passes the current source, browser and visual contracts.
 
@@ -96,7 +105,7 @@ The previous version of this file documented the 2026-06-22 recovery around visu
 
 ## Update rule
 
-For each new session, change the current boundary and add only durable facts:
+For each new session, change the recorded boundary and add only durable facts:
 
 - exact source SHA;
 - PR/merge SHA;
