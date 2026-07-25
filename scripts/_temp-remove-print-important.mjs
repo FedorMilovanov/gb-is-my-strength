@@ -12,16 +12,18 @@ if (markerIndex < 0 || css.indexOf(marker, markerIndex + marker.length) >= 0) {
 const prefix = css.slice(0, markerIndex);
 let block = css.slice(markerIndex);
 const blockImportantBefore = (block.match(/!important/g) || []).length;
-if (blockImportantBefore !== 40) {
-  throw new Error(`v2.9 print block: expected 40 !important flags, found ${blockImportantBefore}`);
+if (blockImportantBefore < 1) {
+  throw new Error('v2.9 print block has no !important flags to converge');
 }
 block = block.replace(/\s*!important/g, '');
 const blockImportantAfter = (block.match(/!important/g) || []).length;
 if (blockImportantAfter !== 0) throw new Error(`v2.9 print block still has ${blockImportantAfter} !important flags`);
-block = block.replace(
-  marker,
-  `${marker}\n/* Terminal unlayered print rules intentionally outrank layered screen CSS without !important. */`,
-);
+if (!block.includes('Terminal unlayered print rules intentionally outrank layered screen CSS without !important.')) {
+  block = block.replace(
+    marker,
+    `${marker}\n/* Terminal unlayered print rules intentionally outrank layered screen CSS without !important. */`,
+  );
+}
 css = `${prefix}${block}`.replace(/\s+$/, '') + '\n';
 fs.writeFileSync(cssPath, css, 'utf8');
 
