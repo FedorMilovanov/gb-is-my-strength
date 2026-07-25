@@ -45,7 +45,11 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
 
       - name: Materialize synchronous first paint and contracts
-        run: node scripts/_temp-materialize-tts-webkit-first-paint.mjs
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/_temp-materialize-tts-webkit-first-paint.mjs 2>&1 \
+            | tee reports/tts-webkit-first-paint-materializer.log
 
       - name: Run engine lifecycle including delayed RAF
         run: node scripts/tts-engine-lifecycle-browser-test.js
@@ -87,6 +91,7 @@ jobs:
         with:
           name: tts-webkit-first-paint-${{ github.run_id }}
           path: |
+            reports/tts-webkit-first-paint-materializer.log
             reports/tts-lifecycle-*.png
             reports/tts-status-route-*.png
             reports/tts-mobile-notice-geometry-*.png
