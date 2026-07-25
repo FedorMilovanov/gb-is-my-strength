@@ -1,166 +1,48 @@
-name: Notify on Workflow Failure
-
-# Слушает завершение ключевых workflow'ов;
-# если любой из них упал — создаёт (или поднимает) GitHub Issue с алертом.
-#
-# Зачем: статический сайт деплоится через GitHub Pages + IndexNow.
-# Если deploy.yml упал — сайт не обновится, читатели увидят старую версию.
-# Если indexnow.yml упал — Yandex/Bing не узнают про новую статью.
-# Если source-links / interactive audit упали — появился hard-broken источник
-# или пользовательский runtime-сценарий.
-# Issue даёт владельцу видимое уведомление прямо в GitHub.
-#
-# Также пытается прикрепить route-impact report из артефактов failed workflow.
+name: CI State Notifier
 
 on:
   workflow_run:
     workflows:
+      - "Metadata & IndexNow Readiness"
       - "Deploy to GitHub Pages"
+      - "Deployment Witness Ledger"
       - "IndexNow — Notify Search Engines"
+      - "TTS Download Consent"
       - "Source Link Audit"
       - "Runtime Interactive Audit"
       - "Visual Parity Guard — pixel-diff"
       - "Dist Strangler Dry Run"
       - "Shared Files Guard"
-    types:
-      - completed
+    types: [completed]
 
 permissions:
-  issues: write
-  actions: read
+  actions: read       # factual run/job/artifact evidence and stale-event suppression
+  contents: read      # checkout trusted recorder from the default branch
+  issues: write       # open/update/reopen/close stable CI state issues
+
+concurrency:
+  group: ci-state-${{ github.event.workflow_run.workflow_id }}-${{ github.event.workflow_run.head_branch || 'unknown' }}
+  cancel-in-progress: false
 
 jobs:
-  notify:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+  reconcile:
+    name: Reconcile workflow state issue
     runs-on: ubuntu-latest
     steps:
-      - name: Try to fetch route-impact report from failed workflow
-        id: route-impact
-        run: |
-          ROUTE_IMPACT=""
-          # Try to download route-impact.json from the failed workflow's artifacts
-          # Workflow run ID is available from the trigger event
-          RUN_ID="${{ github.event.workflow_run.id }}"
-          echo "Fetching artifacts from run $RUN_ID..."
-          # List artifacts for the failed workflow run
-          ARTIFACTS=$(curl -s -H "Authorization: Bearer ${{ github.token }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts" \
-            | python3 -c "import sys,json; d=json.load(sys.stdin); [print(a['name'], a['id']) for a in d.get('artifacts',[])]" 2>/dev/null || echo "")
+      - name: Checkout trusted notifier from default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
 
-          for ARTIFACT in $ARTIFACTS; do
-            if [[ "$ARTIFACT" == *"route-impact"* ]] || [[ "$ARTIFACT" == *"reports"* ]]; then
-              echo "Found artifact: $ARTIFACT"
-            fi
-          done
-          echo "route_impact_data=$ROUTE_IMPACT" >> "$GITHUB_OUTPUT"
-
-      - name: Open or update failure issue
+      - name: Record factual workflow state transition
         uses: actions/github-script@v7
         with:
           script: |
-            const wf = context.payload.workflow_run;
-            const wfName = wf.name;
-            const wfUrl = wf.html_url;
-            const sha = wf.head_sha.slice(0, 7);
-            const branch = wf.head_branch;
-            const commitMsg = wf.head_commit
-              ? wf.head_commit.message.split('\n')[0]
-              : '(no commit message)';
-            const triggerActor = wf.actor ? wf.actor.login : 'unknown';
-            const routeImpact = '${{ steps.route-impact.outputs.route_impact_data }}';
-
-            // Build workflow-specific guidance based on actual rules (P0/P1 fix)
-            let guidanceText = '';
-            if (wfName === 'Shared Files Guard') {
-              guidanceText = [
-                '⚠️ **Shared/high-risk файл изменён.**',
-                '- **Подозреваемая ветка:** `' + branch + '`',
-                '- **Диагноз:** Вероятно, route-специфичный lane затронул файлы `package.json`, скрипты CI или глобальные стили.',
-                '- **Как исправить:** Запусти `npm run guard:shared-files`, чтобы увидеть какие файлы сломали guard. SYSTEM-файлы должны правиться в `lane/system-*`.'
-              ].join('\n');
-            } else if (wfName === 'Visual Parity Guard — pixel-diff') {
-              guidanceText = [
-                '⚠️ **Визуальная регрессия.**',
-                '- **Диагноз:** DOM-структура или стили Astro не совпадают с Legacy-оригиналом.',
-                '- **Что проверить:** Affected routes в артефакте CI. Запусти локально `npm run visual:parity:screenshots -- --routes /<твой-route>/`.',
-                '- **Артефакт:** Скачай `diff.png` из логов CI.'
-              ].join('\n');
-            } else if (wfName === 'IndexNow — Notify Search Engines') {
-              guidanceText = [
-                '⚠️ **Поисковики (Яндекс, Bing) не узнали про изменения.**',
-                '- **Возможная причина:** Неверный HTTP Status Code, упал endpoint API Яндекса, неправильный payload или сломанный Deploy-шаг до этого.',
-                '- **Как исправить:** Проверь логи шага `curl` в GitHub Actions.'
-              ].join('\n');
-            } else if (wfName === 'Deploy to GitHub Pages') {
-              guidanceText = [
-                '⚠️ **Прод не обновился.** Читатели видят старую версию сайта.',
-                '- **Диагноз:** Ошибка в финальной сборке Astro или копировании легаси (`copy-legacy-to-dist.js`).',
-                '- **Как исправить:** Посмотри точный упавший шаг в логах.'
-              ].join('\n');
-            } else {
-              guidanceText = 'Проверь `npm run ci:check` и логи GitHub Actions.';
-            }
-
-            // Build affected routes hint based on commit message
-            const affectedHint = [];
-            const msg = commitMsg.toLowerCase();
-            if (msg.includes('articles') || msg.includes('article')) affectedHint.push('/articles/');
-            if (msg.includes('biografii') || msg.includes('biography')) affectedHint.push('/biografii/');
-            if (msg.includes('baptist') || msg.includes('баптист')) affectedHint.push('/baptisty-rossii/');
-            if (msg.includes('karty') || msg.includes('карт')) affectedHint.push('/karty/');
-            if (msg.includes('home') || msg.includes('главн')) affectedHint.push('/');
-            if (msg.includes('gill')) affectedHint.push('/articles/dzhon-gill-chast-1-chelovek/');
-            if (msg.includes('nagorn') || msg.includes('нагорн')) affectedHint.push('/nagornaya/');
-            if (msg.includes('konfess') || msg.includes('конфес')) affectedHint.push('/konfessii/');
-
-            const routeBlock = affectedHint.length > 0
-              ? ['\n## Подозреваемые route(s)', '', ...affectedHint.map(r => `- ${r}`), ''].join('\n')
-              : '';
-
-            const title = `🚨 CI failure: ${wfName}`;
-            const body = [
-              `Workflow **${wfName}** упал на коммите \`${sha}\` (ветка \`${branch}\`).`,
-              ``,
-              `**Коммит:** ${commitMsg}`,
-              `**Запустил:** @${triggerActor}`,
-              `**Run URL:** ${wfUrl}`,
-              ``,
-              guidanceText,
-              ``,
-              routeBlock,
-              ``,
-              `> Подробности падения (ошибки, diff-файлы) лежат в артефактах этого CI-run.`,
-              ``,
-              `Это сообщение создано автоматически workflow'ом \`notify-on-failure.yml\`.`,
-              `Закрой это issue, когда проблема устранена; следующее падение откроет новое.`
-            ].join('\n');
-
-            // Найти открытый issue с тем же названием — чтобы не плодить дубликаты
-            const { data: existing } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'ci-failure',
-              per_page: 50
+            const recordState = require('./scripts/record-ci-workflow-state.cjs');
+            await recordState({
+              github,
+              context,
+              core,
+              workflowRun: context.payload.workflow_run,
             });
-
-            const dup = existing.find(i => i.title === title);
-            if (dup) {
-              // Добавить комментарий вместо нового issue
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: dup.number,
-                body
-              });
-              core.info(`Updated existing issue #${dup.number}`);
-            } else {
-              const created = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title,
-                body,
-                labels: ['ci-failure', 'bug']
-              });
-              core.info(`Created issue #${created.data.number}`);
-            }
