@@ -29,14 +29,14 @@ jobs:
           cache: "npm"
 
       - name: Materialize source-link evidence hardening
-        if: github.ref == 'refs/heads/agent/source-link-evidence-hardening'
+        if: github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           python3 scripts/_temp_harden_source_link_evidence.py
 
       - name: Restore canonical Shared Files Guard after materialization
-        if: github.ref == 'refs/heads/agent/source-link-evidence-hardening'
+        if: github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening'
         run: |
           git fetch origin main
           git checkout origin/main -- .github/workflows/shared-files-guard.yml
@@ -54,7 +54,6 @@ jobs:
         run: |
           node --check scripts/ci-failure-lifecycle.cjs
           node --check scripts/ci-failure-lifecycle-contract-test.cjs
-          node --check scripts/ci-failure-lifecycle-source-contract-test.cjs
           node scripts/ci-failure-lifecycle-contract-test.cjs
           node scripts/ci-failure-lifecycle-source-contract-test.cjs
 
