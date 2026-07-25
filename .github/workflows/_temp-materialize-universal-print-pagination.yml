@@ -34,9 +34,9 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Materialize shared pagination runtime and remove route-specific CSS
-        run: |
-          node scripts/_temp-materialize-universal-print-pagination.mjs
-          node scripts/_temp-patch-print-terminal-followers.mjs
+        run: node scripts/_temp-materialize-universal-print-pagination.mjs
+      - name: Materialize terminal-tail and follower semantics
+        run: node scripts/_temp-patch-print-terminal-followers.mjs
       - name: Verify asset revisions
         run: npm run cache-bust
       - run: npx playwright install --with-deps chromium
