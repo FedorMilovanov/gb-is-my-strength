@@ -1,0 +1,67 @@
+name: Temporary TTS Mobile Notice Materializer
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'css/tts-download-notice.css'
+      - 'scripts/_temp-materialize-tts-mobile-notice.mjs'
+      - '.github/workflows/_temp-materialize-tts-mobile-notice.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-tts-mobile-notice-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - name: Checkout exact product lane
+        uses: actions/checkout@v4
+        with:
+          ref: fix/tts-mobile-notice-viewport-2026-07-25
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply exact mobile notice transaction
+        run: node scripts/_temp-materialize-tts-mobile-notice.mjs
+
+      - name: Validate source and workflow contracts
+        run: |
+          node scripts/tts-engine-status-contract-test.js
+          node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml .github/workflows/_temp-materialize-tts-mobile-notice.yml
+          node scripts/cache-bust.js
+
+      - name: Build production-like routes
+        run: npm run strangler:build:production-like
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run TTS lifecycle and route matrices
+        run: |
+          node scripts/tts-engine-lifecycle-browser-test.js
+          node scripts/tts-status-route-browser-test.js
+          node scripts/tts-mobile-notice-geometry-browser-test.js
+
+      - name: Publish product commit without workflow mutation
+        run: |
+          git checkout -- .github/workflows/tts-download-consent.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add css/tts-download-notice.css scripts/tts-engine-status-contract-test.js scripts/tts-mobile-notice-geometry-browser-test.js src/lib/asset-version.js src '*.html' articles baptisty-rossii nagornaya || true
+          git diff --cached --quiet && { echo 'No product changes staged'; exit 1; }
+          git commit -m "fix(tts): anchor mobile status notice to viewport insets"
+          git push origin HEAD:fix/tts-mobile-notice-viewport-2026-07-25
