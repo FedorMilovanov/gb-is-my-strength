@@ -40,7 +40,6 @@ jobs:
           TARGET_SHA: 59a91bacea6c498d2c16e6a965924b37f9bd7c2f
         run: |
           set -euo pipefail
-          export TARGET_SHA
           mkdir -p reports/deploy-diagnostics
           headers=(
             -H "Accept: application/vnd.github+json"
@@ -48,37 +47,10 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28"
           )
 
-          deploy_run_id=""
-          for attempt in $(seq 1 20); do
-            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-              "${GH_API}/actions/workflows/deploy.yml/runs?head_sha=${TARGET_SHA}&per_page=20" \
-              > reports/deploy-diagnostics/deploy-runs.json
-            deploy_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "workflow_run")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deploy-runs.json)"
-            if [[ -n "${deploy_run_id}" ]]; then
-              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/actions/runs/${deploy_run_id}" \
-                > reports/deploy-diagnostics/deploy-run.json
-              status="$(jq -r '.status' reports/deploy-diagnostics/deploy-run.json)"
-              if [[ "${status}" == "completed" ]]; then
-                break
-              fi
-            fi
-            sleep 15
-          done
-
-          test -n "${deploy_run_id}"
-          jq -e --arg sha "${TARGET_SHA}" '.head_sha == $sha and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' \
-            reports/deploy-diagnostics/deploy-run.json
-          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-            "${GH_API}/actions/runs/${deploy_run_id}/jobs?per_page=100" \
-            > reports/deploy-diagnostics/deploy-jobs.json
-          jq -e '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length == 0' \
-            reports/deploy-diagnostics/deploy-jobs.json
-
           deployment_id=""
-          for attempt in $(seq 1 20); do
+          for attempt in $(seq 1 40); do
             curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-              "${GH_API}/deployments?sha=${TARGET_SHA}&per_page=100" \
+              "${GH_API}/deployments?sha=${TARGET_SHA}&environment=github-pages&per_page=100" \
               > reports/deploy-diagnostics/deployments.json
             deployment_id="$(jq -r 'sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deployments.json)"
             if [[ -n "${deployment_id}" ]]; then
@@ -94,9 +66,34 @@ jobs:
           done
 
           test -n "${deployment_id}"
-          jq -e 'sort_by(.created_at) | reverse | .[0].state == "success"' \
+          jq -e --arg sha "${TARGET_SHA}" 'length > 0 and (sort_by(.created_at) | reverse | .[0].sha == $sha)' \
+            reports/deploy-diagnostics/deployments.json
+          jq -e 'length > 0 and (sort_by(.created_at) | reverse | .[0].state == "success")' \
             reports/deploy-diagnostics/deployment-statuses.json
-          printf '%s\n' "deploy_run_id=${deploy_run_id}" "deployment_id=${deployment_id}" \
+
+          status_url="$(jq -r 'sort_by(.created_at) | reverse | .[0] | .log_url // .target_url // .environment_url // empty' reports/deploy-diagnostics/deployment-statuses.json)"
+          deploy_run_id="$(printf '%s\n' "${status_url}" | sed -nE 's#.*[/]actions[/]runs[/]([0-9]+).*#\1#p' | head -n 1)"
+          test -n "${deploy_run_id}"
+
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/actions/runs/${deploy_run_id}" \
+            > reports/deploy-diagnostics/deploy-run.json
+          jq -e '.name == "Deploy to GitHub Pages" and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' \
+            reports/deploy-diagnostics/deploy-run.json
+
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/actions/runs/${deploy_run_id}/jobs?per_page=100" \
+            > reports/deploy-diagnostics/deploy-jobs.json
+          jq -e '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length == 0' \
+            reports/deploy-diagnostics/deploy-jobs.json
+          jq -e '[.jobs[].steps[]? | select(.name == "Upload Pages artifact" or .name == "Deploy to GitHub Pages") | select(.conclusion == "success")] | length == 2' \
+            reports/deploy-diagnostics/deploy-jobs.json
+
+          printf '%s\n' \
+            "target_sha=${TARGET_SHA}" \
+            "deployment_id=${deployment_id}" \
+            "deployment_state=success" \
+            "deploy_run_id=${deploy_run_id}" \
             > reports/deploy-diagnostics/exact-deployment.txt
 
       - name: Install dependencies
