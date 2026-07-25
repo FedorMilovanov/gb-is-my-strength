@@ -28,15 +28,15 @@ export function assertManualReleaseMainAncestry({
   assert.match(mainSha, /^[a-f0-9]{40}$/, 'origin/main did not resolve to an exact commit SHA');
 
   const ancestry = gitRunner('git', ['merge-base', '--is-ancestor', commitSha, mainSha], options);
-  assert.equal(
-    ancestry.status,
-    0,
-    'manual release SHA must already belong to the history of origin/main',
-  );
+  assert.equal(ancestry.status, 0, 'manual release SHA must already belong to the history of origin/main');
   return { checked: true, mainSha };
 }
 
-export function writeDeploymentProvenance({ root = ROOT, env = process.env } = {}) {
+export function writeDeploymentProvenance({
+  root = ROOT,
+  env = process.env,
+  gitRunner = spawnSync,
+} = {}) {
   const dist = path.join(root, 'dist');
   const reports = path.join(root, 'reports');
   const commitSha = String(env.RELEASE_SHA || env.DEPLOYED_SHA || env.GITHUB_SHA || '').trim().toLowerCase();
@@ -47,7 +47,7 @@ export function writeDeploymentProvenance({ root = ROOT, env = process.env } = {
   const npmVersion = String(env.RELEASE_NPM_VERSION || '').trim();
 
   assert.ok(npmVersion, 'RELEASE_NPM_VERSION is required');
-  const ancestry = assertManualReleaseMainAncestry({ root, eventName, commitSha });
+  const ancestry = assertManualReleaseMainAncestry({ root, eventName, commitSha, gitRunner });
   const prepared = prepareReleaseCandidate({
     root,
     dist,
