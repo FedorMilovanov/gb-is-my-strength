@@ -1,0 +1,122 @@
+name: TEMP Live Universal Print Smoke
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  actions: read
+  contents: read
+  deployments: read
+  pages: read
+
+concurrency:
+  group: temp-live-universal-print-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  live-production-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verify/universal-print-production-2026-07-25
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Require exact merged Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_API: https://api.github.com/repos/${{ github.repository }}
+          TARGET_SHA: f92794b4f11ef9dae55d284a106a9bd0f69133c9
+        run: |
+          set -euo pipefail
+          export TARGET_SHA
+          mkdir -p reports/live-universal-print/github-api
+          headers=(
+            -H "Accept: application/vnd.github+json"
+            -H "Authorization: Bearer ${GH_TOKEN}"
+            -H "X-GitHub-Api-Version: 2022-11-28"
+          )
+          deploy_run_id=""
+          for attempt in $(seq 1 120); do
+            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+              "${GH_API}/actions/workflows/deploy.yml/runs?head_sha=${TARGET_SHA}&per_page=20" \
+              > reports/live-universal-print/github-api/deploy-runs.json
+            deploy_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "workflow_run")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/live-universal-print/github-api/deploy-runs.json)"
+            if [[ -n "${deploy_run_id}" ]]; then
+              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+                "${GH_API}/actions/runs/${deploy_run_id}" \
+                > reports/live-universal-print/github-api/deploy-run.json
+              status="$(jq -r '.status' reports/live-universal-print/github-api/deploy-run.json)"
+              [[ "${status}" == "completed" ]] && break
+            fi
+            sleep 15
+          done
+          test -n "${deploy_run_id}"
+          jq -e --arg sha "${TARGET_SHA}" '.head_sha == $sha and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' \
+            reports/live-universal-print/github-api/deploy-run.json
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/actions/runs/${deploy_run_id}/jobs?per_page=100" \
+            > reports/live-universal-print/github-api/deploy-jobs.json
+          jq -e '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length == 0' \
+            reports/live-universal-print/github-api/deploy-jobs.json
+          deployment_id=""
+          for attempt in $(seq 1 80); do
+            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+              "${GH_API}/deployments?sha=${TARGET_SHA}&per_page=100" \
+              > reports/live-universal-print/github-api/deployments.json
+            deployment_id="$(jq -r 'sort_by(.created_at) | reverse | .[0].id // empty' reports/live-universal-print/github-api/deployments.json)"
+            if [[ -n "${deployment_id}" ]]; then
+              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+                "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" \
+                > reports/live-universal-print/github-api/deployment-statuses.json
+              state="$(jq -r 'sort_by(.created_at) | reverse | .[0].state // empty' reports/live-universal-print/github-api/deployment-statuses.json)"
+              [[ "${state}" == "success" ]] && break
+            fi
+            sleep 15
+          done
+          test -n "${deployment_id}"
+          jq -e --arg sha "${TARGET_SHA}" 'length > 0 and (sort_by(.created_at) | reverse | .[0].sha == $sha)' \
+            reports/live-universal-print/github-api/deployments.json
+          jq -e 'sort_by(.created_at) | reverse | .[0].state == "success"' \
+            reports/live-universal-print/github-api/deployment-statuses.json
+          printf '%s\n' "deploy_run_id=${deploy_run_id}" "deployment_id=${deployment_id}" \
+            > reports/live-universal-print/github-api/exact-deployment.txt
+      - run: npm ci
+      - name: Fetch exact merged proof contracts
+        env:
+          TARGET_SHA: f92794b4f11ef9dae55d284a106a9bd0f69133c9
+        run: |
+          set -euo pipefail
+          RAW="https://raw.githubusercontent.com/${{ github.repository }}/${TARGET_SHA}"
+          curl --fail-with-body --location --silent --show-error "${RAW}/src/lib/asset-version.js" -o src/lib/asset-version.js
+          curl --fail-with-body --location --silent --show-error "${RAW}/scripts/print-paper-pdf-audit.py" -o scripts/print-paper-pdf-audit.py
+      - name: Validate exact merged proof contracts
+        run: |
+          grep -Fq "'css/site.css': '45d5818f'" src/lib/asset-version.js
+          grep -Fq "'js/reader-preferences-head.js': 'a47c8630'" src/lib/asset-version.js
+          node --check scripts/_temp-live-universal-print-smoke.mjs
+          python3 -m py_compile scripts/print-paper-pdf-audit.py
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+      - name: Poll production and generate live A4 proof
+        env:
+          LIVE_MAX_POLLS: '100'
+          LIVE_POLL_MS: '15000'
+        run: node scripts/_temp-live-universal-print-smoke.mjs
+      - name: Audit live production PDF
+        run: python3 scripts/print-paper-pdf-audit.py reports/live-universal-print/live-reader-print-a4.pdf --out reports/live-universal-print
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-universal-print-proof-${{ github.sha }}
+          path: reports/live-universal-print
+          if-no-files-found: warn
+          retention-days: 14
