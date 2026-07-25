@@ -12,74 +12,38 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   guard:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 7
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@v4
         with:
-          ref: agent/source-link-evidence-hardening
           fetch-depth: 0
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
 
-      - name: Materialize source-link evidence hardening
-        if: github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening'
+      - name: Asset revision drift (read-only)
+        run: node scripts/cache-bust.js
+
+      - name: Deterministic font asset contracts
         shell: bash
         run: |
           set -o pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python3 scripts/_temp_harden_source_link_evidence.py 2>&1 | tee "$RUNNER_TEMP/source-link-materializer.log"
-
-      - name: Push materialized non-workflow files
-        if: failure() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
-        run: |
-          test "$(git log -1 --pretty=%s)" = "fix(links): redact malformed evidence and pin audit actions"
-          git reset --soft HEAD^
-          git restore --staged .github/workflows/source-links.yml .github/workflows/_temp-harden-source-link-evidence.yml
-          git restore .github/workflows/source-links.yml .github/workflows/_temp-harden-source-link-evidence.yml
-          git commit -m "fix(links): redact malformed URL evidence"
-          git push origin HEAD
-
-      - name: Upload source-link materializer diagnostics
-        if: always() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: source-link-materializer-${{ github.run_id }}
-          path: ${{ runner.temp }}/source-link-materializer.log
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Upload materialized source-link product files
-        if: always() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: source-link-product-${{ github.run_id }}
-          path: |
-            .github/workflows/source-links.yml
-            scripts/source-link-audit.js
-            scripts/source-link-audit-source-contract-test.cjs
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Restore canonical Shared Files Guard after materialization
-        if: success() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
-        run: |
-          git fetch origin main
-          git checkout origin/main -- .github/workflows/shared-files-guard.yml
-          git add .github/workflows/shared-files-guard.yml
-          git commit -m "chore: restore canonical shared guard after materialization"
-          git push origin HEAD
-
-      - name: Asset revision drift (read-only)
-        run: node scripts/cache-bust.js
+          mkdir -p reports
+          node --check scripts/font-assets-lib.mjs
+          node --check scripts/verify-font-assets.mjs
+          node --check scripts/generate-font-assets.mjs
+          node --check scripts/font-assets-contract-test.mjs
+          node --check scripts/font-assets-alias-contract-test.mjs
+          node scripts/font-assets-contract-test.mjs 2>&1 | tee reports/font-assets-contract.log
+          node scripts/font-assets-alias-contract-test.mjs 2>&1 | tee reports/font-assets-alias-contract.log
+          node scripts/verify-font-assets.mjs 2>&1 | tee reports/font-assets-verification.log
 
       - name: Workflow policy contracts
         run: npm run workflows:check
@@ -88,6 +52,7 @@ jobs:
         run: |
           node --check scripts/ci-failure-lifecycle.cjs
           node --check scripts/ci-failure-lifecycle-contract-test.cjs
+          node --check scripts/ci-failure-lifecycle-source-contract-test.cjs
           node scripts/ci-failure-lifecycle-contract-test.cjs
           node scripts/ci-failure-lifecycle-source-contract-test.cjs
 
@@ -166,12 +131,16 @@ jobs:
 
       - name: Upload control-plane audit
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@v4
         with:
           name: repository-control-plane-audit-${{ github.run_id }}
           path: |
             reports/repository-control-plane-audit.json
             reports/repository-control-plane-audit.md
+            reports/font-assets-contract.log
+            reports/font-assets-alias-contract.log
+            reports/font-assets-verification.log
+            reports/font-assets-verification.json
           if-no-files-found: warn
           retention-days: 14
 
