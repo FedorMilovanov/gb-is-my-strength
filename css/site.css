@@ -686,7 +686,7 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 /* reduced-motion: единый финальный блок — специфичность побеждает порядком, без !important (аудит 2026-07-14) */
 @media (prefers-reduced-motion:reduce){.article-figure img:not(.img-loaded),.article-hero img:not(.img-loaded),.card-cover:not(.img-loaded),.related-articles__img:not(.img-loaded){animation:none}.ehrman-block,.info-box,.opusdei-note,.quote-box,.warn-box{opacity:1;transform:none;transition:none}.resume-list-item{transform:none;transition:none}.article-figure::after{animation:none;transform:none}.error-flip-card:not(.flipped),.flip-card:not(.flipped),.flip-finger::before,.heart-flip-card:not(.flipped),.heart-flip-hint-icon{animation:none}.heart-flip-card.flipped .heart-flip-hint{transition:none}.error-flip-inner,.flip-card-inner,.heart-flip-inner{transition:none;transform:none}.heart-flip-card{transition:none}.timeline-anim li{opacity:1;transform:none;transition:none}.quiz-option.shake{animation:none}.quiz-progress-fill{transition:none}.faq-accordion__body{transition:none}.faq-accordion__body-inner{transition:none}.faq-accordion__icon{transition:none}.error-flip-card.flipped .error-flip-inner,.flip-card.flipped .flip-card-inner,.heart-flip-card.flipped .heart-flip-inner{transform:none}.error-flip-back,.error-flip-front,.flip-card-back,.flip-card-front,.heart-flip-back,.heart-flip-front{position:static;transform:none;visibility:visible;backface-visibility:visible;width:auto;height:auto;inset:auto}.gb-accuracy-btn,.gb-accuracy-btn:hover{transform:none;transition:none}[data-series-cards] .series-card,[data-series-cards] .series-card:hover{transform:none;transition:none}.bottom-bar,.btoc-link,.h-article-card,.quiz-option{transition:none;animation:none}}
 .fn-marker:not(.is-open)>.tooltip{pointer-events:none}.fn-marker.is-open>.tooltip{pointer-events:auto}
-.tooltip.gb-floating-tip,.gtip.gb-floating-tip,body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}
+.tooltip.gb-floating-tip,.gtip.gb-floating-tip,body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{pointer-events:none}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}
 
 /* =========================================================
    GB PRINT CONTRACT v2.1 — 2026-07-24
@@ -1329,67 +1329,68 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 }
 
 /* GB PRINT CONTRACT v2.9 — progress chrome isolation and reversible-card flow. */
+/* Terminal unlayered print rules intentionally outrank layered screen CSS without priority flags. */
 @media print {
   html body :where(#reading-progress, .h-reading-progress) {
-    display: none !important;
-    visibility: hidden !important;
-    position: static !important;
-    width: 0 !important;
-    height: 0 !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: none !important;
-    box-shadow: none !important;
-    transform: none !important;
-    opacity: 0 !important;
+    display: none;
+    visibility: hidden;
+    position: static;
+    width: 0;
+    height: 0;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    transform: none;
+    opacity: 0;
   }
 
   html body :where(.flip-card, .heart-flip-card, .error-flip-card) {
-    perspective: none !important;
-    min-height: 0 !important;
-    height: auto !important;
-    cursor: default !important;
-    break-inside: avoid-page !important;
-    page-break-inside: avoid !important;
+    perspective: none;
+    min-height: 0;
+    height: auto;
+    cursor: default;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
   }
   html body :where(.flip-card-inner, .heart-flip-inner, .error-flip-inner) {
-    position: static !important;
-    min-height: 0 !important;
-    height: auto !important;
-    transform: none !important;
-    transform-style: flat !important;
-    transition: none !important;
+    position: static;
+    min-height: 0;
+    height: auto;
+    transform: none;
+    transform-style: flat;
+    transition: none;
   }
   html body :where(.flip-card-front, .heart-flip-front, .error-flip-front,
                    .flip-card-back, .heart-flip-back, .error-flip-back) {
-    position: static !important;
-    inset: auto !important;
-    width: 100% !important;
-    min-height: 0 !important;
-    height: auto !important;
-    transform: none !important;
-    backface-visibility: visible !important;
-    -webkit-backface-visibility: visible !important;
-    break-inside: avoid-page !important;
-    page-break-inside: avoid !important;
+    position: static;
+    inset: auto;
+    width: 100%;
+    min-height: 0;
+    height: auto;
+    transform: none;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
   }
   html body :where(.flip-card-front, .heart-flip-front, .error-flip-front) {
-    display: flex !important;
+    display: flex;
   }
   html body :where(.flip-card-back, .heart-flip-back, .error-flip-back) {
-    display: none !important;
+    display: none;
   }
   html body .flip-card.flipped > .flip-card-inner > .flip-card-front,
   html body .heart-flip-card.flipped > .heart-flip-inner > .heart-flip-front,
   html body .error-flip-card.flipped > .error-flip-inner > .error-flip-front {
-    display: none !important;
+    display: none;
   }
   html body .flip-card.flipped > .flip-card-inner > .flip-card-back,
   html body .heart-flip-card.flipped > .heart-flip-inner > .heart-flip-back,
   html body .error-flip-card.flipped > .error-flip-inner > .error-flip-back {
-    display: flex !important;
+    display: flex;
   }
 }
