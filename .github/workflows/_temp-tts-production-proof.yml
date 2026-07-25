@@ -94,7 +94,7 @@ jobs:
             if [[ -n "${deployment_id}" ]]; then
               curl --fail-with-body --location --silent --show-error "${headers[@]}" \
                 "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" > reports/deploy-diagnostics/deployment-statuses.json
-              if jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (..target_url // "")) | contains($run))' reports/deploy-diagnostics/deployment-statuses.json >/dev/null; then
+              if jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' reports/deploy-diagnostics/deployment-statuses.json >/dev/null; then
                 break
               fi
             fi
@@ -171,27 +171,6 @@ jobs:
           if old_cancel not in source:
               raise SystemExit('cancel-to-disabled proof block not found')
           source = source.replace(old_cancel, new_cancel, 1)
-
-          old_sw = """  assert.ok(cssText.includes('.gb-tts-download-notice'), 'live notice CSS does not contain the status card contract');
-
-              return {
-          """
-          new_sw = """  assert.ok(cssText.includes('.gb-tts-download-notice'), 'live notice CSS does not contain the status card contract');
-
-              const swResponse = await page.request.get(`${ORIGIN}/sw.js?tts_proof=${Date.now()}`, {
-                headers: { 'cache-control': 'no-cache' },
-                timeout: 30000,
-              });
-              assert.equal(swResponse.status(), 200, 'service worker asset is not HTTP 200');
-              const swText = await swResponse.text();
-              assert.ok(!swText.includes('/css/tts-download-notice.css'), 'notice CSS was accidentally added to Service Worker precache');
-              assert.ok(!swText.includes('/js/vosk-tts-engine.js'), 'Vosk engine was accidentally added to Service Worker precache');
-
-              return {
-          """
-          if old_sw not in source:
-              raise SystemExit('service-worker policy insertion point not found')
-          source = source.replace(old_sw, new_sw, 1)
           path.write_text(source, encoding='utf-8')
           PY
           grep -Fq "const EXPECTED_MAIN = 'f92794b4f11ef9dae55d284a106a9bd0f69133c9';" scripts/_temp-tts-production-proof.mjs
@@ -200,12 +179,20 @@ jobs:
           grep -Fq "noticeCss: '/css/tts-download-notice.css?v=475abd4b'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "link.sheet.cssRules.length > 0" scripts/_temp-tts-production-proof.mjs
           grep -Fq "assert.match(disabledState.meta, /системный голос/i);" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "Vosk engine was accidentally added to Service Worker precache" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
         run: |
           node --check scripts/_temp-tts-production-proof.mjs
           node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-tts-production-proof.yml
+
+      - name: Verify live lazy-asset policy
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --location --silent --show-error \
+            -H 'Cache-Control: no-cache' \
+            "https://gospod-bog.ru/sw.js?tts_proof=${GITHUB_RUN_ID}" > reports/live-sw.js
+          ! grep -Fq '/css/tts-download-notice.css' reports/live-sw.js
+          ! grep -Fq '/js/vosk-tts-engine.js' reports/live-sw.js
 
       - name: Run production TTS matrix
         run: |
@@ -219,6 +206,7 @@ jobs:
           name: tts-live-production-proof-${{ github.run_id }}
           path: |
             reports/deploy-diagnostics/**
+            reports/live-sw.js
             reports/tts-production-proof.json
             reports/tts-production-proof.log
             reports/chromium-*.png
