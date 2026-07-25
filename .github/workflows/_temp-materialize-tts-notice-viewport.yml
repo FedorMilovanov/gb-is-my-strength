@@ -7,6 +7,7 @@ on:
       - '.github/workflows/_temp-materialize-tts-notice-viewport.yml'
       - 'scripts/_temp-materialize-tts-notice-viewport.mjs'
       - 'css/tts-download-notice.css'
+      - 'js/vosk-tts-engine.js'
       - 'js/floating-cluster-controller.js'
       - 'scripts/cache-bust-assets.js'
       - 'scripts/tts-engine-status-contract-test.js'
@@ -57,10 +58,6 @@ jobs:
         if: steps.transaction.outputs.skip != 'true'
         run: node scripts/_temp-materialize-tts-notice-viewport.mjs
 
-      - name: Build production-like dist
-        if: steps.transaction.outputs.skip != 'true'
-        run: npm run strangler:build:production-like
-
       - name: Install Chromium and WebKit
         if: steps.transaction.outputs.skip != 'true'
         run: npx playwright install --with-deps chromium webkit
@@ -75,7 +72,13 @@ jobs:
 
       - name: TTS notice browser contract
         if: steps.transaction.outputs.skip != 'true'
-        run: node scripts/tts-download-notice-browser-test.js
+        run: |
+          set -o pipefail
+          node scripts/tts-download-notice-browser-test.js 2>&1 | tee reports/tts-download-notice-browser.log
+
+      - name: Build production-like dist
+        if: steps.transaction.outputs.skip != 'true'
+        run: npm run strangler:build:production-like
 
       - name: TTS lifecycle browser contract
         if: steps.transaction.outputs.skip != 'true'
@@ -117,6 +120,7 @@ jobs:
         with:
           name: tts-notice-viewport-${{ github.run_id }}
           path: |
+            reports/tts-download-notice-browser.log
             reports/tts-download-notice-*.png
             reports/tts-lifecycle-*.png
             reports/tts-route-*.png
