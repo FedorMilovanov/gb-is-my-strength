@@ -100,6 +100,7 @@
     'main article',
     'article'
   ];
+  // GB_PRINT_REVERSIBLE_CARD_ROOTS_V1
   var CANDIDATE_SELECTOR = [
     '[data-print-keep]',
     'table',
@@ -116,6 +117,9 @@
     '.event-item',
     '.history-item',
     '.manuscript-quote',
+    '.flip-card',
+    '.heart-flip-card',
+    '.error-flip-card',
     '.ancient-epigraph',
     '.note-box',
     '.info-box',
@@ -141,7 +145,7 @@
     '.devotional-tail',
     '.epilogue'
   ].join(',');
-  var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;
+  var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|flip-card|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;
   var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"]';
   var TAIL_SELECTOR = '[data-print-tail],.article-end-block,.article-end-sdg-wrap,.article-end-sdg,.closing-mark,.devotional-tail,.epilogue';
   var STYLE_ID = 'gb-print-pagination-contract';

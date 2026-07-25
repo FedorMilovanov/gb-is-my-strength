@@ -1327,3 +1327,106 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   html body .editorial-dateline__place { color: #333; }
   html body .editorial-dateline__date { color: #555; }
 }
+
+/* GB PRINT CONTRACT v2.9 — progress chrome isolation and reversible-card flow. */
+@media print {
+  /* One neutral, static paper masthead. Route-specific fixed pseudo-surfaces
+     are overridden here so paged media cannot repeat them on every sheet. */
+  html body::before {
+    content: "ГОСПОДЬ БОГ — СИЛА МОЯ (gospod-bog.ru)" !important;
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 0 9mm !important;
+    padding: 0 0 4mm !important;
+    border: 0 !important;
+    border-bottom: 1px solid #9a9a96 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    color: #111 !important;
+  }
+
+  html body #reading-progress,
+  html body .h-reading-progress {
+    display: none !important;
+    visibility: hidden !important;
+    position: static !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 0 !important;
+  }
+
+  html body .flip-card,
+  html body .heart-flip-card,
+  html body .error-flip-card {
+    perspective: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    cursor: default !important;
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
+  }
+  html body .flip-card-inner,
+  html body .heart-flip-inner,
+  html body .error-flip-inner {
+    position: static !important;
+    min-height: 0 !important;
+    height: auto !important;
+    transform: none !important;
+    transform-style: flat !important;
+    transition: none !important;
+  }
+  html body .flip-card-front,
+  html body .heart-flip-front,
+  html body .error-flip-front,
+  html body .flip-card-back,
+  html body .heart-flip-back,
+  html body .error-flip-back {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    transform: none !important;
+    backface-visibility: visible !important;
+    -webkit-backface-visibility: visible !important;
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
+  }
+  html body .flip-card-front,
+  html body .heart-flip-front,
+  html body .error-flip-front {
+    display: flex !important;
+  }
+  html body .flip-card-back,
+  html body .heart-flip-back,
+  html body .error-flip-back {
+    display: none !important;
+  }
+  html body .flip-card.flipped > .flip-card-inner > .flip-card-front,
+  html body .heart-flip-card.flipped > .heart-flip-inner > .heart-flip-front,
+  html body .error-flip-card.flipped > .error-flip-inner > .error-flip-front {
+    display: none !important;
+  }
+  html body .flip-card.flipped > .flip-card-inner > .flip-card-back,
+  html body .heart-flip-card.flipped > .heart-flip-inner > .heart-flip-back,
+  html body .error-flip-card.flipped > .error-flip-inner > .error-flip-back {
+    display: flex !important;
+  }
+}
