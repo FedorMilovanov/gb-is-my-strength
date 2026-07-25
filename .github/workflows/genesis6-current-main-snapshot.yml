@@ -1,0 +1,28 @@
+name: Genesis 6 current-main snapshot
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/genesis6-current-main-snapshot.yml'
+      - 'tmp-genesis6-current-main-trigger.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Package repository
+        run: tar --exclude=.git --exclude=node_modules --exclude=dist --exclude=.astro -czf /tmp/genesis6-current-main.tgz .
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis6-current-main-${{ github.run_id }}
+          path: /tmp/genesis6-current-main.tgz
+          if-no-files-found: error
+          retention-days: 1
