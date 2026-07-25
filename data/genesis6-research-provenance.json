@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "seriesId": "genesis-6",
+  "research": {
+    "repository": "FedorMilovanov/Research",
+    "commit": "9bba3d45d3475468798f69e4b6067acae673b79c",
+    "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
+    "manifestPath": "data/genesis6-authority-manifest.json",
+    "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
+    "ledgerPath": "data/genesis6-publication-ledger.json",
+    "contractPath": "GENESIS6_AUTHORITY_CONTRACT.md"
+  },
+  "publicationPolicy": {
+    "defaultState": "draft-noindex",
+    "requiresExactResearchCommit": true,
+    "requiresManifestDigest": true,
+    "requiresExactHeadSiteEvidence": true,
+    "productionWitnessSeparate": true
+  },
+  "articles": [
+    {
+      "article": 6,
+      "slug": "enoh-prorochestvoval-iuda-14-15-4q204",
+      "bundleId": "GEN6-PUB-ARTICLE-6",
+      "readerBaseId": "GEN6-ARTICLE-6-XLVIII",
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-6-XLVIII",
+        "GEN6-ARTICLE-6-LI",
+        "GEN6-4Q204-SCHEMATIC-L"
+      ],
+      "rightsDecisionIds": ["RIGHT-4Q204-OPEN-SCHEMATIC"]
+    },
+    {
+      "article": 7,
+      "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
+      "bundleId": "GEN6-PUB-ARTICLE-7",
+      "readerBaseId": "GEN6-ARTICLE-7-XLVIII",
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-7-XLVIII"
+      ],
+      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+    },
+    {
+      "article": 8,
+      "slug": "duhi-v-temnice-noi-kreshchenie-pobeda",
+      "bundleId": "GEN6-PUB-ARTICLE-8",
+      "readerBaseId": "GEN6-ARTICLE-8-XLVIII",
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-8-XLVIII",
+        "GEN6-ARTICLE-8-LI"
+      ],
+      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+    },
+    {
+      "article": 9,
+      "slug": "blagovestie-mertvym-1-petra-4-5-6",
+      "bundleId": "GEN6-PUB-ARTICLE-9",
+      "readerBaseId": "GEN6-ARTICLE-9-XLVIII",
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-9-XLVIII"
+      ],
+      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+    }
+  ]
+}
