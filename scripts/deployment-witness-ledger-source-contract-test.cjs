@@ -83,7 +83,8 @@ function validate({ deploy, ledger, workflow, recorder }) {
     ['recorder binds TTS to candidate digest', recorder, /TTS witness candidate digest mismatch[\s\S]*TTS discovery candidate digest mismatch[\s\S]*TTS provenance candidate digest mismatch/],
     ['recorder generic envelope exact', recorder, /kind:\s*'deployment-release-witness'[\s\S]*releaseCandidate:[\s\S]*liveWitnessArtifact:[\s\S]*extensions:[\s\S]*tts:/],
     ['recorder marker binds all artifact IDs', recorder, /deployment-release-witness:\$\{sha\}:\$\{runId\}:\$\{runAttempt\}:\$\{candidateArtifact\.id\}:\$\{genericArtifact\.id\}:\$\{ttsArtifact\.id\}/],
-    ['recorder supports generic and legacy targets', recorder, /deployment-witness-target:release:\$\{sha\}[\s\S]*deployment-witness-target:tts:\$\{sha\}/],
+    ['recorder supports generic target', recorder, /deployment-witness-target:release:\$\{sha\}/],
+    ['recorder supports legacy TTS target', recorder, /deployment-witness-target:tts:\$\{sha\}/],
     ['recorder exact merge SHA only', recorder, /normalize\(pull\.merge_commit_sha\)\.toLowerCase\(\) === sha/],
     ['recorder truthful release wording', recorder, /Release candidate witness accepted[\s\S]*same candidate bytes/],
 
