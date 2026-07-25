@@ -38,16 +38,22 @@ jobs:
         run: npm ci
 
       - name: Materialize canonical lazy-cache policy
-        run: node scripts/_temp-materialize-tts-lazy-cache-policy.mjs
+        run: |
+          mkdir -p reports/tts-lazy-cache-policy
+          set -o pipefail
+          node scripts/_temp-materialize-tts-lazy-cache-policy.mjs 2>&1 | tee reports/tts-lazy-cache-policy/materializer.log
 
       - name: Re-run registry and workflow contracts
         run: |
-          npm run surface:registry:check
-          npm run surface:registry:test
-          node scripts/tts-engine-status-contract-test.js
-          node scripts/cache-bust.js
-          node scripts/audit-pro.js
-          node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml .github/workflows/_temp-materialize-tts-lazy-cache-policy.yml
+          set -o pipefail
+          {
+            npm run surface:registry:check
+            npm run surface:registry:test
+            node scripts/tts-engine-status-contract-test.js
+            node scripts/cache-bust.js
+            node scripts/audit-pro.js
+            node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml .github/workflows/_temp-materialize-tts-lazy-cache-policy.yml
+          } 2>&1 | tee reports/tts-lazy-cache-policy/contracts.log
 
       - name: Publish product patch without temporary infrastructure
         run: |
@@ -57,3 +63,12 @@ jobs:
           git diff --cached --quiet && { echo 'No product changes staged'; exit 1; }
           git commit -m "fix(cache): model lazy versioned assets explicitly"
           git push origin HEAD:fix/tts-mobile-notice-viewport-2026-07-25
+
+      - name: Upload lazy-cache diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-lazy-cache-policy-${{ github.run_id }}
+          path: reports/tts-lazy-cache-policy
+          if-no-files-found: warn
+          retention-days: 7
