@@ -50,7 +50,7 @@ jobs:
           rm -f scripts/_temp-materialize-editorial-dateline.py
           rm -f .github/workflows/_temp-materialize-editorial-dateline.yml
           echo '=== refresh cache-bust revisions ==='
-          node scripts/cache-bust.js
+          node scripts/cache-bust.js --write
           echo '=== semantic contract ==='
           node scripts/editorial-dateline-contract-test.js
           echo '=== runtime syntax ==='
