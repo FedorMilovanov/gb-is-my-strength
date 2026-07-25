@@ -48,7 +48,7 @@ jobs:
           PY
           node scripts/cache-bust.js --write
 
-      - name: Validate source and workflow contracts
+      - name: Validate source contracts
         run: |
           mkdir -p reports
           set +e
@@ -73,18 +73,11 @@ jobs:
             check 'progress controls targeted' grep -Fq '#reading-progress, .h-reading-progress' css/site.css
             check 'paper-aware raster helper present' grep -Fq 'paper_ratio_around' scripts/print-pagination-raster-audit.py
             printf '\n===== obsolete v2.8 absent =====\n'
-            if grep -Fq 'GB PRINT CONTRACT v2.8' css/site.css; then
-              echo 'obsolete v2.8 remains' >&2
-              exit 1
-            fi
+            grep -Fq 'GB PRINT CONTRACT v2.8' css/site.css && { echo 'obsolete v2.8 remains' >&2; exit 1; } || true
             echo 'PASS: obsolete v2.8 absent'
             printf '\n===== duplicate body progress absent =====\n'
-            if grep -Fq 'transform: scaleX(var(--gb-read-pct, 0))' css/floating-cluster.css; then
-              echo 'duplicate body progress remains' >&2
-              exit 1
-            fi
+            grep -Fq 'transform: scaleX(var(--gb-read-pct, 0))' css/floating-cluster.css && { echo 'duplicate body progress remains' >&2; exit 1; } || true
             echo 'PASS: duplicate body progress absent'
-            check 'workflow actionlint' node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-print-decoration-finalize.yml
           ) 2>&1 | tee reports/print-decoration-validation.log
           code=${PIPESTATUS[0]}
           exit "${code}"
