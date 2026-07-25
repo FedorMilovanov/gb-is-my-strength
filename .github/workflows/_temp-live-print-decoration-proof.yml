@@ -1,0 +1,98 @@
+name: TEMP Live Print Decoration Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-live-print-decoration-proof.yml'
+      - 'scripts/_temp-live-print-decoration-proof.mjs'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  deployments: read
+  pages: read
+
+concurrency:
+  group: temp-live-print-decoration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-proof:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'verify/live-print-decoration-2026-07-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TARGET_SHA: d94b54889e4f5f0330adaf2b9947e59af4aee7e4
+      GB_EXPECT_SITE_CSS: 226fbe6b
+      GB_EXPECT_FLOATING_CSS: d26d83c2
+      GB_EXPECT_READER_HEAD: 2db7a79e
+      GB_LIVE_PRINT_ARTIFACT_DIR: reports/live-print-decoration-proof
+    steps:
+      - name: Checkout proof harness
+        uses: actions/checkout@v4
+
+      - name: Confirm exact successful Pages run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports/live-print-decoration-proof
+          success=false
+          for attempt in $(seq 1 40); do
+            curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'Accept: application/vnd.github+json' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&per_page=100" \
+              > reports/live-print-decoration-proof/pages-runs.json
+            if jq -e '[.workflow_runs[] | select(.name == "Deploy to GitHub Pages" and .status == "completed" and .conclusion == "success")] | length > 0' \
+              reports/live-print-decoration-proof/pages-runs.json >/dev/null; then
+              success=true
+              break
+            fi
+            echo "Pages deployment for ${TARGET_SHA} not successful yet (attempt ${attempt}/40)"
+            sleep 15
+          done
+          test "${success}" = true
+
+      - name: Setup Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium and PDF tools
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+
+      - name: Print and verify the live production page
+        run: |
+          set -o pipefail
+          node scripts/_temp-live-print-decoration-proof.mjs \
+            2>&1 | tee reports/live-print-decoration-proof/live-proof.log
+
+      - name: Raster-audit the live PDF
+        run: |
+          mkdir -p reports/live-print-decoration-proof-raster/input
+          cp reports/live-print-decoration-proof/live-gill-print-a4.pdf \
+            reports/live-print-decoration-proof-raster/input/live-gill-print-a4.pdf
+          python3 scripts/print-pagination-raster-audit.py \
+            reports/live-print-decoration-proof-raster/input \
+            --out reports/live-print-decoration-proof-raster/audit
+
+      - name: Upload live production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-print-decoration-proof-${{ github.run_id }}
+          path: |
+            reports/live-print-decoration-proof/
+            reports/live-print-decoration-proof-raster/
+          if-no-files-found: error
+          retention-days: 14
