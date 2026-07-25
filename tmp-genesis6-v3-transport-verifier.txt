@@ -1,1 +1,1 @@
-Verify issue #287 V3 chunks 000-010. Temporary branch; never merge.
+Verify issue #287 V3 chunks 000-010 after repairing chunk 008. Attempt 2. Temporary branch; never merge.
