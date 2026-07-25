@@ -65,9 +65,11 @@ jobs:
 
       - name: Verify source contracts and cache revisions
         run: |
+          git diff --binary > /tmp/tts-product-before.diff
           node scripts/tts-engine-status-contract-test.js
           node scripts/cache-bust.js
-          git diff --exit-code
+          git diff --binary > /tmp/tts-product-after.diff
+          cmp /tmp/tts-product-before.diff /tmp/tts-product-after.diff
 
       - name: Lint temporary workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-tts-webkit-first-paint.yml
