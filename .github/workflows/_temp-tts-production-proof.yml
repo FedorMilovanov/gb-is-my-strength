@@ -164,7 +164,12 @@ jobs:
                 assert.equal(browserState.title, 'Проверяем улучшенный голос');
                 assert.match(browserState.meta, /Системный голос уже работает/);
               }
-              assertGeometry(browserState, { mobile: config.viewport.width <= 430 });
+              await page.waitForFunction(() => {
+                const notice = document.querySelector('.gb-tts-download-notice');
+                return !!notice && getComputedStyle(notice).position === 'fixed';
+              }, null, { timeout: 5000 });
+              const positionedState = await noticeSnapshot(page);
+              assertGeometry(positionedState, { mobile: config.viewport.width <= 430 });
           """
           if old not in source:
               raise SystemExit('immediate TTS-state proof block not found')
@@ -172,7 +177,7 @@ jobs:
           PY
           grep -Fq "const EXPECTED_MAIN = '59a91bacea6c498d2c16e6a965924b37f9bd7c2f';" scripts/_temp-tts-production-proof.mjs
           grep -Fq "controller: '/js/floating-cluster-controller.js?v=4bf2a7fd'" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "browserState.state === 'browser' || browserState.state === 'preparing'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "getComputedStyle(notice).position === 'fixed'" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
         run: |
