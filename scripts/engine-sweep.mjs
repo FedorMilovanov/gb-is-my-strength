@@ -528,6 +528,94 @@ for (const [id, url] of [
   await ctx.close();
 }
 
+/* ============ UNIVERSAL PRINT PAGINATION — COMPONENT CONTRACT ============ */
+for (const [id, url] of [
+  ['paginate-gill', '/articles/dzhon-gill-chast-1-chelovek/'],
+  ['paginate-book', '/articles/novoe-serdce/'],
+  ['paginate-baptist', '/baptisty-rossii/podpolnaya-pechat/'],
+  ['paginate-single', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],
+]) {
+  const { ctx, page } = await newPage({ width: 1240, height: 900 });
+  await page.goto(base + url, { waitUntil: 'networkidle' });
+  const screenState = await page.evaluate(() => {
+    const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body, article[data-pagefind-body], main article, article');
+    const scope = root?.parentElement || document.body;
+    return {
+      groups: document.querySelectorAll('.gb-print-closing-group').length,
+      text: String(scope.textContent || '').replace(/\s+/g, ' ').trim(),
+    };
+  });
+  R(id, 'print: screen DOM remains structurally untouched', screenState.groups === 0, JSON.stringify({ groups: screenState.groups }));
+  await page.emulateMedia({ media: 'print' });
+  await page.waitForTimeout(250);
+  const pagination = await page.evaluate(() => {
+    const semanticText = () => {
+      const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body, article[data-pagefind-body], main article, article');
+      const scope = root?.parentElement || document.body;
+      return String(scope.textContent || '').replace(/\s+/g, ' ').trim();
+    };
+    const api = window.GBPrintPagination;
+    const first = api?.prepare?.() || null;
+    const firstGroups = document.querySelectorAll('.gb-print-closing-group').length;
+    const groupOrder = [...document.querySelectorAll('.gb-print-closing-group')].every((group) =>
+      group.children.length >= 2 && group.lastElementChild?.matches('[data-print-tail],.article-end-block,.article-end-sdg-wrap,.article-end-sdg,.closing-mark,.devotional-tail,.epilogue')
+    );
+    const terminalNodes = [...document.querySelectorAll('[data-print-terminal-flow]')];
+    const terminalFollowers = [...document.querySelectorAll('[data-print-terminal-follower]')];
+    const forcedTerminalBreaks = terminalNodes.filter((node) => {
+      const style = getComputedStyle(node);
+      return !['auto', 'avoid', 'avoid-page'].includes(style.breakBefore) || !['auto', 'avoid', 'avoid-page'].includes(style.breakAfter);
+    });
+    const atomic = [...document.querySelectorAll('[data-print-flow="atomic"]')];
+    const badAtomic = atomic.filter((node) => !String(getComputedStyle(node).breakInside).includes('avoid'));
+    const keepers = [...document.querySelectorAll('[data-print-keep-next]')];
+    const badKeep = keepers.filter((node) => !String(getComputedStyle(node).breakAfter).includes('avoid'));
+    const legacyPattern = /\[data-gill-v16=["']part1["']\][\s\S]{0,240}note-box:first-child/;
+    api?.reset?.();
+    const resetGroups = document.querySelectorAll('.gb-print-closing-group').length;
+    const resetGenerated = document.querySelectorAll('[data-gb-print-generated]').length;
+    const resetText = semanticText();
+    const second = api?.prepare?.() || null;
+    const secondGroups = document.querySelectorAll('.gb-print-closing-group').length;
+    api?.reset?.();
+    const secondResetGroups = document.querySelectorAll('.gb-print-closing-group').length;
+    const secondResetGenerated = document.querySelectorAll('[data-gb-print-generated]').length;
+    const secondResetText = semanticText();
+    return {
+      version: api?.version || 0, report: second, atomic: atomic.length, keepers: keepers.length, groupOrder,
+      firstGroups, resetGroups, resetGenerated, resetText, secondGroups, secondResetGroups, secondResetGenerated, secondResetText,
+      terminalNodes: terminalNodes.length, terminalFollowers: terminalFollowers.length, forcedTerminalBreaks: forcedTerminalBreaks.slice(0, 8).map((node) => ({ tag: node.tagName, className: typeof node.className === 'string' ? node.className.slice(0, 120) : '' })),
+      firstClosingGroups: first?.stats?.closingGroups || 0,
+      secondClosingGroups: second?.stats?.closingGroups || 0,
+      badAtomic: badAtomic.slice(0, 5).map((node) => node.className || node.tagName),
+      badKeep: badKeep.slice(0, 5).map((node) => node.className || node.tagName),
+      legacyRoutePatch: [...document.styleSheets].some((sheet) => {
+        try { return [...sheet.cssRules].some((rule) => legacyPattern.test(String(rule.cssText || ''))); } catch { return false; }
+      })
+    };
+  });
+  R(id, 'print: shared pagination runtime classifies semantic components',
+    pagination.version === 1 && pagination.report?.prepared && pagination.atomic > 0 && pagination.keepers > 0,
+    JSON.stringify(pagination));
+  R(id, 'print: closing groups are print-only, ordered, reversible and idempotent',
+    pagination.groupOrder && pagination.resetGroups === 0 && pagination.resetGenerated === 0 && pagination.secondResetGroups === 0 && pagination.secondResetGenerated === 0 && pagination.firstGroups === pagination.firstClosingGroups && pagination.secondGroups === pagination.secondClosingGroups,
+    JSON.stringify({ groupOrder: pagination.groupOrder, firstGroups: pagination.firstGroups, resetGroups: pagination.resetGroups, resetGenerated: pagination.resetGenerated, secondGroups: pagination.secondGroups, secondResetGroups: pagination.secondResetGroups, secondResetGenerated: pagination.secondResetGenerated }));
+  R(id, 'print: actual terminal semantic region is sealed',
+    pagination.report?.stats?.terminalAnchors === 1 && pagination.terminalNodes > 0 && pagination.forcedTerminalBreaks.length === 0,
+    JSON.stringify({ terminalAnchors: pagination.report?.stats?.terminalAnchors, terminalNodes: pagination.terminalNodes, terminalFollowers: pagination.terminalFollowers, forced: pagination.forcedTerminalBreaks }));
+  R(id, 'print: only terminal tails may form closing groups',
+    pagination.report?.stats?.closingGroups <= Math.max(0, pagination.report?.stats?.tails - pagination.report?.stats?.nonTerminalTails),
+    JSON.stringify({ tails: pagination.report?.stats?.tails, nonTerminalTails: pagination.report?.stats?.nonTerminalTails, closingGroups: pagination.report?.stats?.closingGroups }));
+  R(id, 'print: source semantic order is restored after every reset',
+    pagination.resetText === screenState.text && pagination.secondResetText === screenState.text,
+    JSON.stringify({ screen: screenState.text.slice(-180), reset: pagination.resetText.slice(-180), secondReset: pagination.secondResetText.slice(-180) }));
+  R(id, 'print: atomic and keep-next computed contracts are effective',
+    pagination.badAtomic.length === 0 && pagination.badKeep.length === 0,
+    JSON.stringify({ badAtomic: pagination.badAtomic, badKeep: pagination.badKeep }));
+  R(id, 'print: legacy route-specific pagination patch is absent', !pagination.legacyRoutePatch, JSON.stringify(pagination));
+  await ctx.close();
+}
+
 /* ============ READERSTATE R6 — ЕДИНЫЙ ДИАПАЗОН/ПРОГРЕСС/RESUME ============ */
 for (const [id, url, uiSelector] of [
   ['r6-gill', SERIES[0][1], '#gbs2MobPct'],

@@ -128,6 +128,9 @@ try {
       }
 
       function hosts(node) {
+        if (node.matches?.('.gb-print-closing-group')) {
+          return { start: node.firstElementChild || node, end: node.lastElementChild || node };
+        }
         if (node.matches?.('table')) {
           const cells = [...node.querySelectorAll('th,td')];
           if (cells.length) return { start: cells[0], end: cells[cells.length - 1] };

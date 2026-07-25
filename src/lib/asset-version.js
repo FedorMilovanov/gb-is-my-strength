@@ -12,7 +12,7 @@ export const ASSET_VERSIONS = {
   'css/nagornaya-mobile-toc.css': '282d8fe8',
   'css/reader-preferences.css': '2b0b76ce',
   'css/series-samizdat.css': '2c4a9f29',
-  'css/site.css': '4e58ac4d',
+  'css/site.css': '45d5818f',
   'css/sw-toast.css': 'efbe868b',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'fba4e559',
