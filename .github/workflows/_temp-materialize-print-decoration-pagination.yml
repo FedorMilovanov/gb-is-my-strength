@@ -1,0 +1,119 @@
+name: TEMP Materialize Print Decoration Pagination
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-materialize-print-decoration-pagination.yml'
+      - 'scripts/_temp-materialize-print-decoration-pagination.mjs'
+      - 'js/reader-preferences-head.js'
+      - 'scripts/print-pagination-contract.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-print-decoration-pagination-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'fix/print-decoration-pagination-2026-07-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact product lane
+        uses: actions/checkout@v4
+        with:
+          ref: fix/print-decoration-pagination-2026-07-25
+          fetch-depth: 0
+
+      - name: Detect completed product transaction
+        id: transaction
+        run: |
+          if grep -Fq 'GB_PRINT_DECORATION_PAGINATION_V2' js/reader-preferences-head.js; then
+            echo 'skip=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'skip=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node 22.12
+        if: steps.transaction.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.transaction.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Apply exact product transaction
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/_temp-materialize-print-decoration-pagination.mjs
+
+      - name: Validate source and revision contracts
+        if: steps.transaction.outputs.skip != 'true'
+        run: |
+          node --check js/reader-preferences-head.js
+          node --check scripts/print-pagination-contract.mjs
+          node scripts/cache-bust.js
+          git diff --check
+          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-print-decoration-pagination.yml
+
+      - name: Build production-like dist
+        if: steps.transaction.outputs.skip != 'true'
+        run: npm run strangler:build:production-like
+
+      - name: Install browser and PDF audit dependencies
+        if: steps.transaction.outputs.skip != 'true'
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+
+      - name: Run multi-route pagination proof
+        if: steps.transaction.outputs.skip != 'true'
+        env:
+          GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-decoration-pagination
+        run: |
+          set -o pipefail
+          node scripts/print-pagination-contract.mjs 2>&1 | tee reports/print-decoration-pagination.log
+
+      - name: Raster-audit every generated PDF
+        if: steps.transaction.outputs.skip != 'true'
+        run: |
+          python3 scripts/print-pagination-raster-audit.py \
+            reports/print-decoration-pagination \
+            --out reports/print-decoration-pagination-raster
+
+      - name: Publish tested product commit only
+        if: steps.transaction.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git reset -- \
+            .github/workflows/_temp-materialize-print-decoration-pagination.yml \
+            scripts/_temp-materialize-print-decoration-pagination.mjs \
+            .github/workflows/_temp-print-decoration-diagnose.yml \
+            .github/workflows/_temp-print-source-grep.yml \
+            scripts/_temp-print-decoration-diagnose.mjs
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No product changes staged'; exit 1; }
+          git commit -m 'fix(print): remove page bars and keep flip cards atomic'
+          git push origin HEAD:fix/print-decoration-pagination-2026-07-25
+
+      - name: Upload print evidence
+        if: always() && steps.transaction.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: print-decoration-pagination-${{ github.run_id }}
+          path: |
+            reports/print-decoration-pagination.log
+            reports/print-decoration-pagination/
+            reports/print-decoration-pagination-raster/
+          if-no-files-found: warn
+          retention-days: 14
