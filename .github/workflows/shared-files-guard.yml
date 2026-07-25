@@ -38,6 +38,16 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           python3 scripts/_temp_harden_source_link_evidence.py 2>&1 | tee "$RUNNER_TEMP/source-link-materializer.log"
 
+      - name: Push materialized non-workflow files
+        if: failure() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
+        run: |
+          test "$(git log -1 --pretty=%s)" = "fix(links): redact malformed evidence and pin audit actions"
+          git reset --soft HEAD^
+          git restore --staged .github/workflows/source-links.yml .github/workflows/_temp-harden-source-link-evidence.yml
+          git restore .github/workflows/source-links.yml .github/workflows/_temp-harden-source-link-evidence.yml
+          git commit -m "fix(links): redact malformed URL evidence"
+          git push origin HEAD
+
       - name: Upload source-link materializer diagnostics
         if: always() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -60,7 +70,7 @@ jobs:
           retention-days: 7
 
       - name: Restore canonical Shared Files Guard after materialization
-        if: github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening'
+        if: success() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
         run: |
           git fetch origin main
           git checkout origin/main -- .github/workflows/shared-files-guard.yml
