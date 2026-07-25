@@ -63,6 +63,7 @@ jobs:
               raise SystemExit(f'guarded writer raw-template normalization found only {count} candidates')
           source = source.replace('\n  `', '\n  String.raw`')
           source = source.replace('{0,1200}fallbackTtsNoticeStylesApplied', '{0,3200}fallbackTtsNoticeStylesApplied', 1)
+          source = source.replace('{0,500}TTS_NOTICE_STYLE_TIMEOUT_MS', '{0,1800}TTS_NOTICE_STYLE_TIMEOUT_MS', 1)
           source = source.replace('{0,2600}setTimeout', '{0,8000}setTimeout', 1)
           path.write_text(source, encoding='utf-8')
           PY
