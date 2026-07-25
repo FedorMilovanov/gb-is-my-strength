@@ -9,7 +9,7 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
-function validate(engine, controller, css, workflow) {
+function validate(engine, controller, css, workflow, cacheAssets) {
   const problems = [];
   const checks = [
     ['engine status API', engine, /getStatus:\s*getStatus[\s\S]{0,180}showStatus:\s*showStatus/],
@@ -32,7 +32,10 @@ function validate(engine, controller, css, workflow) {
     ['workflow owns controller', workflow, /js\/floating-cluster-controller\.js/],
     ['workflow runs lifecycle browser test', workflow, /tts-engine-lifecycle-browser-test\.js/],
     ['workflow runs route integration', workflow, /tts-status-route-browser-test\.js/],
+    ['workflow runs mobile geometry gate', workflow, /tts-mobile-notice-geometry-browser-test\.js/],
     ['workflow installs WebKit', workflow, /playwright install --with-deps chromium webkit/],
+    ['cache registry owns notice CSS', cacheAssets, /'css\/tts-download-notice\.css'/],
+    ['cache registry owns Vosk engine', cacheAssets, /'js\/vosk-tts-engine\.js'/],
   ];
   for (const [label, source, pattern] of checks) {
     if (!pattern.test(source)) problems.push(label);
@@ -57,19 +60,23 @@ const engine = read('js/vosk-tts-engine.js');
 const controller = read('js/floating-cluster-controller.js');
 const css = read('css/tts-download-notice.css');
 const workflow = read('.github/workflows/tts-download-consent.yml');
-assert.deepEqual(validate(engine, controller, css, workflow), []);
+const cacheAssets = read('scripts/cache-bust-assets.js');
+assert.deepEqual(validate(engine, controller, css, workflow, cacheAssets), []);
 
 const mutations = [
-  [engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow],
-  [engine, controller.replace(/vosk-tts-engine\.js\?v=[a-f0-9]{8}/, 'vosk-tts-engine.js'), css, workflow],
-  [engine, controller.replace(/gb:vosk-retry-request/g, 'gb:vosk-retry-missing'), css, workflow],
-  [engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow],
-  [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow],
-  [engine, controller, css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;'), workflow],
-  [engine.replace(/DOWNLOAD_NOTICE_CSS_URL = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=00000000'"), controller, css, workflow],
-  [engine, controller.replace(/TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=00000000'"), css, workflow],
-  [engine, controller.replace(/VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}'/, "VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=00000000'"), css, workflow],
-  [engine, controller, css, workflow.replace('chromium webkit', 'chromium')],
+  [engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow, cacheAssets],
+  [engine, controller.replace(/vosk-tts-engine\.js\?v=[a-f0-9]{8}/, 'vosk-tts-engine.js'), css, workflow, cacheAssets],
+  [engine, controller.replace(/gb:vosk-retry-request/g, 'gb:vosk-retry-missing'), css, workflow, cacheAssets],
+  [engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],
+  [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow, cacheAssets],
+  [engine, controller, css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;'), workflow, cacheAssets],
+  [engine.replace(/DOWNLOAD_NOTICE_CSS_URL = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=00000000'"), controller, css, workflow, cacheAssets],
+  [engine, controller.replace(/TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=00000000'"), css, workflow, cacheAssets],
+  [engine, controller.replace(/VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}'/, "VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=00000000'"), css, workflow, cacheAssets],
+  [engine, controller, css, workflow.replace('chromium webkit', 'chromium'), cacheAssets],
+  [engine, controller, css, workflow.replace(/\n\s*- name: Run mobile notice viewport geometry[\s\S]*?tts-mobile-notice-geometry-browser-test\.js[^\n]*\n/, '\n'), cacheAssets],
+  [engine, controller, css, workflow, cacheAssets.replace("  'css/tts-download-notice.css',\n", '')],
+  [engine, controller, css, workflow, cacheAssets.replace("  'js/vosk-tts-engine.js',\n", '')],
 ];
 for (const mutation of mutations) {
   assert.ok(validate(...mutation).length > 0, 'adversarial mutation must be rejected');
