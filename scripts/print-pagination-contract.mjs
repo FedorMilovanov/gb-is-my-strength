@@ -227,6 +227,7 @@ try {
         const inner = node.querySelector('.flip-card-inner,.heart-flip-inner,.error-flip-inner');
         const faces = [...node.querySelectorAll('.flip-card-front,.flip-card-back,.heart-flip-front,.heart-flip-back,.error-flip-front,.error-flip-back')];
         const snapshot = () => {
+          const innerState = inner ? getComputedStyle(inner) : null;
           const faceStates = faces.map((face) => {
             const style = getComputedStyle(face);
             const rect = face.getBoundingClientRect();
@@ -242,6 +243,8 @@ try {
           });
           return {
             flipped: node.classList.contains('flipped'),
+            innerPosition: innerState?.position || '',
+            innerTransform: innerState?.transform || '',
             visibleFaces: faceStates.filter((face) => face.display !== 'none' && face.visibility !== 'hidden' && face.width > 8 && face.height > 4),
             faces: faceStates
           };
@@ -252,14 +255,11 @@ try {
         const toggled = snapshot();
         node.classList.toggle('flipped', wasFlipped);
         const style = getComputedStyle(node);
-        const innerStyle = inner ? getComputedStyle(inner) : null;
         return {
           className: typeof node.className === 'string' ? node.className.slice(0, 140) : '',
           flow: node.getAttribute('data-print-flow') || '',
           breakInside: style.breakInside,
           height: Math.round(node.getBoundingClientRect().height),
-          innerPosition: innerStyle?.position || '',
-          innerTransform: innerStyle?.transform || '',
           initial,
           toggled
         };
@@ -289,9 +289,11 @@ try {
       const modes = [item.initial, item.toggled];
       return item.flow !== 'atomic'
         || !String(item.breakInside).includes('avoid')
-        || item.innerPosition !== 'static'
-        || item.innerTransform !== 'none'
-        || modes.some((mode) => mode.visibleFaces.length !== 1 || mode.visibleFaces[0].position !== 'static' || mode.visibleFaces[0].transform !== 'none');
+        || modes.some((mode) => mode.innerPosition !== 'static'
+          || mode.innerTransform !== 'none'
+          || mode.visibleFaces.length !== 1
+          || mode.visibleFaces[0].position !== 'static'
+          || mode.visibleFaces[0].transform !== 'none');
     });
     if (badCards.length) report.failures.push(`${id}: reversible-card print flow is not atomic/single-face: ${JSON.stringify(badCards.slice(0, 4))}`);
 
