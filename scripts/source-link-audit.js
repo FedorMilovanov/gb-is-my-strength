@@ -13,6 +13,7 @@
  */
 'use strict';
 
+const crypto = require('node:crypto');
 const dns = require('node:dns').promises;
 const fs = require('node:fs');
 const http = require('node:http');
@@ -56,15 +57,17 @@ function normalizeHost(hostname) {
 }
 
 function sanitizeUrlForEvidence(value) {
+  const raw = String(value ?? '');
   try {
-    const url = new URL(value);
+    const url = new URL(raw);
     url.username = '';
     url.password = '';
     url.hash = '';
     if (url.search) url.search = '?redacted=1';
     return url.href;
   } catch {
-    return String(value || '').slice(0, 300);
+    const digest = crypto.createHash('sha256').update(raw, 'utf8').digest('hex').slice(0, 32);
+    return `invalid-url:sha256:${digest}:bytes:${Buffer.byteLength(raw, 'utf8')}`;
   }
 }
 
