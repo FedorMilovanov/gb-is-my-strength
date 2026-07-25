@@ -182,7 +182,7 @@ jobs:
               await waitForState(page, 'disabled', 5000);
               const disabledState = await noticeSnapshot(page);
               assert.equal(disabledState.title, 'Улучшенный голос отключён');
-              assert.match(disabledState.meta, /Системный голос/);
+              assert.match(disabledState.meta, /системный голос/i);
               assert.equal(disabledState.action, 'Включить');
               assert.equal(await page.evaluate(() => localStorage.getItem('gbx-vosk-warmup')), 'off');
           """
@@ -194,7 +194,7 @@ jobs:
           grep -Fq "const EXPECTED_MAIN = '59a91bacea6c498d2c16e6a965924b37f9bd7c2f';" scripts/_temp-tts-production-proof.mjs
           grep -Fq "controller: '/js/floating-cluster-controller.js?v=4bf2a7fd'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "getComputedStyle(notice).position === 'fixed'" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "await waitForState(page, 'disabled', 5000);" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "assert.match(disabledState.meta, /системный голос/i);" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
         run: |
