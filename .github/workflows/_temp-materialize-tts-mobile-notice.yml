@@ -5,7 +5,11 @@ on:
     branches: [main]
     paths:
       - 'css/tts-download-notice.css'
+      - 'js/vosk-tts-engine.js'
       - 'js/floating-cluster-controller.js'
+      - 'scripts/cache-bust-assets.js'
+      - 'scripts/tts-engine-status-contract-test.js'
+      - 'scripts/tts-mobile-notice-geometry-browser-test.js'
       - 'scripts/_temp-materialize-tts-mobile-notice.mjs'
       - '.github/workflows/_temp-materialize-tts-mobile-notice.yml'
 
@@ -42,6 +46,7 @@ jobs:
       - name: Validate source and workflow contracts
         run: |
           node scripts/tts-engine-status-contract-test.js
+          node scripts/tts-download-consent-contract-test.js
           node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml .github/workflows/_temp-materialize-tts-mobile-notice.yml
           node scripts/cache-bust.js
 
