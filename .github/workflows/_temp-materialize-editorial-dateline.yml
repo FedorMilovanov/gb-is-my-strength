@@ -57,6 +57,25 @@ jobs:
           echo '=== diff integrity ==='
           git diff --check
           echo '=== materializer completed ==='
+      - name: Commit materialized product and contracts
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          mkdir -p reports/editorial-dateline-materializer
+          exec > >(tee reports/editorial-dateline-materializer/commit-push.log) 2>&1
+          set -euo pipefail
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- . ':(exclude).github/workflows/**' ':(exclude)reports/**'
+          echo '=== staged product diff ==='
+          git diff --cached --stat
+          if git diff --cached --quiet; then
+            echo 'No product materialization changes remain.'
+            exit 0
+          fi
+          git commit -m 'feat(editorial): replace foliant boxes with semantic datelines'
+          git push origin "HEAD:${BRANCH}"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -64,17 +83,3 @@ jobs:
           path: reports/editorial-dateline-materializer
           if-no-files-found: warn
           retention-days: 7
-      - name: Commit materialized product and contracts
-        env:
-          BRANCH: ${{ github.event.pull_request.head.ref }}
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- . ':!.github/workflows/**' ':!reports/**'
-          if git diff --cached --quiet; then
-            echo 'No product materialization changes remain.'
-            exit 0
-          fi
-          git commit -m 'feat(editorial): replace foliant boxes with semantic datelines'
-          git push origin "HEAD:${BRANCH}"
