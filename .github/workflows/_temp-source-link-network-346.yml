@@ -6,12 +6,17 @@ on:
       - fix/source-link-native-lookup-20260725
     paths:
       - '.github/workflows/_temp-source-link-network-346.yml'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-source-link-network-346.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: temp-source-link-network-346
+  group: temp-source-link-network-346-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -22,6 +27,7 @@ jobs:
       - name: Checkout exact branch head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Setup Node.js
