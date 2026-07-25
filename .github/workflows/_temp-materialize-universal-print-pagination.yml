@@ -1,0 +1,73 @@
+name: TEMP Materialize Universal Print Pagination
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'css/**'
+      - 'js/**'
+      - 'scripts/**print-pagination**'
+      - 'scripts/engine-sweep.mjs'
+      - 'src/components/reader-platform/**'
+      - '.github/workflows/_temp-materialize-universal-print-pagination.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-materialize-universal-print-pagination-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  materialize-and-prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/universal-print-pagination-marathon-2026-07-25
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - name: Materialize shared pagination runtime and remove route-specific CSS
+        run: node scripts/_temp-materialize-universal-print-pagination.mjs
+      - name: Verify asset revisions
+        run: npm run cache-bust
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+      - name: Build production-like site
+        run: npm run strangler:build:production-like
+      - name: Run full reader engine sweep and canonical PDF
+        env:
+          GB_READER_UI_ARTIFACT_DIR: reports/universal-print-pagination/canonical
+        run: node scripts/engine-sweep.mjs
+      - name: Audit canonical PDF raster, palette and pagination
+        run: python3 scripts/print-paper-pdf-audit.py reports/universal-print-pagination/canonical/reader-print-a4.pdf --out reports/universal-print-pagination/canonical
+      - name: Audit atomic components across route families in real PDFs
+        env:
+          GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/universal-print-pagination/matrix
+        run: node scripts/print-pagination-contract.mjs
+      - name: Remove one-shot infrastructure and commit product patch
+        run: |
+          rm -f scripts/_temp-print-pagination-inventory.mjs
+          rm -f scripts/_temp-materialize-universal-print-pagination.mjs
+          rm -f .github/workflows/_temp-print-pagination-inventory.yml
+          rm -f .github/workflows/_temp-materialize-universal-print-pagination.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix(print): introduce universal semantic pagination"
+          git push origin HEAD:fix/universal-print-pagination-marathon-2026-07-25
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: universal-print-pagination-proof-${{ github.sha }}
+          path: reports/universal-print-pagination
+          if-no-files-found: warn
+          retention-days: 7
