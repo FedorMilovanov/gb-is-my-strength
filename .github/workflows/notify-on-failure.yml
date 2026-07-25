@@ -10,6 +10,7 @@ on:
     workflows:
       - "Metadata & IndexNow Readiness"
       - "Deploy to GitHub Pages"
+      - "Deployment Witness Ledger"
       - "Source Link Audit"
       - "Runtime Interactive Audit"
       - "Visual Parity Guard — pixel-diff"
