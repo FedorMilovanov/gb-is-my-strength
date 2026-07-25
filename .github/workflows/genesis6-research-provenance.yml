@@ -1,0 +1,50 @@
+name: Genesis 6 Research provenance
+
+on:
+  pull_request:
+    paths:
+      - 'data/genesis6-research-provenance.json'
+      - 'scripts/genesis6-research-provenance-contract.mjs'
+      - 'src/content/articles/*enoh*'
+      - 'src/content/articles/*angely-pod-mrakom*'
+      - 'src/content/articles/*duhi-v-temnice*'
+      - 'src/content/articles/*blagovestie-mertvym*'
+      - 'src/pages/hard-texts/**'
+      - 'src/components/**/genesis6*'
+      - '.github/workflows/genesis6-research-provenance.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/genesis6-research-provenance.json'
+      - 'scripts/genesis6-research-provenance-contract.mjs'
+      - 'src/content/articles/*enoh*'
+      - 'src/content/articles/*angely-pod-mrakom*'
+      - 'src/content/articles/*duhi-v-temnice*'
+      - 'src/content/articles/*blagovestie-mertvym*'
+      - 'src/pages/hard-texts/**'
+      - 'src/components/**/genesis6*'
+      - '.github/workflows/genesis6-research-provenance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout site source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout exact Research authority
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: FedorMilovanov/Research
+          ref: 9bba3d45d3475468798f69e4b6067acae673b79c
+          path: _external/Research
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Validate pinned Research authority
+        run: node scripts/genesis6-research-provenance-contract.mjs --research-root _external/Research
