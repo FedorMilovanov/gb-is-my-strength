@@ -38,7 +38,10 @@ jobs:
         run: npm ci
 
       - name: Materialize canonical deploy lazy policy
-        run: node scripts/_temp-materialize-deploy-lazy-policy.mjs
+        run: |
+          mkdir -p reports/deploy-publication-diagnostic
+          set -o pipefail
+          node scripts/_temp-materialize-deploy-lazy-policy.mjs 2>&1 | tee reports/deploy-publication-diagnostic/materializer.log
 
       - name: Reproduce deploy dist through failed gate
         run: |
