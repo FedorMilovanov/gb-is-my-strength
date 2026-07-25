@@ -431,7 +431,7 @@
       }
     }
 
-    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,.section-label,.eyebrow,.overline,.foliant-mark,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
+    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,.section-label,.eyebrow,.overline,.editorial-dateline,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
     for (var k = 0; k < keepers.length; k++) {
       var keeper = keepers[k];
       if (!isVisible(keeper) || closestAtomic(keeper)) continue;
