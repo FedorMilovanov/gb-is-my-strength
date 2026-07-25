@@ -14,18 +14,12 @@ on:
         type: string
 
 permissions:
-  actions: read         # resolve and download the exact deploy-run artifact
-  contents: read        # checkout trusted recorder source
-  issues: write         # comment/close only a full-SHA machine-marked issue
-  pull-requests: write  # comment the exact merged PR after verified deployment
-
-concurrency:
-  group: deployment-witness-${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || inputs.deploy_run_id }}
-  cancel-in-progress: false
+  actions: read
+  contents: read
 
 jobs:
-  record:
-    name: Record verified deployment capability witness
+  resolve:
+    name: Resolve exact successful deploy run
     if: >-
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_run' &&
@@ -33,33 +27,38 @@ jobs:
        github.event.workflow_run.head_branch == 'main' &&
        github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
-
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      run_id: ${{ steps.resolve.outputs.run_id }}
+      head_sha: ${{ steps.resolve.outputs.head_sha }}
+      recorder_ref: ${{ steps.resolve.outputs.recorder_ref }}
     steps:
-      - name: Resolve exact successful deploy run
+      - name: Resolve and canonicalize deploy identity
         id: resolve
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        env:
-          DEPLOYMENT_RUN_RECORD: ${{ runner.temp }}/deployment-workflow-run.json
         with:
           script: |
             const assert = require('node:assert/strict');
-            const fs = require('node:fs');
             const requested = context.eventName === 'workflow_dispatch'
               ? String(context.payload.inputs && context.payload.inputs.deploy_run_id || '').trim()
               : String(context.payload.workflow_run && context.payload.workflow_run.id || '').trim();
             assert.match(requested, /^\d+$/, 'deploy_run_id must be numeric');
+            const requestedNumber = Number(requested);
+            assert.ok(Number.isSafeInteger(requestedNumber) && requestedNumber > 0, 'deploy_run_id must be a positive safe integer');
 
             let workflowRun = context.payload.workflow_run;
             if (context.eventName === 'workflow_dispatch') {
               const response = await github.rest.actions.getWorkflowRun({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                run_id: Number(requested),
+                run_id: requestedNumber,
               });
               workflowRun = response.data;
             }
 
-            assert.equal(Number(workflowRun.id), Number(requested), 'resolved deploy run ID mismatch');
+            assert.equal(Number(workflowRun.id), requestedNumber, 'resolved deploy run ID mismatch');
             assert.equal(workflowRun.name, 'Deploy to GitHub Pages', 'requested run is not the Pages deploy workflow');
             assert.equal(workflowRun.status, 'completed', 'requested deploy run is not completed');
             assert.equal(workflowRun.conclusion, 'success', 'requested deploy run did not succeed');
@@ -71,26 +70,70 @@ jobs:
             );
             assert.match(String(workflowRun.head_sha || ''), /^[a-f0-9]{40}$/, 'requested deploy run lacks an exact SHA');
 
-            fs.writeFileSync(process.env.DEPLOYMENT_RUN_RECORD, `${JSON.stringify(workflowRun, null, 2)}\n`);
-            core.setOutput('run_id', String(workflowRun.id));
+            core.setOutput('run_id', String(requestedNumber));
             core.setOutput('head_sha', workflowRun.head_sha);
             core.setOutput(
               'recorder_ref',
               context.eventName === 'workflow_dispatch' ? context.sha : workflowRun.head_sha,
             );
 
+  record:
+    name: Record verified deployment capability witness
+    needs: resolve
+    if: needs.resolve.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+      pull-requests: write
+    concurrency:
+      group: deployment-witness-${{ needs.resolve.outputs.run_id }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Re-fetch and persist exact deploy run
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          DEPLOYMENT_RUN_ID: ${{ needs.resolve.outputs.run_id }}
+          EXPECTED_HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+          DEPLOYMENT_RUN_RECORD: ${{ runner.temp }}/deployment-workflow-run.json
+        with:
+          script: |
+            const assert = require('node:assert/strict');
+            const fs = require('node:fs');
+            const runId = Number(process.env.DEPLOYMENT_RUN_ID);
+            assert.ok(Number.isSafeInteger(runId) && runId > 0, 'resolved deploy run ID is invalid');
+            const response = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId,
+            });
+            const workflowRun = response.data;
+            assert.equal(workflowRun.name, 'Deploy to GitHub Pages', 'resolved run is not the Pages deploy workflow');
+            assert.equal(workflowRun.status, 'completed', 'resolved deploy run is not completed');
+            assert.equal(workflowRun.conclusion, 'success', 'resolved deploy run did not succeed');
+            assert.equal(workflowRun.head_branch, 'main', 'resolved deploy run is not from main');
+            assert.equal(
+              workflowRun.head_repository && workflowRun.head_repository.full_name,
+              `${context.repo.owner}/${context.repo.repo}`,
+              'resolved deploy run belongs to a foreign repository',
+            );
+            assert.equal(workflowRun.head_sha, process.env.EXPECTED_HEAD_SHA, 'resolved deploy SHA changed between jobs');
+            fs.writeFileSync(process.env.DEPLOYMENT_RUN_RECORD, `${JSON.stringify(workflowRun, null, 2)}\n`);
+
       - name: Checkout trusted recorder source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ steps.resolve.outputs.recorder_ref }}
+          ref: ${{ needs.resolve.outputs.recorder_ref }}
           persist-credentials: false
 
       - name: Download exact-run TTS witness artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: tts-live-deployment-${{ steps.resolve.outputs.run_id }}
+          name: tts-live-deployment-${{ needs.resolve.outputs.run_id }}
           path: ${{ runner.temp }}/deployment-witness
-          run-id: ${{ steps.resolve.outputs.run_id }}
+          run-id: ${{ needs.resolve.outputs.run_id }}
           github-token: ${{ github.token }}
 
       - name: Validate artifact metadata/report and record witness
