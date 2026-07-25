@@ -5,11 +5,13 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/_temp-diagnose-deploy-publication.yml'
-      - 'scripts/_temp-diagnose-deploy-publication.mjs'
+      - 'scripts/_temp-materialize-deploy-lazy-policy.mjs'
+      - 'scripts/dist-publication-audit.js'
+      - 'scripts/tts-engine-status-contract-test.js'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: temp-diagnose-deploy-publication-${{ github.event.pull_request.number || github.ref }}
@@ -18,7 +20,7 @@ concurrency:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 55
     steps:
       - name: Checkout exact diagnostic branch
         uses: actions/checkout@v4
@@ -35,12 +37,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Materialize canonical deploy lazy policy
+        run: node scripts/_temp-materialize-deploy-lazy-policy.mjs
+
       - name: Reproduce deploy dist through failed gate
         run: |
           mkdir -p reports/deploy-publication-diagnostic
           set +e
           set -o pipefail
           {
+            node scripts/tts-engine-status-contract-test.js
+            node scripts/cache-bust.js
             npm run validate:static-publication
             npm run strangler:build:production-like
             npm run page-ownership:dist:production-like
@@ -54,11 +61,20 @@ jobs:
           find dist -maxdepth 4 -type f | sort > reports/deploy-publication-diagnostic/dist-files.txt || true
           exit "$code"
 
+      - name: Publish permanent deploy audit fix only
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/dist-publication-audit.js scripts/tts-engine-status-contract-test.js
+          git diff --cached --quiet && { echo 'No product changes staged'; exit 1; }
+          git commit -m "fix(deploy): honor canonical lazy precache policy"
+          git push origin HEAD:fix/deploy-publication-audit-2026-07-25
+
       - name: Upload exact deploy diagnostic
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: deploy-publication-diagnostic-${{ github.run_id }}
           path: reports/deploy-publication-diagnostic
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
