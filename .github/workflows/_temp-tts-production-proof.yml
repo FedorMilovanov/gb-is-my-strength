@@ -49,9 +49,16 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28"
           )
 
-          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-            "${GH_API}/actions/workflows?per_page=100" \
+          for page in 1 2; do
+            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+              "${GH_API}/actions/workflows?per_page=100&page=${page}" \
+              > "reports/deploy-diagnostics/workflows-page-${page}.json"
+          done
+          jq -s '{workflows: [.[].workflows[]]}' \
+            reports/deploy-diagnostics/workflows-page-1.json \
+            reports/deploy-diagnostics/workflows-page-2.json \
             > reports/deploy-diagnostics/workflows.json
+
           readiness_workflow_id="$(jq -r '.workflows[] | select(.name == "Metadata & IndexNow Readiness") | .id' reports/deploy-diagnostics/workflows.json | head -n 1)"
           deploy_workflow_id="$(jq -r '.workflows[] | select(.name == "Deploy to GitHub Pages") | .id' reports/deploy-diagnostics/workflows.json | head -n 1)"
           test -n "${readiness_workflow_id}"
