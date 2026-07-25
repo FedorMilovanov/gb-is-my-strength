@@ -1,0 +1,35 @@
+name: TEMP Harden Source Link Evidence
+
+on:
+  push:
+    branches:
+      - agent/source-link-evidence-hardening
+    paths:
+      - scripts/_temp_harden_source_link_evidence.py
+      - .github/workflows/_temp-harden-source-link-evidence.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-harden-source-link-evidence
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: agent/source-link-evidence-hardening
+          fetch-depth: 0
+
+      - name: Configure commit identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Apply exact patch, validate and self-clean
+        run: python3 scripts/_temp_harden_source_link_evidence.py
