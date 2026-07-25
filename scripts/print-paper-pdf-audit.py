@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Raster/text audit for the canonical reader A4 PDF."""
+"""Raster/text audit for reader A4 PDFs.
+
+The raster layer is universal. Text markers are an optional canonical Gill-I
+profile and must not be applied to unrelated routes.
+"""
 from __future__ import annotations
 
 import argparse
@@ -22,6 +26,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("pdf", type=Path)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument(
+        "--raster-only",
+        action="store_true",
+        help="Run universal blank-page/fill checks without Gill-I text markers.",
+    )
     args = parser.parse_args()
     if not args.pdf.is_file() or args.pdf.stat().st_size < 1000:
         raise SystemExit(f"PDF is missing or empty: {args.pdf}")
@@ -76,48 +85,49 @@ def main() -> int:
         if flat_saturated:
             failures.append(f"page {index}: large saturated flat fill {flat_saturated}")
 
-    text = text_path.read_text("utf-8", errors="ignore")
-    text_pages = text.split("\f")
-    normalize = lambda value: re.sub(r"\s+", " ", value).strip().upper()
-    normalized_pages = [normalize(value) for value in text_pages]
-    date_pages = [i for i, value in enumerate(normalized_pages) if "23 НОЯБРЯ 1697" in value]
-    name_pages = [i for i, value in enumerate(normalized_pages) if "JOHN GILL" in value]
-    if not date_pages or not name_pages or not set(date_pages) & set(name_pages):
-        failures.append(f"biography masthead split across pages: dates={date_pages}, name={name_pages}")
+    if not args.raster_only:
+        text = text_path.read_text("utf-8", errors="ignore")
+        text_pages = text.split("\f")
+        normalize = lambda value: re.sub(r"\s+", " ", value).strip().upper()
+        normalized_pages = [normalize(value) for value in text_pages]
+        date_pages = [i for i, value in enumerate(normalized_pages) if "23 НОЯБРЯ 1697" in value]
+        name_pages = [i for i, value in enumerate(normalized_pages) if "JOHN GILL" in value]
+        if not date_pages or not name_pages or not set(date_pages) & set(name_pages):
+            failures.append(f"biography masthead split across pages: dates={date_pages}, name={name_pages}")
 
-    # The series eyebrow is a styled div rather than a semantic heading, so the
-    # generic heading-orphan check cannot protect it. Bind it to its intro text.
-    series_label_pages = [
-        i for i, value in enumerate(normalized_pages)
-        if "СЕРИЯ О ДЖОНЕ ГИЛЛЕ" in value
-    ]
-    series_intro_pages = [
-        i for i, value in enumerate(normalized_pages)
+        # The series eyebrow is a styled div rather than a semantic heading, so the
+        # generic heading-orphan check cannot protect it. Bind it to its intro text.
+        series_label_pages = [
+            i for i, value in enumerate(normalized_pages)
+            if "СЕРИЯ О ДЖОНЕ ГИЛЛЕ" in value
+        ]
+        series_intro_pages = [
+            i for i, value in enumerate(normalized_pages)
+            if (
+                "СЕРИЯ О ДЖОНЕ ГИЛЛЕ СОСТОИТ" in value
+                or "БИОГРАФИЯ ДЖОНА ГИЛЛА" in value
+            )
+        ]
         if (
-            "СЕРИЯ О ДЖОНЕ ГИЛЛЕ СОСТОИТ" in value
-            or "БИОГРАФИЯ ДЖОНА ГИЛЛА" in value
-        )
-    ]
-    if (
-        not series_label_pages
-        or not series_intro_pages
-        or not set(series_label_pages) & set(series_intro_pages)
-    ):
-        failures.append(
-            "series overview split across pages: "
-            f"label={series_label_pages}, intro={series_intro_pages}"
-        )
+            not series_label_pages
+            or not series_intro_pages
+            or not set(series_label_pages) & set(series_intro_pages)
+        ):
+            failures.append(
+                "series overview split across pages: "
+                f"label={series_label_pages}, intro={series_intro_pages}"
+            )
 
-    known_headings = {
-        "I. СТАНОВЛЕНИЕ И ПРИЗВАНИЕ",
-        "ОТКУДА РОЖДАЮТСЯ ГЕНИИ БЕЗ УНИВЕРСИТЕТОВ",
-        "БЫТИЕ 3:9 — ВОПРОС, ИЗМЕНИВШИЙ ЖИЗНЬ",
-        "КРЕЩЕНИЕ И ПЕРВЫЕ ШАГИ СЛУЖЕНИЯ",
-    }
-    for page_index, value in enumerate(text_pages[:-1], 1):
-        lines = [normalize(line) for line in value.splitlines() if normalize(line)]
-        if lines and lines[-1] in known_headings:
-            failures.append(f"page {page_index}: orphan heading at page bottom: {lines[-1]}")
+        known_headings = {
+            "I. СТАНОВЛЕНИЕ И ПРИЗВАНИЕ",
+            "ОТКУДА РОЖДАЮТСЯ ГЕНИИ БЕЗ УНИВЕРСИТЕТОВ",
+            "БЫТИЕ 3:9 — ВОПРОС, ИЗМЕНИВШИЙ ЖИЗНЬ",
+            "КРЕЩЕНИЕ И ПЕРВЫЕ ШАГИ СЛУЖЕНИЯ",
+        }
+        for page_index, value in enumerate(text_pages[:-1], 1):
+            lines = [normalize(line) for line in value.splitlines() if normalize(line)]
+            if lines and lines[-1] in known_headings:
+                failures.append(f"page {page_index}: orphan heading at page bottom: {lines[-1]}")
 
     columns, cell_w, cell_h = 4, 310, 430
     rows = math.ceil(len(thumbs) / columns)
@@ -130,11 +140,16 @@ def main() -> int:
         draw.text((slot % columns * cell_w + 10, slot // columns * cell_h + 6), f"Page {number}", fill="black")
     sheet.save(out / "pdf-contact-sheet-paper.png")
 
-    report = {"pages": len(pages), "diagnostics": diagnostics, "failures": failures}
+    report = {
+        "pages": len(pages),
+        "mode": "raster-only" if args.raster_only else "canonical-gill-part-1",
+        "diagnostics": diagnostics,
+        "failures": failures,
+    }
     (out / "pdf-visual-audit.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), "utf-8"
     )
-    print(json.dumps({"pages": len(pages), "failures": failures}, ensure_ascii=False, indent=2))
+    print(json.dumps({"pages": len(pages), "mode": report["mode"], "failures": failures}, ensure_ascii=False, indent=2))
     return 1 if failures else 0
 
 
