@@ -1384,7 +1384,10 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   }
   html body .flip-card-inner,
   html body .heart-flip-inner,
-  html body .error-flip-inner {
+  html body .error-flip-inner,
+  html body .flip-card.flipped > .flip-card-inner,
+  html body .heart-flip-card.flipped > .heart-flip-inner,
+  html body .error-flip-card.flipped > .error-flip-inner {
     position: static;
     min-height: 0;
     height: auto;
