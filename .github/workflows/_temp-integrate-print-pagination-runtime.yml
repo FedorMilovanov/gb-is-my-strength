@@ -1,9 +1,9 @@
 name: TEMP Integrate Print Pagination Runtime
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/universal-print-pagination-marathon-2026-07-25
+      - main
     paths:
       - 'scripts/_temp-integrate-print-pagination-runtime.mjs'
       - '.github/workflows/_temp-integrate-print-pagination-runtime.yml'
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: temp-integrate-print-pagination-runtime
+  group: temp-integrate-print-pagination-runtime-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
