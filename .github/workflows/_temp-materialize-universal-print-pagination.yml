@@ -46,13 +46,41 @@ jobs:
       - name: Run full reader engine sweep and canonical PDF
         env:
           GB_READER_UI_ARTIFACT_DIR: reports/universal-print-pagination/canonical
-        run: node scripts/engine-sweep.mjs
+        run: |
+          mkdir -p reports/universal-print-pagination/diagnostics
+          set +e
+          set -o pipefail
+          node scripts/engine-sweep.mjs 2>&1 | tee reports/universal-print-pagination/diagnostics/engine-sweep.log
+          code=${PIPESTATUS[0]}
+          echo "$code" > reports/universal-print-pagination/diagnostics/engine-sweep.exit
+          exit 0
       - name: Audit canonical PDF raster, palette and pagination
-        run: python3 scripts/print-paper-pdf-audit.py reports/universal-print-pagination/canonical/reader-print-a4.pdf --out reports/universal-print-pagination/canonical
+        run: |
+          set +e
+          set -o pipefail
+          python3 scripts/print-paper-pdf-audit.py reports/universal-print-pagination/canonical/reader-print-a4.pdf --out reports/universal-print-pagination/canonical 2>&1 | tee reports/universal-print-pagination/diagnostics/canonical-audit.log
+          code=${PIPESTATUS[0]}
+          echo "$code" > reports/universal-print-pagination/diagnostics/canonical-audit.exit
+          exit 0
       - name: Audit atomic components across route families in real PDFs
         env:
           GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/universal-print-pagination/matrix
-        run: node scripts/print-pagination-contract.mjs
+        run: |
+          set +e
+          set -o pipefail
+          node scripts/print-pagination-contract.mjs 2>&1 | tee reports/universal-print-pagination/diagnostics/pagination-matrix.log
+          code=${PIPESTATUS[0]}
+          echo "$code" > reports/universal-print-pagination/diagnostics/pagination-matrix.exit
+          exit 0
+      - name: Assert all universal print gates
+        run: |
+          engine=$(cat reports/universal-print-pagination/diagnostics/engine-sweep.exit)
+          canonical=$(cat reports/universal-print-pagination/diagnostics/canonical-audit.exit)
+          matrix=$(cat reports/universal-print-pagination/diagnostics/pagination-matrix.exit)
+          echo "engine=$engine canonical=$canonical matrix=$matrix"
+          test "$engine" = 0
+          test "$canonical" = 0
+          test "$matrix" = 0
       - name: Remove one-shot infrastructure and commit product patch
         run: |
           rm -f scripts/_temp-print-pagination-inventory.mjs
