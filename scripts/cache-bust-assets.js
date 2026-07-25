@@ -13,6 +13,7 @@
 
 const ASSETS = [
   'css/site.css',
+  'css/tts-download-notice.css',
   'css/reader-preferences.css',
   'css/home.css',
   'css/command-palette.css',
@@ -39,7 +40,20 @@ const ASSETS = [
   'js/nagornaya-mobile-toc.js',
   'js/nagornaya-bar-extras.js',
   'js/glossary.js',
+  'js/vosk-tts-engine.js',
   'js/floating-cluster-controller.js',
 ];
 
-module.exports = { ASSETS };
+// Assets that are version-governed but intentionally fetched only on first use.
+// Keep this policy beside ASSETS so cache revision ownership and SW download
+// strategy cannot drift into contradictory hand-maintained lists.
+const LAZY_NO_PRECACHE = Object.freeze([
+  'js/search.js',
+  'js/glossary.js',
+  'css/tts-download-notice.css',
+  'js/vosk-tts-engine.js',
+  'manifest.json',
+  'data/search-manifest.json',
+]);
+
+module.exports = { ASSETS, LAZY_NO_PRECACHE };

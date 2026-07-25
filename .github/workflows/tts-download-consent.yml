@@ -11,6 +11,7 @@ on:
       - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-engine-lifecycle-browser-test.js"
       - "scripts/tts-status-route-browser-test.js"
+      - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - ".github/workflows/tts-download-consent.yml"
   push:
     branches: [main]
@@ -23,6 +24,7 @@ on:
       - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-engine-lifecycle-browser-test.js"
       - "scripts/tts-status-route-browser-test.js"
+      - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - ".github/workflows/tts-download-consent.yml"
 
 permissions:
@@ -54,6 +56,7 @@ jobs:
           node --check scripts/tts-engine-status-contract-test.js
           node --check scripts/tts-engine-lifecycle-browser-test.js
           node --check scripts/tts-status-route-browser-test.js
+          node --check scripts/tts-mobile-notice-geometry-browser-test.js
 
       - name: Enforce TTS source contracts
         run: |
@@ -102,6 +105,11 @@ jobs:
           set -o pipefail
           node scripts/tts-status-route-browser-test.js 2>&1 | tee reports/tts-route-status.log
 
+      - name: Run mobile notice viewport geometry
+        run: |
+          set -o pipefail
+          node scripts/tts-mobile-notice-geometry-browser-test.js 2>&1 | tee reports/tts-mobile-notice-geometry.log
+
       - name: Upload interaction evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,5 +123,6 @@ jobs:
             reports/tts-engine-lifecycle.log
             reports/tts-production-build.log
             reports/tts-route-status.log
+            reports/tts-mobile-notice-geometry.log
           if-no-files-found: warn
           retention-days: 14

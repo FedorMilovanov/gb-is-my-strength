@@ -179,12 +179,17 @@ html.dark .gb-tts-download-notice__action:hover{
 }
 @media (max-width:480px){
   .gb-tts-download-notice{
-    width:calc(100vw - 20px);
+    left:max(10px,env(safe-area-inset-left,0px));
+    right:max(10px,env(safe-area-inset-right,0px));
+    width:auto;
     grid-template-columns:30px minmax(0,1fr);
     gap:8px 10px;
     padding:10px;
     border-radius:14px;
+    transform:translateY(14px) scale(.985);
+    transform-origin:center bottom;
   }
+  .gb-tts-download-notice.is-visible{transform:translateY(0) scale(1)}
   .gb-tts-download-notice__icon{width:28px;height:28px;grid-row:1 / span 2}
   .gb-tts-download-notice__title{font-size:12px}
   .gb-tts-download-notice__meta{font-size:10.5px}
