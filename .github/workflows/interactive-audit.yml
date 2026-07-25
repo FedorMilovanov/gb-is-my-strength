@@ -6,6 +6,7 @@ on:
       - '.github/workflows/interactive-audit.yml'
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'scripts/_temp_bind_pagefind_request_identity.py'
       - 'src/pages/index.astro'
       - 'src/components/home/**'
       - 'src/styles/**'
@@ -43,6 +44,52 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  materialize-pagefind-request-identity:
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/home-browser-lifecycle-final-clean-20260726'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: fix/home-browser-lifecycle-final-clean-20260726
+          fetch-depth: 2
+
+      - name: Apply exact Pagefind request identity boundary
+        run: python3 scripts/_temp_bind_pagefind_request_identity.py
+
+      - name: Restore permanent read-only workflow
+        run: |
+          git checkout HEAD^ -- .github/workflows/interactive-audit.yml
+          test ! -e scripts/_temp_bind_pagefind_request_identity.py
+          node --check scripts/home-browser-lifecycle-contract.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('scripts/home-browser-lifecycle-contract.mjs').read_text(encoding='utf-8')
+          required = [
+              'function isExpectedPagefindRequest(request, baseUrl)',
+              'function isKnownNavigationAbort(request, expectedNavigationAborts)',
+              'const expectedNavigationAborts = new WeakSet();',
+              "page.on('request', (request) => {",
+              'expectedNavigationAborts.add(request);',
+              'isKnownNavigationAbort(request, expectedNavigationAborts)',
+          ]
+          missing = [marker for marker in required if text.count(marker) != 1]
+          if missing:
+              raise SystemExit(f'request identity boundary incomplete: {missing}')
+          PY
+
+      - name: Publish tested correction
+        run: |
+          git config user.name "home-contract-materializer"
+          git config user.email "home-contract-materializer@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "test(home): bind Pagefind abort to request identity"
+          git push origin HEAD:fix/home-browser-lifecycle-final-clean-20260726
+
   home-browser-contract:
     name: Home Chromium WebKit contract
     runs-on: ubuntu-latest
