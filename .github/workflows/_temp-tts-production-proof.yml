@@ -182,8 +182,10 @@ jobs:
 
       - name: Validate temporary proof source
         run: |
+          mkdir -p reports
           node --check scripts/_temp-tts-production-proof.mjs
-          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-tts-production-proof.yml
+          set -o pipefail
+          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-tts-production-proof.yml 2>&1 | tee reports/tts-proof-actionlint.log
 
       - name: Verify live lazy-asset policy
         run: |
@@ -207,6 +209,7 @@ jobs:
           path: |
             reports/deploy-diagnostics/**
             reports/live-sw.js
+            reports/tts-proof-actionlint.log
             reports/tts-production-proof.json
             reports/tts-production-proof.log
             reports/chromium-*.png
