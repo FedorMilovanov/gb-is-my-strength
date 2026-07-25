@@ -43,6 +43,7 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
   must('notifier closes recovered issue as completed', notifier, /state_reason:\s*'completed'/);
   must('notifier rejects external repository heads', notifier, /ignored-external-repository/);
   must('notifier refuses ambiguous duplicate markers', notifier, /Ambiguous CI lifecycle state/);
+  must('failure ordering uses latest lifecycle transition', notifier, /latestTransition[\s\S]*previousState\.latestSeen/);
   mustNot('notifier infers routes from commit message', notifier, /affectedHint|msg\.includes\(|Подозреваемые route/);
 
   must('shared guard syntax-checks notifier', sharedGuard, /node --check scripts\/ci-failure-lifecycle\.cjs/);
@@ -55,6 +56,8 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
   must('contract covers cancelled runs', contract, /Cancelled\/superseded runs never create false failure alerts/);
   must('contract covers stale success', contract, /older success cannot close a newer failure/);
   must('contract covers recovery', contract, /newer success closes the issue/);
+  must('contract covers delayed failure after recovery', contract, /delayed rerun of an older failure must not reopen/);
+  must('contract covers genuine post-recovery failure', contract, /genuinely newer failure after recovery reopens/);
   must('contract covers factual failed steps', contract, /Evidence comes from job data/);
   must('contract covers route-impact omission', contract, /Route-impact is explicitly omitted rather than faked/);
 
@@ -96,6 +99,14 @@ const mutations = [
     label: 'recovery state reason removal',
     key: 'notifier',
     mutate: (source) => source.replace("    state_reason: 'completed',\n", ''),
+  },
+  {
+    label: 'latest transition ordering removal',
+    key: 'notifier',
+    mutate: (source) => source.replace(
+      '  const latestTransition = previousState && (previousState.latestSeen || previousFailure);\n',
+      '  const latestTransition = previousFailure;\n',
+    ),
   },
   {
     label: 'deterministic contract removal',
