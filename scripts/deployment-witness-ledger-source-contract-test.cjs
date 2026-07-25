@@ -13,7 +13,7 @@ const PINS = Object.freeze({
 });
 const LOCK = 'group: deployment-witness-${{ needs.resolve.outputs.run_id }}';
 
-function countLiteral(source, literal) { return source.split(literal).length - 1; }
+const countLiteral = (source, literal) => source.split(literal).length - 1;
 function canonicalRunId(value) {
   const requested = String(value || '').trim();
   assert.match(requested, /^\d+$/);
@@ -21,7 +21,7 @@ function canonicalRunId(value) {
   assert.ok(Number.isSafeInteger(number) && number > 0);
   return String(number);
 }
-function writerLock(value) { return `deployment-witness-${canonicalRunId(value)}`; }
+const writerLock = (value) => `deployment-witness-${canonicalRunId(value)}`;
 function jobSection(workflow, name, nextName = null) {
   const marker = `\n  ${name}:\n`;
   const start = workflow.indexOf(marker);
@@ -30,6 +30,10 @@ function jobSection(workflow, name, nextName = null) {
   if (!nextName) return workflow.slice(offset);
   const end = workflow.indexOf(`\n  ${nextName}:\n`, offset);
   return end < 0 ? workflow.slice(offset) : workflow.slice(offset, end);
+}
+function downgradeNamedArtifact(source, artifactName) {
+  const pattern = new RegExp(`(name:\\s*${artifactName}[\\s\\S]{0,260}?if-no-files-found:\\s*)error`);
+  return source.replace(pattern, '$1warn');
 }
 
 function validate({ deploy, ledger, workflow, recorder }) {
@@ -42,8 +46,8 @@ function validate({ deploy, ledger, workflow, recorder }) {
     ['release top-level read only', deploy, /^permissions:\s*\n\s*contents:\s*read\s*$/m],
     ['release candidate job read only', releaseReadiness, /permissions:\s*\n\s*contents:\s*read/],
     ['release promotion permissions exact', releaseDeploy, /permissions:\s*\n\s*actions:\s*read\s*\n\s*contents:\s*read\s*\n\s*pages:\s*write\s*\n\s*id-token:\s*write/],
-    ['generic live artifact fail closed', releaseDeploy, /release-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,240}if-no-files-found:\s*error/],
-    ['TTS live artifact fail closed', releaseDeploy, /tts-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,240}if-no-files-found:\s*error/],
+    ['generic live artifact fail closed', releaseDeploy, /release-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,260}if-no-files-found:\s*error/],
+    ['TTS live artifact fail closed', releaseDeploy, /tts-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,260}if-no-files-found:\s*error/],
     ['generic live precedes TTS', releaseDeploy, /Verify generic live release contract[\s\S]*Verify live TTS capability extension/],
 
     ['ledger automatic entry exact', ledger, /workflow_run:[\s\S]{0,160}workflows:\s*\["Deploy to GitHub Pages"\][\s\S]{0,100}types:\s*\[completed\]/],
@@ -125,7 +129,7 @@ for (const invalid of ['', '0', '-1', '1e3', String(Number.MAX_SAFE_INTEGER + 1)
 const mutations = [
   ['release gains issue write', { ...sources, deploy: sources.deploy.replace('  contents: read\n', '  contents: read\n  issues: write\n') }],
   ['release deploy rebuilds', { ...sources, deploy: sources.deploy.replace('name: Download exact same-run release candidate', 'run: npm run strangler:build:production-like\n\n      - name: Download exact same-run release candidate') }],
-  ['generic evidence downgraded', { ...sources, deploy: sources.deploy.replace('if-no-files-found: error', 'if-no-files-found: warn') }],
+  ['generic evidence downgraded', { ...sources, deploy: downgradeNamedArtifact(sources.deploy, 'release-live-deployment-\\$\\{\\{ github\\.run_id \\}\\}') }],
   ['generic and TTS order reversed', { ...sources, deploy: sources.deploy.replace('Verify generic live release contract', '__GENERIC__').replace('Verify live TTS capability extension', 'Verify generic live release contract').replace('__GENERIC__', 'Verify live TTS capability extension') }],
   ['manual replay removed', { ...sources, ledger: sources.ledger.replace(/\n  workflow_dispatch:[\s\S]*?\n\npermissions:/, '\n\npermissions:') }],
   ['resolver success assertion bypassed', { ...sources, ledger: sources.ledger.replace("assert.equal(workflowRun.conclusion, 'success', 'requested deploy run did not succeed');", "assert.equal('success', 'success');") }],
