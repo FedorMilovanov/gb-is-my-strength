@@ -50,11 +50,14 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Run TTS lifecycle and route matrices
-        run: |
-          node scripts/tts-engine-lifecycle-browser-test.js
-          node scripts/tts-status-route-browser-test.js
-          node scripts/tts-mobile-notice-geometry-browser-test.js
+      - name: Run TTS lifecycle fixtures
+        run: node scripts/tts-engine-lifecycle-browser-test.js
+
+      - name: Run real-route status matrix
+        run: node scripts/tts-status-route-browser-test.js
+
+      - name: Run mobile notice viewport geometry
+        run: node scripts/tts-mobile-notice-geometry-browser-test.js
 
       - name: Publish product commit without workflow mutation
         run: |
