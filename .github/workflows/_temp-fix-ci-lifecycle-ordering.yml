@@ -1,0 +1,44 @@
+name: TEMP Fix CI Lifecycle Ordering
+
+on:
+  push:
+    branches:
+      - fix/ci-lifecycle-monotonic-ordering-20260725
+    paths:
+      - scripts/_temp_fix_ci_lifecycle_ordering.py
+      - .github/workflows/_temp-fix-ci-lifecycle-ordering.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-fix-ci-lifecycle-ordering
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact repair lane
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ci-lifecycle-monotonic-ordering-20260725
+          fetch-depth: 0
+      - name: Apply monotonic lifecycle transition patch
+        run: python3 scripts/_temp_fix_ci_lifecycle_ordering.py
+      - name: Validate focused contracts
+        run: |
+          node --check scripts/ci-failure-lifecycle.cjs
+          node --check scripts/ci-failure-lifecycle-contract-test.cjs
+          node scripts/ci-failure-lifecycle-contract-test.cjs
+          node scripts/ci-failure-lifecycle-source-contract-test.cjs
+          git diff --check
+          test ! -e scripts/_temp_fix_ci_lifecycle_ordering.py
+      - name: Publish tested repair
+        run: |
+          git config user.name "ci-lifecycle-repair-bot"
+          git config user.email "ci-lifecycle-repair-bot@users.noreply.github.com"
+          git add scripts/ci-failure-lifecycle.cjs scripts/ci-failure-lifecycle-contract-test.cjs scripts/_temp_fix_ci_lifecycle_ordering.py
+          git diff --cached --check
+          git commit -m "fix(ci): order failures against latest lifecycle transition"
+          git push origin HEAD:fix/ci-lifecycle-monotonic-ordering-20260725
