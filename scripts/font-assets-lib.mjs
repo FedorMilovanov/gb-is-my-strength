@@ -179,6 +179,12 @@ export function validateSupportManifestObject(manifest) {
     overridePaths.add(overridePath);
     previousOverridePath = overridePath;
     assert.ok(typeof override.family === 'string' && override.family.trim(), `${overridePath}: override family is missing`);
+    if (override.weight !== undefined) {
+      assert.ok(Number.isInteger(override.weight) && override.weight >= 100 && override.weight <= 900, `${overridePath}: invalid override weight`);
+    }
+    if (override.style !== undefined) {
+      assert.ok(['normal', 'italic'].includes(override.style), `${overridePath}: invalid override style`);
+    }
   }
 
   const seen = new Set();
@@ -285,6 +291,14 @@ function validateCssSupport(bytes, label) {
   return { bytes: bytes.length, sha256: sha256(bytes), fontFaceCount: (text.match(/@font-face\s*\{/gi) || []).length };
 }
 
+function faceMatchesVariant(face, variant) {
+  return face.family === variant.family && face.weight === variant.weight && face.style === variant.style;
+}
+
+function formatFace(face) {
+  return `${face.file}:${face.family || '(missing family)'}/${face.weight ?? '(missing weight)'}/${face.style || '(missing style)'}`;
+}
+
 export function verifyFontAssets({
   root = ROOT,
   manifest = loadFontManifest(root),
@@ -332,8 +346,8 @@ export function verifyFontAssets({
     const declaredFonts = new Map(manifest.assets.map((asset) => [asset.path, asset]));
     const declaredSupportFonts = new Map(supportManifest.supportAssets.filter((asset) => asset.kind === 'sfnt').map((asset) => [asset.path, asset]));
     const declaredAllFonts = new Map([...declaredFonts, ...declaredSupportFonts]);
-    const overrideFamilies = new Map(supportManifest.fontFaceOverrides.map((override) => [override.path, override.family]));
-    const unknownOverrides = [...overrideFamilies.keys()].filter((fontPath) => !declaredFonts.has(fontPath));
+    const overrideByPath = new Map(supportManifest.fontFaceOverrides.map((override) => [override.path, override]));
+    const unknownOverrides = [...overrideByPath.keys()].filter((fontPath) => !declaredFonts.has(fontPath));
     assert.deepEqual(unknownOverrides, [], `font face overrides target undeclared WOFF2 assets: ${unknownOverrides.join(', ')}`);
 
     const referenceMap = collectFontReferences(root);
@@ -343,12 +357,35 @@ export function verifyFontAssets({
     assert.deepEqual(unreferenced, [], `manifest fonts have no source reference: ${unreferenced.join(', ')}`);
 
     const faces = parseCssFontFaces(root);
+    const usedOverridePaths = new Set();
     for (const [fontPath, asset] of declaredAllFonts) {
       const candidates = faces.get(fontPath) || [];
-      const expectedFamily = overrideFamilies.get(fontPath) || asset.family;
       assert.ok(candidates.length > 0, `${fontPath}: matching @font-face block is missing`);
-      assert.ok(candidates.some((face) => face.family === expectedFamily && face.weight === asset.weight && face.style === asset.style), `${fontPath}: @font-face metadata does not match manifest`);
+      const baseVariant = { family: asset.family, weight: asset.weight, style: asset.style };
+      const variants = [baseVariant];
+      const override = overrideByPath.get(fontPath);
+      let overrideVariant = null;
+      if (override) {
+        overrideVariant = {
+          family: override.family,
+          weight: override.weight ?? asset.weight,
+          style: override.style ?? asset.style,
+        };
+        assert.notDeepEqual(overrideVariant, baseVariant, `${fontPath}: font face override does not change metadata`);
+        variants.push(overrideVariant);
+      }
+      const invalidCandidates = candidates.filter((face) => !variants.some((variant) => faceMatchesVariant(face, variant)));
+      assert.deepEqual(
+        invalidCandidates.map(formatFace),
+        [],
+        `${fontPath}: every @font-face declaration must match base metadata or an explicit override`,
+      );
+      if (overrideVariant && candidates.some((face) => faceMatchesVariant(face, overrideVariant))) {
+        usedOverridePaths.add(fontPath);
+      }
     }
+    const unusedOverrides = [...overrideByPath.keys()].filter((fontPath) => !usedOverridePaths.has(fontPath));
+    assert.deepEqual(unusedOverrides, [], `font face overrides are stale or unused: ${unusedOverrides.join(', ')}`);
 
     const registryAssets = supportManifest.supportAssets.filter((asset) => asset.role === 'font-face-registry');
     assert.equal(registryAssets.length, 1, 'exactly one font-face registry support asset is required');
