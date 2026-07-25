@@ -116,20 +116,22 @@ runtime = replaceRegexOnce(
 );
 
 if (!runtime.includes('hasMeaningfulFollowingContent(tail, scope)')) {
-  runtime = insertAfterUniqueLine(
+  runtime = replaceRegexOnce(
     runtime,
-    'stats.tails += 1;',
-`      if (hasMeaningfulFollowingContent(tail, scope)) {
+    /      var tail = tails\[t\];\n      mark\(tail, 'data-print-flow', 'atomic'\);/,
+`      var tail = tails[t];
+      if (hasMeaningfulFollowingContent(tail, scope)) {
         stats.nonTerminalTails += 1;
         continue;
-      }`,
+      }
+      mark(tail, 'data-print-flow', 'atomic');`,
     'non-terminal tail guard'
   );
 }
 
 runtime = replaceRegexOnce(
   runtime,
-  /        if \(group\) \{\n(?:          var terminalRegion = markTerminalRegion\(group, scope\);\n          stats\.terminalFlow \+= terminalRegion\.flow;\n          stats\.terminalFollowers \+= terminalRegion\.followers;|          stats\.terminalFlow \+= markTerminalRegion\(group, scope\);)\n          stats\.tailPairs \+= 1;/,
+  /        if \(group\) \{[\s\S]*?          stats\.tailPairs \+= 1;/,
 `        if (group) {
           stats.tailPairs += 1;`,
   'deferred terminal sealing block'
