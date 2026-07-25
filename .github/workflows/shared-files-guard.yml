@@ -34,6 +34,14 @@ jobs:
       - name: Workflow policy contracts
         run: npm run workflows:check
 
+      - name: CI failure lifecycle regressions
+        run: |
+          node --check scripts/ci-failure-lifecycle.cjs
+          node --check scripts/ci-failure-lifecycle-contract-test.cjs
+          node --check scripts/ci-failure-lifecycle-source-contract-test.cjs
+          node scripts/ci-failure-lifecycle-contract-test.cjs
+          node scripts/ci-failure-lifecycle-source-contract-test.cjs
+
       - name: Repository control-plane integrity
         run: npm run control-plane:audit
 
