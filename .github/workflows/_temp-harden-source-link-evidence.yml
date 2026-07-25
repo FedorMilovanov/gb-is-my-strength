@@ -32,5 +32,16 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Apply exact patch, validate and self-clean
-        # Second push intentionally triggers this already-registered branch workflow.
-        run: python3 scripts/_temp_harden_source_link_evidence.py
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 scripts/_temp_harden_source_link_evidence.py 2>&1 | tee "$RUNNER_TEMP/source-link-materializer.log"
+
+      - name: Upload materializer diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-link-materializer-${{ github.run_id }}
+          path: ${{ runner.temp }}/source-link-materializer.log
+          if-no-files-found: error
+          retention-days: 7
