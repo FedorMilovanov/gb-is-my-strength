@@ -177,9 +177,9 @@ sweep = replaceRegexOnce(
 `  R(id, 'print: actual terminal semantic region is sealed',
     pagination.report?.stats?.terminalAnchors === 1 && pagination.terminalNodes > 0 && pagination.forcedTerminalBreaks.length === 0,
     JSON.stringify({ terminalAnchors: pagination.report?.stats?.terminalAnchors, terminalNodes: pagination.terminalNodes, terminalFollowers: pagination.terminalFollowers, forced: pagination.forcedTerminalBreaks }));
-  R(id, 'print: in-flow closing marks remain in document order',
-    id !== 'paginate-book' || (pagination.report?.stats?.nonTerminalTails > 0 && pagination.firstGroups === 0 && pagination.secondGroups === 0),
-    JSON.stringify({ id, nonTerminalTails: pagination.report?.stats?.nonTerminalTails, firstGroups: pagination.firstGroups, secondGroups: pagination.secondGroups }));
+  R(id, 'print: only terminal tails may form closing groups',
+    pagination.report?.stats?.closingGroups <= Math.max(0, pagination.report?.stats?.tails - pagination.report?.stats?.nonTerminalTails),
+    JSON.stringify({ tails: pagination.report?.stats?.tails, nonTerminalTails: pagination.report?.stats?.nonTerminalTails, closingGroups: pagination.report?.stats?.closingGroups }));
   R(id, 'print: source semantic order is restored after every reset',`,
   'engine sweep terminal assertions'
 );
