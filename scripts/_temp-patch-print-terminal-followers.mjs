@@ -81,15 +81,21 @@ runtime = replaceRegexOnce(
   'semantic terminal helper boundary'
 );
 
-runtime = replaceRegexOnce(
-  runtime,
-  /      '  html body \[data-print-terminal-flow\] \{[^'\n]+\}',/,
-`      '  html[data-print-terminal-root], html[data-print-terminal-root] body { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-after: auto !important; page-break-after: auto !important; }',
+runtime = runtime
+  .replace(/^\s*'  \/\* GB_PRINT_TERMINAL_SEAL_V2_CSS \*\/',$\n/gm, '')
+  .replace(/^\s*'  [^'\n]*data-print-terminal-root[^'\n]*',$\n/gm, '')
+  .replace(/^\s*'  [^'\n]*data-print-terminal-flow[^'\n]*',$\n/gm, '')
+  .replace(/^\s*'  [^'\n]*data-print-terminal-follower[^'\n]*',$\n/gm, '');
+
+const cssAnchor = `      '  html body [data-print-flow] { box-shadow: none; }',`;
+const cssHits = runtime.split(cssAnchor).length - 1;
+if (cssHits !== 1) throw new Error(`semantic terminal CSS anchor: expected one match, found ${cssHits}`);
+const canonicalTerminalCss = `      '  /* GB_PRINT_TERMINAL_SEAL_V2_CSS */',
+      '  html[data-print-terminal-root], html[data-print-terminal-root] body { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-terminal-flow] { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html[data-print-terminal-root]::before, html[data-print-terminal-root]::after, html[data-print-terminal-root] body::before, html[data-print-terminal-root] body::after, html body [data-print-terminal-flow]::before, html body [data-print-terminal-flow]::after { break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
-      '  html body [data-print-terminal-follower] { display: none !important; }',`,
-  'semantic terminal CSS rule'
-);
+      '  html body [data-print-terminal-follower] { display: none !important; }',`;
+runtime = runtime.replace(cssAnchor, `${canonicalTerminalCss}\n${cssAnchor}`);
 
 if (!runtime.includes("nodes[i].removeAttribute('data-print-terminal-follower');")) {
   runtime = insertAfterUniqueLine(runtime, "nodes[i].removeAttribute('data-print-terminal-flow');", "      nodes[i].removeAttribute('data-print-terminal-follower');", 'terminal follower cleanup');
