@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 
 const runtimePath = 'js/reader-preferences-head.js';
 const contractPath = 'scripts/print-pagination-contract.mjs';
+const rasterPath = 'scripts/print-pagination-raster-audit.py';
 
 function read(path) { return fs.readFileSync(path, 'utf8'); }
 function write(path, value) { fs.writeFileSync(path, value); }
@@ -55,15 +56,32 @@ contract = replaceOnce(
 );
 write(contractPath, contract);
 
+let raster = read(rasterPath);
+raster = replaceOnce(
+  raster,
+  `    \"\"\"Find thin, long warm-gold strips in the upper 22% of a paper page.\"\"\"\n    width, height = image.size\n    limit_y = max(1, int(height * 0.22))`,
+  `    \"\"\"Find broad warm-gold page chrome in the upper 12% of a paper page.\"\"\"\n    width, height = image.size\n    limit_y = max(1, int(height * 0.12))`,
+  'amber detector vertical region'
+);
+raster = replaceOnce(
+  raster,
+  `    min_run = max(36, int(width * 0.14))`,
+  `    min_run = max(72, int(width * 0.32))`,
+  'amber detector minimum page-width run'
+);
+write(rasterPath, raster);
+
 for (const path of [runtimePath, contractPath]) {
   execFileSync(process.execPath, ['--check', path], { stdio: 'inherit' });
 }
+execFileSync('python3', ['-m', 'py_compile', rasterPath], { stdio: 'inherit' });
 execFileSync(process.execPath, ['scripts/cache-bust.js', '--write'], { stdio: 'inherit' });
 execFileSync(process.execPath, ['scripts/cache-bust.js'], { stdio: 'inherit' });
 
 console.log(JSON.stringify({
-  changedProductFiles: [runtimePath, contractPath],
+  changedProductFiles: [runtimePath, contractPath, rasterPath],
   outerAtomicRoles: ['flip-card', 'heart-flip-card', 'error-flip-card'],
   visibleFaceContract: 'break-inside avoid-page',
+  amberDetector: { upperPageFraction: 0.12, minimumWidthFraction: 0.32 },
   marker: 'GB_PRINT_DECORATION_PAGINATION_V3'
 }, null, 2));
