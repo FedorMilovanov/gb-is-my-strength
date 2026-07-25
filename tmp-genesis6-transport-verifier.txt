@@ -1,0 +1,1 @@
+Verify issue #287 payload chunk 000 only. Temporary branch; never merge.
