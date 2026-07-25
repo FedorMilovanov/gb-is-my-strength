@@ -41,7 +41,10 @@ jobs:
         run: npm ci
 
       - name: Apply exact mobile notice transaction
-        run: node scripts/_temp-materialize-tts-mobile-notice.mjs
+        run: |
+          sed -i "s/createHash('sha256')/createHash('md5')/g" scripts/_temp-materialize-tts-mobile-notice.mjs
+          node --check scripts/_temp-materialize-tts-mobile-notice.mjs
+          node scripts/_temp-materialize-tts-mobile-notice.mjs
 
       - name: Validate source and workflow contracts
         run: |
