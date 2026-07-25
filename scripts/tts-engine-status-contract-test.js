@@ -45,6 +45,29 @@ function validate(engine, controller, css, workflow, cacheAssets) {
   for (const [label, source, pattern] of checks) {
     if (!pattern.test(source)) problems.push(label);
   }
+
+  const requiredWorkflowPaths = [
+    'js/vosk-tts-engine.js',
+    'js/floating-cluster-controller.js',
+    'css/tts-download-notice.css',
+    'scripts/cache-bust-assets.js',
+    'scripts/cache-bust.js',
+    'scripts/dist-publication-audit.js',
+    'src/lib/asset-version.js',
+    'scripts/tts-download-consent-contract-test.js',
+    'scripts/tts-download-notice-browser-test.js',
+    'scripts/tts-engine-status-contract-test.js',
+    'scripts/tts-engine-lifecycle-browser-test.js',
+    'scripts/tts-status-route-browser-test.js',
+    'scripts/tts-mobile-notice-geometry-browser-test.js',
+    '.github/workflows/tts-download-consent.yml',
+  ];
+  for (const ownedPath of requiredWorkflowPaths) {
+    const escaped = ownedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const count = (workflow.match(new RegExp(`^      - "${escaped}"$`, 'gm')) || []).length;
+    if (count !== 2) problems.push(`workflow path ownership drift: ${ownedPath} (${count}/2)`);
+  }
+
   const noticeRevision = crypto.createHash('md5').update(css).digest('hex').slice(0, 8);
   const engineRevision = crypto.createHash('md5').update(engine).digest('hex').slice(0, 8);
   if (!engine.includes('/css/tts-download-notice.css?v=' + noticeRevision)) {
@@ -74,7 +97,7 @@ assert.deepEqual(validate(engine, controller, css, workflow, cacheAssets), []);
 
 function validateDistPublicationAudit(source) {
   const problems = [];
-  if (!/const \{ ASSETS, LAZY_NO_PRECACHE \} = require\('.\/cache-bust-assets'\);/.test(source)) {
+  if (!/const \{ ASSETS, LAZY_NO_PRECACHE \} = require\('\.\/cache-bust-assets'\);/.test(source)) {
     problems.push('dist publication audit does not import canonical lazy policy');
   }
   if (!/const lazyNoPrecache = new Set\(LAZY_NO_PRECACHE\);/.test(source)) {
@@ -108,6 +131,9 @@ const mutations = [
   ['controller engine revision corrupted', engine, controller.replace(/VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}'/, "VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=00000000'"), css, workflow, cacheAssets],
   ['WebKit install removed', engine, controller, css, workflow.replace('chromium webkit', 'chromium'), cacheAssets],
   ['mobile geometry execution removed', engine, controller, css, workflow.replace(/\n\s*- name: Run mobile notice viewport geometry[\s\S]*?node scripts\/tts-mobile-notice-geometry-browser-test\.js[^\n]*\n/, '\n'), cacheAssets],
+  ['cache registry trigger removed', engine, controller, css, workflow.replace(/^      - "scripts\/cache-bust-assets\.js"\n/gm, ''), cacheAssets],
+  ['dist publication trigger removed', engine, controller, css, workflow.replace(/^      - "scripts\/dist-publication-audit\.js"\n/gm, ''), cacheAssets],
+  ['asset projection trigger removed', engine, controller, css, workflow.replace(/^      - "src\/lib\/asset-version\.js"\n/gm, ''), cacheAssets],
   ['notice CSS cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \[[\s\S]*?)  'css\/tts-download-notice\.css',\n/, '$1')],
   ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \[[\s\S]*?)  'js\/vosk-tts-engine\.js',\n/, '$1')],
   ['notice CSS lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*?)  'css\/tts-download-notice\.css',\n/, '$1')],
