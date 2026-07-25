@@ -4,12 +4,21 @@ on:
   push:
     branches:
       - fix/universal-print-pagination-marathon-2026-07-25
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'css/**'
+      - 'js/**'
+      - 'scripts/_temp-print-pagination-inventory.mjs'
+      - '.github/workflows/_temp-print-pagination-inventory.yml'
+      - 'src/components/reader-platform/**'
 
 permissions:
   contents: read
 
 concurrency:
-  group: temp-universal-print-pagination-inventory
+  group: temp-universal-print-pagination-inventory-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
