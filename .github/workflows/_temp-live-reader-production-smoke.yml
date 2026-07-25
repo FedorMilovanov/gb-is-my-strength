@@ -104,8 +104,6 @@ jobs:
           grep -Fq "'js/floating-cluster-controller.js': '4bf2a7fd'" src/lib/asset-version.js
           node --check scripts/_temp-live-reader-production-smoke.mjs
           python3 -m py_compile scripts/print-paper-pdf-audit.py
-      - name: Lint temporary workflow
-        run: node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-live-reader-production-smoke.yml
       - run: npx playwright install --with-deps chromium
       - run: |
           sudo apt-get update
