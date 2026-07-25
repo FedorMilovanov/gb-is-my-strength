@@ -96,8 +96,11 @@ jobs:
       - name: Nagornaya PremiumControls ARIA regressions
         run: node scripts/nagornaya-premium-controls-aria-regression-test.js
 
-      - name: Series reader façade regressions
-        run: npm run series:facade:guard
+      - name: Series reader capability regressions
+        run: |
+          npm run series:facade:guard
+          npm run surface:registry:check
+          node scripts/series-capability-route-name-regression-test.js
 
       - name: Guard shared/system files (strict on main/PR)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
