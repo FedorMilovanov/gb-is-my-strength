@@ -13,14 +13,14 @@ import {
   verifyFontAssets,
 } from './font-assets-lib.mjs';
 
-function makeWoff2(seed = 0, length = 96) {
+function makeWoff2(seed = 0, length = 2048) {
   const bytes = Buffer.alloc(length, seed & 0xff);
   bytes.write('wOF2', 0, 'ascii');
   bytes.writeUInt32BE(0x00010000, 4);
   bytes.writeUInt32BE(length, 8);
   bytes.writeUInt16BE(1, 12);
   bytes.writeUInt16BE(0, 14);
-  bytes.writeUInt32BE(128, 16);
+  bytes.writeUInt32BE(4096, 16);
   bytes.writeUInt32BE(Math.max(1, length - 48), 20);
   bytes.writeUInt16BE(1, 24);
   bytes.writeUInt16BE(0, 26);
@@ -118,7 +118,7 @@ check('undeclared font fails', async () => withFixture(async (root) => {
 }));
 
 check('HTML body named woff2 fails magic', async () => {
-  assert.throws(() => validateWoff2Buffer(Buffer.from('<!doctype html><title>error</title>'.repeat(40)), 'html-error.woff2'), /wOF2 magic/);
+  assert.throws(() => validateWoff2Buffer(Buffer.from('<!doctype html><title>error</title>'.repeat(80)), 'html-error.woff2'), /wOF2 magic/);
 });
 
 check('truncated WOFF2 fails declared length', async () => {
