@@ -1,6 +1,16 @@
 {
   "schemaVersion": 1,
   "policy": "offline-pinned-support",
+  "fontFaceOverrides": [
+    {
+      "path": "fonts/NotoSansGreek/notosansgreek-400.woff2",
+      "family": "Noto Sans Greek"
+    },
+    {
+      "path": "fonts/NotoSerifGreek/notoserifgreek-400.woff2",
+      "family": "Noto Serif Greek"
+    }
+  ],
   "supportAssets": [
     {
       "path": "fonts/NotoSerifGreek/notoserifgreek-400.ttf",
