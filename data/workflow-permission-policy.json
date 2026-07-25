@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "description": "Fail-closed registry for every GitHub Actions job with an effective write permission. Unregistered writes and mutable action refs are forbidden.",
+  "workflows": {
+    ".github/workflows/deploy.yml": {
+      "jobs": {
+        "deploy": {
+          "permissions": {
+            "contents": "read",
+            "id-token": "write",
+            "pages": "write"
+          },
+          "purpose": "Publish the exact readiness-authorized site to GitHub Pages",
+          "allowedEvents": [
+            "workflow_dispatch",
+            "workflow_run"
+          ],
+          "repositoryBoundary": "same repository; automatic promotion only from successful main readiness",
+          "branchBoundary": "exact readiness head SHA or explicit operator recovery SHA",
+          "mutationTargets": [
+            "github-pages deployment",
+            "OIDC deployment token"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "github.event.workflow_run.conclusion == 'success'",
+            "github.event.workflow_run.head_sha",
+            "environment:",
+            "name: github-pages"
+          ]
+        }
+      }
+    },
+    ".github/workflows/deployment-witness-ledger.yml": {
+      "jobs": {
+        "record": {
+          "permissions": {
+            "actions": "read",
+            "contents": "read",
+            "issues": "write",
+            "pull-requests": "write"
+          },
+          "purpose": "Record an idempotent capability witness for one exact successful Pages deploy run",
+          "allowedEvents": [
+            "workflow_dispatch",
+            "workflow_run"
+          ],
+          "repositoryBoundary": "same repository deploy run resolved through the Actions API",
+          "branchBoundary": "main deployment head SHA and trusted recorder source",
+          "mutationTargets": [
+            "machine-marked deployment witness issue or pull-request thread"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "workflowRun.head_repository && workflowRun.head_repository.full_name",
+            "workflowRun.head_branch, 'main'",
+            "deployment-witness-${{ needs.resolve.outputs.run_id }}",
+            "persist-credentials: false"
+          ]
+        }
+      }
+    },
+    ".github/workflows/notify-on-failure.yml": {
+      "jobs": {
+        "lifecycle": {
+          "permissions": {
+            "actions": "read",
+            "contents": "read",
+            "issues": "write"
+          },
+          "purpose": "Open, update, and recover one factual CI incident per workflow and branch or pull request identity",
+          "allowedEvents": [
+            "workflow_run"
+          ],
+          "repositoryBoundary": "same repository workflow_run metadata; triggering branch code is never executed",
+          "branchBoundary": "notifier implementation fetched from the trusted default branch",
+          "mutationTargets": [
+            "machine-marked CI failure lifecycle issues"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "context.payload.repository.default_branch",
+            "github.rest.repos.getContent",
+            "ref: defaultBranch",
+            "cancel-in-progress: false"
+          ]
+        }
+      }
+    },
+    ".github/workflows/glossary-contract.yml": {
+      "jobs": {
+        "placement-autofix": {
+          "permissions": {
+            "contents": "write"
+          },
+          "purpose": "Apply deterministic glossary, tooltip, and asset-revision normalization to an explicitly labelled same-repository pull request",
+          "allowedEvents": [
+            "pull_request"
+          ],
+          "repositoryBoundary": "same-repository pull request only",
+          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "mutationTargets": [
+            "pull-request source branch glossary and tooltip normalization"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "contains(github.event.pull_request.labels.*.name, 'autofix')",
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            "ref: ${{ github.event.pull_request.head.ref }}"
+          ]
+        }
+      }
+    },
+    ".github/workflows/search-manifest-policy.yml": {
+      "jobs": {
+        "search-manifest-autofix": {
+          "permissions": {
+            "contents": "write"
+          },
+          "purpose": "Apply deterministic search-manifest and RSS normalization to an explicitly labelled same-repository pull request",
+          "allowedEvents": [
+            "pull_request"
+          ],
+          "repositoryBoundary": "same-repository pull request only",
+          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "mutationTargets": [
+            "feed.xml and route/search policy manifests on the pull-request source branch"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "contains(github.event.pull_request.labels.*.name, 'autofix')",
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            "ref: ${{ github.event.pull_request.head.ref }}"
+          ]
+        }
+      }
+    }
+  }
+}
