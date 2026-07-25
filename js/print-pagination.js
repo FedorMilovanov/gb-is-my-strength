@@ -94,6 +94,7 @@
       '  html body [data-print-tail] { display: block !important; min-height: 0 !important; height: auto !important; margin: 5mm 0 0 !important; padding: 3mm 0 0 !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-tail] > .article-end-sdg,',
       '  html body [data-print-tail].article-end-sdg { min-height: 0 !important; height: auto !important; margin: 0 !important; padding: 0 !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
+      '  html body [data-print-terminal-flow] { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-flow] { box-shadow: none; }',
       '  html body article:last-child,',
       '  html body .article-body:last-child,',
@@ -173,6 +174,7 @@
       nodes[i].removeAttribute('data-print-row');
       nodes[i].removeAttribute('data-print-tail');
       nodes[i].removeAttribute('data-print-closing-group');
+      nodes[i].removeAttribute('data-print-terminal-flow');
       nodes[i].removeAttribute(GENERATED);
     }
   }
@@ -316,9 +318,14 @@
       var previous = previousSemanticFlow(tail, scope);
       if (!previous) continue;
       var combined = previous.getBoundingClientRect().height + tail.getBoundingClientRect().height + measureMm(8);
-      if (combined <= pageHeight * 0.94) {
+      if (isPrintMedia() && combined <= pageHeight * 0.94) {
         var group = createClosingGroup(previous, tail);
         if (group) {
+          var terminal = group.parentElement;
+          while (terminal && terminal !== document.body && terminal !== document.documentElement) {
+            mark(terminal, 'data-print-terminal-flow', '1');
+            terminal = terminal.parentElement;
+          }
           stats.tailPairs += 1;
           stats.closingGroups += 1;
           stats.atomic += 1;
