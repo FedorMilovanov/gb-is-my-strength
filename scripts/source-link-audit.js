@@ -183,6 +183,22 @@ async function validateUrlPolicy(value, {
   return { url, hostname, addresses: normalizedAddresses };
 }
 
+function createPinnedLookup(record) {
+  const address = String(record && record.address || '');
+  const family = Number(record && record.family);
+  const detectedFamily = net.isIP(address);
+  if (!detectedFamily || ![4, 6].includes(family) || family !== detectedFamily) {
+    throw new TypeError('pinned DNS address record is invalid');
+  }
+  return (_hostname, options, callback) => {
+    if (options && options.all) {
+      callback(null, [{ address, family }]);
+      return;
+    }
+    callback(null, address, family);
+  };
+}
+
 function requestOnce(url, method, {
   address,
   timeoutMs = TIMEOUT_MS,
@@ -201,7 +217,7 @@ function requestOnce(url, method, {
     const request = client.request(url, {
       method,
       timeout: timeoutMs,
-      lookup: (_hostname, _options, callback) => callback(null, address.address, address.family),
+      lookup: createPinnedLookup(address),
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; GBSourceAudit/2.0; +https://gospod-bog.ru)',
         Accept: 'text/html,application/xhtml+xml,application/pdf,application/json,text/plain,image/*;q=0.8,*/*;q=0.2',
@@ -216,22 +232,30 @@ function requestOnce(url, method, {
       }
       const chunks = [];
       let bytesRead = 0;
-      response.on('data', (chunk) => {
-        bytesRead += chunk.length;
-        if (bytesRead > maxProbeBytes) {
-          request.destroy(Object.assign(new Error(`response probe exceeded ${maxProbeBytes} bytes`), { code: 'RESPONSE_TOO_LARGE' }));
-          return;
-        }
-        chunks.push(chunk);
-      });
-      response.on('end', () => finish(null, {
+      let storedBytes = 0;
+      const snapshot = (truncated) => ({
         status: response.statusCode,
         location: headers.location || '',
         headers,
         method,
         bodyPrefix: Buffer.concat(chunks),
         bytesRead,
-      }));
+        truncated,
+      });
+      response.on('data', (chunk) => {
+        bytesRead += chunk.length;
+        const remaining = maxProbeBytes - storedBytes;
+        if (remaining > 0) {
+          const prefix = chunk.subarray(0, remaining);
+          chunks.push(prefix);
+          storedBytes += prefix.length;
+        }
+        if (bytesRead > maxProbeBytes) {
+          finish(null, snapshot(true));
+          response.destroy();
+        }
+      });
+      response.on('end', () => finish(null, snapshot(false)));
     });
     request.on('timeout', () => request.destroy(Object.assign(new Error('timeout'), { code: 'TIMEOUT' })));
     request.on('error', (error) => finish(error));
@@ -275,8 +299,18 @@ function usableContentType(contentType) {
 function classifyTransportError(error) {
   const code = String(error && (error.code || error.name || error.message) || 'ERROR');
   if (/CERT|SSL|HOSTNAME|SELF_SIGNED|UNABLE_TO_VERIFY|DEPTH_ZERO|ENOTFOUND|EAI_AGAIN|INVALID_URL/i.test(code)) return 'hard';
-  if (/RESPONSE_TOO_LARGE/i.test(code)) return 'hard';
   return 'warn';
+}
+
+function isSystemicTransportFailure(results) {
+  const entries = Array.isArray(results) ? results : [];
+  return entries.length > 0 && entries.every((entry) => (
+    entry &&
+    entry.result === 'warn' &&
+    !Number.isInteger(entry.status) &&
+    !entry.final &&
+    (!Array.isArray(entry.hops) || entry.hops.length === 0)
+  ));
 }
 
 async function auditUrl(source, {
@@ -349,7 +383,7 @@ async function auditUrl(source, {
 
     const status = Number(response.status || 0);
     if (status === 404 || status === 410) return { ...evidence, final: sanitizeUrlForEvidence(policy.url), status, reason: `HTTP ${status}` };
-    if ([403, 405, 429].includes(status) || status >= 500) {
+    if ([401, 403, 405, 418, 429].includes(status) || status >= 500) {
       return { ...evidence, result: 'warn', final: sanitizeUrlForEvidence(policy.url), status, reason: `HTTP ${status}` };
     }
     if (status < 200 || status >= 400) return { ...evidence, final: sanitizeUrlForEvidence(policy.url), status, reason: `unusable HTTP ${status}` };
@@ -461,6 +495,7 @@ async function main() {
     passed: results.filter((entry) => entry.result === 'pass').length,
     warnings: warn.length,
     hardErrors: hard.length,
+    systemicTransportFailure: isSystemicTransportFailure(results),
     results,
   };
 
@@ -484,13 +519,21 @@ async function main() {
     process.exitCode = 1;
     return;
   }
+  if (report.systemicTransportFailure) {
+    console.log('❌ Every external link failed before an HTTP response; network acceptance is invalid');
+    process.exitCode = 1;
+    return;
+  }
   console.log('✅ Source links hard-check passed');
 }
 
 module.exports = {
   LinkPolicyError,
   auditUrl,
+  createPinnedLookup,
   isForbiddenAddress,
+  requestOnce,
+  isSystemicTransportFailure,
   sanitizeUrlForEvidence,
   sniffContentType,
   usableContentType,
