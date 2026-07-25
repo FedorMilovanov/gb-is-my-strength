@@ -4,27 +4,152 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
+  push:
+    branches: [main, "lane/**", "agent/**"]
+
+concurrency:
+  group: shared-files-guard-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize-native-lookup:
-    if: github.head_ref == 'fix/source-link-native-lookup-20260725'
+  guard:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 7
     steps:
-      - name: Checkout exact feature branch
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@v4
         with:
-          ref: fix/source-link-native-lookup-20260725
           fetch-depth: 0
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: '22.12.0'
-      - name: Apply exact patch and run permanent contracts
+          node-version: "22"
+          cache: "npm"
+
+      - name: Asset revision drift (read-only)
+        run: node scripts/cache-bust.js
+
+      - name: Deterministic font asset contracts
+        shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python3 scripts/_temp_materialize_source_link_native_lookup.py
+          set -o pipefail
+          mkdir -p reports
+          node --check scripts/font-assets-lib.mjs
+          node --check scripts/verify-font-assets.mjs
+          node --check scripts/generate-font-assets.mjs
+          node --check scripts/font-assets-contract-test.mjs
+          node --check scripts/font-assets-alias-contract-test.mjs
+          node scripts/font-assets-contract-test.mjs 2>&1 | tee reports/font-assets-contract.log
+          node scripts/font-assets-alias-contract-test.mjs 2>&1 | tee reports/font-assets-alias-contract.log
+          node scripts/verify-font-assets.mjs 2>&1 | tee reports/font-assets-verification.log
+
+      - name: Workflow policy contracts
+        run: npm run workflows:check
+
+      - name: CI failure lifecycle regressions
+        run: |
+          node --check scripts/ci-failure-lifecycle.cjs
+          node --check scripts/ci-failure-lifecycle-contract-test.cjs
+          node --check scripts/ci-failure-lifecycle-source-contract-test.cjs
+          node scripts/ci-failure-lifecycle-contract-test.cjs
+          node scripts/ci-failure-lifecycle-source-contract-test.cjs
+
+      - name: Repository control-plane integrity
+        run: npm run control-plane:audit
+
+      - name: Readiness-to-deploy workflow linkage
+        run: node scripts/workflow-linkage-regression-test.js
+
+      - name: Visual parity route-policy regressions
+        run: node scripts/visual-parity-policy-regression-test.js
+
+      - name: Runtime integrity regressions
+        run: node scripts/runtime-integrity-test.js
+
+      - name: Overlay runtime contracts
+        run: |
+          node --check js/site-utils.js
+          node --check js/site.js
+          node --check js/floating-cluster-controller.js
+          node scripts/overlay-runtime-contract-test.js
+
+      - name: Special overlay writer regressions
+        run: npm run overlay:special:writers:test
+
+      - name: Map engine P0 regressions
+        run: |
+          node --check karty/_engine/map-engine.js
+          node scripts/map-engine-p0-regression-test.js
+
+      - name: Map initial-state regressions
+        run: node scripts/map-initial-state-regression-test.js
+
+      - name: Map layers and palette regressions
+        run: node scripts/map-layers-theme-regression-test.js
+
+      - name: Reader preferences regressions
+        run: node scripts/reader-preferences-regression-test.js
+
+      - name: Highlights runtime regressions
+        run: node scripts/highlights-runtime-regression-test.js
+
+      - name: Nagornaya pastoral safety regressions
+        run: node scripts/nagornaya-pastoral-safety-regression-test.js
+
+      - name: Nagornaya source integrity regressions
+        run: node scripts/nagornaya-source-integrity-regression-test.js
+
+      - name: Nagornaya source registry regressions
+        run: node scripts/nagornaya-source-registry-test.js
+
+      - name: Nagornaya epistemic UI regressions
+        run: node scripts/nagornaya-epistemic-ui-regression-test.js
+
+      - name: Nagornaya PremiumControls ARIA regressions
+        run: node scripts/nagornaya-premium-controls-aria-regression-test.js
+
+      - name: Series reader capability regressions
+        run: |
+          npm run series:facade:guard
+          npm run surface:registry:check
+          node scripts/series-capability-route-name-regression-test.js
+
+      - name: Guard shared/system files (strict on main/PR)
+        if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+        run: node scripts/guard-shared-files.js
+
+      - name: Guard shared/system files (warn on lane branches)
+        if: startsWith(github.ref, 'refs/heads/lane/') || startsWith(github.ref, 'refs/heads/agent/')
+        run: node scripts/guard-shared-files.js --warn
+        continue-on-error: true
+
+      - name: Lint workflow YAML (actionlint)
+        if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+        run: npm run workflows:lint
+
+      - name: Upload control-plane audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-control-plane-audit-${{ github.run_id }}
+          path: |
+            reports/repository-control-plane-audit.json
+            reports/repository-control-plane-audit.md
+            reports/font-assets-contract.log
+            reports/font-assets-alias-contract.log
+            reports/font-assets-verification.log
+            reports/font-assets-verification.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Report shared files touched
+        if: always()
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "Branch: $REF_NAME"
+          echo "Event: $EVENT_NAME"
+          echo "Shared files guard completed"
