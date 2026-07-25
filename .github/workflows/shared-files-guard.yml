@@ -31,6 +31,18 @@ jobs:
       - name: Asset revision drift (read-only)
         run: node scripts/cache-bust.js
 
+      - name: Deterministic font asset contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          node --check scripts/font-assets-lib.mjs
+          node --check scripts/verify-font-assets.mjs
+          node --check scripts/generate-font-assets.mjs
+          node --check scripts/font-assets-contract-test.mjs
+          node scripts/font-assets-contract-test.mjs 2>&1 | tee reports/font-assets-contract.log
+          node scripts/verify-font-assets.mjs 2>&1 | tee reports/font-assets-verification.log
+
       - name: Workflow policy contracts
         run: npm run workflows:check
 
@@ -123,6 +135,9 @@ jobs:
           path: |
             reports/repository-control-plane-audit.json
             reports/repository-control-plane-audit.md
+            reports/font-assets-contract.log
+            reports/font-assets-verification.log
+            reports/font-assets-verification.json
           if-no-files-found: warn
           retention-days: 14
 
