@@ -10,6 +10,8 @@ on:
       - "scripts/cache-bust.js"
       - "scripts/dist-publication-audit.js"
       - "src/lib/asset-version.js"
+      - "scripts/deployment-provenance-contract-test.mjs"
+      - "scripts/write-deployment-provenance.mjs"
       - "scripts/tts-live-deployment-contract.mjs"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
@@ -29,6 +31,8 @@ on:
       - "scripts/cache-bust.js"
       - "scripts/dist-publication-audit.js"
       - "src/lib/asset-version.js"
+      - "scripts/deployment-provenance-contract-test.mjs"
+      - "scripts/write-deployment-provenance.mjs"
       - "scripts/tts-live-deployment-contract.mjs"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
@@ -63,6 +67,8 @@ jobs:
         run: |
           node --check js/vosk-tts-engine.js
           node --check js/floating-cluster-controller.js
+          node --check scripts/deployment-provenance-contract-test.mjs
+          node --check scripts/write-deployment-provenance.mjs
           node --check scripts/tts-live-deployment-contract.mjs
           node --check scripts/tts-download-consent-contract-test.js
           node --check scripts/tts-download-notice-browser-test.js
@@ -71,10 +77,23 @@ jobs:
           node --check scripts/tts-status-route-browser-test.js
           node --check scripts/tts-mobile-notice-geometry-browser-test.js
 
-      - name: Enforce TTS source contracts
+      - name: Download consent source contract
         run: |
-          node scripts/tts-download-consent-contract-test.js
-          node scripts/tts-engine-status-contract-test.js
+          set -o pipefail
+          mkdir -p reports
+          node scripts/tts-download-consent-contract-test.js 2>&1 | tee reports/tts-source-download-consent.log
+
+      - name: Engine status source contract
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          node scripts/tts-engine-status-contract-test.js 2>&1 | tee reports/tts-source-engine-status.log
+
+      - name: Deployment provenance source contract
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          node scripts/deployment-provenance-contract-test.mjs 2>&1 | tee reports/deployment-provenance-source.log
 
       - name: Verify existing asset revisions remain read-only clean
         run: node scripts/cache-bust.js
@@ -83,6 +102,18 @@ jobs:
         run: |
           node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml
           node scripts/run-actionlint.mjs -no-color .github/workflows/deploy.yml
+
+      - name: Upload source contract diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-source-contract-${{ github.run_id }}
+          path: |
+            reports/tts-source-download-consent.log
+            reports/tts-source-engine-status.log
+            reports/deployment-provenance-source.log
+          if-no-files-found: warn
+          retention-days: 14
 
   browser-contract:
     name: Engine and real-route browser contract
