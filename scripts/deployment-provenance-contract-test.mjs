@@ -10,7 +10,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 
-function validate({ writer, live, deploy, workflow }) {
+function validate({ writer, live, recorder, deploy, workflow }) {
   const problems = [];
   const checks = [
     ['writer requires exact SHA', writer, /DEPLOYED_SHA must be an exact 40-character commit SHA/],
@@ -37,14 +37,34 @@ function validate({ writer, live, deploy, workflow }) {
     ['live verifier invokes provenance assertion', live, /assertProvenance\(provenance\);/],
     ['live verifier compares SHA-256 chain', live, /controllerSha256[\s\S]*engineSha256[\s\S]*noticeCssSha256[\s\S]*serviceWorkerSha256/],
     ['live verifier checks SW no-precache', live, /live Service Worker precaches lazy TTS notice CSS[\s\S]*live Service Worker precaches lazy Vosk engine/],
+    ['recorder requires exact SHA', recorder, /deployedSha must be an exact 40-character SHA/],
+    ['recorder requires canonical current pointer', recorder, /assert\.equal\(currentPointer, 'https:\/\/gospod-bog\.ru\/deployments\/current\.json'/],
+    ['recorder requires run-addressed provenance', recorder, /provenance URL must be run-addressed under the exact SHA/],
+    ['recorder uses idempotent run-attempt marker', recorder, /deployment-acceptance:\$\{sha\}:\$\{runId\}:\$\{runAttempt\}/],
+    ['recorder targets exact acceptance title', recorder, /issue\.title === expectedTitle/],
+    ['recorder targets exact merge SHA', recorder, /normalize\(pull\.merge_commit_sha\)\.toLowerCase\(\) === sha/],
+    ['recorder rejects ambiguous PRs', recorder, /multiple merged pull requests claim exact deployment SHA/],
+    ['recorder rejects ambiguous issues', recorder, /multiple acceptance issues match exact title/],
+    ['recorder closes completed acceptance issue', recorder, /state: 'closed'[\s\S]{0,100}state_reason: 'completed'/],
+    ['recorder comments through issue API', recorder, /issues\.createComment/],
     ['deploy writes provenance before upload', deploy, /- name: Write immutable deployment provenance[\s\S]{0,420}node scripts\/write-deployment-provenance\.mjs[\s\S]{0,300}- name: Upload Pages artifact/],
     ['deploy checks out the same exact SHA', deploy, /ref:\s*\$\{\{\s*github\.event_name == 'workflow_run' && github\.event\.workflow_run\.head_sha \|\| github\.sha\s*\}\}/],
     ['deploy passes verified commit SHA', deploy, /DEPLOYED_SHA:[^\n]*workflow_run\.head_sha/],
     ['deploy preserves readiness run ID', deploy, /SOURCE_READINESS_RUN_ID:[^\n]*workflow_run\.id/],
     ['deploy verifies live after Pages', deploy, /- name: Deploy to GitHub Pages[\s\S]{0,900}- name: Verify live TTS deployment contract/],
+    ['deploy grants issue write for exact acceptance', deploy, /^  issues: write\s+# фиксируем exact-SHA acceptance и закрываем точную задачу$/m],
+    ['deploy grants PR read for merge SHA lookup', deploy, /^  pull-requests: read\s+# находим PR, породивший опубликованный merge SHA$/m],
+    ['deploy records acceptance after evidence upload', deploy, /- name: Upload live TTS deployment evidence[\s\S]{0,900}- name: Record live deployment acceptance/],
+    ['deploy invokes acceptance recorder', deploy, /require\('\.\/scripts\/record-live-deployment-acceptance\.cjs'\)/],
+    ['deploy passes canonical current pointer', deploy, /CURRENT_POINTER_URL:\s*https:\/\/gospod-bog\.ru\/deployments\/current\.json/],
+    ['deploy passes run-addressed provenance URL', deploy, /PROVENANCE_URL:\s*https:\/\/gospod-bog\.ru\/deployments\/\$\{\{[^\n]+\}\}\/\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}\.json/],
+    ['deploy passes run-scoped artifact name', deploy, /ARTIFACT_NAME:\s*tts-live-deployment-\$\{\{ github\.run_id \}\}/],
     ['workflow owns provenance contract', workflow, /scripts\/deployment-provenance-contract-test\.mjs/],
     ['workflow owns provenance writer', workflow, /scripts\/write-deployment-provenance\.mjs/],
+    ['workflow owns acceptance recorder', workflow, /scripts\/record-live-deployment-acceptance\.cjs/],
+    ['workflow owns acceptance recorder test', workflow, /scripts\/record-live-deployment-acceptance-contract-test\.cjs/],
     ['workflow executes provenance contract', workflow, /node scripts\/deployment-provenance-contract-test\.mjs/],
+    ['workflow executes acceptance recorder contract', workflow, /node scripts\/record-live-deployment-acceptance-contract-test\.cjs/],
   ];
 
   for (const [label, source, pattern] of checks) {
@@ -60,11 +80,16 @@ function validate({ writer, live, deploy, workflow }) {
   if (/ref:\s*\$\{\{[^\n]*\|\|\s*'main'\s*\}\}/.test(deploy)) {
     problems.push('deploy still checks out moving main');
   }
+  if (/issue\.title\.includes\(expectedTitle\)/.test(recorder)) {
+    problems.push('recorder accepts partial issue title matches');
+  }
 
   for (const ownedPath of [
     'scripts/deployment-provenance-contract-test.mjs',
     'scripts/write-deployment-provenance.mjs',
     'scripts/tts-live-deployment-contract.mjs',
+    'scripts/record-live-deployment-acceptance.cjs',
+    'scripts/record-live-deployment-acceptance-contract-test.cjs',
     '.github/workflows/deploy.yml',
     '.github/workflows/tts-download-consent.yml',
   ]) {
@@ -79,6 +104,7 @@ function validate({ writer, live, deploy, workflow }) {
 const sources = {
   writer: read('scripts/write-deployment-provenance.mjs'),
   live: read('scripts/tts-live-deployment-contract.mjs'),
+  recorder: read('scripts/record-live-deployment-acceptance.cjs'),
   deploy: read('.github/workflows/deploy.yml'),
   workflow: read('.github/workflows/tts-download-consent.yml'),
 };
@@ -97,11 +123,22 @@ const mutations = [
   ['live current pointer assertion removed', { ...sources, live: sources.live.replace('assertCurrentPointer(pointer);', 'void pointer;') }],
   ['live provenance assertion removed', { ...sources, live: sources.live.replace('assertProvenance(provenance);', 'void provenance;') }],
   ['live Service Worker check removed', { ...sources, live: sources.live.replace('live Service Worker precaches lazy Vosk engine', 'unchecked Service Worker') }],
+  ['recorder exact issue match weakened', { ...sources, recorder: sources.recorder.replace('issue.title === expectedTitle', 'issue.title.includes(expectedTitle)') }],
+  ['recorder exact merge SHA removed', { ...sources, recorder: sources.recorder.replace('normalize(pull.merge_commit_sha).toLowerCase() === sha', 'true') }],
+  ['recorder issue close removed', { ...sources, recorder: sources.recorder.replace("state: 'closed'", "state: 'open'") }],
+  ['recorder idempotency marker flattened', { ...sources, recorder: sources.recorder.replace('${sha}:${runId}:${runAttempt}', '${sha}') }],
+  ['recorder current pointer flattened', { ...sources, recorder: sources.recorder.replace('https://gospod-bog.ru/deployments/current.json', 'https://gospod-bog.ru/deployments/latest.json') }],
   ['deploy provenance generation removed', { ...sources, deploy: sources.deploy.replace('node scripts/write-deployment-provenance.mjs', 'echo provenance skipped') }],
   ['deploy provenance moved after upload', { ...sources, deploy: sources.deploy.replace(/(\s+- name: Write immutable deployment provenance[\s\S]*?run: node scripts\/write-deployment-provenance\.mjs\n)([\s\S]*?)(\s+- name: Upload Pages artifact[\s\S]*?path: dist\n)/, '$2$3$1') }],
   ['deploy manual checkout moved to main', { ...sources, deploy: sources.deploy.replace('|| github.sha }}', "|| 'main' }}") }],
+  ['deploy issue write permission removed', { ...sources, deploy: sources.deploy.replace(/^  issues: write.*\n/m, '') }],
+  ['deploy PR read permission removed', { ...sources, deploy: sources.deploy.replace(/^  pull-requests: read.*\n/m, '') }],
+  ['deploy acceptance recorder removed', { ...sources, deploy: sources.deploy.replace("const recordAcceptance = require('./scripts/record-live-deployment-acceptance.cjs');", 'const recordAcceptance = async () => {};') }],
+  ['deploy acceptance provenance flattened', { ...sources, deploy: sources.deploy.replace('/${{ github.run_id }}-${{ github.run_attempt }}.json', '.json') }],
   ['workflow contract execution removed', { ...sources, workflow: sources.workflow.replace('node scripts/deployment-provenance-contract-test.mjs', 'echo provenance contract skipped') }],
+  ['workflow recorder test execution removed', { ...sources, workflow: sources.workflow.replace('node scripts/record-live-deployment-acceptance-contract-test.cjs', 'echo acceptance contract skipped') }],
   ['workflow writer ownership removed', { ...sources, workflow: sources.workflow.replace(/^      - "scripts\/write-deployment-provenance\.mjs"\n/gm, '') }],
+  ['workflow recorder ownership removed', { ...sources, workflow: sources.workflow.replace(/^      - "scripts\/record-live-deployment-acceptance\.cjs"\n/gm, '') }],
 ];
 
 for (const [name, mutated] of mutations) {
