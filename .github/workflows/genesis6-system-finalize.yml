@@ -52,18 +52,34 @@ jobs:
       - name: Install exact dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run shared system contracts
+      - name: Validate workflows and control plane
         run: |
           set -euo pipefail
           node scripts/check-workflows.js
           npm run workflows:lint
           node scripts/repository-control-plane-audit.mjs
+
+      - name: Validate shared series engine
+        run: |
+          set -euo pipefail
           npm run engine:contracts
           npm run series:facade:guard
+
+      - name: Validate public registry and series capability
+        run: |
+          set -euo pipefail
           node scripts/public-surface-registry-audit.js
           node scripts/series-capability-route-name-regression-test.js
+
+      - name: Validate design tokens and CSS layers
+        run: |
+          set -euo pipefail
           npm run tokens:check
           npm run css:layer:validate
+
+      - name: Run strict repository audits
+        run: |
+          set -euo pipefail
           node scripts/validate.js --strict
           node scripts/audit-pro.js
 
