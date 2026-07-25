@@ -468,6 +468,7 @@
     options = options || {};
     var manual = options.manual === true;
     var retry = options.retry === true;
+    var preserveBrowserStatus = options.preserveBrowserStatus === true;
     var blockReason = voskWarmupBlockReason();
 
     if (!manual && blockReason) {
@@ -476,7 +477,7 @@
     }
     if (_voskWarmupPromise && !retry) return _voskWarmupPromise;
 
-    showVoskStatus('preparing');
+    if (!preserveBrowserStatus) showVoskStatus('preparing');
     _voskWarmupPromise = loadVoskEngineScript().then(function () {
       if (!(window.VoskTTSEngine && window.VoskTTSEngine.isSupported())) {
         throw new Error('enhanced voice is not supported by this browser');
@@ -551,7 +552,7 @@
     }
     if ('speechSynthesis' in window) {
       showVoskStatus('browser');
-      warmVoskInBackground();
+      warmVoskInBackground({ preserveBrowserStatus: true });
       return Promise.resolve('webspeech');
     }
     showVoskStatus('preparing');
