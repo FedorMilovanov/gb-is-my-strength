@@ -24,6 +24,8 @@ function validate(engine, controller, css, workflow, cacheAssets) {
     ['switch event contract', controller, /gb:vosk-switch-request[\s\S]*switchCurrentSessionToVosk/],
     ['retryable promise, no one-shot latch', controller, /var _voskWarmupPromise = null/],
     ['system voice disclosed', controller, /showVoskStatus\('browser'\)/],
+    ['controller first status reveal is synchronous', controller, /function showFallbackTtsStatus\([\s\S]{0,5000}el\.classList\.add\('is-visible'\);[\s\S]{0,700}return el;/],
+    ['engine first status reveal is synchronous', engine, /function showStatus\([\s\S]{0,5000}setNoticeAction\(el, actionMode, actionLabel, actionAria\);[\s\S]{0,700}el\.classList\.add\('is-visible'\);[\s\S]{0,700}dispatchEngineStatus/],
     ['browser status preserved during automatic warm-up', controller, /showVoskStatus\('browser'\);\s*warmVoskInBackground\(\{ preserveBrowserStatus: true \}\)/],
     ['warm-up supports status preservation', controller, /preserveBrowserStatus\s*=\s*options\.preserveBrowserStatus === true[\s\S]{0,360}if \(!preserveBrowserStatus\) showVoskStatus\('preparing'\)/],
     ['mobile two-row reflow', css, /@media \(max-width:480px\)[\s\S]*grid-template-columns:30px minmax\(0,1fr\)[\s\S]*grid-column:2/],
@@ -56,6 +58,9 @@ function validate(engine, controller, css, workflow, cacheAssets) {
   }
   if (/_voskWarmupStarted/.test(controller)) problems.push('obsolete one-shot warm-up latch remains');
   if (/s\.src\s*=\s*'\/js\/vosk-tts-engine\.js'/.test(controller)) problems.push('unversioned lazy engine URL remains');
+  const deferredReveal = /requestAnimationFrame\(function \(\) \{ el\.classList\.add\('is-visible'\); \}\);/;
+  if (deferredReveal.test(controller)) problems.push('controller first status reveal still depends on RAF');
+  if (deferredReveal.test(engine)) problems.push('engine first status reveal still depends on RAF');
   return problems;
 }
 
@@ -94,6 +99,8 @@ const mutations = [
   ['engine URL unversioned', engine, controller.replace(/vosk-tts-engine\.js\?v=[a-f0-9]{8}/, 'vosk-tts-engine.js'), css, workflow, cacheAssets],
   ['retry event removed', engine, controller.replace(/gb:vosk-retry-request/g, 'gb:vosk-retry-missing'), css, workflow, cacheAssets],
   ['browser status preservation removed', engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],
+  ['controller synchronous reveal deferred', engine, controller.replace("el.classList.add('is-visible');", "requestAnimationFrame(function () { el.classList.add('is-visible'); });"), css, workflow, cacheAssets],
+  ['engine synchronous reveal deferred', engine.replace("el.classList.add('is-visible');", "requestAnimationFrame(function () { el.classList.add('is-visible'); });"), controller, css, workflow, cacheAssets],
   ['notice copy forced nowrap', engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow, cacheAssets],
   ['mobile right inset removed', engine, controller, css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;'), workflow, cacheAssets],
   ['engine CSS revision corrupted', engine.replace(/DOWNLOAD_NOTICE_CSS_URL = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=00000000'"), controller, css, workflow, cacheAssets],

@@ -140,14 +140,47 @@ async function cachedReady(browserType, origin, name) {
   }
 }
 
+
+async function delayedRafFirstPaint(browserType, origin, name) {
+  const browser = await browserType.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.__origin = origin;
+  try {
+    await reset(page);
+    await page.evaluate(() => {
+      window.__queuedTtsRaf = [];
+      window.requestAnimationFrame = (callback) => {
+        window.__queuedTtsRaf.push(callback);
+        return window.__queuedTtsRaf.length;
+      };
+    });
+    await page.addScriptTag({ content: ENGINE });
+    const snap = await page.evaluate(() => {
+      const notice = window.VoskTTSEngine.showStatus('browser');
+      return {
+        visible: notice.classList.contains('is-visible'),
+        state: notice.getAttribute('data-state'),
+        queuedRaf: window.__queuedTtsRaf.length,
+      };
+    });
+    assert.equal(snap.state, 'browser');
+    assert.equal(snap.visible, true, name + ': browser status must be visible before any RAF callback');
+    assert.equal(snap.queuedRaf, 0, name + ': first status visibility must not enqueue RAF');
+  } finally {
+    await browser.close();
+  }
+}
+
 (async () => {
   const { server, origin } = await startServer();
   try {
+    await delayedRafFirstPaint(chromium, origin, 'chromium');
+    await delayedRafFirstPaint(webkit, origin, 'webkit');
     await cachedFailure(chromium, origin, 'chromium');
     await cachedReady(chromium, origin, 'chromium');
     await cachedFailure(webkit, origin, 'webkit');
     await cachedReady(webkit, origin, 'webkit');
-    console.log('TTS engine lifecycle browser contract: PASS (Chromium + WebKit, cached error + ready/switch).');
+    console.log('TTS engine lifecycle browser contract: PASS (Chromium + WebKit, synchronous first paint + cached error + ready/switch).');
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }

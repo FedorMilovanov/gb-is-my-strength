@@ -249,7 +249,9 @@
     if (title) title.textContent = titleText;
     if (meta) meta.textContent = metaText;
     setNoticeAction(el, actionMode, actionLabel, actionAria);
-    requestAnimationFrame(function () { el.classList.add('is-visible'); });
+    // Do not gate status visibility on requestAnimationFrame. WebKit can defer
+    // that callback long enough for browser/preparing to be replaced by loading.
+    el.classList.add('is-visible');
     dispatchEngineStatus(stateName, {
       title: titleText,
       message: metaText,
