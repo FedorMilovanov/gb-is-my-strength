@@ -80,9 +80,17 @@ const ALLOWED_JS = new Set([
 // P1-9 FIX: synced with cache-bust.js ASSETS — single source of truth
 // Shared asset list — single source of truth (see scripts/cache-bust-assets.js)
 let CACHE_BUST_ASSETS;
-try { CACHE_BUST_ASSETS = require('./cache-bust-assets').ASSETS; }
+let CACHE_BUST_LAZY_NO_PRECACHE;
+try {
+  const cacheBustPolicy = require('./cache-bust-assets');
+  CACHE_BUST_ASSETS = cacheBustPolicy.ASSETS;
+  CACHE_BUST_LAZY_NO_PRECACHE = cacheBustPolicy.LAZY_NO_PRECACHE;
+  if (!Array.isArray(CACHE_BUST_ASSETS) || !Array.isArray(CACHE_BUST_LAZY_NO_PRECACHE)) {
+    throw new Error('ASSETS and LAZY_NO_PRECACHE must both be arrays');
+  }
+}
 catch (e) {
-  console.error('FATAL: scripts/cache-bust-assets.js unreadable (' + e.message + ') — audit-pro cannot run without the canonical asset list.');
+  console.error('FATAL: scripts/cache-bust-assets.js unreadable (' + e.message + ') — audit-pro cannot run without the canonical asset/cache policy.');
   process.exit(1);
 }
 
@@ -2802,7 +2810,7 @@ const JS_SIZE_FLOORS = {
   // precached — forcing every visitor to download them defeats the lazy
   // loaders (search palette, glossary) and wastes mobile bandwidth. They are
   // runtime-cached by the SW on first real use instead.
-  const LAZY_NO_PRECACHE = new Set(['/js/search.js', '/js/glossary.js', '/manifest.json', '/data/search-manifest.json']);
+  const LAZY_NO_PRECACHE = new Set(CACHE_BUST_LAZY_NO_PRECACHE.map((asset) => '/' + String(asset).replace(/^\/+/, '')));
   const required = CACHE_BUST_ASSETS.map(f => '/' + f).filter(f => !LAZY_NO_PRECACHE.has(f));
   const missing = [];
   for (const f of required) {
