@@ -1,0 +1,36 @@
+name: Temporary font source provenance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "fonts/**"
+      - "scripts/_temp-font-source-provenance.mjs"
+      - ".github/workflows/_temp-font-source-provenance.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+
+      - name: Resolve exact Google Fonts sources
+        run: node scripts/_temp-font-source-provenance.mjs
+
+      - name: Upload source provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-source-provenance-${{ github.run_id }}
+          path: reports/font-source-provenance.json
+          if-no-files-found: error
+          retention-days: 3
