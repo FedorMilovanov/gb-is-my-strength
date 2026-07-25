@@ -103,11 +103,9 @@ jobs:
 
       - name: Raster-audit every dateline PDF
         run: |
-          set -euo pipefail
-          for pdf in reports/editorial-dateline/*.pdf; do
-            slug="$(basename "$pdf" .pdf)"
-            python3 scripts/print-paper-pdf-audit.py "$pdf" --out "reports/editorial-dateline/audit-$slug"
-          done
+          python3 scripts/print-pagination-raster-audit.py \
+            reports/editorial-dateline \
+            --out reports/editorial-dateline/raster-audit
 
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/editorial-dateline-contract.yml
