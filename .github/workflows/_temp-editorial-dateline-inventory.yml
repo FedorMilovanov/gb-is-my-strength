@@ -1,0 +1,36 @@
+name: TEMP Editorial Dateline Inventory
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Capture legacy marker inventory
+        run: |
+          set -euo pipefail
+          mkdir -p reports/editorial-dateline/files
+          git grep -n -C 3 -E 'foliant-mark|editorial-dateline' -- ':!reports/**' > reports/editorial-dateline/occurrences.txt || true
+          git grep -l -z -E 'foliant-mark|editorial-dateline' -- ':!reports/**' | while IFS= read -r -d '' file; do
+            mkdir -p "reports/editorial-dateline/files/$(dirname "$file")"
+            cp "$file" "reports/editorial-dateline/files/$file"
+          done
+          cp src/lib/asset-version.js reports/editorial-dateline/files/src/lib/asset-version.js
+          cp scripts/cache-bust-assets.js reports/editorial-dateline/files/scripts/cache-bust-assets.js
+          printf 'head=%s\n' "$GITHUB_SHA" > reports/editorial-dateline/meta.txt
+          find reports/editorial-dateline/files -type f | sort > reports/editorial-dateline/file-list.txt
+          cat reports/editorial-dateline/occurrences.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: editorial-dateline-inventory-${{ github.sha }}
+          path: reports/editorial-dateline
+          retention-days: 7
