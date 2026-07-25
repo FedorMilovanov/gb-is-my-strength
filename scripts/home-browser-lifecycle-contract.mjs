@@ -48,8 +48,6 @@ async function startServer() {
   const server = http.createServer((request, response) => {
     try {
       const filePath = resolveRequestPath(request.url);
-      // This is a test-only static server. Unlike `no-store`, revalidation permits
-      // the browser to exercise a genuine back-forward-cache restoration.
       response.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
       if (!filePath) {
         response.statusCode = 404;
@@ -182,28 +180,32 @@ async function assertRealHistoryRestore(page, baseUrl) {
   await waitForMenuState(page, false);
   await assertScrollUnlocked(page, 'real history restore');
 
-  const evidence = await page.evaluate((storageKey) => ({
-    events: JSON.parse(sessionStorage.getItem(storageKey) || '[]'),
-    theme: {
-      attribute: document.documentElement.getAttribute('data-theme'),
-      stored: localStorage.getItem('theme'),
-    },
-  }), LIFECYCLE_KEY);
+  const evidence = await page.evaluate((storageKey) => {
+    const navigation = performance.getEntriesByType('navigation').at(-1);
+    return {
+      events: JSON.parse(sessionStorage.getItem(storageKey) || '[]'),
+      theme: {
+        attribute: document.documentElement.getAttribute('data-theme'),
+        stored: localStorage.getItem('theme'),
+      },
+      navigationType: navigation?.type || null,
+      notRestoredReasons: navigation?.notRestoredReasons || null,
+    };
+  }, LIFECYCLE_KEY);
   const homePageHide = [...evidence.events].reverse().find((entry) => entry.type === 'pagehide' && entry.path === '/');
   const homePageShow = [...evidence.events].reverse().find((entry) => entry.type === 'pageshow' && entry.path === '/');
-  assert.equal(homePageHide?.persisted, true, `home page was not admitted to BFCache: ${JSON.stringify(evidence.events)}`);
-  assert.equal(homePageShow?.persisted, true, `home page was not restored from BFCache: ${JSON.stringify(evidence.events)}`);
+  const diagnostic = JSON.stringify({ events: evidence.events, navigationType: evidence.navigationType, notRestoredReasons: evidence.notRestoredReasons });
+  assert.equal(homePageHide?.persisted, true, `home page was not admitted to BFCache: ${diagnostic}`);
+  assert.equal(homePageShow?.persisted, true, `home page was not restored from BFCache: ${diagnostic}`);
   assert.deepEqual(evidence.theme, themeBefore, 'theme state drifted across real history restoration');
 
-  // One click must produce one open transition after restoration. Duplicate
-  // toggle listeners would immediately return the menu to its closed state.
   await menuButton.click();
   await waitForMenuState(page, true);
   await page.keyboard.press('Escape');
   await waitForMenuState(page, false);
   await assertScrollUnlocked(page, 'post-BFCache menu close');
 
-  return evidence.events;
+  return evidence;
 }
 
 async function assertEditableShortcutIsolation(page) {
@@ -300,10 +302,8 @@ async function assertBackToTopThreshold(page) {
 }
 
 async function runBrowser(browserName, browserType, baseUrl) {
-  const launchOptions = { headless: true };
+  const launchOptions = { headless: false };
   if (browserName === 'chromium') {
-    // Playwright disables BFCache in Chromium by default. Remove only that test-
-    // runner flag so the contract observes a genuine browser history restore.
     launchOptions.ignoreDefaultArgs = ['--disable-back-forward-cache'];
   }
   const browser = await browserType.launch(launchOptions);
