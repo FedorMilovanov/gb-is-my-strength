@@ -3,7 +3,7 @@
  * Multi-route PDF pagination contract.
  *
  * The browser runtime classifies semantic components, then this audit places
- * non-layout marker text at the start/end of each top-level atomic component,
+ * non-layout marker nodes at the start/end of each top-level atomic component,
  * prints real A4 PDFs and verifies with pdftotext that no atomic component was
  * fragmented across sheets. The route matrix spans series, book and single
  * article engines; assertions are component-based rather than route-specific.
@@ -84,28 +84,61 @@ try {
       const markerStyle = document.createElement('style');
       markerStyle.id = 'gb-print-pagination-audit-markers';
       markerStyle.textContent = `@media print {
-        [data-gb-audit-id] { position: relative !important; }
-        [data-gb-audit-id]::before,
-        [data-gb-audit-id]::after {
-          position: absolute !important; left: 0 !important; z-index: -1 !important;
-          font: 1px/1px monospace !important; color: #fff !important;
-          opacity: .01 !important; white-space: nowrap !important;
+        [data-gb-audit-id], .gb-print-audit-host { position: relative !important; }
+        .gb-print-audit-marker {
+          position: absolute !important;
+          left: 1px !important;
+          z-index: 2147483647 !important;
+          display: block !important;
+          width: auto !important;
+          height: 4px !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: 0 !important;
+          overflow: visible !important;
+          white-space: nowrap !important;
+          font: 4px/4px monospace !important;
+          letter-spacing: 0 !important;
+          color: #fff !important;
+          background: transparent !important;
+          text-shadow: none !important;
+          pointer-events: none !important;
         }
-        [data-gb-audit-id]::before { top: 0 !important; content: attr(data-gb-audit-start); }
-        [data-gb-audit-id]::after { bottom: 0 !important; content: attr(data-gb-audit-end); }
+        .gb-print-audit-marker--start { top: 1px !important; }
+        .gb-print-audit-marker--end { bottom: 1px !important; }
       }`;
       document.head.appendChild(markerStyle);
+
+      function marker(text, kind) {
+        const span = document.createElement('span');
+        span.className = `gb-print-audit-marker gb-print-audit-marker--${kind}`;
+        span.setAttribute('aria-hidden', 'true');
+        span.textContent = text;
+        return span;
+      }
+
       const atomic = allAtomic.map((node, index) => {
         const base = `GBP_R${routeIndex}_A${index}`;
         node.setAttribute('data-gb-audit-id', base);
-        node.setAttribute('data-gb-audit-start', `${base}_S`);
-        node.setAttribute('data-gb-audit-end', `${base}_E`);
+        let startHost = node;
+        let endHost = node;
+        if (node.matches('table')) {
+          const cells = [...node.querySelectorAll('th,td')];
+          if (cells.length) {
+            startHost = cells[0];
+            endHost = cells[cells.length - 1];
+          }
+        }
+        startHost.classList.add('gb-print-audit-host');
+        endHost.classList.add('gb-print-audit-host');
+        startHost.prepend(marker(`${base}_S`, 'start'));
+        endHost.append(marker(`${base}_E`, 'end'));
         const rect = node.getBoundingClientRect();
         return {
           id: base,
           tag: node.tagName.toLowerCase(),
           className: typeof node.className === 'string' ? node.className.slice(0, 120) : '',
-          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().replace(/GBP_R\d+_A\d+_[SE]/g, '').slice(0, 120),
           height: Math.round(rect.height),
           breakInside: getComputedStyle(node).breakInside
         };
