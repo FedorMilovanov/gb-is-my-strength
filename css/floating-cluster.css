@@ -3051,20 +3051,7 @@ html.dark #bookmarkToast small {
   color: #eed093 !important;
 }
 
-/* --- 2. Gold mobile progress — top thin bar + bottom bar gold track --- */
-html body::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  z-index: 3000;
-  background: linear-gradient(90deg, #d4a857, #ffd18b, #d4a857);
-  transform-origin: left;
-  transform: scaleX(var(--gb-read-pct, 0));
-  opacity: var(--gb-read-active, 0);
-  transition: transform .25s ease, opacity .3s ease;
-  pointer-events: none;
-}
+/* Global top progress pseudo-element removed: canonical reader controls own progress. */
 @media (max-width: 899px) {
   /* Старый gold-track индикатор на .mobile-bottom-bar::before убран —
      не из референса (там у .bottom-bar простой border-top:1px), а на
