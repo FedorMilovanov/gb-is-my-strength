@@ -8,6 +8,14 @@ function replaceOnce(source, oldText, newText, label) {
   return source.replace(oldText, newText);
 }
 
+function insertAfterUniqueLine(source, marker, line, label) {
+  const lines = source.split('\n');
+  const matches = lines.map((value, index) => value.includes(marker) ? index : -1).filter((index) => index >= 0);
+  if (matches.length !== 1) throw new Error(`${label}: expected one marker line, found ${matches.length}`);
+  lines.splice(matches[0] + 1, 0, line);
+  return lines.join('\n');
+}
+
 const cssPath = 'css/tts-download-notice.css';
 let css = fs.readFileSync(cssPath, 'utf8');
 css = replaceOnce(css,
@@ -35,11 +43,12 @@ fs.writeFileSync(cssPath, css);
 
 const contractPath = 'scripts/tts-engine-status-contract-test.js';
 let contract = fs.readFileSync(contractPath, 'utf8');
-contract = replaceOnce(contract,
-`    ['mobile two-row reflow', css, /@media \(max-width:480px\)[\s\S]*grid-template-columns:30px minmax\(0,1fr\)[\s\S]*grid-column:2/],`,
-`    ['mobile two-row reflow', css, /@media \(max-width:480px\)[\s\S]*grid-template-columns:30px minmax\(0,1fr\)[\s\S]*grid-column:2/],
-    ['mobile viewport anchoring', css, /@media \(max-width:480px\)[\s\S]*left:max\(10px,env\(safe-area-inset-left,0px\)\)[\s\S]*right:max\(10px,env\(safe-area-inset-right,0px\)\)[\s\S]*width:auto[\s\S]*translateY\(14px\)[\s\S]*is-visible\{transform:translateY\(0\) scale\(1\)\}/],`,
-'mobile source contract');
+contract = insertAfterUniqueLine(
+  contract,
+  "['mobile two-row reflow', css,",
+  String.raw`    ['mobile viewport anchoring', css, /@media \(max-width:480px\)[\s\S]*left:max\(10px,env\(safe-area-inset-left,0px\)\)[\s\S]*right:max\(10px,env\(safe-area-inset-right,0px\)\)[\s\S]*width:auto[\s\S]*translateY\(14px\)[\s\S]*is-visible\{transform:translateY\(0\) scale\(1\)\}/],`,
+  'mobile source contract'
+);
 contract = replaceOnce(contract,
 `  [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow],`,
 `  [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow],
