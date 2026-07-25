@@ -33,13 +33,15 @@ jobs:
           node-version: 22.12.0
           cache: npm
 
-      - name: Require exact merged Pages deployment
+      - name: Require exact readiness and Pages deployment chain
         env:
           GH_TOKEN: ${{ github.token }}
           GH_API: https://api.github.com/repos/${{ github.repository }}
           TARGET_SHA: 59a91bacea6c498d2c16e6a965924b37f9bd7c2f
         run: |
           set -euo pipefail
+          export TARGET_SHA
+          TARGET_SHORT="${TARGET_SHA:0:8}"
           mkdir -p reports/deploy-diagnostics
           headers=(
             -H "Accept: application/vnd.github+json"
@@ -47,37 +49,54 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28"
           )
 
-          deployment_id=""
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/actions/workflows?per_page=100" \
+            > reports/deploy-diagnostics/workflows.json
+          readiness_workflow_id="$(jq -r '.workflows[] | select(.name == "Metadata & IndexNow Readiness") | .id' reports/deploy-diagnostics/workflows.json | head -n 1)"
+          deploy_workflow_id="$(jq -r '.workflows[] | select(.name == "Deploy to GitHub Pages") | .id' reports/deploy-diagnostics/workflows.json | head -n 1)"
+          test -n "${readiness_workflow_id}"
+          test -n "${deploy_workflow_id}"
+
+          readiness_run_id=""
           for attempt in $(seq 1 40); do
             curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-              "${GH_API}/deployments?sha=${TARGET_SHA}&environment=github-pages&per_page=100" \
-              > reports/deploy-diagnostics/deployments.json
-            deployment_id="$(jq -r 'sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deployments.json)"
-            if [[ -n "${deployment_id}" ]]; then
+              "${GH_API}/actions/workflows/${readiness_workflow_id}/runs?head_sha=${TARGET_SHA}&per_page=20" \
+              > reports/deploy-diagnostics/readiness-runs.json
+            readiness_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "push")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/readiness-runs.json)"
+            if [[ -n "${readiness_run_id}" ]]; then
               curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" \
-                > reports/deploy-diagnostics/deployment-statuses.json
-              deployment_state="$(jq -r 'sort_by(.created_at) | reverse | .[0].state // empty' reports/deploy-diagnostics/deployment-statuses.json)"
-              if [[ "${deployment_state}" == "success" ]]; then
+                "${GH_API}/actions/runs/${readiness_run_id}" \
+                > reports/deploy-diagnostics/readiness-run.json
+              readiness_status="$(jq -r '.status' reports/deploy-diagnostics/readiness-run.json)"
+              if [[ "${readiness_status}" == "completed" ]]; then
                 break
               fi
             fi
             sleep 15
           done
+          test -n "${readiness_run_id}"
+          jq -e --arg sha "${TARGET_SHA}" '.head_sha == $sha and .event == "push" and .status == "completed" and .conclusion == "success"' \
+            reports/deploy-diagnostics/readiness-run.json
+          readiness_completed_at="$(jq -r '.updated_at' reports/deploy-diagnostics/readiness-run.json)"
 
-          test -n "${deployment_id}"
-          jq -e --arg sha "${TARGET_SHA}" 'length > 0 and (sort_by(.created_at) | reverse | .[0].sha == $sha)' \
-            reports/deploy-diagnostics/deployments.json
-          jq -e 'length > 0 and (sort_by(.created_at) | reverse | .[0].state == "success")' \
-            reports/deploy-diagnostics/deployment-statuses.json
-
-          status_url="$(jq -r 'sort_by(.created_at) | reverse | .[0] | .log_url // .target_url // .environment_url // empty' reports/deploy-diagnostics/deployment-statuses.json)"
-          deploy_run_id="$(printf '%s\n' "${status_url}" | sed -nE 's#.*[/]actions[/]runs[/]([0-9]+).*#\1#p' | head -n 1)"
+          deploy_run_id=""
+          for attempt in $(seq 1 40); do
+            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+              "${GH_API}/actions/workflows/${deploy_workflow_id}/runs?event=workflow_run&branch=main&per_page=30" \
+              > reports/deploy-diagnostics/deploy-runs.json
+            deploy_run_id="$(jq -r --arg after "${readiness_completed_at}" '.workflow_runs | map(select(.event == "workflow_run" and .created_at >= $after)) | sort_by(.created_at) | .[0].id // empty' reports/deploy-diagnostics/deploy-runs.json)"
+            if [[ -n "${deploy_run_id}" ]]; then
+              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+                "${GH_API}/actions/runs/${deploy_run_id}" \
+                > reports/deploy-diagnostics/deploy-run.json
+              deploy_status="$(jq -r '.status' reports/deploy-diagnostics/deploy-run.json)"
+              if [[ "${deploy_status}" == "completed" ]]; then
+                break
+              fi
+            fi
+            sleep 15
+          done
           test -n "${deploy_run_id}"
-
-          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-            "${GH_API}/actions/runs/${deploy_run_id}" \
-            > reports/deploy-diagnostics/deploy-run.json
           jq -e '.name == "Deploy to GitHub Pages" and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' \
             reports/deploy-diagnostics/deploy-run.json
 
@@ -89,11 +108,41 @@ jobs:
           jq -e '[.jobs[].steps[]? | select(.name == "Upload Pages artifact" or .name == "Deploy to GitHub Pages") | select(.conclusion == "success")] | length == 2' \
             reports/deploy-diagnostics/deploy-jobs.json
 
+          deploy_job_id="$(jq -r '.jobs[] | select(.name == "deploy") | .id' reports/deploy-diagnostics/deploy-jobs.json | head -n 1)"
+          test -n "${deploy_job_id}"
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/actions/jobs/${deploy_job_id}/logs" \
+            > reports/deploy-diagnostics/deploy-job.log
+          grep -Fq "${TARGET_SHORT}" reports/deploy-diagnostics/deploy-job.log
+
+          deploy_started_at="$(jq -r '.run_started_at // .created_at' reports/deploy-diagnostics/deploy-run.json)"
+          deployment_id=""
+          for attempt in $(seq 1 20); do
+            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+              "${GH_API}/deployments?environment=github-pages&per_page=100" \
+              > reports/deploy-diagnostics/deployments.json
+            deployment_id="$(jq -r --arg after "${deploy_started_at}" 'map(select(.created_at >= $after)) | sort_by(.created_at) | .[0].id // empty' reports/deploy-diagnostics/deployments.json)"
+            if [[ -n "${deployment_id}" ]]; then
+              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+                "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" \
+                > reports/deploy-diagnostics/deployment-statuses.json
+              if jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' \
+                reports/deploy-diagnostics/deployment-statuses.json >/dev/null; then
+                break
+              fi
+            fi
+            sleep 15
+          done
+          test -n "${deployment_id}"
+          jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' \
+            reports/deploy-diagnostics/deployment-statuses.json
+
           printf '%s\n' \
             "target_sha=${TARGET_SHA}" \
+            "readiness_run_id=${readiness_run_id}" \
+            "deploy_run_id=${deploy_run_id}" \
             "deployment_id=${deployment_id}" \
             "deployment_state=success" \
-            "deploy_run_id=${deploy_run_id}" \
             > reports/deploy-diagnostics/exact-deployment.txt
 
       - name: Install dependencies
