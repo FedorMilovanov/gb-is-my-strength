@@ -47,6 +47,18 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Upload materialized source-link product files
+        if: always() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-link-product-${{ github.run_id }}
+          path: |
+            .github/workflows/source-links.yml
+            scripts/source-link-audit.js
+            scripts/source-link-audit-source-contract-test.cjs
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Restore canonical Shared Files Guard after materialization
         if: github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening'
         run: |
