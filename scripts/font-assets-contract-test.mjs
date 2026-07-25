@@ -9,6 +9,8 @@ import {
   generateFontAssets,
   sha256,
   validateManifestObject,
+  validateSfntBuffer,
+  validateSupportManifestObject,
   validateWoff2Buffer,
   verifyFontAssets,
 } from './font-assets-lib.mjs';
@@ -21,14 +23,24 @@ function makeWoff2(seed = 0, length = 2048) {
   bytes.writeUInt16BE(1, 12);
   bytes.writeUInt16BE(0, 14);
   bytes.writeUInt32BE(4096, 16);
-  bytes.writeUInt32BE(Math.max(1, length - 48), 20);
+  bytes.writeUInt32BE(length - 48, 20);
   bytes.writeUInt16BE(1, 24);
   bytes.writeUInt16BE(0, 26);
-  bytes.writeUInt32BE(0, 28);
-  bytes.writeUInt32BE(0, 32);
-  bytes.writeUInt32BE(0, 36);
-  bytes.writeUInt32BE(0, 40);
-  bytes.writeUInt32BE(0, 44);
+  bytes.fill(0, 28, 48);
+  return bytes;
+}
+
+function makeSfnt(seed = 0, length = 2048) {
+  const bytes = Buffer.alloc(length, seed & 0xff);
+  bytes.writeUInt32BE(0x00010000, 0);
+  bytes.writeUInt16BE(1, 4);
+  bytes.writeUInt16BE(16, 6);
+  bytes.writeUInt16BE(0, 8);
+  bytes.writeUInt16BE(0, 10);
+  bytes.write('head', 12, 'ascii');
+  bytes.writeUInt32BE(0, 16);
+  bytes.writeUInt32BE(28, 20);
+  bytes.writeUInt32BE(length - 28, 24);
   return bytes;
 }
 
@@ -67,7 +79,47 @@ function manifestFor(assets) {
   };
 }
 
-function writeFixture(root, assets, manifest = manifestFor(assets.map(([fontPath, bytes]) => assetRecord(fontPath, bytes)))) {
+function registryCss(manifest, sfntAssets = []) {
+  const records = [
+    ...manifest.assets.map((asset) => `@font-face{font-family:'${asset.family}';font-style:${asset.style};font-weight:${asset.weight};src:url('./${asset.path.slice('fonts/'.length)}') format('woff2');}`),
+    ...sfntAssets.map((asset) => `@font-face{font-family:'${asset.family}';font-style:${asset.style};font-weight:${asset.weight};src:url('./${asset.path.slice('fonts/'.length)}') format('truetype');}`),
+  ];
+  return Buffer.from(`${records.join('\n')}\n`, 'utf8');
+}
+
+function supportManifestFor(registryBytes, sfntAssets = []) {
+  return {
+    schemaVersion: 1,
+    policy: 'offline-pinned-support',
+    fontFaceOverrides: [],
+    supportAssets: [
+      ...sfntAssets,
+      {
+        path: 'fonts/fonts.css',
+        kind: 'css',
+        role: 'font-face-registry',
+        bytes: registryBytes.length,
+        sha256: sha256(registryBytes),
+      },
+    ].sort((a, b) => a.path.localeCompare(b.path)),
+  };
+}
+
+function writeFixture(root, assets, { manifest = null, sfntFiles = [] } = {}) {
+  const resolvedManifest = manifest || manifestFor(assets.map(([fontPath, bytes]) => assetRecord(fontPath, bytes)));
+  const sfntAssets = sfntFiles.map(({ fontPath, bytes, family = 'Fixture Serif', weight = 400, style = 'normal' }) => ({
+    path: fontPath,
+    kind: 'sfnt',
+    role: 'fixture-fallback',
+    family,
+    weight,
+    style,
+    bytes: bytes.length,
+    sha256: sha256(bytes),
+  }));
+  const registry = registryCss(resolvedManifest, sfntAssets);
+  const supportManifest = supportManifestFor(registry, sfntAssets);
+
   fs.mkdirSync(path.join(root, 'fonts'), { recursive: true });
   fs.mkdirSync(path.join(root, 'css'), { recursive: true });
   for (const [fontPath, bytes] of assets) {
@@ -75,10 +127,16 @@ function writeFixture(root, assets, manifest = manifestFor(assets.map(([fontPath
     fs.mkdirSync(path.dirname(absolute), { recursive: true });
     fs.writeFileSync(absolute, bytes);
   }
-  fs.writeFileSync(path.join(root, 'fonts', 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  const faces = manifest.assets.map((asset) => `@font-face{font-family:'${asset.family}';font-style:${asset.style};font-weight:${asset.weight};src:url('/${asset.path}') format('woff2');}`).join('\n');
-  fs.writeFileSync(path.join(root, 'css', 'fonts.css'), `${faces}\n`);
-  return manifest;
+  for (let index = 0; index < sfntFiles.length; index += 1) {
+    const absolute = path.join(root, sfntFiles[index].fontPath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, sfntFiles[index].bytes);
+  }
+  fs.writeFileSync(path.join(root, 'fonts', 'manifest.json'), `${JSON.stringify(resolvedManifest, null, 2)}\n`);
+  fs.writeFileSync(path.join(root, 'fonts', 'support-manifest.json'), `${JSON.stringify(supportManifest, null, 2)}\n`);
+  fs.writeFileSync(path.join(root, 'fonts', 'fonts.css'), registry);
+  fs.writeFileSync(path.join(root, 'css', 'fonts.css'), registry);
+  return { manifest: resolvedManifest, supportManifest };
 }
 
 async function withFixture(callback) {
@@ -97,24 +155,37 @@ function response(body, status = 200, headers = { 'content-type': 'font/woff2' }
 const checks = [];
 const check = (name, fn) => checks.push([name, fn]);
 
-check('valid pinned local set passes offline verification', async () => withFixture(async (root) => {
+check('valid pinned WOFF2 and support registry pass offline verification', async () => withFixture(async (root) => {
   const bytes = makeWoff2(1);
-  const manifest = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
-  assert.equal(verifyFontAssets({ root, manifest }).result, 'PASS');
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  const result = verifyFontAssets({ root, manifest, supportManifest });
+  assert.equal(result.result, 'PASS');
+  assert.equal(result.assets.length, 1);
+  assert.equal(result.supportAssets.length, 1);
+}));
+
+check('valid pinned sfnt fallback passes', async () => withFixture(async (root) => {
+  const woff2 = makeWoff2(2);
+  const sfnt = makeSfnt(3);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', woff2]], {
+    sfntFiles: [{ fontPath: 'fonts/Fixture/fixture-fallback.ttf', bytes: sfnt }],
+  });
+  assert.equal(validateSfntBuffer(sfnt).numTables, 1);
+  assert.equal(verifyFontAssets({ root, manifest, supportManifest }).result, 'PASS');
 }));
 
 check('missing manifest font fails', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(2);
-  const manifest = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  const bytes = makeWoff2(4);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
   fs.rmSync(path.join(root, manifest.assets[0].path));
-  assert.throws(() => verifyFontAssets({ root, manifest }), /manifest files missing/);
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /manifest files missing/);
 }));
 
 check('undeclared font fails', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(3);
-  const manifest = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
-  fs.writeFileSync(path.join(root, 'fonts', 'Fixture', 'rogue.woff2'), makeWoff2(4));
-  assert.throws(() => verifyFontAssets({ root, manifest }), /undeclared files/);
+  const bytes = makeWoff2(5);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  fs.writeFileSync(path.join(root, 'fonts', 'Fixture', 'rogue.woff2'), makeWoff2(6));
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /undeclared files/);
 }));
 
 check('HTML body named woff2 fails magic', async () => {
@@ -122,50 +193,81 @@ check('HTML body named woff2 fails magic', async () => {
 });
 
 check('truncated WOFF2 fails declared length', async () => {
-  const bytes = makeWoff2(5);
+  const bytes = makeWoff2(7);
   assert.throws(() => validateWoff2Buffer(bytes.subarray(0, bytes.length - 1), 'truncated.woff2'), /declared length mismatch/);
 });
 
-check('stale tracked hash fails', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(6);
-  const manifest = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+check('truncated sfnt table fails', async () => {
+  const bytes = makeSfnt(8);
+  bytes.writeUInt32BE(bytes.length + 1, 20);
+  assert.throws(() => validateSfntBuffer(bytes, 'broken.ttf'), /exceeds file/);
+});
+
+check('stale tracked WOFF2 hash fails', async () => withFixture(async (root) => {
+  const bytes = makeWoff2(9);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
   manifest.assets[0].sha256 = '0'.repeat(64);
   manifest.assets[0].source.trackedMatch = false;
   manifest.assets[0].source.status = 'upstream-drift';
-  assert.throws(() => verifyFontAssets({ root, manifest }), /SHA-256 mismatch/);
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /SHA-256 mismatch/);
+}));
+
+check('stale support hash fails', async () => withFixture(async (root) => {
+  const bytes = makeWoff2(10);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  supportManifest.supportAssets.at(-1).sha256 = '0'.repeat(64);
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /support SHA-256 mismatch/);
 }));
 
 check('symbolic font link fails', async () => withFixture(async (root) => {
   if (process.platform === 'win32') return;
-  const bytes = makeWoff2(7);
-  const manifest = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  const bytes = makeWoff2(11);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
   fs.symlinkSync('fixture-latin-400.woff2', path.join(root, 'fonts', 'Fixture', 'linked.woff2'));
-  assert.throws(() => verifyFontAssets({ root, manifest }), /symbolic link is forbidden/);
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /symbolic link is forbidden/);
 }));
 
-check('unknown source reference fails', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(8);
-  const manifest = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+check('unknown font reference fails', async () => withFixture(async (root) => {
+  const bytes = makeWoff2(12);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
   fs.appendFileSync(path.join(root, 'css', 'fonts.css'), "x{src:url('/fonts/Fixture/unknown.woff2')}\n");
-  assert.throws(() => verifyFontAssets({ root, manifest }), /references are not declared/);
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /references are not declared/);
 }));
 
 check('font-face family metadata drift fails', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(9);
-  const manifest = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  const bytes = makeWoff2(13);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
   fs.writeFileSync(path.join(root, 'css', 'fonts.css'), "@font-face{font-family:'Wrong Family';font-style:normal;font-weight:400;src:url('/fonts/Fixture/fixture-latin-400.woff2') format('woff2');}\n");
-  assert.throws(() => verifyFontAssets({ root, manifest }), /metadata does not match manifest/);
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /metadata does not match manifest/);
+}));
+
+check('registry omission fails even when another CSS file references font', async () => withFixture(async (root) => {
+  const bytes = makeWoff2(14);
+  const { manifest, supportManifest } = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  const emptyRegistry = Buffer.from("@font-face{font-family:'Other';font-style:normal;font-weight:400;src:url('./Other/other.woff2') format('woff2');}\n");
+  fs.writeFileSync(path.join(root, 'fonts', 'fonts.css'), emptyRegistry);
+  const registryRecord = supportManifest.supportAssets.find((asset) => asset.role === 'font-face-registry');
+  registryRecord.bytes = emptyRegistry.length;
+  registryRecord.sha256 = sha256(emptyRegistry);
+  assert.throws(() => verifyFontAssets({ root, manifest, supportManifest }), /references are not declared|registry omits/);
 }));
 
 check('manifest source status must reflect observed bytes', async () => {
-  const bytes = makeWoff2(10);
+  const bytes = makeWoff2(15);
   const manifest = manifestFor([assetRecord('fonts/Fixture/fixture-latin-400.woff2', bytes)]);
   manifest.assets[0].source.observedSha256 = 'f'.repeat(64);
   assert.throws(() => validateManifestObject(manifest), /trackedMatch does not reflect/);
 });
 
+check('support manifest rejects unnormalized path', async () => {
+  const bytes = Buffer.from('@font-face{}\n');
+  const supportManifest = supportManifestFor(bytes);
+  supportManifest.supportAssets[0].path = './fonts/fonts.css';
+  assert.throws(() => validateSupportManifestObject(supportManifest), /must be normalized/);
+});
+
 check('exact font fetch accepts valid WOFF2', async () => {
-  const bytes = makeWoff2(11);
+  const bytes = makeWoff2(16);
   const fetched = await fetchExactFontSource('https://fonts.gstatic.com/fixture.woff2', { fetchImpl: async () => response(bytes) });
   assert.equal(fetched.sha256, sha256(bytes));
 });
@@ -201,49 +303,52 @@ check('redirect loop fails closed', async () => {
   await assert.rejects(fetchExactFontSource('https://fonts.gstatic.com/start.woff2', { fetchImpl: fakeFetch, maxRedirects: 2 }), /exceeded 2 redirects/);
 });
 
-check('upstream drift leaves tracked directory untouched', async () => withFixture(async (root) => {
-  const original = makeWoff2(12);
-  const changed = makeWoff2(13);
+check('upstream drift leaves complete tracked directory untouched', async () => withFixture(async (root) => {
+  const original = makeWoff2(17);
+  const changed = makeWoff2(18);
   const fontPath = 'fonts/Fixture/fixture-latin-400.woff2';
-  const manifest = writeFixture(root, [[fontPath, original]]);
-  await assert.rejects(generateFontAssets({ root, manifest, write: true, fetchImpl: async () => response(changed) }), /upstream drift/);
+  const { manifest, supportManifest } = writeFixture(root, [[fontPath, original]]);
+  const registryBefore = fs.readFileSync(path.join(root, 'fonts', 'fonts.css'));
+  await assert.rejects(generateFontAssets({ root, manifest, supportManifest, write: true, fetchImpl: async () => response(changed) }), /upstream drift/);
   assert.deepEqual(fs.readFileSync(path.join(root, fontPath)), original);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(root, 'fonts', 'manifest.json'), 'utf8')).assets[0].sha256, sha256(original));
+  assert.deepEqual(fs.readFileSync(path.join(root, 'fonts', 'fonts.css')), registryBefore);
 }));
 
-check('one unavailable source aborts the whole generation', async () => withFixture(async (root) => {
-  const first = makeWoff2(14);
-  const second = makeWoff2(15);
-  const assets = [
-    ['fonts/A/a-latin-400.woff2', first],
-    ['fonts/B/b-latin-400.woff2', second],
-  ];
-  const manifest = writeFixture(root, assets);
+check('one unavailable source aborts whole generation', async () => withFixture(async (root) => {
+  const first = makeWoff2(19);
+  const second = makeWoff2(20);
+  const assets = [['fonts/A/a-latin-400.woff2', first], ['fonts/B/b-latin-400.woff2', second]];
+  const { manifest, supportManifest } = writeFixture(root, assets);
   const fakeFetch = async (url) => String(url).includes('/a-latin') ? response(first) : response('missing', 404, { 'content-type': 'text/plain' });
-  await assert.rejects(generateFontAssets({ root, manifest, write: true, fetchImpl: fakeFetch }), /font source HTTP 404/);
+  await assert.rejects(generateFontAssets({ root, manifest, supportManifest, write: true, fetchImpl: fakeFetch }), /font source HTTP 404/);
   assert.deepEqual(fs.readFileSync(path.join(root, assets[0][0])), first);
   assert.deepEqual(fs.readFileSync(path.join(root, assets[1][0])), second);
 }));
 
 check('explicit accepted upstream refresh updates staged manifest only', async () => withFixture(async (root) => {
-  const original = makeWoff2(16);
-  const changed = makeWoff2(17);
+  const original = makeWoff2(21);
+  const changed = makeWoff2(22);
   const fontPath = 'fonts/Fixture/fixture-latin-400.woff2';
-  const manifest = writeFixture(root, [[fontPath, original]]);
-  const result = await generateFontAssets({ root, manifest, acceptUpstream: true, write: false, fetchImpl: async () => response(changed) });
+  const { manifest, supportManifest } = writeFixture(root, [[fontPath, original]]);
+  const result = await generateFontAssets({ root, manifest, supportManifest, acceptUpstream: true, write: false, fetchImpl: async () => response(changed) });
   assert.equal(result.result, 'DRY_RUN_PASS');
   assert.equal(result.manifest.assets[0].sha256, sha256(changed));
   assert.deepEqual(fs.readFileSync(path.join(root, fontPath)), original);
 }));
 
-check('matching exact source performs transactional directory swap', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(18);
+check('matching exact source swaps directory and preserves support assets', async () => withFixture(async (root) => {
+  const woff2 = makeWoff2(23);
+  const sfnt = makeSfnt(24);
   const fontPath = 'fonts/Fixture/fixture-latin-400.woff2';
-  const manifest = writeFixture(root, [[fontPath, bytes]]);
-  const result = await generateFontAssets({ root, manifest, write: true, fetchImpl: async () => response(bytes) });
+  const ttfPath = 'fonts/Fixture/fixture-fallback.ttf';
+  const { manifest, supportManifest } = writeFixture(root, [[fontPath, woff2]], { sfntFiles: [{ fontPath: ttfPath, bytes: sfnt }] });
+  const registryBefore = fs.readFileSync(path.join(root, 'fonts', 'fonts.css'));
+  const result = await generateFontAssets({ root, manifest, supportManifest, write: true, fetchImpl: async () => response(woff2) });
   assert.equal(result.result, 'WRITE_PASS');
-  assert.deepEqual(fs.readFileSync(path.join(root, fontPath)), bytes);
-  assert.equal(verifyFontAssets({ root, scanReferences: true }).result, 'PASS');
+  assert.deepEqual(fs.readFileSync(path.join(root, fontPath)), woff2);
+  assert.deepEqual(fs.readFileSync(path.join(root, ttfPath)), sfnt);
+  assert.deepEqual(fs.readFileSync(path.join(root, 'fonts', 'fonts.css')), registryBefore);
+  assert.equal(verifyFontAssets({ root, scanReferences: false }).result, 'PASS');
 }));
 
 const verifierSource = fs.readFileSync(new URL('./verify-font-assets.mjs', import.meta.url), 'utf8');
