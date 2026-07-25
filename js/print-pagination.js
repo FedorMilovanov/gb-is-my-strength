@@ -193,6 +193,23 @@
     });
   }
 
+  function precedes(node, reference) {
+    if (!node || !reference || node === reference || node.contains(reference) || reference.contains(node)) return false;
+    try { return !!(node.compareDocumentPosition(reference) & Node.DOCUMENT_POSITION_FOLLOWING); } catch (_) { return false; }
+  }
+
+  function previousSemanticFlow(tail, scope) {
+    var nodes = [];
+    try { nodes = Array.prototype.slice.call(scope.querySelectorAll('[data-print-flow],[data-print-keep-next]')); } catch (_) {}
+    var previous = null;
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (!isVisible(node) || !precedes(node, tail)) continue;
+      previous = node;
+    }
+    return previous;
+  }
+
   function classifyCandidates(root, pageHeight) {
     var candidates = collectCandidates(root);
     var stats = { candidates: candidates.length, atomic: 0, splittable: 0, rows: 0, keepNext: 0, tailPairs: 0, tails: 0 };
@@ -241,8 +258,7 @@
       var tail = tails[t];
       mark(tail, 'data-print-flow', 'atomic');
       mark(tail, 'data-print-tail', '1');
-      var previous = tail.previousElementSibling;
-      while (previous && (!isVisible(previous) || previous.matches(CHROME_SELECTOR))) previous = previous.previousElementSibling;
+      var previous = previousSemanticFlow(tail, scope);
       if (!previous) continue;
       var combined = previous.getBoundingClientRect().height + tail.getBoundingClientRect().height;
       if (combined <= pageHeight * 0.94) {
