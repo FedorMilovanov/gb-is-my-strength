@@ -337,7 +337,7 @@
   }
 
   var _voskEngineScriptPromise = null;
-  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=9ca1685a';
+  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=216b15fb';
   var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=475abd4b';
   var fallbackTtsNoticeTimer = null;
 
@@ -412,7 +412,10 @@
       action.textContent = actionLabel || '';
       action.setAttribute('aria-label', options.actionAria || actionLabel || '');
     }
-    requestAnimationFrame(function () { el.classList.add('is-visible'); });
+    // The first status must be paintable in the current rendering opportunity.
+    // WebKit may defer requestAnimationFrame while the page is settling; queuing
+    // visibility there lets later states overwrite the still-hidden browser notice.
+    el.classList.add('is-visible');
     if (options.autoHide) {
       fallbackTtsNoticeTimer = setTimeout(function () { el.classList.remove('is-visible'); }, options.autoHide);
     }
