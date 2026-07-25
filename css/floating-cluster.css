@@ -3051,7 +3051,7 @@ html.dark #bookmarkToast small {
   color: #eed093 !important;
 }
 
-/* Global gold progress pseudo-element removed: reading progress is represented by existing reader controls. */
+/* Global top progress pseudo-element removed: canonical reader controls own progress. */
 @media (max-width: 899px) {
   /* Старый gold-track индикатор на .mobile-bottom-bar::before убран —
      не из референса (там у .bottom-bar простой border-top:1px), а на
