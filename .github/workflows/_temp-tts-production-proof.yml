@@ -173,11 +173,28 @@ jobs:
           """
           if old not in source:
               raise SystemExit('immediate TTS-state proof block not found')
-          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          source = source.replace(old, new, 1)
+          old_cancel = """    await page.waitForFunction(() => window.__ttsProof.modelFetchAborted === true, null, { timeout: 10000 });
+              await waitForState(page, 'cancelled', 5000);
+              assert.equal(await page.evaluate(() => localStorage.getItem('gbx-vosk-warmup')), 'off');
+          """
+          new_cancel = """    await page.waitForFunction(() => window.__ttsProof.modelFetchAborted === true, null, { timeout: 10000 });
+              await waitForState(page, 'disabled', 5000);
+              const disabledState = await noticeSnapshot(page);
+              assert.equal(disabledState.title, 'Улучшенный голос отключён');
+              assert.match(disabledState.meta, /Системный голос/);
+              assert.equal(disabledState.action, 'Включить');
+              assert.equal(await page.evaluate(() => localStorage.getItem('gbx-vosk-warmup')), 'off');
+          """
+          if old_cancel not in source:
+              raise SystemExit('cancel-to-disabled proof block not found')
+          source = source.replace(old_cancel, new_cancel, 1)
+          path.write_text(source, encoding='utf-8')
           PY
           grep -Fq "const EXPECTED_MAIN = '59a91bacea6c498d2c16e6a965924b37f9bd7c2f';" scripts/_temp-tts-production-proof.mjs
           grep -Fq "controller: '/js/floating-cluster-controller.js?v=4bf2a7fd'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "getComputedStyle(notice).position === 'fixed'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "await waitForState(page, 'disabled', 5000);" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
         run: |
