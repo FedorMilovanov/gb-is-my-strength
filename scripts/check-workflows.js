@@ -113,10 +113,12 @@ must(deployPath, releaseReadiness, /actions\/upload-artifact@[a-f0-9]{40}/, 'can
 must(deployPath, releaseDeploy, /needs:\s*readiness/, 'privileged deploy must depend on candidate readiness');
 must(deployPath, releaseDeploy, /permissions:\s*\n\s*actions:\s*read\s*\n\s*contents:\s*read\s*\n\s*pages:\s*write\s*\n\s*id-token:\s*write/, 'privileged deploy permissions must be exact');
 must(deployPath, releaseDeploy, /actions\/download-artifact@[a-f0-9]{40}/, 'privileged deploy must download the exact candidate');
-must(deployPath, releaseDeploy, /verify-release-candidate\.mjs[\s\S]*actions\/upload-pages-artifact@v3/, 'candidate verification must precede Pages packaging');
-must(deployPath, releaseDeploy, /actions\/deploy-pages@[a-f0-9]{40}/, 'Pages deployment action must be pinned');
+must(deployPath, releaseDeploy, /verify-release-candidate\.mjs[\s\S]*actions\/upload-pages-artifact@[a-f0-9]{40}/, 'candidate verification must precede pinned Pages packaging');
+must(deployPath, releaseDeploy, /actions\/upload-pages-artifact@[a-f0-9]{40}\s+# v3/, 'Pages packaging action must be pinned');
+must(deployPath, releaseDeploy, /actions\/deploy-pages@[a-f0-9]{40}\s+# v4/, 'Pages deployment action must be pinned');
 must(deployPath, releaseDeploy, /live-release-contract\.mjs[\s\S]*tts-live-deployment-contract\.mjs/, 'generic live witness must precede TTS capability witness');
 mustNot(deployPath, releaseDeploy, /actions\/checkout@|\bnpm ci\b|strangler:build|cache-bust\.js|validate:static-publication|pagefind:build/, 'privileged deploy must not checkout, install, validate or build source');
+mustNot(deployPath, deploy, /uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i, 'release workflow must not use mutable action tags');
 if (count(deploy, /actions\/checkout@/g) !== 1) issues.push(`${deployPath}: exactly one checkout is allowed`);
 if (count(deploy, /\bnpm ci\b/g) !== 1) issues.push(`${deployPath}: exactly one npm ci is allowed`);
 if (count(deploy, /npm run strangler:build:production-like/g) !== 1) issues.push(`${deployPath}: exactly one production-like build is allowed`);
@@ -230,4 +232,5 @@ if (issues.length) {
 }
 console.log('✅ Workflow policy passed');
 console.log('✅ One automatic production build; metadata diagnostics remain read-only and build-free');
+console.log('✅ Privileged Pages actions are pinned to full commit SHAs');
 console.log('NOTE: actionlint separately validates YAML syntax, expressions and shell fragments.');
