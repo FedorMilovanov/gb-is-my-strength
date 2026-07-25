@@ -1,0 +1,46 @@
+name: Genesis 6 transport verifier
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/genesis6-transport-verifier.yml'
+      - 'tmp-genesis6-transport-verifier.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  verify-chunk-zero:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify issue payload chunk 000
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const crypto = require('crypto');
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 287,
+              per_page: 100,
+            });
+            const marker = 'GENESIS6_PATCH_CHUNK 000/060';
+            const match = comments.find(({ body = '' }) => body.startsWith(marker));
+            if (!match) core.setFailed(`Missing ${marker}`);
+            const lines = match.body.split('\n');
+            const begin = lines.indexOf('BEGIN');
+            const end = lines.lastIndexOf('END');
+            if (begin < 0 || end <= begin) core.setFailed('Malformed BEGIN/END envelope');
+            const data = lines.slice(begin + 1, end).join('\n');
+            const expectedChars = 10000;
+            const expectedSha256 = 'f889d0f8a0f5632ea7e3d5b26eb48a698a1a64a1d1d029cfe5f5b96b77886267';
+            const expectedGitSha = '36d0a26230c07ec708c91e3d33a6fefe79cf784d';
+            const sha256 = crypto.createHash('sha256').update(data, 'utf8').digest('hex');
+            const header = Buffer.from(`blob ${Buffer.byteLength(data, 'utf8')}\0`);
+            const gitSha = crypto.createHash('sha1').update(Buffer.concat([header, Buffer.from(data)])).digest('hex');
+            core.info(JSON.stringify({ chars: data.length, sha256, gitSha }));
+            if (data.length !== expectedChars) core.setFailed(`Character count mismatch: ${data.length}`);
+            if (sha256 !== expectedSha256) core.setFailed(`SHA-256 mismatch: ${sha256}`);
+            if (gitSha !== expectedGitSha) core.setFailed(`Git blob SHA mismatch: ${gitSha}`);
