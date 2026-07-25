@@ -69,7 +69,8 @@ async function verify(browserType, viewport, transformed) {
   const browser = await browserType.launch({ headless: true });
   try {
     const page = await browser.newPage({ viewport, isMobile: true, hasTouch: true });
-    await page.setContent('<!doctype html><html><head></head><body><main></main></body></html>');
+    await page.setContent('<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body><main></main></body></html>');
+    assert.equal(await page.evaluate(() => matchMedia('(max-width:480px)').matches), true, 'mobile media query is not active');
     await page.addStyleTag({ content: css });
     await page.evaluate((useTransform) => {
       if (useTransform) {
