@@ -13,6 +13,8 @@ on:
       - "scripts/deployment-provenance-contract-test.mjs"
       - "scripts/write-deployment-provenance.mjs"
       - "scripts/tts-live-deployment-contract.mjs"
+      - "scripts/record-live-deployment-acceptance.cjs"
+      - "scripts/record-live-deployment-acceptance-contract-test.cjs"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
       - "scripts/tts-engine-status-contract-test.js"
@@ -34,6 +36,8 @@ on:
       - "scripts/deployment-provenance-contract-test.mjs"
       - "scripts/write-deployment-provenance.mjs"
       - "scripts/tts-live-deployment-contract.mjs"
+      - "scripts/record-live-deployment-acceptance.cjs"
+      - "scripts/record-live-deployment-acceptance-contract-test.cjs"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
       - "scripts/tts-engine-status-contract-test.js"
@@ -70,6 +74,8 @@ jobs:
           node --check scripts/deployment-provenance-contract-test.mjs
           node --check scripts/write-deployment-provenance.mjs
           node --check scripts/tts-live-deployment-contract.mjs
+          node --check scripts/record-live-deployment-acceptance.cjs
+          node --check scripts/record-live-deployment-acceptance-contract-test.cjs
           node --check scripts/tts-download-consent-contract-test.js
           node --check scripts/tts-download-notice-browser-test.js
           node --check scripts/tts-engine-status-contract-test.js
@@ -95,6 +101,12 @@ jobs:
           mkdir -p reports
           node scripts/deployment-provenance-contract-test.mjs 2>&1 | tee reports/deployment-provenance-source.log
 
+      - name: Live acceptance recorder contract
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          node scripts/record-live-deployment-acceptance-contract-test.cjs 2>&1 | tee reports/live-deployment-acceptance-source.log
+
       - name: Verify existing asset revisions remain read-only clean
         run: node scripts/cache-bust.js
 
@@ -112,6 +124,7 @@ jobs:
             reports/tts-source-download-consent.log
             reports/tts-source-engine-status.log
             reports/deployment-provenance-source.log
+            reports/live-deployment-acceptance-source.log
           if-no-files-found: warn
           retention-days: 14
 
