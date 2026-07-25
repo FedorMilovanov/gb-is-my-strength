@@ -10,7 +10,10 @@ import {
   prepareReleaseCandidate,
   verifyReleaseCandidate,
 } from './release-candidate-lib.mjs';
-import { assertManualReleaseMainAncestry } from './write-deployment-provenance.mjs';
+import {
+  assertManualReleaseMainAncestry,
+  writeDeploymentProvenance,
+} from './write-deployment-provenance.mjs';
 
 function write(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -148,15 +151,11 @@ try {
   );
   assert.equal(pushCalls, 0, 'automatic push must not invoke manual ancestry checks');
 
+  const rejectRunner = (_command, args) => args[0] === 'rev-parse'
+    ? { status: 0, stdout: `${mainSha}\n`, stderr: '' }
+    : { status: 1, stdout: '', stderr: '' };
   assert.throws(
-    () => assertManualReleaseMainAncestry({
-      root,
-      eventName: 'workflow_dispatch',
-      commitSha: manualSha,
-      gitRunner: (_command, args) => args[0] === 'rev-parse'
-        ? { status: 0, stdout: `${mainSha}\n`, stderr: '' }
-        : { status: 1, stdout: '', stderr: '' },
-    }),
+    () => assertManualReleaseMainAncestry({ root, eventName: 'workflow_dispatch', commitSha: manualSha, gitRunner: rejectRunner }),
     /must already belong to the history of origin\/main/,
   );
   assert.throws(
@@ -172,8 +171,50 @@ try {
     () => assertManualReleaseMainAncestry({ root, eventName: 'workflow_dispatch', commitSha: 'short', gitRunner: allowRunner }),
     /manual release SHA must be exact/,
   );
+
+  const manualWriterFixture = fixture();
+  try {
+    const report = writeDeploymentProvenance({
+      root: manualWriterFixture.root,
+      env: {
+        RELEASE_SHA: manualSha,
+        GITHUB_REPOSITORY: identity.repository,
+        GITHUB_RUN_ID: String(identity.runId),
+        GITHUB_RUN_ATTEMPT: String(identity.runAttempt),
+        GITHUB_EVENT_NAME: 'workflow_dispatch',
+        RELEASE_NPM_VERSION: identity.actualNpmVersion,
+      },
+      gitRunner: allowRunner,
+    });
+    assert.deepEqual(report.manualReleaseMainAncestry, { checked: true, mainSha });
+  } finally {
+    fs.rmSync(manualWriterFixture.root, { recursive: true, force: true });
+  }
+
+  const rejectedWriterFixture = fixture();
+  try {
+    assert.throws(
+      () => writeDeploymentProvenance({
+        root: rejectedWriterFixture.root,
+        env: {
+          RELEASE_SHA: manualSha,
+          GITHUB_REPOSITORY: identity.repository,
+          GITHUB_RUN_ID: String(identity.runId),
+          GITHUB_RUN_ATTEMPT: String(identity.runAttempt),
+          GITHUB_EVENT_NAME: 'workflow_dispatch',
+          RELEASE_NPM_VERSION: identity.actualNpmVersion,
+        },
+        gitRunner: rejectRunner,
+      }),
+      /must already belong to the history of origin\/main/,
+    );
+    assert.equal(fs.existsSync(path.join(rejectedWriterFixture.root, 'deployments')), false);
+    assert.equal(fs.existsSync(path.join(rejectedWriterFixture.root, 'reports', 'release-candidate.json')), false);
+  } finally {
+    fs.rmSync(rejectedWriterFixture.root, { recursive: true, force: true });
+  }
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }
 
-console.log('Deployment provenance schema v3 contract: PASS (whole-tree digest, tamper, toolchain and manual-main-ancestry fixtures).');
+console.log('Deployment provenance schema v3 contract: PASS (whole-tree digest, tamper, toolchain and manual-main-ancestry writer fixtures).');
