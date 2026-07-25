@@ -12,6 +12,7 @@ on:
       - 'scripts/print-paper-pdf-audit.py'
       - 'scripts/print-pagination-contract.mjs'
       - 'scripts/print-pagination-raster-audit.py'
+      - 'scripts/print-reversible-card-contract.mjs'
       - '.github/workflows/print-paper-contract.yml'
   workflow_dispatch:
 
@@ -33,6 +34,12 @@ jobs:
           node-version: '22.12.0'
           cache: npm
       - run: npm ci
+      - name: Validate print proof sources
+        run: |
+          node --check scripts/print-pagination-contract.mjs
+          node --check scripts/print-reversible-card-contract.mjs
+          python3 -m py_compile scripts/print-paper-pdf-audit.py scripts/print-pagination-raster-audit.py
+          node scripts/run-actionlint.mjs -no-color .github/workflows/print-paper-contract.yml
       - run: npx playwright install --with-deps chromium
       - run: |
           sudo apt-get update
@@ -48,8 +55,14 @@ jobs:
         env:
           GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-paper/matrix
         run: node scripts/print-pagination-contract.mjs
+      - name: Prove both reversible-card faces in physical PDFs
+        env:
+          GB_PRINT_REVERSIBLE_CARD_ARTIFACT_DIR: reports/print-paper/reversible-card
+        run: node scripts/print-reversible-card-contract.mjs
       - name: Raster-audit every route PDF and build contact sheets
         run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix --out reports/print-paper/matrix-raster
+      - name: Raster-audit reversible-card front and back PDFs
+        run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/reversible-card --out reports/print-paper/reversible-card-raster
       - if: always()
         uses: actions/upload-artifact@v4
         with:
