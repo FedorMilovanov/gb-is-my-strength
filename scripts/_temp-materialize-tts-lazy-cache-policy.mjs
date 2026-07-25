@@ -44,22 +44,15 @@ fs.writeFileSync(auditPath, audit, 'utf8');
 
 const contractPath = 'scripts/tts-engine-status-contract-test.js';
 let contract = fs.readFileSync(contractPath, 'utf8');
-if (!contract.includes("['cache policy exports lazy no-precache set'")) {
-  contract = replaceOnce(
-    contract,
-    `    ['cache registry owns Vosk engine', cacheAssets, /'js\\/vosk-tts-engine\\.js'/],`,
-    `    ['cache registry owns Vosk engine', cacheAssets, /'js\\/vosk-tts-engine\\.js'/],\n    ['cache policy exports lazy no-precache set', cacheAssets, /const LAZY_NO_PRECACHE = Object\\.freeze\\(\\[[\\s\\S]*module\\.exports = \\{ ASSETS, LAZY_NO_PRECACHE \\}/],\n    ['notice CSS remains lazy', cacheAssets, /const LAZY_NO_PRECACHE[\\s\\S]*'css\\/tts-download-notice\\.css'/],\n    ['Vosk engine remains lazy', cacheAssets, /const LAZY_NO_PRECACHE[\\s\\S]*'js\\/vosk-tts-engine\\.js'/],`,
-    'TTS lazy policy checks'
-  );
-}
-if (!contract.includes("['notice CSS lazy policy entry removed'")) {
-  contract = replaceOnce(
-    contract,
-    `  ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'js/vosk-tts-engine.js',\\n", '')],`,
-    `  ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'js/vosk-tts-engine.js',\\n", '')],\n  ['notice CSS lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE[\\s\\S]*?)  'css\\/tts-download-notice\\.css',\\n/, '$1')],\n  ['Vosk engine lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE[\\s\\S]*?)  'js\\/vosk-tts-engine\\.js',\\n/, '$1')],`,
-    'TTS lazy policy mutations'
-  );
-}
+const oldChecks = `    ['cache registry owns notice CSS', cacheAssets, /'css\\/tts-download-notice\\.css'/],\n    ['cache registry owns Vosk engine', cacheAssets, /'js\\/vosk-tts-engine\\.js'/],`;
+const newChecks = `    ['cache registry owns notice CSS', cacheAssets, /const ASSETS = \\[\\[[\\s\\S]*'css\\/tts-download-notice\\.css'[\\s\\S]*?\\];/],\n    ['cache registry owns Vosk engine', cacheAssets, /const ASSETS = \\[\\[[\\s\\S]*'js\\/vosk-tts-engine\\.js'[\\s\\S]*?\\];/],\n    ['cache policy exports lazy no-precache set', cacheAssets, /const LAZY_NO_PRECACHE = Object\\.freeze\\(\\[[\\s\\S]*?\\]\\);[\\s\\S]*module\\.exports = \\{ ASSETS, LAZY_NO_PRECACHE \\}/],\n    ['notice CSS remains lazy', cacheAssets, /const LAZY_NO_PRECACHE = Object\\.freeze\\(\\[[\\s\\S]*'css\\/tts-download-notice\\.css'[\\s\\S]*?\\]\\);/],\n    ['Vosk engine remains lazy', cacheAssets, /const LAZY_NO_PRECACHE = Object\\.freeze\\(\\[[\\s\\S]*'js\\/vosk-tts-engine\\.js'[\\s\\S]*?\\]\\);/],`;
+if (contract.includes(oldChecks)) contract = replaceOnce(contract, oldChecks, newChecks, 'TTS cache policy checks');
+if (!contract.includes("['cache policy exports lazy no-precache set'")) throw new Error('TTS lazy policy checks missing');
+
+const oldMutations = `  ['notice CSS cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'css/tts-download-notice.css',\\n", '')],\n  ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'js/vosk-tts-engine.js',\\n", '')],`;
+const newMutations = `  ['notice CSS cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \\[\\[[\\s\\S]*?)  'css\\/tts-download-notice\\.css',\\n/, '$1')],\n  ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \\[\\[[\\s\\S]*?)  'js\\/vosk-tts-engine\\.js',\\n/, '$1')],\n  ['notice CSS lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\\.freeze\\(\\[[\\s\\S]*?)  'css\\/tts-download-notice\\.css',\\n/, '$1')],\n  ['Vosk engine lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\\.freeze\\(\\[[\\s\\S]*?)  'js\\/vosk-tts-engine\\.js',\\n/, '$1')],`;
+if (contract.includes(oldMutations)) contract = replaceOnce(contract, oldMutations, newMutations, 'TTS cache policy mutations');
+if (!contract.includes("['notice CSS lazy policy entry removed'")) throw new Error('TTS lazy policy mutations missing');
 fs.writeFileSync(contractPath, contract, 'utf8');
 
 for (const file of [cachePath, auditPath, contractPath]) {
