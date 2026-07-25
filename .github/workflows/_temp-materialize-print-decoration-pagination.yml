@@ -41,25 +41,32 @@ jobs:
 
       - name: Validate source, scope and revision contracts
         run: |
-          set -euo pipefail
-          node --check js/reader-preferences-head.js
-          node --check scripts/print-pagination-contract.mjs
-          python3 -m py_compile scripts/print-pagination-raster-audit.py
-          node scripts/cache-bust.js
-          git diff --check
-          grep -Fq 'GB_PRINT_REVERSIBLE_CARD_ROOTS_V1' js/reader-preferences-head.js
-          grep -Fq 'GB PRINT CONTRACT v2.9' css/site.css
-          grep -Fq 'ГОСПОДЬ БОГ — СИЛА МОЯ' css/site.css
-          grep -Fq '#reading-progress, .h-reading-progress' css/site.css
-          if grep -Fq 'GB PRINT CONTRACT v2.8' css/site.css; then
-            echo 'obsolete v2.8 print contract remains' >&2
-            exit 1
-          fi
-          if grep -Fq 'transform: scaleX(var(--gb-read-pct, 0))' css/floating-cluster.css; then
-            echo 'duplicate global progress pseudo-element remains' >&2
-            exit 1
-          fi
-          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-print-decoration-pagination.yml
+          mkdir -p reports
+          set +e
+          set -o pipefail
+          (
+            set -euo pipefail
+            node --check js/reader-preferences-head.js
+            node --check scripts/print-pagination-contract.mjs
+            python3 -m py_compile scripts/print-pagination-raster-audit.py
+            node scripts/cache-bust.js
+            git diff --check
+            grep -Fq 'GB_PRINT_REVERSIBLE_CARD_ROOTS_V1' js/reader-preferences-head.js
+            grep -Fq 'GB PRINT CONTRACT v2.9' css/site.css
+            grep -Fq 'ГОСПОДЬ БОГ — СИЛА МОЯ' css/site.css
+            grep -Fq '#reading-progress, .h-reading-progress' css/site.css
+            if grep -Fq 'GB PRINT CONTRACT v2.8' css/site.css; then
+              echo 'obsolete v2.8 print contract remains' >&2
+              exit 1
+            fi
+            if grep -Fq 'transform: scaleX(var(--gb-read-pct, 0))' css/floating-cluster.css; then
+              echo 'duplicate global progress pseudo-element remains' >&2
+              exit 1
+            fi
+            node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-print-decoration-pagination.yml
+          ) 2>&1 | tee reports/print-decoration-validation.log
+          code=${PIPESTATUS[0]}
+          exit "${code}"
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
@@ -111,6 +118,7 @@ jobs:
         with:
           name: print-decoration-pagination-${{ github.run_id }}
           path: |
+            reports/print-decoration-validation.log
             reports/print-decoration-pagination.log
             reports/print-decoration-pagination/
             reports/print-decoration-pagination-raster/
