@@ -13,8 +13,16 @@ const ACTION_PINS = Object.freeze({
   downloadArtifact: 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4',
 });
 
+const CONCURRENCY_GROUP = "group: deployment-witness-${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || inputs.deploy_run_id }}";
+
 function countLiteral(source, literal) {
   return source.split(literal).length - 1;
+}
+
+function resolveDeploymentWitnessConcurrency({ eventName, workflowRunId, deployRunId }) {
+  const targetRunId = eventName === 'workflow_run' && workflowRunId || deployRunId;
+  assert.match(String(targetRunId || ''), /^\d+$/, 'target deploy run ID must be numeric');
+  return `deployment-witness-${targetRunId}`;
 }
 
 function validate({ deploy, ledger, workflow, recorder }) {
@@ -32,6 +40,8 @@ function validate({ deploy, ledger, workflow, recorder }) {
     ['ledger has contents read', ledger, /^  contents: read\s+# checkout trusted recorder source$/m],
     ['ledger owns issue projection', ledger, /^  issues: write\s+# comment\/close only a full-SHA machine-marked issue$/m],
     ['ledger owns exact PR comment projection', ledger, /^  pull-requests: write\s+# comment the exact merged PR after verified deployment$/m],
+    ['ledger serializes automatic and manual projection by target deploy run', ledger, /concurrency:\s*\n\s*group: deployment-witness-\$\{\{ github\.event_name == 'workflow_run' && github\.event\.workflow_run\.id \|\| inputs\.deploy_run_id \}\}/],
+    ['ledger never cancels an evidence writer in progress', ledger, /concurrency:[\s\S]{0,180}cancel-in-progress: false/],
 
     ['automatic ledger requires successful deploy', ledger, /workflow_run\.conclusion == 'success'/],
     ['automatic ledger requires main branch', ledger, /workflow_run\.head_branch == 'main'/],
@@ -84,6 +94,9 @@ function validate({ deploy, ledger, workflow, recorder }) {
     if (!pattern.test(source)) problems.push(label);
   }
 
+  if (countLiteral(ledger, CONCURRENCY_GROUP) !== 1) {
+    problems.push(`ledger concurrency identity drift (${countLiteral(ledger, CONCURRENCY_GROUP)}/1)`);
+  }
   if (countLiteral(ledger, ACTION_PINS.githubScript) !== 2) {
     problems.push(`ledger github-script pin drift (${countLiteral(ledger, ACTION_PINS.githubScript)}/2)`);
   }
@@ -127,11 +140,24 @@ const sources = {
 };
 
 assert.deepEqual(validate(sources), []);
+assert.equal(
+  resolveDeploymentWitnessConcurrency({ eventName: 'workflow_run', workflowRunId: '30169443420' }),
+  resolveDeploymentWitnessConcurrency({ eventName: 'workflow_dispatch', deployRunId: '30169443420' }),
+  'automatic and manual entry paths must serialize on the same target deploy run',
+);
+assert.notEqual(
+  resolveDeploymentWitnessConcurrency({ eventName: 'workflow_run', workflowRunId: '30169443420' }),
+  resolveDeploymentWitnessConcurrency({ eventName: 'workflow_dispatch', deployRunId: '30169443421' }),
+  'different target deploy runs must not share one writer lock',
+);
 
 const mutations = [
   ['deploy issue permission reintroduced', { ...sources, deploy: sources.deploy.replace('  pages: write', '  issues: write\n  pages: write') }],
   ['deploy evidence absence downgraded', { ...sources, deploy: sources.deploy.replace('if-no-files-found: error', 'if-no-files-found: warn') }],
   ['ledger PR projection downgraded to read', { ...sources, ledger: sources.ledger.replace('  pull-requests: write', '  pull-requests: read') }],
+  ['ledger concurrency removed', { ...sources, ledger: sources.ledger.replace(/\nconcurrency:[\s\S]*?\n\njobs:/, '\n\njobs:') }],
+  ['ledger concurrency cancellation enabled', { ...sources, ledger: sources.ledger.replace('  cancel-in-progress: false', '  cancel-in-progress: true') }],
+  ['ledger manual replay lock detached from deploy run', { ...sources, ledger: sources.ledger.replace('inputs.deploy_run_id', 'github.run_id') }],
   ['github-script pin made mutable', { ...sources, ledger: sources.ledger.replaceAll(ACTION_PINS.githubScript, 'actions/github-script@v7') }],
   ['checkout pin made mutable', { ...sources, ledger: sources.ledger.replace(ACTION_PINS.checkout, 'actions/checkout@v4') }],
   ['download-artifact pin made mutable', { ...sources, ledger: sources.ledger.replace(ACTION_PINS.downloadArtifact, 'actions/download-artifact@v4') }],
