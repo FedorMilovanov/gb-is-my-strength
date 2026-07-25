@@ -300,7 +300,13 @@ async function assertBackToTopThreshold(page) {
 }
 
 async function runBrowser(browserName, browserType, baseUrl) {
-  const browser = await browserType.launch({ headless: true });
+  const launchOptions = { headless: true };
+  if (browserName === 'chromium') {
+    // Playwright disables BFCache in Chromium by default. Remove only that test-
+    // runner flag so the contract observes a genuine browser history restore.
+    launchOptions.ignoreDefaultArgs = ['--disable-back-forward-cache'];
+  }
+  const browser = await browserType.launch(launchOptions);
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     reducedMotion: 'reduce',
