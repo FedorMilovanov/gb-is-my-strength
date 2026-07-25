@@ -34,16 +34,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python3 - <<'PY'
-          from pathlib import Path
-          materializer = Path('scripts/_temp_harden_source_link_evidence.py')
-          source = materializer.read_text(encoding='utf-8')
-          needle = "''', encoding=\"utf-8\")\n\n# Temporary infrastructure must not survive the product commit."
-          replacement = "''', encoding=\"utf-8\")\nCONTRACT.write_text(CONTRACT.read_text(encoding=\"utf-8\").replace(\"\\\\\\\\\", \"\\\\\"), encoding=\"utf-8\")\n\n# Temporary infrastructure must not survive the product commit."
-          if source.count(needle) != 1:
-              raise SystemExit(f'contract normalization anchor drifted: {source.count(needle)}')
-          materializer.write_text(source.replace(needle, replacement, 1), encoding='utf-8')
-          PY
           python3 scripts/_temp_harden_source_link_evidence.py
 
       - name: Restore canonical Shared Files Guard after materialization
