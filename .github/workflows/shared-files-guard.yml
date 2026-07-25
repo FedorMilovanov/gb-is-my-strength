@@ -7,33 +7,33 @@ on:
 
 permissions:
   contents: read
-  actions: write
+  actions: read
 
 jobs:
-  dispatch-source-links:
+  inspect-source-links:
     if: github.head_ref == 'agent/_temp-dispatch-source-links-20260725'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Dispatch canonical Source Link Audit on main
+      - name: Resolve latest manual Source Link Audit run
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
-          response_file="$RUNNER_TEMP/dispatch-response.txt"
-          status="$({ curl --silent --show-error \
-            --output "$response_file" \
-            --write-out '%{http_code}' \
-            --request POST \
+          api="https://api.github.com/repos/$REPOSITORY/actions/workflows/source-links.yml/runs?event=workflow_dispatch&branch=main&per_page=5"
+          payload="$(curl --fail-with-body --silent --show-error \
             --header 'Accept: application/vnd.github+json' \
             --header "Authorization: Bearer $GH_TOKEN" \
             --header 'X-GitHub-Api-Version: 2022-11-28' \
-            "https://api.github.com/repos/$REPOSITORY/actions/workflows/source-links.yml/dispatches" \
-            --data '{"ref":"main"}'; } || true)"
-          if [ "$status" != "204" ]; then
-            cat "$response_file" >&2 || true
-            echo "workflow dispatch failed with HTTP $status" >&2
-            exit 1
-          fi
-          echo "Source Link Audit dispatched on main"
+            "$api")"
+          node -e '
+            const payload = JSON.parse(process.env.PAYLOAD);
+            const run = payload.workflow_runs && payload.workflow_runs[0];
+            if (!run) throw new Error("no manual Source Link Audit run found");
+            console.log(`SOURCE_LINK_RUN_ID=${run.id}`);
+            console.log(`SOURCE_LINK_RUN_STATUS=${run.status}`);
+            console.log(`SOURCE_LINK_RUN_CONCLUSION=${run.conclusion || ""}`);
+            console.log(`SOURCE_LINK_RUN_HEAD_SHA=${run.head_sha}`);
+            console.log(`SOURCE_LINK_RUN_CREATED_AT=${run.created_at}`);
+          ' PAYLOAD="$payload"
