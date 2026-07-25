@@ -15,6 +15,21 @@ on:
       - 'js/search.js'
       - 'package.json'
       - 'package-lock.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/interactive-audit.yml'
+      - 'scripts/home-browser-contract.mjs'
+      - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'src/pages/index.astro'
+      - 'src/components/home/**'
+      - 'src/styles/**'
+      - 'css/**'
+      - 'js/site.js'
+      - 'js/site-utils.js'
+      - 'js/search.js'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
   schedule:
     # Weekly Monday 03:30 UTC. Browser runtime checks are heavier than static gates.
@@ -70,7 +85,7 @@ jobs:
           retention-days: 14
 
   interactive-audit:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
