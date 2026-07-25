@@ -2,33 +2,27 @@
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-function replaceOnce(source, before, after, label) {
-  const count = source.split(before).length - 1;
-  if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
-  return source.replace(before, after);
+function replaceRegexOnce(source, pattern, replacement, label) {
+  const flags = pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g';
+  const matches = [...source.matchAll(new RegExp(pattern.source, flags))];
+  if (matches.length !== 1) throw new Error(`${label}: expected one match, found ${matches.length}`);
+  return source.replace(pattern, replacement);
+}
+
+function insertAfterUniqueLine(source, marker, line, label) {
+  const lines = source.split('\n');
+  const hits = lines.map((value, index) => value.includes(marker) ? index : -1).filter((index) => index >= 0);
+  if (hits.length !== 1) throw new Error(`${label}: expected one marker line, found ${hits.length}`);
+  lines.splice(hits[0] + 1, 0, line);
+  return lines.join('\n');
 }
 
 const runtimePath = 'js/print-pagination.js';
 let runtime = fs.readFileSync(runtimePath, 'utf8');
 
-runtime = replaceOnce(runtime,
-`  function markTerminalRegion(group, scope) {
-    var count = 0;
-    var nodes = [];
-    try { nodes = Array.prototype.slice.call((scope || document).querySelectorAll('*')); } catch (_) {}
-    for (var i = 0; i < nodes.length; i++) {
-      if (!precedes(group, nodes[i])) continue;
-      mark(nodes[i], 'data-print-terminal-flow', '1');
-      count += 1;
-    }
-    var terminal = group.parentElement;
-    while (terminal && terminal !== document.body && terminal !== document.documentElement) {
-      mark(terminal, 'data-print-terminal-flow', '1');
-      count += 1;
-      terminal = terminal.parentElement;
-    }
-    return count;
-  }`,
+runtime = replaceRegexOnce(
+  runtime,
+  /  function markTerminalRegion\(group, scope\) \{[\s\S]*?\n  \}\n\n  function classifyCandidates/,
 `  function hasMeaningfulFollowingContent(anchor, scope) {
     var nodes = [];
     try { nodes = Array.prototype.slice.call((scope || document).querySelectorAll('p,li,dt,dd,h1,h2,h3,h4,h5,h6,table,figure,blockquote,pre,section,article,[data-pagefind-body]')); } catch (_) {}
@@ -81,54 +75,59 @@ runtime = replaceOnce(runtime,
       terminal = terminal.parentElement;
     }
     return result;
-  }`,
-'print terminal helpers');
+  }
 
-runtime = replaceOnce(runtime,
-`      '  html body [data-print-terminal-flow] { break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',`,
+  function classifyCandidates`,
+  'semantic terminal helper boundary'
+);
+
+runtime = replaceRegexOnce(
+  runtime,
+  /      '  html body \[data-print-terminal-flow\] \{[^'\n]+\}',/,
 `      '  html[data-print-terminal-root], html[data-print-terminal-root] body { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-terminal-flow] { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html[data-print-terminal-root]::before, html[data-print-terminal-root]::after, html[data-print-terminal-root] body::before, html[data-print-terminal-root] body::after, html body [data-print-terminal-flow]::before, html body [data-print-terminal-flow]::after { break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-terminal-follower] { display: none !important; }',`,
-'print terminal CSS');
+  'semantic terminal CSS rule'
+);
 
-runtime = replaceOnce(runtime,
-`      nodes[i].removeAttribute('data-print-terminal-flow');`,
-`      nodes[i].removeAttribute('data-print-terminal-flow');
-      nodes[i].removeAttribute('data-print-terminal-follower');
-      nodes[i].removeAttribute('data-print-terminal-root');`,
-'print terminal cleanup');
+if (!runtime.includes("nodes[i].removeAttribute('data-print-terminal-follower');")) {
+  runtime = insertAfterUniqueLine(runtime, "nodes[i].removeAttribute('data-print-terminal-flow');", "      nodes[i].removeAttribute('data-print-terminal-follower');", 'terminal follower cleanup');
+}
+if (!runtime.includes("nodes[i].removeAttribute('data-print-terminal-root');")) {
+  runtime = insertAfterUniqueLine(runtime, "nodes[i].removeAttribute('data-print-terminal-follower');", "      nodes[i].removeAttribute('data-print-terminal-root');", 'terminal root cleanup');
+}
 
-runtime = replaceOnce(runtime,
-`var stats = { candidates: candidates.length, atomic: 0, splittable: 0, rows: 0, keepNext: 0, tailPairs: 0, closingGroups: 0, terminalFlow: 0, tails: 0 };`,
+runtime = replaceRegexOnce(
+  runtime,
+  /var stats = \{ candidates: candidates\.length,[^\n;]+\};/,
 `var stats = { candidates: candidates.length, atomic: 0, splittable: 0, rows: 0, keepNext: 0, tailPairs: 0, closingGroups: 0, terminalFlow: 0, terminalFollowers: 0, terminalAnchors: 0, nonTerminalTails: 0, tails: 0 };`,
-'print terminal stats');
+  'semantic terminal stats line'
+);
 
-runtime = replaceOnce(runtime,
-`      stats.tails += 1;
-      var previous = previousSemanticFlow(tail, scope, candidates);`,
-`      stats.tails += 1;
-      if (hasMeaningfulFollowingContent(tail, scope)) {
+if (!runtime.includes('hasMeaningfulFollowingContent(tail, scope)')) {
+  runtime = insertAfterUniqueLine(
+    runtime,
+    'stats.tails += 1;',
+`      if (hasMeaningfulFollowingContent(tail, scope)) {
         stats.nonTerminalTails += 1;
         continue;
-      }
-      var previous = previousSemanticFlow(tail, scope, candidates);`,
-'non-terminal tail guard');
+      }`,
+    'non-terminal tail guard'
+  );
+}
 
-runtime = replaceOnce(runtime,
+runtime = replaceRegexOnce(
+  runtime,
+  /        if \(group\) \{\n(?:          var terminalRegion = markTerminalRegion\(group, scope\);\n          stats\.terminalFlow \+= terminalRegion\.flow;\n          stats\.terminalFollowers \+= terminalRegion\.followers;|          stats\.terminalFlow \+= markTerminalRegion\(group, scope\);)\n          stats\.tailPairs \+= 1;/,
 `        if (group) {
-          stats.terminalFlow += markTerminalRegion(group, scope);
           stats.tailPairs += 1;`,
-`        if (group) {
-          stats.tailPairs += 1;`,
-'defer terminal sealing');
+  'deferred terminal sealing block'
+);
 
-runtime = replaceOnce(runtime,
-`    }
-    return stats;
-  }
-
-  function prepare() {`,
+runtime = replaceRegexOnce(
+  runtime,
+  /    \}\n    return stats;\n  \}\n\n  function prepare\(\) \{/,
 `    }
     var terminalAnchor = closingGroups.length ? closingGroups[closingGroups.length - 1].group : findTerminalAnchor(root, scope);
     if (terminalAnchor) {
@@ -141,33 +140,41 @@ runtime = replaceOnce(runtime,
   }
 
   function prepare() {`,
-'actual terminal anchor sealing');
+  'actual terminal anchor sealing'
+);
 
 fs.writeFileSync(runtimePath, runtime, 'utf8');
 
 const sweepPath = 'scripts/engine-sweep.mjs';
 let sweep = fs.readFileSync(sweepPath, 'utf8');
-sweep = replaceOnce(sweep,
-`    const terminalNodes = [...document.querySelectorAll('[data-print-terminal-flow]')];`,
-`    const terminalNodes = [...document.querySelectorAll('[data-print-terminal-flow]')];
-    const terminalFollowers = [...document.querySelectorAll('[data-print-terminal-follower]')];`,
-'engine sweep terminal followers');
-sweep = replaceOnce(sweep,
-`      terminalNodes: terminalNodes.length, forcedTerminalBreaks: forcedTerminalBreaks.slice(0, 8).map((node) => ({ tag: node.tagName, className: typeof node.className === 'string' ? node.className.slice(0, 120) : '' })),`,
+if (!sweep.includes("const terminalFollowers = [...document.querySelectorAll('[data-print-terminal-follower]')];")) {
+  sweep = insertAfterUniqueLine(sweep, "const terminalNodes = [...document.querySelectorAll('[data-print-terminal-flow]')];", "    const terminalFollowers = [...document.querySelectorAll('[data-print-terminal-follower]')];", 'engine sweep terminal followers');
+}
+
+sweep = replaceRegexOnce(
+  sweep,
+  /      terminalNodes: terminalNodes\.length,[^\n]+forcedTerminalBreaks:[^\n]+/,
 `      terminalNodes: terminalNodes.length, terminalFollowers: terminalFollowers.length, forcedTerminalBreaks: forcedTerminalBreaks.slice(0, 8).map((node) => ({ tag: node.tagName, className: typeof node.className === 'string' ? node.className.slice(0, 120) : '' })),`,
-'engine sweep terminal report');
-sweep = replaceOnce(sweep,
-`  R(id, 'print: terminal region has no forced page breaks', pagination.terminalNodes > 0 && pagination.forcedTerminalBreaks.length === 0, JSON.stringify({ terminalNodes: pagination.terminalNodes, forced: pagination.forcedTerminalBreaks }));`,
+  'engine sweep terminal report'
+);
+
+sweep = replaceRegexOnce(
+  sweep,
+  /  R\(id, 'print: terminal region has no forced page breaks',[\s\S]*?\n  R\(id, 'print: source semantic order is restored after every reset',/,
 `  R(id, 'print: actual terminal semantic region is sealed',
     pagination.report?.stats?.terminalAnchors === 1 && pagination.terminalNodes > 0 && pagination.forcedTerminalBreaks.length === 0,
     JSON.stringify({ terminalAnchors: pagination.report?.stats?.terminalAnchors, terminalNodes: pagination.terminalNodes, terminalFollowers: pagination.terminalFollowers, forced: pagination.forcedTerminalBreaks }));
   R(id, 'print: in-flow closing marks remain in document order',
     id !== 'paginate-book' || (pagination.report?.stats?.nonTerminalTails > 0 && pagination.firstGroups === 0 && pagination.secondGroups === 0),
-    JSON.stringify({ id, nonTerminalTails: pagination.report?.stats?.nonTerminalTails, firstGroups: pagination.firstGroups, secondGroups: pagination.secondGroups }));`,
-'engine sweep terminal assertions');
+    JSON.stringify({ id, nonTerminalTails: pagination.report?.stats?.nonTerminalTails, firstGroups: pagination.firstGroups, secondGroups: pagination.secondGroups }));
+  R(id, 'print: source semantic order is restored after every reset',`,
+  'engine sweep terminal assertions'
+);
+
 fs.writeFileSync(sweepPath, sweep, 'utf8');
 
 execFileSync(process.execPath, ['--check', runtimePath], { stdio: 'inherit' });
+execFileSync(process.execPath, ['--check', sweepPath], { stdio: 'inherit' });
 execFileSync(process.execPath, ['scripts/cache-bust.js', '--write'], { stdio: 'inherit' });
 execFileSync(process.execPath, ['scripts/cache-bust.js'], { stdio: 'inherit' });
 console.log('Actual terminal semantic boundary patch materialized.');
