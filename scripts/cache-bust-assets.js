@@ -44,4 +44,16 @@ const ASSETS = [
   'js/floating-cluster-controller.js',
 ];
 
-module.exports = { ASSETS };
+// Assets that are version-governed but intentionally fetched only on first use.
+// Keep this policy beside ASSETS so cache revision ownership and SW download
+// strategy cannot drift into contradictory hand-maintained lists.
+const LAZY_NO_PRECACHE = Object.freeze([
+  'js/search.js',
+  'js/glossary.js',
+  'css/tts-download-notice.css',
+  'js/vosk-tts-engine.js',
+  'manifest.json',
+  'data/search-manifest.json',
+]);
+
+module.exports = { ASSETS, LAZY_NO_PRECACHE };

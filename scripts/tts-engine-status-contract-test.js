@@ -34,8 +34,11 @@ function validate(engine, controller, css, workflow, cacheAssets) {
     ['workflow runs route integration', workflow, /tts-status-route-browser-test\.js/],
     ['workflow executes mobile geometry gate', workflow, /- name:\s*Run mobile notice viewport geometry[\s\S]{0,220}run:\s*\|[\s\S]{0,220}node scripts\/tts-mobile-notice-geometry-browser-test\.js/],
     ['workflow installs WebKit', workflow, /playwright install --with-deps chromium webkit/],
-    ['cache registry owns notice CSS', cacheAssets, /'css\/tts-download-notice\.css'/],
-    ['cache registry owns Vosk engine', cacheAssets, /'js\/vosk-tts-engine\.js'/],
+    ['cache registry owns notice CSS', cacheAssets, /const ASSETS = \[[\s\S]*'css\/tts-download-notice\.css'[\s\S]*?\];/],
+    ['cache registry owns Vosk engine', cacheAssets, /const ASSETS = \[[\s\S]*'js\/vosk-tts-engine\.js'[\s\S]*?\];/],
+    ['cache policy exports lazy no-precache set', cacheAssets, /const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*?\]\);[\s\S]*module\.exports = \{ ASSETS, LAZY_NO_PRECACHE \}/],
+    ['notice CSS remains lazy', cacheAssets, /const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*'css\/tts-download-notice\.css'[\s\S]*?\]\);/],
+    ['Vosk engine remains lazy', cacheAssets, /const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*'js\/vosk-tts-engine\.js'[\s\S]*?\]\);/],
   ];
   for (const [label, source, pattern] of checks) {
     if (!pattern.test(source)) problems.push(label);
@@ -75,8 +78,10 @@ const mutations = [
   ['controller engine revision corrupted', engine, controller.replace(/VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}'/, "VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=00000000'"), css, workflow, cacheAssets],
   ['WebKit install removed', engine, controller, css, workflow.replace('chromium webkit', 'chromium'), cacheAssets],
   ['mobile geometry execution removed', engine, controller, css, workflow.replace(/\n\s*- name: Run mobile notice viewport geometry[\s\S]*?node scripts\/tts-mobile-notice-geometry-browser-test\.js[^\n]*\n/, '\n'), cacheAssets],
-  ['notice CSS cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'css/tts-download-notice.css',\n", '')],
-  ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'js/vosk-tts-engine.js',\n", '')],
+  ['notice CSS cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \[[\s\S]*?)  'css\/tts-download-notice\.css',\n/, '$1')],
+  ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \[[\s\S]*?)  'js\/vosk-tts-engine\.js',\n/, '$1')],
+  ['notice CSS lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*?)  'css\/tts-download-notice\.css',\n/, '$1')],
+  ['Vosk engine lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*?)  'js\/vosk-tts-engine\.js',\n/, '$1')],
 ];
 for (const [name, ...mutation] of mutations) {
   const problems = validate(...mutation);
