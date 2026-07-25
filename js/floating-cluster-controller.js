@@ -60,6 +60,7 @@
       }
     }
     _registeredListeners = [];
+    cancelScheduledVoskWarmup();
   };
 
   /* =====================================================
@@ -340,14 +341,58 @@
   var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=9ca1685a';
   var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=475abd4b';
   var fallbackTtsNoticeTimer = null;
+  var fallbackTtsNoticeStylesPromise = null;
+  var _voskWarmupStartPromise = null;
+  var _voskWarmupStartTimer = null;
+  var _voskWarmupScheduleId = 0;
+  var VOSK_BROWSER_STATUS_DWELL_MS = 800;
+  var TTS_NOTICE_STYLE_TIMEOUT_MS = 5000;
+  var TTS_NOTICE_PAINT_TIMEOUT_MS = 2200;
+
+  function fallbackTtsNoticeStylesApplied(link) {
+    if (!(link && link.sheet)) return false;
+    try { return link.sheet.cssRules.length > 0; }
+    catch (_) { return true; }
+  }
 
   function ensureFallbackTtsNoticeStyles() {
-    if (document.querySelector('link[data-gb-tts-download-notice]')) return;
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = TTS_NOTICE_CSS_SRC;
-    link.setAttribute('data-gb-tts-download-notice', 'true');
-    document.head.appendChild(link);
+    var existing = document.querySelector('link[data-gb-tts-download-notice]');
+    if (fallbackTtsNoticeStylesApplied(existing)) return Promise.resolve(true);
+    if (fallbackTtsNoticeStylesPromise) return fallbackTtsNoticeStylesPromise;
+
+    fallbackTtsNoticeStylesPromise = new Promise(function (resolve) {
+      var link = existing || document.createElement('link');
+      var settled = false;
+      var timeout = null;
+
+      function finish(applied) {
+        if (settled) return;
+        settled = true;
+        if (timeout) clearTimeout(timeout);
+        if (!applied) fallbackTtsNoticeStylesPromise = null;
+        resolve(applied);
+      }
+      function probe() {
+        if (settled) return;
+        if (fallbackTtsNoticeStylesApplied(link)) {
+          finish(true);
+          return;
+        }
+        setTimeout(probe, 32);
+      }
+
+      link.addEventListener('load', probe, { once: true });
+      link.addEventListener('error', function () { finish(false); }, { once: true });
+      if (!existing) {
+        link.rel = 'stylesheet';
+        link.href = TTS_NOTICE_CSS_SRC;
+        link.setAttribute('data-gb-tts-download-notice', 'true');
+        document.head.appendChild(link);
+      }
+      timeout = setTimeout(function () { finish(false); }, TTS_NOTICE_STYLE_TIMEOUT_MS);
+      probe();
+    });
+    return fallbackTtsNoticeStylesPromise;
   }
 
   function getFallbackTtsNotice() {
@@ -426,6 +471,62 @@
     return showFallbackTtsStatus(stateName, options || {});
   }
 
+  function fallbackBrowserStatusPainted() {
+    var el = qs('.gb-tts-download-notice[data-state="browser"].is-visible');
+    if (!el) return false;
+    var style;
+    try { style = getComputedStyle(el); } catch (_) { return false; }
+    return style.position === 'fixed' &&
+      style.visibility === 'visible' &&
+      Number.parseFloat(style.opacity || '0') >= 0.99;
+  }
+
+  function waitForFallbackTtsNoticePaint() {
+    return ensureFallbackTtsNoticeStyles().then(function () {
+      return new Promise(function (resolve) {
+        var settled = false;
+        var timeout = setTimeout(function () { finish(false); }, TTS_NOTICE_PAINT_TIMEOUT_MS);
+        function finish(painted) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeout);
+          resolve(painted);
+        }
+        function probe() {
+          if (settled) return;
+          if (fallbackBrowserStatusPainted()) {
+            requestAnimationFrame(function () { finish(true); });
+            return;
+          }
+          requestAnimationFrame(probe);
+        }
+        requestAnimationFrame(probe);
+      });
+    });
+  }
+
+  function cancelScheduledVoskWarmup() {
+    _voskWarmupScheduleId += 1;
+    if (_voskWarmupStartTimer) clearTimeout(_voskWarmupStartTimer);
+    _voskWarmupStartTimer = null;
+    _voskWarmupStartPromise = null;
+  }
+
+  function scheduleVoskWarmupAfterBrowserStatus() {
+    if (_voskWarmupPromise || _voskWarmupStartPromise || _voskWarmupStartTimer) return;
+    var scheduleId = ++_voskWarmupScheduleId;
+    function beginDwell() {
+      if (scheduleId !== _voskWarmupScheduleId) return;
+      _voskWarmupStartPromise = null;
+      _voskWarmupStartTimer = setTimeout(function () {
+        if (scheduleId !== _voskWarmupScheduleId) return;
+        _voskWarmupStartTimer = null;
+        warmVoskInBackground({ preserveBrowserStatus: true });
+      }, VOSK_BROWSER_STATUS_DWELL_MS);
+    }
+    _voskWarmupStartPromise = waitForFallbackTtsNoticePaint().then(beginDwell, beginDwell);
+  }
+
   function loadVoskEngineScript() {
     if (window.VoskTTSEngine) return Promise.resolve();
     if (_voskEngineScriptPromise) return _voskEngineScriptPromise;
@@ -469,6 +570,7 @@
     var manual = options.manual === true;
     var retry = options.retry === true;
     var preserveBrowserStatus = options.preserveBrowserStatus === true;
+    if (manual || retry) cancelScheduledVoskWarmup();
     var blockReason = voskWarmupBlockReason();
 
     if (!manual && blockReason) {
@@ -552,7 +654,8 @@
     }
     if ('speechSynthesis' in window) {
       showVoskStatus('browser');
-      warmVoskInBackground({ preserveBrowserStatus: true });
+      if (voskWarmupBlockReason()) warmVoskInBackground({ preserveBrowserStatus: true });
+      else scheduleVoskWarmupAfterBrowserStatus();
       return Promise.resolve('webspeech');
     }
     showVoskStatus('preparing');
@@ -867,6 +970,7 @@
 
   function stopTts() {
     if (!ttsAvailable()) return;
+    cancelScheduledVoskWarmup();
     ttsState.runId += 1;
     ttsState.suppressEnd = true;
     cancelActiveEngine();

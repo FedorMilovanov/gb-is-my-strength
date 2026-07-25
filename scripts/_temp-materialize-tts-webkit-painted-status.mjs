@@ -17,20 +17,20 @@ const files = {
 let controller = fs.readFileSync(files.controller, 'utf8');
 controller = replaceOnce(
   controller,
-  `    _registeredListeners = [];
+  String.raw`    _registeredListeners = [];
   };`,
-  `    _registeredListeners = [];
+  String.raw`    _registeredListeners = [];
     cancelScheduledVoskWarmup();
   };`,
   'controller cleanup cancels scheduled warm-up',
 );
 controller = replaceOnce(
   controller,
-  `  var _voskEngineScriptPromise = null;
+  String.raw`  var _voskEngineScriptPromise = null;
   var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=9ca1685a';
   var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=475abd4b';
   var fallbackTtsNoticeTimer = null;`,
-  `  var _voskEngineScriptPromise = null;
+  String.raw`  var _voskEngineScriptPromise = null;
   var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=9ca1685a';
   var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=475abd4b';
   var fallbackTtsNoticeTimer = null;
@@ -45,7 +45,7 @@ controller = replaceOnce(
 );
 controller = replaceOnce(
   controller,
-  `  function ensureFallbackTtsNoticeStyles() {
+  String.raw`  function ensureFallbackTtsNoticeStyles() {
     if (document.querySelector('link[data-gb-tts-download-notice]')) return;
     var link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -53,7 +53,7 @@ controller = replaceOnce(
     link.setAttribute('data-gb-tts-download-notice', 'true');
     document.head.appendChild(link);
   }`,
-  `  function fallbackTtsNoticeStylesApplied(link) {
+  String.raw`  function fallbackTtsNoticeStylesApplied(link) {
     if (!(link && link.sheet)) return false;
     try { return link.sheet.cssRules.length > 0; }
     catch (_) { return true; }
@@ -102,7 +102,7 @@ controller = replaceOnce(
 );
 controller = replaceOnce(
   controller,
-  `  function showVoskStatus(stateName, options) {
+  String.raw`  function showVoskStatus(stateName, options) {
     if (window.VoskTTSEngine && typeof window.VoskTTSEngine.showStatus === 'function') {
       return window.VoskTTSEngine.showStatus(stateName, options || {});
     }
@@ -110,7 +110,7 @@ controller = replaceOnce(
   }
 
   function loadVoskEngineScript() {`,
-  `  function showVoskStatus(stateName, options) {
+  String.raw`  function showVoskStatus(stateName, options) {
     if (window.VoskTTSEngine && typeof window.VoskTTSEngine.showStatus === 'function') {
       return window.VoskTTSEngine.showStatus(stateName, options || {});
     }
@@ -178,10 +178,10 @@ controller = replaceOnce(
 );
 controller = replaceOnce(
   controller,
-  `    var manual = options.manual === true;
+  String.raw`    var manual = options.manual === true;
     var retry = options.retry === true;
     var preserveBrowserStatus = options.preserveBrowserStatus === true;`,
-  `    var manual = options.manual === true;
+  String.raw`    var manual = options.manual === true;
     var retry = options.retry === true;
     var preserveBrowserStatus = options.preserveBrowserStatus === true;
     if (manual || retry) cancelScheduledVoskWarmup();`,
@@ -189,12 +189,12 @@ controller = replaceOnce(
 );
 controller = replaceOnce(
   controller,
-  `    if ('speechSynthesis' in window) {
+  String.raw`    if ('speechSynthesis' in window) {
       showVoskStatus('browser');
       warmVoskInBackground({ preserveBrowserStatus: true });
       return Promise.resolve('webspeech');
     }`,
-  `    if ('speechSynthesis' in window) {
+  String.raw`    if ('speechSynthesis' in window) {
       showVoskStatus('browser');
       if (voskWarmupBlockReason()) warmVoskInBackground({ preserveBrowserStatus: true });
       else scheduleVoskWarmupAfterBrowserStatus();
@@ -204,10 +204,10 @@ controller = replaceOnce(
 );
 controller = replaceOnce(
   controller,
-  `  function stopTts() {
+  String.raw`  function stopTts() {
     if (!ttsAvailable()) return;
     ttsState.runId += 1;`,
-  `  function stopTts() {
+  String.raw`  function stopTts() {
     if (!ttsAvailable()) return;
     cancelScheduledVoskWarmup();
     ttsState.runId += 1;`,
@@ -218,18 +218,18 @@ fs.writeFileSync(files.controller, controller);
 let contract = fs.readFileSync(files.contract, 'utf8');
 contract = replaceOnce(
   contract,
-  `    ['browser status preserved during automatic warm-up', controller, /showVoskStatus\('browser'\);\s*warmVoskInBackground\(\{ preserveBrowserStatus: true \}\)/],`,
-  `    ['browser status schedules painted warm-up', controller, /showVoskStatus\('browser'\);[\s\S]{0,180}else scheduleVoskWarmupAfterBrowserStatus\(\)/],
-    ['notice stylesheet readiness promise', controller, /function ensureFallbackTtsNoticeStyles\(\)[\s\S]{0,1200}fallbackTtsNoticeStylesApplied\(link\)[\s\S]{0,500}TTS_NOTICE_STYLE_TIMEOUT_MS/],
-    ['browser paint gate', controller, /function waitForFallbackTtsNoticePaint\(\)[\s\S]{0,1000}fallbackBrowserStatusPainted\(\)[\s\S]{0,420}requestAnimationFrame/],
-    ['post-paint browser dwell', controller, /VOSK_BROWSER_STATUS_DWELL_MS\s*=\s*(?:[7-9]\d{2}|1\d{3})[\s\S]{0,2600}setTimeout\([\s\S]{0,420}warmVoskInBackground\(\{ preserveBrowserStatus: true \}\)[\s\S]{0,160}VOSK_BROWSER_STATUS_DWELL_MS/],
+  String.raw`    ['browser status preserved during automatic warm-up', controller, /showVoskStatus\('browser'\);\s*warmVoskInBackground\(\{ preserveBrowserStatus: true \}\)/],`,
+  String.raw`    ['browser status schedules painted warm-up', controller, /showVoskStatus\('browser'\);[\s\S]{0,180}else scheduleVoskWarmupAfterBrowserStatus\(\)/],
+    ['notice stylesheet readiness promise', controller, /function ensureFallbackTtsNoticeStyles\(\)[\s\S]{0,3200}fallbackTtsNoticeStylesApplied\(link\)[\s\S]{0,1800}TTS_NOTICE_STYLE_TIMEOUT_MS/],
+    ['browser paint gate', controller, /function waitForFallbackTtsNoticePaint\(\)[\s\S]{0,260}return ensureFallbackTtsNoticeStyles\(\)\.then[\s\S]{0,1200}fallbackBrowserStatusPainted\(\)[\s\S]{0,420}requestAnimationFrame/],
+    ['post-paint browser dwell', controller, /VOSK_BROWSER_STATUS_DWELL_MS\s*=\s*(?:[7-9]\d{2}|1\d{3})[\s\S]{0,8000}setTimeout\([\s\S]{0,420}warmVoskInBackground\(\{ preserveBrowserStatus: true \}\)[\s\S]{0,160}VOSK_BROWSER_STATUS_DWELL_MS/],
     ['scheduled warm-up cancellation', controller, /function cancelScheduledVoskWarmup\(\)[\s\S]{0,360}clearTimeout\(_voskWarmupStartTimer\)[\s\S]*function stopTts\(\)[\s\S]{0,120}cancelScheduledVoskWarmup\(\)/],`,
   'source checks for painted browser status',
 );
 contract = replaceOnce(
   contract,
-  `  ['browser status preservation removed', engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],`,
-  `  ['browser status preservation removed', engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],
+  String.raw`  ['browser status preservation removed', engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],`,
+  String.raw`  ['browser status preservation removed', engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],
   ['painted warm-up scheduler bypassed', engine, controller.replace('else scheduleVoskWarmupAfterBrowserStatus();', 'else warmVoskInBackground({ preserveBrowserStatus: true });'), css, workflow, cacheAssets],
   ['stylesheet readiness bypassed', engine, controller.replace('return ensureFallbackTtsNoticeStyles().then(function () {', 'return Promise.resolve().then(function () {'), css, workflow, cacheAssets],
   ['post-paint dwell removed', engine, controller.replace('VOSK_BROWSER_STATUS_DWELL_MS = 800', 'VOSK_BROWSER_STATUS_DWELL_MS = 0'), css, workflow, cacheAssets],`,
@@ -240,23 +240,39 @@ fs.writeFileSync(files.contract, contract);
 let routeTest = fs.readFileSync(files.routeTest, 'utf8');
 routeTest = replaceOnce(
   routeTest,
-  `async function makePage(browser, origin, viewport, saveData) {`,
-  `async function makePage(browser, origin, viewport, saveData, noticeCssDelayMs = 0) {`,
+  String.raw`async function makePage(browser, origin, viewport, saveData) {`,
+  String.raw`async function makePage(browser, origin, viewport, saveData, noticeCssDelayMs = 0) {`,
   'route fixture accepts delayed notice stylesheet',
 );
 routeTest = replaceOnce(
   routeTest,
-  `    window.__webSpeechCount = 0;
+  String.raw`    window.__webSpeechCount = 0;
     window.__modelFetchCount = 0;
     window.__modelFetchAborted = false;`,
-  `    window.__webSpeechCount = 0;
+  String.raw`    window.__webSpeechCount = 0;
     window.__modelFetchCount = 0;
     window.__modelFetchAborted = false;
     window.__engineScriptAppendCount = 0;
+    window.__engineScriptAppendAt = 0;
+    window.__browserStatusPaintedAt = 0;
+    function captureBrowserStatusPaint() {
+      if (window.__browserStatusPaintedAt) return;
+      const el = document.querySelector('.gb-tts-download-notice[data-state="browser"].is-visible');
+      if (el) {
+        const style = getComputedStyle(el);
+        if (style.position === 'fixed' && style.visibility === 'visible' && Number.parseFloat(style.opacity) >= 0.99) {
+          window.__browserStatusPaintedAt = performance.now();
+          return;
+        }
+      }
+      requestAnimationFrame(captureBrowserStatusPaint);
+    }
+    requestAnimationFrame(captureBrowserStatusPaint);
     const nativeHeadAppendChild = HTMLHeadElement.prototype.appendChild;
     HTMLHeadElement.prototype.appendChild = function appendChild(node) {
       if (node && node.tagName === 'SCRIPT' && /\/js\/vosk-tts-engine\.js(?:\?|$)/.test(String(node.src || ''))) {
         window.__engineScriptAppendCount += 1;
+        if (!window.__engineScriptAppendAt) window.__engineScriptAppendAt = performance.now();
       }
       return nativeHeadAppendChild.call(this, node);
     };`,
@@ -264,9 +280,9 @@ routeTest = replaceOnce(
 );
 routeTest = replaceOnce(
   routeTest,
-  `  }, { saveDataValue: !!saveData });
+  String.raw`  }, { saveDataValue: !!saveData });
   page.__origin = origin;`,
-  `  }, { saveDataValue: !!saveData });
+  String.raw`  }, { saveDataValue: !!saveData });
   if (noticeCssDelayMs > 0) {
     await page.route(/\/css\/tts-download-notice\.css(?:\?|$)/, async (route) => {
       await new Promise((resolve) => setTimeout(resolve, noticeCssDelayMs));
@@ -278,8 +294,8 @@ routeTest = replaceOnce(
 );
 routeTest = replaceOnce(
   routeTest,
-  `async function scriptFailure(origin) {`,
-  `async function delayedNoticeStylesScenario(origin) {
+  String.raw`async function scriptFailure(origin) {`,
+  String.raw`async function delayedNoticeStylesScenario(origin) {
   const browser = await webkit.launch({ headless: true });
   const page = await makePage(browser, origin, { width: 390, height: 844 }, false, 1600);
   try {
@@ -298,15 +314,20 @@ routeTest = replaceOnce(
       const style = getComputedStyle(el);
       return style.position === 'fixed' && style.visibility === 'visible' && Number.parseFloat(style.opacity) >= 0.99;
     }, null, { timeout: 10000 });
-    const paintedAt = Date.now();
     const browserSnapshot = await settledNoticeSnapshot(page);
     assert.equal(browserSnapshot.title, 'Сейчас системный голос');
     assert.match(browserSnapshot.meta, /Улучшенный голос проверяется/);
     assert.equal(await page.evaluate(() => window.__engineScriptAppendCount), 0, 'engine started before browser status dwell');
 
     await page.waitForFunction(() => window.__engineScriptAppendCount > 0, null, { timeout: 10000 });
-    const postPaintDelay = Date.now() - paintedAt;
-    assert.ok(postPaintDelay >= 650, 'post-paint dwell was only ' + postPaintDelay + 'ms');
+    const timing = await page.evaluate(() => ({
+      paintedAt: window.__browserStatusPaintedAt,
+      engineAt: window.__engineScriptAppendAt,
+    }));
+    assert.ok(timing.paintedAt > 0, 'browser paint timestamp was not captured');
+    assert.ok(timing.engineAt > 0, 'engine append timestamp was not captured');
+    const postPaintDelay = timing.engineAt - timing.paintedAt;
+    assert.ok(postPaintDelay >= 700, 'browser-local post-paint dwell was only ' + postPaintDelay + 'ms');
     await page.waitForSelector('.gb-tts-download-notice[data-state="loading"].is-visible', { timeout: 15000 });
     assert.equal(await page.evaluate(() => window.__modelFetchCount), 1);
     await page.screenshot({ path: path.join(REPORTS, 'tts-route-webkit-delayed-notice-css.png') });
@@ -323,17 +344,17 @@ async function scriptFailure(origin) {`,
 );
 routeTest = replaceOnce(
   routeTest,
-  `    await coldScenario(webkit, origin, '/articles/dzhon-gill-chast-1-chelovek/', { width: 390, height: 844 }, 'webkit-gill-mobile390');
+  String.raw`    await coldScenario(webkit, origin, '/articles/dzhon-gill-chast-1-chelovek/', { width: 390, height: 844 }, 'webkit-gill-mobile390');
     await blockedScenario(chromium, origin, 'disabled', 'chromium-optout-retry');`,
-  `    await coldScenario(webkit, origin, '/articles/dzhon-gill-chast-1-chelovek/', { width: 390, height: 844 }, 'webkit-gill-mobile390');
+  String.raw`    await coldScenario(webkit, origin, '/articles/dzhon-gill-chast-1-chelovek/', { width: 390, height: 844 }, 'webkit-gill-mobile390');
     await delayedNoticeStylesScenario(origin);
     await blockedScenario(chromium, origin, 'disabled', 'chromium-optout-retry');`,
   'invoke WebKit delayed stylesheet scenario',
 );
 routeTest = replaceOnce(
   routeTest,
-  `    console.log('TTS route status browser contract: PASS (Gill + standalone, Chromium + WebKit, 320/390/desktop, opt-out, Save-Data, script failure).');`,
-  `    console.log('TTS route status browser contract: PASS (Gill + standalone, Chromium + WebKit, delayed WebKit CSS, 320/390/desktop, opt-out, Save-Data, script failure).');`,
+  String.raw`    console.log('TTS route status browser contract: PASS (Gill + standalone, Chromium + WebKit, 320/390/desktop, opt-out, Save-Data, script failure).');`,
+  String.raw`    console.log('TTS route status browser contract: PASS (Gill + standalone, Chromium + WebKit, delayed WebKit CSS, 320/390/desktop, opt-out, Save-Data, script failure).');`,
   'route contract summary',
 );
 fs.writeFileSync(files.routeTest, routeTest);

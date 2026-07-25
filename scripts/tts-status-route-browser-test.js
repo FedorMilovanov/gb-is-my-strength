@@ -30,12 +30,36 @@ function startServer() {
   });
 }
 
-async function makePage(browser, origin, viewport, saveData) {
+async function makePage(browser, origin, viewport, saveData, noticeCssDelayMs = 0) {
   const page = await browser.newPage({ viewport, isMobile: viewport.width <= 430, hasTouch: viewport.width <= 430 });
   await page.addInitScript(({ saveDataValue }) => {
     window.__webSpeechCount = 0;
     window.__modelFetchCount = 0;
     window.__modelFetchAborted = false;
+    window.__engineScriptAppendCount = 0;
+    window.__engineScriptAppendAt = 0;
+    window.__browserStatusPaintedAt = 0;
+    function captureBrowserStatusPaint() {
+      if (window.__browserStatusPaintedAt) return;
+      const el = document.querySelector('.gb-tts-download-notice[data-state="browser"].is-visible');
+      if (el) {
+        const style = getComputedStyle(el);
+        if (style.position === 'fixed' && style.visibility === 'visible' && Number.parseFloat(style.opacity) >= 0.99) {
+          window.__browserStatusPaintedAt = performance.now();
+          return;
+        }
+      }
+      requestAnimationFrame(captureBrowserStatusPaint);
+    }
+    requestAnimationFrame(captureBrowserStatusPaint);
+    const nativeHeadAppendChild = HTMLHeadElement.prototype.appendChild;
+    HTMLHeadElement.prototype.appendChild = function appendChild(node) {
+      if (node && node.tagName === 'SCRIPT' && /\/js\/vosk-tts-engine\.js(?:\?|$)/.test(String(node.src || ''))) {
+        window.__engineScriptAppendCount += 1;
+        if (!window.__engineScriptAppendAt) window.__engineScriptAppendAt = performance.now();
+      }
+      return nativeHeadAppendChild.call(this, node);
+    };
     function FakeUtterance(text) { this.text = text; this.rate = 1; this.lang = 'ru-RU'; }
     try { Object.defineProperty(window, 'SpeechSynthesisUtterance', { configurable: true, value: FakeUtterance }); } catch (_) { window.SpeechSynthesisUtterance = FakeUtterance; }
     const speech = {
@@ -61,6 +85,12 @@ async function makePage(browser, origin, viewport, saveData) {
       return nativeFetch(url, options);
     };
   }, { saveDataValue: !!saveData });
+  if (noticeCssDelayMs > 0) {
+    await page.route(/\/css\/tts-download-notice\.css(?:\?|$)/, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, noticeCssDelayMs));
+      await route.continue();
+    });
+  }
   page.__origin = origin;
   return page;
 }
@@ -180,6 +210,50 @@ async function blockedScenario(browserType, origin, kind, label) {
   }
 }
 
+async function delayedNoticeStylesScenario(origin) {
+  const browser = await webkit.launch({ headless: true });
+  const page = await makePage(browser, origin, { width: 390, height: 844 }, false, 1600);
+  try {
+    await page.goto(origin + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'domcontentloaded' });
+    await resetStorage(page, false);
+    await clickPlay(page);
+    await page.waitForSelector('.gb-tts-download-notice[data-state="browser"]');
+    await page.waitForTimeout(500);
+    assert.ok(await page.evaluate(() => window.__webSpeechCount > 0), 'Web Speech did not start immediately');
+    assert.equal(await page.evaluate(() => window.__engineScriptAppendCount), 0, 'Vosk engine started before delayed notice CSS painted');
+    assert.equal(await page.evaluate(() => window.__modelFetchCount), 0, 'model fetch started before delayed notice CSS painted');
+
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.gb-tts-download-notice[data-state="browser"].is-visible');
+      if (!el) return false;
+      const style = getComputedStyle(el);
+      return style.position === 'fixed' && style.visibility === 'visible' && Number.parseFloat(style.opacity) >= 0.99;
+    }, null, { timeout: 10000 });
+    const browserSnapshot = await settledNoticeSnapshot(page);
+    assert.equal(browserSnapshot.title, 'Сейчас системный голос');
+    assert.match(browserSnapshot.meta, /Улучшенный голос проверяется/);
+    assert.equal(await page.evaluate(() => window.__engineScriptAppendCount), 0, 'engine started before browser status dwell');
+
+    await page.waitForFunction(() => window.__engineScriptAppendCount > 0, null, { timeout: 10000 });
+    const timing = await page.evaluate(() => ({
+      paintedAt: window.__browserStatusPaintedAt,
+      engineAt: window.__engineScriptAppendAt,
+    }));
+    assert.ok(timing.paintedAt > 0, 'browser paint timestamp was not captured');
+    assert.ok(timing.engineAt > 0, 'engine append timestamp was not captured');
+    const postPaintDelay = timing.engineAt - timing.paintedAt;
+    assert.ok(postPaintDelay >= 700, 'browser-local post-paint dwell was only ' + postPaintDelay + 'ms');
+    await page.waitForSelector('.gb-tts-download-notice[data-state="loading"].is-visible', { timeout: 15000 });
+    assert.equal(await page.evaluate(() => window.__modelFetchCount), 1);
+    await page.screenshot({ path: path.join(REPORTS, 'tts-route-webkit-delayed-notice-css.png') });
+    await page.locator('.gb-tts-download-notice__action').click();
+    await page.waitForFunction(() => window.__modelFetchAborted === true);
+    console.log('[tts-route] webkit-delayed-notice-css', JSON.stringify({ postPaintDelay, browserSnapshot }));
+  } finally {
+    await browser.close();
+  }
+}
+
 async function scriptFailure(origin) {
   const browser = await chromium.launch({ headless: true });
   const page = await makePage(browser, origin, { width: 1440, height: 900 }, false);
@@ -216,11 +290,12 @@ async function scriptFailure(origin) {
     await coldScenario(chromium, origin, '/articles/20-antisovetov-pastoru/', { width: 320, height: 568 }, 'chromium-standalone-mobile320');
     await coldScenario(webkit, origin, '/articles/dzhon-gill-chast-1-chelovek/', { width: 1280, height: 760 }, 'webkit-gill-desktop');
     await coldScenario(webkit, origin, '/articles/dzhon-gill-chast-1-chelovek/', { width: 390, height: 844 }, 'webkit-gill-mobile390');
+    await delayedNoticeStylesScenario(origin);
     await blockedScenario(chromium, origin, 'disabled', 'chromium-optout-retry');
     await blockedScenario(chromium, origin, 'save-data', 'chromium-save-data-manual');
     await blockedScenario(webkit, origin, 'disabled', 'webkit-optout-retry');
     await scriptFailure(origin);
-    console.log('TTS route status browser contract: PASS (Gill + standalone, Chromium + WebKit, 320/390/desktop, opt-out, Save-Data, script failure).');
+    console.log('TTS route status browser contract: PASS (Gill + standalone, Chromium + WebKit, delayed WebKit CSS, 320/390/desktop, opt-out, Save-Data, script failure).');
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
