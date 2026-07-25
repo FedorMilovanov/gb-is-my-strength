@@ -154,6 +154,21 @@ jobs:
         id: deploy
         uses: actions/deploy-pages@v4
 
+      - name: Verify live TTS deployment contract
+        env:
+          LIVE_BASE_URL: https://gospod-bog.ru
+          DEPLOYED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        run: node scripts/tts-live-deployment-contract.mjs
+
+      - name: Upload live TTS deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-live-deployment-${{ github.run_id }}
+          path: reports/tts-live-deployment-contract.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Build IndexNow payload
         id: payload
         env:
