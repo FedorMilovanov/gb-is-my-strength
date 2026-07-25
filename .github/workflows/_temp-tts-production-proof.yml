@@ -136,8 +136,43 @@ jobs:
           set -euo pipefail
           sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = '59a91bacea6c498d2c16e6a965924b37f9bd7c2f';|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|controller: '/js/floating-cluster-controller.js?v=e7ba3d29'|controller: '/js/floating-cluster-controller.js?v=4bf2a7fd'|" scripts/_temp-tts-production-proof.mjs
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/_temp-tts-production-proof.mjs')
+          source = path.read_text(encoding='utf-8')
+          old = """    await waitForState(page, 'browser', 5000);
+              const browserState = await noticeSnapshot(page);
+              assert.equal(browserState.title, 'Сейчас системный голос');
+              assert.match(browserState.meta, /Улучшенный голос проверяется/);
+              assertGeometry(browserState, { mobile: config.viewport.width <= 430 });
+          """
+          new = """    await page.waitForSelector(
+                '.gb-tts-download-notice[data-state=\"browser\"].is-visible, ' +
+                '.gb-tts-download-notice[data-state=\"preparing\"].is-visible',
+                { timeout: 5000 },
+              );
+              const browserState = await noticeSnapshot(page);
+              assert.ok(
+                browserState.state === 'browser' || browserState.state === 'preparing',
+                `unexpected immediate TTS state: ${JSON.stringify(browserState)}`,
+              );
+              if (browserState.state === 'browser') {
+                assert.equal(browserState.title, 'Сейчас системный голос');
+                assert.match(browserState.meta, /Улучшенный голос проверяется/);
+              } else {
+                assert.equal(browserState.title, 'Проверяем улучшенный голос');
+                assert.match(browserState.meta, /Системный голос уже работает/);
+              }
+              assertGeometry(browserState, { mobile: config.viewport.width <= 430 });
+          """
+          if old not in source:
+              raise SystemExit('immediate TTS-state proof block not found')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
           grep -Fq "const EXPECTED_MAIN = '59a91bacea6c498d2c16e6a965924b37f9bd7c2f';" scripts/_temp-tts-production-proof.mjs
           grep -Fq "controller: '/js/floating-cluster-controller.js?v=4bf2a7fd'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "browserState.state === 'browser' || browserState.state === 'preparing'" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
         run: |
