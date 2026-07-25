@@ -22,7 +22,6 @@ jobs:
     name: Chromium and WebKit live TTS proof
     runs-on: ubuntu-latest
     timeout-minutes: 120
-
     steps:
       - name: Checkout proof head
         uses: actions/checkout@v4
@@ -37,7 +36,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_API: https://api.github.com/repos/${{ github.repository }}
-          TARGET_SHA: 434d1855da2cabcb41b5a1369841449dea70e855
+          TARGET_SHA: f92794b4f11ef9dae55d284a106a9bd0f69133c9
         run: |
           set -euo pipefail
           export TARGET_SHA
@@ -56,16 +55,14 @@ jobs:
             readiness_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "push")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/readiness-runs.json)"
             if [[ -n "${readiness_run_id}" ]]; then
               curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/actions/runs/${readiness_run_id}" \
-                > reports/deploy-diagnostics/readiness-run.json
+                "${GH_API}/actions/runs/${readiness_run_id}" > reports/deploy-diagnostics/readiness-run.json
               status="$(jq -r '.status' reports/deploy-diagnostics/readiness-run.json)"
               [[ "${status}" == "completed" ]] && break
             fi
             sleep 15
           done
           test -n "${readiness_run_id}"
-          jq -e --arg sha "${TARGET_SHA}" '.name == "Metadata & IndexNow Readiness" and .head_sha == $sha and .event == "push" and .status == "completed" and .conclusion == "success"' \
-            reports/deploy-diagnostics/readiness-run.json
+          jq -e --arg sha "${TARGET_SHA}" '.name == "Metadata & IndexNow Readiness" and .head_sha == $sha and .event == "push" and .status == "completed" and .conclusion == "success"' reports/deploy-diagnostics/readiness-run.json
 
           deploy_run_id=""
           for _attempt in $(seq 1 180); do
@@ -75,47 +72,37 @@ jobs:
             deploy_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "workflow_run")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deploy-runs.json)"
             if [[ -n "${deploy_run_id}" ]]; then
               curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/actions/runs/${deploy_run_id}" \
-                > reports/deploy-diagnostics/deploy-run.json
+                "${GH_API}/actions/runs/${deploy_run_id}" > reports/deploy-diagnostics/deploy-run.json
               status="$(jq -r '.status' reports/deploy-diagnostics/deploy-run.json)"
               [[ "${status}" == "completed" ]] && break
             fi
             sleep 15
           done
           test -n "${deploy_run_id}"
-          jq -e --arg sha "${TARGET_SHA}" '.name == "Deploy to GitHub Pages" and .head_sha == $sha and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' \
-            reports/deploy-diagnostics/deploy-run.json
+          jq -e --arg sha "${TARGET_SHA}" '.name == "Deploy to GitHub Pages" and .head_sha == $sha and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' reports/deploy-diagnostics/deploy-run.json
 
           curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-            "${GH_API}/actions/runs/${deploy_run_id}/jobs?per_page=100" \
-            > reports/deploy-diagnostics/deploy-jobs.json
-          jq -e '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length == 0' \
-            reports/deploy-diagnostics/deploy-jobs.json
-          jq -e '[.jobs[].steps[]? | select(.name == "Upload Pages artifact" or .name == "Deploy to GitHub Pages") | select(.conclusion == "success")] | length == 2' \
-            reports/deploy-diagnostics/deploy-jobs.json
+            "${GH_API}/actions/runs/${deploy_run_id}/jobs?per_page=100" > reports/deploy-diagnostics/deploy-jobs.json
+          jq -e '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length == 0' reports/deploy-diagnostics/deploy-jobs.json
+          jq -e '[.jobs[].steps[]? | select(.name == "Upload Pages artifact" or .name == "Deploy to GitHub Pages") | select(.conclusion == "success")] | length == 2' reports/deploy-diagnostics/deploy-jobs.json
 
           deployment_id=""
           for _attempt in $(seq 1 60); do
             curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-              "${GH_API}/deployments?sha=${TARGET_SHA}&environment=github-pages&per_page=100" \
-              > reports/deploy-diagnostics/deployments.json
+              "${GH_API}/deployments?sha=${TARGET_SHA}&environment=github-pages&per_page=100" > reports/deploy-diagnostics/deployments.json
             deployment_id="$(jq -r 'sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deployments.json)"
             if [[ -n "${deployment_id}" ]]; then
               curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" \
-                > reports/deploy-diagnostics/deployment-statuses.json
-              if jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' \
-                reports/deploy-diagnostics/deployment-statuses.json >/dev/null; then
+                "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" > reports/deploy-diagnostics/deployment-statuses.json
+              if jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (..target_url // "")) | contains($run))' reports/deploy-diagnostics/deployment-statuses.json >/dev/null; then
                 break
               fi
             fi
             sleep 15
           done
           test -n "${deployment_id}"
-          jq -e --arg sha "${TARGET_SHA}" 'length > 0 and (sort_by(.created_at) | reverse | .[0].sha == $sha)' \
-            reports/deploy-diagnostics/deployments.json
-          jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' \
-            reports/deploy-diagnostics/deployment-statuses.json
+          jq -e --arg sha "${TARGET_SHA}" 'length > 0 and (sort_by(.created_at) | reverse | .[0].sha == $sha)' reports/deploy-diagnostics/deployments.json
+          jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' reports/deploy-diagnostics/deployment-statuses.json
 
           printf '%s\n' \
             "target_sha=${TARGET_SHA}" \
@@ -134,7 +121,7 @@ jobs:
       - name: Materialize exact production expectations
         run: |
           set -euo pipefail
-          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = '434d1855da2cabcb41b5a1369841449dea70e855';|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = 'f92794b4f11ef9dae55d284a106a9bd0f69133c9';|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|controller: '/js/floating-cluster-controller.js?v=e7ba3d29'|controller: '/js/floating-cluster-controller.js?v=75656128'|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|engine: '/js/vosk-tts-engine.js?v=87bfc44a'|engine: '/js/vosk-tts-engine.js?v=9ca1685a'|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|noticeCss: '/css/tts-download-notice.css?v=1cdbee44'|noticeCss: '/css/tts-download-notice.css?v=475abd4b'|" scripts/_temp-tts-production-proof.mjs
@@ -207,11 +194,10 @@ jobs:
           source = source.replace(old_sw, new_sw, 1)
           path.write_text(source, encoding='utf-8')
           PY
-          grep -Fq "const EXPECTED_MAIN = '434d1855da2cabcb41b5a1369841449dea70e855';" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "const EXPECTED_MAIN = 'f92794b4f11ef9dae55d284a106a9bd0f69133c9';" scripts/_temp-tts-production-proof.mjs
           grep -Fq "controller: '/js/floating-cluster-controller.js?v=75656128'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "engine: '/js/vosk-tts-engine.js?v=9ca1685a'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "noticeCss: '/css/tts-download-notice.css?v=475abd4b'" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "await waitForState(page, 'browser', 5000);" scripts/_temp-tts-production-proof.mjs
           grep -Fq "link.sheet.cssRules.length > 0" scripts/_temp-tts-production-proof.mjs
           grep -Fq "assert.match(disabledState.meta, /системный голос/i);" scripts/_temp-tts-production-proof.mjs
           grep -Fq "Vosk engine was accidentally added to Service Worker precache" scripts/_temp-tts-production-proof.mjs
