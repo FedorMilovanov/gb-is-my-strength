@@ -105,7 +105,7 @@ let browserTest = read(files.browserTest);
 browserTest = replaceOnce(
   browserTest,
   "  await page.goto(page.__origin, { waitUntil: 'domcontentloaded' });\n  await page.evaluate(async (darkMode) => {\n",
-  "  await page.goto(page.__origin, { waitUntil: 'domcontentloaded' });\n  if (page.__expandedContainingBlock) {\n    await page.evaluate(() => {\n      document.documentElement.style.overflowX = 'clip';\n      document.body.style.margin = '0';\n      document.body.style.width = '553px';\n      document.body.style.overflowX = 'hidden';\n      document.body.style.transform = 'translateZ(0)';\n    });\n  }\n  await page.evaluate(async (darkMode) => {\n",
+  "  await page.goto(page.__origin, { waitUntil: 'domcontentloaded' });\n  if (page.__expandedContainingBlock) {\n    await page.evaluate(() => {\n      document.documentElement.style.overflowX = 'clip';\n      document.body.style.position = 'fixed';\n      document.body.style.inset = '0 auto auto 0';\n      document.body.style.margin = '0';\n      document.body.style.width = '553px';\n      document.body.style.height = '568px';\n      document.body.style.overflow = 'hidden';\n      document.body.style.transform = 'translateZ(0)';\n    });\n  }\n  await page.evaluate(async (darkMode) => {\n",
   'browser fixture expanded containing block',
 );
 browserTest = replaceOnce(
