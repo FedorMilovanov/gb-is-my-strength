@@ -105,7 +105,7 @@ let browserTest = read(files.browserTest);
 browserTest = replaceOnce(
   browserTest,
   "  await page.goto(page.__origin, { waitUntil: 'domcontentloaded' });\n  await page.evaluate(async (darkMode) => {\n",
-  "  await page.goto(page.__origin, { waitUntil: 'domcontentloaded' });\n  if (page.__expandedContainingBlock) {\n    await page.evaluate(() => {\n      document.body.style.width = '553px';\n      document.body.style.transform = 'translateZ(0)';\n    });\n  }\n  await page.evaluate(async (darkMode) => {\n",
+  "  await page.goto(page.__origin, { waitUntil: 'domcontentloaded' });\n  if (page.__expandedContainingBlock) {\n    await page.evaluate(() => {\n      document.documentElement.style.overflowX = 'clip';\n      document.body.style.margin = '0';\n      document.body.style.width = '553px';\n      document.body.style.overflowX = 'hidden';\n      document.body.style.transform = 'translateZ(0)';\n    });\n  }\n  await page.evaluate(async (darkMode) => {\n",
   'browser fixture expanded containing block',
 );
 browserTest = replaceOnce(
@@ -123,7 +123,7 @@ browserTest = replaceOnce(
 browserTest = replaceOnce(
   browserTest,
   "async function runMobileDark(browser, origin) {\n",
-  "async function runMobileViewportContainingBlock(browser, origin) {\n  const page = await browser.newPage({\n    viewport: { width: 320, height: 568 },\n    isMobile: true,\n    hasTouch: true,\n  });\n  page.__origin = origin;\n  page.__expandedContainingBlock = true;\n  await installFixture(page, false);\n  const snapshot = await verifyCard(page, 300.5);\n  assert.ok(snapshot.left >= 9, `viewport-centred notice left edge is ${snapshot.left}`);\n  assert.ok(snapshot.right <= 311, `viewport-centred notice right edge is ${snapshot.right}`);\n  await page.screenshot({ path: path.join(REPORTS, 'tts-download-notice-mobile-viewport-containing-block.png') });\n  await page.locator('.gb-tts-download-notice__action').click();\n  await page.waitForFunction(() => window.__modelFetchAborted === true);\n  await page.close();\n}\n\nasync function runMobileDark(browser, origin) {\n",
+  "async function runMobileViewportContainingBlock(browser, origin) {\n  const page = await browser.newPage({\n    viewport: { width: 320, height: 568 },\n    isMobile: true,\n    hasTouch: true,\n  });\n  page.__origin = origin;\n  page.__expandedContainingBlock = true;\n  await installFixture(page, false);\n  const snapshot = await verifyCard(page, 300.5);\n  assert.equal(snapshot.scrollWidth, 320, `fixture root width is ${snapshot.scrollWidth}, expected 320`);\n  assert.ok(snapshot.left >= 9, `viewport-centred notice left edge is ${snapshot.left}`);\n  assert.ok(snapshot.right <= 311, `viewport-centred notice right edge is ${snapshot.right}`);\n  await page.screenshot({ path: path.join(REPORTS, 'tts-download-notice-mobile-viewport-containing-block.png') });\n  await page.locator('.gb-tts-download-notice__action').click();\n  await page.waitForFunction(() => window.__modelFetchAborted === true);\n  await page.close();\n}\n\nasync function runMobileDark(browser, origin) {\n",
   'browser expanded-containing-block scenario',
 );
 browserTest = replaceOnce(
@@ -148,4 +148,5 @@ console.log(JSON.stringify({
   centering: 'left:50vw',
   regressionViewport: 320,
   expandedContainingBlockWidth: 553,
+  rootOverflow: 0,
 }, null, 2));
