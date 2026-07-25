@@ -6,10 +6,10 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize-bfcache-diagnostics:
+  diagnose-bfcache-materializer:
     if: github.head_ref == 'fix/home-browser-contract-residuals-20260725'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -18,21 +18,37 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: fix/home-browser-contract-residuals-20260725
-          fetch-depth: 0
-          persist-credentials: true
+          persist-credentials: false
 
-      - name: Patch permanent diagnostics and self-clean
+      - name: Capture exact materializer result
         shell: bash
         run: |
-          set -euo pipefail
-          python3 scripts/_temp_materialize_bfcache_diagnostics.py
-          test ! -e scripts/_temp_materialize_bfcache_diagnostics.py
-          grep -F 'Page.backForwardCacheNotUsed' scripts/home-browser-lifecycle-contract.mjs
-          git diff --check
-          git add scripts/home-browser-lifecycle-contract.mjs \
-            scripts/_temp_materialize_bfcache_diagnostics.py
-          git diff --cached --name-only
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'test(home): record Chromium BFCache rejection reasons'
-          git push origin HEAD:fix/home-browser-contract-residuals-20260725
+          set +e
+          python3 scripts/_temp_materialize_bfcache_diagnostics.py > "$RUNNER_TEMP/materializer.log" 2>&1
+          status=$?
+          printf '%s\n' "$status" > "$RUNNER_TEMP/materializer.status"
+          {
+            echo '--- python output ---'
+            cat "$RUNNER_TEMP/materializer.log"
+            echo '--- git status ---'
+            git status --short
+            echo '--- diff check ---'
+            git diff --check
+          } > "$RUNNER_TEMP/diagnostic.txt" 2>&1
+          cp scripts/home-browser-lifecycle-contract.mjs "$RUNNER_TEMP/patched-home-browser-lifecycle-contract.mjs"
+          exit 0
+
+      - name: Upload materializer diagnostic
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bfcache-materializer-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/diagnostic.txt
+            ${{ runner.temp }}/materializer.status
+            ${{ runner.temp }}/patched-home-browser-lifecycle-contract.mjs
+          if-no-files-found: error
+          retention-days: 2
+
+      - name: Preserve materializer failure status
+        shell: bash
+        run: exit "$(cat "$RUNNER_TEMP/materializer.status")"
