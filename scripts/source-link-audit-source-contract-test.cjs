@@ -4,7 +4,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { sanitizeUrlForEvidence } = require('./source-link-audit.js');
+const { createPinnedLookup, isSystemicTransportFailure, sanitizeUrlForEvidence } = require('./source-link-audit.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
@@ -32,6 +32,10 @@ function validate({ source, workflow }) {
   must('malformed URL evidence records byte count only', source, /invalid-url:sha256:\$\{digest\}:bytes:\$\{Buffer\.byteLength\(raw, 'utf8'\)\}/);
   mustNot('raw malformed URL slice remains', source, /String\(value \|\| ''\)\.slice\(0, 300\)/);
   mustNot('malformed URL fallback returns raw input', source, /catch\s*\{\s*return\s+(?:raw|String\(value)/);
+  must('pinned lookup supports Node all-address mode', source, /function createPinnedLookup[\s\S]{0,500}options && options\.all[\s\S]{0,180}callback\(null, \[\{ address, family \}\]\)/);
+  must('native request uses validated pinned lookup', source, /lookup: createPinnedLookup\(address\)/);
+  must('report records systemic transport failure', source, /systemicTransportFailure: isSystemicTransportFailure\(results\)/);
+  must('systemic transport failure exits nonzero', source, /if \(report\.systemicTransportFailure\)[\s\S]{0,220}process\.exitCode = 1/);
 
   must('workflow owns source contract path', workflow, /- 'scripts\/source-link-audit-source-contract-test\.cjs'/);
   must('workflow syntax-checks source contract', workflow, /node --check scripts\/source-link-audit-source-contract-test\.cjs/);
@@ -66,6 +70,15 @@ assert.equal(
   'https://example.com/path?redacted=1',
 );
 
+const pinnedLookup = createPinnedLookup({ address: '93.184.216.34', family: 4 });
+pinnedLookup('example.com', { all: true }, (error, addresses) => {
+  assert.ifError(error);
+  assert.deepEqual(addresses, [{ address: '93.184.216.34', family: 4 }]);
+});
+assert.throws(() => createPinnedLookup({ address: '93.184.216.34', family: 6 }), /pinned DNS address record is invalid/);
+assert.equal(isSystemicTransportFailure([{ result: 'warn', reason: 'ERR_INVALID_IP_ADDRESS', hops: [] }]), true);
+assert.equal(isSystemicTransportFailure([{ result: 'pass', status: 200, final: 'https://example.com/', hops: [] }]), false);
+
 const mutations = [
   ['raw malformed fallback', { source: source.replace(
     "const digest = crypto.createHash('sha256').update(raw, 'utf8').digest('hex').slice(0, 32);\n    return `invalid-url:sha256:${digest}:bytes:${Buffer.byteLength(raw, 'utf8')}`;",
@@ -77,6 +90,13 @@ const mutations = [
   ['source contract execution removed', { source, workflow: workflow.replace('          node scripts/source-link-audit-source-contract-test.cjs\n', '') }],
   ['source contract path trigger removed', { source, workflow: workflow.replace("      - 'scripts/source-link-audit-source-contract-test.cjs'\n", '') }],
   ['evidence upload made optional', { source, workflow: workflow.replace('if-no-files-found: error', 'if-no-files-found: warn') }],
+  ['all-address lookup support removed', { source: source.replace(
+    "if (options && options.all) {\n      callback(null, [{ address, family }]);\n      return;\n    }",
+    "if (false) {\n      callback(null, [{ address, family }]);\n      return;\n    }",
+  ), workflow }],
+  ['request bypasses pinned lookup helper', { source: source.replace('lookup: createPinnedLookup(address)', 'lookup: (_hostname, _options, callback) => callback(null, address.address, address.family)'), workflow }],
+  ['systemic failure report field removed', { source: source.replace('    systemicTransportFailure: isSystemicTransportFailure(results),\n', ''), workflow }],
+  ['systemic failure nonzero guard removed', { source: source.replace(/  if \(report\.systemicTransportFailure\) \{[\s\S]*?\n  \}\n  console\.log\('✅ Source links hard-check passed'\);/, "  console.log('✅ Source links hard-check passed');"), workflow }],
 ];
 
 for (const [name, mutated] of mutations) {

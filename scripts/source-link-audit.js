@@ -183,6 +183,22 @@ async function validateUrlPolicy(value, {
   return { url, hostname, addresses: normalizedAddresses };
 }
 
+function createPinnedLookup(record) {
+  const address = String(record && record.address || '');
+  const family = Number(record && record.family);
+  const detectedFamily = net.isIP(address);
+  if (!detectedFamily || ![4, 6].includes(family) || family !== detectedFamily) {
+    throw new TypeError('pinned DNS address record is invalid');
+  }
+  return (_hostname, options, callback) => {
+    if (options && options.all) {
+      callback(null, [{ address, family }]);
+      return;
+    }
+    callback(null, address, family);
+  };
+}
+
 function requestOnce(url, method, {
   address,
   timeoutMs = TIMEOUT_MS,
@@ -201,7 +217,7 @@ function requestOnce(url, method, {
     const request = client.request(url, {
       method,
       timeout: timeoutMs,
-      lookup: (_hostname, _options, callback) => callback(null, address.address, address.family),
+      lookup: createPinnedLookup(address),
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; GBSourceAudit/2.0; +https://gospod-bog.ru)',
         Accept: 'text/html,application/xhtml+xml,application/pdf,application/json,text/plain,image/*;q=0.8,*/*;q=0.2',
@@ -277,6 +293,17 @@ function classifyTransportError(error) {
   if (/CERT|SSL|HOSTNAME|SELF_SIGNED|UNABLE_TO_VERIFY|DEPTH_ZERO|ENOTFOUND|EAI_AGAIN|INVALID_URL/i.test(code)) return 'hard';
   if (/RESPONSE_TOO_LARGE/i.test(code)) return 'hard';
   return 'warn';
+}
+
+function isSystemicTransportFailure(results) {
+  const entries = Array.isArray(results) ? results : [];
+  return entries.length > 0 && entries.every((entry) => (
+    entry &&
+    entry.result === 'warn' &&
+    !Number.isInteger(entry.status) &&
+    !entry.final &&
+    (!Array.isArray(entry.hops) || entry.hops.length === 0)
+  ));
 }
 
 async function auditUrl(source, {
@@ -461,6 +488,7 @@ async function main() {
     passed: results.filter((entry) => entry.result === 'pass').length,
     warnings: warn.length,
     hardErrors: hard.length,
+    systemicTransportFailure: isSystemicTransportFailure(results),
     results,
   };
 
@@ -484,13 +512,20 @@ async function main() {
     process.exitCode = 1;
     return;
   }
+  if (report.systemicTransportFailure) {
+    console.log('❌ Every external link failed before an HTTP response; network acceptance is invalid');
+    process.exitCode = 1;
+    return;
+  }
   console.log('✅ Source links hard-check passed');
 }
 
 module.exports = {
   LinkPolicyError,
   auditUrl,
+  createPinnedLookup,
   isForbiddenAddress,
+  isSystemicTransportFailure,
   sanitizeUrlForEvidence,
   sniffContentType,
   usableContentType,

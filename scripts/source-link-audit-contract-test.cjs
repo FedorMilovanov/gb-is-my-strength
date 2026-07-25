@@ -6,7 +6,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {
   auditUrl,
+  createPinnedLookup,
   isForbiddenAddress,
+  isSystemicTransportFailure,
   sanitizeUrlForEvidence,
   sniffContentType,
   usableContentType,
@@ -56,6 +58,36 @@ async function test(name, fn) {
 }
 
 async function main() {
+  await test('pinned lookup supports scalar and all-address callback shapes', async () => {
+    const lookup = createPinnedLookup({ address: '93.184.216.34', family: 4 });
+    const scalar = await new Promise((resolve, reject) => {
+      lookup('allowed.example', { all: false }, (error, address, family) => {
+        if (error) reject(error);
+        else resolve({ address, family });
+      });
+    });
+    assert.deepEqual(scalar, { address: '93.184.216.34', family: 4 });
+
+    const all = await new Promise((resolve, reject) => {
+      lookup('allowed.example', { all: true }, (error, addresses) => {
+        if (error) reject(error);
+        else resolve(addresses);
+      });
+    });
+    assert.deepEqual(all, [{ address: '93.184.216.34', family: 4 }]);
+
+    assert.throws(() => createPinnedLookup({ address: '', family: 4 }), /pinned DNS address record is invalid/);
+    assert.throws(() => createPinnedLookup({ address: '93.184.216.34', family: 6 }), /pinned DNS address record is invalid/);
+  });
+
+  await test('all pre-HTTP warnings invalidate network acceptance', async () => {
+    assert.equal(isSystemicTransportFailure([]), false);
+    assert.equal(isSystemicTransportFailure([{ result: 'warn', reason: 'ERR_INVALID_IP_ADDRESS', hops: [] }]), true);
+    assert.equal(isSystemicTransportFailure([{ result: 'warn', reason: 'timeout', status: 500, hops: [] }]), false);
+    assert.equal(isSystemicTransportFailure([{ result: 'pass', status: 200, final: 'https://example.com/', hops: [] }]), false);
+    assert.equal(isSystemicTransportFailure([{ result: 'warn', reason: 'timeout', hops: [{ status: 301 }] }]), false);
+  });
+
   await test('approved HTTPS redirect records complete chain', async () => {
     const calls = [];
     const requestImpl = scripted({
