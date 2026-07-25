@@ -1327,3 +1327,35 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   html body .editorial-dateline__place { color: #333; }
   html body .editorial-dateline__date { color: #555; }
 }
+
+
+/* GB PRINT CONTRACT v2.8 — decoration purge and reversible-card pagination. */
+@media print {
+  /* Root pseudo-elements are screen chrome. They must never become repeated
+     page furniture in paged media. */
+  html body::before,
+  html body::after {
+    content: none !important;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: none !important;
+    background-image: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    opacity: 0 !important;
+    transform: none !important;
+  }
+
+  /* Reversible cards are semantic reading modules in print. A face may move
+     to the next sheet, but it may not be cut between its text and source. */
+  html body :where(
+    .flip-card-front, .flip-card-back,
+    .heart-flip-front, .heart-flip-back,
+    .error-flip-front, .error-flip-back,
+    .manuscript-quote, .ancient-epigraph
+  ) {
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
+  }
+}

@@ -22,6 +22,55 @@ def run(command: list[str]) -> None:
     subprocess.run(command, check=True)
 
 
+def find_amber_header_bars(image: Image.Image) -> list[dict]:
+    """Find thin, long warm-gold strips in the upper 22% of a paper page."""
+    width, height = image.size
+    limit_y = max(1, int(height * 0.22))
+    qualifying_rows: list[tuple[int, int, int]] = []
+    pixels = image.load()
+    min_run = max(36, int(width * 0.14))
+    for y in range(limit_y):
+        longest = 0
+        run = 0
+        start = 0
+        longest_start = 0
+        for x in range(width):
+            r, g, b = pixels[x, y]
+            warm_gold = r >= 165 and g >= 105 and b <= 170 and r >= g + 18 and g >= b + 12
+            if warm_gold:
+                if run == 0:
+                    start = x
+                run += 1
+                if run > longest:
+                    longest = run
+                    longest_start = start
+            else:
+                run = 0
+        if longest >= min_run:
+            qualifying_rows.append((y, longest_start, longest))
+    bars: list[dict] = []
+    group: list[tuple[int, int, int]] = []
+    for row in qualifying_rows:
+        if group and row[0] > group[-1][0] + 1:
+            if len(group) >= 2:
+                bars.append({
+                    'y': group[0][0],
+                    'height': group[-1][0] - group[0][0] + 1,
+                    'x': min(item[1] for item in group),
+                    'width': max(item[2] for item in group),
+                })
+            group = []
+        group.append(row)
+    if len(group) >= 2:
+        bars.append({
+            'y': group[0][0],
+            'height': group[-1][0] - group[0][0] + 1,
+            'x': min(item[1] for item in group),
+            'width': max(item[2] for item in group),
+        })
+    return [bar for bar in bars if bar['height'] <= max(24, int(height * 0.025))]
+
+
 def audit_pdf(pdf: Path, out: Path) -> dict:
     route_out = out / pdf.stem
     rendered = route_out / "rendered"
@@ -58,17 +107,21 @@ def audit_pdf(pdf: Path, out: Path) -> dict:
                 and fraction > 0.018
             ):
                 flat_saturated.append({"rgb": rgb, "fraction": round(fraction, 4)})
+        amber_bars = find_amber_header_bars(image)
         diagnostics.append(
             {
                 "page": index,
                 "nonWhiteFraction": round(non_white, 4),
                 "flatSaturated": flat_saturated,
+                "amberHeaderBars": amber_bars,
             }
         )
         if non_white < 0.004:
             failures.append(f"page {index}: effectively blank ({non_white:.4f})")
         if flat_saturated:
             failures.append(f"page {index}: large saturated flat fill {flat_saturated}")
+        if amber_bars:
+            failures.append(f"page {index}: repeated amber/gold header bar {amber_bars}")
 
     columns, cell_w, cell_h = 4, 310, 430
     rows = math.ceil(len(thumbs) / columns)
