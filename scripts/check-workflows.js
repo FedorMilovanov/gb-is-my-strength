@@ -77,7 +77,18 @@ must('.github/workflows/deploy.yml', deploy, /node-version:\s*['"]?22['"]?/, 'de
 must('.github/workflows/deploy.yml', deploy, /npm ci/, 'deploy must install dependencies via npm ci');
 must('.github/workflows/deploy.yml', deploy, /npm run validate:static-publication/, 'deploy must run validate:static-publication');
 must('.github/workflows/deploy.yml', deploy, /^concurrency:\s*$/m, 'deploy must keep concurrency');
-must('.github/workflows/deploy.yml', deploy, /actions\/upload-pages-artifact@v3/, 'deploy must upload a Pages artifact');
+must(
+  '.github/workflows/deploy.yml',
+  deploy,
+  /actions\/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa\s+#\s*v3/,
+  'deploy must use the approved immutable upload-pages-artifact v3 identity',
+);
+must(
+  '.github/workflows/deploy.yml',
+  deploy,
+  /actions\/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e\s+#\s*v4/,
+  'deploy must use the approved immutable deploy-pages v4 identity',
+);
 
 // Strangler safety rail: production now uploads the Astro/strangler dist artifact.
 // If anyone rolls back to root, the workflow must be internally consistent;
