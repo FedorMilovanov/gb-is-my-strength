@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/_temp-rebalance-print-priority.yml'
       - 'scripts/_temp-rebalance-print-priority.mjs'
+      - 'scripts/_temp-refactor-print-priority.py'
 
 permissions:
   contents: write
