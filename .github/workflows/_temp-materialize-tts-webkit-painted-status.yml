@@ -52,7 +52,10 @@ jobs:
 
       - name: Apply exact WebKit painted-status transaction
         if: steps.transaction.outputs.skip != 'true'
-        run: node scripts/_temp-materialize-tts-webkit-painted-status.mjs
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/_temp-materialize-tts-webkit-painted-status.mjs 2>&1 | tee reports/tts-webkit-materializer.log
 
       - name: Validate source contracts
         if: steps.transaction.outputs.skip != 'true'
@@ -126,6 +129,7 @@ jobs:
         with:
           name: tts-webkit-painted-status-${{ github.run_id }}
           path: |
+            reports/tts-webkit-materializer.log
             reports/tts-notice-browser.log
             reports/tts-lifecycle.log
             reports/tts-webkit-painted-status.log
