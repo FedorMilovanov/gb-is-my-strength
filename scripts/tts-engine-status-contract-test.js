@@ -64,7 +64,30 @@ const controller = read('js/floating-cluster-controller.js');
 const css = read('css/tts-download-notice.css');
 const workflow = read('.github/workflows/tts-download-consent.yml');
 const cacheAssets = read('scripts/cache-bust-assets.js');
+const distPublicationAudit = read('scripts/dist-publication-audit.js');
 assert.deepEqual(validate(engine, controller, css, workflow, cacheAssets), []);
+
+function validateDistPublicationAudit(source) {
+  const problems = [];
+  if (!/const \{ ASSETS, LAZY_NO_PRECACHE \} = require\('.\/cache-bust-assets'\);/.test(source)) {
+    problems.push('dist publication audit does not import canonical lazy policy');
+  }
+  if (!/const lazyNoPrecache = new Set\(LAZY_NO_PRECACHE\);/.test(source)) {
+    problems.push('dist publication audit does not consume canonical lazy policy');
+  }
+  if (/const LAZY_NO_PRECACHE = new Set\(\[/.test(source)) {
+    problems.push('dist publication audit keeps a divergent local lazy list');
+  }
+  return problems;
+}
+
+assert.deepEqual(validateDistPublicationAudit(distPublicationAudit), []);
+for (const [name, mutation] of [
+  ['dist audit lazy export removed', distPublicationAudit.replace('{ ASSETS, LAZY_NO_PRECACHE }', '{ ASSETS }')],
+  ['dist audit canonical lazy set bypassed', distPublicationAudit.replace('new Set(LAZY_NO_PRECACHE)', 'new Set([])')],
+]) {
+  assert.ok(validateDistPublicationAudit(mutation).length > 0, `${name}: mutation must be rejected`);
+}
 
 const mutations = [
   ['retry API removed', engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow, cacheAssets],

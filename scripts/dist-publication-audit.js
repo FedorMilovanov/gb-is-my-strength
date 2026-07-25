@@ -323,19 +323,19 @@ function checkSwPrecache() {
   else ok(`sw.js precache assets resolve in dist (${assets.length}, pagefind ${REQUIRE_PAGEFIND ? 'required' : 'optional'})`);
 
   try {
-    const { ASSETS } = require('./cache-bust-assets');
+    const { ASSETS, LAZY_NO_PRECACHE } = require('./cache-bust-assets');
     // AUDIT-P2-SW-PRECACHE-4 (2026-07-05): lazy-loaded assets are cache-busted
     // but deliberately NOT precached (precaching them defeats the lazy
     // loaders). Keep in sync with LAZY_NO_PRECACHE in audit-pro.js G61.
-    const LAZY_NO_PRECACHE = new Set(['js/search.js', 'js/glossary.js', 'manifest.json', 'data/search-manifest.json']);
+    const lazyNoPrecache = new Set(LAZY_NO_PRECACHE);
     const swAssets = new Set(assets.map(a => a.replace(/^\//, '').split('?')[0]));
-    const drift = ASSETS.filter(a => !swAssets.has(a) && !LAZY_NO_PRECACHE.has(a));
+    const drift = ASSETS.filter(a => !swAssets.has(a) && !lazyNoPrecache.has(a));
     if (drift.length) {
       drift.forEach(a => bad(`sw.js PRECACHE_ASSETS is missing cache-busted asset: ${a}`));
     } else {
       ok(`sw.js PRECACHE_ASSETS is synchronized with cache-bust-assets.js (lazy set excluded by design)`);
     }
-    const reintroduced = [...LAZY_NO_PRECACHE].filter(a => swAssets.has(a));
+    const reintroduced = [...lazyNoPrecache].filter(a => swAssets.has(a));
     if (reintroduced.length) reintroduced.forEach(a => bad(`sw.js PRECACHE_ASSETS re-introduced lazy asset: ${a}`));
   } catch (e) { bad(`cache-bust-assets sync check failed: ${e.message}`); }
 }
