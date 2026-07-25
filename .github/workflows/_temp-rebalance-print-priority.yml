@@ -1,0 +1,101 @@
+name: TEMP Rebalance Print Priority
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-rebalance-print-priority.yml'
+      - 'scripts/_temp-rebalance-print-priority.mjs'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-rebalance-print-priority-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prove-and-publish:
+    if: github.head_ref == 'fix/print-decoration-pagination-final-2026-07-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/print-decoration-pagination-final-2026-07-25
+          fetch-depth: 0
+
+      - name: Setup Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebalance print priority
+        run: |
+          set -euo pipefail
+          node --check scripts/_temp-rebalance-print-priority.mjs
+          node scripts/_temp-rebalance-print-priority.mjs
+          node scripts/cache-bust.js
+          git diff --check
+          test "$(grep -o '!important' css/site.css | wc -l)" -le 200
+          test "$(grep -o '!important' css/floating-cluster.css | wc -l)" -le 524
+          grep -Fq 'GB PRINT PRIORITY BRIDGE v1' css/floating-cluster.css
+          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-rebalance-print-priority.yml
+
+      - name: Professional audit
+        run: node scripts/audit-pro.js
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install browser and PDF audit dependencies
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+
+      - name: Run multi-route print proof
+        env:
+          GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-priority-rebalance
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          node scripts/print-pagination-contract.mjs 2>&1 | tee reports/print-priority-rebalance.log
+          python3 scripts/print-pagination-raster-audit.py \
+            reports/print-priority-rebalance \
+            --out reports/print-priority-rebalance-raster
+
+      - name: Commit proven product only
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            css/floating-cluster.css \
+            css/site.css \
+            src/lib/asset-version.js
+          git add -u -- '*.html' '*.astro'
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No product changes staged' >&2
+            exit 1
+          fi
+          git commit -m 'fix(print): respect CSS priority ratchets'
+          git push origin HEAD:fix/print-decoration-pagination-final-2026-07-25
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: print-priority-rebalance-${{ github.run_id }}
+          path: |
+            reports/print-priority-rebalance.log
+            reports/print-priority-rebalance/
+            reports/print-priority-rebalance-raster/
+          if-no-files-found: warn
+          retention-days: 14
