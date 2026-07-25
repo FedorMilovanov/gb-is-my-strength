@@ -54,6 +54,16 @@ jobs:
         if: steps.transaction.outputs.skip != 'true'
         run: |
           mkdir -p reports
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/_temp-materialize-tts-webkit-painted-status.mjs')
+          source = path.read_text(encoding='utf-8')
+          count = source.count('\n  `')
+          if count < 10:
+              raise SystemExit(f'guarded writer raw-template normalization found only {count} candidates')
+          source = source.replace('\n  `', '\n  String.raw`')
+          path.write_text(source, encoding='utf-8')
+          PY
           set -o pipefail
           node scripts/_temp-materialize-tts-webkit-painted-status.mjs 2>&1 | tee reports/tts-webkit-materializer.log
 
