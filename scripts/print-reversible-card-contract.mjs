@@ -62,8 +62,6 @@ try {
   await page.goto(base + ROUTE, { waitUntil: 'networkidle' });
   await page.emulateMedia({ media: 'print' });
   await page.evaluate(async () => { if (document.fonts?.ready) await document.fonts.ready; });
-  const prepared = await page.evaluate(() => window.GBPrintPagination?.prepare?.() || null);
-  if (!prepared?.prepared) report.failures.push('GBPrintPagination did not prepare the fixture route');
 
   const cardCount = await page.locator(CARD_SELECTOR).count();
   if (cardCount !== 1) report.failures.push(`expected one reversible-card fixture, found ${cardCount}`);
@@ -82,6 +80,12 @@ try {
       const card = document.querySelector(cardSelector);
       if (!card) return { error: 'reversible-card fixture missing' };
       card.classList.toggle('flipped', flipped);
+
+      // page.pdf() dispatches afterprint and the production runtime correctly
+      // removes generated flow attributes. Every independent print job must
+      // therefore prepare the current DOM state again before measuring it.
+      const prepared = window.GBPrintPagination?.prepare?.() || null;
+      if (!prepared?.prepared) return { error: 'GBPrintPagination did not prepare current card state' };
 
       const faces = [...card.querySelectorAll(faceSelector)].map((face) => {
         const style = getComputedStyle(face);
