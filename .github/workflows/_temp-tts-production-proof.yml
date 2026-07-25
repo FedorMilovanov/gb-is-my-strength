@@ -36,7 +36,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_API: https://api.github.com/repos/${{ github.repository }}
-          TARGET_SHA: 8af7037617db6dd389837d4c3a2546fbe27624c7
+          TARGET_SHA: 54785cdb8979df83377181c2e029266376eecc30
         run: |
           set -euo pipefail
           export TARGET_SHA
@@ -121,9 +121,9 @@ jobs:
       - name: Materialize exact production expectations
         run: |
           set -euo pipefail
-          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = '8af7037617db6dd389837d4c3a2546fbe27624c7';|" scripts/_temp-tts-production-proof.mjs
-          sed -i "s|controller: '/js/floating-cluster-controller.js?v=e7ba3d29'|controller: '/js/floating-cluster-controller.js?v=75656128'|" scripts/_temp-tts-production-proof.mjs
-          sed -i "s|engine: '/js/vosk-tts-engine.js?v=87bfc44a'|engine: '/js/vosk-tts-engine.js?v=9ca1685a'|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = '54785cdb8979df83377181c2e029266376eecc30';|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|controller: '/js/floating-cluster-controller.js?v=e7ba3d29'|controller: '/js/floating-cluster-controller.js?v=2b92a1a5'|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|engine: '/js/vosk-tts-engine.js?v=87bfc44a'|engine: '/js/vosk-tts-engine.js?v=216b15fb'|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|noticeCss: '/css/tts-download-notice.css?v=1cdbee44'|noticeCss: '/css/tts-download-notice.css?v=475abd4b'|" scripts/_temp-tts-production-proof.mjs
           python - <<'PY'
           from pathlib import Path
@@ -173,9 +173,9 @@ jobs:
           source = source.replace(old_cancel, new_cancel, 1)
           path.write_text(source, encoding='utf-8')
           PY
-          grep -Fq "const EXPECTED_MAIN = '8af7037617db6dd389837d4c3a2546fbe27624c7';" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "controller: '/js/floating-cluster-controller.js?v=75656128'" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "engine: '/js/vosk-tts-engine.js?v=9ca1685a'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "const EXPECTED_MAIN = '54785cdb8979df83377181c2e029266376eecc30';" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "controller: '/js/floating-cluster-controller.js?v=2b92a1a5'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "engine: '/js/vosk-tts-engine.js?v=216b15fb'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "noticeCss: '/css/tts-download-notice.css?v=475abd4b'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "link.sheet.cssRules.length > 0" scripts/_temp-tts-production-proof.mjs
           grep -Fq "assert.match(disabledState.meta, /системный голос/i);" scripts/_temp-tts-production-proof.mjs
