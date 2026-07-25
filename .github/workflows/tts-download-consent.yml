@@ -91,27 +91,42 @@ jobs:
         with:
           node-version: "22.12.0"
 
-      - name: Check syntax
+      - name: Verify exact release toolchain
         run: |
-          node --check js/vosk-tts-engine.js
-          node --check js/floating-cluster-controller.js
-          node --check scripts/release-candidate-lib.mjs
-          node --check scripts/release-pipeline-contract-test.mjs
-          node --check scripts/deployment-provenance-contract-test.mjs
-          node --check scripts/write-deployment-provenance.mjs
-          node --check scripts/verify-release-candidate.mjs
-          node --check scripts/live-release-contract.mjs
-          node --check scripts/tts-live-deployment-contract.mjs
-          node --check scripts/record-deployment-witness.cjs
-          node --check scripts/record-deployment-witness-contract-test.cjs
-          node --check scripts/deployment-witness-ledger-source-contract-test.cjs
-          node --check scripts/tts-download-consent-contract-test.js
-          node --check scripts/tts-download-notice-browser-test.js
-          node --check scripts/tts-engine-status-contract-test.js
-          node --check scripts/tts-engine-lifecycle-browser-test.js
-          node --check scripts/tts-status-route-browser-test.js
-          node --check scripts/tts-mobile-notice-geometry-browser-test.js
-          node --check scripts/workflow-linkage-regression-test.js
+          node -e "const assert=require('node:assert/strict'); const t=require('./data/release-toolchain.json'); assert.equal(process.version, 'v'+t.node)"
+          test "$(npm --version)" = "$(node -p "require('./data/release-toolchain.json').npm")"
+
+      - name: Check syntax with named diagnostics
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          {
+            for file in \
+              js/vosk-tts-engine.js \
+              js/floating-cluster-controller.js \
+              scripts/release-candidate-lib.mjs \
+              scripts/release-pipeline-contract-test.mjs \
+              scripts/deployment-provenance-contract-test.mjs \
+              scripts/write-deployment-provenance.mjs \
+              scripts/verify-release-candidate.mjs \
+              scripts/live-release-contract.mjs \
+              scripts/tts-live-deployment-contract.mjs \
+              scripts/record-deployment-witness.cjs \
+              scripts/record-deployment-witness-contract-test.cjs \
+              scripts/deployment-witness-ledger-source-contract-test.cjs \
+              scripts/tts-download-consent-contract-test.js \
+              scripts/tts-download-notice-browser-test.js \
+              scripts/tts-engine-status-contract-test.js \
+              scripts/tts-engine-lifecycle-browser-test.js \
+              scripts/tts-status-route-browser-test.js \
+              scripts/tts-mobile-notice-geometry-browser-test.js \
+              scripts/workflow-linkage-regression-test.js
+            do
+              echo "CHECK $file"
+              node --check "$file"
+            done
+          } 2>&1 | tee reports/release-source-syntax.log
 
       - name: Download consent source contract
         run: |
@@ -168,6 +183,7 @@ jobs:
         with:
           name: tts-source-contract-${{ github.run_id }}
           path: |
+            reports/release-source-syntax.log
             reports/tts-source-download-consent.log
             reports/tts-source-engine-status.log
             reports/deployment-provenance-source.log
