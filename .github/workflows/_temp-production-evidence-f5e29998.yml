@@ -1,0 +1,40 @@
+name: Temporary Production Evidence — f5e29998
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/_temp-production-evidence-f5e29998.yml"
+      - "scripts/_temp-production-evidence-f5e29998.py"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  deployments: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout temporary verifier
+        uses: actions/checkout@v4
+
+      - name: Verify exact production evidence chain
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TARGET_SHA: f5e29998c5b42cc9e4e7c917b1e1c1072aa52320
+          TARGET_PR: "286"
+          LIVE_BASE_URL: https://gospod-bog.ru
+        run: python3 scripts/_temp-production-evidence-f5e29998.py
+
+      - name: Upload exact evidence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-evidence-f5e29998-${{ github.run_id }}
+          path: reports/production-evidence-f5e29998.json
+          if-no-files-found: error
+          retention-days: 14
