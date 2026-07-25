@@ -50,3 +50,5 @@ const report = {
 fs.mkdirSync(REPORTS, { recursive: true });
 fs.writeFileSync(path.join(REPORTS, 'font-assets-inventory.json'), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify(report, null, 2));
+
+// Trigger commit after the workflow already exists on this branch.
