@@ -1,1 +1,1 @@
-Verify issue #287 V3 chunk 000 only. Temporary branch; never merge.
+Verify issue #287 final V3 chunk 000. Attempt 2. Temporary branch; never merge.
