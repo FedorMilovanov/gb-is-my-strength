@@ -10,11 +10,9 @@ import { assetUrl } from '@/lib/asset-version';
 const bootstrapSrc = assetUrl('js/reader-preferences-head.js');
 const runtimeSrc = assetUrl('js/reader-preferences.js');
 const readerStateSrc = assetUrl('js/reader-state.js');
-const printPaginationSrc = assetUrl('js/print-pagination.js');
 const preferencesCss = assetUrl('css/reader-preferences.css');
 ---
 <script is:inline src={bootstrapSrc}></script>
 <link rel="stylesheet" href={preferencesCss} />
 <script is:inline defer src={runtimeSrc}></script>
 <script is:inline defer src={readerStateSrc}></script>
-<script is:inline defer src={printPaginationSrc}></script>
