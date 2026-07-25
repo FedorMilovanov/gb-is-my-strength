@@ -145,6 +145,12 @@ jobs:
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 
+      - name: Write immutable deployment provenance
+        env:
+          DEPLOYED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          SOURCE_READINESS_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}
+        run: node scripts/write-deployment-provenance.mjs
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
