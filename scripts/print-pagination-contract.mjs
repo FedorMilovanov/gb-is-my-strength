@@ -3,10 +3,11 @@
  * Multi-route PDF pagination contract.
  *
  * The browser runtime classifies semantic components, then this audit places
- * non-layout marker nodes at the start/end of each top-level atomic component,
- * prints real A4 PDFs and verifies with pdftotext that no atomic component was
- * fragmented across sheets. The route matrix spans series, book and single
- * article engines; assertions are component-based rather than route-specific.
+ * non-layout marker nodes at the start/end of every top-level atomic component
+ * and around every keep-with-next pair. Real A4 PDFs are inspected with
+ * pdftotext, proving that atomic modules are not fragmented and linked modules
+ * actually share a sheet. The route matrix spans series, book and standalone
+ * engines; assertions are component-based rather than route-specific.
  */
 import { createServer } from 'node:http';
 import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
@@ -75,11 +76,19 @@ try {
       const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body, article[data-pagefind-body], main article, article');
       if (!root) return { error: 'reader root missing', runtime };
       const scope = root.parentElement || document.body;
-      const allAtomic = [...scope.querySelectorAll('[data-print-flow="atomic"]')].filter((node) => {
-        const parent = node.parentElement?.closest('[data-print-flow="atomic"]');
+      const visible = (node) => {
+        if (!node || !node.getBoundingClientRect) return false;
         const style = getComputedStyle(node);
         const rect = node.getBoundingClientRect();
-        return !parent && style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 8 && rect.height > 4;
+        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 8 && rect.height > 4;
+      };
+      const after = (node, reference) => {
+        if (!node || !reference || node === reference || node.contains(reference) || reference.contains(node)) return false;
+        return !!(reference.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+      };
+      const allAtomic = [...scope.querySelectorAll('[data-print-flow="atomic"]')].filter((node) => {
+        const parent = node.parentElement?.closest('[data-print-flow="atomic"]');
+        return !parent && visible(node);
       });
       const markerStyle = document.createElement('style');
       markerStyle.id = 'gb-print-pagination-audit-markers';
@@ -117,41 +126,69 @@ try {
         return span;
       }
 
+      function hosts(node) {
+        if (node.matches?.('table')) {
+          const cells = [...node.querySelectorAll('th,td')];
+          if (cells.length) return { start: cells[0], end: cells[cells.length - 1] };
+        }
+        return { start: node, end: node };
+      }
+
+      function attach(node, token, kind) {
+        const pair = hosts(node);
+        const host = kind === 'start' ? pair.start : pair.end;
+        host.classList.add('gb-print-audit-host');
+        if (kind === 'start') host.prepend(marker(token, kind));
+        else host.append(marker(token, kind));
+      }
+
       const atomic = allAtomic.map((node, index) => {
         const base = `GBP_R${routeIndex}_A${index}`;
         node.setAttribute('data-gb-audit-id', base);
-        let startHost = node;
-        let endHost = node;
-        if (node.matches('table')) {
-          const cells = [...node.querySelectorAll('th,td')];
-          if (cells.length) {
-            startHost = cells[0];
-            endHost = cells[cells.length - 1];
-          }
-        }
-        startHost.classList.add('gb-print-audit-host');
-        endHost.classList.add('gb-print-audit-host');
-        startHost.prepend(marker(`${base}_S`, 'start'));
-        endHost.append(marker(`${base}_E`, 'end'));
+        attach(node, `${base}_S`, 'start');
+        attach(node, `${base}_E`, 'end');
         const rect = node.getBoundingClientRect();
         return {
           id: base,
           tag: node.tagName.toLowerCase(),
           className: typeof node.className === 'string' ? node.className.slice(0, 120) : '',
-          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().replace(/GBP_R\d+_A\d+_[SE]/g, '').slice(0, 120),
+          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().replace(/GBP_R\d+_[AK]\d+_[SE]/g, '').slice(0, 120),
           height: Math.round(rect.height),
           breakInside: getComputedStyle(node).breakInside
         };
       });
-      const keepers = [...scope.querySelectorAll('[data-print-keep-next]')].filter((node) => {
-        const style = getComputedStyle(node);
-        return style.display !== 'none' && style.visibility !== 'hidden';
-      }).map((node) => ({
-        tag: node.tagName.toLowerCase(),
-        className: typeof node.className === 'string' ? node.className.slice(0, 100) : '',
-        text: String(node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100),
-        breakAfter: getComputedStyle(node).breakAfter
-      }));
+
+      function nextVisibleSibling(node) {
+        let next = node.nextElementSibling;
+        while (next && !visible(next)) next = next.nextElementSibling;
+        return next;
+      }
+
+      function firstFollowingTail(node) {
+        return [...scope.querySelectorAll('[data-print-tail]')].find((candidate) => visible(candidate) && after(candidate, node)) || null;
+      }
+
+      const keeperNodes = [...scope.querySelectorAll('[data-print-keep-next]')].filter(visible);
+      const keepers = [];
+      for (let index = 0; index < keeperNodes.length; index += 1) {
+        const node = keeperNodes[index];
+        let target = nextVisibleSibling(node);
+        if (!target && node.getAttribute('data-print-keep-next') === 'tail') target = firstFollowingTail(node);
+        if (!target) continue;
+        const base = `GBP_R${routeIndex}_K${index}`;
+        attach(node, `${base}_S`, 'end');
+        attach(target, `${base}_E`, 'start');
+        keepers.push({
+          id: base,
+          tag: node.tagName.toLowerCase(),
+          className: typeof node.className === 'string' ? node.className.slice(0, 100) : '',
+          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().replace(/GBP_R\d+_[AK]\d+_[SE]/g, '').slice(0, 100),
+          targetTag: target.tagName.toLowerCase(),
+          targetClassName: typeof target.className === 'string' ? target.className.slice(0, 100) : '',
+          targetText: String(target.textContent || '').replace(/\s+/g, ' ').trim().replace(/GBP_R\d+_[AK]\d+_[SE]/g, '').slice(0, 100),
+          breakAfter: getComputedStyle(node).breakAfter
+        });
+      }
       return { runtime, atomic, keepers };
     }, routeIndex);
 
@@ -172,23 +209,35 @@ try {
     await page.pdf({ path: pdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
     execFileSync('pdftotext', ['-layout', pdf, txt]);
     const pages = pageMap(await readFile(txt, 'utf8'));
-    const splits = [];
-    const missing = [];
+    const atomicSplits = [];
+    const atomicMissing = [];
     for (const item of setup.atomic) {
       const start = pages.get(`${item.id}_S`);
       const end = pages.get(`${item.id}_E`);
-      if (!start || !end) missing.push({ ...item, start: start || 0, end: end || 0 });
-      else if (start !== end) splits.push({ ...item, start, end });
+      if (!start || !end) atomicMissing.push({ ...item, start: start || 0, end: end || 0 });
+      else if (start !== end) atomicSplits.push({ ...item, start, end });
     }
-    if (missing.length) report.failures.push(`${id}: ${missing.length} PDF markers missing`);
-    if (splits.length) report.failures.push(`${id}: ${splits.length} atomic components split across pages`);
+    const pairSplits = [];
+    const pairMissing = [];
+    for (const item of setup.keepers) {
+      const source = pages.get(`${item.id}_S`);
+      const target = pages.get(`${item.id}_E`);
+      if (!source || !target) pairMissing.push({ ...item, source: source || 0, target: target || 0 });
+      else if (source !== target) pairSplits.push({ ...item, source, target });
+    }
+    if (atomicMissing.length) report.failures.push(`${id}: ${atomicMissing.length} atomic PDF markers missing`);
+    if (atomicSplits.length) report.failures.push(`${id}: ${atomicSplits.length} atomic components split across pages`);
+    if (pairMissing.length) report.failures.push(`${id}: ${pairMissing.length} keep-pair PDF markers missing`);
+    if (pairSplits.length) report.failures.push(`${id}: ${pairSplits.length} keep-with-next pairs split across pages`);
     report.routes.push({
       id, url,
       runtime: setup.runtime,
       atomicCount: setup.atomic.length,
       keepNextCount: setup.keepers.length,
-      missing: missing.slice(0, 12),
-      splits: splits.slice(0, 12)
+      atomicMissing: atomicMissing.slice(0, 12),
+      atomicSplits: atomicSplits.slice(0, 12),
+      pairMissing: pairMissing.slice(0, 12),
+      pairSplits: pairSplits.slice(0, 12)
     });
     await context.close();
   }
