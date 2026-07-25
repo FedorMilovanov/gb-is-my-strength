@@ -4,9 +4,9 @@
  * Shared semantic pagination for every reader surface. The runtime classifies
  * components by role and measured paper height; it never keys behaviour to a
  * route, article title or author. Small modules remain atomic, oversized
- * modules keep safe internal break points, headings/labels stay with the next
- * block, and a compact closing mark stays with the preceding module when both
- * fit on one A4 content area.
+ * modules retain safe internal break points, headings/labels stay with the
+ * following block, and compact closing marks are grouped with the preceding
+ * semantic module in a reversible print-only wrapper.
  */
 (function () {
   'use strict';
@@ -60,13 +60,18 @@
     '.overview-grid',
     '.diagram',
     '.diagram-card',
+    '.article-end-block',
     '.article-end-sdg-wrap',
-    '.article-end-sdg'
+    '.article-end-sdg',
+    '.closing-mark',
+    '.devotional-tail',
+    '.epilogue'
   ].join(',');
-  var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|epilogue)(?:$|[\s_-])/i;
+  var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;
   var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"]';
-  var TAIL_SELECTOR = '.article-end-sdg-wrap,.article-end-sdg,[data-print-tail]';
+  var TAIL_SELECTOR = '[data-print-tail],.article-end-block,.article-end-sdg-wrap,.article-end-sdg,.closing-mark,.devotional-tail,.epilogue';
   var STYLE_ID = 'gb-print-pagination-contract';
+  var closingGroups = [];
   var report = null;
 
   function installStyle() {
@@ -76,21 +81,25 @@
     style.textContent = [
       '@media print {',
       '  @page { size: A4; margin: 14mm; }',
-      '  html body [data-print-flow="atomic"] { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
+      '  html body { orphans: 3; widows: 3; }',
+      '  html body [data-print-flow="atomic"],',
+      '  html body .gb-print-closing-group { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
       '  html body [data-print-flow="splittable"] { break-inside: auto !important; page-break-inside: auto !important; }',
       '  html body [data-print-keep-next] { break-after: avoid-page !important; page-break-after: avoid !important; }',
       '  html body [data-print-row] { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
       '  html body table thead { display: table-header-group !important; }',
       '  html body table tfoot { display: table-footer-group !important; }',
       '  html body [data-print-flow="atomic"].table-scroll { overflow: visible !important; max-height: none !important; }',
-      '  html body [data-print-tail] { display: block !important; min-height: 0 !important; height: auto !important; margin: 5mm 0 0 !important; padding: 3mm 0 0 !important; break-after: auto !important; page-break-after: auto !important; }',
+      '  html body .gb-print-closing-group { display: block !important; width: auto !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; border: 0 !important; }',
+      '  html body [data-print-tail] { display: block !important; min-height: 0 !important; height: auto !important; margin: 5mm 0 0 !important; padding: 3mm 0 0 !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-tail] > .article-end-sdg,',
       '  html body [data-print-tail].article-end-sdg { min-height: 0 !important; height: auto !important; margin: 0 !important; padding: 0 !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-flow] { box-shadow: none; }',
       '  html body article:last-child,',
       '  html body .article-body:last-child,',
       '  html body [data-reader-range]:last-child,',
-      '  html body [data-print-tail]:last-child { break-after: auto !important; page-break-after: auto !important; }',
+      '  html body [data-print-tail]:last-child,',
+      '  html body .gb-print-closing-group:last-child { break-after: auto !important; page-break-after: auto !important; }',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -137,13 +146,33 @@
     node.setAttribute(GENERATED, '1');
   }
 
+  function restoreClosingGroups() {
+    for (var i = closingGroups.length - 1; i >= 0; i--) {
+      var record = closingGroups[i];
+      try {
+        if (record.previousAnchor.parentNode) {
+          record.previousAnchor.parentNode.insertBefore(record.previous, record.previousAnchor.nextSibling);
+          record.previousAnchor.remove();
+        }
+        if (record.tailAnchor.parentNode) {
+          record.tailAnchor.parentNode.insertBefore(record.tail, record.tailAnchor.nextSibling);
+          record.tailAnchor.remove();
+        }
+        if (record.group.parentNode) record.group.remove();
+      } catch (_) {}
+    }
+    closingGroups = [];
+  }
+
   function clearGenerated() {
+    restoreClosingGroups();
     var nodes = document.querySelectorAll('[' + GENERATED + ']');
     for (var i = 0; i < nodes.length; i++) {
       nodes[i].removeAttribute('data-print-flow');
       nodes[i].removeAttribute('data-print-keep-next');
       nodes[i].removeAttribute('data-print-row');
       nodes[i].removeAttribute('data-print-tail');
+      nodes[i].removeAttribute('data-print-closing-group');
       nodes[i].removeAttribute(GENERATED);
     }
   }
@@ -210,9 +239,35 @@
     return previous;
   }
 
+  function createClosingGroup(previous, tail) {
+    if (!previous || !tail || !previous.parentNode || !tail.parentNode) return null;
+    var previousAnchor = document.createComment('gb-print-previous');
+    var tailAnchor = document.createComment('gb-print-tail');
+    previous.parentNode.insertBefore(previousAnchor, previous);
+    tail.parentNode.insertBefore(tailAnchor, tail);
+
+    var group = document.createElement('div');
+    group.className = 'gb-print-closing-group';
+    group.setAttribute('data-print-closing-group', '1');
+    group.setAttribute('data-print-flow', 'atomic');
+    group.setAttribute(GENERATED, '1');
+    previousAnchor.parentNode.insertBefore(group, previousAnchor.nextSibling);
+    group.appendChild(previous);
+    group.appendChild(tail);
+
+    closingGroups.push({
+      group: group,
+      previous: previous,
+      tail: tail,
+      previousAnchor: previousAnchor,
+      tailAnchor: tailAnchor
+    });
+    return group;
+  }
+
   function classifyCandidates(root, pageHeight) {
     var candidates = collectCandidates(root);
-    var stats = { candidates: candidates.length, atomic: 0, splittable: 0, rows: 0, keepNext: 0, tailPairs: 0, tails: 0 };
+    var stats = { candidates: candidates.length, atomic: 0, splittable: 0, rows: 0, keepNext: 0, tailPairs: 0, closingGroups: 0, tails: 0 };
     var atomicLimit = pageHeight * 0.84;
 
     for (var i = 0; i < candidates.length; i++) {
@@ -260,10 +315,14 @@
       mark(tail, 'data-print-tail', '1');
       var previous = previousSemanticFlow(tail, scope);
       if (!previous) continue;
-      var combined = previous.getBoundingClientRect().height + tail.getBoundingClientRect().height;
+      var combined = previous.getBoundingClientRect().height + tail.getBoundingClientRect().height + measureMm(8);
       if (combined <= pageHeight * 0.94) {
-        mark(previous, 'data-print-keep-next', 'tail');
-        stats.tailPairs += 1;
+        var group = createClosingGroup(previous, tail);
+        if (group) {
+          stats.tailPairs += 1;
+          stats.closingGroups += 1;
+          stats.atomic += 1;
+        }
       }
     }
     return stats;
@@ -295,6 +354,10 @@
     document.documentElement.removeAttribute('data-gb-print-pagination');
   }
 
+  function isPrintMedia() {
+    try { return window.matchMedia && window.matchMedia('print').matches; } catch (_) { return false; }
+  }
+
   window.GBPrintPagination = {
     version: VERSION,
     prepare: prepare,
@@ -311,6 +374,7 @@
     else if (media.addListener) media.addListener(onChange);
   } catch (_) {}
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', prepare, { once: true });
-  else prepare();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { if (isPrintMedia()) prepare(); }, { once: true });
+  } else if (isPrintMedia()) prepare();
 })();
