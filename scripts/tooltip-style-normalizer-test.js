@@ -25,8 +25,9 @@ assert.ok(first.output.includes(CLOSED_TOOLTIP_POINTER_RULE));
 assert.ok(first.output.includes(FLOATING_TOOLTIP_POINTER_RULE));
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /body>\.tooltip\.gb-floating-tip\.is-open/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /body>\.gtip\.gb-floating-tip\.is-open/);
-assert.match(FLOATING_TOOLTIP_POINTER_RULE, /pointer-events:none!important/);
-assert.match(FLOATING_TOOLTIP_POINTER_RULE, /pointer-events:auto!important/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /pointer-events:none/);
+assert.match(FLOATING_TOOLTIP_POINTER_RULE, /pointer-events:auto/);
+assert.doesNotMatch(FLOATING_TOOLTIP_POINTER_RULE, /!important/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip a/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\[role="button"\]/);
 
