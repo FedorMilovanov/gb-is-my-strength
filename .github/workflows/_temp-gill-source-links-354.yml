@@ -1,0 +1,53 @@
+name: TEMP Gill Source Link Acceptance 354
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-gill-source-links-354.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-gill-source-links-354-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    if: github.event.pull_request.head.ref == 'fix/gill-broken-source-links-20260725'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Run exact-head real-network source audit
+        run: |
+          mkdir -p reports/source-links
+          node scripts/source-link-audit.js --root dist --json-out reports/source-links/report.json
+
+      - name: Upload exact-head chain evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gill-source-links-354-${{ github.run_id }}
+          path: reports/source-links/**
+          if-no-files-found: error
+          retention-days: 14
