@@ -10,12 +10,14 @@ on:
       - "scripts/cache-bust.js"
       - "scripts/dist-publication-audit.js"
       - "src/lib/asset-version.js"
+      - "scripts/tts-live-deployment-contract.mjs"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
       - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-engine-lifecycle-browser-test.js"
       - "scripts/tts-status-route-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
+      - ".github/workflows/deploy.yml"
       - ".github/workflows/tts-download-consent.yml"
   push:
     branches: [main]
@@ -27,12 +29,14 @@ on:
       - "scripts/cache-bust.js"
       - "scripts/dist-publication-audit.js"
       - "src/lib/asset-version.js"
+      - "scripts/tts-live-deployment-contract.mjs"
       - "scripts/tts-download-consent-contract-test.js"
       - "scripts/tts-download-notice-browser-test.js"
       - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-engine-lifecycle-browser-test.js"
       - "scripts/tts-status-route-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
+      - ".github/workflows/deploy.yml"
       - ".github/workflows/tts-download-consent.yml"
 
 permissions:
@@ -59,6 +63,7 @@ jobs:
         run: |
           node --check js/vosk-tts-engine.js
           node --check js/floating-cluster-controller.js
+          node --check scripts/tts-live-deployment-contract.mjs
           node --check scripts/tts-download-consent-contract-test.js
           node --check scripts/tts-download-notice-browser-test.js
           node --check scripts/tts-engine-status-contract-test.js
@@ -74,8 +79,10 @@ jobs:
       - name: Verify existing asset revisions remain read-only clean
         run: node scripts/cache-bust.js
 
-      - name: Lint workflow
-        run: node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml
+      - name: Lint workflows
+        run: |
+          node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml
+          node scripts/run-actionlint.mjs -no-color .github/workflows/deploy.yml
 
   browser-contract:
     name: Engine and real-route browser contract
