@@ -1,7 +1,7 @@
 {
   "historicalCommit": "bcf6389f29ee0c89e9e96e7587e0226ecf251ae0",
-  "reconciledAt": "2026-07-05",
-  "policy": "The pre-v16 GBS desktop submenu (labels + order + item count) is restored verbatim from the canonical historical witness bcf6389f29ee0c89e9e96e7587e0226ecf251ae0. During the Astro migration 7 anchor IDs were renamed; labels and target headings are preserved. These renames are the ONLY differences between the historical witness and the current render. They are legitimate (label-preserving) and MUST be applied by scripts/gill-pre-v16-submenu-regression-audit.js (via the \"renames\" map below) when comparing the historical reference manifest to the current build, so the manifest historical hrefs resolve to the current rendered anchors.",
+  "reconciledAt": "2026-07-25",
+  "policy": "The pre-v16 GBS submenu reference at bcf6389f29ee0c89e9e96e7587e0226ecf251ae0 remains the immutable design witness for route coverage, item count, hierarchy and historical wording. Current submenu labels follow the owner-approved label-semantics rule and must match the current rendered target heading; every legitimate editorial change is recorded in the relabels map. Seven Astro migration anchor-ID renames remain documented separately in renames, while reorders record current document order required by the scrollspy.",
   "renames": {
     "#sec-early-years": "#part-calling",
     "#sec-gill-spirituality": "#sec-family-deep",
@@ -143,29 +143,48 @@
   "relabels": {
     "articles/dzhon-gill-chast-1-chelovek/index.html": {
       "#part-calling": "I. Становление и призвание",
-      "#sec-family-deep": "Семья: дети, зять-издатель и богословие в деталях"
+      "#sec-family-deep": "Семья: дети, зять-издатель и богословие в деталях",
+      "#sec-intro": "Самообразование вне университетской траектории",
+      "#sec-birth-prophecy": "Риппоновское предание об утре рождения",
+      "#sec-education": "Грамматическая школа, книжная лавка и самообразование",
+      "#sec-evangelism": "Евангельская активность: свидетельства и границы доказательства",
+      "#sec-ordination-1720": "Рукоположение 22 марта 1720 года: свидетельства Кросби и Риппона",
+      "#sec-personal-credo": "Личные высказывания: только с прослеживаемой передачей",
+      "#sec-context-southwark": "Кеттеринг, Саутварк и правовой мир диссентеров"
     },
     "articles/dzhon-gill-chast-2-uchenyi/index.html": {
       "#sec-hebrew": "Раввинист — христианин с Мишной в руках",
       "#sec-canticles": "Песнь Песней: самый личный труд Гилла",
       "#sec-systematics": "«Полный свод богословия» — первая баптистская сумма",
-      "#sec-ordinances": "Таинства и церковные установления: крещение и Вечеря"
+      "#sec-ordinances": "Церковные установления: крещение и Вечеря"
     },
     "articles/dzhon-gill-chast-3-nasledie/index.html": {
       "#part-legacy": "V. Историческое влияние и память",
-      "#sec-church-gov": "Управление церковью: единственный пастор, никаких степеней",
+      "#sec-church-gov": "Управление церковью: один пастор и власть общины",
       "#sec-toplady-memoir": "Топлэди о Гилле: Чёрный Принц и Мальборо",
       "#sec-church-gov-polity": "О вступлении в членство и права поместной общины",
       "#sec-america": "Влияние на Америку и Фонд партикулярных баптистов",
       "#sec-spurgeon-legacy": "Сперджен — наследник и независимый критик",
       "#sec-gill-last-pages": "Последние страницы: «10 000!» и Nunc Dimittis",
       "#sec-ordination-rippon": "Риппон: «Столь великого плача в мире»",
-      "#sec-gill-muller-rediscovery": "Современная реабилитация: «Проект Джона Гилла» (2023–2025)",
+      "#sec-gill-muller-rediscovery": "Современное переиздание и новый этап исследований: «Проект Джона Гилла»",
       "#sec-contemporaries": "Как современники видели Гилла: портрет из первых уст",
       "#sec-terms": "Словарь эпохи: ключевые богословские понятия"
+    },
+    "articles/dzhon-gill-istoricheskiy-kontekst/index.html": {
+      "#sec-from-puritans-to-baptists": "I. От пуританского спора к устойчивому миру диссента",
+      "#sec-particular-vs-general": "II. Партикулярные и генеральные баптисты: две традиции, а не две монолитные партии",
+      "#sec-great-ejection": "III. 1662 год и рождение устойчивого нонконформизма",
+      "#sec-clarendon": "IV. После терпимости: три разных стены",
+      "#sec-academies": "V. Диссентерские академии: не один подпольный университет, а целая экосистема",
+      "#sec-salters-hall": "VI. Солтерс-Холл, 1719: Троица, подписка и власть церковной формулы",
+      "#sec-coffee-house": "VII. Лондонские сети: кофейни, письма, фонды и лекции",
+      "#sec-southwark": "VIII. Саутварк: пасторство на южном берегу",
+      "#sec-books": "IX. Кеттерингская книжная лавка: что действительно сообщает Риппон",
+      "#sec-conclusion": "X. Итог: что исторический контекст объясняет — и чего не объясняет"
     }
   },
-  "relabelsPolicy": "Owner decision 2026-07-05 (UI-GILL-SUBMENU-LABEL-SEMANTICS-09): a submenu label MUST match the CURRENT rendered target heading (verbatim, or be its prefix for decorated headings). Articles evolved editorially after the historical witness; 19/56 labels had drifted from their target headings. Historical labels remain recorded in 'entries' below. The regression audit applies this map after 'renames' and additionally enforces label↔heading parity.",
+  "relabelsPolicy": "Owner decision 2026-07-05 (UI-GILL-SUBMENU-LABEL-SEMANTICS-09): a submenu label MUST match the CURRENT rendered target heading verbatim, or be its prefix for a decorated heading. The native Gill articles evolved editorially after the historical witness; 34/56 represented labels now differ from the historical wording and are explicitly reconciled here. Historical labels remain immutable in data/gill-pre-v16-submenu-reference.json; entries below document anchor-rename decisions.",
   "paragraphTargets": {
     "articles/dzhon-gill-chast-3-nasledie/index.html": {
       "#sec-church-gov-polity": {
