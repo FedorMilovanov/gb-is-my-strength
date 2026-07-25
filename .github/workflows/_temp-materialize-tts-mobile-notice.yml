@@ -57,7 +57,10 @@ jobs:
         run: node scripts/tts-status-route-browser-test.js
 
       - name: Run mobile notice viewport geometry
-        run: node scripts/tts-mobile-notice-geometry-browser-test.js
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/tts-mobile-notice-geometry-browser-test.js 2>&1 | tee reports/tts-mobile-notice-geometry.log
 
       - name: Publish product commit without workflow mutation
         run: |
@@ -68,3 +71,15 @@ jobs:
           git diff --cached --quiet && { echo 'No product changes staged'; exit 1; }
           git commit -m "fix(tts): anchor mobile status notice to viewport insets"
           git push origin HEAD:fix/tts-mobile-notice-viewport-2026-07-25
+
+      - name: Upload mobile geometry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-mobile-notice-geometry-${{ github.run_id }}
+          path: |
+            reports/tts-mobile-notice-geometry.log
+            reports/tts-mobile-notice-geometry*.json
+            reports/tts-mobile-notice-geometry*.png
+          if-no-files-found: warn
+          retention-days: 14
