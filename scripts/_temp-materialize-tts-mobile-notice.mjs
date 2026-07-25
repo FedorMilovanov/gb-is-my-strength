@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 const BASE_SHA = '8a26fd7ea45a7124217f779f78def8fd0f17a0aa';
 
 function revision(text) {
-  return crypto.createHash('sha256').update(text).digest('hex').slice(0, 8);
+  return crypto.createHash('md5').update(text).digest('hex').slice(0, 8);
 }
 
 function replaceOnce(source, oldText, newText, label) {
@@ -132,8 +132,8 @@ if (!contract.includes('engine notice CSS revision drift')) {
 `  for (const [label, source, pattern] of checks) {
     if (!pattern.test(source)) problems.push(label);
   }
-  const noticeRevision = crypto.createHash('sha256').update(css).digest('hex').slice(0, 8);
-  const engineRevision = crypto.createHash('sha256').update(engine).digest('hex').slice(0, 8);
+  const noticeRevision = crypto.createHash('md5').update(css).digest('hex').slice(0, 8);
+  const engineRevision = crypto.createHash('md5').update(engine).digest('hex').slice(0, 8);
   if (!engine.includes('/css/tts-download-notice.css?v=' + noticeRevision)) {
     problems.push('engine notice CSS revision drift');
   }
