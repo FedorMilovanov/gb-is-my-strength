@@ -33,28 +33,21 @@ jobs:
       - name: Checkout proof harness
         uses: actions/checkout@v4
 
-      - name: Confirm exact successful Pages run
+      - name: Capture Pages and readiness run ledger
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p reports/live-print-decoration-proof
-          success=false
-          for attempt in $(seq 1 40); do
-            curl -fsSL \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H 'Accept: application/vnd.github+json' \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&per_page=100" \
-              > reports/live-print-decoration-proof/pages-runs.json
-            if jq -e '[.workflow_runs[] | select(.name == "Deploy to GitHub Pages" and .status == "completed" and .conclusion == "success")] | length > 0' \
-              reports/live-print-decoration-proof/pages-runs.json >/dev/null; then
-              success=true
-              break
-            fi
-            echo "Pages deployment for ${TARGET_SHA} not successful yet (attempt ${attempt}/40)"
-            sleep 15
-          done
-          test "${success}" = true
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100" \
+            > reports/live-print-decoration-proof/pages-runs.json
+          jq --arg sha "${TARGET_SHA}" '{targetSha:$sha,runs:[.workflow_runs[] | select(.name == "Deploy to GitHub Pages" or .name == "Metadata & IndexNow Readiness") | {id,name,event,head_sha,status,conclusion,created_at,updated_at,html_url}]}' \
+            reports/live-print-decoration-proof/pages-runs.json \
+            > reports/live-print-decoration-proof/pages-ledger.json
+          cat reports/live-print-decoration-proof/pages-ledger.json
 
       - name: Setup Node 22.12
         uses: actions/setup-node@v4
