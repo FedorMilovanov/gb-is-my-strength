@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "policy": "offline-pinned-support",
+  "fontFaceOverrides": [
+    {
+      "path": "fonts/NotoSansGreek/notosansgreek-400.woff2",
+      "family": "Noto Sans Greek"
+    },
+    {
+      "path": "fonts/NotoSerifGreek/notoserifgreek-400.woff2",
+      "family": "Noto Serif Greek"
+    }
+  ],
+  "supportAssets": [
+    {
+      "path": "fonts/fonts.css",
+      "kind": "css",
+      "role": "font-face-registry",
+      "bytes": 6574,
+      "sha256": "acffa8f6fee8cb825395c40dedbff3ddb49766ae50cb79089ccf589530763324"
+    },
+    {
+      "path": "fonts/NotoSerifGreek/notoserifgreek-400.ttf",
+      "kind": "sfnt",
+      "role": "greek-truetype-fallback",
+      "family": "Noto Serif Greek",
+      "weight": 400,
+      "style": "normal",
+      "bytes": 444064,
+      "sha256": "5473d2e43bdd018ee124a4addba8091fd0a29894b121cbb741023af6549662b6"
+    }
+  ]
+}
