@@ -36,7 +36,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_API: https://api.github.com/repos/${{ github.repository }}
-          TARGET_SHA: f92794b4f11ef9dae55d284a106a9bd0f69133c9
+          TARGET_SHA: 8af7037617db6dd389837d4c3a2546fbe27624c7
         run: |
           set -euo pipefail
           export TARGET_SHA
@@ -121,7 +121,7 @@ jobs:
       - name: Materialize exact production expectations
         run: |
           set -euo pipefail
-          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = 'f92794b4f11ef9dae55d284a106a9bd0f69133c9';|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = '8af7037617db6dd389837d4c3a2546fbe27624c7';|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|controller: '/js/floating-cluster-controller.js?v=e7ba3d29'|controller: '/js/floating-cluster-controller.js?v=75656128'|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|engine: '/js/vosk-tts-engine.js?v=87bfc44a'|engine: '/js/vosk-tts-engine.js?v=9ca1685a'|" scripts/_temp-tts-production-proof.mjs
           sed -i "s|noticeCss: '/css/tts-download-notice.css?v=1cdbee44'|noticeCss: '/css/tts-download-notice.css?v=475abd4b'|" scripts/_temp-tts-production-proof.mjs
@@ -173,7 +173,7 @@ jobs:
           source = source.replace(old_cancel, new_cancel, 1)
           path.write_text(source, encoding='utf-8')
           PY
-          grep -Fq "const EXPECTED_MAIN = 'f92794b4f11ef9dae55d284a106a9bd0f69133c9';" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "const EXPECTED_MAIN = '8af7037617db6dd389837d4c3a2546fbe27624c7';" scripts/_temp-tts-production-proof.mjs
           grep -Fq "controller: '/js/floating-cluster-controller.js?v=75656128'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "engine: '/js/vosk-tts-engine.js?v=9ca1685a'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "noticeCss: '/css/tts-download-notice.css?v=475abd4b'" scripts/_temp-tts-production-proof.mjs
