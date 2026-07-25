@@ -44,8 +44,8 @@ function validateCacheBustWorkflowPolicy(input) {
   requireMatch('metadata-diagnostics', diagnostics, /^\s*-\s*['"]\*\*['"]\s*$/m, 'must retain catch-all diagnostic coverage');
   requireMatch('metadata-diagnostics', diagnostics, /^permissions:\s*$[\s\S]{0,80}?contents:\s*read\b/m, 'must remain read-only');
   requireMatch('metadata-diagnostics', diagnostics, /name:\s*Check source asset revisions without writing[\s\S]{0,160}?run:\s*node scripts\/cache-bust\.js\s*$/m, 'must execute the read-only revision check');
-  requireBefore('metadata-diagnostics', diagnostics, /run:\s*node scripts\/cache-bust\.js\s*$/m, /run:\s*npm run strangler:build:production-like\s*$/m, 'revision check must precede diagnostic build');
-  forbidMatch('metadata-diagnostics', diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, 'diagnostics must not own Pages publication');
+  forbidMatch('metadata-diagnostics', diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit|playwright install/, 'must not duplicate release installation or dist generation');
+  forbidMatch('metadata-diagnostics', diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, 'must not own Pages publication');
 
   requireMatch('release-workflow', release, /^\s*push:\s*$[\s\S]{0,120}?branches:\s*\[main\]/m, 'must own every direct release push to main');
   requireMatch('release-workflow', release, /^\s*-\s*['"]\*\*['"]\s*$/m, 'must retain catch-all production coverage');
@@ -98,6 +98,8 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
     ['diagnostic catch-all removed', { ...baseline, readiness: baseline.readiness.replace("      - '**'", "      - 'src/**'") }],
     ['diagnostic revision check removed', { ...baseline, readiness: baseline.readiness.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust-disabled.js') }],
     ['diagnostics gain Pages permission', { ...baseline, readiness: baseline.readiness.replace('contents: read', 'contents: read\n  pages: write') }],
+    ['diagnostics duplicate npm install', { ...baseline, readiness: baseline.readiness.replace('name: Validate registry structure', 'run: npm ci\n\n      - name: Validate registry structure') }],
+    ['diagnostics duplicate production build', { ...baseline, readiness: baseline.readiness.replace('name: Ensure diagnostics left tracked sources clean', 'run: npm run strangler:build:production-like\n\n      - name: Ensure diagnostics left tracked sources clean') }],
     ['release direct push removed', { ...baseline, deploy: baseline.deploy.replace('  push:\n', '  push-disabled:\n') }],
     ['release catch-all removed', { ...baseline, deploy: baseline.deploy.replace("      - '**'", "      - 'src/**'") }],
     ['release readiness revision check removed', { ...baseline, deploy: baseline.deploy.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust-disabled.js') }],
