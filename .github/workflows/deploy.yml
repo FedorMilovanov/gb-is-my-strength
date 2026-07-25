@@ -57,8 +57,8 @@ jobs:
         # ran npm ci. Setup-node cache keeps this cheap and preserves build isolation.
         run: npm ci
 
-      - name: Download fonts (if not in repo)
-        run: node scripts/download-fonts.js || echo "Fonts download skipped"
+      - name: Verify deterministic local fonts
+        run: node scripts/verify-font-assets.mjs
 
       - name: Check asset revisions for manual deploys
         # workflow_run already follows a successful read-only readiness check.
