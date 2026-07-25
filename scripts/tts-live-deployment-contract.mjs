@@ -13,12 +13,16 @@ const REPORT_PATH = path.join(REPORTS, 'tts-live-deployment-contract.json');
 const LIVE_BASE_URL = String(process.env.LIVE_BASE_URL || 'https://gospod-bog.ru').replace(/\/+$/, '');
 const DEPLOYED_SHA = String(process.env.DEPLOYED_SHA || process.env.GITHUB_SHA || 'unknown').trim().toLowerCase();
 const EXPECTED_REPOSITORY = String(process.env.GITHUB_REPOSITORY || 'FedorMilovanov/gb-is-my-strength').trim();
+const WORKFLOW_RUN_ID = String(process.env.GITHUB_RUN_ID || '').trim();
+const WORKFLOW_RUN_ATTEMPT = String(process.env.GITHUB_RUN_ATTEMPT || '').trim();
 const MAX_ATTEMPTS = Number.parseInt(process.env.TTS_LIVE_MAX_ATTEMPTS || '36', 10);
 const RETRY_DELAY_MS = Number.parseInt(process.env.TTS_LIVE_RETRY_DELAY_MS || '10000', 10);
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.TTS_LIVE_REQUEST_TIMEOUT_MS || '30000', 10);
 
 assert.match(DEPLOYED_SHA, /^[a-f0-9]{40}$/, 'DEPLOYED_SHA must be an exact 40-character commit SHA');
 assert.match(EXPECTED_REPOSITORY, /^[^/\s]+\/[^/\s]+$/, 'GITHUB_REPOSITORY must be owner/name');
+assert.match(WORKFLOW_RUN_ID, /^\d+$/, 'GITHUB_RUN_ID must be numeric');
+assert.match(WORKFLOW_RUN_ATTEMPT, /^\d+$/, 'GITHUB_RUN_ATTEMPT must be numeric');
 assert.ok(fs.existsSync(DIST) && fs.statSync(DIST).isDirectory(), 'dist must exist before live deployment verification');
 
 const ROUTES = Object.freeze([
@@ -56,6 +60,7 @@ const deployed = {
   serviceWorker: readDeployedBuffer(PUBLIC_ASSETS.serviceWorker),
 };
 
+const runIdentity = `${WORKFLOW_RUN_ID}-${WORKFLOW_RUN_ATTEMPT}`;
 const expected = Object.freeze({
   controllerRevision: md5(deployed.controller),
   engineRevision: md5(deployed.engine),
@@ -68,13 +73,16 @@ const expected = Object.freeze({
   controllerPath: `/js/floating-cluster-controller.js?v=${md5(deployed.controller)}`,
   enginePath: `/js/vosk-tts-engine.js?v=${md5(deployed.engine)}`,
   noticeCssPath: `/css/tts-download-notice.css?v=${md5(deployed.noticeCss)}`,
-  provenancePath: `/deployments/${DEPLOYED_SHA}.json`,
+  currentPointerPath: '/deployments/current.json',
+  provenancePath: `/deployments/${DEPLOYED_SHA}/${runIdentity}.json`,
 });
 
 const report = {
   liveBaseUrl: LIVE_BASE_URL,
   deployedSha: DEPLOYED_SHA,
   expectedRepository: EXPECTED_REPOSITORY,
+  workflowRunId: Number(WORKFLOW_RUN_ID),
+  workflowRunAttempt: Number(WORKFLOW_RUN_ATTEMPT),
   expected,
   startedAt: new Date().toISOString(),
   attempts: [],
@@ -140,7 +148,7 @@ async function fetchBuffer(url, attempt, label) {
     headers: {
       'cache-control': 'no-cache, no-store, max-age=0',
       pragma: 'no-cache',
-      'user-agent': 'gb-tts-live-deployment-contract/2.0',
+      'user-agent': 'gb-tts-live-deployment-contract/3.0',
     },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
@@ -150,6 +158,15 @@ async function fetchBuffer(url, attempt, label) {
     contentType: response.headers.get('content-type') || '',
     buffer: Buffer.from(await response.arrayBuffer()),
   };
+}
+
+function parseJsonResponse(response, label) {
+  assert.match(response.contentType, /(?:application\/json|text\/plain|octet-stream)/i, `${label}: unexpected content-type ${response.contentType}`);
+  try {
+    return JSON.parse(response.buffer.toString('utf8'));
+  } catch (error) {
+    throw new Error(`${label} is not valid JSON: ${error.message || error}`);
+  }
 }
 
 function assertDistRevisionChain() {
@@ -175,14 +192,24 @@ function assertCsp(csp, route) {
   return { connectSrc, mediaSrc, workerSrc };
 }
 
+function assertCurrentPointer(pointer) {
+  assert.equal(pointer.schemaVersion, 1, 'deployment current pointer schema drifted');
+  assert.equal(pointer.repository, EXPECTED_REPOSITORY, 'deployment current pointer repository mismatch');
+  assert.equal(pointer.commitSha, DEPLOYED_SHA, 'deployment current pointer commit SHA mismatch');
+  assert.equal(pointer.immutablePath, expected.provenancePath, 'deployment current pointer path mismatch');
+  assert.equal(pointer.workflow && pointer.workflow.name, 'Deploy to GitHub Pages', 'deployment current pointer workflow mismatch');
+  assert.equal(pointer.workflow && pointer.workflow.runId, Number(WORKFLOW_RUN_ID), 'deployment current pointer run ID mismatch');
+  assert.equal(pointer.workflow && pointer.workflow.runAttempt, Number(WORKFLOW_RUN_ATTEMPT), 'deployment current pointer run attempt mismatch');
+}
+
 function assertProvenance(manifest) {
-  assert.equal(manifest.schemaVersion, 1, 'deployment provenance schema drifted');
+  assert.equal(manifest.schemaVersion, 2, 'deployment provenance schema drifted');
   assert.equal(manifest.repository, EXPECTED_REPOSITORY, 'deployment provenance repository mismatch');
   assert.equal(manifest.commitSha, DEPLOYED_SHA, 'deployment provenance commit SHA mismatch');
   assert.equal(manifest.immutablePath, expected.provenancePath, 'deployment provenance path mismatch');
   assert.equal(manifest.workflow && manifest.workflow.name, 'Deploy to GitHub Pages', 'deployment provenance workflow mismatch');
-  assert.ok(Number.isInteger(manifest.workflow && manifest.workflow.runId) && manifest.workflow.runId > 0, 'deployment provenance run ID is missing');
-  assert.ok(Number.isInteger(manifest.workflow && manifest.workflow.runAttempt) && manifest.workflow.runAttempt > 0, 'deployment provenance run attempt is missing');
+  assert.equal(manifest.workflow && manifest.workflow.runId, Number(WORKFLOW_RUN_ID), 'deployment provenance run ID mismatch');
+  assert.equal(manifest.workflow && manifest.workflow.runAttempt, Number(WORKFLOW_RUN_ATTEMPT), 'deployment provenance run attempt mismatch');
 
   const assets = manifest.tts && manifest.tts.assets;
   assert.ok(assets, 'deployment provenance TTS assets are missing');
@@ -204,14 +231,12 @@ function assertProvenance(manifest) {
 async function verifyAttempt(attempt) {
   assertDistRevisionChain();
 
+  const pointerResponse = await fetchBuffer(`${LIVE_BASE_URL}${expected.currentPointerPath}`, attempt, 'deployment-current-pointer');
+  const pointer = parseJsonResponse(pointerResponse, 'deployment current pointer');
+  assertCurrentPointer(pointer);
+
   const provenanceResponse = await fetchBuffer(`${LIVE_BASE_URL}${expected.provenancePath}`, attempt, 'deployment-provenance');
-  assert.match(provenanceResponse.contentType, /(?:application\/json|text\/plain|octet-stream)/i, `deployment provenance: unexpected content-type ${provenanceResponse.contentType}`);
-  let provenance;
-  try {
-    provenance = JSON.parse(provenanceResponse.buffer.toString('utf8'));
-  } catch (error) {
-    throw new Error(`deployment provenance is not valid JSON: ${error.message || error}`);
-  }
+  const provenance = parseJsonResponse(provenanceResponse, 'deployment provenance');
   assertProvenance(provenance);
 
   const routeEvidence = [];
@@ -266,6 +291,12 @@ async function verifyAttempt(attempt) {
   assert.equal(swText.includes('/js/vosk-tts-engine.js'), false, 'live Service Worker precaches lazy Vosk engine');
 
   return {
+    discovery: {
+      path: expected.currentPointerPath,
+      immutablePath: pointer.immutablePath,
+      workflowRunId: pointer.workflow.runId,
+      workflowRunAttempt: pointer.workflow.runAttempt,
+    },
     provenance: {
       path: expected.provenancePath,
       commitSha: provenance.commitSha,
@@ -295,7 +326,7 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     report.result = 'PASS';
     report.finishedAt = new Date().toISOString();
     writeReport();
-    console.log(`TTS live deployment contract: PASS on attempt ${attempt} (${DEPLOYED_SHA}).`);
+    console.log(`TTS live deployment contract: PASS on attempt ${attempt} (${DEPLOYED_SHA}, run ${runIdentity}).`);
     process.exit(0);
   } catch (error) {
     lastError = error;

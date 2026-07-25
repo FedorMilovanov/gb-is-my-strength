@@ -98,9 +98,10 @@ function validateLiveDeploymentContract(liveContract, deployWorkflow) {
     ['live contract checks Hugging Face CSP', liveContract, /connect-src lacks huggingface\.co/],
     ['live contract checks Hugging Face CDN CSP', liveContract, /connect-src lacks \*\.aws\.cdn\.hf\.co/],
     ['live contract checks media and worker blob policy', liveContract, /media-src lacks blob:[\s\S]*worker-src lacks blob:/],
-    ['live contract verifies immutable provenance', liveContract, /expected\.provenancePath[\s\S]{0,1800}assertProvenance\(provenance\)/],
+    ['live contract verifies current pointer', liveContract, /expected\.currentPointerPath[\s\S]{0,2600}assertCurrentPointer\(pointer\)/],
+    ['live contract verifies run-addressed provenance', liveContract, /expected\.provenancePath[\s\S]{0,2200}assertProvenance\(provenance\)/],
     ['live contract verifies provenance SHA', liveContract, /deployment provenance commit SHA mismatch/],
-    ['live contract verifies provenance run ID', liveContract, /deployment provenance run ID is missing/],
+    ['live contract verifies provenance run ID', liveContract, /deployment provenance run ID mismatch/],
     ['live contract verifies controller bytes', liveContract, /live controller bytes do not match deployed revision/],
     ['live contract verifies engine bytes', liveContract, /live Vosk engine bytes do not match deployed revision/],
     ['live contract verifies notice CSS bytes', liveContract, /live notice CSS bytes do not match deployed revision/],
@@ -122,16 +123,19 @@ function validateDeploymentProvenance(writer, liveContract, deployWorkflow) {
   const problems = [];
   const checks = [
     ['writer requires exact commit SHA', writer, /DEPLOYED_SHA must be an exact 40-character commit SHA/],
+    ['writer requires exact workflow identity', writer, /GITHUB_RUN_ID must be numeric[\s\S]*GITHUB_RUN_ATTEMPT must be numeric/],
     ['writer requires existing dist', writer, /dist must exist before writing deployment provenance/],
     ['writer imports canonical lazy policy', writer, /LAZY_NO_PRECACHE[\s\S]{0,200}cache-bust-assets\.js/],
     ['writer records MD5 and SHA-256', writer, /createHash\('md5'\)[\s\S]*createHash\('sha256'\)/],
     ['writer records TTS assets', writer, /floating-cluster-controller\.js[\s\S]*vosk-tts-engine\.js[\s\S]*tts-download-notice\.css[\s\S]*sw\.js/],
-    ['writer uses immutable SHA path', writer, /deployments[\s\S]{0,120}\$\{commitSha\}\.json/],
-    ['writer publishes only under dist deployments', writer, /path\.join\(DIST, 'deployments'\)[\s\S]{0,500}fs\.writeFileSync\(outputPath/],
+    ['writer uses run-addressed commit path', writer, /path\.join\(deploymentsDir, commitSha\)[\s\S]{0,180}path\.join\(outputDir, `\$\{runIdentity\}\.json`\)/],
+    ['writer publishes current pointer', writer, /path\.join\(deploymentsDir, 'current\.json'\)[\s\S]{0,900}fs\.writeFileSync\(currentPointerPath/],
     ['writer preserves TTS lazy policy', writer, /LAZY_NO_PRECACHE\.includes[\s\S]*assets\.engine[\s\S]*assets\.noticeCss/],
     ['deploy writes provenance before upload', deployWorkflow, /- name: Write immutable deployment provenance[\s\S]{0,420}node scripts\/write-deployment-provenance\.mjs[\s\S]{0,300}- name: Upload Pages artifact/],
+    ['deploy checks out exact manual SHA', deployWorkflow, /ref:\s*\$\{\{\s*github\.event_name == 'workflow_run' && github\.event\.workflow_run\.head_sha \|\| github\.sha\s*\}\}/],
     ['deploy passes readiness provenance', deployWorkflow, /SOURCE_READINESS_RUN_ID:[^\n]*workflow_run\.id/],
-    ['live contract fetches immutable SHA path', liveContract, /provenancePath:\s*`\/deployments\/\$\{DEPLOYED_SHA\}\.json`/],
+    ['live contract fetches current pointer', liveContract, /currentPointerPath:\s*'\/deployments\/current\.json'/],
+    ['live contract fetches run-addressed path', liveContract, /provenancePath:\s*`\/deployments\/\$\{DEPLOYED_SHA\}\/\$\{runIdentity\}\.json`/],
     ['live contract compares provenance hashes', liveContract, /assets\.controller\.sha256[\s\S]*assets\.engine\.sha256[\s\S]*assets\.noticeCss\.sha256[\s\S]*assets\.serviceWorker\.sha256/],
   ];
   for (const [label, source, pattern] of checks) {
@@ -179,6 +183,7 @@ for (const [name, liveMutation, deployMutation] of [
   ['standalone live route removed', liveDeploymentContract.replace("  '/articles/20-antisovetov-pastoru/',\n", ''), deployWorkflow],
   ['live CSP host check removed', liveDeploymentContract.replace('connect-src lacks huggingface.co', 'connect-src host unchecked'), deployWorkflow],
   ['live Service Worker check removed', liveDeploymentContract.replace('live Service Worker precaches lazy Vosk engine', 'live Service Worker ignored'), deployWorkflow],
+  ['live current pointer assertion removed', liveDeploymentContract.replace('assertCurrentPointer(pointer);', 'void pointer;'), deployWorkflow],
   ['live provenance assertion removed', liveDeploymentContract.replace('assertProvenance(provenance);', 'void provenance;'), deployWorkflow],
   ['post-deploy execution removed', liveDeploymentContract, deployWorkflow.replace('node scripts/tts-live-deployment-contract.mjs', 'echo live TTS contract skipped')],
   ['live evidence upload removed', liveDeploymentContract, deployWorkflow.replace('reports/tts-live-deployment-contract.json', 'reports/missing-live-tts-evidence.json')],
@@ -188,10 +193,11 @@ for (const [name, liveMutation, deployMutation] of [
 
 for (const [name, writerMutation, liveMutation, deployMutation] of [
   ['writer exact SHA validation removed', provenanceWriter.replace('DEPLOYED_SHA must be an exact 40-character commit SHA', 'unchecked SHA'), liveDeploymentContract, deployWorkflow],
-  ['writer immutable path flattened', provenanceWriter.replace('`${commitSha}.json`', "'deployment.json'"), liveDeploymentContract, deployWorkflow],
+  ['writer run-addressed path flattened', provenanceWriter.replace('`${runIdentity}.json`', "'deployment.json'"), liveDeploymentContract, deployWorkflow],
+  ['writer current pointer removed', provenanceWriter.replace("path.join(deploymentsDir, 'current.json')", "path.join(deploymentsDir, 'missing.json')"), liveDeploymentContract, deployWorkflow],
   ['writer SHA-256 removed', provenanceWriter.replace("crypto.createHash('sha256')", "crypto.createHash('md5')"), liveDeploymentContract, deployWorkflow],
   ['deploy provenance step removed', provenanceWriter, liveDeploymentContract, deployWorkflow.replace('node scripts/write-deployment-provenance.mjs', 'echo provenance skipped')],
-  ['live immutable path removed', provenanceWriter, liveDeploymentContract.replace('provenancePath: `/deployments/${DEPLOYED_SHA}.json`', "provenancePath: '/deployment.json'"), deployWorkflow],
+  ['live run-addressed path removed', provenanceWriter, liveDeploymentContract.replace('provenancePath: `/deployments/${DEPLOYED_SHA}/${runIdentity}.json`', "provenancePath: '/deployment.json'"), deployWorkflow],
 ]) {
   assert.ok(validateDeploymentProvenance(writerMutation, liveMutation, deployMutation).length > 0, `${name}: mutation must be rejected`);
 }
@@ -225,4 +231,4 @@ for (const [name, ...mutation] of mutations) {
   const problems = validate(...mutation);
   assert.ok(problems.length > 0, `${name}: mutation must be rejected`);
 }
-console.log('TTS engine status contract: PASS (' + (mutations.length + 11) + ' named adversarial mutations rejected).');
+console.log('TTS engine status contract: PASS (' + (mutations.length + 13) + ' named adversarial mutations rejected).');
