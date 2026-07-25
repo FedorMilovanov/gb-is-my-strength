@@ -1,0 +1,118 @@
+name: TEMP Materialize Print Decoration Pagination
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-materialize-print-decoration-pagination.yml'
+      - 'scripts/_temp-materialize-print-decoration-pagination.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-print-decoration-pagination-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'fix/print-decoration-pagination-2026-07-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact product lane
+        uses: actions/checkout@v4
+        with:
+          ref: fix/print-decoration-pagination-2026-07-25
+          fetch-depth: 0
+
+      - name: Setup Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Reconstruct exact product transaction
+        run: node scripts/_temp-materialize-print-decoration-pagination.mjs
+
+      - name: Validate source, scope and revision contracts
+        run: |
+          set -euo pipefail
+          node --check js/reader-preferences-head.js
+          node --check scripts/print-pagination-contract.mjs
+          python3 -m py_compile scripts/print-pagination-raster-audit.py
+          node scripts/cache-bust.js
+          git diff --check
+          grep -Fq 'GB_PRINT_REVERSIBLE_CARD_ROOTS_V1' js/reader-preferences-head.js
+          grep -Fq 'GB PRINT CONTRACT v2.9' css/site.css
+          grep -Fq 'ГОСПОДЬ БОГ — СИЛА МОЯ' css/site.css
+          grep -Fq '#reading-progress, .h-reading-progress' css/site.css
+          if grep -Fq 'GB PRINT CONTRACT v2.8' css/site.css; then
+            echo 'obsolete v2.8 print contract remains' >&2
+            exit 1
+          fi
+          if grep -Fq 'transform: scaleX(var(--gb-read-pct, 0))' css/floating-cluster.css; then
+            echo 'duplicate global progress pseudo-element remains' >&2
+            exit 1
+          fi
+          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-print-decoration-pagination.yml
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install browser and PDF audit dependencies
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+
+      - name: Run multi-route pagination proof
+        env:
+          GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-decoration-pagination
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          node scripts/print-pagination-contract.mjs 2>&1 | tee reports/print-decoration-pagination.log
+
+      - name: Raster-audit every generated PDF
+        run: |
+          python3 scripts/print-pagination-raster-audit.py \
+            reports/print-decoration-pagination \
+            --out reports/print-decoration-pagination-raster
+
+      - name: Publish tested product commit only
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            css/floating-cluster.css \
+            css/site.css \
+            js/reader-preferences-head.js \
+            scripts/print-pagination-contract.mjs \
+            scripts/print-pagination-raster-audit.py \
+            src/lib/asset-version.js
+          git add -u -- '*.html' '*.astro'
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No tested product changes staged' >&2
+            exit 1
+          fi
+          git commit -m 'fix(print): isolate progress chrome and keep active card face atomic'
+          git push origin HEAD:fix/print-decoration-pagination-2026-07-25
+
+      - name: Upload print evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: print-decoration-pagination-${{ github.run_id }}
+          path: |
+            reports/print-decoration-pagination.log
+            reports/print-decoration-pagination/
+            reports/print-decoration-pagination-raster/
+          if-no-files-found: warn
+          retention-days: 14
