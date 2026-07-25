@@ -1,0 +1,53 @@
+name: TEMP Fix font-face candidate integrity
+
+on:
+  push:
+    branches:
+      - fix/_temp-font-face-candidate-integrity-20260725
+    paths:
+      - scripts/_temp_fix_font_face_candidate_integrity.py
+      - .github/workflows/_temp-fix-font-face-candidate-integrity.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-fix-font-face-candidate-integrity
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact temporary lane
+        uses: actions/checkout@v4
+        with:
+          ref: fix/_temp-font-face-candidate-integrity-20260725
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Apply candidate integrity patch
+        run: python3 scripts/_temp_fix_font_face_candidate_integrity.py
+      - name: Validate focused and real font contracts
+        run: |
+          node --check scripts/font-assets-lib.mjs
+          node --check scripts/font-assets-contract-test.mjs
+          node scripts/font-assets-contract-test.mjs
+          node scripts/verify-font-assets.mjs
+          test ! -e scripts/_temp_fix_font_face_candidate_integrity.py
+          test ! -e .github/workflows/_temp-fix-font-face-candidate-integrity.yml
+          git diff --check
+      - name: Publish validated final blobs
+        run: |
+          git config user.name "font-integrity-bot"
+          git config user.email "font-integrity-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(fonts): enforce every font-face candidate"
+          git push origin HEAD:fix/_temp-font-face-candidate-integrity-20260725
