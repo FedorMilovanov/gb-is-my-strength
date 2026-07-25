@@ -21,13 +21,13 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Apply request identity and restore canonical workflow
+      - name: Apply request identity and restore reviewed workflow
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/_temp_bind_pagefind_request_identity.py
           test ! -e scripts/_temp_bind_pagefind_request_identity.py
-          git show origin/main:.github/workflows/interactive-audit.yml > .github/workflows/interactive-audit.yml
+          git show a73b57945ebb354a79e723b2939d9f70e3e0c42e:.github/workflows/interactive-audit.yml > .github/workflows/interactive-audit.yml
           node --check scripts/home-browser-lifecycle-contract.mjs
           python3 - <<'PY'
           from pathlib import Path
@@ -44,8 +44,16 @@ jobs:
           if missing:
               raise SystemExit(f'request identity boundary incomplete: {missing}')
           workflow = Path('.github/workflows/interactive-audit.yml').read_text(encoding='utf-8')
+          required_workflow = [
+              "'scripts/home-browser-lifecycle-contract.mjs'",
+              'persist-credentials: false',
+              'xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs',
+              'reports/home-browser-lifecycle-contract',
+          ]
+          if any(marker not in workflow for marker in required_workflow):
+              raise SystemExit('reviewed workflow restoration incomplete')
           if 'contents: write' in workflow or '_temp_' in workflow:
-              raise SystemExit('canonical workflow restoration failed')
+              raise SystemExit('reviewed workflow restoration retained transport state')
           PY
           git diff --check
           git add -A
