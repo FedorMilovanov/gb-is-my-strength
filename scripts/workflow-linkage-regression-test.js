@@ -58,14 +58,17 @@ assert.match(deploy, /needs:\s*readiness/, `${RELEASE_PATH}: privileged promotio
 assert.match(deploy, /permissions:\s*\n\s*actions:\s*read\s*\n\s*contents:\s*read\s*\n\s*pages:\s*write\s*\n\s*id-token:\s*write/, `${RELEASE_PATH}: deploy permissions are incomplete or widened`);
 assert.match(deploy, /name:\s*Download exact same-run release candidate/, `${RELEASE_PATH}: candidate download is missing`);
 assert.match(deploy, /name:\s*Verify downloaded candidate identity[\s\S]*name:\s*Upload exact candidate as Pages artifact/, `${RELEASE_PATH}: downloaded candidate must be verified before Pages upload`);
+assert.match(deploy, /actions\/upload-pages-artifact@[a-f0-9]{40}\s+# v3/, `${RELEASE_PATH}: Pages packaging action must be pinned`);
+assert.match(deploy, /actions\/deploy-pages@[a-f0-9]{40}\s+# v4/, `${RELEASE_PATH}: Pages deployment action must be pinned`);
 assert.doesNotMatch(deploy, /actions\/checkout@|\bnpm ci\b|strangler:build|cache-bust\.js|validate:static-publication/, `${RELEASE_PATH}: privileged deploy job must not checkout, validate or rebuild source`);
 assert.equal((release.match(/actions\/checkout@/g) || []).length, 1, `${RELEASE_PATH}: exactly one checkout is allowed`);
 assert.equal((release.match(/\bnpm ci\b/g) || []).length, 1, `${RELEASE_PATH}: exactly one npm ci is allowed`);
 assert.equal((release.match(/npm run strangler:build:production-like/g) || []).length, 1, `${RELEASE_PATH}: exactly one production build is allowed`);
 assert.equal((release.match(/actions\/deploy-pages@/g) || []).length, 1, `${RELEASE_PATH}: exactly one Pages promotion is allowed`);
+assert.doesNotMatch(diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/, `${DIAGNOSTICS_PATH}: diagnostics must not duplicate the release build`);
 assert.doesNotMatch(diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, `${DIAGNOSTICS_PATH}: diagnostic workflow must not own production publication`);
 
 console.log('✅ workflow linkage: one direct-push release workflow owns candidate readiness and Pages promotion');
 console.log('✅ build-once: one checkout, one npm ci, one production build, one deploy-pages');
-console.log('✅ privileged deploy: needs readiness, downloads/verifies exact candidate, no source rebuild');
-console.log('✅ metadata workflow remains read-only diagnostics only');
+console.log('✅ privileged deploy: exact pinned Pages actions, no source checkout/rebuild');
+console.log('✅ metadata workflow remains read-only and build-free');
