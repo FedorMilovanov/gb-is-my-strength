@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 function replaceRegexOnce(source, pattern, replacement, label) {
   const flags = pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g';
   const matches = [...source.matchAll(new RegExp(pattern.source, flags))];
+  console.log('[terminal-materializer]', label, 'matches=' + matches.length);
   if (matches.length !== 1) throw new Error(`${label}: expected one match, found ${matches.length}`);
   return source.replace(pattern, replacement);
 }
@@ -12,6 +13,7 @@ function replaceRegexOnce(source, pattern, replacement, label) {
 function insertAfterUniqueLine(source, marker, line, label) {
   const lines = source.split('\n');
   const hits = lines.map((value, index) => value.includes(marker) ? index : -1).filter((index) => index >= 0);
+  console.log('[terminal-materializer]', label, 'markers=' + hits.length);
   if (hits.length !== 1) throw new Error(`${label}: expected one marker line, found ${hits.length}`);
   lines.splice(hits[0] + 1, 0, line);
   return lines.join('\n');
@@ -86,9 +88,11 @@ runtime = runtime
   .replace(/^\s*'  [^'\n]*data-print-terminal-root[^'\n]*',$\n/gm, '')
   .replace(/^\s*'  [^'\n]*data-print-terminal-flow[^'\n]*',$\n/gm, '')
   .replace(/^\s*'  [^'\n]*data-print-terminal-follower[^'\n]*',$\n/gm, '');
+console.log('[terminal-materializer] prior terminal CSS stripped');
 
 const cssAnchor = `      '  html body [data-print-flow] { box-shadow: none; }',`;
 const cssHits = runtime.split(cssAnchor).length - 1;
+console.log('[terminal-materializer] semantic terminal CSS anchor matches=' + cssHits);
 if (cssHits !== 1) throw new Error(`semantic terminal CSS anchor: expected one match, found ${cssHits}`);
 const canonicalTerminalCss = `      '  /* GB_PRINT_TERMINAL_SEAL_V2_CSS */',
       '  html[data-print-terminal-root], html[data-print-terminal-root] body { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-after: auto !important; page-break-after: auto !important; }',
@@ -150,6 +154,7 @@ runtime = replaceRegexOnce(
 );
 
 fs.writeFileSync(runtimePath, runtime, 'utf8');
+console.log('[terminal-materializer] runtime written');
 
 const sweepPath = 'scripts/engine-sweep.mjs';
 let sweep = fs.readFileSync(sweepPath, 'utf8');
@@ -178,6 +183,7 @@ sweep = replaceRegexOnce(
 );
 
 fs.writeFileSync(sweepPath, sweep, 'utf8');
+console.log('[terminal-materializer] engine sweep written');
 
 execFileSync(process.execPath, ['--check', runtimePath], { stdio: 'inherit' });
 execFileSync(process.execPath, ['--check', sweepPath], { stdio: 'inherit' });
