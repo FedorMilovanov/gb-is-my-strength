@@ -1,2 +1,0 @@
-base=f4c60ecbc15b9a6bd5353f9d1c0d81d2d72b6b3e
-purpose=deterministic self-cleaning Genesis 6 system transaction

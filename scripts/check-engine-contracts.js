@@ -137,15 +137,41 @@ check('Серии: каждый *SeriesConfig.ts объявлен через def
 check('Серии: гид для агентов docs/SERIES-ENGINE-GUIDE.md на месте',
   fs.existsSync(path.join(ROOT, 'docs/SERIES-ENGINE-GUIDE.md')));
 
-// Каждая заявленная theme обязана иметь css/series-<theme>.css
+// Каждая заявленная theme обязана быть зарегистрирована с реальным stylesheet
+// и точным scoped-selector. По умолчанию тема живёт в css/series-<theme>.css,
+// но AGENTS ограничивает число CSS-файлов: новые локальные темы могут быть
+// размещены в существующем core stylesheet только через явный registry.
+const themeRegistryPath = 'data/series-theme-registry.json';
+let themeRegistry = null;
+try {
+  themeRegistry = JSON.parse(read(themeRegistryPath));
+} catch (error) {
+  check('Серии: theme registry читается', false, error.message);
+}
+check('Серии: theme registry schema version=1', themeRegistry?.version === 1 && themeRegistry?.themes && typeof themeRegistry.themes === 'object');
 const themes = [];
 for (const f of cfgFiles.concat(['seriesConfig.ts'])) {
   const m = read(path.join(seriesDir, f)).match(/theme:\s*'([a-z0-9-]+)'/g) || [];
   for (const t of m) themes.push(t.match(/'([a-z0-9-]+)'/)[1]);
 }
-const missingThemes = themes.filter((t) => !fs.existsSync(path.join(ROOT, `css/series-${t}.css`)));
-check('Серии: у каждой theme есть css/series-<theme>.css', missingThemes.length === 0,
-  'нет файла темы: ' + missingThemes.join(', '));
+const themeErrors = [];
+for (const [theme, entry] of Object.entries(themeRegistry?.themes || {})) {
+  if (!entry || typeof entry.stylesheet !== 'string' || typeof entry.selector !== 'string') {
+    themeErrors.push(`${theme}: нужен stylesheet + selector`);
+    continue;
+  }
+  if (!fs.existsSync(path.join(ROOT, entry.stylesheet))) {
+    themeErrors.push(`${theme}: stylesheet отсутствует (${entry.stylesheet})`);
+    continue;
+  }
+  if (!read(entry.stylesheet).includes(entry.selector)) {
+    themeErrors.push(`${theme}: selector ${entry.selector} отсутствует в ${entry.stylesheet}`);
+  }
+}
+for (const theme of themes) {
+  if (!themeRegistry?.themes?.[theme]) themeErrors.push(`${theme}: тема не зарегистрирована`);
+}
+check('Серии: themes зарегистрированы и реально scoped', themeErrors.length === 0, themeErrors.join(' | '));
 
 // Спутники: аккордеон обязан уметь их рендерить (satellitesOf подключён)
 check('Серии: аккордеон рендерит спутники (satellitesOf в GillPartTocOverlay)',
