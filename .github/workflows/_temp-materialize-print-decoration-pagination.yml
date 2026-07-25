@@ -32,7 +32,7 @@ jobs:
       - name: Detect completed product transaction
         id: transaction
         run: |
-          if grep -Fq 'GB_PRINT_DECORATION_PAGINATION_V2' js/reader-preferences-head.js; then
+          if grep -Fq 'GB_PRINT_DECORATION_PAGINATION_V3' js/reader-preferences-head.js; then
             echo 'skip=true' >> "$GITHUB_OUTPUT"
           else
             echo 'skip=false' >> "$GITHUB_OUTPUT"
@@ -100,10 +100,12 @@ jobs:
             scripts/_temp-materialize-print-decoration-pagination.mjs \
             .github/workflows/_temp-print-decoration-diagnose.yml \
             .github/workflows/_temp-print-source-grep.yml \
-            scripts/_temp-print-decoration-diagnose.mjs
+            scripts/_temp-print-decoration-diagnose.mjs \
+            .github/workflows/_temp-materialize-print-decoration.yml \
+            scripts/_temp-apply-print-decoration-fix.py
           git diff --cached --check
           git diff --cached --quiet && { echo 'No product changes staged'; exit 1; }
-          git commit -m 'fix(print): remove page bars and keep flip cards atomic'
+          git commit -m 'fix(print): normalize reversible-card pagination proof'
           git push origin HEAD:fix/print-decoration-pagination-2026-07-25
 
       - name: Upload print evidence
