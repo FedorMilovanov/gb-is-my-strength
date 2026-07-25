@@ -49,7 +49,7 @@ jobs:
           )
 
           readiness_run_id=""
-          for attempt in $(seq 1 100); do
+          for _attempt in $(seq 1 100); do
             curl --fail-with-body --location --silent --show-error "${headers[@]}" \
               "${GH_API}/actions/workflows/indexnow.yml/runs?head_sha=${TARGET_SHA}&event=push&per_page=20" \
               > reports/deploy-diagnostics/readiness-runs.json
@@ -68,7 +68,7 @@ jobs:
             reports/deploy-diagnostics/readiness-run.json
 
           deploy_run_id=""
-          for attempt in $(seq 1 100); do
+          for _attempt in $(seq 1 100); do
             curl --fail-with-body --location --silent --show-error "${headers[@]}" \
               "${GH_API}/actions/workflows/deploy.yml/runs?head_sha=${TARGET_SHA}&event=workflow_run&per_page=20" \
               > reports/deploy-diagnostics/deploy-runs.json
@@ -95,7 +95,7 @@ jobs:
             reports/deploy-diagnostics/deploy-jobs.json
 
           deployment_id=""
-          for attempt in $(seq 1 60); do
+          for _attempt in $(seq 1 60); do
             curl --fail-with-body --location --silent --show-error "${headers[@]}" \
               "${GH_API}/deployments?sha=${TARGET_SHA}&environment=github-pages&per_page=100" \
               > reports/deploy-diagnostics/deployments.json
