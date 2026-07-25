@@ -2,8 +2,9 @@
 """Generic raster audit for a directory of reader PDFs.
 
 This audit is deliberately content-agnostic: every PDF is rendered page by
-page, checked for effectively blank sheets and large saturated screen fills,
-and emitted as an individual contact sheet for visual inspection.
+page, checked for effectively blank sheets, large saturated screen fills and
+obsolete warm-gold progress strips in the paper header, then emitted as an
+individual contact sheet for visual inspection.
 """
 from __future__ import annotations
 
@@ -22,53 +23,93 @@ def run(command: list[str]) -> None:
     subprocess.run(command, check=True)
 
 
-def find_amber_header_bars(image: Image.Image) -> list[dict]:
-    """Find thin, long warm-gold strips in the upper 22% of a paper page."""
+def paper_ratio_around(image: Image.Image, bar: dict) -> float:
+    """Return the light neutral-paper ratio immediately above/below a bar."""
+    pixels = image.load()
     width, height = image.size
-    limit_y = max(1, int(height * 0.22))
+    pad_x = max(4, int(width * 0.006))
+    pad_y = max(4, int(height * 0.004))
+    x0 = max(0, bar["x"] - pad_x)
+    x1 = min(width, bar["x"] + bar["width"] + pad_x)
+    rows = list(range(max(0, bar["y"] - pad_y), bar["y"]))
+    rows += list(range(bar["y"] + bar["height"], min(height, bar["y"] + bar["height"] + pad_y)))
+    neutral = 0
+    total = 0
+    for y in rows:
+        for x in range(x0, x1):
+            r, g, b = pixels[x, y]
+            total += 1
+            if min(r, g, b) >= 232 and max(r, g, b) - min(r, g, b) <= 20:
+                neutral += 1
+    return neutral / total if total else 0.0
+
+
+def find_amber_header_bars(image: Image.Image) -> list[dict]:
+    """Find the obsolete long gold progress strip on otherwise blank paper.
+
+    The old defect sat near the upper-left paper margin and was surrounded by
+    neutral paper. Requiring that geometry prevents sunsets, illustrations and
+    intentional short editorial rules from becoming false positives.
+    """
+    width, height = image.size
+    limit_y = max(1, int(height * 0.16))
     qualifying_rows: list[tuple[int, int, int]] = []
     pixels = image.load()
-    min_run = max(36, int(width * 0.14))
+    min_run = max(48, int(width * 0.28))
     for y in range(limit_y):
         longest = 0
-        run = 0
-        start = 0
+        run_length = 0
+        run_start = 0
         longest_start = 0
         for x in range(width):
             r, g, b = pixels[x, y]
             warm_gold = r >= 165 and g >= 105 and b <= 170 and r >= g + 18 and g >= b + 12
             if warm_gold:
-                if run == 0:
-                    start = x
-                run += 1
-                if run > longest:
-                    longest = run
-                    longest_start = start
+                if run_length == 0:
+                    run_start = x
+                run_length += 1
+                if run_length > longest:
+                    longest = run_length
+                    longest_start = run_start
             else:
-                run = 0
+                run_length = 0
         if longest >= min_run:
             qualifying_rows.append((y, longest_start, longest))
+
     bars: list[dict] = []
     group: list[tuple[int, int, int]] = []
     for row in qualifying_rows:
         if group and row[0] > group[-1][0] + 1:
             if len(group) >= 2:
                 bars.append({
-                    'y': group[0][0],
-                    'height': group[-1][0] - group[0][0] + 1,
-                    'x': min(item[1] for item in group),
-                    'width': max(item[2] for item in group),
+                    "y": group[0][0],
+                    "height": group[-1][0] - group[0][0] + 1,
+                    "x": min(item[1] for item in group),
+                    "width": max(item[2] for item in group),
                 })
             group = []
         group.append(row)
     if len(group) >= 2:
         bars.append({
-            'y': group[0][0],
-            'height': group[-1][0] - group[0][0] + 1,
-            'x': min(item[1] for item in group),
-            'width': max(item[2] for item in group),
+            "y": group[0][0],
+            "height": group[-1][0] - group[0][0] + 1,
+            "x": min(item[1] for item in group),
+            "width": max(item[2] for item in group),
         })
-    return [bar for bar in bars if bar['height'] <= max(24, int(height * 0.025))]
+
+    confirmed: list[dict] = []
+    for bar in bars:
+        geometry_matches = (
+            2 <= bar["height"] <= max(20, int(height * 0.018))
+            and bar["x"] <= int(width * 0.28)
+            and int(width * 0.28) <= bar["width"] <= int(width * 0.78)
+        )
+        if not geometry_matches:
+            continue
+        paper_ratio = paper_ratio_around(image, bar)
+        if paper_ratio >= 0.82:
+            confirmed.append({**bar, "paperRatio": round(paper_ratio, 4)})
+    return confirmed
 
 
 def audit_pdf(pdf: Path, out: Path) -> dict:
@@ -121,7 +162,7 @@ def audit_pdf(pdf: Path, out: Path) -> dict:
         if flat_saturated:
             failures.append(f"page {index}: large saturated flat fill {flat_saturated}")
         if amber_bars:
-            failures.append(f"page {index}: repeated amber/gold header bar {amber_bars}")
+            failures.append(f"page {index}: obsolete amber/gold paper-header bar {amber_bars}")
 
     columns, cell_w, cell_h = 4, 310, 430
     rows = math.ceil(len(thumbs) / columns)
