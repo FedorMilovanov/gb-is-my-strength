@@ -3,10 +3,14 @@
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const http = require('node:http');
 const path = require('node:path');
 const {
   auditUrl,
+  createPinnedLookup,
   isForbiddenAddress,
+  isSystemicTransportFailure,
+  requestOnce,
   sanitizeUrlForEvidence,
   sniffContentType,
   usableContentType,
@@ -56,6 +60,62 @@ async function test(name, fn) {
 }
 
 async function main() {
+  await test('pinned lookup supports scalar and all-address callback shapes', async () => {
+    const lookup = createPinnedLookup({ address: '93.184.216.34', family: 4 });
+    const scalar = await new Promise((resolve, reject) => {
+      lookup('allowed.example', { all: false }, (error, address, family) => {
+        if (error) reject(error);
+        else resolve({ address, family });
+      });
+    });
+    assert.deepEqual(scalar, { address: '93.184.216.34', family: 4 });
+
+    const all = await new Promise((resolve, reject) => {
+      lookup('allowed.example', { all: true }, (error, addresses) => {
+        if (error) reject(error);
+        else resolve(addresses);
+      });
+    });
+    assert.deepEqual(all, [{ address: '93.184.216.34', family: 4 }]);
+
+    assert.throws(() => createPinnedLookup({ address: '', family: 4 }), /pinned DNS address record is invalid/);
+    assert.throws(() => createPinnedLookup({ address: '93.184.216.34', family: 6 }), /pinned DNS address record is invalid/);
+  });
+
+  await test('all pre-HTTP warnings invalidate network acceptance', async () => {
+    assert.equal(isSystemicTransportFailure([]), false);
+    assert.equal(isSystemicTransportFailure([{ result: 'warn', reason: 'ERR_INVALID_IP_ADDRESS', hops: [] }]), true);
+    assert.equal(isSystemicTransportFailure([{ result: 'warn', reason: 'timeout', status: 500, hops: [] }]), false);
+    assert.equal(isSystemicTransportFailure([{ result: 'pass', status: 200, final: 'https://example.com/', hops: [] }]), false);
+    assert.equal(isSystemicTransportFailure([{ result: 'warn', reason: 'timeout', hops: [{ status: 301 }] }]), false);
+  });
+
+  await test('native GET stores a bounded prefix instead of rejecting a large page', async () => {
+    const payload = Buffer.from(`<!doctype html><html><body>${'x'.repeat(128 * 1024)}</body></html>`);
+    const server = http.createServer((_request, response) => {
+      response.writeHead(200, { 'content-type': 'application/octet-stream' });
+      response.end(payload);
+    });
+    await new Promise((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    try {
+      const port = server.address().port;
+      const result = await requestOnce(new URL(`http://probe.example:${port}/`), 'GET', {
+        address: { address: '127.0.0.1', family: 4 },
+        timeoutMs: 5000,
+        maxProbeBytes: 4096,
+      });
+      assert.equal(result.status, 200);
+      assert.equal(result.truncated, true);
+      assert.equal(result.bodyPrefix.length, 4096);
+      assert.equal(sniffContentType(result.bodyPrefix), 'text/html');
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
+
   await test('approved HTTPS redirect records complete chain', async () => {
     const calls = [];
     const requestImpl = scripted({
@@ -186,7 +246,7 @@ async function main() {
     );
   });
 
-  await test('404 is hard while transient 500 is warning', async () => {
+  await test('404 is hard while bot and transient statuses are warnings', async () => {
     const missing = await auditUrl('https://allowed.example/missing', {
       requestImpl: scripted({
         'HEAD https://allowed.example/missing': response({ status: 404 }),
@@ -204,6 +264,15 @@ async function main() {
     });
     assert.equal(server.result, 'warn');
     assert.equal(server.status, 500);
+
+    const botBlock = await auditUrl('https://allowed.example/bot', {
+      requestImpl: scripted({
+        'HEAD https://allowed.example/bot': response({ status: 418 }),
+      }),
+      lookupImpl: publicLookup,
+    });
+    assert.equal(botBlock.result, 'warn');
+    assert.equal(botBlock.status, 418);
   });
 
   await test('unusable final content blocks', async () => {
