@@ -55,14 +55,21 @@ jobs:
       - name: Install Chromium and WebKit
         if: steps.transaction.outputs.skip != 'true'
         run: npx playwright install --with-deps chromium webkit
-      - name: Run TTS source and browser contracts
+      - name: TTS source status contract
         if: steps.transaction.outputs.skip != 'true'
-        run: |
-          node scripts/tts-engine-status-contract-test.js
-          node scripts/tts-download-consent-contract-test.js
-          node scripts/tts-download-notice-browser-test.js
-          node scripts/tts-engine-lifecycle-browser-test.js
-          node scripts/tts-status-route-browser-test.js
+        run: node scripts/tts-engine-status-contract-test.js
+      - name: TTS consent contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-download-consent-contract-test.js
+      - name: TTS notice browser contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-download-notice-browser-test.js
+      - name: TTS lifecycle browser contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-engine-lifecycle-browser-test.js
+      - name: TTS route browser dwell contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-status-route-browser-test.js
       - name: Re-run Gill controller traversal
         if: steps.transaction.outputs.skip != 'true'
         env:
