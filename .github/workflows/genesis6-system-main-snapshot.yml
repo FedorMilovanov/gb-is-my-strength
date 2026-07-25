@@ -1,0 +1,29 @@
+name: Genesis 6 system-base snapshot
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/genesis6-system-main-snapshot.yml'
+      - 'tmp-genesis6-system-main-trigger.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Package repository
+        run: tar --exclude=.git --exclude=node_modules --exclude=dist --exclude=.astro -czf /tmp/genesis6-system-main.tgz .
+      - name: Upload snapshot
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: genesis6-system-main-${{ github.run_id }}
+          path: /tmp/genesis6-system-main.tgz
+          if-no-files-found: error
+          retention-days: 1
