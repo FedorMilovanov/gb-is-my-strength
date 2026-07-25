@@ -14,9 +14,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read   # читаем репозиторий
-  pages:    write  # заливаем артефакт на Pages
-  id-token: write  # OIDC-токен для actions/deploy-pages
+  contents: read       # читаем репозиторий
+  pages: write         # заливаем артефакт на Pages
+  id-token: write      # OIDC-токен для actions/deploy-pages
+  issues: write        # фиксируем exact-SHA acceptance и закрываем точную задачу
+  pull-requests: read  # находим PR, породивший опубликованный merge SHA
 
 # Если в очереди несколько деплоев — оставляем только последний
 concurrency:
@@ -174,6 +176,30 @@ jobs:
           path: reports/tts-live-deployment-contract.json
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Record live deployment acceptance
+        uses: actions/github-script@v7
+        env:
+          DEPLOYED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          SOURCE_READINESS_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}
+          CURRENT_POINTER_URL: https://gospod-bog.ru/deployments/current.json
+          PROVENANCE_URL: https://gospod-bog.ru/deployments/${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}/${{ github.run_id }}-${{ github.run_attempt }}.json
+          ARTIFACT_NAME: tts-live-deployment-${{ github.run_id }}
+        with:
+          script: |
+            const recordAcceptance = require('./scripts/record-live-deployment-acceptance.cjs');
+            await recordAcceptance({
+              github,
+              context,
+              core,
+              deployedSha: process.env.DEPLOYED_SHA,
+              deployRunId: String(context.runId),
+              deployRunAttempt: process.env.GITHUB_RUN_ATTEMPT,
+              sourceReadinessRunId: process.env.SOURCE_READINESS_RUN_ID,
+              currentPointerUrl: process.env.CURRENT_POINTER_URL,
+              provenanceUrl: process.env.PROVENANCE_URL,
+              artifactName: process.env.ARTIFACT_NAME,
+            });
 
       - name: Build IndexNow payload
         id: payload
