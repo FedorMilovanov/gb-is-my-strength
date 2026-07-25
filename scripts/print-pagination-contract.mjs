@@ -4,10 +4,9 @@
  *
  * The browser runtime classifies semantic components, then this audit places
  * non-layout marker nodes at the start/end of every top-level atomic component
- * and around every keep-with-next pair. Real A4 PDFs are inspected with
- * pdftotext, proving that atomic modules are not fragmented and linked modules
- * actually share a sheet. The route matrix spans series, book and standalone
- * engines; assertions are component-based rather than route-specific.
+ * and around every keep-with-next pair. Marker PDFs prove pagination through
+ * pdftotext; separate clean PDFs are emitted for raster and visual inspection
+ * so diagnostic markers can never create false trailing pages.
  */
 import { createServer } from 'node:http';
 import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
@@ -20,6 +19,7 @@ import { chromium } from 'playwright';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, process.env.GB_PRINT_PAGINATION_ARTIFACT_DIR || 'reports/print-pagination-contract');
+const MARKERS = join(OUT, 'markers');
 const MIME = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.json':'application/json', '.woff2':'font/woff2' };
 const ROUTES = [
   ['gill-part1', '/articles/dzhon-gill-chast-1-chelovek/'],
@@ -54,6 +54,7 @@ function pageMap(text) {
 }
 
 await mkdir(OUT, { recursive: true });
+await mkdir(MARKERS, { recursive: true });
 const { server, base } = await serve();
 const pinned = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
 const browser = await chromium.launch(existsSync(pinned) ? { executablePath: pinned } : {});
@@ -204,11 +205,11 @@ try {
     const badKeep = setup.keepers.filter((item) => !String(item.breakAfter).includes('avoid'));
     if (badKeep.length) report.failures.push(`${id}: keep-with-next computed style is not avoid-page: ${JSON.stringify(badKeep.slice(0, 4))}`);
 
-    const pdf = join(OUT, `${id}.pdf`);
-    const txt = join(OUT, `${id}.txt`);
-    await page.pdf({ path: pdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
-    execFileSync('pdftotext', ['-layout', pdf, txt]);
-    const pages = pageMap(await readFile(txt, 'utf8'));
+    const markerPdf = join(MARKERS, `${id}.pdf`);
+    const markerTxt = join(MARKERS, `${id}.txt`);
+    await page.pdf({ path: markerPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
+    execFileSync('pdftotext', ['-layout', markerPdf, markerTxt]);
+    const pages = pageMap(await readFile(markerTxt, 'utf8'));
     const atomicSplits = [];
     const atomicMissing = [];
     for (const item of setup.atomic) {
@@ -229,11 +230,23 @@ try {
     if (atomicSplits.length) report.failures.push(`${id}: ${atomicSplits.length} atomic components split across pages`);
     if (pairMissing.length) report.failures.push(`${id}: ${pairMissing.length} keep-pair PDF markers missing`);
     if (pairSplits.length) report.failures.push(`${id}: ${pairSplits.length} keep-with-next pairs split across pages`);
+
+    await page.evaluate(() => {
+      document.querySelectorAll('.gb-print-audit-marker').forEach((node) => node.remove());
+      document.querySelectorAll('[data-gb-audit-id]').forEach((node) => node.removeAttribute('data-gb-audit-id'));
+      document.querySelectorAll('.gb-print-audit-host').forEach((node) => node.classList.remove('gb-print-audit-host'));
+      document.getElementById('gb-print-pagination-audit-markers')?.remove();
+    });
+    const cleanPdf = join(OUT, `${id}.pdf`);
+    await page.pdf({ path: cleanPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
+
     report.routes.push({
       id, url,
       runtime: setup.runtime,
       atomicCount: setup.atomic.length,
       keepNextCount: setup.keepers.length,
+      markerPdf: `markers/${id}.pdf`,
+      cleanPdf: `${id}.pdf`,
       atomicMissing: atomicMissing.slice(0, 12),
       atomicSplits: atomicSplits.slice(0, 12),
       pairMissing: pairMissing.slice(0, 12),
