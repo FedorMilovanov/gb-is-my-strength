@@ -31,10 +31,21 @@ jobs:
 
       - name: Materialize source-link evidence hardening
         if: github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening'
+        shell: bash
         run: |
+          set -o pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python3 scripts/_temp_harden_source_link_evidence.py
+          python3 scripts/_temp_harden_source_link_evidence.py 2>&1 | tee "$RUNNER_TEMP/source-link-materializer.log"
+
+      - name: Upload source-link materializer diagnostics
+        if: always() && (github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening')
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-link-materializer-${{ github.run_id }}
+          path: ${{ runner.temp }}/source-link-materializer.log
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Restore canonical Shared Files Guard after materialization
         if: github.head_ref == 'agent/source-link-evidence-hardening' || github.ref == 'refs/heads/agent/source-link-evidence-hardening'
