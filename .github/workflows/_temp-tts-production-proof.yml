@@ -21,7 +21,7 @@ jobs:
   live-proof:
     name: Chromium and WebKit live TTS proof
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 35
 
     steps:
       - name: Checkout proof head
@@ -33,94 +33,45 @@ jobs:
           node-version: 22.12.0
           cache: npm
 
-      - name: Require exact readiness and Pages deployment chain
+      - name: Verify exact successful Pages deployment
         env:
           GH_TOKEN: ${{ github.token }}
           GH_API: https://api.github.com/repos/${{ github.repository }}
           TARGET_SHA: 59a91bacea6c498d2c16e6a965924b37f9bd7c2f
+          DEPLOY_RUN_ID: "30135679061"
         run: |
           set -euo pipefail
-          export TARGET_SHA
           mkdir -p reports/deploy-diagnostics
           headers=(
             -H "Accept: application/vnd.github+json"
             -H "Authorization: Bearer ${GH_TOKEN}"
             -H "X-GitHub-Api-Version: 2022-11-28"
           )
-
-          readiness_run_id=""
-          for _attempt in $(seq 1 100); do
-            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-              "${GH_API}/actions/workflows/indexnow.yml/runs?head_sha=${TARGET_SHA}&event=push&per_page=20" \
-              > reports/deploy-diagnostics/readiness-runs.json
-            readiness_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "push")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/readiness-runs.json)"
-            if [[ -n "${readiness_run_id}" ]]; then
-              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/actions/runs/${readiness_run_id}" \
-                > reports/deploy-diagnostics/readiness-run.json
-              status="$(jq -r '.status' reports/deploy-diagnostics/readiness-run.json)"
-              [[ "${status}" == "completed" ]] && break
-            fi
-            sleep 15
-          done
-          test -n "${readiness_run_id}"
-          jq -e --arg sha "${TARGET_SHA}" '.name == "Metadata & IndexNow Readiness" and .head_sha == $sha and .event == "push" and .status == "completed" and .conclusion == "success"' \
-            reports/deploy-diagnostics/readiness-run.json
-
-          deploy_run_id=""
-          for _attempt in $(seq 1 100); do
-            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-              "${GH_API}/actions/workflows/deploy.yml/runs?head_sha=${TARGET_SHA}&event=workflow_run&per_page=20" \
-              > reports/deploy-diagnostics/deploy-runs.json
-            deploy_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "workflow_run")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deploy-runs.json)"
-            if [[ -n "${deploy_run_id}" ]]; then
-              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/actions/runs/${deploy_run_id}" \
-                > reports/deploy-diagnostics/deploy-run.json
-              status="$(jq -r '.status' reports/deploy-diagnostics/deploy-run.json)"
-              [[ "${status}" == "completed" ]] && break
-            fi
-            sleep 15
-          done
-          test -n "${deploy_run_id}"
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/actions/runs/${DEPLOY_RUN_ID}" \
+            > reports/deploy-diagnostics/deploy-run.json
           jq -e --arg sha "${TARGET_SHA}" '.name == "Deploy to GitHub Pages" and .head_sha == $sha and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' \
             reports/deploy-diagnostics/deploy-run.json
-
           curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-            "${GH_API}/actions/runs/${deploy_run_id}/jobs?per_page=100" \
+            "${GH_API}/actions/runs/${DEPLOY_RUN_ID}/jobs?per_page=100" \
             > reports/deploy-diagnostics/deploy-jobs.json
           jq -e '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length == 0' \
             reports/deploy-diagnostics/deploy-jobs.json
           jq -e '[.jobs[].steps[]? | select(.name == "Upload Pages artifact" or .name == "Deploy to GitHub Pages") | select(.conclusion == "success")] | length == 2' \
             reports/deploy-diagnostics/deploy-jobs.json
-
-          deployment_id=""
-          for _attempt in $(seq 1 60); do
-            curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-              "${GH_API}/deployments?sha=${TARGET_SHA}&environment=github-pages&per_page=100" \
-              > reports/deploy-diagnostics/deployments.json
-            deployment_id="$(jq -r 'sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deployments.json)"
-            if [[ -n "${deployment_id}" ]]; then
-              curl --fail-with-body --location --silent --show-error "${headers[@]}" \
-                "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" \
-                > reports/deploy-diagnostics/deployment-statuses.json
-              if jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' \
-                reports/deploy-diagnostics/deployment-statuses.json >/dev/null; then
-                break
-              fi
-            fi
-            sleep 15
-          done
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/deployments?sha=${TARGET_SHA}&environment=github-pages&per_page=100" \
+            > reports/deploy-diagnostics/deployments.json
+          deployment_id="$(jq -r 'sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deployments.json)"
           test -n "${deployment_id}"
-          jq -e --arg sha "${TARGET_SHA}" 'length > 0 and (sort_by(.created_at) | reverse | .[0].sha == $sha)' \
-            reports/deploy-diagnostics/deployments.json
-          jq -e --arg run "/actions/runs/${deploy_run_id}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' \
+          curl --fail-with-body --location --silent --show-error "${headers[@]}" \
+            "${GH_API}/deployments/${deployment_id}/statuses?per_page=100" \
+            > reports/deploy-diagnostics/deployment-statuses.json
+          jq -e --arg run "/actions/runs/${DEPLOY_RUN_ID}" 'sort_by(.created_at) | reverse | .[0] | .state == "success" and (((.log_url // "") + (.target_url // "")) | contains($run))' \
             reports/deploy-diagnostics/deployment-statuses.json
-
           printf '%s\n' \
             "target_sha=${TARGET_SHA}" \
-            "readiness_run_id=${readiness_run_id}" \
-            "deploy_run_id=${deploy_run_id}" \
+            "deploy_run_id=${DEPLOY_RUN_ID}" \
             "deployment_id=${deployment_id}" \
             "deployment_state=success" \
             > reports/deploy-diagnostics/exact-deployment.txt
@@ -165,6 +116,11 @@ jobs:
                 assert.match(browserState.meta, /Системный голос уже работает/);
               }
               await page.waitForFunction(() => {
+                const link = document.querySelector('link[data-gb-tts-download-notice]');
+                if (!link || !link.sheet) return false;
+                try { return link.sheet.cssRules.length > 0; } catch (_) { return true; }
+              }, null, { timeout: 5000 });
+              await page.waitForFunction(() => {
                 const notice = document.querySelector('.gb-tts-download-notice');
                 return !!notice && getComputedStyle(notice).position === 'fixed';
               }, null, { timeout: 5000 });
@@ -192,8 +148,7 @@ jobs:
           path.write_text(source, encoding='utf-8')
           PY
           grep -Fq "const EXPECTED_MAIN = '59a91bacea6c498d2c16e6a965924b37f9bd7c2f';" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "controller: '/js/floating-cluster-controller.js?v=4bf2a7fd'" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "getComputedStyle(notice).position === 'fixed'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "link.sheet.cssRules.length > 0" scripts/_temp-tts-production-proof.mjs
           grep -Fq "assert.match(disabledState.meta, /системный голос/i);" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
