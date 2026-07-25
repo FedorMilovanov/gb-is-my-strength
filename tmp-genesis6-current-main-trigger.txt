@@ -1,0 +1,2 @@
+main=733ba309e159023ae44682b7cb71b2c042cd8eb6
+purpose=read-only Genesis 6 implementation snapshot
