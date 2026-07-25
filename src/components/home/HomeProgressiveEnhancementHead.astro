@@ -14,6 +14,26 @@
   }
 </script>
 
+<script is:inline>
+  (() => {
+    const isEditable = (target) => Boolean(
+      target instanceof Element &&
+      target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], [contenteditable="plaintext-only"]')
+    );
+
+    // search.js owns the canonical Ctrl/Command+K action. This early capture
+    // gate prevents its broad bootstrap listener from consuming modified,
+    // composing or editable shortcuts before the lazy search runtime loads.
+    document.addEventListener('keydown', (event) => {
+      if (String(event.key || '').toLowerCase() !== 'k') return;
+      const modifierCount = Number(event.ctrlKey) + Number(event.metaKey);
+      const canonical = modifierCount === 1 && !event.altKey && !event.shiftKey;
+      if (canonical && !event.isComposing && !isEditable(event.target)) return;
+      event.stopImmediatePropagation();
+    }, true);
+  })();
+</script>
+
 <style is:global>
   html.home-no-intersection-observer .home-page .h-reveal {
     opacity: 1 !important;
