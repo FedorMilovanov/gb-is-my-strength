@@ -53,7 +53,7 @@ jobs:
             curl --fail-with-body --location --silent --show-error "${headers[@]}" \
               "${GH_API}/actions/workflows/deploy.yml/runs?head_sha=${TARGET_SHA}&per_page=20" \
               > reports/deploy-diagnostics/deploy-runs.json
-            deploy_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "push")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deploy-runs.json)"
+            deploy_run_id="$(jq -r '.workflow_runs | map(select(.head_sha == env.TARGET_SHA and .event == "workflow_run")) | sort_by(.created_at) | reverse | .[0].id // empty' reports/deploy-diagnostics/deploy-runs.json)"
             if [[ -n "${deploy_run_id}" ]]; then
               curl --fail-with-body --location --silent --show-error "${headers[@]}" \
                 "${GH_API}/actions/runs/${deploy_run_id}" \
@@ -67,7 +67,7 @@ jobs:
           done
 
           test -n "${deploy_run_id}"
-          jq -e --arg sha "${TARGET_SHA}" '.head_sha == $sha and .status == "completed" and .conclusion == "success"' \
+          jq -e --arg sha "${TARGET_SHA}" '.head_sha == $sha and .event == "workflow_run" and .status == "completed" and .conclusion == "success"' \
             reports/deploy-diagnostics/deploy-run.json
           curl --fail-with-body --location --silent --show-error "${headers[@]}" \
             "${GH_API}/actions/runs/${deploy_run_id}/jobs?per_page=100" \
