@@ -32,7 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_API: https://api.github.com/repos/${{ github.repository }}
-          TARGET_SHA: f92794b4f11ef9dae55d284a106a9bd0f69133c9
+          TARGET_SHA: 8af7037617db6dd389837d4c3a2546fbe27624c7
         run: |
           set -euo pipefail
           export TARGET_SHA
@@ -109,7 +109,7 @@ jobs:
       - run: npm ci
       - name: Fetch exact merged proof contracts
         env:
-          TARGET_SHA: f92794b4f11ef9dae55d284a106a9bd0f69133c9
+          TARGET_SHA: 8af7037617db6dd389837d4c3a2546fbe27624c7
         run: |
           set -euo pipefail
           RAW="https://raw.githubusercontent.com/${{ github.repository }}/${TARGET_SHA}"
