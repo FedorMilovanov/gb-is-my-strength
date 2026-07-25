@@ -32,6 +32,8 @@ function validate({ deploy, ledger, workflow, recorder }) {
     ['ledger has contents read', ledger, /^  contents: read\s+# checkout trusted recorder source$/m],
     ['ledger owns issue projection', ledger, /^  issues: write\s+# comment\/close only a full-SHA machine-marked issue$/m],
     ['ledger owns exact PR comment projection', ledger, /^  pull-requests: write\s+# comment the exact merged PR after verified deployment$/m],
+    ['ledger serializes automatic and manual projection by deploy run', ledger, /concurrency:[\s\S]{0,180}group: deployment-witness-\$\{\{ github\.event_name == 'workflow_run' && github\.event\.workflow_run\.id \|\| inputs\.deploy_run_id \}\}/],
+    ['ledger evidence writer never cancels an earlier projection', ledger, /concurrency:[\s\S]{0,220}cancel-in-progress: false/],
 
     ['automatic ledger requires successful deploy', ledger, /workflow_run\.conclusion == 'success'/],
     ['automatic ledger requires main branch', ledger, /workflow_run\.head_branch == 'main'/],
@@ -132,6 +134,9 @@ const mutations = [
   ['deploy issue permission reintroduced', { ...sources, deploy: sources.deploy.replace('  pages: write', '  issues: write\n  pages: write') }],
   ['deploy evidence absence downgraded', { ...sources, deploy: sources.deploy.replace('if-no-files-found: error', 'if-no-files-found: warn') }],
   ['ledger PR projection downgraded to read', { ...sources, ledger: sources.ledger.replace('  pull-requests: write', '  pull-requests: read') }],
+  ['ledger concurrency removed', { ...sources, ledger: sources.ledger.replace(/\nconcurrency:[\s\S]*?\n\njobs:/, '\n\njobs:') }],
+  ['ledger concurrency made cancelling', { ...sources, ledger: sources.ledger.replace('  cancel-in-progress: false', '  cancel-in-progress: true') }],
+  ['ledger concurrency keyed to recorder run', { ...sources, ledger: sources.ledger.replace("group: deployment-witness-${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || inputs.deploy_run_id }}", 'group: deployment-witness-${{ github.run_id }}') }],
   ['github-script pin made mutable', { ...sources, ledger: sources.ledger.replaceAll(ACTION_PINS.githubScript, 'actions/github-script@v7') }],
   ['checkout pin made mutable', { ...sources, ledger: sources.ledger.replace(ACTION_PINS.checkout, 'actions/checkout@v4') }],
   ['download-artifact pin made mutable', { ...sources, ledger: sources.ledger.replace(ACTION_PINS.downloadArtifact, 'actions/download-artifact@v4') }],

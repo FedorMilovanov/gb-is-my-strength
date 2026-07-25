@@ -19,6 +19,10 @@ permissions:
   issues: write         # comment/close only a full-SHA machine-marked issue
   pull-requests: write  # comment the exact merged PR after verified deployment
 
+concurrency:
+  group: deployment-witness-${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || inputs.deploy_run_id }}
+  cancel-in-progress: false
+
 jobs:
   record:
     name: Record verified deployment capability witness
