@@ -19,6 +19,7 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
 
   must('readiness gateway is subscribed', workflow, /- "Metadata & IndexNow Readiness"/);
   must('deploy workflow is subscribed', workflow, /- "Deploy to GitHub Pages"/);
+  must('downstream deployment ledger is subscribed', workflow, /- "Deployment Witness Ledger"/);
   mustNot('stale standalone IndexNow workflow subscription remains', workflow, /IndexNow — Notify Search Engines/);
   must('workflow handles every completed conclusion', workflow, /types:\s*\n\s*- completed/);
   mustNot('workflow still runs only on failure', workflow, /conclusion\s*==\s*['"]failure['"]/);
@@ -75,6 +76,11 @@ const mutations = [
     label: 'readiness subscription removal',
     key: 'workflow',
     mutate: (source) => source.replace('      - "Metadata & IndexNow Readiness"\n', ''),
+  },
+  {
+    label: 'deployment ledger subscription removal',
+    key: 'workflow',
+    mutate: (source) => source.replace('      - "Deployment Witness Ledger"\n', ''),
   },
   {
     label: 'failure-only job regression',
