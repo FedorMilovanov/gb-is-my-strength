@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
 function replaceOnce(source, before, after, label) {
@@ -13,15 +14,6 @@ const enginePath = 'js/vosk-tts-engine.js';
 const lifecyclePath = 'scripts/tts-engine-lifecycle-browser-test.js';
 const contractPath = 'scripts/tts-engine-status-contract-test.js';
 
-let controller = fs.readFileSync(controllerPath, 'utf8');
-controller = replaceOnce(
-  controller,
-  "    requestAnimationFrame(function () { el.classList.add('is-visible'); });",
-  "    // The first status must be paintable in the current rendering opportunity.\n    // WebKit may defer requestAnimationFrame while the page is settling; queuing\n    // visibility there lets later states overwrite the still-hidden browser notice.\n    el.classList.add('is-visible');",
-  'controller synchronous first reveal'
-);
-fs.writeFileSync(controllerPath, controller, 'utf8');
-
 let engine = fs.readFileSync(enginePath, 'utf8');
 engine = replaceOnce(
   engine,
@@ -30,6 +22,23 @@ engine = replaceOnce(
   'engine synchronous first reveal'
 );
 fs.writeFileSync(enginePath, engine, 'utf8');
+const engineRevision = crypto.createHash('md5').update(engine).digest('hex').slice(0, 8);
+
+let controller = fs.readFileSync(controllerPath, 'utf8');
+controller = replaceOnce(
+  controller,
+  "    requestAnimationFrame(function () { el.classList.add('is-visible'); });",
+  "    // The first status must be paintable in the current rendering opportunity.\n    // WebKit may defer requestAnimationFrame while the page is settling; queuing\n    // visibility there lets later states overwrite the still-hidden browser notice.\n    el.classList.add('is-visible');",
+  'controller synchronous first reveal'
+);
+controller = controller.replace(
+  /var VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}';/,
+  "var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=" + engineRevision + "';"
+);
+if (!controller.includes("var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=" + engineRevision + "';")) {
+  throw new Error('controller nested engine revision was not updated');
+}
+fs.writeFileSync(controllerPath, controller, 'utf8');
 
 let lifecycle = fs.readFileSync(lifecyclePath, 'utf8');
 const lifecycleAnchor = "\n(async () => {\n  const { server, origin } = await startServer();";
@@ -84,8 +93,8 @@ fs.writeFileSync(lifecyclePath, lifecycle, 'utf8');
 let contract = fs.readFileSync(contractPath, 'utf8');
 const checksAnchor = "    ['system voice disclosed', controller, /showVoskStatus\\('browser'\\)/],";
 const checksInsertion = `${checksAnchor}
-    ['controller first status reveal is synchronous', controller, /showFallbackTtsStatus[\\s\\S]{0,1800}el\\.classList\\.add\\('is-visible'\\);[\\s\\S]{0,260}return el;/],
-    ['engine first status reveal is synchronous', engine, /setNoticeAction\\(el, actionMode, actionLabel, actionAria\\);\\s*el\\.classList\\.add\\('is-visible'\\);\\s*dispatchEngineStatus/],`;
+    ['controller first status reveal is synchronous', controller, /function showFallbackTtsStatus\\([\\s\\S]{0,5000}el\\.classList\\.add\\('is-visible'\\);[\\s\\S]{0,700}return el;/],
+    ['engine first status reveal is synchronous', engine, /function showStatus\\([\\s\\S]{0,5000}setNoticeAction\\(el, actionMode, actionLabel, actionAria\\);[\\s\\S]{0,700}el\\.classList\\.add\\('is-visible'\\);[\\s\\S]{0,700}dispatchEngineStatus/],`;
 if (!contract.includes('controller first status reveal is synchronous')) {
   contract = replaceOnce(contract, checksAnchor, checksInsertion, 'source synchronous reveal checks');
 }
