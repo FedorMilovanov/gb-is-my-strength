@@ -29,6 +29,7 @@ function validate({ writer, live, deploy, workflow }) {
     ['live verifier compares SHA-256 chain', live, /controllerSha256[\s\S]*engineSha256[\s\S]*noticeCssSha256[\s\S]*serviceWorkerSha256/],
     ['live verifier checks SW no-precache', live, /live Service Worker precaches lazy TTS notice CSS[\s\S]*live Service Worker precaches lazy Vosk engine/],
     ['deploy writes provenance before upload', deploy, /- name: Write immutable deployment provenance[\s\S]{0,420}node scripts\/write-deployment-provenance\.mjs[\s\S]{0,300}- name: Upload Pages artifact/],
+    ['deploy checks out the same exact SHA', deploy, /ref:\s*\$\{\{\s*github\.event_name == 'workflow_run' && github\.event\.workflow_run\.head_sha \|\| github\.sha\s*\}\}/],
     ['deploy passes verified commit SHA', deploy, /DEPLOYED_SHA:[^\n]*workflow_run\.head_sha/],
     ['deploy preserves readiness run ID', deploy, /SOURCE_READINESS_RUN_ID:[^\n]*workflow_run\.id/],
     ['deploy verifies live after Pages', deploy, /- name: Deploy to GitHub Pages[\s\S]{0,900}- name: Verify live TTS deployment contract/],
@@ -46,6 +47,9 @@ function validate({ writer, live, deploy, workflow }) {
   }
   if (/function readBuffer\(relativePath\)[\s\S]{0,160}path\.join\(ROOT, relativePath\)/.test(live)) {
     problems.push('live verifier still hashes root files');
+  }
+  if (/ref:\s*\$\{\{[^\n]*\|\|\s*'main'\s*\}\}/.test(deploy)) {
+    problems.push('deploy still checks out moving main');
   }
 
   for (const ownedPath of [
@@ -83,6 +87,7 @@ const mutations = [
   ['live Service Worker check removed', { ...sources, live: sources.live.replace('live Service Worker precaches lazy Vosk engine', 'unchecked Service Worker') }],
   ['deploy provenance generation removed', { ...sources, deploy: sources.deploy.replace('node scripts/write-deployment-provenance.mjs', 'echo provenance skipped') }],
   ['deploy provenance moved after upload', { ...sources, deploy: sources.deploy.replace(/(\s+- name: Write immutable deployment provenance[\s\S]*?run: node scripts\/write-deployment-provenance\.mjs\n)([\s\S]*?)(\s+- name: Upload Pages artifact[\s\S]*?path: dist\n)/, '$2$3$1') }],
+  ['deploy manual checkout moved to main', { ...sources, deploy: sources.deploy.replace('|| github.sha }}', "|| 'main' }}") }],
   ['workflow contract execution removed', { ...sources, workflow: sources.workflow.replace('node scripts/deployment-provenance-contract-test.mjs', 'echo provenance contract skipped') }],
   ['workflow writer ownership removed', { ...sources, workflow: sources.workflow.replace(/^      - "scripts\/write-deployment-provenance\.mjs"\n/gm, '') }],
 ];
