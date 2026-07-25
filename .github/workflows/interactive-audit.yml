@@ -6,6 +6,7 @@ on:
       - '.github/workflows/interactive-audit.yml'
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'scripts/_temp_fix_home_bfcache_wait.py'
       - 'src/pages/index.astro'
       - 'src/components/home/**'
       - 'src/styles/**'
@@ -43,6 +44,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  materialize-bfcache-wait:
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/home-browser-lifecycle-final-20260725'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: fix/home-browser-lifecycle-final-20260725
+          fetch-depth: 2
+
+      - name: Apply exact BFCache wait correction
+        run: python3 scripts/_temp_fix_home_bfcache_wait.py
+
+      - name: Restore permanent read-only workflow
+        run: |
+          git checkout HEAD^ -- .github/workflows/interactive-audit.yml
+          test ! -e scripts/_temp_fix_home_bfcache_wait.py
+          node --check scripts/home-browser-lifecycle-contract.mjs
+          grep -F "await page.goBack({ waitUntil: 'commit' });" scripts/home-browser-lifecycle-contract.mjs
+          ! grep -F "await page.goBack({ waitUntil: 'domcontentloaded' });" scripts/home-browser-lifecycle-contract.mjs
+
+      - name: Publish tested correction
+        run: |
+          git config user.name "home-contract-materializer"
+          git config user.email "home-contract-materializer@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "test(home): make BFCache navigation wait commit-aware"
+          git push origin HEAD:fix/home-browser-lifecycle-final-20260725
+
   home-browser-contract:
     name: Home Chromium WebKit contract
     runs-on: ubuntu-latest
