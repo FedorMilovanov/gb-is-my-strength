@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 
 const files = {
   css: 'css/tts-download-notice.css',
+  engine: 'js/vosk-tts-engine.js',
   controller: 'js/floating-cluster-controller.js',
   cacheAssets: 'scripts/cache-bust-assets.js',
   contract: 'scripts/tts-engine-status-contract-test.js',
@@ -29,15 +30,38 @@ write(files.css, css);
 
 const cssRevision = crypto.createHash('md5').update(css).digest('hex').slice(0, 8);
 
+let engine = read(files.engine);
+const engineCssUrlPattern = /var DOWNLOAD_NOTICE_CSS_URL = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}';/g;
+const engineCssUrlMatches = engine.match(engineCssUrlPattern) || [];
+if (engineCssUrlMatches.length !== 1) {
+  throw new Error(`engine notice CSS URL: expected exactly one match, found ${engineCssUrlMatches.length}`);
+}
+engine = engine.replace(
+  engineCssUrlPattern,
+  `var DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=${cssRevision}';`,
+);
+write(files.engine, engine);
+
+const engineRevision = crypto.createHash('md5').update(engine).digest('hex').slice(0, 8);
+
 let controller = read(files.controller);
-const cssUrlPattern = /var TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}';/g;
-const cssUrlMatches = controller.match(cssUrlPattern) || [];
-if (cssUrlMatches.length !== 1) {
-  throw new Error(`controller notice CSS URL: expected exactly one match, found ${cssUrlMatches.length}`);
+const controllerCssUrlPattern = /var TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}';/g;
+const controllerCssUrlMatches = controller.match(controllerCssUrlPattern) || [];
+if (controllerCssUrlMatches.length !== 1) {
+  throw new Error(`controller notice CSS URL: expected exactly one match, found ${controllerCssUrlMatches.length}`);
 }
 controller = controller.replace(
-  cssUrlPattern,
+  controllerCssUrlPattern,
   `var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=${cssRevision}';`,
+);
+const controllerEngineUrlPattern = /var VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}';/g;
+const controllerEngineUrlMatches = controller.match(controllerEngineUrlPattern) || [];
+if (controllerEngineUrlMatches.length !== 1) {
+  throw new Error(`controller engine URL: expected exactly one match, found ${controllerEngineUrlMatches.length}`);
+}
+controller = controller.replace(
+  controllerEngineUrlPattern,
+  `var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=${engineRevision}';`,
 );
 write(files.controller, controller);
 
@@ -110,7 +134,7 @@ browserTest = replaceOnce(
 );
 write(files.browserTest, browserTest);
 
-for (const file of [files.controller, files.cacheAssets, files.contract, files.browserTest]) {
+for (const file of [files.engine, files.controller, files.cacheAssets, files.contract, files.browserTest]) {
   execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' });
 }
 execFileSync(process.execPath, [files.contract], { stdio: 'inherit' });
@@ -120,6 +144,7 @@ execFileSync(process.execPath, ['scripts/cache-bust.js'], { stdio: 'inherit' });
 console.log(JSON.stringify({
   changedProductFiles: Object.values(files),
   noticeCssRevision: cssRevision,
+  engineRevision,
   centering: 'left:50vw',
   regressionViewport: 320,
   expandedContainingBlockWidth: 553,
