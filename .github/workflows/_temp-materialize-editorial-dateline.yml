@@ -28,8 +28,12 @@ jobs:
       - run: npm ci
       - name: Apply universal dateline migration
         run: |
+          mkdir -p reports/editorial-dateline-materializer
+          exec > >(tee reports/editorial-dateline-materializer/full.log) 2>&1
           set -euo pipefail
+          echo '=== remove inventory workflow ==='
           rm -f .github/workflows/_temp-editorial-dateline-inventory.yml
+          echo '=== patch one-shot legacy-scan self exclusion ==='
           python3 - <<'PY'
           from pathlib import Path
           path = Path('scripts/_temp-materialize-editorial-dateline.py')
@@ -40,13 +44,27 @@ jobs:
               raise SystemExit('materializer legacy-scan anchor missing')
           path.write_text(source.replace(old, new), 'utf-8')
           PY
+          echo '=== materialize product and permanent contracts ==='
           python3 scripts/_temp-materialize-editorial-dateline.py
+          echo '=== remove temporary materializers ==='
           rm -f scripts/_temp-materialize-editorial-dateline.py
           rm -f .github/workflows/_temp-materialize-editorial-dateline.yml
+          echo '=== refresh cache-bust revisions ==='
           node scripts/cache-bust.js
+          echo '=== semantic contract ==='
           node scripts/editorial-dateline-contract-test.js
+          echo '=== runtime syntax ==='
           node --check js/reader-preferences-head.js
+          echo '=== diff integrity ==='
           git diff --check
+          echo '=== materializer completed ==='
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-dateline-materializer-${{ github.sha }}
+          path: reports/editorial-dateline-materializer
+          if-no-files-found: warn
+          retention-days: 7
       - name: Commit materialized product and contracts
         env:
           BRANCH: ${{ github.event.pull_request.head.ref }}
