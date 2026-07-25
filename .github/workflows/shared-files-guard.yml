@@ -27,7 +27,7 @@ jobs:
             --header "Authorization: Bearer $GH_TOKEN" \
             --header 'X-GitHub-Api-Version: 2022-11-28' \
             "$api")"
-          node -e '
+          PAYLOAD="$payload" node -e '
             const payload = JSON.parse(process.env.PAYLOAD);
             const run = payload.workflow_runs && payload.workflow_runs[0];
             if (!run) throw new Error("no manual Source Link Audit run found");
@@ -36,4 +36,4 @@ jobs:
             console.log(`SOURCE_LINK_RUN_CONCLUSION=${run.conclusion || ""}`);
             console.log(`SOURCE_LINK_RUN_HEAD_SHA=${run.head_sha}`);
             console.log(`SOURCE_LINK_RUN_CREATED_AT=${run.created_at}`);
-          ' PAYLOAD="$payload"
+          '
