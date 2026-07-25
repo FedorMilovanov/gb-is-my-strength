@@ -14,10 +14,11 @@ export const ASSET_VERSIONS = {
   'css/series-samizdat.css': '2c4a9f29',
   'css/site.css': '4e58ac4d',
   'css/sw-toast.css': 'efbe868b',
+  'css/tts-download-notice.css': '475abd4b',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'fba4e559',
   'js/enhancements.js': 'cbbdb283',
-  'js/floating-cluster-controller.js': '4444f882',
+  'js/floating-cluster-controller.js': '75656128',
   'js/glossary.js': '81fc28c2',
   'js/highlights.js': '25484760',
   'js/nagornaya-bar-extras.js': '3c7e0bdd',
@@ -30,6 +31,7 @@ export const ASSET_VERSIONS = {
   'js/site-utils.js': '30ed46cf',
   'js/site.js': '38b94307',
   'js/sw-register.js': '7a8bd1e7',
+  'js/vosk-tts-engine.js': '9ca1685a',
   'nagornaya/tw.min.css': '2670414e',
 };
 

@@ -13,6 +13,7 @@
 
 const ASSETS = [
   'css/site.css',
+  'css/tts-download-notice.css',
   'css/reader-preferences.css',
   'css/home.css',
   'css/command-palette.css',
@@ -39,6 +40,7 @@ const ASSETS = [
   'js/nagornaya-mobile-toc.js',
   'js/nagornaya-bar-extras.js',
   'js/glossary.js',
+  'js/vosk-tts-engine.js',
   'js/floating-cluster-controller.js',
 ];
 

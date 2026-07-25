@@ -337,8 +337,8 @@
   }
 
   var _voskEngineScriptPromise = null;
-  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=87bfc44a';
-  var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=1cdbee44';
+  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=9ca1685a';
+  var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=475abd4b';
   var fallbackTtsNoticeTimer = null;
 
   function ensureFallbackTtsNoticeStyles() {

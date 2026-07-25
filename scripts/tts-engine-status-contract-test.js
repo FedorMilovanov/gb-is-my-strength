@@ -2,6 +2,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -36,6 +37,17 @@ function validate(engine, controller, css, workflow) {
   for (const [label, source, pattern] of checks) {
     if (!pattern.test(source)) problems.push(label);
   }
+  const noticeRevision = crypto.createHash('md5').update(css).digest('hex').slice(0, 8);
+  const engineRevision = crypto.createHash('md5').update(engine).digest('hex').slice(0, 8);
+  if (!engine.includes('/css/tts-download-notice.css?v=' + noticeRevision)) {
+    problems.push('engine notice CSS revision drift');
+  }
+  if (!controller.includes('/css/tts-download-notice.css?v=' + noticeRevision)) {
+    problems.push('controller notice CSS revision drift');
+  }
+  if (!controller.includes('/js/vosk-tts-engine.js?v=' + engineRevision)) {
+    problems.push('controller Vosk engine revision drift');
+  }
   if (/_voskWarmupStarted/.test(controller)) problems.push('obsolete one-shot warm-up latch remains');
   if (/s\.src\s*=\s*'\/js\/vosk-tts-engine\.js'/.test(controller)) problems.push('unversioned lazy engine URL remains');
   return problems;
@@ -54,6 +66,9 @@ const mutations = [
   [engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow],
   [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow],
   [engine, controller, css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;'), workflow],
+  [engine.replace(/DOWNLOAD_NOTICE_CSS_URL = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=00000000'"), controller, css, workflow],
+  [engine, controller.replace(/TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=00000000'"), css, workflow],
+  [engine, controller.replace(/VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}'/, "VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=00000000'"), css, workflow],
   [engine, controller, css, workflow.replace('chromium webkit', 'chromium')],
 ];
 for (const mutation of mutations) {
