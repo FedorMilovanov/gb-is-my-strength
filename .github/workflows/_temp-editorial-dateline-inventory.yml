@@ -18,7 +18,7 @@ jobs:
       - name: Capture legacy marker inventory
         run: |
           set -euo pipefail
-          mkdir -p reports/editorial-dateline/files
+          mkdir -p reports/editorial-dateline/files/src/lib reports/editorial-dateline/files/scripts
           git grep -n -C 3 -E 'foliant-mark|editorial-dateline' -- ':!reports/**' > reports/editorial-dateline/occurrences.txt || true
           git grep -l -z -E 'foliant-mark|editorial-dateline' -- ':!reports/**' | while IFS= read -r -d '' file; do
             mkdir -p "reports/editorial-dateline/files/$(dirname "$file")"
