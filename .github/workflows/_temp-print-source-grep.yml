@@ -1,0 +1,34 @@
+name: TEMP Print Source Grep
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  grep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture exact source matches
+        run: |
+          set -euo pipefail
+          mkdir -p reports/print-source-grep
+          {
+            echo '=== RUSSIAN TRANSLATION ==='
+            grep -RInE --exclude-dir=node_modules --exclude-dir=.git 'Русский перевод|РУССКИЙ ПЕРЕВОД|Чтоб следовать за Агнцем|Его святым заветам' . || true
+            echo '=== BODY/CONTAINER PSEUDOS ==='
+            grep -RInE --exclude-dir=node_modules --exclude-dir=.git 'body(::|:)(before|after)|gbs2-world(::|:)(before|after)|page-wrap(::|:)(before|after)|article-body(::|:)(before|after)' css src js articles || true
+            echo '=== GOLD/AMBER DECLARATIONS ==='
+            grep -RInE --exclude-dir=node_modules --exclude-dir=.git '#d8b068|#e8b878|#d4a574|#eec886|#c28a48|#f2d191|linear-gradient' css src | head -n 1200 || true
+            echo '=== QUOTE CLASSES ==='
+            grep -RInE --exclude-dir=node_modules --exclude-dir=.git 'manuscript-quote|hymn|poem|translation|epigraph|quote-source|quote-box' src articles | head -n 1200 || true
+          } | tee reports/print-source-grep/matches.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: print-source-grep-${{ github.run_id }}
+          path: reports/print-source-grep
+          retention-days: 7
