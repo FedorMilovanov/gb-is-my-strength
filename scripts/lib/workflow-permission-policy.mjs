@@ -1,6 +1,5 @@
 import path from 'node:path';
 
-const TOP_LEVEL_KEY_RX = /^([A-Za-z0-9_-]+):(?:\s*(.*))?$/;
 const JOB_KEY_RX = /^  ([A-Za-z0-9_-]+):\s*$/;
 const PERMISSION_VALUE_RX = /^(?:read|write|none)$/;
 const FULL_SHA_RX = /^[a-f0-9]{40}$/i;
@@ -171,7 +170,7 @@ export function parseWorkflow(text, file = '<workflow>') {
     const actions = [];
     for (let cursor = start.index + 1; cursor < end; cursor += 1) {
       const clean = stripYamlComment(lines[cursor]);
-      const match = clean.match(/^\s*uses:\s*(.+?)\s*$/);
+      const match = clean.match(/^\s*(?:-\s*)?uses:\s*(.+?)\s*$/);
       if (!match) continue;
       const action = parseExternalAction(match[1]);
       if (action) actions.push({ ...action, line: cursor + 1 });
