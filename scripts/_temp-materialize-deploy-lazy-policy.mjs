@@ -16,7 +16,7 @@ const oldBlock = `  try {
     // but deliberately NOT precached (precaching them defeats the lazy
     // loaders). Keep in sync with LAZY_NO_PRECACHE in audit-pro.js G61.
     const LAZY_NO_PRECACHE = new Set(['js/search.js', 'js/glossary.js', 'manifest.json', 'data/search-manifest.json']);
-    const swAssets = new Set(assets.map(a => a.replace(/^\\//, '').split('?')[0]));
+    const swAssets = new Set(assets.map(a => a.replace(/^\//, '').split('?')[0]));
     const drift = ASSETS.filter(a => !swAssets.has(a) && !LAZY_NO_PRECACHE.has(a));
     if (drift.length) {
       drift.forEach(a => bad(\`sw.js PRECACHE_ASSETS is missing cache-busted asset: \${a}\`));
@@ -32,7 +32,7 @@ const newBlock = `  try {
     // Assets in LAZY_NO_PRECACHE remain revision-governed but must not be
     // downloaded until their first-use loader explicitly requests them.
     const lazyNoPrecache = new Set(LAZY_NO_PRECACHE);
-    const swAssets = new Set(assets.map(a => a.replace(/^\\//, '').split('?')[0]));
+    const swAssets = new Set(assets.map(a => a.replace(/^\//, '').split('?')[0]));
     const drift = ASSETS.filter(a => !swAssets.has(a) && !lazyNoPrecache.has(a));
     if (drift.length) {
       drift.forEach(a => bad(\`sw.js PRECACHE_ASSETS is missing cache-busted asset: \${a}\`));
@@ -74,7 +74,7 @@ for (const [name, mutation] of [
   ['dist audit lazy export removed', distPublicationAudit.replace('{ ASSETS, LAZY_NO_PRECACHE }', '{ ASSETS }')],
   ['dist audit canonical lazy set bypassed', distPublicationAudit.replace('new Set(LAZY_NO_PRECACHE)', 'new Set([])')],
 ]) {
-  assert.ok(validateDistPublicationAudit(mutation).length > 0, \`${name}: mutation must be rejected\`);
+  assert.ok(validateDistPublicationAudit(mutation).length > 0, \`\${name}: mutation must be rejected\`);
 }`;
   contract = replaceOnce(contract, anchor, insertion, 'dist publication contract insertion');
 }
