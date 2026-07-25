@@ -10,6 +10,7 @@ import {
   prepareReleaseCandidate,
   verifyReleaseCandidate,
 } from './release-candidate-lib.mjs';
+import { assertManualReleaseMainAncestry } from './write-deployment-provenance.mjs';
 
 function write(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -113,8 +114,66 @@ try {
   } finally {
     fs.rmSync(wrongToolchain.root, { recursive: true, force: true });
   }
+
+  const manualSha = 'c'.repeat(40);
+  const mainSha = 'd'.repeat(40);
+  const calls = [];
+  const allowRunner = (command, args, options) => {
+    calls.push({ command, args, options });
+    if (args[0] === 'rev-parse') return { status: 0, stdout: `${mainSha}\n`, stderr: '' };
+    return { status: 0, stdout: '', stderr: '' };
+  };
+  const allowed = assertManualReleaseMainAncestry({
+    root,
+    eventName: 'workflow_dispatch',
+    commitSha: manualSha,
+    gitRunner: allowRunner,
+  });
+  assert.deepEqual(allowed, { checked: true, mainSha });
+  assert.deepEqual(calls.map((entry) => entry.args), [
+    ['rev-parse', '--verify', 'refs/remotes/origin/main^{commit}'],
+    ['merge-base', '--is-ancestor', manualSha, mainSha],
+  ]);
+  assert.ok(calls.every((entry) => entry.command === 'git' && entry.options.cwd === root));
+
+  let pushCalls = 0;
+  assert.deepEqual(
+    assertManualReleaseMainAncestry({
+      root,
+      eventName: 'push',
+      commitSha: manualSha,
+      gitRunner: () => { pushCalls += 1; return { status: 1 }; },
+    }),
+    { checked: false, mainSha: null },
+  );
+  assert.equal(pushCalls, 0, 'automatic push must not invoke manual ancestry checks');
+
+  assert.throws(
+    () => assertManualReleaseMainAncestry({
+      root,
+      eventName: 'workflow_dispatch',
+      commitSha: manualSha,
+      gitRunner: (_command, args) => args[0] === 'rev-parse'
+        ? { status: 0, stdout: `${mainSha}\n`, stderr: '' }
+        : { status: 1, stdout: '', stderr: '' },
+    }),
+    /must already belong to the history of origin\/main/,
+  );
+  assert.throws(
+    () => assertManualReleaseMainAncestry({
+      root,
+      eventName: 'workflow_dispatch',
+      commitSha: manualSha,
+      gitRunner: () => ({ status: 128, stdout: '', stderr: 'unknown revision' }),
+    }),
+    /requires a fetched origin\/main ref/,
+  );
+  assert.throws(
+    () => assertManualReleaseMainAncestry({ root, eventName: 'workflow_dispatch', commitSha: 'short', gitRunner: allowRunner }),
+    /manual release SHA must be exact/,
+  );
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }
 
-console.log('Deployment provenance schema v3 contract: PASS (whole-tree digest, pointer, extension, tamper and toolchain fixtures).');
+console.log('Deployment provenance schema v3 contract: PASS (whole-tree digest, tamper, toolchain and manual-main-ancestry fixtures).');
