@@ -23,6 +23,8 @@ function validate(engine, controller, css, workflow) {
     ['switch event contract', controller, /gb:vosk-switch-request[\s\S]*switchCurrentSessionToVosk/],
     ['retryable promise, no one-shot latch', controller, /var _voskWarmupPromise = null/],
     ['system voice disclosed', controller, /showVoskStatus\('browser'\)/],
+    ['browser status preserved during automatic warm-up', controller, /showVoskStatus\('browser'\);\s*warmVoskInBackground\(\{ preserveBrowserStatus: true \}\)/],
+    ['warm-up supports status preservation', controller, /preserveBrowserStatus\s*=\s*options\.preserveBrowserStatus === true[\s\S]{0,360}if \(!preserveBrowserStatus\) showVoskStatus\('preparing'\)/],
     ['mobile two-row reflow', css, /@media \(max-width:480px\)[\s\S]*grid-template-columns:30px minmax\(0,1fr\)[\s\S]*grid-column:2/],
     ['copy can wrap', css, /gb-tts-download-notice__title[\s\S]{0,260}white-space:normal[\s\S]*gb-tts-download-notice__meta[\s\S]{0,260}white-space:normal/],
     ['workflow owns controller', workflow, /js\/floating-cluster-controller\.js/],
@@ -48,6 +50,7 @@ const mutations = [
   [engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow],
   [engine, controller.replace(/vosk-tts-engine\.js\?v=[a-f0-9]{8}/, 'vosk-tts-engine.js'), css, workflow],
   [engine, controller.replace(/gb:vosk-retry-request/g, 'gb:vosk-retry-missing'), css, workflow],
+  [engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow],
   [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow],
   [engine, controller, css, workflow.replace('chromium webkit', 'chromium')],
 ];
