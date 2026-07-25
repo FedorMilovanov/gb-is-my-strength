@@ -31,7 +31,7 @@ jobs:
           mkdir -p reports/editorial-dateline-materializer
           exec > >(tee reports/editorial-dateline-materializer/full.log) 2>&1
           set -euo pipefail
-          echo '=== remove inventory workflow ==='
+          echo '=== remove inventory workflow in worktree ==='
           rm -f .github/workflows/_temp-editorial-dateline-inventory.yml
           echo '=== patch one-shot legacy-scan self exclusion ==='
           python3 - <<'PY'
@@ -46,9 +46,8 @@ jobs:
           PY
           echo '=== materialize product and permanent contracts ==='
           python3 scripts/_temp-materialize-editorial-dateline.py
-          echo '=== remove temporary materializers ==='
+          echo '=== remove temporary materializer script in worktree ==='
           rm -f scripts/_temp-materialize-editorial-dateline.py
-          rm -f .github/workflows/_temp-materialize-editorial-dateline.yml
           echo '=== refresh cache-bust revisions ==='
           node scripts/cache-bust.js --write
           echo '=== semantic contract ==='
@@ -70,12 +69,12 @@ jobs:
           BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
-          if git diff --quiet && git diff --cached --quiet; then
-            echo 'No materialization changes remain.'
-            exit 0
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add -A -- . ':!.github/workflows/**' ':!reports/**'
+          if git diff --cached --quiet; then
+            echo 'No product materialization changes remain.'
+            exit 0
+          fi
           git commit -m 'feat(editorial): replace foliant boxes with semantic datelines'
           git push origin "HEAD:${BRANCH}"
