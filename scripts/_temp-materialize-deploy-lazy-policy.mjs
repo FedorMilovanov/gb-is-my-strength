@@ -10,41 +10,37 @@ function replaceOnce(source, before, after, label) {
 
 const auditPath = 'scripts/dist-publication-audit.js';
 let audit = fs.readFileSync(auditPath, 'utf8');
-const oldBlock = `  try {
-    const { ASSETS } = require('./cache-bust-assets');
-    // AUDIT-P2-SW-PRECACHE-4 (2026-07-05): lazy-loaded assets are cache-busted
-    // but deliberately NOT precached (precaching them defeats the lazy
-    // loaders). Keep in sync with LAZY_NO_PRECACHE in audit-pro.js G61.
-    const LAZY_NO_PRECACHE = new Set(['js/search.js', 'js/glossary.js', 'manifest.json', 'data/search-manifest.json']);
-    const swAssets = new Set(assets.map(a => a.replace(/^\//, '').split('?')[0]));
-    const drift = ASSETS.filter(a => !swAssets.has(a) && !LAZY_NO_PRECACHE.has(a));
-    if (drift.length) {
-      drift.forEach(a => bad(\`sw.js PRECACHE_ASSETS is missing cache-busted asset: \${a}\`));
-    } else {
-      ok(\`sw.js PRECACHE_ASSETS is synchronized with cache-bust-assets.js (lazy set excluded by design)\`);
-    }
-    const reintroduced = [...LAZY_NO_PRECACHE].filter(a => swAssets.has(a));
-    if (reintroduced.length) reintroduced.forEach(a => bad(\`sw.js PRECACHE_ASSETS re-introduced lazy asset: \${a}\`));
-  } catch (e) { bad(\`cache-bust-assets sync check failed: \${e.message}\`); }`;
-const newBlock = `  try {
-    const { ASSETS, LAZY_NO_PRECACHE } = require('./cache-bust-assets');
-    // Version ownership and Service Worker strategy share one canonical policy.
-    // Assets in LAZY_NO_PRECACHE remain revision-governed but must not be
-    // downloaded until their first-use loader explicitly requests them.
-    const lazyNoPrecache = new Set(LAZY_NO_PRECACHE);
-    const swAssets = new Set(assets.map(a => a.replace(/^\//, '').split('?')[0]));
-    const drift = ASSETS.filter(a => !swAssets.has(a) && !lazyNoPrecache.has(a));
-    if (drift.length) {
-      drift.forEach(a => bad(\`sw.js PRECACHE_ASSETS is missing cache-busted asset: \${a}\`));
-    } else {
-      ok(\`sw.js PRECACHE_ASSETS is synchronized with cache-bust-assets.js (lazy set excluded by design)\`);
-    }
-    const reintroduced = [...lazyNoPrecache].filter(a => swAssets.has(a));
-    if (reintroduced.length) reintroduced.forEach(a => bad(\`sw.js PRECACHE_ASSETS re-introduced lazy asset: \${a}\`));
-  } catch (e) { bad(\`cache-bust-assets sync check failed: \${e.message}\`); }`;
-if (audit.includes(oldBlock)) audit = replaceOnce(audit, oldBlock, newBlock, 'dist publication lazy policy');
+if (!audit.includes("const { ASSETS, LAZY_NO_PRECACHE } = require('./cache-bust-assets');")) {
+  audit = replaceOnce(
+    audit,
+    "    const { ASSETS } = require('./cache-bust-assets');",
+    "    const { ASSETS, LAZY_NO_PRECACHE } = require('./cache-bust-assets');",
+    'dist publication cache policy import'
+  );
+}
+if (!audit.includes('const lazyNoPrecache = new Set(LAZY_NO_PRECACHE);')) {
+  audit = replaceOnce(
+    audit,
+    "    const LAZY_NO_PRECACHE = new Set(['js/search.js', 'js/glossary.js', 'manifest.json', 'data/search-manifest.json']);",
+    "    const lazyNoPrecache = new Set(LAZY_NO_PRECACHE);",
+    'dist publication canonical lazy set'
+  );
+}
+audit = replaceOnce(
+  audit,
+  '    const drift = ASSETS.filter(a => !swAssets.has(a) && !LAZY_NO_PRECACHE.has(a));',
+  '    const drift = ASSETS.filter(a => !swAssets.has(a) && !lazyNoPrecache.has(a));',
+  'dist publication drift policy'
+);
+audit = replaceOnce(
+  audit,
+  '    const reintroduced = [...LAZY_NO_PRECACHE].filter(a => swAssets.has(a));',
+  '    const reintroduced = [...lazyNoPrecache].filter(a => swAssets.has(a));',
+  'dist publication reintroduced policy'
+);
 if (!audit.includes("const { ASSETS, LAZY_NO_PRECACHE } = require('./cache-bust-assets');")) throw new Error('canonical cache policy import missing');
 if (!audit.includes('const lazyNoPrecache = new Set(LAZY_NO_PRECACHE);')) throw new Error('canonical lazy set consumption missing');
+if (/const LAZY_NO_PRECACHE = new Set\(\[/.test(audit)) throw new Error('divergent local lazy list remains');
 fs.writeFileSync(auditPath, audit, 'utf8');
 
 const contractPath = 'scripts/tts-engine-status-contract-test.js';
