@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/_temp-production-evidence-f5e29998.yml"
       - "scripts/_temp-production-evidence-f5e29998.py"
+      - "scripts/_temp-production-evidence-f5e29998-v2.py"
   workflow_dispatch:
 
 permissions:
@@ -22,19 +23,29 @@ jobs:
       - name: Checkout temporary verifier
         uses: actions/checkout@v4
 
-      - name: Verify exact production evidence chain
+      - name: Download exact live TTS witness
+        uses: actions/download-artifact@v4
+        with:
+          name: tts-live-deployment-30169443420
+          path: ${{ runner.temp }}/production-witness
+          run-id: 30169443420
+          github-token: ${{ github.token }}
+
+      - name: Verify exact production and ledger evidence
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TARGET_SHA: f5e29998c5b42cc9e4e7c917b1e1c1072aa52320
           TARGET_PR: "286"
+          DEPLOY_RUN_ID: "30169443420"
+          WITNESS_DIRECTORY: ${{ runner.temp }}/production-witness
           LIVE_BASE_URL: https://gospod-bog.ru
-        run: python3 scripts/_temp-production-evidence-f5e29998.py
+        run: python3 scripts/_temp-production-evidence-f5e29998-v2.py
 
       - name: Upload exact evidence report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: production-evidence-f5e29998-${{ github.run_id }}
-          path: reports/production-evidence-f5e29998.json
+          name: production-evidence-f5e29998-v2-${{ github.run_id }}
+          path: reports/production-evidence-f5e29998-v2.json
           if-no-files-found: error
           retention-days: 14
