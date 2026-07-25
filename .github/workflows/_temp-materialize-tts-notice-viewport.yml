@@ -1,0 +1,125 @@
+name: Temporary TTS Notice Viewport Materializer
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-materialize-tts-notice-viewport.yml'
+      - 'scripts/_temp-materialize-tts-notice-viewport.mjs'
+      - 'css/tts-download-notice.css'
+      - 'js/floating-cluster-controller.js'
+      - 'scripts/cache-bust-assets.js'
+      - 'scripts/tts-engine-status-contract-test.js'
+      - 'scripts/tts-download-notice-browser-test.js'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-tts-notice-viewport-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'fix/tts-notice-viewport-centering-2026-07-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Detect completed transaction
+        id: transaction
+        run: |
+          if grep -Fq 'left:50vw;' css/tts-download-notice.css; then
+            echo 'skip=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'skip=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Node 22.12
+        if: steps.transaction.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.transaction.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Apply exact-match product transaction
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/_temp-materialize-tts-notice-viewport.mjs
+
+      - name: Build production-like dist
+        if: steps.transaction.outputs.skip != 'true'
+        run: npm run strangler:build:production-like
+
+      - name: Install Chromium and WebKit
+        if: steps.transaction.outputs.skip != 'true'
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: TTS source and revision contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-engine-status-contract-test.js
+
+      - name: TTS consent contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-download-consent-contract-test.js
+
+      - name: TTS notice browser contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-download-notice-browser-test.js
+
+      - name: TTS lifecycle browser contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-engine-lifecycle-browser-test.js
+
+      - name: TTS real-route status contract
+        if: steps.transaction.outputs.skip != 'true'
+        run: node scripts/tts-status-route-browser-test.js
+
+      - name: Re-run Gill shared-controller traversal
+        if: steps.transaction.outputs.skip != 'true'
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
+        run: npm run gill:pre-v16-submenu:audit
+
+      - name: Verify revisions and final diff
+        if: steps.transaction.outputs.skip != 'true'
+        run: |
+          node scripts/cache-bust.js
+          git diff --check
+          node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-tts-notice-viewport.yml
+
+      - name: Publish tested product commit
+        if: steps.transaction.outputs.skip != 'true'
+        env:
+          TARGET_BRANCH: fix/tts-notice-viewport-centering-2026-07-25
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'fix(tts): center notice against the visual viewport'
+          git push origin "HEAD:${TARGET_BRANCH}"
+
+      - name: Upload viewport evidence
+        if: always() && steps.transaction.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-notice-viewport-${{ github.run_id }}
+          path: |
+            reports/tts-download-notice-*.png
+            reports/tts-lifecycle-*.png
+            reports/tts-route-*.png
+            reports/gill-pre-v16-submenu-audit/
+          if-no-files-found: warn
+          retention-days: 14
