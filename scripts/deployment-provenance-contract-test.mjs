@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DIST = path.join(ROOT, 'dist');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 
 function validate({ writer, live, deploy, workflow }) {
@@ -106,4 +108,61 @@ for (const [name, mutated] of mutations) {
   assert.ok(validate(mutated).length > 0, `${name}: mutation must be rejected`);
 }
 
-console.log(`Deployment provenance contract: PASS (${mutations.length} named adversarial mutations rejected).`);
+const fixtureSha = 'a'.repeat(40);
+const fixtureRunId = '123456789';
+const fixtureRunAttempt = '2';
+const fixtureAssets = [
+  'js/floating-cluster-controller.js',
+  'js/vosk-tts-engine.js',
+  'css/tts-download-notice.css',
+  'sw.js',
+];
+
+fs.rmSync(DIST, { recursive: true, force: true });
+try {
+  for (const relativePath of fixtureAssets) {
+    const sourcePath = path.join(ROOT, relativePath);
+    const targetPath = path.join(DIST, relativePath);
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(sourcePath, targetPath);
+  }
+
+  execFileSync(process.execPath, [path.join(ROOT, 'scripts/write-deployment-provenance.mjs')], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      DEPLOYED_SHA: fixtureSha,
+      GITHUB_REPOSITORY: 'FedorMilovanov/gb-is-my-strength',
+      GITHUB_RUN_ID: fixtureRunId,
+      GITHUB_RUN_ATTEMPT: fixtureRunAttempt,
+      SOURCE_READINESS_RUN_ID: '987654321',
+      GITHUB_EVENT_NAME: 'workflow_run',
+    },
+  });
+
+  const exactPath = path.join(DIST, 'deployments', fixtureSha, `${fixtureRunId}-${fixtureRunAttempt}.json`);
+  const pointerPath = path.join(DIST, 'deployments', 'current.json');
+  const obsoleteFlatPath = path.join(DIST, 'deployments', `${fixtureSha}.json`);
+  assert.equal(fs.existsSync(exactPath), true, 'writer fixture did not create the run-addressed object');
+  assert.equal(fs.existsSync(pointerPath), true, 'writer fixture did not create current.json');
+  assert.equal(fs.existsSync(obsoleteFlatPath), false, 'writer fixture recreated the mutable flat SHA object');
+
+  const manifest = JSON.parse(fs.readFileSync(exactPath, 'utf8'));
+  const pointer = JSON.parse(fs.readFileSync(pointerPath, 'utf8'));
+  const expectedPath = `/deployments/${fixtureSha}/${fixtureRunId}-${fixtureRunAttempt}.json`;
+  assert.equal(manifest.schemaVersion, 2);
+  assert.equal(manifest.commitSha, fixtureSha);
+  assert.equal(manifest.immutablePath, expectedPath);
+  assert.equal(manifest.workflow.runId, Number(fixtureRunId));
+  assert.equal(manifest.workflow.runAttempt, Number(fixtureRunAttempt));
+  assert.equal(pointer.schemaVersion, 1);
+  assert.equal(pointer.commitSha, fixtureSha);
+  assert.equal(pointer.immutablePath, expectedPath);
+  assert.equal(pointer.workflow.runId, Number(fixtureRunId));
+  assert.equal(pointer.workflow.runAttempt, Number(fixtureRunAttempt));
+} finally {
+  fs.rmSync(DIST, { recursive: true, force: true });
+}
+
+console.log(`Deployment provenance contract: PASS (${mutations.length} named adversarial mutations rejected; writer fixture PASS).`);
