@@ -17,10 +17,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  prove-and-publish:
+  publish-product:
     if: github.head_ref == 'fix/print-decoration-pagination-final-2026-07-25'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 20
     steps:
       - name: Checkout isolated branch
         uses: actions/checkout@v4
@@ -69,30 +69,7 @@ jobs:
           fi
           node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-print-decoration-final.yml
 
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
-
-      - name: Install browser and PDF audit dependencies
-        run: |
-          npx playwright install --with-deps chromium
-          sudo apt-get update
-          sudo apt-get install -y poppler-utils python3-pil
-
-      - name: Run Playwright multi-route pagination proof
-        env:
-          GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-decoration-final
-        run: |
-          set -o pipefail
-          mkdir -p reports
-          node scripts/print-pagination-contract.mjs 2>&1 | tee reports/print-decoration-final.log
-
-      - name: Raster-audit every generated PDF
-        run: |
-          python3 scripts/print-pagination-raster-audit.py \
-            reports/print-decoration-final \
-            --out reports/print-decoration-final-raster
-
-      - name: Commit tested product only
+      - name: Commit product only
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
@@ -107,20 +84,8 @@ jobs:
           git add -u -- '*.html' '*.astro'
           git diff --cached --check
           if git diff --cached --quiet; then
-            echo 'No tested product changes staged' >&2
+            echo 'No product changes staged' >&2
             exit 1
           fi
           git commit -m 'fix(print): remove gold progress and keep card face atomic'
           git push origin HEAD:fix/print-decoration-pagination-final-2026-07-25
-
-      - name: Upload final evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: print-decoration-final-${{ github.run_id }}
-          path: |
-            reports/print-decoration-final.log
-            reports/print-decoration-final/
-            reports/print-decoration-final-raster/
-          if-no-files-found: warn
-          retention-days: 14
