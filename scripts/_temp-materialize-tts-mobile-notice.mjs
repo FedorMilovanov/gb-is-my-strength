@@ -1,6 +1,13 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
+
+const BASE_SHA = '8a26fd7ea45a7124217f779f78def8fd0f17a0aa';
+
+function revision(text) {
+  return crypto.createHash('sha256').update(text).digest('hex').slice(0, 8);
+}
 
 function replaceOnce(source, oldText, newText, label) {
   const count = source.split(oldText).length - 1;
@@ -17,16 +24,19 @@ function insertAfterUniqueLine(source, marker, line, label) {
 }
 
 const cssPath = 'css/tts-download-notice.css';
-let css = fs.readFileSync(cssPath, 'utf8');
-css = replaceOnce(css,
-`  .gb-tts-download-notice{
+const baseCss = execFileSync('git', ['show', `${BASE_SHA}:${cssPath}`], { encoding: 'utf8' });
+if (revision(baseCss) !== '1cdbee44') {
+  throw new Error(`baseline notice CSS revision mismatch: ${revision(baseCss)}`);
+}
+
+const oldMobileBlock = `  .gb-tts-download-notice{
     width:calc(100vw - 20px);
     grid-template-columns:30px minmax(0,1fr);
     gap:8px 10px;
     padding:10px;
     border-radius:14px;
-  }`,
-`  .gb-tts-download-notice{
+  }`;
+const newMobileBlock = `  .gb-tts-download-notice{
     left:max(10px,env(safe-area-inset-left,0px));
     right:max(10px,env(safe-area-inset-right,0px));
     width:auto;
@@ -37,23 +47,57 @@ css = replaceOnce(css,
     transform:translateY(14px) scale(.985);
     transform-origin:center bottom;
   }
-  .gb-tts-download-notice.is-visible{transform:translateY(0) scale(1)}`,
-'mobile notice viewport anchoring');
+  .gb-tts-download-notice.is-visible{transform:translateY(0) scale(1)}`;
+
+let css = fs.readFileSync(cssPath, 'utf8');
+if (css.includes(oldMobileBlock)) css = replaceOnce(css, oldMobileBlock, newMobileBlock, 'mobile notice viewport anchoring');
+if (!css.includes(newMobileBlock)) throw new Error('mobile notice viewport block missing after materialization');
 fs.writeFileSync(cssPath, css);
+const noticeRevision = revision(css);
+if (noticeRevision === '1cdbee44') throw new Error('notice CSS revision did not change');
+
+const controllerPath = 'js/floating-cluster-controller.js';
+let controller = fs.readFileSync(controllerPath, 'utf8');
+const controllerLine = /var TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}';/g;
+const controllerMatches = controller.match(controllerLine) || [];
+if (controllerMatches.length !== 1) throw new Error(`notice CSS controller URL: expected one match, found ${controllerMatches.length}`);
+controller = controller.replace(controllerLine, `var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=${noticeRevision}';`);
+fs.writeFileSync(controllerPath, controller);
 
 const contractPath = 'scripts/tts-engine-status-contract-test.js';
 let contract = fs.readFileSync(contractPath, 'utf8');
-contract = insertAfterUniqueLine(
-  contract,
-  "['mobile two-row reflow', css,",
-  String.raw`    ['mobile viewport anchoring', css, /@media \(max-width:480px\)[\s\S]*left:max\(10px,env\(safe-area-inset-left,0px\)\)[\s\S]*right:max\(10px,env\(safe-area-inset-right,0px\)\)[\s\S]*width:auto[\s\S]*translateY\(14px\)[\s\S]*is-visible\{transform:translateY\(0\) scale\(1\)\}/],`,
-  'mobile source contract'
-);
-contract = replaceOnce(contract,
+if (!contract.includes("const crypto = require('node:crypto');")) {
+  contract = insertAfterUniqueLine(contract, "const assert = require('node:assert/strict');", "const crypto = require('node:crypto');", 'contract crypto import');
+}
+if (!contract.includes("['mobile viewport anchoring', css,")) {
+  contract = insertAfterUniqueLine(
+    contract,
+    "['mobile two-row reflow', css,",
+    String.raw`    ['mobile viewport anchoring', css, /@media \(max-width:480px\)[\s\S]*left:max\(10px,env\(safe-area-inset-left,0px\)\)[\s\S]*right:max\(10px,env\(safe-area-inset-right,0px\)\)[\s\S]*width:auto[\s\S]*translateY\(14px\)[\s\S]*is-visible\{transform:translateY\(0\) scale\(1\)\}/],`,
+    'mobile source contract'
+  );
+}
+if (!contract.includes('notice CSS revision matches source')) {
+  contract = replaceOnce(contract,
+`  for (const [label, source, pattern] of checks) {
+    if (!pattern.test(source)) problems.push(label);
+  }`,
+`  for (const [label, source, pattern] of checks) {
+    if (!pattern.test(source)) problems.push(label);
+  }
+  const noticeRevision = crypto.createHash('sha256').update(css).digest('hex').slice(0, 8);
+  if (!controller.includes('/css/tts-download-notice.css?v=' + noticeRevision)) {
+    problems.push('notice CSS revision matches source');
+  }`,
+'notice revision source contract');
+}
+if (!contract.includes("css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;')")) {
+  contract = replaceOnce(contract,
 `  [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow],`,
 `  [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow],
   [engine, controller, css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;'), workflow],`,
 'mobile adversarial contract');
+}
 fs.writeFileSync(contractPath, contract);
 
 const geometryPath = 'scripts/tts-mobile-notice-geometry-browser-test.js';
@@ -116,7 +160,8 @@ async function verify(browserType, viewport, transformed) {
 
 const workflowPath = '.github/workflows/tts-download-consent.yml';
 let workflow = fs.readFileSync(workflowPath, 'utf8');
-workflow = replaceOnce(workflow,
+if (!workflow.includes('Run mobile notice viewport geometry')) {
+  workflow = replaceOnce(workflow,
 `      - name: Run real-route status matrix
         run: |
           set -o pipefail
@@ -133,10 +178,11 @@ workflow = replaceOnce(workflow,
 
       - name: Upload interaction evidence`,
 'workflow geometry gate');
+}
 fs.writeFileSync(workflowPath, workflow);
 
-for (const file of [contractPath, geometryPath]) execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' });
+for (const file of [controllerPath, contractPath, geometryPath]) execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' });
 execFileSync(process.execPath, [contractPath], { stdio: 'inherit' });
 execFileSync(process.execPath, ['scripts/cache-bust.js', '--write'], { stdio: 'inherit' });
 execFileSync(process.execPath, ['scripts/cache-bust.js'], { stdio: 'inherit' });
-console.log(JSON.stringify({ css: cssPath, contract: contractPath, geometry: geometryPath, workflow: workflowPath }, null, 2));
+console.log(JSON.stringify({ css: cssPath, cssRevision: noticeRevision, controller: controllerPath, contract: contractPath, geometry: geometryPath, workflow: workflowPath }, null, 2));
