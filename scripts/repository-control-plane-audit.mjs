@@ -71,7 +71,11 @@ function triggerSection(text) {
   return boundary >= 0 ? text.slice(0, boundary) : text;
 }
 
-runWorkflowPermissionPolicyRegressionTests();
+try {
+  runWorkflowPermissionPolicyRegressionTests();
+} catch (error) {
+  addIssue(`workflow permission policy regressions failed: ${error.stack || error.message}`);
+}
 
 let pkg;
 try {
