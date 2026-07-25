@@ -1,0 +1,80 @@
+name: Editorial Dateline Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'articles/**'
+      - 'src/components/article-pilots/**'
+      - 'css/site.css'
+      - 'js/reader-preferences-head.js'
+      - 'src/lib/asset-version.js'
+      - 'scripts/editorial-dateline-*.js'
+      - 'scripts/editorial-dateline-*.mjs'
+      - '.github/workflows/editorial-dateline-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'articles/**'
+      - 'src/components/article-pilots/**'
+      - 'css/site.css'
+      - 'js/reader-preferences-head.js'
+      - 'src/lib/asset-version.js'
+      - 'scripts/editorial-dateline-*.js'
+      - 'scripts/editorial-dateline-*.mjs'
+      - '.github/workflows/editorial-dateline-contract.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: editorial-dateline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - name: Semantic and architecture contract
+        run: |
+          node scripts/editorial-dateline-contract-test.js
+          node --check js/reader-preferences-head.js
+          git diff --check
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+      - run: npx playwright install --with-deps chromium
+      - name: Start production-like dist server
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/editorial-dateline-server.log 2>&1 &
+          for attempt in $(seq 1 40); do
+            curl --fail --silent http://127.0.0.1:4173/articles/dzhon-gill-chast-1-chelovek/ >/dev/null && break
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/articles/dzhon-gill-chast-1-chelovek/ >/dev/null
+      - name: Desktop, mobile, dark and print contract
+        run: node scripts/editorial-dateline-visual-test.mjs
+      - name: Install PDF audit dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils python3-pil
+      - name: Raster-audit every dateline PDF
+        run: |
+          set -euo pipefail
+          for pdf in reports/editorial-dateline/*.pdf; do
+            slug="$(basename "$pdf" .pdf)"
+            python3 scripts/print-paper-pdf-audit.py "$pdf" --out "reports/editorial-dateline/audit-$slug"
+          done
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-dateline-proof-${{ github.sha }}
+          path: reports/editorial-dateline
+          if-no-files-found: warn
+          retention-days: 14
