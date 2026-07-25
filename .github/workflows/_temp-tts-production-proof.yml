@@ -171,6 +171,62 @@ jobs:
           if old_cancel not in source:
               raise SystemExit('cancel-to-disabled proof block not found')
           source = source.replace(old_cancel, new_cancel, 1)
+
+          old_scenario = """    pageErrors: [],
+              assetFailures: [],
+              startedAt: new Date().toISOString(),
+          """
+          new_scenario = """    pageErrors: [],
+              assetFailures: [],
+              thirdPartyNavigationAborts: [],
+              startedAt: new Date().toISOString(),
+          """
+          if old_scenario not in source:
+              raise SystemExit('scenario diagnostics block not found')
+          source = source.replace(old_scenario, new_scenario, 1)
+
+          old_request_failed = """  page.on('requestfailed', (request) => {
+              const url = request.url();
+              if (url.includes(MODEL_MARKER)) return;
+              if (/\\.(?:js|css)(?:\\?|$)/.test(url) || /cdn\\.jsdelivr\\.net/.test(url)) {
+                scenario.assetFailures.push({ url, error: request.failure() && request.failure().errorText || 'request failed' });
+              }
+            });
+          """
+          new_request_failed = """  page.on('requestfailed', (request) => {
+              const url = request.url();
+              if (url.includes(MODEL_MARKER)) return;
+              const error = request.failure() && request.failure().errorText || 'request failed';
+              const expectedAnalyticsReloadAbort =
+                scenario.label === 'chromium-service-worker-reload' &&
+                error === 'net::ERR_ABORTED' &&
+                /^https:\\/\\/mc\\.yandex\\.(?:ru|com)\\/metrika\\/tag\\.js(?:\\?|$)/.test(url);
+              if (expectedAnalyticsReloadAbort) {
+                scenario.thirdPartyNavigationAborts.push({ url, error });
+                return;
+              }
+              if (/\\.(?:js|css)(?:\\?|$)/.test(url) || /cdn\\.jsdelivr\\.net/.test(url)) {
+                scenario.assetFailures.push({ url, error });
+              }
+            });
+          """
+          if old_request_failed not in source:
+              raise SystemExit('requestfailed diagnostics block not found')
+          source = source.replace(old_request_failed, new_request_failed, 1)
+
+          old_finish = """  assert.deepEqual(scenario.pageErrors, [], `${scenario.label}: page errors: ${JSON.stringify(scenario.pageErrors)}`);
+            assert.deepEqual(scenario.assetFailures, [], `${scenario.label}: asset failures: ${JSON.stringify(scenario.assetFailures)}`);
+            await context.close();
+          """
+          new_finish = """  assert.deepEqual(scenario.pageErrors, [], `${scenario.label}: page errors: ${JSON.stringify(scenario.pageErrors)}`);
+            assert.deepEqual(scenario.assetFailures, [], `${scenario.label}: asset failures: ${JSON.stringify(scenario.assetFailures)}`);
+            assert.ok(scenario.thirdPartyNavigationAborts.length <= 1, `${scenario.label}: excessive third-party navigation aborts: ${JSON.stringify(scenario.thirdPartyNavigationAborts)}`);
+            await context.close();
+          """
+          if old_finish not in source:
+              raise SystemExit('finish diagnostics block not found')
+          source = source.replace(old_finish, new_finish, 1)
+
           path.write_text(source, encoding='utf-8')
           PY
           grep -Fq "const EXPECTED_MAIN = '54785cdb8979df83377181c2e029266376eecc30';" scripts/_temp-tts-production-proof.mjs
@@ -179,6 +235,8 @@ jobs:
           grep -Fq "noticeCss: '/css/tts-download-notice.css?v=475abd4b'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "link.sheet.cssRules.length > 0" scripts/_temp-tts-production-proof.mjs
           grep -Fq "assert.match(disabledState.meta, /системный голос/i);" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "thirdPartyNavigationAborts" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "expectedAnalyticsReloadAbort" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
         run: |
