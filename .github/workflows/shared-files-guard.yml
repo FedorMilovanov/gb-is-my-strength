@@ -21,7 +21,7 @@ jobs:
           persist-credentials: false
       - name: Extract exact source citation context
         run: |
-          python3 - <<'PY'
+          python3 - <<'PY' > "$RUNNER_TEMP/source352-context.txt"
           from pathlib import Path
           import re
 
@@ -48,10 +48,9 @@ jobs:
                       if idx < 0:
                           break
                       found = True
-                      lo = max(0, idx - 700)
-                      hi = min(len(text), idx + len(needle) + 700)
-                      context = text[lo:hi]
-                      context = re.sub(r'\s+', ' ', context)
+                      lo = max(0, idx - 900)
+                      hi = min(len(text), idx + len(needle) + 900)
+                      context = re.sub(r'\s+', ' ', text[lo:hi])
                       print(f'\n--- NEEDLE {needle} @ {idx} ---')
                       print(context)
                       start = idx + 1
@@ -65,3 +64,10 @@ jobs:
                       clean_label = re.sub(r'\s+', ' ', clean_label).strip()
                       print(f'HREF={href}\nLABEL={clean_label}')
           PY
+      - name: Upload exact citation context
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source352-context-${{ github.run_id }}
+          path: ${{ runner.temp }}/source352-context.txt
+          if-no-files-found: error
+          retention-days: 7
