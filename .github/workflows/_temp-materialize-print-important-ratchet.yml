@@ -38,7 +38,10 @@ jobs:
         run: npm ci
 
       - name: Remove v2.9 important flags and project revisions
-        run: node scripts/_temp-remove-print-important.mjs
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/_temp-remove-print-important.mjs 2>&1 | tee reports/print-important-materializer.log
 
       - name: Validate source, ratchet and audit-pro
         run: |
@@ -48,7 +51,8 @@ jobs:
           git diff --check
           count=$(grep -o '!important' css/site.css | wc -l)
           test "${count}" -le 200
-          test "$(awk '/GB PRINT CONTRACT v2.9/{f=1} f' css/site.css | grep -o '!important' | wc -l)" -eq 0
+          block_count=$(awk '/GB PRINT CONTRACT v2.9/{f=1} f' css/site.css | grep -o '!important' | wc -l || true)
+          test "${block_count}" -eq 0
           node scripts/audit-pro.js
           node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-materialize-print-important-ratchet.yml
 
@@ -93,6 +97,7 @@ jobs:
         with:
           name: print-important-ratchet-${{ github.run_id }}
           path: |
+            reports/print-important-materializer.log
             reports/print-important-ratchet.log
             reports/print-important-ratchet/
             reports/print-important-ratchet-raster/
