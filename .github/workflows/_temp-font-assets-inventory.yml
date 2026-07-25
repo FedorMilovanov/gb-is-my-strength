@@ -1,8 +1,8 @@
 name: Temporary font assets inventory
 
 on:
-  push:
-    branches: ["temp/font-assets-inventory-20260725"]
+  pull_request:
+    branches: [main]
     paths:
       - "fonts/**"
       - "scripts/_temp-font-assets-inventory.mjs"
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Checkout exact branch head
+      - name: Checkout exact PR head
         uses: actions/checkout@v4
 
       - name: Set up Node 22.12
