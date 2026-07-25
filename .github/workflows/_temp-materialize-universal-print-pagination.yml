@@ -34,7 +34,9 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Materialize shared pagination runtime and remove route-specific CSS
-        run: node scripts/_temp-materialize-universal-print-pagination.mjs
+        run: |
+          node scripts/_temp-materialize-universal-print-pagination.mjs
+          node scripts/_temp-patch-print-terminal-followers.mjs
       - name: Verify asset revisions
         run: npm run cache-bust
       - run: npx playwright install --with-deps chromium
@@ -91,15 +93,12 @@ jobs:
           test "$canonical" = 0
           test "$matrix" = 0
           test "$raster" = 0
-      - name: Remove one-shot infrastructure and commit product patch
+      - name: Publish product patch without workflow mutation
         run: |
-          rm -f scripts/_temp-print-pagination-inventory.mjs
-          rm -f scripts/_temp-materialize-universal-print-pagination.mjs
-          rm -f .github/workflows/_temp-print-pagination-inventory.yml
-          rm -f .github/workflows/_temp-materialize-universal-print-pagination.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
+          git add -A -- . ':(exclude)scripts/_temp-*' ':(exclude).github/workflows/_temp-*'
+          git diff --cached --quiet && { echo 'No product changes staged'; exit 1; }
           git commit -m "fix(print): introduce universal semantic pagination"
           git push origin HEAD:fix/universal-print-pagination-marathon-2026-07-25
       - if: always()
