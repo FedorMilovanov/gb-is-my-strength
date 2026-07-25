@@ -106,7 +106,7 @@ if (!contract.includes('controller synchronous reveal deferred')) {
 }
 fs.writeFileSync(contractPath, contract, 'utf8');
 
-execFileSync(process.execPath, ['scripts/cache-bust.js'], { stdio: 'inherit' });
+execFileSync(process.execPath, ['scripts/cache-bust.js', '--write'], { stdio: 'inherit' });
 for (const file of [controllerPath, enginePath, lifecyclePath, contractPath]) {
   execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' });
 }
