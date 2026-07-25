@@ -54,12 +54,14 @@ function validate(engine, controller, css, workflow, cacheAssets) {
     'scripts/cache-bust.js',
     'scripts/dist-publication-audit.js',
     'src/lib/asset-version.js',
+    'scripts/tts-live-deployment-contract.mjs',
     'scripts/tts-download-consent-contract-test.js',
     'scripts/tts-download-notice-browser-test.js',
     'scripts/tts-engine-status-contract-test.js',
     'scripts/tts-engine-lifecycle-browser-test.js',
     'scripts/tts-status-route-browser-test.js',
     'scripts/tts-mobile-notice-geometry-browser-test.js',
+    '.github/workflows/deploy.yml',
     '.github/workflows/tts-download-consent.yml',
   ];
   for (const ownedPath of requiredWorkflowPaths) {
@@ -87,13 +89,40 @@ function validate(engine, controller, css, workflow, cacheAssets) {
   return problems;
 }
 
+function validateLiveDeploymentContract(liveContract, deployWorkflow) {
+  const problems = [];
+  const checks = [
+    ['live contract checks Gill route', liveContract, /\/articles\/dzhon-gill-chast-1-chelovek\//],
+    ['live contract checks standalone route', liveContract, /\/articles\/20-antisovetov-pastoru\//],
+    ['live contract checks Hugging Face CSP', liveContract, /connect-src lacks huggingface\.co/],
+    ['live contract checks Hugging Face CDN CSP', liveContract, /connect-src lacks \*\.aws\.cdn\.hf\.co/],
+    ['live contract checks media and worker blob policy', liveContract, /media-src lacks blob:[\s\S]*worker-src lacks blob:/],
+    ['live contract verifies controller bytes', liveContract, /live controller bytes do not match deployed revision/],
+    ['live contract verifies engine bytes', liveContract, /live Vosk engine bytes do not match deployed revision/],
+    ['live contract verifies notice CSS bytes', liveContract, /live notice CSS bytes do not match deployed revision/],
+    ['live contract rejects notice precache', liveContract, /live Service Worker precaches lazy TTS notice CSS/],
+    ['live contract rejects engine precache', liveContract, /live Service Worker precaches lazy Vosk engine/],
+    ['live contract writes evidence on every attempt', liveContract, /writeReport\(\);[\s\S]*attempt[\s\S]*writeReport\(\);/],
+    ['deploy executes live contract after Pages', deployWorkflow, /- name: Deploy to GitHub Pages[\s\S]{0,900}- name: Verify live TTS deployment contract[\s\S]{0,260}node scripts\/tts-live-deployment-contract\.mjs/],
+    ['deploy passes verified SHA', deployWorkflow, /DEPLOYED_SHA:[^\n]*workflow_run\.head_sha/],
+    ['deploy uploads live TTS evidence', deployWorkflow, /name: tts-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,220}reports\/tts-live-deployment-contract\.json/],
+  ];
+  for (const [label, source, pattern] of checks) {
+    if (!pattern.test(source)) problems.push(label);
+  }
+  return problems;
+}
+
 const engine = read('js/vosk-tts-engine.js');
 const controller = read('js/floating-cluster-controller.js');
 const css = read('css/tts-download-notice.css');
 const workflow = read('.github/workflows/tts-download-consent.yml');
+const deployWorkflow = read('.github/workflows/deploy.yml');
+const liveDeploymentContract = read('scripts/tts-live-deployment-contract.mjs');
 const cacheAssets = read('scripts/cache-bust-assets.js');
 const distPublicationAudit = read('scripts/dist-publication-audit.js');
 assert.deepEqual(validate(engine, controller, css, workflow, cacheAssets), []);
+assert.deepEqual(validateLiveDeploymentContract(liveDeploymentContract, deployWorkflow), []);
 
 function validateDistPublicationAudit(source) {
   const problems = [];
@@ -117,6 +146,16 @@ for (const [name, mutation] of [
   assert.ok(validateDistPublicationAudit(mutation).length > 0, `${name}: mutation must be rejected`);
 }
 
+for (const [name, liveMutation, deployMutation] of [
+  ['standalone live route removed', liveDeploymentContract.replace("  '/articles/20-antisovetov-pastoru/',\n", ''), deployWorkflow],
+  ['live CSP host check removed', liveDeploymentContract.replace('connect-src lacks huggingface.co', 'connect-src host unchecked'), deployWorkflow],
+  ['live Service Worker check removed', liveDeploymentContract.replace('live Service Worker precaches lazy Vosk engine', 'live Service Worker ignored'), deployWorkflow],
+  ['post-deploy execution removed', liveDeploymentContract, deployWorkflow.replace('node scripts/tts-live-deployment-contract.mjs', 'echo live TTS contract skipped')],
+  ['live evidence upload removed', liveDeploymentContract, deployWorkflow.replace('reports/tts-live-deployment-contract.json', 'reports/missing-live-tts-evidence.json')],
+]) {
+  assert.ok(validateLiveDeploymentContract(liveMutation, deployMutation).length > 0, `${name}: mutation must be rejected`);
+}
+
 const mutations = [
   ['retry API removed', engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow, cacheAssets],
   ['engine URL unversioned', engine, controller.replace(/vosk-tts-engine\.js\?v=[a-f0-9]{8}/, 'vosk-tts-engine.js'), css, workflow, cacheAssets],
@@ -134,6 +173,8 @@ const mutations = [
   ['cache registry trigger removed', engine, controller, css, workflow.replace(/^      - "scripts\/cache-bust-assets\.js"\n/gm, ''), cacheAssets],
   ['dist publication trigger removed', engine, controller, css, workflow.replace(/^      - "scripts\/dist-publication-audit\.js"\n/gm, ''), cacheAssets],
   ['asset projection trigger removed', engine, controller, css, workflow.replace(/^      - "src\/lib\/asset-version\.js"\n/gm, ''), cacheAssets],
+  ['live deployment script trigger removed', engine, controller, css, workflow.replace(/^      - "scripts\/tts-live-deployment-contract\.mjs"\n/gm, ''), cacheAssets],
+  ['deploy workflow trigger removed', engine, controller, css, workflow.replace(/^      - "\.github\/workflows\/deploy\.yml"\n/gm, ''), cacheAssets],
   ['notice CSS cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \[[\s\S]*?)  'css\/tts-download-notice\.css',\n/, '$1')],
   ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const ASSETS = \[[\s\S]*?)  'js\/vosk-tts-engine\.js',\n/, '$1')],
   ['notice CSS lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*?)  'css\/tts-download-notice\.css',\n/, '$1')],
@@ -143,4 +184,4 @@ for (const [name, ...mutation] of mutations) {
   const problems = validate(...mutation);
   assert.ok(problems.length > 0, `${name}: mutation must be rejected`);
 }
-console.log('TTS engine status contract: PASS (' + mutations.length + ' named adversarial mutations rejected).');
+console.log('TTS engine status contract: PASS (' + (mutations.length + 5) + ' named adversarial mutations rejected).');
