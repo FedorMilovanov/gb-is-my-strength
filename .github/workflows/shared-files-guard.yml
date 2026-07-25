@@ -40,7 +40,9 @@ jobs:
           node --check scripts/verify-font-assets.mjs
           node --check scripts/generate-font-assets.mjs
           node --check scripts/font-assets-contract-test.mjs
+          node --check scripts/font-assets-alias-contract-test.mjs
           node scripts/font-assets-contract-test.mjs 2>&1 | tee reports/font-assets-contract.log
+          node scripts/font-assets-alias-contract-test.mjs 2>&1 | tee reports/font-assets-alias-contract.log
           node scripts/verify-font-assets.mjs 2>&1 | tee reports/font-assets-verification.log
 
       - name: Workflow policy contracts
@@ -136,6 +138,7 @@ jobs:
             reports/repository-control-plane-audit.json
             reports/repository-control-plane-audit.md
             reports/font-assets-contract.log
+            reports/font-assets-alias-contract.log
             reports/font-assets-verification.log
             reports/font-assets-verification.json
           if-no-files-found: warn
