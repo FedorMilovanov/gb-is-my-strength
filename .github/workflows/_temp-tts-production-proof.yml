@@ -198,8 +198,14 @@ jobs:
           curl --fail-with-body --location --silent --show-error \
             -H 'Cache-Control: no-cache' \
             "https://gospod-bog.ru/sw.js?tts_proof=${GITHUB_RUN_ID}" > reports/live-sw.js
-          ! grep -Fq '/css/tts-download-notice.css' reports/live-sw.js
-          ! grep -Fq '/js/vosk-tts-engine.js' reports/live-sw.js
+          if grep -Fq '/css/tts-download-notice.css' reports/live-sw.js; then
+            echo 'live sw.js unexpectedly precaches the lazy TTS notice CSS' >&2
+            exit 1
+          fi
+          if grep -Fq '/js/vosk-tts-engine.js' reports/live-sw.js; then
+            echo 'live sw.js unexpectedly precaches the lazy Vosk engine' >&2
+            exit 1
+          fi
 
       - name: Run production TTS matrix
         run: |
