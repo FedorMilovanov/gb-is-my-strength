@@ -142,6 +142,7 @@ jobs:
               raise SystemExit(f'paper-header detector block: expected 1 match, found {count}')
           raster.write_text(updated, 'utf-8')
           PY
+          node scripts/cache-bust.js --write
 
       - name: Validate source, scope and revision contracts
         run: |
