@@ -1,0 +1,64 @@
+name: TEMP Diagnose Deploy Publication Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-diagnose-deploy-publication.yml'
+      - 'scripts/_temp-diagnose-deploy-publication.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-diagnose-deploy-publication-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout exact diagnostic branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/deploy-publication-audit-2026-07-25
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Reproduce deploy dist through failed gate
+        run: |
+          mkdir -p reports/deploy-publication-diagnostic
+          set +e
+          set -o pipefail
+          {
+            npm run validate:static-publication
+            npm run strangler:build:production-like
+            npm run page-ownership:dist:production-like
+            npm run pagefind:build:dist
+            touch dist/.nojekyll
+            npm run visual:parity:production
+            node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
+          } 2>&1 | tee reports/deploy-publication-diagnostic/full.log
+          code=${PIPESTATUS[0]}
+          echo "$code" > reports/deploy-publication-diagnostic/exit-code.txt
+          find dist -maxdepth 4 -type f | sort > reports/deploy-publication-diagnostic/dist-files.txt || true
+          exit "$code"
+
+      - name: Upload exact deploy diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-publication-diagnostic-${{ github.run_id }}
+          path: reports/deploy-publication-diagnostic
+          if-no-files-found: error
+          retention-days: 7
