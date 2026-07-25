@@ -37,7 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_API: https://api.github.com/repos/${{ github.repository }}
-          TARGET_SHA: 8a26fd7ea45a7124217f779f78def8fd0f17a0aa
+          TARGET_SHA: 434d1855da2cabcb41b5a1369841449dea70e855
         run: |
           set -euo pipefail
           export TARGET_SHA
@@ -134,8 +134,10 @@ jobs:
       - name: Materialize exact production expectations
         run: |
           set -euo pipefail
-          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = '8a26fd7ea45a7124217f779f78def8fd0f17a0aa';|" scripts/_temp-tts-production-proof.mjs
-          sed -i "s|controller: '/js/floating-cluster-controller.js?v=e7ba3d29'|controller: '/js/floating-cluster-controller.js?v=4444f882'|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|const EXPECTED_MAIN = '6869e0389c7e0981f002f6471f870230f3cd3c99';|const EXPECTED_MAIN = '434d1855da2cabcb41b5a1369841449dea70e855';|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|controller: '/js/floating-cluster-controller.js?v=e7ba3d29'|controller: '/js/floating-cluster-controller.js?v=75656128'|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|engine: '/js/vosk-tts-engine.js?v=87bfc44a'|engine: '/js/vosk-tts-engine.js?v=9ca1685a'|" scripts/_temp-tts-production-proof.mjs
+          sed -i "s|noticeCss: '/css/tts-download-notice.css?v=1cdbee44'|noticeCss: '/css/tts-download-notice.css?v=475abd4b'|" scripts/_temp-tts-production-proof.mjs
           python - <<'PY'
           from pathlib import Path
 
@@ -166,6 +168,7 @@ jobs:
           if old not in source:
               raise SystemExit('strict browser-state proof block not found')
           source = source.replace(old, new, 1)
+
           old_cancel = """    await page.waitForFunction(() => window.__ttsProof.modelFetchAborted === true, null, { timeout: 10000 });
               await waitForState(page, 'cancelled', 5000);
               assert.equal(await page.evaluate(() => localStorage.getItem('gbx-vosk-warmup')), 'off');
@@ -181,13 +184,37 @@ jobs:
           if old_cancel not in source:
               raise SystemExit('cancel-to-disabled proof block not found')
           source = source.replace(old_cancel, new_cancel, 1)
+
+          old_sw = """  assert.ok(cssText.includes('.gb-tts-download-notice'), 'live notice CSS does not contain the status card contract');
+
+              return {
+          """
+          new_sw = """  assert.ok(cssText.includes('.gb-tts-download-notice'), 'live notice CSS does not contain the status card contract');
+
+              const swResponse = await page.request.get(`${ORIGIN}/sw.js?tts_proof=${Date.now()}`, {
+                headers: { 'cache-control': 'no-cache' },
+                timeout: 30000,
+              });
+              assert.equal(swResponse.status(), 200, 'service worker asset is not HTTP 200');
+              const swText = await swResponse.text();
+              assert.ok(!swText.includes('/css/tts-download-notice.css'), 'notice CSS was accidentally added to Service Worker precache');
+              assert.ok(!swText.includes('/js/vosk-tts-engine.js'), 'Vosk engine was accidentally added to Service Worker precache');
+
+              return {
+          """
+          if old_sw not in source:
+              raise SystemExit('service-worker policy insertion point not found')
+          source = source.replace(old_sw, new_sw, 1)
           path.write_text(source, encoding='utf-8')
           PY
-          grep -Fq "const EXPECTED_MAIN = '8a26fd7ea45a7124217f779f78def8fd0f17a0aa';" scripts/_temp-tts-production-proof.mjs
-          grep -Fq "controller: '/js/floating-cluster-controller.js?v=4444f882'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "const EXPECTED_MAIN = '434d1855da2cabcb41b5a1369841449dea70e855';" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "controller: '/js/floating-cluster-controller.js?v=75656128'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "engine: '/js/vosk-tts-engine.js?v=9ca1685a'" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "noticeCss: '/css/tts-download-notice.css?v=475abd4b'" scripts/_temp-tts-production-proof.mjs
           grep -Fq "await waitForState(page, 'browser', 5000);" scripts/_temp-tts-production-proof.mjs
           grep -Fq "link.sheet.cssRules.length > 0" scripts/_temp-tts-production-proof.mjs
           grep -Fq "assert.match(disabledState.meta, /системный голос/i);" scripts/_temp-tts-production-proof.mjs
+          grep -Fq "Vosk engine was accidentally added to Service Worker precache" scripts/_temp-tts-production-proof.mjs
 
       - name: Validate temporary proof source
         run: |
