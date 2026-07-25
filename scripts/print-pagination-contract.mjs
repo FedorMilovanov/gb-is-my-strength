@@ -66,6 +66,15 @@ try {
     const page = await context.newPage();
     await page.route(/gospod-bog\.ru|mc\.yandex/, (r) => r.abort());
     await page.goto(base + url, { waitUntil: 'networkidle' });
+    await page.evaluate(() => {
+      const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body, article[data-pagefind-body], main article, article');
+      if (!root) return;
+      const rect = root.getBoundingClientRect();
+      const absoluteTop = rect.top + window.scrollY;
+      const target = absoluteTop + Math.min(Math.max(rect.height * 0.32, 500), Math.max(500, rect.height - window.innerHeight));
+      window.scrollTo(0, Math.max(0, target));
+    });
+    await page.waitForTimeout(120);
     await page.emulateMedia({ media: 'print' });
     await page.evaluate(async () => { if (document.fonts?.ready) await document.fonts.ready; });
     await page.waitForTimeout(250);
@@ -194,21 +203,68 @@ try {
         });
       }
       const bodyBefore = getComputedStyle(document.body, '::before');
-      const bodyAfter = getComputedStyle(document.body, '::after');
-      const rootPseudo = {
-        before: { content: bodyBefore.content, display: bodyBefore.display, background: bodyBefore.background, height: bodyBefore.height, opacity: bodyBefore.opacity },
-        after: { content: bodyAfter.content, display: bodyAfter.display, background: bodyAfter.background, height: bodyAfter.height, opacity: bodyAfter.opacity }
+      const printBranding = {
+        content: bodyBefore.content,
+        display: bodyBefore.display,
+        position: bodyBefore.position,
+        borderBottomWidth: bodyBefore.borderBottomWidth,
+        height: bodyBefore.height
       };
-      const flipFaces = [...scope.querySelectorAll('.flip-card-front,.flip-card-back,.heart-flip-front,.heart-flip-back,.error-flip-front,.error-flip-back')]
-        .filter(visible)
-        .map((node) => ({
-          tag: node.tagName.toLowerCase(),
+      const progressChrome = [...document.querySelectorAll('#reading-progress,.h-reading-progress')].map((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return {
+          selector: node.id ? '#' + node.id : '.' + [...node.classList].join('.'),
+          display: style.display,
+          visibility: style.visibility,
+          position: style.position,
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          opacity: style.opacity
+        };
+      });
+      const flipCards = [...scope.querySelectorAll('.flip-card,.heart-flip-card,.error-flip-card')].filter(visible).map((node) => {
+        const inner = node.querySelector('.flip-card-inner,.heart-flip-inner,.error-flip-inner');
+        const faces = [...node.querySelectorAll('.flip-card-front,.flip-card-back,.heart-flip-front,.heart-flip-back,.error-flip-front,.error-flip-back')];
+        const snapshot = () => {
+          const faceStates = faces.map((face) => {
+            const style = getComputedStyle(face);
+            const rect = face.getBoundingClientRect();
+            return {
+              className: typeof face.className === 'string' ? face.className.slice(0, 120) : '',
+              display: style.display,
+              visibility: style.visibility,
+              position: style.position,
+              transform: style.transform,
+              width: Math.round(rect.width),
+              height: Math.round(rect.height)
+            };
+          });
+          return {
+            flipped: node.classList.contains('flipped'),
+            visibleFaces: faceStates.filter((face) => face.display !== 'none' && face.visibility !== 'hidden' && face.width > 8 && face.height > 4),
+            faces: faceStates
+          };
+        };
+        const initial = snapshot();
+        const wasFlipped = node.classList.contains('flipped');
+        node.classList.toggle('flipped', !wasFlipped);
+        const toggled = snapshot();
+        node.classList.toggle('flipped', wasFlipped);
+        const style = getComputedStyle(node);
+        const innerStyle = inner ? getComputedStyle(inner) : null;
+        return {
           className: typeof node.className === 'string' ? node.className.slice(0, 140) : '',
           flow: node.getAttribute('data-print-flow') || '',
-          breakInside: getComputedStyle(node).breakInside,
-          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100)
-        }));
-      return { runtime, atomic, keepers, rootPseudo, flipFaces };
+          breakInside: style.breakInside,
+          height: Math.round(node.getBoundingClientRect().height),
+          innerPosition: innerStyle?.position || '',
+          innerTransform: innerStyle?.transform || '',
+          initial,
+          toggled
+        };
+      });
+      return { runtime, atomic, keepers, printBranding, progressChrome, flipCards };
     }, routeIndex);
 
     if (setup.error) {
@@ -222,12 +278,23 @@ try {
     if (badComputed.length) report.failures.push(`${id}: atomic computed style is not avoid-page: ${JSON.stringify(badComputed.slice(0, 4))}`);
     const badKeep = setup.keepers.filter((item) => !String(item.breakAfter).includes('avoid'));
     if (badKeep.length) report.failures.push(`${id}: keep-with-next computed style is not avoid-page: ${JSON.stringify(badKeep.slice(0, 4))}`);
-    const visiblePseudo = Object.entries(setup.rootPseudo || {}).filter(([, pseudo]) =>
-      pseudo && pseudo.display !== 'none' && pseudo.content !== 'none' && pseudo.content !== 'normal' && pseudo.opacity !== '0'
-    );
-    if (visiblePseudo.length) report.failures.push(`${id}: root pseudo decoration remains printable: ${JSON.stringify(visiblePseudo)}`);
-    const badFlipFaces = (setup.flipFaces || []).filter((item) => item.flow !== 'atomic' || !String(item.breakInside).includes('avoid'));
-    if (badFlipFaces.length) report.failures.push(`${id}: reversible-card faces are not atomic: ${JSON.stringify(badFlipFaces.slice(0, 8))}`);
+    const brandingContent = String(setup.printBranding?.content || '');
+    const brandingPresent = brandingContent.includes('ГОСПОДЬ БОГ');
+    if (brandingPresent && (setup.printBranding?.display === 'none' || setup.printBranding?.position !== 'static')) {
+      report.failures.push(`${id}: existing print branding was not kept in normal flow: ${JSON.stringify(setup.printBranding)}`);
+    }
+    const visibleProgress = (setup.progressChrome || []).filter((item) => item.display !== 'none' && item.visibility !== 'hidden' && item.opacity !== '0' && item.width > 0 && item.height > 0);
+    if (visibleProgress.length) report.failures.push(`${id}: screen progress chrome remains printable: ${JSON.stringify(visibleProgress)}`);
+    if (id === 'gill-part1' && !(setup.flipCards || []).length) report.failures.push(`${id}: reversible-card fixture missing`);
+    const badCards = (setup.flipCards || []).filter((item) => {
+      const modes = [item.initial, item.toggled];
+      return item.flow !== 'atomic'
+        || !String(item.breakInside).includes('avoid')
+        || item.innerPosition !== 'static'
+        || item.innerTransform !== 'none'
+        || modes.some((mode) => mode.visibleFaces.length !== 1 || ['absolute', 'fixed', 'sticky'].includes(mode.visibleFaces[0].position) || mode.visibleFaces[0].transform !== 'none');
+    });
+    if (badCards.length) report.failures.push(`${id}: reversible-card print flow is not atomic/single-face: ${JSON.stringify(badCards.slice(0, 4))}`);
 
     const markerPdf = join(MARKERS, `${id}.pdf`);
     const markerTxt = join(MARKERS, `${id}.txt`);
@@ -269,6 +336,9 @@ try {
       runtime: setup.runtime,
       atomicCount: setup.atomic.length,
       keepNextCount: setup.keepers.length,
+      printBranding: setup.printBranding,
+      progressChrome: setup.progressChrome,
+      flipCards: setup.flipCards,
       markerPdf: `markers/${id}.pdf`,
       cleanPdf: `${id}.pdf`,
       atomicMissing: atomicMissing.slice(0, 12),

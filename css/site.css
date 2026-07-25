@@ -1328,34 +1328,68 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   html body .editorial-dateline__date { color: #555; }
 }
 
-
-/* GB PRINT CONTRACT v2.8 — decoration purge and reversible-card pagination. */
+/* GB PRINT CONTRACT v2.9 — progress chrome isolation and reversible-card flow. */
 @media print {
-  /* Root pseudo-elements are screen chrome. They must never become repeated
-     page furniture in paged media. */
-  html body::before,
-  html body::after {
-    content: none !important;
+  html body :where(#reading-progress, .h-reading-progress) {
     display: none !important;
+    visibility: hidden !important;
+    position: static !important;
     width: 0 !important;
     height: 0 !important;
-    background: none !important;
-    background-image: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     border: 0 !important;
+    background: none !important;
     box-shadow: none !important;
-    opacity: 0 !important;
     transform: none !important;
+    opacity: 0 !important;
   }
 
-  /* Reversible cards are semantic reading modules in print. A face may move
-     to the next sheet, but it may not be cut between its text and source. */
-  html body :where(
-    .flip-card-front, .flip-card-back,
-    .heart-flip-front, .heart-flip-back,
-    .error-flip-front, .error-flip-back,
-    .manuscript-quote, .ancient-epigraph
-  ) {
+  html body :where(.flip-card, .heart-flip-card, .error-flip-card) {
+    perspective: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    cursor: default !important;
     break-inside: avoid-page !important;
     page-break-inside: avoid !important;
+  }
+  html body :where(.flip-card-inner, .heart-flip-inner, .error-flip-inner) {
+    position: static !important;
+    min-height: 0 !important;
+    height: auto !important;
+    transform: none !important;
+    transform-style: flat !important;
+    transition: none !important;
+  }
+  html body :where(.flip-card-front, .heart-flip-front, .error-flip-front,
+                   .flip-card-back, .heart-flip-back, .error-flip-back) {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    transform: none !important;
+    backface-visibility: visible !important;
+    -webkit-backface-visibility: visible !important;
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
+  }
+  html body :where(.flip-card-front, .heart-flip-front, .error-flip-front) {
+    display: flex !important;
+  }
+  html body :where(.flip-card-back, .heart-flip-back, .error-flip-back) {
+    display: none !important;
+  }
+  html body .flip-card.flipped > .flip-card-inner > .flip-card-front,
+  html body .heart-flip-card.flipped > .heart-flip-inner > .heart-flip-front,
+  html body .error-flip-card.flipped > .error-flip-inner > .error-flip-front {
+    display: none !important;
+  }
+  html body .flip-card.flipped > .flip-card-inner > .flip-card-back,
+  html body .heart-flip-card.flipped > .heart-flip-inner > .heart-flip-back,
+  html body .error-flip-card.flipped > .error-flip-inner > .error-flip-back {
+    display: flex !important;
   }
 }

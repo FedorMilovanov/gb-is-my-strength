@@ -2,9 +2,8 @@
 """Generic raster audit for a directory of reader PDFs.
 
 This audit is deliberately content-agnostic: every PDF is rendered page by
-page, checked for effectively blank sheets, large saturated screen fills and
-obsolete warm-gold progress strips in the paper header, then emitted as an
-individual contact sheet for visual inspection.
+page, checked for effectively blank sheets and large saturated screen fills,
+and emitted as an individual contact sheet for visual inspection.
 """
 from __future__ import annotations
 
@@ -24,7 +23,27 @@ def run(command: list[str]) -> None:
 
 
 def paper_ratio_around(image: Image.Image, bar: dict) -> float:
-    """Return the light neutral-paper ratio immediately above/below a bar."""
+    pixels = image.load()
+    width, height = image.size
+    pad_x = max(4, int(width * 0.006))
+    pad_y = max(4, int(height * 0.004))
+    x0 = max(0, bar["x"] - pad_x)
+    x1 = min(width, bar["x"] + bar["width"] + pad_x)
+    rows = list(range(max(0, bar["y"] - pad_y), bar["y"]))
+    rows += list(range(bar["y"] + bar["height"], min(height, bar["y"] + bar["height"] + pad_y)))
+    neutral = 0
+    total = 0
+    for y in rows:
+        for x in range(x0, x1):
+            r, g, b = pixels[x, y]
+            total += 1
+            if min(r, g, b) >= 232 and max(r, g, b) - min(r, g, b) <= 20:
+                neutral += 1
+    return neutral / total if total else 0.0
+
+
+def paper_ratio_around(image: Image.Image, bar: dict) -> float:
+    """Return the neutral-paper ratio immediately above and below a candidate strip."""
     pixels = image.load()
     width, height = image.size
     pad_x = max(4, int(width * 0.006))
@@ -45,12 +64,7 @@ def paper_ratio_around(image: Image.Image, bar: dict) -> float:
 
 
 def find_amber_header_bars(image: Image.Image) -> list[dict]:
-    """Find the obsolete long gold progress strip on otherwise blank paper.
-
-    The old defect sat near the upper-left paper margin and was surrounded by
-    neutral paper. Requiring that geometry prevents sunsets, illustrations and
-    intentional short editorial rules from becoming false positives.
-    """
+    """Find the obsolete broad gold progress strip on neutral paper."""
     width, height = image.size
     limit_y = max(1, int(height * 0.16))
     qualifying_rows: list[tuple[int, int, int]] = []
