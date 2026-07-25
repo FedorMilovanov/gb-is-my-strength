@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
+// Issue #300: this entrypoint owns both classification and capability-interface truth.
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 const {
   runSeriesCapabilityMutationSuite,
