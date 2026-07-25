@@ -5,6 +5,22 @@ on:
     paths:
       - '.github/workflows/interactive-audit.yml'
       - 'scripts/home-browser-contract.mjs'
+      - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'src/pages/index.astro'
+      - 'src/components/home/**'
+      - 'src/styles/**'
+      - 'css/**'
+      - 'js/site.js'
+      - 'js/site-utils.js'
+      - 'js/search.js'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/interactive-audit.yml'
+      - 'scripts/home-browser-contract.mjs'
+      - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'src/pages/index.astro'
       - 'src/components/home/**'
       - 'src/styles/**'
@@ -33,6 +49,8 @@ jobs:
     steps:
       - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -54,21 +72,28 @@ jobs:
       - name: Run homepage interaction contract
         run: node scripts/home-browser-contract.mjs
 
+      - name: Run real headed homepage lifecycle contract
+        run: xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs
+
       - name: Upload homepage browser evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: home-browser-contract-${{ github.run_id }}
-          path: reports/home-browser-contract
+          path: |
+            reports/home-browser-contract
+            reports/home-browser-lifecycle-contract
           if-no-files-found: error
           retention-days: 14
 
   interactive-audit:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -78,14 +103,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chromium for Playwright
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium and WebKit for Playwright
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
       - name: Build Pagefind index into dist
         run: npm run pagefind:build:dist
+
+      - name: Run homepage interaction contracts
+        run: |
+          node scripts/home-browser-contract.mjs
+          xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs
 
       - name: Start production-like dist server
         run: |
@@ -104,3 +134,14 @@ jobs:
           if [ -f /tmp/gb-http.pid ]; then
             kill "$(cat /tmp/gb-http.pid)" 2>/dev/null || true
           fi
+
+      - name: Upload scheduled homepage browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: home-browser-contract-${{ github.run_id }}
+          path: |
+            reports/home-browser-contract
+            reports/home-browser-lifecycle-contract
+          if-no-files-found: error
+          retention-days: 14
