@@ -193,7 +193,22 @@ try {
           breakAfter: getComputedStyle(node).breakAfter
         });
       }
-      return { runtime, atomic, keepers };
+      const bodyBefore = getComputedStyle(document.body, '::before');
+      const bodyAfter = getComputedStyle(document.body, '::after');
+      const rootPseudo = {
+        before: { content: bodyBefore.content, display: bodyBefore.display, background: bodyBefore.background, height: bodyBefore.height, opacity: bodyBefore.opacity },
+        after: { content: bodyAfter.content, display: bodyAfter.display, background: bodyAfter.background, height: bodyAfter.height, opacity: bodyAfter.opacity }
+      };
+      const flipFaces = [...scope.querySelectorAll('.flip-card-front,.flip-card-back,.heart-flip-front,.heart-flip-back,.error-flip-front,.error-flip-back')]
+        .filter(visible)
+        .map((node) => ({
+          tag: node.tagName.toLowerCase(),
+          className: typeof node.className === 'string' ? node.className.slice(0, 140) : '',
+          flow: node.getAttribute('data-print-flow') || '',
+          breakInside: getComputedStyle(node).breakInside,
+          text: String(node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100)
+        }));
+      return { runtime, atomic, keepers, rootPseudo, flipFaces };
     }, routeIndex);
 
     if (setup.error) {
@@ -207,6 +222,12 @@ try {
     if (badComputed.length) report.failures.push(`${id}: atomic computed style is not avoid-page: ${JSON.stringify(badComputed.slice(0, 4))}`);
     const badKeep = setup.keepers.filter((item) => !String(item.breakAfter).includes('avoid'));
     if (badKeep.length) report.failures.push(`${id}: keep-with-next computed style is not avoid-page: ${JSON.stringify(badKeep.slice(0, 4))}`);
+    const visiblePseudo = Object.entries(setup.rootPseudo || {}).filter(([, pseudo]) =>
+      pseudo && pseudo.display !== 'none' && pseudo.content !== 'none' && pseudo.content !== 'normal' && pseudo.opacity !== '0'
+    );
+    if (visiblePseudo.length) report.failures.push(`${id}: root pseudo decoration remains printable: ${JSON.stringify(visiblePseudo)}`);
+    const badFlipFaces = (setup.flipFaces || []).filter((item) => item.flow !== 'atomic' || !String(item.breakInside).includes('avoid'));
+    if (badFlipFaces.length) report.failures.push(`${id}: reversible-card faces are not atomic: ${JSON.stringify(badFlipFaces.slice(0, 8))}`);
 
     const markerPdf = join(MARKERS, `${id}.pdf`);
     const markerTxt = join(MARKERS, `${id}.txt`);
