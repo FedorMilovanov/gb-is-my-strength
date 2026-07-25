@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "themes": {
+    "samizdat": {
+      "stylesheet": "css/series-samizdat.css",
+      "selector": "[data-series-theme=\"samizdat\"]",
+      "scope": "route-specific"
+    },
+    "genesis6": {
+      "stylesheet": "css/site.css",
+      "selector": "[data-series-theme=\"genesis6\"]",
+      "scope": "scoped-in-core"
+    }
+  }
+}
