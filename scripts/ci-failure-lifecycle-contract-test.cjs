@@ -188,6 +188,51 @@ function failedJob(stepName) {
   assert.equal(state.issues[0].state_reason, 'completed');
   assert.ok(state.comments.some((comment) => comment.issue_number === state.issues[0].number && /recovered/.test(comment.body)));
 
+  // A delayed rerun of an older failure must not reopen after a newer recovery transition.
+  const commentsAfterRecovery = state.comments.length;
+  state.jobsByRun.set(101, failedJob('Delayed old failure attempt'));
+  const delayedFailureAfterRecovery = await runNotifier({
+    github,
+    context,
+    core,
+    workflowRun: makeRun({ id: 101, run_attempt: 2 }),
+  });
+  assert.equal(delayedFailureAfterRecovery.action, 'ignored-stale-failure');
+  assert.equal(state.issues[0].state, 'closed');
+  assert.equal(state.comments.length, commentsAfterRecovery);
+
+  // An event equal to the latest recovery transition is also a duplicate.
+  const duplicateRecoveryVersion = await runNotifier({
+    github,
+    context,
+    core,
+    workflowRun: makeRun({ id: 104, run_attempt: 1 }),
+  });
+  assert.equal(duplicateRecoveryVersion.action, 'ignored-stale-failure');
+  assert.equal(state.issues[0].state, 'closed');
+
+  // A genuinely newer failure after recovery reopens the same machine-key issue.
+  state.jobsByRun.set(105, failedJob('Genuinely newer post-recovery failure'));
+  const reopenedAfterRecovery = await runNotifier({
+    github,
+    context,
+    core,
+    workflowRun: makeRun({ id: 105 }),
+  });
+  assert.equal(reopenedAfterRecovery.action, 'reopened');
+  assert.equal(state.issues.length, 2);
+  assert.equal(state.issues[0].state, 'open');
+  assert.match(state.issues[0].body, /Genuinely newer post-recovery failure/);
+
+  const recoveredAgain = await runNotifier({
+    github,
+    context,
+    core,
+    workflowRun: makeRun({ id: 106, conclusion: 'success' }),
+  });
+  assert.equal(recoveredAgain.action, 'recovered');
+  assert.equal(state.issues[0].state, 'closed');
+
   // Same run ID with a higher successful attempt is also newer and can recover a rerun.
   state.jobsByRun.set(110, failedJob('Attempt one failed'));
   await runNotifier({

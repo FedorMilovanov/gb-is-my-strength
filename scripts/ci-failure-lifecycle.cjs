@@ -321,9 +321,13 @@ async function handleFailure({ github, context, core, workflowRun, descriptor })
   const previousState = existing ? decodeState(existing.body) : null;
   const current = runVersion(workflowRun);
   const previousFailure = previousState && previousState.latestFailure;
+  const latestTransition = previousState && (previousState.latestSeen || previousFailure);
 
-  if (previousFailure && compareRunVersion(current, previousFailure) <= 0) {
-    core.info(`Ignoring stale/duplicate failure run ${current.id}/${current.attempt}`);
+  if (latestTransition && compareRunVersion(current, latestTransition) <= 0) {
+    core.info(
+      `Ignoring stale/duplicate failure run ${current.id}/${current.attempt}; ` +
+      `latest transition is ${latestTransition.id}/${latestTransition.attempt}`,
+    );
     return { action: 'ignored-stale-failure', issueNumber: existing.number };
   }
 
