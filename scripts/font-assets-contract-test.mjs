@@ -171,8 +171,7 @@ check('missing manifest font fails', async () => withFixture(async (root) => {
 }));
 
 check('undeclared font fails', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(5);
-  const state = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  const state = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', makeWoff2(5)]]);
   fs.writeFileSync(path.join(root, 'fonts', 'Fixture', 'rogue.woff2'), makeWoff2(6));
   assert.throws(() => verifyFontAssets({ root, ...state }), /undeclared files/);
 }));
@@ -193,8 +192,7 @@ check('sfnt table outside file fails', async () => {
 });
 
 check('stale WOFF2 hash fails', async () => withFixture(async (root) => {
-  const bytes = makeWoff2(9);
-  const state = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', bytes]]);
+  const state = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', makeWoff2(9)]]);
   state.manifest.assets[0].sha256 = '0'.repeat(64);
   state.manifest.assets[0].source.trackedMatch = false;
   state.manifest.assets[0].source.status = 'upstream-drift';
@@ -229,7 +227,10 @@ check('canonical registry family drift fails', async () => withFixture(async (ro
   const record = state.supportManifest.supportAssets.find((asset) => asset.role === 'font-face-registry');
   record.bytes = wrongRegistry.length;
   record.sha256 = sha256(wrongRegistry);
-  assert.throws(() => verifyFontAssets({ root, ...state }), /metadata does not match manifest/);
+  assert.throws(
+    () => verifyFontAssets({ root, ...state }),
+    /every @font-face declaration must match base metadata or an explicit override/,
+  );
 }));
 
 check('registry omission fails', async () => withFixture(async (root) => {
@@ -261,7 +262,9 @@ check('support manifest rejects unnormalized path', async () => {
 
 check('exact fetch accepts valid WOFF2', async () => {
   const bytes = makeWoff2(16);
-  const fetched = await fetchExactFontSource('https://fonts.gstatic.com/fixture.woff2', { fetchImpl: async () => response(bytes) });
+  const fetched = await fetchExactFontSource('https://fonts.gstatic.com/fixture.woff2', {
+    fetchImpl: async () => response(bytes),
+  });
   assert.equal(fetched.sha256, sha256(bytes));
 });
 
@@ -299,7 +302,10 @@ check('private redirect target fails', async () => {
 
 check('redirect loop fails closed', async () => {
   const fakeFetch = async (url) => response(null, 302, { location: new URL('/loop.woff2', url).href });
-  await assert.rejects(fetchExactFontSource('https://fonts.gstatic.com/start.woff2', { fetchImpl: fakeFetch, maxRedirects: 2 }), /exceeded 2 redirects/);
+  await assert.rejects(fetchExactFontSource('https://fonts.gstatic.com/start.woff2', {
+    fetchImpl: fakeFetch,
+    maxRedirects: 2,
+  }), /exceeded 2 redirects/);
 });
 
 check('upstream drift leaves full directory untouched', async () => withFixture(async (root) => {
@@ -308,7 +314,12 @@ check('upstream drift leaves full directory untouched', async () => withFixture(
   const fontPath = 'fonts/Fixture/fixture-latin-400.woff2';
   const state = writeFixture(root, [[fontPath, original]]);
   const registryBefore = fs.readFileSync(path.join(root, 'fonts', 'fonts.css'));
-  await assert.rejects(generateFontAssets({ root, ...state, write: true, fetchImpl: async () => response(changed) }), /upstream drift/);
+  await assert.rejects(generateFontAssets({
+    root,
+    ...state,
+    write: true,
+    fetchImpl: async () => response(changed),
+  }), /upstream drift/);
   assert.deepEqual(fs.readFileSync(path.join(root, fontPath)), original);
   assert.deepEqual(fs.readFileSync(path.join(root, 'fonts', 'fonts.css')), registryBefore);
 }));
@@ -316,9 +327,14 @@ check('upstream drift leaves full directory untouched', async () => withFixture(
 check('one unavailable source aborts whole generation', async () => withFixture(async (root) => {
   const first = makeWoff2(19);
   const second = makeWoff2(20);
-  const assets = [['fonts/A/a-latin-400.woff2', first], ['fonts/B/b-latin-400.woff2', second]];
+  const assets = [
+    ['fonts/A/a-latin-400.woff2', first],
+    ['fonts/B/b-latin-400.woff2', second],
+  ];
   const state = writeFixture(root, assets);
-  const fakeFetch = async (url) => String(url).includes('/a-latin') ? response(first) : response('missing', 404, { 'content-type': 'text/plain' });
+  const fakeFetch = async (url) => String(url).includes('/a-latin')
+    ? response(first)
+    : response('missing', 404, { 'content-type': 'text/plain' });
   await assert.rejects(generateFontAssets({ root, ...state, write: true, fetchImpl: fakeFetch }), /font source HTTP 404/);
   assert.deepEqual(fs.readFileSync(path.join(root, assets[0][0])), first);
   assert.deepEqual(fs.readFileSync(path.join(root, assets[1][0])), second);
@@ -329,7 +345,13 @@ check('accepted refresh updates staged manifest only', async () => withFixture(a
   const changed = makeWoff2(22);
   const fontPath = 'fonts/Fixture/fixture-latin-400.woff2';
   const state = writeFixture(root, [[fontPath, original]]);
-  const result = await generateFontAssets({ root, ...state, acceptUpstream: true, write: false, fetchImpl: async () => response(changed) });
+  const result = await generateFontAssets({
+    root,
+    ...state,
+    acceptUpstream: true,
+    write: false,
+    fetchImpl: async () => response(changed),
+  });
   assert.equal(result.result, 'DRY_RUN_PASS');
   assert.equal(result.manifest.assets[0].sha256, sha256(changed));
   assert.deepEqual(fs.readFileSync(path.join(root, fontPath)), original);
@@ -340,7 +362,9 @@ check('exact source swaps directory and preserves support', async () => withFixt
   const sfnt = makeSfnt(24);
   const fontPath = 'fonts/Fixture/fixture-latin-400.woff2';
   const ttfPath = 'fonts/Fixture/fixture-fallback.ttf';
-  const state = writeFixture(root, [[fontPath, woff2]], { sfntFiles: [{ fontPath: ttfPath, bytes: sfnt }] });
+  const state = writeFixture(root, [[fontPath, woff2]], {
+    sfntFiles: [{ fontPath: ttfPath, bytes: sfnt }],
+  });
   const registryBefore = fs.readFileSync(path.join(root, 'fonts', 'fonts.css'));
   const result = await generateFontAssets({ root, ...state, write: true, fetchImpl: async () => response(woff2) });
   assert.equal(result.result, 'WRITE_PASS');
