@@ -74,7 +74,7 @@ jobs:
               'const expectedNavigationAborts = new WeakSet();',
               "page.on('request', (request) => {",
               'expectedNavigationAborts.add(request);',
-              'isKnownNavigationAbort(request, expectedNavigationAborts)',
+              'if (isKnownNavigationAbort(request, expectedNavigationAborts))',
           ]
           missing = [marker for marker in required if text.count(marker) != 1]
           if missing:
