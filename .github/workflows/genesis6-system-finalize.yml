@@ -38,7 +38,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git merge-base "$BASE_SHA" HEAD)" = "$BASE_SHA"
-          unexpected="$(git diff --name-only "$BASE_SHA"..HEAD | grep -Ev '^(.genesis6-system/(apply.mjs|manuscript.css)|.github/workflows/genesis6-system-(finalize|research-provenance).yml|tmp-genesis6-system-finalize-trigger.txt|data/(genesis6-research-provenance|series-theme-registry).json|scripts/genesis6-research-provenance-contract.mjs)$' || true)"
+          unexpected="$(git diff --name-only "$BASE_SHA"..HEAD | grep -Ev '^(.genesis6-system/(apply.mjs|manuscript.css)|.github/workflows/genesis6-(system-finalize|research-provenance).yml|tmp-genesis6-system-finalize-trigger.txt|data/(genesis6-research-provenance|series-theme-registry).json|scripts/genesis6-research-provenance-contract.mjs)$' || true)"
           test -z "$unexpected" || { printf 'Unexpected staging paths:\n%s\n' "$unexpected" >&2; exit 1; }
 
       - name: Apply deterministic shared migration
