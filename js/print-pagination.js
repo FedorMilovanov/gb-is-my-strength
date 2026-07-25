@@ -94,7 +94,11 @@
       '  html body [data-print-tail] { display: block !important; min-height: 0 !important; height: auto !important; margin: 5mm 0 0 !important; padding: 3mm 0 0 !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
       '  html body [data-print-tail] > .article-end-sdg,',
       '  html body [data-print-tail].article-end-sdg { min-height: 0 !important; height: auto !important; margin: 0 !important; padding: 0 !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
-      '  html body [data-print-terminal-flow] { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-after: auto !important; page-break-after: auto !important; }',
+      '  /* GB_PRINT_TERMINAL_SEAL_V2_CSS */',
+      '  html[data-print-terminal-root], html[data-print-terminal-root] body { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-after: auto !important; page-break-after: auto !important; }',
+      '  html body [data-print-terminal-flow] { min-height: 0 !important; height: auto !important; padding-bottom: 0 !important; margin-bottom: 0 !important; overflow: visible !important; break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
+      '  html[data-print-terminal-root]::before, html[data-print-terminal-root]::after, html[data-print-terminal-root] body::before, html[data-print-terminal-root] body::after, html body [data-print-terminal-flow]::before, html body [data-print-terminal-flow]::after { break-before: auto !important; page-break-before: auto !important; break-after: auto !important; page-break-after: auto !important; }',
+      '  html body [data-print-terminal-follower] { display: none !important; }',
       '  html body [data-print-flow] { box-shadow: none; }',
       '  html body article:last-child,',
       '  html body .article-body:last-child,',
@@ -175,6 +179,8 @@
       nodes[i].removeAttribute('data-print-tail');
       nodes[i].removeAttribute('data-print-closing-group');
       nodes[i].removeAttribute('data-print-terminal-flow');
+      nodes[i].removeAttribute('data-print-terminal-follower');
+      nodes[i].removeAttribute('data-print-terminal-root');
       nodes[i].removeAttribute(GENERATED);
     }
   }
@@ -267,9 +273,63 @@
     return group;
   }
 
+  function hasMeaningfulFollowingContent(anchor, scope) {
+    var nodes = [];
+    try { nodes = Array.prototype.slice.call((scope || document).querySelectorAll('p,li,dt,dd,h1,h2,h3,h4,h5,h6,table,figure,blockquote,pre,section,article,[data-pagefind-body]')); } catch (_) {}
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (!precedes(anchor, node) || !isVisible(node)) continue;
+      var text = String(node.innerText || node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text.length > 0) return true;
+      if (node.matches && node.matches('img,svg,canvas,video,table,figure')) return true;
+    }
+    return false;
+  }
+
+  function isMeaningfulPrintBlock(node) {
+    if (!isVisible(node)) return false;
+    var text = String(node.innerText || node.textContent || '').replace(/\s+/g, ' ').trim();
+    if (text.length > 0) return true;
+    return !!(node.matches && node.matches('img,svg,canvas,video,table,figure'));
+  }
+
+  function findTerminalAnchor(root, scope) {
+    var selector = 'p,li,dt,dd,h1,h2,h3,h4,h5,h6,table,figure,blockquote,pre,.timeline-entry,.timeline-card,.chronology-item,.milestone,.event-item,.history-item,.note-box,.info-box,.warn-box,.quote-box,.summary-card,.callout,.fact-card,.source-card,.author-card,.series-map,.series-roadmap,.series-overview,.overview-grid,.diagram,.diagram-card,[data-print-tail]';
+    var nodes = [];
+    try { nodes = Array.prototype.slice.call((root || scope || document).querySelectorAll(selector)); } catch (_) {}
+    var last = null;
+    for (var i = 0; i < nodes.length; i++) {
+      if (isMeaningfulPrintBlock(nodes[i])) last = nodes[i];
+    }
+    return last || root || null;
+  }
+
+  function markTerminalRegion(anchor, scope) {
+    var result = { flow: 0, followers: 0 };
+    if (!anchor) return result;
+    mark(document.documentElement, 'data-print-terminal-root', '1');
+    mark(document.body, 'data-print-terminal-root', '1');
+    var nodes = [];
+    try { nodes = Array.prototype.slice.call((scope || document).querySelectorAll('*')); } catch (_) {}
+    for (var i = 0; i < nodes.length; i++) {
+      if (!precedes(anchor, nodes[i])) continue;
+      mark(nodes[i], 'data-print-terminal-flow', '1');
+      mark(nodes[i], 'data-print-terminal-follower', '1');
+      result.flow += 1;
+      result.followers += 1;
+    }
+    var terminal = anchor.parentElement;
+    while (terminal && terminal !== document.body && terminal !== document.documentElement) {
+      mark(terminal, 'data-print-terminal-flow', '1');
+      result.flow += 1;
+      terminal = terminal.parentElement;
+    }
+    return result;
+  }
+
   function classifyCandidates(root, pageHeight) {
     var candidates = collectCandidates(root);
-    var stats = { candidates: candidates.length, atomic: 0, splittable: 0, rows: 0, keepNext: 0, tailPairs: 0, closingGroups: 0, tails: 0 };
+    var stats = { candidates: candidates.length, atomic: 0, splittable: 0, rows: 0, keepNext: 0, tailPairs: 0, closingGroups: 0, terminalFlow: 0, terminalFollowers: 0, terminalAnchors: 0, nonTerminalTails: 0, tails: 0 };
     var atomicLimit = pageHeight * 0.84;
 
     for (var i = 0; i < candidates.length; i++) {
@@ -313,6 +373,10 @@
     stats.tails = tails.length;
     for (var t = 0; t < tails.length; t++) {
       var tail = tails[t];
+      if (hasMeaningfulFollowingContent(tail, scope)) {
+        stats.nonTerminalTails += 1;
+        continue;
+      }
       mark(tail, 'data-print-flow', 'atomic');
       mark(tail, 'data-print-tail', '1');
       var previous = previousSemanticFlow(tail, scope);
@@ -321,16 +385,18 @@
       if (isPrintMedia() && combined <= pageHeight * 0.94) {
         var group = createClosingGroup(previous, tail);
         if (group) {
-          var terminal = group.parentElement;
-          while (terminal && terminal !== document.body && terminal !== document.documentElement) {
-            mark(terminal, 'data-print-terminal-flow', '1');
-            terminal = terminal.parentElement;
-          }
           stats.tailPairs += 1;
           stats.closingGroups += 1;
           stats.atomic += 1;
         }
       }
+    }
+    var terminalAnchor = closingGroups.length ? closingGroups[closingGroups.length - 1].group : findTerminalAnchor(root, scope);
+    if (terminalAnchor) {
+      var terminalRegion = markTerminalRegion(terminalAnchor, scope);
+      stats.terminalFlow += terminalRegion.flow;
+      stats.terminalFollowers += terminalRegion.followers;
+      stats.terminalAnchors += 1;
     }
     return stats;
   }
