@@ -232,22 +232,30 @@ function requestOnce(url, method, {
       }
       const chunks = [];
       let bytesRead = 0;
-      response.on('data', (chunk) => {
-        bytesRead += chunk.length;
-        if (bytesRead > maxProbeBytes) {
-          request.destroy(Object.assign(new Error(`response probe exceeded ${maxProbeBytes} bytes`), { code: 'RESPONSE_TOO_LARGE' }));
-          return;
-        }
-        chunks.push(chunk);
-      });
-      response.on('end', () => finish(null, {
+      let storedBytes = 0;
+      const snapshot = (truncated) => ({
         status: response.statusCode,
         location: headers.location || '',
         headers,
         method,
         bodyPrefix: Buffer.concat(chunks),
         bytesRead,
-      }));
+        truncated,
+      });
+      response.on('data', (chunk) => {
+        bytesRead += chunk.length;
+        const remaining = maxProbeBytes - storedBytes;
+        if (remaining > 0) {
+          const prefix = chunk.subarray(0, remaining);
+          chunks.push(prefix);
+          storedBytes += prefix.length;
+        }
+        if (bytesRead > maxProbeBytes) {
+          finish(null, snapshot(true));
+          response.destroy();
+        }
+      });
+      response.on('end', () => finish(null, snapshot(false)));
     });
     request.on('timeout', () => request.destroy(Object.assign(new Error('timeout'), { code: 'TIMEOUT' })));
     request.on('error', (error) => finish(error));
@@ -291,7 +299,6 @@ function usableContentType(contentType) {
 function classifyTransportError(error) {
   const code = String(error && (error.code || error.name || error.message) || 'ERROR');
   if (/CERT|SSL|HOSTNAME|SELF_SIGNED|UNABLE_TO_VERIFY|DEPTH_ZERO|ENOTFOUND|EAI_AGAIN|INVALID_URL/i.test(code)) return 'hard';
-  if (/RESPONSE_TOO_LARGE/i.test(code)) return 'hard';
   return 'warn';
 }
 
@@ -376,7 +383,7 @@ async function auditUrl(source, {
 
     const status = Number(response.status || 0);
     if (status === 404 || status === 410) return { ...evidence, final: sanitizeUrlForEvidence(policy.url), status, reason: `HTTP ${status}` };
-    if ([403, 405, 429].includes(status) || status >= 500) {
+    if ([401, 403, 405, 418, 429].includes(status) || status >= 500) {
       return { ...evidence, result: 'warn', final: sanitizeUrlForEvidence(policy.url), status, reason: `HTTP ${status}` };
     }
     if (status < 200 || status >= 400) return { ...evidence, final: sanitizeUrlForEvidence(policy.url), status, reason: `unusable HTTP ${status}` };
@@ -525,6 +532,7 @@ module.exports = {
   auditUrl,
   createPinnedLookup,
   isForbiddenAddress,
+  requestOnce,
   isSystemicTransportFailure,
   sanitizeUrlForEvidence,
   sniffContentType,

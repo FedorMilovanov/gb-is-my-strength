@@ -36,6 +36,9 @@ function validate({ source, workflow }) {
   must('native request uses validated pinned lookup', source, /lookup: createPinnedLookup\(address\)/);
   must('report records systemic transport failure', source, /systemicTransportFailure: isSystemicTransportFailure\(results\)/);
   must('systemic transport failure exits nonzero', source, /if \(report\.systemicTransportFailure\)[\s\S]{0,220}process\.exitCode = 1/);
+  must('native response probe caps stored bytes', source, /const remaining = maxProbeBytes - storedBytes;[\s\S]{0,300}finish\(null, snapshot\(true\)\);[\s\S]{0,80}response\.destroy\(\)/);
+  mustNot('large response is treated as transport failure', source, /RESPONSE_TOO_LARGE/);
+  must('bot and auth response statuses remain warnings', source, /\[401, 403, 405, 418, 429\]\.includes\(status\)/);
 
   must('workflow owns source contract path', workflow, /- 'scripts\/source-link-audit-source-contract-test\.cjs'/);
   must('workflow syntax-checks source contract', workflow, /node --check scripts\/source-link-audit-source-contract-test\.cjs/);
@@ -97,6 +100,9 @@ const mutations = [
   ['request bypasses pinned lookup helper', { source: source.replace('lookup: createPinnedLookup(address)', 'lookup: (_hostname, _options, callback) => callback(null, address.address, address.family)'), workflow }],
   ['systemic failure report field removed', { source: source.replace('    systemicTransportFailure: isSystemicTransportFailure(results),\n', ''), workflow }],
   ['systemic failure nonzero guard removed', { source: source.replace(/  if \(report\.systemicTransportFailure\) \{[\s\S]*?\n  \}\n  console\.log\('✅ Source links hard-check passed'\);/, "  console.log('✅ Source links hard-check passed');"), workflow }],
+  ['bounded prefix storage removed', { source: source.replace('const remaining = maxProbeBytes - storedBytes;', 'const remaining = chunk.length;'), workflow }],
+  ['large response transport error reintroduced', { source: source.replace('          finish(null, snapshot(true));\n          response.destroy();', "          request.destroy(Object.assign(new Error('probe too large'), { code: 'RESPONSE_TOO_LARGE' }));"), workflow }],
+  ['HTTP 418 bot block made hard', { source: source.replace('[401, 403, 405, 418, 429]', '[401, 403, 405, 429]'), workflow }],
 ];
 
 for (const [name, mutated] of mutations) {
