@@ -1,0 +1,53 @@
+name: TEMP Materialize Editorial Dateline
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-materialize-editorial-dateline-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - name: Apply universal dateline migration
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/_temp-editorial-dateline-inventory.yml
+          python3 scripts/_temp-materialize-editorial-dateline.py
+          rm -f scripts/_temp-materialize-editorial-dateline.py
+          rm -f .github/workflows/_temp-materialize-editorial-dateline.yml
+          node scripts/cache-bust.js
+          node scripts/editorial-dateline-contract-test.js
+          node --check js/reader-preferences-head.js
+          git diff --check
+      - name: Commit materialized product and contracts
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet && git diff --cached --quiet; then
+            echo 'No materialization changes remain.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat(editorial): replace foliant boxes with semantic datelines'
+          git push origin "HEAD:${BRANCH}"
