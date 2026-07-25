@@ -68,6 +68,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify deterministic local font set
+        run: |
+          node --check scripts/font-assets-lib.mjs
+          node --check scripts/verify-font-assets.mjs
+          node --check scripts/generate-font-assets.mjs
+          node --check scripts/font-assets-contract-test.mjs
+          node scripts/font-assets-contract-test.mjs
+          node scripts/verify-font-assets.mjs
+
       - name: Validate registry structure
         run: node scripts/editorial-metadata-registry.js --check
 
@@ -96,7 +105,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: editorial-metadata-${{ github.run_id }}
-          path: reports/editorial-metadata-*.log
+          path: |
+            reports/editorial-metadata-*.log
+            reports/font-assets-verification.json
           if-no-files-found: ignore
           retention-days: 7
 
