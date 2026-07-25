@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/interactive-audit.yml'
       - 'scripts/home-browser-contract.mjs'
+      - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'src/pages/index.astro'
       - 'src/components/home/**'
       - 'src/styles/**'
@@ -54,12 +55,17 @@ jobs:
       - name: Run homepage interaction contract
         run: node scripts/home-browser-contract.mjs
 
+      - name: Run homepage lifecycle residual contract
+        run: node scripts/home-browser-lifecycle-contract.mjs
+
       - name: Upload homepage browser evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: home-browser-contract-${{ github.run_id }}
-          path: reports/home-browser-contract
+          path: |
+            reports/home-browser-contract
+            reports/home-browser-lifecycle-contract
           if-no-files-found: error
           retention-days: 14
 
@@ -78,14 +84,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chromium for Playwright
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium and WebKit for Playwright
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
       - name: Build Pagefind index into dist
         run: npm run pagefind:build:dist
+
+      - name: Run homepage interaction contracts
+        run: |
+          node scripts/home-browser-contract.mjs
+          node scripts/home-browser-lifecycle-contract.mjs
 
       - name: Start production-like dist server
         run: |
@@ -104,3 +115,14 @@ jobs:
           if [ -f /tmp/gb-http.pid ]; then
             kill "$(cat /tmp/gb-http.pid)" 2>/dev/null || true
           fi
+
+      - name: Upload scheduled homepage browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: home-browser-contract-${{ github.run_id }}
+          path: |
+            reports/home-browser-contract
+            reports/home-browser-lifecycle-contract
+          if-no-files-found: error
+          retention-days: 14
