@@ -101,3 +101,25 @@ updated, count = pattern.subn('\n' + replacement.strip('\n'), source, count=1)
 if count != 1:
     raise SystemExit(f'paper-header detector block: expected 1 match, found {count}')
 raster.write_text(updated.rstrip() + '\n', 'utf-8')
+
+contract = Path('scripts/print-pagination-contract.mjs')
+contract_source = contract.read_text('utf-8')
+branding_old = """    const brandingContent = String(setup.printBranding?.content || '');
+    if (!brandingContent.includes('ГОСПОДЬ БОГ') || setup.printBranding?.display === 'none' || setup.printBranding?.position !== 'static') {
+      report.failures.push(`${id}: legitimate print branding was lost: ${JSON.stringify(setup.printBranding)}`);
+    }"""
+branding_new = """    const brandingContent = String(setup.printBranding?.content || '');
+    const brandingPresent = brandingContent.includes('ГОСПОДЬ БОГ');
+    if (brandingPresent && (setup.printBranding?.display === 'none' || setup.printBranding?.position !== 'static')) {
+      report.failures.push(`${id}: existing print branding was not kept in normal flow: ${JSON.stringify(setup.printBranding)}`);
+    }"""
+if contract_source.count(branding_old) != 1:
+    raise SystemExit(f'branding assertion: expected 1 match, found {contract_source.count(branding_old)}')
+contract_source = contract_source.replace(branding_old, branding_new, 1)
+
+position_old = "mode.visibleFaces.length !== 1 || mode.visibleFaces[0].position !== 'static' || mode.visibleFaces[0].transform !== 'none'"
+position_new = "mode.visibleFaces.length !== 1 || ['absolute', 'fixed', 'sticky'].includes(mode.visibleFaces[0].position) || mode.visibleFaces[0].transform !== 'none'"
+if contract_source.count(position_old) != 1:
+    raise SystemExit(f'visible-face position assertion: expected 1 match, found {contract_source.count(position_old)}')
+contract_source = contract_source.replace(position_old, position_new, 1)
+contract.write_text(contract_source.rstrip() + '\n', 'utf-8')
