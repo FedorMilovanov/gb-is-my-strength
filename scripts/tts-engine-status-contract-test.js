@@ -32,7 +32,7 @@ function validate(engine, controller, css, workflow, cacheAssets) {
     ['workflow owns controller', workflow, /js\/floating-cluster-controller\.js/],
     ['workflow runs lifecycle browser test', workflow, /tts-engine-lifecycle-browser-test\.js/],
     ['workflow runs route integration', workflow, /tts-status-route-browser-test\.js/],
-    ['workflow runs mobile geometry gate', workflow, /tts-mobile-notice-geometry-browser-test\.js/],
+    ['workflow executes mobile geometry gate', workflow, /- name:\s*Run mobile notice viewport geometry[\s\S]{0,220}run:\s*\|[\s\S]{0,220}node scripts\/tts-mobile-notice-geometry-browser-test\.js/],
     ['workflow installs WebKit', workflow, /playwright install --with-deps chromium webkit/],
     ['cache registry owns notice CSS', cacheAssets, /'css\/tts-download-notice\.css'/],
     ['cache registry owns Vosk engine', cacheAssets, /'js\/vosk-tts-engine\.js'/],
@@ -64,21 +64,22 @@ const cacheAssets = read('scripts/cache-bust-assets.js');
 assert.deepEqual(validate(engine, controller, css, workflow, cacheAssets), []);
 
 const mutations = [
-  [engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow, cacheAssets],
-  [engine, controller.replace(/vosk-tts-engine\.js\?v=[a-f0-9]{8}/, 'vosk-tts-engine.js'), css, workflow, cacheAssets],
-  [engine, controller.replace(/gb:vosk-retry-request/g, 'gb:vosk-retry-missing'), css, workflow, cacheAssets],
-  [engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],
-  [engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow, cacheAssets],
-  [engine, controller, css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;'), workflow, cacheAssets],
-  [engine.replace(/DOWNLOAD_NOTICE_CSS_URL = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=00000000'"), controller, css, workflow, cacheAssets],
-  [engine, controller.replace(/TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=00000000'"), css, workflow, cacheAssets],
-  [engine, controller.replace(/VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}'/, "VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=00000000'"), css, workflow, cacheAssets],
-  [engine, controller, css, workflow.replace('chromium webkit', 'chromium'), cacheAssets],
-  [engine, controller, css, workflow.replace(/\n\s*- name: Run mobile notice viewport geometry[\s\S]*?tts-mobile-notice-geometry-browser-test\.js[^\n]*\n/, '\n'), cacheAssets],
-  [engine, controller, css, workflow, cacheAssets.replace("  'css/tts-download-notice.css',\n", '')],
-  [engine, controller, css, workflow, cacheAssets.replace("  'js/vosk-tts-engine.js',\n", '')],
+  ['retry API removed', engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow, cacheAssets],
+  ['engine URL unversioned', engine, controller.replace(/vosk-tts-engine\.js\?v=[a-f0-9]{8}/, 'vosk-tts-engine.js'), css, workflow, cacheAssets],
+  ['retry event removed', engine, controller.replace(/gb:vosk-retry-request/g, 'gb:vosk-retry-missing'), css, workflow, cacheAssets],
+  ['browser status preservation removed', engine, controller.replace('preserveBrowserStatus: true', 'preserveBrowserStatus: false'), css, workflow, cacheAssets],
+  ['notice copy forced nowrap', engine, controller, css.replace('white-space:normal', 'white-space:nowrap'), workflow, cacheAssets],
+  ['mobile right inset removed', engine, controller, css.replace('right:max(10px,env(safe-area-inset-right,0px));', 'right:auto;'), workflow, cacheAssets],
+  ['engine CSS revision corrupted', engine.replace(/DOWNLOAD_NOTICE_CSS_URL = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=00000000'"), controller, css, workflow, cacheAssets],
+  ['controller CSS revision corrupted', engine, controller.replace(/TTS_NOTICE_CSS_SRC = '\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}'/, "TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=00000000'"), css, workflow, cacheAssets],
+  ['controller engine revision corrupted', engine, controller.replace(/VOSK_ENGINE_SRC = '\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}'/, "VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=00000000'"), css, workflow, cacheAssets],
+  ['WebKit install removed', engine, controller, css, workflow.replace('chromium webkit', 'chromium'), cacheAssets],
+  ['mobile geometry execution removed', engine, controller, css, workflow.replace(/\n\s*- name: Run mobile notice viewport geometry[\s\S]*?node scripts\/tts-mobile-notice-geometry-browser-test\.js[^\n]*\n/, '\n'), cacheAssets],
+  ['notice CSS cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'css/tts-download-notice.css',\n", '')],
+  ['Vosk engine cache registry entry removed', engine, controller, css, workflow, cacheAssets.replace("  'js/vosk-tts-engine.js',\n", '')],
 ];
-for (const mutation of mutations) {
-  assert.ok(validate(...mutation).length > 0, 'adversarial mutation must be rejected');
+for (const [name, ...mutation] of mutations) {
+  const problems = validate(...mutation);
+  assert.ok(problems.length > 0, `${name}: mutation must be rejected`);
 }
-console.log('TTS engine status contract: PASS (' + mutations.length + ' adversarial mutations rejected).');
+console.log('TTS engine status contract: PASS (' + mutations.length + ' named adversarial mutations rejected).');
