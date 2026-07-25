@@ -24,7 +24,7 @@ function replaceOnce(source, oldText, newText, label) {
   return source.replace(oldText, newText);
 }
 
-// 1. Remove the duplicate global top progress pseudo-element at its source.
+// 1. Remove the obsolete global gold progress pseudo-element at its source.
 let floating = fromBase(PATHS.floating);
 const progressStart = floating.indexOf('/* --- 2. Gold mobile progress — top thin bar + bottom bar gold track --- */');
 const progressEnd = floating.indexOf('@media (max-width: 899px)', progressStart);
@@ -39,13 +39,12 @@ if (floating.includes('transform: scaleX(var(--gb-read-pct, 0))')) {
 }
 write(PATHS.floating, floating);
 
-// 2. Preserve legitimate printed branding, hide only progress UI, and flatten reversible cards.
+// 2. Preserve legitimate paper branding, hide only progress UI and flatten the visible card face.
 let site = fromBase(PATHS.site).trimEnd();
 site += String.raw`
 
 /* GB PRINT CONTRACT v2.9 — progress chrome isolation and reversible-card flow. */
 @media print {
-  /* Screen-only progress owners must never repeat on every paper page. */
   html body :where(#reading-progress, .h-reading-progress) {
     display: none !important;
     visibility: hidden !important;
@@ -63,7 +62,6 @@ site += String.raw`
     opacity: 0 !important;
   }
 
-  /* A reversible card becomes one ordinary semantic block in paged media. */
   html body :where(.flip-card, .heart-flip-card, .error-flip-card) {
     perspective: none !important;
     min-height: 0 !important;
@@ -113,23 +111,29 @@ site += String.raw`
 `;
 write(PATHS.site, site + '\n');
 
-// 3. Register only the outer reversible-card roots with the pagination engine.
+// 3. Register only outer reversible-card roots as semantic pagination components.
 let runtime = fromBase(PATHS.runtime);
 runtime = replaceOnce(
   runtime,
-  `  var CANDIDATE_SELECTOR = [`,
-  `  // GB_PRINT_REVERSIBLE_CARD_ROOTS_V1\n  var CANDIDATE_SELECTOR = [`,
+  '  var CANDIDATE_SELECTOR = [',
+  '  // GB_PRINT_REVERSIBLE_CARD_ROOTS_V1\n  var CANDIDATE_SELECTOR = [',
   'runtime contract marker'
 );
 runtime = replaceOnce(
   runtime,
-  `    '.manuscript-quote',\n    '.ancient-epigraph',`,
-  `    '.manuscript-quote',\n    '.flip-card',\n    '.heart-flip-card',\n    '.error-flip-card',\n    '.ancient-epigraph',`,
+  "    '.manuscript-quote',\n    '.ancient-epigraph',",
+  "    '.manuscript-quote',\n    '.flip-card',\n    '.heart-flip-card',\n    '.error-flip-card',\n    '.ancient-epigraph',",
   'outer reversible-card candidates'
+);
+runtime = replaceOnce(
+  runtime,
+  String.raw`var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;`,
+  String.raw`var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|flip-card|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;`,
+  'reversible-card semantic role'
 );
 write(PATHS.runtime, runtime);
 
-// 4. Extend the permanent browser/PDF contract without suppressing print branding.
+// 4. Extend the permanent Playwright/PDF proof.
 let contract = fromBase(PATHS.contract);
 contract = replaceOnce(
   contract,
@@ -157,35 +161,55 @@ contract = replaceOnce(
 );
 write(PATHS.contract, contract);
 
-// 5. Add a physical raster gate for the exact repeated warm-gold strip defect.
+// 5. Add a physical gate for the exact long gold strip on neutral paper.
 let raster = fromBase(PATHS.raster);
 const helperAnchor = '\n\ndef audit_pdf(pdf: Path, out: Path) -> dict:\n';
 const helper = String.raw`
 
-def find_amber_header_bars(image: Image.Image) -> list[dict]:
-    """Find thin, long warm-gold strips in the upper 22% of a paper page."""
+def paper_ratio_around(image: Image.Image, bar: dict) -> float:
+    pixels = image.load()
     width, height = image.size
-    limit_y = max(1, int(height * 0.22))
+    pad_x = max(4, int(width * 0.006))
+    pad_y = max(4, int(height * 0.004))
+    x0 = max(0, bar["x"] - pad_x)
+    x1 = min(width, bar["x"] + bar["width"] + pad_x)
+    rows = list(range(max(0, bar["y"] - pad_y), bar["y"]))
+    rows += list(range(bar["y"] + bar["height"], min(height, bar["y"] + bar["height"] + pad_y)))
+    neutral = 0
+    total = 0
+    for y in rows:
+        for x in range(x0, x1):
+            r, g, b = pixels[x, y]
+            total += 1
+            if min(r, g, b) >= 232 and max(r, g, b) - min(r, g, b) <= 20:
+                neutral += 1
+    return neutral / total if total else 0.0
+
+
+def find_amber_header_bars(image: Image.Image) -> list[dict]:
+    """Find the obsolete long gold progress strip on otherwise blank paper."""
+    width, height = image.size
+    limit_y = max(1, int(height * 0.16))
     qualifying_rows: list[tuple[int, int, int]] = []
     pixels = image.load()
-    min_run = max(36, int(width * 0.14))
+    min_run = max(48, int(width * 0.28))
     for y in range(limit_y):
         longest = 0
-        run = 0
-        start = 0
+        run_length = 0
+        run_start = 0
         longest_start = 0
         for x in range(width):
             r, g, b = pixels[x, y]
             warm_gold = r >= 165 and g >= 105 and b <= 170 and r >= g + 18 and g >= b + 12
             if warm_gold:
-                if run == 0:
-                    start = x
-                run += 1
-                if run > longest:
-                    longest = run
-                    longest_start = start
+                if run_length == 0:
+                    run_start = x
+                run_length += 1
+                if run_length > longest:
+                    longest = run_length
+                    longest_start = run_start
             else:
-                run = 0
+                run_length = 0
         if longest >= min_run:
             qualifying_rows.append((y, longest_start, longest))
     bars: list[dict] = []
@@ -194,23 +218,35 @@ def find_amber_header_bars(image: Image.Image) -> list[dict]:
         if group and row[0] > group[-1][0] + 1:
             if len(group) >= 2:
                 bars.append({
-                    'y': group[0][0],
-                    'height': group[-1][0] - group[0][0] + 1,
-                    'x': min(item[1] for item in group),
-                    'width': max(item[2] for item in group),
+                    "y": group[0][0],
+                    "height": group[-1][0] - group[0][0] + 1,
+                    "x": min(item[1] for item in group),
+                    "width": max(item[2] for item in group),
                 })
             group = []
         group.append(row)
     if len(group) >= 2:
         bars.append({
-            'y': group[0][0],
-            'height': group[-1][0] - group[0][0] + 1,
-            'x': min(item[1] for item in group),
-            'width': max(item[2] for item in group),
+            "y": group[0][0],
+            "height": group[-1][0] - group[0][0] + 1,
+            "x": min(item[1] for item in group),
+            "width": max(item[2] for item in group),
         })
-    return [bar for bar in bars if bar['height'] <= max(24, int(height * 0.025))]
+    confirmed: list[dict] = []
+    for bar in bars:
+        geometry_matches = (
+            2 <= bar["height"] <= max(20, int(height * 0.018))
+            and bar["x"] <= int(width * 0.28)
+            and int(width * 0.28) <= bar["width"] <= int(width * 0.78)
+        )
+        if not geometry_matches:
+            continue
+        paper_ratio = paper_ratio_around(image, bar)
+        if paper_ratio >= 0.82:
+            confirmed.append({**bar, "paperRatio": round(paper_ratio, 4)})
+    return confirmed
 `;
-raster = replaceOnce(raster, helperAnchor, helper + helperAnchor, 'amber detector helper');
+raster = replaceOnce(raster, helperAnchor, helper + helperAnchor, 'paper-aware amber detector');
 raster = replaceOnce(
   raster,
   `        diagnostics.append(\n            {\n                "page": index,\n                "nonWhiteFraction": round(non_white, 4),\n                "flatSaturated": flat_saturated,\n            }\n        )`,
@@ -220,7 +256,7 @@ raster = replaceOnce(
 raster = replaceOnce(
   raster,
   `        if flat_saturated:\n            failures.append(f"page {index}: large saturated flat fill {flat_saturated}")`,
-  `        if flat_saturated:\n            failures.append(f"page {index}: large saturated flat fill {flat_saturated}")\n        if amber_bars:\n            failures.append(f"page {index}: repeated amber/gold header bar {amber_bars}")`,
+  `        if flat_saturated:\n            failures.append(f"page {index}: large saturated flat fill {flat_saturated}")\n        if amber_bars:\n            failures.append(f"page {index}: obsolete amber/gold paper-header bar {amber_bars}")`,
   'amber failure gate'
 );
 write(PATHS.raster, raster);
@@ -236,8 +272,8 @@ console.log(JSON.stringify({
   baseSha: BASE_SHA,
   changedProductFiles: Object.values(PATHS),
   progressOwner: 'canonical reader controls; global body pseudo removed',
-  printChrome: ['#reading-progress', '.h-reading-progress'],
   reversibleCards: ['flip-card', 'heart-flip-card', 'error-flip-card'],
   printBranding: 'preserved and asserted',
+  rasterGate: 'paper-aware obsolete-header-strip detector',
   marker: 'GB_PRINT_REVERSIBLE_CARD_ROOTS_V1',
 }, null, 2));
