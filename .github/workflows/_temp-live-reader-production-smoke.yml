@@ -83,21 +83,22 @@ jobs:
             sleep 15
           done
           test -n "${deployment_id}"
+          jq -e --arg sha "${TARGET_SHA}" 'length > 0 and (sort_by(.created_at) | reverse | .[0].sha == $sha)' \
+            reports/live-reader-production/github-api/deployments.json
           jq -e 'sort_by(.created_at) | reverse | .[0].state == "success"' \
             reports/live-reader-production/github-api/deployment-statuses.json
           printf '%s\n' "deploy_run_id=${deploy_run_id}" "deployment_id=${deployment_id}" \
             > reports/live-reader-production/github-api/exact-deployment.txt
+      - run: npm ci
       - name: Materialize exact proof contracts
         env:
           TARGET_SHA: 59a91bacea6c498d2c16e6a965924b37f9bd7c2f
         run: |
           set -euo pipefail
-          git fetch --no-tags origin "${TARGET_SHA}"
           git show "${TARGET_SHA}:src/lib/asset-version.js" > src/lib/asset-version.js
           git show "${TARGET_SHA}:scripts/print-paper-pdf-audit.py" > scripts/print-paper-pdf-audit.py
           node scripts/run-actionlint.mjs -no-color .github/workflows/_temp-live-reader-production-smoke.yml
           node --check scripts/_temp-live-reader-production-smoke.mjs
-      - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: |
           sudo apt-get update
