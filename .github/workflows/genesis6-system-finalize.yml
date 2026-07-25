@@ -41,12 +41,16 @@ jobs:
           unexpected="$(git diff --name-only "$BASE_SHA"..HEAD | grep -Ev '^(.genesis6-system/(apply.mjs|manuscript.css)|.github/workflows/genesis6-(system-finalize|research-provenance).yml|tmp-genesis6-system-finalize-trigger.txt|data/(genesis6-research-provenance|series-theme-registry).json|scripts/genesis6-research-provenance-contract.mjs)$' || true)"
           test -z "$unexpected" || { printf 'Unexpected staging paths:\n%s\n' "$unexpected" >&2; exit 1; }
 
-      - name: Apply deterministic shared migration
+      - name: Materialize clean permanent tree
         run: |
           set -euo pipefail
           node .genesis6-system/apply.mjs
           node scripts/cache-bust.js --write
+          rm -rf .genesis6-system
+          rm -f .github/workflows/genesis6-system-finalize.yml
+          rm -f tmp-genesis6-system-finalize-trigger.txt
           git add -A
+          ! git diff --cached --name-only | grep -E '(^|/)(.genesis6-system|genesis6-system-finalize|tmp-genesis6-system-finalize)'
           git diff --check --cached
 
       - name: Install exact dependencies
@@ -88,9 +92,6 @@ jobs:
         run: |
           set -euo pipefail
           find audit -maxdepth 1 -type f -name 'audit-pro-*.md' -delete
-          rm -rf .genesis6-system
-          rm -f .github/workflows/genesis6-system-finalize.yml
-          rm -f tmp-genesis6-system-finalize-trigger.txt
           git add -A
           ! git diff --cached --name-only | grep -E '(^|/)(.genesis6-system|genesis6-system-finalize|tmp-genesis6-system-finalize)'
           git config user.name 'Genesis 6 System Finalizer'
