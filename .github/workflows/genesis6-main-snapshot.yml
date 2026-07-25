@@ -1,0 +1,31 @@
+name: Genesis 6 main snapshot
+
+on:
+  push:
+    branches:
+      - temp/genesis6-main-snapshot-20260725
+    paths:
+      - '.github/workflows/genesis6-main-snapshot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Package repository
+        run: |
+          tar --exclude=.git --exclude=node_modules --exclude=dist --exclude=.astro -czf /tmp/genesis6-main-snapshot.tgz .
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis6-main-snapshot-${{ github.run_id }}
+          path: /tmp/genesis6-main-snapshot.tgz
+          if-no-files-found: error
+          retention-days: 2
