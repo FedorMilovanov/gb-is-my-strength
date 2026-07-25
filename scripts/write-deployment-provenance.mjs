@@ -25,6 +25,7 @@ assert.match(workflowRunId, /^\d+$/, 'GITHUB_RUN_ID must be numeric');
 assert.match(workflowRunAttempt, /^\d+$/, 'GITHUB_RUN_ATTEMPT must be numeric');
 assert.ok(fs.existsSync(DIST) && fs.statSync(DIST).isDirectory(), 'dist must exist before writing deployment provenance');
 
+const runIdentity = `${workflowRunId}-${workflowRunAttempt}`;
 const assets = Object.freeze({
   controller: 'js/floating-cluster-controller.js',
   engine: 'js/vosk-tts-engine.js',
@@ -56,20 +57,24 @@ function assetRecord(relativePath) {
   };
 }
 
+function workflowRecord() {
+  return {
+    name: 'Deploy to GitHub Pages',
+    runId: Number(workflowRunId),
+    runAttempt: Number(workflowRunAttempt),
+    sourceReadinessRunId: /^\d+$/.test(sourceReadinessRunId) ? Number(sourceReadinessRunId) : null,
+    eventName: eventName || null,
+  };
+}
+
 function buildManifest(immutablePath) {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     repository,
     commitSha,
     immutablePath,
     generatedAt: new Date().toISOString(),
-    workflow: {
-      name: 'Deploy to GitHub Pages',
-      runId: Number(workflowRunId),
-      runAttempt: Number(workflowRunAttempt),
-      sourceReadinessRunId: /^\d+$/.test(sourceReadinessRunId) ? Number(sourceReadinessRunId) : null,
-      eventName: eventName || null,
-    },
+    workflow: workflowRecord(),
     tts: {
       assets: {
         controller: assetRecord(assets.controller),
@@ -82,6 +87,16 @@ function buildManifest(immutablePath) {
   };
 }
 
+function buildCurrentPointer(immutablePath) {
+  return {
+    schemaVersion: 1,
+    repository,
+    commitSha,
+    immutablePath,
+    workflow: workflowRecord(),
+  };
+}
+
 for (const requiredLazyAsset of [assets.engine, assets.noticeCss]) {
   assert.ok(
     LAZY_NO_PRECACHE.includes(requiredLazyAsset),
@@ -89,32 +104,46 @@ for (const requiredLazyAsset of [assets.engine, assets.noticeCss]) {
   );
 }
 
-const outputDir = path.join(DIST, 'deployments');
-const outputPath = path.join(outputDir, `${commitSha}.json`);
+const deploymentsDir = path.join(DIST, 'deployments');
+const outputDir = path.join(deploymentsDir, commitSha);
+const outputPath = path.join(outputDir, `${runIdentity}.json`);
+const currentPointerPath = path.join(deploymentsDir, 'current.json');
 const immutablePath = `/${path.relative(DIST, outputPath).split(path.sep).join('/')}`;
 const manifest = buildManifest(immutablePath);
+const currentPointer = buildCurrentPointer(immutablePath);
+
 fs.mkdirSync(outputDir, { recursive: true });
 fs.writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+fs.writeFileSync(currentPointerPath, `${JSON.stringify(currentPointer, null, 2)}\n`, 'utf8');
 
-assert.equal(path.dirname(immutablePath), '/deployments', 'deployment provenance must remain under /deployments');
-assert.equal(path.basename(immutablePath, '.json'), commitSha, 'deployment provenance basename must equal the exact commit SHA');
+assert.equal(path.dirname(immutablePath), `/deployments/${commitSha}`, 'run-specific provenance must remain under its exact commit directory');
+assert.equal(path.basename(immutablePath, '.json'), runIdentity, 'run-specific provenance basename must equal run ID and attempt');
 assert.equal(path.extname(immutablePath), '.json', 'deployment provenance filename must use .json');
 
 const written = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+const pointer = JSON.parse(fs.readFileSync(currentPointerPath, 'utf8'));
 assert.equal(written.commitSha, commitSha);
 assert.equal(written.immutablePath, immutablePath);
+assert.equal(written.workflow.runId, Number(workflowRunId));
+assert.equal(written.workflow.runAttempt, Number(workflowRunAttempt));
 assert.equal(written.tts.assets.controller.md5, md5(readDist(assets.controller)));
 assert.equal(written.tts.assets.engine.md5, md5(readDist(assets.engine)));
 assert.equal(written.tts.assets.noticeCss.md5, md5(readDist(assets.noticeCss)));
 assert.equal(written.tts.assets.serviceWorker.md5, md5(readDist(assets.serviceWorker)));
 assert.deepEqual(written.tts.lazyNoPrecache, [assets.noticeCss, assets.engine]);
+assert.equal(pointer.commitSha, commitSha);
+assert.equal(pointer.immutablePath, immutablePath);
+assert.equal(pointer.workflow.runId, Number(workflowRunId));
+assert.equal(pointer.workflow.runAttempt, Number(workflowRunAttempt));
 
 console.log(JSON.stringify({
   result: 'PASS',
   output: path.relative(ROOT, outputPath),
+  currentPointer: path.relative(ROOT, currentPointerPath),
   immutablePath,
   commitSha,
   workflowRunId: Number(workflowRunId),
+  workflowRunAttempt: Number(workflowRunAttempt),
   ttsRevisions: {
     controller: written.tts.assets.controller.md5,
     engine: written.tts.assets.engine.md5,
