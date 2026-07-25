@@ -62,7 +62,7 @@ jobs:
           code=${PIPESTATUS[0]}
           echo "$code" > reports/universal-print-pagination/diagnostics/canonical-audit.exit
           exit 0
-      - name: Audit atomic components across route families in real PDFs
+      - name: Audit atomic and keep-with-next components across route families
         env:
           GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/universal-print-pagination/matrix
         run: |
@@ -72,15 +72,25 @@ jobs:
           code=${PIPESTATUS[0]}
           echo "$code" > reports/universal-print-pagination/diagnostics/pagination-matrix.exit
           exit 0
+      - name: Raster-audit every route PDF and build contact sheets
+        run: |
+          set +e
+          set -o pipefail
+          python3 scripts/print-pagination-raster-audit.py reports/universal-print-pagination/matrix --out reports/universal-print-pagination/matrix-raster 2>&1 | tee reports/universal-print-pagination/diagnostics/matrix-raster.log
+          code=${PIPESTATUS[0]}
+          echo "$code" > reports/universal-print-pagination/diagnostics/matrix-raster.exit
+          exit 0
       - name: Assert all universal print gates
         run: |
           engine=$(cat reports/universal-print-pagination/diagnostics/engine-sweep.exit)
           canonical=$(cat reports/universal-print-pagination/diagnostics/canonical-audit.exit)
           matrix=$(cat reports/universal-print-pagination/diagnostics/pagination-matrix.exit)
-          echo "engine=$engine canonical=$canonical matrix=$matrix"
+          raster=$(cat reports/universal-print-pagination/diagnostics/matrix-raster.exit)
+          echo "engine=$engine canonical=$canonical matrix=$matrix raster=$raster"
           test "$engine" = 0
           test "$canonical" = 0
           test "$matrix" = 0
+          test "$raster" = 0
       - name: Remove one-shot infrastructure and commit product patch
         run: |
           rm -f scripts/_temp-print-pagination-inventory.mjs
