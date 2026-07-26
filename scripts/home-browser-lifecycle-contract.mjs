@@ -41,12 +41,39 @@ function resolveRequestPath(urlValue) {
   return null;
 }
 
+function transformDiagnosticHomepage(source, scenario) {
+  if (!scenario) return source;
+  if (scenario === 'no-scripts') {
+    return source.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+  }
+  if (scenario === 'no-metrika' || scenario === 'no-metrika-sw') {
+    source = source.replace(/<!-- Yandex\.Metrika counter -->[\s\S]*?<!-- \/Yandex\.Metrika counter -->/i, '');
+  }
+  if (scenario === 'no-sw' || scenario === 'no-metrika-sw') {
+    source = source.replace(/<script\b[^>]*\bsrc=["'][^"']*sw-register\.js[^"']*["'][^>]*>[\s\S]*?<\/script>/gi, '');
+  }
+  if (scenario === 'no-core') {
+    source = source.replace(
+      /<script\b[^>]*\bsrc=["'][^"']*(?:site-utils|scroll-perf|site|enhancements)\.js[^"']*["'][^>]*>[\s\S]*?<\/script>/gi,
+      '',
+    );
+  }
+  if (scenario === 'no-reader') {
+    source = source.replace(
+      /<script\b[^>]*\bsrc=["'][^"']*reader-preferences(?:-head)?\.js[^"']*["'][^>]*>[\s\S]*?<\/script>/gi,
+      '',
+    );
+  }
+  return source;
+}
+
 async function startServer() {
   assert.ok(fs.existsSync(path.join(DIST, 'index.html')), 'dist/index.html is missing; build production-like dist first');
   assert.ok(fs.existsSync(path.join(DIST, 'about', 'index.html')), 'dist/about/index.html is missing; real history traversal needs a same-origin destination');
 
   const server = http.createServer((request, response) => {
     try {
+      const requestUrl = new URL(request.url || '/', 'http://127.0.0.1');
       const filePath = resolveRequestPath(request.url);
       response.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
       if (!filePath) {
@@ -55,6 +82,11 @@ async function startServer() {
         return;
       }
       response.setHeader('Content-Type', contentType(filePath));
+      if (requestUrl.pathname === '/' && requestUrl.searchParams.has('gb-bfcache-diag')) {
+        const source = fs.readFileSync(filePath, 'utf8');
+        response.end(transformDiagnosticHomepage(source, requestUrl.searchParams.get('gb-bfcache-diag')));
+        return;
+      }
       fs.createReadStream(filePath).pipe(response);
     } catch (error) {
       response.statusCode = 400;
@@ -92,8 +124,32 @@ function isKnownNavigationAbort(request, expectedNavigationAborts) {
     && expectedNavigationAborts.has(request);
 }
 
-async function installLifecycleProbe(context) {
-  await context.addInitScript(({ storageKey }) => {
+async function installLifecycleProbe(context, browserName) {
+  await context.addInitScript(({ storageKey, diagnoseWebKitLifecycle }) => {
+    if (diagnoseWebKitLifecycle) {
+      const nativeAddEventListener = window.addEventListener;
+      let suppressedBeforeUnloadListeners = 0;
+      window.addEventListener = function addEventListener(type, listener, options) {
+        if (type === 'beforeunload') {
+          suppressedBeforeUnloadListeners += 1;
+          return;
+        }
+        return nativeAddEventListener.call(this, type, listener, options);
+      };
+      Object.defineProperty(window, '__gbSuppressedBeforeUnloadListeners', {
+        configurable: true,
+        get: () => suppressedBeforeUnloadListeners,
+      });
+    }
+    // Playwright WebKit currently crashes on this optional cross-document
+    // transition before the target commits. This diagnostic run also removes
+    // the compositor variable while preserving the native anchor navigation.
+    if (diagnoseWebKitLifecycle && document.startViewTransition) {
+      Object.defineProperty(document, 'startViewTransition', {
+        configurable: true,
+        value: undefined,
+      });
+    }
     const read = () => {
       try {
         const parsed = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
@@ -124,7 +180,10 @@ async function installLifecycleProbe(context) {
       path: location.pathname,
       persisted: event.persisted,
     }));
-  }, { storageKey: LIFECYCLE_KEY });
+  }, {
+    storageKey: LIFECYCLE_KEY,
+    diagnoseWebKitLifecycle: browserName === 'webkit',
+  });
 }
 
 async function waitForMenuState(page, open) {
@@ -223,13 +282,22 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
       },
       navigationType: navigation?.type || null,
       notRestoredReasons: navigation?.notRestoredReasons || null,
+      suppressedBeforeUnloadListeners: Number(window.__gbSuppressedBeforeUnloadListeners || 0),
     };
   }, LIFECYCLE_KEY);
   const homePageHide = [...evidence.events].reverse().find((entry) => entry.type === 'pagehide' && entry.path === '/');
   const homePageShow = [...evidence.events].reverse().find((entry) => entry.type === 'pageshow' && entry.path === '/');
-  const diagnostic = JSON.stringify({ events: evidence.events, navigationType: evidence.navigationType, notRestoredReasons: evidence.notRestoredReasons });
+  const diagnostic = JSON.stringify({
+    events: evidence.events,
+    navigationType: evidence.navigationType,
+    notRestoredReasons: evidence.notRestoredReasons,
+    suppressedBeforeUnloadListeners: evidence.suppressedBeforeUnloadListeners,
+  });
   assert.equal(homePageHide?.persisted, true, `home page was not admitted to BFCache: ${diagnostic}`);
   assert.equal(homePageShow?.persisted, true, `home page was not restored from BFCache: ${diagnostic}`);
+  if (evidence.suppressedBeforeUnloadListeners > 0) {
+    assert.ok(evidence.suppressedBeforeUnloadListeners >= 3, 'WebKit diagnostic did not observe the known beforeunload registrations');
+  }
   assert.deepEqual(evidence.theme, themeBefore, 'theme state drifted across real history restoration');
 
   await menuButton.click();
@@ -335,6 +403,71 @@ async function assertBackToTopThreshold(page) {
   assert.equal(await inactive(), true, 'back-to-top remained active below its threshold');
 }
 
+async function probeWebKitBfcacheScenario(browser, baseUrl, scenario) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    reducedMotion: 'reduce',
+    locale: 'ru-RU',
+  });
+  await installLifecycleProbe(context, 'webkit');
+  const page = await context.newPage();
+  try {
+    const homeUrl = `${baseUrl}/?gb-bfcache-diag=${encodeURIComponent(scenario)}`;
+    await page.goto(homeUrl, { waitUntil: 'networkidle' });
+    await page.evaluate((storageKey) => sessionStorage.setItem(storageKey, '[]'), LIFECYCLE_KEY);
+    await page.evaluate(() => {
+      const link = document.createElement('a');
+      link.id = 'webkit-bfcache-diagnostic-target';
+      link.href = '/about/';
+      link.textContent = 'diagnostic target';
+      document.body.appendChild(link);
+    });
+    await Promise.all([
+      page.waitForURL(`${baseUrl}/about/`),
+      page.locator('#webkit-bfcache-diagnostic-target').click(),
+    ]);
+    await page.goBack({ waitUntil: 'commit' });
+    await page.waitForURL(homeUrl);
+    const evidence = await page.evaluate((storageKey) => ({
+      events: JSON.parse(sessionStorage.getItem(storageKey) || '[]'),
+      suppressedBeforeUnloadListeners: Number(window.__gbSuppressedBeforeUnloadListeners || 0),
+    }), LIFECYCLE_KEY);
+    const homePageHide = [...evidence.events].reverse().find((entry) => entry.type === 'pagehide' && entry.path === '/');
+    const homePageShow = [...evidence.events].reverse().find((entry) => entry.type === 'pageshow' && entry.path === '/');
+    return {
+      scenario,
+      admitted: homePageHide?.persisted === true,
+      restored: homePageShow?.persisted === true,
+      ...evidence,
+    };
+  } catch (error) {
+    return { scenario, error: error.stack || error.message };
+  } finally {
+    await context.close();
+  }
+}
+
+async function runWebKitBfcacheDiagnosticMatrix(baseUrl) {
+  const browser = await webkit.launch({ headless: false });
+  try {
+    const results = [];
+    for (const scenario of [
+      'full',
+      'no-scripts',
+      'no-metrika',
+      'no-sw',
+      'no-metrika-sw',
+      'no-core',
+      'no-reader',
+    ]) {
+      results.push(await probeWebKitBfcacheScenario(browser, baseUrl, scenario));
+    }
+    return results;
+  } finally {
+    await browser.close();
+  }
+}
+
 async function runBrowser(browserName, browserType, baseUrl) {
   const launchOptions = { headless: false };
   if (browserName === 'chromium') {
@@ -346,7 +479,7 @@ async function runBrowser(browserName, browserType, baseUrl) {
     reducedMotion: 'reduce',
     locale: 'ru-RU',
   });
-  await installLifecycleProbe(context);
+  await installLifecycleProbe(context, browserName);
   const page = await context.newPage();
   const runtimeErrors = [];
   const ignoredDiagnostics = [];
@@ -379,12 +512,31 @@ async function runBrowser(browserName, browserType, baseUrl) {
     assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
 
     const lifecycle = await assertRealHistoryRestore(page, baseUrl, navigationState);
-    await assertCanonicalShortcut(page, 'Meta+K', 'canonical Meta+K');
+    // Load the Pagefind proof only after strict BFCache acceptance so its
+    // network observers cannot perturb the lifecycle phase.
+    page.removeAllListeners('requestfailed');
+    const { assertPagefindBootstrap } = await import('./home-pagefind-bootstrap-proof.mjs');
+    const pagefind = await assertPagefindBootstrap({
+      page,
+      browserName,
+      baseUrl,
+      runtimeErrors,
+      ignoredDiagnostics,
+    });
+    page.on('requestfailed', (request) => {
+      runtimeErrors.push(`requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`);
+    });
     await assertEditableShortcutIsolation(page);
     await assertBackToTopThreshold(page);
 
     assert.deepEqual(runtimeErrors, [], `runtime errors: ${runtimeErrors.join(' | ')}`);
-    return { browser: browserName, result: 'PASS', lifecycle, ignoredDiagnostics };
+    return {
+      browser: browserName,
+      result: 'PASS',
+      lifecycle,
+      pagefind,
+      ignoredDiagnostics,
+    };
   } catch (error) {
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     await page.screenshot({ path: path.join(REPORT_DIR, `${browserName}-failure.png`), fullPage: true }).catch(() => {});
@@ -400,6 +552,14 @@ async function main() {
   const server = await startServer();
   const results = [];
   try {
+    const diagnosticMatrix = await runWebKitBfcacheDiagnosticMatrix(server.baseUrl);
+    fs.writeFileSync(
+      path.join(REPORT_DIR, 'webkit-bfcache-diagnostic-matrix.json'),
+      `${JSON.stringify({ result: 'DIAGNOSTIC', diagnosticMatrix }, null, 2)}\n`,
+    );
+    console.log(`WebKit BFCache diagnostic matrix: ${JSON.stringify(diagnosticMatrix)}`);
+    assert.fail('Diagnostic head only: inspect webkit-bfcache-diagnostic-matrix.json and do not merge');
+
     for (const browserName of browserNames) {
       const browserType = BROWSERS[browserName];
       assert.ok(browserType, `unsupported browser: ${browserName}`);
