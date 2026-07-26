@@ -117,52 +117,101 @@ for (const fp of htmlFiles) {
 // ── 4. Harden dist CSP meta consistently (NEW-68/NEW-69) ───────────────
 // Astro-owned pages can be emitted from many PageHead components. Keep the
 // deploy artifact safe even while source heads are gradually deduplicated.
-const DEFAULT_DIST_CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://gospod-bog.ru https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org https://cdn.loc.gov https://tile.loc.gov https://www.ritmeyer.com https://*.nasa.gov https://bibleplaces.photoshelter.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com https://huggingface.co https://*.aws.cdn.hf.co https://cdn.jsdelivr.net; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';";
+// ONNX Runtime Web compiles its WASM backend in the browser. Permit only that
+// narrow capability; do not widen the site to the general 'unsafe-eval'.
+const WASM_EVAL_SOURCE = "'wasm-unsafe-eval'";
+const DEFAULT_DIST_CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://gospod-bog.ru https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org https://cdn.loc.gov https://tile.loc.gov https://www.ritmeyer.com https://*.nasa.gov https://bibleplaces.photoshelter.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com https://huggingface.co https://*.aws.cdn.hf.co https://cdn.jsdelivr.net; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';";
 
 function cspMetaTag(html) {
   const tags = html.match(/<meta\b[^>]*>/gi) || [];
   return tags.find((tag) => /http-equiv\s*=\s*["']Content-Security-Policy["']/i.test(tag)) || '';
 }
-function addFormActionToCspTag(tag) {
-  if (!tag || /(?:^|;)\s*form-action\b/i.test(tag)) return tag;
+function transformCspContent(tag, transform) {
+  if (!tag) return tag;
   return tag.replace(/content\s*=\s*(["])([\s\S]*?)\1/i, (_m, q, content) => {
-    const trimmed = content.trim().replace(/;+\s*$/, '');
-    return `content=${q}${trimmed}; form-action 'self';${q}`;
+    return `content=${q}${transform(content)}${q}`;
   });
 }
+function addWasmUnsafeEvalToCspTag(tag) {
+  return transformCspContent(tag, (content) => {
+    return content.replace(/((?:^|;)\s*script-src\s+)([^;]*)/i, (directive, prefix, sources) => {
+      const tokens = sources.trim().split(/\s+/).filter(Boolean);
+      if (tokens.includes(WASM_EVAL_SOURCE)) return directive;
+      return `${prefix}${tokens.concat(WASM_EVAL_SOURCE).join(' ')}`;
+    });
+  });
+}
+function addFormActionToCspTag(tag) {
+  if (!tag || /(?:^|;)\s*form-action\b/i.test(tag)) return tag;
+  return transformCspContent(tag, (content) => {
+    const trimmed = content.trim().replace(/;+\s*$/, '');
+    return `${trimmed}; form-action 'self';`;
+  });
+}
+function cspTagHasScriptSource(tag, source) {
+  const contentMatch = String(tag).match(/content\s*=\s*(["])([\s\S]*?)\1/i);
+  if (!contentMatch) return false;
+  const directiveMatch = contentMatch[2].match(/(?:^|;)\s*script-src\s+([^;]*)/i);
+  if (!directiveMatch) return false;
+  return directiveMatch[1].trim().split(/\s+/).includes(source);
+}
 function hardenCsp(html) {
-  if (!/<html\b/i.test(html) || !/<head\b/i.test(html)) return { html, changed: false, injected: false, formFixed: false };
+  const emptyResult = { html, changed: false, injected: false, formFixed: false, wasmFixed: false };
+  if (!/<html\b/i.test(html) || !/<head\b/i.test(html)) return emptyResult;
   const tag = cspMetaTag(html);
   if (tag) {
-    const next = addFormActionToCspTag(tag);
-    if (next !== tag) return { html: html.replace(tag, next), changed: true, injected: false, formFixed: true };
-    return { html, changed: false, injected: false, formFixed: false };
+    const withWasm = addWasmUnsafeEvalToCspTag(tag);
+    const next = addFormActionToCspTag(withWasm);
+    const wasmFixed = withWasm !== tag;
+    const formFixed = next !== withWasm;
+    if (next !== tag) {
+      return { html: html.replace(tag, next), changed: true, injected: false, formFixed, wasmFixed };
+    }
+    return emptyResult;
   }
   const meta = `<meta http-equiv="Content-Security-Policy" content="${DEFAULT_DIST_CSP}">`;
   if (/<meta\s+charset=/i.test(html)) {
-    return { html: html.replace(/(<meta\s+charset=[^>]*>)/i, `$1\n${meta}`), changed: true, injected: true, formFixed: false };
+    return { html: html.replace(/(<meta\s+charset=[^>]*>)/i, `$1\n${meta}`), changed: true, injected: true, formFixed: false, wasmFixed: false };
   }
-  return { html: html.replace(/(<head\b[^>]*>)/i, `$1\n${meta}`), changed: true, injected: true, formFixed: false };
+  return { html: html.replace(/(<head\b[^>]*>)/i, `$1\n${meta}`), changed: true, injected: true, formFixed: false, wasmFixed: false };
 }
 
 let cspFilesTouched = 0;
 let cspInjected = 0;
 let cspFormFixed = 0;
+let cspWasmFixed = 0;
+let cspWasmVerified = 0;
+const cspWasmFailures = [];
 for (const fp of htmlFiles) {
   const src = fs.readFileSync(fp, 'utf8');
   const result = hardenCsp(src);
-  if (!result.changed) continue;
-  cspFilesTouched++;
-  if (result.injected) cspInjected++;
-  if (result.formFixed) cspFormFixed++;
-  if (!DRY_RUN) fs.writeFileSync(fp, result.html, 'utf8');
+  if (result.changed) {
+    cspFilesTouched++;
+    if (result.injected) cspInjected++;
+    if (result.formFixed) cspFormFixed++;
+    if (result.wasmFixed) cspWasmFixed++;
+    if (!DRY_RUN) fs.writeFileSync(fp, result.html, 'utf8');
+  }
+
+  if (!/<html\b/i.test(result.html) || !/<head\b/i.test(result.html)) continue;
+  const finalTag = cspMetaTag(result.html);
+  if (!cspTagHasScriptSource(finalTag, WASM_EVAL_SOURCE)) {
+    cspWasmFailures.push(path.relative(DIST, fp));
+  } else {
+    cspWasmVerified++;
+  }
+}
+
+if (cspWasmFailures.length > 0) {
+  throw new Error(`CSP hardening failed: script-src lacks ${WASM_EVAL_SOURCE} in ${cspWasmFailures.join(', ')}`);
 }
 
 console.log(`\n⚡  astro-cache-bust-postbuild.js${DRY_RUN ? ' [DRY RUN]' : ''}\n`);
 console.log(`  HTML files scanned: ${htmlFiles.length}`);
 console.log(`  Files touched:      ${filesTouched}`);
 console.log(`  Hash replacements:  ${replacements}`);
-console.log(`  CSP files touched:   ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed})`);
+console.log(`  CSP files touched:   ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed}, wasm fixed: ${cspWasmFixed})`);
+console.log(`  CSP WASM verified:   ${cspWasmVerified}`);
 
 if (DRY_RUN) {
   console.log('\n  (dry-run: nothing written)');
