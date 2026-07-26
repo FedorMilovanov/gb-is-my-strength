@@ -28,10 +28,10 @@ jobs:
           test "$(git merge-base origin/main HEAD)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git rev-parse origin/main)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "45c3f7d9194a62c2a71d54f77b47056c467598e8"
-          grep -Fxq 'transport=5-chunks+timing+pixel-com+yandex-cancel+resource-type' .home-browser-capability-trigger
+          grep -Fxq 'transport=5-chunks+timing+pixel-com+yandex-cancel+resource-type+resource-agnostic' .home-browser-capability-trigger
 
           mapfile -t transfer_files < <(find .home-browser-capability-transfer -maxdepth 1 -type f -printf '%f\n' | sort)
-          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64 pixel-com.patch timing.patch yandex-cancel.patch yandex-resource-type.patch)
+          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64 pixel-com.patch timing.patch yandex-cancel.patch yandex-resource-agnostic.patch yandex-resource-type.patch)
           test "${transfer_files[*]}" = "${expected_files[*]}"
 
           test "$(sha256sum .home-browser-capability-transfer/chunk-01.b64 | awk '{print $1}')" = "e76937e58e3033b331f20c40b77a5e6538c4cf89600d11019580d5abfd4133d3"
@@ -43,6 +43,7 @@ jobs:
           test "$(sha256sum .home-browser-capability-transfer/pixel-com.patch | awk '{print $1}')" = "ef9158abe2c286f66af0bd9a913aafab1417c357e8c074de8d129a2b574bc6e8"
           test "$(sha256sum .home-browser-capability-transfer/yandex-cancel.patch | awk '{print $1}')" = "afb28ee1ad1386b05b4f550b905d8417487bb68ac2b896f53adc2d6762b97cc4"
           test "$(sha256sum .home-browser-capability-transfer/yandex-resource-type.patch | awk '{print $1}')" = "701d19e7d20108b0e5dbac6042112ee15b6e949674f366a54c06545c8a75015c"
+          test "$(sha256sum .home-browser-capability-transfer/yandex-resource-agnostic.patch | awk '{print $1}')" = "076768d7ce0c4f4eb26b1b3e280f7f28665ec5222fa1c0288caa85b2b133e4fc"
 
           cat \
             .home-browser-capability-transfer/chunk-01.b64 \
@@ -67,7 +68,8 @@ jobs:
             git apply "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/timing.patch"
             git apply "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/pixel-com.patch"
             git apply "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/yandex-cancel.patch"
-            git apply --check "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/yandex-resource-type.patch"
+            git apply "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/yandex-resource-type.patch"
+            git apply --check "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/yandex-resource-agnostic.patch"
           )
           rm -rf "${verify_dir}"
 
@@ -80,6 +82,7 @@ jobs:
           git apply .home-browser-capability-transfer/pixel-com.patch
           git apply .home-browser-capability-transfer/yandex-cancel.patch
           git apply .home-browser-capability-transfer/yandex-resource-type.patch
+          git apply .home-browser-capability-transfer/yandex-resource-agnostic.patch
           rm -rf .home-browser-capability-transfer
           rm -f .home-browser-capability-trigger
           rm -f .github/workflows/temp-home-browser-capability-materializer.yml
@@ -88,8 +91,8 @@ jobs:
           grep -Fq "const PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL = 'https://mc.yandex.com/watch/108353327';" scripts/home-browser-lifecycle-contract.mjs
           grep -Fq ".replaceAll(PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL, LOCAL_YANDEX_METRIKA_PIXEL_PATH);" scripts/home-browser-lifecycle-contract.mjs
           grep -Fq "function isExpectedYandexCounterPixelCancellation(request)" scripts/home-browser-lifecycle-contract.mjs
-          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "94f1581517afbe3ac674f7f7d9fc13e2e31981cb510ea9a7cdb36c9e00a6a17b"
-          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "12446f17f9a2a1aefcbfe789fd59de53769ca3b3"
+          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "04fc22dd47858050141761b53c57fe10f74b264e49a6cf877ec1f3fc0ee4301a"
+          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "8d1f126d76dfa63fd269bf141b37cacd80fa1090"
           sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}' > /tmp/product-file-sha256.txt
           git hash-object scripts/home-browser-lifecycle-contract.mjs > /tmp/product-file-blob.txt
           git diff --check
