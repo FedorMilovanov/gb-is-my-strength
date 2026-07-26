@@ -1,5 +1,5 @@
 base=38d6e82da2323568008dc1ed70093fc660499475
-patch=747b144e70c91174a28bb51c96141748e939db38f76b310025e7321af9e1402d
+patch=4d19e891b1bb7f3673fd4189ee521a76ea5fe1f19dc899fc18bf9f1f0dbce688
 control_run=30185037654
-fixtures=local-manifest+yandex-metrika-tag+yandex-counter-pixel
-transport=4-chunks
+fixtures=local-manifest+yandex-metrika-tag+server-localized-yandex-counter-pixel
+transport=5-chunks
