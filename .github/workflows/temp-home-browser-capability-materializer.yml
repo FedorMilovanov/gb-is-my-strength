@@ -28,10 +28,10 @@ jobs:
           test "$(git merge-base origin/main HEAD)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git rev-parse origin/main)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "45c3f7d9194a62c2a71d54f77b47056c467598e8"
-          grep -Fxq 'transport=5-chunks+timing' .home-browser-capability-trigger
+          grep -Fxq 'transport=5-chunks+timing+pixel-com' .home-browser-capability-trigger
 
           mapfile -t transfer_files < <(find .home-browser-capability-transfer -maxdepth 1 -type f -printf '%f\n' | sort)
-          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64 timing.patch)
+          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64 pixel-com.patch timing.patch)
           test "${transfer_files[*]}" = "${expected_files[*]}"
 
           test "$(sha256sum .home-browser-capability-transfer/chunk-01.b64 | awk '{print $1}')" = "e76937e58e3033b331f20c40b77a5e6538c4cf89600d11019580d5abfd4133d3"
@@ -40,6 +40,7 @@ jobs:
           test "$(sha256sum .home-browser-capability-transfer/chunk-04.b64 | awk '{print $1}')" = "7a38b8e0a13802b039a985d6948857f844421b5fa57a80c5d727d47750b312ab"
           test "$(sha256sum .home-browser-capability-transfer/chunk-05.b64 | awk '{print $1}')" = "d0b784431973c1c42da68e7dc85ab593560c00888169fb85be2d3c01492f0efd"
           test "$(sha256sum .home-browser-capability-transfer/timing.patch | awk '{print $1}')" = "59e4481ba36f11d8bf19ea0184f1c2b23dbcc5bd784b5d079873b61b272a7ff1"
+          test "$(sha256sum .home-browser-capability-transfer/pixel-com.patch | awk '{print $1}')" = "ef9158abe2c286f66af0bd9a913aafab1417c357e8c074de8d129a2b574bc6e8"
 
           cat \
             .home-browser-capability-transfer/chunk-01.b64 \
@@ -61,7 +62,8 @@ jobs:
           (
             cd "${verify_dir}"
             git apply /tmp/home-browser-capability.patch
-            git apply --check "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/timing.patch"
+            git apply "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/timing.patch"
+            git apply --check "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/pixel-com.patch"
           )
           rm -rf "${verify_dir}"
 
@@ -71,12 +73,15 @@ jobs:
           set -euo pipefail
           git apply /tmp/home-browser-capability.patch
           git apply .home-browser-capability-transfer/timing.patch
+          git apply .home-browser-capability-transfer/pixel-com.patch
           rm -rf .home-browser-capability-transfer
           rm -f .home-browser-capability-trigger
           rm -f .github/workflows/temp-home-browser-capability-materializer.yml
           node --check scripts/home-browser-lifecycle-contract.mjs
-          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "66195f833b7d8fb152eeca2a6ab0c2d1b0614a925c8ca066bb549f1bef9fadf2"
-          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "4dcdffb26fd552745f18a934a2d2dde831738c8f"
+          grep -Fq "const PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL = 'https://mc.yandex.com/watch/108353327';" scripts/home-browser-lifecycle-contract.mjs
+          grep -Fq ".replaceAll(PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL, LOCAL_YANDEX_METRIKA_PIXEL_PATH);" scripts/home-browser-lifecycle-contract.mjs
+          sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}' > /tmp/product-file-sha256.txt
+          git hash-object scripts/home-browser-lifecycle-contract.mjs > /tmp/product-file-blob.txt
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -112,19 +117,39 @@ jobs:
           set +e
           node scripts/home-browser-contract.mjs > /tmp/home-browser-contract.log 2>&1
           home_status=$?
-          lifecycle_status=125
+          chromium_status=125
+          webkit_status=125
+
           if [[ ${home_status} -eq 0 ]]; then
-            xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs > /tmp/home-browser-lifecycle-contract.log 2>&1
-            lifecycle_status=$?
+            rm -rf reports/home-browser-lifecycle-contract
+            HOME_BROWSERS=chromium xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs > /tmp/home-browser-lifecycle-chromium.log 2>&1
+            chromium_status=$?
+            if [[ -d reports/home-browser-lifecycle-contract ]]; then
+              cp -a reports/home-browser-lifecycle-contract reports/home-browser-lifecycle-contract-chromium
+            fi
+
+            rm -rf reports/home-browser-lifecycle-contract
+            HOME_BROWSERS=webkit xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs > /tmp/home-browser-lifecycle-webkit.log 2>&1
+            webkit_status=$?
+            if [[ -d reports/home-browser-lifecycle-contract ]]; then
+              cp -a reports/home-browser-lifecycle-contract reports/home-browser-lifecycle-contract-webkit
+            fi
           else
-            printf '%s\n' 'Lifecycle contract was not started because the base homepage contract failed.' > /tmp/home-browser-lifecycle-contract.log
+            printf '%s\n' 'Lifecycle contracts were not started because the base homepage contract failed.' > /tmp/home-browser-lifecycle-chromium.log
+            cp /tmp/home-browser-lifecycle-chromium.log /tmp/home-browser-lifecycle-webkit.log
           fi
+
           cat /tmp/home-browser-contract.log
-          cat /tmp/home-browser-lifecycle-contract.log
+          cat /tmp/home-browser-lifecycle-chromium.log
+          cat /tmp/home-browser-lifecycle-webkit.log
+
           if [[ ${home_status} -ne 0 ]]; then
             exit "${home_status}"
           fi
-          exit "${lifecycle_status}"
+          if [[ ${chromium_status} -ne 0 ]]; then
+            exit "${chromium_status}"
+          fi
+          exit "${webkit_status}"
 
       - name: Run shared-file guard
         run: npm run guard:shared-files
@@ -143,9 +168,14 @@ jobs:
           path: |
             /tmp/product-commit-sha.txt
             /tmp/product-tree-sha.txt
+            /tmp/product-file-sha256.txt
+            /tmp/product-file-blob.txt
             /tmp/home-browser-contract.log
-            /tmp/home-browser-lifecycle-contract.log
+            /tmp/home-browser-lifecycle-chromium.log
+            /tmp/home-browser-lifecycle-webkit.log
+            scripts/home-browser-lifecycle-contract.mjs
             reports/home-browser-contract
-            reports/home-browser-lifecycle-contract
+            reports/home-browser-lifecycle-contract-chromium
+            reports/home-browser-lifecycle-contract-webkit
           if-no-files-found: warn
           retention-days: 14
