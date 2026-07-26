@@ -1,0 +1,1 @@
+Materialize dormant Genesis 6 manuscript theme from reviewed patch; temporary transaction, never merge this head.
