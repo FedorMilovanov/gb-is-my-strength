@@ -2,22 +2,24 @@
 /**
  * Repository control-plane integrity audit.
  *
- * This is deliberately filesystem-derived: package commands and GitHub Actions
- * may not point at deleted local files, temporary workflows may not survive
- * their transaction, and long-lived workflows may not retain one-off lane
- * branch names.
+ * Filesystem-derived references, workflow permission inheritance, mutation
+ * boundaries, and privileged action identities are checked together. Any new
+ * effective write scope must be registered before it can enter the control
+ * plane.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { auditWorkflowPermissionPolicy, parseWorkflow } from './lib/workflow-permission-policy.mjs';
+import { runWorkflowPermissionPolicyRegressionTests } from './workflow-permission-policy-regression-test.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORTS = path.join(ROOT, 'reports');
 const WORKFLOW_DIR = path.join(ROOT, '.github', 'workflows');
+const POLICY_PATH = 'data/workflow-permission-policy.json';
 const issues = [];
 const warnings = [];
 const references = [];
-const acceptedWriteWorkflows = [];
 
 function exists(repoPath) {
   return fs.existsSync(path.join(ROOT, repoPath));
@@ -69,6 +71,12 @@ function triggerSection(text) {
   return boundary >= 0 ? text.slice(0, boundary) : text;
 }
 
+try {
+  runWorkflowPermissionPolicyRegressionTests();
+} catch (error) {
+  addIssue(`workflow permission policy regressions failed: ${error.stack || error.message}`);
+}
+
 let pkg;
 try {
   pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
@@ -90,6 +98,7 @@ if (scripts['control-plane:audit'] !== 'node scripts/repository-control-plane-au
   addIssue('package.json scripts.control-plane:audit must expose the repository control-plane audit');
 }
 
+const parsedWorkflows = [];
 for (const name of workflowFiles()) {
   const file = `.github/workflows/${name}`;
   const text = fs.readFileSync(path.join(WORKFLOW_DIR, name), 'utf8');
@@ -110,17 +119,26 @@ for (const name of workflowFiles()) {
     addIssue(`${file}: long-lived workflow targets one-off branch ${match[0]}`);
   }
 
-  if (/permissions:[\s\S]{0,240}?contents:\s*write/.test(text)) {
-    const guardedAutofix = /contains\(github\.event\.pull_request\.labels\.\*\.name,\s*['"]autofix['"]\)/.test(text)
-      && /github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository/.test(text);
-    if (guardedAutofix) acceptedWriteWorkflows.push(file);
-    else addIssue(`${file}: contents: write has no accepted same-repository autofix guard`);
-  }
-
   if (/releases\/download\/v[0-9.]+\/actionlint_/.test(text)) {
     addIssue(`${file}: inline actionlint installer duplicates scripts/run-actionlint.mjs`);
   }
+
+  try {
+    parsedWorkflows.push(parseWorkflow(text, file));
+  } catch (error) {
+    addIssue(`${file}: cannot parse workflow control plane: ${error.message}`);
+  }
 }
+
+let permissionRegistry = null;
+try {
+  permissionRegistry = JSON.parse(fs.readFileSync(path.join(ROOT, POLICY_PATH), 'utf8'));
+} catch (error) {
+  addIssue(`${POLICY_PATH}: cannot parse workflow permission registry: ${error.message}`);
+}
+
+const permissionAudit = auditWorkflowPermissionPolicy(parsedWorkflows, permissionRegistry);
+for (const issue of permissionAudit.issues) addIssue(issue);
 
 const requiredDocs = [
   'AGENTS.md',
@@ -132,6 +150,7 @@ const requiredDocs = [
   'docs/refactor-2026/lanes/README.md',
   'docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md',
   'audit/external-checks/README.md',
+  POLICY_PATH,
 ];
 for (const file of requiredDocs) {
   if (!exists(file)) addIssue(`required governance document is missing: ${file}`);
@@ -154,7 +173,9 @@ const report = {
   workflows: workflowFiles().length,
   packageScripts: Object.keys(scripts).length,
   localReferences: references.length,
-  acceptedWriteWorkflows,
+  effectivePermissionJobs: permissionAudit.effectivePermissions.length,
+  privilegedJobs: permissionAudit.privilegedJobs,
+  effectivePermissions: permissionAudit.effectivePermissions,
   issues,
   warnings,
 };
@@ -170,15 +191,21 @@ fs.writeFileSync(
     `- Workflows: ${report.workflows}`,
     `- Package scripts: ${report.packageScripts}`,
     `- Static local references checked: ${report.localReferences}`,
-    `- Accepted same-repository autofix writers: ${acceptedWriteWorkflows.length}`,
+    `- Jobs with explicit effective permissions: ${report.effectivePermissionJobs}`,
+    `- Registered privileged jobs: ${report.privilegedJobs.length}`,
     `- Issues: ${issues.length}`,
     `- Warnings: ${warnings.length}`,
     '',
     '## Issues',
     ...(issues.length ? issues.map((item) => `- ${item}`) : ['- None']),
     '',
-    '## Accepted write workflows',
-    ...(acceptedWriteWorkflows.length ? acceptedWriteWorkflows.map((item) => `- ${item}`) : ['- None']),
+    '## Registered privileged jobs',
+    ...(report.privilegedJobs.length
+      ? report.privilegedJobs.map((item) => `- ${item.workflow} / ${item.job}: ${item.writeScopes.join(', ')} — ${item.purpose}`)
+      : ['- None']),
+    '',
+    '## Effective permission inventory',
+    ...report.effectivePermissions.map((item) => `- ${item.workflow} / ${item.job}: ${JSON.stringify(item.permissions)}`),
     '',
     '## Warnings',
     ...(warnings.length ? warnings.map((item) => `- ${item}`) : ['- None']),
@@ -186,7 +213,7 @@ fs.writeFileSync(
   ].join('\n'),
 );
 
-console.log(`Control-plane audit: ${report.workflows} workflows, ${report.packageScripts} npm scripts, ${report.localReferences} local references`);
+console.log(`Control-plane audit: ${report.workflows} workflows, ${report.packageScripts} npm scripts, ${report.localReferences} local references, ${report.privilegedJobs.length} privileged jobs`);
 for (const warning of warnings) console.warn(`WARN ${warning}`);
 if (issues.length) {
   for (const issue of issues) console.error(`ERROR ${issue}`);
