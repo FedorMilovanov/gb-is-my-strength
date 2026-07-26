@@ -10,6 +10,13 @@ const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'home-browser-lifecycle-contract');
 const LIFECYCLE_KEY = 'gb-home-browser-lifecycle-contract-v1';
+const PRODUCTION_MANIFEST_URL = 'https://gospod-bog.ru/manifest.json';
+const PRODUCTION_YANDEX_METRIKA_PIXEL_URL = 'https://mc.yandex.ru/watch/108353327';
+const PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL = 'https://mc.yandex.com/watch/108353327';
+const LOCAL_YANDEX_METRIKA_PIXEL_PATH = '/__fixtures/yandex-metrika-pixel.gif';
+const YANDEX_METRIKA_TAG = /^https:\/\/mc\.yandex\.ru\/metrika\/tag\.js\?id=108353327(?:&|$)/;
+const YANDEX_METRIKA_PIXEL = /^https:\/\/mc\.yandex\.(?:ru|com)\/watch\/108353327(?:\?|$)/;
+const TRANSPARENT_GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==', 'base64');
 const BROWSERS = { chromium, webkit };
 const browserNames = String(process.env.HOME_BROWSERS || 'chromium,webkit')
   .split(',')
@@ -45,16 +52,40 @@ async function startServer() {
   assert.ok(fs.existsSync(path.join(DIST, 'index.html')), 'dist/index.html is missing; build production-like dist first');
   assert.ok(fs.existsSync(path.join(DIST, 'about', 'index.html')), 'dist/about/index.html is missing; real history traversal needs a same-origin destination');
 
+  const fixtureRequests = [];
   const server = http.createServer((request, response) => {
     try {
-      const filePath = resolveRequestPath(request.url);
+      const requestUrl = new URL(request.url || '/', 'http://127.0.0.1');
       response.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
+      if (requestUrl.pathname === LOCAL_YANDEX_METRIKA_PIXEL_PATH) {
+        fixtureRequests.push({
+          fixture: 'yandex-metrika-pixel',
+          method: request.method || 'GET',
+          path: requestUrl.pathname,
+        });
+        response.setHeader('Content-Type', 'image/gif');
+        response.end(TRANSPARENT_GIF);
+        return;
+      }
+      const filePath = resolveRequestPath(request.url);
       if (!filePath) {
         response.statusCode = 404;
         response.end('Not found');
         return;
       }
       response.setHeader('Content-Type', contentType(filePath));
+      if (path.extname(filePath).toLowerCase() === '.html') {
+        // Absolute production resources that are same-origin on gospod-bog.ru
+        // must remain same-origin in the 127.0.0.1 acceptance harness. Rewrite
+        // only the web-app manifest and the exact Yandex counter-pixel URLs;
+        // canonical/OG/JSON-LD metadata stays byte-identical to the build.
+        const html = fs.readFileSync(filePath, 'utf8')
+          .replaceAll(PRODUCTION_MANIFEST_URL, '/manifest.json')
+          .replaceAll(PRODUCTION_YANDEX_METRIKA_PIXEL_URL, LOCAL_YANDEX_METRIKA_PIXEL_PATH)
+          .replaceAll(PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL, LOCAL_YANDEX_METRIKA_PIXEL_PATH);
+        response.end(html);
+        return;
+      }
       fs.createReadStream(filePath).pipe(response);
     } catch (error) {
       response.statusCode = 400;
@@ -66,6 +97,7 @@ async function startServer() {
   const address = server.address();
   return {
     baseUrl: `http://127.0.0.1:${address.port}`,
+    fixtureRequests,
     close: () => new Promise((resolve) => server.close(resolve)),
   };
 }
@@ -75,8 +107,55 @@ function isKnownBrowserDiagnostic(browserName, text) {
     && text === 'Viewport argument key "interactive-widget" not recognized and ignored.';
 }
 
-function isExpectedPagefindRequest(request, baseUrl) {
+function isExpectedYandexCounterPixelCancellation(request) {
   if (request.method() !== 'GET') return false;
+  const errorText = request.failure()?.errorText || '';
+  if (!['Load request cancelled', 'net::ERR_ABORTED'].includes(errorText)) return false;
+  return YANDEX_METRIKA_PIXEL.test(request.url());
+}
+
+async function installExternalServiceFixtures(context, fixtures) {
+  await context.route(YANDEX_METRIKA_TAG, async (route) => {
+    const request = route.request();
+    fixtures.push({
+      service: 'yandex-metrika-tag',
+      method: request.method(),
+      resourceType: request.resourceType(),
+      url: request.url(),
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/javascript; charset=utf-8',
+      body: 'window.ym = function () {};',
+    });
+  });
+  await context.route(YANDEX_METRIKA_PIXEL, async (route) => {
+    const request = route.request();
+    fixtures.push({
+      service: 'yandex-metrika-pixel',
+      method: request.method(),
+      resourceType: request.resourceType(),
+      url: request.url(),
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: 'image/gif',
+      body: TRANSPARENT_GIF,
+    });
+  });
+}
+
+async function assertLocalManifest(page, baseUrl, label) {
+  const manifests = page.locator('link[rel="manifest"]');
+  assert.equal(await manifests.count(), 1, `${label}: expected exactly one web-app manifest`);
+  const href = await manifests.first().getAttribute('href');
+  assert.ok(href, `${label}: web-app manifest href is missing`);
+  const resolved = new URL(href, page.url());
+  assert.equal(resolved.origin, baseUrl, `${label}: production manifest was not mapped to the local acceptance origin`);
+  assert.equal(resolved.pathname, '/manifest.json', `${label}: unexpected web-app manifest path`);
+}
+
+function isExactPagefindAssetRequest(request, baseUrl) {
   try {
     const url = new URL(request.url());
     return url.origin === baseUrl && url.pathname === '/pagefind/pagefind.js';
@@ -85,11 +164,30 @@ function isExpectedPagefindRequest(request, baseUrl) {
   }
 }
 
+function isExpectedPagefindRequest(request, baseUrl) {
+  return request.method() === 'GET'
+    && isExactPagefindAssetRequest(request, baseUrl);
+}
+
 function isKnownNavigationAbort(request, expectedNavigationAborts) {
   // Bind the exception to the exact request object when it starts inside the
   // intentional route transition. requestfailed may arrive asynchronously.
   return request.failure()?.errorText === 'net::ERR_ABORTED'
     && expectedNavigationAborts.has(request);
+}
+
+function isKnownSuccessfulPagefindHeadAbort(browserName, request, baseUrl, pagefindState) {
+  // Chromium reports this HEAD probe as aborted after exposing its successful
+  // response to fetch(). Accept only that exact response object during the
+  // canonical bootstrap; Pagefind readiness and the completed GET are asserted
+  // separately before the browser result can pass.
+  return browserName === 'chromium'
+    && pagefindState.bootstrapActive
+    && request.method() === 'HEAD'
+    && request.resourceType() === 'fetch'
+    && isExactPagefindAssetRequest(request, baseUrl)
+    && request.failure()?.errorText === 'net::ERR_ABORTED'
+    && pagefindState.successfulHeadResponses.has(request);
 }
 
 async function installLifecycleProbe(context) {
@@ -114,15 +212,18 @@ async function installLifecycleProbe(context) {
         throw error;
       }
     };
+    window.__gbHomeLifecycleDocumentToken ||= `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     window.addEventListener('pageshow', (event) => append({
       type: 'pageshow',
       path: location.pathname,
       persisted: event.persisted,
+      documentToken: window.__gbHomeLifecycleDocumentToken,
     }));
     window.addEventListener('pagehide', (event) => append({
       type: 'pagehide',
       path: location.pathname,
       persisted: event.persisted,
+      documentToken: window.__gbHomeLifecycleDocumentToken,
     }));
   }, { storageKey: LIFECYCLE_KEY });
 }
@@ -163,17 +264,55 @@ async function closeSearch(page) {
   });
 }
 
-async function assertCanonicalShortcut(page, chord, label) {
-  await page.locator('body').click({ position: { x: 1, y: 1 } });
-  await page.keyboard.press(chord);
-  const searchInput = page.locator('.cp-input');
-  await searchInput.waitFor({ state: 'visible' });
-  assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, `${label}: search input did not receive focus`);
-  assert.equal(await page.locator('.cp-backdrop').count(), 1, `${label}: search initialized more than once`);
+async function assertCanonicalShortcut(page, chord, label, baseUrl, pagefindState) {
+  const observeHeadResponse = (response) => {
+    const request = response.request();
+    if (
+      response.status() >= 200
+      && response.status() < 300
+      && request.method() === 'HEAD'
+      && request.resourceType() === 'fetch'
+      && isExactPagefindAssetRequest(request, baseUrl)
+    ) {
+      pagefindState.successfulHeadResponses.add(request);
+      pagefindState.headResponseCount += 1;
+    }
+  };
+  const observeModuleLoad = (request) => {
+    if (
+      request.method() === 'GET'
+      && request.resourceType() === 'script'
+      && isExactPagefindAssetRequest(request, baseUrl)
+    ) {
+      pagefindState.moduleLoadCount += 1;
+    }
+  };
+  page.on('response', observeHeadResponse);
+  page.on('requestfinished', observeModuleLoad);
+  pagefindState.bootstrapActive = true;
+  try {
+    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await page.keyboard.press(chord);
+    const searchInput = page.locator('.cp-input');
+    await searchInput.waitFor({ state: 'visible' });
+    assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, `${label}: search input did not receive focus`);
+    assert.equal(await page.locator('.cp-backdrop').count(), 1, `${label}: search initialized more than once`);
+    await page.waitForFunction(() => window.__pagefindReady__ === true || window.__pagefindFailed__ === true);
+    const loadState = await page.evaluate(() => ({
+      failed: window.__pagefindFailed__ === true,
+      ready: window.__pagefindReady__ === true,
+    }));
+    assert.equal(loadState.failed, false, `${label}: Pagefind bootstrap reported failure`);
+    assert.equal(loadState.ready, true, `${label}: Pagefind bootstrap did not reach ready state`);
+  } finally {
+    pagefindState.bootstrapActive = false;
+    page.off('response', observeHeadResponse);
+    page.off('requestfinished', observeModuleLoad);
+  }
   await closeSearch(page);
 }
 
-async function assertRealHistoryRestore(page, baseUrl, navigationState) {
+async function assertRealHistoryRestore(page, baseUrl, navigationState, browserName) {
   await page.evaluate((storageKey) => sessionStorage.setItem(storageKey, '[]'), LIFECYCLE_KEY);
   const themeBefore = await page.evaluate(() => ({
     attribute: document.documentElement.getAttribute('data-theme'),
@@ -183,6 +322,12 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
   const menuButton = page.locator('#hMobileMenuBtn');
   await menuButton.click();
   await waitForMenuState(page, true);
+  // Let the opened menu and scroll lock reach a painted, stable frame before
+  // the product captures them for its full-page View Transition navigation.
+  await page.evaluate(() => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
+  await waitForMenuState(page, true);
 
   await page.evaluate(() => {
     const link = document.createElement('a');
@@ -190,6 +335,9 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
     link.href = '/about/';
     link.textContent = 'history target';
     link.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:2147483647';
+    // Preserve the anchor's same-context default action while isolating this
+    // lifecycle fixture from the product's cross-document View Transition.
+    link.addEventListener('click', (event) => event.stopPropagation(), { once: true });
     document.body.appendChild(link);
   });
   navigationState.allowPagefindAbort = true;
@@ -199,6 +347,7 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
       page.locator('#home-contract-history-target').click(),
     ]);
     await page.locator('#main-content').waitFor({ state: 'visible' });
+    await assertLocalManifest(page, baseUrl, 'history destination');
   } finally {
     navigationState.allowPagefindAbort = false;
   }
@@ -207,6 +356,19 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
   // navigation commit, then assert the restored URL, DOM and persisted events.
   await page.goBack({ waitUntil: 'commit' });
   await page.waitForSelector('#hMobileMenuBtn');
+  // WebKit may expose the restored DOM before dispatching pageshow. Wait for
+  // the actual lifecycle evidence rather than sleeping or assuming selector
+  // readiness implies that the history traversal event already fired.
+  await page.waitForFunction((storageKey) => {
+    try {
+      const events = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
+      return Array.isArray(events)
+        && events.some((entry) => entry.type === 'pageshow' && entry.path === '/');
+    } catch {
+      return false;
+    }
+  }, LIFECYCLE_KEY);
+  await assertLocalManifest(page, baseUrl, 'restored homepage');
   const restoredUrl = new URL(page.url());
   assert.equal(restoredUrl.origin, baseUrl, 'history traversal changed origin');
   assert.equal(restoredUrl.pathname, '/', 'history traversal did not restore the homepage path');
@@ -228,15 +390,49 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
   const homePageHide = [...evidence.events].reverse().find((entry) => entry.type === 'pagehide' && entry.path === '/');
   const homePageShow = [...evidence.events].reverse().find((entry) => entry.type === 'pageshow' && entry.path === '/');
   const diagnostic = JSON.stringify({ events: evidence.events, navigationType: evidence.navigationType, notRestoredReasons: evidence.notRestoredReasons });
-  assert.equal(homePageHide?.persisted, true, `home page was not admitted to BFCache: ${diagnostic}`);
-  assert.equal(homePageShow?.persisted, true, `home page was not restored from BFCache: ${diagnostic}`);
-  assert.deepEqual(evidence.theme, themeBefore, 'theme state drifted across real history restoration');
+  assert.equal(typeof homePageHide?.persisted, 'boolean', `home page did not emit pagehide evidence: ${diagnostic}`);
+  assert.equal(typeof homePageShow?.persisted, 'boolean', `home page did not emit pageshow evidence: ${diagnostic}`);
+  assert.equal(homePageHide.persisted, homePageShow.persisted, `history restoration reported an incoherent persisted pair: ${diagnostic}`);
+
+  assert.equal(typeof homePageHide.documentToken, 'string', `home pagehide did not record a document token: ${diagnostic}`);
+  assert.equal(typeof homePageShow.documentToken, 'string', `home pageshow did not record a document token: ${diagnostic}`);
+
+  const usesBFCache = homePageHide.persisted === true;
+  if (usesBFCache) {
+    assert.equal(homePageShow.documentToken, homePageHide.documentToken, `BFCache restoration replaced the home document: ${diagnostic}`);
+  } else {
+    assert.notEqual(homePageShow.documentToken, homePageHide.documentToken, `history reload unexpectedly reused the original home document: ${diagnostic}`);
+  }
+
+  if (browserName === 'chromium') {
+    // Chromium is launched without Playwright's --disable-back-forward-cache
+    // default argument, so this remains the strict real-BFCache witness.
+    assert.equal(usesBFCache, true, `Chromium home page was not restored from BFCache: ${diagnostic}`);
+  } else {
+    assert.equal(browserName, 'webkit', `unsupported restoration capability contract: ${browserName}`);
+    if (!usesBFCache) {
+      // Playwright WebKit does not admit even a minimal two-page control to
+      // BFCache on Linux or macOS (headed/headless, ephemeral/persistent,
+      // cacheable/revalidate/no cache header). Do not mislabel a truthful
+      // back/forward reload as BFCache; require the browser's explicit history
+      // traversal signal and keep all product state/runtime checks blocking.
+      assert.equal(evidence.navigationType, 'back_forward', `WebKit did not complete a coherent back/forward traversal: ${diagnostic}`);
+    }
+  }
+
+  evidence.restoration = {
+    admitted: homePageHide.persisted,
+    restored: homePageShow.persisted,
+    bfcacheRequired: browserName === 'chromium',
+    mode: usesBFCache ? 'bfcache' : 'history-reload',
+  };
+  assert.deepEqual(evidence.theme, themeBefore, `${browserName} theme state drifted across ${evidence.restoration.mode} restoration`);
 
   await menuButton.click();
   await waitForMenuState(page, true);
   await page.keyboard.press('Escape');
   await waitForMenuState(page, false);
-  await assertScrollUnlocked(page, 'post-BFCache menu close');
+  await assertScrollUnlocked(page, `${browserName} post-${evidence.restoration.mode} menu close`);
 
   return evidence;
 }
@@ -346,12 +542,21 @@ async function runBrowser(browserName, browserType, baseUrl) {
     reducedMotion: 'reduce',
     locale: 'ru-RU',
   });
+  const externalServiceFixtures = [];
+  await installExternalServiceFixtures(context, externalServiceFixtures);
   await installLifecycleProbe(context);
   const page = await context.newPage();
   const runtimeErrors = [];
   const ignoredDiagnostics = [];
   const navigationState = { allowPagefindAbort: false };
   const expectedNavigationAborts = new WeakSet();
+  const pagefindState = {
+    bootstrapActive: false,
+    headAbortCount: 0,
+    headResponseCount: 0,
+    moduleLoadCount: 0,
+    successfulHeadResponses: new WeakSet(),
+  };
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
@@ -367,24 +572,92 @@ async function runBrowser(browserName, browserType, baseUrl) {
       expectedNavigationAborts.add(request);
     }
   });
-  page.on('requestfailed', (request) => {
+  const recordExpectedExternalCancellation = (request, diagnostic) => {
+    if (!isExpectedYandexCounterPixelCancellation(request)) return false;
+    externalServiceFixtures.push({
+      service: 'yandex-metrika-counter-pixel-cancelled',
+      method: request.method(),
+      resourceType: request.resourceType(),
+      url: request.url(),
+      failure: request.failure()?.errorText || null,
+    });
+    ignoredDiagnostics.push(diagnostic);
+    return true;
+  };
+  const observeRuntimeFailure = (request) => {
     const diagnostic = `requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`;
+    if (recordExpectedExternalCancellation(request, diagnostic)) return;
     if (isKnownNavigationAbort(request, expectedNavigationAborts)) ignoredDiagnostics.push(diagnostic);
     else runtimeErrors.push(diagnostic);
-  });
+  };
+  const observePagefindFailure = (request) => {
+    const diagnostic = `requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`;
+    if (recordExpectedExternalCancellation(request, diagnostic)) return;
+    const knownNavigationAbort = isKnownNavigationAbort(request, expectedNavigationAborts);
+    if (knownNavigationAbort) {
+      ignoredDiagnostics.push(diagnostic);
+      return;
+    }
+    const knownSuccessfulHeadAbort = isKnownSuccessfulPagefindHeadAbort(
+      browserName,
+      request,
+      baseUrl,
+      pagefindState,
+    );
+    if (knownSuccessfulHeadAbort) {
+      pagefindState.headAbortCount += 1;
+      ignoredDiagnostics.push(`requestfailed: ${request.method()} ${request.url()} — ${request.failure()?.errorText || 'unknown'} (${request.resourceType()})`);
+      return;
+    }
+    runtimeErrors.push(`requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`);
+  };
+  page.on('requestfailed', observeRuntimeFailure);
 
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#hMobileMenuBtn');
+    await assertLocalManifest(page, baseUrl, 'initial homepage');
     assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
 
-    const lifecycle = await assertRealHistoryRestore(page, baseUrl, navigationState);
-    await assertCanonicalShortcut(page, 'Meta+K', 'canonical Meta+K');
+    const lifecycle = await assertRealHistoryRestore(page, baseUrl, navigationState, browserName);
+    page.off('requestfailed', observeRuntimeFailure);
+    page.on('requestfailed', observePagefindFailure);
+    try {
+      await assertCanonicalShortcut(page, 'Meta+K', 'canonical Meta+K', baseUrl, pagefindState);
+    } finally {
+      page.off('requestfailed', observePagefindFailure);
+      page.on('requestfailed', observeRuntimeFailure);
+    }
     await assertEditableShortcutIsolation(page);
     await assertBackToTopThreshold(page);
 
+    assert.equal(pagefindState.headResponseCount, 1, 'Pagefind bootstrap did not receive exactly one successful HEAD response');
+    assert.equal(pagefindState.moduleLoadCount, 1, 'Pagefind bootstrap did not finish exactly one module GET');
+    assert.ok(pagefindState.headAbortCount <= 1, 'Pagefind bootstrap emitted duplicate successful HEAD aborts');
+    assert.ok(
+      externalServiceFixtures.some((fixture) => fixture.service === 'yandex-metrika-tag' && fixture.resourceType === 'script'),
+      'Yandex Metrika test fixture did not intercept the exact third-party tag script',
+    );
+    const cancelledCounterPixels = externalServiceFixtures.filter(
+      (fixture) => fixture.service === 'yandex-metrika-counter-pixel-cancelled',
+    );
+    assert.ok(
+      cancelledCounterPixels.length <= 2,
+      `Yandex counter pixel emitted duplicate cancellations (${cancelledCounterPixels.length})`,
+    );
     assert.deepEqual(runtimeErrors, [], `runtime errors: ${runtimeErrors.join(' | ')}`);
-    return { browser: browserName, result: 'PASS', lifecycle, ignoredDiagnostics };
+    return {
+      browser: browserName,
+      result: 'PASS',
+      lifecycle,
+      pagefind: {
+        headAborts: pagefindState.headAbortCount,
+        headResponses: pagefindState.headResponseCount,
+        moduleLoads: pagefindState.moduleLoadCount,
+      },
+      externalServiceFixtures,
+      ignoredDiagnostics,
+    };
   } catch (error) {
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     await page.screenshot({ path: path.join(REPORT_DIR, `${browserName}-failure.png`), fullPage: true }).catch(() => {});
@@ -394,6 +667,7 @@ async function runBrowser(browserName, browserType, baseUrl) {
     await browser.close();
   }
 }
+
 
 async function main() {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
@@ -405,10 +679,10 @@ async function main() {
       assert.ok(browserType, `unsupported browser: ${browserName}`);
       results.push(await runBrowser(browserName, browserType, server.baseUrl));
     }
-    fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ result: 'PASS', results }, null, 2)}\n`);
+    fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ result: 'PASS', results, serverFixtures: server.fixtureRequests }, null, 2)}\n`);
     console.log(`Home browser lifecycle contract: PASS (${results.length} browsers)`);
   } catch (error) {
-    fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ result: 'FAIL', results, error: error.stack || error.message }, null, 2)}\n`);
+    fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ result: 'FAIL', results, serverFixtures: server.fixtureRequests, error: error.stack || error.message }, null, 2)}\n`);
     throw error;
   } finally {
     await server.close();
