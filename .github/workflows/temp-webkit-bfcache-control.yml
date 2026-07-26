@@ -1,0 +1,189 @@
+name: Temporary WebKit BFCache control
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  control:
+    if: github.head_ref == 'temp/webkit-bfcache-control-20260726'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            browser: chromium
+            headless: 'false'
+            persistent: 'false'
+            id: chromium-linux-headed-ephemeral
+          - os: ubuntu-24.04
+            browser: webkit
+            headless: 'false'
+            persistent: 'false'
+            id: webkit-linux-headed-ephemeral
+          - os: ubuntu-24.04
+            browser: webkit
+            headless: 'true'
+            persistent: 'false'
+            id: webkit-linux-headless-ephemeral
+          - os: ubuntu-24.04
+            browser: webkit
+            headless: 'false'
+            persistent: 'true'
+            id: webkit-linux-headed-persistent
+          - os: macos-14
+            browser: webkit
+            headless: 'true'
+            persistent: 'false'
+            id: webkit-macos-headless-ephemeral
+          - os: macos-14
+            browser: webkit
+            headless: 'true'
+            persistent: 'true'
+            id: webkit-macos-headless-persistent
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 38d6e82da2323568008dc1ed70093fc660499475
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install exact dependencies
+        run: npm ci
+      - name: Install browser on Linux
+        if: runner.os == 'Linux'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Install browser on macOS
+        if: runner.os == 'macOS'
+        run: npx playwright install ${{ matrix.browser }}
+      - name: Write minimal control
+        shell: bash
+        run: |
+          cat > /tmp/bfcache-control.mjs <<'NODE'
+          import fs from 'node:fs';
+          import http from 'node:http';
+          import os from 'node:os';
+          import path from 'node:path';
+          import { chromium, webkit } from 'playwright';
+
+          const browserName = process.env.CONTROL_BROWSER;
+          const headless = process.env.CONTROL_HEADLESS === 'true';
+          const persistent = process.env.CONTROL_PERSISTENT === 'true';
+          const id = process.env.CONTROL_ID;
+          const browserType = { chromium, webkit }[browserName];
+          const reportDir = path.resolve('reports/webkit-bfcache-control');
+          fs.mkdirSync(reportDir, { recursive: true });
+
+          const html = (pathname, cacheMode) => `<!doctype html><meta charset="utf-8"><title>${pathname}</title>
+          <a id="target" href="${pathname === '/' ? '/about/' : '/'}?cache=${cacheMode}">target</a>
+          <script>
+          (() => {
+            const key = 'minimal-bfcache-control-v1';
+            const read = () => { try { return JSON.parse(sessionStorage.getItem(key) || '[]'); } catch { return []; } };
+            const append = (event) => { const events = read(); events.push({...event, sequence: events.length + 1}); sessionStorage.setItem(key, JSON.stringify(events)); };
+            window.__controlMarker ||= Math.random().toString(36).slice(2);
+            addEventListener('pagehide', event => append({type:'pagehide', path:location.pathname, persisted:event.persisted, marker:window.__controlMarker}));
+            addEventListener('pageshow', event => append({type:'pageshow', path:location.pathname, persisted:event.persisted, marker:window.__controlMarker}));
+          })();
+          </script>`;
+
+          const server = http.createServer((request, response) => {
+            const url = new URL(request.url || '/', 'http://127.0.0.1');
+            const cacheMode = url.searchParams.get('cache') || 'none';
+            if (cacheMode === 'revalidate') response.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
+            if (cacheMode === 'cacheable') response.setHeader('Cache-Control', 'public, max-age=60');
+            response.setHeader('Content-Type', 'text/html; charset=utf-8');
+            response.end(html(url.pathname, cacheMode));
+          });
+          await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+          const baseUrl = `http://127.0.0.1:${server.address().port}`;
+
+          async function runCase(cacheMode) {
+            let browser;
+            let context;
+            const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pw-bfcache-'));
+            const launchOptions = { headless };
+            if (browserName === 'chromium') launchOptions.ignoreDefaultArgs = ['--disable-back-forward-cache'];
+            try {
+              if (persistent) {
+                context = await browserType.launchPersistentContext(userDataDir, {
+                  ...launchOptions,
+                  viewport: { width: 390, height: 844 },
+                  reducedMotion: 'reduce',
+                });
+              } else {
+                browser = await browserType.launch(launchOptions);
+                context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+              }
+              const page = context.pages()[0] || await context.newPage();
+              await page.goto(`${baseUrl}/?cache=${cacheMode}`, { waitUntil: 'networkidle' });
+              const initialMarker = await page.evaluate(() => {
+                sessionStorage.setItem('minimal-bfcache-control-v1', '[]');
+                return window.__controlMarker;
+              });
+              await Promise.all([
+                page.waitForURL(`${baseUrl}/about/?cache=${cacheMode}`),
+                page.locator('#target').click(),
+              ]);
+              await page.goBack({ waitUntil: 'commit' });
+              await page.waitForSelector('#target');
+              const evidence = await page.evaluate(() => ({
+                events: JSON.parse(sessionStorage.getItem('minimal-bfcache-control-v1') || '[]'),
+                marker: window.__controlMarker,
+                navigationType: performance.getEntriesByType('navigation').at(-1)?.type || null,
+              }));
+              const hide = [...evidence.events].reverse().find(event => event.type === 'pagehide' && event.path === '/');
+              const show = [...evidence.events].reverse().find(event => event.type === 'pageshow' && event.path === '/');
+              return {
+                cacheMode,
+                initialMarker,
+                restoredMarker: evidence.marker,
+                markerPreserved: initialMarker === evidence.marker,
+                admitted: hide?.persisted === true,
+                restored: show?.persisted === true,
+                ...evidence,
+              };
+            } catch (error) {
+              return { cacheMode, error: error.stack || error.message };
+            } finally {
+              await context?.close().catch(() => {});
+              await browser?.close().catch(() => {});
+              fs.rmSync(userDataDir, { recursive: true, force: true });
+            }
+          }
+
+          const cases = [];
+          for (const cacheMode of ['none', 'revalidate', 'cacheable']) cases.push(await runCase(cacheMode));
+          const report = { id, os: process.platform, browserName, headless, persistent, cases };
+          fs.writeFileSync(path.join(reportDir, `${id}.json`), `${JSON.stringify(report, null, 2)}\n`);
+          console.log(JSON.stringify(report, null, 2));
+          await new Promise(resolve => server.close(resolve));
+          NODE
+      - name: Run minimal control
+        shell: bash
+        env:
+          CONTROL_BROWSER: ${{ matrix.browser }}
+          CONTROL_HEADLESS: ${{ matrix.headless }}
+          CONTROL_PERSISTENT: ${{ matrix.persistent }}
+          CONTROL_ID: ${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          if [[ "${RUNNER_OS}" == "Linux" && "${CONTROL_HEADLESS}" == "false" ]]; then
+            xvfb-run -a node /tmp/bfcache-control.mjs
+          else
+            node /tmp/bfcache-control.mjs
+          fi
+      - name: Upload control evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: webkit-bfcache-control-${{ matrix.id }}
+          path: reports/webkit-bfcache-control/${{ matrix.id }}.json
+          if-no-files-found: error
+          retention-days: 7
