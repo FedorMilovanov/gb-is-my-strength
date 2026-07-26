@@ -28,11 +28,11 @@ jobs:
           test "$(git merge-base origin/main HEAD)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git rev-parse origin/main)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "45c3f7d9194a62c2a71d54f77b47056c467598e8"
-          test "$(sha256sum .home-browser-capability-transfer/home-browser-capability.patch.gz.b64 | awk '{print $1}')" = "bb17e856632b59b6b72f115442a884f10d5e28693a7c1d9814ed586cecfda389"
+          test "$(sha256sum .home-browser-capability-transfer/home-browser-capability.patch.gz.b64 | awk '{print $1}')" = "057349920cf94157c224df08b57a89fbb563c2eea2b3fa9a268586977f10fd3c"
           base64 --decode .home-browser-capability-transfer/home-browser-capability.patch.gz.b64 > /tmp/home-browser-capability.patch.gz
-          test "$(sha256sum /tmp/home-browser-capability.patch.gz | awk '{print $1}')" = "f2f017836254c483a31b499b3f300a360c92f16e52f503a60fbf8be5ec120c6d"
+          test "$(sha256sum /tmp/home-browser-capability.patch.gz | awk '{print $1}')" = "8f08ba8fc5a419cd5acdb0f993984f0e207e12abd47b3d1efde5f24eca885a5e"
           gzip --decompress --stdout /tmp/home-browser-capability.patch.gz > /tmp/home-browser-capability.patch
-          test "$(sha256sum /tmp/home-browser-capability.patch | awk '{print $1}')" = "793ea190f41cfb8f0a741800440bcdb0858f3aa159c6dc955058c0c317ede8c1"
+          test "$(sha256sum /tmp/home-browser-capability.patch | awk '{print $1}')" = "6d4c856110eb05adcd3bbeace6d6d498cfac64334fb5644fd93dce669b1376e0"
           git apply --check /tmp/home-browser-capability.patch
 
       - name: Apply patch and create clean product commit
@@ -44,8 +44,8 @@ jobs:
           rm -f .home-browser-capability-trigger
           rm -f .github/workflows/temp-home-browser-capability-materializer.yml
           node --check scripts/home-browser-lifecycle-contract.mjs
-          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "b745006f5ae8487b4af5ff14df5a632eae69bd8da2f890cdb44c117565a3f077"
-          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "5d317c2896f5a7eaa53811ddaec218c58ccd54bb"
+          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "84fafe82f27c175312e22e05c4b08bd2957cf86f4a1776f35cd9e28f3e193e4a"
+          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "f361a3948298400a7d9b6d19430f13151dc2338b"
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
