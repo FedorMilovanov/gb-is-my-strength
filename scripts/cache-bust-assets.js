@@ -20,6 +20,7 @@ const ASSETS = [
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'css/series-samizdat.css',
+  'css/series-manuscript.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
@@ -47,10 +48,12 @@ const ASSETS = [
 // Assets that are version-governed but intentionally fetched only on first use.
 // Keep this policy beside ASSETS so cache revision ownership and SW download
 // strategy cannot drift into contradictory hand-maintained lists.
+// A dormant series theme stays lazy until a route opts into it through defineSeriesConfig.
 const LAZY_NO_PRECACHE = Object.freeze([
   'js/search.js',
   'js/glossary.js',
   'css/tts-download-notice.css',
+  'css/series-manuscript.css',
   'js/vosk-tts-engine.js',
   'manifest.json',
   'data/search-manifest.json',
