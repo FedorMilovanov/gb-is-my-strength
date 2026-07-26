@@ -75,8 +75,7 @@ function isKnownBrowserDiagnostic(browserName, text) {
     && text === 'Viewport argument key "interactive-widget" not recognized and ignored.';
 }
 
-function isExpectedPagefindRequest(request, baseUrl) {
-  if (request.method() !== 'GET') return false;
+function isExactPagefindAssetRequest(request, baseUrl) {
   try {
     const url = new URL(request.url());
     return url.origin === baseUrl && url.pathname === '/pagefind/pagefind.js';
@@ -85,11 +84,30 @@ function isExpectedPagefindRequest(request, baseUrl) {
   }
 }
 
+function isExpectedPagefindRequest(request, baseUrl) {
+  return request.method() === 'GET'
+    && isExactPagefindAssetRequest(request, baseUrl);
+}
+
 function isKnownNavigationAbort(request, expectedNavigationAborts) {
   // Bind the exception to the exact request object when it starts inside the
   // intentional route transition. requestfailed may arrive asynchronously.
   return request.failure()?.errorText === 'net::ERR_ABORTED'
     && expectedNavigationAborts.has(request);
+}
+
+function isKnownSuccessfulPagefindHeadAbort(browserName, request, baseUrl, pagefindState) {
+  // Chromium reports this HEAD probe as aborted after exposing its successful
+  // response to fetch(). Accept only that exact response object during the
+  // canonical bootstrap; Pagefind readiness and the completed GET are asserted
+  // separately before the browser result can pass.
+  return browserName === 'chromium'
+    && pagefindState.bootstrapActive
+    && request.method() === 'HEAD'
+    && request.resourceType() === 'fetch'
+    && isExactPagefindAssetRequest(request, baseUrl)
+    && request.failure()?.errorText === 'net::ERR_ABORTED'
+    && pagefindState.successfulHeadResponses.has(request);
 }
 
 async function installLifecycleProbe(context) {
@@ -163,13 +181,51 @@ async function closeSearch(page) {
   });
 }
 
-async function assertCanonicalShortcut(page, chord, label) {
-  await page.locator('body').click({ position: { x: 1, y: 1 } });
-  await page.keyboard.press(chord);
-  const searchInput = page.locator('.cp-input');
-  await searchInput.waitFor({ state: 'visible' });
-  assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, `${label}: search input did not receive focus`);
-  assert.equal(await page.locator('.cp-backdrop').count(), 1, `${label}: search initialized more than once`);
+async function assertCanonicalShortcut(page, chord, label, baseUrl, pagefindState) {
+  const observeHeadResponse = (response) => {
+    const request = response.request();
+    if (
+      response.status() >= 200
+      && response.status() < 300
+      && request.method() === 'HEAD'
+      && request.resourceType() === 'fetch'
+      && isExactPagefindAssetRequest(request, baseUrl)
+    ) {
+      pagefindState.successfulHeadResponses.add(request);
+      pagefindState.headResponseCount += 1;
+    }
+  };
+  const observeModuleLoad = (request) => {
+    if (
+      request.method() === 'GET'
+      && request.resourceType() === 'script'
+      && isExactPagefindAssetRequest(request, baseUrl)
+    ) {
+      pagefindState.moduleLoadCount += 1;
+    }
+  };
+  page.on('response', observeHeadResponse);
+  page.on('requestfinished', observeModuleLoad);
+  pagefindState.bootstrapActive = true;
+  try {
+    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await page.keyboard.press(chord);
+    const searchInput = page.locator('.cp-input');
+    await searchInput.waitFor({ state: 'visible' });
+    assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, `${label}: search input did not receive focus`);
+    assert.equal(await page.locator('.cp-backdrop').count(), 1, `${label}: search initialized more than once`);
+    await page.waitForFunction(() => window.__pagefindReady__ === true || window.__pagefindFailed__ === true);
+    const loadState = await page.evaluate(() => ({
+      failed: window.__pagefindFailed__ === true,
+      ready: window.__pagefindReady__ === true,
+    }));
+    assert.equal(loadState.failed, false, `${label}: Pagefind bootstrap reported failure`);
+    assert.equal(loadState.ready, true, `${label}: Pagefind bootstrap did not reach ready state`);
+  } finally {
+    pagefindState.bootstrapActive = false;
+    page.off('response', observeHeadResponse);
+    page.off('requestfinished', observeModuleLoad);
+  }
   await closeSearch(page);
 }
 
@@ -182,6 +238,12 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
 
   const menuButton = page.locator('#hMobileMenuBtn');
   await menuButton.click();
+  await waitForMenuState(page, true);
+  // Let the opened menu and scroll lock reach a painted, stable frame before
+  // the product captures them for its full-page View Transition navigation.
+  await page.evaluate(() => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
   await waitForMenuState(page, true);
 
   await page.evaluate(() => {
@@ -352,6 +414,13 @@ async function runBrowser(browserName, browserType, baseUrl) {
   const ignoredDiagnostics = [];
   const navigationState = { allowPagefindAbort: false };
   const expectedNavigationAborts = new WeakSet();
+  const pagefindState = {
+    bootstrapActive: false,
+    headAbortCount: 0,
+    headResponseCount: 0,
+    moduleLoadCount: 0,
+    successfulHeadResponses: new WeakSet(),
+  };
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
@@ -367,11 +436,31 @@ async function runBrowser(browserName, browserType, baseUrl) {
       expectedNavigationAborts.add(request);
     }
   });
-  page.on('requestfailed', (request) => {
+  const observeRuntimeFailure = (request) => {
     const diagnostic = `requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`;
     if (isKnownNavigationAbort(request, expectedNavigationAborts)) ignoredDiagnostics.push(diagnostic);
     else runtimeErrors.push(diagnostic);
-  });
+  };
+  const observePagefindFailure = (request) => {
+    const knownNavigationAbort = isKnownNavigationAbort(request, expectedNavigationAborts);
+    if (knownNavigationAbort) {
+      ignoredDiagnostics.push(`requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`);
+      return;
+    }
+    const knownSuccessfulHeadAbort = isKnownSuccessfulPagefindHeadAbort(
+      browserName,
+      request,
+      baseUrl,
+      pagefindState,
+    );
+    if (knownSuccessfulHeadAbort) {
+      pagefindState.headAbortCount += 1;
+      ignoredDiagnostics.push(`requestfailed: ${request.method()} ${request.url()} — ${request.failure()?.errorText || 'unknown'} (${request.resourceType()})`);
+      return;
+    }
+    runtimeErrors.push(`requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`);
+  };
+  page.on('requestfailed', observeRuntimeFailure);
 
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
@@ -379,12 +468,32 @@ async function runBrowser(browserName, browserType, baseUrl) {
     assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
 
     const lifecycle = await assertRealHistoryRestore(page, baseUrl, navigationState);
-    await assertCanonicalShortcut(page, 'Meta+K', 'canonical Meta+K');
+    page.off('requestfailed', observeRuntimeFailure);
+    page.on('requestfailed', observePagefindFailure);
+    try {
+      await assertCanonicalShortcut(page, 'Meta+K', 'canonical Meta+K', baseUrl, pagefindState);
+    } finally {
+      page.off('requestfailed', observePagefindFailure);
+      page.on('requestfailed', observeRuntimeFailure);
+    }
     await assertEditableShortcutIsolation(page);
     await assertBackToTopThreshold(page);
 
+    assert.equal(pagefindState.headResponseCount, 1, 'Pagefind bootstrap did not receive exactly one successful HEAD response');
+    assert.equal(pagefindState.moduleLoadCount, 1, 'Pagefind bootstrap did not finish exactly one module GET');
+    assert.ok(pagefindState.headAbortCount <= 1, 'Pagefind bootstrap emitted duplicate successful HEAD aborts');
     assert.deepEqual(runtimeErrors, [], `runtime errors: ${runtimeErrors.join(' | ')}`);
-    return { browser: browserName, result: 'PASS', lifecycle, ignoredDiagnostics };
+    return {
+      browser: browserName,
+      result: 'PASS',
+      lifecycle,
+      pagefind: {
+        headAborts: pagefindState.headAbortCount,
+        headResponses: pagefindState.headResponseCount,
+        moduleLoads: pagefindState.moduleLoadCount,
+      },
+      ignoredDiagnostics,
+    };
   } catch (error) {
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     await page.screenshot({ path: path.join(REPORT_DIR, `${browserName}-failure.png`), fullPage: true }).catch(() => {});
