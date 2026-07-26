@@ -159,7 +159,7 @@ check('Серии: аккордеон рендерит спутники (satelli
 try {
   const csstree = require('css-tree');
   for (const f of ['css/site.css', 'css/floating-cluster.css', 'css/mobile-hotfix.css',
-                   'css/series-samizdat.css', 'css/nagornaya-mobile-toc.css', 'css/home.css']) {
+                   'css/series-samizdat.css', 'css/series-manuscript.css', 'css/nagornaya-mobile-toc.css', 'css/home.css']) {
     const txt = read(f);
     const errs = [];
     csstree.parse(txt, { onParseError: (e) => errs.push(e.message) });
