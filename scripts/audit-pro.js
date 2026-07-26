@@ -46,6 +46,7 @@ const ALLOWED_CSS = new Set([
   'css/sw-toast.css',
   'css/nagornaya-mobile-toc.css',
   'css/series-samizdat.css',
+  'css/series-manuscript.css',
   'css/reader-preferences.css',
   'css/tts-download-notice.css'
 ]);
@@ -354,6 +355,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     { file: 'css/mobile-hotfix.css',        ceil: 142,            goal: 0 },
     { file: 'css/nagornaya-mobile-toc.css', ceil: 134,            goal: 50 },
     { file: 'css/series-samizdat.css',      ceil: 12,             goal: 0 },
+    { file: 'css/series-manuscript.css',     ceil: 0,              goal: 0 },
   ];
   for (const { file, ceil, goal } of RATCHETS) {
     const f = path.join(ROOT, file);
@@ -378,7 +380,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
                    'css/floating-cluster.css',
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
-  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css']) {
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css',
+  'css/series-manuscript.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const s = fs.readFileSync(p, 'utf8');
@@ -3394,7 +3397,8 @@ const JS_SIZE_FLOORS = {
                    'css/floating-cluster.css',
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
-  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css']) {
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css',
+  'css/series-manuscript.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const css = fs.readFileSync(p, 'utf8');
