@@ -1,0 +1,1 @@
+Temporary read-only snapshot trigger for main@38d6e82da2323568008dc1ed70093fc660499475. Never merge.
