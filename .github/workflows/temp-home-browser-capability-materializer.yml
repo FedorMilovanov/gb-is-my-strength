@@ -28,10 +28,10 @@ jobs:
           test "$(git merge-base origin/main HEAD)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git rev-parse origin/main)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "45c3f7d9194a62c2a71d54f77b47056c467598e8"
-          grep -Fxq 'transport=5-chunks' .home-browser-capability-trigger
+          grep -Fxq 'transport=5-chunks+timing' .home-browser-capability-trigger
 
           mapfile -t transfer_files < <(find .home-browser-capability-transfer -maxdepth 1 -type f -printf '%f\n' | sort)
-          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64)
+          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64 timing.patch)
           test "${transfer_files[*]}" = "${expected_files[*]}"
 
           test "$(sha256sum .home-browser-capability-transfer/chunk-01.b64 | awk '{print $1}')" = "e76937e58e3033b331f20c40b77a5e6538c4cf89600d11019580d5abfd4133d3"
@@ -39,6 +39,7 @@ jobs:
           test "$(sha256sum .home-browser-capability-transfer/chunk-03.b64 | awk '{print $1}')" = "647a1ae65b20dc4e1e14bc21ab11357d3395d559d01bceb76cbec159c393132f"
           test "$(sha256sum .home-browser-capability-transfer/chunk-04.b64 | awk '{print $1}')" = "7a38b8e0a13802b039a985d6948857f844421b5fa57a80c5d727d47750b312ab"
           test "$(sha256sum .home-browser-capability-transfer/chunk-05.b64 | awk '{print $1}')" = "d0b784431973c1c42da68e7dc85ab593560c00888169fb85be2d3c01492f0efd"
+          test "$(sha256sum .home-browser-capability-transfer/timing.patch | awk '{print $1}')" = "59e4481ba36f11d8bf19ea0184f1c2b23dbcc5bd784b5d079873b61b272a7ff1"
 
           cat \
             .home-browser-capability-transfer/chunk-01.b64 \
@@ -54,17 +55,28 @@ jobs:
           test "$(sha256sum /tmp/home-browser-capability.patch | awk '{print $1}')" = "4d19e891b1bb7f3673fd4189ee521a76ea5fe1f19dc899fc18bf9f1f0dbce688"
           git apply --check /tmp/home-browser-capability.patch
 
-      - name: Apply patch and create clean product commit
+          verify_dir="$(mktemp -d)"
+          mkdir -p "${verify_dir}/scripts"
+          cp scripts/home-browser-lifecycle-contract.mjs "${verify_dir}/scripts/home-browser-lifecycle-contract.mjs"
+          (
+            cd "${verify_dir}"
+            git apply /tmp/home-browser-capability.patch
+            git apply --check "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/timing.patch"
+          )
+          rm -rf "${verify_dir}"
+
+      - name: Apply patches and create clean product commit
         shell: bash
         run: |
           set -euo pipefail
           git apply /tmp/home-browser-capability.patch
+          git apply .home-browser-capability-transfer/timing.patch
           rm -rf .home-browser-capability-transfer
           rm -f .home-browser-capability-trigger
           rm -f .github/workflows/temp-home-browser-capability-materializer.yml
           node --check scripts/home-browser-lifecycle-contract.mjs
-          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "14473edca65a7fcee8b256587fdd50d4cfe8faba3d7e452bfeeca29092af45b0"
-          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "89bc957f21a3c69245e039436d056a0cda2995a2"
+          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "66195f833b7d8fb152eeca2a6ab0c2d1b0614a925c8ca066bb549f1bef9fadf2"
+          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "4dcdffb26fd552745f18a934a2d2dde831738c8f"
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
