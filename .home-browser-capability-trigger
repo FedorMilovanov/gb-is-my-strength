@@ -1,6 +1,7 @@
 base=38d6e82da2323568008dc1ed70093fc660499475
 patch=4d19e891b1bb7f3673fd4189ee521a76ea5fe1f19dc899fc18bf9f1f0dbce688
 timing_patch=59e4481ba36f11d8bf19ea0184f1c2b23dbcc5bd784b5d079873b61b272a7ff1
+pixel_com_patch=ef9158abe2c286f66af0bd9a913aafab1417c357e8c074de8d129a2b574bc6e8
 control_run=30185037654
-fixtures=local-manifest+yandex-metrika-tag+server-localized-yandex-counter-pixel
-transport=5-chunks+timing
+fixtures=local-manifest+yandex-metrika-tag+server-localized-yandex-counter-pixel-ru-com
+transport=5-chunks+timing+pixel-com
