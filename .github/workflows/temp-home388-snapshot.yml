@@ -1,15 +1,16 @@
 name: Temporary home388 exact snapshot
 
 on:
-  push:
-    branches:
-      - temp/home388-ff613-snapshot-20260726
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   snapshot:
+    if: github.head_ref == 'temp/home388-ff613-snapshot-20260726'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout exact product head
