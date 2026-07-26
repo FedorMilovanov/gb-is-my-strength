@@ -92,12 +92,25 @@ jobs:
       - name: Build Pagefind index
         run: npm run pagefind:build:dist
 
-      - name: Run homepage contracts
+      - name: Run homepage contracts with preserved logs
         shell: bash
         run: |
-          set -euo pipefail
-          node scripts/home-browser-contract.mjs
-          xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs
+          set +e
+          node scripts/home-browser-contract.mjs > /tmp/home-browser-contract.log 2>&1
+          home_status=$?
+          lifecycle_status=125
+          if [[ ${home_status} -eq 0 ]]; then
+            xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs > /tmp/home-browser-lifecycle-contract.log 2>&1
+            lifecycle_status=$?
+          else
+            printf '%s\n' 'Lifecycle contract was not started because the base homepage contract failed.' > /tmp/home-browser-lifecycle-contract.log
+          fi
+          cat /tmp/home-browser-contract.log
+          cat /tmp/home-browser-lifecycle-contract.log
+          if [[ ${home_status} -ne 0 ]]; then
+            exit "${home_status}"
+          fi
+          exit "${lifecycle_status}"
 
       - name: Run shared-file guard
         run: npm run guard:shared-files
@@ -116,6 +129,8 @@ jobs:
           path: |
             /tmp/product-commit-sha.txt
             /tmp/product-tree-sha.txt
+            /tmp/home-browser-contract.log
+            /tmp/home-browser-lifecycle-contract.log
             reports/home-browser-contract
             reports/home-browser-lifecycle-contract
           if-no-files-found: warn
