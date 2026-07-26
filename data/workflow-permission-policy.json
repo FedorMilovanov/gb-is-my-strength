@@ -6,25 +6,28 @@
       "jobs": {
         "deploy": {
           "permissions": {
+            "actions": "read",
             "contents": "read",
             "id-token": "write",
             "pages": "write"
           },
-          "purpose": "Publish the exact readiness-authorized site to GitHub Pages",
+          "purpose": "Promote the exact same-run candidate built by the read-only readiness job to GitHub Pages",
           "allowedEvents": [
-            "workflow_dispatch",
-            "workflow_run"
+            "push",
+            "workflow_dispatch"
           ],
-          "repositoryBoundary": "same repository; automatic promotion only from successful main readiness",
-          "branchBoundary": "exact readiness head SHA or explicit operator recovery SHA",
+          "repositoryBoundary": "same repository; candidate and witness artifacts must belong to this exact workflow run",
+          "branchBoundary": "control-plane SHA equals current main; release SHA equals it automatically or is an explicit historical main ancestor",
           "mutationTargets": [
             "github-pages deployment",
             "OIDC deployment token"
           ],
           "requiresConcurrency": true,
           "requiredMarkers": [
-            "github.event.workflow_run.conclusion == 'success'",
-            "github.event.workflow_run.head_sha",
+            "needs: readiness",
+            "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+            "EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}",
+            "EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}",
             "environment:",
             "name: github-pages"
           ]
@@ -46,7 +49,7 @@
             "workflow_run"
           ],
           "repositoryBoundary": "same repository deploy run resolved through the Actions API",
-          "branchBoundary": "main deployment head SHA and trusted recorder source",
+          "branchBoundary": "main deployment control-plane SHA plus independently verified release SHA",
           "mutationTargets": [
             "machine-marked deployment witness issue or pull-request thread"
           ],

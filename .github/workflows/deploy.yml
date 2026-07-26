@@ -1,97 +1,126 @@
 name: Deploy to GitHub Pages
 
-# Production has one automatic entry point: a successful read-only
-# Metadata & IndexNow Readiness run. Every production-impacting path belongs to
-# readiness, so mixed source/asset commits cannot create competing Pages runs.
-# workflow_dispatch remains for explicit operator recovery. This workflow never
-# rewrites source revisions.
+# One trusted control-plane workflow builds one exact release candidate and
+# promotes those same bytes. Automatic releases use one SHA for both roles;
+# manual recovery may select an older release SHA, but only when it is already
+# an ancestor of the current main control plane.
 on:
-  workflow_run:
-    workflows: ["Metadata & IndexNow Readiness"]
-    types: [completed]
+  push:
     branches: [main]
-
+    paths:
+      - '**'
   workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact historical main SHA to promote; blank means current main
+        required: false
+        type: string
 
 permissions:
-  contents: read       # читаем репозиторий
-  pages: write         # заливаем артефакт на Pages
-  id-token: write      # OIDC-токен для actions/deploy-pages
+  contents: read
 
-# Если в очереди несколько деплоев — оставляем только последний
 concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  RELEASE_NODE_VERSION: '22.12.0'
+  RELEASE_NPM_VERSION: '10.9.0'
+  CONTROL_PLANE_SHA: ${{ github.sha }}
+  RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+  RELEASE_ARTIFACT_NAME: pages-release-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
-  deploy:
+  readiness:
+    name: Build and validate immutable release candidate
     runs-on: ubuntu-latest
-
-    # Automatic deploy is allowed only after readiness succeeds. A failed or
-    # cancelled readiness must never ship production. Manual runs remain
-    # available for explicit operator recovery.
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+    timeout-minutes: 55
+    permissions:
+      contents: read
+    outputs:
+      release_sha: ${{ steps.provenance.outputs.release_sha }}
+      control_plane_sha: ${{ steps.provenance.outputs.control_plane_sha }}
+      candidate_id: ${{ steps.provenance.outputs.candidate_id }}
+      candidate_digest: ${{ steps.provenance.outputs.candidate_digest }}
+      candidate_bytes: ${{ steps.provenance.outputs.candidate_bytes }}
+      candidate_files: ${{ steps.provenance.outputs.candidate_files }}
+      immutable_path: ${{ steps.provenance.outputs.immutable_path }}
+      transport_artifact_id: ${{ steps.candidate_upload.outputs.artifact-id }}
+      transport_artifact_digest: ${{ steps.candidate_upload.outputs.artifact-digest }}
 
     steps:
-      - name: Checkout exact readiness-verified commit
+      - name: Checkout exact release source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          # Automatic and manual deploys both checkout the exact event SHA.
-          # Never replace the verified/frozen commit with moving main.
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ env.RELEASE_SHA }}
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup Node.js
+      - name: Prove release and control-plane Git boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$CONTROL_PLANE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          git fetch --no-tags origin "+main:refs/remotes/origin/main"
+          test "$(git rev-parse --verify HEAD^{commit})" = "$RELEASE_SHA"
+          test "$(git rev-parse --verify refs/remotes/origin/main^{commit})" = "$CONTROL_PLANE_SHA"
+          git merge-base --is-ancestor "$RELEASE_SHA" "$CONTROL_PLANE_SHA"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            test "$RELEASE_SHA" = "$CONTROL_PLANE_SHA"
+          fi
+
+      - name: Set up pinned Node toolchain
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: '22.12.0'
+          cache: npm
 
-      - name: Install dependencies
-        # Note: P1-CI-DUPE — when triggered by workflow_run, readiness already
-        # ran npm ci. Setup-node cache keeps this cheap and preserves build isolation.
+      - name: Assert pinned npm toolchain
+        run: test "$(npm --version)" = "$RELEASE_NPM_VERSION"
+
+      - name: Install dependencies once
         run: npm ci
 
       - name: Verify deterministic local fonts
-        run: node scripts/verify-font-assets.mjs
+        run: |
+          node --check scripts/font-assets-lib.mjs
+          node --check scripts/verify-font-assets.mjs
+          node --check scripts/generate-font-assets.mjs
+          node --check scripts/font-assets-contract-test.mjs
+          node scripts/font-assets-contract-test.mjs
+          node scripts/verify-font-assets.mjs
 
-      - name: Check asset revisions for manual deploys
-        # workflow_run already follows a successful read-only readiness check.
-        if: github.event_name == 'workflow_dispatch'
+      - name: Validate registry structure
+        run: node scripts/editorial-metadata-registry.js --check
+
+      - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
 
-      - name: Static publication gates
+      - name: Static publication source gates
         run: npm run validate:static-publication
 
-      # РЕФАКТОРИНГ 5.0 (AGENTS-r245, 2026-06-20):
-      # Dist deploy enabled. Full-document shadow-wrap restores 100% visual parity
-      # for all landing/series pages. Build-time strangler produces complete dist.
-      # See docs/refactor-2026/REFACTORING_5_0_PLAN.md.
-      - name: Build Astro + copy legacy into dist
+      - name: Build production-like dist once
         run: npm run strangler:build:production-like
 
-      - name: Verify page ownership in production-like dist
+      - name: Verify page ownership in candidate dist
         run: npm run page-ownership:dist:production-like
 
-      - name: Build Pagefind index in dist
+      - name: Build Pagefind index in candidate dist
         run: npm run pagefind:build:dist
 
-      - name: Publish IndexNow key file from secret into dist
+      - name: Publish IndexNow key file into candidate dist
+        env:
+          INDEXNOW_KEY_VALUE: ${{ secrets.INDEXNOW_KEY }}
         run: |
-          KEY="${{ secrets.INDEXNOW_KEY }}"
+          KEY="$INDEXNOW_KEY_VALUE"
           if [ -n "$KEY" ]; then
             printf '%s' "$KEY" > "dist/${KEY}.txt"
           else
             echo "INDEXNOW_KEY secret is empty — key file was not generated"
           fi
 
-      - name: Verify Pagefind index and disable Jekyll filtering in dist
+      - name: Verify Pagefind and disable Jekyll filtering
         run: |
           test -f dist/pagefind/pagefind.js
           touch dist/.nojekyll
@@ -102,7 +131,7 @@ jobs:
       - name: Production-like dist publication audit
         run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 
-      - name: Public URL contract compare on dist
+      - name: Public URL contract compare on candidate dist
         run: npm run contract:extract:dist && npm run contract:compare:dist
 
       - name: Dist JSON-LD parse audit
@@ -117,13 +146,10 @@ jobs:
       - name: Gill v16 dist strict audits
         run: node scripts/gill-context-visual-parity-audit.js --require-dist && node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
 
-      - name: Install Playwright browsers
+      - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Gill pre-v16 submenu regression audit
-        # --require-live: the full per-row scrollspy traversal must actually
-        # execute; the soft "not exercisable headlessly" path once masked a
-        # dead initGbs2Controls gate that froze the submenu on every Gill page.
         env:
           GILL_SUBMENU_REQUIRE_LIVE: '1'
         run: npm run gill:pre-v16-submenu:audit
@@ -137,96 +163,181 @@ jobs:
       - name: Broad production-like dist runtime smoke
         run: node scripts/dist-smoke-audit.js --no-build --production-like
 
-      - name: Content word-coverage audit (legacy shadow vs dist)
-        # GATE-GAP-NATIVE-TEXT-PARITY: catches content silently lost between
-        # the legacy shadow and the built Astro page (CONTENT-PARITY-LOSS-01
-        # regression class).
+      - name: Content word-coverage audit
         run: npm run content:coverage:audit
 
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 
-      - name: Write immutable deployment provenance
-        env:
-          DEPLOYED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
-          SOURCE_READINESS_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}
-        run: node scripts/write-deployment-provenance.mjs
+      - name: Verify frozen editorial projections
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-metadata-freeze.log
 
-      - name: Upload Pages artifact
+      - name: Prepare IndexNow URL list without storing the secret
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ env.RELEASE_SHA }}
+        run: |
+          mkdir -p reports
+          CHANGED=$(git diff --name-only "${BEFORE_SHA:-HEAD~1}" "${AFTER_SHA:-HEAD}" 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || true)
+          printf '%s\n' "$CHANGED" | node scripts/build-indexnow-urls.js --base "https://gospod-bog.ru" > reports/indexnow-urls.json
+          node -e "const x=require('./reports/indexnow-urls.json'); if(!Array.isArray(x)) process.exit(1)"
+
+      - name: Ensure release-source validation left tracked files clean
+        run: git diff --exit-code
+
+      - name: Stage immutable verification tools from trusted control plane
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf release-tools
+          mkdir release-tools
+          for file in \
+            release-candidate-lib.mjs \
+            write-deployment-provenance.mjs \
+            verify-release-candidate.mjs \
+            live-release-contract.mjs \
+            tts-live-deployment-contract.mjs
+          do
+            git show "${CONTROL_PLANE_SHA}:scripts/${file}" > "release-tools/${file}"
+          done
+          node --check release-tools/release-candidate-lib.mjs
+          node --check release-tools/write-deployment-provenance.mjs
+          node --check release-tools/verify-release-candidate.mjs
+          node --check release-tools/live-release-contract.mjs
+          node --check release-tools/tts-live-deployment-contract.mjs
+
+      - name: Write generic immutable release provenance
+        id: provenance
+        env:
+          RELEASE_ROOT: ${{ github.workspace }}
+        run: node release-tools/write-deployment-provenance.mjs
+
+      - name: Verify prepared release candidate
+        env:
+          EXPECTED_REPOSITORY: ${{ github.repository }}
+          EXPECTED_RELEASE_SHA: ${{ env.RELEASE_SHA }}
+          EXPECTED_CONTROL_PLANE_SHA: ${{ env.CONTROL_PLANE_SHA }}
+          EXPECTED_RUN_ID: ${{ github.run_id }}
+          EXPECTED_RUN_ATTEMPT: ${{ github.run_attempt }}
+          EXPECTED_CANDIDATE_DIGEST: ${{ steps.provenance.outputs.candidate_digest }}
+        run: node release-tools/verify-release-candidate.mjs
+
+      - name: Upload immutable release candidate
+        id: candidate_upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ env.RELEASE_ARTIFACT_NAME }}
+          path: |
+            dist
+            release-tools
+            reports/indexnow-urls.json
+            reports/release-candidate.json
+            reports/release-candidate-verification.json
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 30
+
+  deploy:
+    name: Promote exact readiness candidate
+    needs: readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy_pages.outputs.page_url }}
+
+    steps:
+      - name: Download exact same-run release candidate
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ env.RELEASE_ARTIFACT_NAME }}
+          path: .
+
+      - name: Set up pinned Node verifier
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Verify downloaded candidate identity
+        env:
+          EXPECTED_REPOSITORY: ${{ github.repository }}
+          EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
+          EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}
+          EXPECTED_RUN_ID: ${{ github.run_id }}
+          EXPECTED_RUN_ATTEMPT: ${{ github.run_attempt }}
+          EXPECTED_CANDIDATE_DIGEST: ${{ needs.readiness.outputs.candidate_digest }}
+        run: node release-tools/verify-release-candidate.mjs
+
+      - name: Upload exact candidate as Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: dist
 
-      - name: Deploy to GitHub Pages
-        id: deploy
+      - name: Deploy exact candidate to GitHub Pages
+        id: deploy_pages
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
-      - name: Verify live TTS deployment contract
+      - name: Verify generic live release contract
         env:
           LIVE_BASE_URL: https://gospod-bog.ru
-          DEPLOYED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
-        run: node scripts/tts-live-deployment-contract.mjs
+          RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
+          CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}
+          EXPECTED_CANDIDATE_DIGEST: ${{ needs.readiness.outputs.candidate_digest }}
+          RELEASE_ARTIFACT_ID: ${{ needs.readiness.outputs.transport_artifact_id }}
+          RELEASE_ARTIFACT_DIGEST: ${{ needs.readiness.outputs.transport_artifact_digest }}
+        run: node release-tools/live-release-contract.mjs
 
-      - name: Upload live TTS deployment evidence
+      - name: Upload generic live release evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-live-deployment-${{ github.run_id }}
+          path: reports/release-live-deployment-contract.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Verify live TTS capability extension
+        env:
+          LIVE_BASE_URL: https://gospod-bog.ru
+          RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
+          CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}
+          EXPECTED_CANDIDATE_DIGEST: ${{ needs.readiness.outputs.candidate_digest }}
+        run: node release-tools/tts-live-deployment-contract.mjs
+
+      - name: Upload live TTS capability evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: tts-live-deployment-${{ github.run_id }}
           path: reports/tts-live-deployment-contract.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
 
-      - name: Build IndexNow payload
-        id: payload
+      - name: Submit precomputed URLs to IndexNow
+        continue-on-error: true
         env:
-          BEFORE_SHA: ${{ github.event.before }}
-          AFTER_SHA: ${{ github.event.after }}
           INDEXNOW_KEY_VALUE: ${{ secrets.INDEXNOW_KEY }}
         run: |
-          BASE="https://gospod-bog.ru"
-          KEY="$INDEXNOW_KEY_VALUE"
-
-          if [ -z "$KEY" ]; then
-            echo "::warning::INDEXNOW_KEY secret is not set; skipping IndexNow submit."
-            {
-              echo "urls=[]"
-              echo "key="
-              echo "host=gospod-bog.ru"
-            } >> "$GITHUB_OUTPUT"
+          if [ -z "$INDEXNOW_KEY_VALUE" ]; then
+            echo "INDEXNOW_KEY secret is empty — submission skipped"
             exit 0
           fi
-
-          CHANGED=$(git diff --name-only "${BEFORE_SHA:-HEAD~1}" "${AFTER_SHA:-HEAD}" 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || true)
-          URLS=$(printf '%s\n' "$CHANGED" | node scripts/build-indexnow-urls.js --base "$BASE")
-
-          {
-            echo "urls=$URLS"
-            echo "key=$KEY"
-            echo "host=gospod-bog.ru"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Submit to IndexNow (Bing / Yandex)
-        if: steps.payload.outputs.urls != '[]' && steps.payload.outputs.urls != ''
-        continue-on-error: true
-        run: |
-          KEY="${{ steps.payload.outputs.key }}"
-          HOST="${{ steps.payload.outputs.host }}"
-          URLS='${{ steps.payload.outputs.urls }}'
-
+          URLS=$(cat reports/indexnow-urls.json)
           BODY=$(jq -n \
-            --arg host "$HOST" \
-            --arg key  "$KEY" \
+            --arg host "gospod-bog.ru" \
+            --arg key "$INDEXNOW_KEY_VALUE" \
             --argjson urls "$URLS" \
             '{host: $host, key: $key, keyLocation: ("https://"+$host+"/"+$key+".txt"), urlList: $urls}')
-
-          echo "Payload: $BODY"
-
-          curl -s -o /tmp/indexnow-bing.out -w "%{http_code}\n" \
-            -X POST "https://api.indexnow.org/indexnow" \
-            -H "Content-Type: application/json; charset=utf-8" \
-            -d "$BODY" || true
-
-          curl -s -o /tmp/indexnow-yandex.out -w "%{http_code}\n" \
-            -X POST "https://yandex.com/indexnow" \
-            -H "Content-Type: application/json; charset=utf-8" \
-            -d "$BODY" || true
+          curl --fail-with-body --retry 3 -sS -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" -d "$BODY"
+          curl --fail-with-body --retry 3 -sS -X POST "https://yandex.com/indexnow" -H "Content-Type: application/json; charset=utf-8" -d "$BODY"

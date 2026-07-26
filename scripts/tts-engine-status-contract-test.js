@@ -42,11 +42,10 @@ function validate(engine, controller, css, workflow, cacheAssets) {
     ['notice CSS remains lazy', cacheAssets, /const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*'css\/tts-download-notice\.css'[\s\S]*?\]\);/],
     ['Vosk engine remains lazy', cacheAssets, /const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*'js\/vosk-tts-engine\.js'[\s\S]*?\]\);/],
   ];
-  for (const [label, source, pattern] of checks) {
-    if (!pattern.test(source)) problems.push(label);
-  }
+  for (const [label, source, pattern] of checks) if (!pattern.test(source)) problems.push(label);
 
   const requiredWorkflowPaths = [
+    'data/release-toolchain.json',
     'js/vosk-tts-engine.js',
     'js/floating-cluster-controller.js',
     'css/tts-download-notice.css',
@@ -54,7 +53,12 @@ function validate(engine, controller, css, workflow, cacheAssets) {
     'scripts/cache-bust.js',
     'scripts/dist-publication-audit.js',
     'src/lib/asset-version.js',
+    'scripts/release-candidate-lib.mjs',
+    'scripts/release-pipeline-contract-test.mjs',
+    'scripts/deployment-provenance-contract-test.mjs',
     'scripts/write-deployment-provenance.mjs',
+    'scripts/verify-release-candidate.mjs',
+    'scripts/live-release-contract.mjs',
     'scripts/tts-live-deployment-contract.mjs',
     'scripts/tts-download-consent-contract-test.js',
     'scripts/tts-download-notice-browser-test.js',
@@ -73,15 +77,9 @@ function validate(engine, controller, css, workflow, cacheAssets) {
 
   const noticeRevision = crypto.createHash('md5').update(css).digest('hex').slice(0, 8);
   const engineRevision = crypto.createHash('md5').update(engine).digest('hex').slice(0, 8);
-  if (!engine.includes('/css/tts-download-notice.css?v=' + noticeRevision)) {
-    problems.push('engine notice CSS revision drift');
-  }
-  if (!controller.includes('/css/tts-download-notice.css?v=' + noticeRevision)) {
-    problems.push('controller notice CSS revision drift');
-  }
-  if (!controller.includes('/js/vosk-tts-engine.js?v=' + engineRevision)) {
-    problems.push('controller Vosk engine revision drift');
-  }
+  if (!engine.includes('/css/tts-download-notice.css?v=' + noticeRevision)) problems.push('engine notice CSS revision drift');
+  if (!controller.includes('/css/tts-download-notice.css?v=' + noticeRevision)) problems.push('controller notice CSS revision drift');
+  if (!controller.includes('/js/vosk-tts-engine.js?v=' + engineRevision)) problems.push('controller Vosk engine revision drift');
   if (/_voskWarmupStarted/.test(controller)) problems.push('obsolete one-shot warm-up latch remains');
   if (/s\.src\s*=\s*'\/js\/vosk-tts-engine\.js'/.test(controller)) problems.push('unversioned lazy engine URL remains');
   const deferredReveal = /requestAnimationFrame\(function \(\) \{ el\.classList\.add\('is-visible'\); \}\);/;
@@ -97,50 +95,66 @@ function validateLiveDeploymentContract(liveContract, deployWorkflow) {
     ['live contract checks standalone route', liveContract, /\/articles\/20-antisovetov-pastoru\//],
     ['live contract checks Hugging Face CSP', liveContract, /connect-src lacks huggingface\.co/],
     ['live contract checks Hugging Face CDN CSP', liveContract, /connect-src lacks \*\.aws\.cdn\.hf\.co/],
-    ['live contract checks media and worker blob policy', liveContract, /media-src lacks blob:[\s\S]*worker-src lacks blob:/],
-    ['live contract verifies current pointer', liveContract, /expected\.currentPointerPath[\s\S]{0,2600}assertCurrentPointer\(pointer\)/],
-    ['live contract verifies run-addressed provenance', liveContract, /expected\.provenancePath[\s\S]{0,2200}assertProvenance\(provenance\)/],
-    ['live contract verifies provenance SHA', liveContract, /deployment provenance commit SHA mismatch/],
+    ['live contract checks media and worker blob policy', liveContract, /media-src lacks blob[\s\S]*worker-src lacks blob/],
+    ['live contract verifies current pointer', liveContract, /assertPointer\(pointer\);/],
+    ['live contract verifies run-addressed provenance', liveContract, /assertProvenance\(provenance\);/],
+    ['live contract verifies release SHA', liveContract, /deployment provenance release SHA mismatch/],
+    ['live contract verifies control-plane SHA', liveContract, /deployment provenance control-plane SHA mismatch/],
     ['live contract verifies provenance run ID', liveContract, /deployment provenance run ID mismatch/],
-    ['live contract verifies controller bytes', liveContract, /live controller bytes do not match deployed revision/],
-    ['live contract verifies engine bytes', liveContract, /live Vosk engine bytes do not match deployed revision/],
-    ['live contract verifies notice CSS bytes', liveContract, /live notice CSS bytes do not match deployed revision/],
-    ['live contract verifies SHA-256 chain', liveContract, /live controller SHA-256[\s\S]*live Vosk engine SHA-256[\s\S]*live notice CSS SHA-256/],
+    ['live contract verifies candidate digest before TTS', liveContract, /local TTS candidate digest mismatch[\s\S]*deployment provenance candidate digest mismatch/],
+    ['live contract reads TTS extension', liveContract, /manifest\.extensions\?\.tts/],
+    ['live contract verifies controller bytes', liveContract, /live controller SHA-256 mismatch/],
+    ['live contract verifies engine bytes', liveContract, /live Vosk engine SHA-256 mismatch/],
+    ['live contract verifies notice CSS bytes', liveContract, /live notice CSS SHA-256 mismatch/],
     ['live contract rejects notice precache', liveContract, /live Service Worker precaches lazy TTS notice CSS/],
     ['live contract rejects engine precache', liveContract, /live Service Worker precaches lazy Vosk engine/],
     ['live contract writes evidence on every attempt', liveContract, /writeReport\(\);[\s\S]*attempt[\s\S]*writeReport\(\);/],
-    ['deploy executes live contract after Pages', deployWorkflow, /- name: Deploy to GitHub Pages[\s\S]{0,900}- name: Verify live TTS deployment contract[\s\S]{0,260}node scripts\/tts-live-deployment-contract\.mjs/],
-    ['deploy passes verified SHA', deployWorkflow, /DEPLOYED_SHA:[^\n]*workflow_run\.head_sha/],
-    ['deploy uploads live TTS evidence', deployWorkflow, /name: tts-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,220}reports\/tts-live-deployment-contract\.json/],
+    ['deploy executes generic live contract before TTS', deployWorkflow, /- name: Verify generic live release contract[\s\S]*- name: Verify live TTS capability extension/],
+    ['deploy executes staged TTS verifier after Pages', deployWorkflow, /- name: Deploy exact candidate to GitHub Pages[\s\S]*node release-tools\/tts-live-deployment-contract\.mjs/],
+    ['deploy passes release SHA', deployWorkflow, /RELEASE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.release_sha \}\}/],
+    ['deploy passes control-plane SHA', deployWorkflow, /CONTROL_PLANE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.control_plane_sha \}\}/],
+    ['deploy passes candidate digest', deployWorkflow, /EXPECTED_CANDIDATE_DIGEST:\s*\$\{\{ needs\.readiness\.outputs\.candidate_digest \}\}/],
+    ['deploy uploads live TTS evidence', deployWorkflow, /name: tts-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,260}reports\/tts-live-deployment-contract\.json/],
   ];
-  for (const [label, source, pattern] of checks) {
-    if (!pattern.test(source)) problems.push(label);
-  }
+  for (const [label, source, pattern] of checks) if (!pattern.test(source)) problems.push(label);
   return problems;
 }
 
-function validateDeploymentProvenance(writer, liveContract, deployWorkflow) {
+function validateDeploymentProvenance(library, writer, liveContract, deployWorkflow) {
   const problems = [];
   const checks = [
-    ['writer requires exact commit SHA', writer, /DEPLOYED_SHA must be an exact 40-character commit SHA/],
-    ['writer requires exact workflow identity', writer, /GITHUB_RUN_ID must be numeric[\s\S]*GITHUB_RUN_ATTEMPT must be numeric/],
-    ['writer requires existing dist', writer, /dist must exist before writing deployment provenance/],
-    ['writer imports canonical lazy policy', writer, /LAZY_NO_PRECACHE[\s\S]{0,200}cache-bust-assets\.js/],
-    ['writer records MD5 and SHA-256', writer, /createHash\('md5'\)[\s\S]*createHash\('sha256'\)/],
-    ['writer records TTS assets', writer, /floating-cluster-controller\.js[\s\S]*vosk-tts-engine\.js[\s\S]*tts-download-notice\.css[\s\S]*sw\.js/],
-    ['writer uses run-addressed commit path', writer, /path\.join\(deploymentsDir, commitSha\)[\s\S]{0,180}path\.join\(outputDir, `\$\{runIdentity\}\.json`\)/],
-    ['writer publishes current pointer', writer, /path\.join\(deploymentsDir, 'current\.json'\)[\s\S]{0,900}fs\.writeFileSync\(currentPointerPath/],
-    ['writer preserves TTS lazy policy', writer, /LAZY_NO_PRECACHE\.includes[\s\S]*assets\.engine[\s\S]*assets\.noticeCss/],
-    ['deploy writes provenance before upload', deployWorkflow, /- name: Write immutable deployment provenance[\s\S]{0,420}node scripts\/write-deployment-provenance\.mjs[\s\S]{0,300}- name: Upload Pages artifact/],
-    ['deploy checks out exact manual SHA', deployWorkflow, /ref:\s*\$\{\{\s*github\.event_name == 'workflow_run' && github\.event\.workflow_run\.head_sha \|\| github\.sha\s*\}\}/],
-    ['deploy passes readiness provenance', deployWorkflow, /SOURCE_READINESS_RUN_ID:[^\n]*workflow_run\.id/],
+    ['library owns canonical whole-tree digest', library, /sha256-canonical-pages-tree-v1[\s\S]*function canonicalTreeStats/],
+    ['library rejects release symlinks', library, /release candidate must not contain symlinks/],
+    ['library writes schema v4 generic manifest', library, /schemaVersion:\s*4[\s\S]*releaseSha,[\s\S]*controlPlaneSha,[\s\S]*artifact:[\s\S]*build:[\s\S]*criticalAssets,[\s\S]*extensions:/],
+    ['library writes schema v3 two-SHA pointer', library, /schemaVersion:\s*3[\s\S]*releaseSha,[\s\S]*controlPlaneSha,[\s\S]*immutablePath/],
+    ['library stores TTS below extensions', library, /extensions:\s*\{[\s\S]*tts:\s*\{/],
+    ['writer requires exact release and control identities', writer, /RELEASE_SHA[\s\S]*CONTROL_PLANE_SHA[\s\S]*assertReleaseControlPlaneBoundary/],
+    ['writer checks fetched current main', writer, /refs\/remotes\/origin\/main\^\{commit\}/],
+    ['writer checks release ancestry', writer, /merge-base', '--is-ancestor', releaseSha, controlPlaneSha/],
+    ['writer requires pinned npm version', writer, /RELEASE_NPM_VERSION is required/],
+    ['writer emits release output', writer, /release_sha=\$\{report\.releaseSha\}/],
+    ['writer emits control output', writer, /control_plane_sha=\$\{report\.controlPlaneSha\}/],
+    ['writer emits candidate digest output', writer, /candidate_digest=\$\{report\.digest\}/],
+    ['deploy stages trusted tools before provenance', deployWorkflow, /Stage immutable verification tools from trusted control plane[\s\S]*Write generic immutable release provenance/],
+    ['deploy writes provenance before candidate upload', deployWorkflow, /- name: Write generic immutable release provenance[\s\S]*node release-tools\/write-deployment-provenance\.mjs[\s\S]*- name: Upload immutable release candidate/],
+    ['deploy verifies candidate before Pages upload', deployWorkflow, /- name: Verify downloaded candidate identity[\s\S]*node release-tools\/verify-release-candidate\.mjs[\s\S]*- name: Upload exact candidate as Pages artifact/],
+    ['deploy promotes without checkout or rebuild', deployWorkflow, /name:\s*Promote exact readiness candidate[\s\S]*needs:\s*readiness/],
     ['live contract fetches current pointer', liveContract, /currentPointerPath:\s*'\/deployments\/current\.json'/],
-    ['live contract fetches run-addressed path', liveContract, /provenancePath:\s*`\/deployments\/\$\{DEPLOYED_SHA\}\/\$\{runIdentity\}\.json`/],
-    ['live contract compares provenance hashes', liveContract, /assets\.controller\.sha256[\s\S]*assets\.engine\.sha256[\s\S]*assets\.noticeCss\.sha256[\s\S]*assets\.serviceWorker\.sha256/],
+    ['live contract fetches release-addressed path', liveContract, /provenancePath:\s*`\/deployments\/\$\{RELEASE_SHA\}\/\$\{runIdentity\}\.json`/],
+    ['live contract compares schema v4 TTS extension', liveContract, /deployment provenance schema drifted[\s\S]*deployment provenance TTS extension mismatch/],
   ];
-  for (const [label, source, pattern] of checks) {
-    if (!pattern.test(source)) problems.push(label);
-  }
+  for (const [label, source, pattern] of checks) if (!pattern.test(source)) problems.push(label);
+  const deploySection = deployWorkflow.split('\n  deploy:\n')[1] || '';
+  if (/actions\/checkout@|\bnpm ci\b|strangler:build/.test(deploySection)) problems.push('privileged deploy rebuilds or checks out source');
+  if (/\bcommitSha\b|DEPLOYED_SHA|EXPECTED_COMMIT_SHA/.test([library, writer, liveContract].join('\n'))) problems.push('legacy single-SHA deployment identity remains');
+  return problems;
+}
+
+function validateDistPublicationAudit(source) {
+  const problems = [];
+  if (!/const \{ ASSETS, LAZY_NO_PRECACHE \} = require\('\.\/cache-bust-assets'\);/.test(source)) problems.push('dist publication audit does not import canonical lazy policy');
+  if (!/const lazyNoPrecache = new Set\(LAZY_NO_PRECACHE\);/.test(source)) problems.push('dist publication audit does not consume canonical lazy policy');
+  if (/const LAZY_NO_PRECACHE = new Set\(\[/.test(source)) problems.push('dist publication audit keeps a divergent local lazy list');
   return problems;
 }
 
@@ -149,58 +163,45 @@ const controller = read('js/floating-cluster-controller.js');
 const css = read('css/tts-download-notice.css');
 const workflow = read('.github/workflows/tts-download-consent.yml');
 const deployWorkflow = read('.github/workflows/deploy.yml');
+const releaseLibrary = read('scripts/release-candidate-lib.mjs');
 const provenanceWriter = read('scripts/write-deployment-provenance.mjs');
 const liveDeploymentContract = read('scripts/tts-live-deployment-contract.mjs');
 const cacheAssets = read('scripts/cache-bust-assets.js');
 const distPublicationAudit = read('scripts/dist-publication-audit.js');
+
 assert.deepEqual(validate(engine, controller, css, workflow, cacheAssets), []);
 assert.deepEqual(validateLiveDeploymentContract(liveDeploymentContract, deployWorkflow), []);
-assert.deepEqual(validateDeploymentProvenance(provenanceWriter, liveDeploymentContract, deployWorkflow), []);
-
-function validateDistPublicationAudit(source) {
-  const problems = [];
-  if (!/const \{ ASSETS, LAZY_NO_PRECACHE \} = require\('\.\/cache-bust-assets'\);/.test(source)) {
-    problems.push('dist publication audit does not import canonical lazy policy');
-  }
-  if (!/const lazyNoPrecache = new Set\(LAZY_NO_PRECACHE\);/.test(source)) {
-    problems.push('dist publication audit does not consume canonical lazy policy');
-  }
-  if (/const LAZY_NO_PRECACHE = new Set\(\[/.test(source)) {
-    problems.push('dist publication audit keeps a divergent local lazy list');
-  }
-  return problems;
-}
-
+assert.deepEqual(validateDeploymentProvenance(releaseLibrary, provenanceWriter, liveDeploymentContract, deployWorkflow), []);
 assert.deepEqual(validateDistPublicationAudit(distPublicationAudit), []);
+
 for (const [name, mutation] of [
   ['dist audit lazy export removed', distPublicationAudit.replace('{ ASSETS, LAZY_NO_PRECACHE }', '{ ASSETS }')],
   ['dist audit canonical lazy set bypassed', distPublicationAudit.replace('new Set(LAZY_NO_PRECACHE)', 'new Set([])')],
-]) {
-  assert.ok(validateDistPublicationAudit(mutation).length > 0, `${name}: mutation must be rejected`);
-}
+]) assert.ok(validateDistPublicationAudit(mutation).length > 0, `${name}: mutation must be rejected`);
 
 for (const [name, liveMutation, deployMutation] of [
   ['standalone live route removed', liveDeploymentContract.replace("  '/articles/20-antisovetov-pastoru/',\n", ''), deployWorkflow],
   ['live CSP host check removed', liveDeploymentContract.replace('connect-src lacks huggingface.co', 'connect-src host unchecked'), deployWorkflow],
   ['live Service Worker check removed', liveDeploymentContract.replace('live Service Worker precaches lazy Vosk engine', 'live Service Worker ignored'), deployWorkflow],
-  ['live current pointer assertion removed', liveDeploymentContract.replace('assertCurrentPointer(pointer);', 'void pointer;'), deployWorkflow],
+  ['live current pointer assertion removed', liveDeploymentContract.replace('assertPointer(pointer);', 'void pointer;'), deployWorkflow],
   ['live provenance assertion removed', liveDeploymentContract.replace('assertProvenance(provenance);', 'void provenance;'), deployWorkflow],
-  ['post-deploy execution removed', liveDeploymentContract, deployWorkflow.replace('node scripts/tts-live-deployment-contract.mjs', 'echo live TTS contract skipped')],
+  ['candidate digest check removed', liveDeploymentContract.replace("assert.equal(local.manifest.artifact.digest, EXPECTED_CANDIDATE_DIGEST, 'local TTS candidate digest mismatch');", ''), deployWorkflow],
+  ['release SHA check removed', liveDeploymentContract.replace('deployment provenance release SHA mismatch', 'release unchecked'), deployWorkflow],
+  ['control SHA check removed', liveDeploymentContract.replace('deployment provenance control-plane SHA mismatch', 'control unchecked'), deployWorkflow],
+  ['post-deploy execution removed', liveDeploymentContract, deployWorkflow.replace('node release-tools/tts-live-deployment-contract.mjs', 'echo live TTS contract skipped')],
   ['live evidence upload removed', liveDeploymentContract, deployWorkflow.replace('reports/tts-live-deployment-contract.json', 'reports/missing-live-tts-evidence.json')],
-]) {
-  assert.ok(validateLiveDeploymentContract(liveMutation, deployMutation).length > 0, `${name}: mutation must be rejected`);
-}
+]) assert.ok(validateLiveDeploymentContract(liveMutation, deployMutation).length > 0, `${name}: mutation must be rejected`);
 
-for (const [name, writerMutation, liveMutation, deployMutation] of [
-  ['writer exact SHA validation removed', provenanceWriter.replace('DEPLOYED_SHA must be an exact 40-character commit SHA', 'unchecked SHA'), liveDeploymentContract, deployWorkflow],
-  ['writer run-addressed path flattened', provenanceWriter.replace('`${runIdentity}.json`', "'deployment.json'"), liveDeploymentContract, deployWorkflow],
-  ['writer current pointer removed', provenanceWriter.replace("path.join(deploymentsDir, 'current.json')", "path.join(deploymentsDir, 'missing.json')"), liveDeploymentContract, deployWorkflow],
-  ['writer SHA-256 removed', provenanceWriter.replace("crypto.createHash('sha256')", "crypto.createHash('md5')"), liveDeploymentContract, deployWorkflow],
-  ['deploy provenance step removed', provenanceWriter, liveDeploymentContract, deployWorkflow.replace('node scripts/write-deployment-provenance.mjs', 'echo provenance skipped')],
-  ['live run-addressed path removed', provenanceWriter, liveDeploymentContract.replace('provenancePath: `/deployments/${DEPLOYED_SHA}/${runIdentity}.json`', "provenancePath: '/deployment.json'"), deployWorkflow],
-]) {
-  assert.ok(validateDeploymentProvenance(writerMutation, liveMutation, deployMutation).length > 0, `${name}: mutation must be rejected`);
-}
+for (const [name, libraryMutation, writerMutation, liveMutation, deployMutation] of [
+  ['whole-tree digest weakened', releaseLibrary.replace('sha256-canonical-pages-tree-v1', 'sha256-selected-files-v1'), provenanceWriter, liveDeploymentContract, deployWorkflow],
+  ['symlink rejection removed', releaseLibrary.replace('release candidate must not contain symlinks', 'symlinks allowed'), provenanceWriter, liveDeploymentContract, deployWorkflow],
+  ['TTS returned to top level', releaseLibrary.replace('extensions: {\n      tts:', 'tts:'), provenanceWriter, liveDeploymentContract, deployWorkflow],
+  ['writer release output removed', releaseLibrary, provenanceWriter.replace('release_sha=${report.releaseSha}', 'release_sha=unchecked'), liveDeploymentContract, deployWorkflow],
+  ['writer control output aliased', releaseLibrary, provenanceWriter.replace('control_plane_sha=${report.controlPlaneSha}', 'control_plane_sha=${report.releaseSha}'), liveDeploymentContract, deployWorkflow],
+  ['deploy provenance step removed', releaseLibrary, provenanceWriter, liveDeploymentContract, deployWorkflow.replace('node release-tools/write-deployment-provenance.mjs', 'echo provenance skipped')],
+  ['deploy candidate verification removed', releaseLibrary, provenanceWriter, liveDeploymentContract, deployWorkflow.replace('node release-tools/verify-release-candidate.mjs', 'echo candidate unchecked')],
+  ['live release-addressed path removed', releaseLibrary, provenanceWriter, liveDeploymentContract.replace('provenancePath: `/deployments/${RELEASE_SHA}/${runIdentity}.json`', "provenancePath: '/deployment.json'"), deployWorkflow],
+]) assert.ok(validateDeploymentProvenance(libraryMutation, writerMutation, liveMutation, deployMutation).length > 0, `${name}: mutation must be rejected`);
 
 const mutations = [
   ['retry API removed', engine.replace('retryLoading: retryLoading', 'retryLoading: null'), controller, css, workflow, cacheAssets],
@@ -227,8 +228,5 @@ const mutations = [
   ['notice CSS lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*?)  'css\/tts-download-notice\.css',\n/, '$1')],
   ['Vosk engine lazy policy entry removed', engine, controller, css, workflow, cacheAssets.replace(/(const LAZY_NO_PRECACHE = Object\.freeze\(\[[\s\S]*?)  'js\/vosk-tts-engine\.js',\n/, '$1')],
 ];
-for (const [name, ...mutation] of mutations) {
-  const problems = validate(...mutation);
-  assert.ok(problems.length > 0, `${name}: mutation must be rejected`);
-}
-console.log('TTS engine status contract: PASS (' + (mutations.length + 13) + ' named adversarial mutations rejected).');
+for (const [name, ...mutation] of mutations) assert.ok(validate(...mutation).length > 0, `${name}: mutation must be rejected`);
+console.log('TTS engine status contract: PASS (' + (mutations.length + 22) + ' named adversarial mutations rejected).');
