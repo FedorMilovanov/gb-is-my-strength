@@ -2,3 +2,4 @@ base=38d6e82da2323568008dc1ed70093fc660499475
 patch=747b144e70c91174a28bb51c96141748e939db38f76b310025e7321af9e1402d
 control_run=30185037654
 fixtures=local-manifest+yandex-metrika-tag+yandex-counter-pixel
+transport=4-chunks
