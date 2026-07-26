@@ -127,7 +127,11 @@ jobs:
 
       - name: Lint workflow YAML (actionlint)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
-        run: npm run workflows:lint
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          npm run workflows:lint 2>&1 | tee reports/actionlint.log
 
       - name: Upload control-plane audit
         if: always()
@@ -141,6 +145,7 @@ jobs:
             reports/font-assets-alias-contract.log
             reports/font-assets-verification.log
             reports/font-assets-verification.json
+            reports/actionlint.log
           if-no-files-found: warn
           retention-days: 14
 
