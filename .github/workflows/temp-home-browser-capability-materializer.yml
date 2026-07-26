@@ -28,28 +28,30 @@ jobs:
           test "$(git merge-base origin/main HEAD)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git rev-parse origin/main)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "45c3f7d9194a62c2a71d54f77b47056c467598e8"
-          grep -Fxq 'transport=4-chunks' .home-browser-capability-trigger
+          grep -Fxq 'transport=5-chunks' .home-browser-capability-trigger
 
           mapfile -t transfer_files < <(find .home-browser-capability-transfer -maxdepth 1 -type f -printf '%f\n' | sort)
-          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64)
+          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64)
           test "${transfer_files[*]}" = "${expected_files[*]}"
 
-          test "$(sha256sum .home-browser-capability-transfer/chunk-01.b64 | awk '{print $1}')" = "92017e3139a3e175f178463588949c336d11723cab3db30c47e183edb6babdd2"
-          test "$(sha256sum .home-browser-capability-transfer/chunk-02.b64 | awk '{print $1}')" = "b95faaba5408b23aca7a19c8b47891543e213dacbc4f5e8b354b07cbaed86b30"
-          test "$(sha256sum .home-browser-capability-transfer/chunk-03.b64 | awk '{print $1}')" = "f5aaca8d7d3f29d31109d7079e1bda6337263c666acdc645171815482b7735f2"
-          test "$(sha256sum .home-browser-capability-transfer/chunk-04.b64 | awk '{print $1}')" = "f6df541a0d0de7c9c8e1f5f88f760e03c020ebd192c6a13b4544c810a9ed4dc8"
+          test "$(sha256sum .home-browser-capability-transfer/chunk-01.b64 | awk '{print $1}')" = "e76937e58e3033b331f20c40b77a5e6538c4cf89600d11019580d5abfd4133d3"
+          test "$(sha256sum .home-browser-capability-transfer/chunk-02.b64 | awk '{print $1}')" = "72bb1777d5108999043b58a19303fdb6abc9906f260d31089f40dec5b552d7e4"
+          test "$(sha256sum .home-browser-capability-transfer/chunk-03.b64 | awk '{print $1}')" = "647a1ae65b20dc4e1e14bc21ab11357d3395d559d01bceb76cbec159c393132f"
+          test "$(sha256sum .home-browser-capability-transfer/chunk-04.b64 | awk '{print $1}')" = "7a38b8e0a13802b039a985d6948857f844421b5fa57a80c5d727d47750b312ab"
+          test "$(sha256sum .home-browser-capability-transfer/chunk-05.b64 | awk '{print $1}')" = "d0b784431973c1c42da68e7dc85ab593560c00888169fb85be2d3c01492f0efd"
 
           cat \
             .home-browser-capability-transfer/chunk-01.b64 \
             .home-browser-capability-transfer/chunk-02.b64 \
             .home-browser-capability-transfer/chunk-03.b64 \
             .home-browser-capability-transfer/chunk-04.b64 \
+            .home-browser-capability-transfer/chunk-05.b64 \
             > /tmp/home-browser-capability.patch.gz.b64
-          test "$(sha256sum /tmp/home-browser-capability.patch.gz.b64 | awk '{print $1}')" = "c5d1824e5dcb5364b76358d8634c56107c10db81de025871e1fad89524213cbb"
+          test "$(sha256sum /tmp/home-browser-capability.patch.gz.b64 | awk '{print $1}')" = "2321e06433df2e4e5b493b92bf06a51f3cc1e449d7d2b21a60082a6e165f9d30"
           base64 --decode /tmp/home-browser-capability.patch.gz.b64 > /tmp/home-browser-capability.patch.gz
-          test "$(sha256sum /tmp/home-browser-capability.patch.gz | awk '{print $1}')" = "1992e9640679db7752cb1d4264f3cca0e55cb0fc61b61d1b35a50d3c9b6bb9ae"
+          test "$(sha256sum /tmp/home-browser-capability.patch.gz | awk '{print $1}')" = "416f25e57c2e9020bf9e95b2ac11ee7b730d9d3a1ad9690bb5800b6098950c04"
           gzip --decompress --stdout /tmp/home-browser-capability.patch.gz > /tmp/home-browser-capability.patch
-          test "$(sha256sum /tmp/home-browser-capability.patch | awk '{print $1}')" = "747b144e70c91174a28bb51c96141748e939db38f76b310025e7321af9e1402d"
+          test "$(sha256sum /tmp/home-browser-capability.patch | awk '{print $1}')" = "4d19e891b1bb7f3673fd4189ee521a76ea5fe1f19dc899fc18bf9f1f0dbce688"
           git apply --check /tmp/home-browser-capability.patch
 
       - name: Apply patch and create clean product commit
@@ -61,8 +63,8 @@ jobs:
           rm -f .home-browser-capability-trigger
           rm -f .github/workflows/temp-home-browser-capability-materializer.yml
           node --check scripts/home-browser-lifecycle-contract.mjs
-          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "98ac9bb0b5e207b9e795dd91a7d6028df2acc42fe4073f2685bd3deb2fb9109f"
-          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "1d073c7cf597d9a7fa06b8c5ccc24ffeaf91a351"
+          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "14473edca65a7fcee8b256587fdd50d4cfe8faba3d7e452bfeeca29092af45b0"
+          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "89bc957f21a3c69245e039436d056a0cda2995a2"
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
