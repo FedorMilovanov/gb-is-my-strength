@@ -66,7 +66,8 @@ jobs:
       - name: Write minimal control
         shell: bash
         run: |
-          cat > /tmp/bfcache-control.mjs <<'NODE'
+          mkdir -p .tmp
+          cat > .tmp/bfcache-control.mjs <<'NODE'
           import fs from 'node:fs';
           import http from 'node:http';
           import os from 'node:os';
@@ -176,14 +177,15 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${RUNNER_OS}" == "Linux" && "${CONTROL_HEADLESS}" == "false" ]]; then
-            xvfb-run -a node /tmp/bfcache-control.mjs
+            xvfb-run -a node .tmp/bfcache-control.mjs
           else
-            node /tmp/bfcache-control.mjs
+            node .tmp/bfcache-control.mjs
           fi
       - name: Upload control evidence
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: webkit-bfcache-control-${{ matrix.id }}
           path: reports/webkit-bfcache-control/${{ matrix.id }}.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
