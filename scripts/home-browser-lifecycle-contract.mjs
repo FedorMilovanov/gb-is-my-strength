@@ -75,18 +75,21 @@ function isKnownBrowserDiagnostic(browserName, text) {
     && text === 'Viewport argument key "interactive-widget" not recognized and ignored.';
 }
 
-function isKnownNavigationAbort(request, baseUrl, allowNavigationAbort) {
-  // Dynamic import resource types vary across Playwright/browser versions.
-  // Accept only the exact same-origin GET aborted by our intentional route transition.
-  if (!allowNavigationAbort
-    || request.failure()?.errorText !== 'net::ERR_ABORTED'
-    || request.method() !== 'GET') return false;
+function isExpectedPagefindRequest(request, baseUrl) {
+  if (request.method() !== 'GET') return false;
   try {
     const url = new URL(request.url());
     return url.origin === baseUrl && url.pathname === '/pagefind/pagefind.js';
   } catch {
     return false;
   }
+}
+
+function isKnownNavigationAbort(request, expectedNavigationAborts) {
+  // Mark the request when it starts inside the intentional route transition.
+  // Its requestfailed event may arrive after that transition window has closed.
+  return request.failure()?.errorText === 'net::ERR_ABORTED'
+    && expectedNavigationAborts.has(request);
 }
 
 async function installLifecycleProbe(context) {
@@ -189,6 +192,9 @@ async function assertRealHistoryRestore(page, baseUrl, navigationState) {
     link.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:2147483647';
     document.body.appendChild(link);
   });
+  for (const request of navigationState.pendingPagefindRequests) {
+    navigationState.expectedNavigationAborts.add(request);
+  }
   navigationState.allowPagefindAbort = true;
   try {
     await Promise.all([
@@ -347,7 +353,11 @@ async function runBrowser(browserName, browserType, baseUrl) {
   const page = await context.newPage();
   const runtimeErrors = [];
   const ignoredDiagnostics = [];
-  const navigationState = { allowPagefindAbort: false };
+  const navigationState = {
+    allowPagefindAbort: false,
+    pendingPagefindRequests: new Set(),
+    expectedNavigationAborts: new WeakSet(),
+  };
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
@@ -358,10 +368,21 @@ async function runBrowser(browserName, browserType, baseUrl) {
   page.on('response', (response) => {
     if (response.status() >= 400) runtimeErrors.push(`HTTP ${response.status()} ${response.url()}`);
   });
+  page.on('request', (request) => {
+    if (!isExpectedPagefindRequest(request, baseUrl)) return;
+    navigationState.pendingPagefindRequests.add(request);
+    if (navigationState.allowPagefindAbort) {
+      navigationState.expectedNavigationAborts.add(request);
+    }
+  });
+  page.on('requestfinished', (request) => {
+    navigationState.pendingPagefindRequests.delete(request);
+  });
   page.on('requestfailed', (request) => {
     const diagnostic = `requestfailed: ${request.url()} — ${request.failure()?.errorText || 'unknown'}`;
-    if (isKnownNavigationAbort(request, baseUrl, navigationState.allowPagefindAbort)) ignoredDiagnostics.push(diagnostic);
+    if (isKnownNavigationAbort(request, navigationState.expectedNavigationAborts)) ignoredDiagnostics.push(diagnostic);
     else runtimeErrors.push(diagnostic);
+    navigationState.pendingPagefindRequests.delete(request);
   });
 
   try {
