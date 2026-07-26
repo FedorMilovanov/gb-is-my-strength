@@ -1,0 +1,104 @@
+name: Temporary home browser isolation materializer
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.head_ref == 'fix/home-browser-process-isolation-20260726'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify transaction boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --no-tags
+          test "$(git merge-base origin/main HEAD)" = "38d6e82da2323568008dc1ed70093fc660499475"
+          test "$(git rev-parse origin/main)" = "38d6e82da2323568008dc1ed70093fc660499475"
+          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "45c3f7d9194a62c2a71d54f77b47056c467598e8"
+          test "$(sha256sum .home388-transfer/home-browser-isolation.patch.gz.b64 | awk '{print $1}')" = "72b44672694a164f42045d1eef159ee0b218e7b09d18ce271aa23346e1dddf45"
+          base64 --decode .home388-transfer/home-browser-isolation.patch.gz.b64 > /tmp/home-browser-isolation.patch.gz
+          test "$(sha256sum /tmp/home-browser-isolation.patch.gz | awk '{print $1}')" = "d82e68e59e20c090cc68edeced8f292d5dd98c2ba782132d89cbd2315ee6b455"
+          gzip --decompress --stdout /tmp/home-browser-isolation.patch.gz > /tmp/home-browser-isolation.patch
+          test "$(sha256sum /tmp/home-browser-isolation.patch | awk '{print $1}')" = "167f45d0a3170c6aff9751d1fd4e421b070b488a4e5ee5a07ff1d4b9235a5f2c"
+          git apply --check /tmp/home-browser-isolation.patch
+
+      - name: Apply patch and create clean product commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply /tmp/home-browser-isolation.patch
+          rm -rf .home388-transfer
+          rm -f .home388-isolation-trigger
+          rm -f .github/workflows/temp-home-browser-isolation-materializer.yml
+          node --check scripts/home-browser-lifecycle-contract.mjs
+          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "4a917431359766990c596a1e1e3fe08c3232949ee4f30a6918c6c55c9f220cde"
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "test(home): isolate browser lifecycle processes [LANE lane/home-browser-process-isolation-2026-07-26]"
+          printf '%s\n' "$(git rev-parse HEAD)" > /tmp/product-commit-sha.txt
+          printf '%s\n' "$(git rev-parse HEAD^{tree})" > /tmp/product-tree-sha.txt
+          test "$(git diff --name-only origin/main...HEAD)" = "scripts/home-browser-lifecycle-contract.mjs"
+          test ! -e .home388-transfer
+          test ! -e .home388-isolation-trigger
+          test ! -e .github/workflows/temp-home-browser-isolation-materializer.yml
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index
+        run: npm run pagefind:build:dist
+
+      - name: Run homepage contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/home-browser-contract.mjs
+          xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs
+
+      - name: Run shared-file guard
+        run: npm run guard:shared-files
+
+      - name: Push clean product head
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin HEAD:${GITHUB_HEAD_REF}
+
+      - name: Upload exact product evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: home-browser-isolation-product-${{ github.run_id }}
+          path: |
+            /tmp/product-commit-sha.txt
+            /tmp/product-tree-sha.txt
+            reports/home-browser-contract
+            reports/home-browser-lifecycle-contract
+          if-no-files-found: warn
+          retention-days: 14
