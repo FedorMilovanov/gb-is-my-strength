@@ -1,0 +1,47 @@
+name: Temporary Genesis 6 main snapshot
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/_temp-genesis6-main-snapshot.yml'
+      - 'tmp-genesis6-main-snapshot-trigger.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: 38d6e82da2323568008dc1ed70093fc660499475
+          path: source
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Create deterministic source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar \
+            --sort=name \
+            --mtime='UTC 2026-07-26' \
+            --owner=0 \
+            --group=0 \
+            --numeric-owner \
+            --exclude=.git \
+            -czf genesis6-main-38d6e82d.tgz \
+            -C source .
+          sha256sum genesis6-main-38d6e82d.tgz > genesis6-main-38d6e82d.sha256
+
+      - name: Upload exact snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: genesis6-main-38d6e82d
+          path: |
+            genesis6-main-38d6e82d.tgz
+            genesis6-main-38d6e82d.sha256
+          if-no-files-found: error
+          retention-days: 1
