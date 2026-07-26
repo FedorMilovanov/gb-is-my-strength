@@ -1,0 +1,59 @@
+name: Temporary Genesis 6 asset inventory
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    if: github.head_ref == 'temp/genesis6-asset-inventory-20260726'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact main snapshot
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 23f83f0ddc87b675ecbd1bd91116b3b76447497a
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Inventory Genesis 6 assets and references
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/genesis6-asset-inventory
+          {
+            echo 'BASE=23f83f0ddc87b675ecbd1bd91116b3b76447497a'
+            echo
+            echo 'FILES'
+            find public/images/articles/genesis6 -maxdepth 1 -type f -print0 \
+              | sort -z \
+              | while IFS= read -r -d '' file; do
+                  printf '%s\t%s\t%s\t' "$file" "$(stat -c %s "$file")" "$(sha256sum "$file" | awk '{print $1}')"
+                  xxd -p -l 16 "$file" | tr -d '\n'
+                  printf '\n'
+                done
+            echo
+            echo 'FILE_COMMAND'
+            find public/images/articles/genesis6 -maxdepth 1 -type f -print0 \
+              | sort -z \
+              | xargs -0 file
+            echo
+            echo 'REFERENCES'
+            grep -RInE 'images/articles/genesis6|genesis6/' src content data migration 2>/dev/null || true
+            echo
+            echo 'PUBLICATION_FLAGS'
+            grep -RInE '^(draft|noindex):' src/content 2>/dev/null \
+              | grep -E 'genesis|enoh|angely|duhi|blagovestie' || true
+          } | tee reports/genesis6-asset-inventory/inventory.txt
+
+      - name: Upload inventory
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: genesis6-asset-inventory-${{ github.run_id }}
+          path: reports/genesis6-asset-inventory/inventory.txt
+          if-no-files-found: error
+          retention-days: 7
