@@ -31,7 +31,7 @@ jobs:
       contents: read
     outputs:
       run_id: ${{ steps.resolve.outputs.run_id }}
-      head_sha: ${{ steps.resolve.outputs.head_sha }}
+      control_plane_sha: ${{ steps.resolve.outputs.control_plane_sha }}
       recorder_ref: ${{ steps.resolve.outputs.recorder_ref }}
 
     steps:
@@ -71,17 +71,17 @@ jobs:
               `${context.repo.owner}/${context.repo.repo}`,
               'requested deploy run belongs to a foreign repository',
             );
-            assert.match(String(workflowRun.head_sha || ''), /^[a-f0-9]{40}$/, 'requested deploy run lacks an exact SHA');
+            assert.match(String(workflowRun.head_sha || ''), /^[a-f0-9]{40}$/, 'requested deploy run lacks an exact control-plane SHA');
 
             core.setOutput('run_id', String(workflowRun.id));
-            core.setOutput('head_sha', workflowRun.head_sha);
+            core.setOutput('control_plane_sha', workflowRun.head_sha);
             core.setOutput(
               'recorder_ref',
               context.eventName === 'workflow_dispatch' ? context.sha : workflowRun.head_sha,
             );
 
   record:
-    name: Record verified deployment capability witness
+    name: Record verified release witness
     needs: resolve
     runs-on: ubuntu-latest
     permissions:
@@ -100,18 +100,26 @@ jobs:
           ref: ${{ needs.resolve.outputs.recorder_ref }}
           persist-credentials: false
 
-      - name: Download exact-run TTS witness artifact
+      - name: Download exact-run generic release evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-live-deployment-${{ needs.resolve.outputs.run_id }}
+          path: ${{ runner.temp }}/deployment-witness/release
+          run-id: ${{ needs.resolve.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download exact-run TTS capability evidence
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: tts-live-deployment-${{ needs.resolve.outputs.run_id }}
-          path: ${{ runner.temp }}/deployment-witness
+          path: ${{ runner.temp }}/deployment-witness/tts
           run-id: ${{ needs.resolve.outputs.run_id }}
           github-token: ${{ github.token }}
 
       - name: Revalidate target and record witness
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
-          EXPECTED_DEPLOY_HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+          EXPECTED_DEPLOY_CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
           TARGET_DEPLOY_RUN_ID: ${{ needs.resolve.outputs.run_id }}
           WITNESS_DIRECTORY: ${{ runner.temp }}/deployment-witness
         with:
@@ -137,7 +145,11 @@ jobs:
               `${context.repo.owner}/${context.repo.repo}`,
               'writer target deploy run belongs to a foreign repository',
             );
-            assert.equal(workflowRun.head_sha, process.env.EXPECTED_DEPLOY_HEAD_SHA, 'writer target deploy SHA mismatch');
+            assert.equal(
+              workflowRun.head_sha,
+              process.env.EXPECTED_DEPLOY_CONTROL_PLANE_SHA,
+              'writer target deploy control-plane SHA mismatch',
+            );
 
             await recordWitness({
               github,
