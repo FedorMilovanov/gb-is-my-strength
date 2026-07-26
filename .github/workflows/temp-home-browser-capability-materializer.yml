@@ -28,10 +28,10 @@ jobs:
           test "$(git merge-base origin/main HEAD)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git rev-parse origin/main)" = "38d6e82da2323568008dc1ed70093fc660499475"
           test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "45c3f7d9194a62c2a71d54f77b47056c467598e8"
-          grep -Fxq 'transport=5-chunks+timing+pixel-com' .home-browser-capability-trigger
+          grep -Fxq 'transport=5-chunks+timing+pixel-com+yandex-cancel' .home-browser-capability-trigger
 
           mapfile -t transfer_files < <(find .home-browser-capability-transfer -maxdepth 1 -type f -printf '%f\n' | sort)
-          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64 pixel-com.patch timing.patch)
+          expected_files=(chunk-01.b64 chunk-02.b64 chunk-03.b64 chunk-04.b64 chunk-05.b64 pixel-com.patch timing.patch yandex-cancel.patch)
           test "${transfer_files[*]}" = "${expected_files[*]}"
 
           test "$(sha256sum .home-browser-capability-transfer/chunk-01.b64 | awk '{print $1}')" = "e76937e58e3033b331f20c40b77a5e6538c4cf89600d11019580d5abfd4133d3"
@@ -41,6 +41,7 @@ jobs:
           test "$(sha256sum .home-browser-capability-transfer/chunk-05.b64 | awk '{print $1}')" = "d0b784431973c1c42da68e7dc85ab593560c00888169fb85be2d3c01492f0efd"
           test "$(sha256sum .home-browser-capability-transfer/timing.patch | awk '{print $1}')" = "59e4481ba36f11d8bf19ea0184f1c2b23dbcc5bd784b5d079873b61b272a7ff1"
           test "$(sha256sum .home-browser-capability-transfer/pixel-com.patch | awk '{print $1}')" = "ef9158abe2c286f66af0bd9a913aafab1417c357e8c074de8d129a2b574bc6e8"
+          test "$(sha256sum .home-browser-capability-transfer/yandex-cancel.patch | awk '{print $1}')" = "afb28ee1ad1386b05b4f550b905d8417487bb68ac2b896f53adc2d6762b97cc4"
 
           cat \
             .home-browser-capability-transfer/chunk-01.b64 \
@@ -63,7 +64,8 @@ jobs:
             cd "${verify_dir}"
             git apply /tmp/home-browser-capability.patch
             git apply "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/timing.patch"
-            git apply --check "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/pixel-com.patch"
+            git apply "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/pixel-com.patch"
+            git apply --check "${GITHUB_WORKSPACE}/.home-browser-capability-transfer/yandex-cancel.patch"
           )
           rm -rf "${verify_dir}"
 
@@ -74,12 +76,16 @@ jobs:
           git apply /tmp/home-browser-capability.patch
           git apply .home-browser-capability-transfer/timing.patch
           git apply .home-browser-capability-transfer/pixel-com.patch
+          git apply .home-browser-capability-transfer/yandex-cancel.patch
           rm -rf .home-browser-capability-transfer
           rm -f .home-browser-capability-trigger
           rm -f .github/workflows/temp-home-browser-capability-materializer.yml
           node --check scripts/home-browser-lifecycle-contract.mjs
           grep -Fq "const PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL = 'https://mc.yandex.com/watch/108353327';" scripts/home-browser-lifecycle-contract.mjs
           grep -Fq ".replaceAll(PRODUCTION_YANDEX_METRIKA_PIXEL_FALLBACK_URL, LOCAL_YANDEX_METRIKA_PIXEL_PATH);" scripts/home-browser-lifecycle-contract.mjs
+          grep -Fq "function isExpectedYandexCounterPixelCancellation(request)" scripts/home-browser-lifecycle-contract.mjs
+          test "$(sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}')" = "b066d1fc69389c0dd514fe932665c5a3ffbfe8e455648cb11e9c70f1323d3ba5"
+          test "$(git hash-object scripts/home-browser-lifecycle-contract.mjs)" = "98de31299d28964859f71272a5db005dc72644b8"
           sha256sum scripts/home-browser-lifecycle-contract.mjs | awk '{print $1}' > /tmp/product-file-sha256.txt
           git hash-object scripts/home-browser-lifecycle-contract.mjs > /tmp/product-file-blob.txt
           git diff --check
