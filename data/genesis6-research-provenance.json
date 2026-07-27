@@ -3,7 +3,7 @@
   "seriesId": "genesis-6",
   "research": {
     "repository": "FedorMilovanov/Research",
-    "commit": "145a52151f8d3bb6186addae2a99fa21401f9b09",
+    "commit": "1849c71d8b439dda63ed81d060abea9e77912531",
     "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
     "manifestPath": "data/genesis6-authority-manifest.json",
     "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
