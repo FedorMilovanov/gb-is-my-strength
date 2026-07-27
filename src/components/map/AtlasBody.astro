@@ -1,10 +1,7 @@
 ---
-import graphData from '../../../data/links-graph.json';
-import seriesData from '../../../data/series.json';
-import catalogData from '../../../data/relations.json';
-import { compileRelations } from '../../lib/relations/engine.mjs';
+import compiledRelations from '../../lib/relations/compiled';
 
-const compiled = compileRelations({ graphData, seriesData, catalogData, strict: true });
+const compiled = compiledRelations;
 const nodes = compiled.nodes;
 const groups = compiled.groups;
 const edgeKinds = compiled.edgeKinds;
