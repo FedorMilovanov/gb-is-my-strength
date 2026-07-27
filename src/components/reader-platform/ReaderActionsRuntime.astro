@@ -1,12 +1,10 @@
 ---
 /**
  * Explicit native owner for reader-level actions that were historically
- * bundled into site.js. The script is loaded synchronously at the end of each
- * strict-native reading surface so capture-phase actions exist before any
- * deferred chrome controller can consume the same event.
+ * bundled into site.js. Astro/Vite owns hashing, module delivery and cache
+ * invalidation; the legacy root asset registry is intentionally not involved.
  */
-import { assetUrl } from '@/lib/asset-version';
-
-const actionsSrc = assetUrl('js/reader-actions.js');
 ---
-<script is:inline src={actionsSrc}></script>
+<script>
+  import '../../runtime/reader-actions.js';
+</script>
