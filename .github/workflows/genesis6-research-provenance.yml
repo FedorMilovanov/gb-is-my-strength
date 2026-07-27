@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: FedorMilovanov/Research
-          ref: 1f03a2439767505ae66a7ba8d92195e5904a1a2a
+          ref: 0861a773ae757fe06ac8cd533f78e7098ab19179
           path: _external/Research
           fetch-depth: 0
           persist-credentials: false
