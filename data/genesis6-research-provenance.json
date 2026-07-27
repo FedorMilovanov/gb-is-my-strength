@@ -1,6 +1,15 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "seriesId": "genesis-6",
+  "releaseState": "blocked",
+  "readerOrder": [
+    "6",
+    "6A",
+    "6B",
+    "7",
+    "8",
+    "9"
+  ],
   "research": {
     "repository": "FedorMilovanov/Research",
     "commit": "1f03a2439767505ae66a7ba8d92195e5904a1a2a",
@@ -22,7 +31,11 @@
     "requiresManifestDigest": true,
     "requiresExtensionManifestDigest": true,
     "requiresExactHeadSiteEvidence": true,
-    "productionWitnessSeparate": true
+    "productionWitnessSeparate": true,
+    "requiresAllSeriesArticlesDraftNoindex": true,
+    "requiresExactCanonicalOverride": true,
+    "requiresExactRelatedGraph": true,
+    "requiresOrderedForwardLinks": true
   },
   "articles": [
     {
@@ -30,32 +43,75 @@
       "slug": "enoh-prorochestvoval-iuda-14-15-4q204",
       "bundleId": "GEN6-PUB-ARTICLE-6",
       "readerBaseId": "GEN6-ARTICLE-6-XLVIII",
-      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-6-XLVIII","GEN6-ARTICLE-6-LI","GEN6-4Q204-SCHEMATIC-L"],
-      "rightsDecisionIds": ["RIGHT-4Q204-OPEN-SCHEMATIC"]
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-6-XLVIII",
+        "GEN6-ARTICLE-6-LI",
+        "GEN6-4Q204-SCHEMATIC-L"
+      ],
+      "rightsDecisionIds": [
+        "RIGHT-4Q204-OPEN-SCHEMATIC"
+      ]
     },
     {
       "article": 7,
       "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
       "bundleId": "GEN6-PUB-ARTICLE-7",
       "readerBaseId": "GEN6-ARTICLE-7-XLVIII",
-      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-7-XLVIII"],
-      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-7-XLVIII"
+      ],
+      "rightsDecisionIds": [
+        "RIGHT-P72-TEXT-LINK-ONLY"
+      ]
     },
     {
       "article": 8,
       "slug": "duhi-v-temnice-noi-kreshchenie-pobeda",
       "bundleId": "GEN6-PUB-ARTICLE-8",
       "readerBaseId": "GEN6-ARTICLE-8-XLVIII",
-      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-8-XLVIII","GEN6-ARTICLE-8-LI"],
-      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-8-XLVIII",
+        "GEN6-ARTICLE-8-LI"
+      ],
+      "rightsDecisionIds": [
+        "RIGHT-P72-TEXT-LINK-ONLY"
+      ]
     },
     {
       "article": 9,
       "slug": "blagovestie-mertvym-1-petra-4-5-6",
       "bundleId": "GEN6-PUB-ARTICLE-9",
       "readerBaseId": "GEN6-ARTICLE-9-XLVIII",
-      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-9-XLVIII"],
-      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+      "orderedDocumentIds": [
+        "GEN6-MASTER-XLII",
+        "GEN6-AUTHORITY-XLVI",
+        "GEN6-SITE-READY-XLVIII",
+        "GEN6-TEXTUAL-XLIX",
+        "GEN6-RIGHTS-L",
+        "GEN6-PRECISION-LI",
+        "GEN6-ARTICLE-9-XLVIII"
+      ],
+      "rightsDecisionIds": [
+        "RIGHT-P72-TEXT-LINK-ONLY"
+      ]
     }
   ],
   "draftArticles": [
@@ -63,8 +119,22 @@
       "articleKey": "6A",
       "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
       "bundleId": "GEN6-PUB-ARTICLE-6A",
-      "orderedDocumentIds": ["GEN6-ENOCH-PROTOCOL-LVI","GEN6-ENOCH-VERSION-MATRIX-LIV","GEN6-ENOCH-ARCHITECTURE-LIII","GEN6-ENOCH-CORPUS-DRAFT-LIV","GEN6-ENOCH-CLAIM-GATE-LIV","GEN6-ENOCH-ACADEMIC-PASS-1-LV","GEN6-ENOCH-ACADEMIC-PASS-2-LV","GEN6-ENOCH-CODEX-AUDIT-LVI","GEN6-ENOCH-PRODUCTION-MAP-LVII","GEN6-ENOCH-6A-FOOTNOTE-MAP-LIX"],
-      "requiredSiteState": {"draft": true, "noindex": true},
+      "orderedDocumentIds": [
+        "GEN6-ENOCH-PROTOCOL-LVI",
+        "GEN6-ENOCH-VERSION-MATRIX-LIV",
+        "GEN6-ENOCH-ARCHITECTURE-LIII",
+        "GEN6-ENOCH-CORPUS-DRAFT-LIV",
+        "GEN6-ENOCH-CLAIM-GATE-LIV",
+        "GEN6-ENOCH-ACADEMIC-PASS-1-LV",
+        "GEN6-ENOCH-ACADEMIC-PASS-2-LV",
+        "GEN6-ENOCH-CODEX-AUDIT-LVI",
+        "GEN6-ENOCH-PRODUCTION-MAP-LVII",
+        "GEN6-ENOCH-6A-FOOTNOTE-MAP-LIX"
+      ],
+      "requiredSiteState": {
+        "draft": true,
+        "noindex": true
+      },
       "rightsMode": "no-manuscript-image-reproduction",
       "publicationStatus": "draft-noindex-hold"
     },
@@ -72,10 +142,78 @@
       "articleKey": "6B",
       "slug": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
       "bundleId": "GEN6-PUB-ARTICLE-6B",
-      "orderedDocumentIds": ["GEN6-ENOCH-PROTOCOL-LVI","GEN6-ENOCH-VERSION-MATRIX-LIV","GEN6-ENOCH-CANON-MATRIX-LII","GEN6-ENOCH-ARCHITECTURE-LIII","GEN6-ENOCH-CLAIM-GATE-LIV","GEN6-ENOCH-PRODUCTION-MAP-LVII","GEN6-ENOCH-6B-SOURCE-PASS-LIX"],
-      "requiredSiteState": {"draft": true, "noindex": true},
+      "orderedDocumentIds": [
+        "GEN6-ENOCH-PROTOCOL-LVI",
+        "GEN6-ENOCH-VERSION-MATRIX-LIV",
+        "GEN6-ENOCH-CANON-MATRIX-LII",
+        "GEN6-ENOCH-ARCHITECTURE-LIII",
+        "GEN6-ENOCH-CLAIM-GATE-LIV",
+        "GEN6-ENOCH-PRODUCTION-MAP-LVII",
+        "GEN6-ENOCH-6B-SOURCE-PASS-LIX"
+      ],
+      "requiredSiteState": {
+        "draft": true,
+        "noindex": true
+      },
       "rightsMode": "no-manuscript-image-reproduction",
       "publicationStatus": "draft-noindex-hold"
+    }
+  ],
+  "siteArticles": [
+    {
+      "articleKey": "6",
+      "slug": "enoh-prorochestvoval-iuda-14-15-4q204",
+      "expectedRelatedSlugs": [
+        "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+        "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+        "angely-pod-mrakom-iuda-6-7-2-petra-2"
+      ]
+    },
+    {
+      "articleKey": "6A",
+      "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+      "expectedRelatedSlugs": [
+        "enoh-prorochestvoval-iuda-14-15-4q204",
+        "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+        "angely-pod-mrakom-iuda-6-7-2-petra-2"
+      ]
+    },
+    {
+      "articleKey": "6B",
+      "slug": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+      "expectedRelatedSlugs": [
+        "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+        "enoh-prorochestvoval-iuda-14-15-4q204",
+        "angely-pod-mrakom-iuda-6-7-2-petra-2"
+      ]
+    },
+    {
+      "articleKey": "7",
+      "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
+      "expectedRelatedSlugs": [
+        "enoh-prorochestvoval-iuda-14-15-4q204",
+        "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+        "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+        "duhi-v-temnice-noi-kreshchenie-pobeda"
+      ]
+    },
+    {
+      "articleKey": "8",
+      "slug": "duhi-v-temnice-noi-kreshchenie-pobeda",
+      "expectedRelatedSlugs": [
+        "angely-pod-mrakom-iuda-6-7-2-petra-2",
+        "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+        "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+        "blagovestie-mertvym-1-petra-4-5-6"
+      ]
+    },
+    {
+      "articleKey": "9",
+      "slug": "blagovestie-mertvym-1-petra-4-5-6",
+      "expectedRelatedSlugs": [
+        "duhi-v-temnice-noi-kreshchenie-pobeda",
+        "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit"
+      ]
     }
   ]
 }
