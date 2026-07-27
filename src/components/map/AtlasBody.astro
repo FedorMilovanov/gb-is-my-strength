@@ -1,162 +1,16 @@
 ---
 import graphData from '../../../data/links-graph.json';
 import seriesData from '../../../data/series.json';
+import catalogData from '../../../data/relations.json';
+import { compileRelations } from '../../lib/relations/engine.mjs';
 
-type GraphNode = {
-  id: string;
-  title: string;
-  url: string;
-  group?: string;
-  readingTime?: number;
-  cover?: string;
-  desc?: string;
-  tags?: string[];
-  atlasGroup?: string;
-  isHub?: boolean;
-};
-
-type SeriesPart = {
-  slug: string;
-  title: string;
-  status?: string;
-  readingTime?: number;
-};
-
-type SeriesEntry = {
-  title: string;
-  baseUrl: string;
-  parts: SeriesPart[];
-};
-
-type EdgeKind = 'series' | 'cluster' | 'structure' | 'bridge';
-
-const GROUP_META: Record<string, { label: string; color: string }> = {
-  gill: { label: 'Джон Гилл', color: '#c3925a' },
-  nagornaya: { label: 'Нагорная проповедь', color: '#d8ae4e' },
-  'hard-texts': { label: 'Трудные тексты', color: '#6f9fd3' },
-  stand: { label: 'Баптисты России', color: '#4e86bd' },
-  'russian-baptism': { label: 'Баптисты России', color: '#4e86bd' },
-  karty: { label: 'Библейские карты', color: '#5eb9bd' },
-  biografii: { label: 'Биографии служителей', color: '#d68158' },
-  'pastor-series': { label: 'Практическое служение', color: '#ce6486' },
-  standalone: { label: 'Отдельные исследования', color: '#78aa72' },
-  landing: { label: 'Разделы библиотеки', color: '#9a8ac5' },
-};
-
-const SERIES_GROUP: Record<string, string> = {
-  nagornaya: 'nagornaya',
-  'dzhon-gill': 'gill',
-  'hard-texts': 'hard-texts',
-  'pastor-series': 'pastor-series',
-  'russian-baptism': 'stand',
-};
-
-function normalizeUrl(value: string) {
-  const path = String(value || '/').split(/[?#]/)[0].replace(/\/{2,}/g, '/');
-  return path.length > 1 && !path.endsWith('/') ? `${path}/` : path;
-}
-
-function atlasGroupFor(node: GraphNode) {
-  if (node.group !== 'landing') return node.group || 'standalone';
-  if (node.id === 'biografii') return 'biografii';
-  if (node.id === 'hard-texts') return 'hard-texts';
-  if (node.id === 'pastor-series') return 'pastor-series';
-  if (node.id === 'karty') return 'karty';
-  return 'landing';
-}
-
-const nodes: GraphNode[] = (Array.isArray(graphData.nodes) ? graphData.nodes : []).map((raw) => {
-  const node = raw as GraphNode;
-  return {
-    ...node,
-    atlasGroup: atlasGroupFor(node),
-    isHub: node.group === 'landing' || ['biografii', 'hard-texts', 'pastor-series', 'karty'].includes(node.id),
-  };
-});
-
-const nodeByUrl = new Map(nodes.map((node) => [normalizeUrl(node.url), node]));
-const seriesPaths: string[][] = [];
-
-for (const [seriesId, rawSeries] of Object.entries(seriesData as Record<string, SeriesEntry>)) {
-  const series = rawSeries as SeriesEntry;
-  const atlasGroup = SERIES_GROUP[seriesId] || 'standalone';
-  const pathIds: string[] = [];
-
-  for (const part of Array.isArray(series.parts) ? series.parts : []) {
-    if (part.status && part.status !== 'published') continue;
-    const url = normalizeUrl(`${series.baseUrl}${part.slug}/`);
-    let node = nodeByUrl.get(url);
-    if (!node) {
-      node = {
-        id: `series-${seriesId}-${part.slug}`,
-        title: part.title,
-        url,
-        group: atlasGroup,
-        atlasGroup,
-        readingTime: part.readingTime,
-        desc: `Материал серии «${series.title}».`,
-        tags: [series.title, 'серия'],
-        isHub: false,
-      };
-      nodes.push(node);
-      nodeByUrl.set(url, node);
-    } else {
-      node.atlasGroup = atlasGroup;
-      if (!node.readingTime && part.readingTime) node.readingTime = part.readingTime;
-    }
-    pathIds.push(node.id);
-  }
-
-  if (pathIds.length > 1) seriesPaths.push(pathIds);
-}
-
-const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-const edgeMap = new Map<string, EdgeKind>();
-
-function edgeKey(source: string, target: string) {
-  return [source, target].sort().join('::');
-}
-
-for (const rawEdge of Array.isArray(graphData.edges) ? graphData.edges : []) {
-  if (!Array.isArray(rawEdge) || rawEdge.length < 2) continue;
-  const source = String(rawEdge[0]);
-  const target = String(rawEdge[1]);
-  if (!source || !target || source === target || !nodeMap.has(source) || !nodeMap.has(target)) continue;
-  const a = nodeMap.get(source)!;
-  const b = nodeMap.get(target)!;
-  const kind: EdgeKind = a.atlasGroup === b.atlasGroup ? 'cluster' : a.isHub || b.isHub ? 'structure' : 'bridge';
-  edgeMap.set(edgeKey(source, target), kind);
-}
-
-for (const pathIds of seriesPaths) {
-  for (let index = 0; index < pathIds.length - 1; index += 1) {
-    edgeMap.set(edgeKey(pathIds[index], pathIds[index + 1]), 'series');
-  }
-}
-
-const edgeCounts: Record<EdgeKind, number> = { series: 0, cluster: 0, structure: 0, bridge: 0 };
-for (const kind of edgeMap.values()) edgeCounts[kind] += 1;
-
-const preferredOrder = ['gill', 'nagornaya', 'biografii', 'stand', 'hard-texts', 'karty', 'pastor-series', 'standalone', 'landing'];
-const groupIds = Array.from(new Set(nodes.map((node) => node.atlasGroup || 'standalone'))).sort((a, b) => {
-  const ai = preferredOrder.indexOf(a);
-  const bi = preferredOrder.indexOf(b);
-  return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.localeCompare(b, 'ru');
-});
-const groups = groupIds.map((id) => ({
-  id,
-  ...(GROUP_META[id] || { label: id, color: '#9a8ac5' }),
-  count: nodes.filter((node) => node.atlasGroup === id).length,
-}));
-const edgeKinds = [
-  { id: 'series', label: 'Порядок серии', count: edgeCounts.series },
-  { id: 'cluster', label: 'Внутри темы', count: edgeCounts.cluster },
-  { id: 'structure', label: 'Раздел и материал', count: edgeCounts.structure },
-  { id: 'bridge', label: 'Мост между темами', count: edgeCounts.bridge },
-];
+const compiled = compileRelations({ graphData, seriesData, catalogData, strict: true });
+const nodes = compiled.nodes;
+const groups = compiled.groups;
+const edgeKinds = compiled.edgeKinds;
 ---
 
-<div class="atlas-app" id="atlasApp" data-view="graph" data-zoom-level="overview">
+<div class="atlas-app" id="atlasApp" data-view="graph" data-zoom-level="overview" data-relation-engine={compiled.engineVersion}>
   <header class="atlas-topbar">
     <div class="atlas-brand">
       <a href="/" class="atlas-back" aria-label="Вернуться на главную">
@@ -249,9 +103,9 @@ const edgeKinds = [
           </button>
         </div>
         <div class="atlas-overview-stats" aria-label="Статистика Атласа">
-          <span><b>{nodes.length}</b> материалов</span>
-          <span><b>{edgeMap.size}</b> уникальных связей</span>
-          <span><b>{groups.length}</b> тем</span>
+          <span><b>{compiled.stats.nodes}</b> материалов</span>
+          <span><b>{compiled.stats.edges}</b> уникальных связей</span>
+          <span><b>{compiled.stats.groups}</b> тем</span>
         </div>
       </section>
 
@@ -296,11 +150,6 @@ const edgeKinds = [
       <div class="atlas-detail__content" id="atlasDetailContent" hidden></div>
     </aside>
   </div>
-
-  <noscript>
-    <style>.atlas-graph-view,.atlas-sidebar,.atlas-detail{display:none!important}.atlas-list-view{display:block!important;position:static!important}</style>
-    <p class="sr-only">Интерактивная карта требует JavaScript. Все материалы доступны в списке.</p>
-  </noscript>
 </div>
 
 <script is:inline defer src="/js/atlas-runtime.js"></script>
