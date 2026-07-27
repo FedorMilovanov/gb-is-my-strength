@@ -1,4 +1,4 @@
-name: TEMP Glossary tooltip runtime diagnostic
+name: TEMP Glossary tooltip audit repair materializer
 
 on:
   pull_request:
@@ -6,244 +6,179 @@ on:
       - '.github/workflows/_temp-glossary-tooltip-diagnostic.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  materialize:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
     steps:
-      - name: Checkout exact diagnostic head
+      - name: Checkout exact repair branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          persist-credentials: false
+          ref: agent/glossary-tooltip-runtime-20260727
+          fetch-depth: 1
+          show-progress: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Build production-like dist
-        run: |
-          npm run strangler:build:production-like
-          npm run pagefind:build:dist
-
-      - name: Start exact dist server
-        run: |
-          python3 -m http.server 8080 --bind 127.0.0.1 -d dist > /tmp/gb-http.log 2>&1 &
-          echo $! > /tmp/gb-http.pid
-          sleep 2
-
-      - name: Probe glossary readiness and opening repeatedly
+      - name: Stop after permanent repair commit
+        id: permanent
         shell: bash
         run: |
-          set -uo pipefail
-          out='reports/glossary-tooltip-diagnostic'
-          mkdir -p "$out/screenshots"
-          grep -RInE 'initGlossaryTooltips|__gbGlossaryRuntime|gb-floating-tip|className="gterm"|class="gterm"' js src scripts 2>/dev/null > "$out/source-matches.txt" || true
+          if git log -1 --pretty=%s | grep -q '^fix(audit): wait for glossary runtime readiness$'; then
+            echo 'done=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'done=false' >> "$GITHUB_OUTPUT"
+          fi
 
-          cat > /tmp/glossary-tooltip-diagnostic.js <<'JS'
-          'use strict';
-
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const { chromium } = require('playwright');
-
-          const BASE = 'http://127.0.0.1:8080';
-          const URL = '/articles/dzhon-gill-istoricheskiy-kontekst/';
-          const OUT = 'reports/glossary-tooltip-diagnostic';
-          const SELECTOR = 'article .gterm:not(.summary-card .gterm)';
-          const rounds = 20;
-          fs.mkdirSync(path.join(OUT, 'screenshots'), { recursive: true });
-
-          function sampleScript(selector) {
-            const target = document.querySelector(selector);
-            const openTip = document.querySelector('.gtip.gb-floating-tip.is-open');
-            const runtime = window.__gbGlossaryRuntime || null;
-            const targetBox = target ? target.getBoundingClientRect() : null;
-            const cx = targetBox ? Math.max(0, Math.min(innerWidth - 1, targetBox.left + targetBox.width / 2)) : 0;
-            const cy = targetBox ? Math.max(0, Math.min(innerHeight - 1, targetBox.top + targetBox.height / 2)) : 0;
-            const hit = targetBox ? document.elementFromPoint(cx, cy) : null;
-            const tipBox = openTip ? openTip.getBoundingClientRect() : null;
-            const tipStyle = openTip ? getComputedStyle(openTip) : null;
-            return {
-              readyState: document.readyState,
-              runtime: {
-                initialized: window.__gbGlossaryInitialized === true,
-                object: Boolean(runtime),
-                promise: Boolean(runtime && runtime.promise),
-                dict: Boolean(runtime && runtime.dict),
-                policy: Boolean(runtime && runtime.policy),
-                aliases: Boolean(runtime && runtime.aliasToCanonical),
-                regex: Boolean(runtime && runtime.regex),
-                initFunction: Boolean(window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function'),
-              },
-              targetCount: document.querySelectorAll(selector).length,
-              target: target ? {
-                tag: target.tagName,
-                className: String(target.className || ''),
-                text: String(target.textContent || '').trim().slice(0, 120),
-                term: target.getAttribute('data-term'),
-                tabindex: target.getAttribute('tabindex'),
-                role: target.getAttribute('role'),
-                ariaExpanded: target.getAttribute('aria-expanded'),
-                width: Math.round(targetBox.width),
-                height: Math.round(targetBox.height),
-                top: Math.round(targetBox.top),
-                bottom: Math.round(targetBox.bottom),
-                hasInlineTip: Boolean(target.querySelector('.gtip')),
-              } : null,
-              hit: hit ? {
-                tag: hit.tagName,
-                className: String(hit.className || ''),
-                text: String(hit.textContent || '').trim().slice(0, 80),
-              } : null,
-              openTip: openTip ? {
-                className: String(openTip.className || ''),
-                width: Math.round(tipBox.width),
-                height: Math.round(tipBox.height),
-                top: Math.round(tipBox.top),
-                bottom: Math.round(tipBox.bottom),
-                background: tipStyle.backgroundColor,
-                innerDisplay: openTip.querySelector('.gtip-luxury') ? getComputedStyle(openTip.querySelector('.gtip-luxury')).display : null,
-              } : null,
-              floatingCount: document.querySelectorAll('.gb-floating-tip').length,
-              bodyClasses: document.body.className,
-            };
-          }
-
-          async function sample(page) {
-            return page.evaluate(sampleScript, SELECTOR);
-          }
-
-          async function waitForRuntime(page, timeout) {
-            const started = Date.now();
-            try {
-              await page.waitForFunction((selector) => {
-                const runtime = window.__gbGlossaryRuntime;
-                const target = document.querySelector(selector);
-                return Boolean(
-                  runtime && runtime.dict && runtime.policy && runtime.aliasToCanonical && runtime.regex &&
-                  window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function' &&
-                  target && target.getAttribute('data-term') && target.querySelector('.gtip')
-                );
-              }, SELECTOR, { timeout });
-              return { ready: true, elapsedMs: Date.now() - started, error: null };
-            } catch (error) {
-              return { ready: false, elapsedMs: Date.now() - started, error: String(error.message || error).slice(0, 500) };
-            }
-          }
-
-          async function hoverTarget(page) {
-            const target = page.locator(SELECTOR).first();
-            try {
-              if (await target.count() === 0) return { attempted: false, error: 'target-missing' };
-              await target.scrollIntoViewIfNeeded();
-              await target.hover({ force: true, timeout: 5000 });
-              return { attempted: true, error: null };
-            } catch (error) {
-              return { attempted: true, error: String(error.message || error).slice(0, 500) };
-            }
-          }
-
-          (async () => {
-            const browser = await chromium.launch({ headless: true });
-            const results = [];
-            const summary = {
-              rounds,
-              targetMissingAt900: 0,
-              runtimeNotReadyAt900: 0,
-              earlyHoverMisses: 0,
-              runtimeReadyTimeouts: 0,
-              readyHoverRecoveries: 0,
-              readyHoverMisses: 0,
-              roundErrors: 0,
-            };
-
-            for (let round = 1; round <= rounds; round++) {
-              const page = await browser.newPage({ viewport: { width: 900, height: 650 }, deviceScaleFactor: 1 });
-              const consoleMessages = [];
-              page.on('console', (message) => {
-                if (['error', 'warning'].includes(message.type())) consoleMessages.push({ type: message.type(), text: message.text().slice(0, 400) });
-              });
-              page.on('pageerror', (error) => consoleMessages.push({ type: 'pageerror', text: error.message.slice(0, 400) }));
-
-              const record = { round, consoleMessages };
-              try {
-                const response = await page.goto(BASE + URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-                record.status = response ? response.status() : null;
-                await page.waitForTimeout(900);
-                record.at900 = await sample(page);
-                if (!record.at900.target) summary.targetMissingAt900++;
-                const earlyRuntimeReady = record.at900.runtime.dict && record.at900.runtime.policy && record.at900.runtime.aliases && record.at900.runtime.regex && record.at900.runtime.initFunction && record.at900.target && record.at900.target.term && record.at900.target.hasInlineTip;
-                if (!earlyRuntimeReady) summary.runtimeNotReadyAt900++;
-
-                record.earlyHover = await hoverTarget(page);
-                await page.waitForTimeout(250);
-                record.afterEarlyHover = await sample(page);
-                if (!record.afterEarlyHover.openTip) summary.earlyHoverMisses++;
-
-                record.readiness = await waitForRuntime(page, 5000);
-                record.afterReady = await sample(page);
-                if (!record.readiness.ready) summary.runtimeReadyTimeouts++;
-
-                record.readyHover = await hoverTarget(page);
-                let openedAfterReady = false;
-                if (record.readyHover.attempted && !record.readyHover.error) {
-                  try {
-                    await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'attached', timeout: 2000 });
-                    openedAfterReady = true;
-                  } catch (_) {}
-                }
-                record.afterReadyHover = await sample(page);
-                record.openedAfterReady = openedAfterReady && Boolean(record.afterReadyHover.openTip);
-                if (record.openedAfterReady && !record.afterEarlyHover.openTip) summary.readyHoverRecoveries++;
-                if (!record.openedAfterReady) {
-                  summary.readyHoverMisses++;
-                  await page.screenshot({ path: path.join(OUT, 'screenshots', `round-${String(round).padStart(2, '0')}-ready-miss.png`), fullPage: false });
-                }
-              } catch (error) {
-                summary.roundErrors++;
-                record.error = String(error.stack || error.message || error).slice(0, 2000);
-                try { await page.screenshot({ path: path.join(OUT, 'screenshots', `round-${String(round).padStart(2, '0')}-error.png`), fullPage: false }); } catch (_) {}
-              } finally {
-                results.push(record);
-                await page.close();
-              }
-            }
-
-            await browser.close();
-            fs.writeFileSync(path.join(OUT, 'result.json'), JSON.stringify({ schema: 2, sha: process.env.GITHUB_SHA || '', summary, results }, null, 2) + '\n');
-            fs.writeFileSync(path.join(OUT, 'summary.txt'), Object.entries(summary).map(([key, value]) => `${key}: ${value}`).join('\n') + '\n');
-            console.log(JSON.stringify(summary));
-          })().catch((error) => {
-            fs.writeFileSync(path.join(OUT, 'fatal.txt'), String(error.stack || error.message || error) + '\n');
-            console.error(error);
-            process.exit(1);
-          });
-          JS
-
-          node /tmp/glossary-tooltip-diagnostic.js
-          status=$?
-          if [[ -f "$out/summary.txt" ]]; then cat "$out/summary.txt" >> "$GITHUB_STEP_SUMMARY"; fi
-          exit "$status"
-
-      - name: Stop local server
-        if: always()
+      - name: Materialize exact glossary audit repair
+        if: steps.permanent.outputs.done != 'true'
+        shell: bash
         run: |
-          if [[ -f /tmp/gb-http.pid ]]; then kill "$(cat /tmp/gb-http.pid)" || true; fi
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
 
-      - name: Upload exact diagnostic evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: glossary-tooltip-diagnostic-${{ github.run_id }}
-          path: reports/glossary-tooltip-diagnostic
-          if-no-files-found: error
-          retention-days: 14
+          path = Path('scripts/interactive-audit.js')
+          text = path.read_text(encoding='utf-8')
+          old = '''async function checkGlossary(browser) {
+  for (const url of GLOSSARY_URLS) {
+    const page = await openPage(browser, url, { width: 900, height: 650 });
+    const summaryTerms = await page.locator('.summary-card .gterm, .summary-card .gtip').count();
+    if (summaryTerms) push('summary-has-glossary-terms', url, summaryTerms);
+    const count = await page.locator('article .gterm:not(.summary-card .gterm)').count();
+    if (count > 0) {
+      await page.locator('article .gterm:not(.summary-card .gterm)').first().hover({ force: true });
+      await page.waitForTimeout(250);
+      const state = await page.evaluate(() => {
+        const tip = document.querySelector('.gtip.gb-floating-tip.is-open');
+        if (!tip) return null;
+        const r = tip.getBoundingClientRect();
+        const inner = tip.querySelector('.gtip-luxury');
+        const cs = getComputedStyle(tip);
+        return {
+          w: Math.round(r.width),
+          h: Math.round(r.height),
+          top: Math.round(r.top),
+          bottom: Math.round(r.bottom),
+          bg: cs.backgroundColor,
+          innerDisplay: inner ? getComputedStyle(inner).display : null,
+        };
+      });
+      if (!state || state.w < 100 || state.h < 50 || state.top < 0 || state.bottom > 651 || /rgba\\(0, 0, 0, 0\\)/.test(state.bg) || state.innerDisplay !== 'block') {
+        push('glossary-tooltip-bad-layout', url, state);
+      }
+    }
+    stats.glossary++;
+    await page.close();
+  }
+}
+'''
+          new = '''async function checkGlossary(browser) {
+  const selector = 'article .gterm:not(.summary-card .gterm)';
+  for (const url of GLOSSARY_URLS) {
+    const page = await openPage(browser, url, { width: 900, height: 650 });
+    const summaryTerms = await page.locator('.summary-card .gterm, .summary-card .gtip').count();
+    if (summaryTerms) push('summary-has-glossary-terms', url, summaryTerms);
+    const terms = page.locator(selector);
+    const count = await terms.count();
+    if (count > 0) {
+      let readinessError = null;
+      try {
+        await page.waitForFunction((termSelector) => {
+          const runtime = window.__gbGlossaryRuntime;
+          const target = document.querySelector(termSelector);
+          return Boolean(
+            runtime && runtime.dict && runtime.policy && runtime.aliasToCanonical &&
+            window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function' &&
+            target && target.getAttribute('data-term') && target.querySelector('.gtip')
+          );
+        }, selector, { timeout: 5000 });
+      } catch (error) {
+        readinessError = String(error.message || error).slice(0, 500);
+      }
+
+      const target = terms.first();
+      if (!readinessError) {
+        await target.scrollIntoViewIfNeeded();
+        await target.hover({ force: true });
+        try {
+          await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'attached', timeout: 2000 });
+        } catch (error) {
+          readinessError = `open timeout: ${String(error.message || error).slice(0, 400)}`;
+        }
+      }
+
+      const state = await page.evaluate((termSelector) => {
+        const runtime = window.__gbGlossaryRuntime;
+        const target = document.querySelector(termSelector);
+        const tip = document.querySelector('.gtip.gb-floating-tip.is-open');
+        const targetRect = target ? target.getBoundingClientRect() : null;
+        const tipRect = tip ? tip.getBoundingClientRect() : null;
+        const inner = tip ? tip.querySelector('.gtip-luxury') : null;
+        const tipStyle = tip ? getComputedStyle(tip) : null;
+        return {
+          runtime: {
+            initialized: window.__gbGlossaryInitialized === true,
+            dict: Boolean(runtime && runtime.dict),
+            policy: Boolean(runtime && runtime.policy),
+            aliases: Boolean(runtime && runtime.aliasToCanonical),
+            initFunction: Boolean(window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function'),
+          },
+          target: target ? {
+            term: target.getAttribute('data-term'),
+            role: target.getAttribute('role'),
+            tabindex: target.getAttribute('tabindex'),
+            ariaExpanded: target.getAttribute('aria-expanded'),
+            hasInlineTip: Boolean(target.querySelector('.gtip')),
+            w: targetRect ? Math.round(targetRect.width) : null,
+            h: targetRect ? Math.round(targetRect.height) : null,
+          } : null,
+          floatingCount: document.querySelectorAll('.gb-floating-tip').length,
+          tip: tip ? {
+            w: Math.round(tipRect.width),
+            h: Math.round(tipRect.height),
+            top: Math.round(tipRect.top),
+            bottom: Math.round(tipRect.bottom),
+            bg: tipStyle.backgroundColor,
+            innerDisplay: inner ? getComputedStyle(inner).display : null,
+          } : null,
+        };
+      }, selector);
+
+      if (readinessError) {
+        const kind = state.runtime.dict && state.runtime.policy && state.runtime.aliases && state.runtime.initFunction
+          ? 'glossary-tooltip-did-not-open'
+          : 'glossary-tooltip-runtime-not-ready';
+        push(kind, url, { error: readinessError, ...state });
+      } else if (!state.tip || state.tip.w < 100 || state.tip.h < 50 || state.tip.top < 0 || state.tip.bottom > 651 || /rgba\\(0, 0, 0, 0\\)/.test(state.tip.bg) || state.tip.innerDisplay !== 'block') {
+        push('glossary-tooltip-bad-layout', url, state);
+      }
+    }
+    stats.glossary++;
+    await page.close();
+  }
+}
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f'glossary audit anchor count={text.count(old)}')
+          updated = text.replace(old, new)
+          for required in [
+              'glossary-tooltip-runtime-not-ready',
+              'glossary-tooltip-did-not-open',
+              "page.waitForSelector('.gtip.gb-floating-tip.is-open'",
+              'runtime && runtime.dict && runtime.policy && runtime.aliasToCanonical',
+          ]:
+              if required not in updated:
+                  raise SystemExit(f'missing required contract: {required}')
+          path.write_text(updated, encoding='utf-8')
+          PY
+
+          node --check scripts/interactive-audit.js
+          git diff --check
+          mapfile -t changed < <(git diff --name-only)
+          [[ ${#changed[@]} -eq 1 && "${changed[0]}" == 'scripts/interactive-audit.js' ]]
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/interactive-audit.js
+          git commit -m 'fix(audit): wait for glossary runtime readiness'
+          git push origin HEAD:agent/glossary-tooltip-runtime-20260727
