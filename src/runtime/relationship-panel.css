@@ -1,6 +1,6 @@
-/* Premium article relationship panel.
-   Loaded before site.js so the deprecated technical blocks never flash. */
-.gbx-backlinks{display:none!important}
+/* Compiler-owned static article relationship panel.
+   Legacy backlink blocks are physically removed by the build projector and
+   rejected by browser contracts; this stylesheet never masks old markup. */
 
 .gb-relations-panel{
   --rel-accent:#8a6236;
@@ -299,8 +299,8 @@ html.dark .gb-relations-panel__count,
   .gb-relations-panel *::after{scroll-behavior:auto!important;transition:none!important}
 }
 
-/* The transitional panel is navigation-only. Keep canonical article PDFs
-   byte-stable and page-clean until contextual citation evidence is available. */
+/* Canonical article PDFs stay page-clean; the same navigation remains fully
+   available in the HTML and no-JS surfaces. */
 @media print{
   .gb-relations-panel{display:none!important}
 }
