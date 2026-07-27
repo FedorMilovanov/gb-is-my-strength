@@ -171,6 +171,28 @@ rejects('one route cannot belong to two series', () => compileRelations({
   strict: true,
 }), /belongs to both/);
 
+rejects('synthetic series node id collisions fail closed', () => compileRelations({
+  graphData: {
+    nodes: [{
+      id: 'series-series-a-part-a',
+      title: 'Existing collision',
+      url: '/elsewhere/',
+      group: 'standalone',
+      readingTime: 2,
+    }],
+    edges: [],
+  },
+  seriesData: {
+    'series-a': {
+      title: 'A',
+      baseUrl: '/articles/',
+      parts: [{ slug: 'part-a', title: 'Part A', status: 'published', readingTime: 3 }],
+    },
+  },
+  catalogData: { schemaVersion: 1, relations: [] },
+  strict: true,
+}), /synthetic series node id .* collides/);
+
 rejects('catalog schema version is fail-closed', () => compileRelations({
   graphData: fixtureGraph,
   seriesData: emptySeries,
