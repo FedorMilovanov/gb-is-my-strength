@@ -42,11 +42,21 @@ jobs:
           if not block or not any('git commit' in line for line in block):
               raise SystemExit('materializer shell extraction incomplete')
           script = '\n'.join(block) + '\n'
-          old = "git diff --name-only | sort > /tmp/editorial-repair/actual.txt"
-          new = "{ git diff --name-only; git ls-files --others --exclude-standard; } | sort > /tmp/editorial-repair/actual.txt"
-          if script.count(old) != 1:
-              raise SystemExit('scope collector anchor mismatch')
-          Path('/tmp/editorial-materializer.sh').write_text(script.replace(old, new), encoding='utf-8')
+          replacements = [
+              (
+                  "git diff --name-only | sort > /tmp/editorial-repair/actual.txt",
+                  "{ git diff --name-only; git ls-files --others --exclude-standard; } | sort > /tmp/editorial-repair/actual.txt",
+              ),
+              (
+                  "git add -- $(cat /tmp/editorial-repair/expected.txt)",
+                  "git add -- data/editorial-metadata.json scripts/editorial-metadata-diff-report.js scripts/editorial-metadata-registry-preservation-test.js scripts/editorial-metadata-registry.js scripts/editorial-metadata-workflow-contract-test.js scripts/lib/editorial-metadata.js",
+              ),
+          ]
+          for old, new in replacements:
+              if script.count(old) != 1:
+                  raise SystemExit(f'materializer patch anchor mismatch: {old}')
+              script = script.replace(old, new)
+          Path('/tmp/editorial-materializer.sh').write_text(script, encoding='utf-8')
           PY
           bash -n /tmp/editorial-materializer.sh
 
