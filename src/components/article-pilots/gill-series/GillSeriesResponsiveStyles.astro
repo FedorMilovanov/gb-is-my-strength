@@ -1,0 +1,60 @@
+<style is:global>
+  [data-gill-v16],
+  [data-gill-v16] .page-wrap,
+  [data-gill-v16] .article-body,
+  [data-gill-v16] .article-body > * {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+
+  @media (max-width: 48rem) {
+    [data-gill-v16] table.manuscript-table {
+      display: block;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      min-inline-size: 0 !important;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    body[data-gbs2-series="dzhon-gill"] .tooltip {
+      box-sizing: border-box;
+      inline-size: auto !important;
+      max-inline-size: min(32rem, calc(100vw - 24px)) !important;
+      min-inline-size: 0 !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    body[data-gbs2-series="dzhon-gill"] .tooltip * {
+      box-sizing: border-box;
+      max-inline-size: 100%;
+      min-inline-size: 0;
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+  }
+
+  @media print {
+    [data-gill-v16] table.manuscript-table {
+      display: table;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      min-inline-size: 0 !important;
+      overflow: visible;
+    }
+
+    [data-gill-v16] table.manuscript-table thead {
+      display: table-header-group;
+    }
+
+    [data-gill-v16] table.manuscript-table tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+  }
+</style>
