@@ -22,4 +22,21 @@
 .atlas-app[data-zoom-level="detail"] .atlas-edge--series{
   stroke-opacity:.58;
 }
+
+/* Runtime data failure must never leave an empty graph stage. The complete
+   server-rendered list is already present, so expose it immediately. */
+.atlas-app[data-runtime-error="1"] .atlas-graph-view,
+.atlas-app[data-runtime-error="1"] .atlas-sidebar,
+.atlas-app[data-runtime-error="1"] .atlas-detail{
+  display:none!important;
+}
+.atlas-app[data-runtime-error="1"] .atlas-list-view{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+}
+.atlas-app[data-runtime-error="1"] .atlas-view-switch button[data-atlas-view="graph"]{
+  opacity:.45;
+  pointer-events:none;
+}
 </style>
