@@ -1,6 +1,6 @@
 /** Canonical, deterministic relation compiler shared by SSR, Atlas and dist. */
 export const RELATION_SCHEMA_VERSION = 1;
-export const RELATION_ENGINE_VERSION = '1.1.0';
+export const RELATION_ENGINE_VERSION = '1.2.0';
 
 const type = (direction, label, inverseLabel, articlePriority, defaultWeight, articleVisible = true) =>
   Object.freeze({ direction, label, inverseLabel, articlePriority, defaultWeight, articleVisible });
@@ -163,9 +163,11 @@ function buildNodes(graphData, seriesData, errors) {
 
       let node = byUrl.get(url);
       if (!node) {
-        let id = `series-${slug(seriesId)}-${slug(partSlug)}`;
-        let suffix = 2;
-        while (byId.has(id)) id = `series-${slug(seriesId)}-${slug(partSlug)}-${suffix++}`;
+        const id = `series-${slug(seriesId)}-${slug(partSlug)}`;
+        if (byId.has(id)) {
+          errors.push(`synthetic series node id ${id} collides with an existing node for ${url}`);
+          continue;
+        }
         node = {
           id,
           title,
