@@ -299,10 +299,8 @@ html.dark .gb-relations-panel__count,
   .gb-relations-panel *::after{scroll-behavior:auto!important;transition:none!important}
 }
 
+/* The transitional panel is navigation-only. Keep canonical article PDFs
+   byte-stable and page-clean until contextual citation evidence is available. */
 @media print{
-  .gb-relations-panel{break-inside:avoid;box-shadow:none}
-  .gb-relations-panel__atlas{display:none}
-  .gb-relations-panel__arrow{display:none}
-  .gb-relations-panel__item{min-height:0;padding:10pt 0}
-  .gb-relations-panel__head{padding:12pt 0}
+  .gb-relations-panel{display:none!important}
 }
