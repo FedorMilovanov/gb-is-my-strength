@@ -1,4 +1,4 @@
-const VERSION = 1;
+const VERSION = 2;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
@@ -57,6 +57,35 @@ function inlineTip(anchor) {
   return null;
 }
 
+function prepareGlossaryTip(tip) {
+  if (!tip?.classList.contains('gtip')) return;
+  let frame = tip.querySelector(':scope > .gtip-luxury');
+  if (!frame) {
+    frame = document.createElement('span');
+    frame.className = 'gtip-luxury';
+    while (tip.firstChild) frame.appendChild(tip.firstChild);
+    tip.appendChild(frame);
+  }
+  const expand = frame.querySelector('[data-gtip-expand]');
+  if (!expand || expand.dataset.gbExpandReady === '1') return;
+  expand.dataset.gbExpandReady = '1';
+  const detail = frame.querySelector('.gtip-detail-wrap');
+  expand.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const expanded = expand.getAttribute('aria-expanded') !== 'true';
+    expand.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    frame.classList.toggle('is-expanded', expanded);
+    if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    if (active?.tip === tip) position(tip, active.anchor);
+  });
+}
+
+function prepareTip(tip) {
+  prepareGlossaryTip(tip);
+  return tip;
+}
+
 function position(tip, anchor) {
   if (mobileMode()) {
     tip.style.removeProperty('left');
@@ -65,15 +94,18 @@ function position(tip, anchor) {
   }
   const margin = 16;
   const gap = 10;
-  const a = anchor.getBoundingClientRect();
-  const t = tip.getBoundingClientRect();
-  let left = a.left + a.width / 2 - t.width / 2;
-  left = Math.max(margin, Math.min(left, window.innerWidth - margin - t.width));
-  let top = a.top - t.height - gap;
-  if (top < margin) top = Math.min(window.innerHeight - margin - t.height, a.bottom + gap);
+  const anchorRect = anchor.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  const availableWidth = Math.max(0, window.innerWidth - margin * 2);
+  const width = Math.min(tipRect.width, availableWidth);
+  let left = anchorRect.left + anchorRect.width / 2 - width / 2;
+  left = Math.max(margin, Math.min(left, window.innerWidth - margin - width));
+  let top = anchorRect.top - tipRect.height - gap;
+  if (top < margin) top = anchorRect.bottom + gap;
+  top = Math.max(margin, Math.min(top, window.innerHeight - margin - tipRect.height));
   tip.style.left = `${Math.round(left)}px`;
-  tip.style.top = `${Math.round(Math.max(margin, top))}px`;
-  tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(a.left + a.width / 2 - left)}px`);
+  tip.style.top = `${Math.round(top)}px`;
+  tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
 function restore(record) {
@@ -104,7 +136,7 @@ export function closeTooltip(reason = 'close') {
 }
 
 function openTooltip(anchor, reason = 'open') {
-  const tip = inlineTip(anchor);
+  const tip = prepareTip(inlineTip(anchor));
   if (!tip) return;
   if (active?.anchor === anchor) {
     active.reason = reason;
@@ -153,7 +185,7 @@ function openTooltip(anchor, reason = 'open') {
 
 function initializeAnchor(anchor) {
   if (!(anchor instanceof Element) || anchor.dataset.gbTooltipReady === '1') return;
-  const tip = inlineTip(anchor);
+  const tip = prepareTip(inlineTip(anchor));
   if (!tip) return;
   anchor.dataset.gbTooltipReady = '1';
   anchor.setAttribute('aria-expanded', 'false');
