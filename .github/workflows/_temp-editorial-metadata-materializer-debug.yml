@@ -1,0 +1,70 @@
+name: TEMP Editorial metadata materializer debug
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/_temp-editorial-metadata-materializer-debug.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  debug-materializer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: agent/editorial-metadata-reconcile-20260727
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Extract exact materializer shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path('.github/workflows/_temp-editorial-metadata-repair-materializer.yml').read_text(encoding='utf-8').splitlines()
+          marker = next(i for i, line in enumerate(source) if line.strip() == '- name: Materialize exact permanent repair')
+          run_line = next(i for i in range(marker + 1, len(source)) if source[i].strip() == 'run: |')
+          block = []
+          for line in source[run_line + 1:]:
+              if line.startswith('      - name:'):
+                  break
+              if line.startswith('          '):
+                  block.append(line[10:])
+              elif not line.strip():
+                  block.append('')
+              else:
+                  raise SystemExit(f'unexpected materializer indentation: {line!r}')
+          if not block or not any('git commit' in line for line in block):
+              raise SystemExit('materializer shell extraction incomplete')
+          Path('/tmp/editorial-materializer.sh').write_text('\n'.join(block) + '\n', encoding='utf-8')
+          PY
+          bash -n /tmp/editorial-materializer.sh
+
+      - name: Execute exact materializer with full trace
+        id: execute
+        shell: bash
+        run: |
+          set +e
+          bash -x /tmp/editorial-materializer.sh > /tmp/editorial-materializer.log 2>&1
+          status=$?
+          cat /tmp/editorial-materializer.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload full materializer trace
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: editorial-materializer-trace-${{ github.run_id }}
+          path: /tmp/editorial-materializer.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Fail after evidence upload
+        if: steps.execute.outputs.status != '0'
+        run: exit 1
