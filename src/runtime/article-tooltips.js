@@ -1,4 +1,4 @@
-const VERSION = 2;
+const VERSION = 3;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
@@ -86,34 +86,52 @@ function prepareTip(tip) {
   return tip;
 }
 
+function setImportant(style, property, value) {
+  style.setProperty(property, value, 'important');
+}
+
+function clearAuthoritativeGeometry(tip) {
+  for (const property of ['left', 'top', 'right', 'bottom', 'max-height']) tip.style.removeProperty(property);
+}
+
 function position(tip, anchor) {
   if (mobileMode()) {
-    tip.style.removeProperty('left');
-    tip.style.removeProperty('top');
+    clearAuthoritativeGeometry(tip);
+    setImportant(tip.style, 'left', '0px');
+    setImportant(tip.style, 'right', '0px');
+    setImportant(tip.style, 'top', 'auto');
+    setImportant(tip.style, 'bottom', '0px');
+    setImportant(tip.style, 'max-height', `${Math.max(180, Math.floor(window.innerHeight * 0.72))}px`);
     return;
   }
+
   const margin = 16;
   const gap = 10;
+  setImportant(tip.style, 'position', 'fixed');
+  setImportant(tip.style, 'right', 'auto');
+  setImportant(tip.style, 'bottom', 'auto');
+  setImportant(tip.style, 'max-height', `${Math.max(160, window.innerHeight - margin * 2)}px`);
+
   const anchorRect = anchor.getBoundingClientRect();
   const tipRect = tip.getBoundingClientRect();
-  const availableWidth = Math.max(0, window.innerWidth - margin * 2);
-  const width = Math.min(tipRect.width, availableWidth);
+  const width = Math.min(tipRect.width, Math.max(0, window.innerWidth - margin * 2));
+  const height = Math.min(tipRect.height, Math.max(0, window.innerHeight - margin * 2));
   let left = anchorRect.left + anchorRect.width / 2 - width / 2;
   left = Math.max(margin, Math.min(left, window.innerWidth - margin - width));
-  let top = anchorRect.top - tipRect.height - gap;
+  let top = anchorRect.top - height - gap;
   if (top < margin) top = anchorRect.bottom + gap;
-  top = Math.max(margin, Math.min(top, window.innerHeight - margin - tipRect.height));
-  tip.style.left = `${Math.round(left)}px`;
-  tip.style.top = `${Math.round(top)}px`;
+  top = Math.max(margin, Math.min(top, window.innerHeight - margin - height));
+
+  setImportant(tip.style, 'left', `${Math.round(left)}px`);
+  setImportant(tip.style, 'top', `${Math.round(top)}px`);
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
 function restore(record) {
   const { tip, placeholder } = record;
   tip.classList.remove('gb-floating-tip', 'is-open');
-  tip.style.removeProperty('left');
-  tip.style.removeProperty('top');
-  tip.style.removeProperty('max-height');
+  clearAuthoritativeGeometry(tip);
+  tip.style.removeProperty('position');
   tip.style.removeProperty('--gb-tip-arrow-x');
   if (placeholder?.parentNode) {
     placeholder.parentNode.insertBefore(tip, placeholder);
@@ -155,6 +173,9 @@ function openTooltip(anchor, reason = 'open') {
 
   active = { anchor, tip, placeholder, mobile: mobileMode(), reason };
   position(tip, anchor);
+  window.requestAnimationFrame(() => {
+    if (active?.tip === tip) position(tip, anchor);
+  });
 
   if (tip.dataset.gbInteractionBound !== '1') {
     tip.dataset.gbInteractionBound = '1';
