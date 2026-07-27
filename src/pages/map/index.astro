@@ -1,14 +1,13 @@
 ---
 /**
- * /map/ — strict-native route (Protected App Routes Native Astro Phase).
+ * /map/ — strict-native-app research atlas.
  *
- * Interactive graph map of site connections.
- * Native MapPageHead (SEO/JSON-LD/meta) + Native MapBody.
- * Does NOT use global site.css/site.js to avoid breaking custom canvas.
+ * Native Astro shell and accessible server-rendered list. The graph runtime
+ * fetches the canonical JSON source without raw HTML transport or set:html.
  */
 import MapPageHead from '@/components/map/MapPageHead.astro';
 import MapStyles from '@/components/map/MapStyles.astro';
-import MapBody from '@/components/map/MapBody.astro';
+import AtlasBody from '@/components/map/AtlasBody.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -17,6 +16,6 @@ import MapBody from '@/components/map/MapBody.astro';
     <MapStyles />
   </head>
   <body>
-    <MapBody />
+    <AtlasBody />
   </body>
 </html>
