@@ -59,5 +59,36 @@
       break-inside: avoid;
       page-break-inside: avoid;
     }
+
+    /*
+     * Series articles use dark editorial quote surfaces on screen. The global
+     * paper palette intentionally removes saturated fills, so print must also
+     * restore an explicit readable foreground and a normal block formatting
+     * context. Keeping this rule in the shared series chrome prevents route-
+     * specific PDF patches and makes every semantic quote truly atomic.
+     */
+    [data-gill-v16] .quote-box {
+      display: block !important;
+      color: #1a1a1a !important;
+      -webkit-text-fill-color: currentColor !important;
+      background: #f7f4ee !important;
+      border: 1px solid #d8d1c4 !important;
+      border-inline-start: 3px solid #7a2e2e !important;
+      box-shadow: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+      mix-blend-mode: normal !important;
+      overflow: visible !important;
+      break-inside: avoid-page !important;
+      page-break-inside: avoid !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    [data-gill-v16] .quote-box,
+    [data-gill-v16] .quote-box * {
+      color: #1a1a1a !important;
+      -webkit-text-fill-color: currentColor !important;
+    }
   }
 </style>
