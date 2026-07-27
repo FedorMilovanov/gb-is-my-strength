@@ -3,88 +3,503 @@
   "updated": "2026-07-27",
   "description": "Build-time strangler ownership manifest — Gill v16 sanitary refresh 2026-06-29. Production GitHub Pages serves Astro/strangler `dist/` artifact (deploy.yml path: dist). owner:\"astro\" means output is generated from `src/pages/**` and must NOT be overwritten by copy-legacy-to-dist.js. visualMode is declared separately via route contracts / visual-route-contracts manifest, NOT inferred from status. `status:\"production-dist\"` = route is allowed in production dist after gates (may be native Astro, shared chrome, shadow-wrap, or built-app – check visualMode / routeProfile). `status:\"shadow-dist\"` = full-document shadow awaiting owner review. `status:\"shadow-pilot\"` = partial parity / native Astro without owner visual sign-off. Legacy note about \"all landing/series/catalog pages use full-document shadow-wrap\" is HISTORICAL (pre-2026-06-25) — current main includes: Native Astro pages (/ , /about/, /articles/, /biografii/, …), shared series façade (`SeriesReaderChrome` → `data-gill-v16` implementation), Nagornaya native (9 routes), Baptist GBS2 routes, maps strict-native-app (/karty/avraam/, /karty/ishod/) and holding pages. Route visual mode: see `data/visual-route-contracts.json` / `migration/page-ownership.json` + route profiles. copy-legacy-to-dist.js must skip astro-owned routes — verified.",
   "routes": {
-    "/": {"owner":"astro","source":"src/pages/index.astro","risk":2,"status":"production-dist"},
-    "/about/": {"owner":"astro","source":"src/pages/about/index.astro","risk":2,"status":"production-dist"},
-    "/articles/": {"owner":"astro","source":"src/pages/articles/index.astro","risk":2,"status":"production-dist"},
-    "/articles/20-antisovetov-pastoru/": {"owner":"astro","source":"src/pages/articles/20-antisovetov-pastoru/index.astro","risk":2,"status":"production-dist"},
-    "/articles/chto-bibliya-nazyvaet-serdcem/": {"owner":"astro","source":"src/pages/articles/chto-bibliya-nazyvaet-serdcem/index.astro","risk":2,"status":"production-dist"},
-    "/articles/dzhon-gill-chast-1-chelovek/": {"owner":"astro","source":"src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro","risk":2,"status":"production-dist"},
-    "/articles/dzhon-gill-chast-2-uchenyi/": {"owner":"astro","source":"src/pages/articles/dzhon-gill-chast-2-uchenyi/index.astro","risk":2,"status":"production-dist"},
-    "/articles/dzhon-gill-chast-3-nasledie/": {"owner":"astro","source":"src/pages/articles/dzhon-gill-chast-3-nasledie/index.astro","risk":2,"status":"production-dist"},
-    "/articles/dzhon-gill-chast-4-ekzeget/": {"owner":"astro","source":"src/pages/articles/dzhon-gill-chast-4-ekzeget/index.astro","risk":2,"status":"production-dist"},
-    "/articles/dzhon-gill-istoricheskiy-kontekst/": {"owner":"astro","source":"src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro","risk":2,"status":"production-dist"},
-    "/articles/dzhon-gill-spravochnik/": {"owner":"astro","source":"src/pages/articles/dzhon-gill-spravochnik/index.astro","risk":2,"status":"production-dist"},
-    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {"owner":"astro","source":"src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro","risk":2,"status":"production-dist"},
-    "/articles/kak-hranit-serdce/": {"owner":"astro","source":"src/pages/articles/kak-hranit-serdce/index.astro","risk":2,"status":"production-dist"},
-    "/articles/kak-menyaetsya-serdce/": {"owner":"astro","source":"src/pages/articles/kak-menyaetsya-serdce/index.astro","risk":2,"status":"production-dist"},
-    "/articles/kod-da-vinchi/": {"owner":"astro","source":"src/pages/articles/kod-da-vinchi/index.astro","risk":2,"status":"production-dist"},
-    "/articles/krajne-li-isporcheno-serdce/": {"owner":"astro","source":"src/pages/articles/krajne-li-isporcheno-serdce/index.astro","risk":2,"status":"production-dist"},
-    "/articles/myslennaya-zhizn-serdca/": {"owner":"astro","source":"src/pages/articles/myslennaya-zhizn-serdca/index.astro","risk":2,"status":"production-dist"},
-    "/articles/novoe-serdce/": {"owner":"astro","source":"src/pages/articles/novoe-serdce/index.astro","risk":2,"status":"production-dist"},
-    "/articles/osvobozhdennoe-serdce/": {"owner":"astro","source":"src/pages/articles/osvobozhdennoe-serdce/index.astro","risk":2,"status":"production-dist"},
-    "/articles/religioznoe-serdce/": {"owner":"astro","source":"src/pages/articles/religioznoe-serdce/index.astro","risk":2,"status":"production-dist"},
-    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {"owner":"astro","source":"src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-hrista-k-nemoshchnym/": {"owner":"astro","source":"src/pages/articles/serdce-hrista-k-nemoshchnym/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-i-duh/": {"owner":"astro","source":"src/pages/articles/serdce-i-duh/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-i-iskushenie/": {"owner":"astro","source":"src/pages/articles/serdce-i-iskushenie/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-i-sokrovishche/": {"owner":"astro","source":"src/pages/articles/serdce-i-sokrovishche/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-i-telo/": {"owner":"astro","source":"src/pages/articles/serdce-i-telo/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-i-yazyk/": {"owner":"astro","source":"src/pages/articles/serdce-i-yazyk/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-ne-v-odinochku/": {"owner":"astro","source":"src/pages/articles/serdce-ne-v-odinochku/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-pod-skorbyu/": {"owner":"astro","source":"src/pages/articles/serdce-pod-skorbyu/index.astro","risk":2,"status":"production-dist"},
-    "/articles/serdce-spravochnik/": {"owner":"astro","source":"src/pages/articles/serdce-spravochnik/index.astro","risk":2,"status":"production-dist"},
-    "/articles/skrytye-idoly-serdca/": {"owner":"astro","source":"src/pages/articles/skrytye-idoly-serdca/index.astro","risk":2,"status":"production-dist"},
-    "/articles/sovest-vnutrenniy-sud/": {"owner":"astro","source":"src/pages/articles/sovest-vnutrenniy-sud/index.astro","risk":2,"status":"production-dist"},
-    "/articles/starye-dorozhki-serdca/": {"owner":"astro","source":"src/pages/articles/starye-dorozhki-serdca/index.astro","risk":2,"status":"production-dist"},
-    "/articles/strah-bozhij-rabskij-ili-synovnij/": {"owner":"astro","source":"src/pages/articles/strah-bozhij-rabskij-ili-synovnij/index.astro","risk":2,"status":"production-dist"},
-    "/articles/svoboda-vo-hriste/": {"owner":"astro","source":"src/pages/articles/svoboda-vo-hriste/index.astro","risk":2,"status":"production-dist"},
-    "/articles/tma-na-serdce/": {"owner":"astro","source":"src/pages/articles/tma-na-serdce/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/": {"owner":"astro","source":"src/pages/baptisty-rossii/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/dva-sezda-1884/": {"owner":"astro","source":"src/pages/baptisty-rossii/dva-sezda-1884/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/goneniya-i-sovest/": {"owner":"astro","source":"src/pages/baptisty-rossii/goneniya-i-sovest/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/iniciativnaya-gruppa/": {"owner":"astro","source":"src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/noch-na-kure/": {"owner":"astro","source":"src/pages/baptisty-rossii/noch-na-kure/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/peterburgskaya-liniya/": {"owner":"astro","source":"src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/podpolnaya-pechat/": {"owner":"astro","source":"src/pages/baptisty-rossii/podpolnaya-pechat/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/sovetskaya-noch/": {"owner":"astro","source":"src/pages/baptisty-rossii/sovetskaya-noch/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/spravochnik/": {"owner":"astro","source":"src/pages/baptisty-rossii/spravochnik/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/vsehib-1944/": {"owner":"astro","source":"src/pages/baptisty-rossii/vsehib-1944/index.astro","risk":2,"status":"production-dist"},
-    "/baptisty-rossii/yuzhnaya-shtunda/": {"owner":"astro","source":"src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro","risk":2,"status":"production-dist"},
-    "/biografii/": {"owner":"astro","source":"src/pages/biografii/index.astro","risk":2,"status":"production-dist"},
-    "/hard-texts/": {"owner":"astro","source":"src/pages/hard-texts/index.astro","risk":2,"status":"production-dist"},
-    "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/": {"owner":"astro","source":"src/pages/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/index.astro","risk":2,"status":"shadow-pilot"},
-    "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/": {"owner":"astro","source":"src/pages/hard-texts/blagovestie-mertvym-1-petra-4-5-6/index.astro","risk":2,"status":"shadow-pilot"},
-    "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/": {"owner":"astro","source":"src/pages/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/index.astro","risk":2,"status":"shadow-pilot"},
-    "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/": {"owner":"astro","source":"src/pages/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/index.astro","risk":2,"status":"shadow-pilot"},
-    "/hard-texts/genesis-6/": {"owner":"astro","source":"src/pages/hard-texts/genesis-6/index.astro","risk":2,"status":"shadow-pilot"},
-    "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/": {"owner":"astro","source":"src/pages/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/index.astro","risk":2,"status":"shadow-pilot"},
-    "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/": {"owner":"astro","source":"src/pages/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/index.astro","risk":2,"status":"shadow-pilot"},
-    "/izbrannoe/": {"owner":"astro","source":"src/pages/izbrannoe/index.astro","risk":1,"status":"production-dist"},
-    "/karty/": {"owner":"astro","source":"src/pages/karty/index.astro","risk":2,"status":"production-dist"},
-    "/karty/avraam/": {"owner":"astro","source":"src/pages/karty/avraam/index.astro","risk":2,"status":"production-dist"},
-    "/karty/early-church/": {"owner":"astro","source":"src/pages/karty/early-church/index.astro","risk":2,"status":"production-dist"},
-    "/karty/ishod/": {"owner":"astro","source":"src/pages/karty/ishod/index.astro","risk":2,"status":"production-dist"},
-    "/karty/maccabim/": {"owner":"astro","source":"src/pages/karty/maccabim/index.astro","risk":2,"status":"production-dist"},
-    "/karty/melachim/": {"owner":"astro","source":"src/pages/karty/melachim/index.astro","risk":1,"status":"production-dist"},
-    "/karty/pavel/": {"owner":"astro","source":"src/pages/karty/pavel/index.astro","risk":2,"status":"production-dist"},
-    "/karty/revelation/": {"owner":"astro","source":"src/pages/karty/revelation/index.astro","risk":2,"status":"production-dist"},
-    "/karty/shoftim/": {"owner":"astro","source":"src/pages/karty/shoftim/index.astro","risk":1,"status":"production-dist"},
-    "/karty/shvatim/": {"owner":"astro","source":"src/pages/karty/shvatim/index.astro","risk":1,"status":"production-dist"},
-    "/karty/yeshua/": {"owner":"astro","source":"src/pages/karty/yeshua/index.astro","risk":1,"status":"production-dist"},
-    "/konfessii/": {"owner":"astro","source":"src/pages/konfessii/index.astro","risk":2,"status":"production-dist"},
-    "/konfessii/russkij-baptizm/": {"owner":"astro","source":"src/pages/konfessii/russkij-baptizm/index.astro","risk":2,"status":"production-dist"},
-    "/konfessii/russkij-baptizm/_app/": {"owner":"built-app","source":"konfessii/russkij-baptizm/_app/","risk":5,"status":"copy-as-built-asset"},
-    "/map/": {"owner":"astro","source":"src/pages/map/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/": {"owner":"astro","source":"src/pages/nagornaya/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/chast-1/": {"owner":"astro","source":"src/pages/nagornaya/chast-1/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/chast-2/": {"owner":"astro","source":"src/pages/nagornaya/chast-2/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/chast-3/": {"owner":"astro","source":"src/pages/nagornaya/chast-3/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/chast-4/": {"owner":"astro","source":"src/pages/nagornaya/chast-4/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/chast-5/": {"owner":"astro","source":"src/pages/nagornaya/chast-5/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/istochniki/": {"owner":"astro","source":"src/pages/nagornaya/istochniki/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/nakhodki/": {"owner":"astro","source":"src/pages/nagornaya/nakhodki/index.astro","risk":2,"status":"production-dist"},
-    "/nagornaya/seriya/": {"owner":"astro","source":"src/pages/nagornaya/seriya/index.astro","risk":2,"status":"production-dist"},
-    "/pastor-series/": {"owner":"astro","source":"src/pages/pastor-series/index.astro","risk":2,"status":"production-dist"},
-    "/rodosloviye/": {"owner":"astro","source":"src/pages/rodosloviye/index.astro","risk":2,"status":"production-dist"}
+    "/": {
+      "owner": "astro",
+      "source": "src/pages/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/about/": {
+      "owner": "astro",
+      "source": "src/pages/about/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/": {
+      "owner": "astro",
+      "source": "src/pages/articles/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/20-antisovetov-pastoru/": {
+      "owner": "astro",
+      "source": "src/pages/articles/20-antisovetov-pastoru/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/chto-bibliya-nazyvaet-serdcem/": {
+      "owner": "astro",
+      "source": "src/pages/articles/chto-bibliya-nazyvaet-serdcem/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/dzhon-gill-chast-1-chelovek/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/dzhon-gill-chast-2-uchenyi/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-chast-2-uchenyi/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/dzhon-gill-chast-3-nasledie/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-chast-3-nasledie/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/dzhon-gill-chast-4-ekzeget/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-chast-4-ekzeget/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/dzhon-gill-istoricheskiy-kontekst/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/dzhon-gill-spravochnik/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-spravochnik/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
+      "owner": "astro",
+      "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/kak-hranit-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/kak-hranit-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/kak-menyaetsya-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/kak-menyaetsya-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/kod-da-vinchi/": {
+      "owner": "astro",
+      "source": "src/pages/articles/kod-da-vinchi/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/krajne-li-isporcheno-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/krajne-li-isporcheno-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/myslennaya-zhizn-serdca/": {
+      "owner": "astro",
+      "source": "src/pages/articles/myslennaya-zhizn-serdca/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/novoe-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/novoe-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/osvobozhdennoe-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/osvobozhdennoe-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/religioznoe-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/religioznoe-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
+      "owner": "astro",
+      "source": "src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-hrista-k-nemoshchnym/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-hrista-k-nemoshchnym/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-duh/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-duh/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-iskushenie/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-iskushenie/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-sokrovishche/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-sokrovishche/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-telo/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-telo/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-i-yazyk/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-yazyk/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-ne-v-odinochku/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-ne-v-odinochku/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-pod-skorbyu/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-pod-skorbyu/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-spravochnik/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-spravochnik/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/skrytye-idoly-serdca/": {
+      "owner": "astro",
+      "source": "src/pages/articles/skrytye-idoly-serdca/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/sovest-vnutrenniy-sud/": {
+      "owner": "astro",
+      "source": "src/pages/articles/sovest-vnutrenniy-sud/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/starye-dorozhki-serdca/": {
+      "owner": "astro",
+      "source": "src/pages/articles/starye-dorozhki-serdca/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/strah-bozhij-rabskij-ili-synovnij/": {
+      "owner": "astro",
+      "source": "src/pages/articles/strah-bozhij-rabskij-ili-synovnij/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/svoboda-vo-hriste/": {
+      "owner": "astro",
+      "source": "src/pages/articles/svoboda-vo-hriste/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/tma-na-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/tma-na-serdce/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/dva-sezda-1884/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/dva-sezda-1884/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/goneniya-i-sovest/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/goneniya-i-sovest/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/iniciativnaya-gruppa/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/noch-na-kure/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/noch-na-kure/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/peterburgskaya-liniya/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/podpolnaya-pechat/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/podpolnaya-pechat/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/sovetskaya-noch/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/sovetskaya-noch/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/spravochnik/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/vsehib-1944/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/vsehib-1944/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/baptisty-rossii/yuzhnaya-shtunda/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/biografii/": {
+      "owner": "astro",
+      "source": "src/pages/biografii/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/hard-texts/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/blagovestie-mertvym-1-petra-4-5-6/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/hard-texts/genesis-6/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/genesis-6/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/izbrannoe/": {
+      "owner": "astro",
+      "source": "src/pages/izbrannoe/index.astro",
+      "risk": 1,
+      "status": "production-dist"
+    },
+    "/karty/": {
+      "owner": "astro",
+      "source": "src/pages/karty/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/karty/avraam/": {
+      "owner": "astro",
+      "source": "src/pages/karty/avraam/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/karty/early-church/": {
+      "owner": "astro",
+      "source": "src/pages/karty/early-church/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/karty/ishod/": {
+      "owner": "astro",
+      "source": "src/pages/karty/ishod/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/karty/maccabim/": {
+      "owner": "astro",
+      "source": "src/pages/karty/maccabim/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/karty/melachim/": {
+      "owner": "astro",
+      "source": "src/pages/karty/melachim/index.astro",
+      "risk": 1,
+      "status": "production-dist"
+    },
+    "/karty/pavel/": {
+      "owner": "astro",
+      "source": "src/pages/karty/pavel/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/karty/revelation/": {
+      "owner": "astro",
+      "source": "src/pages/karty/revelation/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/karty/shoftim/": {
+      "owner": "astro",
+      "source": "src/pages/karty/shoftim/index.astro",
+      "risk": 1,
+      "status": "production-dist"
+    },
+    "/karty/shvatim/": {
+      "owner": "astro",
+      "source": "src/pages/karty/shvatim/index.astro",
+      "risk": 1,
+      "status": "production-dist"
+    },
+    "/karty/yeshua/": {
+      "owner": "astro",
+      "source": "src/pages/karty/yeshua/index.astro",
+      "risk": 1,
+      "status": "production-dist"
+    },
+    "/konfessii/": {
+      "owner": "astro",
+      "source": "src/pages/konfessii/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/konfessii/russkij-baptizm/": {
+      "owner": "astro",
+      "source": "src/pages/konfessii/russkij-baptizm/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/konfessii/russkij-baptizm/_app/": {
+      "owner": "built-app",
+      "source": "konfessii/russkij-baptizm/_app/",
+      "risk": 5,
+      "status": "copy-as-built-asset"
+    },
+    "/map/": {
+      "owner": "astro",
+      "source": "src/pages/map/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/chast-1/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-1/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/chast-2/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-2/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/chast-3/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-3/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/chast-4/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-4/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/chast-5/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-5/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/istochniki/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/istochniki/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/nakhodki/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/nakhodki/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/nagornaya/seriya/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/seriya/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/pastor-series/": {
+      "owner": "astro",
+      "source": "src/pages/pastor-series/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/rodosloviye/": {
+      "owner": "astro",
+      "source": "src/pages/rodosloviye/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    }
   }
 }
