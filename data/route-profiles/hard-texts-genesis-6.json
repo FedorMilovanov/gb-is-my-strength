@@ -1,0 +1,30 @@
+{
+  "route": "/hard-texts/genesis-6/",
+  "profiledAt": "2026-07-27",
+  "migrationLane": "landing",
+  "routeType": "series-landing",
+  "surfaceContractVersion": 1,
+  "surface": "series",
+  "seriesShape": "flat",
+  "section": "hard-texts",
+  "slug": "genesis-6",
+  "currentStatus": "shadow-pilot",
+  "source": "src/pages/hard-texts/genesis-6/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyStatus": "absent",
+  "legacyPath": null,
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": "css/series-manuscript.css",
+  "migrationMode": "strict-native",
+  "seriesLandingReadTimeMode": "summary-only",
+  "scope": "excluded-semantic-lane",
+  "seo": {
+    "indexable": false,
+    "reason": "Genesis 6 Phase C staging: draft/noindex until exact-head publication acceptance"
+  }
+}

@@ -64,9 +64,11 @@ const MEDIA_URLS = [
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/articles/krajne-li-isporcheno-serdce/',
 ];
+const HERMENEUTIKA_URL = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
+const HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '72', '75', '77', '82', '83', '107'];
 
 const issues = [];
-const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, theme: 0, search: 0, media: 0 };
+const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0 };
 
 function isNoise(text) {
   return /Content Security Policy directive.*https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons|images)|favicon\.ico|mc\.yandex/i.test(text);
@@ -257,6 +259,110 @@ async function checkGlossary(browser) {
   }
 }
 
+async function checkHermenevtikaFootnotes(browser) {
+  const desktop = await openPage(browser, HERMENEUTIKA_URL, { width: 1280, height: 850 });
+  const staticState = await desktop.evaluate((expected) => {
+    function numberOf(marker) {
+      return Array.from(marker.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent || '').join('').replace(/\s+/g, '').trim();
+    }
+    const markers = Array.from(document.querySelectorAll('.fn-marker'));
+    const found = {};
+    for (const marker of markers) {
+      const number = numberOf(marker);
+      if (!expected.includes(number)) continue;
+      marker.dataset.auditFootnote = number;
+      const tip = marker.querySelector('.tooltip');
+      found[number] = {
+        tooltip: !!tip,
+        nestedInteractive: tip ? tip.querySelectorAll('button, a, [tabindex], [role="button"], .bref, [data-ref]').length : -1,
+      };
+    }
+    return {
+      found,
+      nestedInteractive: document.querySelectorAll('.fn-marker .tooltip button, .fn-marker .tooltip a, .fn-marker .tooltip [tabindex], .fn-marker .tooltip [role="button"], .fn-marker .tooltip .bref, .fn-marker .tooltip [data-ref]').length,
+      ordinaryScripture: document.querySelectorAll('article .bref[data-ref]').length,
+    };
+  }, HERMENEUTIKA_STATIC_FOOTNOTES);
+  for (const number of HERMENEUTIKA_STATIC_FOOTNOTES) {
+    if (!staticState.found[number]?.tooltip || staticState.found[number]?.nestedInteractive !== 0) push('hermenevtika-static-footnote-contract', HERMENEUTIKA_URL, { number, state: staticState.found[number] || null });
+  }
+  if (staticState.nestedInteractive !== 0) push('hermenevtika-nested-footnote-interactive', HERMENEUTIKA_URL, staticState);
+  if (staticState.ordinaryScripture < 20) push('hermenevtika-ordinary-scripture-missing', HERMENEUTIKA_URL, staticState);
+
+  const hoverMarker = desktop.locator('[data-audit-footnote="40"]');
+  await hoverMarker.scrollIntoViewIfNeeded();
+  await hoverMarker.hover({ force: true });
+  await desktop.waitForTimeout(250);
+  let openState = await desktop.evaluate(() => ({
+    markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
+    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
+  }));
+  if (!openState.tipOpen) push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
+  if (openState.tipOpen) {
+    await desktop.locator('.gb-floating-tip.is-open').hover({ force: true });
+    await desktop.waitForTimeout(180);
+    openState = await desktop.evaluate(() => ({
+      markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
+      tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
+    }));
+    if (!openState.tipOpen) push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, openState);
+  }
+  await desktop.keyboard.press('Escape');
+  await desktop.locator('[data-audit-footnote="72"]').focus();
+  await desktop.waitForTimeout(220);
+  const keyboardState = await desktop.evaluate(() => ({
+    markerOpen: document.querySelector('[data-audit-footnote="72"]')?.getAttribute('aria-expanded') === 'true',
+    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
+    nestedFocusable: document.querySelectorAll('.gb-floating-tip.is-open button, .gb-floating-tip.is-open a, .gb-floating-tip.is-open [tabindex], .gb-floating-tip.is-open [role="button"]').length,
+  }));
+  if (!keyboardState.tipOpen || keyboardState.nestedFocusable !== 0) push('hermenevtika-footnote-keyboard-contract', HERMENEUTIKA_URL, keyboardState);
+  await desktop.keyboard.press('Escape');
+
+  const ordinary = desktop.locator('article .bref[data-ref]').first();
+  await ordinary.scrollIntoViewIfNeeded();
+  await ordinary.click({ force: true });
+  await desktop.waitForTimeout(220);
+  const ordinaryState = await desktop.evaluate(() => ({
+    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
+    expandedScripture: !!document.querySelector('article .bref[data-ref][aria-expanded="true"]'),
+  }));
+  if (!ordinaryState.tipOpen || !ordinaryState.expandedScripture) push('hermenevtika-ordinary-scripture-tooltip-broken', HERMENEUTIKA_URL, ordinaryState);
+  await desktop.keyboard.press('Escape');
+  await desktop.close();
+
+  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const resp = await mobile.goto(BASE + HERMENEUTIKA_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await mobile.waitForTimeout(900);
+  stats.pages++;
+  if (!resp || !resp.ok()) push('hermenevtika-mobile-status', HERMENEUTIKA_URL, resp ? resp.status() : 'null response');
+  await mobile.evaluate((expected) => {
+    for (const marker of document.querySelectorAll('.fn-marker')) {
+      const number = Array.from(marker.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent || '').join('').replace(/\s+/g, '').trim();
+      if (expected.includes(number)) marker.dataset.auditFootnote = number;
+    }
+  }, HERMENEUTIKA_STATIC_FOOTNOTES);
+  const mobileMarker = mobile.locator('[data-audit-footnote="75"]');
+  await mobileMarker.scrollIntoViewIfNeeded();
+  await mobileMarker.tap();
+  await mobile.waitForTimeout(300);
+  const mobileState = await mobile.evaluate(() => ({
+    markerOpen: document.querySelector('[data-audit-footnote="75"]')?.getAttribute('aria-expanded') === 'true',
+    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
+    nestedInteractive: document.querySelectorAll('.gb-floating-tip.is-open button, .gb-floating-tip.is-open a, .gb-floating-tip.is-open [tabindex], .gb-floating-tip.is-open [role="button"], .gb-floating-tip.is-open .bref, .gb-floating-tip.is-open [data-ref]').length,
+    scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden',
+  }));
+  if (!mobileState.markerOpen || !mobileState.tipOpen || mobileState.nestedInteractive !== 0 || !mobileState.scrollLocked) push('hermenevtika-mobile-footnote-sheet-contract', HERMENEUTIKA_URL, mobileState);
+  await mobile.keyboard.press('Escape');
+  await mobile.waitForTimeout(250);
+  const mobileClosed = await mobile.evaluate(() => ({
+    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
+    scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden',
+  }));
+  if (mobileClosed.tipOpen || mobileClosed.scrollLocked) push('hermenevtika-mobile-footnote-sheet-did-not-close', HERMENEUTIKA_URL, mobileClosed);
+  await mobile.close();
+  stats.footnotes++;
+}
+
 async function visibleThemeHandle(page) {
   return await page.evaluateHandle(() => {
     const selectors = ['[data-fc-action="theme"]', '.gb-theme-toggle', '.gbs2-mctl[data-gbs2-theme]', '.gbs2-ctl[data-gbs2-theme]', '.gb-fc-theme', '#barThemeBtn', '#themeToggle', '.theme-toggle', '.nag-sidebar-theme-btn'];
@@ -412,6 +518,7 @@ async function checkMediaViewerAndShare(browser) {
     await checkSeries(browser);
     await checkQuiz(browser);
     await checkGlossary(browser);
+    await checkHermenevtikaFootnotes(browser);
     await checkMobileTheme(browser);
     await checkSearchShortcuts(browser);
     await checkMediaViewerAndShare(browser);
@@ -419,7 +526,7 @@ async function checkMediaViewerAndShare(browser) {
     await browser.close();
   }
   console.log('\nGB INTERACTIVE AUDIT');
-  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media}`);
+  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · footnotes: ${stats.footnotes} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media}`);
   if (issues.length) {
     console.log(`❌ ${issues.length} issue(s):`);
     issues.forEach(i => console.log(`- ${i.kind} ${i.url}: ${JSON.stringify(i.detail)}`));

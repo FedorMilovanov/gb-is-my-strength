@@ -19,6 +19,9 @@ const ARTICLES_ONLY = process.argv.includes('--articles-only');
 const SERIES_ONLY = process.argv.includes('--series-only');
 const SITE = 'https://gospod-bog.ru';
 const RETIRED_PREVIEW_REL = 'dev/article-mdx-pilot/index.html';
+const HERMENEUTIKA_ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
+const HERMENEUTIKA_SOURCE_REL = 'src/components/article-pilots/hermenevtika/HermenevtikaBody.astro';
+const HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '72', '75', '77', '82', '83', '107'];
 
 if (ARTICLES_ONLY && SERIES_ONLY) {
   console.error('❌ Use only one of --articles-only or --series-only');
@@ -62,6 +65,62 @@ function wordCount(html) {
 
 function bodyHtml(html) {
   return html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || html;
+}
+
+function matchingSpanClose(html, openStart) {
+  const tags = /<\/?span\b[^>]*>/gi;
+  tags.lastIndex = openStart;
+  let depth = 0;
+  for (let match; (match = tags.exec(html));) {
+    if (/^<\/span/i.test(match[0])) depth -= 1;
+    else depth += 1;
+    if (depth === 0) return { start: match.index, end: tags.lastIndex };
+  }
+  return null;
+}
+
+function footnoteTooltips(html) {
+  const result = [];
+  const markers = /<span\b(?=[^>]*\bclass=["'][^"']*\bfn-marker\b[^"']*["'])[^>]*>/gi;
+  for (let marker; (marker = markers.exec(html));) {
+    const markerClose = matchingSpanClose(html, marker.index);
+    if (!markerClose) break;
+    const markerInner = html.slice(markers.lastIndex, markerClose.start);
+    const tooltip = /<span\b(?=[^>]*\bclass=["'][^"']*\btooltip\b[^"']*["'])[^>]*>/i.exec(markerInner);
+    if (!tooltip) { markers.lastIndex = markerClose.end; continue; }
+    const tooltipOpenStart = markers.lastIndex + tooltip.index;
+    const tooltipOpenEnd = tooltipOpenStart + tooltip[0].length;
+    const tooltipClose = matchingSpanClose(html, tooltipOpenStart);
+    if (!tooltipClose || tooltipClose.end > markerClose.end) break;
+    const direct = html.slice(markers.lastIndex, tooltipOpenStart).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    result.push({
+      number: direct.match(/^\d+$/)?.[0] || '',
+      content: html.slice(tooltipOpenEnd, tooltipClose.start),
+    });
+    markers.lastIndex = markerClose.end;
+  }
+  return result;
+}
+
+function assertHermenevtikaFootnotes(label, html) {
+  const tooltips = footnoteTooltips(html);
+  const byNumber = new Set(tooltips.map((item) => item.number));
+  for (const number of HERMENEUTIKA_STATIC_FOOTNOTES) {
+    if (!byNumber.has(number)) bad(label + ': footnote ' + number + ' missing from native contract');
+  }
+  const forbidden = /<(?:button|a)\b|\bdata-ref\s*=|\btabindex\s*=|\brole\s*=\s*["']button["']|\bclass\s*=\s*["'][^"']*\bbref\b/i;
+  const interactive = tooltips.filter((item) => forbidden.test(item.content)).map((item) => item.number || '(unnumbered)');
+  if (interactive.length) bad(label + ': interactive descendants inside footnotes ' + interactive.join(', '));
+  else ok(label + ': footnote tooltip descendants are static');
+  const ordinaryScripture = (html.match(/<button\b(?=[^>]*\bclass=["'][^"']*\bbref\b[^"']*["'])(?=[^>]*\bdata-ref=)[^>]*>/gi) || []).length;
+  if (ordinaryScripture < 20) bad(label + ': ordinary Scripture controls unexpectedly missing (' + ordinaryScripture + ')');
+  else ok(label + ': ordinary Scripture controls remain active (' + ordinaryScripture + ')');
+}
+
+function auditHermenevtikaSource() {
+  const sourcePath = path.join(ROOT, HERMENEUTIKA_SOURCE_REL);
+  if (!fs.existsSync(sourcePath)) { bad('Hermenevtika source missing: ' + HERMENEUTIKA_SOURCE_REL); return; }
+  assertHermenevtikaFootnotes('hermenevtika source', fs.readFileSync(sourcePath, 'utf8'));
 }
 
 function articleHtml(html) {
@@ -198,6 +257,7 @@ function auditArticle(record, baselineByUrl) {
   }
 
   const html = fs.readFileSync(distPath, 'utf8');
+  if (route === HERMENEUTIKA_ROUTE) assertHermenevtikaFootnotes('hermenevtika dist', html);
   const pageCanonical = canonical(html);
   const title = textOf(html, 'title');
   const description = meta(html, 'description');
@@ -250,6 +310,7 @@ function main() {
   console.log(`ARTICLE NATIVE CONTRACT AUDIT (${NO_BUILD ? 'no-build' : 'production-like build'}; ${scope})`);
   console.log('Legacy HTML and MDX references are migration evidence, not current production truth.');
 
+  auditHermenevtikaSource();
   runBuild();
 
   const retired = path.join(DIST, RETIRED_PREVIEW_REL);
