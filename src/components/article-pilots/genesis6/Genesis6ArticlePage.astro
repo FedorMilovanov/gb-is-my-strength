@@ -1,0 +1,206 @@
+---
+import Seo from '@/components/seo/Seo.astro';
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import { GENESIS6_SERIES } from '@/components/article-pilots/_shared/series/genesis6SeriesConfig';
+import { GENESIS6_SERIES_ITEMS } from '@/components/article-pilots/_shared/series/genesis6SeriesData';
+import { SITE } from '@/data/site';
+import { assetUrl } from '@/lib/asset-version';
+
+interface Frontmatter {
+  title: string;
+  h1: string;
+  description: string;
+  slug: string;
+  publishedAt: string;
+  updatedAt: string;
+  readingTime: number;
+  draft?: boolean;
+  noindex?: boolean;
+  canonicalOverride?: string;
+}
+
+interface Props {
+  pageId: 'enoch' | 'angels' | 'spirits' | 'dead';
+  frontmatter: unknown;
+}
+
+const { pageId, frontmatter } = Astro.props as Props;
+
+function assertFrontmatter(value: unknown): asserts value is Frontmatter {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Genesis 6 frontmatter must be an object');
+  }
+  const record = value as Record<string, unknown>;
+  for (const field of ['title', 'h1', 'description', 'slug', 'publishedAt', 'updatedAt'] as const) {
+    if (typeof record[field] !== 'string' || record[field].length === 0) {
+      throw new Error(`Genesis 6 frontmatter field "${field}" must be a non-empty string`);
+    }
+  }
+  if (typeof record.readingTime !== 'number' || !Number.isFinite(record.readingTime) || record.readingTime <= 0) {
+    throw new Error('Genesis 6 frontmatter readingTime must be a positive number');
+  }
+  for (const field of ['draft', 'noindex'] as const) {
+    if (record[field] !== undefined && typeof record[field] !== 'boolean') {
+      throw new Error(`Genesis 6 frontmatter field "${field}" must be boolean when present`);
+    }
+  }
+  if (record.canonicalOverride !== undefined && typeof record.canonicalOverride !== 'string') {
+    throw new Error('Genesis 6 frontmatter canonicalOverride must be a string when present');
+  }
+}
+
+assertFrontmatter(frontmatter);
+const itemIndex = GENESIS6_SERIES_ITEMS.findIndex((entry) => entry.id === pageId);
+const item = GENESIS6_SERIES_ITEMS[itemIndex];
+if (!item) throw new Error(`Unknown Genesis 6 page: ${pageId}`);
+const next = GENESIS6_SERIES_ITEMS[itemIndex + 1] ?? null;
+const canonical = frontmatter.canonicalOverride || `${SITE.url}/hard-texts/${frontmatter.slug}/`;
+const indexable = frontmatter.draft !== true && frontmatter.noindex !== true;
+const robots = indexable
+  ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
+  : 'noindex, nofollow, noarchive';
+const ogImage = `${SITE.url}${item.cover.replace(/^\.\.\/\.\./, '')}`;
+const dateRu = (value: string) => new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
+}).format(new Date(value));
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      '@id': `${canonical}#article`,
+      headline: frontmatter.h1,
+      description: frontmatter.description,
+      url: canonical,
+      inLanguage: 'ru',
+      image: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 675 },
+      datePublished: frontmatter.publishedAt,
+      dateModified: frontmatter.updatedAt,
+      author: { '@id': `${SITE.url}/about/#person` },
+      publisher: { '@id': `${SITE.url}/#organization` },
+      isPartOf: { '@type': 'CreativeWorkSeries', name: GENESIS6_SERIES.seriesTitleFull, url: `${SITE.url}/hard-texts/genesis-6/` },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${canonical}#breadcrumbs`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
+        { '@type': 'ListItem', position: 2, name: 'Трудные тексты', item: `${SITE.url}/hard-texts/` },
+        { '@type': 'ListItem', position: 3, name: GENESIS6_SERIES.seriesTitle, item: `${SITE.url}/hard-texts/genesis-6/` },
+        { '@type': 'ListItem', position: 4, name: item.shortTitle, item: canonical },
+      ],
+    },
+  ],
+};
+const siteConfig = {
+  version: 1,
+  site: { id: 'gb-strength', name: SITE.name, baseUrl: SITE.url, locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
+  page: { type: 'article', id: frontmatter.slug, title: frontmatter.h1 },
+  features: { themeToggle: { enabled: true }, search: { enabled: true }, share: { enabled: true } },
+};
+---
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="color-scheme" content="light dark" />
+    <ReaderPreferencesHead />
+    <Seo
+      title={frontmatter.title}
+      description={frontmatter.description}
+      canonical={canonical}
+      robots={robots}
+      ogImage={ogImage}
+      ogImageAlt={item.coverAlt}
+      ogImageWidth="1200"
+      ogImageHeight="675"
+      ogType="article"
+      articlePublishedTime={frontmatter.publishedAt}
+      articleModifiedTime={frontmatter.updatedAt}
+      articleAuthor="Фёдор Милованов"
+      jsonLd={jsonLd}
+    />
+    <link rel="preload" as="image" href={item.coverAvif} type="image/avif" fetchpriority="high" />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
+    <link rel="stylesheet" href={assetUrl('fonts/fonts.css')} />
+    <link rel="stylesheet" href={assetUrl('css/site.css')} />
+    <link rel="stylesheet" href={assetUrl('css/home.css')} />
+    <link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
+    <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')} />
+    <link rel="stylesheet" href={assetUrl('css/floating-cluster.css')} />
+    <link rel="stylesheet" href={assetUrl('css/series-manuscript.css')} />
+    <script is:inline define:vars={{ siteConfig }}>window.SITE_CONFIG = siteConfig;</script>
+  </head>
+  <body
+    class="gbs-world"
+    data-series-theme="manuscript"
+    data-gbs2-series="genesis-6"
+    data-gbs2-done-min={GENESIS6_SERIES.pages[pageId].readingProgressDoneMin}
+    data-gbs2-part-min={frontmatter.readingTime}
+    data-gbs2-total-min={GENESIS6_SERIES.pages[pageId].readingProgressTotalMin}
+  >
+    <SeriesReaderChrome pageId={pageId} config={GENESIS6_SERIES}>
+      <main class="article-main" id="main-content">
+        <article data-pagefind-body={indexable ? '' : undefined}>
+          {indexable && (
+            <>
+              <span data-pagefind-meta="image" hidden>{item.cover.replace('../..', '')}</span>
+              <span data-pagefind-meta="author" hidden>Фёдор Милованов</span>
+              <span data-pagefind-meta="readTime" hidden>{frontmatter.readingTime}</span>
+              <span data-pagefind-meta="category" hidden>Трудные тексты</span>
+            </>
+          )}
+          <figure class="gbs2-hero genesis6-hero" data-n={item.roman} id="gbs2Hero">
+            <picture>
+              <source srcset={item.coverAvif} type="image/avif" />
+              <img src={item.cover} alt={item.coverAlt} width="1200" height="675" loading="eager" decoding="async" fetchpriority="high" />
+            </picture>
+            <figcaption class="gbs2-hero-cap"><i aria-hidden="true"></i>Бытие 6, Енох, Иуда и Пётр · Часть {item.roman}</figcaption>
+          </figure>
+          <header class="article-header article-header--no-border gbs2-head">
+            <span aria-hidden="true" class="gbs2-kinetic">{item.roman}</span>
+            <p class="section-label">Трудные тексты · Бытие 6</p>
+            <h1>{frontmatter.h1}</h1>
+            <p class="article-byline">
+              <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
+              <span aria-hidden="true" class="article-byline__sep">·</span>
+              <time datetime={frontmatter.publishedAt}>{dateRu(frontmatter.publishedAt)}</time>
+              <span aria-hidden="true" class="article-byline__sep">·</span>
+              <span>⏱ {frontmatter.readingTime} мин</span>
+              {!indexable && <span class="article-byline__badge">Предпубликационная проверка</span>}
+            </p>
+            <p>{frontmatter.description}</p>
+          </header>
+          <div class="genesis6-prose">
+            <slot />
+          </div>
+          <aside class="author-card genesis6-author">
+            <div class="author-card-icon" aria-hidden="true">ФМ</div>
+            <div class="author-card-body">
+              <div class="author-card-label genesis6-author__eyebrow">Редакционный принцип</div>
+              <div class="author-card-name">Текст, источник и степень уверенности</div>
+              <p class="author-card-desc">Канонический текст, рукописные данные, реконструкция и богословский вывод различаются явно, без подмены одного уровня другим.</p>
+            </div>
+          </aside>
+          {next && (
+            <nav class="gbs2-next" aria-label="Следующая часть серии">
+              <a class="gbs2-next-card" href={`/hard-texts/${next.slug}/`}>
+                <span class="gbs2-next-cover" style={`background-image:url(${next.cover})`}></span>
+                <span>
+                  <span class="gbs2-next-eyebrow">Дальше · Часть {next.roman}</span>
+                  <span class="gbs2-next-title">{next.shortTitle}</span>
+                  <span class="gbs2-next-desc">{next.description}</span>
+                </span>
+              </a>
+            </nav>
+          )}
+        </article>
+        <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
+      </main>
+    </SeriesReaderChrome>
+  </body>
+</html>

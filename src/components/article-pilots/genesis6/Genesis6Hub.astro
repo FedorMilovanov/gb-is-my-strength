@@ -1,0 +1,69 @@
+---
+import { GENESIS6_SERIES_ITEMS, GENESIS6_TOTAL_MIN } from '@/components/article-pilots/_shared/series/genesis6SeriesData';
+
+const planned = [
+  { n: 'I', title: 'Сыны Божии и дочери человеческие', description: 'Основные толкования Быт. 6:1–4 и границы каждого чтения.', cover: '01-sons-of-god-and-daughters-of-men' },
+  { n: 'II', title: 'Нефилимы и сильные древности', description: 'Кем были нефилимы и что текст действительно говорит об исполинах.', cover: '02-nephilim-mighty-men-of-renown' },
+  { n: 'III', title: 'Что такое Первая книга Еноха', description: 'Состав, датировка, рукописи и место текста вне канона Писания.', cover: '03-what-is-first-enoch' },
+  { n: 'IV', title: 'Книга Стражей', description: 'Падение ангелов, суд и развитие древней Еноховой традиции.', cover: '04-book-of-watchers' },
+  { n: 'V', title: 'Книга исполинов', description: 'Кумранские фрагменты, манихейские свидетели и пределы реконструкции.', cover: '05-book-of-giants' },
+];
+---
+<section class="genesis6-hub" aria-labelledby="genesis6-title">
+  <nav class="genesis6-hub__breadcrumb" aria-label="Хлебные крошки">
+    <a href="/">Главная</a><span aria-hidden="true">/</span><a href="/hard-texts/">Трудные тексты</a><span aria-hidden="true">/</span><span>Бытие 6</span>
+  </nav>
+
+  <section class="genesis6-hub__hero">
+    <div>
+      <p class="genesis6-hub__kicker">Исследовательская серия · девять частей</p>
+      <h1 id="genesis6-title">Бытие 6, Енох, Иуда и Пётр</h1>
+      <p class="genesis6-hub__lead">Путеводитель по одному из самых трудных узлов библейской интерпретации: сыны Божии, нефилимы, Енохова традиция и тексты Нового Завета.</p>
+      <div class="genesis6-hub__status" aria-label="Состояние серии">
+        <span><strong>4</strong> готовых разбора</span>
+        <span><strong>{GENESIS6_TOTAL_MIN}</strong> минут чтения</span>
+        <span><strong>5</strong> следующих частей без фиктивных ссылок</span>
+      </div>
+      <a class="genesis6-hub__start" href={`/hard-texts/${GENESIS6_SERIES_ITEMS[0].slug}/`}>Начать с апостольского свидетельства <span aria-hidden="true">→</span></a>
+    </div>
+    <figure class="genesis6-hub__cover">
+      <picture>
+        <source srcset="/images/articles/genesis6/00-series-guide.avif" type="image/avif" />
+        <img src="/images/articles/genesis6/00-series-guide.webp" alt="Свитки и книги на каменном столе у окна с видом на рассветную пустыню — путеводитель по циклу о Бытии 6." width="1200" height="675" loading="eager" decoding="async" fetchpriority="high" />
+      </picture>
+      <figcaption>Текст · рукопись · интерпретация · степень уверенности</figcaption>
+    </figure>
+  </section>
+
+  <section class="genesis6-method" aria-labelledby="genesis6-method-title">
+    <div class="genesis6-method__heading"><p>Как читать цикл</p><h2 id="genesis6-method-title">Четыре уровня не смешиваются</h2></div>
+    <ol class="genesis6-method__grid">
+      <li><span>01</span><strong>Что говорит текст</strong><p>Прямая формулировка канонического отрывка и его ближайший контекст.</p></li>
+      <li><span>02</span><strong>Что сохранила рукопись</strong><p>Физически читаемые буквы отделяются от редакторской реконструкции.</p></li>
+      <li><span>03</span><strong>Что вероятно исторически</strong><p>Модель передачи и литературная связь получают честную степень уверенности.</p></li>
+      <li><span>04</span><strong>Каков богословский вывод</strong><p>Конфессиональное принятие не выдаётся за нейтральное историческое доказательство.</p></li>
+    </ol>
+  </section>
+
+  <section class="genesis6-catalog" aria-labelledby="genesis6-catalog-title">
+    <header class="genesis6-catalog__head"><div><p>Оглавление</p><h2 id="genesis6-catalog-title">Девять частей серии</h2></div><p>Части I–V показаны как редакционный план и не ведут на несуществующие страницы. Опубликованные исходники VI–IX доступны для предпубликационной технической проверки.</p></header>
+    <div class="genesis6-cards">
+      {planned.map((entry) => (
+        <article class="genesis6-card genesis6-card--planned" aria-label={`${entry.title} — планируется`}>
+          <picture class="genesis6-card__picture"><source srcset={`/images/articles/genesis6/${entry.cover}.avif`} type="image/avif" /><img src={`/images/articles/genesis6/${entry.cover}.webp`} alt="" width="1200" height="675" loading="lazy" decoding="async" /></picture>
+          <span class="genesis6-card__number">{entry.n}</span>
+          <div class="genesis6-card__copy"><p class="genesis6-card__state">Планируется</p><h3>{entry.title}</h3><p>{entry.description}</p><span class="genesis6-card__action">Без ссылки до готовности</span></div>
+        </article>
+      ))}
+      {GENESIS6_SERIES_ITEMS.map((entry) => (
+        <a class="genesis6-card genesis6-card--published" href={`/hard-texts/${entry.slug}/`}>
+          <picture class="genesis6-card__picture"><source srcset={entry.coverAvif.replace('../..', '')} type="image/avif" /><img src={entry.cover.replace('../..', '')} alt={entry.coverAlt} width="1200" height="675" loading="lazy" decoding="async" /></picture>
+          <span class="genesis6-card__number">{entry.roman}</span>
+          <div class="genesis6-card__copy"><p class="genesis6-card__state">Готово · {entry.minutes} мин</p><h3>{entry.shortTitle}</h3><p>{entry.description}</p><span class="genesis6-card__action">Читать разбор →</span></div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <aside class="genesis6-hub__note"><div><span aria-hidden="true">✦</span><strong>Предпубликационная граница</strong></div><p>Маршруты открыты только для технической приёмки и остаются исключёнными из поисковых индексов, Pagefind, sitemap и RSS до отдельного exact-head решения о публикации.</p></aside>
+</section>
