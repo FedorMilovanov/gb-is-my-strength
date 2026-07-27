@@ -113,6 +113,19 @@ async function mobileScene(browser, base, compiled) {
     await page.locator('#atlasFilterClose').click();
     await page.locator('.atlas-node:not(.is-filtered-out)').first().tap();
     await page.waitForSelector('#atlasDetail.is-open');
+    await page.waitForFunction(() => {
+      const sheet = document.getElementById('atlasDetail');
+      if (!sheet?.classList.contains('is-open')) return false;
+      const rect = sheet.getBoundingClientRect();
+      const style = getComputedStyle(sheet);
+      return style.display !== 'none'
+        && style.visibility !== 'hidden'
+        && rect.width > 0
+        && rect.height > 180
+        && rect.top < innerHeight
+        && rect.bottom <= innerHeight + 2;
+    }, null, { timeout: 8_000 });
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     const state = await page.evaluate(() => {
       const target = (selector) => {
         const rect = document.querySelector(selector)?.getBoundingClientRect();
@@ -122,7 +135,8 @@ async function mobileScene(browser, base, compiled) {
       return {
         zoomIn: target('#atlasZoomIn'), zoomOut: target('#atlasZoomOut'),
         center: target('#atlasCenter'), filter: target('#atlasFilterTrigger'),
-        sheetVisible: Boolean(sheet && sheet.width > 0 && sheet.height > 180 && sheet.bottom <= innerHeight + 2),
+        sheet: sheet ? { top: sheet.top, bottom: sheet.bottom, width: sheet.width, height: sheet.height } : null,
+        sheetVisible: Boolean(sheet && sheet.width > 0 && sheet.height > 180 && sheet.top < innerHeight && sheet.bottom <= innerHeight + 2),
         runtimeNodes: Number(document.getElementById('atlasApp')?.dataset.runtimeNodes || 0),
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
