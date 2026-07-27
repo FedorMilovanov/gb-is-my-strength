@@ -1,0 +1,389 @@
+name: TEMP Editorial metadata repair materializer
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/_temp-editorial-metadata-repair-materializer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: agent/editorial-metadata-reconcile-20260727
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Stop after permanent repair commit
+        id: permanent
+        shell: bash
+        run: |
+          if git log -1 --pretty=%s | grep -q '^fix(editorial): preserve frozen editorial decisions$'; then
+            echo 'done=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'done=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Materialize exact permanent repair
+        if: steps.permanent.outputs.done != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/editorial-repair
+          git show HEAD:data/editorial-metadata.json > /tmp/editorial-repair/before.json
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'data/editorial-metadata.json';
+          const registry = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const routes = [
+            '/articles/chto-bibliya-nazyvaet-serdcem/',
+            '/articles/dzhon-gill-chast-1-chelovek/',
+            '/articles/dzhon-gill-chast-2-uchenyi/',
+            '/articles/dzhon-gill-chast-3-nasledie/',
+            '/articles/dzhon-gill-chast-4-ekzeget/',
+            '/articles/kak-hranit-serdce/',
+            '/articles/kak-menyaetsya-serdce/',
+            '/articles/myslennaya-zhizn-serdca/',
+            '/articles/novoe-serdce/',
+            '/articles/osvobozhdennoe-serdce/',
+            '/articles/religioznoe-serdce/',
+            '/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/',
+            '/articles/serdce-hrista-k-nemoshchnym/',
+            '/articles/serdce-i-duh/',
+            '/articles/serdce-i-iskushenie/',
+            '/articles/serdce-i-sokrovishche/',
+            '/articles/serdce-i-telo/',
+            '/articles/serdce-i-yazyk/',
+            '/articles/serdce-ne-v-odinochku/',
+            '/articles/serdce-pod-skorbyu/',
+            '/articles/serdce-spravochnik/',
+            '/articles/skrytye-idoly-serdca/',
+            '/articles/sovest-vnutrenniy-sud/',
+            '/articles/starye-dorozhki-serdca/',
+            '/articles/strah-bozhij-rabskij-ili-synovnij/',
+            '/articles/svoboda-vo-hriste/',
+            '/articles/tma-na-serdce/',
+          ];
+          if (routes.length !== 27 || new Set(routes).size !== 27) throw new Error('repair route set must contain exactly 27 unique routes');
+          for (const route of routes) {
+            const record = registry.records?.[route];
+            if (!record) throw new Error(`${route}: registry record missing`);
+            if (record.editorialPublishedAt !== '2026-07-11T21:00:00.000Z') {
+              throw new Error(`${route}: unexpected current editorialPublishedAt=${record.editorialPublishedAt}`);
+            }
+            record.editorialPublishedAt = '2026-07-14T18:00:00.000Z';
+          }
+          fs.writeFileSync(file, JSON.stringify(registry, null, 2) + '\n');
+          NODE
+
+          python - <<'PY'
+          from pathlib import Path
+
+          lib = Path('scripts/lib/editorial-metadata.js')
+          text = lib.read_text(encoding='utf-8')
+          anchor = '''function eligibleRecords() {\n'''
+          insert = '''function mergeObservedRecord(previous, observed) {\n  if (!previous) return observed;\n  return {\n    ...previous,\n    canonical: observed.canonical,\n    title: observed.title,\n    metadataSource: observed.metadataSource,\n    observations: observed.observations,\n  };\n}\n\nfunction eligibleRecords() {\n'''
+          if text.count(anchor) != 1:
+              raise SystemExit('editorial metadata merge helper anchor mismatch')
+          text = text.replace(anchor, insert)
+          export_anchor = '''  observeRoute,\n  readRegistry,\n'''
+          export_insert = '''  observeRoute,\n  mergeObservedRecord,\n  readRegistry,\n'''
+          if text.count(export_anchor) != 1:
+              raise SystemExit('editorial metadata export anchor mismatch')
+          lib.write_text(text.replace(export_anchor, export_insert), encoding='utf-8')
+
+          registry = Path('scripts/editorial-metadata-registry.js')
+          text = registry.read_text(encoding='utf-8')
+          import_anchor = '''  observeRoute,\n  readRegistry,\n'''
+          import_insert = '''  observeRoute,\n  mergeObservedRecord,\n  readRegistry,\n'''
+          if text.count(import_anchor) != 1:
+              raise SystemExit('registry import anchor mismatch')
+          text = text.replace(import_anchor, import_insert)
+          old = '''    // Once a record is approved, an observation refresh must never silently\n    // replace editorial decisions. Only observed projection snapshots update.\n    if (previous?.reviewStatus === 'approved') {\n      records.set(routeRecord.route, {\n        ...previous,\n        canonical: observed.canonical,\n        title: observed.title,\n        metadataSource: observed.metadataSource,\n        observations: observed.observations,\n      });\n    } else {\n      records.set(routeRecord.route, observed);\n    }\n'''
+          new = '''    // Observation refreshes may update projection snapshots and technical\n    // descriptors, but must never replace an existing editorial decision.\n    records.set(routeRecord.route, mergeObservedRecord(previous, observed));\n'''
+          if text.count(old) != 1:
+              raise SystemExit('registry merge block mismatch')
+          registry.write_text(text.replace(old, new), encoding='utf-8')
+
+          workflow = Path('.github/workflows/editorial-metadata-v3.yml')
+          text = workflow.read_text(encoding='utf-8')
+          first = '''      - name: Validate editorial workflow transaction contract\n        run: node scripts/editorial-metadata-workflow-contract-test.js\n\n      - name: Build production metadata surface and preserve committed freeze\n'''
+          first_new = '''      - name: Validate editorial workflow transaction contract\n        run: node scripts/editorial-metadata-workflow-contract-test.js\n\n      - name: Validate registry refresh preserves editorial decisions\n        run: node scripts/editorial-metadata-registry-preservation-test.js\n\n      - name: Build production metadata surface and preserve committed freeze\n'''
+          if text.count(first) != 1:
+              raise SystemExit('workflow preservation-step anchor mismatch')
+          text = text.replace(first, first_new)
+          second = '''          git diff --exit-code -- data/editorial-metadata.json\n\n      - name: Validate asset revisions without writing\n'''
+          second_new = '''          git diff --exit-code -- data/editorial-metadata.json\n\n      - name: Compare frozen and observed metadata snapshots\n        if: always()\n        run: >-\n          node scripts/editorial-metadata-diff-report.js\n          --before reports/editorial-metadata-frozen.json\n          --after reports/editorial-metadata-observed.json\n          --out reports/editorial-metadata-diff.json\n          --forbid-editorial-drift\n\n      - name: Validate asset revisions without writing\n'''
+          if text.count(second) != 1:
+              raise SystemExit('workflow diff-step anchor mismatch')
+          text = text.replace(second, second_new)
+          third = '''            reports/editorial-metadata-observed.json\n            reports/asset-revision-drift.log\n'''
+          third_new = '''            reports/editorial-metadata-observed.json\n            reports/editorial-metadata-diff.json\n            reports/asset-revision-drift.log\n'''
+          if text.count(third) != 1:
+              raise SystemExit('workflow artifact anchor mismatch')
+          workflow.write_text(text.replace(third, third_new), encoding='utf-8')
+          PY
+
+          cat > scripts/editorial-metadata-registry-preservation-test.js <<'JS'
+          #!/usr/bin/env node
+          'use strict';
+
+          const assert = require('node:assert/strict');
+          const { mergeObservedRecord } = require('./lib/editorial-metadata');
+
+          const previous = Object.freeze({
+            route: '/articles/example/',
+            canonical: 'https://gospod-bog.ru/articles/old/',
+            title: 'Editorial title',
+            metadataSource: 'old-source.astro',
+            contentType: 'article',
+            editorialPublishedAt: '2026-07-14T18:00:00.000Z',
+            editorialModifiedAt: '2026-07-10T21:00:00.000Z',
+            originalWorkPublishedAt: '1700-01-01T00:00:00.000Z',
+            reviewStatus: 'inconsistent-needs-review',
+            provenance: 'production-like-dist-migration-freeze',
+            observations: Object.freeze({ rssPublishedAt: 'old' }),
+          });
+          const observed = Object.freeze({
+            route: '/articles/example/',
+            canonical: 'https://gospod-bog.ru/articles/example/',
+            title: 'Observed title',
+            metadataSource: 'new-source.astro',
+            contentType: 'series-article',
+            editorialPublishedAt: '2026-07-11T21:00:00.000Z',
+            editorialModifiedAt: '2026-07-11T21:00:00.000Z',
+            originalWorkPublishedAt: null,
+            reviewStatus: 'migration-freeze-unverified',
+            provenance: 'replacement-provenance',
+            observations: Object.freeze({ rssPublishedAt: 'new' }),
+          });
+
+          const merged = mergeObservedRecord(previous, observed);
+          assert.deepEqual(merged, {
+            ...previous,
+            canonical: observed.canonical,
+            title: observed.title,
+            metadataSource: observed.metadataSource,
+            observations: observed.observations,
+          });
+          assert.equal(merged.editorialPublishedAt, previous.editorialPublishedAt);
+          assert.equal(merged.editorialModifiedAt, previous.editorialModifiedAt);
+          assert.equal(merged.originalWorkPublishedAt, previous.originalWorkPublishedAt);
+          assert.equal(merged.reviewStatus, previous.reviewStatus);
+          assert.equal(merged.provenance, previous.provenance);
+          assert.equal(merged.contentType, previous.contentType);
+          assert.deepEqual(mergeObservedRecord(null, observed), observed);
+          assert.deepEqual(previous.observations, { rssPublishedAt: 'old' });
+
+          const approved = { ...previous, reviewStatus: 'approved' };
+          const approvedMerged = mergeObservedRecord(approved, observed);
+          assert.equal(approvedMerged.reviewStatus, 'approved');
+          assert.equal(approvedMerged.editorialPublishedAt, approved.editorialPublishedAt);
+          assert.deepEqual(approvedMerged.observations, observed.observations);
+
+          console.log('✅ Editorial metadata refresh preserves every existing editorial decision');
+          JS
+
+          cat > scripts/editorial-metadata-diff-report.js <<'JS'
+          #!/usr/bin/env node
+          'use strict';
+
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          function valueAfter(flag) {
+            const index = process.argv.indexOf(flag);
+            return index >= 0 ? process.argv[index + 1] : null;
+          }
+
+          const beforeFile = valueAfter('--before');
+          const afterFile = valueAfter('--after');
+          const outFile = valueAfter('--out');
+          const forbidEditorialDrift = process.argv.includes('--forbid-editorial-drift');
+          if (!beforeFile || !afterFile || !outFile) {
+            console.error('Usage: editorial-metadata-diff-report.js --before <json> --after <json> --out <json> [--forbid-editorial-drift]');
+            process.exit(2);
+          }
+
+          const before = JSON.parse(fs.readFileSync(beforeFile, 'utf8'));
+          const after = JSON.parse(fs.readFileSync(afterFile, 'utf8'));
+          const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+          const scalar = (value) => value === null || ['string', 'number', 'boolean'].includes(typeof value);
+
+          function flatten(value, prefix = '', result = new Map()) {
+            if (scalar(value) || Array.isArray(value)) {
+              result.set(prefix, value);
+              return result;
+            }
+            for (const key of Object.keys(value || {}).sort()) {
+              flatten(value[key], prefix ? `${prefix}.${key}` : key, result);
+            }
+            return result;
+          }
+
+          function classify(field) {
+            if (field.startsWith('observations.')) return 'observed-projection';
+            if (['editorialPublishedAt', 'editorialModifiedAt', 'originalWorkPublishedAt', 'reviewStatus', 'provenance'].includes(field)) {
+              return 'editorial-governance';
+            }
+            if (['route', 'canonical', 'title', 'metadataSource', 'contentType'].includes(field)) return 'record-identity';
+            return 'record-other';
+          }
+
+          const beforeRoutes = Object.keys(before.records || {}).sort();
+          const afterRoutes = Object.keys(after.records || {}).sort();
+          const changes = [];
+          for (const route of [...new Set([...beforeRoutes, ...afterRoutes])].sort()) {
+            if (!before.records?.[route]) {
+              changes.push({ class: 'route-added', route, field: null, before: null, after: after.records[route] });
+              continue;
+            }
+            if (!after.records?.[route]) {
+              changes.push({ class: 'route-removed', route, field: null, before: before.records[route], after: null });
+              continue;
+            }
+            const left = flatten(before.records[route]);
+            const right = flatten(after.records[route]);
+            for (const field of [...new Set([...left.keys(), ...right.keys()])].sort()) {
+              const oldValue = left.has(field) ? left.get(field) : undefined;
+              const newValue = right.has(field) ? right.get(field) : undefined;
+              if (!same(oldValue, newValue)) changes.push({ class: classify(field), route, field, before: oldValue, after: newValue });
+            }
+          }
+
+          for (const field of ['version', 'policy', 'sourceCommit']) {
+            if (!same(before[field], after[field])) {
+              changes.push({ class: field === 'sourceCommit' ? 'source-boundary' : 'registry-root', route: null, field, before: before[field], after: after[field] });
+            }
+          }
+
+          const countsByClass = {};
+          for (const change of changes) countsByClass[change.class] = (countsByClass[change.class] || 0) + 1;
+          const report = {
+            schema: 1,
+            before: path.normalize(beforeFile),
+            after: path.normalize(afterFile),
+            counts: { total: changes.length, byClass: countsByClass },
+            changes,
+          };
+          fs.mkdirSync(path.dirname(outFile), { recursive: true });
+          fs.writeFileSync(outFile, JSON.stringify(report, null, 2) + '\n');
+
+          console.log(`Editorial metadata diff: ${changes.length} field/route change(s)`);
+          console.log(`Classes: ${JSON.stringify(countsByClass)}`);
+          const editorialDrift = changes.filter((change) => change.class === 'editorial-governance');
+          if (forbidEditorialDrift && editorialDrift.length) {
+            console.error(`❌ Observed refresh changed ${editorialDrift.length} editorial decision field(s)`);
+            for (const change of editorialDrift.slice(0, 50)) {
+              console.error(`  - ${change.route}: ${change.field} ${JSON.stringify(change.before)} -> ${JSON.stringify(change.after)}`);
+            }
+            process.exit(1);
+          }
+          console.log('✅ Editorial metadata diff report written without forbidden editorial drift');
+          JS
+
+          cat > scripts/editorial-metadata-workflow-contract-test.js <<'JS'
+          #!/usr/bin/env node
+          'use strict';
+
+          const fs = require('fs');
+          const path = require('path');
+
+          const ROOT = path.resolve(__dirname, '..');
+          const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'editorial-metadata-v3.yml');
+          const text = fs.readFileSync(WORKFLOW, 'utf8');
+          const failures = [];
+
+          function requireFirst(marker) {
+            const index = text.indexOf(marker);
+            if (index < 0) failures.push(`missing marker: ${marker}`);
+            return index;
+          }
+
+          const transaction = requireFirst('node scripts/editorial-metadata-workflow-contract-test.js');
+          const preservation = requireFirst('node scripts/editorial-metadata-registry-preservation-test.js');
+          const build = requireFirst('npm run strangler:build:production-like');
+          const preserve = requireFirst('cp data/editorial-metadata.json reports/editorial-metadata-frozen.json');
+          const structure = requireFirst('node scripts/editorial-metadata-registry.js --check');
+          const freeze = requireFirst('node scripts/editorial-metadata-freeze-audit.js');
+          const observe = requireFirst('node scripts/editorial-metadata-registry.js --write');
+          const observedCopy = requireFirst('cp data/editorial-metadata.json reports/editorial-metadata-observed.json');
+          const restoreCall = requireFirst('restore_registry\n          trap - EXIT');
+          const cleanDiff = requireFirst('git diff --exit-code -- data/editorial-metadata.json');
+          const diffReport = requireFirst('node scripts/editorial-metadata-diff-report.js');
+
+          const ordered = [transaction, preservation, build, preserve, structure, freeze, observe, observedCopy, restoreCall, cleanDiff, diffReport];
+          if (ordered.every((value) => value >= 0)) {
+            for (let index = 1; index < ordered.length; index++) {
+              if (ordered[index] <= ordered[index - 1]) {
+                failures.push('workflow transaction order must be contract → preservation → build → preserve → structure → freeze → observe → copy → restore → clean diff → machine diff');
+                break;
+              }
+            }
+          }
+
+          if (/editorial-metadata-registry\.js\s+--write\s+--build/.test(text)) failures.push('workflow must not refresh the registry before auditing the committed freeze');
+          if (!text.includes('restore_registry() {\n            cp reports/editorial-metadata-frozen.json data/editorial-metadata.json\n          }')) failures.push('restore function must replace the generated registry with the committed freeze');
+          if (!text.includes('reports/editorial-metadata-frozen.json')) failures.push('artifact must preserve the committed freeze snapshot');
+          if (!text.includes('reports/editorial-metadata-observed.json')) failures.push('artifact must preserve the current observed snapshot separately');
+          if (!text.includes('reports/editorial-metadata-diff.json')) failures.push('artifact must preserve the machine-readable frozen/observed diff');
+          if (!text.includes('--forbid-editorial-drift')) failures.push('observed refresh must fail when editorial decisions drift');
+          if (!text.includes('trap restore_registry EXIT')) failures.push('observation step must restore the committed registry even when capture fails');
+
+          if (failures.length) {
+            console.error(`❌ Editorial metadata workflow contract failed (${failures.length}):`);
+            failures.forEach((failure) => console.error(`  - ${failure}`));
+            process.exit(1);
+          }
+          console.log('✅ Editorial metadata workflow preserves the committed freeze and forbids observed editorial drift');
+          JS
+
+          node --check scripts/lib/editorial-metadata.js
+          node --check scripts/editorial-metadata-registry.js
+          node --check scripts/editorial-metadata-registry-preservation-test.js
+          node --check scripts/editorial-metadata-diff-report.js
+          node --check scripts/editorial-metadata-workflow-contract-test.js
+          node scripts/editorial-metadata-registry-preservation-test.js
+          node scripts/editorial-metadata-workflow-contract-test.js
+          node scripts/editorial-metadata-registry.js --check
+          node scripts/editorial-metadata-diff-report.js --before /tmp/editorial-repair/before.json --after data/editorial-metadata.json --out /tmp/editorial-repair/repair-diff.json
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const diff = JSON.parse(fs.readFileSync('/tmp/editorial-repair/repair-diff.json', 'utf8'));
+          if (diff.counts.total !== 27 || diff.counts.byClass?.['editorial-governance'] !== 27 || Object.keys(diff.counts.byClass).length !== 1) {
+            throw new Error(`repair must change exactly 27 editorial-governance fields: ${JSON.stringify(diff.counts)}`);
+          }
+          const fields = new Set(diff.changes.map((change) => change.field));
+          if (fields.size !== 1 || !fields.has('editorialPublishedAt')) throw new Error(`unexpected repair fields: ${[...fields].join(', ')}`);
+          for (const change of diff.changes) {
+            if (change.before !== '2026-07-11T21:00:00.000Z' || change.after !== '2026-07-14T18:00:00.000Z') {
+              throw new Error(`${change.route}: unexpected repair ${change.before} -> ${change.after}`);
+            }
+          }
+          NODE
+
+          git diff --check
+          cat > /tmp/editorial-repair/expected.txt <<'FILES'
+          .github/workflows/editorial-metadata-v3.yml
+          data/editorial-metadata.json
+          scripts/editorial-metadata-diff-report.js
+          scripts/editorial-metadata-registry-preservation-test.js
+          scripts/editorial-metadata-registry.js
+          scripts/editorial-metadata-workflow-contract-test.js
+          scripts/lib/editorial-metadata.js
+          FILES
+          git diff --name-only | sort > /tmp/editorial-repair/actual.txt
+          diff -u /tmp/editorial-repair/expected.txt /tmp/editorial-repair/actual.txt
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $(cat /tmp/editorial-repair/expected.txt)
+          git commit -m 'fix(editorial): preserve frozen editorial decisions'
+          git push origin HEAD:agent/editorial-metadata-reconcile-20260727
