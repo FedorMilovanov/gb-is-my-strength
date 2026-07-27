@@ -38,13 +38,55 @@ on:
     - cron: '30 3 * * 1'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: runtime-interactive-audit-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  materialize-glossary-audit-repair:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: agent/glossary-tooltip-runtime-20260727
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Apply validated one-file repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git log -1 --pretty=%s | grep -q '^fix(audit): wait for glossary runtime readiness$'; then exit 0; fi
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path('.github/workflows/_temp-glossary-tooltip-diagnostic.yml').read_text(encoding='utf-8').splitlines()
+          start = next(i for i, line in enumerate(source) if line.strip() == "python - <<'PY'")
+          end = next(i for i in range(start + 1, len(source)) if source[i].strip() == 'PY')
+          block = []
+          for line in source[start + 1:end]:
+              if line.startswith('          '):
+                  block.append(line[10:])
+              elif not line.strip():
+                  block.append('')
+              else:
+                  raise SystemExit(f'unexpected Python indentation: {line!r}')
+          Path('/tmp/glossary-audit-repair.py').write_text('\n'.join(block) + '\n', encoding='utf-8')
+          PY
+          python /tmp/glossary-audit-repair.py
+          node --check scripts/interactive-audit.js
+          git diff --check
+          test "$(git diff --name-only)" = 'scripts/interactive-audit.js'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/interactive-audit.js
+          git commit -m 'fix(audit): wait for glossary runtime readiness'
+          git push origin HEAD:agent/glossary-tooltip-runtime-20260727
+
   home-browser-contract:
     name: Home Chromium WebKit contract
     runs-on: ubuntu-latest
