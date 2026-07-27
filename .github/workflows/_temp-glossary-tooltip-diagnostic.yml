@@ -1,4 +1,4 @@
-name: TEMP Glossary tooltip audit repair materializer
+name: TEMP Glossary tooltip repair artifact
 
 on:
   pull_request:
@@ -6,37 +6,24 @@ on:
       - '.github/workflows/_temp-glossary-tooltip-diagnostic.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   materialize:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout exact repair branch
+      - name: Checkout exact repair head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: agent/glossary-tooltip-runtime-20260727
-          fetch-depth: 1
+          persist-credentials: false
           show-progress: false
 
-      - name: Stop after permanent repair commit
-        id: permanent
-        shell: bash
-        run: |
-          if git log -1 --pretty=%s | grep -q '^fix(audit): wait for glossary runtime readiness$'; then
-            echo 'done=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'done=false' >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Materialize exact glossary audit repair
-        if: steps.permanent.outputs.done != 'true'
+      - name: Create and validate exact one-file repair
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-
           path = Path('scripts/interactive-audit.js')
           text = path.read_text(encoding='utf-8')
           old = '''async function checkGlossary(browser) {
@@ -99,7 +86,7 @@ jobs:
       const target = terms.first();
       if (!readinessError) {
         await target.scrollIntoViewIfNeeded();
-        await target.hover({ force: true });
+        await target.hover();
         try {
           await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'attached', timeout: 2000 });
         } catch (error) {
@@ -161,24 +148,31 @@ jobs:
           if text.count(old) != 1:
               raise SystemExit(f'glossary audit anchor count={text.count(old)}')
           updated = text.replace(old, new)
-          for required in [
+          required = [
               'glossary-tooltip-runtime-not-ready',
               'glossary-tooltip-did-not-open',
               "page.waitForSelector('.gtip.gb-floating-tip.is-open'",
               'runtime && runtime.dict && runtime.policy && runtime.aliasToCanonical',
-          ]:
-              if required not in updated:
-                  raise SystemExit(f'missing required contract: {required}')
+              'await target.hover();',
+          ]
+          missing = [item for item in required if item not in updated]
+          if missing:
+              raise SystemExit(f'missing contracts: {missing}')
           path.write_text(updated, encoding='utf-8')
           PY
 
           node --check scripts/interactive-audit.js
           git diff --check
-          mapfile -t changed < <(git diff --name-only)
-          [[ ${#changed[@]} -eq 1 && "${changed[0]}" == 'scripts/interactive-audit.js' ]]
+          test "$(git diff --name-only)" = 'scripts/interactive-audit.js'
+          mkdir -p reports/glossary-tooltip-repair
+          cp scripts/interactive-audit.js reports/glossary-tooltip-repair/interactive-audit.js
+          git diff -- scripts/interactive-audit.js > reports/glossary-tooltip-repair/interactive-audit.patch
+          sha256sum scripts/interactive-audit.js > reports/glossary-tooltip-repair/sha256.txt
 
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/interactive-audit.js
-          git commit -m 'fix(audit): wait for glossary runtime readiness'
-          git push origin HEAD:agent/glossary-tooltip-runtime-20260727
+      - name: Upload validated repair artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: glossary-tooltip-repair-${{ github.run_id }}
+          path: reports/glossary-tooltip-repair
+          if-no-files-found: error
+          retention-days: 7
