@@ -179,6 +179,17 @@ function observeRoute(record, distRoot, shared) {
   };
 }
 
+function mergeObservedRecord(previous, observed) {
+  if (!previous) return observed;
+  return {
+    ...previous,
+    canonical: observed.canonical,
+    title: observed.title,
+    metadataSource: observed.metadataSource,
+    observations: observed.observations,
+  };
+}
+
 function eligibleRecords() {
   const { records } = loadRouteRecords();
   return records.filter((record) =>
@@ -222,6 +233,7 @@ module.exports = {
   eligibleRecords,
   sharedProjectionData,
   observeRoute,
+  mergeObservedRecord,
   readRegistry,
   validateRecordShape,
 };

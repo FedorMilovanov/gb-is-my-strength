@@ -224,5 +224,39 @@
         "readingTime": 27
       }
     ]
+  },
+  "genesis-6": {
+    "title": "Бытие 6, Енох, Иуда и Пётр",
+    "baseUrl": "/hard-texts/",
+    "parts": [
+      {
+        "n": 6,
+        "slug": "enoh-prorochestvoval-iuda-14-15-4q204",
+        "title": "Енох пророчествовал",
+        "status": "draft",
+        "readingTime": 18
+      },
+      {
+        "n": 7,
+        "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
+        "title": "Ангелы под мраком",
+        "status": "draft",
+        "readingTime": 22
+      },
+      {
+        "n": 8,
+        "slug": "duhi-v-temnice-noi-kreshchenie-pobeda",
+        "title": "Духи в темнице",
+        "status": "draft",
+        "readingTime": 25
+      },
+      {
+        "n": 9,
+        "slug": "blagovestie-mertvym-1-petra-4-5-6",
+        "title": "Благовестие мёртвым",
+        "status": "draft",
+        "readingTime": 17
+      }
+    ]
   }
 }

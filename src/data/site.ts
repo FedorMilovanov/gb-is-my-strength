@@ -65,4 +65,10 @@ export const SERIES_ORDER: Record<string, string[]> = {
     'serdce-i-duh',
     'serdce-spravochnik',
   ],
+  'genesis-6': [
+    'enoh-prorochestvoval-iuda-14-15-4q204',
+    'angely-pod-mrakom-iuda-6-7-2-petra-2',
+    'duhi-v-temnice-noi-kreshchenie-pobeda',
+    'blagovestie-mertvym-1-petra-4-5-6',
+  ],
 };

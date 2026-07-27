@@ -10,6 +10,7 @@ const {
   eligibleRecords,
   sharedProjectionData,
   observeRoute,
+  mergeObservedRecord,
   readRegistry,
   validateRecordShape,
 } = require('./lib/editorial-metadata');
@@ -77,19 +78,9 @@ function writeRegistry() {
     const observed = observeRoute(routeRecord, DIST, shared);
     const previous = existing?.records?.[routeRecord.route];
 
-    // Once a record is approved, an observation refresh must never silently
-    // replace editorial decisions. Only observed projection snapshots update.
-    if (previous?.reviewStatus === 'approved') {
-      records.set(routeRecord.route, {
-        ...previous,
-        canonical: observed.canonical,
-        title: observed.title,
-        metadataSource: observed.metadataSource,
-        observations: observed.observations,
-      });
-    } else {
-      records.set(routeRecord.route, observed);
-    }
+    // Observation refreshes may update projection snapshots and technical
+    // descriptors, but must never replace an existing editorial decision.
+    records.set(routeRecord.route, mergeObservedRecord(previous, observed));
   }
 
   const registry = stableRegistry(records, gitHead());
