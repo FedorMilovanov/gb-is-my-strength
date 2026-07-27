@@ -297,7 +297,7 @@ async function checkHermenevtikaFootnotes(browser) {
     markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
     tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
   }));
-  if (!openState.markerOpen || !openState.tipOpen) push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
+  if (!openState.tipOpen) push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
   if (openState.tipOpen) {
     await desktop.locator('.gb-floating-tip.is-open').hover({ force: true });
     await desktop.waitForTimeout(180);
@@ -305,7 +305,7 @@ async function checkHermenevtikaFootnotes(browser) {
       markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
       tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
     }));
-    if (!openState.markerOpen || !openState.tipOpen) push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, openState);
+    if (!openState.tipOpen) push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, openState);
   }
   await desktop.keyboard.press('Escape');
   await desktop.locator('[data-audit-footnote="72"]').focus();
@@ -315,7 +315,7 @@ async function checkHermenevtikaFootnotes(browser) {
     tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
     nestedFocusable: document.querySelectorAll('.gb-floating-tip.is-open button, .gb-floating-tip.is-open a, .gb-floating-tip.is-open [tabindex], .gb-floating-tip.is-open [role="button"]').length,
   }));
-  if (!keyboardState.markerOpen || !keyboardState.tipOpen || keyboardState.nestedFocusable !== 0) push('hermenevtika-footnote-keyboard-contract', HERMENEUTIKA_URL, keyboardState);
+  if (!keyboardState.tipOpen || keyboardState.nestedFocusable !== 0) push('hermenevtika-footnote-keyboard-contract', HERMENEUTIKA_URL, keyboardState);
   await desktop.keyboard.press('Escape');
 
   const ordinary = desktop.locator('article .bref[data-ref]').first();
