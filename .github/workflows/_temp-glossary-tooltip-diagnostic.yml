@@ -1,0 +1,208 @@
+name: TEMP Glossary tooltip runtime diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/_temp-glossary-tooltip-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact diagnostic head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production-like dist
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+
+      - name: Start exact dist server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 -d dist > /tmp/gb-http.log 2>&1 &
+          echo $! > /tmp/gb-http.pid
+          sleep 2
+
+      - name: Probe glossary opening and layout repeatedly
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/glossary-tooltip-diagnostic/screenshots
+          cat > /tmp/glossary-tooltip-diagnostic.js <<'JS'
+          'use strict';
+
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const { chromium } = require('playwright');
+
+          const BASE = 'http://127.0.0.1:8080';
+          const URL = '/articles/dzhon-gill-istoricheskiy-kontekst/';
+          const OUT = 'reports/glossary-tooltip-diagnostic';
+          const rounds = 20;
+
+          function sampleScript() {
+            const target = document.querySelector('article .gterm:not(.summary-card .gterm)');
+            const openTip = document.querySelector('.gtip.gb-floating-tip.is-open');
+            const anyFloating = Array.from(document.querySelectorAll('.gb-floating-tip')).map((node) => {
+              const box = node.getBoundingClientRect();
+              const style = getComputedStyle(node);
+              return {
+                className: node.className,
+                width: Math.round(box.width),
+                height: Math.round(box.height),
+                top: Math.round(box.top),
+                bottom: Math.round(box.bottom),
+                display: style.display,
+                visibility: style.visibility,
+                opacity: style.opacity,
+                pointerEvents: style.pointerEvents,
+              };
+            });
+            const targetBox = target?.getBoundingClientRect();
+            const cx = targetBox ? Math.max(0, Math.min(innerWidth - 1, targetBox.left + targetBox.width / 2)) : 0;
+            const cy = targetBox ? Math.max(0, Math.min(innerHeight - 1, targetBox.top + targetBox.height / 2)) : 0;
+            const elementAtTarget = targetBox ? document.elementFromPoint(cx, cy) : null;
+            const tipBox = openTip?.getBoundingClientRect();
+            const tipStyle = openTip ? getComputedStyle(openTip) : null;
+            return {
+              readyState: document.readyState,
+              targetCount: document.querySelectorAll('article .gterm:not(.summary-card .gterm)').length,
+              target: target ? {
+                tag: target.tagName,
+                className: target.className,
+                text: (target.textContent || '').trim().slice(0, 120),
+                tabindex: target.getAttribute('tabindex'),
+                role: target.getAttribute('role'),
+                ariaExpanded: target.getAttribute('aria-expanded'),
+                connected: target.isConnected,
+                width: targetBox ? Math.round(targetBox.width) : null,
+                height: targetBox ? Math.round(targetBox.height) : null,
+                top: targetBox ? Math.round(targetBox.top) : null,
+                bottom: targetBox ? Math.round(targetBox.bottom) : null,
+              } : null,
+              elementAtTarget: elementAtTarget ? {
+                tag: elementAtTarget.tagName,
+                className: elementAtTarget.className,
+                text: (elementAtTarget.textContent || '').trim().slice(0, 80),
+              } : null,
+              activeElement: document.activeElement ? {
+                tag: document.activeElement.tagName,
+                className: document.activeElement.className,
+              } : null,
+              openTip: openTip ? {
+                className: openTip.className,
+                width: Math.round(tipBox.width),
+                height: Math.round(tipBox.height),
+                top: Math.round(tipBox.top),
+                bottom: Math.round(tipBox.bottom),
+                background: tipStyle.backgroundColor,
+                innerDisplay: openTip.querySelector('.gtip-luxury') ? getComputedStyle(openTip.querySelector('.gtip-luxury')).display : null,
+              } : null,
+              floatingTips: anyFloating,
+              scripts: Array.from(document.scripts).map((script) => script.src || '[inline]').filter((value) => /site|tooltip|overlay|article|runtime/i.test(value)).slice(0, 30),
+              bodyClasses: document.body.className,
+            };
+          }
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const results = [];
+            let hoverMisses = 0;
+            let focusRecoveries = 0;
+            let completeMisses = 0;
+
+            for (let round = 1; round <= rounds; round++) {
+              const page = await browser.newPage({ viewport: { width: 900, height: 650 }, deviceScaleFactor: 1 });
+              const consoleMessages = [];
+              page.on('console', (message) => {
+                if (['error', 'warning'].includes(message.type())) consoleMessages.push({ type: message.type(), text: message.text().slice(0, 400) });
+              });
+              page.on('pageerror', (error) => consoleMessages.push({ type: 'pageerror', text: error.message.slice(0, 400) }));
+
+              const response = await page.goto(BASE + URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+              await page.waitForTimeout(900);
+              const target = page.locator('article .gterm:not(.summary-card .gterm)').first();
+              const before = await page.evaluate(sampleScript);
+              const timeline = [{ afterMs: -1, state: before }];
+              let hoverError = null;
+
+              try {
+                await target.scrollIntoViewIfNeeded();
+                await target.hover({ force: true, timeout: 5000 });
+              } catch (error) {
+                hoverError = String(error.message || error).slice(0, 500);
+              }
+
+              for (const wait of [0, 50, 100, 250, 500, 1000]) {
+                if (wait) await page.waitForTimeout(wait - (timeline.at(-1)?.afterMs > 0 ? timeline.at(-1).afterMs : 0));
+                timeline.push({ afterMs: wait, state: await page.evaluate(sampleScript) });
+              }
+
+              const hoverOpenedAt = timeline.find((entry) => entry.afterMs >= 0 && entry.state.openTip)?.afterMs ?? null;
+              let focusState = null;
+              if (hoverOpenedAt === null) {
+                hoverMisses++;
+                await target.focus();
+                await page.waitForTimeout(300);
+                focusState = await page.evaluate(sampleScript);
+                if (focusState.openTip) focusRecoveries++;
+                else completeMisses++;
+                await page.screenshot({ path: path.join(OUT, 'screenshots', `round-${String(round).padStart(2, '0')}-miss.png`), fullPage: false });
+              }
+
+              results.push({
+                round,
+                status: response?.status() ?? null,
+                hoverError,
+                hoverOpenedAt,
+                focusState,
+                timeline,
+                consoleMessages,
+              });
+              await page.close();
+            }
+
+            await browser.close();
+            const summary = { rounds, hoverMisses, focusRecoveries, completeMisses };
+            fs.writeFileSync(path.join(OUT, 'result.json'), JSON.stringify({ schema: 1, sha: process.env.GITHUB_SHA || '', summary, results }, null, 2) + '\n');
+            fs.writeFileSync(path.join(OUT, 'summary.txt'), Object.entries(summary).map(([key, value]) => `${key}: ${value}`).join('\n') + '\n');
+            console.log(JSON.stringify(summary));
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          JS
+
+          node /tmp/glossary-tooltip-diagnostic.js
+          cat reports/glossary-tooltip-diagnostic/summary.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop local server
+        if: always()
+        run: |
+          if [[ -f /tmp/gb-http.pid ]]; then kill "$(cat /tmp/gb-http.pid)" || true; fi
+
+      - name: Upload exact diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: glossary-tooltip-diagnostic-${{ github.run_id }}
+          path: reports/glossary-tooltip-diagnostic
+          if-no-files-found: error
+          retention-days: 14
