@@ -1,11 +1,6 @@
 name: TEMP reader cache-bust materializer
 
 on:
-  push:
-    branches:
-      - 'agent/interactive-audit-evidence-contract-20260727'
-    paths:
-      - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
   pull_request:
     paths:
       - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
@@ -28,15 +23,20 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Materialize and verify deterministic asset revisions
-        shell: bash
+      - name: Materialize deterministic asset revisions
         run: |
           set -euo pipefail
           node scripts/cache-bust.js --write
           node scripts/cache-bust.js
-          node scripts/reader-preferences-regression-test.js
           git diff --check
 
+      - name: Verify reader preference regressions
+        run: node scripts/reader-preferences-regression-test.js
+
+      - name: Verify exact generated scope and hashes
+        shell: bash
+        run: |
+          set -euo pipefail
           cat > /tmp/expected-files.txt <<'FILES'
           404.html
           about/index.html
@@ -98,7 +98,6 @@ jobs:
           git diff --name-only | sort > /tmp/actual-files.txt
           sort -o /tmp/expected-files.txt /tmp/expected-files.txt
           diff -u /tmp/expected-files.txt /tmp/actual-files.txt
-
           test "$(git diff --numstat | awk '{a+=$1; d+=$2} END {print a+0 ":" d+0}')" = "55:55"
           test "$(git diff | grep -c '^-.*reader-preferences.js?v=7a15a6b0')" = "54"
           test "$(git diff | grep -c '^+.*reader-preferences.js?v=63b588b5')" = "54"
