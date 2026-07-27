@@ -41,6 +41,14 @@ jobs:
 
           path = Path('.github/tmp/hermenevtika-materialize.js')
           source = path.read_text(encoding='utf-8')
+
+          old_numbers = "['40', '72', '75', '82', '83', '107']"
+          new_numbers = "['40', '72', '75', '77', '82', '83', '107']"
+          count = source.count(old_numbers)
+          if count != 3:
+              raise SystemExit(f'expected three stale footnote lists, got {count}')
+          source = source.replace(old_numbers, new_numbers)
+
           replacements = [
               ('const helperCode = `${helperAnchor}\n', 'const helperCode = String.raw`${helperAnchor}\n'),
               ('const browserHelper = `async function checkHermenevtikaFootnotes(browser) {', 'const browserHelper = String.raw`async function checkHermenevtikaFootnotes(browser) {'),
