@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "relations": [
+    {
+      "id": "gill-part-1-historical-context",
+      "source": "dzhon-gill-chast-1-chelovek",
+      "target": "dzhon-gill-istoricheskiy-kontekst",
+      "kind": "historical-context",
+      "weight": 96,
+      "rationale": "Исторический фон объясняет религиозную и общественную среду, в которой формировался Джон Гилл.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "gill-part-1-biography-section",
+      "source": "dzhon-gill-chast-1-chelovek",
+      "target": "biografii",
+      "kind": "part-of",
+      "weight": 76,
+      "rationale": "Материал открывает биографическую линию исследования жизни, характера и служения Джона Гилла.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "gill-scholar-methodology",
+      "source": "dzhon-gill-chast-2-uchenyi",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 84,
+      "rationale": "Помогает сопоставить учёность Гилла и его работу с источниками с общими принципами ответственного толкования Писания.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "gill-legacy-pastoral-contrast",
+      "source": "dzhon-gill-chast-3-nasledie",
+      "target": "20-antisovetov-pastoru",
+      "kind": "contrasts",
+      "weight": 72,
+      "rationale": "Сопоставляет историческое наследие пастора с современным разбором власти, подотчётности и разрушительных моделей служения.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "gill-exegete-methodology",
+      "source": "dzhon-gill-chast-4-ekzeget",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 88,
+      "rationale": "Сопоставляет экзегетическую практику Гилла с принципами грамматико-исторического толкования.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "gill-context-biography-section",
+      "source": "dzhon-gill-istoricheskiy-kontekst",
+      "target": "biografii",
+      "kind": "part-of",
+      "weight": 70,
+      "rationale": "Исторический контекст служит входом в биографическое исследование Джона Гилла и английского баптизма XVIII века.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "gill-reference-biography-section",
+      "source": "dzhon-gill-spravochnik",
+      "target": "biografii",
+      "kind": "part-of",
+      "weight": 68,
+      "rationale": "Справочник собирает хронологию, труды и источники биографической серии в одной навигационной точке.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "nagornaya-part-1-methodology",
+      "source": "nagornaya-chast-1",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 91,
+      "rationale": "Помогает понять метод сравнения параллельных евангельских текстов без навязывания тексту внешней схемы.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "nagornaya-part-2-methodology",
+      "source": "nagornaya-chast-2",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 89,
+      "rationale": "Даёт методологический контекст для разговора о синоптической проблеме, авторском замысле и богодухновенности.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "nagornaya-part-3-methodology",
+      "source": "nagornaya-chast-3",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 82,
+      "rationale": "Помогает отделить адресатов текста, историческую ситуацию и современное применение от заранее выбранной богословской схемы.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "nagornaya-part-4-code-contrast",
+      "source": "nagornaya-chast-4",
+      "target": "kod-da-vinchi",
+      "kind": "contrasts",
+      "weight": 80,
+      "rationale": "Сопоставляет аргументы о надёжности Евангелий с популярными мифами о каноне, Никее и раннем христианстве.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "nagornaya-part-5-heart-application",
+      "source": "nagornaya-chast-5",
+      "target": "krajne-li-isporcheno-serdce",
+      "kind": "recommended-next",
+      "weight": 76,
+      "rationale": "Продолжает разговор о Законе и Евангелии через вопрос о состоянии сердца, грехе и освящении верующего.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "kod-da-vinchi-methodology",
+      "source": "kod-da-vinchi",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 86,
+      "rationale": "Показывает, каким методом проверять популярные историко-богословские утверждения и отделять текстовые данные от домыслов.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "heart-exegesis-methodology",
+      "source": "krajne-li-isporcheno-serdce",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 84,
+      "rationale": "Связывает конкретную экзегезу Иеремии 17 с более общими принципами толкования Писания.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "romans-7-methodology",
+      "source": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 83,
+      "rationale": "Показывает, как грамматика, контекст Римлянам 6–8 и история толкования совместно ограничивают допустимые выводы.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "romans-7-heart-companion",
+      "source": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+      "target": "krajne-li-isporcheno-serdce",
+      "kind": "expands",
+      "weight": 82,
+      "rationale": "Расширяет тему остаточного греха и внутренней борьбы верующего через другой ключевой библейский текст.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "pastor-series-biography-context",
+      "source": "20-antisovetov-pastoru",
+      "target": "biografii",
+      "kind": "recommended-next",
+      "weight": 74,
+      "rationale": "Биографии служителей дают исторические примеры пастырского характера, ответственности и последствий решений.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "avraam-map-section",
+      "source": "karty-avraam",
+      "target": "karty",
+      "kind": "part-of",
+      "weight": 86,
+      "rationale": "Интерактивный маршрут Авраама входит в библиотеку библейских карт и археологических материалов сайта.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "pastor-hub-biography-bridge",
+      "source": "pastor-series",
+      "target": "biografii",
+      "kind": "recommended-next",
+      "weight": 62,
+      "rationale": "Исторические биографии дополняют тематическую серию примерами реального служения, характера и ответственности.",
+      "editorialStatus": "verified"
+    }
+  ]
+}

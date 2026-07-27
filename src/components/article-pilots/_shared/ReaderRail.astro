@@ -235,11 +235,7 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
     // общий контракт data-action="share" в floating-cluster-controller.js
     // (PR-4 плана unification, дрейф D8). Раньше это была bespoke-копия здесь.
 
-    const backBtn = document.querySelector('.hrail-back') as HTMLElement | null;
-    if(backBtn){
-      const href = backBtn.dataset.homeHref;
-      if(href) backBtn.addEventListener('click', () => { window.location.href = href; });
-    }
+    // Back, share and print are owned by ReaderActionsRuntime.
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initReaderRail, { once: true });
   else initReaderRail();

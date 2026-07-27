@@ -1,0 +1,15 @@
+---
+/**
+ * Explicit native owner for reader-level actions that were historically
+ * bundled into site.js. Astro/Vite owns hashing, module delivery and cache
+ * invalidation; the legacy root asset registry is intentionally not involved.
+ *
+ * Print pagination has two owners with a strict lifecycle boundary:
+ * semantic classification is prepared by GBPrintPagination v1; physical A4
+ * geometry runs only after the document enters print media / beforeprint.
+ */
+---
+<script>
+  import '../../runtime/print-pagination-geometry.js';
+  import '../../runtime/reader-actions.js';
+</script>

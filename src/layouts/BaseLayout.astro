@@ -1,5 +1,7 @@
 ---
 import Seo from '@/components/seo/Seo.astro';
+import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import Header from '@/components/ui/Header.astro';
 import Footer from '@/components/ui/Footer.astro';
 import { SITE } from '@/data/site';
@@ -32,6 +34,7 @@ interface Props {
   hideFooter?: boolean;
   legacyStylesheets?: string[];
   includeLegacyRuntime?: boolean;
+  includeLegacySiteScript?: boolean;
 }
 const {
   title,
@@ -58,6 +61,7 @@ const {
   hideFooter = false,
   legacyStylesheets = [],
   includeLegacyRuntime = true,
+  includeLegacySiteScript = ogType !== 'article',
 } = Astro.props;
 
 function routeToLegacyFile(canonicalUrl: string) {
@@ -74,10 +78,8 @@ function routeToLegacyFile(canonicalUrl: string) {
 }
 
 // Legacy runtime I/O and dead helper functions removed (REF-01 / REF-02).
-// The generic runtime is now emitted as native Astro <script> elements in the
-// body (see below) instead of a raw-HTML string blob — strict-native clean
-// per the route-source contract (no legacy runtime transport markers).
-
+// Each remaining script is an explicit compatibility owner. Strict-native
+// article layouts disable site.js and receive ReaderActionsRuntime instead.
 const runtimePageId =
   routeToLegacyFile(canonical).replace(/\/index\.html$/, '').replace(/\//g, '-') || 'home';
 const runtimeConfig = {
@@ -104,11 +106,10 @@ const runtimeConfig = {
 const runtimeScripts = [
   assetUrl('js/site-utils.js'),
   assetUrl('js/scroll-perf.js'),
-  assetUrl('js/site.js'),
+  ...(includeLegacySiteScript ? [assetUrl('js/site.js')] : []),
   assetUrl('js/sw-register.js'),
 ];
 const searchSrc = assetUrl('js/search.js');
-import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
 <!doctype html>
 <html lang="ru">
@@ -174,6 +175,7 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
           window.SITE_CONFIG = __gbSiteConfig;
         </script>
         {runtimeScripts.map((src) => <script is:inline defer src={src}></script>)}
+        {!includeLegacySiteScript && <ReaderActionsRuntime />}
         {/* Lazy search: ~31KB saved on initial pageload. search.js loads on first Ctrl+K / click. */}
         <script is:inline define:vars={{ __gbSearchSrc: searchSrc }}>
           {`!function(){var e=function(o){window.__gbSearchBootRequested=true,window.__gbSearchOpenAfterLoad=!!o;var t=document.createElement("script");t.defer=true,t.src=__gbSearchSrc,document.head.appendChild(t);e=function(){}};function u(o){e(o),document.removeEventListener("keydown",k),document.removeEventListener("click",c),document.removeEventListener("touchstart",c)}function k(n){(n.metaKey||n.ctrlKey)&&"k"===String(n.key).toLowerCase()&&(n.preventDefault(),u(true))}function c(){u(false)}document.addEventListener("keydown",k),document.addEventListener("click",c),document.addEventListener("touchstart",c)}();`}

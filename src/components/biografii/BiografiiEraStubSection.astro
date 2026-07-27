@@ -1,6 +1,7 @@
 ---
 /**
  * BiografiiEraStubSection.astro — reusable placeholder era block for /biografii/.
+ * The native route renders every era in SSR without observer-owned visibility.
  */
 export interface Props {
   badge: string;
@@ -10,7 +11,7 @@ export interface Props {
 }
 const { badge, id, title, desc } = Astro.props;
 ---
-<section class="h-section h-reveal bio-era" style="padding-top:0;" aria-labelledby={id}>
+<section class="h-section bio-era" style="padding-top:0;" aria-labelledby={id}>
   <div class="bio-era__head">
     <span class="bio-era__badge">{badge}</span>
     <span class="bio-era__rule" aria-hidden="true"></span>
