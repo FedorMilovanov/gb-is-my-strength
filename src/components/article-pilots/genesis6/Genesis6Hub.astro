@@ -16,13 +16,13 @@ const planned = [
 
   <section class="genesis6-hub__hero">
     <div>
-      <p class="genesis6-hub__kicker">Исследовательская серия · девять частей</p>
+      <p class="genesis6-hub__kicker">Исследовательская серия · девять частей и два экскурса</p>
       <h1 id="genesis6-title">Бытие 6, Енох, Иуда и Пётр</h1>
       <p class="genesis6-hub__lead">Путеводитель по одному из самых трудных узлов библейской интерпретации: сыны Божии, нефилимы, Енохова традиция и тексты Нового Завета.</p>
       <div class="genesis6-hub__status" aria-label="Состояние серии">
-        <span><strong>4</strong> готовых разбора</span>
+        <span><strong>{GENESIS6_SERIES_ITEMS.length}</strong> готовых разборов</span>
         <span><strong>{GENESIS6_TOTAL_MIN}</strong> минут чтения</span>
-        <span><strong>5</strong> следующих частей без фиктивных ссылок</span>
+        <span><strong>{planned.length}</strong> следующих частей без фиктивных ссылок</span>
       </div>
       <a class="genesis6-hub__start" href={`/hard-texts/${GENESIS6_SERIES_ITEMS[0].slug}/`}>Начать с апостольского свидетельства <span aria-hidden="true">→</span></a>
     </div>
@@ -46,7 +46,7 @@ const planned = [
   </section>
 
   <section class="genesis6-catalog" aria-labelledby="genesis6-catalog-title">
-    <header class="genesis6-catalog__head"><div><p>Оглавление</p><h2 id="genesis6-catalog-title">Девять частей серии</h2></div><p>Части I–V показаны как редакционный план и не ведут на несуществующие страницы. Опубликованные исходники VI–IX доступны для предпубликационной технической проверки.</p></header>
+    <header class="genesis6-catalog__head"><div><p>Оглавление</p><h2 id="genesis6-catalog-title">Девять частей и два экскурса</h2></div><p>Части I–V показаны как редакционный план и не ведут на несуществующие страницы. Исходники VI–IX и экскурсы VI‑A/VI‑B доступны только для предпубликационной технической проверки.</p></header>
     <div class="genesis6-cards">
       {planned.map((entry) => (
         <article class="genesis6-card genesis6-card--planned" aria-label={`${entry.title} — планируется`}>
@@ -59,7 +59,7 @@ const planned = [
         <a class="genesis6-card genesis6-card--published" href={`/hard-texts/${entry.slug}/`}>
           <picture class="genesis6-card__picture"><source srcset={entry.coverAvif.replace('../..', '')} type="image/avif" /><img src={entry.cover.replace('../..', '')} alt={entry.coverAlt} width="1200" height="675" loading="lazy" decoding="async" /></picture>
           <span class="genesis6-card__number">{entry.roman}</span>
-          <div class="genesis6-card__copy"><p class="genesis6-card__state">Готово · {entry.minutes} мин</p><h3>{entry.shortTitle}</h3><p>{entry.description}</p><span class="genesis6-card__action">Читать разбор →</span></div>
+          <div class="genesis6-card__copy"><p class="genesis6-card__state">{entry.tier === 'satellite' ? 'Экскурс' : 'Готово'} · {entry.minutes} мин</p><h3>{entry.shortTitle}</h3><p>{entry.description}</p><span class="genesis6-card__action">Читать разбор →</span></div>
         </a>
       ))}
     </div>

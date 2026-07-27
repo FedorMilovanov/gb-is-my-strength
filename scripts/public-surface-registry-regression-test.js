@@ -12,10 +12,10 @@ const {
 const loaded = loadRouteRecords();
 const baseline = buildPublicSurfaceRegistry({ loaded });
 assert.deepEqual(baseline.errors, [], baseline.errors.join('\n'));
-assert.equal(baseline.entries.length, 81);
-assert.deepEqual(baseline.counts, { page: 9, series: 56, article: 2, special: 14 });
-assert.deepEqual(baseline.shapeCounts, { flat: 32, book: 24 });
-assert.deepEqual(baseline.roleCounts, { page: 2, reading: 52, application: 14, landing: 11, reference: 2 });
+assert.equal(baseline.entries.length, 83);
+assert.deepEqual(baseline.counts, { page: 9, series: 58, article: 2, special: 14 });
+assert.deepEqual(baseline.shapeCounts, { flat: 34, book: 24 });
+assert.deepEqual(baseline.roleCounts, { page: 2, reading: 54, application: 14, landing: 11, reference: 2 });
 
 const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));
 const bookEntry = entryByRoute.get('/articles/novoe-serdce/');
