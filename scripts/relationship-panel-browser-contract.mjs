@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-/** Browser contract for compiler-owned static article relation projections. */
+/** Browser and corpus contracts for compiler-owned static article relations. */
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join, extname, dirname } from 'node:path';
+import { join, extname, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const COMPILED_PATH = join(DIST, 'data', 'relations.compiled.json');
+const PROJECTION_REPORT_PATH = join(DIST, 'reports', 'relation-projection.json');
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
@@ -40,6 +41,104 @@ function relevantConsoleError(message) {
   const localOriginProductionIcon = /Loading the image 'https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons\/icon-)/.test(value)
     && /Content Security Policy directive/.test(value);
   return !localOriginProductionIcon;
+}
+
+function normalizeRoute(value) {
+  let route = String(value || '/').split(/[?#]/)[0].replace(/\\/g, '/').replace(/\/{2,}/g, '/');
+  if (!route.startsWith('/')) route = `/${route}`;
+  return route.length > 1 && !route.endsWith('/') ? `${route}/` : route || '/';
+}
+
+function routeForFile(file) {
+  let route = relative(DIST, file).split(sep).join('/');
+  if (route === 'index.html') return '/';
+  if (route.endsWith('/index.html')) route = route.slice(0, -'index.html'.length);
+  return normalizeRoute(`/${route}`);
+}
+
+async function walkHtml(dir, out = []) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.')) continue;
+    const target = join(dir, entry.name);
+    if (entry.isDirectory()) await walkHtml(target, out);
+    else if (target.endsWith('.html')) out.push(target);
+  }
+  return out;
+}
+
+function matchesAll(value, pattern) {
+  return Array.from(String(value || '').matchAll(pattern));
+}
+
+async function staticCorpusScene(compiled, nodeMap) {
+  const issues = [];
+  const sources = new Set();
+  const files = await walkHtml(DIST);
+  const report = JSON.parse(await readFile(PROJECTION_REPORT_PATH, 'utf8'));
+  let panelFiles = 0;
+
+  for (const file of files) {
+    const html = await readFile(file, 'utf8');
+    if (!html.includes('gb-relations-panel')) continue;
+    panelFiles += 1;
+    const route = routeForFile(file);
+    const panelStarts = matchesAll(html, /<nav\b[^>]*\bclass=["'][^"']*\bgb-relations-panel\b[^"']*["'][^>]*>/gi);
+    if (panelStarts.length !== 1) {
+      issues.push(`${route}: ${panelStarts.length} relation panels`);
+      continue;
+    }
+    const panelStart = panelStarts[0].index;
+    const panelEnd = html.indexOf('</nav>', panelStart);
+    if (panelEnd < panelStart) {
+      issues.push(`${route}: unclosed relation panel`);
+      continue;
+    }
+    const panel = html.slice(panelStart, panelEnd + '</nav>'.length);
+    const source = panel.match(/\bdata-relation-source=["']([^"']+)["']/i)?.[1] || '';
+    const engine = panel.match(/\bdata-relation-engine=["']([^"']+)["']/i)?.[1] || '';
+    const node = nodeMap.get(source);
+    const projection = compiled.projections?.byNode?.[source];
+    const hrefs = matchesAll(panel, /<a\b[^>]*\bclass=["'][^"']*\bgb-relations-panel__item\b[^"']*["'][^>]*\bhref=["']([^"']+)["']/gi)
+      .map((match) => normalizeRoute(match[1]));
+    const edges = matchesAll(panel, /\bdata-relation-edge=["']([^"']+)["']/gi).map((match) => match[1]);
+    const kinds = matchesAll(panel, /\bdata-relation-kind=["']([^"']+)["']/gi).map((match) => match[1]);
+    const atlas = panel.match(/<a\b[^>]*\bclass=["'][^"']*\bgb-relations-panel__atlas\b[^"']*["'][^>]*\bhref=["']([^"']+)["']/i)?.[1] || '';
+    const cssRefs = matchesAll(html, /<link\b[^>]*\bhref=["'][^"']*\/css\/relationship-panel\.css(?:\?[^"']*)?["'][^>]*>/gi).length;
+    const siteScripts = matchesAll(html, /<script\b[^>]*\bsrc=["'][^"']*\/js\/site\.js(?:\?[^"']*)?["'][^>]*>/gi).length;
+    const relationScripts = matchesAll(html, /<script\b[^>]*\bsrc=["'][^"']*\/js\/relationship-panel\.js(?:\?[^"']*)?["'][^>]*>/gi).length;
+    const oldBlocks = matchesAll(html, /\bclass=["'][^"']*\bgbx-backlinks\b[^"']*["']/gi).length;
+    const rawGraphReferences = matchesAll(html, /\/data\/(?:links-graph|series)\.json/gi).length;
+    const sameSeriesUrls = node?.seriesId
+      ? new Set(compiled.nodes.filter((item) => item.id !== source && item.seriesId === node.seriesId).map((item) => normalizeRoute(item.url)))
+      : new Set();
+    const sameSeriesTargets = hrefs.filter((href) => sameSeriesUrls.has(href));
+
+    if (!source || !node || sources.has(source)) issues.push(`${route}: invalid or duplicate source ${source || '<missing>'}`);
+    else sources.add(source);
+    if (engine !== '1') issues.push(`${route}: engine=${engine || '<missing>'}`);
+    if (node && normalizeRoute(node.url) !== route) issues.push(`${route}: source ${source} owns ${node.url}`);
+    if (!projection || projection.article.length < 1 || projection.article.length > 4) issues.push(`${route}: invalid compiler projection`);
+    if (hrefs.length < 1 || hrefs.length > 4) issues.push(`${route}: ${hrefs.length} visible targets`);
+    if (new Set(hrefs).size !== hrefs.length) issues.push(`${route}: duplicate targets`);
+    if (edges.length !== hrefs.length || new Set(edges).size !== edges.length) issues.push(`${route}: edge identity mismatch`);
+    if (kinds.length !== hrefs.length) issues.push(`${route}: relation kind mismatch`);
+    if (sameSeriesTargets.length) issues.push(`${route}: same-series targets ${sameSeriesTargets.join(', ')}`);
+    if (atlas !== `/map/?focus=${encodeURIComponent(source)}`) issues.push(`${route}: invalid Atlas focus ${atlas}`);
+    if (cssRefs !== 1) issues.push(`${route}: ${cssRefs} relation stylesheets`);
+    if (siteScripts) issues.push(`${route}: legacy site.js loaded`);
+    if (relationScripts) issues.push(`${route}: obsolete relationship runtime loaded`);
+    if (oldBlocks) issues.push(`${route}: ${oldBlocks} legacy backlink blocks`);
+    if (rawGraphReferences) issues.push(`${route}: ${rawGraphReferences} raw graph references`);
+  }
+
+  if (panelFiles !== Number(report.projectedPanels)) {
+    issues.push(`corpus count ${panelFiles} != projector report ${report.projectedPanels}`);
+  }
+  if (sources.size !== panelFiles) issues.push(`unique sources ${sources.size} != panel files ${panelFiles}`);
+  if (panelFiles < 1) issues.push('no projected relation panels found');
+
+  record('entire projected HTML corpus', issues.length === 0,
+    JSON.stringify({ panelFiles, uniqueSources: sources.size, projectorPanels: report.projectedPanels, issues: issues.slice(0, 30) }));
 }
 
 async function serve() {
@@ -204,8 +303,8 @@ async function printScene(browser, base) {
   finally { await context.close(); }
 }
 
-if (!existsSync(DIST) || !existsSync(COMPILED_PATH)) {
-  console.error('❌ production-like dist or compiled relation endpoint missing');
+if (!existsSync(DIST) || !existsSync(COMPILED_PATH) || !existsSync(PROJECTION_REPORT_PATH)) {
+  console.error('❌ production-like dist, compiled relation endpoint or projection report missing');
   process.exit(1);
 }
 if (existsSync(join(DIST, 'js', 'relationship-panel.js'))) {
@@ -214,6 +313,7 @@ if (existsSync(join(DIST, 'js', 'relationship-panel.js'))) {
 }
 const compiled = JSON.parse(await readFile(COMPILED_PATH, 'utf8'));
 const nodeMap = new Map(compiled.nodes.map((node) => [node.id, node]));
+await staticCorpusScene(compiled, nodeMap);
 
 const { server, base } = await serve();
 let browser;
