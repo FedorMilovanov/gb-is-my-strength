@@ -6,6 +6,9 @@ on:
       - 'agent/interactive-audit-evidence-contract-20260727'
     paths:
       - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
 
 permissions:
   contents: write
