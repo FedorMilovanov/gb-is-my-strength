@@ -1,7 +1,7 @@
 {
   "note": "Owner-approved visual comparison policy per public route. legacy-diff measures root legacy HTML against production-like dist; native-contract routes intentionally retired legacy presentation and are blocked by the named source/dist and browser guards instead. Never promote a route to native-contract merely to silence a screenshot failure.",
   "tolerancePct": 0.5,
-  "updatedAt": "2026-07-23",
+  "updatedAt": "2026-07-27",
   "baselineType": "policy-aware-legacy-vs-dist-pixel",
   "baselineSource": "repo-root-html-vs-dist",
   "routeArchitectureAtApproval": "mixed: legacy parity + native Astro + shared series chrome + built-app maps",
@@ -56,6 +56,17 @@
       ],
       "reviewedAt": "2026-07-22",
       "reviewedSourceSha": "aeae401d782d769dad582395f2045fa79c020f42"
+    },
+    "/map/": {
+      "mode": "native-contract",
+      "reason": "The Atlas route intentionally replaced the retired hardcoded legacy graph with a compiler-owned SSR shell, immutable compiled payload, responsive graph/list runtime, deep-link state and fail-closed recovery; visual correctness is now defined by those native contracts rather than resemblance to the obsolete map.",
+      "requiredGuards": [
+        "scripts/atlas-browser-contract.mjs",
+        "scripts/check-engine-contracts.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-27",
+      "reviewedSourceSha": "69d51f54d430fea885685ddff3c9ff5580b51cb0"
     }
   },
   "routes": {
