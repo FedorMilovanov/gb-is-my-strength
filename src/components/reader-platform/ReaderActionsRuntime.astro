@@ -1,0 +1,10 @@
+---
+/**
+ * Explicit native owner for reader-level actions that were historically
+ * bundled into site.js. Load this only on strict-native reading surfaces.
+ */
+import { assetUrl } from '@/lib/asset-version';
+
+const actionsSrc = assetUrl('js/reader-actions.js');
+---
+<script is:inline defer src={actionsSrc}></script>
