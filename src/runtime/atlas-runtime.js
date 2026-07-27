@@ -1,16 +1,22 @@
 /*
  * atlas-runtime.js
- * Native runtime for /map/. The HTML list remains usable without this file.
+ *
+ * Native runtime for /map/. The server-rendered list remains usable without
+ * this file. Runtime data is compiled from the transitional relationship graph
+ * plus the canonical published series registry.
  */
 (function () {
   'use strict';
 
   var GRAPH_URL = '/data/links-graph.json';
+  var SERIES_URL = '/data/series.json';
   var WIDTH = 1600;
   var HEIGHT = 1000;
   var MIN_WIDTH = 350;
   var MAX_WIDTH = 2400;
   var INITIAL_VIEW = { x: 0, y: 0, w: WIDTH, h: HEIGHT };
+  var ALL_KINDS = ['series', 'cluster', 'structure', 'bridge'];
+
   var GROUP_META = {
     gill: { label: 'Джон Гилл', color: '#c3925a' },
     nagornaya: { label: 'Нагорная проповедь', color: '#d8ae4e' },
@@ -24,9 +30,22 @@
     landing: { label: 'Разделы библиотеки', color: '#9a8ac5' }
   };
 
+  var SERIES_GROUP = {
+    nagornaya: 'nagornaya',
+    'dzhon-gill': 'gill',
+    'hard-texts': 'hard-texts',
+    'pastor-series': 'pastor-series',
+    'russian-baptism': 'stand'
+  };
+
   function ready(fn) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, { once: true });
     else fn();
+  }
+
+  function normalizeUrl(value) {
+    var path = String(value || '/').split(/[?#]/)[0].replace(/\/{2,}/g, '/');
+    return path.length > 1 && !path.endsWith('/') ? path + '/' : path;
   }
 
   function atlasGroupFor(node) {
@@ -38,43 +57,93 @@
     return 'landing';
   }
 
-  function prepareGraph(raw) {
-    var nodes = (Array.isArray(raw.nodes) ? raw.nodes : []).map(function (node) {
+  function edgeKey(source, target) {
+    return [source, target].sort().join('::');
+  }
+
+  function prepareGraph(rawGraph, rawSeries) {
+    var nodes = (Array.isArray(rawGraph.nodes) ? rawGraph.nodes : []).map(function (node) {
       return Object.assign({}, node, {
         atlasGroup: atlasGroupFor(node),
         isHub: node.group === 'landing' || ['biografii', 'hard-texts', 'pastor-series', 'karty'].includes(node.id)
       });
     });
-    var nodeMap = new Map(nodes.map(function (node) { return [node.id, node]; }));
-    var seen = new Set();
-    var edges = [];
 
-    (Array.isArray(raw.edges) ? raw.edges : []).forEach(function (edge) {
+    var nodeByUrl = new Map(nodes.map(function (node) { return [normalizeUrl(node.url), node]; }));
+    var seriesPaths = [];
+
+    Object.entries(rawSeries || {}).forEach(function (entry) {
+      var seriesId = entry[0];
+      var series = entry[1] || {};
+      var atlasGroup = SERIES_GROUP[seriesId] || 'standalone';
+      var ids = [];
+
+      (Array.isArray(series.parts) ? series.parts : []).forEach(function (part) {
+        if (part.status && part.status !== 'published') return;
+        var url = normalizeUrl(String(series.baseUrl || '/') + String(part.slug || '') + '/');
+        var node = nodeByUrl.get(url);
+        if (!node) {
+          node = {
+            id: 'series-' + seriesId + '-' + part.slug,
+            title: part.title,
+            url: url,
+            group: atlasGroup,
+            atlasGroup: atlasGroup,
+            readingTime: part.readingTime,
+            desc: 'Материал серии «' + series.title + '».',
+            tags: [series.title, 'серия'],
+            isHub: false
+          };
+          nodes.push(node);
+          nodeByUrl.set(url, node);
+        } else {
+          node.atlasGroup = atlasGroup;
+          if (!node.readingTime && part.readingTime) node.readingTime = part.readingTime;
+        }
+        ids.push(node.id);
+      });
+
+      if (ids.length > 1) seriesPaths.push(ids);
+    });
+
+    var nodeMap = new Map(nodes.map(function (node) { return [node.id, node]; }));
+    var edgeMap = new Map();
+
+    (Array.isArray(rawGraph.edges) ? rawGraph.edges : []).forEach(function (edge) {
       if (!Array.isArray(edge) || edge.length < 2) return;
       var source = String(edge[0]);
       var target = String(edge[1]);
       if (!source || !target || source === target || !nodeMap.has(source) || !nodeMap.has(target)) return;
-      var key = [source, target].sort().join('::');
-      if (seen.has(key)) return;
-      seen.add(key);
       var a = nodeMap.get(source);
       var b = nodeMap.get(target);
-      var sameGroup = a.atlasGroup === b.atlasGroup;
-      var structural = a.isHub || b.isHub;
-      edges.push({ source: source, target: target, kind: sameGroup ? 'cluster' : structural ? 'structure' : 'bridge' });
+      var kind = a.atlasGroup === b.atlasGroup ? 'cluster' : a.isHub || b.isHub ? 'structure' : 'bridge';
+      edgeMap.set(edgeKey(source, target), { source: source, target: target, kind: kind });
     });
 
-    var preferred = ['gill', 'nagornaya', 'biografii', 'stand', 'russian-baptism', 'hard-texts', 'karty', 'pastor-series', 'standalone', 'landing'];
+    seriesPaths.forEach(function (ids) {
+      for (var index = 0; index < ids.length - 1; index += 1) {
+        var source = ids[index];
+        var target = ids[index + 1];
+        edgeMap.set(edgeKey(source, target), { source: source, target: target, kind: 'series' });
+      }
+    });
+
+    var preferred = ['gill', 'nagornaya', 'biografii', 'stand', 'hard-texts', 'karty', 'pastor-series', 'standalone', 'landing'];
     var ids = Array.from(new Set(nodes.map(function (node) { return node.atlasGroup || 'standalone'; })));
     ids.sort(function (a, b) {
       var ai = preferred.indexOf(a);
       var bi = preferred.indexOf(b);
       return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi) || a.localeCompare(b, 'ru');
     });
+
     var groups = ids.map(function (id) {
-      return Object.assign({ id: id, count: nodes.filter(function (node) { return node.atlasGroup === id; }).length }, GROUP_META[id] || { label: id, color: '#9a8ac5' });
+      return Object.assign(
+        { id: id, count: nodes.filter(function (node) { return node.atlasGroup === id; }).length },
+        GROUP_META[id] || { label: id, color: '#9a8ac5' }
+      );
     });
-    return { nodes: nodes, edges: edges, groups: groups };
+
+    return { nodes: nodes, edges: Array.from(edgeMap.values()), groups: groups };
   }
 
   function escapeHtml(value) {
@@ -86,12 +155,12 @@
       .replace(/'/g, '&#039;');
   }
 
-  function init(raw) {
+  function init(rawGraph, rawSeries) {
     var app = document.getElementById('atlasApp');
     var svg = document.getElementById('atlasCanvas');
     if (!app || !svg) return;
 
-    var data = prepareGraph(raw);
+    var data = prepareGraph(rawGraph, rawSeries);
     var world = document.getElementById('atlasWorld');
     var edgeLayer = document.getElementById('atlasEdges');
     var nodeLayer = document.getElementById('atlasNodes');
@@ -111,7 +180,7 @@
     var nodePositions = new Map();
     var edgeElements = [];
     var nodeElements = new Map();
-    var enabledKinds = new Set(['cluster', 'structure', 'bridge']);
+    var enabledKinds = new Set(ALL_KINDS);
     var pointers = new Map();
     var gesture = null;
     var view = Object.assign({}, INITIAL_VIEW);
@@ -138,23 +207,26 @@
       ];
       nodePositions = new Map();
       labelLayer.innerHTML = '';
+
       data.groups.forEach(function (group, groupIndex) {
         var center = centers[groupIndex];
         if (!center) {
-          var angle = Math.PI * 2 * groupIndex / data.groups.length - Math.PI / 2;
-          center = [800 + Math.cos(angle) * 560, 500 + Math.sin(angle) * 340];
+          var outerAngle = Math.PI * 2 * groupIndex / data.groups.length - Math.PI / 2;
+          center = [800 + Math.cos(outerAngle) * 560, 500 + Math.sin(outerAngle) * 340];
         }
+
         var groupNodes = data.nodes.filter(function (node) { return node.atlasGroup === group.id; });
         var hub = groupNodes.find(function (node) { return node.isHub; }) || groupNodes[0];
         var leaves = groupNodes.filter(function (node) { return node !== hub; });
         if (hub) nodePositions.set(hub.id, { x: center[0], y: center[1], r: 18, hub: true });
+
         leaves.forEach(function (node, index) {
           var ring = Math.floor(index / 8);
           var ringIndex = index % 8;
           var ringCount = Math.min(8, leaves.length - ring * 8);
           var angle = Math.PI * 2 * ringIndex / Math.max(1, ringCount) - Math.PI / 2 + groupIndex * .31;
-          var radiusX = 72 + ring * 52;
-          var radiusY = 58 + ring * 42;
+          var radiusX = 78 + ring * 58;
+          var radiusY = 62 + ring * 46;
           nodePositions.set(node.id, {
             x: center[0] + Math.cos(angle) * radiusX,
             y: center[1] + Math.sin(angle) * radiusY,
@@ -162,9 +234,13 @@
             hub: false
           });
         });
+
         var label = createSvg('text', {
-          x: center[0], y: center[1] - (leaves.length ? 102 : 48),
-          class: 'atlas-cluster-label', 'text-anchor': 'middle', 'data-group': group.id
+          x: center[0],
+          y: center[1] - (leaves.length ? 112 + Math.floor(leaves.length / 9) * 20 : 48),
+          class: 'atlas-cluster-label',
+          'text-anchor': 'middle',
+          'data-group': group.id
         });
         label.textContent = group.label;
         label.style.setProperty('--cluster-color', group.color);
@@ -177,41 +253,70 @@
       nodeLayer.innerHTML = '';
       edgeElements = [];
       nodeElements = new Map();
+
       data.edges.forEach(function (edge) {
         var a = nodePositions.get(edge.source);
         var b = nodePositions.get(edge.target);
         if (!a || !b) return;
         var line = createSvg('line', {
-          x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+          x1: a.x,
+          y1: a.y,
+          x2: b.x,
+          y2: b.y,
           class: 'atlas-edge atlas-edge--' + edge.kind,
-          'data-source': edge.source, 'data-target': edge.target, 'data-kind': edge.kind
+          'data-source': edge.source,
+          'data-target': edge.target,
+          'data-kind': edge.kind
         });
         edgeLayer.appendChild(line);
         edgeElements.push({ edge: edge, el: line });
       });
+
       data.nodes.forEach(function (node) {
         var pos = nodePositions.get(node.id);
         if (!pos) return;
         var group = groupById.get(node.atlasGroup) || { color: '#9a8ac5', label: node.atlasGroup };
         var g = createSvg('g', {
           class: 'atlas-node' + (pos.hub ? ' atlas-node--hub' : ''),
-          transform: 'translate(' + pos.x + ' ' + pos.y + ')', tabindex: '0', role: 'button',
-          'aria-label': node.title + '. ' + group.label, 'data-node-id': node.id, 'data-group': node.atlasGroup
+          transform: 'translate(' + pos.x + ' ' + pos.y + ')',
+          tabindex: '0',
+          role: 'button',
+          'aria-label': node.title + '. ' + group.label,
+          'data-node-id': node.id,
+          'data-group': node.atlasGroup
         });
         g.style.setProperty('--node-color', group.color);
+
         var halo = createSvg('circle', { class: 'atlas-node__halo', r: pos.r + 12 });
         var core = createSvg('circle', { class: 'atlas-node__core', r: pos.r });
-        var glint = createSvg('circle', { class: 'atlas-node__glint', cx: -pos.r * .28, cy: -pos.r * .32, r: Math.max(1.5, pos.r * .18) });
-        var label = createSvg('text', { class: 'atlas-node__label', x: 0, y: pos.r + 18, 'text-anchor': 'middle' });
+        var glint = createSvg('circle', {
+          class: 'atlas-node__glint',
+          cx: -pos.r * .28,
+          cy: -pos.r * .32,
+          r: Math.max(1.5, pos.r * .18)
+        });
+        var label = createSvg('text', {
+          class: 'atlas-node__label',
+          x: 0,
+          y: pos.r + 18,
+          'text-anchor': 'middle'
+        });
         label.textContent = truncate(node.title, pos.hub ? 38 : 29);
         g.append(halo, core, glint, label);
-        g.addEventListener('click', function (event) { event.stopPropagation(); focusNode(node.id, true); });
+        g.addEventListener('click', function (event) {
+          event.stopPropagation();
+          focusNode(node.id, true);
+        });
         g.addEventListener('keydown', function (event) {
-          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); focusNode(node.id, true); }
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            focusNode(node.id, true);
+          }
         });
         nodeLayer.appendChild(g);
         nodeElements.set(node.id, g);
       });
+
       applyFilters();
     }
 
@@ -225,6 +330,7 @@
     }
 
     function kindLabel(kind) {
+      if (kind === 'series') return 'Порядок серии';
       if (kind === 'cluster') return 'Внутри темы';
       if (kind === 'structure') return 'Раздел и материал';
       return 'Мост между темами';
@@ -241,13 +347,23 @@
       detailContent.innerHTML =
         '<span class="atlas-detail__kind">' + escapeHtml(group.label) + '</span>' +
         '<h2>' + escapeHtml(node.title) + '</h2>' +
-        '<div class="atlas-detail__meta"><span>' + (node.readingTime ? escapeHtml(node.readingTime) + ' мин. чтения' : 'Материал библиотеки') + '</span><span>' + neighbors.length + ' ' + (neighbors.length === 1 ? 'связь' : neighbors.length < 5 ? 'связи' : 'связей') + '</span></div>' +
+        '<div class="atlas-detail__meta"><span>' +
+          (node.readingTime ? escapeHtml(node.readingTime) + ' мин. чтения' : 'Материал библиотеки') +
+          '</span><span>' + neighbors.length + ' ' +
+          (neighbors.length === 1 ? 'связь' : neighbors.length < 5 ? 'связи' : 'связей') +
+          '</span></div>' +
         (node.desc ? '<p class="atlas-detail__desc">' + escapeHtml(node.desc) + '</p>' : '') +
         '<a class="atlas-detail__primary" href="' + escapeHtml(node.url) + '">Читать материал <span aria-hidden="true">→</span></a>' +
-        (neighbors.length ? '<section class="atlas-detail__relations" aria-labelledby="atlasNeighborTitle"><h3 id="atlasNeighborTitle">Связано с материалом</h3><div>' + neighbors.map(function (item) {
-          var neighbor = nodeById.get(item.id);
-          return '<button type="button" data-detail-focus="' + escapeHtml(neighbor.id) + '"><span>' + escapeHtml(kindLabel(item.kind)) + '</span><strong>' + escapeHtml(neighbor.title) + '</strong></button>';
-        }).join('') + '</div></section>' : '');
+        (neighbors.length ?
+          '<section class="atlas-detail__relations" aria-labelledby="atlasNeighborTitle">' +
+            '<h3 id="atlasNeighborTitle">Связано с материалом</h3><div>' +
+            neighbors.map(function (item) {
+              var neighbor = nodeById.get(item.id);
+              return '<button type="button" data-detail-focus="' + escapeHtml(neighbor.id) + '">' +
+                '<span>' + escapeHtml(kindLabel(item.kind)) + '</span>' +
+                '<strong>' + escapeHtml(neighbor.title) + '</strong></button>';
+            }).join('') +
+            '</div></section>' : '');
       detail.classList.add('is-open');
       detailContent.querySelectorAll('[data-detail-focus]').forEach(function (button) {
         button.addEventListener('click', function () { focusNode(button.dataset.detailFocus, true); });
@@ -260,19 +376,26 @@
       view = {
         x: Math.max(-350, Math.min(WIDTH + 350 - w, next.x)),
         y: Math.max(-250, Math.min(HEIGHT + 250 - h, next.y)),
-        w: w, h: h
+        w: w,
+        h: h
       };
       if (animate && !prefersReduced) svg.classList.add('is-camera-moving');
       svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h);
       updateSemanticZoom();
-      if (animate && !prefersReduced) window.setTimeout(function () { svg.classList.remove('is-camera-moving'); }, 360);
+      if (animate && !prefersReduced) {
+        window.setTimeout(function () { svg.classList.remove('is-camera-moving'); }, 360);
+      }
     }
 
     function updateSemanticZoom() {
       var scale = WIDTH / view.w;
       var level = scale < 1.35 ? 'overview' : scale < 2.45 ? 'cluster' : 'detail';
       app.dataset.zoomLevel = level;
-      zoomCopy.textContent = level === 'overview' ? 'Обзор библиотеки' : level === 'cluster' ? 'Тематический кластер' : 'Подробное окружение';
+      zoomCopy.textContent = level === 'overview'
+        ? 'Обзор библиотеки'
+        : level === 'cluster'
+          ? 'Тематический кластер'
+          : 'Подробное окружение';
     }
 
     function zoomAt(factor, clientX, clientY, animate) {
@@ -286,7 +409,8 @@
       setViewBox({
         x: ux - (px - rect.left) / rect.width * nextW,
         y: uy - (py - rect.top) / rect.height * nextH,
-        w: nextW, h: nextH
+        w: nextW,
+        h: nextH
       }, animate);
     }
 
@@ -305,6 +429,7 @@
       if (!node || !pos) return;
       activeFocus = id;
       var neighbors = new Set(relatedTo(id).map(function (item) { return item.id; }));
+
       nodeElements.forEach(function (el, nodeId) {
         el.classList.toggle('is-focus', nodeId === id);
         el.classList.toggle('is-neighbor', neighbors.has(nodeId));
@@ -315,10 +440,12 @@
         entry.el.classList.toggle('is-focus', connected);
         entry.el.classList.toggle('is-dim', !connected);
       });
+
       renderDetail(id);
       if (moveCamera) {
         var targetW = Math.min(view.w, 690);
-        setViewBox({ x: pos.x - targetW / 2, y: pos.y - targetW * HEIGHT / WIDTH / 2, w: targetW }, true);
+        var targetH = targetW * HEIGHT / WIDTH;
+        setViewBox({ x: pos.x - targetW / 2, y: pos.y - targetH / 2, w: targetW, h: targetH }, true);
       }
       updateUrl({ focus: id });
     }
@@ -334,14 +461,18 @@
       applyFilters();
     }
 
-    function visibleNode(node) { return activeGroup === 'all' || node.atlasGroup === activeGroup; }
+    function visibleNode(node) {
+      return Boolean(node) && (activeGroup === 'all' || node.atlasGroup === activeGroup);
+    }
 
     function applyFilters() {
       nodeElements.forEach(function (el, id) {
         el.classList.toggle('is-filtered-out', !visibleNode(nodeById.get(id)));
       });
       edgeElements.forEach(function (entry) {
-        var hidden = !enabledKinds.has(entry.edge.kind) || !visibleNode(nodeById.get(entry.edge.source)) || !visibleNode(nodeById.get(entry.edge.target));
+        var hidden = !enabledKinds.has(entry.edge.kind)
+          || !visibleNode(nodeById.get(entry.edge.source))
+          || !visibleNode(nodeById.get(entry.edge.target));
         entry.el.classList.toggle('is-filtered-out', hidden);
       });
       document.querySelectorAll('[data-list-group]').forEach(function (section) {
@@ -378,7 +509,7 @@
     function runSearch(query) {
       var value = String(query || '').trim().toLowerCase();
       document.querySelectorAll('[data-list-node]').forEach(function (row) {
-        var matches = !value || row.dataset.searchText.includes(value);
+        var matches = !value || String(row.dataset.searchText || '').includes(value);
         row.hidden = !matches || !visibleNode(nodeById.get(row.dataset.listNode));
       });
       if (!value) {
@@ -386,12 +517,17 @@
         searchInput.setAttribute('aria-expanded', 'false');
         return [];
       }
+
       var results = data.nodes.filter(function (node) {
         var text = (node.title + ' ' + (node.tags || []).join(' ') + ' ' + (node.desc || '') + ' ' + node.atlasGroup).toLowerCase();
         return text.includes(value) && visibleNode(node);
       }).slice(0, 8);
+
       searchResults.innerHTML = results.map(function (node) {
-        return '<button type="button" role="option" data-search-focus="' + escapeHtml(node.id) + '"><strong>' + escapeHtml(node.title) + '</strong><span>' + escapeHtml((groupById.get(node.atlasGroup) || {}).label || node.atlasGroup) + '</span></button>';
+        var group = groupById.get(node.atlasGroup) || {};
+        return '<button type="button" role="option" data-search-focus="' + escapeHtml(node.id) + '">' +
+          '<strong>' + escapeHtml(node.title) + '</strong>' +
+          '<span>' + escapeHtml(group.label || node.atlasGroup) + '</span></button>';
       }).join('');
       searchResults.hidden = !results.length;
       searchInput.setAttribute('aria-expanded', results.length ? 'true' : 'false');
@@ -415,22 +551,31 @@
     renderGraph();
     setViewBox(INITIAL_VIEW);
     app.dataset.runtimeReady = '1';
+    app.dataset.runtimeNodes = String(data.nodes.length);
+    app.dataset.runtimeEdges = String(data.edges.length);
 
     svg.addEventListener('wheel', function (event) {
       event.preventDefault();
       zoomAt(event.deltaY < 0 ? 1.16 : .86, event.clientX, event.clientY);
     }, { passive: false });
+
     svg.addEventListener('pointerdown', function (event) {
       if (event.target.closest && event.target.closest('.atlas-node')) return;
       svg.setPointerCapture(event.pointerId);
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      if (pointers.size === 1) gesture = { type: 'pan', startX: event.clientX, startY: event.clientY, view: Object.assign({}, view) };
-      else if (pointers.size === 2) {
+      if (pointers.size === 1) {
+        gesture = { type: 'pan', startX: event.clientX, startY: event.clientY, view: Object.assign({}, view) };
+      } else if (pointers.size === 2) {
         var points = Array.from(pointers.values());
-        gesture = { type: 'pinch', distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y), view: Object.assign({}, view) };
+        gesture = {
+          type: 'pinch',
+          distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y),
+          view: Object.assign({}, view)
+        };
       }
       svg.classList.add('is-dragging');
     });
+
     svg.addEventListener('pointermove', function (event) {
       if (!pointers.has(event.pointerId)) return;
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -445,45 +590,80 @@
         if (gesture.distance > 0) {
           var factor = distance / gesture.distance;
           var nextW = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, gesture.view.w / factor));
-          setViewBox({ x: gesture.view.x + (gesture.view.w - nextW) / 2, y: gesture.view.y + (gesture.view.h - nextW * HEIGHT / WIDTH) / 2, w: nextW });
+          var nextH = nextW * HEIGHT / WIDTH;
+          setViewBox({
+            x: gesture.view.x + (gesture.view.w - nextW) / 2,
+            y: gesture.view.y + (gesture.view.h - nextH) / 2,
+            w: nextW,
+            h: nextH
+          });
         }
       }
     });
+
     function endPointer(event) {
       pointers.delete(event.pointerId);
-      if (!pointers.size) { gesture = null; svg.classList.remove('is-dragging'); }
-      else if (pointers.size === 1) {
+      if (!pointers.size) {
+        gesture = null;
+        svg.classList.remove('is-dragging');
+      } else if (pointers.size === 1) {
         var point = Array.from(pointers.values())[0];
         gesture = { type: 'pan', startX: point.x, startY: point.y, view: Object.assign({}, view) };
       }
     }
+
     svg.addEventListener('pointerup', endPointer);
     svg.addEventListener('pointercancel', endPointer);
-    svg.addEventListener('click', function (event) { if (event.target === svg || event.target === world) clearFocus(); });
+    svg.addEventListener('click', function (event) {
+      if (event.target === svg || event.target === world) clearFocus();
+    });
 
     document.getElementById('atlasZoomIn').addEventListener('click', function () { zoomAt(1.35, null, null, true); });
     document.getElementById('atlasZoomOut').addEventListener('click', function () { zoomAt(.74, null, null, true); });
-    document.getElementById('atlasCenter').addEventListener('click', function () { clearFocus(); setViewBox(INITIAL_VIEW, true); });
+    document.getElementById('atlasCenter').addEventListener('click', function () {
+      clearFocus();
+      setViewBox(INITIAL_VIEW, true);
+    });
     document.getElementById('atlasDetailClose').addEventListener('click', function () { clearFocus(); });
-    document.querySelectorAll('[data-atlas-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.dataset.atlasView); }); });
-    document.querySelectorAll('[data-atlas-group]').forEach(function (button) { button.addEventListener('click', function () { setGroup(button.dataset.atlasGroup); }); });
+
+    document.querySelectorAll('[data-atlas-view]').forEach(function (button) {
+      button.addEventListener('click', function () { setView(button.dataset.atlasView); });
+    });
+    document.querySelectorAll('[data-atlas-group]').forEach(function (button) {
+      button.addEventListener('click', function () { setGroup(button.dataset.atlasGroup); });
+    });
     document.querySelectorAll('.atlas-relation-filter input').forEach(function (input) {
       input.addEventListener('change', function () {
-        enabledKinds = new Set(Array.from(document.querySelectorAll('.atlas-relation-filter input:checked')).map(function (item) { return item.value; }));
+        enabledKinds = new Set(Array.from(document.querySelectorAll('.atlas-relation-filter input:checked')).map(function (item) {
+          return item.value;
+        }));
         applyFilters();
       });
     });
     document.querySelectorAll('[data-list-focus]').forEach(function (button) {
-      button.addEventListener('click', function () { setView('graph'); focusNode(button.dataset.listFocus, true); });
+      button.addEventListener('click', function () {
+        setView('graph');
+        focusNode(button.dataset.listFocus, true);
+      });
     });
+
     searchInput.addEventListener('input', function () { runSearch(searchInput.value); });
     searchInput.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') { searchResults.hidden = true; searchInput.setAttribute('aria-expanded', 'false'); }
+      if (event.key === 'Escape') {
+        searchResults.hidden = true;
+        searchInput.setAttribute('aria-expanded', 'false');
+      }
       if (event.key === 'Enter') {
         var first = runSearch(searchInput.value)[0];
-        if (first) { event.preventDefault(); setView('graph'); focusNode(first.id, true); searchResults.hidden = true; }
+        if (first) {
+          event.preventDefault();
+          setView('graph');
+          focusNode(first.id, true);
+          searchResults.hidden = true;
+        }
       }
     });
+
     document.getElementById('atlasFilterTrigger').addEventListener('click', function () {
       var sidebar = document.getElementById('atlasSidebar');
       var open = !sidebar.classList.contains('is-open');
@@ -494,16 +674,23 @@
     document.getElementById('atlasReset').addEventListener('click', function () {
       searchInput.value = '';
       runSearch('');
-      enabledKinds = new Set(['cluster', 'structure', 'bridge']);
+      enabledKinds = new Set(ALL_KINDS);
       document.querySelectorAll('.atlas-relation-filter input').forEach(function (input) { input.checked = true; });
       setGroup('all');
       setView('graph');
       setViewBox(INITIAL_VIEW, true);
       history.replaceState({}, '', location.pathname);
     });
+
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') { clearFocus(); closeFilters(); searchResults.hidden = true; }
-      if ((event.key === '+' || event.key === '=') && document.activeElement !== searchInput) zoomAt(1.25, null, null, true);
+      if (event.key === 'Escape') {
+        clearFocus();
+        closeFilters();
+        searchResults.hidden = true;
+      }
+      if ((event.key === '+' || event.key === '=') && document.activeElement !== searchInput) {
+        zoomAt(1.25, null, null, true);
+      }
       if (event.key === '-' && document.activeElement !== searchInput) zoomAt(.8, null, null, true);
       if (event.key === '0' && document.activeElement !== searchInput) setViewBox(INITIAL_VIEW, true);
     });
@@ -515,9 +702,16 @@
   }
 
   ready(function () {
-    fetch(GRAPH_URL, { credentials: 'same-origin' })
-      .then(function (response) { if (!response.ok) throw new Error('graph HTTP ' + response.status); return response.json(); })
-      .then(init)
+    Promise.all([
+      fetch(GRAPH_URL, { credentials: 'same-origin' }),
+      fetch(SERIES_URL, { credentials: 'same-origin' })
+    ])
+      .then(function (responses) {
+        if (!responses[0].ok) throw new Error('graph HTTP ' + responses[0].status);
+        if (!responses[1].ok) throw new Error('series HTTP ' + responses[1].status);
+        return Promise.all([responses[0].json(), responses[1].json()]);
+      })
+      .then(function (payload) { init(payload[0], payload[1]); })
       .catch(function (error) {
         var app = document.getElementById('atlasApp');
         if (app) app.dataset.runtimeError = '1';
