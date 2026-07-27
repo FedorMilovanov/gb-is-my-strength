@@ -1,0 +1,198 @@
+name: TEMP Hermenevtika footnote materializer
+
+on:
+  push:
+    branches:
+      - 'agent/hermenevtika-static-footnotes-20260727'
+    paths:
+      - '.github/workflows/_temp-hermenevtika-footnote-materializer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: agent/hermenevtika-static-footnotes-20260727
+          fetch-depth: 0
+
+      - name: Materialize native source and permanent contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const assert = require('assert');
+
+          const SOURCE = 'src/components/article-pilots/hermenevtika/HermenevtikaBody.astro';
+          const STATIC_AUDIT = 'scripts/article-native-contract-audit.js';
+          const BROWSER_AUDIT = 'scripts/interactive-audit.js';
+          const EXPECTED = ['40', '72', '75', '82', '83', '107'];
+          const FORBIDDEN = /<(?:button|a)\b|\bdata-ref\s*=|\btabindex\s*=|\brole\s*=\s*["']button["']|\bclass\s*=\s*["'][^"']*\bbref\b/i;
+
+          function replaceOnce(source, needle, replacement, label) {
+            const count = source.split(needle).length - 1;
+            assert.strictEqual(count, 1, `${label}: expected one anchor, got ${count}`);
+            return source.replace(needle, replacement);
+          }
+
+          function matchingSpanClose(html, openStart) {
+            const tags = /<\/?span\b[^>]*>/gi;
+            tags.lastIndex = openStart;
+            let depth = 0;
+            for (let match; (match = tags.exec(html));) {
+              if (/^<\/span/i.test(match[0])) depth -= 1;
+              else depth += 1;
+              if (depth === 0) return { start: match.index, end: tags.lastIndex };
+            }
+            return null;
+          }
+
+          function collectFootnotes(html) {
+            const result = [];
+            const markers = /<span\b(?=[^>]*\bclass="[^"]*\bfn-marker\b[^"]*")[^>]*>/gi;
+            for (let marker; (marker = markers.exec(html));) {
+              const markerClose = matchingSpanClose(html, marker.index);
+              assert(markerClose, `unclosed fn-marker at ${marker.index}`);
+              const markerInner = html.slice(markers.lastIndex, markerClose.start);
+              const tooltip = /<span\b(?=[^>]*\bclass="[^"]*\btooltip\b[^"]*")[^>]*>/i.exec(markerInner);
+              if (!tooltip) {
+                markers.lastIndex = markerClose.end;
+                continue;
+              }
+              const tooltipOpenStart = markers.lastIndex + tooltip.index;
+              const tooltipOpenEnd = tooltipOpenStart + tooltip[0].length;
+              const tooltipClose = matchingSpanClose(html, tooltipOpenStart);
+              assert(tooltipClose && tooltipClose.end <= markerClose.end, `unclosed tooltip at ${tooltipOpenStart}`);
+              const direct = html.slice(markers.lastIndex, tooltipOpenStart).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+              const number = direct.match(/^\d+$/)?.[0] || '';
+              result.push({
+                number,
+                contentStart: tooltipOpenEnd,
+                contentEnd: tooltipClose.start,
+                content: html.slice(tooltipOpenEnd, tooltipClose.start),
+              });
+              markers.lastIndex = markerClose.end;
+            }
+            return result;
+          }
+
+          function unwrapInteractive(content) {
+            let output = content;
+            output = output.replace(/<button\b[^>]*>([\s\S]*?)<\/button>/gi, '$1');
+            output = output.replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '$1');
+            output = output.replace(/\s+(?:data-ref|tabindex)\s*=\s*(?:"[^"]*"|'[^']*')/gi, '');
+            output = output.replace(/\s+role\s*=\s*(?:"button"|'button')/gi, '');
+            output = output.replace(/\s+class\s*=\s*(["'])([^"']*)\1/gi, (whole, quote, classes) => {
+              const kept = classes.split(/\s+/).filter(Boolean).filter((name) => name !== 'bref');
+              return kept.length ? ` class=${quote}${kept.join(' ')}${quote}` : '';
+            });
+            return output;
+          }
+
+          let source = fs.readFileSync(SOURCE, 'utf8');
+          const beforeFootnotes = collectFootnotes(source);
+          const affected = beforeFootnotes.filter((item) => FORBIDDEN.test(item.content));
+          assert.deepStrictEqual(affected.map((item) => item.number).sort((a, b) => Number(a) - Number(b)), EXPECTED.slice().sort((a, b) => Number(a) - Number(b)));
+          const beforeOrdinary = (source.match(/<button\b(?=[^>]*\bclass="[^"]*\bbref\b[^"]*")(?=[^>]*\bdata-ref=)[^>]*>/gi) || []).length;
+          assert(beforeOrdinary > 20, `expected ordinary Scripture controls before repair, got ${beforeOrdinary}`);
+
+          for (const item of affected.slice().sort((a, b) => b.contentStart - a.contentStart)) {
+            const replacement = unwrapInteractive(item.content);
+            assert(!FORBIDDEN.test(replacement), `footnote ${item.number}: interactive descendant survived transform`);
+            source = source.slice(0, item.contentStart) + replacement + source.slice(item.contentEnd);
+          }
+
+          const afterFootnotes = collectFootnotes(source);
+          const afterAffected = afterFootnotes.filter((item) => FORBIDDEN.test(item.content));
+          assert.strictEqual(afterAffected.length, 0, `interactive footnotes remain: ${afterAffected.map((item) => item.number).join(', ')}`);
+          for (const number of EXPECTED) assert(afterFootnotes.some((item) => item.number === number), `footnote ${number} disappeared`);
+          const afterOrdinary = (source.match(/<button\b(?=[^>]*\bclass="[^"]*\bbref\b[^"]*")(?=[^>]*\bdata-ref=)[^>]*>/gi) || []).length;
+          assert(afterOrdinary > 20 && afterOrdinary < beforeOrdinary, `ordinary Scripture control floor changed unexpectedly: ${beforeOrdinary} -> ${afterOrdinary}`);
+          fs.writeFileSync(SOURCE, source);
+
+          let staticAudit = fs.readFileSync(STATIC_AUDIT, 'utf8');
+          staticAudit = replaceOnce(
+            staticAudit,
+            "const RETIRED_PREVIEW_REL = 'dev/article-mdx-pilot/index.html';\n",
+            "const RETIRED_PREVIEW_REL = 'dev/article-mdx-pilot/index.html';\nconst HERMENEUTIKA_ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';\nconst HERMENEUTIKA_SOURCE_REL = 'src/components/article-pilots/hermenevtika/HermenevtikaBody.astro';\nconst HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '72', '75', '82', '83', '107'];\n",
+            'article audit constants',
+          );
+          const helperAnchor = "function bodyHtml(html) {\n  return html.match(/<body\\b[^>]*>([\\s\\S]*?)<\\/body>/i)?.[1] || html;\n}\n";
+          const helperCode = `${helperAnchor}\nfunction matchingSpanClose(html, openStart) {\n  const tags = /<\\/?span\\b[^>]*>/gi;\n  tags.lastIndex = openStart;\n  let depth = 0;\n  for (let match; (match = tags.exec(html));) {\n    if (/^<\\/span/i.test(match[0])) depth -= 1;\n    else depth += 1;\n    if (depth === 0) return { start: match.index, end: tags.lastIndex };\n  }\n  return null;\n}\n\nfunction footnoteTooltips(html) {\n  const result = [];\n  const markers = /<span\\b(?=[^>]*\\bclass=[\"'][^\"']*\\bfn-marker\\b[^\"']*[\"'])[^>]*>/gi;\n  for (let marker; (marker = markers.exec(html));) {\n    const markerClose = matchingSpanClose(html, marker.index);\n    if (!markerClose) break;\n    const markerInner = html.slice(markers.lastIndex, markerClose.start);\n    const tooltip = /<span\\b(?=[^>]*\\bclass=[\"'][^\"']*\\btooltip\\b[^\"']*[\"'])[^>]*>/i.exec(markerInner);\n    if (!tooltip) { markers.lastIndex = markerClose.end; continue; }\n    const tooltipOpenStart = markers.lastIndex + tooltip.index;\n    const tooltipOpenEnd = tooltipOpenStart + tooltip[0].length;\n    const tooltipClose = matchingSpanClose(html, tooltipOpenStart);\n    if (!tooltipClose || tooltipClose.end > markerClose.end) break;\n    const direct = html.slice(markers.lastIndex, tooltipOpenStart).replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n    result.push({\n      number: direct.match(/^\\d+$/)?.[0] || '',\n      content: html.slice(tooltipOpenEnd, tooltipClose.start),\n    });\n    markers.lastIndex = markerClose.end;\n  }\n  return result;\n}\n\nfunction assertHermenevtikaFootnotes(label, html) {\n  const tooltips = footnoteTooltips(html);\n  const byNumber = new Set(tooltips.map((item) => item.number));\n  for (const number of HERMENEUTIKA_STATIC_FOOTNOTES) {\n    if (!byNumber.has(number)) bad(\`${label}: footnote ${number} missing from native contract\`);\n  }\n  const forbidden = /<(?:button|a)\\b|\\bdata-ref\\s*=|\\btabindex\\s*=|\\brole\\s*=\\s*[\"']button[\"']|\\bclass\\s*=\\s*[\"'][^\"']*\\bbref\\b/i;\n  const interactive = tooltips.filter((item) => forbidden.test(item.content)).map((item) => item.number || '(unnumbered)');\n  if (interactive.length) bad(\`${label}: interactive descendants inside footnotes ${interactive.join(', ')}\`);\n  else ok(\`${label}: footnote tooltip descendants are static\`);\n  const ordinaryScripture = (html.match(/<button\\b(?=[^>]*\\bclass=[\"'][^\"']*\\bbref\\b[^\"']*[\"'])(?=[^>]*\\bdata-ref=)[^>]*>/gi) || []).length;\n  if (ordinaryScripture < 20) bad(\`${label}: ordinary Scripture controls unexpectedly missing (${ordinaryScripture})\`);\n  else ok(\`${label}: ordinary Scripture controls remain active (${ordinaryScripture})\`);\n}\n\nfunction auditHermenevtikaSource() {\n  const sourcePath = path.join(ROOT, HERMENEUTIKA_SOURCE_REL);\n  if (!fs.existsSync(sourcePath)) { bad(\`Hermenevtika source missing: ${HERMENEUTIKA_SOURCE_REL}\`); return; }\n  assertHermenevtikaFootnotes('hermenevtika source', fs.readFileSync(sourcePath, 'utf8'));\n}\n`;
+          staticAudit = replaceOnce(staticAudit, helperAnchor, helperCode, 'article audit helpers');
+          staticAudit = replaceOnce(
+            staticAudit,
+            "  const html = fs.readFileSync(distPath, 'utf8');\n",
+            "  const html = fs.readFileSync(distPath, 'utf8');\n  if (route === HERMENEUTIKA_ROUTE) assertHermenevtikaFootnotes('hermenevtika dist', html);\n",
+            'article dist assertion',
+          );
+          staticAudit = replaceOnce(
+            staticAudit,
+            "  console.log('Legacy HTML and MDX references are migration evidence, not current production truth.');\n\n  runBuild();\n",
+            "  console.log('Legacy HTML and MDX references are migration evidence, not current production truth.');\n\n  auditHermenevtikaSource();\n  runBuild();\n",
+            'article source assertion call',
+          );
+          fs.writeFileSync(STATIC_AUDIT, staticAudit);
+
+          let browserAudit = fs.readFileSync(BROWSER_AUDIT, 'utf8');
+          browserAudit = replaceOnce(
+            browserAudit,
+            "const MEDIA_URLS = [\n  '/articles/dzhon-gill-chast-1-chelovek/',\n  '/articles/krajne-li-isporcheno-serdce/',\n];\n",
+            "const MEDIA_URLS = [\n  '/articles/dzhon-gill-chast-1-chelovek/',\n  '/articles/krajne-li-isporcheno-serdce/',\n];\nconst HERMENEUTIKA_URL = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';\nconst HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '72', '75', '82', '83', '107'];\n",
+            'interactive audit constants',
+          );
+          browserAudit = replaceOnce(
+            browserAudit,
+            "const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, theme: 0, search: 0, media: 0 };",
+            "const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0 };",
+            'interactive audit stats',
+          );
+          const browserAnchor = "async function visibleThemeHandle(page) {\n";
+          const browserHelper = `async function checkHermenevtikaFootnotes(browser) {\n  const desktop = await openPage(browser, HERMENEUTIKA_URL, { width: 1280, height: 850 });\n  const staticState = await desktop.evaluate((expected) => {\n    function numberOf(marker) {\n      return Array.from(marker.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent || '').join('').replace(/\\s+/g, '').trim();\n    }\n    const markers = Array.from(document.querySelectorAll('.fn-marker'));\n    const found = {};\n    for (const marker of markers) {\n      const number = numberOf(marker);\n      if (!expected.includes(number)) continue;\n      marker.dataset.auditFootnote = number;\n      const tip = marker.querySelector('.tooltip');\n      found[number] = {\n        tooltip: !!tip,\n        nestedInteractive: tip ? tip.querySelectorAll('button, a, [tabindex], [role="button"], .bref, [data-ref]').length : -1,\n      };\n    }\n    return {\n      found,\n      nestedInteractive: document.querySelectorAll('.fn-marker .tooltip button, .fn-marker .tooltip a, .fn-marker .tooltip [tabindex], .fn-marker .tooltip [role="button"], .fn-marker .tooltip .bref, .fn-marker .tooltip [data-ref]').length,\n      ordinaryScripture: document.querySelectorAll('article .bref[data-ref]').length,\n    };\n  }, HERMENEUTIKA_STATIC_FOOTNOTES);\n  for (const number of HERMENEUTIKA_STATIC_FOOTNOTES) {\n    if (!staticState.found[number]?.tooltip || staticState.found[number]?.nestedInteractive !== 0) push('hermenevtika-static-footnote-contract', HERMENEUTIKA_URL, { number, state: staticState.found[number] || null });\n  }\n  if (staticState.nestedInteractive !== 0) push('hermenevtika-nested-footnote-interactive', HERMENEUTIKA_URL, staticState);\n  if (staticState.ordinaryScripture < 20) push('hermenevtika-ordinary-scripture-missing', HERMENEUTIKA_URL, staticState);\n\n  const hoverMarker = desktop.locator('[data-audit-footnote="40"]');\n  await hoverMarker.scrollIntoViewIfNeeded();\n  await hoverMarker.hover({ force: true });\n  await desktop.waitForTimeout(250);\n  let openState = await desktop.evaluate(() => ({\n    markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',\n    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),\n  }));\n  if (!openState.markerOpen || !openState.tipOpen) push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);\n  if (openState.tipOpen) {\n    await desktop.locator('.gb-floating-tip.is-open').hover({ force: true });\n    await desktop.waitForTimeout(180);\n    openState = await desktop.evaluate(() => ({\n      markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',\n      tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),\n    }));\n    if (!openState.markerOpen || !openState.tipOpen) push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, openState);\n  }\n  await desktop.keyboard.press('Escape');\n  await desktop.locator('[data-audit-footnote="72"]').focus();\n  await desktop.waitForTimeout(220);\n  const keyboardState = await desktop.evaluate(() => ({\n    markerOpen: document.querySelector('[data-audit-footnote="72"]')?.getAttribute('aria-expanded') === 'true',\n    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),\n    nestedFocusable: document.querySelectorAll('.gb-floating-tip.is-open button, .gb-floating-tip.is-open a, .gb-floating-tip.is-open [tabindex], .gb-floating-tip.is-open [role="button"]').length,\n  }));\n  if (!keyboardState.markerOpen || !keyboardState.tipOpen || keyboardState.nestedFocusable !== 0) push('hermenevtika-footnote-keyboard-contract', HERMENEUTIKA_URL, keyboardState);\n  await desktop.keyboard.press('Escape');\n\n  const ordinary = desktop.locator('article .bref[data-ref]').first();\n  await ordinary.scrollIntoViewIfNeeded();\n  await ordinary.click({ force: true });\n  await desktop.waitForTimeout(220);\n  const ordinaryState = await desktop.evaluate(() => ({\n    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),\n    expandedScripture: !!document.querySelector('article .bref[data-ref][aria-expanded="true"]'),\n  }));\n  if (!ordinaryState.tipOpen || !ordinaryState.expandedScripture) push('hermenevtika-ordinary-scripture-tooltip-broken', HERMENEUTIKA_URL, ordinaryState);\n  await desktop.keyboard.press('Escape');\n  await desktop.close();\n\n  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });\n  const resp = await mobile.goto(BASE + HERMENEUTIKA_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });\n  await mobile.waitForTimeout(900);\n  stats.pages++;\n  if (!resp || !resp.ok()) push('hermenevtika-mobile-status', HERMENEUTIKA_URL, resp ? resp.status() : 'null response');\n  await mobile.evaluate((expected) => {\n    for (const marker of document.querySelectorAll('.fn-marker')) {\n      const number = Array.from(marker.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent || '').join('').replace(/\\s+/g, '').trim();\n      if (expected.includes(number)) marker.dataset.auditFootnote = number;\n    }\n  }, HERMENEUTIKA_STATIC_FOOTNOTES);\n  const mobileMarker = mobile.locator('[data-audit-footnote="75"]');\n  await mobileMarker.scrollIntoViewIfNeeded();\n  await mobileMarker.tap();\n  await mobile.waitForTimeout(300);\n  const mobileState = await mobile.evaluate(() => ({\n    markerOpen: document.querySelector('[data-audit-footnote="75"]')?.getAttribute('aria-expanded') === 'true',\n    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),\n    nestedInteractive: document.querySelectorAll('.gb-floating-tip.is-open button, .gb-floating-tip.is-open a, .gb-floating-tip.is-open [tabindex], .gb-floating-tip.is-open [role="button"], .gb-floating-tip.is-open .bref, .gb-floating-tip.is-open [data-ref]').length,\n    scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden',\n  }));\n  if (!mobileState.markerOpen || !mobileState.tipOpen || mobileState.nestedInteractive !== 0 || !mobileState.scrollLocked) push('hermenevtika-mobile-footnote-sheet-contract', HERMENEUTIKA_URL, mobileState);\n  await mobile.keyboard.press('Escape');\n  await mobile.waitForTimeout(250);\n  const mobileClosed = await mobile.evaluate(() => ({\n    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),\n    scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden',\n  }));\n  if (mobileClosed.tipOpen || mobileClosed.scrollLocked) push('hermenevtika-mobile-footnote-sheet-did-not-close', HERMENEUTIKA_URL, mobileClosed);\n  await mobile.close();\n  stats.footnotes++;\n}\n\n${browserAnchor}`;
+          browserAudit = replaceOnce(browserAudit, browserAnchor, browserHelper, 'interactive footnote test');
+          browserAudit = replaceOnce(
+            browserAudit,
+            "    await checkGlossary(browser);\n    await checkMobileTheme(browser);\n",
+            "    await checkGlossary(browser);\n    await checkHermenevtikaFootnotes(browser);\n    await checkMobileTheme(browser);\n",
+            'interactive footnote call',
+          );
+          browserAudit = replaceOnce(
+            browserAudit,
+            "  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media}`);",
+            "  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · footnotes: ${stats.footnotes} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media}`);",
+            'interactive summary',
+          );
+          fs.writeFileSync(BROWSER_AUDIT, browserAudit);
+          NODE
+
+      - name: Verify exact static scope and syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/article-native-contract-audit.js
+          node --check scripts/interactive-audit.js
+          git diff --check
+          cat > /tmp/expected.txt <<'FILES'
+          scripts/article-native-contract-audit.js
+          scripts/interactive-audit.js
+          src/components/article-pilots/hermenevtika/HermenevtikaBody.astro
+          FILES
+          git diff --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          test "$(grep -o '<span class="tooltip">' src/components/article-pilots/hermenevtika/HermenevtikaBody.astro | wc -l)" -gt 100
+          ! grep -P '<span class="tooltip">[^<]*(?:<button|<a)|<span class="tooltip">[\s\S]*?\b(?:data-ref|tabindex)=' src/components/article-pilots/hermenevtika/HermenevtikaBody.astro
+
+      - name: Commit exact permanent files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $(cat /tmp/expected.txt)
+          git commit -m 'fix(hermenevtika): keep footnote Scripture references static'
+          git push origin HEAD:agent/hermenevtika-static-footnotes-20260727
