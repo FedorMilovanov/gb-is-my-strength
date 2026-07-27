@@ -76,7 +76,9 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          set +e
           mkdir -p reports/source-authority
+          : > reports/source-authority/summary.log
           status=0
 
           run_audit() {
