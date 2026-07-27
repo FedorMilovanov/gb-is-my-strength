@@ -1,9 +1,11 @@
 ---
 /**
- * Tiny bundled recovery controller. The main Atlas runtime marks
- * data-runtime-error="1" when graph/series JSON cannot load; this controller
- * immediately exposes the already server-rendered list and keeps navigation
- * usable without relying on CSS overriding the native `hidden` attribute.
+ * Bundled recovery controller for the compiled Atlas payload.
+ *
+ * The main runtime marks data-runtime-error="1" when the versioned relation
+ * endpoint is unavailable or invalid. This controller exposes the already
+ * server-rendered list and disables graph-only controls without requiring a
+ * second request or CSS to override the native hidden attribute.
  */
 ---
 <script>
