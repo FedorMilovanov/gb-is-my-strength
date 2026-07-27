@@ -79,18 +79,29 @@ jobs:
 
           text = Path('/tmp/materializer.log').read_text(encoding='utf-8', errors='replace')
           text = re.sub(r'\x1b\[[0-9;]*m', '', text)
-          candidates = [
-              line.strip()
-              for line in text.splitlines()
-              if any(token in line for token in (
-                  'AssertionError', 'ERR_ASSERTION', 'expected ', 'footnote ',
-                  'anchor', 'missing', 'survived', 'unexpected', 'SyntaxError',
-                  'ordinary Scripture', 'interactive footnotes', 'unclosed',
-              ))
-          ]
-          summary = (candidates[-1] if candidates else (text.strip().splitlines()[-1] if text.strip() else 'no output'))
-          summary = re.sub(r'[^0-9A-Za-zА-Яа-яЁё _.,:;()\[\]{}<>/+=!?-]+', ' ', summary)
-          summary = re.sub(r'\s+', ' ', summary).strip()[:180]
+          lines = text.splitlines()
+          start = next((i for i, line in enumerate(lines) if 'AssertionError' in line or 'SyntaxError' in line), None)
+          if start is not None:
+              block = []
+              for line in lines[start:start + 18]:
+                  stripped = line.strip()
+                  if stripped.startswith('at ') or stripped.startswith('Node.js'):
+                      break
+                  if stripped and not stripped.startswith(('generatedMessage:', 'code:', 'operator:')):
+                      block.append(stripped)
+              summary = ' | '.join(block)
+          else:
+              candidates = [
+                  line.strip()
+                  for line in lines
+                  if any(token in line for token in (
+                      'expected ', 'footnote ', 'anchor', 'missing', 'survived',
+                      'unexpected', 'ordinary Scripture', 'interactive footnotes', 'unclosed',
+                  ))
+              ]
+              summary = candidates[0] if candidates else (lines[-1].strip() if lines else 'no output')
+          summary = re.sub(r'[^0-9A-Za-zА-Яа-яЁё _.,:;()\[\]{}<>/+=!?|\-]+', ' ', summary)
+          summary = re.sub(r'\s+', ' ', summary).strip()[:240]
           output = Path(os.environ['GITHUB_OUTPUT'])
           with output.open('a', encoding='utf-8') as handle:
               handle.write(f"status={os.environ['MATERIALIZER_STATUS']}\n")
