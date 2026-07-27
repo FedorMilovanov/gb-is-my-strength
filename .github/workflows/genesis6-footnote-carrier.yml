@@ -1,0 +1,42 @@
+name: Genesis 6 Footnote Product Carrier
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/build-genesis6-footnote-product.py'
+      - '.github/workflows/genesis6-footnote-carrier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-product:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact carrier head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build exact four-file product
+        run: python3 scripts/build-genesis6-footnote-product.py
+
+      - name: Verify carrier remains read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git status --porcelain --untracked-files=no | wc -l)" -eq 0
+          test "$(find out -type f ! -path 'out/manifest.json' | wc -l)" -eq 4
+          test -f out/manifest.json
+          cat out/manifest.json
+
+      - name: Upload exact product artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: genesis6-footnote-product-${{ github.run_id }}
+          path: out
+          if-no-files-found: error
+          retention-days: 14
