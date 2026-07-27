@@ -1,13 +1,5 @@
 #!/usr/bin/env node
-/**
- * Production-like browser contract for /map/ — «Атлас исследований».
- *
- * Proves:
- *   1. desktop runtime, semantic zoom, focus URL and list parity;
- *   2. mobile controls, filter drawer, touch-safe geometry and focus sheet;
- *   3. no-JS complete research-library fallback;
- *   4. graph-data failure recovery to the server-rendered list.
- */
+/** Production-like browser contract for the compiled-data research Atlas. */
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -17,15 +9,11 @@ import { chromium } from 'playwright';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
+const COMPILED = join(DIST, 'data', 'relations.compiled.json');
 const MIME = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.webp': 'image/webp',
-  '.png': 'image/png',
-  '.woff2': 'font/woff2',
+  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2',
 };
 const results = [];
 
@@ -39,11 +27,8 @@ async function serve() {
     try {
       const pathname = decodeURIComponent(String(req.url || '/').split('?')[0]);
       let file = join(DIST, pathname);
-      try {
-        if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
-      } catch {
-        file = join(ROOT, pathname);
-      }
+      try { if ((await stat(file)).isDirectory()) file = join(file, 'index.html'); }
+      catch { file = join(ROOT, pathname); }
       const body = await readFile(file);
       res.writeHead(200, { 'content-type': MIME[extname(file)] || 'application/octet-stream' });
       res.end(body);
@@ -61,25 +46,32 @@ function viewBoxWidth(value) {
   return parts.length === 4 && parts.every(Number.isFinite) ? parts[2] : NaN;
 }
 
-async function desktopScene(browser, base) {
+function observeDataRequests(page) {
+  const requests = [];
+  page.on('request', (request) => {
+    const pathname = new URL(request.url()).pathname;
+    if (pathname.startsWith('/data/')) requests.push(pathname);
+  });
+  return requests;
+}
+
+async function desktopScene(browser, base, compiled) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 950 } });
   const page = await context.newPage();
   const errors = [];
+  const dataRequests = observeDataRequests(page);
   page.on('pageerror', (error) => errors.push(String(error)));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   try {
     await page.goto(`${base}/map/`, { waitUntil: 'networkidle', timeout: 40_000 });
     await page.waitForSelector('#atlasApp[data-runtime-ready="1"]', { timeout: 20_000 });
-
     const before = viewBoxWidth(await page.locator('#atlasCanvas').getAttribute('viewBox'));
     await page.locator('#atlasZoomIn').click();
     await page.waitForTimeout(450);
     const after = viewBoxWidth(await page.locator('#atlasCanvas').getAttribute('viewBox'));
-
     await page.locator('.atlas-node:not(.is-filtered-out)').first().click();
     await page.waitForSelector('#atlasDetail.is-open .atlas-detail__content:not([hidden])', { timeout: 10_000 });
     const focusParam = new URL(page.url()).searchParams.get('focus');
-
     await page.locator('[data-atlas-view="list"]').click();
     const state = await page.evaluate(() => {
       const app = document.getElementById('atlasApp');
@@ -87,28 +79,30 @@ async function desktopScene(browser, base) {
       return {
         runtimeNodes: Number(app?.dataset.runtimeNodes || 0),
         runtimeEdges: Number(app?.dataset.runtimeEdges || 0),
+        runtimeEngine: app?.dataset.runtimeEngine || '',
         listVisible: Boolean(list && !list.hidden && getComputedStyle(list).display !== 'none'),
         listLinks: list?.querySelectorAll('[data-list-node] a[href]').length || 0,
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
-
-    record('desktop zoom/focus/list',
-      Number.isFinite(before) && Number.isFinite(after) && after < before && Boolean(focusParam) &&
-      state.runtimeNodes >= 28 && state.runtimeEdges >= 20 && state.listVisible &&
-      state.listLinks >= 28 && state.overflow <= 2 && errors.length === 0,
-      JSON.stringify({ before, after, focusParam, ...state, errors }));
+    const requestContract = dataRequests.length === 1 && dataRequests[0] === '/data/relations.compiled.json';
+    record('desktop zoom/focus/list/compiled-source',
+      Number.isFinite(before) && Number.isFinite(after) && after < before && Boolean(focusParam)
+      && state.runtimeNodes === compiled.nodes.length && state.runtimeEdges === compiled.edges.length
+      && state.runtimeEngine === compiled.engineVersion && state.listVisible
+      && state.listLinks === compiled.nodes.length && state.overflow <= 2
+      && requestContract && errors.length === 0,
+      JSON.stringify({ before, after, focusParam, ...state, dataRequests, errors }));
   } catch (error) {
-    record('desktop zoom/focus/list', false, String(error).slice(0, 350));
-  } finally {
-    await context.close();
-  }
+    record('desktop zoom/focus/list/compiled-source', false, String(error).slice(0, 400));
+  } finally { await context.close(); }
 }
 
-async function mobileScene(browser, base) {
+async function mobileScene(browser, base, compiled) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   const page = await context.newPage();
   const errors = [];
+  const dataRequests = observeDataRequests(page);
   page.on('pageerror', (error) => errors.push(String(error)));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   try {
@@ -119,7 +113,6 @@ async function mobileScene(browser, base) {
     await page.locator('#atlasFilterClose').click();
     await page.locator('.atlas-node:not(.is-filtered-out)').first().tap();
     await page.waitForSelector('#atlasDetail.is-open');
-
     const state = await page.evaluate(() => {
       const target = (selector) => {
         const rect = document.querySelector(selector)?.getBoundingClientRect();
@@ -127,29 +120,28 @@ async function mobileScene(browser, base) {
       };
       const sheet = document.getElementById('atlasDetail')?.getBoundingClientRect();
       return {
-        zoomIn: target('#atlasZoomIn'),
-        zoomOut: target('#atlasZoomOut'),
-        center: target('#atlasCenter'),
-        filter: target('#atlasFilterTrigger'),
+        zoomIn: target('#atlasZoomIn'), zoomOut: target('#atlasZoomOut'),
+        center: target('#atlasCenter'), filter: target('#atlasFilterTrigger'),
         sheetVisible: Boolean(sheet && sheet.width > 0 && sheet.height > 180 && sheet.bottom <= innerHeight + 2),
+        runtimeNodes: Number(document.getElementById('atlasApp')?.dataset.runtimeNodes || 0),
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
-    const targetsOk = [state.zoomIn, state.zoomOut, state.center, state.filter]
-      .every((target) => target && target.width >= 38 && target.height >= 38);
+    const targetsOk = [state.zoomIn, state.zoomOut, state.center, state.filter].every((target) => target && target.width >= 38 && target.height >= 38);
     record('mobile controls/filter/focus sheet',
-      targetsOk && state.sheetVisible && state.overflow <= 2 && errors.length === 0,
-      JSON.stringify({ ...state, errors }));
+      targetsOk && state.sheetVisible && state.runtimeNodes === compiled.nodes.length
+      && dataRequests.length === 1 && dataRequests[0] === '/data/relations.compiled.json'
+      && state.overflow <= 2 && errors.length === 0,
+      JSON.stringify({ ...state, dataRequests, errors }));
   } catch (error) {
-    record('mobile controls/filter/focus sheet', false, String(error).slice(0, 350));
-  } finally {
-    await context.close();
-  }
+    record('mobile controls/filter/focus sheet', false, String(error).slice(0, 400));
+  } finally { await context.close(); }
 }
 
-async function noJsScene(browser, base) {
+async function noJsScene(browser, base, compiled) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
   const page = await context.newPage();
+  const dataRequests = observeDataRequests(page);
   try {
     await page.goto(`${base}/map/`, { waitUntil: 'load', timeout: 30_000 });
     const state = await page.evaluate(() => {
@@ -165,25 +157,20 @@ async function noJsScene(browser, base) {
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
-    record('no-JS list fallback',
-      state.appHidden && state.listVisible && state.links >= 28 && state.firstLink &&
-      state.firstLink.width > 180 && state.firstLink.height >= 44 && state.overflow <= 2,
-      JSON.stringify(state));
+    record('no-JS compiler-backed list fallback',
+      state.appHidden && state.listVisible && state.links === compiled.nodes.length
+      && state.firstLink && state.firstLink.width > 180 && state.firstLink.height >= 44
+      && state.overflow <= 2 && dataRequests.length === 0,
+      JSON.stringify({ ...state, dataRequests }));
   } catch (error) {
-    record('no-JS list fallback', false, String(error).slice(0, 350));
-  } finally {
-    await context.close();
-  }
+    record('no-JS compiler-backed list fallback', false, String(error).slice(0, 400));
+  } finally { await context.close(); }
 }
 
-async function dataFailureScene(browser, base) {
+async function dataFailureScene(browser, base, compiled) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
-  await page.route('**/data/links-graph.json', (route) => route.fulfill({
-    status: 503,
-    contentType: 'application/json',
-    body: '{"error":"forced graph failure"}',
-  }));
+  await page.route('**/data/relations.compiled.json', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"forced compiled relation failure"}' }));
   try {
     await page.goto(`${base}/map/`, { waitUntil: 'networkidle', timeout: 30_000 });
     await page.waitForSelector('#atlasApp[data-runtime-error="1"][data-view="list"]', { timeout: 15_000 });
@@ -197,18 +184,19 @@ async function dataFailureScene(browser, base) {
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
-    record('graph-data failure recovery',
-      state.graphHidden && state.listVisible && state.links >= 28 && state.overflow <= 2,
-      JSON.stringify(state));
+    record('compiled-data failure recovery', state.graphHidden && state.listVisible && state.links === compiled.nodes.length && state.overflow <= 2, JSON.stringify(state));
   } catch (error) {
-    record('graph-data failure recovery', false, String(error).slice(0, 350));
-  } finally {
-    await context.close();
-  }
+    record('compiled-data failure recovery', false, String(error).slice(0, 400));
+  } finally { await context.close(); }
 }
 
-if (!existsSync(DIST)) {
-  console.error('❌ dist/ missing; build production-like output before Atlas browser contract');
+if (!existsSync(DIST) || !existsSync(COMPILED)) {
+  console.error('❌ production-like dist or compiled relation endpoint missing');
+  process.exit(1);
+}
+const compiled = JSON.parse(await readFile(COMPILED, 'utf8'));
+if (Number(compiled.schemaVersion) !== 1 || !Array.isArray(compiled.nodes) || !Array.isArray(compiled.edges)) {
+  console.error('❌ invalid compiled relation endpoint');
   process.exit(1);
 }
 
@@ -217,15 +205,15 @@ let browser;
 try {
   const pinned = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
   browser = await chromium.launch(existsSync(pinned) ? { executablePath: pinned } : {});
-  await desktopScene(browser, base);
-  await mobileScene(browser, base);
-  await noJsScene(browser, base);
-  await dataFailureScene(browser, base);
+  await desktopScene(browser, base, compiled);
+  await mobileScene(browser, base, compiled);
+  await noJsScene(browser, base, compiled);
+  await dataFailureScene(browser, base, compiled);
 } finally {
   await browser?.close();
   await new Promise((resolve) => server.close(resolve));
 }
 
 const failures = results.filter((result) => !result.ok);
-console.log(`\nAtlas browser contract: ${results.length - failures.length}/${results.length} passed`);
+console.log(`\nCompiled Atlas browser contract: ${results.length - failures.length}/${results.length} passed`);
 if (failures.length) process.exit(1);
