@@ -151,6 +151,65 @@ check('Серии: у каждой theme есть css/series-<theme>.css', missi
 check('Серии: аккордеон рендерит спутники (satellitesOf в GillPartTocOverlay)',
   read('src/components/article-pilots/gill-series/GillPartTocOverlay.astro').includes('satellitesOf('));
 
+/* ---------- навигационная ткань и Атлас ---------- */
+const relationshipRuntime = read('src/runtime/relationship-panel.js');
+const relationshipCss = read('src/runtime/relationship-panel.css');
+const atlasRuntime = read('src/runtime/atlas-runtime.js');
+const atlasBody = read('src/components/map/AtlasBody.astro');
+const atlasRoute = read('src/pages/map/index.astro');
+const atlasPostbuild = read('scripts/astro-cache-bust-postbuild.js');
+
+check('Связи: runtime живёт под src/runtime, корневых css/js дублей нет',
+  fs.existsSync(path.join(ROOT, 'src/runtime/relationship-panel.js')) &&
+  fs.existsSync(path.join(ROOT, 'src/runtime/relationship-panel.css')) &&
+  fs.existsSync(path.join(ROOT, 'src/runtime/atlas-runtime.js')) &&
+  !fs.existsSync(path.join(ROOT, 'js/relationship-panel.js')) &&
+  !fs.existsSync(path.join(ROOT, 'css/relationship-panel.css')) &&
+  !fs.existsSync(path.join(ROOT, 'js/atlas-runtime.js')),
+  'runtime должен материализоваться только в dist');
+
+check('Связи: series navigation не дублируется во внешнем panel',
+  relationshipRuntime.includes('values = values.filter(function (node) { return node.group !== current.group; });') &&
+  relationshipRuntime.includes("var isSeries = SERIES_GROUPS.has(current.group);") &&
+  !relationshipRuntime.includes('seriesNext') && !relationshipRuntime.includes('seriesPrev'),
+  'same-series связи обязаны исключаться до рендера');
+
+check('Связи: старые двойные .gbx-backlinks удаляются и не вспыхивают',
+  relationshipRuntime.includes("node.matches('.gbx-backlinks')") &&
+  relationshipCss.includes('.gbx-backlinks{display:none!important}'));
+
+check('Атлас: strict-native route использует AtlasBody без удалённого MapBody',
+  atlasRoute.includes("import AtlasBody from '@/components/map/AtlasBody.astro'") &&
+  !atlasRoute.includes('MapBody') &&
+  !fs.existsSync(path.join(ROOT, 'src/components/map/MapBody.astro')));
+
+check('Атлас: серверный список и no-JS fallback не зависят от graph runtime',
+  atlasBody.includes('atlas-list-view') && atlasBody.includes('<noscript>') &&
+  atlasBody.includes('data-list-node') && atlasBody.includes('<a href={node.url}>') &&
+  !atlasBody.includes('set:html'));
+
+check('Атлас: runtime реализует zoom/pan/focus/list/deep-link',
+  atlasRuntime.includes("svg.addEventListener('wheel'") &&
+  atlasRuntime.includes("svg.addEventListener('pointerdown'") &&
+  atlasRuntime.includes('function focusNode') &&
+  atlasRuntime.includes('function setView') &&
+  atlasRuntime.includes("initial.get('focus')"));
+
+check('Атлас: postbuild материализует три governed runtime assets только в dist',
+  atlasPostbuild.includes("source: 'src/runtime/relationship-panel.css'") &&
+  atlasPostbuild.includes("source: 'src/runtime/relationship-panel.js'") &&
+  atlasPostbuild.includes("source: 'src/runtime/atlas-runtime.js'") &&
+  atlasPostbuild.includes('materializeRuntimeAssets()') &&
+  atlasPostbuild.includes('Runtime materialization drift'));
+
+try {
+  new Function(relationshipRuntime);
+  new Function(atlasRuntime);
+  check('Связи/Атлас: browser runtime JavaScript синтаксически валиден', true);
+} catch (e) {
+  check('Связи/Атлас: browser runtime JavaScript синтаксически валиден', false, e.message);
+}
+
 /* ---------- CSS: структурная целостность (AST, не только скобки) ---------- */
 // Регрессия AUDIT-CSS-FLOATCLUSTER-COMMENT-CORRUPTION (arena 2026-07-14):
 // незакрытый баннер-комментарий превращал следующий rule в мусорный селектор
@@ -159,7 +218,8 @@ check('Серии: аккордеон рендерит спутники (satelli
 try {
   const csstree = require('css-tree');
   for (const f of ['css/site.css', 'css/floating-cluster.css', 'css/mobile-hotfix.css',
-                   'css/series-samizdat.css', 'css/series-manuscript.css', 'css/nagornaya-mobile-toc.css', 'css/home.css']) {
+                   'css/series-samizdat.css', 'css/series-manuscript.css', 'css/nagornaya-mobile-toc.css',
+                   'css/home.css', 'src/runtime/relationship-panel.css']) {
     const txt = read(f);
     const errs = [];
     csstree.parse(txt, { onParseError: (e) => errs.push(e.message) });
