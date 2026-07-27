@@ -1,4 +1,15 @@
--route-contract-test.js
+ownership staging boundary mismatch: {r}')
+PY_STATUS
+
+echo '== Validate canonical registries and public exclusion =='
+node scripts/sync-route-migration-matrix.js --check
+node scripts/check-route-profiles.js --strict
+node scripts/public-surface-registry-audit.js
+node scripts/series-reader-facade-regression-test.js
+node scripts/sitemap-route-contract-test.js
+node scripts/seo-route-contract-test.js
+node scripts/search-index-policy-contract-test.js
+node scripts/rss-route-contract-test.js
 
 echo '== Install dependencies and validate source =='
 npm ci
@@ -7,7 +18,7 @@ npm run engine:contracts
 npm run workflows:check
 npm run validate:static-publication
 
-echo '== Build production-like noindex routes =='
+echo '== Build production-like shadow-pilot routes =='
 npm run strangler:build:production-like
 npm run page-ownership:dist:production-like
 for route in \
@@ -15,15 +26,4 @@ for route in \
   hard-texts/enoh-prorochestvoval-iuda-14-15-4q204 \
   hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2 \
   hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda \
-  hard-texts/blagovestie-mertvym-1-petra-4-5-6
-do
-  test -s "dist/${route}/index.html"
-  grep -qi 'noindex' "dist/${route}/index.html"
-done
-
-echo '== Seal exact tested product artifact =='
-python <<'PY_SEAL'
-import hashlib,json,os,pathlib,shutil,subprocess
-root=pathlib.Path('/tmp/genesis6-phaseC'); source=json.load(open(root/'package'/'manifest.json'))
-paths=[e['path'] for e in source['files']]
-actual=sorted(subprocess.check_output(['git','ls-files','--modified','--others
+  hard

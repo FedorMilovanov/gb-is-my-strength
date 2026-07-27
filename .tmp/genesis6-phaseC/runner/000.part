@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 ROOT=/tmp/genesis6-phaseC
 EVIDENCE="$ROOT/evidence"
 PACKAGE="$ROOT/package"
@@ -17,7 +16,8 @@ test "$(sha256sum "$ROOT/package.tgz.b64" | cut -d' ' -f1)" = "$CAPSULE_B64_SHA2
 base64 --decode "$ROOT/package.tgz.b64" > "$ROOT/package.tgz"
 test "$(sha256sum "$ROOT/package.tgz" | cut -d' ' -f1)" = "$CAPSULE_TGZ_SHA256"
 python <<'PY_CAPSULE'
-import hashlib, json, os, pathlib, subprocess, tarfile
+import hashlib,json,os,pathlib,subprocess,tarfile
 root=pathlib.Path('/tmp/genesis6-phaseC'); pkg=root/'package'
 with tarfile.open(root/'package.tgz','r:gz') as archive:
-    members=archive.getmembers(); names=[m.name.removepref
+    members=archive.getmembers(); safe=[]
+    for member in memb

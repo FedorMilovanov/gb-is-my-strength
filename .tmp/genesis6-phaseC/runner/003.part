@@ -1,21 +1,16 @@
-cho '== Checkout immutable target baseline =='
-git fetch --no-tags origin "refs/heads/${TARGET_BRANCH}"
-test "$(git rev-parse FETCH_HEAD)" = "$BASE_SHA"
-git checkout --detach "$BASE_SHA"
-
-echo '== Materialize exact 21-file draft/noindex package =='
-python <<'PY_MATERIALIZE'
+on <<'PY_MATERIALIZE'
 import json,pathlib,shutil
-root=pathlib.Path('/tmp/genesis6-phaseC'); pkg=root/'package'
-manifest=json.loads((pkg/'manifest.json').read_text())
-for entry in manifest['files']:
-    source=pkg/entry['path']; target=pathlib.Path(entry['path'])
-    target.parent.mkdir(parents=True,exist_ok=True); shutil.copyfile(source,target)
+root=pathlib.Path('/tmp/genesis6-phaseC'); pkg=root/'package'; m=json.loads((pkg/'manifest.json').read_text())
+for e in m['files']:
+    source=pkg/e['path']; target=pathlib.Path(e['path']); target.parent.mkdir(parents=True,exist_ok=True); shutil.copyfile(source,target)
 PY_MATERIALIZE
 python <<'PY_SCOPE'
 import json,subprocess
-manifest=json.load(open('/tmp/genesis6-phaseC/package/manifest.json'))
-expected=[e['path'] for e in manifest['files']]
+m=json.load(open('/tmp/genesis6-phaseC/package/manifest.json')); expected=[e['path'] for e in m['files']]
 actual=sorted(subprocess.check_output(['git','ls-files','--modified','--others','--exclude-standard']).decode().splitlines())
 if actual!=expected: raise SystemExit(f'diff mismatch\nexpected={expected}\nactual={actual}')
-for
+forbidden=[p for p in actual if p.startswith('.github/') or p.startswith('src/content/articles/') or p.startswith('css/') or p in {'feed.xml','sitemap.xml'}]
+if forbidden: raise SystemExit(f'forbidden product paths: {forbidden}')
+PY_SCOPE
+for file in \
+  src/content/articles/enoh-prorochestvoval-

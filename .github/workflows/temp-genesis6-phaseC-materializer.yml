@@ -25,10 +25,10 @@ jobs:
       CARRIER_SHA: ${{ github.event.pull_request.head.sha }}
       BASE_SHA: 9ff36fab1e7776ce3de60daacdfd9d29066ae6c0
       TARGET_BRANCH: lane/genesis6-route-source-prep-2026-07-27
-      CAPSULE_PART_COUNT: "32"
-      CAPSULE_B64_SHA256: 6eb57813aa02886b36263c920fe2485c9ff22d39d30751727bda27c422409ba6
-      CAPSULE_TGZ_SHA256: e290859f9db4f67401ced23f978d08d38ad99f2fbbc2fe5e9328889a85c96a08
-      MANIFEST_SHA256: da7b731f6683558db32e9b843dea9311828e36bf3ba085fb6e2ae9924b85ba39
+      CAPSULE_PART_COUNT: "29"
+      CAPSULE_B64_SHA256: a78628cdbfa5e379135a36f4810605184dddc6ac08a40f81250c84f5c9d65153
+      CAPSULE_TGZ_SHA256: ea5e1a984ddcd8c0ff092d88cda80a9eef2bed83f692c9715cc2a36a3c0b2fa1
+      MANIFEST_SHA256: aad69e0bbda5c0ca7c0d9d2625e4ed2b82e99f5769c4a51062364897aaad8a86
     steps:
       - name: Checkout exact carrier
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -41,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           cat .tmp/genesis6-phaseC/runner/*.part > /tmp/genesis6-phaseC-runner.sh
-          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = "5217adc94575b466e5ee9304ff8da249c345c488aab0445b5082c70826f044ad"
+          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = "d85168e481f4d17f202de4b2734f2f6b6dfaff18b2d64dd10e30e397cb9e36d6"
           bash -n /tmp/genesis6-phaseC-runner.sh
           chmod 700 /tmp/genesis6-phaseC-runner.sh
       - name: Set up Node 22.12

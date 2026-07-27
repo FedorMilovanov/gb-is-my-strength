@@ -1,14 +1,16 @@
-t files')
-paths=[e['path'] for e in files]
-if paths!=sorted(paths) or len(paths)!=len(set(paths)): raise SystemExit('manifest order/uniqueness mismatch')
+ifest order/uniqueness mismatch')
 if set(safe)!={'manifest.json',*paths}: raise SystemExit('capsule tree differs from manifest')
-for entry in files:
-    data=(pkg/entry['path']).read_bytes()
-    if len(data)!=entry['bytes']: raise SystemExit(f"bytes mismatch: {entry['path']}")
-    if hashlib.sha256(data).hexdigest()!=entry['sha256']: raise SystemExit(f"sha256 mismatch: {entry['path']}")
-    git_sha=subprocess.check_output(['git','hash-object','--stdin'],input=data).decode().strip()
-    if git_sha!=entry['gitBlobSha']: raise SystemExit(f"git blob mismatch: {entry['path']}")
-(root/'evidence'/'capsule.json').write_text(json.dumps({'base':manifest['base'],'fileCount':len(files),'manifestSha256':hashlib.sha256(manifest_bytes).hexdigest(),'capsuleBase64Sha256':os.environ['CAPSULE_B64_SHA256'],'capsuleTgzSha256':os.environ['CAPSULE_TGZ_SHA256']},indent=2)+'\n')
+for e in files:
+    data=(pkg/e['path']).read_bytes()
+    if len(data)!=e['bytes'] or hashlib.sha256(data).hexdigest()!=e['sha256']: raise SystemExit(f"content mismatch: {e['path']}")
+    if subprocess.check_output(['git','hash-object','--stdin'],input=data).decode().strip()!=e['gitBlobSha']: raise SystemExit(f"git blob mismatch: {e['path']}")
+(root/'evidence'/'capsule.json').write_text(json.dumps({'base':m['base'],'fileCount':19,'manifestSha256':hashlib.sha256(mb).hexdigest(),'capsuleBase64Sha256':os.environ['CAPSULE_B64_SHA256'],'capsuleTgzSha256':os.environ['CAPSULE_TGZ_SHA256']},indent=2)+'\n')
 PY_CAPSULE
 
-e
+echo '== Checkout immutable target baseline =='
+git fetch --no-tags origin "refs/heads/${TARGET_BRANCH}"
+test "$(git rev-parse FETCH_HEAD)" = "$BASE_SHA"
+git checkout --detach "$BASE_SHA"
+
+echo '== Materialize exact shadow-pilot/noindex package =='
+pyth
