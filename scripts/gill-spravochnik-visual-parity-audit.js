@@ -142,7 +142,8 @@ if (!problems.length) {
   const header = read(REQUIRED.header);
   const body = read(REQUIRED.body);
   const post = read(REQUIRED.post);
-  const legacyBody = bodyInner(read(LEGACY_REL));
+  const legacyHtml = read(LEGACY_REL);
+  const legacyBody = articleInner(legacyHtml) || bodyInner(legacyHtml);
   const sectionHtml = SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`)).join('');
   const article = `<article class="article-body" data-pagefind-body>${sectionHtml}</article>`;
   const main = `<main id="main-content">${header}${article}${post}</main>`;
@@ -194,8 +195,8 @@ if (!problems.length) {
   mustContain('body component owns article wrapper', body, '<article class="article-body" data-pagefind-body>');
   for (const component of SECTION_COMPONENTS) mustContain(`body imports ${component}`, body, component.replace(/\.astro$/, ''));
   for (const marker of ['class="gbs2-hero"', 'Джон Гилл: справочник', 'summary-card', 'id="sec-prdl"', 'id="sec-timeline"', 'id="sec-works"', 'id="sec-body-structure"', 'id="sec-network"', 'id="sec-disputes"', 'id="sec-terms"', 'id="sec-links"', 'id="sec-quiz"', 'gbs2-next', 'gbs2-timeline', 'article-end-sdg-wrap']) mustContain('reconstructed body marker', reconstructed, marker);
-  if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed body matches legacy body after normalization');
-  else console.log(`⚠ reconstructed body differs from legacy reference (legacyStatus=${profile.legacyStatus}; exact equality is non-blocking)`);
+  if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed article matches legacy article after normalization');
+  else console.log(`⚠ reconstructed article differs from legacy reference (legacyStatus=${profile.legacyStatus}; exact equality is non-blocking)`);
 
   const legacyWords = wordCount(legacyBody);
   const nativeWords = wordCount(reconstructed);
