@@ -1,4 +1,4 @@
-const VERSION = 3;
+const VERSION = 4;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
@@ -266,7 +266,11 @@ export function installArticleTooltips() {
     if (event.key === 'Escape' && active && !active.mobile) closeTooltip('escape');
   }, true);
   window.addEventListener('resize', () => active && position(active.tip, active.anchor), { passive: true });
-  window.addEventListener('scroll', () => active && !active.mobile && closeTooltip('scroll'), { passive: true });
+  window.addEventListener('scroll', () => {
+    if (!active || active.mobile) return;
+    if (!active.anchor.isConnected) closeTooltip('detached');
+    else position(active.tip, active.anchor);
+  }, { passive: true, capture: true });
   window.GBArticleTooltips = Object.freeze({ version: VERSION, init: initInlineTooltips, close: closeTooltip });
   return window.GBArticleTooltips;
 }
