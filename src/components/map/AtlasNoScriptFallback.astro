@@ -42,10 +42,7 @@ const items = Array.from(byUrl.values()).sort((a, b) => a.title.localeCompare(b.
     .atlas-noscript li span{color:#747d89;font-size:11px;font-weight:700;white-space:nowrap}
     @media(max-width:520px){.atlas-noscript{padding-inline:12px}.atlas-noscript li a{min-height:64px;padding:12px}.atlas-noscript li strong{font-size:14px}}
   </style>
-  <!-- With scripting enabled, body-noscript content is raw text and does not
-       create a duplicate ID. With scripting disabled this becomes the primary
-       list surface and intentionally shares the list parity selectors. -->
-  <main class="atlas-noscript" id="atlasListView">
+  <main class="atlas-noscript" id="atlasNoScriptList">
     <div class="atlas-noscript__inner">
       <a class="atlas-noscript__back" href="/">← На главную</a>
       <h1>Атлас исследований</h1>
