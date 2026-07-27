@@ -17,6 +17,16 @@
   var root = document.documentElement;
   var STORAGE_KEY = 'gb:reader-preferences:v1';
   var EVENT_NAME = 'gb:reader-preferences-change';
+  var LEGACY_THEME_CONTROL_SELECTOR = [
+    '[data-fc-action="theme"]',
+    '[data-gbs2-theme]',
+    '.gb-theme-toggle',
+    '.gb-fc-theme',
+    '#barThemeBtn',
+    '#themeToggle',
+    '.theme-toggle',
+    '.nag-sidebar-theme-btn'
+  ].join(',');
   var THEMES = ['light', 'dark', 'sepia'];
   var LINE_HEIGHTS = ['compact', 'normal', 'relaxed'];
   var MEASURES = ['narrow', 'normal', 'wide'];
@@ -202,6 +212,30 @@
     return Object.assign({}, current);
   }
 
+  function closestLegacyThemeControl(target) {
+    if (!target || typeof target.closest !== 'function') return null;
+    try { return target.closest(LEGACY_THEME_CONTROL_SELECTOR); }
+    catch (_) { return null; }
+  }
+
+  function scheduleLegacyThemeReconcile(event) {
+    if (!closestLegacyThemeControl(event && event.target)) return;
+
+    // Legacy controls can still own their visual click handler while migration
+    // is in progress. Reconcile only after the complete click dispatch, then
+    // persist the resulting html.dark state through the canonical owner. Modern
+    // controls already call setTheme(), so this becomes a strict no-op for them.
+    var reconcile = function () {
+      var theme = root.classList.contains('dark') ? 'dark' : 'light';
+      if (current.theme === theme) return;
+      commit({ theme: theme }, { source: 'legacy-theme-control' });
+    };
+
+    if (typeof global.queueMicrotask === 'function') global.queueMicrotask(reconcile);
+    else if (typeof global.Promise === 'function') global.Promise.resolve().then(reconcile);
+    else global.setTimeout(reconcile, 0);
+  }
+
   var api = {
     version: 1,
     storageKey: STORAGE_KEY,
@@ -226,6 +260,7 @@
 
   global.GBReaderPreferences = api;
   global.__GB_READER_PREFS_BOOTSTRAP__ = Object.assign({}, current);
+  document.addEventListener('click', scheduleLegacyThemeReconcile);
   emit(current, 'init');
 
   global.addEventListener('storage', function (event) {

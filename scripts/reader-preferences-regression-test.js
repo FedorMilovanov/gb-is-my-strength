@@ -16,6 +16,7 @@ function createBrowser(seed = {}) {
   const classes = new Set();
   const documentListeners = new Map();
   const windowListeners = new Map();
+  const microtasks = [];
 
   const classList = {
     add(value) { classes.add(value); },
@@ -85,6 +86,7 @@ function createBrowser(seed = {}) {
       if (!windowListeners.has(name)) windowListeners.set(name, []);
       windowListeners.get(name).push(listener);
     },
+    queueMicrotask(callback) { microtasks.push(callback); },
   };
 
   const context = vm.createContext({
@@ -106,7 +108,11 @@ function createBrowser(seed = {}) {
     vm.runInContext(read(relative), context, { filename: relative });
   }
 
-  return { window, document, storage, attrs, styles, classes, run };
+  function flushMicrotasks() {
+    while (microtasks.length) microtasks.shift()();
+  }
+
+  return { window, document, storage, attrs, styles, classes, run, flushMicrotasks };
 }
 
 // Legacy Gill/HM values become one canonical first-paint state.
@@ -156,6 +162,52 @@ canonical.run('js/reader-preferences-head.js');
 assert.strictEqual(canonical.attrs.get('data-reader-theme'), 'dark');
 assert.strictEqual(canonical.attrs.get('data-reader-text-mode'), 'plain');
 assert.strictEqual(canonical.attrs.get('data-reader-motion'), 'reduced');
+
+// Same-document legacy controls must reconcile their final html.dark state
+// through the canonical store. Storage events do not fire in the same tab, so
+// without this bridge the page looks dark until reload and then reverts.
+const legacyClick = createBrowser({
+  'gb:reader-preferences:v1': JSON.stringify({ version: 1, theme: 'light', fontScale: 1, lineHeight: 'normal', measure: 'normal', textMode: 'rich', motion: 'system' }),
+  theme: 'light',
+});
+legacyClick.run('js/reader-preferences.js');
+const legacyThemeButton = {
+  closest(selector) { return selector.includes('#themeToggle') ? this : null; },
+};
+legacyClick.document.addEventListener('click', (event) => {
+  if (event.target !== legacyThemeButton) return;
+  const dark = legacyClick.classes.has('dark');
+  if (dark) legacyClick.classes.delete('dark');
+  else legacyClick.classes.add('dark');
+  legacyClick.storage.set('theme', dark ? 'light' : 'dark');
+});
+legacyClick.document.dispatchEvent({ type: 'click', target: legacyThemeButton });
+legacyClick.flushMicrotasks();
+assert.strictEqual(legacyClick.window.GBReaderPreferences.get().theme, 'dark');
+assert.strictEqual(legacyClick.attrs.get('data-reader-theme'), 'dark');
+assert.strictEqual(legacyClick.storage.get('theme'), 'dark');
+assert.strictEqual(JSON.parse(legacyClick.storage.get('gb:reader-preferences:v1')).theme, 'dark');
+
+// Modern controls already commit through the canonical API. The compatibility
+// bridge observes the same final state and must not emit or persist twice.
+const modernClick = createBrowser({
+  'gb:reader-preferences:v1': JSON.stringify({ version: 1, theme: 'light', fontScale: 1, lineHeight: 'normal', measure: 'normal', textMode: 'rich', motion: 'system' }),
+});
+modernClick.run('js/reader-preferences.js');
+let modernChanges = 0;
+modernClick.window.GBReaderPreferences.subscribe(() => { modernChanges += 1; });
+const modernThemeButton = {
+  closest(selector) { return selector.includes('[data-fc-action="theme"]') ? this : null; },
+};
+modernClick.document.addEventListener('click', (event) => {
+  if (event.target === modernThemeButton) {
+    modernClick.window.GBReaderPreferences.setTheme('dark', { source: 'modern-control' });
+  }
+});
+modernClick.document.dispatchEvent({ type: 'click', target: modernThemeButton });
+modernClick.flushMicrotasks();
+assert.strictEqual(modernClick.window.GBReaderPreferences.get().theme, 'dark');
+assert.strictEqual(modernChanges, 1);
 
 const component = read('src/components/reader-platform/ReaderPreferencesHead.astro');
 assert(component.includes("assetUrl('js/reader-preferences-head.js')"));
@@ -227,6 +279,10 @@ assert(legacyTargets.length >= 50, `expected broad legacy coverage, got ${legacy
 
 const siteRuntime = read('js/site.js');
 assert(siteRuntime.includes('window.GBReaderPreferences.setTheme'), 'legacy theme bridge must call canonical API');
+const readerRuntime = read('js/reader-preferences.js');
+for (const selector of ['[data-fc-action="theme"]', '[data-gbs2-theme]', '.gb-theme-toggle', '#themeToggle', '.nag-sidebar-theme-btn']) {
+  assert(readerRuntime.includes(selector), `canonical legacy-control bridge must cover ${selector}`);
+}
 const gillBar = read('src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
 const standaloneSettings = read('src/components/article-pilots/_shared/ReaderSettings.astro');
 assert(gillBar.includes('GBReaderPreferences'));
