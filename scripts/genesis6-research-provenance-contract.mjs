@@ -9,7 +9,9 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const rootArg = args.indexOf('--research-root');
-const RESEARCH_ROOT = path.resolve(rootArg >= 0 ? args[rootArg + 1] : process.env.GENESIS6_RESEARCH_ROOT || path.join(ROOT, '_external/Research'));
+const RESEARCH_ROOT = path.resolve(
+  rootArg >= 0 ? args[rootArg + 1] : process.env.GENESIS6_RESEARCH_ROOT || path.join(ROOT, '_external/Research'),
+);
 const PROVENANCE_PATH = path.join(ROOT, 'data/genesis6-research-provenance.json');
 
 const fail = (message) => {
@@ -25,13 +27,48 @@ const isFile = (file) => {
     return false;
   }
 };
+const parseScalar = (raw) => {
+  const value = raw.trim();
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return value.replace(/^["']|["']$/g, '');
+};
+const frontmatterBlock = (source) => {
+  const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  return match?.[1];
+};
 const frontmatterValue = (source, key) => {
-  const match = source.match(new RegExp(`^${key}:\\s*(.+?)\\s*$`, 'm'));
-  if (!match) return undefined;
-  const raw = match[1].trim();
-  if (raw === 'true') return true;
-  if (raw === 'false') return false;
-  return raw.replace(/^["']|["']$/g, '');
+  const block = frontmatterBlock(source);
+  if (block === undefined) return undefined;
+  const match = block.match(new RegExp(`^${key}:\\s*(.+?)\\s*$`, 'm'));
+  return match ? parseScalar(match[1]) : undefined;
+};
+const frontmatterList = (source, key) => {
+  const block = frontmatterBlock(source);
+  if (block === undefined) return undefined;
+  const lines = block.split(/\r?\n/);
+  const start = lines.findIndex((line) => line.trimEnd() === `${key}:`);
+  if (start < 0) return undefined;
+
+  const values = [];
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    const item = line.match(/^\s{2}-\s+(.+?)\s*$/);
+    if (item) {
+      values.push(parseScalar(item[1]));
+      continue;
+    }
+    if (/^\s*$/.test(line)) continue;
+    break;
+  }
+  return values;
+};
+const exactKeys = (value, expected, label) => {
+  const actualKeys = Object.keys(value || {}).sort();
+  const expectedKeys = [...expected].sort();
+  if (!isDeepStrictEqual(actualKeys, expectedKeys)) {
+    fail(`${label} keys must be exactly ${expectedKeys.join(', ')}`);
+  }
 };
 
 if (!fs.existsSync(PROVENANCE_PATH)) {
@@ -40,9 +77,22 @@ if (!fs.existsSync(PROVENANCE_PATH)) {
 }
 
 const provenance = readJson(PROVENANCE_PATH);
-if (provenance.schemaVersion !== 2 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
-if (!Array.isArray(provenance.articles) || provenance.articles.length !== 4) fail('exactly four legacy article bindings are required');
-if (!Array.isArray(provenance.draftArticles) || provenance.draftArticles.length !== 2) fail('exactly two extension draft article bindings are required');
+if (provenance.schemaVersion !== 3 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
+if (provenance.releaseState !== 'blocked') {
+  fail('releaseState must remain blocked until an explicit publication pass closes all named gates');
+}
+if (!Array.isArray(provenance.articles) || provenance.articles.length !== 4) {
+  fail('exactly four legacy article bindings are required');
+}
+if (!Array.isArray(provenance.draftArticles) || provenance.draftArticles.length !== 2) {
+  fail('exactly two extension draft article bindings are required');
+}
+if (!Array.isArray(provenance.siteArticles) || provenance.siteArticles.length !== 6) {
+  fail('exactly six site article contracts are required');
+}
+if (!isDeepStrictEqual(provenance.readerOrder, ['6', '6A', '6B', '7', '8', '9'])) {
+  fail('readerOrder must remain 6 → 6A → 6B → 7 → 8 → 9');
+}
 if (provenance.publicationPolicy?.defaultState !== 'draft-noindex') fail('safe default must remain draft-noindex');
 for (const field of [
   'requiresExactResearchCommit',
@@ -50,6 +100,10 @@ for (const field of [
   'requiresExtensionManifestDigest',
   'requiresExactHeadSiteEvidence',
   'productionWitnessSeparate',
+  'requiresAllSeriesArticlesDraftNoindex',
+  'requiresExactCanonicalOverride',
+  'requiresExactRelatedGraph',
+  'requiresOrderedForwardLinks',
 ]) {
   if (provenance.publicationPolicy?.[field] !== true) fail(`publicationPolicy.${field} must be true`);
 }
@@ -58,7 +112,9 @@ const research = provenance.research || {};
 if (research.repository !== 'FedorMilovanov/Research') fail('unexpected Research repository');
 if (!/^[0-9a-f]{40}$/.test(research.commit || '')) fail('Research commit must be an exact SHA');
 if (!/^[0-9a-f]{64}$/.test(research.manifestSha256 || '')) fail('manifestSha256 must be exact');
-if (!/^[0-9a-f]{64}$/.test(research.extension?.manifestSha256 || '')) fail('extension manifestSha256 must be exact');
+if (!/^[0-9a-f]{64}$/.test(research.extension?.manifestSha256 || '')) {
+  fail('extension manifestSha256 must be exact');
+}
 if (!fs.existsSync(RESEARCH_ROOT)) fail(`Research checkout is missing: ${RESEARCH_ROOT}`);
 
 if (!process.exitCode) {
@@ -97,7 +153,9 @@ if (!process.exitCode) {
 
     const manifest = readJson(manifestFile);
     const ledger = readJson(ledgerFile);
-    if (manifest.seriesId !== 'genesis-6' || ledger.seriesId !== 'genesis-6') fail('Research manifest/ledger series mismatch');
+    if (manifest.seriesId !== 'genesis-6' || ledger.seriesId !== 'genesis-6') {
+      fail('Research manifest/ledger series mismatch');
+    }
     if (manifest.authorityBaseCommit !== research.authorityBaseCommit) fail('authorityBaseCommit drift');
     if (ledger.authorityBaseCommit !== research.authorityBaseCommit) fail('ledger authorityBaseCommit drift');
     if (ledger.manifestSha256 !== research.manifestSha256) fail('ledger manifest digest drift');
@@ -121,7 +179,10 @@ if (!process.exitCode) {
         rightsDecisionIds: binding.rightsDecisionIds,
         publicationStatus: 'eligible-after-site-technical-gates',
       };
-      for (const [name, bundle] of [['manifest', manifestBundles.get(binding.bundleId)], ['ledger', ledgerBundles.get(binding.bundleId)]]) {
+      for (const [name, bundle] of [
+        ['manifest', manifestBundles.get(binding.bundleId)],
+        ['ledger', ledgerBundles.get(binding.bundleId)],
+      ]) {
         if (!bundle) {
           fail(`${name} is missing bundle ${binding.bundleId}`);
           continue;
@@ -138,7 +199,9 @@ if (!process.exitCode) {
     }
     if (extensionManifest.extensionId !== 'genesis6-enoch-articles-6a-6b') fail('extension manifest id drift');
     if (extensionLedger.extensionId !== 'genesis6-enoch-articles-6a-6b') fail('extension ledger id drift');
-    if (extensionLedger.manifestSha256 !== research.extension.manifestSha256) fail('extension ledger manifest digest drift');
+    if (extensionLedger.manifestSha256 !== research.extension.manifestSha256) {
+      fail('extension ledger manifest digest drift');
+    }
 
     const extensionManifestBundles = new Map(
       (extensionManifest.draftArticles || []).map((bundle) => [bundle.bundleId, bundle]),
@@ -174,28 +237,84 @@ if (!process.exitCode) {
         }
         if (!isDeepStrictEqual(bundle, expected)) fail(`${name} bundle drift for ${binding.bundleId}`);
       }
+    }
+    if ([...seenExtensionKeys].sort().join(',') !== '6A,6B') {
+      fail('extension bindings must cover exactly 6A and 6B');
+    }
+    if (seenSlugs.size !== 6) fail('the combined provenance graph must contain six unique slugs');
 
-      const articleFile = path.join(ROOT, 'src/content/articles', `${binding.slug}.mdx`);
+    const siteContracts = new Map();
+    const siteSlugs = new Set();
+    for (const article of provenance.siteArticles) {
+      exactKeys(article, ['articleKey', 'slug', 'expectedRelatedSlugs'], `siteArticles.${article.articleKey || '?'}`);
+      if (!provenance.readerOrder.includes(article.articleKey)) fail(`unsupported site article key ${article.articleKey}`);
+      if (siteContracts.has(article.articleKey)) fail(`duplicate site article key ${article.articleKey}`);
+      if (siteSlugs.has(article.slug)) fail(`duplicate site article slug ${article.slug}`);
+      if (!Array.isArray(article.expectedRelatedSlugs)) fail(`${article.articleKey} expectedRelatedSlugs must be an array`);
+      if (new Set(article.expectedRelatedSlugs).size !== article.expectedRelatedSlugs.length) {
+        fail(`${article.articleKey} contains duplicate related slugs`);
+      }
+      if (article.expectedRelatedSlugs.includes(article.slug)) fail(`${article.articleKey} cannot relate to itself`);
+      siteContracts.set(article.articleKey, article);
+      siteSlugs.add(article.slug);
+    }
+
+    if (!isDeepStrictEqual([...siteContracts.keys()], provenance.readerOrder)) {
+      fail('siteArticles must be declared in exact readerOrder');
+    }
+    if (!isDeepStrictEqual([...siteSlugs].sort(), [...seenSlugs].sort())) {
+      fail('site article contracts must match the six Research-bound slugs exactly');
+    }
+
+    for (const articleKey of provenance.readerOrder) {
+      const article = siteContracts.get(articleKey);
+      const articleFile = path.join(ROOT, 'src/content/articles', `${article.slug}.mdx`);
       if (!isFile(articleFile)) {
-        fail(`missing site article ${binding.slug}`);
+        fail(`missing site article ${article.slug}`);
         continue;
       }
+
       const source = fs.readFileSync(articleFile, 'utf8');
-      if (frontmatterValue(source, 'slug') !== binding.slug) fail(`${binding.articleKey} site slug drift`);
-      if (frontmatterValue(source, 'series') !== 'genesis-6') fail(`${binding.articleKey} must remain in genesis-6`);
-      if (frontmatterValue(source, 'draft') !== true) fail(`${binding.articleKey} must remain draft`);
-      if (frontmatterValue(source, 'noindex') !== true) fail(`${binding.articleKey} must remain noindex`);
-      if (frontmatterValue(source, 'sourcesRequired') !== true) fail(`${binding.articleKey} must require sources`);
+      if (frontmatterBlock(source) === undefined) fail(`${articleKey} missing valid frontmatter`);
+      const expectedScalars = {
+        slug: article.slug,
+        section: 'hard-texts',
+        author: 'fedor-milovanov',
+        series: 'genesis-6',
+        draft: true,
+        noindex: true,
+        sourcesRequired: true,
+        canonicalOverride: `https://gospod-bog.ru/hard-texts/${article.slug}/`,
+        sourceMode: 'rendered',
+      };
+      for (const [field, expected] of Object.entries(expectedScalars)) {
+        if (frontmatterValue(source, field) !== expected) fail(`${articleKey} ${field} drift`);
+      }
+
+      const related = frontmatterList(source, 'related');
+      if (!isDeepStrictEqual(related, article.expectedRelatedSlugs)) {
+        fail(`${articleKey} related graph drift`);
+      }
+      for (const relatedSlug of article.expectedRelatedSlugs) {
+        if (!siteSlugs.has(relatedSlug)) fail(`${articleKey} related target is outside the series: ${relatedSlug}`);
+      }
     }
-    if ([...seenExtensionKeys].sort().join(',') !== '6A,6B') fail('extension bindings must cover exactly 6A and 6B');
-    if (seenSlugs.size !== 6) fail('the combined provenance graph must contain six unique slugs');
+
+    for (let index = 0; index < provenance.readerOrder.length - 1; index += 1) {
+      const current = siteContracts.get(provenance.readerOrder[index]);
+      const next = siteContracts.get(provenance.readerOrder[index + 1]);
+      if (!current.expectedRelatedSlugs.includes(next.slug)) {
+        fail(`reader-order link missing: ${current.articleKey} → ${next.articleKey}`);
+      }
+    }
   }
 }
 
 if (!process.exitCode) {
   console.log(
     `Genesis 6 Research provenance: PASS (${research.commit}, ` +
-    `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} extension draft bundles, ` +
-    `manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
+      `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} extension draft bundles, ` +
+      `${provenance.siteArticles.length} site contracts, release ${provenance.releaseState}, ` +
+      `manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
   );
 }
