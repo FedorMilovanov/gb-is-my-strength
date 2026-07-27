@@ -62,12 +62,15 @@ for (const asset of ASSETS) {
   currentHashes[asset] = md5(asset);
 }
 
+// Relationship assets are injected only into complete article HTML. They stay
+// outside the global cache-bust ASSETS registry during the transition so the
+// existing root-source hash contract remains read-only clean.
 const RELATIONSHIP_CSS = 'css/relationship-panel.css';
 const RELATIONSHIP_JS = 'js/relationship-panel.js';
-const relationshipCssHash = currentHashes[RELATIONSHIP_CSS];
-const relationshipJsHash = currentHashes[RELATIONSHIP_JS];
+const relationshipCssHash = md5(RELATIONSHIP_CSS);
+const relationshipJsHash = md5(RELATIONSHIP_JS);
 if (!relationshipCssHash || !relationshipJsHash) {
-  throw new Error('Relationship assets are registered but missing from the repository');
+  throw new Error('Relationship assets are missing from the repository');
 }
 
 // ── 3. Walk dist/**/*.html, rewrite asset hashes and inject article panel ──
@@ -97,10 +100,19 @@ function injectRelationshipAssets(html) {
   const cssHref = `/${RELATIONSHIP_CSS}?v=${relationshipCssHash}`;
   const jsSrc = `/${RELATIONSHIP_JS}?v=${relationshipJsHash}`;
 
+  // Existing injected references are normalized independently from the shared
+  // cache registry so a later edit to either asset cannot leave a stale hash.
+  const cssRefRe = new RegExp(`/${escapeRe(RELATIONSHIP_CSS)}\\?v=[a-f0-9]{8}`, 'g');
+  const jsRefRe = new RegExp(`/${escapeRe(RELATIONSHIP_JS)}\\?v=[a-f0-9]{8}`, 'g');
+  const normalized = updated.replace(cssRefRe, cssHref).replace(jsRefRe, jsSrc);
+  changed = normalized !== updated;
+  updated = normalized;
+
   if (!updated.includes(RELATIONSHIP_CSS)) {
+    const before = updated;
     const tag = `<link id="gbRelationshipPanelCss" rel="stylesheet" href="${cssHref}">`;
     updated = updated.replace(/<\/head>/i, `${tag}\n</head>`);
-    changed = updated !== html;
+    changed = changed || updated !== before;
   }
 
   if (!updated.includes(RELATIONSHIP_JS)) {
@@ -120,6 +132,12 @@ function hasExactRelationshipAssets(html) {
 }
 
 const htmlFiles = walk(DIST);
+for (const asset of [RELATIONSHIP_CSS, RELATIONSHIP_JS]) {
+  if (!fs.existsSync(path.join(DIST, asset))) {
+    throw new Error(`dist is missing relationship asset: ${asset}`);
+  }
+}
+
 let filesTouched = 0;
 let replacements = 0;
 let relationshipEligible = 0;
