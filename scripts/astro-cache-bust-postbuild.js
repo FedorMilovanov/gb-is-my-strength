@@ -13,7 +13,7 @@
  * Run order in strangler:build:production-like:
  *   1. astro:build                  → dist HTML files (stale hashes)
  *   2. copy-legacy-to-dist          → dist (legacy HTML, has fresh hashes)
- *   3. astro-cache-bust-postbuild   → dist HTML (sync all hashes) ← NEW
+ *   3. astro-cache-bust-postbuild   → dist HTML (sync all hashes)
  *
  * Usage: node scripts/astro-cache-bust-postbuild.js [--dry-run]
  */
@@ -39,8 +39,6 @@ if (!fs.existsSync(CB_SCRIPT)) {
 }
 
 // ── 1. Read current ASSETS list from shared cache-bust-assets module ────────
-// The ASSETS list is now maintained in scripts/cache-bust-assets.js
-// as the single source of truth for both cache-bust.js and audit-pro.js.
 const ASSETS_MODULE = path.join(ROOT, 'scripts', 'cache-bust-assets.js');
 if (!fs.existsSync(ASSETS_MODULE)) {
   console.error('❌ scripts/cache-bust-assets.js not found.');
@@ -64,7 +62,15 @@ for (const asset of ASSETS) {
   currentHashes[asset] = md5(asset);
 }
 
-// ── 3. Walk dist/**/*.html, rewrite ?v=STALE → ?v=CURRENT ──────────────────
+const RELATIONSHIP_CSS = 'css/relationship-panel.css';
+const RELATIONSHIP_JS = 'js/relationship-panel.js';
+const relationshipCssHash = currentHashes[RELATIONSHIP_CSS];
+const relationshipJsHash = currentHashes[RELATIONSHIP_JS];
+if (!relationshipCssHash || !relationshipJsHash) {
+  throw new Error('Relationship assets are registered but missing from the repository');
+}
+
+// ── 3. Walk dist/**/*.html, rewrite asset hashes and inject article panel ──
 function escapeRe(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -79,9 +85,46 @@ function walk(dir, out = []) {
   return out;
 }
 
+function isRelationshipArticle(html) {
+  return /<html\b/i.test(html) && /<head\b/i.test(html) && /<article\b/i.test(html);
+}
+
+function injectRelationshipAssets(html) {
+  if (!isRelationshipArticle(html)) return { html, changed: false, eligible: false };
+  let updated = html;
+  let changed = false;
+
+  const cssHref = `/${RELATIONSHIP_CSS}?v=${relationshipCssHash}`;
+  const jsSrc = `/${RELATIONSHIP_JS}?v=${relationshipJsHash}`;
+
+  if (!updated.includes(RELATIONSHIP_CSS)) {
+    const tag = `<link id="gbRelationshipPanelCss" rel="stylesheet" href="${cssHref}">`;
+    updated = updated.replace(/<\/head>/i, `${tag}\n</head>`);
+    changed = updated !== html;
+  }
+
+  if (!updated.includes(RELATIONSHIP_JS)) {
+    const before = updated;
+    const tag = `<script id="gbRelationshipPanelJs" defer src="${jsSrc}"></script>`;
+    updated = updated.replace(/<\/body>/i, `${tag}\n</body>`);
+    changed = changed || updated !== before;
+  }
+
+  return { html: updated, changed, eligible: true };
+}
+
+function hasExactRelationshipAssets(html) {
+  if (!isRelationshipArticle(html)) return true;
+  return html.includes(`/${RELATIONSHIP_CSS}?v=${relationshipCssHash}`)
+    && html.includes(`/${RELATIONSHIP_JS}?v=${relationshipJsHash}`);
+}
+
 const htmlFiles = walk(DIST);
 let filesTouched = 0;
 let replacements = 0;
+let relationshipEligible = 0;
+let relationshipInjected = 0;
+const relationshipFailures = [];
 
 for (const fp of htmlFiles) {
   let src = fs.readFileSync(fp, 'utf8');
@@ -93,8 +136,6 @@ for (const fp of htmlFiles) {
     if (!current) continue;
     const escaped = escapeRe(asset);
 
-    // Match: <asset>?v=<any 8-hex>  →  <asset>?v=<current>
-    // Asset can be preceded by ../ or / etc.
     const re = new RegExp(
       `((?:\\.\\./)*|/?)${escaped}\\?v=[a-f0-9]{8}`,
       'g'
@@ -105,6 +146,14 @@ for (const fp of htmlFiles) {
     });
   }
 
+  const relationResult = injectRelationshipAssets(updated);
+  updated = relationResult.html;
+  if (relationResult.eligible) relationshipEligible++;
+  if (relationResult.changed) relationshipInjected++;
+  if (!hasExactRelationshipAssets(updated)) {
+    relationshipFailures.push(path.relative(DIST, fp));
+  }
+
   if (updated !== src) {
     filesTouched++;
     replacements += fileReplacements;
@@ -112,7 +161,9 @@ for (const fp of htmlFiles) {
   }
 }
 
-
+if (relationshipFailures.length > 0) {
+  throw new Error(`Relationship asset injection failed in ${relationshipFailures.join(', ')}`);
+}
 
 // ── 4. Harden dist CSP meta consistently (NEW-68/NEW-69) ───────────────
 // Astro-owned pages can be emitted from many PageHead components. Keep the
@@ -207,14 +258,16 @@ if (cspWasmFailures.length > 0) {
 }
 
 console.log(`\n⚡  astro-cache-bust-postbuild.js${DRY_RUN ? ' [DRY RUN]' : ''}\n`);
-console.log(`  HTML files scanned: ${htmlFiles.length}`);
-console.log(`  Files touched:      ${filesTouched}`);
-console.log(`  Hash replacements:  ${replacements}`);
-console.log(`  CSP files touched:   ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed}, wasm fixed: ${cspWasmFixed})`);
-console.log(`  CSP WASM verified:   ${cspWasmVerified}`);
+console.log(`  HTML files scanned:       ${htmlFiles.length}`);
+console.log(`  Files touched:            ${filesTouched}`);
+console.log(`  Hash replacements:        ${replacements}`);
+console.log(`  Relationship articles:    ${relationshipEligible}`);
+console.log(`  Relationship injections:  ${relationshipInjected}`);
+console.log(`  CSP files touched:         ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed}, wasm fixed: ${cspWasmFixed})`);
+console.log(`  CSP WASM verified:         ${cspWasmVerified}`);
 
 if (DRY_RUN) {
   console.log('\n  (dry-run: nothing written)');
 } else {
-  console.log('\n✅  dist/ hash drift → 0 (next cache-bust legacy pass will converge)');
+  console.log('\n✅  dist/ asset and relationship drift → 0');
 }
