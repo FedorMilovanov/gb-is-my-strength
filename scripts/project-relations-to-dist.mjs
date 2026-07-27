@@ -120,6 +120,7 @@ function buildPanel(current, projection, nodeMap) {
     ? 'Внешние материалы, которые помогают увидеть эту часть в более широком контексте.'
     : 'Материалы, которые естественно продолжают тему и расширяют аргумент статьи.';
   const headingId = `gbRelationsTitle-${String(current.id).replace(/[^a-z0-9_-]+/gi, '-')}`;
+  const relationGroup = String(current.atlasGroup || current.group || 'standalone');
 
   const rows = items.map(({ entry, node }, index) => {
     const description = String(entry.rationale || node.desc || '').trim();
@@ -133,7 +134,7 @@ function buildPanel(current, projection, nodeMap) {
       + '</span><span class="gb-relations-panel__arrow" aria-hidden="true">→</span></a>';
   }).join('');
 
-  return `<nav class="gb-relations-panel" data-relation-engine="1" data-relation-source="${escapeHtml(current.id)}" aria-labelledby="${headingId}">`
+  return `<nav class="gb-relations-panel" data-relation-engine="1" data-relation-source="${escapeHtml(current.id)}" data-relation-group="${escapeHtml(relationGroup)}" aria-labelledby="${headingId}">`
     + '<div class="gb-relations-panel__head"><div>'
     + '<span class="gb-relations-panel__eyebrow">Навигация по исследованию</span>'
     + `<h2 id="${headingId}">${escapeHtml(title)}</h2><p>${escapeHtml(intro)}</p>`
