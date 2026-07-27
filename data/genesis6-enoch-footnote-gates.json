@@ -7,23 +7,23 @@
       "articleKey": "6A",
       "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
       "researchDocumentId": "GEN6-ENOCH-6A-FOOTNOTE-MAP-LIX",
-      "minimumExistingFootnoteDefinitions": 9,
+      "minimumExistingFootnoteDefinitions": 27,
       "targetClaimLevelFootnoteGroups": 27,
-      "status": "source-insertion-pending"
+      "status": "claim-level-sources-inserted"
     },
     {
       "articleKey": "6B",
       "slug": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
       "researchDocumentId": "GEN6-ENOCH-6B-SOURCE-PASS-LIX",
-      "minimumExistingFootnoteDefinitions": 3,
+      "minimumExistingFootnoteDefinitions": 26,
       "targetClaimLevelFootnoteGroups": 26,
-      "status": "source-insertion-pending"
+      "status": "claim-level-sources-inserted"
     }
   ],
   "policy": {
     "failOnFootnoteRegression": true,
     "targetIsPublicationGate": true,
-    "allowDraftBelowTarget": true,
+    "allowDraftBelowTarget": false,
     "requireDraft": true,
     "requireNoindex": true,
     "requireSourcesRequired": true
