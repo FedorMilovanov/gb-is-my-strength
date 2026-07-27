@@ -40,11 +40,14 @@ jobs:
           echo $! > /tmp/gb-http.pid
           sleep 2
 
-      - name: Probe glossary opening and layout repeatedly
+      - name: Probe glossary readiness and opening repeatedly
         shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p reports/glossary-tooltip-diagnostic/screenshots
+          set -uo pipefail
+          out='reports/glossary-tooltip-diagnostic'
+          mkdir -p "$out/screenshots"
+          grep -RInE 'initGlossaryTooltips|__gbGlossaryRuntime|gb-floating-tip|className="gterm"|class="gterm"' js src scripts 2>/dev/null > "$out/source-matches.txt" || true
+
           cat > /tmp/glossary-tooltip-diagnostic.js <<'JS'
           'use strict';
 
@@ -55,59 +58,54 @@ jobs:
           const BASE = 'http://127.0.0.1:8080';
           const URL = '/articles/dzhon-gill-istoricheskiy-kontekst/';
           const OUT = 'reports/glossary-tooltip-diagnostic';
+          const SELECTOR = 'article .gterm:not(.summary-card .gterm)';
           const rounds = 20;
+          fs.mkdirSync(path.join(OUT, 'screenshots'), { recursive: true });
 
-          function sampleScript() {
-            const target = document.querySelector('article .gterm:not(.summary-card .gterm)');
+          function sampleScript(selector) {
+            const target = document.querySelector(selector);
             const openTip = document.querySelector('.gtip.gb-floating-tip.is-open');
-            const anyFloating = Array.from(document.querySelectorAll('.gb-floating-tip')).map((node) => {
-              const box = node.getBoundingClientRect();
-              const style = getComputedStyle(node);
-              return {
-                className: node.className,
-                width: Math.round(box.width),
-                height: Math.round(box.height),
-                top: Math.round(box.top),
-                bottom: Math.round(box.bottom),
-                display: style.display,
-                visibility: style.visibility,
-                opacity: style.opacity,
-                pointerEvents: style.pointerEvents,
-              };
-            });
-            const targetBox = target?.getBoundingClientRect();
+            const runtime = window.__gbGlossaryRuntime || null;
+            const targetBox = target ? target.getBoundingClientRect() : null;
             const cx = targetBox ? Math.max(0, Math.min(innerWidth - 1, targetBox.left + targetBox.width / 2)) : 0;
             const cy = targetBox ? Math.max(0, Math.min(innerHeight - 1, targetBox.top + targetBox.height / 2)) : 0;
-            const elementAtTarget = targetBox ? document.elementFromPoint(cx, cy) : null;
-            const tipBox = openTip?.getBoundingClientRect();
+            const hit = targetBox ? document.elementFromPoint(cx, cy) : null;
+            const tipBox = openTip ? openTip.getBoundingClientRect() : null;
             const tipStyle = openTip ? getComputedStyle(openTip) : null;
             return {
               readyState: document.readyState,
-              targetCount: document.querySelectorAll('article .gterm:not(.summary-card .gterm)').length,
+              runtime: {
+                initialized: window.__gbGlossaryInitialized === true,
+                object: Boolean(runtime),
+                promise: Boolean(runtime && runtime.promise),
+                dict: Boolean(runtime && runtime.dict),
+                policy: Boolean(runtime && runtime.policy),
+                aliases: Boolean(runtime && runtime.aliasToCanonical),
+                regex: Boolean(runtime && runtime.regex),
+                initFunction: Boolean(window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function'),
+              },
+              targetCount: document.querySelectorAll(selector).length,
               target: target ? {
                 tag: target.tagName,
-                className: target.className,
-                text: (target.textContent || '').trim().slice(0, 120),
+                className: String(target.className || ''),
+                text: String(target.textContent || '').trim().slice(0, 120),
+                term: target.getAttribute('data-term'),
                 tabindex: target.getAttribute('tabindex'),
                 role: target.getAttribute('role'),
                 ariaExpanded: target.getAttribute('aria-expanded'),
-                connected: target.isConnected,
-                width: targetBox ? Math.round(targetBox.width) : null,
-                height: targetBox ? Math.round(targetBox.height) : null,
-                top: targetBox ? Math.round(targetBox.top) : null,
-                bottom: targetBox ? Math.round(targetBox.bottom) : null,
+                width: Math.round(targetBox.width),
+                height: Math.round(targetBox.height),
+                top: Math.round(targetBox.top),
+                bottom: Math.round(targetBox.bottom),
+                hasInlineTip: Boolean(target.querySelector('.gtip')),
               } : null,
-              elementAtTarget: elementAtTarget ? {
-                tag: elementAtTarget.tagName,
-                className: elementAtTarget.className,
-                text: (elementAtTarget.textContent || '').trim().slice(0, 80),
-              } : null,
-              activeElement: document.activeElement ? {
-                tag: document.activeElement.tagName,
-                className: document.activeElement.className,
+              hit: hit ? {
+                tag: hit.tagName,
+                className: String(hit.className || ''),
+                text: String(hit.textContent || '').trim().slice(0, 80),
               } : null,
               openTip: openTip ? {
-                className: openTip.className,
+                className: String(openTip.className || ''),
                 width: Math.round(tipBox.width),
                 height: Math.round(tipBox.height),
                 top: Math.round(tipBox.top),
@@ -115,18 +113,58 @@ jobs:
                 background: tipStyle.backgroundColor,
                 innerDisplay: openTip.querySelector('.gtip-luxury') ? getComputedStyle(openTip.querySelector('.gtip-luxury')).display : null,
               } : null,
-              floatingTips: anyFloating,
-              scripts: Array.from(document.scripts).map((script) => script.src || '[inline]').filter((value) => /site|tooltip|overlay|article|runtime/i.test(value)).slice(0, 30),
+              floatingCount: document.querySelectorAll('.gb-floating-tip').length,
               bodyClasses: document.body.className,
             };
+          }
+
+          async function sample(page) {
+            return page.evaluate(sampleScript, SELECTOR);
+          }
+
+          async function waitForRuntime(page, timeout) {
+            const started = Date.now();
+            try {
+              await page.waitForFunction((selector) => {
+                const runtime = window.__gbGlossaryRuntime;
+                const target = document.querySelector(selector);
+                return Boolean(
+                  runtime && runtime.dict && runtime.policy && runtime.aliasToCanonical && runtime.regex &&
+                  window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function' &&
+                  target && target.getAttribute('data-term') && target.querySelector('.gtip')
+                );
+              }, SELECTOR, { timeout });
+              return { ready: true, elapsedMs: Date.now() - started, error: null };
+            } catch (error) {
+              return { ready: false, elapsedMs: Date.now() - started, error: String(error.message || error).slice(0, 500) };
+            }
+          }
+
+          async function hoverTarget(page) {
+            const target = page.locator(SELECTOR).first();
+            try {
+              if (await target.count() === 0) return { attempted: false, error: 'target-missing' };
+              await target.scrollIntoViewIfNeeded();
+              await target.hover({ force: true, timeout: 5000 });
+              return { attempted: true, error: null };
+            } catch (error) {
+              return { attempted: true, error: String(error.message || error).slice(0, 500) };
+            }
           }
 
           (async () => {
             const browser = await chromium.launch({ headless: true });
             const results = [];
-            let hoverMisses = 0;
-            let focusRecoveries = 0;
-            let completeMisses = 0;
+            const summary = {
+              rounds,
+              targetMissingAt900: 0,
+              runtimeNotReadyAt900: 0,
+              earlyHoverMisses: 0,
+              runtimeReadyTimeouts: 0,
+              readyHoverRecoveries: 0,
+              readyHoverMisses: 0,
+              roundErrors: 0,
+            };
 
             for (let round = 1; round <= rounds; round++) {
               const page = await browser.newPage({ viewport: { width: 900, height: 650 }, deviceScaleFactor: 1 });
@@ -136,62 +174,65 @@ jobs:
               });
               page.on('pageerror', (error) => consoleMessages.push({ type: 'pageerror', text: error.message.slice(0, 400) }));
 
-              const response = await page.goto(BASE + URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-              await page.waitForTimeout(900);
-              const target = page.locator('article .gterm:not(.summary-card .gterm)').first();
-              const before = await page.evaluate(sampleScript);
-              const timeline = [{ afterMs: -1, state: before }];
-              let hoverError = null;
-
+              const record = { round, consoleMessages };
               try {
-                await target.scrollIntoViewIfNeeded();
-                await target.hover({ force: true, timeout: 5000 });
+                const response = await page.goto(BASE + URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+                record.status = response ? response.status() : null;
+                await page.waitForTimeout(900);
+                record.at900 = await sample(page);
+                if (!record.at900.target) summary.targetMissingAt900++;
+                const earlyRuntimeReady = record.at900.runtime.dict && record.at900.runtime.policy && record.at900.runtime.aliases && record.at900.runtime.regex && record.at900.runtime.initFunction && record.at900.target && record.at900.target.term && record.at900.target.hasInlineTip;
+                if (!earlyRuntimeReady) summary.runtimeNotReadyAt900++;
+
+                record.earlyHover = await hoverTarget(page);
+                await page.waitForTimeout(250);
+                record.afterEarlyHover = await sample(page);
+                if (!record.afterEarlyHover.openTip) summary.earlyHoverMisses++;
+
+                record.readiness = await waitForRuntime(page, 5000);
+                record.afterReady = await sample(page);
+                if (!record.readiness.ready) summary.runtimeReadyTimeouts++;
+
+                record.readyHover = await hoverTarget(page);
+                let openedAfterReady = false;
+                if (record.readyHover.attempted && !record.readyHover.error) {
+                  try {
+                    await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'attached', timeout: 2000 });
+                    openedAfterReady = true;
+                  } catch (_) {}
+                }
+                record.afterReadyHover = await sample(page);
+                record.openedAfterReady = openedAfterReady && Boolean(record.afterReadyHover.openTip);
+                if (record.openedAfterReady && !record.afterEarlyHover.openTip) summary.readyHoverRecoveries++;
+                if (!record.openedAfterReady) {
+                  summary.readyHoverMisses++;
+                  await page.screenshot({ path: path.join(OUT, 'screenshots', `round-${String(round).padStart(2, '0')}-ready-miss.png`), fullPage: false });
+                }
               } catch (error) {
-                hoverError = String(error.message || error).slice(0, 500);
+                summary.roundErrors++;
+                record.error = String(error.stack || error.message || error).slice(0, 2000);
+                try { await page.screenshot({ path: path.join(OUT, 'screenshots', `round-${String(round).padStart(2, '0')}-error.png`), fullPage: false }); } catch (_) {}
+              } finally {
+                results.push(record);
+                await page.close();
               }
-
-              for (const wait of [0, 50, 100, 250, 500, 1000]) {
-                if (wait) await page.waitForTimeout(wait - (timeline.at(-1)?.afterMs > 0 ? timeline.at(-1).afterMs : 0));
-                timeline.push({ afterMs: wait, state: await page.evaluate(sampleScript) });
-              }
-
-              const hoverOpenedAt = timeline.find((entry) => entry.afterMs >= 0 && entry.state.openTip)?.afterMs ?? null;
-              let focusState = null;
-              if (hoverOpenedAt === null) {
-                hoverMisses++;
-                await target.focus();
-                await page.waitForTimeout(300);
-                focusState = await page.evaluate(sampleScript);
-                if (focusState.openTip) focusRecoveries++;
-                else completeMisses++;
-                await page.screenshot({ path: path.join(OUT, 'screenshots', `round-${String(round).padStart(2, '0')}-miss.png`), fullPage: false });
-              }
-
-              results.push({
-                round,
-                status: response?.status() ?? null,
-                hoverError,
-                hoverOpenedAt,
-                focusState,
-                timeline,
-                consoleMessages,
-              });
-              await page.close();
             }
 
             await browser.close();
-            const summary = { rounds, hoverMisses, focusRecoveries, completeMisses };
-            fs.writeFileSync(path.join(OUT, 'result.json'), JSON.stringify({ schema: 1, sha: process.env.GITHUB_SHA || '', summary, results }, null, 2) + '\n');
+            fs.writeFileSync(path.join(OUT, 'result.json'), JSON.stringify({ schema: 2, sha: process.env.GITHUB_SHA || '', summary, results }, null, 2) + '\n');
             fs.writeFileSync(path.join(OUT, 'summary.txt'), Object.entries(summary).map(([key, value]) => `${key}: ${value}`).join('\n') + '\n');
             console.log(JSON.stringify(summary));
           })().catch((error) => {
+            fs.writeFileSync(path.join(OUT, 'fatal.txt'), String(error.stack || error.message || error) + '\n');
             console.error(error);
             process.exit(1);
           });
           JS
 
           node /tmp/glossary-tooltip-diagnostic.js
-          cat reports/glossary-tooltip-diagnostic/summary.txt >> "$GITHUB_STEP_SUMMARY"
+          status=$?
+          if [[ -f "$out/summary.txt" ]]; then cat "$out/summary.txt" >> "$GITHUB_STEP_SUMMARY"; fi
+          exit "$status"
 
       - name: Stop local server
         if: always()
