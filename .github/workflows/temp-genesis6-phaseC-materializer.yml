@@ -25,9 +25,10 @@ jobs:
       CARRIER_SHA: ${{ github.event.pull_request.head.sha }}
       BASE_SHA: 9ff36fab1e7776ce3de60daacdfd9d29066ae6c0
       TARGET_BRANCH: lane/genesis6-route-source-prep-2026-07-27
-      CAPSULE_B64_SHA256: 962f47fe056b469508172f9178891d59e7999557b927fc9596af12b0d28b4139
-      CAPSULE_TGZ_SHA256: 224581af3d057f4ce69a76e23c74ca8be9c03688c58c27b0e33814b6bb96012c
-      MANIFEST_SHA256: 743153757d3117bb03a824b13481c2cc525814b2cb7b3d5c4593dcacdacddbe4
+      CAPSULE_PART_COUNT: "32"
+      CAPSULE_B64_SHA256: 6eb57813aa02886b36263c920fe2485c9ff22d39d30751727bda27c422409ba6
+      CAPSULE_TGZ_SHA256: e290859f9db4f67401ced23f978d08d38ad99f2fbbc2fe5e9328889a85c96a08
+      MANIFEST_SHA256: da7b731f6683558db32e9b843dea9311828e36bf3ba085fb6e2ae9924b85ba39
     steps:
       - name: Checkout exact carrier
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -35,25 +36,21 @@ jobs:
           ref: ${{ env.CARRIER_SHA }}
           fetch-depth: 0
           persist-credentials: false
-
       - name: Restore verified acceptance runner
         shell: bash
         run: |
           set -euo pipefail
           cat .tmp/genesis6-phaseC/runner/*.part > /tmp/genesis6-phaseC-runner.sh
-          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = '7ccadea12893ad97a4ec5b9ae862ab206549e73b766b4feb5816c145dcbfe360'
+          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = "5217adc94575b466e5ee9304ff8da249c345c488aab0445b5082c70826f044ad"
           bash -n /tmp/genesis6-phaseC-runner.sh
           chmod 700 /tmp/genesis6-phaseC-runner.sh
-
       - name: Set up Node 22.12
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22.12.0'
           cache: npm
-
       - name: Validate and seal exact product
         run: /tmp/genesis6-phaseC-runner.sh
-
       - name: Upload acceptance evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

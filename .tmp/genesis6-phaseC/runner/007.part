@@ -1,0 +1,3 @@
+owner -czf "$ROOT/tested-product.tgz" -C "$PRODUCT" .
+sha256sum "$ROOT/tested-product.tgz" > "$EVIDENCE/tested-product.tgz.sha256"
+echo '== Phase C read-only acceptance complete =='

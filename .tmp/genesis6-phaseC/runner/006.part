@@ -1,0 +1,12 @@
+','--exclude-standard']).decode().splitlines())
+if actual!=paths: raise SystemExit(f'tested product scope mismatch: {actual}')
+product=root/'tested-product'; product.mkdir(parents=True,exist_ok=True); files=[]
+for path in paths:
+    src=pathlib.Path(path); dst=product/path; dst.parent.mkdir(parents=True,exist_ok=True); shutil.copyfile(src,dst)
+    data=src.read_bytes(); files.append({'path':path,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest(),'gitBlobSha':subprocess.check_output(['git','hash-object','--stdin'],input=data).decode().strip()})
+final={'schemaVersion':2,'base':source['base'],'carrier':os.environ['CARRIER_SHA'],'publicationState':'draft-noindex','files':files}
+mb=(json.dumps(final,ensure_ascii=False,indent=2)+'\n').encode()
+(root/'evidence'/'tested-product-manifest.json').write_bytes(mb)
+(root/'evidence'/'tested-product-manifest.sha256').write_text(hashlib.sha256(mb).hexdigest()+'\n')
+PY_SEAL
+tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-

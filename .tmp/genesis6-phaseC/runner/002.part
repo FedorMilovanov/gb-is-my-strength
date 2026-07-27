@@ -1,88 +1,14 @@
-y exact scope and dormant publication flags =='
-python <<'PY'
-import json, subprocess
-manifest = json.load(open('/tmp/genesis6-phaseC/package/manifest.json'))
-expected = [entry['path'] for entry in manifest['files']]
-actual = sorted(subprocess.check_output(['git', 'ls-files', '--modified', '--others', '--exclude-standard']).decode().splitlines())
-if actual != expected:
-    raise SystemExit(f'diff mismatch\nexpected={expected}\nactual={actual}')
-forbidden = [p for p in actual if p.startswith('.github/') or p.startswith('src/content/articles/') or p.startswith('css/') or p in {'feed.xml','sitemap.xml'}]
-if forbidden:
-    raise SystemExit(f'forbidden staging paths: {forbidden}')
-PY
-for file in \
-  src/content/articles/enoh-prorochestvoval-iuda-14-15-4q204.mdx \
-  src/content/articles/angely-pod-mrakom-iuda-6-7-2-petra-2.mdx \
-  src/content/articles/duhi-v-temnice-noi-kreshchenie-pobeda.mdx \
-  src/content/articles/blagovestie-mertvym-1-petra-4-5-6.mdx
-do
-  grep -qx 'draft: true' "$file"
-  grep -qx 'noindex: true' "$file"
-done
+t files')
+paths=[e['path'] for e in files]
+if paths!=sorted(paths) or len(paths)!=len(set(paths)): raise SystemExit('manifest order/uniqueness mismatch')
+if set(safe)!={'manifest.json',*paths}: raise SystemExit('capsule tree differs from manifest')
+for entry in files:
+    data=(pkg/entry['path']).read_bytes()
+    if len(data)!=entry['bytes']: raise SystemExit(f"bytes mismatch: {entry['path']}")
+    if hashlib.sha256(data).hexdigest()!=entry['sha256']: raise SystemExit(f"sha256 mismatch: {entry['path']}")
+    git_sha=subprocess.check_output(['git','hash-object','--stdin'],input=data).decode().strip()
+    if git_sha!=entry['gitBlobSha']: raise SystemExit(f"git blob mismatch: {entry['path']}")
+(root/'evidence'/'capsule.json').write_text(json.dumps({'base':manifest['base'],'fileCount':len(files),'manifestSha256':hashlib.sha256(manifest_bytes).hexdigest(),'capsuleBase64Sha256':os.environ['CAPSULE_B64_SHA256'],'capsuleTgzSha256':os.environ['CAPSULE_TGZ_SHA256']},indent=2)+'\n')
+PY_CAPSULE
 
-echo '== Validate canonical registries and shared façade =='
-node scripts/sync-route-migration-matrix.js --check
-node scripts/check-route-profiles.js --strict
-node scripts/public-surface-registry-audit.js
-node scripts/series-reader-facade-regression-test.js
-
-echo '== Install dependencies and validate source =='
-npm ci
-npm run astro:check
-npm run engine:contracts
-npm run workflows:check
-npm run validate:static-publication
-
-echo '== Build production-like noindex routes =='
-npm run strangler:build:production-like
-npm run page-ownership:dist:production-like
-for route in \
-  hard-texts/genesis-6 \
-  hard-texts/enoh-prorochestvoval-iuda-14-15-4q204 \
-  hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2 \
-  hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda \
-  hard-texts/blagovestie-mertvym-1-petra-4-5-6
-do
-  test -s "dist/${route}/index.html"
-  grep -q 'noindex' "dist/${route}/index.html"
-done
-
-echo '== Seal exact tested product artifact =='
-python <<'PY'
-import hashlib, json, os, pathlib, shutil, subprocess
-root = pathlib.Path('/tmp/genesis6-phaseC')
-source_manifest = json.load(open(root / 'package' / 'manifest.json'))
-paths = [entry['path'] for entry in source_manifest['files']]
-actual = sorted(subprocess.check_output([
-    'git', 'ls-files', '--modified', '--others', '--exclude-standard'
-]).decode().splitlines())
-if actual != paths:
-    raise SystemExit(f'tested product scope mismatch: {actual}')
-product = root / 'tested-product'
-product.mkdir(parents=True, exist_ok=True)
-files = []
-for path in paths:
-    src = pathlib.Path(path)
-    dst = product / path
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(src, dst)
-    data = src.read_bytes()
-    files.append({
-        'path': path,
-        'bytes': len(data),
-        'sha256': hashlib.sha256(data).hexdigest(),
-        'gitBlobSha': subprocess.check_output(['git', 'hash-object', '--stdin'], input=data).decode().strip(),
-    })
-final_manifest = {
-    'schemaVersion': 1,
-    'base': source_manifest['base'],
-    'sourceCapsule': {
-        'base64Sha256': os.environ['CAPSULE_B64_SHA256'],
-        'tgzSha256': os.environ['CAPSULE_TGZ_SHA256'],
-        'manifestSha256': os.environ['MANIFEST_SHA256'],
-    },
-    'componentPatch': json.load(open(root / 'evidence' / 'component-patch.json')),
-    'files': files,
-}
-manifest_bytes = (json.dumps(final_manifest, ensure_ascii=False, indent=2) + '\n').encode()
-(root / 'evidence' / 'tested-product-manifest.json').write_by
+e

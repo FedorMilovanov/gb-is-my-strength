@@ -1,0 +1,22 @@
+bidden=[p for p in actual if p.startswith('.github/') or p.startswith('src/content/articles/') or p.startswith('css/') or p in {'feed.xml','sitemap.xml'}]
+if forbidden: raise SystemExit(f'forbidden staging paths: {forbidden}')
+PY_SCOPE
+for file in \
+  src/content/articles/enoh-prorochestvoval-iuda-14-15-4q204.mdx \
+  src/content/articles/angely-pod-mrakom-iuda-6-7-2-petra-2.mdx \
+  src/content/articles/duhi-v-temnice-noi-kreshchenie-pobeda.mdx \
+  src/content/articles/blagovestie-mertvym-1-petra-4-5-6.mdx
+do
+  grep -qx 'draft: true' "$file"
+  grep -qx 'noindex: true' "$file"
+done
+
+echo '== Validate canonical registries and noindex contracts =='
+node scripts/sync-route-migration-matrix.js --check
+node scripts/check-route-profiles.js --strict
+node scripts/public-surface-registry-audit.js
+node scripts/series-reader-facade-regression-test.js
+node scripts/sitemap-route-contract-test.js
+node scripts/seo-route-contract-test.js
+node scripts/search-index-policy-contract-test.js
+node scripts/rss

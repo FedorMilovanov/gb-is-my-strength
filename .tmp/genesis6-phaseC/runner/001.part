@@ -1,33 +1,17 @@
-arget.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source, target)
-PY
-
-echo '== Apply typed frontmatter boundary patch =='
-python <<'PY'
-import base64, hashlib, json, pathlib, subprocess
-path = pathlib.Path('src/components/article-pilots/genesis6/Genesis6ArticlePage.astro')
-data = path.read_bytes()
-old_git = subprocess.check_output(['git', 'hash-object', '--stdin'], input=data).decode().strip()
-if old_git != '330db014bda9668025239d2b0e44cd95ca826370':
-    raise SystemExit(f'unexpected pre-patch Genesis6ArticlePage blob: {old_git}')
-text = data.decode()
-old = base64.b64decode('aW50ZXJmYWNlIFByb3BzIHsKICBwYWdlSWQ6ICdlbm9jaCcgfCAnYW5nZWxzJyB8ICdzcGlyaXRzJyB8ICdkZWFkJzsKICBmcm9udG1hdHRlcjogRnJvbnRtYXR0ZXI7Cn0KCmNvbnN0IHsgcGFnZUlkLCBmcm9udG1hdHRlciB9ID0gQXN0cm8ucHJvcHMgYXMgUHJvcHM7Cg==').decode()
-new = base64.b64decode('aW50ZXJmYWNlIFByb3BzIHsKICBwYWdlSWQ6ICdlbm9jaCcgfCAnYW5nZWxzJyB8ICdzcGlyaXRzJyB8ICdkZWFkJzsKICBmcm9udG1hdHRlcjogdW5rbm93bjsKfQoKY29uc3QgeyBwYWdlSWQsIGZyb250bWF0dGVyIH0gPSBBc3Ryby5wcm9wcyBhcyBQcm9wczsKCmZ1bmN0aW9uIGFzc2VydEZyb250bWF0dGVyKHZhbHVlOiB1bmtub3duKTogYXNzZXJ0cyB2YWx1ZSBpcyBGcm9udG1hdHRlciB7CiAgaWYgKCF2YWx1ZSB8fCB0eXBlb2YgdmFsdWUgIT09ICdvYmplY3QnKSB7CiAgICB0aHJvdyBuZXcgRXJyb3IoJ0dlbmVzaXMgNiBmcm9udG1hdHRlciBtdXN0IGJlIGFuIG9iamVjdCcpOwogIH0KICBjb25zdCByZWNvcmQgPSB2YWx1ZSBhcyBSZWNvcmQ8c3RyaW5nLCB1bmtub3duPjsKICBmb3IgKGNvbnN0IGZpZWxkIG9mIFsndGl0bGUnLCAnaDEnLCAnZGVzY3JpcHRpb24nLCAnc2x1ZycsICdwdWJsaXNoZWRBdCcsICd1cGRhdGVkQXQnXSBhcyBjb25zdCkgewogICAgaWYgKHR5cGVvZiByZWNvcmRbZmllbGRdICE9PSAnc3RyaW5nJyB8fCByZWNvcmRbZmllbGRdLmxlbmd0aCA9PT0gMCkgewogICAgICB0aHJvdyBuZXcgRXJyb3IoYEdlbmVzaXMgNiBmcm9udG1hdHRlciBmaWVsZCAiJHtmaWVsZH0iIG11c3QgYmUgYSBub24tZW1wdHkgc3RyaW5nYCk7CiAgICB9CiAgfQogIGlmICh0eXBlb2YgcmVjb3JkLnJlYWRpbmdUaW1lICE9PSAnbnVtYmVyJyB8fCAhTnVtYmVyLmlzRmluaXRlKHJlY29yZC5yZWFkaW5nVGltZSkgfHwgcmVjb3JkLnJlYWRpbmdUaW1lIDw9IDApIHsKICAgIHRocm93IG5ldyBFcnJvcignR2VuZXNpcyA2IGZyb250bWF0dGVyIHJlYWRpbmdUaW1lIG11c3QgYmUgYSBwb3NpdGl2ZSBudW1iZXInKTsKICB9CiAgZm9yIChjb25zdCBmaWVsZCBvZiBbJ2RyYWZ0JywgJ25vaW5kZXgnXSBhcyBjb25zdCkgewogICAgaWYgKHJlY29yZFtmaWVsZF0gIT09IHVuZGVmaW5lZCAmJiB0eXBlb2YgcmVjb3JkW2ZpZWxkXSAhPT0gJ2Jvb2xlYW4nKSB7CiAgICAgIHRocm93IG5ldyBFcnJvcihgR2VuZXNpcyA2IGZyb250bWF0dGVyIGZpZWxkICIke2ZpZWxkfSIgbXVzdCBiZSBib29sZWFuIHdoZW4gcHJlc2VudGApOwogICAgfQogIH0KICBpZiAocmVjb3JkLmNhbm9uaWNhbE92ZXJyaWRlICE9PSB1bmRlZmluZWQgJiYgdHlwZW9mIHJlY29yZC5jYW5vbmljYWxPdmVycmlkZSAhPT0gJ3N0cmluZycpIHsKICAgIHRocm93IG5ldyBFcnJvcignR2VuZXNpcyA2IGZyb250bWF0dGVyIGNhbm9uaWNhbE92ZXJyaWRlIG11c3QgYmUgYSBzdHJpbmcgd2hlbiBwcmVzZW50Jyk7CiAgfQp9Cgphc3NlcnRGcm9udG1hdHRlcihmcm9udG1hdHRlcik7Cg==').decode()
-if text.count(old) != 1:
-    raise SystemExit('unexpected Genesis6ArticlePage type boundary')
-path.write_text(text.replace(old, new))
-final = path.read_bytes()
-final_sha = hashlib.sha256(final).hexdigest()
-final_git = subprocess.check_output(['git', 'hash-object', '--stdin'], input=final).decode().strip()
-if len(final) != 10201 or final_sha != 'd97af42dece1a3dd8dbf10eaef2a81c5925c620fcdd524b43f8f04ed20985703' or final_git != '27634c59d99f6c24a1a53e04847702d97bfad80f':
-    raise SystemExit(f'patched Genesis6ArticlePage identity mismatch: bytes={len(final)} sha256={final_sha} git={final_git}')
-pathlib.Path('/tmp/genesis6-phaseC/evidence/component-patch.json').write_text(json.dumps({
-    'path': str(path),
-    'fromGitBlob': old_git,
-    'toGitBlob': final_git,
-    'toSha256': final_sha,
-    'bytes': len(final),
-}, indent=2) + '\n')
-PY
-
-echo '== Verif
+ix('./') for m in members]
+    safe=[]
+    for member,name in zip(members,names):
+        path=pathlib.PurePosixPath(name)
+        if name in ('','.') or member.isdir(): continue
+        if member.name.startswith('/') or '..' in path.parts or not member.isfile():
+            raise SystemExit(f'unsafe capsule member: {member.name}')
+        safe.append(name)
+    if len(safe)!=len(set(safe)): raise SystemExit('duplicate capsule paths')
+    archive.extractall(pkg,filter='data')
+manifest_bytes=(pkg/'manifest.json').read_bytes()
+if hashlib.sha256(manifest_bytes).hexdigest()!=os.environ['MANIFEST_SHA256']: raise SystemExit('manifest digest mismatch')
+manifest=json.loads(manifest_bytes)
+if manifest.get('schemaVersion')!=2 or manifest.get('base')!=os.environ['BASE_SHA'] or manifest.get('publicationState')!='draft-noindex':
+    raise SystemExit('manifest authority mismatch')
+files=manifest.get('files')
+if not isinstance(files,list) or len(files)!=21: raise SystemExit('expected exactly 21 produc

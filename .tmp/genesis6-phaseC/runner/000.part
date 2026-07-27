@@ -8,74 +8,16 @@ PRODUCT="$ROOT/tested-product"
 mkdir -p "$EVIDENCE" "$PACKAGE"
 exec > >(tee "$EVIDENCE/runner.log") 2>&1
 
-echo '== Verify carrier identity =='
+echo '== Verify exact carrier and capsule =='
 test "$(git rev-parse HEAD)" = "$CARRIER_SHA"
-
-echo '== Restore and verify capsule =='
 mapfile -t chunks < <(find .tmp/genesis6-phaseC/capsule -maxdepth 1 -type f -name '*.part' -print | LC_ALL=C sort)
-test "${#chunks[@]}" -eq 7
+test "${#chunks[@]}" -eq "$CAPSULE_PART_COUNT"
 cat "${chunks[@]}" > "$ROOT/package.tgz.b64"
 test "$(sha256sum "$ROOT/package.tgz.b64" | cut -d' ' -f1)" = "$CAPSULE_B64_SHA256"
 base64 --decode "$ROOT/package.tgz.b64" > "$ROOT/package.tgz"
 test "$(sha256sum "$ROOT/package.tgz" | cut -d' ' -f1)" = "$CAPSULE_TGZ_SHA256"
-python <<'PY'
+python <<'PY_CAPSULE'
 import hashlib, json, os, pathlib, subprocess, tarfile
-root = pathlib.Path('/tmp/genesis6-phaseC')
-pkg = root / 'package'
-with tarfile.open(root / 'package.tgz', 'r:gz') as archive:
-    members = archive.getmembers()
-    names = [m.name for m in members]
-    for member in members:
-        path = pathlib.PurePosixPath(member.name)
-        if member.name.startswith('/') or '..' in path.parts or not member.isfile():
-            raise SystemExit(f'unsafe capsule member: {member.name}')
-    if len(names) != len(set(names)):
-        raise SystemExit('duplicate capsule paths')
-    archive.extractall(pkg, filter='data')
-manifest_bytes = (pkg / 'manifest.json').read_bytes()
-if hashlib.sha256(manifest_bytes).hexdigest() != os.environ['MANIFEST_SHA256']:
-    raise SystemExit('manifest digest mismatch')
-manifest = json.loads(manifest_bytes)
-if manifest.get('schemaVersion') != 1 or manifest.get('base') != os.environ['BASE_SHA']:
-    raise SystemExit('manifest authority mismatch')
-files = manifest.get('files')
-if not isinstance(files, list) or len(files) != 19:
-    raise SystemExit('expected exactly 19 product files')
-paths = [entry['path'] for entry in files]
-if paths != sorted(paths) or len(paths) != len(set(paths)):
-    raise SystemExit('manifest file order/uniqueness mismatch')
-if set(names) != {'manifest.json', *paths}:
-    raise SystemExit('capsule tree differs from manifest')
-for entry in files:
-    data = (pkg / entry['path']).read_bytes()
-    if len(data) != entry['bytes']:
-        raise SystemExit(f"bytes mismatch: {entry['path']}")
-    if hashlib.sha256(data).hexdigest() != entry['sha256']:
-        raise SystemExit(f"sha256 mismatch: {entry['path']}")
-    git_sha = subprocess.check_output(['git', 'hash-object', '--stdin'], input=data).decode().strip()
-    if git_sha != entry['gitBlobSha']:
-        raise SystemExit(f"git blob mismatch: {entry['path']}")
-(root / 'evidence' / 'capsule.json').write_text(json.dumps({
-    'base': manifest['base'],
-    'fileCount': len(files),
-    'manifestSha256': hashlib.sha256(manifest_bytes).hexdigest(),
-    'capsuleBase64Sha256': os.environ['CAPSULE_B64_SHA256'],
-    'capsuleTgzSha256': os.environ['CAPSULE_TGZ_SHA256'],
-}, indent=2) + '\n')
-PY
-
-echo '== Checkout immutable target baseline =='
-git fetch --no-tags origin "refs/heads/${TARGET_BRANCH}"
-test "$(git rev-parse FETCH_HEAD)" = "$BASE_SHA"
-git checkout --detach "$BASE_SHA"
-
-echo '== Materialize exact 19-file package =='
-python <<'PY'
-import json, pathlib, shutil
-root = pathlib.Path('/tmp/genesis6-phaseC')
-pkg = root / 'package'
-manifest = json.loads((pkg / 'manifest.json').read_text())
-for entry in manifest['files']:
-    source = pkg / entry['path']
-    target = pathlib.Path(entry['path'])
-    t
+root=pathlib.Path('/tmp/genesis6-phaseC'); pkg=root/'package'
+with tarfile.open(root/'package.tgz','r:gz') as archive:
+    members=archive.getmembers(); names=[m.name.removepref
