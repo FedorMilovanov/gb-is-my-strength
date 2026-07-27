@@ -74,6 +74,8 @@ async function inspect(page, spec, node, viewport) {
       .filter((link) => String(link.getAttribute('href')).includes('/css/relationship-panel.css'));
     const runtimeScripts = Array.from(document.scripts)
       .filter((script) => String(script.src || '').includes('/js/relationship-panel.js'));
+    const legacySiteScripts = Array.from(document.scripts)
+      .filter((script) => new URL(script.src || location.href).pathname === '/js/site.js');
     const legacyBlocks = Array.from(document.querySelectorAll('.gbx-backlinks')).map((block) => ({
       tag: block.tagName.toLowerCase(),
       className: block.className,
@@ -100,6 +102,7 @@ async function inspect(page, spec, node, viewport) {
       targetRect: targetRect ? { width: targetRect.width, height: targetRect.height } : null,
       stylesheets: stylesheets.length,
       runtimeScripts: runtimeScripts.length,
+      legacySiteScripts: legacySiteScripts.length,
       scripts: Array.from(document.scripts).map((script) => script.src || '[inline]').filter((src, index, all) => all.indexOf(src) === index),
       radius: panel ? getComputedStyle(panel).borderRadius : '',
       overflow: document.documentElement.scrollWidth - viewportWidth,
@@ -119,7 +122,7 @@ function valid(state, spec, viewport) {
     && state.atlas === `/map/?focus=${encodeURIComponent(spec.id)}`
     && state.panelRect && state.panelRect.left >= -1 && state.panelRect.right <= viewport.width + 1
     && state.targetRect && state.targetRect.width > 180 && state.targetRect.height >= 44
-    && state.stylesheets === 1 && state.runtimeScripts === 0
+    && state.stylesheets === 1 && state.runtimeScripts === 0 && state.legacySiteScripts === 0
     && state.radius !== '0px' && state.overflow <= 2;
 }
 
@@ -135,7 +138,8 @@ async function scene(browser, base, spec, node, viewport, javaScriptEnabled) {
     await cdp.send('Network.enable');
     cdp.on('Network.requestWillBeSent', (event) => {
       const pathname = new URL(event.request.url).pathname;
-      if (/^\/data\/(?:links-graph|series|relations\.compiled)\.json$/.test(pathname) || pathname === '/js/relationship-panel.js') {
+      if (/^\/data\/(?:links-graph|series|relations\.compiled)\.json$/.test(pathname)
+        || pathname === '/js/relationship-panel.js' || pathname === '/js/site.js') {
         initiators.push({
           pathname,
           type: event.initiator?.type || '',
@@ -156,7 +160,8 @@ async function scene(browser, base, spec, node, viewport, javaScriptEnabled) {
   });
   page.on('request', (request) => {
     const pathname = new URL(request.url()).pathname;
-    if (/^\/data\/(?:links-graph|series|relations\.compiled)\.json$/.test(pathname) || pathname === '/js/relationship-panel.js') forbiddenRequests.push(pathname);
+    if (/^\/data\/(?:links-graph|series|relations\.compiled)\.json$/.test(pathname)
+      || pathname === '/js/relationship-panel.js' || pathname === '/js/site.js') forbiddenRequests.push(pathname);
   });
   const label = `${spec.id} ${viewport.width}px ${javaScriptEnabled ? 'JS' : 'no-JS'}`;
   try {
