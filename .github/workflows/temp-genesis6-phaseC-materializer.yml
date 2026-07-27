@@ -121,6 +121,69 @@ jobs:
               shutil.copyfile(source, target)
           PY
           python <<'PY'
+          import hashlib, json, pathlib, subprocess
+          path = pathlib.Path('src/components/article-pilots/genesis6/Genesis6ArticlePage.astro')
+          data = path.read_bytes()
+          old_git = subprocess.check_output(['git', 'hash-object', '--stdin'], input=data).decode().strip()
+          if old_git != '330db014bda9668025239d2b0e44cd95ca826370':
+              raise SystemExit(f'unexpected pre-patch Genesis6ArticlePage blob: {old_git}')
+          text = data.decode()
+          old = """interface Props {
+  pageId: 'enoch' | 'angels' | 'spirits' | 'dead';
+  frontmatter: Frontmatter;
+}
+
+const { pageId, frontmatter } = Astro.props as Props;
+"""
+          new = """interface Props {
+  pageId: 'enoch' | 'angels' | 'spirits' | 'dead';
+  frontmatter: unknown;
+}
+
+const { pageId, frontmatter } = Astro.props as Props;
+
+function assertFrontmatter(value: unknown): asserts value is Frontmatter {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Genesis 6 frontmatter must be an object');
+  }
+  const record = value as Record<string, unknown>;
+  for (const field of ['title', 'h1', 'description', 'slug', 'publishedAt', 'updatedAt'] as const) {
+    if (typeof record[field] !== 'string' || record[field].length === 0) {
+      throw new Error(`Genesis 6 frontmatter field \"${field}\" must be a non-empty string`);
+    }
+  }
+  if (typeof record.readingTime !== 'number' || !Number.isFinite(record.readingTime) || record.readingTime <= 0) {
+    throw new Error('Genesis 6 frontmatter readingTime must be a positive number');
+  }
+  for (const field of ['draft', 'noindex'] as const) {
+    if (record[field] !== undefined && typeof record[field] !== 'boolean') {
+      throw new Error(`Genesis 6 frontmatter field \"${field}\" must be boolean when present`);
+    }
+  }
+  if (record.canonicalOverride !== undefined && typeof record.canonicalOverride !== 'string') {
+    throw new Error('Genesis 6 frontmatter canonicalOverride must be a string when present');
+  }
+}
+
+assertFrontmatter(frontmatter);
+"""
+          if text.count(old) != 1:
+              raise SystemExit('unexpected Genesis6ArticlePage type boundary')
+          path.write_text(text.replace(old, new))
+          final = path.read_bytes()
+          final_sha = hashlib.sha256(final).hexdigest()
+          final_git = subprocess.check_output(['git', 'hash-object', '--stdin'], input=final).decode().strip()
+          if len(final) != 10205 or final_sha != '0ca22cf2a8166606ea4d994c03631757a9f27e943b74c0e31fe115a9c4c1087b' or final_git != '121bf728bf623e866ae2a3b6d7a227294827549a':
+              raise SystemExit(f'patched Genesis6ArticlePage identity mismatch: bytes={len(final)} sha256={final_sha} git={final_git}')
+          pathlib.Path('/tmp/genesis6-phaseC/evidence/component-patch.json').write_text(json.dumps({
+              'path': str(path),
+              'fromGitBlob': old_git,
+              'toGitBlob': final_git,
+              'toSha256': final_sha,
+              'bytes': len(final),
+          }, indent=2) + '\n')
+          PY
+          python <<'PY'
           import json, subprocess
           manifest = json.load(open('/tmp/genesis6-phaseC/package/manifest.json'))
           expected = [entry['path'] for entry in manifest['files']]
