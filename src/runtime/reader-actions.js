@@ -1,8 +1,12 @@
 (() => {
   'use strict';
 
+  const READER_ACTIONS_VERSION = 1;
   const PRINT_ENGINE_VERSION = 2.1;
-  if (window.GBReaderActions?.version === 1 && window.GBPrintEngine?.version === PRINT_ENGINE_VERSION) return;
+  if (window.GBReaderActions?.version === READER_ACTIONS_VERSION && window.GBPrintEngine?.version === PRINT_ENGINE_VERSION) {
+    document.documentElement.dataset.gbReaderActionsReady = '1';
+    return;
+  }
 
   let report = null;
   let preparationCount = 0;
@@ -128,6 +132,12 @@
     else location.assign(fallback);
   }
 
+  function claimAction(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+  }
+
   function onClick(event) {
     const trigger = event.target instanceof Element
       ? event.target.closest('[data-action="print"],[data-action="share"],[data-home-href]')
@@ -135,17 +145,17 @@
     if (!trigger) return;
 
     if (trigger.matches('[data-action="print"]')) {
-      event.preventDefault();
+      claimAction(event);
       print('button');
       return;
     }
     if (trigger.matches('[data-action="share"]')) {
-      event.preventDefault();
+      claimAction(event);
       void share(trigger);
       return;
     }
     if (trigger.matches('[data-home-href]')) {
-      event.preventDefault();
+      claimAction(event);
       goBack(trigger);
     }
   }
@@ -160,7 +170,7 @@
 
   window.GBPrintEngine = printEngine;
   window.GBReaderActions = Object.freeze({
-    version: 1,
+    version: READER_ACTIONS_VERSION,
     print: printEngine,
     share,
     goBack,
@@ -169,4 +179,8 @@
   document.addEventListener('click', onClick, true);
   window.addEventListener('beforeprint', () => preparePrint('native'));
   window.addEventListener('afterprint', resetPrint);
+  document.documentElement.dataset.gbReaderActionsReady = '1';
+  window.dispatchEvent(new CustomEvent('gb:reader-actions-ready', {
+    detail: { version: READER_ACTIONS_VERSION, printVersion: PRINT_ENGINE_VERSION },
+  }));
 })();
