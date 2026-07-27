@@ -103,8 +103,10 @@ const relationshipCss = read('src/runtime/relationship-panel.css');
 const atlasBody = read('src/components/map/AtlasBody.astro');
 const atlasNoScript = read('src/components/map/AtlasNoScriptFallback.astro');
 const atlasRuntime = read('src/runtime/atlas-runtime.js');
+const atlasStyles = read('src/components/map/MapStyles.astro');
 const atlasRoute = read('src/pages/map/index.astro');
 const postbuild = read('scripts/astro-cache-bust-postbuild.js');
+const baseLayout = read('src/layouts/BaseLayout.astro');
 
 check('Relations: compiler validates catalog, derives series and imports legacy fallback', relationEngine.includes('function compileCatalog') && relationEngine.includes('function compileSeries') && relationEngine.includes('function compileLegacy') && relationEngine.includes('legacy-import'));
 check('Relations: compiler creates ranked article projections without series duplication', relationEngine.includes('function buildProjections') && relationEngine.includes('sameSeries') && relationEngine.includes('.slice(0, 4)'));
@@ -114,6 +116,7 @@ check('Relations: composition root compiles and recursively freezes once', relat
 check('Relations: endpoint serves canonical singleton', relationEndpoint.includes('export const prerender = true') && relationEndpoint.includes("import compiledRelations from '../../lib/relations/compiled'") && !relationEndpoint.includes('compileRelations('));
 check('Relations: projector creates semantic static navigation', projector.includes('data-relation-engine="1"') && projector.includes('removeElementsByClass') && projector.includes('compiled.projections.byNode') && projector.includes('relation-projection.json'));
 check('Relations: projector is idempotent and removes obsolete runtime', projector.includes("removeElementsByClass(updated, 'gb-relations-panel')") && projector.includes("rm(join(DIST, 'js', 'relationship-panel.js')"));
+check('Relations: native article layout excludes legacy site monolith', baseLayout.includes("includeLegacySiteScript = ogType !== 'article'") && baseLayout.includes("...(includeLegacySiteScript ? [assetUrl('js/site.js')] : [])"));
 check('Relations: print output hides navigation panel', /@media\s+print[\s\S]*\.gb-relations-panel/.test(relationshipCss));
 check('Postbuild: only Atlas browser runtime is materialized', postbuild.includes("source: 'src/runtime/atlas-runtime.js'") && !postbuild.includes("source: 'src/runtime/relationship-panel.js'") && !postbuild.includes('injectRelationshipAssets'));
 check('Postbuild: relation projector is a fail-closed phase', postbuild.includes('project-relations-to-dist.mjs') && postbuild.includes('spawnSync') && postbuild.includes('Relation projector failed'));
@@ -123,6 +126,8 @@ check('Atlas: runtime no longer fetches raw graph/series', !atlasRuntime.include
 check('Atlas: runtime is fail-closed and never sanitizes a damaged graph into partial truth', atlasRuntime.includes('node stats mismatch') && atlasRuntime.includes('edge stats mismatch') && atlasRuntime.includes('duplicate edge semantic') && atlasRuntime.includes('function recover') && !atlasRuntime.includes('.innerHTML'));
 check('Atlas: zoom, pan, focus, list and deep links remain', atlasRuntime.includes("svg.addEventListener('wheel'") && atlasRuntime.includes("svg.addEventListener('pointerdown'") && atlasRuntime.includes('function focusNode') && atlasRuntime.includes('function setView') && atlasRuntime.includes("params.get('focus')") && atlasRuntime.includes("window.addEventListener('popstate'"));
 check('Atlas: keyboard graph and search navigation are native contracts', atlasRuntime.includes('function nearestNode') && atlasRuntime.includes('function handleNodeKeyboard') && atlasRuntime.includes('function moveSearchCursor') && atlasRuntime.includes("event.key === 'ArrowDown'"));
+check('Atlas: deterministic desktop and compact layouts are first-class profiles', atlasRuntime.includes('DESKTOP_WORLD') && atlasRuntime.includes('COMPACT_WORLD') && atlasRuntime.includes('function relayoutForViewport') && atlasRuntime.includes("app.dataset.layoutProfile = profile.id"));
+check('Atlas: detail rail consumes desktop grid only during focus', atlasStyles.includes('--atlas-detail-track:0px') && atlasStyles.includes('.atlas-app.has-detail{--atlas-detail-track:var(--atlas-detail)}') && atlasRuntime.includes("app.classList.add('has-detail')") && atlasRuntime.includes("app.classList.remove('has-detail')"));
 check('Atlas: strict-native route has no old MapBody or set:html', atlasRoute.includes("import AtlasBody from '@/components/map/AtlasBody.astro'") && !atlasRoute.includes('MapBody') && !atlasBody.includes('set:html') && !fs.existsSync(path.join(ROOT, 'src/components/map/MapBody.astro')));
 
 function relationImportsOutsideComposition(dir) {
