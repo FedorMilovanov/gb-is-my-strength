@@ -67,6 +67,8 @@ export const SERIES_ORDER: Record<string, string[]> = {
   ],
   'genesis-6': [
     'enoh-prorochestvoval-iuda-14-15-4q204',
+    'kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom',
+    'mozhno-li-doveryat-1-enohu-kanonicheskiy-audit',
     'angely-pod-mrakom-iuda-6-7-2-petra-2',
     'duhi-v-temnice-noi-kreshchenie-pobeda',
     'blagovestie-mertvym-1-petra-4-5-6',
