@@ -1,45 +1,113 @@
-name: TEMP reader cache-bust evidence
+name: TEMP reader cache-bust materializer
 
 on:
   push:
-    paths:
-      - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
-  pull_request:
+    branches:
+      - 'agent/interactive-audit-evidence-contract-20260727'
     paths:
       - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   materialize:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout exact source
+      - name: Checkout exact branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          persist-credentials: false
+          ref: agent/interactive-audit-evidence-contract-20260727
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
 
-      - name: Materialize deterministic asset revisions
+      - name: Materialize and verify deterministic asset revisions
         shell: bash
         run: |
           set -euo pipefail
           node scripts/cache-bust.js --write
-          mkdir -p reports/cache-bust-evidence
-          git diff --binary -- . ':(exclude).github/workflows/_temp-reader-cache-bust-evidence.yml' > reports/cache-bust-evidence/cache-bust.patch
-          git diff --name-only -- . ':(exclude).github/workflows/_temp-reader-cache-bust-evidence.yml' > reports/cache-bust-evidence/changed-files.txt
-          test -s reports/cache-bust-evidence/cache-bust.patch
-          test -s reports/cache-bust-evidence/changed-files.txt
+          node scripts/cache-bust.js
+          node scripts/reader-preferences-regression-test.js
+          git diff --check
 
-      - name: Upload deterministic patch
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: reader-cache-bust-${{ github.sha }}
-          path: reports/cache-bust-evidence
-          if-no-files-found: error
-          retention-days: 1
+          cat > /tmp/expected-files.txt <<'FILES'
+          404.html
+          about/index.html
+          articles/20-antisovetov-pastoru/index.html
+          articles/dzhon-gill-chast-1-chelovek/index.html
+          articles/dzhon-gill-chast-2-uchenyi/index.html
+          articles/dzhon-gill-chast-3-nasledie/index.html
+          articles/dzhon-gill-chast-4-ekzeget/index.html
+          articles/dzhon-gill-istoricheskiy-kontekst/index.html
+          articles/dzhon-gill-spravochnik/index.html
+          articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html
+          articles/index.html
+          articles/kod-da-vinchi/index.html
+          articles/krajne-li-isporcheno-serdce/index.html
+          articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html
+          baptisty-rossii/dva-sezda-1884/index.html
+          baptisty-rossii/goneniya-i-sovest/index.html
+          baptisty-rossii/index.html
+          baptisty-rossii/iniciativnaya-gruppa/index.html
+          baptisty-rossii/noch-na-kure/index.html
+          baptisty-rossii/peterburgskaya-liniya/index.html
+          baptisty-rossii/podpolnaya-pechat/index.html
+          baptisty-rossii/sovetskaya-noch/index.html
+          baptisty-rossii/spravochnik/index.html
+          baptisty-rossii/vsehib-1944/index.html
+          baptisty-rossii/yuzhnaya-shtunda/index.html
+          biografii/index.html
+          hard-texts/index.html
+          index.html
+          karty/avraam/index.html
+          karty/early-church/index.html
+          karty/index.html
+          karty/ishod/index.html
+          karty/maccabim/index.html
+          karty/melachim/index.html
+          karty/pavel/index.html
+          karty/revelation/index.html
+          karty/shoftim/index.html
+          karty/shvatim/index.html
+          karty/yeshua/index.html
+          konfessii/index.html
+          konfessii/russkij-baptizm/_app/index.html
+          konfessii/russkij-baptizm/index.html
+          map/index.html
+          nagornaya/chast-1/index.html
+          nagornaya/chast-2/index.html
+          nagornaya/chast-3/index.html
+          nagornaya/chast-4/index.html
+          nagornaya/chast-5/index.html
+          nagornaya/index.html
+          nagornaya/istochniki/index.html
+          nagornaya/nakhodki/index.html
+          nagornaya/seriya/index.html
+          pastor-series/index.html
+          rodosloviye/index.html
+          src/lib/asset-version.js
+          FILES
+
+          git diff --name-only | sort > /tmp/actual-files.txt
+          sort -o /tmp/expected-files.txt /tmp/expected-files.txt
+          diff -u /tmp/expected-files.txt /tmp/actual-files.txt
+
+          test "$(git diff --numstat | awk '{a+=$1; d+=$2} END {print a+0 ":" d+0}')" = "55:55"
+          test "$(git diff | grep -c '^-.*reader-preferences.js?v=7a15a6b0')" = "54"
+          test "$(git diff | grep -c '^+.*reader-preferences.js?v=63b588b5')" = "54"
+          test "$(git diff -- src/lib/asset-version.js | grep -c "^-  'js/reader-preferences.js': '7a15a6b0'")" = "1"
+          test "$(git diff -- src/lib/asset-version.js | grep -c "^+  'js/reader-preferences.js': '63b588b5'")" = "1"
+
+      - name: Commit exact generated revisions
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $(cat /tmp/expected-files.txt)
+          git commit -m 'chore(reader): synchronize asset revisions'
+          git push origin HEAD:agent/interactive-audit-evidence-contract-20260727
