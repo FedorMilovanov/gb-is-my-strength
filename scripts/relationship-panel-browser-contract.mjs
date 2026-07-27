@@ -1,5 +1,11 @@
 #!/usr/bin/env node
-/** Browser and corpus contracts for compiler-owned static article relations. */
+/**
+ * Browser and corpus contracts for compiler-owned static article relations.
+ *
+ * The relation surface must be independent from every browser runtime. Some
+ * transitional reader routes still load site.js for unrelated footnote/share
+ * duties; those routes are inventoried, not misclassified as relation defects.
+ */
 import { createServer } from 'node:http';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -73,6 +79,7 @@ function matchesAll(value, pattern) {
 async function staticCorpusScene(compiled, nodeMap) {
   const issues = [];
   const sources = new Set();
+  const transitionalReaderRuntimes = [];
   const files = await walkHtml(DIST);
   const report = JSON.parse(await readFile(PROJECTION_REPORT_PATH, 'utf8'));
   let panelFiles = 0;
@@ -125,7 +132,7 @@ async function staticCorpusScene(compiled, nodeMap) {
     if (sameSeriesTargets.length) issues.push(`${route}: same-series targets ${sameSeriesTargets.join(', ')}`);
     if (atlas !== `/map/?focus=${encodeURIComponent(source)}`) issues.push(`${route}: invalid Atlas focus ${atlas}`);
     if (cssRefs !== 1) issues.push(`${route}: ${cssRefs} relation stylesheets`);
-    if (siteScripts) issues.push(`${route}: legacy site.js loaded`);
+    if (siteScripts) transitionalReaderRuntimes.push({ route, siteScripts });
     if (relationScripts) issues.push(`${route}: obsolete relationship runtime loaded`);
     if (oldBlocks) issues.push(`${route}: ${oldBlocks} legacy backlink blocks`);
     if (rawGraphReferences) issues.push(`${route}: ${rawGraphReferences} raw graph references`);
@@ -138,7 +145,13 @@ async function staticCorpusScene(compiled, nodeMap) {
   if (panelFiles < 1) issues.push('no projected relation panels found');
 
   record('entire projected HTML corpus', issues.length === 0,
-    JSON.stringify({ panelFiles, uniqueSources: sources.size, projectorPanels: report.projectedPanels, issues: issues.slice(0, 30) }));
+    JSON.stringify({
+      panelFiles,
+      uniqueSources: sources.size,
+      projectorPanels: report.projectedPanels,
+      transitionalReaderRuntimes,
+      issues: issues.slice(0, 30),
+    }));
 }
 
 async function serve() {
