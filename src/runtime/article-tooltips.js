@@ -1,4 +1,4 @@
-const VERSION = 4;
+const VERSION = 5;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
@@ -154,6 +154,7 @@ export function closeTooltip(reason = 'close') {
 }
 
 function openTooltip(anchor, reason = 'open') {
+  cancelClose();
   const tip = prepareTip(inlineTip(anchor));
   if (!tip) return;
   if (active?.anchor === anchor) {
@@ -226,6 +227,7 @@ function initializeAnchor(anchor) {
   anchor.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
+    cancelClose();
     if (active?.anchor !== anchor) {
       openTooltip(anchor, 'click');
       return;
@@ -236,6 +238,7 @@ function initializeAnchor(anchor) {
   anchor.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
+    cancelClose();
     if (active?.anchor === anchor && active.reason === 'keyboard') closeTooltip('toggle');
     else openTooltip(anchor, 'keyboard');
   });
