@@ -6,6 +6,11 @@ on:
     paths:
       - '.github/workflows/temp-genesis6-phaseC-materializer.yml'
       - '.tmp/genesis6-phaseC/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/temp-genesis6-phaseC-materializer.yml'
+      - '.tmp/genesis6-phaseC/**'
 
 permissions:
   contents: read
@@ -16,10 +21,14 @@ concurrency:
 
 jobs:
   acceptance:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'agent/genesis6-phaseC-materializer-20260727')
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
-      CARRIER_SHA: ${{ github.sha }}
+      CARRIER_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: 9ff36fab1e7776ce3de60daacdfd9d29066ae6c0
       TARGET_BRANCH: lane/genesis6-route-source-prep-2026-07-27
       CAPSULE_B64_SHA256: 962f47fe056b469508172f9178891d59e7999557b927fc9596af12b0d28b4139
@@ -29,7 +38,7 @@ jobs:
       - name: Checkout exact carrier
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.CARRIER_SHA }}
           fetch-depth: 0
           persist-credentials: false
 
