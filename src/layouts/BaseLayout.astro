@@ -59,7 +59,7 @@ const {
   hideFooter = false,
   legacyStylesheets = [],
   includeLegacyRuntime = true,
-  includeLegacySiteScript = true,
+  includeLegacySiteScript = ogType !== 'article',
 } = Astro.props;
 
 function routeToLegacyFile(canonicalUrl: string) {
