@@ -41,9 +41,11 @@ async function serve() {
   return { server, base: `http://127.0.0.1:${server.address().port}` };
 }
 
-function viewBoxWidth(value) {
+function viewBox(value) {
   const parts = String(value || '').trim().split(/\s+/).map(Number);
-  return parts.length === 4 && parts.every(Number.isFinite) ? parts[2] : NaN;
+  return parts.length === 4 && parts.every(Number.isFinite)
+    ? { x: parts[0], y: parts[1], width: parts[2], height: parts[3] }
+    : null;
 }
 
 function observeDataRequests(page) {
@@ -64,13 +66,45 @@ async function desktopScene(browser, base, compiled) {
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   try {
     await page.goto(`${base}/map/`, { waitUntil: 'networkidle', timeout: 40_000 });
-    await page.waitForSelector('#atlasApp[data-runtime-ready="1"]', { timeout: 20_000 });
-    const before = viewBoxWidth(await page.locator('#atlasCanvas').getAttribute('viewBox'));
+    await page.waitForSelector('#atlasApp[data-runtime-ready="1"][data-layout-profile="desktop"]', { timeout: 20_000 });
+    const initialGeometry = await page.evaluate(() => {
+      const app = document.getElementById('atlasApp');
+      const main = document.querySelector('.atlas-main')?.getBoundingClientRect();
+      const workspace = document.querySelector('.atlas-workspace')?.getBoundingClientRect();
+      const detail = document.getElementById('atlasDetail');
+      const detailRect = detail?.getBoundingClientRect();
+      const detailStyle = detail ? getComputedStyle(detail) : null;
+      return {
+        profile: app?.dataset.layoutProfile || '',
+        hasDetail: app?.classList.contains('has-detail') || false,
+        main: main ? { left: main.left, right: main.right, width: main.width } : null,
+        workspace: workspace ? { width: workspace.width } : null,
+        detail: detailRect ? { left: detailRect.left, right: detailRect.right, width: detailRect.width } : null,
+        detailVisibility: detailStyle?.visibility || '',
+        detailPointerEvents: detailStyle?.pointerEvents || '',
+      };
+    });
+    const beforeView = viewBox(await page.locator('#atlasCanvas').getAttribute('viewBox'));
     await page.locator('#atlasZoomIn').click();
     await page.waitForTimeout(450);
-    const after = viewBoxWidth(await page.locator('#atlasCanvas').getAttribute('viewBox'));
+    const afterView = viewBox(await page.locator('#atlasCanvas').getAttribute('viewBox'));
     await page.locator('.atlas-node:not(.is-filtered-out)').first().click();
-    await page.waitForSelector('#atlasDetail.is-open .atlas-detail__content:not([hidden])', { timeout: 10_000 });
+    await page.waitForSelector('#atlasApp.has-detail #atlasDetail.is-open .atlas-detail__content:not([hidden])', { timeout: 10_000 });
+    await page.waitForFunction(() => {
+      const detail = document.getElementById('atlasDetail');
+      const rect = detail?.getBoundingClientRect();
+      return detail && getComputedStyle(detail).visibility === 'visible' && rect && rect.width > 300 && rect.right <= innerWidth + 2;
+    });
+    const focusedGeometry = await page.evaluate(() => {
+      const app = document.getElementById('atlasApp');
+      const main = document.querySelector('.atlas-main')?.getBoundingClientRect();
+      const detail = document.getElementById('atlasDetail')?.getBoundingClientRect();
+      return {
+        hasDetail: app?.classList.contains('has-detail') || false,
+        main: main ? { left: main.left, right: main.right, width: main.width } : null,
+        detail: detail ? { left: detail.left, right: detail.right, width: detail.width } : null,
+      };
+    });
     const focusParam = new URL(page.url()).searchParams.get('focus');
 
     await page.locator('#atlasSearchInput').fill(compiled.nodes.at(-1).title.slice(0, 8));
@@ -94,16 +128,28 @@ async function desktopScene(browser, base, compiled) {
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
+    const openStage = initialGeometry.profile === 'desktop'
+      && !initialGeometry.hasDetail
+      && initialGeometry.main?.right >= 1438
+      && initialGeometry.main?.width > 1100
+      && initialGeometry.detailVisibility === 'hidden'
+      && initialGeometry.detailPointerEvents === 'none';
+    const detailExpansion = focusedGeometry.hasDetail
+      && focusedGeometry.detail?.width >= 320
+      && focusedGeometry.detail?.right <= 1442
+      && focusedGeometry.main?.width < initialGeometry.main?.width - 250;
     const requestContract = dataRequests.length === 1 && dataRequests[0] === '/data/relations.compiled.json';
-    record('desktop zoom/focus/search/list/compiled-source',
-      Number.isFinite(before) && Number.isFinite(after) && after < before && Boolean(focusParam) && Boolean(searchFocus)
+    record('desktop open-stage/focus/search/list/compiled-source',
+      openStage && detailExpansion
+      && beforeView && afterView && afterView.width < beforeView.width
+      && Boolean(focusParam) && Boolean(searchFocus)
       && state.runtimeNodes === compiled.nodes.length && state.runtimeEdges === compiled.edges.length
       && state.runtimeEngine === compiled.engineVersion && state.listVisible
       && state.listLinks === compiled.nodes.length && state.activeDescendantCleared && state.overflow <= 2
       && requestContract && errors.length === 0,
-      JSON.stringify({ before, after, focusParam, searchFocus, ...state, dataRequests, errors }));
+      JSON.stringify({ initialGeometry, focusedGeometry, beforeView, afterView, focusParam, searchFocus, ...state, dataRequests, errors }));
   } catch (error) {
-    record('desktop zoom/focus/search/list/compiled-source', false, String(error).slice(0, 500));
+    record('desktop open-stage/focus/search/list/compiled-source', false, String(error).slice(0, 700));
   } finally { await context.close(); }
 }
 
@@ -116,7 +162,24 @@ async function mobileScene(browser, base, compiled) {
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   try {
     await page.goto(`${base}/map/`, { waitUntil: 'networkidle', timeout: 40_000 });
-    await page.waitForSelector('#atlasApp[data-runtime-ready="1"]', { timeout: 20_000 });
+    await page.waitForSelector('#atlasApp[data-runtime-ready="1"][data-layout-profile="compact"]', { timeout: 20_000 });
+    const compactGeometry = await page.evaluate(() => {
+      const app = document.getElementById('atlasApp');
+      const canvas = document.getElementById('atlasCanvas');
+      const labels = Array.from(document.querySelectorAll('.atlas-cluster-label')).map((label) => {
+        const rect = label.getBoundingClientRect();
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      }).filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+      const xs = labels.map((point) => point.x);
+      const ys = labels.map((point) => point.y);
+      return {
+        profile: app?.dataset.layoutProfile || '',
+        viewBox: canvas?.getAttribute('viewBox') || '',
+        labels: labels.length,
+        spanX: xs.length ? Math.max(...xs) - Math.min(...xs) : 0,
+        spanY: ys.length ? Math.max(...ys) - Math.min(...ys) : 0,
+      };
+    });
     await page.locator('#atlasFilterTrigger').click();
     await page.waitForSelector('#atlasSidebar.is-open');
     await page.locator('#atlasFilterClose').click();
@@ -151,15 +214,20 @@ async function mobileScene(browser, base, compiled) {
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
+    const responsiveComposition = compactGeometry.profile === 'compact'
+      && compactGeometry.viewBox === '0 0 620 1180'
+      && compactGeometry.labels === compiled.groups.length
+      && compactGeometry.spanX > 140
+      && compactGeometry.spanY > 430;
     const targetsOk = [state.zoomIn, state.zoomOut, state.center, state.filter, state.close, state.filterClose]
       .every((target) => target && target.width >= 44 && target.height >= 44);
-    record('mobile 44px controls/filter/focus sheet',
-      targetsOk && state.sheetVisible && state.runtimeNodes === compiled.nodes.length
+    record('mobile vertical-layout/44px-controls/focus-sheet',
+      responsiveComposition && targetsOk && state.sheetVisible && state.runtimeNodes === compiled.nodes.length
       && dataRequests.length === 1 && dataRequests[0] === '/data/relations.compiled.json'
       && state.overflow <= 2 && errors.length === 0,
-      JSON.stringify({ ...state, dataRequests, errors }));
+      JSON.stringify({ compactGeometry, ...state, dataRequests, errors }));
   } catch (error) {
-    record('mobile 44px controls/filter/focus sheet', false, String(error).slice(0, 500));
+    record('mobile vertical-layout/44px-controls/focus-sheet', false, String(error).slice(0, 700));
   } finally { await context.close(); }
 }
 
