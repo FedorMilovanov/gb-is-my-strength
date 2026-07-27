@@ -22,9 +22,18 @@ jobs:
           persist-credentials: false
 
       - name: Build exact four-file product
-        run: python3 scripts/build-genesis6-footnote-product.py
+        id: build
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/build-genesis6-footnote-product.py 2>&1 | tee carrier.log
+          status=${PIPESTATUS[0]}
+          printf '%s\n' "$status" > carrier.status
+          exit "$status"
 
       - name: Verify carrier remains read-only
+        if: steps.build.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
@@ -33,10 +42,22 @@ jobs:
           test -f out/manifest.json
           cat out/manifest.json
 
-      - name: Upload exact product artifact
+      - name: Upload carrier evidence
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: genesis6-footnote-product-${{ github.run_id }}
-          path: out
+          name: genesis6-footnote-carrier-${{ github.run_id }}
+          path: |
+            carrier.log
+            carrier.status
+            out
           if-no-files-found: error
           retention-days: 14
+
+      - name: Enforce successful product build
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f carrier.status
+          test "$(cat carrier.status)" = "0"
