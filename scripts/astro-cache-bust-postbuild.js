@@ -58,20 +58,54 @@ const md5 = relPath => {
 };
 
 const currentHashes = {};
-for (const asset of ASSETS) {
-  currentHashes[asset] = md5(asset);
+for (const asset of ASSETS) currentHashes[asset] = md5(asset);
+
+// Relationship and Atlas source assets live under src/runtime so the root
+// css/js allowlists remain intentionally closed. They are materialized only
+// into the generated dist tree and receive deterministic content hashes here.
+const RUNTIME_ASSETS = Object.freeze([
+  {
+    source: 'src/runtime/relationship-panel.css',
+    publicPath: 'css/relationship-panel.css',
+    role: 'relationship-css',
+  },
+  {
+    source: 'src/runtime/relationship-panel.js',
+    publicPath: 'js/relationship-panel.js',
+    role: 'relationship-js',
+  },
+  {
+    source: 'src/runtime/atlas-runtime.js',
+    publicPath: 'js/atlas-runtime.js',
+    role: 'atlas-js',
+  },
+]);
+
+const runtimeByRole = new Map();
+for (const asset of RUNTIME_ASSETS) {
+  const hash = md5(asset.source);
+  if (!hash) throw new Error(`Governed runtime source is missing: ${asset.source}`);
+  runtimeByRole.set(asset.role, { ...asset, hash });
 }
 
-// Relationship assets are injected only into complete article HTML. They stay
-// outside the global cache-bust ASSETS registry during the transition so the
-// existing root-source hash contract remains read-only clean.
-const RELATIONSHIP_CSS = 'css/relationship-panel.css';
-const RELATIONSHIP_JS = 'js/relationship-panel.js';
-const relationshipCssHash = md5(RELATIONSHIP_CSS);
-const relationshipJsHash = md5(RELATIONSHIP_JS);
-if (!relationshipCssHash || !relationshipJsHash) {
-  throw new Error('Relationship assets are missing from the repository');
+function materializeRuntimeAssets() {
+  for (const asset of runtimeByRole.values()) {
+    const source = path.join(ROOT, asset.source);
+    const target = path.join(DIST, asset.publicPath);
+    if (DRY_RUN) continue;
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(source, target);
+    const sourceDigest = crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex');
+    const targetDigest = crypto.createHash('sha256').update(fs.readFileSync(target)).digest('hex');
+    if (sourceDigest !== targetDigest) throw new Error(`Runtime materialization drift: ${asset.source} -> ${asset.publicPath}`);
+  }
 }
+
+materializeRuntimeAssets();
+
+const relationshipCss = runtimeByRole.get('relationship-css');
+const relationshipJs = runtimeByRole.get('relationship-js');
+const atlasJs = runtimeByRole.get('atlas-js');
 
 // ── 3. Walk dist/**/*.html, rewrite asset hashes and inject article panel ──
 function escapeRe(s) {
@@ -92,30 +126,36 @@ function isRelationshipArticle(html) {
   return /<html\b/i.test(html) && /<head\b/i.test(html) && /<article\b/i.test(html);
 }
 
+function runtimeUrl(asset) {
+  return `/${asset.publicPath}?v=${asset.hash}`;
+}
+
+function normalizeRuntimeReference(html, asset) {
+  const escaped = escapeRe(asset.publicPath);
+  const re = new RegExp(`/${escaped}(?:\\?v=[a-f0-9]{8})?`, 'g');
+  return html.replace(re, runtimeUrl(asset));
+}
+
 function injectRelationshipAssets(html) {
   if (!isRelationshipArticle(html)) return { html, changed: false, eligible: false };
   let updated = html;
   let changed = false;
 
-  const cssHref = `/${RELATIONSHIP_CSS}?v=${relationshipCssHash}`;
-  const jsSrc = `/${RELATIONSHIP_JS}?v=${relationshipJsHash}`;
+  const cssHref = runtimeUrl(relationshipCss);
+  const jsSrc = runtimeUrl(relationshipJs);
 
-  // Existing injected references are normalized independently from the shared
-  // cache registry so a later edit to either asset cannot leave a stale hash.
-  const cssRefRe = new RegExp(`/${escapeRe(RELATIONSHIP_CSS)}\\?v=[a-f0-9]{8}`, 'g');
-  const jsRefRe = new RegExp(`/${escapeRe(RELATIONSHIP_JS)}\\?v=[a-f0-9]{8}`, 'g');
-  const normalized = updated.replace(cssRefRe, cssHref).replace(jsRefRe, jsSrc);
+  const normalized = normalizeRuntimeReference(normalizeRuntimeReference(updated, relationshipCss), relationshipJs);
   changed = normalized !== updated;
   updated = normalized;
 
-  if (!updated.includes(RELATIONSHIP_CSS)) {
+  if (!updated.includes(relationshipCss.publicPath)) {
     const before = updated;
     const tag = `<link id="gbRelationshipPanelCss" rel="stylesheet" href="${cssHref}">`;
     updated = updated.replace(/<\/head>/i, `${tag}\n</head>`);
     changed = changed || updated !== before;
   }
 
-  if (!updated.includes(RELATIONSHIP_JS)) {
+  if (!updated.includes(relationshipJs.publicPath)) {
     const before = updated;
     const tag = `<script id="gbRelationshipPanelJs" defer src="${jsSrc}"></script>`;
     updated = updated.replace(/<\/body>/i, `${tag}\n</body>`);
@@ -127,25 +167,24 @@ function injectRelationshipAssets(html) {
 
 function hasExactRelationshipAssets(html) {
   if (!isRelationshipArticle(html)) return true;
-  return html.includes(`/${RELATIONSHIP_CSS}?v=${relationshipCssHash}`)
-    && html.includes(`/${RELATIONSHIP_JS}?v=${relationshipJsHash}`);
+  return html.includes(runtimeUrl(relationshipCss)) && html.includes(runtimeUrl(relationshipJs));
+}
+
+function hasExactAtlasRuntime(html, file) {
+  if (path.relative(DIST, file).replace(/\\/g, '/') !== 'map/index.html') return true;
+  return html.includes(runtimeUrl(atlasJs));
 }
 
 const htmlFiles = walk(DIST);
-for (const asset of [RELATIONSHIP_CSS, RELATIONSHIP_JS]) {
-  if (!fs.existsSync(path.join(DIST, asset))) {
-    throw new Error(`dist is missing relationship asset: ${asset}`);
-  }
-}
-
 let filesTouched = 0;
 let replacements = 0;
 let relationshipEligible = 0;
 let relationshipInjected = 0;
 const relationshipFailures = [];
+const atlasFailures = [];
 
 for (const fp of htmlFiles) {
-  let src = fs.readFileSync(fp, 'utf8');
+  const src = fs.readFileSync(fp, 'utf8');
   let updated = src;
   let fileReplacements = 0;
 
@@ -153,24 +192,20 @@ for (const fp of htmlFiles) {
     const current = currentHashes[asset];
     if (!current) continue;
     const escaped = escapeRe(asset);
-
-    const re = new RegExp(
-      `((?:\\.\\./)*|/?)${escaped}\\?v=[a-f0-9]{8}`,
-      'g'
-    );
-    updated = updated.replace(re, (match, prefix) => {
+    const re = new RegExp(`((?:\\.\\./)*|/?)${escaped}\\?v=[a-f0-9]{8}`, 'g');
+    updated = updated.replace(re, (_match, prefix) => {
       fileReplacements++;
       return `${prefix}${asset}?v=${current}`;
     });
   }
 
+  updated = normalizeRuntimeReference(updated, atlasJs);
   const relationResult = injectRelationshipAssets(updated);
   updated = relationResult.html;
   if (relationResult.eligible) relationshipEligible++;
   if (relationResult.changed) relationshipInjected++;
-  if (!hasExactRelationshipAssets(updated)) {
-    relationshipFailures.push(path.relative(DIST, fp));
-  }
+  if (!hasExactRelationshipAssets(updated)) relationshipFailures.push(path.relative(DIST, fp));
+  if (!hasExactAtlasRuntime(updated, fp)) atlasFailures.push(path.relative(DIST, fp));
 
   if (updated !== src) {
     filesTouched++;
@@ -182,40 +217,37 @@ for (const fp of htmlFiles) {
 if (relationshipFailures.length > 0) {
   throw new Error(`Relationship asset injection failed in ${relationshipFailures.join(', ')}`);
 }
+if (atlasFailures.length > 0) {
+  throw new Error(`Atlas runtime normalization failed in ${atlasFailures.join(', ')}`);
+}
+for (const asset of runtimeByRole.values()) {
+  if (!DRY_RUN && !fs.existsSync(path.join(DIST, asset.publicPath))) {
+    throw new Error(`dist is missing governed runtime asset: ${asset.publicPath}`);
+  }
+}
 
 // ── 4. Harden dist CSP meta consistently (NEW-68/NEW-69) ───────────────
-// Astro-owned pages can be emitted from many PageHead components. Keep the
-// deploy artifact safe even while source heads are gradually deduplicated.
-// ONNX Runtime Web compiles its WASM backend in the browser. Permit only that
-// narrow capability; do not widen the site to the general 'unsafe-eval'.
 const WASM_EVAL_SOURCE = "'wasm-unsafe-eval'";
 const DEFAULT_DIST_CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://gospod-bog.ru https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org https://cdn.loc.gov https://tile.loc.gov https://www.ritmeyer.com https://*.nasa.gov https://bibleplaces.photoshelter.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com https://huggingface.co https://*.aws.cdn.hf.co https://cdn.jsdelivr.net; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';";
 
 function cspMetaTag(html) {
   const tags = html.match(/<meta\b[^>]*>/gi) || [];
-  return tags.find((tag) => /http-equiv\s*=\s*["']Content-Security-Policy["']/i.test(tag)) || '';
+  return tags.find(tag => /http-equiv\s*=\s*["']Content-Security-Policy["']/i.test(tag)) || '';
 }
 function transformCspContent(tag, transform) {
   if (!tag) return tag;
-  return tag.replace(/content\s*=\s*(["])([\s\S]*?)\1/i, (_m, q, content) => {
-    return `content=${q}${transform(content)}${q}`;
-  });
+  return tag.replace(/content\s*=\s*(["])([\s\S]*?)\1/i, (_m, q, content) => `content=${q}${transform(content)}${q}`);
 }
 function addWasmUnsafeEvalToCspTag(tag) {
-  return transformCspContent(tag, (content) => {
-    return content.replace(/((?:^|;)\s*script-src\s+)([^;]*)/i, (directive, prefix, sources) => {
-      const tokens = sources.trim().split(/\s+/).filter(Boolean);
-      if (tokens.includes(WASM_EVAL_SOURCE)) return directive;
-      return `${prefix}${tokens.concat(WASM_EVAL_SOURCE).join(' ')}`;
-    });
-  });
+  return transformCspContent(tag, content => content.replace(/((?:^|;)\s*script-src\s+)([^;]*)/i, (directive, prefix, sources) => {
+    const tokens = sources.trim().split(/\s+/).filter(Boolean);
+    if (tokens.includes(WASM_EVAL_SOURCE)) return directive;
+    return `${prefix}${tokens.concat(WASM_EVAL_SOURCE).join(' ')}`;
+  }));
 }
 function addFormActionToCspTag(tag) {
   if (!tag || /(?:^|;)\s*form-action\b/i.test(tag)) return tag;
-  return transformCspContent(tag, (content) => {
-    const trimmed = content.trim().replace(/;+\s*$/, '');
-    return `${trimmed}; form-action 'self';`;
-  });
+  return transformCspContent(tag, content => `${content.trim().replace(/;+\s*$/, '')}; form-action 'self';`);
 }
 function cspTagHasScriptSource(tag, source) {
   const contentMatch = String(tag).match(/content\s*=\s*(["])([\s\S]*?)\1/i);
@@ -233,9 +265,7 @@ function hardenCsp(html) {
     const next = addFormActionToCspTag(withWasm);
     const wasmFixed = withWasm !== tag;
     const formFixed = next !== withWasm;
-    if (next !== tag) {
-      return { html: html.replace(tag, next), changed: true, injected: false, formFixed, wasmFixed };
-    }
+    if (next !== tag) return { html: html.replace(tag, next), changed: true, injected: false, formFixed, wasmFixed };
     return emptyResult;
   }
   const meta = `<meta http-equiv="Content-Security-Policy" content="${DEFAULT_DIST_CSP}">`;
@@ -261,14 +291,10 @@ for (const fp of htmlFiles) {
     if (result.wasmFixed) cspWasmFixed++;
     if (!DRY_RUN) fs.writeFileSync(fp, result.html, 'utf8');
   }
-
   if (!/<html\b/i.test(result.html) || !/<head\b/i.test(result.html)) continue;
   const finalTag = cspMetaTag(result.html);
-  if (!cspTagHasScriptSource(finalTag, WASM_EVAL_SOURCE)) {
-    cspWasmFailures.push(path.relative(DIST, fp));
-  } else {
-    cspWasmVerified++;
-  }
+  if (!cspTagHasScriptSource(finalTag, WASM_EVAL_SOURCE)) cspWasmFailures.push(path.relative(DIST, fp));
+  else cspWasmVerified++;
 }
 
 if (cspWasmFailures.length > 0) {
@@ -279,13 +305,11 @@ console.log(`\n⚡  astro-cache-bust-postbuild.js${DRY_RUN ? ' [DRY RUN]' : ''}\
 console.log(`  HTML files scanned:       ${htmlFiles.length}`);
 console.log(`  Files touched:            ${filesTouched}`);
 console.log(`  Hash replacements:        ${replacements}`);
+console.log(`  Governed runtime assets:  ${RUNTIME_ASSETS.length}`);
 console.log(`  Relationship articles:    ${relationshipEligible}`);
 console.log(`  Relationship injections:  ${relationshipInjected}`);
 console.log(`  CSP files touched:         ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed}, wasm fixed: ${cspWasmFixed})`);
 console.log(`  CSP WASM verified:         ${cspWasmVerified}`);
 
-if (DRY_RUN) {
-  console.log('\n  (dry-run: nothing written)');
-} else {
-  console.log('\n✅  dist/ asset and relationship drift → 0');
-}
+if (DRY_RUN) console.log('\n  (dry-run: nothing written)');
+else console.log('\n✅  dist/ asset, runtime and relationship drift → 0');
