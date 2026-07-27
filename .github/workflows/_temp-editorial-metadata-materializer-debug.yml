@@ -41,7 +41,12 @@ jobs:
                   raise SystemExit(f'unexpected materializer indentation: {line!r}')
           if not block or not any('git commit' in line for line in block):
               raise SystemExit('materializer shell extraction incomplete')
-          Path('/tmp/editorial-materializer.sh').write_text('\n'.join(block) + '\n', encoding='utf-8')
+          script = '\n'.join(block) + '\n'
+          old = "git diff --name-only | sort > /tmp/editorial-repair/actual.txt"
+          new = "{ git diff --name-only; git ls-files --others --exclude-standard; } | sort > /tmp/editorial-repair/actual.txt"
+          if script.count(old) != 1:
+              raise SystemExit('scope collector anchor mismatch')
+          Path('/tmp/editorial-materializer.sh').write_text(script.replace(old, new), encoding='utf-8')
           PY
           bash -n /tmp/editorial-materializer.sh
 
