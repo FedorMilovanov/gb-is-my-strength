@@ -3,22 +3,31 @@
 }
 
 .gb-floating-tip {
-  position: fixed;
+  position: fixed !important;
+  inset: auto !important;
+  right: auto !important;
+  bottom: auto !important;
   z-index: 2147482500;
   display: block !important;
   visibility: visible !important;
   box-sizing: border-box;
   width: min(34rem, calc(100vw - 32px));
+  min-width: 0 !important;
+  max-width: calc(100vw - 32px) !important;
   max-height: min(70vh, 34rem);
   overflow: auto;
+  margin: 0 !important;
   padding: 1rem 1.1rem;
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 14px;
   background: var(--surface, var(--card-bg, #fffdf8));
   color: var(--text, #241f1a);
   box-shadow: 0 18px 55px rgb(0 0 0 / 24%);
+  clip: auto !important;
+  transform: none !important;
   line-height: 1.58;
   text-align: left;
+  white-space: normal;
   opacity: 1 !important;
   pointer-events: auto;
 }
@@ -207,8 +216,10 @@
 @media (max-width: 768px) {
   .gb-floating-tip {
     inset: auto 0 0 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     width: 100%;
-    max-width: none;
+    max-width: none !important;
     max-height: min(72vh, 36rem);
     padding: 1.15rem 1.15rem max(1.3rem, env(safe-area-inset-bottom));
     border-width: 1px 0 0;
