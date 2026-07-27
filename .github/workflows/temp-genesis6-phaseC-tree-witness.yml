@@ -1,0 +1,38 @@
+name: Temporary Genesis 6 Phase C tree witness
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/temp-genesis6-phaseC-tree-witness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  witness:
+    if: github.event.pull_request.head.ref == 'agent/genesis6-phaseC-tree-witness-20260727'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout immutable Phase C baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 9ff36fab1e7776ce3de60daacdfd9d29066ae6c0
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Record commit and tree identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = '9ff36fab1e7776ce3de60daacdfd9d29066ae6c0'
+          mkdir -p /tmp/tree-witness
+          git rev-parse HEAD > /tmp/tree-witness/commit-sha.txt
+          git rev-parse 'HEAD^{tree}' > /tmp/tree-witness/tree-sha.txt
+      - name: Upload tree witness
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: genesis6-phaseC-tree-9ff36fab
+          path: /tmp/tree-witness
+          if-no-files-found: error
+          retention-days: 3
