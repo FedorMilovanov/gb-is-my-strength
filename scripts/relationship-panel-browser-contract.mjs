@@ -35,6 +35,13 @@ function record(name, ok, detail = '') {
   console.log(`${ok ? '✅' : '❌'} Relations · ${name}${detail ? ` — ${detail}` : ''}`);
 }
 
+function relevantConsoleError(message) {
+  const value = String(message || '');
+  const localOriginProductionIcon = /Loading the image 'https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons\/icon-)/.test(value)
+    && /Content Security Policy directive/.test(value);
+  return !localOriginProductionIcon;
+}
+
 async function serve() {
   const server = createServer(async (req, res) => {
     try {
@@ -67,6 +74,14 @@ async function inspect(page, spec, node, viewport) {
       .filter((link) => String(link.getAttribute('href')).includes('/css/relationship-panel.css'));
     const runtimeScripts = Array.from(document.scripts)
       .filter((script) => String(script.src || '').includes('/js/relationship-panel.js'));
+    const legacyBlocks = Array.from(document.querySelectorAll('.gbx-backlinks')).map((block) => ({
+      tag: block.tagName.toLowerCase(),
+      className: block.className,
+      id: block.id,
+      parent: block.parentElement?.className || block.parentElement?.tagName?.toLowerCase() || '',
+      heading: block.querySelector('h2,h3,h4')?.textContent?.trim() || '',
+      text: block.textContent?.replace(/\s+/g, ' ').trim().slice(0, 180) || '',
+    }));
     return {
       panels: panels.length,
       source: panel?.getAttribute('data-relation-source') || '',
@@ -78,12 +93,14 @@ async function inspect(page, spec, node, viewport) {
       uniqueEdges: new Set(edges).size === edges.length,
       kindsComplete: links.every((link) => Boolean(link.getAttribute('data-relation-kind'))),
       forbidden: spec.forbidden.filter((href) => hrefs.includes(href)),
-      oldBlocks: document.querySelectorAll('.gbx-backlinks').length,
+      oldBlocks: legacyBlocks.length,
+      legacyBlocks,
       atlas: panel?.querySelector('.gb-relations-panel__atlas')?.getAttribute('href') || '',
       panelRect: panelRect ? { left: panelRect.left, right: panelRect.right, width: panelRect.width } : null,
       targetRect: targetRect ? { width: targetRect.width, height: targetRect.height } : null,
       stylesheets: stylesheets.length,
       runtimeScripts: runtimeScripts.length,
+      scripts: Array.from(document.scripts).map((script) => script.src || '[inline]').filter((src, index, all) => all.indexOf(src) === index),
       radius: panel ? getComputedStyle(panel).borderRadius : '',
       overflow: document.documentElement.scrollWidth - viewportWidth,
     };
@@ -111,8 +128,32 @@ async function scene(browser, base, spec, node, viewport, javaScriptEnabled) {
   const page = await context.newPage();
   const errors = [];
   const forbiddenRequests = [];
+  const initiators = [];
+  let cdp;
+  if (javaScriptEnabled) {
+    cdp = await context.newCDPSession(page);
+    await cdp.send('Network.enable');
+    cdp.on('Network.requestWillBeSent', (event) => {
+      const pathname = new URL(event.request.url).pathname;
+      if (/^\/data\/(?:links-graph|series|relations\.compiled)\.json$/.test(pathname) || pathname === '/js/relationship-panel.js') {
+        initiators.push({
+          pathname,
+          type: event.initiator?.type || '',
+          url: event.initiator?.url || '',
+          stack: (event.initiator?.stack?.callFrames || []).slice(0, 6).map((frame) => ({
+            functionName: frame.functionName,
+            url: frame.url,
+            lineNumber: frame.lineNumber,
+            columnNumber: frame.columnNumber,
+          })),
+        });
+      }
+    });
+  }
   page.on('pageerror', (error) => errors.push(String(error)));
-  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('console', (message) => {
+    if (message.type() === 'error' && relevantConsoleError(message.text())) errors.push(message.text());
+  });
   page.on('request', (request) => {
     const pathname = new URL(request.url()).pathname;
     if (/^\/data\/(?:links-graph|series|relations\.compiled)\.json$/.test(pathname) || pathname === '/js/relationship-panel.js') forbiddenRequests.push(pathname);
@@ -122,9 +163,13 @@ async function scene(browser, base, spec, node, viewport, javaScriptEnabled) {
     await page.goto(base + spec.route, { waitUntil: javaScriptEnabled ? 'networkidle' : 'load', timeout: 40_000 });
     await page.waitForSelector('.gb-relations-panel', { timeout: 10_000 });
     const state = await inspect(page, spec, node, viewport);
-    record(label, valid(state, spec, viewport) && errors.length === 0 && forbiddenRequests.length === 0, JSON.stringify({ ...state, errors, forbiddenRequests }));
-  } catch (error) { record(label, false, String(error).slice(0, 400)); }
-  finally { await context.close(); }
+    record(label, valid(state, spec, viewport) && errors.length === 0 && forbiddenRequests.length === 0,
+      JSON.stringify({ ...state, errors, forbiddenRequests, initiators }));
+  } catch (error) { record(label, false, String(error).slice(0, 500)); }
+  finally {
+    await cdp?.detach().catch(() => {});
+    await context.close();
+  }
 }
 
 async function failureIsolation(browser, base, spec, node) {
@@ -137,7 +182,7 @@ async function failureIsolation(browser, base, spec, node) {
     await page.goto(base + spec.route, { waitUntil: 'networkidle', timeout: 40_000 });
     const state = await inspect(page, spec, node, viewport);
     record('data/runtime failure isolation', valid(state, spec, viewport), JSON.stringify(state));
-  } catch (error) { record('data/runtime failure isolation', false, String(error).slice(0, 400)); }
+  } catch (error) { record('data/runtime failure isolation', false, String(error).slice(0, 500)); }
   finally { await context.close(); }
 }
 
@@ -150,7 +195,7 @@ async function printScene(browser, base) {
     await page.emulateMedia({ media: 'print' });
     const display = await page.locator('.gb-relations-panel').evaluate((node) => getComputedStyle(node).display);
     record('print exclusion', display === 'none', `display=${display}`);
-  } catch (error) { record('print exclusion', false, String(error).slice(0, 400)); }
+  } catch (error) { record('print exclusion', false, String(error).slice(0, 500)); }
   finally { await context.close(); }
 }
 
