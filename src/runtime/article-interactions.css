@@ -285,7 +285,22 @@
 @media print {
   .gb-floating-tip,
   .img-viewer,
-  .gb-quiz-host {
+  .quiz-launch,
+  .quiz-wrapper {
     display: none !important;
+  }
+
+  .gb-quiz-host {
+    display: block !important;
+    min-height: 2.5rem;
+    margin-block: .75rem 1.5rem;
+    color: #4a4037;
+    font-size: 9.5pt;
+    line-height: 1.45;
+  }
+
+  .gb-quiz-host::before {
+    content: 'Интерактивный тест доступен в электронной версии статьи.';
+    display: block;
   }
 }
