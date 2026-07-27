@@ -1,0 +1,46 @@
+---
+/**
+ * Tiny bundled recovery controller. The main Atlas runtime marks
+ * data-runtime-error="1" when graph/series JSON cannot load; this controller
+ * immediately exposes the already server-rendered list and keeps navigation
+ * usable without relying on CSS overriding the native `hidden` attribute.
+ */
+---
+<script>
+  function recoverAtlasList() {
+    const app = document.getElementById('atlasApp');
+    if (!app || app.dataset.runtimeError !== '1') return;
+
+    const graph = document.getElementById('atlasGraphView') as HTMLElement | null;
+    const list = document.getElementById('atlasListView') as HTMLElement | null;
+    const detail = document.getElementById('atlasDetail') as HTMLElement | null;
+    const sidebar = document.getElementById('atlasSidebar') as HTMLElement | null;
+
+    if (graph) graph.hidden = true;
+    if (list) list.hidden = false;
+    if (detail) detail.hidden = true;
+    if (sidebar) sidebar.hidden = true;
+    app.dataset.view = 'list';
+
+    document.querySelectorAll<HTMLElement>('[data-atlas-view]').forEach((button) => {
+      const isList = button.dataset.atlasView === 'list';
+      button.setAttribute('aria-pressed', isList ? 'true' : 'false');
+      if (!isList) button.setAttribute('aria-disabled', 'true');
+    });
+  }
+
+  function initAtlasRecovery() {
+    const app = document.getElementById('atlasApp');
+    if (!app) return;
+    recoverAtlasList();
+    const observer = new MutationObserver(recoverAtlasList);
+    observer.observe(app, { attributes: true, attributeFilter: ['data-runtime-error'] });
+    window.addEventListener('pagehide', () => observer.disconnect(), { once: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAtlasRecovery, { once: true });
+  } else {
+    initAtlasRecovery();
+  }
+</script>
