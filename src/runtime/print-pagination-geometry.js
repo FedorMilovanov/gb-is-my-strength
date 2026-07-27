@@ -1,23 +1,38 @@
 (() => {
   'use strict';
 
-  const GEOMETRY_VERSION = 2;
+  /**
+   * Physical fragmentation fallback for Chromium paged media.
+   *
+   * GBPrintPagination v1 remains the semantic owner: it marks atomic blocks,
+   * keep-with-next pairs and closing groups. This stage never guesses page
+   * coordinates and never inserts forced page breaks. In print media only, it
+   * turns short, full-width, ordinary block atomics into monolithic
+   * inline-block boxes so the browser moves the whole box to the next sheet
+   * when `break-inside: avoid` alone is ignored.
+   */
+  const GEOMETRY_VERSION = 3;
   const INSTALL_TIMEOUT_MS = 4000;
-  const PAGE_EPSILON_PX = 2;
+  const MAX_ATOMIC_PX = 240;
+  const MAX_PAGE_FRACTION = 0.28;
+  const MIN_ROOT_WIDTH_FRACTION = 0.72;
   const touched = new Map();
   let installTimer = 0;
   let installStartedAt = 0;
   let lifecycleBound = false;
   let originalPrepare = null;
+  let preparedForPrint = false;
+  let lastReport = null;
+
+  const PROPERTIES = ['display', 'width', 'max-width', 'vertical-align', 'box-sizing'];
 
   function finite(value, fallback = 0) {
     const number = Number(value);
     return Number.isFinite(number) ? number : fallback;
   }
 
-  function absoluteTop(node) {
-    const rect = node.getBoundingClientRect();
-    return rect.top + window.scrollY;
+  function inPrintMedia() {
+    return Boolean(window.matchMedia?.('print').matches);
   }
 
   function visible(node) {
@@ -26,67 +41,9 @@
     const rect = node.getBoundingClientRect();
     return style.display !== 'none'
       && style.visibility !== 'hidden'
-      && style.position !== 'fixed'
+      && !['fixed', 'sticky', 'absolute'].includes(style.position)
       && rect.width > 8
       && rect.height > 4;
-  }
-
-  function inPrintMedia() {
-    return Boolean(window.matchMedia?.('print').matches);
-  }
-
-  function forcedBreakBefore(style) {
-    return /^(?:page|always|left|right|recto|verso)$/.test(style.breakBefore || '')
-      || /^(?:always|left|right)$/.test(style.pageBreakBefore || '');
-  }
-
-  function forcedBreakAfter(style) {
-    return /^(?:page|always|left|right|recto|verso)$/.test(style.breakAfter || '')
-      || /^(?:always|left|right)$/.test(style.pageBreakAfter || '');
-  }
-
-  function modulo(value, divisor) {
-    return ((value % divisor) + divisor) % divisor;
-  }
-
-  function alignToNextPage(position, origin, pageHeight) {
-    const offset = modulo(position - origin, pageHeight);
-    if (offset <= PAGE_EPSILON_PX || pageHeight - offset <= PAGE_EPSILON_PX) return 0;
-    return pageHeight - offset;
-  }
-
-  function remember(node) {
-    if (touched.has(node)) return;
-    touched.set(node, {
-      breakBefore: node.style.breakBefore,
-      pageBreakBefore: node.style.pageBreakBefore,
-      marker: node.getAttribute('data-gb-print-geometry-break'),
-    });
-  }
-
-  function applyBreak(node, atomicNode) {
-    remember(node);
-    node.style.setProperty('break-before', 'page', 'important');
-    node.style.setProperty('page-break-before', 'always', 'important');
-    node.setAttribute('data-gb-print-geometry-break', '1');
-    if (atomicNode !== node) atomicNode.setAttribute('data-gb-print-geometry-grouped', '1');
-  }
-
-  function clearGeometry() {
-    for (const [node, previous] of touched) {
-      if (!node?.style) continue;
-      if (previous.breakBefore) node.style.breakBefore = previous.breakBefore;
-      else node.style.removeProperty('break-before');
-      if (previous.pageBreakBefore) node.style.pageBreakBefore = previous.pageBreakBefore;
-      else node.style.removeProperty('page-break-before');
-      if (previous.marker === null) node.removeAttribute('data-gb-print-geometry-break');
-      else node.setAttribute('data-gb-print-geometry-break', previous.marker);
-    }
-    touched.clear();
-    document.querySelectorAll('[data-gb-print-geometry-grouped]').forEach((node) => {
-      node.removeAttribute('data-gb-print-geometry-grouped');
-    });
-    document.documentElement.removeAttribute('data-gb-print-geometry-ready');
   }
 
   function readerRoot() {
@@ -100,77 +57,96 @@
     );
   }
 
-  function nextVisibleSibling(node) {
-    let next = node?.nextElementSibling || null;
-    while (next && !visible(next)) next = next.nextElementSibling;
-    return next;
-  }
-
   function previousVisibleSibling(node) {
     let previous = node?.previousElementSibling || null;
     while (previous && !visible(previous)) previous = previous.previousElementSibling;
     return previous;
   }
 
-  function keepGroupStart(node) {
-    let start = node;
-    while (true) {
-      const previous = previousVisibleSibling(start);
-      if (!previous?.hasAttribute('data-print-keep-next')) break;
-      if (nextVisibleSibling(previous) !== start) break;
-      start = previous;
-    }
-    return start;
-  }
-
   function topLevelAtomic(scope) {
     return [...scope.querySelectorAll('[data-print-flow="atomic"]')].filter((node) => {
       const parent = node.parentElement?.closest('[data-print-flow="atomic"]');
-      return !parent
-        && !node.closest('.gb-print-closing-group')
-        && visible(node);
+      return !parent && visible(node);
     });
   }
 
-  function flowEvents(scope, atomicNodes) {
-    const atomicSet = new Set(atomicNodes);
-    const atomicEvents = [];
-    const starts = new Set();
+  function hasKeepBoundary(node) {
+    return node.hasAttribute('data-print-keep-next')
+      || previousVisibleSibling(node)?.hasAttribute('data-print-keep-next');
+  }
 
-    for (const node of atomicNodes) {
-      const startNode = keepGroupStart(node);
-      if (starts.has(startNode)) continue;
-      starts.add(startNode);
-      atomicEvents.push({
-        type: 'atomic',
-        node,
-        startNode,
-        top: absoluteTop(startNode),
-        bottom: absoluteTop(node) + node.getBoundingClientRect().height,
-      });
+  function snapshot(node) {
+    const properties = {};
+    for (const property of PROPERTIES) {
+      properties[property] = {
+        value: node.style.getPropertyValue(property),
+        priority: node.style.getPropertyPriority(property),
+      };
     }
+    return {
+      properties,
+      marker: node.getAttribute('data-gb-print-monolith'),
+    };
+  }
 
-    const events = [...atomicEvents];
-    for (const node of scope.querySelectorAll('*')) {
-      if (!visible(node)) continue;
-      const style = getComputedStyle(node);
-      if (forcedBreakBefore(style) && !atomicSet.has(node) && !starts.has(node)) {
-        events.push({ type: 'break-before', node, top: absoluteTop(node), bottom: absoluteTop(node) });
-      }
-      if (forcedBreakAfter(style)) {
-        const rect = node.getBoundingClientRect();
-        const bottom = rect.bottom + window.scrollY;
-        events.push({ type: 'break-after', node, top: bottom, bottom });
-      }
+  function remember(node) {
+    if (!touched.has(node)) touched.set(node, snapshot(node));
+  }
+
+  function restoreProperty(node, property, previous) {
+    if (previous.value) node.style.setProperty(property, previous.value, previous.priority);
+    else node.style.removeProperty(property);
+  }
+
+  function clearGeometry() {
+    for (const [node, previous] of touched) {
+      if (!node?.style) continue;
+      for (const property of PROPERTIES) restoreProperty(node, property, previous.properties[property]);
+      if (previous.marker === null) node.removeAttribute('data-gb-print-monolith');
+      else node.setAttribute('data-gb-print-monolith', previous.marker);
     }
+    touched.clear();
+    preparedForPrint = false;
+    document.documentElement.removeAttribute('data-gb-print-geometry-ready');
+  }
 
-    return events.sort((left, right) => {
-      if (Math.abs(left.top - right.top) > 0.25) return left.top - right.top;
-      if (left.type === right.type) return 0;
-      if (left.type === 'break-before') return -1;
-      if (right.type === 'break-before') return 1;
-      return left.type === 'atomic' ? -1 : 1;
-    });
+  function makeMonolithic(node) {
+    remember(node);
+    node.style.setProperty('display', 'inline-block', 'important');
+    node.style.setProperty('width', '100%', 'important');
+    node.style.setProperty('max-width', '100%', 'important');
+    node.style.setProperty('vertical-align', 'top', 'important');
+    node.style.setProperty('box-sizing', 'border-box', 'important');
+    node.setAttribute('data-gb-print-monolith', '1');
+  }
+
+  function decisionFor(node, rootRect, pageHeight) {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const heightLimit = Math.min(MAX_ATOMIC_PX, pageHeight * MAX_PAGE_FRACTION);
+    const tag = node.tagName.toLowerCase();
+    const reasons = [];
+
+    if (style.display !== 'block') reasons.push(`display:${style.display}`);
+    if (style.float !== 'none') reasons.push(`float:${style.float}`);
+    if (!String(style.breakInside || style.pageBreakInside || '').includes('avoid')) reasons.push('not-atomic-style');
+    if (rect.height > heightLimit) reasons.push('too-tall');
+    if (rect.width < rootRect.width * MIN_ROOT_WIDTH_FRACTION) reasons.push('not-full-width');
+    if (hasKeepBoundary(node)) reasons.push('keep-pair');
+    if (node.closest('.gb-print-closing-group')) reasons.push('closing-group');
+    if (node.matches('table,figure,details,pre,fieldset')) reasons.push('complex-element');
+    if (node.querySelector(':scope > table, :scope > figure, :scope > details')) reasons.push('complex-child');
+
+    return {
+      node,
+      tag,
+      className: typeof node.className === 'string' ? node.className.slice(0, 96) : '',
+      height: Math.round(rect.height),
+      width: Math.round(rect.width),
+      display: style.display,
+      eligible: reasons.length === 0,
+      reasons,
+    };
   }
 
   function attachGeometry(report, geometry) {
@@ -185,7 +161,8 @@
       reason: 'screen-media',
       pageContentHeight: finite(report?.pageContentHeight),
       considered: 0,
-      applied: 0,
+      stabilized: 0,
+      decisions: [],
     };
   }
 
@@ -200,82 +177,49 @@
         reason: !root ? 'reader-root-missing' : 'page-height-missing',
         pageContentHeight: pageHeight,
         considered: 0,
-        applied: 0,
+        stabilized: 0,
+        decisions: [],
       };
     }
 
     const scope = root.parentElement || document.body;
-    const atomicNodes = topLevelAtomic(scope);
-    const events = flowEvents(scope, atomicNodes);
-    const origin = absoluteTop(document.body);
-    let shift = 0;
-    let applied = 0;
-    const decisions = [];
-
-    for (const event of events) {
-      const style = getComputedStyle(event.node);
-      if (event.type === 'break-before') {
-        shift += alignToNextPage(event.top + shift, origin, pageHeight);
-        continue;
-      }
-      if (event.type === 'break-after') {
-        shift += alignToNextPage(event.bottom + shift, origin, pageHeight);
-        continue;
-      }
-
-      const height = Math.max(0, event.bottom - event.top);
-      if (height <= PAGE_EPSILON_PX || height >= pageHeight - PAGE_EPSILON_PX) continue;
-
-      const startStyle = getComputedStyle(event.startNode);
-      if (forcedBreakBefore(startStyle)) {
-        shift += alignToNextPage(event.top + shift, origin, pageHeight);
-        continue;
-      }
-
-      const logicalTop = event.top + shift;
-      const pageOffset = modulo(logicalTop - origin, pageHeight);
-      const crosses = pageOffset + height > pageHeight + PAGE_EPSILON_PX;
-      decisions.push({
-        tag: event.node.tagName.toLowerCase(),
-        className: typeof event.node.className === 'string' ? event.node.className.slice(0, 96) : '',
-        height: Math.round(height),
-        pageOffset: Math.round(pageOffset),
-        crosses,
-      });
-      if (!crosses) continue;
-
-      const inserted = alignToNextPage(logicalTop, origin, pageHeight);
-      if (inserted <= PAGE_EPSILON_PX) continue;
-      applyBreak(event.startNode, event.node);
-      shift += inserted;
-      applied += 1;
+    const rootRect = root.getBoundingClientRect();
+    const decisions = topLevelAtomic(scope).map((node) => decisionFor(node, rootRect, pageHeight));
+    for (const decision of decisions) {
+      if (decision.eligible) makeMonolithic(decision.node);
     }
 
+    preparedForPrint = true;
     document.documentElement.setAttribute('data-gb-print-geometry-ready', '1');
     return {
       version: GEOMETRY_VERSION,
       status: 'prepared',
       media: 'print',
+      strategy: 'short-atomic-inline-block',
       pageContentHeight: pageHeight,
-      considered: atomicNodes.length,
-      applied,
-      decisions,
+      considered: decisions.length,
+      stabilized: decisions.filter((decision) => decision.eligible).length,
+      decisions: decisions.map(({ node: _node, ...decision }) => decision),
     };
   }
 
-  function prepareGeometry(force = false) {
+  function prepareForPrint() {
     if (!originalPrepare) return null;
+    if (preparedForPrint && lastReport) return lastReport;
     const report = originalPrepare();
-    const geometry = force || inPrintMedia() ? stabilize(report) : deferredReport(report);
-    attachGeometry(report, geometry);
+    attachGeometry(report, stabilize(report));
+    lastReport = report;
     return report;
   }
 
   function bindLifecycle() {
     if (lifecycleBound) return;
     lifecycleBound = true;
-    window.addEventListener('beforeprint', () => { prepareGeometry(true); });
-    window.addEventListener('afterprint', clearGeometry);
+    window.addEventListener('beforeprint', () => { prepareForPrint(); });
+    window.addEventListener('afterprint', () => {
+      clearGeometry();
+      lastReport = null;
+    });
   }
 
   function install() {
@@ -288,14 +232,15 @@
 
     const wrappedPrepare = (...args) => {
       clearGeometry();
-      const report = originalPrepare(...args);
-      const geometry = inPrintMedia() ? stabilize(report) : deferredReport(report);
-      attachGeometry(report, geometry);
-      return report;
+      lastReport = originalPrepare(...args);
+      const geometry = inPrintMedia() ? stabilize(lastReport) : deferredReport(lastReport);
+      attachGeometry(lastReport, geometry);
+      return lastReport;
     };
 
     const wrappedReset = (...args) => {
       clearGeometry();
+      lastReport = null;
       return originalReset ? originalReset(...args) : undefined;
     };
 
