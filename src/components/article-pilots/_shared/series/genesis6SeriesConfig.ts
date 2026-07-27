@@ -34,6 +34,26 @@ const GENESIS6_PART_TOC: Record<Genesis6PageId, SeriesPartTocItem[]> = {
     ['#почему-это-пророчество-важно-для-иуды', 'Почему это пророчество важно для Иуды'],
     ['#итог', 'Итог'],
   ]),
+  corpus: toc([
+    ['#коротко', 'Коротко'],
+    ['#перед-нами-не-потерянная-библия-и-не-бесполезная-подделка', 'Не потерянная Библия и не бесполезная подделка'],
+    ['#что-библия-сообщает-об-енохе', 'Что Библия сообщает об Енохе'],
+    ['#1-енох-2-енох-и-3-енох--разные-произведения', '1, 2 и 3 Енох — разные произведения'],
+    ['#пять-книг-которые-не-всегда-были-одной-книгой', 'Пять книг составного корпуса'],
+    ['#книга-стражей-несколько-линий-внутри-одного-рассказа', 'Книга Стражей'],
+    ['#кумранские-рукописи-что-они-доказывают-и-чего-не-доказывают', 'Что доказывают рукописи Кумрана'],
+    ['#итог', 'Итог'],
+  ]),
+  audit: toc([
+    ['#коротко', 'Коротко'],
+    ['#вопрос-поставлен-неправильно-если-ответ-ожидается-одним-словом', 'Почему нельзя ответить одним словом'],
+    ['#каноническая-граница-исследования', 'Каноническая граница'],
+    ['#категории-аудита', 'Категории аудита'],
+    ['#как-не-проводить-канонический-аудит', 'Как не проводить аудит'],
+    ['#книга-стражей-бог-суд-и-нравственный-порядок', 'Книга Стражей: Бог и суд'],
+    ['#ангельское-прочтение-быт-6', 'Ангельское прочтение Быт. 6'],
+    ['#итог', 'Итог'],
+  ]),
   angels: toc([
     ['#коротко', 'Коротко'],
     ['#что-иуда-говорит-прямо', 'Что Иуда говорит прямо'],
@@ -86,18 +106,19 @@ const GENESIS6_PART_TOC: Record<Genesis6PageId, SeriesPartTocItem[]> = {
 let doneMin = 0;
 const pages: Record<string, SeriesPageChromeData> = {};
 for (const item of GENESIS6_SERIES_ITEMS) {
+  const sectionLabel = item.tier === 'satellite' ? `Экскурс ${item.letter}` : `Часть ${item.roman}`;
   pages[item.id] = {
     id: item.id,
     label: item.shortTitle,
     title: item.title,
     mobileSection: GENESIS6_PART_TOC[item.id][0].label,
-    partLabel: `Часть ${item.roman} · Содержание`,
+    partLabel: `${sectionLabel} · Содержание`,
     readingProgressDoneMin: doneMin,
     readingProgressPartMin: item.minutes,
     readingProgressTotalMin: GENESIS6_TOTAL_MIN,
     railNowTitle: item.shortTitle,
     railCover: item.cover,
-    partDialogLabel: `Часть ${item.roman} · ${item.shortTitle}`,
+    partDialogLabel: `${sectionLabel} · ${item.shortTitle}`,
     partToc: GENESIS6_PART_TOC[item.id],
   };
   doneMin += item.minutes;
@@ -113,11 +134,15 @@ export const GENESIS6_SERIES: SeriesConfig = defineSeriesConfig({
   breadcrumbParent: { label: 'Трудные тексты', href: '../../hard-texts/' },
   items: GENESIS6_SERIES_ITEMS.map((item) => ({
     id: item.id,
-    mark: { kind: 'roman' as const, value: item.roman },
+    mark: item.tier === 'satellite'
+      ? { kind: 'letter' as const, value: item.letter || '' }
+      : { kind: 'roman' as const, value: item.roman },
     title: item.title,
     shortTitle: item.shortTitle,
     href: `/hard-texts/${item.slug}/`,
     readingTime: `${item.minutes} мин`,
+    ...(item.tier ? { tier: item.tier } : {}),
+    ...(item.parent ? { parent: item.parent } : {}),
   })),
   pages,
 });
