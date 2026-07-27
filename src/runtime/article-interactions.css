@@ -1,3 +1,7 @@
+.bref > .btip[data-generated-scripture-tip="1"] {
+  display: none;
+}
+
 .gb-floating-tip {
   position: fixed;
   z-index: 2147482500;
