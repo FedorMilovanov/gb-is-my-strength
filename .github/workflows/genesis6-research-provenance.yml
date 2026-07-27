@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'data/genesis6-research-provenance.json'
+      - 'data/genesis6-enoch-footnote-gates.json'
       - 'scripts/genesis6-research-provenance-contract.mjs'
+      - 'scripts/genesis6-enoch-footnote-gate.mjs'
       - 'src/content/articles/*enoh*'
       - 'src/content/articles/*angely-pod-mrakom*'
       - 'src/content/articles/*duhi-v-temnice*'
@@ -16,7 +18,9 @@ on:
     branches: [main]
     paths:
       - 'data/genesis6-research-provenance.json'
+      - 'data/genesis6-enoch-footnote-gates.json'
       - 'scripts/genesis6-research-provenance-contract.mjs'
+      - 'scripts/genesis6-enoch-footnote-gate.mjs'
       - 'src/content/articles/*enoh*'
       - 'src/content/articles/*angely-pod-mrakom*'
       - 'src/content/articles/*duhi-v-temnice*'
@@ -64,6 +68,13 @@ jobs:
           set -o pipefail
           python3 _external/Research/scripts/validate_genesis6_enoch_extension.py --root _external/Research \
             2>&1 | tee reports/genesis6-research-provenance/enoch-extension-validator.log
+
+      - name: Validate Enoch footnote publication gates
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/genesis6-enoch-footnote-gate.mjs \
+            2>&1 | tee reports/genesis6-research-provenance/enoch-footnote-gate.log
 
       - name: Validate pinned site provenance
         shell: bash
