@@ -1,0 +1,30 @@
+name: Sync Atlas branch with main
+
+on:
+  push:
+    branches:
+      - feat/relationship-atlas-marathon-20260727
+    paths:
+      - .github/workflows/sync-atlas-branch-with-main.yml
+
+permissions:
+  contents: write
+
+jobs:
+  merge-main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/relationship-atlas-marathon-20260727
+          fetch-depth: 0
+
+      - name: Merge current main into the Atlas branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-edit origin/main
+          git push origin HEAD:feat/relationship-atlas-marathon-20260727
