@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'scripts/build-genesis6-footnote-product.py'
+      - 'scripts/finalize-genesis6-footnote-product.py'
       - '.github/workflows/genesis6-footnote-carrier.yml'
   workflow_dispatch:
 
@@ -21,34 +22,40 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Enable one-run mismatch inventory
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('scripts/build-genesis6-footnote-product.py')
-          source = path.read_text(encoding='utf-8')
-          old = """def replace_once(source: str, old: str, new: str, label: str) -> str:\n    count = source.count(old)\n    if count != 1:\n        raise SystemExit(f'{label}: expected exactly one match, found {count}')\n    return source.replace(old, new, 1)\n"""
-          new = """def replace_once(source: str, old: str, new: str, label: str) -> str:\n    count = source.count(old)\n    if count != 1:\n        print(f'DIAGNOSTIC mismatch: {label}: expected exactly one match, found {count}')\n        return source\n    return source.replace(old, new, 1)\n"""
-          if source.count(old) != 1:
-              raise SystemExit('replace_once diagnostic patch boundary drift')
-          path.write_text(source.replace(old, new, 1), encoding='utf-8', newline='')
-          PY
-
-      - name: Build exact four-file product
+      - name: Build and validate exact four-file product
         id: build
         continue-on-error: true
         shell: bash
         run: |
           set +e
-          python3 scripts/build-genesis6-footnote-product.py 2>&1 | tee carrier.log
+          python3 scripts/finalize-genesis6-footnote-product.py 2>&1 | tee carrier.log
           status=${PIPESTATUS[0]}
           printf '%s\n' "$status" > carrier.status
           exit "$status"
 
-      - name: Restore carrier source
-        if: always()
-        run: git checkout -- scripts/build-genesis6-footnote-product.py
+      - name: Verify read-only carrier and exact scope
+        if: steps.build.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git status --porcelain --untracked-files=no | wc -l)" -eq 0
+          test "$(find out -type f ! -path 'out/manifest.json' | wc -l)" -eq 4
+          test -f out/manifest.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          expected = {
+              'src/content/articles/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.mdx',
+              'src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx',
+              'data/genesis6-enoch-footnote-gates.json',
+              'scripts/genesis6-enoch-footnote-gate.mjs',
+          }
+          manifest = json.loads(Path('out/manifest.json').read_text(encoding='utf-8'))
+          actual = {entry['path'] for entry in manifest['files']}
+          if actual != expected:
+              raise SystemExit(f'product scope drift: {sorted(actual)}')
+          print(json.dumps(manifest, ensure_ascii=False, indent=2))
+          PY
 
       - name: Upload carrier evidence
         if: always()
