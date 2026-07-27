@@ -20,15 +20,22 @@ jobs:
           fetch-depth: 1
           show-progress: false
 
-      - name: Materialize and commit exact permanent files once
+      - name: Stop after permanent commit
+        id: permanent
+        shell: bash
+        run: |
+          if git log -1 --pretty=%s | grep -q '^fix(hermenevtika): keep footnote Scripture references static$'; then
+            echo 'done=true' >> "$GITHUB_OUTPUT"
+            echo 'Permanent materialization already committed.'
+          else
+            echo 'done=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Patch temporary materializer safely
+        if: steps.permanent.outputs.done != 'true'
         shell: bash
         run: |
           set -euo pipefail
-          if git log -1 --pretty=%s | grep -q '^fix(hermenevtika): keep footnote Scripture references static$'; then
-            echo 'Permanent materialization already committed.'
-            exit 0
-          fi
-
           python - <<'PY'
           from pathlib import Path
 
@@ -52,13 +59,67 @@ jobs:
           path.write_text(source, encoding='utf-8')
           PY
 
-          node --check .github/tmp/hermenevtika-materialize.js
-          node .github/tmp/hermenevtika-materialize.js
-          git restore -- .github/tmp/hermenevtika-materialize.js
+      - name: Check temporary materializer syntax
+        if: steps.permanent.outputs.done != 'true'
+        run: node --check .github/tmp/hermenevtika-materialize.js
+
+      - name: Execute temporary materializer
+        if: steps.permanent.outputs.done != 'true'
+        id: execute
+        shell: bash
+        run: |
+          set +e
+          node .github/tmp/hermenevtika-materialize.js > /tmp/materializer.log 2>&1
+          status=$?
+          cat /tmp/materializer.log
+          MATERIALIZER_STATUS="$status" python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          text = Path('/tmp/materializer.log').read_text(encoding='utf-8', errors='replace')
+          text = re.sub(r'\x1b\[[0-9;]*m', '', text)
+          candidates = [
+              line.strip()
+              for line in text.splitlines()
+              if any(token in line for token in (
+                  'AssertionError', 'ERR_ASSERTION', 'expected ', 'footnote ',
+                  'anchor', 'missing', 'survived', 'unexpected', 'SyntaxError',
+                  'ordinary Scripture', 'interactive footnotes', 'unclosed',
+              ))
+          ]
+          summary = (candidates[-1] if candidates else (text.strip().splitlines()[-1] if text.strip() else 'no output'))
+          summary = re.sub(r'[^0-9A-Za-zА-Яа-яЁё _.,:;()\[\]{}<>/+=!?-]+', ' ', summary)
+          summary = re.sub(r'\s+', ' ', summary).strip()[:180]
+          output = Path(os.environ['GITHUB_OUTPUT'])
+          with output.open('a', encoding='utf-8') as handle:
+              handle.write(f"status={os.environ['MATERIALIZER_STATUS']}\n")
+              handle.write(f"summary={summary}\n")
+          PY
+          exit 0
+
+      - name: "Materializer failed — ${{ steps.execute.outputs.summary }}"
+        if: steps.permanent.outputs.done != 'true' && steps.execute.outputs.status != '0'
+        run: exit 1
+
+      - name: Restore temporary materializer
+        if: always() && steps.permanent.outputs.done != 'true'
+        run: git restore -- .github/tmp/hermenevtika-materialize.js
+
+      - name: Validate generated JavaScript contracts
+        if: steps.permanent.outputs.done != 'true' && steps.execute.outputs.status == '0'
+        shell: bash
+        run: |
+          set -euo pipefail
           node --check scripts/article-native-contract-audit.js
           node --check scripts/interactive-audit.js
           git diff --check
 
+      - name: Enforce exact three-file scope
+        if: steps.permanent.outputs.done != 'true' && steps.execute.outputs.status == '0'
+        shell: bash
+        run: |
+          set -euo pipefail
           cat > /tmp/expected.txt <<'FILES'
           scripts/article-native-contract-audit.js
           scripts/interactive-audit.js
@@ -67,8 +128,13 @@ jobs:
           git diff --name-only | sort > /tmp/actual.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
 
+      - name: Commit exact permanent files
+        if: steps.permanent.outputs.done != 'true' && steps.execute.outputs.status == '0'
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- $(cat /tmp/expected.txt)
+          git add scripts/article-native-contract-audit.js scripts/interactive-audit.js src/components/article-pilots/hermenevtika/HermenevtikaBody.astro
           git commit -m 'fix(hermenevtika): keep footnote Scripture references static'
           git push origin HEAD:agent/hermenevtika-static-footnotes-20260727
