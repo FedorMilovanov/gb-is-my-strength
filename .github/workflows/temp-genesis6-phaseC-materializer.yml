@@ -51,8 +51,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .tmp/genesis6-phaseC/runner/*.part > /tmp/genesis6-phaseC-runner.sh
-          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = "d85168e481f4d17f202de4b2734f2f6b6dfaff18b2d64dd10e30e397cb9e36d6"
+          cp .tmp/genesis6-phaseC/runner/final.sh /tmp/genesis6-phaseC-runner.sh
+          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = "a2c7663b1a36b4465ca278c68d8821d61e2fe4b59da9dcb97d739d26702e2c07"
           bash -n /tmp/genesis6-phaseC-runner.sh
           chmod 700 /tmp/genesis6-phaseC-runner.sh
       - name: Set up Node 22.12

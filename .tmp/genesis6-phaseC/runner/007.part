@@ -1,7 +1,0 @@
-put=data).decode().strip()})
-final={'schemaVersion':3,'base':source['base'],'carrier':os.environ['CARRIER_SHA'],'publicationState':'shadow-pilot-noindex','files':files}
-mb=(json.dumps(final,ensure_ascii=False,indent=2)+'\n').encode(); (root/'evidence'/'tested-product-manifest.json').write_bytes(mb); (root/'evidence'/'tested-product-manifest.sha256').write_text(hashlib.sha256(mb).hexdigest()+'\n')
-PY_SEAL
-tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -czf "$ROOT/tested-product.tgz" -C "$PRODUCT" .
-sha256sum "$ROOT/tested-product.tgz" > "$EVIDENCE/tested-product.tgz.sha256"
-echo '== Phase C shadow-pilot acceptance complete =='
