@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           include=()
-          for path in src data scripts docs css js .github/workflows package.json package-lock.json astro.config.mjs tsconfig.json; do
+          for path in src data scripts docs css js migration .github/workflows package.json package-lock.json astro.config.mjs tsconfig.json feed.xml sitemap.xml; do
             if [ -e "$path" ]; then include+=("$path"); fi
           done
           tar -czf /tmp/genesis6-phaseC-source/source.tar.gz "${include[@]}"
@@ -45,7 +45,7 @@ jobs:
       - name: Upload source snapshot
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: genesis6-phaseC-source-9ff36fab
+          name: genesis6-phaseC-source-9ff36fab-full
           path: /tmp/genesis6-phaseC-source
           if-no-files-found: error
           retention-days: 7
