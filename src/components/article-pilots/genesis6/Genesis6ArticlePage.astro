@@ -21,7 +21,7 @@ interface Frontmatter {
 }
 
 interface Props {
-  pageId: 'enoch' | 'angels' | 'spirits' | 'dead';
+  pageId: 'enoch' | 'corpus' | 'audit' | 'angels' | 'spirits' | 'dead';
   frontmatter: unknown;
 }
 
@@ -55,6 +55,8 @@ const itemIndex = GENESIS6_SERIES_ITEMS.findIndex((entry) => entry.id === pageId
 const item = GENESIS6_SERIES_ITEMS[itemIndex];
 if (!item) throw new Error(`Unknown Genesis 6 page: ${pageId}`);
 const next = GENESIS6_SERIES_ITEMS[itemIndex + 1] ?? null;
+const itemSection = item.tier === 'satellite' ? `Экскурс ${item.letter}` : `Часть ${item.roman}`;
+const nextSection = next?.tier === 'satellite' ? `Экскурс ${next.letter}` : next ? `Часть ${next.roman}` : '';
 const canonical = frontmatter.canonicalOverride || `${SITE.url}/hard-texts/${frontmatter.slug}/`;
 const indexable = frontmatter.draft !== true && frontmatter.noindex !== true;
 const robots = indexable
@@ -159,7 +161,7 @@ const siteConfig = {
               <source srcset={item.coverAvif} type="image/avif" />
               <img src={item.cover} alt={item.coverAlt} width="1200" height="675" loading="eager" decoding="async" fetchpriority="high" />
             </picture>
-            <figcaption class="gbs2-hero-cap"><i aria-hidden="true"></i>Бытие 6, Енох, Иуда и Пётр · Часть {item.roman}</figcaption>
+            <figcaption class="gbs2-hero-cap"><i aria-hidden="true"></i>Бытие 6, Енох, Иуда и Пётр · {itemSection}</figcaption>
           </figure>
           <header class="article-header article-header--no-border gbs2-head">
             <span aria-hidden="true" class="gbs2-kinetic">{item.roman}</span>
@@ -191,7 +193,7 @@ const siteConfig = {
               <a class="gbs2-next-card" href={`/hard-texts/${next.slug}/`}>
                 <span class="gbs2-next-cover" style={`background-image:url(${next.cover})`}></span>
                 <span>
-                  <span class="gbs2-next-eyebrow">Дальше · Часть {next.roman}</span>
+                  <span class="gbs2-next-eyebrow">Дальше · {nextSection}</span>
                   <span class="gbs2-next-title">{next.shortTitle}</span>
                   <span class="gbs2-next-desc">{next.description}</span>
                 </span>
