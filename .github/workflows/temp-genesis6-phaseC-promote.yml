@@ -1,0 +1,171 @@
+name: Temporary Genesis 6 Phase C promote accepted artifact
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/temp-genesis6-phaseC-promote.yml'
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: genesis6-phaseC-promote-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/genesis6-phaseC-materializer-20260727'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      ACCEPTED_CARRIER_SHA: a029b1c3697f22b641e2fc0e39b4c18581b5a654
+      ACCEPTANCE_RUN_ID: '30293916899'
+      ARTIFACT_ID: '8664215511'
+      ARTIFACT_SHA256: cf31dedc618c79ec80cd6e62a29f6567ca4be13425fc36c2b6ced3da3fccd6dd
+      BASE_SHA: 9ff36fab1e7776ce3de60daacdfd9d29066ae6c0
+      TARGET_BRANCH: lane/genesis6-route-source-prep-2026-07-27
+      STAGING_BRANCH: agent/genesis6-phaseC-tested-product-20260727
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout exact carrier
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download and verify accepted artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis6-promote/artifact /tmp/genesis6-promote/evidence
+          curl --fail --silent --show-error --location \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            --output /tmp/genesis6-promote/artifact.zip
+          test "$(sha256sum /tmp/genesis6-promote/artifact.zip | cut -d' ' -f1)" = "$ARTIFACT_SHA256"
+          unzip -q /tmp/genesis6-promote/artifact.zip -d /tmp/genesis6-promote/artifact
+          MANIFEST="$(find /tmp/genesis6-promote/artifact -type f -name tested-product-manifest.json -print -quit)"
+          PRODUCT_TGZ="$(find /tmp/genesis6-promote/artifact -type f -name tested-product.tgz -print -quit)"
+          test -n "$MANIFEST"
+          test -n "$PRODUCT_TGZ"
+          printf '%s\n' "$MANIFEST" > /tmp/genesis6-promote/evidence/manifest-path.txt
+          printf '%s\n' "$PRODUCT_TGZ" > /tmp/genesis6-promote/evidence/product-path.txt
+          python <<'PY_VERIFY_ARTIFACT'
+          import hashlib,json,os,pathlib,tarfile
+          root=pathlib.Path('/tmp/genesis6-promote/artifact')
+          manifests=list(root.rglob('tested-product-manifest.json'))
+          products=list(root.rglob('tested-product.tgz'))
+          if len(manifests)!=1 or len(products)!=1:
+              raise SystemExit(f'unexpected accepted artifact layout: manifests={manifests} products={products}')
+          manifest=json.loads(manifests[0].read_text())
+          if manifest.get('schemaVersion')!=4:
+              raise SystemExit('tested manifest schema mismatch')
+          if manifest.get('base')!=os.environ['BASE_SHA']:
+              raise SystemExit('tested manifest base mismatch')
+          if manifest.get('carrier')!=os.environ['ACCEPTED_CARRIER_SHA']:
+              raise SystemExit('tested manifest carrier mismatch')
+          if manifest.get('publicationState')!='shadow-pilot-noindex':
+              raise SystemExit('tested manifest publication state mismatch')
+          if manifest.get('unchangedContracts')!=['migration/route-migration-matrix.json']:
+              raise SystemExit('tested manifest unchanged-contract mismatch')
+          files=manifest.get('files')
+          if not isinstance(files,list) or len(files)!=18:
+              raise SystemExit('expected exactly 18 accepted product files')
+          paths=[entry['path'] for entry in files]
+          if paths!=sorted(paths) or len(paths)!=len(set(paths)):
+              raise SystemExit('accepted manifest path order/uniqueness mismatch')
+          forbidden=[path for path in paths if path.startswith('.github/') or path.startswith('.tmp/') or path.startswith('src/content/articles/') or path.startswith('css/') or path in {'feed.xml','sitemap.xml','migration/route-migration-matrix.json'}]
+          if forbidden:
+              raise SystemExit(f'forbidden accepted paths: {forbidden}')
+          with tarfile.open(products[0],'r:gz') as archive:
+              members=[member for member in archive.getmembers() if member.isfile()]
+              names=[member.name.removeprefix('./') for member in members]
+              for name in names:
+                  path=pathlib.PurePosixPath(name)
+                  if name.startswith('/') or '..' in path.parts:
+                      raise SystemExit(f'unsafe accepted product member: {name}')
+              if sorted(names)!=paths:
+                  raise SystemExit(f'accepted tar scope mismatch: {sorted(names)}')
+          evidence={
+              'acceptanceRunId':os.environ['ACCEPTANCE_RUN_ID'],
+              'artifactId':os.environ['ARTIFACT_ID'],
+              'artifactSha256':os.environ['ARTIFACT_SHA256'],
+              'acceptedCarrier':manifest['carrier'],
+              'base':manifest['base'],
+              'fileCount':len(files),
+              'manifestSha256':hashlib.sha256(manifests[0].read_bytes()).hexdigest(),
+              'productTgzSha256':hashlib.sha256(products[0].read_bytes()).hexdigest(),
+          }
+          pathlib.Path('/tmp/genesis6-promote/evidence/accepted-artifact.json').write_text(json.dumps(evidence,indent=2)+'\n')
+          PY_VERIFY_ARTIFACT
+
+      - name: Create exact one-parent product commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          MANIFEST="$(find /tmp/genesis6-promote/artifact -type f -name tested-product-manifest.json -print -quit)"
+          PRODUCT_TGZ="$(find /tmp/genesis6-promote/artifact -type f -name tested-product.tgz -print -quit)"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --no-tags origin "refs/heads/${TARGET_BRANCH}"
+          test "$(git rev-parse FETCH_HEAD)" = "$BASE_SHA"
+          git checkout --detach "$BASE_SHA"
+          BASE_MATRIX_BLOB="$(git hash-object migration/route-migration-matrix.json)"
+          tar -xzf "$PRODUCT_TGZ" -C .
+          python - "$MANIFEST" <<'PY_VERIFY_TREE'
+          import hashlib,json,pathlib,subprocess,sys
+          manifest=json.load(open(sys.argv[1]))
+          expected=[entry['path'] for entry in manifest['files']]
+          actual=sorted(subprocess.check_output(['git','ls-files','--modified','--others','--exclude-standard']).decode().splitlines())
+          if actual!=expected:
+              raise SystemExit(f'working-tree scope mismatch\nexpected={expected}\nactual={actual}')
+          for entry in manifest['files']:
+              data=pathlib.Path(entry['path']).read_bytes()
+              if len(data)!=entry['bytes']:
+                  raise SystemExit(f"bytes mismatch: {entry['path']}")
+              if hashlib.sha256(data).hexdigest()!=entry['sha256']:
+                  raise SystemExit(f"sha256 mismatch: {entry['path']}")
+              git_sha=subprocess.check_output(['git','hash-object','--stdin'],input=data).decode().strip()
+              if git_sha!=entry['gitBlobSha']:
+                  raise SystemExit(f"git blob mismatch: {entry['path']}")
+          PY_VERIFY_TREE
+          test "$(git hash-object migration/route-migration-matrix.json)" = "$BASE_MATRIX_BLOB"
+          for file in \
+            src/content/articles/enoh-prorochestvoval-iuda-14-15-4q204.mdx \
+            src/content/articles/angely-pod-mrakom-iuda-6-7-2-petra-2.mdx \
+            src/content/articles/duhi-v-temnice-noi-kreshchenie-pobeda.mdx \
+            src/content/articles/blagovestie-mertvym-1-petra-4-5-6.mdx
+          do
+            grep -qx 'draft: true' "$file"
+            grep -qx 'noindex: true' "$file"
+          done
+          python - "$MANIFEST" <<'PY_STAGE'
+          import json,subprocess,sys
+          paths=[entry['path'] for entry in json.load(open(sys.argv[1]))['files']]
+          subprocess.check_call(['git','add','--',*paths])
+          PY_STAGE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat(genesis6): add accepted shadow-pilot routes'
+          PRODUCT_SHA="$(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD^)" = "$BASE_SHA"
+          test "$(git diff-tree --no-commit-id --name-only -r "$PRODUCT_SHA" | LC_ALL=C sort | wc -l)" -eq 18
+          git push origin "+${PRODUCT_SHA}:refs/heads/${STAGING_BRANCH}"
+          printf '%s\n' "$PRODUCT_SHA" > /tmp/genesis6-promote/evidence/product-commit-sha.txt
+          git diff-tree --no-commit-id --name-only -r "$PRODUCT_SHA" | LC_ALL=C sort > /tmp/genesis6-promote/evidence/product-paths.txt
+          printf '{"base":"%s","commit":"%s","stagingBranch":"%s","fileCount":18}\n' "$BASE_SHA" "$PRODUCT_SHA" "$STAGING_BRANCH" > /tmp/genesis6-promote/evidence/promotion.json
+
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: genesis6-phaseC-promotion-${{ github.run_id }}
+          path: /tmp/genesis6-promote/evidence
+          if-no-files-found: error
+          retention-days: 14
