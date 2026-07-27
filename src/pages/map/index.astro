@@ -9,6 +9,8 @@ import MapPageHead from '@/components/map/MapPageHead.astro';
 import MapStyles from '@/components/map/MapStyles.astro';
 import AtlasRelationStyles from '@/components/map/AtlasRelationStyles.astro';
 import AtlasBody from '@/components/map/AtlasBody.astro';
+import AtlasRecovery from '@/components/map/AtlasRecovery.astro';
+import AtlasNoScriptFallback from '@/components/map/AtlasNoScriptFallback.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -19,6 +21,8 @@ import AtlasBody from '@/components/map/AtlasBody.astro';
   </head>
   <body>
     <AtlasBody />
+    <AtlasRecovery />
+    <AtlasNoScriptFallback />
     <section class="sr-only" data-pagefind-body aria-label="Описание Атласа исследований">
       <h2>Атлас исследований сайта «Господь Бог — Сила Моя»</h2>
       <p>
