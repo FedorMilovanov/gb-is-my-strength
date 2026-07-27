@@ -63,6 +63,54 @@ check('verified editorial catalog active', (first.stats.origins.catalog || 0) ==
 check('legacy graph is fallback only', first.stats.legacyImported >= 0 && first.stats.legacySuppressed > 0, `${first.stats.legacyImported} imported / ${first.stats.legacySuppressed} suppressed`);
 check('compiler errors empty', first.stats.errors.length === 0, first.stats.errors.join(' | '));
 
+const statusFixtureGraph = {
+  nodes: [
+    { id: 'fixture-a', title: 'Fixture A', url: '/fixture-a/', group: 'standalone' },
+    { id: 'fixture-b', title: 'Fixture B', url: '/fixture-b/', group: 'standalone' },
+  ],
+  edges: [['fixture-a', 'fixture-b']],
+};
+const statusRelation = (editorialStatus) => ({
+  schemaVersion: 1,
+  relations: [{
+    id: `fixture-${editorialStatus}`,
+    source: 'fixture-a',
+    target: 'fixture-b',
+    kind: 'related',
+    rationale: 'Проверочная связь для контракта статусов редакционного каталога.',
+    editorialStatus,
+  }],
+});
+const draftFixture = compileRelations({
+  graphData: statusFixtureGraph,
+  seriesData: {},
+  catalogData: statusRelation('draft'),
+  strict: true,
+});
+const deprecatedFixture = compileRelations({
+  graphData: statusFixtureGraph,
+  seriesData: {},
+  catalogData: statusRelation('deprecated'),
+  strict: true,
+});
+check(
+  'draft relation does not suppress live legacy fallback',
+  draftFixture.stats.catalogDrafts === 1
+    && draftFixture.stats.legacyImported === 1
+    && draftFixture.stats.legacySuppressed === 0
+    && draftFixture.edges.length === 1
+    && draftFixture.edges[0].origin === 'legacy-import',
+  JSON.stringify(draftFixture.stats),
+);
+check(
+  'deprecated relation explicitly suppresses legacy fallback',
+  deprecatedFixture.stats.catalogDeprecated === 1
+    && deprecatedFixture.stats.legacyImported === 0
+    && deprecatedFixture.stats.legacySuppressed === 1
+    && deprecatedFixture.edges.length === 0,
+  JSON.stringify(deprecatedFixture.stats),
+);
+
 const nodeMap = new Map(first.nodes.map((node) => [node.id, node]));
 const edgeIds = new Set();
 const semantics = new Set();
