@@ -37,6 +37,41 @@ check('Reader: Media Session contract', controller.includes('function mediaSessi
 check('Reader: chunk seek contract', controller.includes('function skipChunk') && controller.includes("setActionHandler('seekforward'"));
 check('Reader: shared settings selector', controller.includes('[data-gill-settings-open]'));
 
+const readerActions = read('js/reader-actions.js');
+const readerActionsRuntime = read('src/components/reader-platform/ReaderActionsRuntime.astro');
+const gillChrome = read('src/components/article-pilots/gill-series/GillSeriesChrome.astro');
+const gillResponsive = read('src/components/article-pilots/gill-series/GillSeriesResponsiveStyles.astro');
+const nagornayaRuntime = read('src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro');
+const assetVersions = read('src/lib/asset-version.js');
+check('Reader actions: print engine is a dedicated singleton',
+  readerActions.includes('window.GBPrintEngine = printEngine') &&
+  readerActions.includes('const PRINT_ENGINE_VERSION = 2.1') &&
+  readerActions.includes("closest('[data-action=\"print\"],[data-action=\"share\"],[data-home-href]')") &&
+  readerActions.includes("window.addEventListener('beforeprint'") &&
+  readerActions.includes("window.addEventListener('afterprint'"));
+check('Reader actions: print delegates pagination and calls window.print once',
+  readerActions.includes('window.GBPrintPagination') &&
+  readerActions.includes('if (printing) return copyReport(report)') &&
+  readerActions.includes('window.print();'));
+check('Reader actions: cache-busted native component owns the runtime',
+  readerActionsRuntime.includes("assetUrl('js/reader-actions.js')") &&
+  assetVersions.includes("'js/reader-actions.js': '5a39eb2a'"));
+check('Reader actions: strict-native series use explicit owner without site.js',
+  gillChrome.includes('ReaderActionsRuntime') && nagornayaRuntime.includes('ReaderActionsRuntime') &&
+  !gillChrome.includes('/js/site.js') && !nagornayaRuntime.includes('/js/site.js'));
+check('Gill responsive: mobile table scroll is local, visible and print-reversible',
+  gillResponsive.includes('table.manuscript-table') &&
+  gillResponsive.includes('overflow-x: auto') &&
+  gillResponsive.includes('overscroll-behavior-inline: contain') &&
+  gillResponsive.includes('@media print') &&
+  gillResponsive.includes('display: table') &&
+  !gillResponsive.includes('overflow-x: hidden'));
+check('Gill responsive: floating tooltip wraps within safe viewport',
+  gillResponsive.includes('body[data-gbs2-series="dzhon-gill"] .tooltip') &&
+  gillResponsive.includes('calc(100vw - 24px)') &&
+  gillResponsive.includes('overflow-wrap: anywhere') &&
+  gillResponsive.includes('white-space: normal !important'));
+
 const readerRail = read('src/components/article-pilots/_shared/ReaderRail.astro');
 const readerSettings = read('src/components/article-pilots/_shared/ReaderSettings.astro');
 check('Engine isolation: single article does not import gill-series', !/from ['"][^'"]*gill-series\//.test(readerRail) && !/from ['"][^'"]*gill-series\//.test(readerSettings));
@@ -146,6 +181,7 @@ function relationImportsOutsideComposition(dir) {
 const duplicateAstroCompilers = relationImportsOutsideComposition(path.join(ROOT, 'src'));
 check('Relations: no Astro surface recompiles graph outside composition root', duplicateAstroCompilers.length === 0, duplicateAstroCompilers.join(', '));
 
+syntaxCheck('js/reader-actions.js');
 syntaxCheck('src/lib/relations/engine.mjs');
 syntaxCheck('src/runtime/atlas-runtime.js');
 syntaxCheck('scripts/project-relations-to-dist.mjs');
