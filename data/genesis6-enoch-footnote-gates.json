@@ -26,6 +26,9 @@
     "allowDraftBelowTarget": false,
     "requireDraft": true,
     "requireNoindex": true,
-    "requireSourcesRequired": true
+    "requireSourcesRequired": true,
+    "requireDefinedReferences": true,
+    "requireUsedDefinitions": true,
+    "requireContiguousNumericFootnotes": true
   }
 }
