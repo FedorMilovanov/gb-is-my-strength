@@ -112,8 +112,8 @@ function compileCatalog(catalogData, store, errors) {
   for (const raw of Array.isArray(catalogData?.relations) ? catalogData.relations : []) {
     const id = clean(raw?.id), source = clean(raw?.source), target = clean(raw?.target), kind = clean(raw?.kind), status = clean(raw?.editorialStatus) || 'verified', def = RELATION_TYPES[kind];
     if (!id || !source || !target || !def || !STATUSES.has(status)) { errors.push(`invalid catalog relation ${id || '<unknown>'}`); continue; }
-    explicitPairs.add(pairKey(source, target));
     if (status === 'draft') { drafts += 1; continue; }
+    explicitPairs.add(pairKey(source, target));
     if (status === 'deprecated') { deprecated += 1; continue; }
     const weight = raw?.weight == null ? def.defaultWeight : Number(raw.weight);
     if (!Number.isFinite(weight) || weight < 1 || weight > 100) { errors.push(`invalid weight in ${id}`); continue; }
