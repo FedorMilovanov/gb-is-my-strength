@@ -1,98 +1,46 @@
-name: Temporary Genesis 6 Phase C atomic materializer
+name: Temporary Genesis 6 Phase C read-only acceptance
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
+    branches: [agent/genesis6-phaseC-materializer-20260727]
     paths:
       - '.github/workflows/temp-genesis6-phaseC-materializer.yml'
       - '.tmp/genesis6-phaseC/**'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: genesis6-phaseC-atomic-materializer
+  group: genesis6-phaseC-readonly-acceptance
   cancel-in-progress: false
 
 jobs:
-  materialize:
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'agent/genesis6-phaseC-materializer-20260727' &&
-      github.event.pull_request.base.ref == 'main'
+  acceptance:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
+      CARRIER_SHA: ${{ github.sha }}
       BASE_SHA: 9ff36fab1e7776ce3de60daacdfd9d29066ae6c0
       TARGET_BRANCH: lane/genesis6-route-source-prep-2026-07-27
       CAPSULE_B64_SHA256: 962f47fe056b469508172f9178891d59e7999557b927fc9596af12b0d28b4139
       CAPSULE_TGZ_SHA256: 224581af3d057f4ce69a76e23c74ca8be9c03688c58c27b0e33814b6bb96012c
       MANIFEST_SHA256: 743153757d3117bb03a824b13481c2cc525814b2cb7b3d5c4593dcacdacddbe4
-      GITHUB_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout exact reachable carrier
+      - name: Checkout exact carrier
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Restore and verify capsule
+      - name: Restore verified acceptance runner
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/genesis6-phaseC/evidence /tmp/genesis6-phaseC/package
-          mapfile -t chunks < <(find .tmp/genesis6-phaseC/capsule -maxdepth 1 -type f -name '*.part' -print | LC_ALL=C sort)
-          test "${#chunks[@]}" -eq 7
-          cat "${chunks[@]}" > /tmp/genesis6-phaseC/package.tgz.b64
-          test "$(sha256sum /tmp/genesis6-phaseC/package.tgz.b64 | cut -d' ' -f1)" = "$CAPSULE_B64_SHA256"
-          base64 --decode /tmp/genesis6-phaseC/package.tgz.b64 > /tmp/genesis6-phaseC/package.tgz
-          test "$(sha256sum /tmp/genesis6-phaseC/package.tgz | cut -d' ' -f1)" = "$CAPSULE_TGZ_SHA256"
-          python <<'PY'
-          import hashlib, json, os, pathlib, subprocess, tarfile
-          root = pathlib.Path('/tmp/genesis6-phaseC')
-          pkg = root / 'package'
-          with tarfile.open(root / 'package.tgz', 'r:gz') as archive:
-              members = archive.getmembers()
-              names = [m.name for m in members]
-              for member in members:
-                  path = pathlib.PurePosixPath(member.name)
-                  if member.name.startswith('/') or '..' in path.parts or not member.isfile():
-                      raise SystemExit(f'unsafe capsule member: {member.name}')
-              if len(names) != len(set(names)):
-                  raise SystemExit('duplicate capsule paths')
-              archive.extractall(pkg, filter='data')
-          manifest_bytes = (pkg / 'manifest.json').read_bytes()
-          if hashlib.sha256(manifest_bytes).hexdigest() != os.environ['MANIFEST_SHA256']:
-              raise SystemExit('manifest digest mismatch')
-          manifest = json.loads(manifest_bytes)
-          if manifest.get('schemaVersion') != 1 or manifest.get('base') != os.environ['BASE_SHA']:
-              raise SystemExit('manifest authority mismatch')
-          files = manifest.get('files')
-          if not isinstance(files, list) or len(files) != 19:
-              raise SystemExit('expected exactly 19 product files')
-          paths = [entry['path'] for entry in files]
-          if paths != sorted(paths) or len(paths) != len(set(paths)):
-              raise SystemExit('manifest file order/uniqueness mismatch')
-          if set(names) != {'manifest.json', *paths}:
-              raise SystemExit('capsule tree differs from manifest')
-          for entry in files:
-              data = (pkg / entry['path']).read_bytes()
-              if len(data) != entry['bytes']:
-                  raise SystemExit(f"bytes mismatch: {entry['path']}")
-              if hashlib.sha256(data).hexdigest() != entry['sha256']:
-                  raise SystemExit(f"sha256 mismatch: {entry['path']}")
-              git_sha = subprocess.check_output(['git', 'hash-object', '--stdin'], input=data, text=False).decode().strip()
-              if git_sha != entry['gitBlobSha']:
-                  raise SystemExit(f"git blob mismatch: {entry['path']}")
-          (root / 'evidence' / 'capsule.json').write_text(json.dumps({
-              'base': manifest['base'],
-              'fileCount': len(files),
-              'manifestSha256': hashlib.sha256(manifest_bytes).hexdigest(),
-              'capsuleBase64Sha256': os.environ['CAPSULE_B64_SHA256'],
-              'capsuleTgzSha256': os.environ['CAPSULE_TGZ_SHA256'],
-          }, indent=2) + '\n')
-          PY
+          cat .tmp/genesis6-phaseC/runner/*.part > /tmp/genesis6-phaseC-runner.sh
+          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = '59347ab20811cd6cb3b7e7caf79a9b093f91d2dda08062cfaf8e9c22d13408c8'
+          bash -n /tmp/genesis6-phaseC-runner.sh
+          chmod 700 /tmp/genesis6-phaseC-runner.sh
 
       - name: Set up Node 22.12
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -100,172 +48,16 @@ jobs:
           node-version: '22.12.0'
           cache: npm
 
-      - name: Materialize exact noindex route package
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee /tmp/genesis6-phaseC/evidence/materialize.log) 2>&1
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git fetch --no-tags origin "refs/heads/${TARGET_BRANCH}"
-          test "$(git rev-parse FETCH_HEAD)" = "$BASE_SHA"
-          git checkout --detach "$BASE_SHA"
-          python <<'PY'
-          import json, pathlib, shutil
-          root = pathlib.Path('/tmp/genesis6-phaseC')
-          pkg = root / 'package'
-          manifest = json.loads((pkg / 'manifest.json').read_text())
-          for entry in manifest['files']:
-              source = pkg / entry['path']
-              target = pathlib.Path(entry['path'])
-              target.parent.mkdir(parents=True, exist_ok=True)
-              shutil.copyfile(source, target)
-          PY
-          python <<'PY'
-          import hashlib, json, pathlib, subprocess
-          path = pathlib.Path('src/components/article-pilots/genesis6/Genesis6ArticlePage.astro')
-          data = path.read_bytes()
-          old_git = subprocess.check_output(['git', 'hash-object', '--stdin'], input=data).decode().strip()
-          if old_git != '330db014bda9668025239d2b0e44cd95ca826370':
-              raise SystemExit(f'unexpected pre-patch Genesis6ArticlePage blob: {old_git}')
-          text = data.decode()
-          old = """interface Props {
-  pageId: 'enoch' | 'angels' | 'spirits' | 'dead';
-  frontmatter: Frontmatter;
-}
+      - name: Validate and seal exact product
+        run: /tmp/genesis6-phaseC-runner.sh
 
-const { pageId, frontmatter } = Astro.props as Props;
-"""
-          new = """interface Props {
-  pageId: 'enoch' | 'angels' | 'spirits' | 'dead';
-  frontmatter: unknown;
-}
-
-const { pageId, frontmatter } = Astro.props as Props;
-
-function assertFrontmatter(value: unknown): asserts value is Frontmatter {
-  if (!value || typeof value !== 'object') {
-    throw new Error('Genesis 6 frontmatter must be an object');
-  }
-  const record = value as Record<string, unknown>;
-  for (const field of ['title', 'h1', 'description', 'slug', 'publishedAt', 'updatedAt'] as const) {
-    if (typeof record[field] !== 'string' || record[field].length === 0) {
-      throw new Error(`Genesis 6 frontmatter field \"${field}\" must be a non-empty string`);
-    }
-  }
-  if (typeof record.readingTime !== 'number' || !Number.isFinite(record.readingTime) || record.readingTime <= 0) {
-    throw new Error('Genesis 6 frontmatter readingTime must be a positive number');
-  }
-  for (const field of ['draft', 'noindex'] as const) {
-    if (record[field] !== undefined && typeof record[field] !== 'boolean') {
-      throw new Error(`Genesis 6 frontmatter field \"${field}\" must be boolean when present`);
-    }
-  }
-  if (record.canonicalOverride !== undefined && typeof record.canonicalOverride !== 'string') {
-    throw new Error('Genesis 6 frontmatter canonicalOverride must be a string when present');
-  }
-}
-
-assertFrontmatter(frontmatter);
-"""
-          if text.count(old) != 1:
-              raise SystemExit('unexpected Genesis6ArticlePage type boundary')
-          path.write_text(text.replace(old, new))
-          final = path.read_bytes()
-          final_sha = hashlib.sha256(final).hexdigest()
-          final_git = subprocess.check_output(['git', 'hash-object', '--stdin'], input=final).decode().strip()
-          if len(final) != 10205 or final_sha != '0ca22cf2a8166606ea4d994c03631757a9f27e943b74c0e31fe115a9c4c1087b' or final_git != '121bf728bf623e866ae2a3b6d7a227294827549a':
-              raise SystemExit(f'patched Genesis6ArticlePage identity mismatch: bytes={len(final)} sha256={final_sha} git={final_git}')
-          pathlib.Path('/tmp/genesis6-phaseC/evidence/component-patch.json').write_text(json.dumps({
-              'path': str(path),
-              'fromGitBlob': old_git,
-              'toGitBlob': final_git,
-              'toSha256': final_sha,
-              'bytes': len(final),
-          }, indent=2) + '\n')
-          PY
-          python <<'PY'
-          import json, subprocess
-          manifest = json.load(open('/tmp/genesis6-phaseC/package/manifest.json'))
-          expected = [entry['path'] for entry in manifest['files']]
-          actual = sorted(subprocess.check_output(['git', 'ls-files', '--modified', '--others', '--exclude-standard']).decode().splitlines())
-          if actual != expected:
-              raise SystemExit(f'diff mismatch\nexpected={expected}\nactual={actual}')
-          forbidden = [p for p in actual if p.startswith('.github/') or p.startswith('src/content/articles/') or p.startswith('css/') or p in {'feed.xml','sitemap.xml'}]
-          if forbidden:
-              raise SystemExit(f'forbidden staging paths: {forbidden}')
-          PY
-          for file in \
-            src/content/articles/enoh-prorochestvoval-iuda-14-15-4q204.mdx \
-            src/content/articles/angely-pod-mrakom-iuda-6-7-2-petra-2.mdx \
-            src/content/articles/duhi-v-temnice-noi-kreshchenie-pobeda.mdx \
-            src/content/articles/blagovestie-mertvym-1-petra-4-5-6.mdx
-          do
-            grep -qx 'draft: true' "$file"
-            grep -qx 'noindex: true' "$file"
-          done
-          node scripts/sync-route-migration-matrix.js --check
-          node scripts/check-route-profiles.js --strict
-          node scripts/public-surface-registry-audit.js
-          node scripts/series-reader-facade-regression-test.js
-
-      - name: Install dependencies and validate source
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee /tmp/genesis6-phaseC/evidence/source-validation.log) 2>&1
-          npm ci
-          npm run astro:check
-          npm run engine:contracts
-          npm run workflows:check
-          npm run validate:static-publication
-
-      - name: Build production-like staging routes
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee /tmp/genesis6-phaseC/evidence/build-validation.log) 2>&1
-          npm run strangler:build:production-like
-          npm run page-ownership:dist:production-like
-          for route in \
-            hard-texts/genesis-6 \
-            hard-texts/enoh-prorochestvoval-iuda-14-15-4q204 \
-            hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2 \
-            hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda \
-            hard-texts/blagovestie-mertvym-1-petra-4-5-6
-          do
-            test -s "dist/${route}/index.html"
-            grep -q 'noindex' "dist/${route}/index.html"
-          done
-
-      - name: Commit and push one exact product commit
-        shell: bash
-        run: |
-          set -euo pipefail
-          python <<'PY'
-          import json, subprocess
-          manifest = json.load(open('/tmp/genesis6-phaseC/package/manifest.json'))
-          paths = [entry['path'] for entry in manifest['files']]
-          subprocess.check_call(['git', 'add', '--', *paths])
-          actual = subprocess.check_output(['git', 'diff', '--cached', '--name-only', '--no-renames']).decode().splitlines()
-          if actual != paths:
-              raise SystemExit(f'cached diff mismatch: {actual}')
-          PY
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'feat(genesis6): stage governed noindex routes for Phase C'
-          PRODUCT_SHA="$(git rev-parse HEAD)"
-          test "$(git rev-parse HEAD^)" = "$BASE_SHA"
-          test "$(git rev-list --count "${BASE_SHA}..HEAD")" -eq 1
-          git push --force-with-lease="refs/heads/${TARGET_BRANCH}:${BASE_SHA}" origin "HEAD:refs/heads/${TARGET_BRANCH}"
-          printf '%s\n' "$PRODUCT_SHA" > /tmp/genesis6-phaseC/evidence/product-sha.txt
-          printf '%s\n' "$BASE_SHA" > /tmp/genesis6-phaseC/evidence/base-sha.txt
-          git diff-tree --no-commit-id --name-only -r "$PRODUCT_SHA" > /tmp/genesis6-phaseC/evidence/product-files.txt
-
-      - name: Upload transaction evidence
+      - name: Upload acceptance evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: genesis6-phaseC-materializer-${{ github.run_id }}
-          path: /tmp/genesis6-phaseC/evidence
+          name: genesis6-phaseC-acceptance-${{ github.run_id }}
+          path: |
+            /tmp/genesis6-phaseC/evidence
+            /tmp/genesis6-phaseC/tested-product.tgz
           if-no-files-found: error
           retention-days: 14
