@@ -3,11 +3,8 @@
   'use strict';
 
   var DATA_URL = '/data/relations.compiled.json';
-  var WIDTH = 1600;
-  var HEIGHT = 1000;
-  var MIN_WIDTH = 350;
-  var MAX_WIDTH = 2400;
-  var INITIAL_VIEW = Object.freeze({ x: 0, y: 0, w: WIDTH, h: HEIGHT });
+  var DESKTOP_WORLD = Object.freeze({ id: 'desktop', w: 1600, h: 1000, min: 350, max: 2200, padX: 320, padY: 230 });
+  var COMPACT_WORLD = Object.freeze({ id: 'compact', w: 620, h: 1180, min: 220, max: 850, padX: 100, padY: 100 });
   var ALL_KINDS = Object.freeze(['series', 'cluster', 'structure', 'bridge']);
   var NODE_ID = /^[a-z0-9][a-z0-9_-]{1,119}$/;
   var GROUP_ID = /^[a-z0-9][a-z0-9_-]{1,119}$/;
@@ -60,7 +57,7 @@
       invariant(node.readingTime == null || (Number.isInteger(Number(node.readingTime)) && Number(node.readingTime) > 0), 'node reading time ' + id);
       nodeIds.add(id);
       nodeUrls.add(url);
-      return {
+      return Object.freeze({
         id: id,
         title: title,
         url: url,
@@ -71,7 +68,7 @@
         tags: Array.isArray(node.tags) ? node.tags.map(text).filter(Boolean) : [],
         isHub: Boolean(node.isHub),
         seriesId: text(node.seriesId),
-      };
+      });
     });
 
     var groupIds = new Set();
@@ -85,7 +82,7 @@
       invariant(label.length > 0 && /^#[0-9a-f]{6}$/i.test(color), 'group presentation ' + id);
       invariant(Number.isInteger(count) && count >= 1, 'group count ' + id);
       groupIds.add(id);
-      return { id: id, label: label, color: color, count: count };
+      return Object.freeze({ id: id, label: label, color: color, count: count });
     });
 
     nodes.forEach(function (node) {
@@ -112,7 +109,7 @@
       invariant(ALL_KINDS.includes(atlasKind), 'edge atlas kind ' + id);
       invariant(semanticKind.length > 0 && (direction === 'directed' || direction === 'undirected'), 'edge semantics ' + id);
       invariant(Number.isInteger(weight) && weight >= 1 && weight <= 100, 'edge weight ' + id);
-      var normalized = {
+      var normalized = Object.freeze({
         id: id,
         source: source,
         target: target,
@@ -123,7 +120,7 @@
         rationale: text(edge.rationale),
         direction: direction,
         weight: weight,
-      };
+      });
       var semantic = semanticKey(normalized);
       invariant(!edgeSemantics.has(semantic), 'duplicate edge semantic ' + id);
       edgeIds.add(id);
@@ -172,6 +169,7 @@
     var sidebar = document.getElementById('atlasSidebar');
     var filterTrigger = document.getElementById('atlasFilterTrigger');
     var resetButton = document.getElementById('atlasReset');
+    var compactMedia = window.matchMedia('(max-width: 680px)');
     var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var ns = 'http://www.w3.org/2000/svg';
     var nodeById = new Map(data.nodes.map(function (node) { return [node.id, node]; }));
@@ -182,13 +180,18 @@
     var enabledKinds = new Set(ALL_KINDS);
     var pointers = new Map();
     var gesture = null;
-    var view = Object.assign({}, INITIAL_VIEW);
+    var profile = compactMedia.matches ? COMPACT_WORLD : DESKTOP_WORLD;
+    var view = initialView();
     var activeGroup = 'all';
     var activeFocus = null;
     var activeView = 'graph';
     var searchQuery = '';
     var searchCursor = -1;
     var suppressClick = false;
+
+    function initialView() {
+      return { x: 0, y: 0, w: profile.w, h: profile.h };
+    }
 
     function createSvg(tag, attrs) {
       var element = document.createElementNS(ns, tag);
@@ -201,18 +204,43 @@
       return valueText.length > length ? valueText.slice(0, length - 1).trimEnd() + '…' : valueText;
     }
 
+    function orderedGroups() {
+      return data.groups.slice().sort(function (a, b) {
+        return b.count - a.count || a.label.localeCompare(b.label, 'ru') || a.id.localeCompare(b.id);
+      });
+    }
+
     function groupCenters() {
-      var ordered = data.groups.slice().sort(function (a, b) { return b.count - a.count || a.id.localeCompare(b.id); });
+      var ordered = orderedGroups();
       var centers = new Map();
       if (!ordered.length) return centers;
-      centers.set(ordered[0].id, { x: WIDTH / 2, y: HEIGHT / 2 });
+
+      if (profile.id === 'compact') {
+        var columns = 2;
+        var rows = Math.ceil(ordered.length / columns);
+        var xInset = 154;
+        var yInset = 144;
+        var xGap = profile.w - xInset * 2;
+        var yGap = rows > 1 ? (profile.h - yInset * 2) / (rows - 1) : 0;
+        ordered.forEach(function (group, index) {
+          var row = Math.floor(index / columns);
+          var column = index % columns;
+          centers.set(group.id, {
+            x: xInset + column * xGap,
+            y: yInset + row * yGap,
+          });
+        });
+        return centers;
+      }
+
+      centers.set(ordered[0].id, { x: profile.w / 2, y: profile.h / 2 });
       var outer = ordered.slice(1);
       outer.forEach(function (group, index) {
         var angle = -Math.PI / 2 + Math.PI * 2 * index / Math.max(1, outer.length);
         var stagger = index % 2 ? 1 : .88;
         centers.set(group.id, {
-          x: WIDTH / 2 + Math.cos(angle) * 565 * stagger,
-          y: HEIGHT / 2 + Math.sin(angle) * 360 * stagger,
+          x: profile.w / 2 + Math.cos(angle) * 565 * stagger,
+          y: profile.h / 2 + Math.sin(angle) * 360 * stagger,
         });
       });
       return centers;
@@ -230,39 +258,43 @@
       labelLayer.replaceChildren();
 
       data.groups.forEach(function (group, groupIndex) {
-        var center = centers.get(group.id) || { x: WIDTH / 2, y: HEIGHT / 2 };
+        var center = centers.get(group.id) || { x: profile.w / 2, y: profile.h / 2 };
         var groupNodes = data.nodes.filter(function (node) { return node.atlasGroup === group.id; });
         var ranked = groupNodes.slice().sort(function (a, b) {
           return Number(b.isHub) - Number(a.isHub) || nodeDegree(b.id) - nodeDegree(a.id) || a.title.localeCompare(b.title, 'ru');
         });
         var hub = ranked[0];
         var leaves = ranked.slice(1);
+        var compact = profile.id === 'compact';
+        var ringSize = compact ? 6 : 9;
         if (hub) {
           nodePositions.set(hub.id, {
             x: center.x,
             y: center.y,
-            r: hub.isHub ? 20 : 14 + Math.min(5, nodeDegree(hub.id)),
+            r: hub.isHub ? (compact ? 16 : 20) : (compact ? 12 : 14) + Math.min(compact ? 3 : 5, nodeDegree(hub.id)),
             hub: true,
           });
         }
         leaves.forEach(function (node, index) {
-          var ring = Math.floor(index / 9);
-          var ringStart = ring * 9;
-          var ringCount = Math.min(9, leaves.length - ringStart);
-          var angle = Math.PI * 2 * (index - ringStart) / Math.max(1, ringCount) - Math.PI / 2 + groupIndex * .29;
-          var radiusX = 92 + ring * 68;
-          var radiusY = 72 + ring * 54;
+          var ring = Math.floor(index / ringSize);
+          var ringStart = ring * ringSize;
+          var ringCount = Math.min(ringSize, leaves.length - ringStart);
+          var angle = Math.PI * 2 * (index - ringStart) / Math.max(1, ringCount) - Math.PI / 2 + groupIndex * (compact ? .37 : .29);
+          var radiusX = (compact ? 48 : 92) + ring * (compact ? 40 : 68);
+          var radiusY = (compact ? 38 : 72) + ring * (compact ? 32 : 54);
           nodePositions.set(node.id, {
             x: center.x + Math.cos(angle) * radiusX,
             y: center.y + Math.sin(angle) * radiusY,
-            r: 7.5 + Math.min(5, nodeDegree(node.id) * .65 + Number(node.readingTime || 0) / 35),
+            r: (compact ? 6.8 : 7.5) + Math.min(compact ? 3.8 : 5, nodeDegree(node.id) * .65 + Number(node.readingTime || 0) / 35),
             hub: false,
           });
         });
 
         var label = createSvg('text', {
           x: center.x,
-          y: center.y - (leaves.length ? 124 + Math.floor(leaves.length / 10) * 24 : 52),
+          y: center.y - (compact
+            ? 74 + Math.floor(leaves.length / ringSize) * 18
+            : (leaves.length ? 124 + Math.floor(leaves.length / 10) * 24 : 52)),
           class: 'atlas-cluster-label',
           'text-anchor': 'middle',
           'data-group': group.id,
@@ -271,6 +303,7 @@
         label.style.setProperty('--cluster-color', group.color);
         labelLayer.appendChild(label);
       });
+      app.dataset.layoutProfile = profile.id;
     }
 
     function edgePath(edge, a, b) {
@@ -278,7 +311,7 @@
       var dy = b.y - a.y;
       var distance = Math.max(1, Math.hypot(dx, dy));
       var bendSeed = Array.from(edge.id).reduce(function (sum, character) { return sum + character.charCodeAt(0); }, 0);
-      var bend = ((bendSeed % 17) - 8) * Math.min(2.6, distance / 210);
+      var bend = ((bendSeed % 17) - 8) * Math.min(profile.id === 'compact' ? 1.55 : 2.6, distance / (profile.id === 'compact' ? 180 : 210));
       var nx = -dy / distance;
       var ny = dx / distance;
       var cx = (a.x + b.x) / 2 + nx * bend;
@@ -323,22 +356,22 @@
         });
         nodeGroup.style.setProperty('--node-color', group.color);
         nodeGroup.append(
-          createSvg('circle', { class: 'atlas-node__halo', r: position.r + 13 }),
+          createSvg('circle', { class: 'atlas-node__halo', r: position.r + (profile.id === 'compact' ? 10 : 13) }),
           createSvg('circle', { class: 'atlas-node__core', r: position.r }),
           createSvg('circle', {
             class: 'atlas-node__glint',
             cx: -position.r * .28,
             cy: -position.r * .32,
-            r: Math.max(1.5, position.r * .18),
+            r: Math.max(1.4, position.r * .18),
           })
         );
         var label = createSvg('text', {
           class: 'atlas-node__label',
           x: 0,
-          y: position.r + 19,
+          y: position.r + (profile.id === 'compact' ? 15 : 19),
           'text-anchor': 'middle',
         });
-        label.textContent = truncate(node.title, position.hub ? 42 : 30);
+        label.textContent = truncate(node.title, position.hub ? (profile.id === 'compact' ? 26 : 42) : (profile.id === 'compact' ? 20 : 30));
         nodeGroup.appendChild(label);
         nodeGroup.addEventListener('click', function (event) {
           event.stopPropagation();
@@ -351,7 +384,7 @@
       });
 
       var first = data.nodes.find(function (node) { return isNodeVisible(node); });
-      if (first) nodeElements.get(first.id).tabIndex = 0;
+      if (first && nodeElements.has(first.id)) nodeElements.get(first.id).tabIndex = 0;
       applyFilters();
     }
 
@@ -417,15 +450,24 @@
         relations.appendChild(list);
         detailContent.appendChild(relations);
       }
+      app.classList.add('has-detail');
       detail.classList.add('is-open');
     }
 
+    function clampAxis(value, min, max) {
+      if (max < min) return (min + max) / 2;
+      return Math.max(min, Math.min(max, value));
+    }
+
     function clampView(next) {
-      var width = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, Number(next.w) || WIDTH));
-      var height = width * HEIGHT / WIDTH;
+      var requested = Number(next.w);
+      var width = Math.max(profile.min, Math.min(profile.max, Number.isFinite(requested) ? requested : profile.w));
+      var height = width * profile.h / profile.w;
+      var x = Number(next.x);
+      var y = Number(next.y);
       return {
-        x: Math.max(-350, Math.min(WIDTH + 350 - width, Number(next.x) || 0)),
-        y: Math.max(-250, Math.min(HEIGHT + 250 - height, Number(next.y) || 0)),
+        x: clampAxis(Number.isFinite(x) ? x : 0, -profile.padX, profile.w + profile.padX - width),
+        y: clampAxis(Number.isFinite(y) ? y : 0, -profile.padY, profile.h + profile.padY - height),
         w: width,
         h: height,
       };
@@ -435,7 +477,7 @@
       view = clampView(next);
       if (animate && !prefersReduced) svg.classList.add('is-camera-moving');
       svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h);
-      var scale = WIDTH / view.w;
+      var scale = profile.w / view.w;
       var level = scale < 1.35 ? 'overview' : scale < 2.45 ? 'cluster' : 'detail';
       app.dataset.zoomLevel = level;
       zoomCopy.textContent = level === 'overview' ? 'Обзор библиотеки' : level === 'cluster' ? 'Тематический кластер' : 'Подробное окружение';
@@ -449,10 +491,10 @@
       var py = clientY == null ? rect.top + rect.height / 2 : clientY;
       var ux = view.x + (px - rect.left) / rect.width * view.w;
       var uy = view.y + (py - rect.top) / rect.height * view.h;
-      var nextWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, view.w / factor));
+      var nextWidth = Math.max(profile.min, Math.min(profile.max, view.w / factor));
       setViewBox({
         x: ux - (px - rect.left) / rect.width * nextWidth,
-        y: uy - (py - rect.top) / rect.height * (nextWidth * HEIGHT / WIDTH),
+        y: uy - (py - rect.top) / rect.height * (nextWidth * profile.h / profile.w),
         w: nextWidth,
       }, animate);
     }
@@ -470,7 +512,7 @@
     function focusNode(id, moveCamera, pushHistory) {
       var node = nodeById.get(id);
       var position = nodePositions.get(id);
-      if (!node || !position || !isNodeVisible(node)) return;
+      if (!node || !position || !isNodeVisible(node) || !matchesSearch(node)) return;
       activeFocus = id;
       var neighbors = new Set(relatedTo(id).map(function (item) { return item.id; }));
       nodeElements.forEach(function (element, nodeId) {
@@ -486,10 +528,10 @@
       });
       renderDetail(id);
       if (moveCamera) {
-        var targetWidth = Math.min(view.w, 690);
+        var targetWidth = Math.min(view.w, profile.id === 'compact' ? 270 : 690);
         setViewBox({
           x: position.x - targetWidth / 2,
-          y: position.y - targetWidth * HEIGHT / WIDTH / 2,
+          y: position.y - targetWidth * profile.h / profile.w / 2,
           w: targetWidth,
         }, true);
       }
@@ -501,6 +543,7 @@
       nodeElements.forEach(function (element) { element.classList.remove('is-focus', 'is-neighbor', 'is-dim'); });
       edgeElements.forEach(function (entry) { entry.el.classList.remove('is-focus', 'is-dim'); });
       detail.classList.remove('is-open');
+      app.classList.remove('has-detail');
       detailEmpty.hidden = false;
       detailContent.hidden = true;
       if (updateHistory !== false) updateUrl({ focus: null }, 'replace');
@@ -512,6 +555,7 @@
     }
 
     function matchesSearch(node) {
+      if (!node) return false;
       if (!searchQuery) return true;
       return (node.title + ' ' + node.tags.join(' ') + ' ' + node.desc + ' ' + node.atlasGroup).toLowerCase().includes(searchQuery);
     }
@@ -569,14 +613,14 @@
 
     function renderSearchResults(results) {
       searchResults.replaceChildren();
-      searchCursor = results.length ? 0 : -1;
+      searchCursor = -1;
       results.forEach(function (node, index) {
         var group = groupById.get(node.atlasGroup);
         var button = createElement('button');
         button.type = 'button';
         button.id = 'atlasSearchOption-' + index;
         button.setAttribute('role', 'option');
-        button.setAttribute('aria-selected', index === searchCursor ? 'true' : 'false');
+        button.setAttribute('aria-selected', 'false');
         button.dataset.searchFocus = node.id;
         button.appendChild(createElement('strong', '', node.title));
         button.appendChild(createElement('span', '', group.label));
@@ -592,8 +636,7 @@
       });
       searchResults.hidden = !results.length;
       searchInput.setAttribute('aria-expanded', results.length ? 'true' : 'false');
-      if (results.length) searchInput.setAttribute('aria-activedescendant', 'atlasSearchOption-0');
-      else searchInput.removeAttribute('aria-activedescendant');
+      searchInput.removeAttribute('aria-activedescendant');
     }
 
     function runSearch(query) {
@@ -682,9 +725,22 @@
       else clearFocus(false);
     }
 
+    function relayoutForViewport() {
+      var nextProfile = compactMedia.matches ? COMPACT_WORLD : DESKTOP_WORLD;
+      if (nextProfile.id === profile.id) return;
+      var focused = activeFocus;
+      profile = nextProfile;
+      view = initialView();
+      layoutGraph();
+      renderGraph();
+      setViewBox(initialView(), false);
+      if (focused && isNodeVisible(nodeById.get(focused)) && matchesSearch(nodeById.get(focused))) focusNode(focused, true, false);
+      else applyFilters();
+    }
+
     layoutGraph();
     renderGraph();
-    setViewBox(INITIAL_VIEW, false);
+    setViewBox(initialView(), false);
     restoreUrlState();
     app.dataset.runtimeReady = '1';
     app.dataset.runtimeNodes = String(data.nodes.length);
@@ -733,10 +789,10 @@
         var distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
         if (Math.abs(distance - gesture.distance) > 5) gesture.moved = true;
         if (gesture.distance > 0) {
-          var nextWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, gesture.view.w / (distance / gesture.distance)));
+          var nextWidth = Math.max(profile.min, Math.min(profile.max, gesture.view.w / (distance / gesture.distance)));
           setViewBox({
             x: gesture.view.x + (gesture.view.w - nextWidth) / 2,
-            y: gesture.view.y + (gesture.view.h - nextWidth * HEIGHT / WIDTH) / 2,
+            y: gesture.view.y + (gesture.view.h - nextWidth * profile.h / profile.w) / 2,
             w: nextWidth,
           }, false);
         }
@@ -766,7 +822,7 @@
 
     document.getElementById('atlasZoomIn').addEventListener('click', function () { zoomAt(1.35, null, null, true); });
     document.getElementById('atlasZoomOut').addEventListener('click', function () { zoomAt(.74, null, null, true); });
-    document.getElementById('atlasCenter').addEventListener('click', function () { clearFocus(); setViewBox(INITIAL_VIEW, true); });
+    document.getElementById('atlasCenter').addEventListener('click', function () { clearFocus(); setViewBox(initialView(), true); });
     document.getElementById('atlasDetailClose').addEventListener('click', function () { clearFocus(); });
     document.querySelectorAll('[data-atlas-view]').forEach(function (button) {
       button.addEventListener('click', function () { setView(button.dataset.atlasView, true); });
@@ -825,7 +881,7 @@
       clearFocus(false);
       applyFilters();
       setView('graph', false);
-      setViewBox(INITIAL_VIEW, true);
+      setViewBox(initialView(), true);
       history.pushState({ atlas: true }, '', location.pathname);
     });
 
@@ -833,9 +889,11 @@
       if (event.key === 'Escape') { clearFocus(); closeFilters(); closeSearchResults(); }
       if ((event.key === '+' || event.key === '=') && document.activeElement !== searchInput) zoomAt(1.25, null, null, true);
       if (event.key === '-' && document.activeElement !== searchInput) zoomAt(.8, null, null, true);
-      if (event.key === '0' && document.activeElement !== searchInput) setViewBox(INITIAL_VIEW, true);
+      if (event.key === '0' && document.activeElement !== searchInput) setViewBox(initialView(), true);
     });
     window.addEventListener('popstate', restoreUrlState);
+    if (typeof compactMedia.addEventListener === 'function') compactMedia.addEventListener('change', relayoutForViewport);
+    else if (typeof compactMedia.addListener === 'function') compactMedia.addListener(relayoutForViewport);
   }
 
   function recover(error) {
@@ -843,6 +901,7 @@
     if (app) {
       app.dataset.runtimeError = '1';
       app.dataset.view = 'list';
+      app.classList.remove('has-detail');
     }
     var copy = document.getElementById('atlasZoomCopy');
     if (copy) copy.textContent = 'Карта временно недоступна — используйте список';
