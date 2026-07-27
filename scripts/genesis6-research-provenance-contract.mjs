@@ -14,6 +14,31 @@ const RESEARCH_ROOT = path.resolve(
 );
 const PROVENANCE_PATH = path.join(ROOT, 'data/genesis6-research-provenance.json');
 
+const EXPECTED_BLOCKING_HOLDS = [
+  '1-enoch-10-8-version-control',
+  '1-enoch-15-8-12-demon-origin',
+  '1-enoch-70-71-son-of-man',
+  'astronomical-book-version-plurality',
+];
+const EXPECTED_PRESERVED_HOLDS = [
+  'parables-date-and-witness-form',
+  'animal-apocalypse-decomposition',
+  'chapter-108-relation-to-epistle',
+  'codex-panopolitanus-editorial-intention',
+];
+const EXPECTED_RESOLVED_HOLDS = [
+  {
+    id: 'manuscript-image-rights',
+    resolution: 'no-manuscript-image-reproduction',
+    evidence: 'site main 522f0e1cae4fb9ce5a4631cfe856421f1952f4bc',
+  },
+];
+const EXPECTED_SITE_ACCEPTANCE = {
+  acceptedHead: 'b315998937e4fdd68e204d01660adb65707cd0e6',
+  mergeCommit: '522f0e1cae4fb9ce5a4631cfe856421f1952f4bc',
+  claimLevelGroups: { '6A': 27, '6B': 26 },
+};
+
 const fail = (message) => {
   console.error(`ERROR genesis6 research provenance: ${message}`);
   process.exitCode = 1;
@@ -49,7 +74,6 @@ const frontmatterList = (source, key) => {
   const lines = block.split(/\r?\n/);
   const start = lines.findIndex((line) => line.trimEnd() === `${key}:`);
   if (start < 0) return undefined;
-
   const values = [];
   for (let index = start + 1; index < lines.length; index += 1) {
     const line = lines[index];
@@ -77,9 +101,9 @@ if (!fs.existsSync(PROVENANCE_PATH)) {
 }
 
 const provenance = readJson(PROVENANCE_PATH);
-if (provenance.schemaVersion !== 3 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
+if (provenance.schemaVersion !== 4 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
 if (provenance.releaseState !== 'blocked') {
-  fail('releaseState must remain blocked until an explicit publication pass closes all named gates');
+  fail('releaseState must remain blocked until an explicit publication pass closes all blocking HOLDs');
 }
 if (!Array.isArray(provenance.articles) || provenance.articles.length !== 4) {
   fail('exactly four legacy article bindings are required');
@@ -104,6 +128,8 @@ for (const field of [
   'requiresExactCanonicalOverride',
   'requiresExactRelatedGraph',
   'requiresOrderedForwardLinks',
+  'requiresExactHoldClassification',
+  'requiresNoReproductionRightsResolution',
 ]) {
   if (provenance.publicationPolicy?.[field] !== true) fail(`publicationPolicy.${field} must be true`);
 }
@@ -112,8 +138,21 @@ const research = provenance.research || {};
 if (research.repository !== 'FedorMilovanov/Research') fail('unexpected Research repository');
 if (!/^[0-9a-f]{40}$/.test(research.commit || '')) fail('Research commit must be an exact SHA');
 if (!/^[0-9a-f]{64}$/.test(research.manifestSha256 || '')) fail('manifestSha256 must be exact');
+if (research.extension?.schemaVersion !== 2) fail('extension authority schemaVersion must be 2');
 if (!/^[0-9a-f]{64}$/.test(research.extension?.manifestSha256 || '')) {
   fail('extension manifestSha256 must be exact');
+}
+if (!isDeepStrictEqual(research.extension?.blockingHolds, EXPECTED_BLOCKING_HOLDS)) {
+  fail('pinned blocking HOLD classification drift');
+}
+if (!isDeepStrictEqual(research.extension?.preservedUncertainty, EXPECTED_PRESERVED_HOLDS)) {
+  fail('pinned preserved uncertainty drift');
+}
+if (!isDeepStrictEqual(research.extension?.resolvedByPolicy, EXPECTED_RESOLVED_HOLDS)) {
+  fail('pinned policy resolution drift');
+}
+if (!isDeepStrictEqual(research.extension?.siteAcceptance, EXPECTED_SITE_ACCEPTANCE)) {
+  fail('pinned site acceptance drift');
 }
 if (!fs.existsSync(RESEARCH_ROOT)) fail(`Research checkout is missing: ${RESEARCH_ROOT}`);
 
@@ -149,6 +188,12 @@ if (!process.exitCode) {
     const extensionDigest = sha256(extensionManifestFile);
     if (extensionDigest !== research.extension.manifestSha256) {
       fail(`extension manifest digest ${extensionDigest} != pinned ${research.extension.manifestSha256}`);
+    }
+
+    try {
+      execFileSync('python3', [extensionValidatorFile, '--root', RESEARCH_ROOT], { stdio: 'inherit' });
+    } catch (error) {
+      fail(`pinned Research extension validator failed: ${error.message}`);
     }
 
     const manifest = readJson(manifestFile);
@@ -194,6 +239,9 @@ if (!process.exitCode) {
 
     const extensionManifest = readJson(extensionManifestFile);
     const extensionLedger = readJson(extensionLedgerFile);
+    if (extensionManifest.schemaVersion !== 2 || extensionLedger.schemaVersion !== 2) {
+      fail('extension authority schemaVersion mismatch');
+    }
     if (extensionManifest.seriesId !== 'genesis-6' || extensionLedger.seriesId !== 'genesis-6') {
       fail('extension manifest/ledger series mismatch');
     }
@@ -201,6 +249,38 @@ if (!process.exitCode) {
     if (extensionLedger.extensionId !== 'genesis6-enoch-articles-6a-6b') fail('extension ledger id drift');
     if (extensionLedger.manifestSha256 !== research.extension.manifestSha256) {
       fail('extension ledger manifest digest drift');
+    }
+    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.blocking, research.extension.blockingHolds)) {
+      fail('extension blocking HOLD registry drift');
+    }
+    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.preservedUncertainty, research.extension.preservedUncertainty)) {
+      fail('extension preserved uncertainty drift');
+    }
+    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.resolvedByPolicy, research.extension.resolvedByPolicy)) {
+      fail('extension resolved HOLD registry drift');
+    }
+    const manifestAcceptance = extensionManifest.siteAcceptance || {};
+    const expectedAcceptance = {
+      acceptedHead: manifestAcceptance.acceptedHead,
+      mergeCommit: manifestAcceptance.mergeCommit,
+      claimLevelGroups: manifestAcceptance.claimLevelGroups,
+    };
+    if (!isDeepStrictEqual(expectedAcceptance, research.extension.siteAcceptance)) {
+      fail('extension site acceptance drift');
+    }
+    if (manifestAcceptance.publicationAuthorized !== false) fail('Research site acceptance must not authorize publication');
+    const release = extensionLedger.releaseDecision || {};
+    if (release.state !== 'blocked' || release.mayPublish !== false || release.mayRemoveNoindex !== false) {
+      fail('Research extension release must remain blocked');
+    }
+    if (!isDeepStrictEqual(release.blockingHolds, research.extension.blockingHolds)) {
+      fail('ledger blocking HOLD registry drift');
+    }
+    if (!isDeepStrictEqual(release.preservedUncertainty, research.extension.preservedUncertainty)) {
+      fail('ledger preserved uncertainty drift');
+    }
+    if (!isDeepStrictEqual(release.resolvedByPolicy, research.extension.resolvedByPolicy)) {
+      fail('ledger resolved HOLD registry drift');
     }
 
     const extensionManifestBundles = new Map(
@@ -217,7 +297,6 @@ if (!process.exitCode) {
       if (seenSlugs.has(binding.slug)) fail(`duplicate article slug ${binding.slug}`);
       seenExtensionKeys.add(binding.articleKey);
       seenSlugs.add(binding.slug);
-
       const expected = {
         articleKey: binding.articleKey,
         slug: binding.slug,
@@ -273,7 +352,6 @@ if (!process.exitCode) {
         fail(`missing site article ${article.slug}`);
         continue;
       }
-
       const source = fs.readFileSync(articleFile, 'utf8');
       if (frontmatterBlock(source) === undefined) fail(`${articleKey} missing valid frontmatter`);
       const expectedScalars = {
@@ -287,10 +365,11 @@ if (!process.exitCode) {
         canonicalOverride: `https://gospod-bog.ru/hard-texts/${article.slug}/`,
         sourceMode: 'rendered',
       };
-      for (const [field, expected] of Object.entries(expectedScalars)) {
-        if (frontmatterValue(source, field) !== expected) fail(`${articleKey} ${field} drift`);
+      for (const [key, expected] of Object.entries(expectedScalars)) {
+        if (frontmatterValue(source, key) !== expected) {
+          fail(`${articleKey} frontmatter ${key} drift`);
+        }
       }
-
       const related = frontmatterList(source, 'related');
       if (!isDeepStrictEqual(related, article.expectedRelatedSlugs)) {
         fail(`${articleKey} related graph drift`);
@@ -313,8 +392,8 @@ if (!process.exitCode) {
 if (!process.exitCode) {
   console.log(
     `Genesis 6 Research provenance: PASS (${research.commit}, ` +
-      `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} extension draft bundles, ` +
-      `${provenance.siteArticles.length} site contracts, release ${provenance.releaseState}, ` +
-      `manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
+      `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} source-audited extension bundles, ` +
+      `${research.extension.blockingHolds.length} blocking HOLDs, ${provenance.siteArticles.length} site contracts, ` +
+      `release ${provenance.releaseState}, manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
   );
 }
