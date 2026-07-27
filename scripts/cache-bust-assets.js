@@ -13,7 +13,6 @@
 
 const ASSETS = [
   'css/site.css',
-  'css/relationship-panel.css',
   'css/tts-download-notice.css',
   'css/reader-preferences.css',
   'css/home.css',
@@ -29,7 +28,6 @@ const ASSETS = [
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
   'js/site.js',
-  'js/relationship-panel.js',
   'js/reader-preferences-head.js',
   'js/reader-preferences.js',
   'js/reader-state.js',
