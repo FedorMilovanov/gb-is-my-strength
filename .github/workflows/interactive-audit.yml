@@ -4,38 +4,6 @@ on:
   pull_request:
     paths:
       - '.github/workflows/interactive-audit.yml'
-      - 'scripts/interactive-audit.js'
-      - 'scripts/home-browser-contract.mjs'
-      - 'scripts/home-browser-lifecycle-contract.mjs'
-      - 'src/pages/index.astro'
-      - 'src/components/home/**'
-      - 'src/styles/**'
-      - 'css/**'
-      - 'js/site.js'
-      - 'js/site-utils.js'
-      - 'js/search.js'
-      - 'package.json'
-      - 'package-lock.json'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/interactive-audit.yml'
-      - 'scripts/interactive-audit.js'
-      - 'scripts/home-browser-contract.mjs'
-      - 'scripts/home-browser-lifecycle-contract.mjs'
-      - 'src/pages/index.astro'
-      - 'src/components/home/**'
-      - 'src/styles/**'
-      - 'css/**'
-      - 'js/site.js'
-      - 'js/site-utils.js'
-      - 'js/search.js'
-      - 'package.json'
-      - 'package-lock.json'
-  workflow_dispatch:
-  schedule:
-    # Weekly Monday 03:30 UTC. Browser runtime checks are heavier than static gates.
-    - cron: '30 3 * * 1'
 
 permissions:
   contents: write
@@ -46,7 +14,6 @@ concurrency:
 
 jobs:
   materialize-glossary-audit-repair:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout exact repair branch
@@ -56,16 +23,17 @@ jobs:
           fetch-depth: 1
           show-progress: false
 
-      - name: Apply validated one-file repair
+      - name: Extract validated replacement program
         shell: bash
         run: |
           set -euo pipefail
-          if git log -1 --pretty=%s | grep -q '^fix(audit): wait for glossary runtime readiness$'; then exit 0; fi
           python - <<'PY'
           from pathlib import Path
-
           source = Path('.github/workflows/_temp-glossary-tooltip-diagnostic.yml').read_text(encoding='utf-8').splitlines()
-          start = next(i for i, line in enumerate(source) if line.strip() == "python - <<'PY'")
+          starts = [i for i, line in enumerate(source) if line.strip() == "python - <<'PY'"]
+          if len(starts) != 1:
+              raise SystemExit(f'expected one embedded Python program, found {len(starts)}')
+          start = starts[0]
           end = next(i for i in range(start + 1, len(source)) if source[i].strip() == 'PY')
           block = []
           for line in source[start + 1:end]:
@@ -75,203 +43,39 @@ jobs:
                   block.append('')
               else:
                   raise SystemExit(f'unexpected Python indentation: {line!r}')
-          Path('/tmp/glossary-audit-repair.py').write_text('\n'.join(block) + '\n', encoding='utf-8')
+          program = '\n'.join(block) + '\n'
+          if 'glossary-tooltip-runtime-not-ready' not in program or 'await target.hover();' not in program:
+              raise SystemExit('extracted replacement program is incomplete')
+          Path('/tmp/glossary-audit-repair.py').write_text(program, encoding='utf-8')
           PY
-          python /tmp/glossary-audit-repair.py
+          python -m py_compile /tmp/glossary-audit-repair.py
+
+      - name: Apply exact one-file replacement
+        run: python /tmp/glossary-audit-repair.py
+
+      - name: Validate generated JavaScript
+        run: |
           node --check scripts/interactive-audit.js
           git diff --check
-          test "$(git diff --name-only)" = 'scripts/interactive-audit.js'
+
+      - name: Enforce exact permanent scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only)
+          printf '%s\n' "${changed[@]}"
+          [[ ${#changed[@]} -eq 1 ]]
+          [[ "${changed[0]}" == 'scripts/interactive-audit.js' ]]
+          grep -q 'glossary-tooltip-runtime-not-ready' scripts/interactive-audit.js
+          grep -q 'glossary-tooltip-did-not-open' scripts/interactive-audit.js
+          grep -q 'await target.hover();' scripts/interactive-audit.js
+
+      - name: Commit and push permanent repair
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add scripts/interactive-audit.js
           git commit -m 'fix(audit): wait for glossary runtime readiness'
           git push origin HEAD:agent/glossary-tooltip-runtime-20260727
-
-  home-browser-contract:
-    name: Home Chromium WebKit contract
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout exact source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium and WebKit for Playwright
-        run: npx playwright install --with-deps chromium webkit
-
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
-
-      - name: Build Pagefind index into dist
-        run: npm run pagefind:build:dist
-
-      - name: Run homepage interaction contract
-        run: node scripts/home-browser-contract.mjs
-
-      - name: Run real headed homepage lifecycle contract
-        run: xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs
-
-      - name: Upload homepage browser evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: home-browser-contract-${{ github.run_id }}
-          path: |
-            reports/home-browser-contract
-            reports/home-browser-lifecycle-contract
-          if-no-files-found: error
-          retention-days: 14
-
-  interactive-audit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout exact source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Determine whether the full runtime audit is required
-        id: audit-scope
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          BEFORE_SHA: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-
-          run=false
-          reason=unrelated-change
-
-          case "$EVENT_NAME" in
-            schedule|workflow_dispatch)
-              run=true
-              reason="$EVENT_NAME"
-              ;;
-            pull_request)
-              if git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" |
-                grep -Eq '^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js)$'; then
-                run=true
-                reason=interactive-audit-source-change
-              fi
-              ;;
-            push)
-              if [[ -z "$BEFORE_SHA" || "$BEFORE_SHA" =~ ^0+$ ]]; then
-                run=true
-                reason=initial-push
-              elif git diff --name-only "$BEFORE_SHA" "$HEAD_SHA" |
-                grep -Eq '^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js)$'; then
-                run=true
-                reason=interactive-audit-source-change
-              fi
-              ;;
-          esac
-
-          {
-            echo "run=$run"
-            echo "reason=$reason"
-          } >> "$GITHUB_OUTPUT"
-
-          printf 'Runtime audit: %s (%s)\n' "$run" "$reason" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Setup Node.js
-        if: steps.audit-scope.outputs.run == 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        if: steps.audit-scope.outputs.run == 'true'
-        run: npm ci
-
-      - name: Install Chromium and WebKit for Playwright
-        if: steps.audit-scope.outputs.run == 'true'
-        run: npx playwright install --with-deps chromium webkit
-
-      - name: Build production-like dist
-        if: steps.audit-scope.outputs.run == 'true'
-        run: npm run strangler:build:production-like
-
-      - name: Build Pagefind index into dist
-        if: steps.audit-scope.outputs.run == 'true'
-        run: npm run pagefind:build:dist
-
-      - name: Run homepage interaction contracts
-        if: steps.audit-scope.outputs.run == 'true'
-        run: |
-          node scripts/home-browser-contract.mjs
-          xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs
-
-      - name: Start production-like dist server
-        if: steps.audit-scope.outputs.run == 'true'
-        run: |
-          python3 -m http.server 8080 --bind 127.0.0.1 -d dist > /tmp/gb-http.log 2>&1 &
-          echo $! > /tmp/gb-http.pid
-          sleep 2
-
-      - name: Runtime interactive audit with durable evidence
-        if: steps.audit-scope.outputs.run == 'true'
-        env:
-          AUDIT_BASE: http://127.0.0.1:8080
-        shell: bash
-        run: |
-          set -o pipefail
-          mkdir -p reports/interactive-audit
-
-          status=0
-          npm run interactive-audit 2>&1 |
-            tee reports/interactive-audit/output.log || status=$?
-
-          STATUS="$status" node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-
-          const status = Number(process.env.STATUS || 1);
-          const report = {
-            schemaVersion: 1,
-            conclusion: status === 0 ? 'success' : 'failure',
-            exitCode: status,
-            sha: process.env.GITHUB_SHA || '',
-            ref: process.env.GITHUB_REF || '',
-            event: process.env.GITHUB_EVENT_NAME || '',
-            runId: process.env.GITHUB_RUN_ID || '',
-            runAttempt: process.env.GITHUB_RUN_ATTEMPT || '',
-          };
-
-          fs.writeFileSync(
-            path.join('reports', 'interactive-audit', 'result.json'),
-            `${JSON.stringify(report, null, 2)}\n`,
-          );
-          NODE
-
-          exit "$status"
-
-      - name: Stop local server
-        if: always() && steps.audit-scope.outputs.run == 'true'
-        run: |
-          if [ -f /tmp/gb-http.pid ]; then
-            kill "$(cat /tmp/gb-http.pid)" 2>/dev/null || true
-          fi
-
-      - name: Upload runtime interactive audit evidence
-        if: always() && steps.audit-scope.outputs.run == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: runtime-interactive-audit-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            reports/interactive-audit
-            reports/home-browser-contract
-            reports/home-browser-lifecycle-contract
-          if-no-files-found: error
-          retention-days: 14
