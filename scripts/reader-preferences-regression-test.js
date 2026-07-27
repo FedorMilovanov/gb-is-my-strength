@@ -177,7 +177,8 @@ const legacyThemeButton = {
 legacyClick.document.addEventListener('click', (event) => {
   if (event.target !== legacyThemeButton) return;
   const dark = legacyClick.classes.has('dark');
-  legacyClick.classes.toggle('dark', !dark);
+  if (dark) legacyClick.classes.delete('dark');
+  else legacyClick.classes.add('dark');
   legacyClick.storage.set('theme', dark ? 'light' : 'dark');
 });
 legacyClick.document.dispatchEvent({ type: 'click', target: legacyThemeButton });
