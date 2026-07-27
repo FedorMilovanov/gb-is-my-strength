@@ -1,13 +1,16 @@
 <style is:global>
   [data-gill-v16],
   [data-gill-v16] .page-wrap,
-  [data-gill-v16] .article-body,
-  [data-gill-v16] .article-body > * {
+  [data-gill-v16] .article-body {
     min-inline-size: 0;
-    max-inline-size: 100%;
   }
 
   @media (max-width: 48rem) {
+    [data-gill-v16] .article-body > * {
+      min-inline-size: 0;
+      max-inline-size: 100%;
+    }
+
     [data-gill-v16] table.manuscript-table {
       display: block;
       inline-size: 100%;
