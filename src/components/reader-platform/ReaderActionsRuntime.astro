@@ -1,10 +1,12 @@
 ---
 /**
  * Explicit native owner for reader-level actions that were historically
- * bundled into site.js. Load this only on strict-native reading surfaces.
+ * bundled into site.js. The script is loaded synchronously at the end of each
+ * strict-native reading surface so capture-phase actions exist before any
+ * deferred chrome controller can consume the same event.
  */
 import { assetUrl } from '@/lib/asset-version';
 
 const actionsSrc = assetUrl('js/reader-actions.js');
 ---
-<script is:inline defer src={actionsSrc}></script>
+<script is:inline src={actionsSrc}></script>
