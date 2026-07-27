@@ -32,6 +32,37 @@
   pointer-events: auto;
 }
 
+.gb-floating-tip .gtip-luxury {
+  display: block;
+}
+
+.gb-floating-tip .gtip-detail-wrap[aria-hidden="true"] {
+  display: none;
+}
+
+.gb-floating-tip .gtip-detail-wrap[aria-hidden="false"] {
+  display: block;
+  margin-top: .7rem;
+}
+
+.gb-floating-tip [data-gtip-expand] {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  min-height: 36px;
+  margin-top: .65rem;
+  border: 0;
+  padding: .35rem .55rem;
+  background: transparent;
+  color: inherit;
+  font: 700 .78rem/1.2 var(--font-sans, system-ui, sans-serif);
+  cursor: pointer;
+}
+
+.gb-floating-tip [data-gtip-expand][aria-expanded="true"] .gtip-expand-ico {
+  transform: rotate(180deg);
+}
+
 .gb-floating-tip .btip__reference,
 .gb-floating-tip .btip__text {
   display: block;
