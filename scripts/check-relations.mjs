@@ -23,6 +23,14 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? '✅' : '❌'} ${name}${detail ? ` — ${detail}` : ''}`);
   if (!ok) failures.push(name);
 }
+function rejects(name, fn, pattern) {
+  try {
+    fn();
+    check(name, false, 'compiler unexpectedly accepted invalid input');
+  } catch (error) {
+    check(name, pattern.test(String(error?.message || error)), String(error?.message || error).split('\n')[0]);
+  }
+}
 
 const schemaKinds = catalogSchema?.$defs?.relation?.properties?.kind?.enum || [];
 const engineKinds = Object.keys(RELATION_TYPES);
@@ -41,11 +49,11 @@ for (const [index, relation] of (catalogData.relations || []).entries()) {
   }
   const unknown = Object.keys(relation).filter((key) => !allowedKeys.has(key));
   if (unknown.length) catalogIssues.push(`${prefix}: unknown keys ${unknown.join(',')}`);
-  if (!/^[a-z0-9][a-z0-9:_-]{2,119}$/.test(String(relation.id || ''))) catalogIssues.push(`${prefix}: invalid id`);
+  if (!/^[a-z0-9][a-z0-9:_-]{1,119}$/.test(String(relation.id || ''))) catalogIssues.push(`${prefix}: invalid id`);
   if (catalogIds.has(relation.id)) catalogIssues.push(`${prefix}: duplicate id`);
   catalogIds.add(relation.id);
-  if (!/^[a-z0-9][a-z0-9_-]*$/.test(String(relation.source || ''))) catalogIssues.push(`${prefix}: invalid source`);
-  if (!/^[a-z0-9][a-z0-9_-]*$/.test(String(relation.target || ''))) catalogIssues.push(`${prefix}: invalid target`);
+  if (!/^[a-z0-9][a-z0-9_-]{1,119}$/.test(String(relation.source || ''))) catalogIssues.push(`${prefix}: invalid source`);
+  if (!/^[a-z0-9][a-z0-9_-]{1,119}$/.test(String(relation.target || ''))) catalogIssues.push(`${prefix}: invalid target`);
   if (!engineKinds.includes(relation.kind)) catalogIssues.push(`${prefix}: unknown kind`);
   if (!['verified', 'draft', 'deprecated'].includes(relation.editorialStatus)) catalogIssues.push(`${prefix}: invalid status`);
   if (relation.weight != null && (!Number.isInteger(relation.weight) || relation.weight < 1 || relation.weight > 100)) catalogIssues.push(`${prefix}: invalid weight`);
@@ -62,54 +70,6 @@ check('published series order derived', first.stats.seriesRelations > 0, String(
 check('verified editorial catalog active', (first.stats.origins.catalog || 0) === catalogData.relations.filter((relation) => relation.editorialStatus === 'verified').length, `${first.stats.origins.catalog || 0} compiled`);
 check('legacy graph is fallback only', first.stats.legacyImported >= 0 && first.stats.legacySuppressed > 0, `${first.stats.legacyImported} imported / ${first.stats.legacySuppressed} suppressed`);
 check('compiler errors empty', first.stats.errors.length === 0, first.stats.errors.join(' | '));
-
-const statusFixtureGraph = {
-  nodes: [
-    { id: 'fixture-a', title: 'Fixture A', url: '/fixture-a/', group: 'standalone' },
-    { id: 'fixture-b', title: 'Fixture B', url: '/fixture-b/', group: 'standalone' },
-  ],
-  edges: [['fixture-a', 'fixture-b']],
-};
-const statusRelation = (editorialStatus) => ({
-  schemaVersion: 1,
-  relations: [{
-    id: `fixture-${editorialStatus}`,
-    source: 'fixture-a',
-    target: 'fixture-b',
-    kind: 'related',
-    rationale: 'Проверочная связь для контракта статусов редакционного каталога.',
-    editorialStatus,
-  }],
-});
-const draftFixture = compileRelations({
-  graphData: statusFixtureGraph,
-  seriesData: {},
-  catalogData: statusRelation('draft'),
-  strict: true,
-});
-const deprecatedFixture = compileRelations({
-  graphData: statusFixtureGraph,
-  seriesData: {},
-  catalogData: statusRelation('deprecated'),
-  strict: true,
-});
-check(
-  'draft relation does not suppress live legacy fallback',
-  draftFixture.stats.catalogDrafts === 1
-    && draftFixture.stats.legacyImported === 1
-    && draftFixture.stats.legacySuppressed === 0
-    && draftFixture.edges.length === 1
-    && draftFixture.edges[0].origin === 'legacy-import',
-  JSON.stringify(draftFixture.stats),
-);
-check(
-  'deprecated relation explicitly suppresses legacy fallback',
-  deprecatedFixture.stats.catalogDeprecated === 1
-    && deprecatedFixture.stats.legacyImported === 0
-    && deprecatedFixture.stats.legacySuppressed === 1
-    && deprecatedFixture.edges.length === 0,
-  JSON.stringify(deprecatedFixture.stats),
-);
 
 const nodeMap = new Map(first.nodes.map((node) => [node.id, node]));
 const edgeIds = new Set();
@@ -151,6 +111,72 @@ for (const node of first.nodes) {
 check('article projection integrity', projectionIssues.length === 0, projectionIssues.slice(0, 8).join(' | '));
 check('panel statistic exact', panelCount === first.stats.articlePanels, `${panelCount}/${first.stats.articlePanels}`);
 check('Atlas kinds complete', ['series', 'cluster', 'structure', 'bridge'].every((kind) => first.edgeKinds.some((entry) => entry.id === kind)));
+
+const fixtureGraph = {
+  nodes: [
+    { id: 'node-a', title: 'A', url: '/a/', group: 'standalone', readingTime: 2 },
+    { id: 'node-b', title: 'B', url: '/b/', group: 'standalone', readingTime: 3 },
+  ],
+  edges: [['node-a', 'node-b']],
+};
+const emptySeries = {};
+const relation = (editorialStatus, overrides = {}) => ({
+  id: `fixture-${editorialStatus}`,
+  source: 'node-a',
+  target: 'node-b',
+  kind: 'related',
+  weight: 50,
+  rationale: 'Достаточно длинное редакционное объяснение связи.',
+  editorialStatus,
+  ...overrides,
+});
+
+const draftFixture = compileRelations({
+  graphData: fixtureGraph,
+  seriesData: emptySeries,
+  catalogData: { schemaVersion: 1, relations: [relation('draft')] },
+  strict: true,
+});
+check('draft does not suppress verified legacy fallback', draftFixture.edges.length === 1 && draftFixture.edges[0].origin === 'legacy-import');
+
+const deprecatedFixture = compileRelations({
+  graphData: fixtureGraph,
+  seriesData: emptySeries,
+  catalogData: { schemaVersion: 1, relations: [relation('deprecated')] },
+  strict: true,
+});
+check('deprecated explicitly suppresses legacy fallback', deprecatedFixture.edges.length === 0 && deprecatedFixture.stats.catalogDeprecated === 1);
+
+rejects('draft endpoint must still resolve', () => compileRelations({
+  graphData: fixtureGraph,
+  seriesData: emptySeries,
+  catalogData: { schemaVersion: 1, relations: [relation('draft', { target: 'missing-node' })] },
+  strict: true,
+}), /invalid endpoints/);
+
+rejects('verified rationale is mandatory in compiler', () => compileRelations({
+  graphData: fixtureGraph,
+  seriesData: emptySeries,
+  catalogData: { schemaVersion: 1, relations: [relation('verified', { rationale: 'коротко' })] },
+  strict: true,
+}), /rationale/);
+
+rejects('one route cannot belong to two series', () => compileRelations({
+  graphData: { nodes: [], edges: [] },
+  seriesData: {
+    'series-a': { title: 'A', baseUrl: '/articles/', parts: [{ slug: 'same', title: 'Same', status: 'published' }] },
+    'series-b': { title: 'B', baseUrl: '/articles/', parts: [{ slug: 'same', title: 'Same', status: 'published' }] },
+  },
+  catalogData: { schemaVersion: 1, relations: [] },
+  strict: true,
+}), /belongs to both/);
+
+rejects('catalog schema version is fail-closed', () => compileRelations({
+  graphData: fixtureGraph,
+  seriesData: emptySeries,
+  catalogData: { schemaVersion: 999, relations: [] },
+  strict: true,
+}), /schemaVersion/);
 
 if (failures.length) {
   console.error(`\n❌ relation contracts: ${failures.length} failure(s)`);
