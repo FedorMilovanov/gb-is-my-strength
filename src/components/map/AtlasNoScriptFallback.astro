@@ -1,29 +1,10 @@
 ---
 import graphData from '../../../data/links-graph.json';
 import seriesData from '../../../data/series.json';
+import catalogData from '../../../data/relations.json';
+import { compileRelations } from '../../lib/relations/engine.mjs';
 
-type Item = { title: string; url: string; readingTime?: number };
-type SeriesEntry = { title: string; baseUrl: string; parts: Array<{ slug: string; title: string; status?: string; readingTime?: number }> };
-
-function normalizeUrl(value: string) {
-  const path = String(value || '/').replace(/\/{2,}/g, '/');
-  return path.length > 1 && !path.endsWith('/') ? `${path}/` : path;
-}
-
-const byUrl = new Map<string, Item>();
-for (const node of Array.isArray(graphData.nodes) ? graphData.nodes : []) {
-  const url = normalizeUrl(String(node.url || ''));
-  if (!url) continue;
-  byUrl.set(url, { title: String(node.title || url), url, readingTime: Number(node.readingTime || 0) || undefined });
-}
-for (const series of Object.values(seriesData as Record<string, SeriesEntry>)) {
-  for (const part of Array.isArray(series.parts) ? series.parts : []) {
-    if (part.status && part.status !== 'published') continue;
-    const url = normalizeUrl(`${series.baseUrl}${part.slug}/`);
-    if (!byUrl.has(url)) byUrl.set(url, { title: part.title, url, readingTime: part.readingTime });
-  }
-}
-const items = Array.from(byUrl.values()).sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+const items = compileRelations({ graphData, seriesData, catalogData, strict: true }).nodes;
 ---
 
 <noscript>
@@ -51,7 +32,7 @@ const items = Array.from(byUrl.values()).sort((a, b) => a.title.localeCompare(b.
       </p>
       <ul>
         {items.map((item) => (
-          <li data-list-node={item.url}>
+          <li data-list-node={item.id}>
             <a href={item.url}>
               <strong>{item.title}</strong>
               <span>{item.readingTime ? `${item.readingTime} мин.` : 'Открыть'}</span>
