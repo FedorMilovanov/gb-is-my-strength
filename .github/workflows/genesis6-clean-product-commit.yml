@@ -1,0 +1,96 @@
+name: Genesis 6 Clean Product Commit
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/genesis6-clean-product-commit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  commit-product:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TARGET_BRANCH: agent/genesis6-claim-level-sources
+      EXPECTED_TARGET_HEAD: 5f2595f658fca0ba9f1445a36a245c6dd9dfb4f7
+      ARTIFACT_ID: '8669155155'
+    steps:
+      - name: Checkout exact carrier head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Download sealed product artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            --output /tmp/genesis6-product.zip
+          printf '%s  %s\n' \
+            'd72ee9ccb0a24dd837702065c076327c662205ed7171479dcf3f0f18abfbb8c7' \
+            '/tmp/genesis6-product.zip' | sha256sum --check --strict
+          rm -rf /tmp/genesis6-product
+          mkdir -p /tmp/genesis6-product
+          unzip -q /tmp/genesis6-product.zip -d /tmp/genesis6-product
+          test -d /tmp/genesis6-product/out
+
+      - name: Rebuild target from current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | cut -f1)"
+          test "${actual_target}" = "${EXPECTED_TARGET_HEAD}"
+          git fetch --no-tags origin main
+          git checkout -B "${TARGET_BRANCH}" origin/main
+
+          test "$(git hash-object src/content/articles/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.mdx)" = '7fa248e9a1ac78487e4ca48f208972b9600e3d64'
+          test "$(git hash-object src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx)" = '1eb4a45ef692e5da71a1c1011e4c1f7917600211'
+          test "$(git hash-object data/genesis6-enoch-footnote-gates.json)" = 'ad98895bc38b5dc879d04949aab23ffbfe5b45f3'
+          test "$(git hash-object scripts/genesis6-enoch-footnote-gate.mjs)" = '118405c0ab54d2573233f53af1dc2c8b916d88d5'
+
+          cp /tmp/genesis6-product/out/src/content/articles/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.mdx src/content/articles/
+          cp /tmp/genesis6-product/out/src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx src/content/articles/
+          cp /tmp/genesis6-product/out/data/genesis6-enoch-footnote-gates.json data/
+          cp /tmp/genesis6-product/out/scripts/genesis6-enoch-footnote-gate.mjs scripts/
+
+          test "$(git hash-object src/content/articles/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.mdx)" = 'e8e3b158771f37cbab0675367376513738eb9e18'
+          test "$(git hash-object src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx)" = 'edc80fff9c834a5b8672e9cfc4f704fc15482d80'
+          test "$(git hash-object data/genesis6-enoch-footnote-gates.json)" = 'a24ce98ba670f1a944306338e8ec4df31332ca69'
+          test "$(git hash-object scripts/genesis6-enoch-footnote-gate.mjs)" = '898e13def645a43a8b63c1917ba740b9697e2a13'
+
+          node scripts/genesis6-enoch-footnote-gate.mjs
+
+          mapfile -t changed < <(git status --short | sed 's/^...//' | sort)
+          expected=(
+            'data/genesis6-enoch-footnote-gates.json'
+            'scripts/genesis6-enoch-footnote-gate.mjs'
+            'src/content/articles/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.mdx'
+            'src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx'
+          )
+          test "${#changed[@]}" -eq 4
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
+
+      - name: Create one clean product commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'FedorMilovanov'
+          git config user.email '258225528+FedorMilovanov@users.noreply.github.com'
+          git add -- \
+            data/genesis6-enoch-footnote-gates.json \
+            scripts/genesis6-enoch-footnote-gate.mjs \
+            src/content/articles/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.mdx \
+            src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx
+          git commit -m 'content(genesis6): complete claim-level source notes'
+          git diff --exit-code HEAD -- .
+          git push origin "HEAD:refs/heads/${TARGET_BRANCH}" \
+            --force-with-lease="refs/heads/${TARGET_BRANCH}:${EXPECTED_TARGET_HEAD}"
