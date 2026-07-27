@@ -1,0 +1,31 @@
+{
+  "route": "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/",
+  "profiledAt": "2026-07-27",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "surfaceContractVersion": 1,
+  "surface": "series",
+  "seriesShape": "flat",
+  "section": "hard-texts",
+  "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+  "currentStatus": "shadow-pilot",
+  "source": "src/pages/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/index.astro",
+  "risk": 2,
+  "sourceContractVersion": 1,
+  "contentSourceMode": "mdx-native",
+  "renderSource": "src/pages/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/index.astro",
+  "metadataSourceMode": "content-frontmatter",
+  "hasMDX": true,
+  "mdxStatus": "canonical",
+  "mdxPath": "src/content/articles/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.mdx",
+  "legacyStatus": "absent",
+  "legacyPath": null,
+  "visualParity": { "desktop": 0, "mobile": 0 },
+  "cssPilot": "css/series-manuscript.css",
+  "migrationMode": "strict-native",
+  "scope": "excluded-semantic-lane",
+  "seo": {
+    "indexable": false,
+    "reason": "Genesis 6 Enoch extension staging: draft/noindex until exact-head publication acceptance"
+  }
+}
