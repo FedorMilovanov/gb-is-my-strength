@@ -28,7 +28,6 @@ const ASSETS = [
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
   'js/site.js',
-  'js/reader-actions.js',
   'js/reader-preferences-head.js',
   'js/reader-preferences.js',
   'js/reader-state.js',
