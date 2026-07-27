@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/_temp-reader-cache-bust-evidence.yml'
 
 permissions:
   contents: read
