@@ -36,6 +36,17 @@ jobs:
           ref: ${{ env.CARRIER_SHA }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Record transport inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis6-phaseC/evidence
+          find .tmp/genesis6-phaseC/capsule -maxdepth 1 -type f -name '*.part' -print | LC_ALL=C sort > /tmp/genesis6-phaseC/evidence/capsule-parts.txt
+          wc -l /tmp/genesis6-phaseC/evidence/capsule-parts.txt > /tmp/genesis6-phaseC/evidence/capsule-part-count.txt
+          xargs -d '\n' sha256sum < /tmp/genesis6-phaseC/evidence/capsule-parts.txt > /tmp/genesis6-phaseC/evidence/capsule-parts.sha256
+          xargs -d '\n' wc -c < /tmp/genesis6-phaseC/evidence/capsule-parts.txt > /tmp/genesis6-phaseC/evidence/capsule-parts.bytes
+          xargs -d '\n' cat < /tmp/genesis6-phaseC/evidence/capsule-parts.txt > /tmp/genesis6-phaseC/package.tgz.b64.actual
+          sha256sum /tmp/genesis6-phaseC/package.tgz.b64.actual > /tmp/genesis6-phaseC/evidence/capsule-aggregate-actual.sha256
       - name: Restore verified acceptance runner
         shell: bash
         run: |
