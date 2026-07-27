@@ -1,19 +1,26 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "seriesId": "genesis-6",
   "research": {
     "repository": "FedorMilovanov/Research",
-    "commit": "9bba3d45d3475468798f69e4b6067acae673b79c",
+    "commit": "145a52151f8d3bb6186addae2a99fa21401f9b09",
     "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
     "manifestPath": "data/genesis6-authority-manifest.json",
     "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
     "ledgerPath": "data/genesis6-publication-ledger.json",
-    "contractPath": "GENESIS6_AUTHORITY_CONTRACT.md"
+    "contractPath": "GENESIS6_AUTHORITY_CONTRACT.md",
+    "extension": {
+      "manifestPath": "data/genesis6-enoch-extension-authority-manifest.json",
+      "manifestSha256": "8e44eebc5fae85d4f17d245729ab17b54e0c18ed56b503b12c42cf48909526c5",
+      "ledgerPath": "data/genesis6-enoch-extension-publication-ledger.json",
+      "validatorPath": "scripts/validate_genesis6_enoch_extension.py"
+    }
   },
   "publicationPolicy": {
     "defaultState": "draft-noindex",
     "requiresExactResearchCommit": true,
     "requiresManifestDigest": true,
+    "requiresExtensionManifestDigest": true,
     "requiresExactHeadSiteEvidence": true,
     "productionWitnessSeparate": true
   },
@@ -34,7 +41,9 @@
         "GEN6-ARTICLE-6-LI",
         "GEN6-4Q204-SCHEMATIC-L"
       ],
-      "rightsDecisionIds": ["RIGHT-4Q204-OPEN-SCHEMATIC"]
+      "rightsDecisionIds": [
+        "RIGHT-4Q204-OPEN-SCHEMATIC"
+      ]
     },
     {
       "article": 7,
@@ -50,7 +59,9 @@
         "GEN6-PRECISION-LI",
         "GEN6-ARTICLE-7-XLVIII"
       ],
-      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+      "rightsDecisionIds": [
+        "RIGHT-P72-TEXT-LINK-ONLY"
+      ]
     },
     {
       "article": 8,
@@ -67,7 +78,9 @@
         "GEN6-ARTICLE-8-XLVIII",
         "GEN6-ARTICLE-8-LI"
       ],
-      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+      "rightsDecisionIds": [
+        "RIGHT-P72-TEXT-LINK-ONLY"
+      ]
     },
     {
       "article": 9,
@@ -83,7 +96,52 @@
         "GEN6-PRECISION-LI",
         "GEN6-ARTICLE-9-XLVIII"
       ],
-      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
+      "rightsDecisionIds": [
+        "RIGHT-P72-TEXT-LINK-ONLY"
+      ]
+    }
+  ],
+  "draftArticles": [
+    {
+      "articleKey": "6A",
+      "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+      "bundleId": "GEN6-PUB-ARTICLE-6A",
+      "orderedDocumentIds": [
+        "GEN6-ENOCH-PROTOCOL-LVI",
+        "GEN6-ENOCH-VERSION-MATRIX-LIV",
+        "GEN6-ENOCH-ARCHITECTURE-LIII",
+        "GEN6-ENOCH-CORPUS-DRAFT-LIV",
+        "GEN6-ENOCH-CLAIM-GATE-LIV",
+        "GEN6-ENOCH-ACADEMIC-PASS-1-LV",
+        "GEN6-ENOCH-ACADEMIC-PASS-2-LV",
+        "GEN6-ENOCH-CODEX-AUDIT-LVI",
+        "GEN6-ENOCH-PRODUCTION-MAP-LVII"
+      ],
+      "requiredSiteState": {
+        "draft": true,
+        "noindex": true
+      },
+      "rightsMode": "no-manuscript-image-reproduction",
+      "publicationStatus": "draft-noindex-hold"
+    },
+    {
+      "articleKey": "6B",
+      "slug": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+      "bundleId": "GEN6-PUB-ARTICLE-6B",
+      "orderedDocumentIds": [
+        "GEN6-ENOCH-PROTOCOL-LVI",
+        "GEN6-ENOCH-VERSION-MATRIX-LIV",
+        "GEN6-ENOCH-CANON-MATRIX-LII",
+        "GEN6-ENOCH-ARCHITECTURE-LIII",
+        "GEN6-ENOCH-CLAIM-GATE-LIV",
+        "GEN6-ENOCH-PRODUCTION-MAP-LVII"
+      ],
+      "requiredSiteState": {
+        "draft": true,
+        "noindex": true
+      },
+      "rightsMode": "no-manuscript-image-reproduction",
+      "publicationStatus": "draft-noindex-hold"
     }
   ]
 }
