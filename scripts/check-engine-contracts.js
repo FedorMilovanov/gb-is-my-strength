@@ -49,13 +49,18 @@ check('Reader actions: print engine is a dedicated singleton',
   readerActions.includes("closest('[data-action=\"print\"],[data-action=\"share\"],[data-home-href]')") &&
   readerActions.includes("window.addEventListener('beforeprint'") &&
   readerActions.includes("window.addEventListener('afterprint'"));
-check('Reader actions: print delegates pagination and calls window.print once',
+check('Reader actions: capture-phase owns global actions before chrome propagation',
+  readerActions.includes("document.addEventListener('click', onClick, true)") &&
+  readerActionsRuntime.includes('<script is:inline src={actionsSrc}></script>') &&
+  !readerActionsRuntime.includes('defer src={actionsSrc}'));
+check('Reader actions: print delegates pagination, records failure and calls window.print once',
   readerActions.includes('window.GBPrintPagination') &&
+  readerActions.includes("status: 'failed'") &&
   readerActions.includes('if (printing) return copyReport(report)') &&
   readerActions.includes('window.print();'));
 check('Reader actions: cache-busted native component owns the runtime',
   readerActionsRuntime.includes("assetUrl('js/reader-actions.js')") &&
-  assetVersions.includes("'js/reader-actions.js': '5a39eb2a'"));
+  assetVersions.includes("'js/reader-actions.js': 'de50d382'"));
 check('Reader actions: strict-native series use explicit owner without site.js',
   gillChrome.includes('ReaderActionsRuntime') && nagornayaRuntime.includes('ReaderActionsRuntime') &&
   !gillChrome.includes('/js/site.js') && !nagornayaRuntime.includes('/js/site.js'));
@@ -139,6 +144,7 @@ const atlasBody = read('src/components/map/AtlasBody.astro');
 const atlasNoScript = read('src/components/map/AtlasNoScriptFallback.astro');
 const atlasRuntime = read('src/runtime/atlas-runtime.js');
 const atlasStyles = read('src/components/map/MapStyles.astro');
+const atlasPolish = read('src/components/map/AtlasVisualPolish.astro');
 const atlasRoute = read('src/pages/map/index.astro');
 const postbuild = read('scripts/astro-cache-bust-postbuild.js');
 const baseLayout = read('src/layouts/BaseLayout.astro');
@@ -163,6 +169,12 @@ check('Atlas: zoom, pan, focus, list and deep links remain', atlasRuntime.includ
 check('Atlas: keyboard graph and search navigation are native contracts', atlasRuntime.includes('function nearestNode') && atlasRuntime.includes('function handleNodeKeyboard') && atlasRuntime.includes('function moveSearchCursor') && atlasRuntime.includes("event.key === 'ArrowDown'"));
 check('Atlas: deterministic desktop and compact layouts are first-class profiles', atlasRuntime.includes('DESKTOP_WORLD') && atlasRuntime.includes('COMPACT_WORLD') && atlasRuntime.includes('function relayoutForViewport') && atlasRuntime.includes("app.dataset.layoutProfile = profile.id"));
 check('Atlas: detail rail consumes desktop grid only during focus', atlasStyles.includes('--atlas-detail-track:0px') && atlasStyles.includes('.atlas-app.has-detail{--atlas-detail-track:var(--atlas-detail)}') && atlasRuntime.includes("app.classList.add('has-detail')") && atlasRuntime.includes("app.classList.remove('has-detail')"));
+check('Atlas: compact scenography has a first-class owner and preserves focus contrast',
+  atlasRoute.includes("import AtlasVisualPolish from '@/components/map/AtlasVisualPolish.astro'") &&
+  atlasRoute.includes('<AtlasVisualPolish />') &&
+  atlasPolish.includes('[data-layout-profile="compact"] .atlas-stage-copy') &&
+  atlasPolish.includes('.atlas-edge.is-focus') &&
+  atlasPolish.includes('[data-zoom-level="overview"] .atlas-edge--bridge'));
 check('Atlas: strict-native route has no old MapBody or set:html', atlasRoute.includes("import AtlasBody from '@/components/map/AtlasBody.astro'") && !atlasRoute.includes('MapBody') && !atlasBody.includes('set:html') && !fs.existsSync(path.join(ROOT, 'src/components/map/MapBody.astro')));
 
 function relationImportsOutsideComposition(dir) {
