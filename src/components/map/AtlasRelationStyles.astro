@@ -1,0 +1,25 @@
+<style is:inline>
+.atlas-relation-filter__line--series{
+  height:3px;
+  background:linear-gradient(90deg,#e7c36f,#b88438);
+  box-shadow:0 0 7px rgba(232,200,121,.22);
+}
+.atlas-edge--series{
+  stroke:#d2ad60;
+  stroke-width:1.45;
+  stroke-opacity:.42;
+  stroke-dasharray:2 3;
+}
+.atlas-edge--series.is-focus{
+  stroke:#f2d693;
+  stroke-width:2.35;
+  stroke-opacity:.94;
+  stroke-dasharray:none;
+}
+.atlas-app[data-zoom-level="overview"] .atlas-edge--series{
+  stroke-opacity:.24;
+}
+.atlas-app[data-zoom-level="detail"] .atlas-edge--series{
+  stroke-opacity:.58;
+}
+</style>
