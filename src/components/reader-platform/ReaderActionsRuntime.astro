@@ -3,8 +3,13 @@
  * Explicit native owner for reader-level actions that were historically
  * bundled into site.js. Astro/Vite owns hashing, module delivery and cache
  * invalidation; the legacy root asset registry is intentionally not involved.
+ *
+ * Print pagination is composed in two explicit stages: the existing semantic
+ * classifier marks atomic/keep-next flow, then the geometry owner converts the
+ * few physically crossing short atomic blocks into deterministic page breaks.
  */
 ---
 <script>
+  import '../../runtime/print-pagination-geometry.js';
   import '../../runtime/reader-actions.js';
 </script>
