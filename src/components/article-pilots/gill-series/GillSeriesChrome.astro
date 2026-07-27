@@ -1,4 +1,5 @@
 ---
+import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
 import GillSeriesRail from './GillSeriesRail.astro';
 import GillSeriesMobileBar from './GillSeriesMobileBar.astro';
 import GillSeriesOverlay from './GillSeriesOverlay.astro';
@@ -6,6 +7,7 @@ import GillPartTocOverlay from './GillPartTocOverlay.astro';
 import GillLearningSheet from './GillLearningSheet.astro';
 import GillReaderSettingsSheet from './GillReaderSettingsSheet.astro';
 import GillSeriesImagePremium from './GillSeriesImagePremium.astro';
+import GillSeriesResponsiveStyles from './GillSeriesResponsiveStyles.astro';
 import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props {
@@ -17,6 +19,7 @@ const { pageId, config = GILL_SERIES } = Astro.props;
 const page = config.pages[pageId];
 ---
 <GillSeriesImagePremium />
+<GillSeriesResponsiveStyles />
 <style is:global>
   /* Final calibration from the 390/768/1440 Playwright witness. */
   @media (max-width: 640px) {
@@ -28,9 +31,9 @@ const page = config.pages[pageId];
 </style>
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 
-<!-- Site-sections menu opened by the rail's hamburger (#hMobileMenuBtn) —
-     same canon backdrop+panel+JS as PastorSeriesPageChrome.astro etc., just
-     with paths adjusted for Gill's two-levels-deep route. -->
+<!-- Site-sections menu opened by the rail hamburger. Its native controller is
+     owned by floating-cluster-controller.js; reader actions are owned by the
+     dedicated ReaderActionsRuntime below. -->
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
 <div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
   <span class="gbs-menu-label" aria-hidden="true">Разделы сайта</span>
@@ -65,3 +68,4 @@ const page = config.pages[pageId];
 <script is:inline defer src="../../js/highlights.js?v=25484760"></script>
 <script is:inline defer src="../../js/enhancements.js?v=cbbdb283"></script>
 <script is:inline defer src="../../js/floating-cluster-controller.js?v=2b92a1a5"></script>
+<ReaderActionsRuntime />
