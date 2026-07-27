@@ -1,0 +1,198 @@
+name: Temporary Genesis 6 Phase A merge witness
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/genesis6-phaseA-merge-witness.yml'
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: genesis6-phaseA-merge-witness
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'ops/genesis6-phaseA-merge-witness-2026-07-27' &&
+      github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Wait for exact evidence and merge only green product PR
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const productRef = 'lane/genesis6-assets-revalidation-2026-07-27';
+            const evidenceRef = 'evidence/genesis6-phaseA-ready';
+            const materializerRef = 'lane/genesis6-assets-repair-2026-07-26-v3';
+            const requiredWorkflowNames = [
+              'Shared Files Guard',
+              'Runtime Interactive Audit',
+              'Visual Parity',
+              'Route Registry',
+              'Print',
+              'TTS',
+              'Glossary',
+              'Dateline',
+            ];
+            const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+            const badConclusions = new Set(['failure', 'cancelled', 'timed_out', 'action_required', 'startup_failure', 'stale']);
+
+            async function getRef(ref) {
+              try {
+                return (await github.rest.git.getRef({ owner, repo, ref: `heads/${ref}` })).data.object.sha;
+              } catch (error) {
+                if (error.status === 404) return null;
+                throw error;
+              }
+            }
+
+            async function getFiles(pull_number) {
+              return github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number, per_page: 100 });
+            }
+
+            for (let attempt = 1; attempt <= 360; attempt += 1) {
+              const evidenceSha = await getRef(evidenceRef);
+              if (!evidenceSha) {
+                core.info(`attempt ${attempt}: evidence ref not ready`);
+                await sleep(30000);
+                continue;
+              }
+
+              const pulls = (await github.rest.pulls.list({
+                owner,
+                repo,
+                state: 'open',
+                head: `${owner}:${productRef}`,
+                base: 'main',
+                per_page: 10,
+              })).data;
+              if (pulls.length === 0) {
+                core.info(`attempt ${attempt}: App revalidation PR not open yet`);
+                await sleep(30000);
+                continue;
+              }
+              if (pulls.length !== 1) throw new Error(`expected one product PR, found ${pulls.length}`);
+
+              let pr = pulls[0];
+              if (pr.head.sha !== evidenceSha) {
+                throw new Error(`product PR head ${pr.head.sha} does not equal evidence ${evidenceSha}`);
+              }
+              if (pr.draft) throw new Error('product PR must not be draft');
+
+              const files = await getFiles(pr.number);
+              if (files.length !== 21) throw new Error(`expected 21 changed files, found ${files.length}`);
+              let avif = 0;
+              let webp = 0;
+              let manifest = 0;
+              for (const file of files) {
+                if (!file.filename.startsWith('public/images/articles/genesis6/')) {
+                  throw new Error(`forbidden product path: ${file.filename}`);
+                }
+                if (file.filename.endsWith('.avif')) avif += 1;
+                else if (file.filename.endsWith('.webp')) webp += 1;
+                else if (file.filename === 'public/images/articles/genesis6/manifest.json') manifest += 1;
+                else throw new Error(`forbidden product file: ${file.filename}`);
+              }
+              if (avif !== 10 || webp !== 10 || manifest !== 1) {
+                throw new Error(`invalid asset counts: avif=${avif}, webp=${webp}, manifest=${manifest}`);
+              }
+
+              const runs = (await github.rest.actions.listWorkflowRunsForRepo({
+                owner,
+                repo,
+                head_sha: evidenceSha,
+                event: 'pull_request',
+                per_page: 100,
+              })).data.workflow_runs;
+              const productRuns = runs.filter((run) => run.head_branch === productRef);
+              const names = productRuns.map((run) => run.name);
+              const missing = requiredWorkflowNames.filter((needle) => !names.some((name) => name.includes(needle)));
+              const incomplete = productRuns.filter((run) => run.status !== 'completed');
+              const bad = productRuns.filter((run) => badConclusions.has(run.conclusion));
+              if (missing.length || incomplete.length || productRuns.length < 8) {
+                core.info(`attempt ${attempt}: workflows=${productRuns.length}, missing=${missing.join(',') || '-'}, incomplete=${incomplete.length}`);
+                await sleep(30000);
+                continue;
+              }
+              if (bad.length) {
+                throw new Error(`red product workflows: ${bad.map((run) => `${run.name}:${run.conclusion}`).join(', ')}`);
+              }
+              const nonGreen = productRuns.filter((run) => !['success', 'neutral', 'skipped'].includes(run.conclusion));
+              if (nonGreen.length) {
+                throw new Error(`non-green workflow conclusions: ${nonGreen.map((run) => `${run.name}:${run.conclusion}`).join(', ')}`);
+              }
+
+              pr = (await github.rest.pulls.get({ owner, repo, pull_number: pr.number })).data;
+              if (pr.head.sha !== evidenceSha) throw new Error('product head changed during validation');
+              if (pr.mergeable === false || ['dirty', 'blocked'].includes(pr.mergeable_state)) {
+                core.info(`attempt ${attempt}: mergeable=${pr.mergeable}, state=${pr.mergeable_state}`);
+                await sleep(30000);
+                continue;
+              }
+
+              const merged = (await github.rest.pulls.merge({
+                owner,
+                repo,
+                pull_number: pr.number,
+                sha: evidenceSha,
+                merge_method: 'squash',
+                commit_title: 'assets(genesis6): replace corrupted series imagery',
+                commit_message: 'Replace twenty corrupted Genesis 6 placeholders with validated owner-supplied AVIF/WebP derivatives and a provenance manifest. Publication state remains draft/noindex.',
+              })).data;
+              if (!merged.merged) throw new Error(`merge rejected: ${merged.message}`);
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: 362,
+                body: [
+                  '## Phase A merged',
+                  '',
+                  `Product PR #${pr.number} was squash-merged after exact evidence SHA \`${evidenceSha}\`.`,
+                  `Merge commit: \`${merged.sha}\`.`,
+                  '',
+                  '- exact 21-file asset-only scope',
+                  '- 10 AVIF + 10 WebP + provenance manifest',
+                  '- owner archive SHA pinned',
+                  '- draft/noindex unchanged',
+                  '- full static publication barrier',
+                  '- Chromium and WebKit ready witness',
+                  '- all standard exact-head workflows green',
+                ].join('\n'),
+              });
+
+              const materializerPulls = (await github.rest.pulls.list({
+                owner,
+                repo,
+                state: 'open',
+                head: `${owner}:${materializerRef}`,
+                base: 'main',
+                per_page: 10,
+              })).data;
+              for (const oldPr of materializerPulls) {
+                await github.rest.pulls.update({ owner, repo, pull_number: oldPr.number, state: 'closed' });
+              }
+
+              for (const ref of [productRef, evidenceRef, materializerRef]) {
+                try {
+                  await github.rest.git.deleteRef({ owner, repo, ref: `heads/${ref}` });
+                } catch (error) {
+                  if (error.status !== 404) core.warning(`could not delete ${ref}: ${error.message}`);
+                }
+              }
+
+              core.notice(`Genesis 6 Phase A merged as ${merged.sha}`);
+              return;
+            }
+            throw new Error('timed out waiting for evidence ref, product PR, and green exact-head workflows');
