@@ -243,7 +243,7 @@ async function checkGlossary(browser) {
           return Boolean(
             runtime && runtime.dict && runtime.policy && runtime.aliasToCanonical &&
             window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function' &&
-            target && target.getAttribute('data-term') && target.querySelector('.gtip')
+            target && target.hasAttribute('aria-expanded') && target.querySelector('.gtip')
           );
         }, selector, { timeout: 5000 });
       } catch (error) {
