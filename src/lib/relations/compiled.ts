@@ -3,14 +3,21 @@ import seriesData from '../../../data/series.json';
 import catalogData from '../../../data/relations.json';
 import { compileRelations } from './engine.mjs';
 
+function deepFreeze<T>(value: T): Readonly<T> {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value as Readonly<T>;
+  Object.freeze(value);
+  for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child);
+  return value as Readonly<T>;
+}
+
 /**
- * Process-local singleton projection.
+ * Canonical application composition root for the relation system.
  *
- * Every Astro surface imports this object instead of compiling the same graph
- * independently. The pure compiler remains separately testable; this module is
- * only the canonical application composition root.
+ * Astro surfaces import this one immutable projection instead of compiling the
+ * same source graph independently. The pure compiler remains separately
+ * testable and is still used directly by build diagnostics.
  */
-export const compiledRelations = Object.freeze(
+export const compiledRelations = deepFreeze(
   compileRelations({ graphData, seriesData, catalogData, strict: true }),
 );
 
