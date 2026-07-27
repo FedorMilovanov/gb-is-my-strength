@@ -1,213 +1,798 @@
+---
+import graphData from '../../../data/links-graph.json';
 
-<div class="hdr">
-  <div class="hdr-left">
-    <a href="/" class="back">
-      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      На главную
-    </a>
-    <h1>Карта <em>связей</em></h1>
-    <p class="sub">Интерактивное созвездие всех материалов сайта — как статьи, серии и библейские карты переплетаются между собой.</p>
-    <div class="stats"><b>42</b> страницы · <b>180+</b> связей · <b>7</b> тематических кластеров</div>
+type GraphNode = {
+  id: string;
+  title: string;
+  url: string;
+  group?: string;
+  readingTime?: number;
+  cover?: string;
+  desc?: string;
+  tags?: string[];
+  atlasGroup?: string;
+  isHub?: boolean;
+};
+
+type AtlasEdge = {
+  source: string;
+  target: string;
+  kind: 'cluster' | 'structure' | 'bridge';
+};
+
+const GROUP_META: Record<string, { label: string; color: string }> = {
+  gill: { label: 'Джон Гилл', color: '#c3925a' },
+  nagornaya: { label: 'Нагорная проповедь', color: '#d8ae4e' },
+  'hard-texts': { label: 'Трудные тексты', color: '#6f9fd3' },
+  stand: { label: 'Баптисты России', color: '#4e86bd' },
+  'russian-baptism': { label: 'Баптисты России', color: '#4e86bd' },
+  karty: { label: 'Библейские карты', color: '#5eb9bd' },
+  biografii: { label: 'Биографии служителей', color: '#d68158' },
+  'pastor-series': { label: 'Практическое служение', color: '#ce6486' },
+  standalone: { label: 'Отдельные исследования', color: '#78aa72' },
+  landing: { label: 'Разделы библиотеки', color: '#9a8ac5' },
+};
+
+function atlasGroupFor(node: GraphNode) {
+  if (node.group !== 'landing') return node.group || 'standalone';
+  if (node.id === 'biografii') return 'biografii';
+  if (node.id === 'hard-texts') return 'hard-texts';
+  if (node.id === 'pastor-series') return 'pastor-series';
+  if (node.id === 'karty') return 'karty';
+  return 'landing';
+}
+
+const nodes: GraphNode[] = (Array.isArray(graphData.nodes) ? graphData.nodes : []).map((raw) => {
+  const node = raw as GraphNode;
+  return {
+    ...node,
+    atlasGroup: atlasGroupFor(node),
+    isHub: node.group === 'landing' || ['biografii', 'hard-texts', 'pastor-series', 'karty'].includes(node.id),
+  };
+});
+
+const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+const seenEdges = new Set<string>();
+const edges: AtlasEdge[] = [];
+
+for (const rawEdge of Array.isArray(graphData.edges) ? graphData.edges : []) {
+  if (!Array.isArray(rawEdge) || rawEdge.length < 2) continue;
+  const source = String(rawEdge[0]);
+  const target = String(rawEdge[1]);
+  if (!source || !target || source === target || !nodeMap.has(source) || !nodeMap.has(target)) continue;
+  const key = [source, target].sort().join('::');
+  if (seenEdges.has(key)) continue;
+  seenEdges.add(key);
+
+  const sourceNode = nodeMap.get(source)!;
+  const targetNode = nodeMap.get(target)!;
+  const sameGroup = sourceNode.atlasGroup === targetNode.atlasGroup;
+  const structural = sourceNode.isHub || targetNode.isHub;
+  edges.push({ source, target, kind: sameGroup ? 'cluster' : structural ? 'structure' : 'bridge' });
+}
+
+const groupIds = Array.from(new Set(nodes.map((node) => node.atlasGroup || 'standalone')));
+const preferredOrder = ['gill', 'nagornaya', 'biografii', 'stand', 'russian-baptism', 'hard-texts', 'karty', 'pastor-series', 'standalone', 'landing'];
+groupIds.sort((a, b) => {
+  const ai = preferredOrder.indexOf(a);
+  const bi = preferredOrder.indexOf(b);
+  return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.localeCompare(b, 'ru');
+});
+
+const groups = groupIds.map((id) => {
+  const meta = GROUP_META[id] || { label: id, color: '#9a8ac5' };
+  return {
+    id,
+    ...meta,
+    count: nodes.filter((node) => node.atlasGroup === id).length,
+  };
+});
+
+const edgeKinds = [
+  { id: 'cluster', label: 'Внутри темы', count: edges.filter((edge) => edge.kind === 'cluster').length },
+  { id: 'structure', label: 'Раздел и материал', count: edges.filter((edge) => edge.kind === 'structure').length },
+  { id: 'bridge', label: 'Мост между темами', count: edges.filter((edge) => edge.kind === 'bridge').length },
+];
+
+const atlasPayload = JSON.stringify({ nodes, edges, groups }).replace(/</g, '\\u003c');
+---
+
+<div class="atlas-app" id="atlasApp" data-view="graph" data-zoom-level="overview">
+  <header class="atlas-topbar">
+    <div class="atlas-brand">
+      <a href="/" class="atlas-back" aria-label="Вернуться на главную">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+      </a>
+      <div class="atlas-brand__mark" aria-hidden="true">✦</div>
+      <div>
+        <span class="atlas-brand__eyebrow">Господь Бог — Сила Моя</span>
+        <h1>Атлас исследований</h1>
+      </div>
+    </div>
+
+    <div class="atlas-search" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></svg>
+      <label class="sr-only" for="atlasSearchInput">Найти материал в Атласе</label>
+      <input id="atlasSearchInput" type="search" autocomplete="off" placeholder="Найти материал, тему или автора…" aria-controls="atlasSearchResults" aria-expanded="false" />
+      <div class="atlas-search__results" id="atlasSearchResults" role="listbox" hidden></div>
+    </div>
+
+    <div class="atlas-topbar__actions">
+      <div class="atlas-view-switch" aria-label="Представление Атласа">
+        <button type="button" data-atlas-view="graph" aria-pressed="true">Карта</button>
+        <button type="button" data-atlas-view="list" aria-pressed="false">Список</button>
+      </div>
+      <button class="atlas-filter-trigger" id="atlasFilterTrigger" type="button" aria-expanded="false" aria-controls="atlasSidebar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 12h10M10 19h4" /></svg>
+        <span>Фильтры</span>
+      </button>
+      <button class="atlas-reset" id="atlasReset" type="button">Сбросить</button>
+    </div>
+  </header>
+
+  <div class="atlas-workspace">
+    <aside class="atlas-sidebar" id="atlasSidebar" aria-label="Фильтры Атласа">
+      <div class="atlas-sidebar__head">
+        <div>
+          <span>Навигация</span>
+          <strong>Темы и связи</strong>
+        </div>
+        <button type="button" id="atlasFilterClose" aria-label="Закрыть фильтры">×</button>
+      </div>
+
+      <section class="atlas-filter-group" aria-labelledby="atlasThemesTitle">
+        <h2 id="atlasThemesTitle">Темы</h2>
+        <button class="atlas-theme is-active" type="button" data-atlas-group="all" aria-pressed="true">
+          <span class="atlas-theme__dot atlas-theme__dot--all"></span>
+          <span>Все материалы</span>
+          <b>{nodes.length}</b>
+        </button>
+        {groups.map((group) => (
+          <button class="atlas-theme" type="button" data-atlas-group={group.id} aria-pressed="false">
+            <span class="atlas-theme__dot" style={`--theme-color:${group.color}`}></span>
+            <span>{group.label}</span>
+            <b>{group.count}</b>
+          </button>
+        ))}
+      </section>
+
+      <section class="atlas-filter-group atlas-filter-group--relations" aria-labelledby="atlasRelationsTitle">
+        <h2 id="atlasRelationsTitle">Типы связей</h2>
+        {edgeKinds.map((kind) => (
+          <label class="atlas-relation-filter">
+            <input type="checkbox" value={kind.id} checked />
+            <span class={`atlas-relation-filter__line atlas-relation-filter__line--${kind.id}`}></span>
+            <span>{kind.label}</span>
+            <b>{kind.count}</b>
+          </label>
+        ))}
+      </section>
+
+      <div class="atlas-sidebar__note">
+        <span aria-hidden="true">◎</span>
+        <p><strong>Приближайте карту.</strong> На каждом масштабе раскрывается новый уровень деталей.</p>
+      </div>
+    </aside>
+
+    <main class="atlas-main">
+      <section class="atlas-graph-view" id="atlasGraphView" aria-label="Интерактивная карта материалов">
+        <svg id="atlasCanvas" viewBox="0 0 1600 1000" role="application" aria-label="Интерактивный Атлас исследований. Используйте колесо или кнопки масштаба, чтобы приблизить карту.">
+          <defs>
+            <filter id="atlasGlow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="7" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <radialGradient id="atlasNodeCore">
+              <stop offset="0" stop-color="#fff8da" stop-opacity=".95" />
+              <stop offset=".42" stop-color="#f1c36f" stop-opacity=".82" />
+              <stop offset="1" stop-color="#8a5b28" stop-opacity=".18" />
+            </radialGradient>
+          </defs>
+          <g id="atlasWorld">
+            <g id="atlasClusterLabels"></g>
+            <g id="atlasEdges"></g>
+            <g id="atlasNodes"></g>
+          </g>
+        </svg>
+
+        <div class="atlas-stage-copy" aria-hidden="true">
+          <span id="atlasZoomCopy">Обзор библиотеки</span>
+          <small>Колесо — масштаб · Перетаскивание — перемещение</small>
+        </div>
+
+        <div class="atlas-zoom-controls" aria-label="Масштаб карты">
+          <button type="button" id="atlasZoomIn" aria-label="Приблизить">+</button>
+          <button type="button" id="atlasZoomOut" aria-label="Отдалить">−</button>
+          <button type="button" id="atlasCenter" aria-label="Показать всю карту">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" /></svg>
+          </button>
+        </div>
+
+        <div class="atlas-overview-stats" aria-label="Статистика Атласа">
+          <span><b>{nodes.length}</b> материалов</span>
+          <span><b>{edges.length}</b> уникальных связей</span>
+          <span><b>{groups.length}</b> тем</span>
+        </div>
+      </section>
+
+      <section class="atlas-list-view" id="atlasListView" aria-labelledby="atlasListTitle" hidden>
+        <div class="atlas-list-view__intro">
+          <span>Доступное представление</span>
+          <h2 id="atlasListTitle">Все материалы Атласа</h2>
+          <p>Те же темы и связи в спокойном списке. Фильтры и поиск работают синхронно с картой.</p>
+        </div>
+        <div class="atlas-list-groups">
+          {groups.map((group) => (
+            <section class="atlas-list-group" data-list-group={group.id}>
+              <div class="atlas-list-group__head">
+                <span style={`--theme-color:${group.color}`}></span>
+                <h3>{group.label}</h3>
+                <b>{group.count}</b>
+              </div>
+              <ul>
+                {nodes.filter((node) => node.atlasGroup === group.id).map((node) => (
+                  <li data-list-node={node.id} data-search-text={`${node.title} ${(node.tags || []).join(' ')} ${node.desc || ''}`.toLowerCase()}>
+                    <a href={node.url}>
+                      <strong>{node.title}</strong>
+                      {node.desc && <span>{node.desc}</span>}
+                      <small>{node.readingTime ? `${node.readingTime} мин.` : 'Материал'}</small>
+                    </a>
+                    <button type="button" data-list-focus={node.id}>На карте</button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </section>
+    </main>
+
+    <aside class="atlas-detail" id="atlasDetail" aria-label="Сведения о выбранном материале" aria-live="polite">
+      <button class="atlas-detail__close" id="atlasDetailClose" type="button" aria-label="Закрыть сведения">×</button>
+      <div class="atlas-detail__empty" id="atlasDetailEmpty">
+        <span class="atlas-detail__empty-mark" aria-hidden="true">✦</span>
+        <span>Выберите материал</span>
+        <h2>Исследуйте смысловое окружение</h2>
+        <p>Нажмите на узел или найдите статью через поиск. Атлас выделит ближайшие связи и сохранит контекст карты.</p>
+      </div>
+      <div class="atlas-detail__content" id="atlasDetailContent" hidden></div>
+    </aside>
   </div>
-</div>
 
-<div class="legend">
-  <div class="lg-title">Темы</div>
-  <button class="lg" data-filter="gill"><i style="background:#d4a574"></i> Джон Гилл <span class="n">7</span></button>
-  <button class="lg" data-filter="hard"><i style="background:#7da2e8"></i> Трудные тексты <span class="n">3</span></button>
-  <button class="lg" data-filter="nag"><i style="background:#5fc9a8"></i> Нагорная проповедь <span class="n">8</span></button>
-  <button class="lg" data-filter="stand"><i style="background:#c9b186"></i> Баптисты России <span class="n">11</span></button>
-  <button class="lg" data-filter="karty"><i style="background:#a78bfa"></i> Библейские карты <span class="n">3</span></button>
-  <button class="lg" data-filter="landing"><i style="background:#f4a261"></i> Лендинги <span class="n">5</span></button>
+  <script id="atlasData" type="application/json" set:html={atlasPayload}></script>
 </div>
-
-<div class="svgwrap">
-  <svg id="cnv" width="100%" height="100%" aria-label="Интерактивная карта связей статей"></svg>
-</div>
-
-<div id="card">
-  <button class="close" aria-label="Закрыть">×</button>
-  <h3 id="card-title"></h3>
-  <div class="type" id="card-type"></div>
-  <p id="card-desc"></p>
-  <div class="links" id="card-links"></div>
-</div>
-
-<section class="sr-only" data-pagefind-body>
-  <h2>Карта связей сайта</h2>
-  <p>Карта связей показывает, как основные разделы проекта «Господь Бог — Сила Моя» соединены между собой. В центре находится главная страница, от которой расходятся тематические кластеры: библейские карты, серия о баптистах России, Нагорная проповедь, материалы о Джоне Гилле, трудные тексты Писания, биографические и справочные страницы.</p>
-  <p>Этот раздел нужен не как обычный список ссылок, а как обзорная навигация по смысловым связям. Узлы карты помогают увидеть, какие статьи относятся к историческому исследованию, какие — к экзегетике, какие — к интерактивным картам и какие материалы лучше читать рядом. Интерактивная карта дополняет каталоги и поиск: она показывает не только отдельные страницы, но и отношения между сериями, темами и маршрутами чтения.</p>
-  <p>Визуальный слой страницы остаётся интерактивным SVG-созвездием, а этот текстовый слой обеспечивает доступность, индексируемость и понятное описание раздела для поиска и вспомогательных технологий.</p>
-</section>
 
 <script is:inline>
-// Полноценная премиум-версия карты связей (упрощённая, но визуально и функционально на уровне karty)
-const W=1920,H=1200;
-const svg=document.getElementById('cnv');
-svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+(() => {
+  'use strict';
 
-const nodes=[
-  {id:'root',label:'Главная',x:960,y:300,type:'landing',r:22},
-  {id:'karty',label:'Библейские карты',x:620,y:420,type:'karty',r:18},
-  {id:'avraam',label:'Путь Авраама',x:480,y:520,type:'karty',r:14},
-  {id:'ishod',label:'Исход из Египта',x:560,y:580,type:'karty',r:14},
-  {id:'pavel',label:'Путешествия Павла',x:700,y:540,type:'karty',r:14},
-  {id:'baptisty',label:'Баптисты России',x:1240,y:380,type:'stand',r:18},
-  {id:'nagornaya',label:'Нагорная проповедь',x:820,y:680,type:'nag',r:18},
-  {id:'gill',label:'Джон Гилл',x:380,y:680,type:'gill',r:18},
-  {id:'hard',label:'Трудные тексты',x:1100,y:720,type:'hard',r:16},
-  {id:'about',label:'Об авторе',x:960,y:180,type:'landing',r:14},
-];
+  const app = document.getElementById('atlasApp');
+  const dataNode = document.getElementById('atlasData');
+  if (!app || !dataNode) return;
 
-const edges=[
-  ['root','karty'],['root','baptisty'],['root','nagornaya'],['root','gill'],['root','hard'],['root','about'],
-  ['karty','avraam'],['karty','ishod'],['karty','pavel'],
-  ['baptisty','nagornaya'],['nagornaya','hard'],['gill','hard']
-];
+  const data = JSON.parse(dataNode.textContent || '{"nodes":[],"edges":[],"groups":[]}');
+  const svg = document.getElementById('atlasCanvas');
+  const world = document.getElementById('atlasWorld');
+  const edgeLayer = document.getElementById('atlasEdges');
+  const nodeLayer = document.getElementById('atlasNodes');
+  const labelLayer = document.getElementById('atlasClusterLabels');
+  const detail = document.getElementById('atlasDetail');
+  const detailEmpty = document.getElementById('atlasDetailEmpty');
+  const detailContent = document.getElementById('atlasDetailContent');
+  const graphView = document.getElementById('atlasGraphView');
+  const listView = document.getElementById('atlasListView');
+  const searchInput = document.getElementById('atlasSearchInput');
+  const searchResults = document.getElementById('atlasSearchResults');
+  const zoomCopy = document.getElementById('atlasZoomCopy');
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let currentFilter=null;
+  const WIDTH = 1600;
+  const HEIGHT = 1000;
+  const MIN_WIDTH = 350;
+  const MAX_WIDTH = 2400;
+  const initialView = { x: 0, y: 0, w: WIDTH, h: HEIGHT };
+  let view = { ...initialView };
+  let activeGroup = 'all';
+  let activeFocus = null;
+  let activeView = 'graph';
+  let nodePositions = new Map();
+  let edgeElements = [];
+  let nodeElements = new Map();
+  let enabledKinds = new Set(['cluster', 'structure', 'bridge']);
+  let pointers = new Map();
+  let gesture = null;
 
-function draw(){
-  svg.innerHTML='';
-  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
-  svg.appendChild(defs);
-  
-  // edges
-  edges.forEach(([a,b])=>{
-    const na=nodes.find(n=>n.id===a),nb=nodes.find(n=>n.id===b);
-    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',na.x);line.setAttribute('y1',na.y);
-    line.setAttribute('x2',nb.x);line.setAttribute('y2',nb.y);
-    line.setAttribute('class','edge');
-    line.setAttribute('data-a',a);line.setAttribute('data-b',b);
-    svg.appendChild(line);
-  });
-  
-  // nodes
-  nodes.forEach(n=>{
-    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class','node');
-    g.setAttribute('data-id',n.id);
-    g.setAttribute('data-type',n.type);
-    
-    const halo=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    halo.setAttribute('cx',n.x);halo.setAttribute('cy',n.y);halo.setAttribute('r',n.r+14);
-    halo.setAttribute('class','halo');halo.setAttribute('fill','none');halo.setAttribute('stroke',getColor(n.type));halo.setAttribute('stroke-width','1.5');
-    
-    const core=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    core.setAttribute('cx',n.x);core.setAttribute('cy',n.y);core.setAttribute('r',n.r);
-    core.setAttribute('class','core');core.setAttribute('fill',getColor(n.type));
-    
-    const label=document.createElementNS('http://www.w3.org/2000/svg','text');
-    label.setAttribute('x',n.x);label.setAttribute('y',n.y+28);
-    label.setAttribute('text-anchor','middle');label.setAttribute('class','lbl');
-    label.textContent=n.label;
-    
-    g.appendChild(halo);g.appendChild(core);g.appendChild(label);
-    svg.appendChild(g);
-    
-    g.addEventListener('click',()=>showCard(n));
-    g.addEventListener('mouseenter',()=>highlight(n.id));
-    g.addEventListener('mouseleave',unlight);
-  });
-}
+  const ns = 'http://www.w3.org/2000/svg';
+  const nodeById = new Map(data.nodes.map((node) => [node.id, node]));
+  const groupById = new Map(data.groups.map((group) => [group.id, group]));
 
-function getColor(type){
-  if(type==='gill')return'#d4a574';
-  if(type==='hard')return'#7da2e8';
-  if(type==='nag')return'#5fc9a8';
-  if(type==='stand')return'#c9b186';
-  if(type==='karty')return'#a78bfa';
-  return'#f4a261';
-}
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
-function highlight(id){
-  document.querySelectorAll('.edge').forEach(e=>{
-    if(e.dataset.a===id||e.dataset.b===id)e.classList.add('lit');
-    else e.classList.add('dim');
-  });
-  document.querySelectorAll('.node').forEach(g=>{
-    if(g.dataset.id===id)g.classList.add('lit');
-    else g.classList.add('dim');
-  });
-}
+  function createSvg(tag, attrs = {}) {
+    const el = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, String(value)));
+    return el;
+  }
 
-function unlight(){
-  document.querySelectorAll('.edge,.node').forEach(el=>el.classList.remove('lit','dim'));
-}
+  function truncate(value, length = 31) {
+    const text = String(value || '').trim();
+    return text.length > length ? text.slice(0, length - 1).trimEnd() + '…' : text;
+  }
 
-function showCard(n){
-  const card=document.getElementById('card');
-  document.getElementById('card-title').textContent=n.label;
-  document.getElementById('card-type').textContent=n.type.toUpperCase();
-  document.getElementById('card-desc').textContent=getDesc(n);
-  
-  const links=document.getElementById('card-links');
-  links.innerHTML='';
-  const related=edges.filter(e=>e[0]===n.id||e[1]===n.id).map(e=>e[0]===n.id?e[1]:e[0]);
-  related.forEach(rid=>{
-    const rn=nodes.find(x=>x.id===rid);
-    if(rn){
-      const a=document.createElement('a');
-      a.href=`/${rid==='root'?'':rid+'/'}`;
-      a.textContent=rn.label;
-      links.appendChild(a);
+  function layoutGraph() {
+    const centers = [
+      [800, 185], [1175, 300], [1320, 620], [1060, 820], [620, 825],
+      [275, 650], [315, 305], [800, 505], [1450, 355], [150, 355]
+    ];
+    const groups = data.groups;
+    nodePositions = new Map();
+    labelLayer.innerHTML = '';
+
+    groups.forEach((group, groupIndex) => {
+      let center = centers[groupIndex];
+      if (!center) {
+        const angle = (Math.PI * 2 * groupIndex / groups.length) - Math.PI / 2;
+        center = [800 + Math.cos(angle) * 560, 500 + Math.sin(angle) * 340];
+      }
+
+      const groupNodes = data.nodes.filter((node) => node.atlasGroup === group.id);
+      const hub = groupNodes.find((node) => node.isHub) || groupNodes[0];
+      const leaves = groupNodes.filter((node) => node !== hub);
+
+      if (hub) nodePositions.set(hub.id, { x: center[0], y: center[1], r: 18, hub: true });
+      leaves.forEach((node, index) => {
+        const ring = Math.floor(index / 8);
+        const ringIndex = index % 8;
+        const ringCount = Math.min(8, leaves.length - ring * 8);
+        const angle = (Math.PI * 2 * ringIndex / Math.max(1, ringCount)) - Math.PI / 2 + groupIndex * 0.31;
+        const radiusX = 72 + ring * 52;
+        const radiusY = 58 + ring * 42;
+        nodePositions.set(node.id, {
+          x: center[0] + Math.cos(angle) * radiusX,
+          y: center[1] + Math.sin(angle) * radiusY,
+          r: 8 + Math.min(4, Number(node.readingTime || 0) / 16),
+          hub: false
+        });
+      });
+
+      const label = createSvg('text', {
+        x: center[0],
+        y: center[1] - (leaves.length ? 102 : 48),
+        class: 'atlas-cluster-label',
+        'text-anchor': 'middle',
+        'data-group': group.id
+      });
+      label.textContent = group.label;
+      label.style.setProperty('--cluster-color', group.color);
+      labelLayer.appendChild(label);
+    });
+  }
+
+  function renderGraph() {
+    edgeLayer.innerHTML = '';
+    nodeLayer.innerHTML = '';
+    edgeElements = [];
+    nodeElements = new Map();
+
+    data.edges.forEach((edge) => {
+      const a = nodePositions.get(edge.source);
+      const b = nodePositions.get(edge.target);
+      if (!a || !b) return;
+      const line = createSvg('line', {
+        x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+        class: `atlas-edge atlas-edge--${edge.kind}`,
+        'data-source': edge.source,
+        'data-target': edge.target,
+        'data-kind': edge.kind
+      });
+      edgeLayer.appendChild(line);
+      edgeElements.push({ edge, el: line });
+    });
+
+    data.nodes.forEach((node) => {
+      const pos = nodePositions.get(node.id);
+      if (!pos) return;
+      const group = groupById.get(node.atlasGroup) || { color: '#9a8ac5', label: node.atlasGroup };
+      const g = createSvg('g', {
+        class: `atlas-node${pos.hub ? ' atlas-node--hub' : ''}`,
+        transform: `translate(${pos.x} ${pos.y})`,
+        tabindex: '0',
+        role: 'button',
+        'aria-label': `${node.title}. ${group.label}`,
+        'data-node-id': node.id,
+        'data-group': node.atlasGroup
+      });
+      g.style.setProperty('--node-color', group.color);
+
+      const halo = createSvg('circle', { class: 'atlas-node__halo', r: pos.r + 12 });
+      const core = createSvg('circle', { class: 'atlas-node__core', r: pos.r });
+      const glint = createSvg('circle', { class: 'atlas-node__glint', cx: -pos.r * .28, cy: -pos.r * .32, r: Math.max(1.5, pos.r * .18) });
+      const label = createSvg('text', {
+        class: 'atlas-node__label',
+        x: 0,
+        y: pos.r + 18,
+        'text-anchor': 'middle'
+      });
+      label.textContent = truncate(node.title, pos.hub ? 38 : 29);
+
+      g.append(halo, core, glint, label);
+      g.addEventListener('click', (event) => {
+        event.stopPropagation();
+        focusNode(node.id, true);
+      });
+      g.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          focusNode(node.id, true);
+        }
+      });
+      nodeLayer.appendChild(g);
+      nodeElements.set(node.id, g);
+    });
+
+    applyFilters();
+  }
+
+  function relatedTo(id) {
+    const neighbors = [];
+    data.edges.forEach((edge) => {
+      if (edge.source === id) neighbors.push({ id: edge.target, kind: edge.kind });
+      else if (edge.target === id) neighbors.push({ id: edge.source, kind: edge.kind });
+    });
+    return neighbors;
+  }
+
+  function kindLabel(kind) {
+    if (kind === 'cluster') return 'Внутри темы';
+    if (kind === 'structure') return 'Раздел и материал';
+    return 'Мост между темами';
+  }
+
+  function renderDetail(id) {
+    const node = nodeById.get(id);
+    if (!node) return;
+    const group = groupById.get(node.atlasGroup) || { label: node.atlasGroup, color: '#9a8ac5' };
+    const neighbors = relatedTo(id)
+      .filter((item) => nodeById.has(item.id))
+      .slice(0, 7);
+
+    detail.style.setProperty('--detail-color', group.color);
+    detailEmpty.hidden = true;
+    detailContent.hidden = false;
+    detailContent.innerHTML = `
+      <span class="atlas-detail__kind">${esc(group.label)}</span>
+      <h2>${esc(node.title)}</h2>
+      <div class="atlas-detail__meta">
+        <span>${node.readingTime ? esc(node.readingTime) + ' мин. чтения' : 'Материал библиотеки'}</span>
+        <span>${neighbors.length} ${neighbors.length === 1 ? 'связь' : neighbors.length < 5 ? 'связи' : 'связей'}</span>
+      </div>
+      ${node.desc ? `<p class="atlas-detail__desc">${esc(node.desc)}</p>` : ''}
+      <a class="atlas-detail__primary" href="${esc(node.url)}">Читать материал <span aria-hidden="true">→</span></a>
+      ${neighbors.length ? `
+        <section class="atlas-detail__relations" aria-labelledby="atlasNeighborTitle">
+          <h3 id="atlasNeighborTitle">Связано с материалом</h3>
+          <div>
+            ${neighbors.map((item) => {
+              const neighbor = nodeById.get(item.id);
+              return `<button type="button" data-detail-focus="${esc(neighbor.id)}"><span>${esc(kindLabel(item.kind))}</span><strong>${esc(neighbor.title)}</strong></button>`;
+            }).join('')}
+          </div>
+        </section>` : ''}
+    `;
+    detail.classList.add('is-open');
+    detailContent.querySelectorAll('[data-detail-focus]').forEach((button) => {
+      button.addEventListener('click', () => focusNode(button.dataset.detailFocus, true));
+    });
+  }
+
+  function setViewBox(next, animate = false) {
+    view = {
+      x: Math.max(-350, Math.min(WIDTH + 350 - next.w, next.x)),
+      y: Math.max(-250, Math.min(HEIGHT + 250 - next.h, next.y)),
+      w: Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, next.w)),
+      h: Math.max(MIN_WIDTH * .625, Math.min(MAX_WIDTH * .625, next.h))
+    };
+    if (animate && !prefersReduced) svg.classList.add('is-camera-moving');
+    svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
+    updateSemanticZoom();
+    if (animate && !prefersReduced) window.setTimeout(() => svg.classList.remove('is-camera-moving'), 360);
+  }
+
+  function updateSemanticZoom() {
+    const scale = WIDTH / view.w;
+    const level = scale < 1.35 ? 'overview' : scale < 2.45 ? 'cluster' : 'detail';
+    app.dataset.zoomLevel = level;
+    zoomCopy.textContent = level === 'overview' ? 'Обзор библиотеки' : level === 'cluster' ? 'Тематический кластер' : 'Подробное окружение';
+  }
+
+  function zoomAt(factor, clientX, clientY, animate = false) {
+    const rect = svg.getBoundingClientRect();
+    const px = clientX == null ? rect.left + rect.width / 2 : clientX;
+    const py = clientY == null ? rect.top + rect.height / 2 : clientY;
+    const ux = view.x + (px - rect.left) / rect.width * view.w;
+    const uy = view.y + (py - rect.top) / rect.height * view.h;
+    const nextW = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, view.w / factor));
+    const nextH = nextW * HEIGHT / WIDTH;
+    const nx = ux - (px - rect.left) / rect.width * nextW;
+    const ny = uy - (py - rect.top) / rect.height * nextH;
+    setViewBox({ x: nx, y: ny, w: nextW, h: nextH }, animate);
+  }
+
+  function focusNode(id, moveCamera) {
+    const node = nodeById.get(id);
+    const pos = nodePositions.get(id);
+    if (!node || !pos) return;
+    activeFocus = id;
+    const neighbors = new Set(relatedTo(id).map((item) => item.id));
+
+    nodeElements.forEach((el, nodeId) => {
+      el.classList.toggle('is-focus', nodeId === id);
+      el.classList.toggle('is-neighbor', neighbors.has(nodeId));
+      el.classList.toggle('is-dim', nodeId !== id && !neighbors.has(nodeId));
+    });
+    edgeElements.forEach(({ edge, el }) => {
+      const connected = edge.source === id || edge.target === id;
+      el.classList.toggle('is-focus', connected);
+      el.classList.toggle('is-dim', !connected);
+    });
+
+    renderDetail(id);
+    if (moveCamera) {
+      const targetW = Math.min(view.w, 690);
+      const targetH = targetW * HEIGHT / WIDTH;
+      setViewBox({ x: pos.x - targetW / 2, y: pos.y - targetH / 2, w: targetW, h: targetH }, true);
     }
+    updateUrl({ focus: id });
+  }
+
+  function clearFocus(updateHistory = true) {
+    activeFocus = null;
+    nodeElements.forEach((el) => el.classList.remove('is-focus', 'is-neighbor', 'is-dim'));
+    edgeElements.forEach(({ el }) => el.classList.remove('is-focus', 'is-dim'));
+    detail.classList.remove('is-open');
+    detailEmpty.hidden = false;
+    detailContent.hidden = true;
+    if (updateHistory) updateUrl({ focus: null });
+    applyFilters();
+  }
+
+  function visibleNode(node) {
+    return activeGroup === 'all' || node.atlasGroup === activeGroup;
+  }
+
+  function applyFilters() {
+    nodeElements.forEach((el, id) => {
+      const node = nodeById.get(id);
+      el.classList.toggle('is-filtered-out', !visibleNode(node));
+    });
+    edgeElements.forEach(({ edge, el }) => {
+      const source = nodeById.get(edge.source);
+      const target = nodeById.get(edge.target);
+      const hidden = !enabledKinds.has(edge.kind) || !visibleNode(source) || !visibleNode(target);
+      el.classList.toggle('is-filtered-out', hidden);
+    });
+    document.querySelectorAll('[data-list-group]').forEach((section) => {
+      section.hidden = activeGroup !== 'all' && section.dataset.listGroup !== activeGroup;
+    });
+    document.querySelectorAll('[data-list-node]').forEach((row) => {
+      const node = nodeById.get(row.dataset.listNode);
+      row.hidden = !visibleNode(node);
+    });
+  }
+
+  function setGroup(group) {
+    activeGroup = group || 'all';
+    document.querySelectorAll('[data-atlas-group]').forEach((button) => {
+      const active = button.dataset.atlasGroup === activeGroup;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    clearFocus(false);
+    applyFilters();
+    updateUrl({ group: activeGroup === 'all' ? null : activeGroup });
+  }
+
+  function setView(mode, updateHistory = true) {
+    activeView = mode === 'list' ? 'list' : 'graph';
+    app.dataset.view = activeView;
+    graphView.hidden = activeView !== 'graph';
+    listView.hidden = activeView !== 'list';
+    document.querySelectorAll('[data-atlas-view]').forEach((button) => {
+      const active = button.dataset.atlasView === activeView;
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (updateHistory) updateUrl({ view: activeView === 'graph' ? null : activeView });
+  }
+
+  function updateUrl(changes) {
+    const url = new URL(location.href);
+    Object.entries(changes).forEach(([key, value]) => {
+      if (value == null || value === '') url.searchParams.delete(key);
+      else url.searchParams.set(key, value);
+    });
+    history.replaceState({}, '', url);
+  }
+
+  function runSearch(query) {
+    const value = String(query || '').trim().toLowerCase();
+    document.querySelectorAll('[data-list-node]').forEach((row) => {
+      const matches = !value || row.dataset.searchText.includes(value);
+      const node = nodeById.get(row.dataset.listNode);
+      row.hidden = !matches || !visibleNode(node);
+    });
+    if (!value) {
+      searchResults.hidden = true;
+      searchInput.setAttribute('aria-expanded', 'false');
+      return [];
+    }
+    const results = data.nodes.filter((node) => {
+      const haystack = `${node.title} ${(node.tags || []).join(' ')} ${node.desc || ''} ${node.atlasGroup}`.toLowerCase();
+      return haystack.includes(value) && visibleNode(node);
+    }).slice(0, 8);
+    searchResults.innerHTML = results.map((node) => `<button type="button" role="option" data-search-focus="${esc(node.id)}"><strong>${esc(node.title)}</strong><span>${esc((groupById.get(node.atlasGroup) || {}).label || node.atlasGroup)}</span></button>`).join('');
+    searchResults.hidden = !results.length;
+    searchInput.setAttribute('aria-expanded', results.length ? 'true' : 'false');
+    searchResults.querySelectorAll('[data-search-focus]').forEach((button) => {
+      button.addEventListener('click', () => {
+        setView('graph');
+        focusNode(button.dataset.searchFocus, true);
+        searchResults.hidden = true;
+        searchInput.setAttribute('aria-expanded', 'false');
+      });
+    });
+    return results;
+  }
+
+  function closeFilters() {
+    document.getElementById('atlasSidebar').classList.remove('is-open');
+    document.getElementById('atlasFilterTrigger').setAttribute('aria-expanded', 'false');
+  }
+
+  layoutGraph();
+  renderGraph();
+  setViewBox(initialView);
+
+  svg.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    zoomAt(event.deltaY < 0 ? 1.16 : .86, event.clientX, event.clientY);
+  }, { passive: false });
+
+  svg.addEventListener('pointerdown', (event) => {
+    if (event.target.closest && event.target.closest('.atlas-node')) return;
+    svg.setPointerCapture(event.pointerId);
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.size === 1) {
+      gesture = { type: 'pan', startX: event.clientX, startY: event.clientY, view: { ...view } };
+    } else if (pointers.size === 2) {
+      const points = Array.from(pointers.values());
+      gesture = {
+        type: 'pinch',
+        distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y),
+        view: { ...view }
+      };
+    }
+    svg.classList.add('is-dragging');
   });
-  
-  card.classList.add('open');
-  card.onclick=e=>{if(e.target===card)card.classList.remove('open');};
-}
 
-function getDesc(n){
-  if(n.id==='karty')return'Интерактивные библейские карты: Путь Авраама, Исход, Путешествия Павла.';
-  if(n.id==='baptisty')return'11 статей о русском баптизме — от истоков до советского периода.';
-  if(n.id==='nagornaya')return'8 частей Нагорной проповеди + источники и находки.';
-  if(n.id==='gill')return'Серия из 7 статей о жизни и богословии Джона Гилла.';
-  if(n.id==='hard')return'Три глубоких разбора трудных библейских текстов.';
-  return'Связанный материал на сайте.';
-}
-
-function setupFilters(){
-  document.querySelectorAll('.lg').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const type=btn.dataset.filter;
-      if(currentFilter===type){
-        currentFilter=null;
-        document.querySelectorAll('.node').forEach(g=>g.style.opacity='1');
-        btn.classList.remove('solo');
-      }else{
-        currentFilter=type;
-        document.querySelectorAll('.lg').forEach(b=>b.classList.remove('solo'));
-        btn.classList.add('solo');
-        document.querySelectorAll('.node').forEach(g=>{
-          g.style.opacity=g.dataset.type===type?'1':'0.15';
+  svg.addEventListener('pointermove', (event) => {
+    if (!pointers.has(event.pointerId)) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const rect = svg.getBoundingClientRect();
+    if (pointers.size === 1 && gesture && gesture.type === 'pan') {
+      const dx = (event.clientX - gesture.startX) * gesture.view.w / rect.width;
+      const dy = (event.clientY - gesture.startY) * gesture.view.h / rect.height;
+      setViewBox({ x: gesture.view.x - dx, y: gesture.view.y - dy, w: gesture.view.w, h: gesture.view.h });
+    } else if (pointers.size === 2 && gesture && gesture.type === 'pinch') {
+      const points = Array.from(pointers.values());
+      const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      if (gesture.distance > 0) {
+        const factor = distance / gesture.distance;
+        const nextW = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, gesture.view.w / factor));
+        const nextH = nextW * HEIGHT / WIDTH;
+        setViewBox({
+          x: gesture.view.x + (gesture.view.w - nextW) / 2,
+          y: gesture.view.y + (gesture.view.h - nextH) / 2,
+          w: nextW,
+          h: nextH
         });
       }
+    }
+  });
+
+  function endPointer(event) {
+    pointers.delete(event.pointerId);
+    if (!pointers.size) {
+      gesture = null;
+      svg.classList.remove('is-dragging');
+    } else if (pointers.size === 1) {
+      const point = Array.from(pointers.values())[0];
+      gesture = { type: 'pan', startX: point.x, startY: point.y, view: { ...view } };
+    }
+  }
+  svg.addEventListener('pointerup', endPointer);
+  svg.addEventListener('pointercancel', endPointer);
+  svg.addEventListener('click', (event) => {
+    if (event.target === svg || event.target === world) clearFocus();
+  });
+
+  document.getElementById('atlasZoomIn').addEventListener('click', () => zoomAt(1.35, null, null, true));
+  document.getElementById('atlasZoomOut').addEventListener('click', () => zoomAt(.74, null, null, true));
+  document.getElementById('atlasCenter').addEventListener('click', () => { clearFocus(); setViewBox(initialView, true); });
+  document.getElementById('atlasDetailClose').addEventListener('click', () => clearFocus());
+
+  document.querySelectorAll('[data-atlas-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.atlasView)));
+  document.querySelectorAll('[data-atlas-group]').forEach((button) => button.addEventListener('click', () => setGroup(button.dataset.atlasGroup)));
+  document.querySelectorAll('.atlas-relation-filter input').forEach((input) => {
+    input.addEventListener('change', () => {
+      enabledKinds = new Set(Array.from(document.querySelectorAll('.atlas-relation-filter input:checked')).map((item) => item.value));
+      applyFilters();
     });
   });
-}
+  document.querySelectorAll('[data-list-focus]').forEach((button) => button.addEventListener('click', () => {
+    setView('graph');
+    focusNode(button.dataset.listFocus, true);
+  }));
 
-draw();
-setupFilters();
+  searchInput.addEventListener('input', () => runSearch(searchInput.value));
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      searchResults.hidden = true;
+      searchInput.setAttribute('aria-expanded', 'false');
+    }
+    if (event.key === 'Enter') {
+      const first = runSearch(searchInput.value)[0];
+      if (first) {
+        event.preventDefault();
+        setView('graph');
+        focusNode(first.id, true);
+        searchResults.hidden = true;
+      }
+    }
+  });
 
-// Keyboard
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')document.getElementById('card').classList.remove('open');
-});
+  document.getElementById('atlasFilterTrigger').addEventListener('click', () => {
+    const sidebar = document.getElementById('atlasSidebar');
+    const open = !sidebar.classList.contains('is-open');
+    sidebar.classList.toggle('is-open', open);
+    document.getElementById('atlasFilterTrigger').setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.getElementById('atlasFilterClose').addEventListener('click', closeFilters);
+
+  document.getElementById('atlasReset').addEventListener('click', () => {
+    searchInput.value = '';
+    runSearch('');
+    enabledKinds = new Set(['cluster', 'structure', 'bridge']);
+    document.querySelectorAll('.atlas-relation-filter input').forEach((input) => { input.checked = true; });
+    setGroup('all');
+    setView('graph');
+    setViewBox(initialView, true);
+    history.replaceState({}, '', location.pathname);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      clearFocus();
+      closeFilters();
+      searchResults.hidden = true;
+    }
+    if ((event.key === '+' || event.key === '=') && document.activeElement !== searchInput) zoomAt(1.25, null, null, true);
+    if (event.key === '-' && document.activeElement !== searchInput) zoomAt(.8, null, null, true);
+    if (event.key === '0' && document.activeElement !== searchInput) setViewBox(initialView, true);
+  });
+
+  const initial = new URL(location.href).searchParams;
+  const initialGroup = initial.get('group');
+  const initialViewMode = initial.get('view');
+  const initialFocus = initial.get('focus');
+  if (initialGroup && groupById.has(initialGroup)) setGroup(initialGroup);
+  if (initialViewMode === 'list') setView('list', false);
+  if (initialFocus && nodeById.has(initialFocus)) focusNode(initialFocus, true);
+})();
 </script>
-
-<!-- Static SEO content (JS graph above) -->
-<section class="sr-only" data-pagefind-body aria-label="Тематические кластеры сайта">
-  <h2 style="font-size:1.2rem;font-weight:700;color:#1c1917;margin-bottom:12px;">Тематические кластеры</h2>
-  <p style="color:#57534e;line-height:1.7;margin-bottom:16px;">42 страницы сайта объединены в 7 тематических кластеров через 180+ смысловых связей. Интерактивная карта выше позволяет исследовать связи; этот раздел — статический индекс для удобного чтения.</p>
-  <ul style="list-style:disc;padding-left:20px;color:#44403c;line-height:1.85;">
-    <li><strong>Джон Гилл — 7 материалов:</strong> исторический контекст, три части биографии (Человек / Учёный / Наследие), справочник, карта трудов и влияний. Первый русскоязычный систематический разбор по первоисточникам.</li>
-    <li><strong>Нагорная проповедь — 8 материалов:</strong> пять связанных исследований Матфея 5–7 и Луки 6, плюс хаб серии, 120+ источников и 21 верифицированная исследовательская находка.</li>
-    <li><strong>Баптисты России — 11 материалов:</strong> исследовательская серия от Тифлиса 1867 до наших дней. Три истока ЕХБ, советские гонения, ВСЕХБ, Инициативная группа, подпольная печать и справочник источников.</li>
-    <li><strong>Трудные тексты — 3 материала:</strong> «Крайне ли испорчено сердце верующего?» (Иеремия 17:9–10), «Римлянам 7: верующий или неверующий?», серийный хаб «Тайны человеческого сердца».</li>
-    <li><strong>Библейские карты — 3 материала:</strong> интерактивная карта пути Авраама (Бытие 11–25, 19 мест), интерактивная карта Исхода из Египта (Числа 33, 40 лет), хаб карт.</li>
-    <li><strong>Лендинги — 5 материалов:</strong> главная страница, каталог статей, биографии служителей, серия «Тёмная сторона кафедры», раздел «Конфессии».</li>
-  </ul>
-</section>
-
