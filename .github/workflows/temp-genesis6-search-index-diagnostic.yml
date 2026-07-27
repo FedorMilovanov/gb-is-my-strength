@@ -1,0 +1,49 @@
+name: Temporary Genesis 6 search-index diagnostic
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/temp-genesis6-search-index-diagnostic.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  inspect:
+    if: github.event.pull_request.head.ref == 'agent/genesis6-phaseC-materializer-20260727'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      ARTIFACT_ID: '8665455457'
+      ARTIFACT_SHA256: 61da2694efd1bea44c3885d3c60a293eebca813a10c555dc697d0072f7d0a4cd
+    steps:
+      - name: Inspect exact search-index failure artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/search-index-diag/files
+          curl --fail --silent --show-error --location \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            --output /tmp/search-index-diag/artifact.zip
+          test "$(sha256sum /tmp/search-index-diag/artifact.zip | cut -d' ' -f1)" = "$ARTIFACT_SHA256"
+          unzip -q /tmp/search-index-diag/artifact.zip -d /tmp/search-index-diag/files
+          echo '=== ARTIFACT FILES ==='
+          find /tmp/search-index-diag/files -type f -print | LC_ALL=C sort
+          echo '=== SEARCH INDEX INVENTORY JSON ==='
+          JSON="$(find /tmp/search-index-diag/files -type f -name search-index-policy-inventory.json -print -quit)"
+          test -n "$JSON"
+          cat "$JSON"
+          echo '=== SEARCH INDEX INVENTORY MARKDOWN ==='
+          MD="$(find /tmp/search-index-diag/files -type f -name search-index-policy-inventory.md -print -quit)"
+          test -n "$MD"
+          cat "$MD"
+          echo '=== SEO DIST TAIL ==='
+          SEO="$(find /tmp/search-index-diag/files -type f -name seo-dist.log -print -quit)"
+          test -n "$SEO"
+          tail -n 100 "$SEO"
