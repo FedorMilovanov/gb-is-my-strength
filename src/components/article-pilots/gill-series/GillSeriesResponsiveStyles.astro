@@ -62,13 +62,18 @@
 
     /*
      * Series articles use dark editorial quote surfaces on screen. The global
-     * paper palette intentionally removes saturated fills, so print must also
-     * restore an explicit readable foreground and a normal block formatting
-     * context. Keeping this rule in the shared series chrome prevents route-
-     * specific PDF patches and makes every semantic quote truly atomic.
+     * paper palette intentionally removes saturated fills, so print restores a
+     * readable paper treatment. Chromium can still fragment the final border
+     * of an ordinary block even with break-inside: avoid; a full-width inline
+     * block is an atomic inline-level box and therefore moves as one rectangle.
+     * Keeping this in the shared series chrome avoids route-specific PDF fixes.
      */
     [data-gill-v16] .quote-box {
-      display: block !important;
+      display: inline-block !important;
+      box-sizing: border-box !important;
+      inline-size: 100% !important;
+      max-inline-size: 100% !important;
+      vertical-align: top !important;
       color: #1a1a1a !important;
       -webkit-text-fill-color: currentColor !important;
       background: #f7f4ee !important;
