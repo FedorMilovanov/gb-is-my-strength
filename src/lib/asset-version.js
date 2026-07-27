@@ -24,6 +24,7 @@ export const ASSET_VERSIONS = {
   'js/highlights.js': '25484760',
   'js/nagornaya-bar-extras.js': '3c7e0bdd',
   'js/nagornaya-mobile-toc.js': '649d9217',
+  'js/reader-actions.js': '5a39eb2a',
   'js/reader-preferences-head.js': '2db7a79e',
   'js/reader-preferences.js': '7a15a6b0',
   'js/reader-state.js': 'b3deb501',
