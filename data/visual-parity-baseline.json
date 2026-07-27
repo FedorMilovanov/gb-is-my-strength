@@ -36,6 +36,16 @@
       "reviewedAt": "2026-07-22",
       "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
     },
+    "/biografii/": {
+      "mode": "native-contract",
+      "reason": "The biographies catalog is now a strict-native Astro route whose shelves, era sections and epigraph are SSR-visible without IntersectionObserver; the committed root HTML remains historical evidence rather than the render owner.",
+      "requiredGuards": [
+        "scripts/biografii-visual-parity-audit.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-27",
+      "reviewedSourceSha": "819a5541878326688bf15353e18208ddf3706d27"
+    },
     "/baptisty-rossii/": {
       "mode": "native-contract",
       "reason": "The strict-native series landing intentionally uses the approved compact gbs2 Astro layout; root legacy HTML is retained as historical evidence, not the render owner.",
