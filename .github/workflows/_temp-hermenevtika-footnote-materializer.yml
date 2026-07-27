@@ -28,7 +28,32 @@ jobs:
             exit 0
           fi
 
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/tmp/hermenevtika-materialize.js')
+          source = path.read_text(encoding='utf-8')
+          replacements = [
+              ('const helperCode = `${helperAnchor}\n', 'const helperCode = String.raw`${helperAnchor}\n'),
+              ('const browserHelper = `async function checkHermenevtikaFootnotes(browser) {', 'const browserHelper = String.raw`async function checkHermenevtikaFootnotes(browser) {'),
+              ('if (!byNumber.has(number)) bad(`${label}: footnote ${number} missing from native contract`);', "if (!byNumber.has(number)) bad(label + ': footnote ' + number + ' missing from native contract');"),
+              ('if (interactive.length) bad(`${label}: interactive descendants inside footnotes ${interactive.join(\', \')}`);', "if (interactive.length) bad(label + ': interactive descendants inside footnotes ' + interactive.join(', '));"),
+              ('else ok(`${label}: footnote tooltip descendants are static`);', "else ok(label + ': footnote tooltip descendants are static');"),
+              ('if (ordinaryScripture < 20) bad(`${label}: ordinary Scripture controls unexpectedly missing (${ordinaryScripture})`);', "if (ordinaryScripture < 20) bad(label + ': ordinary Scripture controls unexpectedly missing (' + ordinaryScripture + ')');"),
+              ('else ok(`${label}: ordinary Scripture controls remain active (${ordinaryScripture})`);', "else ok(label + ': ordinary Scripture controls remain active (' + ordinaryScripture + ')');"),
+              ('if (!fs.existsSync(sourcePath)) { bad(`Hermenevtika source missing: ${HERMENEUTIKA_SOURCE_REL}`); return; }', "if (!fs.existsSync(sourcePath)) { bad('Hermenevtika source missing: ' + HERMENEUTIKA_SOURCE_REL); return; }"),
+          ]
+          for old, new in replacements:
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one materializer patch anchor, got {count}: {old}')
+              source = source.replace(old, new)
+          path.write_text(source, encoding='utf-8')
+          PY
+
+          node --check .github/tmp/hermenevtika-materialize.js
           node .github/tmp/hermenevtika-materialize.js
+          git restore -- .github/tmp/hermenevtika-materialize.js
           node --check scripts/article-native-contract-audit.js
           node --check scripts/interactive-audit.js
           git diff --check
