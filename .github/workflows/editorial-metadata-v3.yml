@@ -44,6 +44,9 @@ jobs:
       - name: Validate editorial workflow transaction contract
         run: node scripts/editorial-metadata-workflow-contract-test.js
 
+      - name: Validate registry refresh preserves editorial decisions
+        run: node scripts/editorial-metadata-registry-preservation-test.js
+
       - name: Build production metadata surface and preserve committed freeze
         shell: bash
         run: |
@@ -86,6 +89,15 @@ jobs:
           trap - EXIT
           git diff --exit-code -- data/editorial-metadata.json
 
+      - name: Compare frozen and observed metadata snapshots
+        if: always()
+        run: >-
+          node scripts/editorial-metadata-diff-report.js
+          --before reports/editorial-metadata-frozen.json
+          --after reports/editorial-metadata-observed.json
+          --out reports/editorial-metadata-diff.json
+          --forbid-editorial-drift
+
       - name: Validate asset revisions without writing
         if: always()
         shell: bash
@@ -103,6 +115,7 @@ jobs:
             reports/editorial-metadata-*.log
             reports/editorial-metadata-frozen.json
             reports/editorial-metadata-observed.json
+            reports/editorial-metadata-diff.json
             reports/asset-revision-drift.log
           if-no-files-found: error
           retention-days: 7
