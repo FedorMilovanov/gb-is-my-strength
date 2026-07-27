@@ -84,7 +84,9 @@ check('Series satellites rendered by accordion', read('src/components/article-pi
 const relationFiles = [
   'src/lib/relations/engine.mjs',
   'src/lib/relations/engine.d.ts',
+  'src/lib/relations/compiled.ts',
   'data/relations.json',
+  'data/relations.schema.json',
   'src/pages/data/relations.compiled.json.ts',
   'scripts/check-relations.mjs',
   'scripts/project-relations-to-dist.mjs',
@@ -94,27 +96,50 @@ check('Relations: canonical compiler surface complete', relationFiles.every((fil
 check('Relations: browser assembly runtime removed', !fs.existsSync(path.join(ROOT, 'src/runtime/relationship-panel.js')) && !fs.existsSync(path.join(ROOT, 'js/relationship-panel.js')));
 
 const relationEngine = read('src/lib/relations/engine.mjs');
+const relationComposition = read('src/lib/relations/compiled.ts');
 const relationEndpoint = read('src/pages/data/relations.compiled.json.ts');
 const projector = read('scripts/project-relations-to-dist.mjs');
 const relationshipCss = read('src/runtime/relationship-panel.css');
 const atlasBody = read('src/components/map/AtlasBody.astro');
+const atlasNoScript = read('src/components/map/AtlasNoScriptFallback.astro');
 const atlasRuntime = read('src/runtime/atlas-runtime.js');
 const atlasRoute = read('src/pages/map/index.astro');
 const postbuild = read('scripts/astro-cache-bust-postbuild.js');
 
 check('Relations: compiler validates catalog, derives series and imports legacy fallback', relationEngine.includes('function compileCatalog') && relationEngine.includes('function compileSeries') && relationEngine.includes('function compileLegacy') && relationEngine.includes('legacy-import'));
 check('Relations: compiler creates ranked article projections without series duplication', relationEngine.includes('function buildProjections') && relationEngine.includes('sameSeries') && relationEngine.includes('.slice(0, 4)'));
-check('Relations: endpoint is prerendered and strict', relationEndpoint.includes('export const prerender = true') && relationEndpoint.includes('compileRelations({ graphData, seriesData, catalogData, strict: true })'));
+check('Relations: compiler fails on ambiguous series ownership', relationEngine.includes('seriesOwnerByUrl') && relationEngine.includes('belongs to both'));
+check('Relations: compiler validates draft and deprecated endpoints before status handling', relationEngine.indexOf('references invalid endpoints') < relationEngine.indexOf("status === 'draft'"));
+check('Relations: composition root compiles and recursively freezes once', relationComposition.includes("import graphData from '../../../data/links-graph.json'") && relationComposition.includes("import seriesData from '../../../data/series.json'") && relationComposition.includes("import catalogData from '../../../data/relations.json'") && relationComposition.includes('function deepFreeze') && (relationComposition.match(/compileRelations\(/g) || []).length === 1);
+check('Relations: endpoint serves canonical singleton', relationEndpoint.includes('export const prerender = true') && relationEndpoint.includes("import compiledRelations from '../../lib/relations/compiled'") && !relationEndpoint.includes('compileRelations('));
 check('Relations: projector creates semantic static navigation', projector.includes('data-relation-engine="1"') && projector.includes('removeElementsByClass') && projector.includes('compiled.projections.byNode') && projector.includes('relation-projection.json'));
 check('Relations: projector is idempotent and removes obsolete runtime', projector.includes("removeElementsByClass(updated, 'gb-relations-panel')") && projector.includes("rm(join(DIST, 'js', 'relationship-panel.js')"));
 check('Relations: print output hides navigation panel', /@media\s+print[\s\S]*\.gb-relations-panel/.test(relationshipCss));
 check('Postbuild: only Atlas browser runtime is materialized', postbuild.includes("source: 'src/runtime/atlas-runtime.js'") && !postbuild.includes("source: 'src/runtime/relationship-panel.js'") && !postbuild.includes('injectRelationshipAssets'));
 check('Postbuild: relation projector is a fail-closed phase', postbuild.includes('project-relations-to-dist.mjs') && postbuild.includes('spawnSync') && postbuild.includes('Relation projector failed'));
 
-check('Atlas: SSR, no-JS and endpoint share compiler', atlasBody.includes("import { compileRelations }") && atlasBody.includes('const compiled = compileRelations') && atlasRuntime.includes("var DATA_URL = '/data/relations.compiled.json'"));
-check('Atlas: runtime no longer fetches raw graph/series', !atlasRuntime.includes('/data/links-graph.json') && !atlasRuntime.includes('/data/series.json') && atlasRuntime.includes('assertCompiled'));
-check('Atlas: zoom, pan, focus, list and deep links remain', atlasRuntime.includes("svg.addEventListener('wheel'") && atlasRuntime.includes("svg.addEventListener('pointerdown'") && atlasRuntime.includes('function focusNode') && atlasRuntime.includes('function setView') && atlasRuntime.includes("initial.get('focus')"));
+check('Atlas: SSR, no-JS and endpoint share immutable composition root', atlasBody.includes("import compiledRelations from '../../lib/relations/compiled'") && atlasNoScript.includes("import compiledRelations from '../../lib/relations/compiled'") && relationEndpoint.includes("import compiledRelations from '../../lib/relations/compiled'") && !atlasBody.includes('compileRelations(') && !atlasNoScript.includes('compileRelations('));
+check('Atlas: runtime no longer fetches raw graph/series', !atlasRuntime.includes('/data/links-graph.json') && !atlasRuntime.includes('/data/series.json') && atlasRuntime.includes('function assertCompiled'));
+check('Atlas: runtime is fail-closed and never sanitizes a damaged graph into partial truth', atlasRuntime.includes('node stats mismatch') && atlasRuntime.includes('edge stats mismatch') && atlasRuntime.includes('duplicate edge semantic') && atlasRuntime.includes('function recover') && !atlasRuntime.includes('.innerHTML'));
+check('Atlas: zoom, pan, focus, list and deep links remain', atlasRuntime.includes("svg.addEventListener('wheel'") && atlasRuntime.includes("svg.addEventListener('pointerdown'") && atlasRuntime.includes('function focusNode') && atlasRuntime.includes('function setView') && atlasRuntime.includes("params.get('focus')") && atlasRuntime.includes("window.addEventListener('popstate'"));
+check('Atlas: keyboard graph and search navigation are native contracts', atlasRuntime.includes('function nearestNode') && atlasRuntime.includes('function handleNodeKeyboard') && atlasRuntime.includes('function moveSearchCursor') && atlasRuntime.includes("event.key === 'ArrowDown'"));
 check('Atlas: strict-native route has no old MapBody or set:html', atlasRoute.includes("import AtlasBody from '@/components/map/AtlasBody.astro'") && !atlasRoute.includes('MapBody') && !atlasBody.includes('set:html') && !fs.existsSync(path.join(ROOT, 'src/components/map/MapBody.astro')));
+
+function relationImportsOutsideComposition(dir) {
+  const offenders = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) offenders.push(...relationImportsOutsideComposition(file));
+    else if (/\.(astro|ts|tsx)$/.test(entry.name)) {
+      const relative = path.relative(ROOT, file).replace(/\\/g, '/');
+      if (relative === 'src/lib/relations/compiled.ts') continue;
+      if (fs.readFileSync(file, 'utf8').includes('compileRelations(')) offenders.push(relative);
+    }
+  }
+  return offenders;
+}
+const duplicateAstroCompilers = relationImportsOutsideComposition(path.join(ROOT, 'src'));
+check('Relations: no Astro surface recompiles graph outside composition root', duplicateAstroCompilers.length === 0, duplicateAstroCompilers.join(', '));
 
 syntaxCheck('src/lib/relations/engine.mjs');
 syntaxCheck('src/runtime/atlas-runtime.js');
