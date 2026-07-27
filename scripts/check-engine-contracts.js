@@ -37,12 +37,11 @@ check('Reader: Media Session contract', controller.includes('function mediaSessi
 check('Reader: chunk seek contract', controller.includes('function skipChunk') && controller.includes("setActionHandler('seekforward'"));
 check('Reader: shared settings selector', controller.includes('[data-gill-settings-open]'));
 
-const readerActions = read('js/reader-actions.js');
+const readerActions = read('src/runtime/reader-actions.js');
 const readerActionsRuntime = read('src/components/reader-platform/ReaderActionsRuntime.astro');
 const gillChrome = read('src/components/article-pilots/gill-series/GillSeriesChrome.astro');
 const gillResponsive = read('src/components/article-pilots/gill-series/GillSeriesResponsiveStyles.astro');
 const nagornayaRuntime = read('src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro');
-const assetVersions = read('src/lib/asset-version.js');
 check('Reader actions: print engine is a dedicated singleton',
   readerActions.includes('window.GBPrintEngine = printEngine') &&
   readerActions.includes('const PRINT_ENGINE_VERSION = 2.1') &&
@@ -51,16 +50,17 @@ check('Reader actions: print engine is a dedicated singleton',
   readerActions.includes("window.addEventListener('afterprint'"));
 check('Reader actions: capture-phase owns global actions before chrome propagation',
   readerActions.includes("document.addEventListener('click', onClick, true)") &&
-  readerActionsRuntime.includes('<script is:inline src={actionsSrc}></script>') &&
-  !readerActionsRuntime.includes('defer src={actionsSrc}'));
+  readerActionsRuntime.includes("import '../../runtime/reader-actions.js';") &&
+  readerActionsRuntime.includes('<script>'));
 check('Reader actions: print delegates pagination, records failure and calls window.print once',
   readerActions.includes('window.GBPrintPagination') &&
   readerActions.includes("status: 'failed'") &&
   readerActions.includes('if (printing) return copyReport(report)') &&
   readerActions.includes('window.print();'));
-check('Reader actions: cache-busted native component owns the runtime',
-  readerActionsRuntime.includes("assetUrl('js/reader-actions.js')") &&
-  assetVersions.includes("'js/reader-actions.js': 'de50d382'"));
+check('Reader actions: Astro module graph owns hashing and legacy root stays clean',
+  readerActionsRuntime.includes("import '../../runtime/reader-actions.js';") &&
+  !readerActionsRuntime.includes('assetUrl(') &&
+  !fs.existsSync(path.join(ROOT, 'js/reader-actions.js')));
 check('Reader actions: strict-native series use explicit owner without site.js',
   gillChrome.includes('ReaderActionsRuntime') && nagornayaRuntime.includes('ReaderActionsRuntime') &&
   !gillChrome.includes('/js/site.js') && !nagornayaRuntime.includes('/js/site.js'));
@@ -155,8 +155,9 @@ check('Relations: compiler fails on ambiguous series ownership', relationEngine.
 check('Relations: compiler validates draft and deprecated endpoints before status handling', relationEngine.indexOf('references invalid endpoints') < relationEngine.indexOf("status === 'draft'"));
 check('Relations: composition root compiles and recursively freezes once', relationComposition.includes("import graphData from '../../../data/links-graph.json'") && relationComposition.includes("import seriesData from '../../../data/series.json'") && relationComposition.includes("import catalogData from '../../../data/relations.json'") && relationComposition.includes('function deepFreeze') && (relationComposition.match(/compileRelations\(/g) || []).length === 1);
 check('Relations: endpoint serves canonical singleton', relationEndpoint.includes('export const prerender = true') && relationEndpoint.includes("import compiledRelations from '../../lib/relations/compiled'") && !relationEndpoint.includes('compileRelations('));
-check('Relations: projector creates semantic static navigation', projector.includes('data-relation-engine="1"') && projector.includes('removeElementsByClass') && projector.includes('compiled.projections.byNode') && projector.includes('relation-projection.json'));
+check('Relations: projector creates semantic static navigation', projector.includes('data-relation-engine="1"') && projector.includes('data-relation-group=') && projector.includes('removeElementsByClass') && projector.includes('compiled.projections.byNode') && projector.includes('relation-projection.json'));
 check('Relations: projector is idempotent and removes obsolete runtime', projector.includes("removeElementsByClass(updated, 'gb-relations-panel')") && projector.includes("rm(join(DIST, 'js', 'relationship-panel.js')"));
+check('Relations: legacy backlinks are removed, never CSS-masked', !relationshipCss.includes('.gbx-backlinks') && projector.includes("removeElementsByClass(updated, 'gbx-backlinks')"));
 check('Relations: native article layout excludes legacy site monolith', baseLayout.includes("includeLegacySiteScript = ogType !== 'article'") && baseLayout.includes("...(includeLegacySiteScript ? [assetUrl('js/site.js')] : [])"));
 check('Relations: print output hides navigation panel', /@media\s+print[\s\S]*\.gb-relations-panel/.test(relationshipCss));
 check('Postbuild: only Atlas browser runtime is materialized', postbuild.includes("source: 'src/runtime/atlas-runtime.js'") && !postbuild.includes("source: 'src/runtime/relationship-panel.js'") && !postbuild.includes('injectRelationshipAssets'));
@@ -193,7 +194,7 @@ function relationImportsOutsideComposition(dir) {
 const duplicateAstroCompilers = relationImportsOutsideComposition(path.join(ROOT, 'src'));
 check('Relations: no Astro surface recompiles graph outside composition root', duplicateAstroCompilers.length === 0, duplicateAstroCompilers.join(', '));
 
-syntaxCheck('js/reader-actions.js');
+syntaxCheck('src/runtime/reader-actions.js');
 syntaxCheck('src/lib/relations/engine.mjs');
 syntaxCheck('src/runtime/atlas-runtime.js');
 syntaxCheck('scripts/project-relations-to-dist.mjs');
