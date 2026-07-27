@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "seriesId": "genesis-6",
   "releaseState": "blocked",
   "readerOrder": [
@@ -12,17 +12,45 @@
   ],
   "research": {
     "repository": "FedorMilovanov/Research",
-    "commit": "1f03a2439767505ae66a7ba8d92195e5904a1a2a",
+    "commit": "0861a773ae757fe06ac8cd533f78e7098ab19179",
     "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
     "manifestPath": "data/genesis6-authority-manifest.json",
     "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
     "ledgerPath": "data/genesis6-publication-ledger.json",
     "contractPath": "GENESIS6_AUTHORITY_CONTRACT.md",
     "extension": {
+      "schemaVersion": 2,
       "manifestPath": "data/genesis6-enoch-extension-authority-manifest.json",
-      "manifestSha256": "cab3ba4a85fa539c7eacff4ecdb2d00bdd5054e4d4c4e4fe75d0baf99d1e9c36",
+      "manifestSha256": "6a2178281198bdaa7bc22cb0d57960d168ffb383e1ec617c634355bf38d457d4",
       "ledgerPath": "data/genesis6-enoch-extension-publication-ledger.json",
-      "validatorPath": "scripts/validate_genesis6_enoch_extension.py"
+      "validatorPath": "scripts/validate_genesis6_enoch_extension.py",
+      "blockingHolds": [
+        "1-enoch-10-8-version-control",
+        "1-enoch-15-8-12-demon-origin",
+        "1-enoch-70-71-son-of-man",
+        "astronomical-book-version-plurality"
+      ],
+      "preservedUncertainty": [
+        "parables-date-and-witness-form",
+        "animal-apocalypse-decomposition",
+        "chapter-108-relation-to-epistle",
+        "codex-panopolitanus-editorial-intention"
+      ],
+      "resolvedByPolicy": [
+        {
+          "id": "manuscript-image-rights",
+          "resolution": "no-manuscript-image-reproduction",
+          "evidence": "site main 522f0e1cae4fb9ce5a4631cfe856421f1952f4bc"
+        }
+      ],
+      "siteAcceptance": {
+        "acceptedHead": "b315998937e4fdd68e204d01660adb65707cd0e6",
+        "mergeCommit": "522f0e1cae4fb9ce5a4631cfe856421f1952f4bc",
+        "claimLevelGroups": {
+          "6A": 27,
+          "6B": 26
+        }
+      }
     }
   },
   "publicationPolicy": {
@@ -35,7 +63,9 @@
     "requiresAllSeriesArticlesDraftNoindex": true,
     "requiresExactCanonicalOverride": true,
     "requiresExactRelatedGraph": true,
-    "requiresOrderedForwardLinks": true
+    "requiresOrderedForwardLinks": true,
+    "requiresExactHoldClassification": true,
+    "requiresNoReproductionRightsResolution": true
   },
   "articles": [
     {
@@ -136,7 +166,7 @@
         "noindex": true
       },
       "rightsMode": "no-manuscript-image-reproduction",
-      "publicationStatus": "draft-noindex-hold"
+      "publicationStatus": "source-audited-version-hold"
     },
     {
       "articleKey": "6B",
@@ -156,7 +186,7 @@
         "noindex": true
       },
       "rightsMode": "no-manuscript-image-reproduction",
-      "publicationStatus": "draft-noindex-hold"
+      "publicationStatus": "source-audited-version-hold"
     }
   ],
   "siteArticles": [
