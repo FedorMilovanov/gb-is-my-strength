@@ -12,28 +12,44 @@
     return value ? JSON.parse(JSON.stringify(value)) : null;
   }
 
+  function errorMessage(error) {
+    return error instanceof Error ? error.message : String(error || 'unknown error');
+  }
+
   function preparePagination() {
     const pagination = window.GBPrintPagination;
-    if (!pagination || typeof pagination.prepare !== 'function') return null;
-    return pagination.prepare();
+    if (!pagination || typeof pagination.prepare !== 'function') {
+      return { status: 'unavailable' };
+    }
+    try {
+      return { status: 'prepared', report: pagination.prepare() || null };
+    } catch (error) {
+      console.error('[GBReaderActions] print pagination preparation failed', error);
+      return { status: 'failed', error: errorMessage(error) };
+    }
   }
 
   function resetPagination() {
     const pagination = window.GBPrintPagination;
-    if (pagination && typeof pagination.reset === 'function') pagination.reset();
+    if (!pagination || typeof pagination.reset !== 'function') return;
+    try {
+      pagination.reset();
+    } catch (error) {
+      console.error('[GBReaderActions] print pagination reset failed', error);
+    }
   }
 
   function preparePrint(source = 'api') {
     if (report?.prepared) return copyReport(report);
 
     preparationCount += 1;
-    const paginationReport = preparePagination();
+    const pagination = preparePagination();
     report = {
       version: PRINT_ENGINE_VERSION,
       prepared: true,
       source: String(source || 'api'),
       preparationCount,
-      pagination: paginationReport || null,
+      pagination,
     };
     document.documentElement.dataset.gbPrintPrepared = '1';
     return copyReport(report);
@@ -42,6 +58,7 @@
   function resetPrint() {
     resetPagination();
     printing = false;
+    report = null;
     document.documentElement.removeAttribute('data-gb-print-prepared');
   }
 
@@ -149,7 +166,7 @@
     goBack,
   });
 
-  document.addEventListener('click', onClick);
+  document.addEventListener('click', onClick, true);
   window.addEventListener('beforeprint', () => preparePrint('native'));
   window.addEventListener('afterprint', resetPrint);
 })();
