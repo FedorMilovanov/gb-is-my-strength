@@ -19,7 +19,7 @@ path.write_text(text.replace(old, new))
 final = path.read_bytes()
 final_sha = hashlib.sha256(final).hexdigest()
 final_git = subprocess.check_output(['git', 'hash-object', '--stdin'], input=final).decode().strip()
-if len(final) != 10205 or final_sha != '0ca22cf2a8166606ea4d994c03631757a9f27e943b74c0e31fe115a9c4c1087b' or final_git != '121bf728bf623e866ae2a3b6d7a227294827549a':
+if len(final) != 10201 or final_sha != 'd97af42dece1a3dd8dbf10eaef2a81c5925c620fcdd524b43f8f04ed20985703' or final_git != '27634c59d99f6c24a1a53e04847702d97bfad80f':
     raise SystemExit(f'patched Genesis6ArticlePage identity mismatch: bytes={len(final)} sha256={final_sha} git={final_git}')
 pathlib.Path('/tmp/genesis6-phaseC/evidence/component-patch.json').write_text(json.dumps({
     'path': str(path),

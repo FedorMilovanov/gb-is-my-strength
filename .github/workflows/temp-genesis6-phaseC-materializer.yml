@@ -47,7 +47,7 @@ jobs:
         run: |
           set -euo pipefail
           cat .tmp/genesis6-phaseC/runner/*.part > /tmp/genesis6-phaseC-runner.sh
-          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = '59347ab20811cd6cb3b7e7caf79a9b093f91d2dda08062cfaf8e9c22d13408c8'
+          test "$(sha256sum /tmp/genesis6-phaseC-runner.sh | cut -d' ' -f1)" = '7ccadea12893ad97a4ec5b9ae862ab206549e73b766b4feb5816c145dcbfe360'
           bash -n /tmp/genesis6-phaseC-runner.sh
           chmod 700 /tmp/genesis6-phaseC-runner.sh
 
