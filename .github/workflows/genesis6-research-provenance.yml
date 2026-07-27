@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: FedorMilovanov/Research
-          ref: 9bba3d45d3475468798f69e4b6067acae673b79c
+          ref: 145a52151f8d3bb6186addae2a99fa21401f9b09
           path: _external/Research
           fetch-depth: 0
           persist-credentials: false
@@ -51,12 +51,19 @@ jobs:
       - name: Prepare provenance evidence directory
         run: mkdir -p reports/genesis6-research-provenance
 
-      - name: Validate Research authority graph
+      - name: Validate legacy Research authority graph
         shell: bash
         run: |
           set -o pipefail
           python3 _external/Research/scripts/validate_genesis6_authority_manifest.py --root _external/Research \
             2>&1 | tee reports/genesis6-research-provenance/research-validator.log
+
+      - name: Validate Enoch extension authority graph
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 _external/Research/scripts/validate_genesis6_enoch_extension.py --root _external/Research \
+            2>&1 | tee reports/genesis6-research-provenance/enoch-extension-validator.log
 
       - name: Validate pinned site provenance
         shell: bash
