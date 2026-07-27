@@ -1,0 +1,51 @@
+name: Temporary Genesis 6 Phase C source snapshot
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/temp-genesis6-phaseC-source-snapshot.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    if: github.event.pull_request.head.ref == 'agent/genesis6-phaseC-source-snapshot-20260727'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout immutable Phase C source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 9ff36fab1e7776ce3de60daacdfd9d29066ae6c0
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = '9ff36fab1e7776ce3de60daacdfd9d29066ae6c0'
+          mkdir -p /tmp/genesis6-phaseC-source
+          git ls-tree -r --name-only HEAD > /tmp/genesis6-phaseC-source/tree.txt
+          printf '%s\n' "$(git rev-parse HEAD)" > /tmp/genesis6-phaseC-source/target-sha.txt
+
+      - name: Package current canonical owners
+        shell: bash
+        run: |
+          set -euo pipefail
+          include=()
+          for path in src data scripts docs css js .github/workflows package.json package-lock.json astro.config.mjs tsconfig.json; do
+            if [ -e "$path" ]; then include+=("$path"); fi
+          done
+          tar -czf /tmp/genesis6-phaseC-source/source.tar.gz "${include[@]}"
+          sha256sum /tmp/genesis6-phaseC-source/source.tar.gz > /tmp/genesis6-phaseC-source/source.tar.gz.sha256
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: genesis6-phaseC-source-9ff36fab
+          path: /tmp/genesis6-phaseC-source
+          if-no-files-found: error
+          retention-days: 7
