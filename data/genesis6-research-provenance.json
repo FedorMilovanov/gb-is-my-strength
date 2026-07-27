@@ -3,7 +3,7 @@
   "seriesId": "genesis-6",
   "research": {
     "repository": "FedorMilovanov/Research",
-    "commit": "1849c71d8b439dda63ed81d060abea9e77912531",
+    "commit": "82d342f21bff3f9a8ec5c084b69de6f7883dd3af",
     "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
     "manifestPath": "data/genesis6-authority-manifest.json",
     "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
@@ -11,7 +11,7 @@
     "contractPath": "GENESIS6_AUTHORITY_CONTRACT.md",
     "extension": {
       "manifestPath": "data/genesis6-enoch-extension-authority-manifest.json",
-      "manifestSha256": "8e44eebc5fae85d4f17d245729ab17b54e0c18ed56b503b12c42cf48909526c5",
+      "manifestSha256": "cab3ba4a85fa539c7eacff4ecdb2d00bdd5054e4d4c4e4fe75d0baf99d1e9c36",
       "ledgerPath": "data/genesis6-enoch-extension-publication-ledger.json",
       "validatorPath": "scripts/validate_genesis6_enoch_extension.py"
     }
@@ -30,75 +30,32 @@
       "slug": "enoh-prorochestvoval-iuda-14-15-4q204",
       "bundleId": "GEN6-PUB-ARTICLE-6",
       "readerBaseId": "GEN6-ARTICLE-6-XLVIII",
-      "orderedDocumentIds": [
-        "GEN6-MASTER-XLII",
-        "GEN6-AUTHORITY-XLVI",
-        "GEN6-SITE-READY-XLVIII",
-        "GEN6-TEXTUAL-XLIX",
-        "GEN6-RIGHTS-L",
-        "GEN6-PRECISION-LI",
-        "GEN6-ARTICLE-6-XLVIII",
-        "GEN6-ARTICLE-6-LI",
-        "GEN6-4Q204-SCHEMATIC-L"
-      ],
-      "rightsDecisionIds": [
-        "RIGHT-4Q204-OPEN-SCHEMATIC"
-      ]
+      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-6-XLVIII","GEN6-ARTICLE-6-LI","GEN6-4Q204-SCHEMATIC-L"],
+      "rightsDecisionIds": ["RIGHT-4Q204-OPEN-SCHEMATIC"]
     },
     {
       "article": 7,
       "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
       "bundleId": "GEN6-PUB-ARTICLE-7",
       "readerBaseId": "GEN6-ARTICLE-7-XLVIII",
-      "orderedDocumentIds": [
-        "GEN6-MASTER-XLII",
-        "GEN6-AUTHORITY-XLVI",
-        "GEN6-SITE-READY-XLVIII",
-        "GEN6-TEXTUAL-XLIX",
-        "GEN6-RIGHTS-L",
-        "GEN6-PRECISION-LI",
-        "GEN6-ARTICLE-7-XLVIII"
-      ],
-      "rightsDecisionIds": [
-        "RIGHT-P72-TEXT-LINK-ONLY"
-      ]
+      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-7-XLVIII"],
+      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
     },
     {
       "article": 8,
       "slug": "duhi-v-temnice-noi-kreshchenie-pobeda",
       "bundleId": "GEN6-PUB-ARTICLE-8",
       "readerBaseId": "GEN6-ARTICLE-8-XLVIII",
-      "orderedDocumentIds": [
-        "GEN6-MASTER-XLII",
-        "GEN6-AUTHORITY-XLVI",
-        "GEN6-SITE-READY-XLVIII",
-        "GEN6-TEXTUAL-XLIX",
-        "GEN6-RIGHTS-L",
-        "GEN6-PRECISION-LI",
-        "GEN6-ARTICLE-8-XLVIII",
-        "GEN6-ARTICLE-8-LI"
-      ],
-      "rightsDecisionIds": [
-        "RIGHT-P72-TEXT-LINK-ONLY"
-      ]
+      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-8-XLVIII","GEN6-ARTICLE-8-LI"],
+      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
     },
     {
       "article": 9,
       "slug": "blagovestie-mertvym-1-petra-4-5-6",
       "bundleId": "GEN6-PUB-ARTICLE-9",
       "readerBaseId": "GEN6-ARTICLE-9-XLVIII",
-      "orderedDocumentIds": [
-        "GEN6-MASTER-XLII",
-        "GEN6-AUTHORITY-XLVI",
-        "GEN6-SITE-READY-XLVIII",
-        "GEN6-TEXTUAL-XLIX",
-        "GEN6-RIGHTS-L",
-        "GEN6-PRECISION-LI",
-        "GEN6-ARTICLE-9-XLVIII"
-      ],
-      "rightsDecisionIds": [
-        "RIGHT-P72-TEXT-LINK-ONLY"
-      ]
+      "orderedDocumentIds": ["GEN6-MASTER-XLII","GEN6-AUTHORITY-XLVI","GEN6-SITE-READY-XLVIII","GEN6-TEXTUAL-XLIX","GEN6-RIGHTS-L","GEN6-PRECISION-LI","GEN6-ARTICLE-9-XLVIII"],
+      "rightsDecisionIds": ["RIGHT-P72-TEXT-LINK-ONLY"]
     }
   ],
   "draftArticles": [
@@ -106,21 +63,8 @@
       "articleKey": "6A",
       "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
       "bundleId": "GEN6-PUB-ARTICLE-6A",
-      "orderedDocumentIds": [
-        "GEN6-ENOCH-PROTOCOL-LVI",
-        "GEN6-ENOCH-VERSION-MATRIX-LIV",
-        "GEN6-ENOCH-ARCHITECTURE-LIII",
-        "GEN6-ENOCH-CORPUS-DRAFT-LIV",
-        "GEN6-ENOCH-CLAIM-GATE-LIV",
-        "GEN6-ENOCH-ACADEMIC-PASS-1-LV",
-        "GEN6-ENOCH-ACADEMIC-PASS-2-LV",
-        "GEN6-ENOCH-CODEX-AUDIT-LVI",
-        "GEN6-ENOCH-PRODUCTION-MAP-LVII"
-      ],
-      "requiredSiteState": {
-        "draft": true,
-        "noindex": true
-      },
+      "orderedDocumentIds": ["GEN6-ENOCH-PROTOCOL-LVI","GEN6-ENOCH-VERSION-MATRIX-LIV","GEN6-ENOCH-ARCHITECTURE-LIII","GEN6-ENOCH-CORPUS-DRAFT-LIV","GEN6-ENOCH-CLAIM-GATE-LIV","GEN6-ENOCH-ACADEMIC-PASS-1-LV","GEN6-ENOCH-ACADEMIC-PASS-2-LV","GEN6-ENOCH-CODEX-AUDIT-LVI","GEN6-ENOCH-PRODUCTION-MAP-LVII","GEN6-ENOCH-6A-FOOTNOTE-MAP-LIX"],
+      "requiredSiteState": {"draft": true, "noindex": true},
       "rightsMode": "no-manuscript-image-reproduction",
       "publicationStatus": "draft-noindex-hold"
     },
@@ -128,18 +72,8 @@
       "articleKey": "6B",
       "slug": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
       "bundleId": "GEN6-PUB-ARTICLE-6B",
-      "orderedDocumentIds": [
-        "GEN6-ENOCH-PROTOCOL-LVI",
-        "GEN6-ENOCH-VERSION-MATRIX-LIV",
-        "GEN6-ENOCH-CANON-MATRIX-LII",
-        "GEN6-ENOCH-ARCHITECTURE-LIII",
-        "GEN6-ENOCH-CLAIM-GATE-LIV",
-        "GEN6-ENOCH-PRODUCTION-MAP-LVII"
-      ],
-      "requiredSiteState": {
-        "draft": true,
-        "noindex": true
-      },
+      "orderedDocumentIds": ["GEN6-ENOCH-PROTOCOL-LVI","GEN6-ENOCH-VERSION-MATRIX-LIV","GEN6-ENOCH-CANON-MATRIX-LII","GEN6-ENOCH-ARCHITECTURE-LIII","GEN6-ENOCH-CLAIM-GATE-LIV","GEN6-ENOCH-PRODUCTION-MAP-LVII","GEN6-ENOCH-6B-SOURCE-PASS-LIX"],
+      "requiredSiteState": {"draft": true, "noindex": true},
       "rightsMode": "no-manuscript-image-reproduction",
       "publicationStatus": "draft-noindex-hold"
     }
