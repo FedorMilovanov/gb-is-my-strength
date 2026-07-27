@@ -124,7 +124,7 @@ jobs:
           import json, subprocess
           manifest = json.load(open('/tmp/genesis6-phaseC/package/manifest.json'))
           expected = [entry['path'] for entry in manifest['files']]
-          actual = subprocess.check_output(['git', 'diff', '--name-only', '--no-renames', 'HEAD']).decode().splitlines()
+          actual = subprocess.check_output(['git', 'ls-files', '--modified', '--others', '--exclude-standard']).decode().splitlines()
           if actual != expected:
               raise SystemExit(f'diff mismatch\nexpected={expected}\nactual={actual}')
           forbidden = [p for p in actual if p.startswith('.github/') or p.startswith('src/content/articles/') or p.startswith('css/') or p in {'feed.xml','sitemap.xml'}]
