@@ -59,7 +59,7 @@ for (const edge of compiled.edges) {
 }
 const candidate = compiled.nodes
   .map((node) => ({ node, edges: degrees.get(node.id) || [] }))
-  .filter((entry) => new Set(entry.edges.map((edge) => edge.kind)).size >= 2)
+  .filter((entry) => new Set(entry.edges.map((edge) => edge.atlasKind)).size >= 2)
   .sort((a, b) => b.edges.length - a.edges.length || a.node.id.localeCompare(b.node.id))[0];
 
 if (!candidate) {
@@ -68,7 +68,7 @@ if (!candidate) {
 }
 
 const kindCounts = new Map();
-for (const edge of candidate.edges) kindCounts.set(edge.kind, (kindCounts.get(edge.kind) || 0) + 1);
+for (const edge of candidate.edges) kindCounts.set(edge.atlasKind, (kindCounts.get(edge.atlasKind) || 0) + 1);
 const disabledKind = [...kindCounts.entries()]
   .filter(([, count]) => candidate.edges.length - count > 0)
   .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))[0]?.[0];
