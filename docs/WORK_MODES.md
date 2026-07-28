@@ -1,27 +1,41 @@
 # Work Modes — FAST / LANE / SYSTEM
 
 **Updated:** 2026-07-28  
-**Current policy version:** 4.2
+**Current policy version:** 4.3
 
-Purpose: choose proportionate verification without duplicating execution, ownership and cleanup rules.
+Purpose: choose proportionate verification without turning every change into the same ceremony.
 
-Canonical companion policies:
+## 0. Operational entrypoint
 
-- [GIT_WORKTREE_POLICY.md](GIT_WORKTREE_POLICY.md) — the normal branch/worktree/checkpoint path;
-- [LANE_LOCK_POLICY.md](LANE_LOCK_POLICY.md) — ownership and overlap;
-- [BRANCH_LIFECYCLE_V4.md](BRANCH_LIFECYCLE_V4.md) — remote refs, recovery and cleanup;
-- [OWNER-INVARIANTS.md](OWNER-INVARIANTS.md) — owner-sensitive requirements;
-- [AGENT_PUSH_MODEL.md](AGENT_PUSH_MODEL.md) — authentication and exact remote evidence.
+For every mutation, do only this minimum pre-flight:
+
+1. read the current owner instruction;
+2. inspect current `main` and record a rollback SHA;
+3. inspect open PRs or active branches that may touch the intended files or surface;
+4. choose `FAST`, `LANE` or `SYSTEM`;
+5. identify the current source of truth and the checks that directly cover the change.
+
+Do **not** reread all 1,000+ lines of `AGENTS.md`, its changelog, unrelated architecture sections or every governance document before each task. The older blanket full-read wording in `AGENTS.md` is superseded by this operational entrypoint: read its root pre-flight and only the sections governing the surface being changed.
+
+Read companion policies only when applicable:
+
+- [GIT_WORKTREE_POLICY.md](GIT_WORKTREE_POLICY.md) — branch/worktree/checkpoint mechanics;
+- [LANE_LOCK_POLICY.md](LANE_LOCK_POLICY.md) — parallel agents, shared surfaces or ownership overlap;
+- [BRANCH_LIFECYCLE_V4.md](BRANCH_LIFECYCLE_V4.md) — branch recovery, supersession or cleanup;
+- [OWNER-INVARIANTS.md](OWNER-INVARIANTS.md) — owner-sensitive content, data or UI;
+- [AGENT_PUSH_MODEL.md](AGENT_PUSH_MODEL.md) — authentication, remote publication or deploy evidence.
+
+Inspect environment capabilities only when the planned commands depend on them. A wording-only FAST change does not require a full CPU/RAM/disk/Playwright inventory.
 
 ## 1. Authority before mutation
 
-Inspect:
+Use this order:
 
-1. the current owner instruction;
-2. open issues and PRs;
-3. current `main`, rollback SHA and active branch heads;
-4. exact file/surface overlap;
-5. current source-of-truth files and applicable checks.
+1. current owner instruction;
+2. open issues and PRs relevant to the intended surface;
+3. current `main`, exact branch heads and exact-head CI;
+4. current source-of-truth files;
+5. verified historical evidence only when current sources do not answer the question.
 
 For route work, primary sources are `migration/page-ownership.json` and `data/route-profiles/*.json`. The lane index and historical reports are navigation or evidence, not independent authority.
 
@@ -33,13 +47,13 @@ All normal changes use a branch and PR. Direct `main` mutation is reserved for a
 |---|---|---|
 | `FAST` | one bounded low-risk change without shared runtime ownership | `git diff --check` plus the directly relevant contract |
 | `LANE` | route, feature or multi-file refactor with named owner | targeted data/route/browser/visual checks |
-| `SYSTEM` | shared/global/control-plane/governance | shared/control-plane checks and exact-head barrier |
+| `SYSTEM` | shared/global/control-plane/governance | checks for the touched control-plane surface and exact-head evidence |
 
 Risk mode does not decide when to push. Execution and economical checkpoints are defined in `GIT_WORKTREE_POLICY.md`.
 
 ## 3. Minimum declaration
 
-Record only what is needed to prevent collision and prove the result:
+Record only what prevents collision and proves the result:
 
 ```md
 Mode: FAST | LANE | SYSTEM
@@ -66,55 +80,44 @@ named branch in dedicated worktree
 → squash merge
 ```
 
-A larger initiative may be decomposed into multiple non-overlapping, independently mergeable lanes. One lane must not fan out into duplicate branches.
+A larger initiative may use multiple non-overlapping, independently mergeable lanes. One lane must not fan out into duplicate branches.
 
-## 5. Verification layers
+## 5. Proportionate verification
 
-### Iteration evidence
+Run only checks that can fail because of the current diff.
 
-Run only checks that directly cover the current edit:
+| Change | Minimum evidence |
+|---|---|
+| wording-only FAST | `git diff --check` plus direct link/content/contract check |
+| docs-only governance | `git diff --check`, reference integrity, exact-head Shared Files Guard |
+| workflow/control-plane code | shared-files guard, workflow checks/lint and control-plane audit |
+| route/content/data | targeted route, schema, content or browser contracts |
+| runtime/shared/refactor | targeted contracts plus the applicable final publication barrier |
+
+Useful commands include:
 
 ```bash
 git diff --check
 
-# route / registry / metadata
 npm run migration:metadata:check
 npm run native:runtime:audit:strict
-
-# content / MDX / shared data
 npm run data:consistency
 npm run content:parity
 npm run mdx:structure:audit
 
-# system / workflows / shared files
 npm run guard:shared-files
 npm run workflows:check
 npm run control-plane:audit
 npm run workflows:lint
-```
 
-Checkpoint pushes may precede the full suite. Do not call a checkpoint green unless the claimed evidence covers its exact SHA.
-
-### Exact-head PR evidence
-
-Before merge, required checks must cover the final PR head. A green run on an earlier commit is not evidence for a moved head.
-
-### Final barrier
-
-For production, shared, refactor or system impact:
-
-```bash
 npm run validate:static-publication
-npm run guard:shared-files
 ```
 
-Add current route/browser/visual/source contracts for the touched surface. A docs-only SYSTEM PR may use a narrower barrier when runtime/build cannot be affected, but exact-head Shared Files Guard and reference integrity still apply.
+This is a toolbox, not a command bundle. Do not run workflow lint for a prose-only file, a full production build for an isolated policy wording change, or browser suites for a file that cannot affect a route.
 
-### Production witness
+Checkpoint pushes may precede the full suite. Before merge, required checks must cover the final PR head. A green run on an earlier commit is not evidence for a moved head.
 
-A merged source commit does not prove production. Record exact deployed/live SHA and live evidence separately when production is claimed.
-
-A failed or unavailable check is never silently omitted; record the blocker.
+A merged source commit does not prove production. Record deployed/live evidence only when production is claimed. Failed or unavailable checks that affect confidence must be stated; irrelevant checks need not be mentioned.
 
 ## 6. Mode boundaries
 
@@ -167,10 +170,11 @@ Do not edit it manually to add or redefine a route. Canonical migration modes re
 
 ## 8. Out-of-lane findings
 
+Record only enough to route the finding:
+
 ```md
 Observed at: <exact SHA / file / route>
 Evidence: <source, test or artifact>
-Not changed because: <ownership boundary>
 Proposed lane: <name>
 Recovery risk: <none / possible unique branch material>
 ```
@@ -180,9 +184,9 @@ Recovery risk: <none / possible unique branch material>
 Before merge:
 
 - actual diff matches declared scope;
-- final SHA passed required checks;
-- review threads are resolved;
-- no temporary workflow, trigger, writer or patcher remains;
+- final SHA passed the checks that apply to the diff;
+- unresolved review threads are handled;
+- temporary automation introduced by the lane is removed;
 - production is not claimed without deploy/live evidence.
 
 Before deletion, follow `BRANCH_LIFECYCLE_V4.md`. Never delete solely because a PR is closed or a successor claims the work is superseded.
