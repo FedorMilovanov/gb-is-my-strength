@@ -1,12 +1,12 @@
 # Branch Lifecycle v4
 
-**Policy version:** 4.2  
+**Policy version:** 4.3  
 **Effective:** after merge into `main`  
 **Goal:** preserve useful work without turning remote refs into an unreviewed archive.
 
 ## 1. Safety invariant
 
-No branch is closed, rewritten or deleted because of its name, age, closed PR state, or the word `superseded` alone.
+No branch is closed, rewritten or deleted because of its name, age, closed PR state, inactivity or the word `superseded` alone.
 
 Deletion requires an explicit disposition based on actual content, PR history and current `main`.
 
@@ -25,7 +25,7 @@ Do not rename, rebase, force-push, close or delete active branches merely to sat
 
 One independently mergeable lane has one owner, one canonical remote branch and one PR.
 
-A larger initiative may use multiple explicit non-overlapping lanes when each lane has its own bounded scope, checks and rollback. Do not create successor chains or duplicate refs for the same lane.
+A larger initiative may use multiple explicit non-overlapping lanes when each lane has its own bounded scope, checks and rollback. Do not create duplicate refs for the same lane.
 
 | Category | Remote | Condition |
 |---|---:|---|
@@ -36,23 +36,11 @@ A larger initiative may use multiple explicit non-overlapping lanes when each la
 | Diagnostic/probe/snapshot | no | detached worktree or Actions artifact |
 | Temporary CI trigger | no | use `workflow_dispatch` or an exact PR/SHA |
 
-## 4. Durability contract
+Publication and checkpoint mechanics live in [GIT_WORKTREE_POLICY.md](GIT_WORKTREE_POLICY.md). A remote product branch should normally gain a draft PR with its first meaningful pushed commit; an empty branch is not created merely to reserve a name.
 
-For productive work:
+## 4. Healthy remote state
 
-1. create a named branch in a dedicated worktree;
-2. declare owner, bounded scope, base SHA and overlap decision;
-3. work locally until the first meaningful recoverable unit exists;
-4. commit, push and open the draft PR;
-5. add later checkpoints only at meaningful or real loss-risk boundaries;
-6. update PR status when state changes, not after every push;
-7. record an explicit handoff before another agent continues the lane.
-
-Pushed commits are recoverable. Uncommitted or unpushed changes may be lost. Detached work is valid only while the result is disposable.
-
-## 5. Healthy remote state
-
-There is no arbitrary repository-wide cap on active product branches. The healthy state is defined by accountability:
+There is no arbitrary repository-wide cap on active product branches. Healthy state is defined by accountability:
 
 ```text
 every active product branch has an owner, bounded lane and visible PR or declared short exception
@@ -61,22 +49,23 @@ every active product branch has an owner, bounded lane and visible PR or declare
 0 abandoned branches silently accumulating without owner or disposition
 ```
 
-Concurrency is limited by real ownership and file overlap, not by a fixed number such as three. Three agents may produce three PRs; an additional independent deploy or governance lane may legitimately exist at the same time.
+Concurrency is limited by real ownership and file overlap, not a fixed number.
 
-## 6. Review points, not deletion timers
+## 5. When review is needed
 
-| State | Review point | Required action |
-|---|---:|---|
-| Remote branch without PR | 24 hours | open draft PR, record a short exception, or classify |
-| Open PR without movement | 7 days | ask owner for status or blocker |
-| Open PR without movement | 14 days | decide continue, split, supersede or close |
-| Closed unmerged PR | within 7 days | file-level recovery classification |
-| Unknown branch | immediately | protect and add to forensic review |
-| Detached diagnostic worktree | end of task | preserve evidence, then remove locally |
+Review a branch when:
 
-A review point never authorizes deletion by itself.
+- it has no visible owner or PR;
+- its PR was closed without merge;
+- a successor or recovery is proposed;
+- cleanup is requested;
+- its content or relationship to `main` is unknown.
 
-## 7. Disposition classes
+These are investigation triggers, never deletion authority. A scheduled report is not required: run the read-only inventory manually when a real review or cleanup decision exists. Its pull-request trigger only self-tests changes to the report itself.
+
+## 6. Disposition classes
+
+Final disposition uses one of:
 
 ```text
 ACTIVE_OR_IN_FLIGHT
@@ -100,7 +89,9 @@ UNKNOWN_PROTECTED
 | `SELECTIVE_RECOVERY` | rebuild justified delta from fresh `main` |
 | `UNKNOWN_PROTECTED` | keep and investigate |
 
-## 8. Successor rule
+The hygiene report emits **preliminary review queues**, not final disposition. Fresh unresolved branches are protected for owner review before ancestry-based cleanup labels are considered. Every report row remains deletion-blocked.
+
+## 7. Successor rule
 
 A successor may replace an older lane only when the record identifies:
 
@@ -116,29 +107,27 @@ Final predecessor disposition:
 
 Do not close an actively used predecessor until the successor is real and the owner accepts the replacement boundary.
 
-## 9. Decomposition signals
+## 8. Decomposition signals
 
-Split a change when it contains independently mergeable or independently reversible units, unrelated purposes, different owners, or mixed product and governance/workflow changes.
+Split a change when it contains independently mergeable or reversible units, unrelated purposes, different owners, or mixed product and governance/workflow changes.
 
-File count, line count and subsystem count are review signals, not automatic gates. A large generated or mechanical diff may be one coherent unit; a five-file change may still contain two unrelated transactions.
+File count and line count are review signals, not automatic gates. A large mechanical diff may be one coherent unit; a five-file change may contain two unrelated transactions.
 
-When a safe split is not practical, document review order, rollback units, tests and the reason the transaction must remain together.
+When a safe split is not practical, document review order, rollback units, tests and why the transaction remains together.
 
-Checkpoint commits do not justify an oversized or mixed final PR. Durability and decomposition are separate concerns.
+## 9. Merge and deletion
 
-## 10. Merge and deletion
-
-Prefer squash merge after exact-head evidence when one PR represents one logical change. Squash keeps `main` concise while allowing useful intermediate checkpoints on the branch.
+Prefer squash merge after exact-head evidence when one PR represents one logical change.
 
 Do not enable automatic deletion of merged branches until the existing branch inventory is reconciled and active-agent exceptions are explicit.
 
 For old squash-merged branches, ancestry alone may be insufficient. Use PR records, patch equivalence or file-level comparison before disposition.
 
-## 11. Cleanup waves
+## 10. Cleanup
 
 When cleanup is owner-approved:
 
-1. export a complete inventory;
+1. export an inventory;
 2. exclude active and unknown work;
 3. classify actual content;
 4. recover justified unique deltas from fresh `main`;
