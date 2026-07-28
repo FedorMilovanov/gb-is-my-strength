@@ -1,6 +1,6 @@
 # Branch Lifecycle v4
 
-**Policy version:** 4.0  
+**Policy version:** 4.1  
 **Effective:** after merge into `main`  
 **Goal:** preserve every useful result while preventing remote refs from becoming an unreviewed archive.
 
@@ -44,7 +44,44 @@ Permitted categories:
 | Diagnostic/probe/snapshot | no | local detached worktree or Actions artifact |
 | Temporary CI trigger | no | use `workflow_dispatch` or an exact PR/SHA |
 
-## 4. Target branch budget
+## 4. Agent durability contract
+
+Productive work is not allowed to depend on one local runtime surviving until the end of the task.
+
+For every productive agent task:
+
+1. create a named local branch in its own worktree before substantive edits;
+2. push that canonical branch early;
+3. push the first meaningful recoverable commit without waiting for task completion;
+4. open a draft PR immediately after the first meaningful pushed commit;
+5. continue with bounded checkpoint commits and pushes;
+6. keep the PR status block current;
+7. record the exact last pushed SHA before handoff, pause or completion.
+
+Expected status record:
+
+```md
+Status: active | blocked | ready-for-review
+Owner / agent:
+Last pushed SHA:
+Completed:
+In progress:
+Next:
+Known failing or unavailable checks:
+```
+
+A checkpoint is required after a coherent unit of work and before any session, runtime, context or ownership boundary where losing the current delta would be costly.
+
+Consequences of interruption:
+
+- pushed commits are durable and can be resumed from the remote branch;
+- the draft PR provides visible ownership, scope, file diff and progress;
+- uncommitted or unpushed changes may be lost and are not treated as preserved;
+- another agent must not continue on the branch without explicit handoff or owner decision.
+
+Detached worktrees remain valid only for disposable diagnostics. When diagnostic work becomes useful product material or expensive-to-reproduce evidence, it must be promoted immediately to the one canonical branch and pushed.
+
+## 5. Target branch budget
 
 After the current multi-agent wave and forensic cleanup, target:
 
@@ -57,11 +94,14 @@ After the current multi-agent wave and forensic cleanup, target:
 
 This is a target state, not a command to terminate active work.
 
-## 5. Review timers, not deletion timers
+Three simultaneous productive agents normally produce three visible draft PRs. That is expected active work, not branch clutter.
+
+## 6. Review timers, not deletion timers
 
 | State | Review point | Required action |
 |---|---:|---|
 | New remote branch without PR | 24 hours | open draft PR, mark active exception, or classify |
+| Product branch with no pushed checkpoint | same work session | push recoverable progress or record why no product delta exists |
 | Open PR without movement | 7 days | ask owner/agent for next action |
 | Open PR without movement | 14 days | decide continue, split, supersede or close |
 | Closed unmerged PR | within 7 days | file-level recovery classification |
@@ -70,7 +110,7 @@ This is a target state, not a command to terminate active work.
 
 Passing a review point never authorizes deletion by itself.
 
-## 6. Disposition classes
+## 7. Disposition classes
 
 Every candidate branch receives one class:
 
@@ -98,7 +138,7 @@ Actions:
 | `SELECTIVE_RECOVERY` | rebuild justified delta from fresh `main` in a new PR |
 | `UNKNOWN_PROTECTED` | keep; investigate |
 
-## 7. Successor rule
+## 8. Successor rule
 
 A successor may replace an older branch/PR only when the record includes:
 
@@ -114,7 +154,7 @@ Final predecessor disposition:
 
 Do not close an actively used predecessor until the successor is real and the owner accepts the replacement boundary.
 
-## 8. Large PR decomposition
+## 9. Large PR decomposition
 
 A decomposition review is required when any threshold is crossed:
 
@@ -126,15 +166,19 @@ A decomposition review is required when any threshold is crossed:
 
 A large PR is not automatically invalid, but its description must document review order, rollback units, tests and why a safe split is not yet possible.
 
-## 9. Merge and deletion
+Checkpoint commits do not justify an oversized final PR. Durability and decomposition are separate requirements.
+
+## 10. Merge and deletion
 
 Preferred merge model is squash merge after exact-head evidence. Repository settings are changed separately and only with owner approval.
+
+Squash merge allows agents to push frequent recoverability checkpoints without polluting final `main` history.
 
 Automatic deletion of merged branches must not be enabled until the current branch inventory has been reconciled and active-agent exceptions are explicit.
 
 Old squash-merged branches require PR records, `git cherry`, patch equivalence or file-level comparison; `git branch --merged` is insufficient.
 
-## 10. Cleanup waves
+## 11. Cleanup waves
 
 When the owner starts cleanup:
 
