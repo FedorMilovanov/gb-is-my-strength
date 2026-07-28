@@ -23,16 +23,8 @@ function Invoke-Git {
 }
 
 Invoke-Git rev-parse --is-inside-work-tree | Out-Null
-
-$remotes = @(Invoke-Git remote)
-$baseParts = $Base -split "/", 2
-if ($baseParts.Count -eq 2 -and $remotes -contains $baseParts[0]) {
-    Invoke-Git fetch $baseParts[0] $baseParts[1] --prune
-}
-else {
-    # Local branch, tag or exact SHA: refresh all remotes without assuming origin/main.
-    Invoke-Git fetch --all --prune
-}
+Invoke-Git fetch --all --prune
+Invoke-Git rev-parse --verify "$Base^{commit}" | Out-Null
 
 $date = Get-Date -Format "yyyy-MM-dd"
 $slug = $Name.ToLowerInvariant()
@@ -42,6 +34,7 @@ $parentPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Parent))
 if ($Mode -eq "Task") {
     $branch = "lane/$slug-$date"
     $path = Join-Path $parentPath "gb-wt-$slug"
+    Invoke-Git check-ref-format --branch $branch | Out-Null
     Invoke-Git worktree add -b $branch $path $Base
     Write-Host ""
     Write-Host "Created local product worktree:"

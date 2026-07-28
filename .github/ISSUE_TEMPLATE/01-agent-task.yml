@@ -1,5 +1,5 @@
-name: Agent task
-description: Bounded product, content, route or system change
+name: Work item
+description: Bounded product, content, route or system result
 title: "[Task]: "
 labels: ["triage"]
 body:
@@ -7,7 +7,7 @@ body:
     id: outcome
     attributes:
       label: Required outcome
-      description: What must be true when the task is complete?
+      description: What must be true when this lane is complete?
       placeholder: Describe one verifiable result.
     validations:
       required: true
@@ -24,69 +24,34 @@ body:
     validations:
       required: true
 
-  - type: dropdown
-    id: execution
-    attributes:
-      label: Initial execution
-      options:
-        - Local branch worktree
-        - Detached diagnostic worktree
-        - Recovery from an existing branch
-    validations:
-      required: true
-
   - type: textarea
-    id: ownership
+    id: lane
     attributes:
-      label: Ownership and active overlaps
+      label: Lane, owner and scope
+      description: Use one independently mergeable lane. Include only overlap information that is known now.
       placeholder: |
-        Owner:
-        Related open PRs/branches:
-        Shared surfaces already owned by another agent:
+        Owner or unassigned:
+        Routes/files/surfaces:
+        Related active PRs or overlap:
     validations:
       required: true
 
   - type: textarea
-    id: scope
-    attributes:
-      label: Routes and file boundary
-      placeholder: |
-        Routes:
-        Files allowed:
-        Files forbidden:
-    validations:
-      required: true
-
-  - type: textarea
-    id: truth
-    attributes:
-      label: Source of truth
-      description: Current files, exact SHA, owner decision or verified sources.
-    validations:
-      required: true
-
-  - type: textarea
-    id: acceptance
+    id: evidence
     attributes:
       label: Acceptance evidence
+      description: Optional at intake; complete before merge.
       placeholder: |
-        Commands:
-        Browser profiles:
-        Visual/source contracts:
-        Production witness required: yes/no
+        Source of truth:
+        Relevant checks:
+        Production evidence needed: yes/no
     validations:
-      required: true
+      required: false
 
   - type: checkboxes
-    id: lifecycle
+    id: safety
     attributes:
-      label: Lifecycle agreement
+      label: Ownership safety
       options:
-        - label: I will not modify or delete another active agent branch.
-          required: true
-        - label: Diagnostic work will not create a remote branch.
-          required: true
-        - label: This task will use at most one canonical product branch and PR.
-          required: true
-        - label: Out-of-scope findings will be recorded separately.
+        - label: I will not modify another owner’s active branch; overlap will be resolved before mutation.
           required: true
