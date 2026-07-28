@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
   push:
-    branches: [main, "lane/**", "agent/**", "hotfix/**", "release/**"]
+    branches: [main, "lane/**", "agent/**"]
 
 concurrency:
   group: shared-files-guard-${{ github.ref }}
