@@ -18,6 +18,7 @@ const COMPILED_PATH = join(DIST, 'data', 'relations.compiled.json');
 const CSS_SOURCE = join(ROOT, 'src', 'runtime', 'relationship-panel.css');
 const CSS_PUBLIC_PATH = 'css/relationship-panel.css';
 const CSS_TARGET = join(DIST, CSS_PUBLIC_PATH);
+const REPORT_TARGET = join(ROOT, 'reports', 'relation-projection.json');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 
@@ -170,9 +171,9 @@ function injectCss(html, cssHref) {
 async function walk(dir, out = []) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.')) continue;
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) await walk(path, out);
-    else if (path.endsWith('.html')) out.push(path);
+    const entryPath = join(dir, entry.name);
+    if (entry.isDirectory()) await walk(entryPath, out);
+    else if (entryPath.endsWith('.html')) out.push(entryPath);
   }
   return out;
 }
@@ -249,7 +250,7 @@ if (report.missingProjectionRoutes.length) {
   throw new Error(`Missing relation projections for: ${report.missingProjectionRoutes.join(', ')}`);
 }
 if (!DRY_RUN) {
-  await mkdir(join(DIST, 'reports'), { recursive: true });
-  await writeFile(join(DIST, 'reports', 'relation-projection.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  await mkdir(dirname(REPORT_TARGET), { recursive: true });
+  await writeFile(REPORT_TARGET, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 }
 console.log(`✅ relation projection: ${report.projectedPanels} panels, ${report.legacyBlocksRemoved} legacy blocks removed, runtime fetch eliminated`);
