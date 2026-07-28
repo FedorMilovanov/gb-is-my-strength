@@ -1,0 +1,79 @@
+name: Branch recovery
+description: Classify a possibly lost, superseded or abandoned branch
+title: "[Recovery]: "
+labels: ["triage", "recovery"]
+body:
+  - type: input
+    id: branch
+    attributes:
+      label: Exact remote branch
+      placeholder: origin/lane/...
+    validations:
+      required: true
+
+  - type: input
+    id: head
+    attributes:
+      label: Exact head SHA
+    validations:
+      required: true
+
+  - type: textarea
+    id: ownership
+    attributes:
+      label: Active-owner check
+      placeholder: |
+        Open PR:
+        Last update:
+        Current agent/owner:
+        Why this is not active in-flight work:
+    validations:
+      required: true
+
+  - type: textarea
+    id: comparison
+    attributes:
+      label: Comparison with current main
+      placeholder: |
+        main SHA:
+        ahead/behind:
+        changed files:
+        unique commits:
+        patch-equivalent commits:
+    validations:
+      required: true
+
+  - type: dropdown
+    id: classification
+    attributes:
+      label: Preliminary classification
+      options:
+        - Active or in-flight — do not touch
+        - Unknown — protect and investigate
+        - Fully represented by ancestry
+        - Squash or patch equivalent
+        - Diagnostic disposable
+        - Superseded with verified chain
+        - Unique evidence or prototype
+        - Selective product recovery
+    validations:
+      required: true
+
+  - type: textarea
+    id: disposition
+    attributes:
+      label: Proposed disposition and evidence
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: This classification is not based only on the branch name, age or PR state.
+          required: true
+        - label: No active agent branch will be reset, closed, rebased or deleted.
+          required: true
+        - label: Unique content was checked file-by-file or by patch equivalence.
+          required: true

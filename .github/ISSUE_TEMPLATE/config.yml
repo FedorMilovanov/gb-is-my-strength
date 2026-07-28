@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security-sensitive report
+    url: https://github.com/FedorMilovanov/gb-is-my-strength/security
+    about: Do not place secrets, tokens or private vulnerability details in a public issue.
