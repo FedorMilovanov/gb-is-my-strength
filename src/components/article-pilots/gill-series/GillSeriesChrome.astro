@@ -59,49 +59,6 @@ const page = config.pages[pageId];
   <GillReaderSettingsSheet config={config} />
 </div><!-- /gbs2-world: overlays+bottom-bar nested so [data-gill-v16] descendant CSS applies -->
 
-<!-- Series chrome is the sole owner of reader settings on migrated routes.
-     The historical monolith may still append .reader-setting-btn while it is
-     being retired elsewhere. Remove that duplicate at the ownership boundary
-     instead of competing with it through z-index or synthetic clicks. -->
-<script is:inline>
-  (() => {
-    const canonical = document.getElementById('mobSettingsBtn');
-    if (!canonical || !document.querySelector('[data-gill-v16]')) return;
-
-    const retireLegacyControls = (scope = document) => {
-      const controls = [];
-      if (scope instanceof Element && scope.matches('.reader-setting-btn')) controls.push(scope);
-      if (scope.querySelectorAll) controls.push(...scope.querySelectorAll('.reader-setting-btn'));
-      controls.forEach((control) => {
-        if (control !== canonical && !control.contains(canonical)) control.remove();
-      });
-    };
-
-    retireLegacyControls();
-
-    const observer = new MutationObserver((records) => {
-      records.forEach((record) => {
-        record.addedNodes.forEach((node) => {
-          if (node instanceof Element) retireLegacyControls(node);
-        });
-      });
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-
-    const finishMigrationBoundary = () => {
-      retireLegacyControls();
-      observer.disconnect();
-      document.documentElement.dataset.gbLegacyReaderSettingsRetired = '1';
-    };
-
-    if (document.readyState === 'complete') {
-      queueMicrotask(finishMigrationBoundary);
-    } else {
-      window.addEventListener('load', () => requestAnimationFrame(finishMigrationBoundary), { once: true });
-    }
-  })();
-</script>
-
 <script is:inline defer src="../../js/bookmark-engine.js?v=fba4e559"></script>
 <script is:inline defer src="../../js/site-utils.js?v=30ed46cf"></script>
 <script is:inline defer src="../../js/scroll-perf.js?v=454d6f7b"></script>
@@ -109,6 +66,8 @@ const page = config.pages[pageId];
 <script is:inline defer src="../../js/sw-register.js?v=7a8bd1e7"></script>
 <script is:inline>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src="../../js/search.js?v=b0fd43b8";function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function key(e){(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()==="k"&&(e.preventDefault(),load(true))}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault(),load(true)}}document.addEventListener("keydown",key,true);document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>
 <script is:inline defer src="../../js/highlights.js?v=25484760"></script>
-<script is:inline defer src="../../js/enhancements.js?v=cbbdb283"></script>
+<!-- Gill routes are fully owned by the native article interaction modules below.
+     The legacy enhancements bundle is intentionally absent: loading both owners
+     recreated reader controls and competed for glossary/quiz interaction state. -->
 <script is:inline defer src="../../js/floating-cluster-controller.js?v=2b92a1a5"></script>
 <ReaderActionsRuntime />
