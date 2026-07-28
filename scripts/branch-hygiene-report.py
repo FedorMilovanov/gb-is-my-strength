@@ -9,6 +9,7 @@ deletion decisions.
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import datetime as dt
 import email.utils
 import json
@@ -24,6 +25,7 @@ from typing import Any
 
 API = "https://api.github.com"
 MAX_REQUEST_ATTEMPTS = 4
+MAX_BRANCH_WORKERS = 6
 DIAGNOSTIC_PREFIXES = (
     "diag/",
     "probe/",
@@ -156,6 +158,88 @@ def markdown_code(value: str) -> str:
     return value.replace("|", "\\|").replace("`", "'")
 
 
+def branch_row(
+    branch: dict[str, Any],
+    prs_by_branch: dict[str, list[dict[str, Any]]],
+    repository: str,
+    default_branch: str,
+    default_sha: str,
+    token: str,
+    now: dt.datetime,
+) -> dict[str, Any]:
+    name = str(branch["name"])
+    sha = str(branch["commit"]["sha"])
+    related = prs_by_branch.get(name, [])
+    open_prs = [pr for pr in related if pr.get("state") == "open"]
+    merged_prs = [pr for pr in related if pr.get("merged_at")]
+    closed_unmerged = [
+        pr for pr in related if pr.get("state") == "closed" and not pr.get("merged_at")
+    ]
+    diagnostic = name.startswith(DIAGNOSTIC_PREFIXES)
+
+    commit_date: str | None = None
+    age: int | None = None
+    compare_status = "not_evaluated"
+    ahead: int | None = None
+    behind: int | None = None
+
+    if open_prs:
+        classification = "ACTIVE_OR_IN_FLIGHT"
+    else:
+        commit, _ = request_json(f"/repos/{repository}/commits/{sha}", token)
+        commit_date = (
+            ((commit.get("commit") or {}).get("committer") or {}).get("date")
+            or ((commit.get("commit") or {}).get("author") or {}).get("date")
+        )
+        age = days_old(commit_date, now)
+        recently_updated = age is not None and age < 7
+
+        if recently_updated:
+            classification = "RECENT_OWNER_CHECK_REQUIRED"
+        else:
+            if sha == default_sha:
+                compare_status = "identical"
+                ahead = 0
+                behind = 0
+            else:
+                encoded_base = urllib.parse.quote(default_branch, safe="")
+                encoded_head = urllib.parse.quote(name, safe="")
+                comparison, _ = request_json(
+                    f"/repos/{repository}/compare/{encoded_base}...{encoded_head}",
+                    token,
+                )
+                ahead = int(comparison.get("ahead_by", 0))
+                behind = int(comparison.get("behind_by", 0))
+                compare_status = str(comparison.get("status", "unknown"))
+
+            if ahead == 0:
+                classification = "FULLY_REPRESENTED_BY_ANCESTRY"
+            elif diagnostic:
+                classification = "DIAGNOSTIC_CONTENT_REVIEW"
+            elif merged_prs:
+                classification = "SQUASH_PATCH_EQUIVALENCE_REVIEW"
+            elif closed_unmerged:
+                classification = "CLOSED_UNMERGED_FORENSIC_REVIEW"
+            else:
+                classification = "UNKNOWN_PROTECTED"
+
+    return {
+        "branch": name,
+        "sha": sha,
+        "last_commit": commit_date,
+        "age_days": age,
+        "compare_status": compare_status,
+        "ahead": ahead,
+        "behind": behind,
+        "open_prs": [int(pr["number"]) for pr in open_prs],
+        "merged_prs": [int(pr["number"]) for pr in merged_prs],
+        "closed_unmerged_prs": [int(pr["number"]) for pr in closed_unmerged],
+        "diagnostic_prefix": diagnostic,
+        "deletion_blocked": True,
+        "classification": classification,
+    }
+
+
 def main() -> int:
     args = parse_args()
     token = os.environ.get("GH_TOKEN", "").strip()
@@ -185,80 +269,39 @@ def main() -> int:
             continue
         prs_by_branch.setdefault(str(head.get("ref", "")), []).append(pr)
 
-    rows: list[dict[str, Any]] = []
-    for index, branch in enumerate(branches, start=1):
-        name = str(branch["name"])
-        if name == default_branch:
-            continue
-
-        sha = str(branch["commit"]["sha"])
-        commit, _ = request_json(f"/repos/{repository}/commits/{sha}", token)
-        commit_date = (
-            ((commit.get("commit") or {}).get("committer") or {}).get("date")
-            or ((commit.get("commit") or {}).get("author") or {}).get("date")
+    default_entry = next(
+        (branch for branch in branches if str(branch["name"]) == default_branch),
+        None,
+    )
+    if default_entry is None:
+        encoded_default = urllib.parse.quote(default_branch, safe="")
+        default_entry, _ = request_json(
+            f"/repos/{repository}/branches/{encoded_default}", token
         )
-        age = days_old(commit_date, now)
+    default_sha = str(default_entry["commit"]["sha"])
+    candidates = [
+        branch for branch in branches if str(branch["name"]) != default_branch
+    ]
 
-        encoded_base = urllib.parse.quote(default_branch, safe="")
-        encoded_head = urllib.parse.quote(name, safe="")
-        comparison, _ = request_json(
-            f"/repos/{repository}/compare/{encoded_base}...{encoded_head}", token
+    # Protected open/recent branches skip ancestry comparison. Older candidates are
+    # processed with bounded concurrency to avoid a two-request-per-branch serial crawl.
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=MAX_BRANCH_WORKERS
+    ) as executor:
+        rows = list(
+            executor.map(
+                lambda branch: branch_row(
+                    branch,
+                    prs_by_branch,
+                    repository,
+                    default_branch,
+                    default_sha,
+                    token,
+                    now,
+                ),
+                candidates,
+            )
         )
-        ahead = int(comparison.get("ahead_by", 0))
-        behind = int(comparison.get("behind_by", 0))
-        compare_status = str(comparison.get("status", "unknown"))
-
-        related = prs_by_branch.get(name, [])
-        open_prs = [pr for pr in related if pr.get("state") == "open"]
-        merged_prs = [pr for pr in related if pr.get("merged_at")]
-        closed_unmerged = [
-            pr for pr in related if pr.get("state") == "closed" and not pr.get("merged_at")
-        ]
-
-        diagnostic = name.startswith(DIAGNOSTIC_PREFIXES)
-        recently_updated = age is not None and age < 7
-
-        if open_prs:
-            classification = "ACTIVE_OR_IN_FLIGHT"
-            deletion_blocked = True
-        elif recently_updated:
-            classification = "RECENT_OWNER_CHECK_REQUIRED"
-            deletion_blocked = True
-        elif ahead == 0:
-            classification = "FULLY_REPRESENTED_BY_ANCESTRY"
-            deletion_blocked = True
-        elif diagnostic:
-            classification = "DIAGNOSTIC_CONTENT_REVIEW"
-            deletion_blocked = True
-        elif merged_prs:
-            classification = "SQUASH_PATCH_EQUIVALENCE_REVIEW"
-            deletion_blocked = True
-        elif closed_unmerged:
-            classification = "CLOSED_UNMERGED_FORENSIC_REVIEW"
-            deletion_blocked = True
-        else:
-            classification = "UNKNOWN_PROTECTED"
-            deletion_blocked = True
-
-        rows.append(
-            {
-                "branch": name,
-                "sha": sha,
-                "last_commit": commit_date,
-                "age_days": age,
-                "compare_status": compare_status,
-                "ahead": ahead,
-                "behind": behind,
-                "open_prs": [int(pr["number"]) for pr in open_prs],
-                "merged_prs": [int(pr["number"]) for pr in merged_prs],
-                "closed_unmerged_prs": [int(pr["number"]) for pr in closed_unmerged],
-                "diagnostic_prefix": diagnostic,
-                "deletion_blocked": deletion_blocked,
-                "classification": classification,
-            }
-        )
-        if index % 50 == 0:
-            time.sleep(1)
 
     rows.sort(
         key=lambda row: (
@@ -274,11 +317,11 @@ def main() -> int:
 
     warning = (
         "Read-only preliminary inventory. Every branch remains deletion-blocked. "
-        "Open/recent/unknown branches may belong to active agents. Squash merges require "
-        "patch-equivalence and file-level verification plus owner approval."
+        "Open/recent branches skip ancestry comparison because they require owner review. "
+        "Squash merges require patch-equivalence and file-level verification plus owner approval."
     )
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": now.isoformat(),
         "repository": repository,
         "default_branch": default_branch,
@@ -328,9 +371,14 @@ def main() -> int:
         if row["closed_unmerged_prs"]:
             prs.append("closed " + ",".join(f"#{n}" for n in row["closed_unmerged_prs"]))
         age_text = f"{row['age_days']}d" if row["age_days"] is not None else "?"
+        relation_text = (
+            f"+{row['ahead']}/-{row['behind']}"
+            if row["ahead"] is not None and row["behind"] is not None
+            else "not evaluated"
+        )
         lines.append(
             f"| `{markdown_code(row['branch'])}` | {age_text} | "
-            f"+{row['ahead']}/-{row['behind']} | {'; '.join(prs) or 'none'} | "
+            f"{relation_text} | {'; '.join(prs) or 'none'} | "
             f"`{row['classification']}` |"
         )
 
