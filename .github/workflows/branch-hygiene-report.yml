@@ -37,7 +37,6 @@ jobs:
           python3 scripts/branch-hygiene-report.py \
             --repository "$GH_REPOSITORY" \
             --output-dir reports/branch-hygiene
-          cp AGENTS.md reports/branch-hygiene/AGENTS.md
 
       - name: Upload inventory artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
