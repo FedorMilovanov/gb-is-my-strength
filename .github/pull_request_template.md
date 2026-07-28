@@ -9,10 +9,21 @@ Closes #
 - Mode: `FAST | LANE | SYSTEM`
 - Execution: `LOCAL_WORKTREE -> REMOTE_PR | DETACHED_PROMOTED -> REMOTE_PR | RECOVERY`
 - Canonical branch:
-- Owner:
+- Owner / agent:
 - Base / rollback SHA:
 - Dependencies / active adjacent PRs:
 - Successor of: `none | PR #... at SHA ...`
+
+## Progress checkpoint
+
+- Status: `active | blocked | ready-for-review`
+- Last pushed SHA:
+- Completed:
+- In progress:
+- Next:
+- Known failing or unavailable checks:
+
+<!-- Update this block after meaningful checkpoint pushes and before handoff or pause. -->
 
 ## Exact scope
 
@@ -47,7 +58,15 @@ Closes #
 
 - [ ] I inspected open PRs and known active branches for file overlap.
 - [ ] I did not reset, rebase, force-push, close or delete another owner’s branch.
+- [ ] I did not continue another agent’s branch without explicit handoff.
 - [ ] Out-of-scope findings were recorded separately.
+
+## Durability
+
+- [ ] The canonical branch was pushed early.
+- [ ] The draft PR was opened after the first meaningful checkpoint.
+- [ ] Useful work is represented by pushed commits at the recorded SHA.
+- [ ] No expensive-to-reproduce delta remains only in an unpushed worktree.
 
 ## Verification
 
