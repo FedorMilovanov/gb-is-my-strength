@@ -1,7 +1,17 @@
 {
   "schemaVersion": 6,
   "seriesId": "genesis-6",
-  "releaseState": "blocked",
+  "releaseState": "published",
+  "siteRelease": {
+    "publicationDate": "2026-07-29",
+    "canonicalState": {
+      "draft": false,
+      "noindex": false,
+      "sourcesRequired": true
+    },
+    "routeStatus": "production-dist",
+    "productionWitnessSeparate": true
+  },
   "readerOrder": [
     "6",
     "6A",
@@ -79,19 +89,20 @@
     }
   },
   "publicationPolicy": {
-    "defaultState": "draft-noindex",
+    "defaultState": "published-indexable",
     "requiresExactResearchCommit": true,
     "requiresManifestDigest": true,
     "requiresExtensionManifestDigest": true,
     "requiresExactHeadSiteEvidence": true,
     "productionWitnessSeparate": true,
-    "requiresAllSeriesArticlesDraftNoindex": true,
+    "requiresAllSeriesArticlesPublishedIndexable": true,
     "requiresExactCanonicalOverride": true,
     "requiresExactRelatedGraph": true,
     "requiresOrderedForwardLinks": true,
     "requiresExactHoldClassification": true,
     "requiresNoReproductionRightsResolution": true,
-    "requiresEvidenceResolutionBinding": true
+    "requiresEvidenceResolutionBinding": true,
+    "requiresProductionRouteOwnership": true
   },
   "articles": [
     {
