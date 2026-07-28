@@ -1,7 +1,7 @@
 {
   "note": "Owner-approved visual comparison policy per public route. legacy-diff measures root legacy HTML against production-like dist; native-contract routes intentionally retired legacy presentation and are blocked by the named source/dist and browser guards instead. Never promote a route to native-contract merely to silence a screenshot failure.",
   "tolerancePct": 0.5,
-  "updatedAt": "2026-07-23",
+  "updatedAt": "2026-07-27",
   "baselineType": "policy-aware-legacy-vs-dist-pixel",
   "baselineSource": "repo-root-html-vs-dist",
   "routeArchitectureAtApproval": "mixed: legacy parity + native Astro + shared series chrome + built-app maps",
@@ -36,6 +36,16 @@
       "reviewedAt": "2026-07-22",
       "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
     },
+    "/biografii/": {
+      "mode": "native-contract",
+      "reason": "The biographies catalog is now a strict-native Astro route whose shelves, era sections and epigraph are SSR-visible without IntersectionObserver; the committed root HTML remains historical evidence rather than the render owner.",
+      "requiredGuards": [
+        "scripts/biografii-visual-parity-audit.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-27",
+      "reviewedSourceSha": "819a5541878326688bf15353e18208ddf3706d27"
+    },
     "/baptisty-rossii/": {
       "mode": "native-contract",
       "reason": "The strict-native series landing intentionally uses the approved compact gbs2 Astro layout; root legacy HTML is retained as historical evidence, not the render owner.",
@@ -56,6 +66,17 @@
       ],
       "reviewedAt": "2026-07-22",
       "reviewedSourceSha": "aeae401d782d769dad582395f2045fa79c020f42"
+    },
+    "/map/": {
+      "mode": "native-contract",
+      "reason": "The Atlas route intentionally replaced the retired hardcoded legacy graph with a compiler-owned SSR shell, immutable compiled payload, responsive graph/list runtime, deep-link state and fail-closed recovery; visual correctness is now defined by those native contracts rather than resemblance to the obsolete map.",
+      "requiredGuards": [
+        "scripts/atlas-browser-contract.mjs",
+        "scripts/check-engine-contracts.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ],
+      "reviewedAt": "2026-07-27",
+      "reviewedSourceSha": "69d51f54d430fea885685ddff3c9ff5580b51cb0"
     }
   },
   "routes": {
