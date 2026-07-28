@@ -1,7 +1,7 @@
 # Work Modes — FAST / LANE / SYSTEM
 
 **Updated:** 2026-07-28  
-**Current policy version:** 4.3
+**Current policy version:** 4.4
 
 Purpose: choose proportionate verification without turning every change into the same ceremony.
 
@@ -15,7 +15,7 @@ For every mutation, do only this minimum pre-flight:
 4. choose `FAST`, `LANE` or `SYSTEM`;
 5. identify the current source of truth and the checks that directly cover the change.
 
-Do **not** reread all 1,000+ lines of `AGENTS.md`, its changelog, unrelated architecture sections or every governance document before each task. The older blanket full-read wording in `AGENTS.md` is superseded by this operational entrypoint: read its root pre-flight and only the sections governing the surface being changed.
+Do **not** reread all 1,000+ lines of `AGENTS-REFERENCE.md`, its changelog, unrelated architecture sections or every governance document before each task. The historical blanket full-read wording inside `AGENTS-REFERENCE.md` is superseded by the root `AGENTS.md` operational contract and this entrypoint: read the root pre-flight and only the reference sections governing the surface being changed.
 
 Read companion policies only when applicable:
 
@@ -137,6 +137,7 @@ Includes at minimum:
 
 ```text
 AGENTS.md
+AGENTS-REFERENCE.md
 README.md
 package.json / package-lock.json
 .github/**
