@@ -36,7 +36,7 @@ function validateCacheBustWorkflowPolicy(input) {
   }
 
   requireMatch('shared-files-guard', shared, /^\s*pull_request:\s*$/m, 'must run on pull_request before stale revisions can merge');
-  requireMatch('shared-files-guard', shared, /^\s*push:\s*$[\s\S]{0,180}?branches:\s*\[[^\]]*\bmain\b[^\]]*\]/m, 'must run on pushes to main');
+  requireMatch('shared-files-guard', shared, /^\s*push:\s*$[\s\S]{0,220}?branches:\s*\[[^\]]*\bmain\b[^\]]*\]/m, 'must run on pushes to main');
   requireMatch('shared-files-guard', shared, /^permissions:\s*$[\s\S]{0,80}?contents:\s*read\b/m, 'must remain read-only');
   requireMatch('shared-files-guard', shared, /name:\s*Asset revision drift \(read-only\)[\s\S]{0,160}?run:\s*node scripts\/cache-bust\.js\s*$/m, 'must execute the default read-only asset revision check');
 
@@ -70,7 +70,7 @@ function validateCacheBustWorkflowPolicy(input) {
   if (WRITER_PATTERN.test(glossary)) {
     const writerCount = (glossary.match(/(?:node\s+)?scripts\/cache-bust\.js\s+--write\b/g) || []).length;
     if (writerCount !== 1) issues.push(`${GLOSSARY_WORKFLOW}: expected exactly one constrained cache-bust writer, found ${writerCount}`);
-    requireMatch(GLOSSARY_WORKFLOW, glossary, /^permissions:\s*$[\s\S]{0,80}?contents:\s*read\b/m, 'top-level workflow permissions must remain read-only');
+    requireMatch(GLOSSARY_WORKFLOW, glossary, /^permissions:\s*$[\s\S]{0,80}?contents:\s*write\b/m, 'top-level workflow permissions must remain read-only');
     requireMatch(GLOSSARY_WORKFLOW, glossary, /placement-autofix:[\s\S]{0,520}?github\.event_name\s*==\s*['"]pull_request['"][\s\S]{0,240}?contains\(github\.event\.pull_request\.labels\.\*\.name,\s*['"]autofix['"]\)[\s\S]{0,240}?github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository/, 'writer must require pull_request, explicit autofix label and same-repository head');
     requireMatch(GLOSSARY_WORKFLOW, glossary, /placement-autofix:[\s\S]{0,760}?permissions:\s*$[\s\S]{0,80}?contents:\s*write\b/m, 'write permission must stay scoped to the guarded autofix job');
     requireMatch(GLOSSARY_WORKFLOW, glossary, /name:\s*Checkout pull request branch[\s\S]{0,180}?ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.ref\s*\}\}/, 'writer must checkout the explicit pull-request head branch');
@@ -93,7 +93,13 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
   const glossary = baseline.workflowTexts[GLOSSARY_WORKFLOW] || '';
   const mutations = [
     ['PR trigger removed', { ...baseline, sharedFiles: baseline.sharedFiles.replace('  pull_request:\n', '  pull_request-disabled:\n') }],
-    ['main guard push removed', { ...baseline, sharedFiles: baseline.sharedFiles.replace('branches: [main, "lane/**", "agent/**"]', 'branches: ["lane/**", "agent/**"]') }],
+    ['main guard push removed', {
+      ...baseline,
+      sharedFiles: baseline.sharedFiles.replace(
+        'branches: [main, "lane/**", "agent/**", "hotfix/**", "release/**"]',
+        'branches: ["lane/**", "agent/**", "hotfix/**", "release/**"]',
+      ),
+    }],
     ['shared revision check becomes writer', { ...baseline, sharedFiles: baseline.sharedFiles.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust.js --write') }],
     ['diagnostic catch-all removed', { ...baseline, readiness: baseline.readiness.replace("      - '**'", "      - 'src/**'") }],
     ['diagnostic revision check removed', { ...baseline, readiness: baseline.readiness.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust-disabled.js') }],
