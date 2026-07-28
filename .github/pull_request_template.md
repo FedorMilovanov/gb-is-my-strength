@@ -1,116 +1,63 @@
 ## Purpose
 
-<!-- One verifiable result. -->
+<!-- One independently verifiable result. -->
 
 Closes #
 
-## Transaction
+## Core transaction
 
 - Mode: `FAST | LANE | SYSTEM`
-- Execution: `LOCAL_WORKTREE -> REMOTE_PR | DETACHED_PROMOTED -> REMOTE_PR | RECOVERY`
-- Canonical branch:
-- Owner / agent:
+- Lane / owner:
 - Base / rollback SHA:
-- Dependencies / active adjacent PRs:
-- Successor of: `none | PR #... at SHA ...`
-
-## Progress checkpoint
-
-- Status: `active | blocked | ready-for-review`
-- Last pushed SHA:
-- Completed:
-- In progress:
-- Next:
-- Known failing or unavailable checks:
-
-<!-- Update this block after meaningful checkpoint pushes and before handoff or pause. -->
-
-## Exact scope
-
-### Allowed files
-
-```text
-```
-
-### Forbidden files
-
-```text
-```
-
-### Protected surfaces touched
-
-- [ ] none
-- [ ] governance / workflows
-- [ ] shared runtime / layouts / CSS / JS
-- [ ] migration / registries / shared data
-- [ ] deploy / service worker / publication
-- [ ] owner-sensitive content or UI
-
-## Source of truth
-
-<!-- Current files, exact SHA, owner decision or verified sources. -->
+- Scope:
+- Adjacent active PRs / overlap decision:
+- Source of truth:
 
 ## Change
 
 <!-- What changed and why. -->
 
-## Parallel-agent safety
-
-- [ ] I inspected open PRs and known active branches for file overlap.
-- [ ] I did not reset, rebase, force-push, close or delete another owner’s branch.
-- [ ] I did not continue another agent’s branch without explicit handoff.
-- [ ] Out-of-scope findings were recorded separately.
-
-## Durability
-
-- [ ] The canonical branch was pushed early.
-- [ ] The draft PR was opened after the first meaningful checkpoint.
-- [ ] Useful work is represented by pushed commits at the recorded SHA.
-- [ ] No expensive-to-reproduce delta remains only in an unpushed worktree.
-
 ## Verification
 
-### Iteration
-
 ```text
-command -> result
+command or check -> result
 ```
 
-### Exact-head CI
+- Exact head SHA:
+- Failed or unavailable checks: `none | ...`
+- Production witness: `not claimed | exact deploy/live evidence`
 
-- Head SHA:
-- Required checks:
-- Run IDs / artifacts:
-- Failed or unavailable checks:
+## Safety
 
-### Production witness
+- [ ] Actual diff matches the stated scope.
+- [ ] No other owner’s active branch was reset, rebased, force-pushed, closed or deleted.
+- [ ] No expensive-to-reproduce work remains only in an unpushed worktree.
+- [ ] No temporary workflow, trigger, writer or patcher remains.
+- [ ] Review conversations are resolved before merge.
 
-- [ ] Not claimed by this PR
-- [ ] Exact deployed SHA and live evidence recorded
+## Progress — only while useful
 
-## Decomposition decision
+<!-- Update when status, scope, owner, blocker, handoff or readiness changes. Do not copy the head SHA after every push; GitHub already shows it. -->
 
-- [ ] Within 20 files / 1000 changed lines / 3 protected subsystems
-- [ ] Larger transaction justified below
+- Status: `active | blocked | ready-for-review`
+- Completed:
+- In progress:
+- Next:
+- Blocker / handoff:
 
-Why this cannot be split:
+## Optional: decomposition, recovery or successor
 
-Independent rollback units and review order:
+<!-- Delete when not applicable. Numeric diff size alone is not a gate. Explain only when the change mixes rollback units, owners or purposes, or when recovering/replacing an older lane. -->
 
-## Branch disposition
+- Independent lanes or rollback units:
+- Why this remains one PR:
+- Predecessor / successor PR and head SHA:
+- Unique material transferred, rejected or preserved:
+- Final predecessor disposition:
 
-After merge or close:
+## Optional: branch disposition
 
-- [ ] active branch remains protected until owner decision
-- [ ] merged branch may be deleted after recorded verification
-- [ ] closed-unmerged forensic review required
-- [ ] unique evidence materialized at:
-- [ ] predecessor replacement table recorded
+<!-- Delete when not applicable. Cleanup always follows evidence-backed classification. -->
 
-## Final assertions
-
-- [ ] Actual diff matches declared scope
-- [ ] No temporary workflow, trigger, writer or patcher remains
-- [ ] Review conversations are resolved
-- [ ] No green claim relies on an earlier SHA
-- [ ] No publication claim is inferred from source merge alone
+- After merge or close:
+- Replacement or evidence SHA:
