@@ -246,12 +246,15 @@ async function noJsScene(browser, base, compiled) {
       const firstLink = list?.querySelector('[data-list-node] a[href]');
       const rect = firstLink?.getBoundingClientRect();
       const titleRect = title?.getBoundingClientRect();
+      const titleStyle = title ? getComputedStyle(title) : null;
       return {
         appVisible: Boolean(app && getComputedStyle(app).display !== 'none'),
         workspaceHidden: Boolean(workspace && getComputedStyle(workspace).display === 'none'),
         titleCount: headings.length,
         titleText: headings.map((heading) => heading.textContent?.replace(/\s+/g, ' ').trim() || ''),
-        titleVisible: Boolean(title && getComputedStyle(title).display !== 'none' && titleRect && titleRect.width > 120 && titleRect.height > 20),
+        titleVisible: Boolean(title && titleStyle && titleStyle.display !== 'none' && titleStyle.visibility !== 'hidden'
+          && titleStyle.opacity !== '0' && titleRect && titleRect.width > 0 && titleRect.height > 0),
+        titleRect: titleRect ? { width: titleRect.width, height: titleRect.height, top: titleRect.top, bottom: titleRect.bottom } : null,
         fallbackLabelledBy: list?.getAttribute('aria-labelledby') || '',
         listVisible: Boolean(list && getComputedStyle(list).display !== 'none' && list.getBoundingClientRect().height > 300),
         links: list?.querySelectorAll('[data-list-node] a[href]').length || 0,
