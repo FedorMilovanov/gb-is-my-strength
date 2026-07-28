@@ -36,7 +36,7 @@ function validateCacheBustWorkflowPolicy(input) {
   }
 
   requireMatch('shared-files-guard', shared, /^\s*pull_request:\s*$/m, 'must run on pull_request before stale revisions can merge');
-  requireMatch('shared-files-guard', shared, /^\s*push:\s*$[\s\S]{0,220}?branches:\s*\[[^\]]*\bmain\b[^\]]*\]/m, 'must run on pushes to main');
+  requireMatch('shared-files-guard', shared, /^\s*push:\s*$[\s\S]{0,180}?branches:\s*\[[^\]]*\bmain\b[^\]]*\]/m, 'must run on pushes to main');
   requireMatch('shared-files-guard', shared, /^permissions:\s*$[\s\S]{0,80}?contents:\s*read\b/m, 'must remain read-only');
   requireMatch('shared-files-guard', shared, /name:\s*Asset revision drift \(read-only\)[\s\S]{0,160}?run:\s*node scripts\/cache-bust\.js\s*$/m, 'must execute the default read-only asset revision check');
 
@@ -93,13 +93,7 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
   const glossary = baseline.workflowTexts[GLOSSARY_WORKFLOW] || '';
   const mutations = [
     ['PR trigger removed', { ...baseline, sharedFiles: baseline.sharedFiles.replace('  pull_request:\n', '  pull_request-disabled:\n') }],
-    ['main guard push removed', {
-      ...baseline,
-      sharedFiles: baseline.sharedFiles.replace(
-        'branches: [main, "lane/**", "agent/**", "hotfix/**", "release/**"]',
-        'branches: ["lane/**", "agent/**", "hotfix/**", "release/**"]',
-      ),
-    }],
+    ['main guard push removed', { ...baseline, sharedFiles: baseline.sharedFiles.replace('branches: [main, "lane/**", "agent/**"]', 'branches: ["lane/**", "agent/**"]') }],
     ['shared revision check becomes writer', { ...baseline, sharedFiles: baseline.sharedFiles.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust.js --write') }],
     ['diagnostic catch-all removed', { ...baseline, readiness: baseline.readiness.replace("      - '**'", "      - 'src/**'") }],
     ['diagnostic revision check removed', { ...baseline, readiness: baseline.readiness.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust-disabled.js') }],
