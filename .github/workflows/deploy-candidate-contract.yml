@@ -1,0 +1,86 @@
+name: Deploy Candidate Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "data/**"
+      - "migration/**"
+      - "css/**"
+      - "js/**"
+      - "images/**"
+      - "fonts/**"
+      - "audio/**"
+      - "*.html"
+      - "*.xml"
+      - "*.txt"
+      - "CNAME"
+      - "manifest.json"
+      - "package.json"
+      - "package-lock.json"
+      - "astro.config.mjs"
+      - "scripts/copy-legacy-to-dist.js"
+      - "scripts/astro-cache-bust-postbuild.js"
+      - "scripts/build-pagefind.js"
+      - "scripts/cache-bust-assets.js"
+      - "scripts/dist-publication-audit.js"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/deploy-candidate-contract.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-candidate-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  production-like-candidate:
+    name: Build and audit production-like candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up release Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Pin release npm
+        run: npm install --global npm@10.9.0
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index into dist
+        run: npm run pagefind:build:dist
+
+      - name: Production-like dist publication audit
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/dist-publication-audit.js --require-pagefind --forbid-dev 2>&1 \
+            | tee reports/dist-publication-audit.log
+
+      - name: Upload deploy-candidate diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-candidate-contract-${{ github.run_id }}
+          path: |
+            reports/dist-publication-audit.json
+            reports/dist-publication-audit.log
+          if-no-files-found: error
+          retention-days: 14
