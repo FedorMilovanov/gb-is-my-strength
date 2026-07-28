@@ -1,7 +1,0 @@
-# Raw web source snapshot attempt
-URL: https://baptist.org.ru/news/main/view/article/1419261
-Fetched: 2026-06-18
-Status: fetch failed / unstable lead
-Error: HTTP Error 404: Not Found
-
-Use search snippets/archives only as lead until live text or archive copy is found.
