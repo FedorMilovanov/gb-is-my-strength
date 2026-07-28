@@ -16,7 +16,8 @@ import { chromium } from 'playwright';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const COMPILED_PATH = join(DIST, 'data', 'relations.compiled.json');
-const PROJECTION_REPORT_PATH = join(DIST, 'reports', 'relation-projection.json');
+const PROJECTION_REPORT_PATH = join(ROOT, 'reports', 'relation-projection.json');
+const PUBLIC_REPORT_DIR = join(DIST, 'reports');
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
@@ -317,7 +318,11 @@ async function printScene(browser, base) {
 }
 
 if (!existsSync(DIST) || !existsSync(COMPILED_PATH) || !existsSync(PROJECTION_REPORT_PATH)) {
-  console.error('❌ production-like dist, compiled relation endpoint or projection report missing');
+  console.error('❌ production-like dist, compiled relation endpoint or private projection report missing');
+  process.exit(1);
+}
+if (existsSync(PUBLIC_REPORT_DIR)) {
+  console.error('❌ private relation diagnostics leaked into dist/reports');
   process.exit(1);
 }
 if (existsSync(join(DIST, 'js', 'relationship-panel.js'))) {
