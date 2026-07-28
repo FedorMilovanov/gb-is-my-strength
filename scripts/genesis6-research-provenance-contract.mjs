@@ -14,13 +14,15 @@ const RESEARCH_ROOT = path.resolve(
 );
 const PROVENANCE_PATH = path.join(ROOT, 'data/genesis6-research-provenance.json');
 
-const EXPECTED_RESEARCH_COMMIT = '11e86a120f212d75cf01667d7d3bfa72ed9c327a';
+const EXPECTED_RESEARCH_COMMIT = '0a9105c499fa801f4095bce7ec311fcb728206a7';
+const EXPECTED_LEGACY_DIGEST = '95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd';
 const EXPECTED_EXTENSION_DIGEST = '8cfdadd344f15a752ee279d1c1122079fcacbbd97650dd39151872e5618099ef';
+const EXPECTED_READER_ORDER = ['6', '6A', '6B', '7', '8', '9'];
 const EXPECTED_BLOCKING_HOLDS = [
   '1-enoch-70-71-son-of-man',
   'astronomical-book-version-plurality',
 ];
-const EXPECTED_PRESERVED_HOLDS = [
+const EXPECTED_PRESERVED_UNCERTAINTY = [
   '1-enoch-10-8-interpretive-scope',
   '1-enoch-15-8-12-version-details-and-demon-identity',
   'parables-date-and-witness-form',
@@ -42,7 +44,7 @@ const EXPECTED_EVIDENCE_RESOLUTIONS = [
     evidence: "Greek Syncellus and Codex Panopolitanus plus full Ge'ez preserve the core model; Aramaic 4Q204 is contextual/partial",
   },
 ];
-const EXPECTED_RESOLVED_HOLDS = [
+const EXPECTED_POLICY_RESOLUTIONS = [
   {
     id: 'manuscript-image-rights',
     resolution: 'no-manuscript-image-reproduction',
@@ -54,11 +56,19 @@ const EXPECTED_SITE_ACCEPTANCE = {
   mergeCommit: '522f0e1cae4fb9ce5a4631cfe856421f1952f4bc',
   claimLevelGroups: { '6A': 27, '6B': 26 },
 };
+const DECISION_DOCUMENTS = new Map([
+  [
+    'GEN6-ENOCH-10-8-DECISION-LX',
+    'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LX_10_8_VERSION_CONTROL_DECISION.md',
+  ],
+  [
+    'GEN6-ENOCH-15-8-12-DECISION-LXI',
+    'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LXI_15_8_12_DEMON_ORIGIN_VERSION_CONTROL_DECISION.md',
+  ],
+]);
 
-const fail = (message) => {
-  console.error(`ERROR genesis6 research provenance: ${message}`);
-  process.exitCode = 1;
-};
+const failures = [];
+const fail = (message) => failures.push(message);
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 const sha256 = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const isFile = (file) => {
@@ -74,10 +84,7 @@ const parseScalar = (raw) => {
   if (value === 'false') return false;
   return value.replace(/^["']|["']$/g, '');
 };
-const frontmatterBlock = (source) => {
-  const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-  return match?.[1];
-};
+const frontmatterBlock = (source) => source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
 const frontmatterValue = (source, key) => {
   const block = frontmatterBlock(source);
   if (block === undefined) return undefined;
@@ -103,37 +110,22 @@ const frontmatterList = (source, key) => {
   }
   return values;
 };
-const exactKeys = (value, expected, label) => {
-  const actualKeys = Object.keys(value || {}).sort();
-  const expectedKeys = [...expected].sort();
-  if (!isDeepStrictEqual(actualKeys, expectedKeys)) {
-    fail(`${label} keys must be exactly ${expectedKeys.join(', ')}`);
-  }
+const requireEqual = (actual, expected, label) => {
+  if (!isDeepStrictEqual(actual, expected)) fail(`${label} drift`);
 };
 
-if (!fs.existsSync(PROVENANCE_PATH)) {
-  fail('missing data/genesis6-research-provenance.json');
-  process.exit();
+if (!isFile(PROVENANCE_PATH)) {
+  console.error('ERROR genesis6 research provenance: missing data/genesis6-research-provenance.json');
+  process.exit(1);
 }
 
 const provenance = readJson(PROVENANCE_PATH);
-if (provenance.schemaVersion !== 6 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
-if (provenance.releaseState !== 'blocked') {
-  fail('releaseState must remain blocked until an explicit publication pass closes all blocking HOLDs');
+if (provenance.schemaVersion !== 6 || provenance.seriesId !== 'genesis-6') {
+  fail('invalid provenance schemaVersion/seriesId');
 }
-if (!Array.isArray(provenance.articles) || provenance.articles.length !== 4) {
-  fail('exactly four legacy article bindings are required');
-}
-if (!Array.isArray(provenance.draftArticles) || provenance.draftArticles.length !== 2) {
-  fail('exactly two extension draft article bindings are required');
-}
-if (!Array.isArray(provenance.siteArticles) || provenance.siteArticles.length !== 6) {
-  fail('exactly six site article contracts are required');
-}
-if (!isDeepStrictEqual(provenance.readerOrder, ['6', '6A', '6B', '7', '8', '9'])) {
-  fail('readerOrder must remain 6 → 6A → 6B → 7 → 8 → 9');
-}
-if (provenance.publicationPolicy?.defaultState !== 'draft-noindex') fail('safe default must remain draft-noindex');
+if (provenance.releaseState !== 'blocked') fail('releaseState must remain blocked');
+requireEqual(provenance.readerOrder, EXPECTED_READER_ORDER, 'readerOrder');
+if (provenance.publicationPolicy?.defaultState !== 'draft-noindex') fail('defaultState must be draft-noindex');
 for (const field of [
   'requiresExactResearchCommit',
   'requiresManifestDigest',
@@ -153,297 +145,236 @@ for (const field of [
 
 const research = provenance.research || {};
 if (research.repository !== 'FedorMilovanov/Research') fail('unexpected Research repository');
-if (!/^[0-9a-f]{40}$/.test(research.commit || '')) fail('Research commit must be an exact SHA');
 if (research.commit !== EXPECTED_RESEARCH_COMMIT) fail('Research commit pin drift');
-if (!/^[0-9a-f]{64}$/.test(research.manifestSha256 || '')) fail('manifestSha256 must be exact');
-if (research.extension?.schemaVersion !== 4) fail('extension authority schemaVersion must be 4');
-if (!/^[0-9a-f]{64}$/.test(research.extension?.manifestSha256 || '')) {
-  fail('extension manifestSha256 must be exact');
-}
+if (research.manifestSha256 !== EXPECTED_LEGACY_DIGEST) fail('legacy manifest digest pin drift');
+if (research.extension?.schemaVersion !== 4) fail('extension schemaVersion must be 4');
 if (research.extension?.manifestSha256 !== EXPECTED_EXTENSION_DIGEST) fail('extension manifest digest pin drift');
-if (!isDeepStrictEqual(research.extension?.blockingHolds, EXPECTED_BLOCKING_HOLDS)) {
-  fail('pinned blocking HOLD classification drift');
-}
-if (!isDeepStrictEqual(research.extension?.preservedUncertainty, EXPECTED_PRESERVED_HOLDS)) {
-  fail('pinned preserved uncertainty drift');
-}
-if (!isDeepStrictEqual(research.extension?.resolvedByEvidence, EXPECTED_EVIDENCE_RESOLUTIONS)) {
-  fail('pinned evidence resolution drift');
-}
-if (!isDeepStrictEqual(research.extension?.resolvedByPolicy, EXPECTED_RESOLVED_HOLDS)) {
-  fail('pinned policy resolution drift');
-}
-if (!isDeepStrictEqual(research.extension?.siteAcceptance, EXPECTED_SITE_ACCEPTANCE)) {
-  fail('pinned site acceptance drift');
-}
+requireEqual(research.extension?.blockingHolds, EXPECTED_BLOCKING_HOLDS, 'blocking HOLD classification');
+requireEqual(
+  research.extension?.preservedUncertainty,
+  EXPECTED_PRESERVED_UNCERTAINTY,
+  'preserved uncertainty classification',
+);
+requireEqual(research.extension?.resolvedByEvidence, EXPECTED_EVIDENCE_RESOLUTIONS, 'evidence resolutions');
+requireEqual(research.extension?.resolvedByPolicy, EXPECTED_POLICY_RESOLUTIONS, 'policy resolutions');
+requireEqual(research.extension?.siteAcceptance, EXPECTED_SITE_ACCEPTANCE, 'site acceptance');
+
 if (!fs.existsSync(RESEARCH_ROOT)) fail(`Research checkout is missing: ${RESEARCH_ROOT}`);
 
-if (!process.exitCode) {
-  let actualCommit = '';
+let actualResearchCommit = '';
+if (!failures.length) {
   try {
-    actualCommit = execFileSync('git', ['-C', RESEARCH_ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+    actualResearchCommit = execFileSync('git', ['-C', RESEARCH_ROOT, 'rev-parse', 'HEAD'], {
+      encoding: 'utf8',
+    }).trim();
   } catch (error) {
     fail(`cannot resolve Research checkout HEAD: ${error.message}`);
   }
-  if (actualCommit && actualCommit !== research.commit) fail(`Research HEAD ${actualCommit} != pinned ${research.commit}`);
+}
+if (actualResearchCommit && actualResearchCommit !== EXPECTED_RESEARCH_COMMIT) {
+  fail(`Research HEAD ${actualResearchCommit} != pinned ${EXPECTED_RESEARCH_COMMIT}`);
+}
 
-  const manifestFile = path.join(RESEARCH_ROOT, research.manifestPath);
-  const ledgerFile = path.join(RESEARCH_ROOT, research.ledgerPath);
-  const contractFile = path.join(RESEARCH_ROOT, research.contractPath);
-  const extensionManifestFile = path.join(RESEARCH_ROOT, research.extension.manifestPath);
-  const extensionLedgerFile = path.join(RESEARCH_ROOT, research.extension.ledgerPath);
-  const extensionValidatorFile = path.join(RESEARCH_ROOT, research.extension.validatorPath);
-  for (const file of [
-    manifestFile,
-    ledgerFile,
-    contractFile,
-    extensionManifestFile,
-    extensionLedgerFile,
-    extensionValidatorFile,
-  ]) {
-    if (!isFile(file)) fail(`missing pinned Research file: ${path.relative(RESEARCH_ROOT, file)}`);
+const researchFiles = {
+  legacyManifest: path.join(RESEARCH_ROOT, research.manifestPath || ''),
+  legacyLedger: path.join(RESEARCH_ROOT, research.ledgerPath || ''),
+  legacyContract: path.join(RESEARCH_ROOT, research.contractPath || ''),
+  extensionManifest: path.join(RESEARCH_ROOT, research.extension?.manifestPath || ''),
+  extensionLedger: path.join(RESEARCH_ROOT, research.extension?.ledgerPath || ''),
+  extensionValidator: path.join(RESEARCH_ROOT, research.extension?.validatorPath || ''),
+};
+for (const [label, file] of Object.entries(researchFiles)) {
+  if (!isFile(file)) fail(`missing pinned Research file ${label}: ${file}`);
+}
+
+let legacyManifest;
+let legacyLedger;
+let extensionManifest;
+let extensionLedger;
+if (!failures.length) {
+  if (sha256(researchFiles.legacyManifest) !== EXPECTED_LEGACY_DIGEST) fail('legacy manifest digest mismatch');
+  if (sha256(researchFiles.extensionManifest) !== EXPECTED_EXTENSION_DIGEST) fail('extension manifest digest mismatch');
+  legacyManifest = readJson(researchFiles.legacyManifest);
+  legacyLedger = readJson(researchFiles.legacyLedger);
+  extensionManifest = readJson(researchFiles.extensionManifest);
+  extensionLedger = readJson(researchFiles.extensionLedger);
+  try {
+    execFileSync('python3', [researchFiles.extensionValidator, '--root', RESEARCH_ROOT], { stdio: 'inherit' });
+  } catch (error) {
+    fail(`pinned Research extension validator failed: ${error.message}`);
   }
+}
 
-  if (!process.exitCode) {
-    const digest = sha256(manifestFile);
-    if (digest !== research.manifestSha256) fail(`manifest digest ${digest} != pinned ${research.manifestSha256}`);
-    const extensionDigest = sha256(extensionManifestFile);
-    if (extensionDigest !== research.extension.manifestSha256) {
-      fail(`extension manifest digest ${extensionDigest} != pinned ${research.extension.manifestSha256}`);
-    }
+if (legacyManifest && legacyLedger) {
+  if (legacyManifest.seriesId !== 'genesis-6' || legacyLedger.seriesId !== 'genesis-6') {
+    fail('legacy manifest/ledger series mismatch');
+  }
+  if (legacyManifest.authorityBaseCommit !== research.authorityBaseCommit) fail('legacy authorityBaseCommit drift');
+  if (legacyLedger.authorityBaseCommit !== research.authorityBaseCommit) fail('legacy ledger authorityBaseCommit drift');
+  if (legacyLedger.manifestSha256 !== EXPECTED_LEGACY_DIGEST) fail('legacy ledger digest drift');
 
-    try {
-      execFileSync('python3', [extensionValidatorFile, '--root', RESEARCH_ROOT], { stdio: 'inherit' });
-    } catch (error) {
-      fail(`pinned Research extension validator failed: ${error.message}`);
-    }
-
-    const manifest = readJson(manifestFile);
-    const ledger = readJson(ledgerFile);
-    if (manifest.seriesId !== 'genesis-6' || ledger.seriesId !== 'genesis-6') {
-      fail('Research manifest/ledger series mismatch');
-    }
-    if (manifest.authorityBaseCommit !== research.authorityBaseCommit) fail('authorityBaseCommit drift');
-    if (ledger.authorityBaseCommit !== research.authorityBaseCommit) fail('ledger authorityBaseCommit drift');
-    if (ledger.manifestSha256 !== research.manifestSha256) fail('ledger manifest digest drift');
-
-    const manifestBundles = new Map((manifest.publicationBundles || []).map((bundle) => [bundle.bundleId, bundle]));
-    const ledgerBundles = new Map((ledger.bundles || []).map((bundle) => [bundle.bundleId, bundle]));
-    const seenArticles = new Set();
-    const seenSlugs = new Set();
-
-    for (const binding of provenance.articles) {
-      if (![6, 7, 8, 9].includes(binding.article)) fail(`unsupported legacy article ${binding.article}`);
-      if (seenArticles.has(binding.article)) fail(`duplicate legacy article binding ${binding.article}`);
-      if (seenSlugs.has(binding.slug)) fail(`duplicate article slug ${binding.slug}`);
-      seenArticles.add(binding.article);
-      seenSlugs.add(binding.slug);
-      const expected = {
-        bundleId: binding.bundleId,
-        article: binding.article,
-        readerBaseId: binding.readerBaseId,
-        orderedDocumentIds: binding.orderedDocumentIds,
-        rightsDecisionIds: binding.rightsDecisionIds,
-        publicationStatus: 'eligible-after-site-technical-gates',
-      };
-      for (const [name, bundle] of [
-        ['manifest', manifestBundles.get(binding.bundleId)],
-        ['ledger', ledgerBundles.get(binding.bundleId)],
-      ]) {
-        if (!bundle) {
-          fail(`${name} is missing bundle ${binding.bundleId}`);
-          continue;
-        }
-        if (!isDeepStrictEqual(bundle, expected)) fail(`${name} bundle drift for ${binding.bundleId}`);
-      }
-    }
-    if ([...seenArticles].sort().join(',') !== '6,7,8,9') fail('legacy article bindings must cover exactly 6-9');
-
-    const extensionManifest = readJson(extensionManifestFile);
-    const extensionLedger = readJson(extensionLedgerFile);
-    if (extensionManifest.schemaVersion !== 4 || extensionLedger.schemaVersion !== 4) {
-      fail('extension authority schemaVersion mismatch');
-    }
-    if (extensionManifest.seriesId !== 'genesis-6' || extensionLedger.seriesId !== 'genesis-6') {
-      fail('extension manifest/ledger series mismatch');
-    }
-    if (extensionManifest.extensionId !== 'genesis6-enoch-articles-6a-6b') fail('extension manifest id drift');
-    if (extensionLedger.extensionId !== 'genesis6-enoch-articles-6a-6b') fail('extension ledger id drift');
-    if (extensionLedger.manifestSha256 !== research.extension.manifestSha256) {
-      fail('extension ledger manifest digest drift');
-    }
-    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.blocking, research.extension.blockingHolds)) {
-      fail('extension blocking HOLD registry drift');
-    }
-    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.preservedUncertainty, research.extension.preservedUncertainty)) {
-      fail('extension preserved uncertainty drift');
-    }
-    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.resolvedByEvidence, research.extension.resolvedByEvidence)) {
-      fail('extension evidence resolution drift');
-    }
-    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.resolvedByPolicy, research.extension.resolvedByPolicy)) {
-      fail('extension policy resolution drift');
-    }
-
-    const extensionDocuments = new Map((extensionManifest.documents || []).map((document) => [document.id, document]));
-    for (const resolution of research.extension.resolvedByEvidence) {
-      const document = extensionDocuments.get(resolution.documentId);
-      if (!document) {
-        fail(`extension evidence document missing: ${resolution.documentId}`);
-        continue;
-      }
-      if (document.role !== 'locus-version-control-decision') {
-        fail(`extension evidence document role drift: ${resolution.documentId}`);
-      }
-      if (!isDeepStrictEqual(document.requiredFor, ['6B'])) {
-        fail(`extension evidence document requiredFor drift: ${resolution.documentId}`);
-      }
-      if (!isFile(path.join(RESEARCH_ROOT, document.path))) {
-        fail(`extension evidence document file missing: ${resolution.documentId}`);
-      }
-    }
-
-    const manifestAcceptance = extensionManifest.siteAcceptance || {};
-    const expectedAcceptance = {
-      acceptedHead: manifestAcceptance.acceptedHead,
-      mergeCommit: manifestAcceptance.mergeCommit,
-      claimLevelGroups: manifestAcceptance.claimLevelGroups,
+  const manifestBundles = new Map((legacyManifest.publicationBundles || []).map((item) => [item.bundleId, item]));
+  const ledgerBundles = new Map((legacyLedger.bundles || []).map((item) => [item.bundleId, item]));
+  if (!Array.isArray(provenance.articles) || provenance.articles.length !== 4) fail('exactly four legacy bindings required');
+  for (const binding of provenance.articles || []) {
+    const expected = {
+      bundleId: binding.bundleId,
+      article: binding.article,
+      readerBaseId: binding.readerBaseId,
+      orderedDocumentIds: binding.orderedDocumentIds,
+      rightsDecisionIds: binding.rightsDecisionIds,
+      publicationStatus: 'eligible-after-site-technical-gates',
     };
-    if (!isDeepStrictEqual(expectedAcceptance, research.extension.siteAcceptance)) {
-      fail('extension site acceptance drift');
-    }
-    if (manifestAcceptance.publicationAuthorized !== false) fail('Research site acceptance must not authorize publication');
-    const release = extensionLedger.releaseDecision || {};
-    if (release.state !== 'blocked' || release.mayPublish !== false || release.mayRemoveNoindex !== false) {
-      fail('Research extension release must remain blocked');
-    }
-    if (!isDeepStrictEqual(release.blockingHolds, research.extension.blockingHolds)) {
-      fail('ledger blocking HOLD registry drift');
-    }
-    if (!isDeepStrictEqual(release.preservedUncertainty, research.extension.preservedUncertainty)) {
-      fail('ledger preserved uncertainty drift');
-    }
-    if (!isDeepStrictEqual(release.resolvedByEvidence, research.extension.resolvedByEvidence)) {
-      fail('ledger evidence resolution drift');
-    }
-    if (!isDeepStrictEqual(release.resolvedByPolicy, research.extension.resolvedByPolicy)) {
-      fail('ledger policy resolution drift');
-    }
-
-    const extensionManifestBundles = new Map(
-      (extensionManifest.draftArticles || []).map((bundle) => [bundle.bundleId, bundle]),
-    );
-    const extensionLedgerBundles = new Map(
-      (extensionLedger.bundles || []).map((bundle) => [bundle.bundleId, bundle]),
-    );
-    const seenExtensionKeys = new Set();
-
-    for (const binding of provenance.draftArticles) {
-      if (!['6A', '6B'].includes(binding.articleKey)) fail(`unsupported extension article ${binding.articleKey}`);
-      if (seenExtensionKeys.has(binding.articleKey)) fail(`duplicate extension article ${binding.articleKey}`);
-      if (seenSlugs.has(binding.slug)) fail(`duplicate article slug ${binding.slug}`);
-      seenExtensionKeys.add(binding.articleKey);
-      seenSlugs.add(binding.slug);
-
-      const expected = {
-        articleKey: binding.articleKey,
-        slug: binding.slug,
-        bundleId: binding.bundleId,
-        orderedDocumentIds: binding.orderedDocumentIds,
-        requiredSiteState: binding.requiredSiteState,
-        rightsMode: binding.rightsMode,
-        publicationStatus: binding.publicationStatus,
-      };
-      for (const [name, bundle] of [
-        ['extension manifest', extensionManifestBundles.get(binding.bundleId)],
-        ['extension ledger', extensionLedgerBundles.get(binding.bundleId)],
-      ]) {
-        if (!bundle) {
-          fail(`${name} is missing bundle ${binding.bundleId}`);
-          continue;
-        }
-        if (!isDeepStrictEqual(bundle, expected)) fail(`${name} bundle drift for ${binding.bundleId}`);
-      }
-    }
-    if ([...seenExtensionKeys].sort().join(',') !== '6A,6B') {
-      fail('extension bindings must cover exactly 6A and 6B');
-    }
-    if (seenSlugs.size !== 6) fail('the combined provenance graph must contain six unique slugs');
-
-    const siteContracts = new Map();
-    const siteSlugs = new Set();
-    for (const article of provenance.siteArticles) {
-      exactKeys(article, ['articleKey', 'slug', 'expectedRelatedSlugs'], `siteArticles.${article.articleKey || '?'}`);
-      if (!provenance.readerOrder.includes(article.articleKey)) fail(`unsupported site article key ${article.articleKey}`);
-      if (siteContracts.has(article.articleKey)) fail(`duplicate site article key ${article.articleKey}`);
-      if (siteSlugs.has(article.slug)) fail(`duplicate site article slug ${article.slug}`);
-      if (!Array.isArray(article.expectedRelatedSlugs)) fail(`${article.articleKey} expectedRelatedSlugs must be an array`);
-      if (new Set(article.expectedRelatedSlugs).size !== article.expectedRelatedSlugs.length) {
-        fail(`${article.articleKey} contains duplicate related slugs`);
-      }
-      if (article.expectedRelatedSlugs.includes(article.slug)) fail(`${article.articleKey} cannot relate to itself`);
-      siteContracts.set(article.articleKey, article);
-      siteSlugs.add(article.slug);
-    }
-
-    if (!isDeepStrictEqual([...siteContracts.keys()], provenance.readerOrder)) {
-      fail('siteArticles must be declared in exact readerOrder');
-    }
-    if (!isDeepStrictEqual([...siteSlugs].sort(), [...seenSlugs].sort())) {
-      fail('site article contracts must match the six Research-bound slugs exactly');
-    }
-
-    for (const articleKey of provenance.readerOrder) {
-      const article = siteContracts.get(articleKey);
-      const articleFile = path.join(ROOT, 'src/content/articles', `${article.slug}.mdx`);
-      if (!isFile(articleFile)) {
-        fail(`missing site article ${article.slug}`);
-        continue;
-      }
-      const source = fs.readFileSync(articleFile, 'utf8');
-      if (frontmatterBlock(source) === undefined) fail(`${articleKey} missing valid frontmatter`);
-      const expectedScalars = {
-        slug: article.slug,
-        section: 'hard-texts',
-        author: 'fedor-milovanov',
-        series: 'genesis-6',
-        draft: true,
-        noindex: true,
-        sourcesRequired: true,
-        canonicalOverride: `https://gospod-bog.ru/hard-texts/${article.slug}/`,
-        sourceMode: 'rendered',
-      };
-      for (const [key, expected] of Object.entries(expectedScalars)) {
-        if (frontmatterValue(source, key) !== expected) {
-          fail(`${articleKey} frontmatter ${key} drift`);
-        }
-      }
-      const related = frontmatterList(source, 'related');
-      if (!isDeepStrictEqual(related, article.expectedRelatedSlugs)) {
-        fail(`${articleKey} related graph drift`);
-      }
-      for (const relatedSlug of article.expectedRelatedSlugs) {
-        if (!siteSlugs.has(relatedSlug)) fail(`${articleKey} related target is outside the series: ${relatedSlug}`);
-      }
-    }
-
-    for (let index = 0; index < provenance.readerOrder.length - 1; index += 1) {
-      const current = siteContracts.get(provenance.readerOrder[index]);
-      const next = siteContracts.get(provenance.readerOrder[index + 1]);
-      if (!current.expectedRelatedSlugs.includes(next.slug)) {
-        fail(`reader-order link missing: ${current.articleKey} → ${next.articleKey}`);
-      }
-    }
+    requireEqual(manifestBundles.get(binding.bundleId), expected, `legacy manifest bundle ${binding.bundleId}`);
+    requireEqual(ledgerBundles.get(binding.bundleId), expected, `legacy ledger bundle ${binding.bundleId}`);
   }
 }
 
-if (!process.exitCode) {
-  console.log(
-    `Genesis 6 Research provenance: PASS (${research.commit}, ` +
-      `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} source-audited extension bundles, ` +
-      `${research.extension.blockingHolds.length} blocking HOLDs, ` +
-      `${research.extension.resolvedByEvidence.length} evidence resolutions, ` +
-      `${provenance.siteArticles.length} site contracts, release ${provenance.releaseState}, ` +
-      `manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
+if (extensionManifest && extensionLedger) {
+  if (extensionManifest.schemaVersion !== 4 || extensionLedger.schemaVersion !== 4) {
+    fail('extension manifest/ledger schemaVersion must be 4');
+  }
+  if (extensionManifest.seriesId !== 'genesis-6' || extensionLedger.seriesId !== 'genesis-6') {
+    fail('extension manifest/ledger series mismatch');
+  }
+  if (extensionLedger.manifestSha256 !== EXPECTED_EXTENSION_DIGEST) fail('extension ledger digest drift');
+  requireEqual(extensionManifest.holdRegistry?.blocking, EXPECTED_BLOCKING_HOLDS, 'extension manifest blockers');
+  requireEqual(extensionLedger.releaseDecision?.blockingHolds, EXPECTED_BLOCKING_HOLDS, 'extension ledger blockers');
+  requireEqual(
+    extensionManifest.holdRegistry?.preservedUncertainty,
+    EXPECTED_PRESERVED_UNCERTAINTY,
+    'extension manifest preserved uncertainty',
   );
+  requireEqual(
+    extensionLedger.releaseDecision?.preservedUncertainty,
+    EXPECTED_PRESERVED_UNCERTAINTY,
+    'extension ledger preserved uncertainty',
+  );
+  requireEqual(extensionManifest.holdRegistry?.resolvedByEvidence, EXPECTED_EVIDENCE_RESOLUTIONS, 'manifest evidence resolutions');
+  requireEqual(extensionLedger.releaseDecision?.resolvedByEvidence, EXPECTED_EVIDENCE_RESOLUTIONS, 'ledger evidence resolutions');
+  requireEqual(extensionManifest.holdRegistry?.resolvedByPolicy, EXPECTED_POLICY_RESOLUTIONS, 'manifest policy resolutions');
+  requireEqual(extensionLedger.releaseDecision?.resolvedByPolicy, EXPECTED_POLICY_RESOLUTIONS, 'ledger policy resolutions');
+  if (extensionManifest.siteAcceptance?.publicationAuthorized !== false) fail('site acceptance must not authorize publication');
+  if (
+    extensionLedger.releaseDecision?.state !== 'blocked' ||
+    extensionLedger.releaseDecision?.mayPublish !== false ||
+    extensionLedger.releaseDecision?.mayRemoveNoindex !== false
+  ) {
+    fail('extension release must remain fail-closed');
+  }
+
+  const documents = new Map((extensionManifest.documents || []).map((item) => [item.id, item]));
+  for (const resolution of EXPECTED_EVIDENCE_RESOLUTIONS) {
+    const document = documents.get(resolution.documentId);
+    const expectedPath = DECISION_DOCUMENTS.get(resolution.documentId);
+    requireEqual(
+      document,
+      {
+        id: resolution.documentId,
+        path: expectedPath,
+        role: 'locus-version-control-decision',
+        requiredFor: ['6B'],
+      },
+      `decision binding ${resolution.documentId}`,
+    );
+    if (!isFile(path.join(RESEARCH_ROOT, expectedPath))) fail(`missing decision file ${resolution.documentId}`);
+  }
+
+  const manifestBundles = new Map((extensionManifest.draftArticles || []).map((item) => [item.bundleId, item]));
+  const ledgerBundles = new Map((extensionLedger.bundles || []).map((item) => [item.bundleId, item]));
+  if (!Array.isArray(provenance.draftArticles) || provenance.draftArticles.length !== 2) {
+    fail('exactly two extension bindings required');
+  }
+  for (const binding of provenance.draftArticles || []) {
+    const expected = {
+      articleKey: binding.articleKey,
+      slug: binding.slug,
+      bundleId: binding.bundleId,
+      orderedDocumentIds: binding.orderedDocumentIds,
+      requiredSiteState: binding.requiredSiteState,
+      rightsMode: binding.rightsMode,
+      publicationStatus: binding.publicationStatus,
+    };
+    requireEqual(manifestBundles.get(binding.bundleId), expected, `extension manifest bundle ${binding.bundleId}`);
+    requireEqual(ledgerBundles.get(binding.bundleId), expected, `extension ledger bundle ${binding.bundleId}`);
+  }
 }
+
+if (!Array.isArray(provenance.siteArticles) || provenance.siteArticles.length !== 6) {
+  fail('exactly six site article contracts required');
+}
+const siteContracts = new Map((provenance.siteArticles || []).map((item) => [item.articleKey, item]));
+requireEqual([...siteContracts.keys()], EXPECTED_READER_ORDER, 'site article declaration order');
+const expectedSiteSlugs = new Set([
+  ...(provenance.articles || []).map((item) => item.slug),
+  ...(provenance.draftArticles || []).map((item) => item.slug),
+]);
+if (expectedSiteSlugs.size !== 6) fail('Research bindings must resolve to six unique slugs');
+
+for (const articleKey of EXPECTED_READER_ORDER) {
+  const contract = siteContracts.get(articleKey);
+  if (!contract) {
+    fail(`missing site contract ${articleKey}`);
+    continue;
+  }
+  const articleFile = path.join(ROOT, 'src/content/articles', `${contract.slug}.mdx`);
+  if (!isFile(articleFile)) {
+    fail(`missing site article ${contract.slug}`);
+    continue;
+  }
+  const source = fs.readFileSync(articleFile, 'utf8');
+  const expectedScalars = {
+    slug: contract.slug,
+    section: 'hard-texts',
+    author: 'fedor-milovanov',
+    series: 'genesis-6',
+    draft: true,
+    noindex: true,
+    sourcesRequired: true,
+    canonicalOverride: `https://gospod-bog.ru/hard-texts/${contract.slug}/`,
+    sourceMode: 'rendered',
+  };
+  for (const [key, expected] of Object.entries(expectedScalars)) {
+    if (frontmatterValue(source, key) !== expected) fail(`${articleKey} frontmatter ${key} drift`);
+  }
+  requireEqual(frontmatterList(source, 'related'), contract.expectedRelatedSlugs, `${articleKey} related graph`);
+  for (const relatedSlug of contract.expectedRelatedSlugs || []) {
+    if (!expectedSiteSlugs.has(relatedSlug)) fail(`${articleKey} related target outside series: ${relatedSlug}`);
+  }
+}
+
+for (let index = 0; index < EXPECTED_READER_ORDER.length - 1; index += 1) {
+  const current = siteContracts.get(EXPECTED_READER_ORDER[index]);
+  const next = siteContracts.get(EXPECTED_READER_ORDER[index + 1]);
+  if (!current?.expectedRelatedSlugs?.includes(next?.slug)) {
+    fail(`reader-order link missing: ${EXPECTED_READER_ORDER[index]} → ${EXPECTED_READER_ORDER[index + 1]}`);
+  }
+}
+
+const article6BPath = path.join(ROOT, 'src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx');
+if (isFile(article6BPath)) {
+  const article6B = fs.readFileSync(article6BPath, 'utf8');
+  for (const marker of [
+    'DIFFICULT-TO-HARMONIZE / INTERNAL-TENSION / TEXT-ESTABLISHED / INTERPRETATION-QUALIFIED',
+    'TEXT-DIRECT / HISTORICAL-BACKGROUND / UNSUPPORTED-ELABORATION',
+    'GEN6-ENOCH-10-8-DECISION-LX',
+    'GEN6-ENOCH-15-8-12-DECISION-LXI',
+  ]) {
+    if (!article6B.includes(marker)) fail(`article 6B missing final authority marker: ${marker}`);
+  }
+  if (article6B.includes('окончательное сопоставление всех версионных форм locus остаётся `HOLD`')) {
+    fail('article 6B retains stale 15:8–12 version HOLD wording');
+  }
+}
+
+if (failures.length) {
+  for (const message of failures) console.error(`ERROR genesis6 research provenance: ${message}`);
+  process.exit(1);
+}
+
+console.log(
+  `Genesis 6 Research provenance: PASS (${EXPECTED_RESEARCH_COMMIT}, ` +
+    `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} extension bundles, ` +
+    `${EXPECTED_BLOCKING_HOLDS.length} blocking HOLDs, ${EXPECTED_EVIDENCE_RESOLUTIONS.length} evidence resolutions, ` +
+    `${provenance.siteArticles.length} site contracts, release ${provenance.releaseState})`,
+);

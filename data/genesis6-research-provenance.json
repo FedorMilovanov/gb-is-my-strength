@@ -12,7 +12,7 @@
   ],
   "research": {
     "repository": "FedorMilovanov/Research",
-    "commit": "11e86a120f212d75cf01667d7d3bfa72ed9c327a",
+    "commit": "0a9105c499fa801f4095bce7ec311fcb728206a7",
     "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
     "manifestPath": "data/genesis6-authority-manifest.json",
     "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
