@@ -228,6 +228,11 @@
   "genesis-6": {
     "title": "Бытие 6, Енох, Иуда и Пётр",
     "baseUrl": "/hard-texts/",
+    "searchPolicy": {
+      "landingRoute": "/hard-texts/genesis-6/",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
     "parts": [
       {
         "n": 6,
