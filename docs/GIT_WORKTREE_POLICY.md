@@ -1,6 +1,6 @@
 # Git Worktree Policy
 
-**Policy version:** 1.1  
+**Policy version:** 1.2  
 **Effective:** after merge into `main`  
 **Scope:** local execution by humans and agents, diagnostics, experiments and product work.
 
@@ -55,17 +55,19 @@ Open a draft PR immediately after that first pushed checkpoint. Do not wait for 
 
 Uncommitted or unpushed work is volatile. An agent runtime, container, editor session or temporary filesystem may disappear without preserving it.
 
-For productive work, push a recoverable checkpoint:
+Checkpoint pushes are **event-driven, not time-driven**. Do not push after every edit, file, command, or by a mechanical timer. Do not create empty or near-empty commits merely to signal activity.
 
-- after each coherent implementation unit;
-- before a long-running build, migration, generation or destructive command;
-- before changing execution environment or handing the task to another agent;
-- before an expected context/session boundary;
-- whenever the current unpushed delta would be expensive to reproduce.
+For productive work, push a recoverable checkpoint only when at least one of these is true:
+
+- a coherent and reviewable implementation unit is complete;
+- a real risk boundary is next: long-running build, migration, generation, destructive command, environment change, handoff or session boundary;
+- the current unpushed delta would be materially expensive to reproduce.
+
+Small local edits that belong together should normally be grouped into one meaningful checkpoint. Pure status updates belong in the PR body or a PR comment, not in empty commits.
 
 Checkpoint commits may be marked `wip(...)` because the final PR is expected to use squash merge. A checkpoint may be incomplete, but it must remain within the declared file boundary and must never contain secrets, credentials, private data, accidental generated bulk or unrelated files.
 
-Every pushed checkpoint must update the draft PR or task record with:
+Every meaningful pushed checkpoint must update the draft PR or task record with:
 
 ```md
 Status: active | blocked | ready-for-review
@@ -83,7 +85,7 @@ If an agent stops unexpectedly:
 - another agent may continue only after an explicit handoff or owner decision;
 - uncommitted and unpushed changes are not assumed recoverable.
 
-No productive agent should accumulate a large unpushed working set merely to keep the branch history tidy. Squash merge provides clean final history; checkpoint pushes provide durability.
+No productive agent should accumulate a large unpushed working set merely to keep the branch history tidy. Squash merge provides clean final history; economically meaningful checkpoint pushes provide durability without commit noise.
 
 ## 4. Detached diagnostic worktree
 
@@ -149,6 +151,7 @@ When several agents are active:
 
 - each productive agent has one named worktree branch and one canonical remote branch;
 - open a draft PR after the first meaningful checkpoint so the owner can see actual progress;
+- use economically meaningful checkpoints rather than push-by-timer churn;
 - never switch, reset, rebase, force-push, close or delete another owner’s branch;
 - one shared surface has one active owner;
 - a second agent takes a non-overlapping sub-lane or records an out-of-lane finding;
@@ -159,9 +162,9 @@ When several agents are active:
 For three agents, the expected visible shape is:
 
 ```text
-agent A -> worktree A -> branch A -> draft PR A -> checkpoint pushes
-agent B -> worktree B -> branch B -> draft PR B -> checkpoint pushes
-agent C -> worktree C -> branch C -> draft PR C -> checkpoint pushes
+agent A -> worktree A -> branch A -> draft PR A -> meaningful checkpoints
+agent B -> worktree B -> branch B -> draft PR B -> meaningful checkpoints
+agent C -> worktree C -> branch C -> draft PR C -> meaningful checkpoints
 ```
 
 The owner can determine who did what from the PR scope, commits, changed files, status block and exact head SHA.
