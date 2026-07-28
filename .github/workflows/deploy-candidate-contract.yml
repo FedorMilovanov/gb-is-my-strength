@@ -24,6 +24,7 @@ on:
       - "scripts/astro-cache-bust-postbuild.js"
       - "scripts/build-pagefind.js"
       - "scripts/cache-bust-assets.js"
+      - "scripts/project-relations-to-dist.mjs"
       - "scripts/dist-publication-audit.js"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/deploy-candidate-contract.yml"
@@ -80,6 +81,7 @@ jobs:
         with:
           name: deploy-candidate-contract-${{ github.run_id }}
           path: |
+            reports/relation-projection.json
             reports/dist-publication-audit.json
             reports/dist-publication-audit.log
           if-no-files-found: error
