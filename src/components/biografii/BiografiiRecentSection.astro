@@ -2,11 +2,11 @@
 /**
  * BiografiiRecentSection.astro — recent Gill shelf for /biografii/.
  *
- * Refactoring 6.0 parallel pilot: hand-authored Astro replacement for the
- * recent-materials shelf while preserving legacy DOM/classes/copy.
+ * Strict-native SSR content is visible without IntersectionObserver. Motion is
+ * an enhancement and never owns whether the catalog exists.
  */
 ---
-<section id="dzhon-gill-series" class="h-section h-reveal biography-recent" style="padding-top:0; padding-bottom: 24px;" aria-label="Последние добавленные материалы">
+<section id="dzhon-gill-series" class="h-section biography-recent" style="padding-top:0; padding-bottom: 24px;" aria-label="Последние добавленные материалы">
   <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--h-accent, var(--color-accent-strong)); margin-bottom: 20px; letter-spacing: 0.12em; display: flex; align-items: center; gap: 8px;">
     <span style="width: 6px; height: 6px; background: var(--color-accent-strong); border-radius: 50%;"></span>
     Последние добавленные материалы

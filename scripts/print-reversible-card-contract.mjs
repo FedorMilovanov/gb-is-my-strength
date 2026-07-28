@@ -3,9 +3,10 @@
  * Physical paged-media proof for reversible cards.
  *
  * The real card must keep its screen flip after priority cleanup, then print
- * exactly one static face in both front and flipped states. Marker PDFs prove
- * that each active face remains wholly on one sheet; clean screenshots/PDFs are
- * retained for visual and raster inspection.
+ * exactly one static face in both front and flipped states. Full marker PDFs
+ * prove that each active face remains wholly on one sheet. The clean PDFs used
+ * by the raster audit contain only that physical sheet, so unrelated sparse
+ * pages elsewhere in the article cannot create false failures.
  */
 import { createServer } from 'node:http';
 import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
@@ -18,6 +19,7 @@ import { chromium } from 'playwright';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, process.env.GB_PRINT_REVERSIBLE_CARD_ARTIFACT_DIR || 'reports/print-reversible-card-contract');
+const MARKERS = join(OUT, 'markers');
 const ROUTE = '/articles/dzhon-gill-chast-1-chelovek/';
 const CARD_SELECTOR = '.flip-card,.heart-flip-card,.error-flip-card';
 const INNER_SELECTOR = '.flip-card-inner,.heart-flip-inner,.error-flip-inner';
@@ -56,7 +58,16 @@ function isIdentityTransform(value) {
     || compact === 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)';
 }
 
+async function removeAuditMarkers(page) {
+  await page.evaluate(() => {
+    document.getElementById('gb-card-print-audit-style')?.remove();
+    document.querySelectorAll('.gb-card-print-audit-marker').forEach((node) => node.remove());
+    document.querySelectorAll('.gb-card-print-audit-host').forEach((node) => node.classList.remove('gb-card-print-audit-host'));
+  });
+}
+
 await mkdir(OUT, { recursive: true });
+await mkdir(MARKERS, { recursive: true });
 const { server, base } = await serve();
 const pinned = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
 const browser = await chromium.launch(existsSync(pinned) ? { executablePath: pinned } : {});
@@ -204,22 +215,33 @@ try {
     if (['absolute', 'fixed', 'sticky'].includes(snapshot.facePosition) || snapshot.faceTransform !== 'none') report.failures.push(`${mode.name}: active face remains positioned/transformed`);
     if (!snapshot.activeFaceText) report.failures.push(`${mode.name}: active face has no printable text`);
 
-    const pdf = join(OUT, `${mode.name}.pdf`);
-    const txt = join(OUT, `${mode.name}.txt`);
+    const markerPdf = join(MARKERS, `${mode.name}.pdf`);
+    const markerTxt = join(MARKERS, `${mode.name}.txt`);
+    const cleanPdf = join(OUT, `${mode.name}.pdf`);
     const screenshot = join(OUT, `${mode.name}.png`);
     await page.locator(CARD_SELECTOR).screenshot({ path: screenshot });
-    await page.pdf({ path: pdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
-    execFileSync('pdftotext', ['-layout', pdf, txt]);
-    const text = await readFile(txt, 'utf8');
+    await page.pdf({ path: markerPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
+    execFileSync('pdftotext', ['-layout', markerPdf, markerTxt]);
+    const text = await readFile(markerTxt, 'utf8');
     const startPage = tokenPage(text, startToken);
     const endPage = tokenPage(text, endToken);
     if (!startPage || !endPage) report.failures.push(`${mode.name}: active-face PDF markers missing (${startPage}/${endPage})`);
     else if (startPage !== endPage) report.failures.push(`${mode.name}: active face split across pages (${startPage}/${endPage})`);
 
+    await removeAuditMarkers(page);
+    await page.pdf({
+      path: cleanPdf,
+      format: 'A4',
+      printBackground: true,
+      preferCSSPageSize: true,
+      ...(startPage ? { pageRanges: String(startPage) } : {}),
+    });
+
     report.modes.push({
       ...snapshot,
       startPage,
       endPage,
+      markerPdf: `markers/${mode.name}.pdf`,
       pdf: `${mode.name}.pdf`,
       screenshot: `${mode.name}.png`,
     });
