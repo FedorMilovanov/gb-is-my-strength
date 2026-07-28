@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-07-27",
+  "updated": "2026-07-29",
   "description": "Build-time strangler ownership manifest — Gill v16 sanitary refresh 2026-06-29. Production GitHub Pages serves Astro/strangler `dist/` artifact (deploy.yml path: dist). owner:\"astro\" means output is generated from `src/pages/**` and must NOT be overwritten by copy-legacy-to-dist.js. visualMode is declared separately via route contracts / visual-route-contracts manifest, NOT inferred from status. `status:\"production-dist\"` = route is allowed in production dist after gates (may be native Astro, shared chrome, shadow-wrap, or built-app – check visualMode / routeProfile). `status:\"shadow-dist\"` = full-document shadow awaiting owner review. `status:\"shadow-pilot\"` = partial parity / native Astro without owner visual sign-off. Legacy note about \"all landing/series/catalog pages use full-document shadow-wrap\" is HISTORICAL (pre-2026-06-25) — current main includes: Native Astro pages (/ , /about/, /articles/, /biografii/, …), shared series façade (`SeriesReaderChrome` → `data-gill-v16` implementation), Nagornaya native (9 routes), Baptist GBS2 routes, maps strict-native-app (/karty/avraam/, /karty/ishod/) and holding pages. Route visual mode: see `data/visual-route-contracts.json` / `migration/page-ownership.json` + route profiles. copy-legacy-to-dist.js must skip astro-owned routes — verified.",
   "routes": {
     "/": {
@@ -301,43 +301,43 @@
       "owner": "astro",
       "source": "src/pages/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/index.astro",
       "risk": 2,
-      "status": "shadow-pilot"
+      "status": "production-dist"
     },
     "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/": {
       "owner": "astro",
       "source": "src/pages/hard-texts/blagovestie-mertvym-1-petra-4-5-6/index.astro",
       "risk": 2,
-      "status": "shadow-pilot"
+      "status": "production-dist"
     },
     "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/": {
       "owner": "astro",
       "source": "src/pages/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/index.astro",
       "risk": 2,
-      "status": "shadow-pilot"
+      "status": "production-dist"
     },
     "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/": {
       "owner": "astro",
       "source": "src/pages/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/index.astro",
       "risk": 2,
-      "status": "shadow-pilot"
+      "status": "production-dist"
     },
     "/hard-texts/genesis-6/": {
       "owner": "astro",
       "source": "src/pages/hard-texts/genesis-6/index.astro",
       "risk": 2,
-      "status": "shadow-pilot"
+      "status": "production-dist"
     },
     "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/": {
       "owner": "astro",
       "source": "src/pages/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/index.astro",
       "risk": 2,
-      "status": "shadow-pilot"
+      "status": "production-dist"
     },
     "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/": {
       "owner": "astro",
       "source": "src/pages/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/index.astro",
       "risk": 2,
-      "status": "shadow-pilot"
+      "status": "production-dist"
     },
     "/izbrannoe/": {
       "owner": "astro",
