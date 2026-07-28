@@ -239,24 +239,36 @@ async function noJsScene(browser, base, compiled) {
     await page.goto(`${base}/map/`, { waitUntil: 'load', timeout: 30_000 });
     const state = await page.evaluate(() => {
       const app = document.getElementById('atlasApp');
+      const workspace = document.querySelector('.atlas-workspace');
       const list = document.getElementById('atlasNoScriptList');
+      const title = document.getElementById('atlasPageTitle');
+      const headings = Array.from(document.querySelectorAll('h1'));
       const firstLink = list?.querySelector('[data-list-node] a[href]');
       const rect = firstLink?.getBoundingClientRect();
+      const titleRect = title?.getBoundingClientRect();
       return {
-        appHidden: Boolean(app && getComputedStyle(app).display === 'none'),
+        appVisible: Boolean(app && getComputedStyle(app).display !== 'none'),
+        workspaceHidden: Boolean(workspace && getComputedStyle(workspace).display === 'none'),
+        titleCount: headings.length,
+        titleText: headings.map((heading) => heading.textContent?.replace(/\s+/g, ' ').trim() || ''),
+        titleVisible: Boolean(title && getComputedStyle(title).display !== 'none' && titleRect && titleRect.width > 120 && titleRect.height > 20),
+        fallbackLabelledBy: list?.getAttribute('aria-labelledby') || '',
         listVisible: Boolean(list && getComputedStyle(list).display !== 'none' && list.getBoundingClientRect().height > 300),
         links: list?.querySelectorAll('[data-list-node] a[href]').length || 0,
         firstLink: rect ? { width: rect.width, height: rect.height } : null,
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
-    record('no-JS compiler-backed list fallback',
-      state.appHidden && state.listVisible && state.links === compiled.nodes.length
+    record('no-JS single-heading compiler-backed list fallback',
+      state.appVisible && state.workspaceHidden
+      && state.titleCount === 1 && state.titleText[0] === 'Атлас исследований'
+      && state.titleVisible && state.fallbackLabelledBy === 'atlasPageTitle'
+      && state.listVisible && state.links === compiled.nodes.length
       && state.firstLink && state.firstLink.width > 180 && state.firstLink.height >= 44
       && state.overflow <= 2 && dataRequests.length === 0,
       JSON.stringify({ ...state, dataRequests }));
   } catch (error) {
-    record('no-JS compiler-backed list fallback', false, String(error).slice(0, 500));
+    record('no-JS single-heading compiler-backed list fallback', false, String(error).slice(0, 500));
   } finally { await context.close(); }
 }
 
