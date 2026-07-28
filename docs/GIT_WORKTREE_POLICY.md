@@ -1,6 +1,6 @@
 # Git Worktree Policy
 
-**Policy version:** 1.0  
+**Policy version:** 1.1  
 **Effective:** after merge into `main`  
 **Scope:** local execution by humans and agents, diagnostics, experiments and product work.
 
@@ -11,11 +11,13 @@ Risk mode and execution mode are separate decisions.
 - `FAST`, `LANE`, `SYSTEM` describe the risk and verification boundary.
 - `LOCAL_WORKTREE`, `DETACHED_DIAGNOSTIC`, `REMOTE_PR`, `RECOVERY` describe how the work is executed.
 
-A remote branch is not a scratch directory. It is a publication boundary for one canonical PR.
+A worktree is an isolation mechanism, not durable storage. Product work uses a named branch from the beginning, and useful progress is pushed to the one canonical remote branch throughout the task.
 
-## 2. Product worktree
+A remote branch is not a scratch directory. It is the durable publication boundary for one canonical task and one canonical PR.
 
-Create a linked worktree with a local branch when the result may become product code, content or governance:
+## 2. Product worktree and branch
+
+Create a linked worktree attached to a named branch when the result may become product code, content or governance:
 
 ```bash
 git fetch origin main --prune
@@ -25,25 +27,74 @@ git worktree add \
   origin/main
 ```
 
-The branch remains local until all of the following are true:
+Before substantive edits, record:
 
-1. the scope and owner are declared;
-2. allowed and forbidden files are known;
-3. a meaningful diff exists;
-4. iteration checks have run;
-5. the branch is the single canonical remote branch for the task;
-6. a draft PR is ready to be opened immediately after push.
+1. scope and owner;
+2. allowed and forbidden files;
+3. base and rollback SHA;
+4. adjacent active PRs and overlap decision;
+5. expected checks.
 
-## 3. Detached diagnostic worktree
+Push the named branch early so the task has a visible durable ref:
 
-Use detached HEAD for reproduction, comparison, old-SHA inspection, CI diagnosis, screenshots, temporary builds and hypothesis testing:
+```bash
+git push -u origin HEAD
+```
+
+A branch that still equals `main` cannot open a PR yet, but it establishes the canonical remote destination. After the first meaningful and reviewable checkpoint:
+
+```bash
+git add <bounded-files>
+git commit -m "wip(<scope>): first recoverable checkpoint"
+git push
+```
+
+Open a draft PR immediately after that first pushed checkpoint. Do not wait for the full task to be complete.
+
+## 3. Durable checkpoint protocol
+
+Uncommitted or unpushed work is volatile. An agent runtime, container, editor session or temporary filesystem may disappear without preserving it.
+
+For productive work, push a recoverable checkpoint:
+
+- after each coherent implementation unit;
+- before a long-running build, migration, generation or destructive command;
+- before changing execution environment or handing the task to another agent;
+- before an expected context/session boundary;
+- whenever the current unpushed delta would be expensive to reproduce.
+
+Checkpoint commits may be marked `wip(...)` because the final PR is expected to use squash merge. A checkpoint may be incomplete, but it must remain within the declared file boundary and must never contain secrets, credentials, private data, accidental generated bulk or unrelated files.
+
+Every pushed checkpoint must update the draft PR or task record with:
+
+```md
+Status: active | blocked | ready-for-review
+Last pushed SHA:
+Completed:
+In progress:
+Next:
+Known failing or unavailable checks:
+```
+
+If an agent stops unexpectedly:
+
+- pushed commits and the remote branch remain recoverable;
+- the draft PR shows ownership, scope and last known progress;
+- another agent may continue only after an explicit handoff or owner decision;
+- uncommitted and unpushed changes are not assumed recoverable.
+
+No productive agent should accumulate a large unpushed working set merely to keep the branch history tidy. Squash merge provides clean final history; checkpoint pushes provide durability.
+
+## 4. Detached diagnostic worktree
+
+Use detached HEAD only for reproduction, comparison, old-SHA inspection, CI diagnosis, screenshots, temporary builds and hypotheses that are expected to be disposable:
 
 ```bash
 git fetch origin main --prune
 git worktree add --detach ../gb-diag-<scope> origin/main
 ```
 
-Detached diagnostics must not create a remote branch. Capture evidence instead:
+Detached diagnostics must not create a remote branch merely to preserve temporary noise. Capture evidence instead:
 
 ```bash
 mkdir -p ../diagnostic-evidence
@@ -53,15 +104,16 @@ git diff --binary > ../diagnostic-evidence/experiment.patch
 
 Store short-lived evidence in a GitHub Actions artifact. Store durable conclusions in AuditRepo, a governed patch/bundle, or release evidence.
 
-If the experiment becomes product work, create one local canonical branch from the useful state:
+The moment a diagnostic produces useful product code, content, governance or a result expensive to reproduce, promote it to a named branch and follow the durable checkpoint protocol:
 
 ```bash
 git switch -c lane/<scope>-YYYY-MM-DD
+git push -u origin HEAD
 ```
 
-Then review and push that branch only.
+Then commit the useful bounded delta, push it and open the canonical draft PR.
 
-## 4. Remote namespaces
+## 5. Remote namespaces
 
 Normal canonical PR branches may use:
 
@@ -91,10 +143,12 @@ experiment/**
 
 Existing in-flight branches are grandfathered during transition. They are not renamed, force-pushed, closed or deleted merely because their names do not match the new policy.
 
-## 5. Parallel agents
+## 6. Parallel agents
 
 When several agents are active:
 
+- each productive agent has one named worktree branch and one canonical remote branch;
+- open a draft PR after the first meaningful checkpoint so the owner can see actual progress;
 - never switch, reset, rebase, force-push, close or delete another owner’s branch;
 - one shared surface has one active owner;
 - a second agent takes a non-overlapping sub-lane or records an out-of-lane finding;
@@ -102,7 +156,17 @@ When several agents are active:
 - a governance or diagnostic report is read-only and cannot authorize branch deletion;
 - a successor branch is created only after the replacement scope is explicit.
 
-## 6. Cleanup
+For three agents, the expected visible shape is:
+
+```text
+agent A -> worktree A -> branch A -> draft PR A -> checkpoint pushes
+agent B -> worktree B -> branch B -> draft PR B -> checkpoint pushes
+agent C -> worktree C -> branch C -> draft PR C -> checkpoint pushes
+```
+
+The owner can determine who did what from the PR scope, commits, changed files, status block and exact head SHA.
+
+## 7. Cleanup
 
 Before removing a worktree:
 
@@ -121,7 +185,7 @@ git worktree prune
 
 `--force` is forbidden until unique work is preserved or explicitly rejected with evidence.
 
-## 7. Minimum diagnostic record
+## 8. Minimum diagnostic record
 
 ```md
 Diagnostic ID:
