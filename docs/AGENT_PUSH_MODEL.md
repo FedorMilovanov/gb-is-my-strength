@@ -2,7 +2,7 @@
 
 **Repository:** `FedorMilovanov/gb-is-my-strength`  
 **Updated:** 2026-07-28  
-**Policy version:** 4.2  
+**Policy version:** 4.3  
 **Current rule:** one canonical branch and PR per independently mergeable lane; direct `main` push only in an explicit owner-approved emergency.
 
 ## 1. Authentication truth
@@ -14,9 +14,7 @@
 
 ## 2. Normal publication path
 
-Execution mechanics and checkpoint criteria are defined once in [GIT_WORKTREE_POLICY.md](GIT_WORKTREE_POLICY.md).
-
-The normal publication path is:
+Execution mechanics and checkpoint criteria live in [GIT_WORKTREE_POLICY.md](GIT_WORKTREE_POLICY.md).
 
 ```text
 named local branch in dedicated worktree
@@ -64,43 +62,19 @@ production
 - never close or delete active-agent branches;
 - never continue another owner’s lane without explicit handoff or owner decision;
 - inspect file overlap before publication;
-- use a fresh branch from current `main` for selective recovery;
-- never merge an old recovery branch wholesale merely to preserve its name.
+- use a fresh branch from current `main` for selective recovery.
 
-GitHub already exposes commits, changed files, checks and exact head SHA. Manually update PR status only when scope, ownership, blocker, handoff or readiness changes.
+GitHub already exposes commits, changed files, checks and exact head SHA. Update PR status only when scope, ownership, blocker, handoff or readiness changes.
 
 ## 5. Write-capable workflows
 
-Do not rely on a static list. Run:
+Run `npm run control-plane:audit` when the diff changes workflows, permissions, writers or release/control-plane scripts. Do not run it for unrelated prose-only changes.
 
-```bash
-npm run control-plane:audit
-```
+Any new `contents: write` workflow requires an explicit continuing owner and bounded write path. The branch-hygiene workflow is read-only and must remain unable to close PRs, update refs or delete branches.
 
-Inspect `reports/repository-control-plane-audit.{json,md}` for current writers and permissions. Any new `contents: write` workflow requires an explicit continuing owner and bounded write path.
+## 6. Evidence
 
-The branch-hygiene workflow is read-only and must remain unable to close PRs, update refs or delete branches.
-
-## 6. Verification and evidence
-
-A checkpoint preserves work; it is not automatically a green claim. Full checks may run later, but failures or unavailable checks that affect the plan must be recorded.
-
-For workflow/system changes before ready-for-review:
-
-```bash
-git diff --check
-npm run guard:shared-files
-npm run workflows:check
-npm run control-plane:audit
-npm run workflows:lint
-```
-
-For production/shared/refactor impact, the final barrier normally includes:
-
-```bash
-npm run validate:static-publication
-npm run guard:shared-files
-```
+Choose checks through [WORK_MODES.md](WORK_MODES.md). A checkpoint preserves work; it is not automatically a green claim.
 
 Trust only:
 
