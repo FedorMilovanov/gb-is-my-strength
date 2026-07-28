@@ -1,100 +1,91 @@
 #!/usr/bin/env node
-/**
- * ЗАЩИТА ОТ РЕГРЕССИЙ: статические контракты трёх движков.
- *
- * Быстрый (без сборки и браузера) страж инвариантов, которые мы уже теряли
- * и восстанавливали (см. auditrepo/references/gb-ui-canon-2026-07-13/
- * BRANCH_AUDIT_2026-07-14.md). Каждая проверка — конкретная регрессия из
- * истории проекта; НЕ ослаблять проверку ради «зелёного», чинить причину.
- *
- * Запуск: npm run engine:contracts   (входит в npm run engine:guard)
- */
+/** Static regression contracts for reader engines, relation compiler and Atlas. */
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
-
+const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 let fails = 0;
-function check(name, ok, hint) {
-  if (ok) { console.log('✅ ' + name); }
-  else { fails++; console.error('❌ ' + name + (hint ? '\n   → ' + hint : '')); }
+function check(name, ok, hint = '') {
+  if (ok) console.log('✅ ' + name);
+  else { fails += 1; console.error('❌ ' + name + (hint ? '\n   → ' + hint : '')); }
+}
+function syntaxCheck(file) {
+  const result = spawnSync(process.execPath, ['--check', path.join(ROOT, file)], { encoding: 'utf8' });
+  check('JS syntax: ' + file, result.status === 0, (result.stderr || result.stdout || '').trim());
 }
 
-/* ---------- floating-cluster.css ---------- */
 const css = read('css/floating-cluster.css');
-
-// Регрессия 2026-07-14: снятие префикса превращало поповер настроек серий
-// в центр-модалку с блюром. Каждый селектор .gill-settings-overlay обязан
-// жить под [data-gill-v16].
-const badOverlay = css.split('\n').filter((l) =>
-  /^\s*\.gill-settings-overlay/.test(l) || /,\s*\.gill-settings-overlay/.test(l));
-check('CSS: все правила .gill-settings-overlay под [data-gill-v16]',
-  badOverlay.length === 0,
-  'непрефиксованные селекторы: ' + badOverlay.slice(0, 3).join(' | '));
-
-// Регрессия «двойная рамка» таб-кнопок Обучения (lane 3ee57f7): у .gill-tab
-// уже есть своя рамка; отдельное focus-visible-кольцо с offset рисует вторую.
-const tabIdx = css.indexOf('.gill-tab:focus-visible');
-const tabCtx = tabIdx === -1 ? '' : css.slice(tabIdx, tabIdx + 200);
-check('CSS: нет двойной рамки .gill-tab (focus-visible без outline-offset)',
-  tabIdx === -1 || !/outline-offset/.test(tabCtx),
-  'вернулся outline-offset у .gill-tab:focus-visible');
-
-// Канон: крошки скрыты на мобиле у серия-движка (владелец: «их не должно быть!»)
-check('CSS: мобильные крошки скрыты ([data-gill-v16] .page-wrap > nav.breadcrumb)',
-  /\[data-gill-v16\]\s*\.page-wrap\s*>\s*nav\.breadcrumb\s*\{[^}]*display:\s*none/.test(css));
-
-// Канон: тонкий контур PLAY виден В ПОКОЕ на десктопе — у обоих кластеров.
-check('CSS: контур PLAY в покое — .gbs-theme-corner',
-  /\.gbs-theme-corner \.gb-ember__ring-svg\s*\{\s*opacity:\s*1/.test(css));
-check('CSS: контур PLAY в покое — .gb-floater (одиночные статьи)',
-  /\.gb-floater \.gb-ember__ring-svg\s*\{\s*opacity:\s*1/.test(css));
-
-// Канон: бейдж «N×» СИДИТ В КРУГЕ (right:-2px;bottom:-2px), деск = мобила.
+const badOverlay = css.split('\n').filter((line) => /^\s*\.gill-settings-overlay/.test(line) || /,\s*\.gill-settings-overlay/.test(line));
+check('CSS: .gill-settings-overlay scoped by [data-gill-v16]', badOverlay.length === 0, badOverlay.slice(0, 3).join(' | '));
+const tabIndex = css.indexOf('.gill-tab:focus-visible');
+const tabContext = tabIndex === -1 ? '' : css.slice(tabIndex, tabIndex + 200);
+check('CSS: no double .gill-tab focus ring', tabIndex === -1 || !/outline-offset/.test(tabContext));
+check('CSS: series mobile breadcrumbs hidden', /\[data-gill-v16\]\s*\.page-wrap\s*>\s*nav\.breadcrumb\s*\{[^}]*display:\s*none/.test(css));
+check('CSS: idle PLAY outline for series', /\.gbs-theme-corner \.gb-ember__ring-svg\s*\{\s*opacity:\s*1/.test(css));
+check('CSS: idle PLAY outline for articles', /\.gb-floater \.gb-ember__ring-svg\s*\{\s*opacity:\s*1/.test(css));
 const badgeRules = [
   /\[data-gill-v16\] \.gbs-rail-spdbadge\s*\{[^}]*right:\s*-2px;\s*bottom:\s*-2px/,
   /\.gb-floater \.gbs-rail-spdbadge\s*\{[^}]*right:\s*-2px;\s*bottom:\s*-2px/,
   /\.mobile-spdbadge\s*\{[^}]*right:\s*-2px;\s*bottom:\s*-2px/,
 ];
-check('CSS: бейдж скорости в круге (3 места, -2px/-2px)',
-  badgeRules.every((re) => re.test(css)));
+check('CSS: speed badge anchored inside PLAY', badgeRules.every((rule) => rule.test(css)));
 
-/* ---------- floating-cluster-controller.js ---------- */
-const js = read('js/floating-cluster-controller.js');
+const controller = read('js/floating-cluster-controller.js');
+check('Reader: follow-scroll contract', controller.includes('function buildFollowMap') && controller.includes('function followReading') && controller.includes('followReading(ttsState.spokenChars)'));
+check('Reader: Media Session contract', controller.includes('function mediaSessionMeta') && controller.includes('function mediaSessionSet') && controller.includes('function silentWavUrl') && controller.includes("navigator.mediaSession.setActionHandler('play'"));
+check('Reader: chunk seek contract', controller.includes('function skipChunk') && controller.includes("setActionHandler('seekforward'"));
+check('Reader: shared settings selector', controller.includes('[data-gill-settings-open]'));
 
-check('JS: follow-скролл озвучки (buildFollowMap/followReading)',
-  js.includes('function buildFollowMap') && js.includes('function followReading') &&
-  js.includes('followReading(ttsState.spokenChars)'));
+const readerActions = read('src/runtime/reader-actions.js');
+const readerActionsRuntime = read('src/components/reader-platform/ReaderActionsRuntime.astro');
+const gillChrome = read('src/components/article-pilots/gill-series/GillSeriesChrome.astro');
+const gillResponsive = read('src/components/article-pilots/gill-series/GillSeriesResponsiveStyles.astro');
+const nagornayaRuntime = read('src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro');
+check('Reader actions: print engine is a dedicated singleton',
+  readerActions.includes('window.GBPrintEngine = printEngine') &&
+  readerActions.includes('const PRINT_ENGINE_VERSION = 2.1') &&
+  readerActions.includes("closest('[data-action=\"print\"],[data-action=\"share\"],[data-home-href]')") &&
+  readerActions.includes("window.addEventListener('beforeprint'") &&
+  readerActions.includes("window.addEventListener('afterprint'"));
+check('Reader actions: capture-phase owns global actions before chrome propagation',
+  readerActions.includes("document.addEventListener('click', onClick, true)") &&
+  readerActionsRuntime.includes("import '../../runtime/reader-actions.js';") &&
+  readerActionsRuntime.includes('<script>'));
+check('Reader actions: print delegates pagination, records failure and calls window.print once',
+  readerActions.includes('window.GBPrintPagination') &&
+  readerActions.includes("status: 'failed'") &&
+  readerActions.includes('if (printing) return copyReport(report)') &&
+  readerActions.includes('window.print();'));
+check('Reader actions: Astro module graph owns hashing and legacy root stays clean',
+  readerActionsRuntime.includes("import '../../runtime/reader-actions.js';") &&
+  !readerActionsRuntime.includes('assetUrl(') &&
+  !fs.existsSync(path.join(ROOT, 'js/reader-actions.js')));
+check('Reader actions: strict-native series use explicit owner without site.js',
+  gillChrome.includes('ReaderActionsRuntime') && nagornayaRuntime.includes('ReaderActionsRuntime') &&
+  !gillChrome.includes('/js/site.js') && !nagornayaRuntime.includes('/js/site.js'));
+check('Gill responsive: mobile table scroll is local, visible and print-reversible',
+  gillResponsive.includes('table.manuscript-table') &&
+  gillResponsive.includes('overflow-x: auto') &&
+  gillResponsive.includes('overscroll-behavior-inline: contain') &&
+  gillResponsive.includes('@media print') &&
+  gillResponsive.includes('display: table') &&
+  !gillResponsive.includes('overflow-x: hidden'));
+check('Gill responsive: floating tooltip wraps within safe viewport',
+  gillResponsive.includes('body[data-gbs2-series="dzhon-gill"] .tooltip') &&
+  gillResponsive.includes('calc(100vw - 24px)') &&
+  gillResponsive.includes('overflow-wrap: anywhere') &&
+  gillResponsive.includes('white-space: normal !important'));
 
-check('JS: Media Session + фоновый якорь (mediaSessionMeta/Set, silentWavUrl)',
-  js.includes('function mediaSessionMeta') && js.includes('function mediaSessionSet') &&
-  js.includes('function silentWavUrl') && js.includes("navigator.mediaSession.setActionHandler('play'"));
-
-check('JS: перемотка по chunk (skipChunk для seekforward/backward)',
-  js.includes('function skipChunk') && js.includes("setActionHandler('seekforward'"));
-
-check('JS: единая привязка настроек ([data-gill-settings-open])',
-  js.includes('[data-gill-settings-open]'));
-
-/* ---------- изоляция движков ---------- */
 const readerRail = read('src/components/article-pilots/_shared/ReaderRail.astro');
 const readerSettings = read('src/components/article-pilots/_shared/ReaderSettings.astro');
-check('Изоляция: одиночный движок не импортирует gill-series/',
-  !/from ['"][^'"]*gill-series\//.test(readerRail) &&
-  !/from ['"][^'"]*gill-series\//.test(readerSettings));
+check('Engine isolation: single article does not import gill-series', !/from ['"][^'"]*gill-series\//.test(readerRail) && !/from ['"][^'"]*gill-series\//.test(readerSettings));
+check('Engine isolation: Gill settings has no [data-reader-root] fallback', !read('src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro').includes('data-reader-root'));
 
-const gillSheet = read('src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro');
-check('Изоляция: Gill-лист без fallback на [data-reader-root]',
-  !gillSheet.includes('data-reader-root'));
-
-/* ---------- покрытие page-движка (восстановление rollout-v1) ---------- */
 const registry = read('src/components/article-pilots/_shared/mobileChromeRegistry.ts');
 const catalogRoutes = ['/articles/', '/biografii/', '/hard-texts/', '/rodosloviye/', '/karty/', '/konfessii/'];
-check('Page-движок: 6 каталогов в MOBILE_CHROME_ROUTES',
-  catalogRoutes.every((r) => registry.includes("'" + r + "'")),
-  'потерян маршрут из: ' + catalogRoutes.join(', '));
+check('Page engine: six catalogs registered', catalogRoutes.every((route) => registry.includes("'" + route + "'")), catalogRoutes.join(', '));
 
-/* ---------- серия-движок: все тела серий на SeriesReaderChrome ---------- */
 const seriesBodies = [
   'src/components/baptisty-rossii',
   'src/components/article-pilots/novoe-serdce',
@@ -105,100 +96,152 @@ const seriesBodies = [
   'src/components/article-pilots/chto-bibliya-nazyvaet-serdcem',
   'src/components/article-pilots/antisovetov',
 ];
-const missing = [];
+const missingSeriesChrome = [];
 for (const dir of seriesBodies) {
-  const bodies = fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith('Body.astro'));
-  for (const b of bodies) {
-    const content = read(path.join(dir, b));
-    // Хаб /baptisty-rossii/ — лендинг серии, не статья: SeriesReaderChrome не обязан.
-    if (b === 'BaptistyRossiiBody.astro') continue;
-    if (!content.includes('SeriesReaderChrome')) missing.push(path.join(dir, b));
+  for (const file of fs.readdirSync(path.join(ROOT, dir)).filter((entry) => entry.endsWith('Body.astro'))) {
+    if (file === 'BaptistyRossiiBody.astro') continue;
+    if (!read(path.join(dir, file)).includes('SeriesReaderChrome')) missingSeriesChrome.push(path.join(dir, file));
   }
 }
-check('Серия-движок: все статьи серий на SeriesReaderChrome', missing.length === 0,
-  'вне движка: ' + missing.join(', '));
-
-/* ---------- контент ↔ движок: счётчики Баптистов ---------- */
+check('Series engine: all article bodies use SeriesReaderChrome', missingSeriesChrome.length === 0, missingSeriesChrome.join(', '));
 const baptDir = 'src/components/baptisty-rossii';
-const stale = fs.readdirSync(path.join(ROOT, baptDir))
-  .filter((f) => f.endsWith('Body.astro'))
-  .filter((f) => /из 10</.test(read(path.join(baptDir, f))));
-check('Контент: счётчики Баптистов = канон движка (9 частей, нет «из 10»)',
-  stale.length === 0, 'устаревшие счётчики в: ' + stale.join(', '));
+const staleCounts = fs.readdirSync(path.join(ROOT, baptDir)).filter((file) => file.endsWith('Body.astro') && /из 10</.test(read(path.join(baptDir, file))));
+check('Content: Baptist series counters match canonical engine', staleCounts.length === 0, staleCounts.join(', '));
 
-/* ---------- конфиги серий: только через defineSeriesConfig ---------- */
 const seriesDir = 'src/components/article-pilots/_shared/series';
-const cfgFiles = fs.readdirSync(path.join(ROOT, seriesDir)).filter((f) => f.endsWith('SeriesConfig.ts'));
-const rawCfgs = cfgFiles.filter((f) => !read(path.join(seriesDir, f)).includes('defineSeriesConfig('));
-check('Серии: каждый *SeriesConfig.ts объявлен через defineSeriesConfig()',
-  rawCfgs.length === 0 && read(path.join(seriesDir, 'seriesConfig.ts')).includes('defineSeriesConfig('),
-  'сырые конфиги (валидатор их не проверит): ' + rawCfgs.join(', '));
-
-check('Серии: гид для агентов docs/SERIES-ENGINE-GUIDE.md на месте',
-  fs.existsSync(path.join(ROOT, 'docs/SERIES-ENGINE-GUIDE.md')));
-
-// Каждая заявленная theme обязана иметь css/series-<theme>.css
+const configFiles = fs.readdirSync(path.join(ROOT, seriesDir)).filter((file) => file.endsWith('SeriesConfig.ts'));
+const rawConfigs = configFiles.filter((file) => !read(path.join(seriesDir, file)).includes('defineSeriesConfig('));
+check('Series configs: all declared through defineSeriesConfig()', rawConfigs.length === 0 && read(path.join(seriesDir, 'seriesConfig.ts')).includes('defineSeriesConfig('), rawConfigs.join(', '));
+check('Series guide exists', fs.existsSync(path.join(ROOT, 'docs/SERIES-ENGINE-GUIDE.md')));
 const themes = [];
-for (const f of cfgFiles.concat(['seriesConfig.ts'])) {
-  const m = read(path.join(seriesDir, f)).match(/theme:\s*'([a-z0-9-]+)'/g) || [];
-  for (const t of m) themes.push(t.match(/'([a-z0-9-]+)'/)[1]);
+for (const file of configFiles.concat(['seriesConfig.ts'])) {
+  for (const match of read(path.join(seriesDir, file)).match(/theme:\s*'([a-z0-9-]+)'/g) || []) themes.push(match.match(/'([a-z0-9-]+)'/)[1]);
 }
-const missingThemes = themes.filter((t) => !fs.existsSync(path.join(ROOT, `css/series-${t}.css`)));
-check('Серии: у каждой theme есть css/series-<theme>.css', missingThemes.length === 0,
-  'нет файла темы: ' + missingThemes.join(', '));
+const missingThemes = themes.filter((theme) => !fs.existsSync(path.join(ROOT, `css/series-${theme}.css`)));
+check('Series themes: every declared theme has CSS', missingThemes.length === 0, missingThemes.join(', '));
+check('Series satellites rendered by accordion', read('src/components/article-pilots/gill-series/GillPartTocOverlay.astro').includes('satellitesOf('));
 
-// Спутники: аккордеон обязан уметь их рендерить (satellitesOf подключён)
-check('Серии: аккордеон рендерит спутники (satellitesOf в GillPartTocOverlay)',
-  read('src/components/article-pilots/gill-series/GillPartTocOverlay.astro').includes('satellitesOf('));
+const relationFiles = [
+  'src/lib/relations/engine.mjs',
+  'src/lib/relations/engine.d.ts',
+  'src/lib/relations/compiled.ts',
+  'data/relations.json',
+  'data/relations.schema.json',
+  'src/pages/data/relations.compiled.json.ts',
+  'scripts/check-relations.mjs',
+  'scripts/project-relations-to-dist.mjs',
+  'src/runtime/relationship-panel.css',
+];
+check('Relations: canonical compiler surface complete', relationFiles.every((file) => fs.existsSync(path.join(ROOT, file))), relationFiles.filter((file) => !fs.existsSync(path.join(ROOT, file))).join(', '));
+check('Relations: browser assembly runtime removed', !fs.existsSync(path.join(ROOT, 'src/runtime/relationship-panel.js')) && !fs.existsSync(path.join(ROOT, 'js/relationship-panel.js')));
 
-/* ---------- CSS: структурная целостность (AST, не только скобки) ---------- */
-// Регрессия AUDIT-CSS-FLOATCLUSTER-COMMENT-CORRUPTION (arena 2026-07-14):
-// незакрытый баннер-комментарий превращал следующий rule в мусорный селектор
-// и молча глотал 19 деклараций .mobile-bottom-bar. Скобочный валидатор это
-// не видит — проверяем настоящим парсером + балансом комментариев.
+const relationEngine = read('src/lib/relations/engine.mjs');
+const relationComposition = read('src/lib/relations/compiled.ts');
+const relationEndpoint = read('src/pages/data/relations.compiled.json.ts');
+const projector = read('scripts/project-relations-to-dist.mjs');
+const relationshipCss = read('src/runtime/relationship-panel.css');
+const atlasBody = read('src/components/map/AtlasBody.astro');
+const atlasNoScript = read('src/components/map/AtlasNoScriptFallback.astro');
+const atlasRuntime = read('src/runtime/atlas-runtime.js');
+const atlasStyles = read('src/components/map/MapStyles.astro');
+const atlasPolish = read('src/components/map/AtlasVisualPolish.astro');
+const atlasRoute = read('src/pages/map/index.astro');
+const postbuild = read('scripts/astro-cache-bust-postbuild.js');
+const baseLayout = read('src/layouts/BaseLayout.astro');
+
+check('Relations: compiler validates catalog, derives series and imports legacy fallback', relationEngine.includes('function compileCatalog') && relationEngine.includes('function compileSeries') && relationEngine.includes('function compileLegacy') && relationEngine.includes('legacy-import'));
+check('Relations: compiler creates ranked article projections without series duplication', relationEngine.includes('function buildProjections') && relationEngine.includes('sameSeries') && relationEngine.includes('.slice(0, 4)'));
+check('Relations: compiler fails on ambiguous series ownership', relationEngine.includes('seriesOwnerByUrl') && relationEngine.includes('belongs to both'));
+check('Relations: compiler rejects synthetic series node id collisions instead of renumbering deep links', relationEngine.includes('series node id collision') && !relationEngine.includes('while (byId.has(id))'));
+check('Relations: compiler validates draft and deprecated endpoints before status handling', relationEngine.indexOf('references invalid endpoints') < relationEngine.indexOf("status === 'draft'"));
+check('Relations: composition root compiles and recursively freezes once', relationComposition.includes("import graphData from '../../../data/links-graph.json'") && relationComposition.includes("import seriesData from '../../../data/series.json'") && relationComposition.includes("import catalogData from '../../../data/relations.json'") && relationComposition.includes('function deepFreeze') && (relationComposition.match(/compileRelations\(/g) || []).length === 1);
+check('Relations: endpoint serves canonical singleton', relationEndpoint.includes('export const prerender = true') && relationEndpoint.includes("import compiledRelations from '../../lib/relations/compiled'") && !relationEndpoint.includes('compileRelations('));
+check('Relations: projector creates semantic static navigation', projector.includes('data-relation-engine="1"') && projector.includes('data-relation-group=') && projector.includes('removeElementsByClass') && projector.includes('compiled.projections.byNode') && projector.includes('relation-projection.json'));
+check('Relations: projector is idempotent and removes obsolete runtime', projector.includes("removeElementsByClass(updated, 'gb-relations-panel')") && projector.includes("rm(join(DIST, 'js', 'relationship-panel.js')"));
+check('Relations: legacy backlinks are removed, never CSS-masked', !relationshipCss.includes('.gbx-backlinks') && projector.includes("removeElementsByClass(updated, 'gbx-backlinks')"));
+check('Relations: native article layout excludes legacy site monolith', baseLayout.includes("includeLegacySiteScript = ogType !== 'article'") && baseLayout.includes("...(includeLegacySiteScript ? [assetUrl('js/site.js')] : [])"));
+check('Relations: print output hides navigation panel', /@media\s+print[\s\S]*\.gb-relations-panel/.test(relationshipCss));
+check('Postbuild: only Atlas browser runtime is materialized', postbuild.includes("source: 'src/runtime/atlas-runtime.js'") && !postbuild.includes("source: 'src/runtime/relationship-panel.js'") && !postbuild.includes('injectRelationshipAssets'));
+check('Postbuild: relation projector is a fail-closed phase', postbuild.includes('project-relations-to-dist.mjs') && postbuild.includes('spawnSync') && postbuild.includes('Relation projector failed'));
+
+check('Atlas: SSR, no-JS and endpoint share immutable composition root', atlasBody.includes("import compiledRelations from '../../lib/relations/compiled'") && atlasNoScript.includes("import compiledRelations from '../../lib/relations/compiled'") && relationEndpoint.includes("import compiledRelations from '../../lib/relations/compiled'") && !atlasBody.includes('compileRelations(') && !atlasNoScript.includes('compileRelations('));
+check('Atlas: runtime no longer fetches raw graph/series', !atlasRuntime.includes('/data/links-graph.json') && !atlasRuntime.includes('/data/series.json') && atlasRuntime.includes('function assertCompiled'));
+check('Atlas: runtime is fail-closed and never sanitizes a damaged graph into partial truth', atlasRuntime.includes('node stats mismatch') && atlasRuntime.includes('edge stats mismatch') && atlasRuntime.includes('duplicate edge semantic') && atlasRuntime.includes('function recover') && !atlasRuntime.includes('.innerHTML'));
+check('Atlas: zoom, pan, focus, list and deep links remain', atlasRuntime.includes("svg.addEventListener('wheel'") && atlasRuntime.includes("svg.addEventListener('pointerdown'") && atlasRuntime.includes('function focusNode') && atlasRuntime.includes('function setView') && atlasRuntime.includes("params.get('focus')") && atlasRuntime.includes("window.addEventListener('popstate'"));
+check('Atlas: relation filters own edge focus, detail neighbors and active-focus refresh',
+  atlasRuntime.includes('if (!enabledKinds.has(edge.kind)) return;') &&
+  atlasRuntime.includes('var allNeighbors = relatedTo(id)') &&
+  atlasRuntime.includes('allNeighbors.length +') &&
+  atlasRuntime.includes('enabledKinds.has(entry.edge.kind) &&') &&
+  atlasRuntime.includes('if (activeFocus) focusNode(activeFocus, false, false)'));
+check('Atlas: group navigation clears stale focus from the URL', /updateUrl\(\{\s*group:[\s\S]{0,160}focus:\s*null/.test(atlasRuntime));
+check('Atlas: keyboard graph and search navigation are native contracts', atlasRuntime.includes('function nearestNode') && atlasRuntime.includes('function handleNodeKeyboard') && atlasRuntime.includes('function moveSearchCursor') && atlasRuntime.includes("event.key === 'ArrowDown'"));
+check('Atlas: deterministic desktop and compact layouts are first-class profiles', atlasRuntime.includes('DESKTOP_WORLD') && atlasRuntime.includes('COMPACT_WORLD') && atlasRuntime.includes('function relayoutForViewport') && atlasRuntime.includes("app.dataset.layoutProfile = profile.id"));
+check('Atlas: detail rail consumes desktop grid only during focus', atlasStyles.includes('--atlas-detail-track:0px') && atlasStyles.includes('.atlas-app.has-detail{--atlas-detail-track:var(--atlas-detail)}') && atlasRuntime.includes("app.classList.add('has-detail')") && atlasRuntime.includes("app.classList.remove('has-detail')"));
+check('Atlas: compact scenography has a first-class owner and preserves focus contrast',
+  atlasRoute.includes("import AtlasVisualPolish from '@/components/map/AtlasVisualPolish.astro'") &&
+  atlasRoute.includes('<AtlasVisualPolish />') &&
+  atlasPolish.includes('[data-layout-profile="compact"] .atlas-stage-copy') &&
+  atlasPolish.includes('.atlas-edge.is-focus') &&
+  atlasPolish.includes('[data-zoom-level="overview"] .atlas-edge--bridge'));
+check('Atlas: strict-native route has no old MapBody or set:html', atlasRoute.includes("import AtlasBody from '@/components/map/AtlasBody.astro'") && !atlasRoute.includes('MapBody') && !atlasBody.includes('set:html') && !fs.existsSync(path.join(ROOT, 'src/components/map/MapBody.astro')));
+
+function relationImportsOutsideComposition(dir) {
+  const offenders = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) offenders.push(...relationImportsOutsideComposition(file));
+    else if (/\.(astro|ts|tsx)$/.test(entry.name)) {
+      const relative = path.relative(ROOT, file).replace(/\\/g, '/');
+      if (relative === 'src/lib/relations/compiled.ts') continue;
+      if (fs.readFileSync(file, 'utf8').includes('compileRelations(')) offenders.push(relative);
+    }
+  }
+  return offenders;
+}
+const duplicateAstroCompilers = relationImportsOutsideComposition(path.join(ROOT, 'src'));
+check('Relations: no Astro surface recompiles graph outside composition root', duplicateAstroCompilers.length === 0, duplicateAstroCompilers.join(', '));
+
+syntaxCheck('src/runtime/reader-actions.js');
+syntaxCheck('src/lib/relations/engine.mjs');
+syntaxCheck('src/runtime/atlas-runtime.js');
+syntaxCheck('scripts/project-relations-to-dist.mjs');
+syntaxCheck('scripts/check-relations.mjs');
+syntaxCheck('scripts/astro-cache-bust-postbuild.js');
+const relationContract = spawnSync(process.execPath, [path.join(ROOT, 'scripts/check-relations.mjs')], { encoding: 'utf8' });
+if (relationContract.stdout) process.stdout.write(relationContract.stdout);
+check('Relations: real data passes compiler contracts', relationContract.status === 0, (relationContract.stderr || '').trim());
+
 try {
   const csstree = require('css-tree');
-  for (const f of ['css/site.css', 'css/floating-cluster.css', 'css/mobile-hotfix.css',
-                   'css/series-samizdat.css', 'css/series-manuscript.css', 'css/nagornaya-mobile-toc.css', 'css/home.css']) {
-    const txt = read(f);
-    const errs = [];
-    csstree.parse(txt, { onParseError: (e) => errs.push(e.message) });
-    check('CSS AST: ' + f + ' парсится без ошибок', errs.length === 0, errs.slice(0, 2).join(' | '));
+  for (const file of ['css/site.css', 'css/floating-cluster.css', 'css/mobile-hotfix.css', 'css/series-samizdat.css', 'css/series-manuscript.css', 'css/nagornaya-mobile-toc.css', 'css/home.css', 'src/runtime/relationship-panel.css']) {
+    const errors = [];
+    csstree.parse(read(file), { onParseError: (error) => errors.push(error.message) });
+    check('CSS AST: ' + file, errors.length === 0, errors.slice(0, 2).join(' | '));
   }
-} catch (e) {
-  check('CSS AST: css-tree доступен', false, e.message);
+} catch (error) {
+  check('CSS AST: css-tree available', false, error.message);
 }
 
-/* ---------- артефакты ---------- */
-check('SVG-обложка медиа-шторки images/tts-artwork.svg',
-  fs.existsSync(path.join(ROOT, 'images/tts-artwork.svg')));
-
-/* ---------- нет осиротевших компонентов в _shared ---------- */
+check('TTS artwork exists', fs.existsSync(path.join(ROOT, 'images/tts-artwork.svg')));
 function grepImports(dir) {
-  let acc = '';
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) acc += grepImports(p);
-    else if (/\.(astro|ts|tsx)$/.test(e.name)) acc += fs.readFileSync(p, 'utf8');
+  let content = '';
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) content += grepImports(file);
+    else if (/\.(astro|ts|tsx)$/.test(entry.name)) content += fs.readFileSync(file, 'utf8');
   }
-  return acc;
+  return content;
 }
-const allSrc = grepImports(path.join(ROOT, 'src'));
+const allSource = grepImports(path.join(ROOT, 'src'));
 const orphans = fs.readdirSync(path.join(ROOT, 'src/components/article-pilots/_shared'))
-  .filter((f) => f.endsWith('.astro'))
-  .filter((f) => {
-    const name = f.replace('.astro', '');
-    const refs = allSrc.split(name).length - 1;
-    // 1 вхождение = только собственное имя файла в импортах самого себя нет,
-    // поэтому 0 ссылок извне → сирота (файл сам в allSrc не совпадает по имени).
-    return refs === 0;
-  });
-check('Нет осиротевших компонентов в _shared', orphans.length === 0,
-  'сироты: ' + orphans.join(', '));
+  .filter((file) => file.endsWith('.astro'))
+  .filter((file) => allSource.split(file.replace('.astro', '')).length - 1 === 0);
+check('No orphan shared reader components', orphans.length === 0, orphans.join(', '));
 
 console.log('');
 if (fails) {
-  console.error('❌ engine:contracts — ' + fails + ' контракт(ов) нарушено. НЕ ослаблять проверки — чинить причину.');
+  console.error(`❌ engine:contracts — ${fails} contract(s) failed. Fix the cause; never weaken the guard.`);
   process.exit(1);
 }
-console.log('✅ engine:contracts — все контракты движков целы.');
+console.log('✅ engine:contracts — all reader, relation and Atlas contracts are intact.');

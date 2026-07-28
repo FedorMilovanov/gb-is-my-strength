@@ -25,6 +25,7 @@
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import MobileChromeShell from '../_shared/MobileChromeShell.astro';
+import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
 import { HERMENEVTIKA_TOC } from './hermenevtikaToc';
 
 type HermenevtikaTocItem = (typeof HERMENEVTIKA_TOC)[number];
@@ -39,6 +40,7 @@ interface Props {
 }
 const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.props;
 ---
+<ReaderActionsRuntime />
 <MobileChromeShell
   engine="article"
   topClass="hmtop"
@@ -89,7 +91,7 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11M4 12h7M4 17h13"/><circle cx="18" cy="7" r="2.2"/><circle cx="14" cy="12" r="2.2"/><circle cx="20" cy="17" r="2.2"/></svg>
   </button>
   <span class="hmbar-divider"></span>
-  <button class="hmbar-btn" id="hmShareBtn" type="button" aria-label="Поделиться">
+  <button class="hmbar-btn" id="hmShareBtn" data-action="share" type="button" aria-label="Поделиться">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
   </button>
   </Fragment>
@@ -129,11 +131,11 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
     </ul>
     <div class="hmsheet-actions">
       <SaveButton class="hmsheet-action-btn" tip="Сохранить" />
-      <button class="hmsheet-action-btn" id="hmSheetShareBtn" type="button">
+      <button class="hmsheet-action-btn" id="hmSheetShareBtn" data-action="share" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" /></svg>
         <span>Поделиться</span>
       </button>
-      <button class="hmsheet-action-btn" type="button" onclick="window.print()">
+      <button class="hmsheet-action-btn" data-action="print" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
         <span>PDF</span>
       </button>
@@ -339,12 +341,6 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
       searchInput: '#hmTocSearch',
     });
 
-    const backBtn = document.getElementById('hmBackBtn');
-    if (backBtn) backBtn.addEventListener('click', () => {
-      const href = (backBtn as HTMLElement).dataset.homeHref;
-      if (href) window.location.href = href;
-    });
-
     // ---- TOC sheet: open/close, search filter, scrollspy, progress ----
     const sheet = document.getElementById('hmSheet');
     const backdrop = document.getElementById('hmSheetBackdrop');
@@ -458,17 +454,7 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
       if (topSearchInput.value.trim()) openSheet();
     });
 
-    // share (both top-bar-adjacent bottom bar button and sheet footer button)
-    async function share() {
-      const url = location.href;
-      const title = document.title;
-      try {
-        if (navigator.share) { await navigator.share({ title, url }); return; }
-      } catch (_) {}
-      try { await navigator.clipboard.writeText(url); } catch (_) {}
-    }
-    document.getElementById('hmShareBtn')?.addEventListener('click', share);
-    document.getElementById('hmSheetShareBtn')?.addEventListener('click', share);
+    // Share and print are owned by ReaderActionsRuntime through data-action.
 
     // Шестерёнка «Настройки чтения» — открывает отдельный лист
     // (ReaderSettings слушает это событие). Перед открытием гасим

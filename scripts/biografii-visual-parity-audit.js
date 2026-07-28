@@ -25,18 +25,22 @@ mustExist('src/components/biografii/BiografiiMain.astro', 'BiografiiMain.astro c
 mustExist('src/components/biografii/BiografiiPageChrome.astro', 'BiografiiPageChrome.astro component file');
 mustExist('src/components/biografii/BiografiiPageFooter.astro', 'BiografiiPageFooter.astro component file');
 
-for (const rel of [
+const sectionFiles = [
   'BiografiiRecentSection.astro','BiografiiFocusSection.astro','BiografiiEraStubSection.astro',
   'BiografiiAwakeningSection.astro','BiografiiEpigraphSection.astro','BiografiiArticleEndBlock.astro'
-]) {
-  mustExist(`src/components/biografii/${rel}`, rel);
+];
+for (const rel of sectionFiles) {
+  const component = `src/components/biografii/${rel}`;
+  mustExist(component, rel);
+  if (exists(component)) mustNot(read(component), 'h-reveal', `${rel} cannot delegate SSR visibility to reveal runtime`);
 }
 
 must(main, '<main id="main-content">', 'BiografiiMain preserves semantic main wrapper');
+must(legacy, 'Последние добавленные материалы', 'legacy evidence retains the biography shelf reference');
 
 console.log('\nBIOGRAFII VISUAL PARITY AUDIT');
 if (problems.length) {
   console.log(`❌ ${problems.length} problem(s).`);
   process.exit(1);
 }
-ok('/biografii/ Astro migration is 100% native');
+ok('/biografii/ Astro migration is 100% native and SSR-visible');
