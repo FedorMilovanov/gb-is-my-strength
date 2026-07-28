@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
   push:
-    branches: [main, "lane/**", "agent/**"]
+    branches: [main, "lane/**", "agent/**", "hotfix/**", "release/**"]
 
 concurrency:
   group: shared-files-guard-${{ github.ref }}
@@ -116,14 +116,27 @@ jobs:
           npm run surface:registry:check
           node scripts/series-capability-route-name-regression-test.js
 
-      - name: Guard shared/system files (strict on main/PR)
-        if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
-        run: node scripts/guard-shared-files.js
-
-      - name: Guard shared/system files (warn on lane branches)
-        if: startsWith(github.ref, 'refs/heads/lane/') || startsWith(github.ref, 'refs/heads/agent/')
-        run: node scripts/guard-shared-files.js --warn
-        continue-on-error: true
+      - name: Guard actual shared/system diff
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            BASE_SHA="$(git rev-parse "$HEAD_SHA^")"
+          fi
+          extra=()
+          if [[ "$EVENT_NAME" == "push" && "$BRANCH_NAME" != "main" ]]; then
+            extra+=(--warn)
+          fi
+          node scripts/guard-shared-files.js \
+            --base "$BASE_SHA" \
+            --head "$HEAD_SHA" \
+            --branch "$BRANCH_NAME" \
+            "${extra[@]}"
 
       - name: Lint workflow YAML (actionlint)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
