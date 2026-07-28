@@ -14,17 +14,27 @@ const RESEARCH_ROOT = path.resolve(
 );
 const PROVENANCE_PATH = path.join(ROOT, 'data/genesis6-research-provenance.json');
 
+const EXPECTED_RESEARCH_COMMIT = '4881aca169e76e60fb76e5574a38d360835822f4';
+const EXPECTED_EXTENSION_DIGEST = 'f37c4858926a3a25f892a574a3dd3b4e1900f42d3981a575cc680c4c6fd5e614';
 const EXPECTED_BLOCKING_HOLDS = [
-  '1-enoch-10-8-version-control',
   '1-enoch-15-8-12-demon-origin',
   '1-enoch-70-71-son-of-man',
   'astronomical-book-version-plurality',
 ];
 const EXPECTED_PRESERVED_HOLDS = [
+  '1-enoch-10-8-interpretive-scope',
   'parables-date-and-witness-form',
   'animal-apocalypse-decomposition',
   'chapter-108-relation-to-epistle',
   'codex-panopolitanus-editorial-intention',
+];
+const EXPECTED_EVIDENCE_RESOLUTIONS = [
+  {
+    id: '1-enoch-10-8-version-control',
+    resolution: 'text-established-interpretation-qualified',
+    documentId: 'GEN6-ENOCH-10-8-DECISION-LX',
+    evidence: "Greek and Ge'ez full clause; Aramaic 4Q202 locus 10:8-12 partial/reconstructed",
+  },
 ];
 const EXPECTED_RESOLVED_HOLDS = [
   {
@@ -101,7 +111,7 @@ if (!fs.existsSync(PROVENANCE_PATH)) {
 }
 
 const provenance = readJson(PROVENANCE_PATH);
-if (provenance.schemaVersion !== 4 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
+if (provenance.schemaVersion !== 5 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
 if (provenance.releaseState !== 'blocked') {
   fail('releaseState must remain blocked until an explicit publication pass closes all blocking HOLDs');
 }
@@ -130,6 +140,7 @@ for (const field of [
   'requiresOrderedForwardLinks',
   'requiresExactHoldClassification',
   'requiresNoReproductionRightsResolution',
+  'requiresEvidenceResolutionBinding',
 ]) {
   if (provenance.publicationPolicy?.[field] !== true) fail(`publicationPolicy.${field} must be true`);
 }
@@ -137,16 +148,21 @@ for (const field of [
 const research = provenance.research || {};
 if (research.repository !== 'FedorMilovanov/Research') fail('unexpected Research repository');
 if (!/^[0-9a-f]{40}$/.test(research.commit || '')) fail('Research commit must be an exact SHA');
+if (research.commit !== EXPECTED_RESEARCH_COMMIT) fail('Research commit pin drift');
 if (!/^[0-9a-f]{64}$/.test(research.manifestSha256 || '')) fail('manifestSha256 must be exact');
-if (research.extension?.schemaVersion !== 2) fail('extension authority schemaVersion must be 2');
+if (research.extension?.schemaVersion !== 3) fail('extension authority schemaVersion must be 3');
 if (!/^[0-9a-f]{64}$/.test(research.extension?.manifestSha256 || '')) {
   fail('extension manifestSha256 must be exact');
 }
+if (research.extension?.manifestSha256 !== EXPECTED_EXTENSION_DIGEST) fail('extension manifest digest pin drift');
 if (!isDeepStrictEqual(research.extension?.blockingHolds, EXPECTED_BLOCKING_HOLDS)) {
   fail('pinned blocking HOLD classification drift');
 }
 if (!isDeepStrictEqual(research.extension?.preservedUncertainty, EXPECTED_PRESERVED_HOLDS)) {
   fail('pinned preserved uncertainty drift');
+}
+if (!isDeepStrictEqual(research.extension?.resolvedByEvidence, EXPECTED_EVIDENCE_RESOLUTIONS)) {
+  fail('pinned evidence resolution drift');
 }
 if (!isDeepStrictEqual(research.extension?.resolvedByPolicy, EXPECTED_RESOLVED_HOLDS)) {
   fail('pinned policy resolution drift');
@@ -239,7 +255,7 @@ if (!process.exitCode) {
 
     const extensionManifest = readJson(extensionManifestFile);
     const extensionLedger = readJson(extensionLedgerFile);
-    if (extensionManifest.schemaVersion !== 2 || extensionLedger.schemaVersion !== 2) {
+    if (extensionManifest.schemaVersion !== 3 || extensionLedger.schemaVersion !== 3) {
       fail('extension authority schemaVersion mismatch');
     }
     if (extensionManifest.seriesId !== 'genesis-6' || extensionLedger.seriesId !== 'genesis-6') {
@@ -256,9 +272,31 @@ if (!process.exitCode) {
     if (!isDeepStrictEqual(extensionManifest.holdRegistry?.preservedUncertainty, research.extension.preservedUncertainty)) {
       fail('extension preserved uncertainty drift');
     }
-    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.resolvedByPolicy, research.extension.resolvedByPolicy)) {
-      fail('extension resolved HOLD registry drift');
+    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.resolvedByEvidence, research.extension.resolvedByEvidence)) {
+      fail('extension evidence resolution drift');
     }
+    if (!isDeepStrictEqual(extensionManifest.holdRegistry?.resolvedByPolicy, research.extension.resolvedByPolicy)) {
+      fail('extension policy resolution drift');
+    }
+
+    const extensionDocuments = new Map((extensionManifest.documents || []).map((document) => [document.id, document]));
+    for (const resolution of research.extension.resolvedByEvidence) {
+      const document = extensionDocuments.get(resolution.documentId);
+      if (!document) {
+        fail(`extension evidence document missing: ${resolution.documentId}`);
+        continue;
+      }
+      if (document.role !== 'locus-version-control-decision') {
+        fail(`extension evidence document role drift: ${resolution.documentId}`);
+      }
+      if (!isDeepStrictEqual(document.requiredFor, ['6B'])) {
+        fail(`extension evidence document requiredFor drift: ${resolution.documentId}`);
+      }
+      if (!isFile(path.join(RESEARCH_ROOT, document.path))) {
+        fail(`extension evidence document file missing: ${resolution.documentId}`);
+      }
+    }
+
     const manifestAcceptance = extensionManifest.siteAcceptance || {};
     const expectedAcceptance = {
       acceptedHead: manifestAcceptance.acceptedHead,
@@ -279,8 +317,11 @@ if (!process.exitCode) {
     if (!isDeepStrictEqual(release.preservedUncertainty, research.extension.preservedUncertainty)) {
       fail('ledger preserved uncertainty drift');
     }
+    if (!isDeepStrictEqual(release.resolvedByEvidence, research.extension.resolvedByEvidence)) {
+      fail('ledger evidence resolution drift');
+    }
     if (!isDeepStrictEqual(release.resolvedByPolicy, research.extension.resolvedByPolicy)) {
-      fail('ledger resolved HOLD registry drift');
+      fail('ledger policy resolution drift');
     }
 
     const extensionManifestBundles = new Map(
@@ -297,6 +338,7 @@ if (!process.exitCode) {
       if (seenSlugs.has(binding.slug)) fail(`duplicate article slug ${binding.slug}`);
       seenExtensionKeys.add(binding.articleKey);
       seenSlugs.add(binding.slug);
+
       const expected = {
         articleKey: binding.articleKey,
         slug: binding.slug,
@@ -393,7 +435,9 @@ if (!process.exitCode) {
   console.log(
     `Genesis 6 Research provenance: PASS (${research.commit}, ` +
       `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} source-audited extension bundles, ` +
-      `${research.extension.blockingHolds.length} blocking HOLDs, ${provenance.siteArticles.length} site contracts, ` +
-      `release ${provenance.releaseState}, manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
+      `${research.extension.blockingHolds.length} blocking HOLDs, ` +
+      `${research.extension.resolvedByEvidence.length} evidence resolution, ` +
+      `${provenance.siteArticles.length} site contracts, release ${provenance.releaseState}, ` +
+      `manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
   );
 }
