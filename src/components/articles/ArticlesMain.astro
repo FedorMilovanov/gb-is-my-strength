@@ -15,6 +15,7 @@ import ArticlesRefutationsSection from './ArticlesRefutationsSection.astro';
 import ArticlesArticleEndBlock from './ArticlesArticleEndBlock.astro';
 
 const hardTexts = seriesData['hard-texts'];
+const genesis6 = seriesData['genesis-6'];
 const nagornaya = seriesData.nagornaya;
 const gill = seriesData['dzhon-gill'];
 const gillReadingTime = Object.fromEntries(
@@ -22,6 +23,9 @@ const gillReadingTime = Object.fromEntries(
 );
 const hardTextsPublished = hardTexts.parts.filter((part) => part.status === 'published').length;
 const hardTextsPartsLabel = `${hardTexts.parts.length} части (${hardTextsPublished} опубликованы)`;
+const genesis6Published = genesis6.parts.filter((part) => part.status === 'published');
+const genesis6TotalMinutes = genesis6Published.reduce((sum, part) => sum + part.readingTime, 0);
+const genesis6PartsLabel = `${genesis6Published.length} опубликованных разборов · ${genesis6TotalMinutes} мин`;
 const nagornayaPublished = nagornaya.parts.filter((part) => part.status === 'published').length;
 const nagornayaPartsLabel = `${nagornayaPublished} частей`;
 ---
@@ -45,6 +49,7 @@ const nagornayaPartsLabel = `${nagornayaPublished} частей`;
     <ArticlesHeroSection />
 <ArticlesPublicationsSection
   hardTextsPartsLabel={hardTextsPartsLabel}
+  genesis6PartsLabel={genesis6PartsLabel}
   nagornayaPartsLabel={nagornayaPartsLabel}
   gillReadingTime={gillReadingTime}
 />
