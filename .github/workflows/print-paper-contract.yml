@@ -30,7 +30,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout exact source head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
@@ -46,7 +51,11 @@ jobs:
       - name: Generate canonical reader PDF
         env:
           GB_READER_UI_ARTIFACT_DIR: reports/print-paper/canonical
-        run: node scripts/engine-sweep.mjs
+        shell: bash
+        run: |
+          mkdir -p reports/print-paper/canonical
+          set -o pipefail
+          node scripts/engine-sweep.mjs 2>&1 | tee reports/print-paper/canonical/engine-sweep.log
       - name: Audit canonical pages, palette and pagination
         run: python3 scripts/print-paper-pdf-audit.py reports/print-paper/canonical/reader-print-a4.pdf --out reports/print-paper/canonical
       - name: Prove atomic and keep-with-next components across route families
@@ -64,7 +73,7 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: print-paper-contract-${{ github.sha }}
+          name: print-paper-contract-${{ github.event.pull_request.head.sha || github.sha }}
           path: reports/print-paper
           if-no-files-found: error
           retention-days: 7
