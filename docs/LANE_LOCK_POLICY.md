@@ -1,7 +1,7 @@
 # Lane Lock Policy — FAST / LANE / SYSTEM
 
 **Updated:** 2026-07-28  
-**Policy version:** 4.0  
+**Policy version:** 4.1  
 See also: [WORK_MODES.md](WORK_MODES.md), [GIT_WORKTREE_POLICY.md](GIT_WORKTREE_POLICY.md), [BRANCH_LIFECYCLE_V4.md](BRANCH_LIFECYCLE_V4.md).
 
 ## 1. Purpose
@@ -10,74 +10,69 @@ Lane lock prevents parallel agents from overwriting the same route, shared file,
 
 A lane is an ownership transaction, not merely a branch name.
 
-## 2. Branch and execution boundary
+## 2. Lane boundary
 
-Suggested canonical PR names:
+One independently mergeable lane has one owner, one canonical branch and one PR.
+
+A broader initiative may have several non-overlapping lanes when each can be reviewed, tested, rolled back and merged independently. This is preferred over one oversized mixed PR. Do not create duplicate or successor branches for the same lane without an explicit replacement record.
+
+Suggested branch names:
 
 ```text
 lane/fast-<task>-YYYY-MM-DD
 lane/<route-or-feature>-<phase>-YYYY-MM-DD
 lane/system-<task>-YYYY-MM-DD
-agent/<bounded-task>
-hotfix/<bounded-task>
+agent/<bounded-lane>
+hotfix/<bounded-lane>
 ```
 
-`agent/**` is accepted for connector/runtime publication only when it is the single canonical branch for one PR.
+`agent/**` is accepted for connector/runtime publication only when it is the canonical branch for one PR.
 
-Diagnostics use a local detached worktree and do not publish `diag/**`, `probe/**`, `snapshot/**` or similar refs.
+Diagnostics use a local detached worktree and do not normally publish `diag/**`, `probe/**`, `snapshot/**` or similar refs.
 
-An `archive/forensic-*` ref is an owner-approved last resort. Prefer AuditRepo, an immutable artifact, patch or bundle for unique evidence that should not enter `main`.
+An `archive/forensic-*` ref is an owner-approved last resort. Prefer AuditRepo, an immutable artifact, patch or bundle for evidence that should not enter `main`.
 
-## 3. Lane declaration
+## 3. Minimum declaration
 
 ```md
 Mode: FAST | LANE | SYSTEM
-Execution: LOCAL_WORKTREE | DETACHED_DIAGNOSTIC | REMOTE_PR | RECOVERY
-Lane: <branch or detached SHA>
-Owner: <agent/human>
-Issue/PR: <number or pending draft>
-Routes: <bounded list>
-Files allowed: <bounded list>
-Files forbidden: <list>
-Source of truth: <files / exact SHA>
-Required checks: <commands / browser profiles>
-Rollback point: <exact main SHA>
-Dependencies: <issues / PRs / active branches / owner decisions>
+Lane / owner:
+Purpose and bounded scope:
+Base / rollback SHA:
+Allowed files or surfaces:
+Adjacent active work and overlap decision:
+Source of truth:
+Required checks:
 ```
 
-Commit messages should identify the lane when multiple agents are active:
-
-```text
-[LANE <branch>] <type>(<scope>): <message>
-```
-
-The PR description and actual diff are authoritative when an old commit message is stale.
+Add status, handoff, recovery or successor details only when applicable. The current PR description and actual diff are authoritative; commit messages do not need a special lane prefix.
 
 ## 4. Ownership rules
 
 1. One route or shared surface has one active owner.
 2. A second agent takes a non-overlapping sub-lane or waits.
 3. Never reset, rebase, force-push, close or delete another owner’s active branch.
-4. A route lane does not change system files.
-5. A system lane does not absorb route content or visual redesign.
-6. Shared data uses a declared shared/system lane.
-7. Out-of-lane findings are recorded, not silently repaired.
-8. `Superseded` is a claim to verify against current blobs, not permission to delete.
-9. No temporary workflow, trigger, writer or patcher survives the transaction that needed it.
-10. A hygiene report classifies preliminarily; it never mutates refs or authorizes cleanup.
+4. Never continue another owner’s lane without explicit handoff or owner decision.
+5. A route lane does not absorb unrelated system fixes.
+6. A system lane does not absorb route content or visual redesign.
+7. Shared data uses a declared shared/system lane.
+8. Out-of-lane findings are recorded, not silently repaired.
+9. `Superseded` is a claim to verify against current blobs, not permission to delete.
+10. No temporary workflow, trigger, writer or patcher survives the transaction that needed it.
+11. A hygiene report is preliminary and read-only; it never authorizes cleanup.
 
 ## 5. Active-agent protection
 
 Treat a branch as protected in-flight work when any condition is true:
 
 - it has an open PR;
-- it was updated within the last 7 days and belongs to a current task;
-- it is named in a live owner instruction, issue or PR;
-- the current owner or unique delta is not yet known.
+- it belongs to a current owner instruction or issue;
+- it was recently updated and ownership is unresolved;
+- its unique delta is still unknown.
 
-During the v4 transition, existing active branches are grandfathered. Do not rename or restructure them merely for policy conformity.
+Existing active branches are grandfathered. Do not rename or restructure them merely for policy conformity.
 
-An owner-approved successor may replace an active branch only after the replacement table in `BRANCH_LIFECYCLE_V4.md` is complete and the owner accepts the handoff.
+A successor may replace an active lane only after the replacement record in `BRANCH_LIFECYCLE_V4.md` is complete and the owner accepts the handoff.
 
 ## 6. Verification discipline
 
@@ -85,13 +80,8 @@ An owner-approved successor may replace an active branch only after the replacem
 
 ```bash
 git diff --check
-npm run guard:shared-files
-npm run data:consistency
-npm run migration:metadata:check
-npm run native:runtime:audit:strict
+# plus checks that directly cover the changed surface
 ```
-
-Select relevant commands while iterating and add route-specific browser/visual/source contracts.
 
 ### System/control plane
 
@@ -110,11 +100,9 @@ npm run validate:static-publication
 npm run guard:shared-files
 ```
 
-A docs-only SYSTEM PR may use a narrower barrier only when runtime/build cannot be affected. Shared Files Guard, reference integrity and applicable workflow validation remain mandatory. Record exact-head run IDs or artifacts.
+A docs-only SYSTEM PR may use a narrower barrier when runtime/build cannot be affected. Exact-head Shared Files Guard and reference integrity remain required.
 
 ## 7. Current truth order
-
-Use this order:
 
 1. current owner instruction;
 2. open GitHub issues and PRs;
@@ -127,8 +115,6 @@ The lane index is not an independent backlog. A branch does not become active me
 ## 8. Out-of-lane finding
 
 ```md
-## Out-of-lane finding
-
 Observed at: <exact SHA / file / route>
 Evidence: <source, test or artifact>
 Not changed because: <ownership boundary>
@@ -143,14 +129,13 @@ Recovery risk: <none / possible unique branch material>
 □ Exact PR head passed required checks
 □ Review threads are resolved
 □ Temporary automation is absent from the final tree
-□ Production is not claimed without an exact deploy/live witness
-□ AuditRepo update is prepared when canonical status changed
+□ Production is not claimed without exact deploy/live evidence
 □ Adjacent active-agent branches were not modified
 ```
 
 ## 10. Branch disposition
 
-Before deletion, inspect actual content:
+Before deletion, classify actual content:
 
 | Classification | Action |
 |---|---|
@@ -161,6 +146,6 @@ Before deletion, inspect actual content:
 | Superseded | verify replacement file-by-file |
 | Unique evidence/prototype | preserve outside product history or approved archive ref |
 | Selective recovery | rebuild justified delta from fresh `main` |
-| Unknown | protect and add to forensic register |
+| Unknown | protect and investigate |
 
-Never automatically run `git push origin --delete <branch>` immediately after merge. Follow `BRANCH_LIFECYCLE_V4.md` and remove verified branches in bounded waves only after owner approval.
+Never automatically delete a branch immediately after merge. Follow `BRANCH_LIFECYCLE_V4.md` and remove only small verified batches after owner approval.
