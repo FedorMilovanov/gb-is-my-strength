@@ -1,10 +1,12 @@
-const VERSION = 6;
+const VERSION = 7;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
 let active = null;
 let closeTimer = 0;
 let pointerEpoch = 0;
+let pointerX = null;
+let pointerY = null;
 
 function overlayRuntime() {
   return window.OverlayRuntime || window.SiteUtils?.OverlayRuntime || null;
@@ -21,6 +23,21 @@ function cancelClose() {
 
 function containsInteractive(record, target) {
   return Boolean(record && target instanceof Node && (record.anchor.contains(target) || record.tip.contains(target)));
+}
+
+function recordPointerMovement(event) {
+  const x = Number(event.clientX);
+  const y = Number(event.clientY);
+  const hasCoordinates = Number.isFinite(x) && Number.isFinite(y);
+  const moved = pointerX == null || pointerY == null
+    ? Math.abs(Number(event.movementX) || 0) > 0 || Math.abs(Number(event.movementY) || 0) > 0
+    : hasCoordinates && (Math.abs(x - pointerX) > 0.5 || Math.abs(y - pointerY) > 0.5);
+  if (hasCoordinates) {
+    pointerX = x;
+    pointerY = y;
+  }
+  if (moved) pointerEpoch += 1;
+  return moved;
 }
 
 function settleHover(record) {
@@ -177,11 +194,14 @@ export function closeTooltip(reason = 'close') {
 }
 
 function openTooltip(anchor, reason = 'open') {
+  if (reason === 'hover' && active && active.anchor !== anchor && active.reason !== 'hover'
+    && pointerEpoch === active.pointerBaseline) return;
   cancelClose();
   const tip = prepareTip(inlineTip(anchor));
   if (!tip) return;
   if (active?.anchor === anchor) {
     active.reason = reason;
+    active.pointerBaseline = pointerEpoch;
     if (reason === 'hover') {
       active.hoverSettled = false;
       settleHover(active);
@@ -280,7 +300,10 @@ function initializeAnchor(anchor) {
       return;
     }
     if (active.reason === 'click') closeTooltip('toggle');
-    else active.reason = 'click';
+    else {
+      active.reason = 'click';
+      active.pointerBaseline = pointerEpoch;
+    }
   });
   anchor.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -308,8 +331,7 @@ export function installArticleTooltips() {
   initInlineTooltips(document);
   document.addEventListener('gb:quiz-rendered', (event) => initInlineTooltips(event.detail?.root || document));
   document.addEventListener('pointermove', (event) => {
-    if (event.pointerType === 'touch') return;
-    pointerEpoch += 1;
+    if (event.pointerType === 'touch' || !recordPointerMovement(event)) return;
     if (!active || active.mobile || active.reason !== 'hover') return;
     if (containsInteractive(active, event.target)) cancelClose();
     else scheduleClose();
