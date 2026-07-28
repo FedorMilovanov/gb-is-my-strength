@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "seriesId": "genesis-6",
   "releaseState": "blocked",
   "readerOrder": [
@@ -12,25 +12,25 @@
   ],
   "research": {
     "repository": "FedorMilovanov/Research",
-    "commit": "4881aca169e76e60fb76e5574a38d360835822f4",
+    "commit": "11e86a120f212d75cf01667d7d3bfa72ed9c327a",
     "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
     "manifestPath": "data/genesis6-authority-manifest.json",
     "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
     "ledgerPath": "data/genesis6-publication-ledger.json",
     "contractPath": "GENESIS6_AUTHORITY_CONTRACT.md",
     "extension": {
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "manifestPath": "data/genesis6-enoch-extension-authority-manifest.json",
-      "manifestSha256": "f37c4858926a3a25f892a574a3dd3b4e1900f42d3981a575cc680c4c6fd5e614",
+      "manifestSha256": "8cfdadd344f15a752ee279d1c1122079fcacbbd97650dd39151872e5618099ef",
       "ledgerPath": "data/genesis6-enoch-extension-publication-ledger.json",
       "validatorPath": "scripts/validate_genesis6_enoch_extension.py",
       "blockingHolds": [
-        "1-enoch-15-8-12-demon-origin",
         "1-enoch-70-71-son-of-man",
         "astronomical-book-version-plurality"
       ],
       "preservedUncertainty": [
         "1-enoch-10-8-interpretive-scope",
+        "1-enoch-15-8-12-version-details-and-demon-identity",
         "parables-date-and-witness-form",
         "animal-apocalypse-decomposition",
         "chapter-108-relation-to-epistle",
@@ -42,6 +42,12 @@
           "resolution": "text-established-interpretation-qualified",
           "documentId": "GEN6-ENOCH-10-8-DECISION-LX",
           "evidence": "Greek and Ge'ez full clause; Aramaic 4Q202 locus 10:8-12 partial/reconstructed"
+        },
+        {
+          "id": "1-enoch-15-8-12-demon-origin",
+          "resolution": "core-model-established-canonical-status-qualified",
+          "documentId": "GEN6-ENOCH-15-8-12-DECISION-LXI",
+          "evidence": "Greek Syncellus and Codex Panopolitanus plus full Ge'ez preserve the core model; Aramaic 4Q204 is contextual/partial"
         }
       ],
       "resolvedByPolicy": [
@@ -185,6 +191,7 @@
         "GEN6-ENOCH-PROTOCOL-LVI",
         "GEN6-ENOCH-VERSION-MATRIX-LIV",
         "GEN6-ENOCH-10-8-DECISION-LX",
+        "GEN6-ENOCH-15-8-12-DECISION-LXI",
         "GEN6-ENOCH-CANON-MATRIX-LII",
         "GEN6-ENOCH-ARCHITECTURE-LIII",
         "GEN6-ENOCH-CLAIM-GATE-LIV",

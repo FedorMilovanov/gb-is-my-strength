@@ -14,15 +14,15 @@ const RESEARCH_ROOT = path.resolve(
 );
 const PROVENANCE_PATH = path.join(ROOT, 'data/genesis6-research-provenance.json');
 
-const EXPECTED_RESEARCH_COMMIT = '4881aca169e76e60fb76e5574a38d360835822f4';
-const EXPECTED_EXTENSION_DIGEST = 'f37c4858926a3a25f892a574a3dd3b4e1900f42d3981a575cc680c4c6fd5e614';
+const EXPECTED_RESEARCH_COMMIT = '11e86a120f212d75cf01667d7d3bfa72ed9c327a';
+const EXPECTED_EXTENSION_DIGEST = '8cfdadd344f15a752ee279d1c1122079fcacbbd97650dd39151872e5618099ef';
 const EXPECTED_BLOCKING_HOLDS = [
-  '1-enoch-15-8-12-demon-origin',
   '1-enoch-70-71-son-of-man',
   'astronomical-book-version-plurality',
 ];
 const EXPECTED_PRESERVED_HOLDS = [
   '1-enoch-10-8-interpretive-scope',
+  '1-enoch-15-8-12-version-details-and-demon-identity',
   'parables-date-and-witness-form',
   'animal-apocalypse-decomposition',
   'chapter-108-relation-to-epistle',
@@ -34,6 +34,12 @@ const EXPECTED_EVIDENCE_RESOLUTIONS = [
     resolution: 'text-established-interpretation-qualified',
     documentId: 'GEN6-ENOCH-10-8-DECISION-LX',
     evidence: "Greek and Ge'ez full clause; Aramaic 4Q202 locus 10:8-12 partial/reconstructed",
+  },
+  {
+    id: '1-enoch-15-8-12-demon-origin',
+    resolution: 'core-model-established-canonical-status-qualified',
+    documentId: 'GEN6-ENOCH-15-8-12-DECISION-LXI',
+    evidence: "Greek Syncellus and Codex Panopolitanus plus full Ge'ez preserve the core model; Aramaic 4Q204 is contextual/partial",
   },
 ];
 const EXPECTED_RESOLVED_HOLDS = [
@@ -111,7 +117,7 @@ if (!fs.existsSync(PROVENANCE_PATH)) {
 }
 
 const provenance = readJson(PROVENANCE_PATH);
-if (provenance.schemaVersion !== 5 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
+if (provenance.schemaVersion !== 6 || provenance.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
 if (provenance.releaseState !== 'blocked') {
   fail('releaseState must remain blocked until an explicit publication pass closes all blocking HOLDs');
 }
@@ -150,7 +156,7 @@ if (research.repository !== 'FedorMilovanov/Research') fail('unexpected Research
 if (!/^[0-9a-f]{40}$/.test(research.commit || '')) fail('Research commit must be an exact SHA');
 if (research.commit !== EXPECTED_RESEARCH_COMMIT) fail('Research commit pin drift');
 if (!/^[0-9a-f]{64}$/.test(research.manifestSha256 || '')) fail('manifestSha256 must be exact');
-if (research.extension?.schemaVersion !== 3) fail('extension authority schemaVersion must be 3');
+if (research.extension?.schemaVersion !== 4) fail('extension authority schemaVersion must be 4');
 if (!/^[0-9a-f]{64}$/.test(research.extension?.manifestSha256 || '')) {
   fail('extension manifestSha256 must be exact');
 }
@@ -255,7 +261,7 @@ if (!process.exitCode) {
 
     const extensionManifest = readJson(extensionManifestFile);
     const extensionLedger = readJson(extensionLedgerFile);
-    if (extensionManifest.schemaVersion !== 3 || extensionLedger.schemaVersion !== 3) {
+    if (extensionManifest.schemaVersion !== 4 || extensionLedger.schemaVersion !== 4) {
       fail('extension authority schemaVersion mismatch');
     }
     if (extensionManifest.seriesId !== 'genesis-6' || extensionLedger.seriesId !== 'genesis-6') {
@@ -436,7 +442,7 @@ if (!process.exitCode) {
     `Genesis 6 Research provenance: PASS (${research.commit}, ` +
       `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} source-audited extension bundles, ` +
       `${research.extension.blockingHolds.length} blocking HOLDs, ` +
-      `${research.extension.resolvedByEvidence.length} evidence resolution, ` +
+      `${research.extension.resolvedByEvidence.length} evidence resolutions, ` +
       `${provenance.siteArticles.length} site contracts, release ${provenance.releaseState}, ` +
       `manifests ${research.manifestSha256} / ${research.extension.manifestSha256})`,
   );
