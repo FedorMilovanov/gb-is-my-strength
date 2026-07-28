@@ -91,6 +91,80 @@ function routeId(route) {
   return normalized.replace(/^\/+|\/+$/g, '').split('/').pop();
 }
 
+function joinRoute(baseUrl, slug) {
+  return normalizeRoute(`${String(baseUrl || '/').replace(/\/+$/, '')}/${String(slug || '').replace(/^\/+|\/+$/g, '')}/`);
+}
+
+function seriesPolicySeeds(seriesData) {
+  const byRoute = new Map();
+  for (const [seriesId, series] of Object.entries(seriesData || {})) {
+    const declaration = series?.searchPolicy;
+    if (!declaration) continue;
+    for (const field of ['librarySection', 'topicCategory']) {
+      if (!declaration[field] || typeof declaration[field] !== 'string') {
+        throw new Error(`${seriesId}: searchPolicy.${field} must be a non-empty string`);
+      }
+    }
+
+    const addSeed = (route, policy) => {
+      const normalized = normalizeRoute(route);
+      if (byRoute.has(normalized)) throw new Error(`${normalized}: duplicate series search policy seed`);
+      byRoute.set(normalized, { route: normalized, policy });
+    };
+
+    if (declaration.landingRoute) {
+      addSeed(declaration.landingRoute, {
+        indexPolicy: 'index',
+        pagefindPolicy: 'include',
+        searchManifestPolicy: 'exclude',
+        sitemapPolicy: 'include',
+        rssPolicy: 'exclude',
+        contentKind: 'landing',
+        librarySection: declaration.librarySection,
+        topicCategory: declaration.topicCategory,
+      });
+    }
+
+    if (!series?.baseUrl || !Array.isArray(series.parts)) {
+      throw new Error(`${seriesId}: searchPolicy requires baseUrl and parts`);
+    }
+    for (const part of series.parts) {
+      if (part?.status !== 'published') continue;
+      if (!part.slug) throw new Error(`${seriesId}: published series part missing slug`);
+      addSeed(joinRoute(series.baseUrl, part.slug), {
+        indexPolicy: 'index',
+        pagefindPolicy: 'include',
+        searchManifestPolicy: 'exclude',
+        sitemapPolicy: 'include',
+        rssPolicy: 'include',
+        contentKind: 'series-article',
+        librarySection: declaration.librarySection,
+        topicCategory: declaration.topicCategory,
+      });
+    }
+  }
+  return [...byRoute.values()].sort((a, b) => a.route.localeCompare(b.route, 'ru'));
+}
+
+function applyPolicySeeds({ policyRegistry, seriesData, productionRecords }) {
+  if (!policyRegistry.routes || typeof policyRegistry.routes !== 'object') policyRegistry.routes = {};
+  const productionRoutes = new Set(
+    (productionRecords || [])
+      .filter((record) => record?.owner?.status === 'production-dist')
+      .map((record) => normalizeRoute(record.route))
+  );
+  const seeded = [];
+  for (const seed of seriesPolicySeeds(seriesData)) {
+    if (!productionRoutes.has(seed.route)) {
+      throw new Error(`${seed.route}: series search policy seed has no production route`);
+    }
+    if (policyRegistry.routes[seed.route]) continue;
+    policyRegistry.routes[seed.route] = seed.policy;
+    seeded.push(seed.route);
+  }
+  return seeded;
+}
+
 function buildManifestItem(route, policy, html) {
   const title = firstMeta(html, 'property', 'og:title')
     || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
@@ -166,8 +240,9 @@ function migrationCandidates({ policyRegistry, manifest, productionRecords, prom
   return candidates.sort((a, b) => a.route.localeCompare(b.route, 'ru'));
 }
 
-function applyMigration({ policyRegistry, manifest, productionRecords, distRoot, promoteRssArticles }) {
+function applyMigration({ policyRegistry, manifest, seriesData, productionRecords, distRoot, promoteRssArticles }) {
   if (!Array.isArray(manifest.items)) manifest.items = [];
+  const seeded = applyPolicySeeds({ policyRegistry, seriesData, productionRecords });
   const candidates = migrationCandidates({
     policyRegistry,
     manifest,
@@ -197,7 +272,7 @@ function applyMigration({ policyRegistry, manifest, productionRecords, distRoot,
     added.push(route);
   }
 
-  return { candidates, promoted, added };
+  return { seeded, candidates, promoted, added };
 }
 
 function main() {
@@ -205,36 +280,41 @@ function main() {
   const distRoot = path.resolve(ROOT, options.dist);
   const policyFile = path.join(ROOT, 'data/route-search-policy.json');
   const manifestFile = path.join(ROOT, 'data/search-manifest.json');
+  const seriesFile = path.join(ROOT, 'data/series.json');
   const policyRegistry = readJson(policyFile);
   const manifest = readJson(manifestFile);
+  const seriesData = readJson(seriesFile);
   const { loadRouteRecords } = require('./lib/effective-route-registry');
   const loaded = loadRouteRecords();
   const result = applyMigration({
     policyRegistry,
     manifest,
+    seriesData,
     productionRecords: loaded.records,
     distRoot,
     promoteRssArticles: options.promoteRssArticles,
   });
 
+  console.log(`Search policy seeds: ${result.seeded.length}`);
+  for (const route of result.seeded) console.log(`SEED ${route}`);
   console.log(`Search manifest migration candidates: ${result.candidates.length}`);
   for (const route of result.promoted) console.log(`PROMOTE ${route}`);
   for (const route of result.added) console.log(`ADD ${route}`);
 
   if (!options.write) {
-    if (result.promoted.length || result.added.length) process.exitCode = 1;
+    if (result.seeded.length || result.promoted.length || result.added.length) process.exitCode = 1;
     return;
   }
 
-  if (!result.promoted.length && !result.added.length) {
-    console.log('No search manifest migration changes required.');
+  if (!result.seeded.length && !result.promoted.length && !result.added.length) {
+    console.log('No search policy or manifest migration changes required.');
     return;
   }
   policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
   manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
   writeJson(policyFile, policyRegistry);
   writeJson(manifestFile, manifest);
-  console.log(`Wrote ${result.promoted.length} policy promotion(s) and ${result.added.length} manifest item(s).`);
+  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s) and ${result.added.length} manifest item(s).`);
 }
 
 if (require.main === module) {
@@ -257,6 +337,9 @@ module.exports = {
   readingTime,
   contentKindToManifestType,
   routeId,
+  joinRoute,
+  seriesPolicySeeds,
+  applyPolicySeeds,
   buildManifestItem,
   migrationCandidates,
   applyMigration,
