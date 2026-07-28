@@ -1,16 +1,16 @@
 ## Purpose
 
-<!-- One independently verifiable result. -->
+<!-- One independently mergeable result. -->
 
 Closes #
 
-## Core transaction
+## Lane
 
 - Mode: `FAST | LANE | SYSTEM`
-- Lane / owner:
+- Branch / owner:
 - Base / rollback SHA:
 - Scope:
-- Adjacent active PRs / overlap decision:
+- Adjacent active work / overlap:
 - Source of truth:
 
 ## Change
@@ -20,44 +20,26 @@ Closes #
 ## Verification
 
 ```text
-command or check -> result
+check -> result
 ```
 
-- Exact head SHA:
-- Failed or unavailable checks: `none | ...`
-- Production witness: `not claimed | exact deploy/live evidence`
+- Failed or unavailable checks affecting confidence: `none | ...`
+- Production evidence, only if claimed:
 
-## Safety
+## Merge safety
 
-- [ ] Actual diff matches the stated scope.
-- [ ] No other owner’s active branch was reset, rebased, force-pushed, closed or deleted.
-- [ ] No expensive-to-reproduce work remains only in an unpushed worktree.
-- [ ] No temporary workflow, trigger, writer or patcher remains.
-- [ ] Review conversations are resolved before merge.
+- [ ] The diff matches the lane scope and required checks cover the final PR head.
+- [ ] No other owner’s active branch or ref was changed.
+- [ ] Unresolved review threads are handled; temporary automation introduced here is removed.
 
-## Progress — only while useful
-
-<!-- Update when status, scope, owner, blocker, handoff or readiness changes. Do not copy the head SHA after every push; GitHub already shows it. -->
+## Progress — delete when not useful
 
 - Status: `active | blocked | ready-for-review`
-- Completed:
-- In progress:
-- Next:
-- Blocker / handoff:
+- Next / blocker / handoff:
 
-## Optional: decomposition, recovery or successor
+## Recovery or decomposition — delete unless applicable
 
-<!-- Delete when not applicable. Numeric diff size alone is not a gate. Explain only when the change mixes rollback units, owners or purposes, or when recovering/replacing an older lane. -->
-
-- Independent lanes or rollback units:
-- Why this remains one PR:
-- Predecessor / successor PR and head SHA:
+- Independent rollback units:
+- Predecessor / successor:
 - Unique material transferred, rejected or preserved:
 - Final predecessor disposition:
-
-## Optional: branch disposition
-
-<!-- Delete when not applicable. Cleanup always follows evidence-backed classification. -->
-
-- After merge or close:
-- Replacement or evidence SHA:
