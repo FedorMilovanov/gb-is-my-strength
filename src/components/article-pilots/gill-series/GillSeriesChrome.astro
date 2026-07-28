@@ -59,6 +59,49 @@ const page = config.pages[pageId];
   <GillReaderSettingsSheet config={config} />
 </div><!-- /gbs2-world: overlays+bottom-bar nested so [data-gill-v16] descendant CSS applies -->
 
+<!-- Series chrome is the sole owner of reader settings on migrated routes.
+     The historical monolith may still append .reader-setting-btn while it is
+     being retired elsewhere. Remove that duplicate at the ownership boundary
+     instead of competing with it through z-index or synthetic clicks. -->
+<script is:inline>
+  (() => {
+    const canonical = document.getElementById('mobSettingsBtn');
+    if (!canonical || !document.querySelector('[data-gill-v16]')) return;
+
+    const retireLegacyControls = (scope = document) => {
+      const controls = [];
+      if (scope instanceof Element && scope.matches('.reader-setting-btn')) controls.push(scope);
+      if (scope.querySelectorAll) controls.push(...scope.querySelectorAll('.reader-setting-btn'));
+      controls.forEach((control) => {
+        if (control !== canonical && !control.contains(canonical)) control.remove();
+      });
+    };
+
+    retireLegacyControls();
+
+    const observer = new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.addedNodes.forEach((node) => {
+          if (node instanceof Element) retireLegacyControls(node);
+        });
+      });
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    const finishMigrationBoundary = () => {
+      retireLegacyControls();
+      observer.disconnect();
+      document.documentElement.dataset.gbLegacyReaderSettingsRetired = '1';
+    };
+
+    if (document.readyState === 'complete') {
+      queueMicrotask(finishMigrationBoundary);
+    } else {
+      window.addEventListener('load', () => requestAnimationFrame(finishMigrationBoundary), { once: true });
+    }
+  })();
+</script>
+
 <script is:inline defer src="../../js/bookmark-engine.js?v=fba4e559"></script>
 <script is:inline defer src="../../js/site-utils.js?v=30ed46cf"></script>
 <script is:inline defer src="../../js/scroll-perf.js?v=454d6f7b"></script>
