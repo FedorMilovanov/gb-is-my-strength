@@ -1,28 +1,87 @@
 # Work Modes — FAST / LANE / SYSTEM
 
-**Updated:** 2026-07-24  
-**Current policy version:** 3.0
+**Updated:** 2026-07-28  
+**Current policy version:** 4.0
 
-Purpose: keep iteration proportionate without letting small changes bypass ownership, review or permanent contracts.
+Purpose: keep verification proportionate while preserving ownership, current source authority and exact-head evidence.
+
+Canonical companion policies:
+
+- [GIT_WORKTREE_POLICY.md](GIT_WORKTREE_POLICY.md) — local worktrees and detached diagnostics;
+- [BRANCH_LIFECYCLE_V4.md](BRANCH_LIFECYCLE_V4.md) — active-branch protection, recovery and deletion;
+- [LANE_LOCK_POLICY.md](LANE_LOCK_POLICY.md) — ownership and parallel-agent boundaries;
+- [OWNER-INVARIANTS.md](OWNER-INVARIANTS.md) — owner-sensitive requirements;
+- [AGENT_PUSH_MODEL.md](AGENT_PUSH_MODEL.md) — authenticated publication and exact remote evidence.
 
 ## 1. Authority before mode
 
-Before choosing a mode, inspect:
+Before any mutation inspect:
 
 1. open issues and pull requests;
-2. current `main` and the exact files being changed;
-3. `docs/refactor-2026/lanes/README.md` for navigation;
-4. AuditRepo for verified backlog and production-witness boundaries.
+2. current `main` and exact rollback SHA;
+3. active branches and file overlap, including work that may not yet have a PR;
+4. `docs/refactor-2026/lanes/README.md` for navigation;
+5. AuditRepo for verified backlog and production-witness boundaries;
+6. current primary route sources: `migration/page-ownership.json` and `data/route-profiles/*.json`.
 
-A branch name, old lane report or closed PR description is not current authority by itself.
+A branch name, historical lane report, closed PR, saved artifact or previous agent statement is not current authority by itself.
 
-All repository changes use a branch and PR. `FAST` means a small verification scope, **not direct mutation of `main`**. An emergency direct-main operation requires an explicit owner decision and immediate post-push verification/reconciliation.
+All repository changes use a branch and PR. Direct `main` mutation is reserved for an explicit owner-approved emergency with rollback SHA, exact post-push verification and reconciliation.
 
-## 2. Verification layers
+## 2. Two independent decisions
 
-### FAST loop
+### Risk mode
 
-Run the smallest checks that directly cover the current risk while iterating:
+| Mode | Use | Minimum iteration boundary |
+|---|---|---|
+| `FAST` | one bounded low-risk change without shared runtime ownership | `git diff --check` plus targeted contract |
+| `LANE` | route, feature or multi-file refactor with named owner | targeted data/route/browser/visual checks |
+| `SYSTEM` | shared/global/control-plane/governance | shared/control-plane checks and exact-head barrier |
+
+### Execution mode
+
+| Execution | Use | Remote branch |
+|---|---|---:|
+| `LOCAL_WORKTREE` | product work on a local branch | only when draft PR is ready |
+| `DETACHED_DIAGNOSTIC` | reproduction, audit, snapshot, old-SHA or temporary experiment | forbidden |
+| `REMOTE_PR` | the one canonical published branch for the task | yes |
+| `RECOVERY` | selective recovery from an existing branch | fresh branch from current `main` |
+
+Diagnostic work does not become a fourth risk mode. It uses the relevant risk mode with `DETACHED_DIAGNOSTIC` execution.
+
+## 3. Required declaration
+
+Record in the issue or PR before substantive mutation:
+
+```md
+Mode: FAST | LANE | SYSTEM
+Execution: LOCAL_WORKTREE | DETACHED_DIAGNOSTIC | REMOTE_PR | RECOVERY
+Lane: <branch or detached SHA>
+Owner: <agent/human>
+Issue/PR: <number or pending draft>
+Routes: <bounded list or none>
+Files allowed: <bounded list>
+Files forbidden: <list>
+Source of truth: <current files / exact SHA>
+Required checks: <commands / browser profiles>
+Rollback point: <exact main SHA>
+Dependencies: <open PRs / active branches / owner decisions>
+```
+
+## 4. Parallel-agent safety
+
+- Never reset, rebase, force-push, close or delete another owner’s active branch.
+- One route or shared surface has one active owner.
+- A second agent takes a non-overlapping sub-lane or records an out-of-lane finding.
+- Existing branches with open PRs or current owner activity remain protected during the v4 transition.
+- Governance and hygiene tooling must remain read-only toward refs and PRs.
+- Do not copy code from an older branch until its current owner, replacement history and unique delta are understood.
+
+## 5. Verification layers
+
+### Iteration evidence
+
+Run only checks that directly cover the current edit, and record why they are sufficient.
 
 ```bash
 git diff --check
@@ -43,194 +102,110 @@ npm run control-plane:audit
 npm run workflows:lint
 ```
 
-Do not run every command after every edit. Record why the selected checks cover the touched surface.
+### Exact-head PR evidence
+
+Before merge, checks must cover the final PR head SHA. A green run on an earlier commit is not evidence for a moved head.
 
 ### Final barrier
 
-Before a production, shared, refactor or system PR is merged:
+For production, shared, refactor or system impact:
 
 ```bash
 npm run validate:static-publication
 npm run guard:shared-files
 ```
 
-Add current route/browser/visual contracts for the affected surface. A docs-only PR may use a narrower barrier when its scope cannot affect build/runtime; the PR must state that boundary and still pass Shared Files Guard.
+Add current route/browser/visual/source contracts for the touched surface.
 
-A failed or unavailable check is never silently omitted: record the exact blocker and do not convert it into a green claim.
+A docs-only SYSTEM PR may use a narrower barrier only when the diff cannot affect build/runtime. Shared Files Guard, workflow syntax where applicable, link/reference integrity and exact-head CI remain required.
 
-## 3. Modes
+### Production witness
+
+A merged source commit does not prove production. Record exact deployed/live SHA and live evidence separately.
+
+A failed or unavailable check is never silently omitted; record the exact blocker.
+
+## 6. Mode boundaries
 
 ### FAST
 
-Use for one bounded, low-risk change with no shared runtime ownership:
+Examples:
 
 - typo or factual wording correction;
 - one current documentation file;
-- route-local text with no metadata/schema impact;
+- route-local text without metadata/schema impact;
 - a small test expectation that does not weaken coverage.
-
-Branch example:
-
-```text
-lane/fast-<task>-YYYY-MM-DD
-```
-
-Minimum:
-
-```bash
-git diff --check
-# plus one targeted contract when applicable
-```
 
 FAST must not change workflows, package files, global CSS/JS, migration registries, shared layouts or broad data.
 
 ### LANE
 
-Use for route/feature work, multi-file refactors or any surface that needs a named owner.
-
-Branch example:
-
-```text
-lane/<route-or-feature>-<phase>-YYYY-MM-DD
-```
-
-Declaration:
-
-```md
-Lane: <branch>
-Issue/PR: <number>
-Routes: <bounded list>
-Files allowed: <bounded list>
-Files forbidden: <list>
-Source of truth: <files / exact SHA>
-Required checks: <commands / browser profiles>
-Rollback point: <exact main SHA>
-```
-
-A route lane does not absorb unrelated shared/system fixes. Record those as out-of-lane findings.
+Use for route/feature work, multi-file refactors or any surface requiring a named owner. A route lane does not absorb unrelated shared/system fixes.
 
 ### SYSTEM
 
-Use for shared/global/control-plane work, including:
+Includes at minimum:
 
 ```text
 AGENTS.md
+README.md
 package.json / package-lock.json
-.github/workflows/**
+.github/**
+docs/WORK_MODES.md
+docs/LANE_LOCK_POLICY.md
+docs/OWNER-INVARIANTS.md
+docs/AGENT_PUSH_MODEL.md
+docs/GIT_WORKTREE_POLICY.md
+docs/BRANCH_LIFECYCLE_V4.md
 astro.config.* / tsconfig.*
 sw.js
 migration/**
-scripts that define repository or release policy
+scripts defining repository or release policy
 src/layouts/**
 shared reader/overlay services
 css/** / js/**
 karty/_engine/**
 ```
 
-Branch example:
+SYSTEM work remains separate from route content and visual redesign.
 
-```text
-lane/system-<task>-YYYY-MM-DD
-```
+## 7. Route authority
 
-SYSTEM work must remain separate from route content and visual redesign. It must run:
+For route work, primary sources are:
+
+- `migration/page-ownership.json`;
+- `data/route-profiles/*.json`.
+
+`migration/route-migration-matrix.json` is derived through:
 
 ```bash
-npm run guard:shared-files
-npm run workflows:check
-npm run control-plane:audit
-npm run workflows:lint
+node scripts/sync-route-migration-matrix.js --write
 ```
 
-and the final barrier appropriate to the changed control plane.
+Do not edit it manually to add or redefine a route. Canonical migration modes remain `strict-native`, `strict-native-app`, `legacy-shadow-app`.
 
-## 4. Shared data and documents
-
-Shared data/documents include, at minimum:
-
-```text
-docs/WORK_MODES.md
-docs/LANE_LOCK_POLICY.md
-docs/AGENT_PUSH_MODEL.md
-data/series.json
-data/search-manifest.json
-data/public-content-baseline.json
-scripts/guard-shared-files.js
-scripts/check-data-consistency.js
-scripts/audit-pro.js
-scripts/repository-control-plane-audit.mjs
-```
-
-Change them only in a declared shared/system lane. A docs file is not automatically safe merely because it cannot execute: stale governance can direct later agents into destructive operations.
-
-## 5. Out-of-lane findings
-
-Do not opportunistically repair a different owner’s surface.
+## 8. Out-of-lane findings
 
 ```md
 ## Out-of-lane finding
 
-Observed in: <file / route / exact SHA>
-Evidence: <what proves it>
+Observed at: <exact SHA / file / route>
+Evidence: <source, test or artifact>
 Not changed because: <ownership boundary>
 Proposed lane: <name>
+Recovery risk: <none / possible unique branch material>
 ```
 
-For a likely lost branch or file, add it to the forensic/recovery register before deleting or recreating anything.
+## 9. Before merge or deletion
 
-## 6. Branch and PR lifecycle
+Before merge:
 
-### Before work
+- actual diff matches declared scope;
+- final SHA passed required checks;
+- review threads are resolved;
+- no temporary workflow, trigger, writer or patcher remains;
+- production is not claimed without deploy/live witness.
 
-- inspect open PRs/issues and current branches;
-- choose a unique owner and bounded scope;
-- declare allowed/forbidden files and rollback SHA;
-- identify current tests, not historical tests from the old branch.
+Before branch deletion, follow `BRANCH_LIFECYCLE_V4.md`. Never delete solely because a PR is closed or a successor claims the work is superseded.
 
-### Before merge
-
-- confirm the PR diff contains only declared scope;
-- verify exact head, not an earlier commit;
-- resolve review threads;
-- preserve source authority separately from deployed/live authority;
-- ensure no temporary workflow, trigger, writer or patcher remains.
-
-### Before branch deletion
-
-Do **not** delete a branch solely because its PR closed or a newer PR says “superseded”. First classify its actual content:
-
-- byte-equivalent or fully represented in `main`;
-- diagnostic/trigger-only and intentionally disposable;
-- superseded with a verified replacement chain;
-- unique prototype/evidence worth archiving;
-- selective recovery candidate.
-
-For unique material that should not enter `main`, create an explicit `archive/forensic-*` ref or preserve it in governed AuditRepo evidence. Archive refs are never merged wholesale.
-
-## 7. Current commands by mode
-
-```bash
-# FAST
-git diff --check
-
-# LANE
-git diff --check
-npm run guard:shared-files
-npm run data:consistency
-npm run migration:metadata:check
-# plus route/browser/visual checks
-
-# SYSTEM
-git diff --check
-npm run guard:shared-files
-npm run workflows:check
-npm run control-plane:audit
-npm run workflows:lint
-npm run validate:static-publication
-```
-
-The current lane index is `docs/refactor-2026/lanes/README.md`. The current architecture/recovery summary is `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`.
-
-## Historical policy
-
-Version 2.0 remains available in Git history at blob `4d934372cae4c3deb3f0df10cfb5d20a74cdbe6e`. It reflected the June 2026 sandbox and permitted direct-main FAST work; that permission is retired by this version.
+The lane index is `docs/refactor-2026/lanes/README.md`; it is navigation, not an independent backlog.
