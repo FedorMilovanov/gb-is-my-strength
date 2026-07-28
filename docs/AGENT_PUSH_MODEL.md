@@ -1,25 +1,47 @@
 # Agent Push Model
 
 **Repository:** `FedorMilovanov/gb-is-my-strength`  
-**Updated:** 2026-07-24  
-**Current rule:** branch + pull request; direct `main` push is forbidden outside an explicit owner-approved emergency.
+**Updated:** 2026-07-28  
+**Policy version:** 4.0  
+**Current rule:** one canonical branch and pull request; direct `main` push only in an explicit owner-approved emergency.
 
 ## 1. Authentication truth
 
-- GitHub repository secrets (`${{ secrets.NAME }}`) exist only inside GitHub Actions.
-- An external coding runtime does not inherit `GITHUB_TOKEN`, PAT or repository secrets unless that runtime provides its own authenticated connector or secure environment.
-- The presence of `ARENA_AGENT` or another repository secret does not imply that `$GH_TOKEN` exists in an agent shell.
-- Never request, paste or store a PAT in chat, text files, issues, PR descriptions, commits, gists or example environment files.
+- GitHub repository secrets exist only inside GitHub Actions.
+- An external runtime does not inherit `GITHUB_TOKEN`, PAT or repository secrets unless it supplies an authenticated connector or secure environment.
+- Never request, paste or store a PAT in chat, files, issues, PR descriptions, commits, gists or sample environment files.
+- A connector write capability may be used directly when it preserves the same branch/PR and ownership rules.
 
-## 2. Allowed write paths
+## 2. Local execution before publication
 
-Normal work:
+Product work starts in a local branch worktree. Diagnostics, reproduction and temporary experiments use detached HEAD.
+
+A remote branch is created only when:
+
+1. the scope is bounded;
+2. overlap with active agents is checked;
+3. the diff exists and iteration checks ran;
+4. the branch is the single canonical remote branch for the task;
+5. a draft PR is opened immediately.
+
+See `docs/GIT_WORKTREE_POLICY.md`.
+
+## 3. Remote branch policy
+
+Normal canonical PR namespaces:
 
 ```text
 lane/**
 agent/**
-arena/**
+hotfix/**
+release/**
 ```
+
+`agent/**` is allowed for connector/runtime publication but does not authorize multiple parallel refs for one task.
+
+Diagnostic names such as `diag/**`, `probe/**`, `snapshot/**`, `witness/**`, `tmp/**`, `materializer/**` and `experiment/**` are local execution labels, not normal remote branches.
+
+Existing in-flight branches are grandfathered during transition and must not be renamed, force-pushed, closed or deleted for policy compliance.
 
 Protected destinations:
 
@@ -30,51 +52,29 @@ release
 production
 ```
 
-Rules:
+## 4. Parallel-agent write safety
 
-- push a named branch and open a PR;
 - never force-push another owner’s branch;
-- verify the remote branch SHA after push;
-- a statement such as “я запушил” is not evidence.
+- never move another branch ref;
+- never close or delete active-agent branches;
+- verify file overlap before creating the governance/product branch;
+- record active adjacent PRs and branches in the PR description;
+- use a fresh branch from current `main` for selective recovery;
+- never merge an old recovery branch wholesale merely to save its name.
 
-An emergency direct-main operation requires an explicit owner decision, exact post-push workflow inspection, a rollback SHA and follow-up AuditRepo reconciliation when canonical status changes.
+## 5. Current write-capable workflows
 
-## 3. Current write-capable workflows
-
-The filesystem-derived control-plane audit classifies two continuing same-repository autofix writers:
-
-- `.github/workflows/glossary-contract.yml`;
-- `.github/workflows/search-manifest-policy.yml`.
-
-They are accepted only because their write paths are label-gated and require the PR head repository to equal the target repository. Other `contents: write` workflows are warnings until an explicit continuing owner is documented.
-
-Do not rely on a static list in this document. Run:
+Do not rely on a static list. Run:
 
 ```bash
 npm run control-plane:audit
 ```
 
-and inspect `reports/repository-control-plane-audit.{json,md}` for the exact current inventory.
+Inspect `reports/repository-control-plane-audit.{json,md}` for current writers and permissions. Any new `contents: write` workflow requires an explicit continuing owner and bounded write path.
 
-## 4. Safe capability probe
+The branch-hygiene workflow is deliberately read-only and must remain unable to close PRs, update refs or delete branches.
 
-When using a shell-based external runtime:
-
-```bash
-git fetch --all --prune
-git rev-parse origin/main
-git checkout -b lane/push-probe-YYYY-MM-DD
-# create a harmless commit only when the owner approved a real probe
-git push -u origin HEAD
-```
-
-A `403` means the runtime has no usable credential. Use the GitHub connector, owner patch relay or another approved authenticated path. Do not work around it by exposing credentials.
-
-Delete a probe branch only after confirming it contains no unique content and recording its disposition. Branch cleanup follows `docs/LANE_LOCK_POLICY.md`.
-
-## 5. Verification before push and merge
-
-Choose checks from `docs/WORK_MODES.md` according to actual scope.
+## 6. Verification before push and merge
 
 For workflow/system changes, at minimum:
 
@@ -93,24 +93,33 @@ npm run validate:static-publication
 npm run guard:shared-files
 ```
 
-Add route/browser/visual/source contracts for the touched surface. Do not use a Gill-specific smoke suite as a universal substitute for current scoped contracts.
+Add route/browser/visual/source contracts for the touched surface. Record failed or unavailable checks instead of converting them into a green claim.
 
-## 6. Post-push evidence
+## 7. Post-push evidence
 
 Trust only:
 
-- `origin/<branch>` at an exact SHA;
+- the remote branch at an exact SHA;
 - the GitHub PR head SHA and actual diff;
 - exact-head workflow runs and artifacts;
 - built `dist` when build output is the claim;
 - exact Pages/live witness when production is the claim.
 
-A green check on an earlier commit does not validate a moved head. A merged source commit does not prove that production serves the same bytes.
+A green check on an earlier commit does not validate a moved head. A merged source commit does not prove production serves the same bytes.
 
-## 7. Dynamic state
+## 8. Emergency direct-main path
 
-Never hard-code “open PRs must be 0” or a current `main` SHA in this document. Query GitHub and `git rev-parse origin/main` at the start of the task. Use `docs/refactor-2026/lanes/README.md` only as navigation and AuditRepo for canonical source/production boundaries.
+Requires all of:
 
-## Historical policy
+- explicit owner instruction naming the emergency;
+- exact pre-push rollback SHA;
+- minimal bounded diff;
+- immediate exact post-push CI inspection;
+- rollback readiness;
+- AuditRepo reconciliation when canonical status changes.
 
-The 2026-06-29 version remains in Git history at blob `93e8e0d86f0ce2adf119a678d00d8bfad48a6cfa`. Its fixed main SHA, one-writer claim, static zero-PR assertion and Gill-specific universal gate list are retired.
+This is not a FAST shortcut.
+
+## 9. Branch cleanup
+
+Follow `docs/BRANCH_LIFECYCLE_V4.md`. A closed PR or branch age never authorizes deletion by itself. Active and unknown branches remain protected until owner-approved disposition.
