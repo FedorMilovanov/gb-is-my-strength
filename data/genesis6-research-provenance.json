@@ -12,25 +12,24 @@
   ],
   "research": {
     "repository": "FedorMilovanov/Research",
-    "commit": "0a9105c499fa801f4095bce7ec311fcb728206a7",
+    "commit": "753e09027d4a33af5659ce1221ef8371e9dfae22",
     "authorityBaseCommit": "b654c5375a7b212ff9b42c08bb0193eeaad70746",
     "manifestPath": "data/genesis6-authority-manifest.json",
     "manifestSha256": "95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd",
     "ledgerPath": "data/genesis6-publication-ledger.json",
     "contractPath": "GENESIS6_AUTHORITY_CONTRACT.md",
     "extension": {
-      "schemaVersion": 4,
+      "schemaVersion": 6,
       "manifestPath": "data/genesis6-enoch-extension-authority-manifest.json",
-      "manifestSha256": "8cfdadd344f15a752ee279d1c1122079fcacbbd97650dd39151872e5618099ef",
+      "manifestSha256": "947e7b86705fd1729f86f0f99c60afee9b850f794d439729698be7d2f1edaaf7",
       "ledgerPath": "data/genesis6-enoch-extension-publication-ledger.json",
       "validatorPath": "scripts/validate_genesis6_enoch_extension.py",
-      "blockingHolds": [
-        "1-enoch-70-71-son-of-man",
-        "astronomical-book-version-plurality"
-      ],
+      "blockingHolds": [],
       "preservedUncertainty": [
         "1-enoch-10-8-interpretive-scope",
         "1-enoch-15-8-12-version-details-and-demon-identity",
+        "1-enoch-70-71-composition-and-figure-identity",
+        "astronomical-book-reconstruction-direction-and-joins",
         "parables-date-and-witness-form",
         "animal-apocalypse-decomposition",
         "chapter-108-relation-to-epistle",
@@ -48,6 +47,18 @@
           "resolution": "core-model-established-canonical-status-qualified",
           "documentId": "GEN6-ENOCH-15-8-12-DECISION-LXI",
           "evidence": "Greek Syncellus and Codex Panopolitanus plus full Ge'ez preserve the core model; Aramaic 4Q204 is contextual/partial"
+        },
+        {
+          "id": "1-enoch-70-71-son-of-man",
+          "resolution": "direct-address-established-composition-and-identity-qualified",
+          "documentId": "GEN6-ENOCH-70-71-DECISION-LXV",
+          "evidence": "LXII evidence chain plus modern critical translation support second-person 71:14; Charles third-person is an emendation; composition and total identity remain qualified"
+        },
+        {
+          "id": "astronomical-book-version-plurality",
+          "resolution": "textual-plurality-established-evolution-model-qualified",
+          "documentId": "GEN6-ENOCH-ASTRONOMICAL-DECISION-LXVI",
+          "evidence": "4Q208/4Q209 continuity and scheme-level plurality are established by Ratzon's full reconstruction; direction of adaptation and exact joins remain qualified"
         }
       ],
       "resolvedByPolicy": [
@@ -167,6 +178,10 @@
       "orderedDocumentIds": [
         "GEN6-ENOCH-PROTOCOL-LVI",
         "GEN6-ENOCH-VERSION-MATRIX-LIV",
+        "GEN6-ENOCH-ASTRONOMICAL-PROTOCOL-LXIII",
+        "GEN6-ENOCH-ASTRONOMICAL-PUBLIC-GATE-LXIII-A",
+        "GEN6-ENOCH-ASTRONOMICAL-CHARLES-ADDENDUM-LXIII-B",
+        "GEN6-ENOCH-ASTRONOMICAL-DECISION-LXVI",
         "GEN6-ENOCH-ARCHITECTURE-LIII",
         "GEN6-ENOCH-CORPUS-DRAFT-LIV",
         "GEN6-ENOCH-CLAIM-GATE-LIV",
@@ -181,7 +196,7 @@
         "noindex": true
       },
       "rightsMode": "no-manuscript-image-reproduction",
-      "publicationStatus": "source-audited-version-hold"
+      "publicationStatus": "research-ready-site-implementation-hold"
     },
     {
       "articleKey": "6B",
@@ -190,8 +205,16 @@
       "orderedDocumentIds": [
         "GEN6-ENOCH-PROTOCOL-LVI",
         "GEN6-ENOCH-VERSION-MATRIX-LIV",
+        "GEN6-ENOCH-ASTRONOMICAL-PROTOCOL-LXIII",
+        "GEN6-ENOCH-ASTRONOMICAL-PUBLIC-GATE-LXIII-A",
+        "GEN6-ENOCH-ASTRONOMICAL-CHARLES-ADDENDUM-LXIII-B",
+        "GEN6-ENOCH-ASTRONOMICAL-DECISION-LXVI",
+        "GEN6-ENOCH-70-71-PROTOCOL-LXII",
+        "GEN6-ENOCH-70-71-PUBLIC-GATE-LXII-A",
+        "GEN6-ENOCH-70-71-CHARLES-ADDENDUM-LXII-B",
         "GEN6-ENOCH-10-8-DECISION-LX",
         "GEN6-ENOCH-15-8-12-DECISION-LXI",
+        "GEN6-ENOCH-70-71-DECISION-LXV",
         "GEN6-ENOCH-CANON-MATRIX-LII",
         "GEN6-ENOCH-ARCHITECTURE-LIII",
         "GEN6-ENOCH-CLAIM-GATE-LIV",
@@ -203,7 +226,7 @@
         "noindex": true
       },
       "rightsMode": "no-manuscript-image-reproduction",
-      "publicationStatus": "source-audited-version-hold"
+      "publicationStatus": "research-ready-site-implementation-hold"
     }
   ],
   "siteArticles": [
