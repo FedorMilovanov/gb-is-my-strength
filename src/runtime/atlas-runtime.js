@@ -391,6 +391,7 @@
     function relatedTo(id) {
       var result = [];
       data.edges.forEach(function (edge) {
+        if (!enabledKinds.has(edge.kind)) return;
         if (edge.source === id) result.push({ id: edge.target, edge: edge, orientation: 'outgoing' });
         else if (edge.target === id) result.push({ id: edge.source, edge: edge, orientation: edge.direction === 'directed' ? 'incoming' : 'undirected' });
       });
@@ -408,7 +409,8 @@
       var node = nodeById.get(id);
       if (!node) return;
       var group = groupById.get(node.atlasGroup);
-      var neighbors = relatedTo(id).filter(function (item) { return nodeById.has(item.id); }).slice(0, 7);
+      var allNeighbors = relatedTo(id).filter(function (item) { return nodeById.has(item.id); });
+      var neighbors = allNeighbors.slice(0, 7);
       detail.style.setProperty('--detail-color', group.color);
       detailEmpty.hidden = true;
       detailContent.hidden = false;
@@ -418,7 +420,7 @@
       detailContent.appendChild(createElement('h2', '', node.title));
       var meta = createElement('div', 'atlas-detail__meta');
       meta.appendChild(createElement('span', '', node.readingTime ? node.readingTime + ' мин. чтения' : 'Материал библиотеки'));
-      meta.appendChild(createElement('span', '', neighbors.length + ' ' + pluralRelations(neighbors.length)));
+      meta.appendChild(createElement('span', '', allNeighbors.length + ' ' + pluralRelations(allNeighbors.length)));
       detailContent.appendChild(meta);
       if (node.desc) detailContent.appendChild(createElement('p', 'atlas-detail__desc', node.desc));
 
@@ -522,7 +524,7 @@
         element.tabIndex = nodeId === id ? 0 : -1;
       });
       edgeElements.forEach(function (entry) {
-        var connected = entry.edge.source === id || entry.edge.target === id;
+        var connected = enabledKinds.has(entry.edge.kind) && (entry.edge.source === id || entry.edge.target === id);
         entry.el.classList.toggle('is-focus', connected);
         entry.el.classList.toggle('is-dim', !connected);
       });
@@ -597,7 +599,10 @@
       clearFocus(false);
       applyFilters();
       closeFilters();
-      updateUrl({ group: activeGroup === 'all' ? null : activeGroup }, pushHistory ? 'push' : 'replace');
+      updateUrl({
+        group: activeGroup === 'all' ? null : activeGroup,
+        focus: null,
+      }, pushHistory ? 'push' : 'replace');
     }
 
     function setView(mode, pushHistory) {
@@ -834,6 +839,7 @@
       input.addEventListener('change', function () {
         enabledKinds = new Set(Array.from(document.querySelectorAll('.atlas-relation-filter input:checked')).map(function (item) { return item.value; }));
         applyFilters();
+        if (activeFocus) focusNode(activeFocus, false, false);
       });
     });
     document.querySelectorAll('[data-list-focus]').forEach(function (button) {
