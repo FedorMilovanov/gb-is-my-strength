@@ -44,6 +44,8 @@ console.log('=== Biblical map recovery contract ===');
 await import('./map-runtime-fallback-browser-core.mjs');
 console.log('\n=== Compiled research Atlas contract ===');
 await import('./atlas-browser-contract.mjs');
+console.log('\n=== Atlas state ownership contract ===');
+await import('./atlas-state-browser-contract.mjs');
 console.log('\n=== Static article relation contract ===');
 await import('./relationship-panel-browser-contract.mjs');
 console.log('\n✅ Unified navigation engine sweep completed');
