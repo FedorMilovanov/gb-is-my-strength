@@ -221,11 +221,11 @@ def main() -> int:
         if open_prs:
             classification = "ACTIVE_OR_IN_FLIGHT"
             deletion_blocked = True
-        elif ahead == 0:
-            classification = "FULLY_REPRESENTED_BY_ANCESTRY"
-            deletion_blocked = True
         elif recently_updated:
             classification = "RECENT_OWNER_CHECK_REQUIRED"
+            deletion_blocked = True
+        elif ahead == 0:
+            classification = "FULLY_REPRESENTED_BY_ANCESTRY"
             deletion_blocked = True
         elif diagnostic:
             classification = "DIAGNOSTIC_CONTENT_REVIEW"
