@@ -38,6 +38,7 @@ const SECTION_COMPONENTS = [
 const FORBIDDEN = ['loadLegacyFullDocument', 'headHtml', 'bodyHtml', 'bodyAttributes', '?raw', 'set:html', '_legacy'];
 const REQUIRE_DIST = process.argv.includes('--require-dist');
 const DIST_REL = 'dist/articles/dzhon-gill-spravochnik/index.html';
+const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 const problems = [];
 
 function ok(msg) { console.log(`✅ ${msg}`); }
@@ -60,10 +61,11 @@ function stripTags(html) {
     .replace(/\s+/g, ' ')
     .trim();
 }
-function bodyInner(html) { return html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || ''; }
-function stripFrontmatter(source) {
-  return String(source || '').replace(/^---[\s\S]*?---\s*/, '');
+function bodyInner(html) { return String(html || '').match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || ''; }
+function articleInner(html) {
+  return String(html || '').match(/<article\b[^>]*class=["'][^"']*\barticle-body\b[^"']*["'][^>]*>([\s\S]*?)<\/article>/i)?.[1] || '';
 }
+function stripFrontmatter(source) { return String(source || '').replace(/^---[\s\S]*?---\s*/, ''); }
 function normalize(html) {
   return String(html || '')
     .replace(/\s+is:inline(?=\s|>)/g, '')
@@ -75,46 +77,40 @@ function normalize(html) {
 }
 function wordCount(html) { return (stripTags(html).match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g) || []).length; }
 function h2Count(html) { return (String(html || '').match(/<h2\b/gi) || []).length; }
-function themeBtn(cls) {
-  const c = [cls].filter(Boolean).join(' ');
-  return `<button type="button" class="${c}" aria-label="Переключить тему" title="Тема" aria-pressed="false" data-gbs2-theme=""><span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg></span><span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></span></button>`;
+function hasScriptSource(html, fileName) {
+  const escaped = String(fileName).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`<script\\b[^>]*\\bsrc=["'][^"']*(?:^|/)${escaped}(?:[?#][^"']*)?["'][^>]*>`, 'i').test(String(html || ''));
 }
-function searchBtn(cls) {
-  const c = [cls].filter(Boolean).join(' ');
-  return `<button type="button" class="${c}" aria-label="Поиск" title="Поиск" data-gbs2-search=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></button>`;
+function escapeRegExp(value) { return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function findElementRangeByClass(html, className) {
+  const openRe = /<([a-zA-Z][\w:-]*)\b[^>]*\bclass\s*=\s*(["'])([^"']*)\2[^>]*>/gi;
+  let match;
+  while ((match = openRe.exec(html))) {
+    if (!match[3].trim().split(/\s+/).includes(className)) continue;
+    const start = match.index;
+    const openEnd = start + match[0].length;
+    const tag = match[1].toLowerCase();
+    if (VOID_TAGS.has(tag) || /\/\s*>$/.test(match[0])) return { start, end: openEnd };
+    const tagRe = new RegExp(`<\/?${escapeRegExp(tag)}\\b[^>]*>`, 'gi');
+    tagRe.lastIndex = openEnd;
+    let depth = 1;
+    let token;
+    while ((token = tagRe.exec(html))) {
+      if (/^<\//.test(token[0])) depth -= 1;
+      else if (!/\/\s*>$/.test(token[0]) && !VOID_TAGS.has(tag)) depth += 1;
+      if (depth === 0) return { start, end: tagRe.lastIndex };
+    }
+    throw new Error(`Unbalanced <${tag}> for .${className}`);
+  }
+  return null;
 }
-function shareBtn(cls) {
-  const c = [cls].filter(Boolean).join(' ');
-  return `<button type="button" class="${c}" aria-label="Поделиться" title="Поделиться" data-gbs2-share=""><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51l6.83 3.98"></path><path d="M15.41 6.51L8.59 10.49"></path></svg></button>`;
-}
-function fontBtn(cls, kind, label, text) {
-  const c = [cls].filter(Boolean).join(' ');
-  return `<button type="button" class="${c}" aria-label="${label}" title="${label}" data-gbs2-font="${kind}">${text}</button>`;
-}
-function playBtn(cls) {
-  const c = ['gb-ember', cls].filter(Boolean).join(' ');
-  return `<button type="button" class="${c}" data-fc-action="play" data-audio-state="none" aria-label="Озвучка" aria-disabled="true"><span aria-hidden="true" class="gb-ember__ring-svg"></span><svg aria-hidden="true" class="gb-ember__glyph" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"></path></svg><svg aria-hidden="true" class="gb-ember__pause" viewBox="0 0 24 24"><path d="M9 6v12"></path><path d="M15 6v12"></path></svg><svg aria-hidden="true" class="gb-ember__check" viewBox="0 0 24 24"><path d="M12 5.5v3"></path><path d="M12 15.5v3"></path><path d="M5.5 12h3"></path><path d="M15.5 12h3"></path></svg></button>`;
-}
-function saveBtn(cls) {
-  const c = ['gb-save', cls].filter(Boolean).join(' ');
-  return `<button type="button" class="${c}" data-fc-action="save" aria-label="Сохранить" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>`;
-}
-function offlineBtn(cls) {
-  const c = [cls].filter(Boolean).join(' ');
-  return `<button type="button" class="${c}" aria-label="Сохранить серию офлайн" title="Офлайн" data-gbs2-offline="">↓</button>`;
-}
-function mobileControlsMarkup() {
-  return `<div class="gbs2-mobile-actions" data-fc-root data-fc-variant="gill" role="group" aria-label="Быстрые действия серии">${themeBtn('gbs2-mctl')}${searchBtn('gbs2-mctl')}${playBtn('gbs2-mctl')}${saveBtn('gbs2-mctl')}</div>`;
-}
-function railControlsMarkup() {
-  const cls = 'gbs2-ctl';
-  return `<div class="gbs2-rfoot" data-fc-root data-fc-variant="gill" role="group" aria-label="Управление серией">${themeBtn(cls)}${searchBtn(cls)}${shareBtn(cls)}${fontBtn(cls, 'down', 'Шрифт меньше', 'A\u2212')}${fontBtn(cls, 'up', 'Шрифт больше', 'A+')}${playBtn(cls)}${saveBtn(cls)}${offlineBtn(cls)}<a class="gbs2-home" href="../../biografii/">\u2190 Назад</a></div>`;
-}
-function expandChromeHelpers(html, roman) {
-  return String(html || '')
-    .replace(/<GillRailControls\s+context="mobile"\s+audioState="none"\s+includeStyles=\{true\}\s*\/>/g, mobileControlsMarkup())
-    .replace(/<GillRailControls\s+context="rail"\s+audioState="none"\s+homeHref="\.\.\/\.\.\/biografii\/"\s*\/>/g, railControlsMarkup())
-    .replace(new RegExp(`<RomanNumeral\\s+value="${roman}"\\s*\\/>`, 'g'), `<span aria-hidden="true" class="gb-roman">${roman}</span>`);
+function removeElementsByClass(html, className) {
+  let output = String(html || '');
+  while (true) {
+    const range = findElementRangeByClass(output, className);
+    if (!range) return output;
+    output = `${output.slice(0, range.start)}${output.slice(range.end)}`;
+  }
 }
 
 console.log('GILL SPRAVOCHNIK STRICT-NATIVE AUDIT');
@@ -122,7 +118,7 @@ mustExist('legacy route', LEGACY_REL);
 mustExist('Astro route', PAGE_REL);
 for (const [label, rel] of Object.entries(REQUIRED)) mustExist(label, rel);
 mustNotExist('legacy spravochnik directory retired', `${BASE_REL}/_legacy`);
-for (const comp of SECTION_COMPONENTS) mustExist(`section component ${comp}`, `${BASE_REL}/${comp}`);
+for (const component of SECTION_COMPONENTS) mustExist(`section component ${component}`, `${BASE_REL}/${component}`);
 
 const { file: profileFile, profile } = loadRouteProfile(ROUTE);
 if (!profileFile || !profile) {
@@ -141,27 +137,24 @@ if (!problems.length) {
   const pageHead = read(REQUIRED.pageHead);
   const pageChrome = read(REQUIRED.pageChrome);
   const sharedChrome = read(SHARED_CHROME_REL);
-  const pageChromeContract = pageChrome + '\n' + sharedChrome;
+  const pageChromeContract = `${pageChrome}\n${sharedChrome}`;
   const shell = read(REQUIRED.shell);
   const header = read(REQUIRED.header);
   const body = read(REQUIRED.body);
   const post = read(REQUIRED.post);
-  const legacy = read(LEGACY_REL);
-  const legacyBody = bodyInner(legacy);
+  const legacyHtml = read(LEGACY_REL);
+  const legacyBody = articleInner(legacyHtml) || bodyInner(legacyHtml);
+  const sectionHtml = SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`)).join('');
+  const article = `<article class="article-body" data-pagefind-body>${sectionHtml}</article>`;
+  const main = `<main id="main-content">${header}${article}${post}</main>`;
+  const reconstructed = stripFrontmatter(sharedChrome).replace('<slot />', main);
+  const scopeText = [page, pageHead, pageChrome, sharedChrome, shell, header, body, post, ...SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`))].join('\n');
   let distHtml = '';
   if (exists(DIST_REL)) {
     distHtml = read(DIST_REL);
     ok('dist page present for runtime parity');
-  } else if (REQUIRE_DIST) {
-    bad(`dist page required but missing: ${DIST_REL}`);
-  } else {
-    console.log('ℹ️ dist not built — dist-level assertions skipped (use --require-dist after strangler:build:production-like for full proof)');
-  }
-  const sectionHtml = SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`)).join('');
-  const article = `<article class="article-body" data-pagefind-body>${sectionHtml}</article>`;
-  const main = `<main id="main-content">${header}${article}${post}</main>`;
-  const reconstructed = expandChromeHelpers(stripFrontmatter(sharedChrome).replace('<slot />', main), 'V');
-  const scopeText = [page, pageHead, pageChrome, sharedChrome, shell, header, body, post, ...SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`))].join('\n');
+  } else if (REQUIRE_DIST) bad(`dist page required but missing: ${DIST_REL}`);
+  else console.log('ℹ️ dist not built — dist-level assertions skipped');
 
   for (const token of FORBIDDEN) mustNotContain('strict-native source scope', scopeText, token);
   mustContain('route imports native page head', page, 'GillSpravochnikPageHead');
@@ -177,50 +170,55 @@ if (!problems.length) {
   mustContain('page chrome exposes slot', pageChromeContract, '<slot />');
   if (pageChromeContract.includes('toc-overlay') || pageChromeContract.includes('GillSeriesOverlay')) ok('page chrome has v16 toc popup'); else bad('page chrome has v16 toc popup missing');
   mustContain('page chrome keeps bookmark runtime', pageChromeContract, 'bookmark-engine.js');
-  mustContain('page chrome keeps site runtime', pageChromeContract, 'site.js');
+  mustContain('page chrome keeps shared site utilities', pageChromeContract, 'site-utils.js');
+  mustContain('page chrome keeps glossary runtime', pageChromeContract, 'glossary.js');
+  mustContain('page chrome owns native reader runtime', pageChromeContract, 'ReaderActionsRuntime');
+  hasScriptSource(pageChromeContract, 'site.js') ? bad('page chrome must not restore legacy site.js ownership') : ok('page chrome excludes legacy site.js ownership');
+
   if (distHtml) {
     mustContain('dist keeps v16 toc popup', distHtml, 'toc-overlay');
     mustContain('dist keeps bookmark runtime', distHtml, 'bookmark-engine.js');
-    mustContain('dist keeps site runtime', distHtml, 'site.js');
+    mustContain('dist keeps shared site utilities', distHtml, 'site-utils.js');
+    mustContain('dist keeps glossary runtime', distHtml, 'glossary.js');
+    hasScriptSource(distHtml, 'site.js') ? bad('dist must not restore legacy site.js ownership') : ok('dist excludes legacy site.js ownership');
+    /<script\b[^>]*\btype=["']module["'][^>]*\bsrc=/i.test(distHtml) ? ok('dist contains native module runtime') : bad('dist native module runtime missing');
     mustContain('dist has data-gill-v16 marker', distHtml, 'data-gill-v16');
     mustContain('dist has label series mark', distHtml, 'gb-series-mark--label');
     mustNotContain('dist does not contain forbidden Часть 1 из 5', distHtml, 'Часть 1 из 5');
     mustNotContain('dist does not contain forbidden Часть 0', distHtml, 'Часть 0');
   }
+
   mustContain('main shell renders main-content', shell, '<main id="main-content">');
   mustContain('main shell uses header', shell, 'GillSpravochnikHeaderHero');
   mustContain('main shell uses article body', shell, 'GillSpravochnikArticleBody');
   mustContain('main shell uses post article', shell, 'GillSpravochnikPostArticle');
   mustContain('body component owns article wrapper', body, '<article class="article-body" data-pagefind-body>');
-  for (const comp of SECTION_COMPONENTS) mustContain(`body imports ${comp}`, body, comp.replace(/\.astro$/, ''));
-  for (const marker of ['class="gbs2-hero"', 'Джон Гилл: справочник', 'summary-card', 'id="sec-prdl"', 'id="sec-timeline"', 'id="sec-works"', 'id="sec-body-structure"', 'id="sec-network"', 'id="sec-disputes"', 'id="sec-terms"', 'id="sec-links"', 'id="sec-quiz"', 'gbs2-next', 'gbs2-timeline', 'article-end-sdg-wrap']) {
-    mustContain('reconstructed body marker', reconstructed, marker);
-  }
-  if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed body matches legacy body after normalization');
-  else console.log(`⚠ reconstructed body differs from legacy reference (legacyStatus=${profile.legacyStatus}; exact equality is non-blocking)`);
+  for (const component of SECTION_COMPONENTS) mustContain(`body imports ${component}`, body, component.replace(/\.astro$/, ''));
+  for (const marker of ['class="gbs2-hero"', 'Джон Гилл: справочник', 'summary-card', 'id="sec-prdl"', 'id="sec-timeline"', 'id="sec-works"', 'id="sec-body-structure"', 'id="sec-network"', 'id="sec-disputes"', 'id="sec-terms"', 'id="sec-links"', 'id="sec-quiz"', 'gbs2-next', 'gbs2-timeline', 'article-end-sdg-wrap']) mustContain('reconstructed body marker', reconstructed, marker);
+  if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed article matches legacy article after normalization');
+  else console.log(`⚠ reconstructed article differs from legacy reference (legacyStatus=${profile.legacyStatus}; exact equality is non-blocking)`);
 
-  const lw = wordCount(legacyBody);
-  const rw = wordCount(reconstructed);
+  const legacyWords = wordCount(legacyBody);
+  const nativeWords = wordCount(reconstructed);
   if (legacyIsAuthoritative(profile)) {
-    const drift = Math.abs(lw - rw);
-    drift <= 200
-      ? ok(`authoritative legacy word-count within tolerance: legacy=${lw}, reconstructed=${rw}, drift=${drift}`)
-      : bad(`authoritative legacy word-count drift: legacy=${lw}, reconstructed=${rw}`);
+    const drift = Math.abs(legacyWords - nativeWords);
+    drift <= 200 ? ok(`authoritative legacy word-count within tolerance: legacy=${legacyWords}, reconstructed=${nativeWords}, drift=${drift}`) : bad(`authoritative legacy word-count drift: legacy=${legacyWords}, reconstructed=${nativeWords}`);
   } else if (profile.legacyStatus === 'reference-only') {
-    rw >= lw
-      ? ok(`reference-only legacy is a lower-bound safeguard: legacy=${lw}, native=${rw}`)
-      : bad(`strict-native source regressed below reference-only snapshot: legacy=${lw}, native=${rw}`);
-  } else {
-    bad(`unsupported non-authoritative legacy status: ${profile.legacyStatus || 'missing'}`);
-  }
+    nativeWords >= legacyWords ? ok(`reference-only legacy is a lower-bound safeguard: legacy=${legacyWords}, native=${nativeWords}`) : bad(`strict-native source regressed below reference-only snapshot: legacy=${legacyWords}, native=${nativeWords}`);
+  } else bad(`unsupported non-authoritative legacy status: ${profile.legacyStatus || 'missing'}`);
 
-  const lh = h2Count(legacyBody);
+  const legacyH2 = h2Count(legacyBody);
   if (distHtml) {
-    const dh = h2Count(bodyInner(distHtml));
-    lh === dh ? ok(`H2 parity (dist): ${dh}`) : bad(`H2 drift: legacy=${lh}, dist=${dh}`);
+    const distArticle = articleInner(distHtml);
+    if (!distArticle) bad('dist article-body scope missing');
+    else {
+      const editorialArticle = removeElementsByClass(distArticle, 'gb-relations-panel');
+      const distH2 = h2Count(editorialArticle);
+      legacyH2 === distH2 ? ok(`H2 parity (editorial article body): ${distH2}`) : bad(`H2 drift: legacy=${legacyH2}, distEditorial=${distH2}`);
+    }
   } else {
-    const rh = h2Count(reconstructed);
-    Math.abs(lh - rh) <= 1 ? ok(`H2 parity within shared-chrome tolerance: legacy=${lh}, reconstructed=${rh}`) : bad(`H2 drift: legacy=${lh}, reconstructed=${rh}`);
+    const reconstructedH2 = h2Count(reconstructed);
+    Math.abs(legacyH2 - reconstructedH2) <= 1 ? ok(`H2 parity within shared-chrome tolerance: legacy=${legacyH2}, reconstructed=${reconstructedH2}`) : bad(`H2 drift: legacy=${legacyH2}, reconstructed=${reconstructedH2}`);
   }
 }
 

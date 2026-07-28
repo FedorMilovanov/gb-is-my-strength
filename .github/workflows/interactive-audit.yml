@@ -9,11 +9,13 @@ on:
       - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'src/pages/index.astro'
       - 'src/components/home/**'
+      - 'src/components/article-pilots/**'
+      - 'src/components/reader-platform/**'
+      - 'src/layouts/**'
+      - 'src/runtime/**'
       - 'src/styles/**'
       - 'css/**'
-      - 'js/site.js'
-      - 'js/site-utils.js'
-      - 'js/search.js'
+      - 'js/**'
       - 'package.json'
       - 'package-lock.json'
   push:
@@ -25,11 +27,13 @@ on:
       - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'src/pages/index.astro'
       - 'src/components/home/**'
+      - 'src/components/article-pilots/**'
+      - 'src/components/reader-platform/**'
+      - 'src/layouts/**'
+      - 'src/runtime/**'
       - 'src/styles/**'
       - 'css/**'
-      - 'js/site.js'
-      - 'js/site-utils.js'
-      - 'js/search.js'
+      - 'js/**'
       - 'package.json'
       - 'package-lock.json'
   workflow_dispatch:
@@ -52,7 +56,9 @@ jobs:
       - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -95,6 +101,7 @@ jobs:
       - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -112,6 +119,7 @@ jobs:
 
           run=false
           reason=unrelated-change
+          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/home-browser-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|src/pages/index\.astro|src/components/home/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
@@ -119,20 +127,18 @@ jobs:
               reason="$EVENT_NAME"
               ;;
             pull_request)
-              if git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" |
-                grep -Eq '^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js)$'; then
+              if git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" | grep -Eq "$runtime_pattern"; then
                 run=true
-                reason=interactive-audit-source-change
+                reason=runtime-impacting-source-change
               fi
               ;;
             push)
               if [[ -z "$BEFORE_SHA" || "$BEFORE_SHA" =~ ^0+$ ]]; then
                 run=true
                 reason=initial-push
-              elif git diff --name-only "$BEFORE_SHA" "$HEAD_SHA" |
-                grep -Eq '^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js)$'; then
+              elif git diff --name-only "$BEFORE_SHA" "$HEAD_SHA" | grep -Eq "$runtime_pattern"; then
                 run=true
-                reason=interactive-audit-source-change
+                reason=runtime-impacting-source-change
               fi
               ;;
           esac
@@ -177,6 +183,8 @@ jobs:
         if: steps.audit-scope.outputs.run == 'true'
         env:
           AUDIT_BASE: http://127.0.0.1:8080
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOURCE_REF: ${{ github.event.pull_request.head.ref || github.ref }}
         shell: bash
         run: |
           set -o pipefail
@@ -195,8 +203,8 @@ jobs:
             schemaVersion: 1,
             conclusion: status === 0 ? 'success' : 'failure',
             exitCode: status,
-            sha: process.env.GITHUB_SHA || '',
-            ref: process.env.GITHUB_REF || '',
+            sha: process.env.SOURCE_SHA || '',
+            ref: process.env.SOURCE_REF || '',
             event: process.env.GITHUB_EVENT_NAME || '',
             runId: process.env.GITHUB_RUN_ID || '',
             runAttempt: process.env.GITHUB_RUN_ATTEMPT || '',

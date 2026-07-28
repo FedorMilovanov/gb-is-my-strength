@@ -42,9 +42,18 @@ for (const item of GILL_ROUTES) {
 
   const audit = fs.readFileSync(path.join(ROOT, item.audit), 'utf8');
   assert(audit.includes("require('./lib/legacy-source-authority')"), `${item.audit}: must use shared source authority`);
-  assert(/if \(legacyIsAuthoritative\(profile\)\)[\s\S]*?drift <= 200/.test(audit), `${item.audit}: legacy drift tolerance must be scoped to authoritative legacy`);
-  assert(/profile\.legacyStatus === 'reference-only'[\s\S]*?rw >= lw/.test(audit), `${item.audit}: reference-only legacy must be a lower-bound safeguard`);
-  assert(!/var drift = Math\.abs\(lw - rw\);\s*drift <= 200 \?/.test(audit), `${item.audit}: unconditional legacy oracle must not return`);
+
+  const authorityBranch = audit.match(/if\s*\(\s*legacyIsAuthoritative\(profile\)\s*\)\s*\{([\s\S]*?)\}\s*else\s+if\s*\(\s*profile\.legacyStatus\s*===\s*'reference-only'/);
+  assert(authorityBranch, `${item.audit}: authoritative and reference-only branches must remain explicit`);
+  assert(/Math\.abs\s*\(/.test(authorityBranch[1]), `${item.audit}: authoritative branch must calculate word-count drift`);
+  assert(/<=\s*200/.test(authorityBranch[1]), `${item.audit}: authoritative drift tolerance must remain 200 words`);
+
+  const referenceBranch = audit.match(/profile\.legacyStatus\s*===\s*'reference-only'\s*\)\s*\{([\s\S]*?)\}\s*else/);
+  assert(referenceBranch, `${item.audit}: reference-only lower-bound branch missing`);
+  assert(/(?:rw|nativeWords)\s*>=\s*(?:lw|legacyWords)/.test(referenceBranch[1]), `${item.audit}: reference-only legacy must remain a lower-bound safeguard`);
+
+  const toleranceOutsideAuthority = audit.replace(authorityBranch[0], "if (legacyIsAuthoritative(profile)) { /* authority branch verified */ } else if (profile.legacyStatus === 'reference-only'");
+  assert(!/Math\.abs\s*\([^)]*\)[\s\S]{0,160}<=\s*200/.test(toleranceOutsideAuthority), `${item.audit}: unconditional legacy drift oracle must not return`);
 }
 
 const readingTimeAudit = fs.readFileSync(path.join(ROOT, 'scripts/gill-reading-time-canonical-audit.js'), 'utf8');

@@ -8,6 +8,8 @@ on:
       - 'js/**'
       - 'articles/**'
       - 'src/components/**'
+      - 'src/runtime/print-pagination-geometry.js'
+      - 'scripts/check-print-geometry-contract.js'
       - 'scripts/engine-sweep.mjs'
       - 'scripts/print-paper-pdf-audit.py'
       - 'scripts/print-pagination-contract.mjs'
@@ -34,6 +36,8 @@ jobs:
           node-version: '22.12.0'
           cache: npm
       - run: npm ci
+      - name: Validate print geometry ownership
+        run: node scripts/check-print-geometry-contract.js
       - run: npx playwright install --with-deps chromium
       - run: |
           sudo apt-get update

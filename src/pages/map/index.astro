@@ -1,22 +1,36 @@
 ---
 /**
- * /map/ — strict-native route (Protected App Routes Native Astro Phase).
+ * /map/ — strict-native-app research atlas.
  *
- * Interactive graph map of site connections.
- * Native MapPageHead (SEO/JSON-LD/meta) + Native MapBody.
- * Does NOT use global site.css/site.js to avoid breaking custom canvas.
+ * Native Astro shell and accessible server-rendered list. The graph runtime
+ * fetches the canonical JSON source without raw HTML transport or set:html.
  */
 import MapPageHead from '@/components/map/MapPageHead.astro';
 import MapStyles from '@/components/map/MapStyles.astro';
-import MapBody from '@/components/map/MapBody.astro';
+import AtlasRelationStyles from '@/components/map/AtlasRelationStyles.astro';
+import AtlasVisualPolish from '@/components/map/AtlasVisualPolish.astro';
+import AtlasBody from '@/components/map/AtlasBody.astro';
+import AtlasRecovery from '@/components/map/AtlasRecovery.astro';
+import AtlasNoScriptFallback from '@/components/map/AtlasNoScriptFallback.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <MapPageHead />
     <MapStyles />
+    <AtlasRelationStyles />
+    <AtlasVisualPolish />
   </head>
   <body>
-    <MapBody />
+    <AtlasBody />
+    <AtlasRecovery />
+    <AtlasNoScriptFallback />
+    <section class="sr-only" data-pagefind-body aria-label="Описание Атласа исследований">
+      <h2>Атлас исследований сайта «Господь Бог — Сила Моя»</h2>
+      <p>
+        Масштабируемая карта объединяет серии, биографии, библейские карты и богословские исследования.
+        Материалы можно искать, фильтровать по темам, рассматривать в виде графа или открывать в доступном списке.
+      </p>
+    </section>
   </body>
 </html>

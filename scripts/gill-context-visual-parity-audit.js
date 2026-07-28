@@ -62,6 +62,13 @@ function stripTags(html) {
     .trim();
 }
 function bodyInner(html) { return html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || ''; }
+function articleInner(html) {
+  return String(html || '').match(/<article\b[^>]*class=["'][^"']*\barticle-body\b[^"']*["'][^>]*>([\s\S]*?)<\/article>/i)?.[1] || '';
+}
+function hasScriptSource(html, fileName) {
+  const escaped = String(fileName).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`<script\\b[^>]*\\bsrc=["'][^"']*(?:^|/)${escaped}(?:[?#][^"']*)?["'][^>]*>`, 'i').test(String(html || ''));
+}
 function stripFrontmatter(source) {
   return String(source || '').replace(/^---[\s\S]*?---\s*/, '');
 }
@@ -178,11 +185,23 @@ if (!problems.length) {
   mustContain('page chrome exposes slot', pageChromeContract, '<slot />');
   if (pageChromeContract.includes('toc-overlay') || pageChromeContract.includes('GillSeriesOverlay')) ok('page chrome has v16 toc popup'); else bad('page chrome has v16 toc popup missing');
   mustContain('page chrome keeps bookmark runtime', pageChromeContract, 'bookmark-engine.js');
-  mustContain('page chrome keeps site runtime', pageChromeContract, 'site.js');
+  mustContain('page chrome keeps shared site utilities', pageChromeContract, 'site-utils.js');
+  mustContain('page chrome keeps glossary runtime', pageChromeContract, 'glossary.js');
+  mustContain('page chrome owns native reader runtime', pageChromeContract, 'ReaderActionsRuntime');
+  hasScriptSource(pageChromeContract, 'site.js')
+    ? bad('page chrome must not restore legacy site.js ownership')
+    : ok('page chrome excludes legacy site.js ownership');
   if (distHtml) {
     mustContain('dist keeps v16 toc popup', distHtml, 'toc-overlay');
     mustContain('dist keeps bookmark runtime', distHtml, 'bookmark-engine.js');
-    mustContain('dist keeps site runtime', distHtml, 'site.js');
+    mustContain('dist keeps shared site utilities', distHtml, 'site-utils.js');
+    mustContain('dist keeps glossary runtime', distHtml, 'glossary.js');
+    hasScriptSource(distHtml, 'site.js')
+      ? bad('dist must not restore legacy site.js ownership')
+      : ok('dist excludes legacy site.js ownership');
+    /<script\b[^>]*\btype=["']module["'][^>]*\bsrc=/i.test(distHtml)
+      ? ok('dist contains native module runtime')
+      : bad('dist native module runtime missing');
     mustContain('dist has data-gill-v16 marker', distHtml, 'data-gill-v16');
     mustContain('dist has label series mark', distHtml, 'gb-series-mark--label');
     mustNotContain('dist does not contain forbidden Часть 1 из 5', distHtml, 'Часть 1 из 5');
@@ -217,8 +236,12 @@ if (!problems.length) {
 
   const lh = h2Count(legacyBody);
   if (distHtml) {
-    const dh = h2Count(bodyInner(distHtml));
-    lh === dh ? ok(`H2 parity (dist): ${dh}`) : bad(`H2 drift: legacy=${lh}, dist=${dh}`);
+    const distArticle = articleInner(distHtml);
+    if (!distArticle) bad('dist article-body scope missing');
+    else {
+      const dh = h2Count(distArticle);
+      lh === dh ? ok(`H2 parity (dist article body): ${dh}`) : bad(`H2 drift: legacy=${lh}, distArticle=${dh}`);
+    }
   } else {
     const rh = h2Count(reconstructed);
     Math.abs(lh - rh) <= 1 ? ok(`H2 parity within shared-chrome tolerance: legacy=${lh}, reconstructed=${rh}`) : bad(`H2 drift: legacy=${lh}, reconstructed=${rh}`);
