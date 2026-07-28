@@ -1,0 +1,92 @@
+name: Agent task
+description: Bounded product, content, route or system change
+title: "[Task]: "
+labels: ["triage"]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Required outcome
+      description: What must be true when the task is complete?
+      placeholder: Describe one verifiable result.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Risk mode
+      options:
+        - FAST
+        - LANE
+        - SYSTEM
+        - Unknown — classify before mutation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: execution
+    attributes:
+      label: Initial execution
+      options:
+        - Local branch worktree
+        - Detached diagnostic worktree
+        - Recovery from an existing branch
+    validations:
+      required: true
+
+  - type: textarea
+    id: ownership
+    attributes:
+      label: Ownership and active overlaps
+      placeholder: |
+        Owner:
+        Related open PRs/branches:
+        Shared surfaces already owned by another agent:
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Routes and file boundary
+      placeholder: |
+        Routes:
+        Files allowed:
+        Files forbidden:
+    validations:
+      required: true
+
+  - type: textarea
+    id: truth
+    attributes:
+      label: Source of truth
+      description: Current files, exact SHA, owner decision or verified sources.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance evidence
+      placeholder: |
+        Commands:
+        Browser profiles:
+        Visual/source contracts:
+        Production witness required: yes/no
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: lifecycle
+    attributes:
+      label: Lifecycle agreement
+      options:
+        - label: I will not modify or delete another active agent branch.
+          required: true
+        - label: Diagnostic work will not create a remote branch.
+          required: true
+        - label: This task will use at most one canonical product branch and PR.
+          required: true
+        - label: Out-of-scope findings will be recorded separately.
+          required: true
