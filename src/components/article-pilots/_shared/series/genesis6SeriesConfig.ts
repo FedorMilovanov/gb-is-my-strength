@@ -1,9 +1,8 @@
 /**
  * Canonical configuration owner for the Genesis 6 reading series.
  *
- * Route activation is staged fail-closed: the shared configuration is registered,
- * while MDX publication flags and all index/search/feed surfaces remain disabled
- * until final exact-head acceptance.
+ * The six published reader routes share this configuration, while planned parts
+ * remain represented only on the series hub until their own source gates pass.
  */
 import {
   SERIES_CONFIGS,
@@ -147,6 +146,6 @@ export const GENESIS6_SERIES: SeriesConfig = defineSeriesConfig({
   pages,
 });
 
-// Register the instance in the shared series lookup. Public routes still obey
-// their independent draft/noindex and search-policy publication barriers.
+// Register the published instance in the shared series lookup. Planned parts remain
+// hub-only until their own canonical MDX and source contracts are accepted.
 SERIES_CONFIGS[GENESIS6_SERIES.seriesId] = GENESIS6_SERIES;
