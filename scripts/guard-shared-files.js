@@ -46,6 +46,7 @@ const PROTECTED_PATTERNS = [
 const CANONICAL_BRANCH_PREFIXES = [
   'lane/',
   'agent/',
+  'fix/',
   'hotfix/',
   'release/',
   'dependabot/',

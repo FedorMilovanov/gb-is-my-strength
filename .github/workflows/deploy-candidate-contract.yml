@@ -26,6 +26,8 @@ on:
       - "scripts/cache-bust-assets.js"
       - "scripts/project-relations-to-dist.mjs"
       - "scripts/dist-publication-audit.js"
+      - "scripts/extract-url-contract.js"
+      - "scripts/compare-url-contract.js"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/deploy-candidate-contract.yml"
   workflow_dispatch:
@@ -75,6 +77,20 @@ jobs:
           node scripts/dist-publication-audit.js --require-pagefind --forbid-dev 2>&1 \
             | tee reports/dist-publication-audit.log
 
+      - name: Public URL contract compare on candidate dist
+        shell: bash
+        run: |
+          mkdir -p reports
+          set +e
+          set -o pipefail
+          npm run contract:extract:dist 2>&1 | tee reports/url-contract-compare.log
+          extract_status=${PIPESTATUS[0]}
+          npm run contract:compare:dist 2>&1 | tee -a reports/url-contract-compare.log
+          compare_status=${PIPESTATUS[0]}
+          if [ "$extract_status" -ne 0 ] || [ "$compare_status" -ne 0 ]; then
+            exit 1
+          fi
+
       - name: Upload deploy-candidate diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,5 +100,8 @@ jobs:
             reports/relation-projection.json
             reports/dist-publication-audit.json
             reports/dist-publication-audit.log
+            reports/url-contract-dist.json
+            reports/url-contract-dist.md
+            reports/url-contract-compare.log
           if-no-files-found: error
           retention-days: 14
