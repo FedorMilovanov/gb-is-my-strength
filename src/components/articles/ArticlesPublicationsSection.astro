@@ -7,11 +7,12 @@
  */
 interface Props {
   hardTextsPartsLabel: string;
+  genesis6PartsLabel: string;
   nagornayaPartsLabel: string;
   gillReadingTime: Record<string, number>;
 }
 
-const { hardTextsPartsLabel, nagornayaPartsLabel, gillReadingTime } = Astro.props;
+const { hardTextsPartsLabel, genesis6PartsLabel, nagornayaPartsLabel, gillReadingTime } = Astro.props;
 ---
 <!-- ПУБЛИКАЦИИ -->
     <section class="h-section h-reveal" id="publikacii" aria-labelledby="hPublicationsLabel">
@@ -21,6 +22,35 @@ const { hardTextsPartsLabel, nagornayaPartsLabel, gillReadingTime } = Astro.prop
       <div class="h-articles-group">
         <ul class="h-article-list h-article-list--grid">
 
+          <!-- Бытие 6, Енох, Иуда и Пётр — серия -->
+          <li class="h-article-li--full">
+            <a href="/hard-texts/genesis-6/" class="h-article-card" style="border:2px solid #876f45;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#181715,#29251e);color:#f5efe3;">
+              <div class="h-article-thumb" style="position:relative;">
+                <picture>
+                  <source srcset="/images/articles/genesis6/00-series-guide.avif" type="image/avif">
+                  <img src="/images/articles/genesis6/00-series-guide.webp"
+                       alt="Бытие 6, Енох, Иуда и Пётр — исследовательская серия"
+                       decoding="async" loading="lazy" width="160" height="108">
+                </picture>
+                <span style="position:absolute;top:6px;right:6px;background:#876f45;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;">Серия</span>
+              </div>
+              <div class="h-article-body">
+                <h2 class="h-article-title" style="color:#f3dfb0;">Бытие 6, Енох, Иуда и Пётр</h2>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Автор-редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag h-meta-tag--neutral">{genesis6PartsLabel}</span>
+                  <span class="h-meta-tag">Трудные тексты</span>
+                  <span class="h-meta-tag">Текстология</span>
+                </div>
+                <p class="h-article-abstract">Шесть связанных разборов: пророчество Еноха у Иуды, состав и рукописи 1 Еноха, канонический аудит, согрешившие ангелы, духи в темнице и благовестие мёртвым.</p>
+                <div style="margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#f3dfb0;">
+                  Открыть серию
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </div>
+              </div>
+            </a>
+          </li>
 
           <!-- Джон Гилл — исторический контекст -->
           <li>
@@ -147,17 +177,16 @@ const { hardTextsPartsLabel, nagornayaPartsLabel, gillReadingTime } = Astro.prop
             </a>
           </li>
 
-
           <!-- 20 антисоветов пастору -->
           <li>
             <a href="20-antisovetov-pastoru/" class="h-article-card">
               <div class="h-article-thumb">
                 <picture>
-  <source srcset="../images/pastor-series/og-hero.webp" type="image/webp">
-  <img src="../images/pastor-series/og-hero.webp"
+                  <source srcset="../images/pastor-series/og-hero.webp" type="image/webp">
+                  <img src="../images/pastor-series/og-hero.webp"
                      alt="20 антисоветов пастору — как разрушить своё служение"
                      decoding="async" loading="lazy" width="160" height="108">
-</picture>
+                </picture>
               </div>
               <div class="h-article-body">
                 <h2 class="h-article-title">20 антисоветов, как пастору разрушить своё служение</h2>
@@ -231,7 +260,6 @@ const { hardTextsPartsLabel, nagornayaPartsLabel, gillReadingTime } = Astro.prop
               </div>
             </a>
           </li>
-
 
         </ul>
       </div>
