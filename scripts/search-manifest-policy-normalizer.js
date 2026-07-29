@@ -95,6 +95,26 @@ function joinRoute(baseUrl, slug) {
   return normalizeRoute(`${String(baseUrl || '/').replace(/\/+$/, '')}/${String(slug || '').replace(/^\/+|\/+$/g, '')}/`);
 }
 
+function seriesReadingTimes(seriesData) {
+  const result = new Map();
+  for (const [seriesId, series] of Object.entries(seriesData || {})) {
+    if (!series?.baseUrl || !Array.isArray(series.parts)) continue;
+    for (const part of series.parts) {
+      if (part?.status !== 'published') continue;
+      if (!part.slug) throw new Error(`${seriesId}: published series part missing slug`);
+      if (!Number.isInteger(part.readingTime) || part.readingTime < 1) {
+        throw new Error(`${seriesId}/${part.slug}: published series part missing positive readingTime`);
+      }
+      const route = joinRoute(series.baseUrl, part.slug);
+      if (result.has(route) && result.get(route) !== part.readingTime) {
+        throw new Error(`${route}: conflicting canonical series readingTime`);
+      }
+      result.set(route, part.readingTime);
+    }
+  }
+  return result;
+}
+
 function seriesPolicySeeds(seriesData) {
   const byRoute = new Map();
   for (const [seriesId, series] of Object.entries(seriesData || {})) {
@@ -165,7 +185,7 @@ function applyPolicySeeds({ policyRegistry, seriesData, productionRecords }) {
   return seeded;
 }
 
-function buildManifestItem(route, policy, html) {
+function buildManifestItem(route, policy, html, fallbackReadTime = null) {
   const title = firstMeta(html, 'property', 'og:title')
     || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
   const description = firstMeta(html, 'name', 'description')
@@ -176,7 +196,8 @@ function buildManifestItem(route, policy, html) {
   const tags = [...new Set(metaValues(html, 'property', 'article:tag'))];
   const publishedTime = firstMeta(html, 'property', 'article:published_time');
   const modifiedTime = firstMeta(html, 'property', 'article:modified_time') || publishedTime;
-  const readTime = readingTime(html);
+  const htmlReadTime = readingTime(html);
+  const readTime = Number.isInteger(htmlReadTime) ? htmlReadTime : fallbackReadTime;
 
   const missing = [];
   if (!title) missing.push('title');
@@ -242,6 +263,7 @@ function migrationCandidates({ policyRegistry, manifest, productionRecords, prom
 
 function applyMigration({ policyRegistry, manifest, seriesData, productionRecords, distRoot, promoteRssArticles }) {
   if (!Array.isArray(manifest.items)) manifest.items = [];
+  const canonicalReadTimes = seriesReadingTimes(seriesData);
   const seeded = applyPolicySeeds({ policyRegistry, seriesData, productionRecords });
   const candidates = migrationCandidates({
     policyRegistry,
@@ -263,7 +285,12 @@ function applyMigration({ policyRegistry, manifest, seriesData, productionRecord
     if (candidate.alreadyInManifest) continue;
     const distFile = routeToDistFile(route, distRoot);
     if (!fs.existsSync(distFile)) throw new Error(`${route}: missing built HTML ${distFile}`);
-    const item = buildManifestItem(route, policy, fs.readFileSync(distFile, 'utf8'));
+    const item = buildManifestItem(
+      route,
+      policy,
+      fs.readFileSync(distFile, 'utf8'),
+      canonicalReadTimes.get(route) || null
+    );
     if (ids.has(item.id)) throw new Error(`${route}: duplicate manifest id ${item.id}`);
     if (urls.has(item.url)) throw new Error(`${route}: duplicate manifest url ${item.url}`);
     ids.add(item.id);
@@ -338,6 +365,7 @@ module.exports = {
   contentKindToManifestType,
   routeId,
   joinRoute,
+  seriesReadingTimes,
   seriesPolicySeeds,
   applyPolicySeeds,
   buildManifestItem,
