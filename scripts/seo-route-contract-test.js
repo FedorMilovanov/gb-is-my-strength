@@ -14,10 +14,31 @@ const {
 const ROOT = path.resolve(__dirname, '..');
 const loaded = loadRouteRecords();
 const baseline = expectedSeoRouteEntries({ loaded });
+const GENESIS6_ROUTES = [
+  '/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/',
+  '/hard-texts/blagovestie-mertvym-1-petra-4-5-6/',
+  '/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/',
+  '/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/',
+  '/hard-texts/genesis-6/',
+  '/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/',
+  '/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/',
+];
 
-assert.equal(baseline.length, 75, 'all production-dist routes must be audited');
-assert.equal(baseline.filter((entry) => entry.indexable).length, 66, 'indexable route count');
+assert.equal(baseline.length, 82, 'all production-dist routes must be audited');
+assert.equal(baseline.filter((entry) => entry.indexable).length, 73, 'indexable route count');
 assert.equal(baseline.filter((entry) => !entry.indexable).length, 9, 'explicit noindex route count');
+assert.deepEqual(
+  baseline
+    .filter((entry) => GENESIS6_ROUTES.includes(entry.route))
+    .map((entry) => entry.route)
+    .sort(),
+  [...GENESIS6_ROUTES].sort(),
+  'all seven published Genesis 6 surfaces must be SEO audit obligations'
+);
+assert.ok(
+  GENESIS6_ROUTES.every((route) => baseline.find((entry) => entry.route === route)?.indexable === true),
+  'all seven published Genesis 6 surfaces must remain indexable'
+);
 assert.ok(
   !baseline.some((entry) => entry.route === '/konfessii/russkij-baptizm/_app/'),
   'copy-as-built assets must not become public SEO routes'
@@ -109,4 +130,4 @@ try {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
-console.log(`✅ seo-route-contract: ${baseline.length} production routes (${baseline.filter((entry) => entry.indexable).length} indexable, ${baseline.filter((entry) => !entry.indexable).length} noindex)`);
+console.log(`✅ seo-route-contract: ${baseline.length} production routes (${baseline.filter((entry) => entry.indexable).length} indexable, ${baseline.filter((entry) => !entry.indexable).length} noindex); seven Genesis 6 routes required`);
