@@ -179,8 +179,8 @@ const jsonLd = JSON.stringify({
   </head>
   <body>
     <HardTextsPageChrome>
-      {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
-        <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
+      {mobileChrome?.enabled && mobileChrome.mount === 'registry' && (
+        <MobileChromePage engine={mobileChrome.engine} backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
       )}
       <HardTextsMain />
       <HardTextsPageFooter />
