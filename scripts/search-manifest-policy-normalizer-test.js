@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const {
   buildManifestItem,
+  seriesReadingTimes,
   seriesPolicySeeds,
   migrationCandidates,
   applyMigration,
@@ -36,6 +37,7 @@ const html = `<!doctype html><html><head>
 <meta property="og:image" content="https://gospod-bog.ru/images/fixture.webp">
 <script>window.SITE_CONFIG={page:{readingTime: 17}}</script>
 </head><body></body></html>`;
+const htmlWithoutRuntimeReadTime = html.replace('<script>window.SITE_CONFIG={page:{readingTime: 17}}</script>', '');
 
 const item = buildManifestItem(route, policy, html);
 assert.equal(item.id, 'fixture');
@@ -45,6 +47,7 @@ assert.equal(item.description, 'Нативное описание');
 assert.equal(item.image, '/images/fixture.webp');
 assert.deepEqual(item.tags, ['сердце', 'богословие']);
 assert.equal(item.readTime, 17);
+assert.equal(buildManifestItem(route, policy, htmlWithoutRuntimeReadTime, 23).readTime, 23);
 
 const registry = { version: 1, routes: { [route]: { ...policy } } };
 const manifest = { version: 1, items: [] };
@@ -99,8 +102,8 @@ const seriesData = {
       topicCategory: 'Тестовая серия',
     },
     parts: [
-      { slug: 'fixture-part', status: 'published' },
-      { slug: 'planned-part', status: 'draft' },
+      { slug: 'fixture-part', status: 'published', readingTime: 31 },
+      { slug: 'planned-part', status: 'draft', readingTime: 12 },
     ],
   },
 };
@@ -108,6 +111,8 @@ assert.deepEqual(
   seriesPolicySeeds(seriesData).map((seed) => seed.route),
   ['/hard-texts/fixture-part/', '/hard-texts/fixture-series/']
 );
+assert.equal(seriesReadingTimes(seriesData).get('/hard-texts/fixture-part/'), 31);
+assert.equal(seriesReadingTimes(seriesData).has('/hard-texts/planned-part/'), false);
 
 const seriesRegistry = { version: 1, routes: {} };
 const seriesManifest = { version: 1, items: [] };
@@ -117,7 +122,7 @@ const seriesRecords = [
 ];
 const seriesHtmlFile = path.join(root, 'hard-texts/fixture-part/index.html');
 fs.mkdirSync(path.dirname(seriesHtmlFile), { recursive: true });
-fs.writeFileSync(seriesHtmlFile, html);
+fs.writeFileSync(seriesHtmlFile, htmlWithoutRuntimeReadTime);
 const seriesResult = applyMigration({
   policyRegistry: seriesRegistry,
   manifest: seriesManifest,
@@ -133,6 +138,7 @@ assert.equal(seriesRegistry.routes['/hard-texts/fixture-series/'].searchManifest
 assert.equal(seriesRegistry.routes['/hard-texts/fixture-series/'].rssPolicy, 'exclude');
 assert.equal(seriesRegistry.routes['/hard-texts/fixture-part/'].searchManifestPolicy, 'include');
 assert.equal(seriesManifest.items.length, 1);
+assert.equal(seriesManifest.items[0].readTime, 31);
 
 const seriesSecond = applyMigration({
   policyRegistry: seriesRegistry,
@@ -153,6 +159,10 @@ assert.throws(
 assert.throws(
   () => seriesPolicySeeds({ broken: { searchPolicy: {}, baseUrl: '/', parts: [] } }),
   /searchPolicy.librarySection/
+);
+assert.throws(
+  () => seriesReadingTimes({ broken: { baseUrl: '/', parts: [{ slug: 'part', status: 'published' }] } }),
+  /missing positive readingTime/
 );
 
 fs.rmSync(root, { recursive: true, force: true });
