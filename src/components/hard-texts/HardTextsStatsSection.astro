@@ -2,27 +2,35 @@
 /**
  * HardTextsStatsSection.astro — compact stat cards for /hard-texts/.
  *
- * Refactoring 6.0 parallel pilot: semantic extraction from legacy main shell.
- * Preserve every class, inline style and visible string.
+ * Counters are derived from the active book-shaped series config. They must not
+ * drift back to the historical three-part pilot numbers.
  */
+import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/hardTextsSeriesConfig';
+
+const chapters = HARD_TEXTS_SERIES.items.filter((item) => item.tier === 'chapter');
+const articles = HARD_TEXTS_SERIES.items.filter((item) => item.tier !== 'chapter');
+const totalMinutes = articles.reduce((sum, item) => {
+  const minutes = Number.parseInt(item.readingTime, 10);
+  return sum + (Number.isFinite(minutes) ? minutes : 0);
+}, 0);
 ---
 <section class="h-section h-reveal" style="padding-top:0;" aria-label="О серии">
   <div class="h-grid-4" role="list" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
     <div class="h-card-glass h-reveal h-reveal-d1" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
-      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">3</div>
-      <p class="h-card-desc" style="margin-top:4px;">части (план)</p>
+      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">{chapters.length}</div>
+      <p class="h-card-desc" style="margin-top:4px;">главы</p>
     </div>
     <div class="h-card-glass h-reveal h-reveal-d2" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
-      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">2</div>
-      <p class="h-card-desc" style="margin-top:4px;">опубликовано</p>
+      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">{articles.length}</div>
+      <p class="h-card-desc" style="margin-top:4px;">статьи и форзацы</p>
     </div>
     <div class="h-card-glass h-reveal h-reveal-d3" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
-      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">53</div>
-      <p class="h-card-desc" style="margin-top:4px;">минуты чтения</p>
+      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">{totalMinutes}</div>
+      <p class="h-card-desc" style="margin-top:4px;">минут чтения</p>
     </div>
     <div class="h-card-glass h-reveal h-reveal-d4" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
-      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">Иер · Рим</div>
-      <p class="h-card-desc" style="margin-top:4px;">основные тексты</p>
+      <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">Быт · Пс · Прор · Рим</div>
+      <p class="h-card-desc" style="margin-top:4px;">библейская карта сердца</p>
     </div>
   </div>
 </section>
