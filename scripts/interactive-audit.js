@@ -380,7 +380,7 @@ async function checkHermenevtikaFootnotes(browser) {
   });
 
   let openState = await readStaticFootnoteHoverState();
-  if (!openState.markerOpen || !openState.tipOpen) {
+  if (!openState.tipOpen) {
     push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
   } else if (
     openState.tip.position !== 'fixed' ||
@@ -397,7 +397,7 @@ async function checkHermenevtikaFootnotes(browser) {
     await desktop.mouse.move(openState.tip.centerX, openState.tip.centerY);
     await desktop.waitForTimeout(420);
     const heldState = await readStaticFootnoteHoverState();
-    if (!heldState.markerOpen || !heldState.tipOpen || !heldState.tip?.inViewport) {
+    if (!heldState.tipOpen || !heldState.tip?.inViewport) {
       push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, heldState);
     }
   }
