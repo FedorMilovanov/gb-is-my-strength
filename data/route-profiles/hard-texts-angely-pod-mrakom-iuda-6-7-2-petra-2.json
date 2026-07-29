@@ -1,6 +1,6 @@
 {
   "route": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
-  "profiledAt": "2026-07-27",
+  "profiledAt": "2026-07-29",
   "migrationLane": "content",
   "routeType": "series-article",
   "surfaceContractVersion": 1,
@@ -8,7 +8,7 @@
   "seriesShape": "flat",
   "section": "hard-texts",
   "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
-  "currentStatus": "shadow-pilot",
+  "currentStatus": "production-dist",
   "source": "src/pages/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/index.astro",
   "risk": 2,
   "sourceContractVersion": 1,
@@ -26,9 +26,5 @@
   },
   "cssPilot": "css/series-manuscript.css",
   "migrationMode": "strict-native",
-  "scope": "excluded-semantic-lane",
-  "seo": {
-    "indexable": false,
-    "reason": "Genesis 6 Phase C staging: draft/noindex until exact-head publication acceptance"
-  }
+  "scope": "excluded-semantic-lane"
 }
