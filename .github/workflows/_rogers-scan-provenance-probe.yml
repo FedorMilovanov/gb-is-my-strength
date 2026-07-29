@@ -1,0 +1,140 @@
+name: One-shot Rogers 1691 scan provenance probe
+
+on:
+  push:
+    branches:
+      - agent/heart-post-merge-cleanup-2026-07-30
+    paths:
+      - .github/workflows/_rogers-scan-provenance-probe.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rogers-scan-provenance-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agent/heart-post-merge-cleanup-2026-07-30
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Fetch official Google Books metadata and scan
+        env:
+          VOLUME_ID: yMRjAAAAcAAJ
+        run: |
+          set -euo pipefail
+          mkdir -p reports/rogers-1691/pages
+          curl --fail --location --retry 3 --retry-all-errors \
+            "https://www.googleapis.com/books/v1/volumes/${VOLUME_ID}" \
+            --output reports/rogers-1691/volume.json
+
+          python3 - <<'PY'
+          import json, os, pathlib, urllib.parse, urllib.request
+
+          root = pathlib.Path('reports/rogers-1691')
+          data = json.loads((root / 'volume.json').read_text())
+          access = data.get('accessInfo', {})
+          summary = {
+              'id': data.get('id'),
+              'title': data.get('volumeInfo', {}).get('title'),
+              'publishedDate': data.get('volumeInfo', {}).get('publishedDate'),
+              'viewability': access.get('viewability'),
+              'publicDomain': access.get('publicDomain'),
+              'pdf': access.get('pdf'),
+              'epub': access.get('epub'),
+              'webReaderLink': access.get('webReaderLink'),
+          }
+          (root / 'volume-summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
+
+          queries = {
+              'advice-1': 'Melancholly seizes on the Brain and Spirits',
+              'advice-5': 'Do not urge your Friends under the Disease of Melancholly',
+              'advice-6': 'Do not attribute the effects of mere Disease to the Devil',
+          }
+          for name, query in queries.items():
+              url = 'https://books.google.com/books?' + urllib.parse.urlencode({
+                  'jscmd': 'SearchWithinVolume2',
+                  'q': query,
+                  'vid': os.environ['VOLUME_ID'],
+              })
+              try:
+                  with urllib.request.urlopen(url, timeout=45) as response:
+                      payload = response.read()
+                  (root / f'{name}-search.json').write_bytes(payload)
+              except Exception as exc:
+                  (root / f'{name}-search.error.txt').write_text(repr(exc), encoding='utf-8')
+
+          pdf = access.get('pdf') or {}
+          link = pdf.get('downloadLink')
+          if link:
+              (root / 'pdf-download-url.txt').write_text(link, encoding='utf-8')
+          PY
+
+          if [[ -s reports/rogers-1691/pdf-download-url.txt ]]; then
+            PDF_URL="$(cat reports/rogers-1691/pdf-download-url.txt)"
+            curl --fail --location --retry 3 --retry-all-errors "$PDF_URL" \
+              --output reports/rogers-1691/rogers-1691.pdf || true
+          fi
+
+          if [[ -s reports/rogers-1691/rogers-1691.pdf ]] && head -c 5 reports/rogers-1691/rogers-1691.pdf | grep -q '%PDF'; then
+            pdfinfo reports/rogers-1691/rogers-1691.pdf > reports/rogers-1691/pdfinfo.txt
+            pdftotext -layout reports/rogers-1691/rogers-1691.pdf reports/rogers-1691/rogers-1691.txt
+            python3 - <<'PY'
+            import json, pathlib, re, subprocess
+
+            root = pathlib.Path('reports/rogers-1691')
+            pages = (root / 'rogers-1691.txt').read_text(errors='replace').split('\f')
+            needles = {
+                'advice-1': [r'Melancholly\s+seizes\s+on\s+the\s+Brain', r'incapacitates\s+them\s+for\s+Thought'],
+                'advice-5': [r'Do\s+not\s+urge\s+your\s+Friends', r'bones\s+are\s+broken'],
+                'advice-6': [r'Do\s+not\s+attribute\s+the\s+effects', r'mere\s+Disease.*Devil'],
+            }
+            found = {}
+            for label, patterns in needles.items():
+                hits = []
+                for index, text in enumerate(pages, start=1):
+                    normalized = re.sub(r'\s+', ' ', text)
+                    if any(re.search(pattern, normalized, flags=re.I) for pattern in patterns):
+                        hits.append(index)
+                found[label] = hits
+                for page in hits:
+                    prefix = root / 'pages' / f'{label}-pdf-{page:04d}'
+                    subprocess.run([
+                        'pdftoppm', '-f', str(page), '-singlefile', '-png', '-r', '180',
+                        str(root / 'rogers-1691.pdf'), str(prefix)
+                    ], check=True)
+            (root / 'page-locators.json').write_text(json.dumps(found, indent=2), encoding='utf-8')
+            PY
+          else
+            printf 'Google Books did not return a PDF payload.\n' > reports/rogers-1691/pdf-download-status.txt
+            rm -f reports/rogers-1691/rogers-1691.pdf
+          fi
+
+          find reports/rogers-1691 -maxdepth 2 -type f -printf '%P\t%s bytes\n' | sort \
+            > reports/rogers-1691/inventory.txt
+          cat reports/rogers-1691/volume-summary.json
+          cat reports/rogers-1691/inventory.txt
+
+      - name: Upload provenance evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: rogers-1691-scan-provenance
+          path: reports/rogers-1691
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+      - name: Remove one-shot workflow
+        run: |
+          git rm .github/workflows/_rogers-scan-provenance-probe.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(heart): remove Rogers scan probe"
+          git push origin HEAD:agent/heart-post-merge-cleanup-2026-07-30
