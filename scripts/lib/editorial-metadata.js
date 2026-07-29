@@ -10,6 +10,7 @@ const {
 
 const SITE = 'https://gospod-bog.ru';
 const REGISTRY_FILE = path.join(ROOT, 'data/editorial-metadata.json');
+const REGISTRY_SUPPLEMENTS_DIR = path.join(ROOT, 'data/editorial-metadata-supplements');
 const SEARCH_MANIFEST_FILE = path.join(ROOT, 'data/search-manifest.json');
 const SITEMAP_FILE = path.join(ROOT, 'sitemap.xml');
 const FEED_FILE = path.join(ROOT, 'feed.xml');
@@ -209,8 +210,78 @@ function sharedProjectionData() {
   };
 }
 
+function sortedRecords(records) {
+  return Object.fromEntries(
+    Object.entries(records || {}).sort(([a], [b]) => a.localeCompare(b, 'ru'))
+  );
+}
+
+function registrySupplementFiles() {
+  if (!fs.existsSync(REGISTRY_SUPPLEMENTS_DIR)) return [];
+  return fs.readdirSync(REGISTRY_SUPPLEMENTS_DIR)
+    .filter((name) => name.endsWith('.json'))
+    .sort((a, b) => a.localeCompare(b, 'ru'))
+    .map((name) => path.join(REGISTRY_SUPPLEMENTS_DIR, name));
+}
+
+function readRegistrySources() {
+  const base = readJson(REGISTRY_FILE, null);
+  if (!base) return { registry: null, ownership: new Map(), supplements: [] };
+
+  const mergedRecords = { ...(base.records || {}) };
+  const ownership = new Map();
+  const supplements = [];
+  let sourceCommit = base.sourceCommit;
+
+  for (const file of registrySupplementFiles()) {
+    const supplement = readJson(file, null);
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
+    if (!supplement || supplement.version !== 1 || !supplement.records || typeof supplement.records !== 'object') {
+      throw new Error(`${rel}: invalid editorial metadata supplement`);
+    }
+    for (const [route, record] of Object.entries(supplement.records)) {
+      if (Object.prototype.hasOwnProperty.call(mergedRecords, route)) {
+        throw new Error(`${route}: duplicate editorial metadata ownership in ${rel}`);
+      }
+      mergedRecords[route] = record;
+      ownership.set(route, file);
+    }
+    if (supplement.sourceCommit) sourceCommit = supplement.sourceCommit;
+    supplements.push({ file, value: supplement });
+  }
+
+  return {
+    registry: { ...base, sourceCommit, records: sortedRecords(mergedRecords) },
+    ownership,
+    supplements,
+  };
+}
+
 function readRegistry() {
-  return readJson(REGISTRY_FILE, null);
+  return readRegistrySources().registry;
+}
+
+function writeRegistry(registry) {
+  const { ownership, supplements } = readRegistrySources();
+  const baseRecords = {};
+  const supplementValues = new Map(
+    supplements.map(({ file, value }) => [file, { ...value, sourceCommit: registry.sourceCommit, records: {} }])
+  );
+
+  for (const [route, record] of Object.entries(registry.records || {})) {
+    const ownerFile = ownership.get(route);
+    if (ownerFile) supplementValues.get(ownerFile).records[route] = record;
+    else baseRecords[route] = record;
+  }
+
+  const base = { ...registry, records: sortedRecords(baseRecords) };
+  fs.mkdirSync(path.dirname(REGISTRY_FILE), { recursive: true });
+  fs.writeFileSync(REGISTRY_FILE, `${JSON.stringify(base, null, 2)}\n`, 'utf8');
+
+  for (const [file, supplement] of supplementValues) {
+    supplement.records = sortedRecords(supplement.records);
+    fs.writeFileSync(file, `${JSON.stringify(supplement, null, 2)}\n`, 'utf8');
+  }
 }
 
 function validateRecordShape(record, route) {
@@ -228,6 +299,7 @@ module.exports = {
   ROOT,
   SITE,
   REGISTRY_FILE,
+  REGISTRY_SUPPLEMENTS_DIR,
   ALLOWED_REVIEW_STATUS,
   normalizeInstant,
   eligibleRecords,
@@ -235,5 +307,6 @@ module.exports = {
   observeRoute,
   mergeObservedRecord,
   readRegistry,
+  writeRegistry,
   validateRecordShape,
 };
