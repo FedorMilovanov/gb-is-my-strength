@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-07-23",
+  "reviewedAt": "2026-07-29",
   "description": "Explicit search and index policy for every production route. Semantic editing scope is intentionally not consulted.",
   "routes": {
     "/": {
@@ -752,6 +752,76 @@
       "contentKind": "tool",
       "librarySection": "Библейские инструменты",
       "topicCategory": "Библейские родословия"
+    },
+    "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
+    "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
+    "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
+    "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
+    "/hard-texts/genesis-6/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "exclude",
+      "sitemapPolicy": "include",
+      "rssPolicy": "exclude",
+      "contentKind": "landing",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
+    "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
+    "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
     }
   }
 }
