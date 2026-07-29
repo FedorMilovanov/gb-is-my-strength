@@ -120,9 +120,13 @@ function sitemapObservation(routeUrl, sitemapXml) {
 }
 
 function feedObservation(routeUrl, feedXml) {
-  const escaped = routeUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const item = feedXml.match(new RegExp(`<item>(?=[\\s\\S]*?<link>${escaped}<\\/link>)([\\s\\S]*?)<\\/item>`, 'i'))?.[1] || '';
-  return normalizeInstant(item.match(/<pubDate>([^<]+)<\/pubDate>/i)?.[1]);
+  for (const match of String(feedXml).matchAll(/<item>([\s\S]*?)<\/item>/gi)) {
+    const item = match[1];
+    const link = item.match(/<link>([^<]+)<\/link>/i)?.[1]?.trim() || null;
+    if (link !== routeUrl) continue;
+    return normalizeInstant(item.match(/<pubDate>([^<]+)<\/pubDate>/i)?.[1]);
+  }
+  return null;
 }
 
 function observeRoute(record, distRoot, shared) {
