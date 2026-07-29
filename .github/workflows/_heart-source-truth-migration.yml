@@ -1,0 +1,51 @@
+name: One-shot heart source-truth migration
+
+on:
+  push:
+    branches:
+      - agent/heart-post-merge-cleanup-2026-07-30
+    paths:
+      - .github/workflows/_heart-source-truth-migration.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: heart-source-truth-migration
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agent/heart-post-merge-cleanup-2026-07-30
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply fail-closed structural migration
+        run: python3 scripts/_apply-heart-source-truth-migration.py
+
+      - name: Validate source-truth contract
+        run: |
+          node --check scripts/hard-texts-visual-parity-audit.js
+          node scripts/hard-texts-visual-parity-audit.js
+          git diff --check
+
+      - name: Remove one-shot migration files
+        run: |
+          git rm scripts/_apply-heart-source-truth-migration.py
+          git rm .github/workflows/_heart-source-truth-migration.yml
+
+      - name: Commit only durable project changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts
+          git add scripts/hard-texts-visual-parity-audit.js
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "fix(heart): unify book toc time and cumulative progress"
+          git push origin HEAD:agent/heart-post-merge-cleanup-2026-07-30
