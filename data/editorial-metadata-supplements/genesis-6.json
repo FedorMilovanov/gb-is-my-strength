@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "id": "genesis-6-publication-2026-07-29",
+  "sourceCommit": "2c736a4b9d588fbe382b53d970ae4de3a0f1fa17",
+  "records": {
+    "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/": {
+      "route": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
+      "canonical": "https://gospod-bog.ru/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
+      "title": "Ангелы под мраком: Иуд. 6–7, 2 Петра 2 и Бытие 6 | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/reader-platform/ReaderPreferencesHead.astro",
+      "contentType": "series-article",
+      "editorialPublishedAt": "2026-07-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": "2026-07-28T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-28T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-28T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-28T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-28T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-28T21:00:00.000Z",
+        "rssPublishedAt": "2026-07-28T21:00:00.000Z"
+      }
+    },
+    "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/": {
+      "route": "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/",
+      "canonical": "https://gospod-bog.ru/hard-texts/blagovestie-mertvym-1-petra-4-5-6/",
+      "title": "Благовестие мёртвым: что означает 1 Петра 4:5–6 | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/reader-platform/ReaderPreferencesHead.astro",
+      "contentType": "series-article",
+      "editorialPublishedAt": "2026-07-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": "2026-07-28T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-28T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-28T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-28T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-28T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-28T21:00:00.000Z",
+        "rssPublishedAt": "2026-07-28T21:00:00.000Z"
+      }
+    },
+    "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/": {
+      "route": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+      "canonical": "https://gospod-bog.ru/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+      "title": "Духи в темнице, Ной и крещение: 1 Петра 3:18–22 | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/reader-platform/ReaderPreferencesHead.astro",
+      "contentType": "series-article",
+      "editorialPublishedAt": "2026-07-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": "2026-07-28T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-28T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-28T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-28T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-28T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-28T21:00:00.000Z",
+        "rssPublishedAt": "2026-07-28T21:00:00.000Z"
+      }
+    },
+    "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/": {
+      "route": "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/",
+      "canonical": "https://gospod-bog.ru/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/",
+      "title": "Енох пророчествовал: Иуд. 14–15, 1 Енох 1:9 и 4Q204 | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/reader-platform/ReaderPreferencesHead.astro",
+      "contentType": "series-article",
+      "editorialPublishedAt": "2026-07-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": "2026-07-28T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-28T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-28T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-28T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-28T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-28T21:00:00.000Z",
+        "rssPublishedAt": "2026-07-28T21:00:00.000Z"
+      }
+    },
+    "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/": {
+      "route": "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/",
+      "canonical": "https://gospod-bog.ru/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/",
+      "title": "Книга Еноха, которой не было: как разные произведения стали одним корпусом | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/reader-platform/ReaderPreferencesHead.astro",
+      "contentType": "series-article",
+      "editorialPublishedAt": "2026-07-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": "2026-07-28T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-28T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-28T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-28T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-28T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-28T21:00:00.000Z",
+        "rssPublishedAt": "2026-07-28T21:00:00.000Z"
+      }
+    },
+    "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/": {
+      "route": "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/",
+      "canonical": "https://gospod-bog.ru/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/",
+      "title": "Можно ли доверять 1 Еноху: канонический аудит его богословия | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/reader-platform/ReaderPreferencesHead.astro",
+      "contentType": "series-article",
+      "editorialPublishedAt": "2026-07-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": "2026-07-28T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-28T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-28T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-28T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-28T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-28T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-28T21:00:00.000Z",
+        "rssPublishedAt": "2026-07-28T21:00:00.000Z"
+      }
+    }
+  }
+}
