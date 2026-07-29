@@ -1,14 +1,14 @@
 ---
 /**
- * HardTextsCardsSection.astro — visible article-card shelf for /hard-texts/.
+ * HardTextsCardsSection.astro — published core shelf for /hard-texts/.
  *
- * Refactoring 6.0 parallel pilot: hand-authored Astro replacement for the
- * first semantic block previously kept inside `_legacy/main.html?raw`.
- * Rule: preserve legacy text, classes, attributes, URLs and inline SVGs.
+ * This shelf intentionally presents the prologue, lead article of each chapter
+ * and the reference endpaper. Chapter extras remain available through the book
+ * reader navigation. Times and publication state match the active contracts.
  */
 ---
 <section class="h-section h-reveal" aria-labelledby="seriesLabel">
-  <p class="h-section-label" id="seriesLabel">Материалы серии</p>
+  <p class="h-section-label" id="seriesLabel">Основа книги</p>
   <div class="h-section-accent" aria-hidden="true"></div>
 
   <div class="h-articles-group">
@@ -46,7 +46,7 @@
             </picture>
           </div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Часть 1</div>
+            <div class="h-article-kicker">Глава I · Статья 1</div>
             <h3 class="h-article-title">Крайне ли испорчено моё сердце — если я уже верующий?</h3>
             <div class="h-article-meta">
               <span class="h-meta-author">Редактор: Фёдор Милованов</span>
@@ -70,33 +70,38 @@
             </picture>
           </div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Часть 2</div>
+            <div class="h-article-kicker">Глава II · Статья 1</div>
             <h3 class="h-article-title">Римлянам 7: верующий, неверующий или человек под законом?</h3>
             <div class="h-article-meta">
               <span class="h-meta-author">Редактор: Фёдор Милованов</span>
               <span class="h-meta-sep" aria-hidden="true">·</span>
               <span class="h-meta-time">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                12 мин
+                45 мин
               </span>
             </div>
-            <p class="h-article-abstract">Кто такой человек из Римлянам 7:14–25? Разбор ключевых экзегетических подходов и почему конфликт «внутреннего человека» и «плоти» так важен для понимания освящения.</p>
+            <p class="h-article-abstract">Кто такой человек из Римлянам 7:14–25? Разбор главных экзегетических подходов и почему конфликт «внутреннего человека» и «плоти» важен для понимания освящения.</p>
           </div>
         </a>
       </li>
 
       <li>
         <a href="../articles/novoe-serdce/" class="h-article-card">
-          <div class="h-article-thumb h-article-thumb--planned" data-part="III" aria-hidden="true"></div>
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/ieremia-new-heart-600w.webp" type="image/webp" />
+              <img src="../images/ieremia-new-heart-600w.webp" alt="Новое сердце: Божье обетование обновления" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Часть 3</div>
+            <div class="h-article-kicker">Глава III · Статья 1</div>
             <h3 class="h-article-title">Новое сердце: как Бог меняет то, что мы не смогли исправить</h3>
             <div class="h-article-meta">
               <span class="h-meta-author">Редактор: Фёдор Милованов</span>
               <span class="h-meta-sep" aria-hidden="true">·</span>
               <span class="h-meta-time">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                24 мин
+                38 мин
               </span>
             </div>
             <p class="h-article-abstract">Между испорченным сердцем и борьбой с грехом — решающее звено: Бог даёт новое сердце. Не ремонт старого, а новое рождение: «возьму сердце каменное и дам сердце плотяное» (Иез. 36:26).</p>
@@ -106,19 +111,24 @@
 
       <li>
         <a href="../articles/serdce-i-duh/" class="h-article-card">
-          <div class="h-article-thumb h-article-thumb--planned" data-part="IV" aria-hidden="true"></div>
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/og-series-heart-600w.webp" type="image/webp" />
+              <img src="../images/og-series-heart-600w.webp" alt="Жизнь Духом: Римлянам 8" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Часть 4</div>
-            <h3 class="h-article-title">Закон духа жизни: Римлянам 8 и свобода во Христе</h3>
+            <div class="h-article-kicker">Глава IV · Статья 1</div>
+            <h3 class="h-article-title">Сердце и Дух: как Бог живёт в том, что Сам оживил</h3>
             <div class="h-article-meta">
               <span class="h-meta-author">Редактор: Фёдор Милованов</span>
               <span class="h-meta-sep" aria-hidden="true">·</span>
               <span class="h-meta-time">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                25 мин
+                42 мин
               </span>
             </div>
-            <p class="h-article-abstract">Новое сердце даёт Дух — и Он же в нём поселяется. Римлянам 8: нет осуждения, помышления Духа, Дух усыновления и Дух, помогающий в немощи. И как отличить жизнь по Духу от погони за переживаниями.</p>
+            <p class="h-article-abstract">Римлянам 8: нет осуждения, помышления Духа, усыновление, помощь в немощи и неразлучная любовь Бога во Христе.</p>
           </div>
         </a>
       </li>
@@ -142,7 +152,7 @@
                 23 мин
               </span>
             </div>
-            <p class="h-article-abstract">Не пересказ статей, а инструмент: полный библейский индекс, словарь оригинала, сверенные цитаты, диагностические сетки и выводы без воды — настольный компаньон серии.</p>
+            <p class="h-article-abstract">Полный библейский индекс, словарь оригинала, сверенные цитаты, диагностические сетки и выводы — настольный компаньон книги.</p>
           </div>
         </a>
       </li>
