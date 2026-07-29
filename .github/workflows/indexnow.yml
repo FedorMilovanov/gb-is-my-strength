@@ -6,6 +6,7 @@ name: Metadata & IndexNow Readiness
 # without duplicating npm installation or dist generation.
 on:
   workflow_dispatch:
+  pull_request:
   push:
     branches: [main]
     paths:
