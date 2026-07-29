@@ -2,7 +2,10 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { mergeObservedRecord } = require('./lib/editorial-metadata');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { mergeObservedRecord, observeRoute } = require('./lib/editorial-metadata');
 
 const previous = Object.freeze({
   route: '/articles/example/',
@@ -54,4 +57,43 @@ assert.equal(approvedMerged.reviewStatus, 'approved');
 assert.equal(approvedMerged.editorialPublishedAt, approved.editorialPublishedAt);
 assert.deepEqual(approvedMerged.observations, observed.observations);
 
-console.log('✅ Editorial metadata refresh preserves every existing editorial decision');
+const distRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'editorial-rss-item-'));
+try {
+  const route = '/articles/old-entry/';
+  const distFile = path.join(distRoot, 'articles/old-entry/index.html');
+  fs.mkdirSync(path.dirname(distFile), { recursive: true });
+  fs.writeFileSync(
+    distFile,
+    '<!doctype html><html><head><title>Old entry</title><link rel="canonical" href="https://gospod-bog.ru/articles/old-entry/"></head><body></body></html>',
+    'utf8'
+  );
+
+  const feedXml = `<?xml version="1.0"?><rss><channel>
+    <item><link>https://gospod-bog.ru/articles/new-entry/</link><pubDate>Tue, 28 Jul 2026 21:00:00 GMT</pubDate></item>
+    <item><link>https://gospod-bog.ru/articles/old-entry/</link><pubDate>Sat, 11 Jul 2026 21:00:00 GMT</pubDate></item>
+  </channel></rss>`;
+
+  const routeRecord = {
+    route,
+    sourceRel: 'src/pages/articles/old-entry/index.astro',
+    inspection: { headImports: [] },
+    profile: { routeType: 'article' },
+  };
+  const shared = { searchItems: [], sitemapXml: '', feedXml };
+  const rssObserved = observeRoute(routeRecord, distRoot, shared);
+  assert.equal(rssObserved.observations.rssPublishedAt, '2026-07-11T21:00:00.000Z');
+
+  const missingRoute = {
+    ...routeRecord,
+    route: '/articles/missing-entry/',
+  };
+  const missingFile = path.join(distRoot, 'articles/missing-entry/index.html');
+  fs.mkdirSync(path.dirname(missingFile), { recursive: true });
+  fs.copyFileSync(distFile, missingFile);
+  const missingObserved = observeRoute(missingRoute, distRoot, shared);
+  assert.equal(missingObserved.observations.rssPublishedAt, null);
+} finally {
+  fs.rmSync(distRoot, { recursive: true, force: true });
+}
+
+console.log('✅ Editorial metadata refresh preserves decisions and binds RSS dates to one item');
