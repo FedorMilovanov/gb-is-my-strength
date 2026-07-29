@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: rogers-scan-provenance-probe
@@ -131,10 +132,48 @@ jobs:
           retention-days: 14
           compression-level: 6
 
+      - name: Record self-identifying evidence on issue 513
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo '## Automated Rogers 1691 provenance probe'
+            echo
+            echo "- run: \`${GITHUB_RUN_ID}\`"
+            echo "- attempt: \`${GITHUB_RUN_ATTEMPT}\`"
+            echo "- triggering SHA: \`${GITHUB_SHA}\`"
+            echo "- artifact: \`rogers-1691-scan-provenance\`"
+            echo
+            echo '### Google Books volume summary'
+            echo '```json'
+            cat reports/rogers-1691/volume-summary.json
+            echo '```'
+            echo
+            if [[ -s reports/rogers-1691/page-locators.json ]]; then
+              echo '### PDF page locators'
+              echo '```json'
+              cat reports/rogers-1691/page-locators.json
+              echo '```'
+            else
+              echo '### PDF status'
+              cat reports/rogers-1691/pdf-download-status.txt 2>/dev/null || true
+            fi
+            echo
+            echo '### Artifact inventory'
+            echo '```text'
+            cat reports/rogers-1691/inventory.txt
+            echo '```'
+          } > reports/rogers-1691/issue-comment.md
+          gh issue comment 513 --repo FedorMilovanov/gb-is-my-strength --body-file reports/rogers-1691/issue-comment.md
+
       - name: Remove one-shot workflow
         run: |
-          git rm .github/workflows/_rogers-scan-provenance-probe.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore(heart): remove Rogers scan probe"
-          git push origin HEAD:agent/heart-post-merge-cleanup-2026-07-30
+          if [[ -f .github/workflows/_rogers-scan-provenance-probe.yml ]]; then
+            git rm .github/workflows/_rogers-scan-provenance-probe.yml
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore(heart): remove Rogers scan probe [run ${GITHUB_RUN_ID}]"
+            git push origin HEAD:agent/heart-post-merge-cleanup-2026-07-30
+          else
+            echo 'Probe workflow already removed by an earlier queued run.'
+          fi
