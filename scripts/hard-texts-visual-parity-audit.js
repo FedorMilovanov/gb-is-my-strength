@@ -37,6 +37,11 @@ const stats      = read('src/components/hard-texts/HardTextsStatsSection.astro')
 const seriesmap  = read('src/components/hard-texts/HardTextsSeriesMapSection.astro');
 const articleend = read('src/components/hard-texts/HardTextsArticleEndBlock.astro');
 const profile    = read('data/route-profiles/hard-texts.json');
+const heartConfig = read('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts');
+const heartData   = read('src/components/article-pilots/_shared/heartSeriesData.ts');
+const tmaBody     = read('src/components/article-pilots/tma-na-serdce/TmaNaSerdceBody.astro');
+const tmaHead     = read('src/components/article-pilots/tma-na-serdce/TmaNaSerdcePageHead.astro');
+const tmaRoute    = read('src/pages/articles/tma-na-serdce/index.astro');
 
 // ── Page composition contract ────────────────────────────────────────────────
 must(page, 'HardTextsPageChrome', 'Astro /hard-texts/ imports HardTextsPageChrome');
@@ -115,6 +120,88 @@ must(articleend, 'Soli Deo Gloria', 'content marker (article end): Soli Deo Glor
 for (const stale of ['3 части', '2 опубликованы', '53 минуты', 'Карта серии']) {
   mustNot(`${cards}\n${stats}\n${seriesmap}\n${chrome}`, stale, `retired pilot marker: ${stale}`);
 }
+
+
+// ── Heart book source-of-truth contract ─────────────────────────────────────
+const expectedTmaToc = [
+  ['#pered-bogom', 'Сначала — человек перед Богом'],
+  ['#ditya-sveta-vo-tme', 'Дитя света, ходящее во тьме'],
+  ['#psalmopevec-sporit', 'Псалмопевец спорит с собственной душой'],
+  ['#ne-odin-diagnoz', 'Одна тьма — несколько уровней вопроса'],
+  ['#kogda-tma-bolezn', 'Болезнь души — но не вне тела'],
+  ['#iliya-pod-mozhzhevelnikom', 'Илия под можжевельником'],
+  ['#kogda-vina-realna', 'Когда тьма связана с реальной виной: Давид'],
+  ['#oblichenie-i-obvinenie', 'Обличение и обвинение — не одно и то же'],
+  ['#tverdo-ne-dubinkoy', 'Твёрдо, но не дубинкой'],
+  ['#so-svoej-tmoj', 'Как быть с собственной тьмой'],
+  ['#vyhod', 'Выход: не свет по требованию, а верность в темноте'],
+  ['#istochniki', 'Источники и сверка'],
+];
+
+const tmaTocBlock = heartConfig.match(/  tma: \[([\s\S]*?)  \],\s+skorb:/)?.[1] ?? '';
+const actualTmaToc = [...tmaTocBlock.matchAll(/href: '([^']+)', label: '([^']+)'/g)]
+  .map((match) => [match[1], match[2]]);
+if (JSON.stringify(actualTmaToc) === JSON.stringify(expectedTmaToc)) ok('tma shared TOC matches the exact 12-section article order');
+else bad(`tma shared TOC drift: ${JSON.stringify(actualTmaToc)}`);
+const currentRows = [...tmaTocBlock.matchAll(/current: true/g)].length;
+if (currentRows === 1 && /href: '#pered-bogom'[\s\S]*?current: true/.test(tmaTocBlock)) ok('tma TOC has exactly one current row on #pered-bogom');
+else bad('tma TOC current-row contract failed');
+
+const bodyH2 = [...tmaBody.matchAll(/<h2 id="([^"]+)">([^<]+)<\/h2>/g)]
+  .map((match) => [`#${match[1]}`, match[2]])
+  .filter(([href]) => href !== '#summary-title-auto');
+if (tmaBody.includes('<section class="sources-block" id="istochniki">')) bodyH2.push(['#istochniki', 'Источники и сверка']);
+if (JSON.stringify(bodyH2) === JSON.stringify(expectedTmaToc)) ok('tma body H2 anchors and labels match the shared TOC');
+else bad(`tma body/shared TOC mismatch: ${JSON.stringify(bodyH2)}`);
+
+must(heartConfig, "{ id: 'tma', slug: 'tma-na-serdce', minutes: 34,", 'tma canonical series time is 34 minutes');
+must(tmaBody, '<span data-pagefind-meta="readTime" hidden>34</span>', 'tma Pagefind time is 34 minutes');
+must(tmaBody, '<span>⏱ 34 мин</span>', 'tma visible article time is 34 minutes');
+must(tmaHead, 'readingTime: 34', 'tma SITE_CONFIG time is 34 minutes');
+must(tmaRoute, "HARD_TEXTS_SERIES.pages['tma']", 'tma route reads progress from canonical series page data');
+mustNot(heartConfig, 'heartProgress(ch.lead)', 'no chapter-lead progress reused for extra articles');
+mustNot(heartConfig, 'readingProgressTotalMin: HEART_TOTAL_MIN', 'no core-only total for extra articles');
+must(heartConfig, 'heartBookProgress(sat.id)', 'extra articles use their own cumulative progress');
+
+function parseMinuteMap(source, entryPattern) {
+  const out = new Map();
+  for (const match of source.matchAll(entryPattern)) out.set(match[1], Number(match[2]));
+  return out;
+}
+const coreMinutes = parseMinuteMap(heartData, /\{\s+id: '([^']+)',[\s\S]*?\n\s+minutes: (\d+),[\s\S]*?\n\s+\},/g);
+const satelliteMinutes = parseMinuteMap(heartConfig, /\{ id: '([^']+)', slug: '[^']+', minutes: (\d+),/g);
+const chapterBlock = heartConfig.match(/const HEART_CHAPTERS:[\s\S]*?= \[([\s\S]*?)\n\];/)?.[1] ?? '';
+const chapters = [...chapterBlock.matchAll(/lead: '([^']+)',\s+extras: \[([^\]]*)\]/g)].map((match) => ({
+  lead: match[1],
+  extras: [...match[2].matchAll(/'([^']+)'/g)].map((entry) => entry[1]),
+}));
+const bookSequence = [{ id: 'prolog', minutes: coreMinutes.get('prolog') }];
+for (const chapter of chapters) {
+  bookSequence.push({ id: chapter.lead, minutes: coreMinutes.get(chapter.lead) });
+  for (const id of chapter.extras) bookSequence.push({ id, minutes: satelliteMinutes.get(id) });
+}
+bookSequence.push({ id: 'spravochnik', minutes: coreMinutes.get('spravochnik') });
+const missingMinutes = bookSequence.filter((pageDef) => !Number.isInteger(pageDef.minutes));
+if (missingMinutes.length === 0) ok('all 24 heart-book pages have canonical integer minutes');
+else bad(`missing book-page minutes: ${missingMinutes.map((pageDef) => pageDef.id).join(', ')}`);
+const uniqueIds = new Set(bookSequence.map((pageDef) => pageDef.id));
+if (bookSequence.length === 24 && uniqueIds.size === 24) ok('book sequence contains 24 unique pages and no chapter headings');
+else bad(`book sequence shape drift: ${bookSequence.length} entries / ${uniqueIds.size} unique`);
+let doneMin = 0;
+let monotonic = true;
+for (const pageDef of bookSequence) {
+  if (pageDef.minutes <= 0) monotonic = false;
+  const nextDone = doneMin + pageDef.minutes;
+  if (nextDone <= doneMin) monotonic = false;
+  doneMin = nextDone;
+}
+if (monotonic) ok('book progress is strictly cumulative across every article');
+else bad('book progress is not strictly cumulative');
+if (doneMin === 727) ok('full heart-book reading total is exactly 727 minutes');
+else bad(`heart-book total drift: ${doneMin} minutes (expected 727)`);
+const lastPage = bookSequence.at(-1);
+if (lastPage?.id === 'spravochnik' && doneMin - lastPage.minutes === 704 && doneMin === 727) ok('last page completes progress exactly at 727 minutes');
+else bad(`last-page progress contract failed: ${JSON.stringify(lastPage)} / ${doneMin}`);
 
 // ── Forbidden generic shells ─────────────────────────────────────────────────
 for (const marker of ['import BaseLayout', '<BaseLayout', 'astro-card-grid']) {
