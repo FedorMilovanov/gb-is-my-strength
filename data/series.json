@@ -228,34 +228,53 @@
   "genesis-6": {
     "title": "Бытие 6, Енох, Иуда и Пётр",
     "baseUrl": "/hard-texts/",
+    "searchPolicy": {
+      "landingRoute": "/hard-texts/genesis-6/",
+      "librarySection": "Богословие",
+      "topicCategory": "Бытие 6"
+    },
     "parts": [
       {
         "n": 6,
         "slug": "enoh-prorochestvoval-iuda-14-15-4q204",
         "title": "Енох пророчествовал",
-        "status": "draft",
-        "readingTime": 18
+        "status": "published",
+        "readingTime": 19
+      },
+      {
+        "n": "6A",
+        "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+        "title": "Книга Еноха, которой не было",
+        "status": "published",
+        "readingTime": 38
+      },
+      {
+        "n": "6B",
+        "slug": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+        "title": "Можно ли доверять 1 Еноху",
+        "status": "published",
+        "readingTime": 42
       },
       {
         "n": 7,
         "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
         "title": "Ангелы под мраком",
-        "status": "draft",
-        "readingTime": 22
+        "status": "published",
+        "readingTime": 24
       },
       {
         "n": 8,
         "slug": "duhi-v-temnice-noi-kreshchenie-pobeda",
         "title": "Духи в темнице",
-        "status": "draft",
-        "readingTime": 25
+        "status": "published",
+        "readingTime": 28
       },
       {
         "n": 9,
         "slug": "blagovestie-mertvym-1-petra-4-5-6",
         "title": "Благовестие мёртвым",
-        "status": "draft",
-        "readingTime": 17
+        "status": "published",
+        "readingTime": 19
       }
     ]
   }

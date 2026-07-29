@@ -18,12 +18,24 @@ const SERIES_DATA_PATH = path.join(
   'src/components/article-pilots/_shared/series/genesis6SeriesData.ts',
 );
 const IMAGE_MANIFEST_PATH = path.join(ROOT, 'public/images/articles/genesis6/manifest.json');
+const OWNERSHIP_PATH = path.join(ROOT, 'migration/page-ownership.json');
+const ROUTE_PROFILE_DIR = path.join(ROOT, 'data/route-profiles');
 
 const EXPECTED_RESEARCH_COMMIT = '753e09027d4a33af5659ce1221ef8371e9dfae22';
 const EXPECTED_LEGACY_DIGEST = '95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd';
 const EXPECTED_EXTENSION_DIGEST = '947e7b86705fd1729f86f0f99c60afee9b850f794d439729698be7d2f1edaaf7';
 const EXPECTED_READER_ORDER = ['6', '6A', '6B', '7', '8', '9'];
 const EXPECTED_TOTAL_MINUTES = 170;
+const EXPECTED_SITE_RELEASE = {
+  publicationDate: '2026-07-29',
+  canonicalState: {
+    draft: false,
+    noindex: false,
+    sourcesRequired: true,
+  },
+  routeStatus: 'production-dist',
+  productionWitnessSeparate: true,
+};
 const EXPECTED_BLOCKING_HOLDS = [];
 const EXPECTED_PRESERVED_UNCERTAINTY = [
   '1-enoch-10-8-interpretive-scope',
@@ -180,6 +192,7 @@ for (const [label, file] of [
   ['provenance', PROVENANCE_PATH],
   ['Genesis series data', SERIES_DATA_PATH],
   ['Genesis image manifest', IMAGE_MANIFEST_PATH],
+  ['route ownership manifest', OWNERSHIP_PATH],
 ]) {
   if (!isFile(file)) fail(`missing ${label}: ${file}`);
 }
@@ -192,22 +205,26 @@ const provenance = readJson(PROVENANCE_PATH);
 if (provenance.schemaVersion !== 6 || provenance.seriesId !== 'genesis-6') {
   fail('invalid provenance schemaVersion/seriesId');
 }
-if (provenance.releaseState !== 'blocked') fail('releaseState must remain blocked');
+if (provenance.releaseState !== 'published') fail('releaseState must be published');
+requireEqual(provenance.siteRelease, EXPECTED_SITE_RELEASE, 'site release');
 requireEqual(provenance.readerOrder, EXPECTED_READER_ORDER, 'readerOrder');
-if (provenance.publicationPolicy?.defaultState !== 'draft-noindex') fail('defaultState must be draft-noindex');
+if (provenance.publicationPolicy?.defaultState !== 'published-indexable') {
+  fail('defaultState must be published-indexable');
+}
 for (const field of [
   'requiresExactResearchCommit',
   'requiresManifestDigest',
   'requiresExtensionManifestDigest',
   'requiresExactHeadSiteEvidence',
   'productionWitnessSeparate',
-  'requiresAllSeriesArticlesDraftNoindex',
+  'requiresAllSeriesArticlesPublishedIndexable',
   'requiresExactCanonicalOverride',
   'requiresExactRelatedGraph',
   'requiresOrderedForwardLinks',
   'requiresExactHoldClassification',
   'requiresNoReproductionRightsResolution',
   'requiresEvidenceResolutionBinding',
+  'requiresProductionRouteOwnership',
 ]) {
   if (provenance.publicationPolicy?.[field] !== true) fail(`publicationPolicy.${field} must be true`);
 }
@@ -323,7 +340,9 @@ if (extensionManifest && extensionLedger) {
   requireEqual(extensionLedger.releaseDecision?.resolvedByEvidence, EXPECTED_EVIDENCE_RESOLUTIONS, 'ledger evidence resolutions');
   requireEqual(extensionManifest.holdRegistry?.resolvedByPolicy, EXPECTED_POLICY_RESOLUTIONS, 'manifest policy resolutions');
   requireEqual(extensionLedger.releaseDecision?.resolvedByPolicy, EXPECTED_POLICY_RESOLUTIONS, 'ledger policy resolutions');
-  if (extensionManifest.siteAcceptance?.publicationAuthorized !== false) fail('site acceptance must not authorize publication');
+  if (extensionManifest.siteAcceptance?.publicationAuthorized !== false) {
+    fail('historical Research site acceptance must remain non-authorizing');
+  }
   if (
     extensionLedger.releaseDecision?.state !== 'blocked' ||
     extensionLedger.releaseDecision?.mayPublish !== false ||
@@ -332,7 +351,7 @@ if (extensionManifest && extensionLedger) {
     extensionLedger.releaseDecision?.siteImplementationRequired !== true ||
     extensionLedger.releaseDecision?.explicitPublicationPassRequired !== true
   ) {
-    fail('extension release must remain fail-closed after Research blocker closure');
+    fail('historical Research extension release record must remain fail-closed');
   }
 
   const documents = new Map((extensionManifest.documents || []).map((item) => [item.id, item]));
@@ -355,7 +374,7 @@ if (extensionManifest && extensionLedger) {
   const manifestBundles = new Map((extensionManifest.draftArticles || []).map((item) => [item.bundleId, item]));
   const ledgerBundles = new Map((extensionLedger.bundles || []).map((item) => [item.bundleId, item]));
   if (!Array.isArray(provenance.draftArticles) || provenance.draftArticles.length !== 2) {
-    fail('exactly two extension bindings required');
+    fail('exactly two historical extension bindings required');
   }
   for (const binding of provenance.draftArticles || []) {
     const expected = {
@@ -402,8 +421,8 @@ for (const articleKey of EXPECTED_READER_ORDER) {
     section: 'hard-texts',
     author: 'fedor-milovanov',
     series: 'genesis-6',
-    draft: true,
-    noindex: true,
+    draft: false,
+    noindex: false,
     sourcesRequired: true,
     canonicalOverride: `https://gospod-bog.ru/hard-texts/${contract.slug}/`,
     sourceMode: 'rendered',
@@ -423,6 +442,31 @@ for (let index = 0; index < EXPECTED_READER_ORDER.length - 1; index += 1) {
   if (!current?.expectedRelatedSlugs?.includes(next?.slug)) {
     fail(`reader-order link missing: ${EXPECTED_READER_ORDER[index]} → ${EXPECTED_READER_ORDER[index + 1]}`);
   }
+}
+
+const ownership = readJson(OWNERSHIP_PATH);
+const publicationRoutes = [
+  { route: '/hard-texts/genesis-6/', profile: 'hard-texts-genesis-6.json' },
+  ...EXPECTED_READER_ORDER.map((articleKey) => {
+    const contract = siteContracts.get(articleKey);
+    return {
+      route: `/hard-texts/${contract?.slug}/`,
+      profile: `hard-texts-${contract?.slug}.json`,
+    };
+  }),
+];
+for (const { route, profile } of publicationRoutes) {
+  const profileFile = path.join(ROUTE_PROFILE_DIR, profile);
+  if (!isFile(profileFile)) {
+    fail(`missing publication route profile ${profile}`);
+    continue;
+  }
+  const routeProfile = readJson(profileFile);
+  if (routeProfile.route !== route) fail(`${route} profile route drift`);
+  if (routeProfile.currentStatus !== 'production-dist') fail(`${route} profile must be production-dist`);
+  if (routeProfile.seo?.indexable === false) fail(`${route} profile retains non-indexable staging policy`);
+  if (ownership.routes?.[route]?.owner !== 'astro') fail(`${route} ownership must remain astro`);
+  if (ownership.routes?.[route]?.status !== 'production-dist') fail(`${route} ownership must be production-dist`);
 }
 
 const seriesItems = parseSeriesItems(fs.readFileSync(SERIES_DATA_PATH, 'utf8'));
@@ -508,7 +552,7 @@ if (failures.length) {
 
 console.log(
   `Genesis 6 Research provenance: PASS (${EXPECTED_RESEARCH_COMMIT}, ` +
-    `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} extension bundles, ` +
+    `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} historical extension bundles, ` +
     `${EXPECTED_BLOCKING_HOLDS.length} blocking HOLDs, ${EXPECTED_EVIDENCE_RESOLUTIONS.length} evidence resolutions, ` +
-    `${provenance.siteArticles.length} site contracts, ${EXPECTED_TOTAL_MINUTES} total minutes, release ${provenance.releaseState})`,
+    `${provenance.siteArticles.length} published site contracts, ${EXPECTED_TOTAL_MINUTES} total minutes, release ${provenance.releaseState})`,
 );

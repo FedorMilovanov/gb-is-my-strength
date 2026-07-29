@@ -346,19 +346,60 @@ async function checkHermenevtikaFootnotes(browser) {
   await hoverMarker.scrollIntoViewIfNeeded();
   await hoverMarker.hover({ force: true });
   await desktop.waitForTimeout(250);
-  let openState = await desktop.evaluate(() => ({
-    markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
-    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
-  }));
-  if (!openState.tipOpen) push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
-  if (openState.tipOpen) {
-    await desktop.locator('.gb-floating-tip.is-open').hover({ force: true });
-    await desktop.waitForTimeout(180);
-    openState = await desktop.evaluate(() => ({
-      markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
-      tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
-    }));
-    if (!openState.tipOpen) push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, openState);
+
+  const readStaticFootnoteHoverState = () => desktop.evaluate(() => {
+    const marker = document.querySelector('[data-audit-footnote="40"]');
+    const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
+    const rect = tip ? tip.getBoundingClientRect() : null;
+    const style = tip ? getComputedStyle(tip) : null;
+    const epsilon = 1;
+    return {
+      markerOpen: marker?.getAttribute('aria-expanded') === 'true',
+      tipOpen: !!tip,
+      tip: tip && rect && style ? {
+        position: style.position,
+        display: style.display,
+        visibility: style.visibility,
+        opacity: Number(style.opacity),
+        textLength: (tip.textContent || '').trim().length,
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        left: Math.round(rect.left),
+        top: Math.round(rect.top),
+        right: Math.round(rect.right),
+        bottom: Math.round(rect.bottom),
+        centerX: rect.left + rect.width / 2,
+        centerY: rect.top + rect.height / 2,
+        inViewport:
+          rect.left >= -epsilon &&
+          rect.top >= -epsilon &&
+          rect.right <= window.innerWidth + epsilon &&
+          rect.bottom <= window.innerHeight + epsilon,
+      } : null,
+    };
+  });
+
+  let openState = await readStaticFootnoteHoverState();
+  if (!openState.tipOpen) {
+    push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
+  } else if (
+    openState.tip.position !== 'fixed' ||
+    openState.tip.display === 'none' ||
+    openState.tip.visibility === 'hidden' ||
+    openState.tip.opacity < 0.9 ||
+    openState.tip.textLength < 20 ||
+    openState.tip.width < 80 ||
+    openState.tip.height < 20 ||
+    !openState.tip.inViewport
+  ) {
+    push('hermenevtika-footnote-hover-layout-broken', HERMENEUTIKA_URL, openState);
+  } else {
+    await desktop.mouse.move(openState.tip.centerX, openState.tip.centerY);
+    await desktop.waitForTimeout(420);
+    const heldState = await readStaticFootnoteHoverState();
+    if (!heldState.tipOpen || !heldState.tip?.inViewport) {
+      push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, heldState);
+    }
   }
   await desktop.keyboard.press('Escape');
   await desktop.locator('[data-audit-footnote="72"]').focus();
