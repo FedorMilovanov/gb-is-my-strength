@@ -300,26 +300,33 @@ async function browserAudit(){
                 activeHref:lks[idx]?.classList.contains('gbs2-active')?lks[idx].getAttribute('href'):null,activeVisible,
                 ariaOk:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="location"]').length===1};
             },i); if(r.activeHref===href && r.active===1 && r.activeVisible) break; }
-            // Let the expand/collapse animation + railKick follow-loop settle
-            // before judging fill geometry: sample until two consecutive reads
-            // agree within 1px (cap ~1.2s).
+            // Let collapse/expand, railKick and the controller's scroller follow-up
+            // settle as one contract. A sample is stable only when the fill has
+            // stopped moving and the active row is inside the scroller for two
+            // consecutive reads. The visibility boundary stays the strict ±1px.
+            let settledReads=0;
             for(let s=0;s<12;s++){
               await page.waitForTimeout(100);
-              const f2=await page.evaluate(()=>{const fl=document.querySelector('.gbs2-track i');const tr=document.querySelector('.gbs2-track');const sig=[...document.querySelectorAll('.gbs-rail .gbs2-toc li')].map(li=>li.classList.contains('gbs2-collapsed')?'0':'1').join('');return{fillH:fl?fl.getBoundingClientRect().height:0,trackH:tr?tr.getBoundingClientRect().height:0,sig};});
-              if(Math.abs(f2.fillH-r.fillH)<=1){r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;break;}
-              r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;
+              const f2=await page.evaluate((idx)=>{
+                const fl=document.querySelector('.gbs2-track i');
+                const tr=document.querySelector('.gbs2-track');
+                const sig=[...document.querySelectorAll('.gbs-rail .gbs2-toc li')].map(li=>li.classList.contains('gbs2-collapsed')?'0':'1').join('');
+                const lks=[...document.querySelectorAll('.gbs-rail .gbs2-toc a[href^="#"]')];
+                const sc=document.querySelector('.gbs2-tocscroll');
+                const sr=sc?sc.getBoundingClientRect():null;
+                const ar=lks[idx]?.getBoundingClientRect();
+                return{
+                  fillH:fl?fl.getBoundingClientRect().height:0,
+                  trackH:tr?tr.getBoundingClientRect().height:0,
+                  sig,
+                  activeVisible:!!(ar&&sr&&ar.top>=sr.top-1&&ar.bottom<=sr.bottom+1)
+                };
+              },i);
+              const fillStable=Math.abs(f2.fillH-r.fillH)<=1&&f2.sig===r.sig;
+              r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;r.activeVisible=f2.activeVisible;
+              settledReads=fillStable&&f2.activeVisible?settledReads+1:0;
+              if(settledReads>=2)break;
             }
-            // Visibility must be measured after the settle loop. The controller's
-            // smooth scroll can still be completing while the earlier state sample
-            // is captured; retaining that stale boolean creates a false red even
-            // when the final active row is fully inside the scroller.
-            r.activeVisible=await page.evaluate((idx)=>{
-              const lks=[...document.querySelectorAll('.gbs-rail .gbs2-toc a[href^="#"]')];
-              const sc=document.querySelector('.gbs2-tocscroll');
-              const sr=sc?sc.getBoundingClientRect():null;
-              const ar=lks[idx]?.getBoundingClientRect();
-              return !!(ar&&sr&&ar.top>=sr.top-1&&ar.bottom<=sr.bottom+1);
-            },i);
             if(r.active!==1)bad(`${route} ${vp.name} item ${i+1}: active count ${r.active}`); else ok(`${route} ${vp.name} item ${i+1}: 1 active`);
             if(r.activeHref!==href)bad(`${route} ${vp.name} item ${i+1}: active ${r.activeHref} != ${href}`);
             if(r.passed!==i)bad(`${route} ${vp.name} item ${i+1}: passed ${r.passed} != ${i}`); else ok(`${route} ${vp.name} item ${i+1}: passed ${i}`);
