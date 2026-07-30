@@ -29,6 +29,25 @@ function writeJson(file, value) {
   fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
 }
 
+function manifestMaxModifiedAt(manifest) {
+  let max = null;
+  for (const item of Array.isArray(manifest?.items) ? manifest.items : []) {
+    const value = Date.parse(String(item?.modifiedTime || ''));
+    if (Number.isFinite(value) && (max === null || value > max)) max = value;
+  }
+  return max === null ? null : new Date(max).toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+function refreshGeneratedAt(manifest) {
+  const maxModifiedAt = manifestMaxModifiedAt(manifest);
+  if (!maxModifiedAt) return false;
+  const current = Date.parse(String(manifest?.generatedAt || ''));
+  const target = Date.parse(maxModifiedAt);
+  if (Number.isFinite(current) && current >= target) return false;
+  manifest.generatedAt = maxModifiedAt;
+  return true;
+}
+
 function routeToDistFile(route, distRoot) {
   const clean = normalizeRoute(route).replace(/^\/+|\/+$/g, '');
   return path.join(distRoot, clean, 'index.html');
@@ -321,27 +340,32 @@ function main() {
     distRoot,
     promoteRssArticles: options.promoteRssArticles,
   });
+  const migrationChanged = Boolean(result.seeded.length || result.promoted.length || result.added.length);
+  const generatedAtRefreshed = migrationChanged ? false : refreshGeneratedAt(manifest);
 
   console.log(`Search policy seeds: ${result.seeded.length}`);
   for (const route of result.seeded) console.log(`SEED ${route}`);
   console.log(`Search manifest migration candidates: ${result.candidates.length}`);
   for (const route of result.promoted) console.log(`PROMOTE ${route}`);
   for (const route of result.added) console.log(`ADD ${route}`);
+  console.log(`Search manifest generatedAt refreshed: ${generatedAtRefreshed ? 'yes' : 'no'}`);
 
   if (!options.write) {
-    if (result.seeded.length || result.promoted.length || result.added.length) process.exitCode = 1;
+    if (result.seeded.length || result.promoted.length || result.added.length || generatedAtRefreshed) process.exitCode = 1;
     return;
   }
 
-  if (!result.seeded.length && !result.promoted.length && !result.added.length) {
+  if (!migrationChanged && !generatedAtRefreshed) {
     console.log('No search policy or manifest migration changes required.');
     return;
   }
-  policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
-  manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-  writeJson(policyFile, policyRegistry);
+  if (migrationChanged) {
+    policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
+    manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+    writeJson(policyFile, policyRegistry);
+  }
   writeJson(manifestFile, manifest);
-  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s) and ${result.added.length} manifest item(s).`);
+  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s), ${result.added.length} manifest item(s) and generatedAt refresh=${generatedAtRefreshed}.`);
 }
 
 if (require.main === module) {
@@ -356,6 +380,8 @@ if (require.main === module) {
 module.exports = {
   SEARCHABLE_ARTICLE_KINDS,
   parseArgs,
+  manifestMaxModifiedAt,
+  refreshGeneratedAt,
   attr,
   metaValues,
   firstMeta,
