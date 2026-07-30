@@ -4,53 +4,130 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'scripts/_apply-home-search-focus-contract.py'
+      - 'scripts/lib/legacy-source-authority.js'
+      - 'scripts/lib/route-source-contract.js'
+      - 'scripts/content-coverage-audit.js'
+      - 'scripts/check-data-consistency.js'
+      - 'scripts/gill-context-visual-parity-audit.js'
+      - 'scripts/gill-spravochnik-visual-parity-audit.js'
+      - 'scripts/gill-reading-time-canonical-audit.js'
+      - 'scripts/gill-pagefind-body-audit.js'
+      - 'scripts/legacy-source-authority-regression-test.js'
+      - 'data/route-profiles/**'
+      - 'src/pages/articles/dzhon-gill-*/**'
+      - 'src/components/article-pilots/gill-context/**'
+      - 'src/components/article-pilots/gill-series/**'
+      - 'src/components/article-pilots/gill-spravochnik/**'
+      - '.github/workflows/source-authority-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/lib/legacy-source-authority.js'
+      - 'scripts/lib/route-source-contract.js'
+      - 'scripts/content-coverage-audit.js'
+      - 'scripts/check-data-consistency.js'
+      - 'scripts/gill-context-visual-parity-audit.js'
+      - 'scripts/gill-spravochnik-visual-parity-audit.js'
+      - 'scripts/gill-reading-time-canonical-audit.js'
+      - 'scripts/gill-pagefind-body-audit.js'
+      - 'scripts/legacy-source-authority-regression-test.js'
+      - 'data/route-profiles/**'
+      - 'src/pages/articles/dzhon-gill-*/**'
+      - 'src/components/article-pilots/gill-context/**'
+      - 'src/components/article-pilots/gill-series/**'
+      - 'src/components/article-pilots/gill-spravochnik/**'
       - '.github/workflows/source-authority-contract.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: source-authority-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  apply-home-search-focus-contract:
-    if: github.event_name == 'pull_request' && github.head_ref == 'agent/heart-post-merge-cleanup-2026-07-30'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
+  production-like-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
-      - name: Checkout exact feature branch
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Checkout exact head
+        uses: actions/checkout@v4
         with:
-          ref: agent/heart-post-merge-cleanup-2026-07-30
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
           fetch-depth: 0
-          persist-credentials: true
 
-      - name: Apply fail-closed browser contract migration
-        run: python3 scripts/_apply-home-search-focus-contract.py
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
 
-      - name: Validate condition-based readiness
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Source authority regression
+        run: node scripts/legacy-source-authority-regression-test.js
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Gill strict-native dist audits
+        shell: bash
         run: |
-          python3 -m py_compile scripts/_apply-home-search-focus-contract.py
-          node --check scripts/home-browser-contract.mjs
-          grep -F "const input = document.querySelector('.cp-input');" scripts/home-browser-contract.mjs
-          grep -F "return input !== null && input === document.activeElement;" scripts/home-browser-contract.mjs
-          git diff --check
+          set -uo pipefail
+          set +e
+          mkdir -p reports/source-authority
+          : > reports/source-authority/summary.log
+          status=0
 
-      - name: Restore canonical workflow and remove migration tool
-        run: |
-          git fetch origin main
-          git checkout origin/main -- .github/workflows/source-authority-contract.yml
-          git rm scripts/_apply-home-search-focus-contract.py
+          run_audit() {
+            local name="$1"
+            shift
+            printf '\n===== %s =====\n' "$name"
+            "$@" 2>&1 | tee "reports/source-authority/${name}.log"
+            local code=${PIPESTATUS[0]}
+            if [ "$code" -ne 0 ]; then
+              status=1
+              printf 'FAILED %s (exit %s)\n' "$name" "$code" \
+                | tee -a reports/source-authority/summary.log
+            else
+              printf 'PASSED %s\n' "$name" \
+                | tee -a reports/source-authority/summary.log
+            fi
+          }
 
-      - name: Commit only durable project change
+          run_audit gill-context \
+            node scripts/gill-context-visual-parity-audit.js --require-dist
+          run_audit gill-spravochnik \
+            node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
+          run_audit gill-reading-time \
+            node scripts/gill-reading-time-canonical-audit.js
+          run_audit gill-pagefind-body \
+            node scripts/gill-pagefind-body-audit.js
+          run_audit data-consistency \
+            node scripts/check-data-consistency.js
+
+          exit "$status"
+
+      - name: Full static publication gate
+        shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/source-authority-contract.yml
-          git add scripts/home-browser-contract.mjs
-          git diff --cached --check
-          git diff --cached --stat
-          git commit -m "test(home): wait for canonical search focus readiness"
-          git push origin HEAD:agent/heart-post-merge-cleanup-2026-07-30
+          mkdir -p reports
+          set -o pipefail
+          npm run validate:static-publication:light 2>&1 \
+            | tee reports/source-authority-publication.log
+
+      - name: Upload source authority diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-authority-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports/source-authority
+            reports/source-authority-publication.log
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Ensure proof is read-only
+        run: git diff --exit-code
