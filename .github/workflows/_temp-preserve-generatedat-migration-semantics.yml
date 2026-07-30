@@ -1,0 +1,45 @@
+name: Temporary Preserve generatedAt Migration Semantics
+
+on:
+  push:
+    branches:
+      - agent/search-manifest-generatedat-contract-2026-07-30
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply exact refinement
+        run: node scripts/_temp-preserve-generatedat-migration-semantics.cjs
+
+      - name: Validate normalizer contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/search-manifest-policy-normalizer.js
+          node scripts/search-manifest-policy-normalizer-test.js
+          node scripts/check-data-consistency.js
+          test ! -e scripts/_temp-preserve-generatedat-migration-semantics.cjs
+          test ! -e .github/workflows/_temp-preserve-generatedat-migration-semantics.yml
+          git diff --check
+
+      - name: Commit refinement
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && { echo 'No generated changes'; exit 1; }
+          git commit -m 'fix(search): preserve generatedAt migration semantics'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
