@@ -25,11 +25,13 @@ Page numbers below use 1-based PDF order. Printed pagination is the roman number
 | Preface, advice 5 | xii | 27 | Begins with the instruction not to urge afflicted friends to what they cannot do and compares them to persons whose bones are broken. |
 | Preface, advice 6 | xiv | 29 | Begins with the instruction not to attribute the effects of mere disease to the Devil. |
 
-Text extraction was used to locate candidate pages. The authoritative verification was visual inspection of page renders at 220 DPI.
+Text extraction was used to locate candidate pages. The authoritative verification was visual inspection of page renders at 220 DPI. The printed roman pagination and the relevant wording are visible on the rendered page images.
 
-## Translation correction
+## Reader-facing verdict
 
-The first Russian block previously rendered early-modern `Pleurisie` as `чахотка`. The page image reads `a Fever, or a Pleurisie, the Gout, or the Stone`; therefore the governed Russian text now uses `плеврит`, not `чахотка`.
+- Advice 1 required one correction: early-modern `Pleurisie` means pleurisy, so the Russian text now reads `плеврит`, not `чахотка`.
+- Advice 5 supports the existing Russian block about not urging a sufferer to what they cannot do and about broken bones; no substantive wording change was required.
+- Advice 6 supports the existing brief warning not to attribute the effects of mere disease to the Devil; no substantive wording change was required.
 
 ## Michigan EEBO-TCP status
 
@@ -37,4 +39,4 @@ The University of Michigan EEBO-TCP page remains useful for table-of-contents an
 
 ## Publication rule
 
-Any future direct Rogers quotation or translation requires a visible page image, a 1-based PDF locator, and printed pagination/signature when visible. Search snippets or OCR alone are not sufficient.
+Any future direct Rogers quotation or translation requires a visible page image, a 1-based PDF locator, and printed pagination/signature when visible. Search snippets or extracted text alone are not sufficient.
