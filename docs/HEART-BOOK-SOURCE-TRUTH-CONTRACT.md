@@ -50,6 +50,15 @@ The shared reader TOC must match the article’s twelve actual H2/source-section
 - `SITE_CONFIG`;
 - route progress data.
 
+The substantive scan-first source correction was completed on **30 July 2026**. That modified dateline must agree across:
+
+- the visible article header;
+- Open Graph `article:modified_time`;
+- Article JSON-LD `dateModified`;
+- `SITE_CONFIG.page.modified`.
+
+A machine-readable date must not be advanced without a corresponding reader-visible update, and a substantive reader-facing correction must not retain an earlier machine or visible dateline.
+
 ## Enforcement
 
 `scripts/hard-texts-visual-parity-audit.js` is the fail-closed regression contract. It verifies:
@@ -57,10 +66,11 @@ The shared reader TOC must match the article’s twelve actual H2/source-section
 - exact TOC anchor/label parity;
 - one current TOC row on `#pered-bogom`;
 - 34-minute parity across source surfaces;
+- visible and machine modified-date parity at 30 July 2026;
 - 24 unique actual book pages;
 - strictly cumulative progress;
 - exact total of 727 minutes;
 - final-page completion at 727;
 - absence of the retired chapter-lead and core-only progress patterns.
 
-This document does not create a second data source. Numeric values stated here are ratcheted expectations; executable values remain derived from the canonical TypeScript sources above.
+This document does not create a second data source. Numeric values and dates stated here are ratcheted expectations; executable values remain derived from the canonical TypeScript and Astro sources above.
