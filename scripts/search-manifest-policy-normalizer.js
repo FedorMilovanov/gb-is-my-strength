@@ -340,7 +340,8 @@ function main() {
     distRoot,
     promoteRssArticles: options.promoteRssArticles,
   });
-  const generatedAtRefreshed = refreshGeneratedAt(manifest);
+  const migrationChanged = Boolean(result.seeded.length || result.promoted.length || result.added.length);
+  const generatedAtRefreshed = migrationChanged ? false : refreshGeneratedAt(manifest);
 
   console.log(`Search policy seeds: ${result.seeded.length}`);
   for (const route of result.seeded) console.log(`SEED ${route}`);
@@ -354,13 +355,13 @@ function main() {
     return;
   }
 
-  const migrationChanged = Boolean(result.seeded.length || result.promoted.length || result.added.length);
   if (!migrationChanged && !generatedAtRefreshed) {
     console.log('No search policy or manifest migration changes required.');
     return;
   }
   if (migrationChanged) {
     policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
+    manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
     writeJson(policyFile, policyRegistry);
   }
   writeJson(manifestFile, manifest);
