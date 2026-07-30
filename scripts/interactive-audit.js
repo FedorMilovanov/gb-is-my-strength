@@ -88,6 +88,21 @@ async function openPage(browser, urlPath, viewport = { width: 1200, height: 800 
   return page;
 }
 
+async function waitForScrollSettled(page, timeout = 2000) {
+  const deadline = Date.now() + timeout;
+  let previous = null;
+  let stableReads = 0;
+  while (Date.now() < deadline) {
+    const current = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+    if (previous && Math.abs(current.x - previous.x) < 0.5 && Math.abs(current.y - previous.y) < 0.5) stableReads += 1;
+    else stableReads = 0;
+    if (stableReads >= 2) return;
+    previous = current;
+    await page.waitForTimeout(50);
+  }
+  throw new Error(`scroll did not settle within ${timeout}ms`);
+}
+
 async function checkSeries(browser) {
   for (const url of SERIES_URLS) {
     // Production now contains two legitimate series shells:
@@ -252,12 +267,16 @@ async function checkGlossary(browser) {
 
       const target = terms.first();
       if (!readinessError) {
-        await target.scrollIntoViewIfNeeded();
-        await target.hover();
         try {
+          await target.scrollIntoViewIfNeeded();
+          await waitForScrollSettled(page);
+          // The glossary controller explicitly supports focus/blur. Use the
+          // deterministic keyboard path after scrolling has stopped so a late
+          // scroll event cannot immediately close an otherwise healthy tooltip.
+          await target.focus();
           await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'attached', timeout: 2000 });
         } catch (error) {
-          readinessError = `open timeout: ${String(error.message || error).slice(0, 400)}`;
+          readinessError = `open failed: ${String(error.message || error).slice(0, 400)}`;
         }
       }
 
@@ -303,7 +322,7 @@ async function checkGlossary(browser) {
           ? 'glossary-tooltip-did-not-open'
           : 'glossary-tooltip-runtime-not-ready';
         push(kind, url, { error: readinessError, ...state });
-      } else if (!state.tip || state.tip.w < 100 || state.tip.h < 50 || state.tip.top < 0 || state.tip.bottom > 651 || /rgba\(0, 0, 0, 0\)/.test(state.tip.bg) || state.tip.innerDisplay !== 'block') {
+      } else if (state.target?.ariaExpanded !== 'true' || !state.tip || state.tip.w < 100 || state.tip.h < 50 || state.tip.top < 0 || state.tip.bottom > 651 || /rgba\(0, 0, 0, 0\)/.test(state.tip.bg) || state.tip.innerDisplay !== 'block') {
         push('glossary-tooltip-bad-layout', url, state);
       }
     }
