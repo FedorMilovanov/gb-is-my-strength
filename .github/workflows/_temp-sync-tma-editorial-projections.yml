@@ -1,0 +1,46 @@
+name: Temporary TMA Editorial Projection Sync
+
+on:
+  push:
+    branches:
+      - agent/tma-editorial-projection-sync-2026-07-30
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply exact projection sync
+        run: node scripts/_temp-sync-tma-editorial-projections.cjs
+
+      - name: Validate generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "JSON.parse(require('fs').readFileSync('data/editorial-metadata.json','utf8')); JSON.parse(require('fs').readFileSync('data/search-manifest.json','utf8'))"
+          grep -F '"modifiedTime": "2026-07-30T00:00:00+03:00"' data/search-manifest.json
+          grep -F '"readTime": 34' data/search-manifest.json
+          grep -F '<lastmod>2026-07-30T00:00:00+03:00</lastmod>' sitemap.xml
+          test ! -e scripts/_temp-sync-tma-editorial-projections.cjs
+          test ! -e .github/workflows/_temp-sync-tma-editorial-projections.yml
+          git diff --check
+
+      - name: Commit generated canonical files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && { echo 'No generated changes'; exit 1; }
+          git commit -m 'fix(editorial): sync tma projections for deployment'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
