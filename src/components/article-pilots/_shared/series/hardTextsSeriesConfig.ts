@@ -18,13 +18,7 @@
  *   Движение Д (помощь и финал)           → часть IV (serdce-duh, жизнь Духом).
  */
 import { SERIES_CONFIGS, type SeriesConfig, type SeriesItem, type SeriesPageChromeData, type SeriesPartTocItem, defineSeriesConfig } from './seriesConfig';
-import {
-  HEART_SERIES_ITEMS,
-  HEART_TOTAL_MIN,
-  heartRoman,
-  heartProgress,
-  type HeartPageId,
-} from '../heartSeriesData';
+import { HEART_SERIES_ITEMS, type HeartPageId } from '../heartSeriesData';
 
 /** Оглавления частей ядра (H2 из собранных статей; карточка «Коротко» не
  *  входит — это резюме, а не раздел). Первый ряд каждой части помечен current
@@ -163,7 +157,7 @@ const HEART_SATELLITES: HeartSatelliteDef[] = [
   { id: 'sokrovishche', slug: 'serdce-i-sokrovishche', minutes: 25,
     railTitle: 'Сердце и сокровище', shortTitle: 'Деньги, статус и довольство' },
   // Движение В. Сердце в темноте → часть II («бедный я человек»)
-  { id: 'tma', slug: 'tma-na-serdce', minutes: 26,
+  { id: 'tma', slug: 'tma-na-serdce', minutes: 34,
     railTitle: 'Тьма на сердце', shortTitle: 'Всегда ли уныние — грех?' },
   { id: 'skorb', slug: 'serdce-pod-skorbyu', minutes: 28,
     railTitle: 'Сердце под скорбью', shortTitle: 'Страдание, провидение и плач' },
@@ -290,11 +284,13 @@ const HEART_SATELLITE_TOC: Record<string, SeriesPartTocItem[]> = {
     { href: '#istochniki', label: 'Источники и сверка', level: 2 },
   ],
   tma: [
-    { href: '#ditya-sveta-vo-tme', label: 'Дитя света, ходящее во тьме', level: 2, current: true },
+    { href: '#pered-bogom', label: 'Сначала — человек перед Богом', level: 2, current: true },
+    { href: '#ditya-sveta-vo-tme', label: 'Дитя света, ходящее во тьме', level: 2 },
     { href: '#psalmopevec-sporit', label: 'Псалмопевец спорит с собственной душой', level: 2 },
-    { href: '#ne-odin-diagnoz', label: 'Не один диагноз, а много', level: 2 },
-    { href: '#kogda-tma-bolezn', label: 'Когда тьма — это болезнь тела', level: 2 },
+    { href: '#ne-odin-diagnoz', label: 'Одна тьма — несколько уровней вопроса', level: 2 },
+    { href: '#kogda-tma-bolezn', label: 'Болезнь души — но не вне тела', level: 2 },
     { href: '#iliya-pod-mozhzhevelnikom', label: 'Илия под можжевельником', level: 2 },
+    { href: '#kogda-vina-realna', label: 'Когда тьма связана с реальной виной: Давид', level: 2 },
     { href: '#oblichenie-i-obvinenie', label: 'Обличение и обвинение — не одно и то же', level: 2 },
     { href: '#tverdo-ne-dubinkoy', label: 'Твёрдо, но не дубинкой', level: 2 },
     { href: '#so-svoej-tmoj', label: 'Как быть с собственной тьмой', level: 2 },
@@ -443,6 +439,56 @@ const satById = new Map(HEART_SATELLITES.map((s) => [s.id, s]));
 const coreById = new Map(HEART_SERIES_ITEMS.map((i) => [i.id, i]));
 const declOf = (n: number) => (n === 1 ? 'статья' : n < 5 ? 'статьи' : 'статей');
 
+interface HeartBookPageDef {
+  id: string;
+  minutes: number;
+}
+
+function requireCorePage(pageId: HeartPageId) {
+  const page = coreById.get(pageId);
+  if (!page) throw new Error(`Missing heart core page: ${pageId}`);
+  return page;
+}
+
+function requireSatellitePage(pageId: string) {
+  const page = satById.get(pageId);
+  if (!page) throw new Error(`Missing heart satellite page: ${pageId}`);
+  return page;
+}
+
+/**
+ * Единственная последовательность фактических страниц книги. Заголовки глав
+ * сюда намеренно не входят: они группируют статьи, но не добавляют минуты.
+ */
+const HEART_BOOK_SEQUENCE: readonly HeartBookPageDef[] = [
+  requireCorePage('prolog'),
+  ...HEART_CHAPTERS.flatMap((chapter) => [
+    requireCorePage(chapter.lead),
+    ...chapter.extras.map(requireSatellitePage),
+  ]),
+  requireCorePage('spravochnik'),
+].map(({ id, minutes }) => ({ id, minutes }));
+
+const HEART_BOOK_TOTAL_MIN = HEART_BOOK_SEQUENCE.reduce((sum, page) => sum + page.minutes, 0);
+
+const heartBookProgressById = new Map<string, { doneMin: number; partMin: number; totalMin: number }>();
+let heartBookDoneMin = 0;
+for (const page of HEART_BOOK_SEQUENCE) {
+  if (heartBookProgressById.has(page.id)) throw new Error(`Duplicate heart book page: ${page.id}`);
+  heartBookProgressById.set(page.id, {
+    doneMin: heartBookDoneMin,
+    partMin: page.minutes,
+    totalMin: HEART_BOOK_TOTAL_MIN,
+  });
+  heartBookDoneMin += page.minutes;
+}
+
+function heartBookProgress(pageId: string) {
+  const progress = heartBookProgressById.get(pageId);
+  if (!progress) throw new Error(`Page is absent from heart book sequence: ${pageId}`);
+  return progress;
+}
+
 const items: SeriesItem[] = [];
 const pages: Record<string, SeriesPageChromeData> = {};
 
@@ -450,7 +496,7 @@ const pages: Record<string, SeriesPageChromeData> = {};
 function pushLabelPage(pageId: HeartPageId): void {
   const item = coreById.get(pageId)!;
   const partWord = item.labelMark === 'Справ.' ? 'Справочник' : item.labelMark ?? '';
-  const prog = heartProgress(item.id);
+  const prog = heartBookProgress(item.id);
   const toc = HARD_TEXTS_PART_TOC[item.id];
   items.push({
     id: item.id,
@@ -494,7 +540,7 @@ for (const ch of HEART_CHAPTERS) {
     tier: 'chapter' as const,
   });
   // Статья №1 — бывшая «часть» (полный хром, прогресс части как раньше).
-  const leadProg = heartProgress(lead.id);
+  const leadProg = heartBookProgress(lead.id);
   const leadToc = HARD_TEXTS_PART_TOC[lead.id];
   items.push({
     id: lead.id,
@@ -522,7 +568,7 @@ for (const ch of HEART_CHAPTERS) {
   // Статьи №2…N — бывшие спутники: полноценные статьи главы.
   extras.forEach((sat, i) => {
     const n = i + 2;
-    const prog = heartProgress(ch.lead);
+    const prog = heartBookProgress(sat.id);
     const toc = HEART_SATELLITE_TOC[sat.id];
     items.push({
       id: sat.id,
@@ -541,7 +587,7 @@ for (const ch of HEART_CHAPTERS) {
       partLabel: `Глава ${ch.roman} · Статья ${n} · Содержание`,
       readingProgressDoneMin: prog.doneMin,
       readingProgressPartMin: sat.minutes,
-      readingProgressTotalMin: HEART_TOTAL_MIN,
+      readingProgressTotalMin: prog.totalMin,
       railNowTitle: `${n}. ${sat.railTitle}`,
       railCover: '../../images/og-series-heart-600w.webp',
       partDialogLabel: `Глава ${ch.roman} · ${sat.railTitle}`,
