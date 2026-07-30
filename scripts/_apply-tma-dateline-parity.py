@@ -61,8 +61,11 @@ if "tma editorial dateline parity contract" in audit:
 audit = audit.replace(marker, dateline_contract + marker, 1)
 AUDIT.write_text(audit, encoding="utf-8")
 
-for path in (BODY, HEAD, AUDIT):
-    if "2026-07-29T00:00:00+03:00" in path.read_text(encoding="utf-8"):
-        raise SystemExit(f"retired timestamp remains in {path}")
+if "Обн. 29 июля 2026" in BODY.read_text(encoding="utf-8"):
+    raise SystemExit("retired visible dateline remains in article body")
+head_after = HEAD.read_text(encoding="utf-8")
+for retired in ("2026-07-29T00:00:00+03:00", "modified: '2026-07-29'"):
+    if retired in head_after:
+        raise SystemExit(f"retired machine dateline remains in page head: {retired}")
 
 print("tma dateline parity migration applied")
