@@ -54,22 +54,22 @@ for (const [id, count] of [...counts.entries()].filter(([, n]) => n > 1).sort())
 
 const required = {
   agents: [
-    'Канонические режимы: `FAST`, `LANE`, `SYSTEM`',
-    'Любая mutation выполняется в отдельной ветке и PR',
-    '`migration/route-migration-matrix.json` — производный артефакт',
-    'checksum-verified actionlint',
-    'live-discovery в текущей сессии',
-    '| **AGENTS-r324** |',
+    'выбери `FAST`, `LANE` или `SYSTEM`',
+    'Все обычные изменения идут через branch + PR',
+    '`migration/route-migration-matrix.json` — derived output canonical generator',
+    'recovery/cleanup disposition записан только если применим',
   ],
   workModes: [
     '# Work Modes — FAST / LANE / SYSTEM',
-    'All repository changes use a branch and PR.',
-    'A docs file is not automatically safe',
+    'All normal changes use a branch and PR.',
+    'Run only checks that can fail because of the current diff.',
+    'docs-only governance',
   ],
   lanePolicy: [
     '# Lane Lock Policy — FAST / LANE / SYSTEM',
-    'Direct changes to `main` are not a normal FAST path.',
-    'No temporary workflow, trigger, writer or patcher survives',
+    'Never reset, rebase, force-push, close or delete another owner’s active branch.',
+    'Temporary workflow, trigger, writer or patcher introduced by a lane must not survive that lane.',
+    'A hygiene report is preliminary and read-only; it never authorizes cleanup.',
   ],
   owner: [
     'PremiumControls / Floating Cluster / Gill остаются owner-sensitive',
