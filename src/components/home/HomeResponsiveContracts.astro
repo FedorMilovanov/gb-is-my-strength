@@ -4,7 +4,8 @@
  *
  * Leaf components continue to own their normal presentation. This component owns
  * only cross-section edge states that depend on the complete homepage geometry:
- * safe desktop marginalia rails, an odd final gateway card, and reduced motion.
+ * safe desktop marginalia rails, mobile title semantics, an odd final gateway
+ * card, and reduced motion.
  */
 ---
 
@@ -42,6 +43,31 @@
       min-width: 0;
       max-width: none;
       box-sizing: border-box;
+    }
+  }
+
+  /* Keep the authored dash in the rendered H1 on mobile. The previous visual
+     replacement used generated content, which looked correct but disappeared
+     from innerText and blocked the immutable production release smoke. */
+  @media (max-width: 760px) {
+    body.home-page #main-content .h-hero .h-hero-title .h-title-static {
+      display: block;
+    }
+
+    body.home-page #main-content .h-hero .h-hero-title .h-title-dash,
+    body.home-page #main-content .h-hero .h-hero-title .h-title-accent {
+      display: inline-block;
+      margin-top: .08em;
+    }
+
+    body.home-page #main-content .h-hero .h-hero-title .h-title-dash {
+      margin-right: .2em;
+      opacity: .76;
+      transform: translateY(-.04em);
+    }
+
+    body.home-page #main-content .h-hero .h-hero-title .h-title-accent::before {
+      content: none;
     }
   }
 
