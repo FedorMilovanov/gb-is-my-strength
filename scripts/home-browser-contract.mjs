@@ -215,6 +215,10 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await page.keyboard.press('Control+K');
     const searchInput = page.locator('.cp-input');
     await searchInput.waitFor({ state: 'visible' });
+    await page.waitForFunction(() => {
+      const input = document.querySelector('.cp-input');
+      return input !== null && input === document.activeElement;
+    });
     assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, 'canonical Ctrl+K did not focus search input');
     assert.equal(await page.locator('.cp-backdrop').count(), 1, 'search initialized more than once');
     await page.keyboard.press('Escape');
