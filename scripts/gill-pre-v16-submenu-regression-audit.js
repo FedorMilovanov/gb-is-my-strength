@@ -309,6 +309,17 @@ async function browserAudit(){
               if(Math.abs(f2.fillH-r.fillH)<=1){r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;break;}
               r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;
             }
+            // Visibility must be measured after the settle loop. The controller's
+            // smooth scroll can still be completing while the earlier state sample
+            // is captured; retaining that stale boolean creates a false red even
+            // when the final active row is fully inside the scroller.
+            r.activeVisible=await page.evaluate((idx)=>{
+              const lks=[...document.querySelectorAll('.gbs-rail .gbs2-toc a[href^="#"]')];
+              const sc=document.querySelector('.gbs2-tocscroll');
+              const sr=sc?sc.getBoundingClientRect():null;
+              const ar=lks[idx]?.getBoundingClientRect();
+              return !!(ar&&sr&&ar.top>=sr.top-1&&ar.bottom<=sr.bottom+1);
+            },i);
             if(r.active!==1)bad(`${route} ${vp.name} item ${i+1}: active count ${r.active}`); else ok(`${route} ${vp.name} item ${i+1}: 1 active`);
             if(r.activeHref!==href)bad(`${route} ${vp.name} item ${i+1}: active ${r.activeHref} != ${href}`);
             if(r.passed!==i)bad(`${route} ${vp.name} item ${i+1}: passed ${r.passed} != ${i}`); else ok(`${route} ${vp.name} item ${i+1}: passed ${i}`);
