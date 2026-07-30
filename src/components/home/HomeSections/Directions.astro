@@ -1,79 +1,525 @@
 ---
 /**
- * Directions.astro — the single, responsive library gateway for /.
+ * Directions.astro — responsive library gateway with owner-selected archival art.
  *
- * The marks deliberately remain free-standing: the SVG itself carries the
- * interaction instead of being placed inside another dashboard/card system.
+ * This component owns route data, the cinematic PNG objects, wide desktop
+ * breakout and responsive card layout. Images are decorative; every route keeps
+ * a real text label and description.
  */
+const routes = [
+  {
+    href: '/articles/',
+    key: 'articles',
+    eyebrow: 'Тексты',
+    title: 'Статьи',
+    description: 'Экзегеза, богословие, переводы и ответы',
+    image: '/images/home/directions/articles-scroll.png',
+    width: 300,
+    height: 205,
+  },
+  {
+    href: '/nagornaya/',
+    key: 'series',
+    eyebrow: 'По порядку',
+    title: 'Серии',
+    description: 'Цельные исследования от первой части к последней',
+    image: '/images/home/directions/series-documents.png',
+    width: 300,
+    height: 292,
+  },
+  {
+    href: '/biografii/',
+    key: 'biographies',
+    eyebrow: 'Люди',
+    title: 'Биографии',
+    description: 'Служители, реформаторы, богословы и их эпохи',
+    image: '/images/home/directions/biographies-theologian.png',
+    width: 202,
+    height: 300,
+  },
+  {
+    href: '/karty/',
+    key: 'maps',
+    eyebrow: 'Пространство',
+    title: 'Карты',
+    description: 'Маршруты, события, связи и библейская география',
+    image: '/images/home/directions/maps-biblical-atlas.png',
+    width: 300,
+    height: 206,
+  },
+  {
+    href: '/konfessii/',
+    key: 'confessions',
+    eyebrow: 'Системы',
+    title: 'Конфессии',
+    description: 'Документы веры, традиции и богословские различия',
+    image: '/images/home/directions/confessions-dossier.png',
+    width: 300,
+    height: 247,
+  },
+];
 ---
+
 <section class="h-home-gateway h-reveal h-scroll-target" id="issledovat" aria-labelledby="hDirectionsLabel">
-  <header class="h-home-section-head">
+  <header class="h-home-section-head h-home-section-head--gateway">
     <div>
-      <p class="h-section-label">Исследовать библиотеку</p>
-      <h2 id="hDirectionsLabel">Выберите не раздел, а способ исследования</h2>
+      <p class="h-section-label">Пять направлений</p>
+      <h2 id="hDirectionsLabel">Исследовать библиотеку</h2>
     </div>
-    <p>Четыре входа ведут к тем же материалам, но помогают начать с нужного масштаба: точного ответа, цельной серии, исторического контекста или визуальной карты.</p>
+    <p>Начните с отдельного текста, пройдите серию по порядку, откройте исторический контекст или исследуйте материал через карту и документы веры.</p>
   </header>
 
-  <nav class="h-home-routes" aria-label="Основные направления библиотеки">
-    <a class="h-home-route h-reveal h-reveal-d1" href="/articles/" data-home-route="reading">
-      <span class="h-home-route__index" aria-hidden="true">01</span>
-      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
-        <path class="h-route-line h-route-line--quiet" d="M18 22.5h23c4.7 0 7 2.3 7 7V76c0-5.2-3.8-8-9.2-8H18V22.5Z"/>
-        <path class="h-route-line" d="M78 22.5H55c-4.7 0-7 2.3-7 7V76c0-5.2 3.8-8 9.2-8H78V22.5Z"/>
-        <path class="h-route-spark" d="M48 22V12m-8.5 3.5-4-7M56.5 15.5l4-7"/>
-      </svg>
-      <span class="h-home-route__copy">
-        <strong>Статьи и ответы</strong>
-        <span>Экзегеза, богословие, переводы и непростые вопросы</span>
-      </span>
-      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
-    </a>
-
-    <a class="h-home-route h-reveal h-reveal-d2" href="/nagornaya/" data-home-route="series">
-      <span class="h-home-route__index" aria-hidden="true">02</span>
-      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
-        <path class="h-route-line h-route-line--quiet" d="M19 72c8-11.7 16.2-17.5 24.5-17.5S60 60.3 77 72"/>
-        <path class="h-route-line" d="M25 58c7.1-14 14.8-21 23-21s15.9 7 23 21"/>
-        <path class="h-route-line" d="M34 41c4.2-10 8.8-15 14-15s9.8 5 14 15"/>
-        <circle class="h-route-spark" cx="48" cy="18" r="3"/>
-      </svg>
-      <span class="h-home-route__copy">
-        <strong>Последовательные серии</strong>
-        <span>Цельные исследования, в которых лучше идти от части к части</span>
-      </span>
-      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
-    </a>
-
-    <a class="h-home-route h-reveal h-reveal-d3" href="/biografii/" data-home-route="history">
-      <span class="h-home-route__index" aria-hidden="true">03</span>
-      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
-        <circle class="h-route-line" cx="48" cy="30" r="12"/>
-        <path class="h-route-line h-route-line--quiet" d="M24 74c2.5-17 10.5-25.5 24-25.5S69.5 57 72 74"/>
-        <path class="h-route-spark" d="M18 63h10M68 63h10M22 52l8 4M66 56l8-4"/>
-      </svg>
-      <span class="h-home-route__copy">
-        <strong>Люди и история</strong>
-        <span>Биографии служителей, движения, эпохи и живой контекст</span>
-      </span>
-      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
-    </a>
-
-    <a class="h-home-route h-reveal h-reveal-d4" href="/karty/" data-home-route="maps">
-      <span class="h-home-route__index" aria-hidden="true">04</span>
-      <svg class="h-home-route__mark" viewBox="0 0 96 96" fill="none" aria-hidden="true">
-        <circle class="h-route-line h-route-line--quiet" cx="48" cy="48" r="27"/>
-        <path class="h-route-line" d="M48 17c10 10.4 15 20.7 15 31S58 68.6 48 79c-10-10.4-15-20.7-15-31s5-20.6 15-31Z"/>
-        <path class="h-route-line" d="M22 39h52M22 57h52"/>
-        <circle class="h-route-spark" cx="66" cy="31" r="4"/>
-      </svg>
-      <span class="h-home-route__copy">
-        <strong>Карты и связи</strong>
-        <span>Визуальные исследования, маршруты, события и временные линии</span>
-      </span>
-      <span class="h-home-route__arrow" aria-hidden="true">↗</span>
-    </a>
+  <nav class="h-home-routes" aria-label="Основные направления библиотеки" data-pagefind-ignore>
+    {routes.map((route, index) => (
+      <a class="h-home-route h-reveal" href={route.href} data-home-route={route.key}>
+        <span class="h-home-route__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+        <span class="h-home-route__glyph" aria-hidden="true">
+          <img
+            class={`h-route-object h-route-object--${route.key}`}
+            src={route.image}
+            alt=""
+            width={route.width}
+            height={route.height}
+            loading="eager"
+            decoding="async"
+            fetchpriority="low"
+          />
+        </span>
+        <span class="h-home-route__copy">
+          <span class="h-home-route__eyebrow">{route.eyebrow}</span>
+          <strong>{route.title}</strong>
+          <span>{route.description}</span>
+        </span>
+        <span class="h-home-route__arrow" aria-hidden="true">→</span>
+      </a>
+    ))}
   </nav>
 
-  <p class="h-home-gateway__hint">Наведите или нажмите на знак — он мягко меняет состояние, не превращаясь в отдельную плитку.</p>
+  <div class="h-home-gateway__footer">
+    <span>Одна библиотека — разные способы начать</span>
+    <a href="/izbrannoe/">Открыть избранное <span aria-hidden="true">→</span></a>
+  </div>
 </section>
+
+<style is:global>
+  body.home-page #main-content #issledovat {
+    padding: clamp(76px, 8vw, 112px) 0 clamp(48px, 5vw, 70px);
+  }
+
+  body.home-page #main-content #issledovat + #publikacii {
+    padding-top: clamp(42px, 4.5vw, 62px);
+  }
+
+  body.home-page #main-content .h-home-routes {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border: 1px solid var(--h-border-strong);
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--h-surface-solid) 46%, transparent);
+    box-shadow: 0 36px 110px -76px rgba(43, 28, 10, .58), inset 0 1px rgba(255, 255, 255, .34);
+    overflow: hidden;
+  }
+
+  html.dark body.home-page #main-content .h-home-routes {
+    background: color-mix(in srgb, var(--h-surface-solid) 78%, transparent);
+    box-shadow: 0 44px 128px -78px rgba(0, 0, 0, .95), inset 0 1px rgba(255, 255, 255, .04);
+  }
+
+  body.home-page #main-content .h-home-route {
+    position: relative;
+    min-width: 0;
+    min-height: 410px;
+    display: grid;
+    grid-template-rows: auto minmax(168px, 1fr) auto auto;
+    padding: 20px clamp(17px, 1.55vw, 25px) 23px;
+    border-right: 1px solid var(--h-border);
+    color: var(--h-heading);
+    text-decoration: none;
+    background: transparent;
+    overflow: hidden;
+    isolation: isolate;
+    transition: background .45s ease, box-shadow .45s ease;
+  }
+
+  body.home-page #main-content .h-home-route:last-child { border-right: 0; }
+
+  body.home-page #main-content .h-home-route::before,
+  body.home-page #main-content .h-home-route::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+
+  body.home-page #main-content .h-home-route::before {
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 34%, rgba(182, 132, 65, .12), transparent 42%),
+      linear-gradient(155deg, var(--h-accent-soft), transparent 62%);
+    opacity: 0;
+    transition: opacity .4s ease;
+  }
+
+  body.home-page #main-content .h-home-route::after {
+    right: clamp(17px, 1.55vw, 25px);
+    bottom: 0;
+    left: clamp(17px, 1.55vw, 25px);
+    height: 2px;
+    background: linear-gradient(90deg, var(--h-gold), var(--h-accent), transparent);
+    transform: scaleX(.18);
+    transform-origin: left;
+    transition: transform .42s ease;
+  }
+
+  body.home-page #main-content .h-home-route > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  body.home-page #main-content .h-home-route__index {
+    color: var(--h-muted);
+    font-family: var(--f-ui);
+    font-size: 8px;
+    letter-spacing: .22em;
+    opacity: .78;
+  }
+
+  body.home-page #main-content .h-home-route__glyph {
+    position: relative;
+    width: 100%;
+    min-height: 168px;
+    display: grid;
+    place-items: center;
+    align-self: center;
+    margin: 5px 0 10px;
+    overflow: visible;
+  }
+
+  body.home-page #main-content .h-home-route__glyph::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    left: 12%;
+    right: 12%;
+    bottom: 16px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(64, 41, 16, .22), transparent 70%);
+    filter: blur(8px);
+    opacity: .52;
+    transform: scaleX(.92);
+  }
+
+  html.dark body.home-page #main-content .h-home-route__glyph::after {
+    background: radial-gradient(ellipse, rgba(0, 0, 0, .72), transparent 70%);
+    opacity: .72;
+  }
+
+  body.home-page #main-content .h-route-object {
+    --route-object-scale: 1;
+    --route-object-hover-scale: 1.045;
+    --route-object-y: 0px;
+    position: relative;
+    z-index: 1;
+    width: min(100%, 218px);
+    max-height: 190px;
+    display: block;
+    object-fit: contain;
+    filter: drop-shadow(0 16px 15px rgba(48, 31, 12, .24)) saturate(.94) contrast(1.03);
+    transform: translateY(var(--route-object-y)) scale(var(--route-object-scale));
+    transform-origin: center;
+    transition: transform .62s cubic-bezier(.16, 1, .3, 1), filter .45s ease;
+  }
+
+  html.dark body.home-page #main-content .h-route-object {
+    filter: drop-shadow(0 18px 18px rgba(0, 0, 0, .68)) brightness(.9) saturate(.9) contrast(1.08);
+  }
+
+  body.home-page #main-content .h-route-object--articles {
+    --route-object-scale: 1.08;
+    --route-object-hover-scale: 1.13;
+    --route-object-y: 4px;
+  }
+
+  body.home-page #main-content .h-route-object--series {
+    --route-object-scale: .98;
+    --route-object-hover-scale: 1.03;
+  }
+
+  body.home-page #main-content .h-route-object--biographies {
+    --route-object-scale: 1.01;
+    --route-object-hover-scale: 1.06;
+    --route-object-y: -1px;
+  }
+
+  body.home-page #main-content .h-route-object--maps {
+    --route-object-scale: 1.12;
+    --route-object-hover-scale: 1.17;
+    --route-object-y: 6px;
+  }
+
+  body.home-page #main-content .h-route-object--confessions {
+    --route-object-scale: 1.04;
+    --route-object-hover-scale: 1.09;
+    --route-object-y: 4px;
+  }
+
+  body.home-page #main-content .h-home-route__eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--h-accent);
+    font-family: var(--f-ui);
+    font-size: 8px;
+    font-weight: 740;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  body.home-page #main-content .h-home-route__copy strong {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--h-heading);
+    font-family: var(--f-body);
+    font-size: clamp(1.24rem, 1.48vw, 1.52rem);
+    line-height: 1.1;
+  }
+
+  body.home-page #main-content .h-home-route__copy > span:last-child {
+    color: var(--h-muted);
+    font-size: 13px;
+    line-height: 1.52;
+  }
+
+  body.home-page #main-content .h-home-route__arrow {
+    justify-self: end;
+    align-self: end;
+    margin-top: 18px;
+    color: var(--h-gold);
+    font-size: 18px;
+    opacity: .76;
+    transition: transform .38s ease, color .38s ease;
+  }
+
+  body.home-page #main-content .h-home-route:is(:hover, :focus-visible) {
+    background: color-mix(in srgb, var(--h-surface) 88%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--h-accent) 30%, transparent);
+  }
+
+  body.home-page #main-content .h-home-route:is(:hover, :focus-visible)::before { opacity: 1; }
+  body.home-page #main-content .h-home-route:is(:hover, :focus-visible)::after { transform: scaleX(1); }
+
+  body.home-page #main-content .h-home-route:is(:hover, :focus-visible) .h-route-object {
+    transform: translateY(calc(var(--route-object-y) - 7px)) scale(var(--route-object-hover-scale));
+    filter: drop-shadow(0 22px 19px rgba(48, 31, 12, .31)) saturate(1.03) contrast(1.05);
+  }
+
+  html.dark body.home-page #main-content .h-home-route:is(:hover, :focus-visible) .h-route-object {
+    filter: drop-shadow(0 24px 22px rgba(0, 0, 0, .82)) brightness(.99) saturate(.98) contrast(1.09);
+  }
+
+  body.home-page #main-content .h-home-route:is(:hover, :focus-visible) .h-home-route__arrow {
+    color: var(--h-accent);
+    transform: translateX(4px);
+  }
+
+  body.home-page #main-content .h-home-route:focus-visible {
+    outline: 2px solid var(--h-accent);
+    outline-offset: -3px;
+    border-radius: 0;
+  }
+
+  body.home-page #main-content .h-home-gateway__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-top: 20px;
+    color: var(--h-muted);
+    font-family: var(--f-ui);
+    font-size: 9px;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+  }
+
+  body.home-page #main-content .h-home-gateway__footer a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--h-accent);
+    text-decoration: none;
+  }
+
+  @media (min-width: 1500px) {
+    body.home-page #main-content #issledovat {
+      width: min(calc(100vw - 260px), 1480px);
+      max-width: none;
+      margin-left: calc((100% - min(calc(100vw - 260px), 1480px)) / 2);
+    }
+
+    body.home-page #main-content .h-home-route {
+      min-height: 430px;
+      grid-template-rows: auto minmax(190px, 1fr) auto auto;
+      padding-inline: clamp(22px, 1.55vw, 30px);
+    }
+
+    body.home-page #main-content .h-home-route__glyph { min-height: 190px; }
+    body.home-page #main-content .h-route-object { width: min(100%, 242px); max-height: 214px; }
+  }
+
+  @media (max-width: 1120px) and (min-width: 761px) {
+    body.home-page #main-content .h-home-routes { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+    body.home-page #main-content .h-home-route {
+      min-height: 350px;
+      grid-column: span 2;
+      border-bottom: 1px solid var(--h-border);
+    }
+
+    body.home-page #main-content .h-home-route:nth-child(3) { border-right: 0; }
+    body.home-page #main-content .h-home-route:nth-child(4) { grid-column: 2 / span 2; border-bottom: 0; }
+    body.home-page #main-content .h-home-route:nth-child(5) { grid-column: 4 / span 2; border-right: 0; border-bottom: 0; }
+    body.home-page #main-content .h-route-object { width: min(100%, 210px); max-height: 185px; }
+  }
+
+  @media (max-width: 760px) {
+    body.home-page #main-content #issledovat { padding-top: 52px; padding-bottom: 34px; }
+    body.home-page #main-content #issledovat + #publikacii { padding-top: 32px; }
+    body.home-page #main-content .h-home-section-head--gateway { margin-bottom: 22px; }
+    body.home-page #main-content .h-home-section-head--gateway h2 { max-width: none; font-size: clamp(1.95rem, 8.8vw, 2.48rem); line-height: 1.04; }
+    body.home-page #main-content .h-home-section-head--gateway > p { display: none; }
+
+    body.home-page #main-content .h-home-routes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
+    }
+
+    body.home-page #main-content .h-home-route {
+      min-height: 166px;
+      grid-template-columns: 72px minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      align-content: center;
+      gap: 4px 10px;
+      padding: 15px 13px 14px;
+      border: 1px solid var(--h-border);
+      border-radius: 15px;
+      background: color-mix(in srgb, var(--h-surface) 82%, transparent);
+      box-shadow: 0 18px 44px -36px rgba(45, 31, 12, .42), inset 0 1px rgba(255, 255, 255, .28);
+      text-align: left;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html.dark body.home-page #main-content .h-home-route {
+      background: color-mix(in srgb, var(--h-surface-solid) 88%, transparent);
+      box-shadow: 0 20px 46px -36px rgba(0, 0, 0, .9), inset 0 1px rgba(255, 255, 255, .04);
+    }
+
+    body.home-page #main-content .h-home-route:last-child {
+      min-height: 148px;
+      grid-column: 1 / -1;
+      grid-template-columns: 82px minmax(0, 1fr);
+    }
+
+    body.home-page #main-content .h-home-route::before { border-radius: inherit; }
+    body.home-page #main-content .h-home-route::after { right: 14px; left: 14px; }
+
+    body.home-page #main-content .h-home-route__index {
+      position: absolute;
+      top: 10px;
+      right: 11px;
+      color: var(--h-border-strong);
+      font-size: 7px;
+    }
+
+    body.home-page #main-content .h-home-route__glyph {
+      width: 72px;
+      min-height: 72px;
+      height: 72px;
+      grid-row: 1 / 3;
+      align-self: center;
+      margin: 0;
+    }
+
+    body.home-page #main-content .h-home-route:last-child .h-home-route__glyph {
+      width: 82px;
+      height: 82px;
+      min-height: 82px;
+    }
+
+    body.home-page #main-content .h-home-route__glyph::after {
+      bottom: 6px;
+      height: 12px;
+      filter: blur(5px);
+    }
+
+    body.home-page #main-content .h-route-object { width: 100%; max-height: 82px; }
+    body.home-page #main-content .h-route-object--articles { --route-object-scale: 1.16; --route-object-hover-scale: 1.18; }
+    body.home-page #main-content .h-route-object--series { --route-object-scale: 1.03; --route-object-hover-scale: 1.05; }
+    body.home-page #main-content .h-route-object--biographies { --route-object-scale: .94; --route-object-hover-scale: .96; --route-object-y: 1px; }
+    body.home-page #main-content .h-route-object--maps { --route-object-scale: 1.24; --route-object-hover-scale: 1.26; --route-object-y: 4px; }
+    body.home-page #main-content .h-route-object--confessions { --route-object-scale: 1.08; --route-object-hover-scale: 1.1; }
+
+    body.home-page #main-content .h-home-route__copy {
+      min-width: 0;
+      align-self: center;
+      padding-right: 8px;
+    }
+
+    body.home-page #main-content .h-home-route__eyebrow { margin-bottom: 5px; font-size: 7.5px; letter-spacing: .13em; }
+
+    body.home-page #main-content .h-home-route__copy strong {
+      max-width: 100%;
+      margin: 0;
+      font-size: clamp(14.5px, 4.1vw, 17px);
+      font-weight: 660;
+      line-height: 1.08;
+    }
+
+    body.home-page #main-content .h-home-route__copy > span:last-child { display: none; }
+
+    body.home-page #main-content .h-home-route__arrow {
+      position: absolute;
+      right: 11px;
+      bottom: 9px;
+      margin: 0;
+      color: var(--h-accent);
+      font-size: 14px;
+      line-height: 1;
+      opacity: .72;
+    }
+
+    body.home-page #main-content .h-home-route:is(:hover, :focus-visible, :active) {
+      border-color: var(--h-border-strong);
+      background: var(--h-accent-soft);
+      box-shadow: inset 0 -2px var(--h-accent), 0 20px 48px -35px rgba(5, 93, 109, .55);
+    }
+
+    body.home-page #main-content .h-home-route:is(:hover, :focus-visible, :active) .h-route-object {
+      transform: translateY(calc(var(--route-object-y) - 2px)) scale(var(--route-object-hover-scale));
+    }
+
+    body.home-page #main-content .h-home-gateway__footer { justify-content: flex-end; padding-top: 14px; }
+    body.home-page #main-content .h-home-gateway__footer > span { display: none; }
+  }
+
+  @media (max-width: 340px) {
+    body.home-page #main-content .h-home-routes { gap: 8px; }
+    body.home-page #main-content .h-home-route { min-height: 144px; grid-template-columns: 58px minmax(0, 1fr); gap: 3px 7px; padding: 13px 10px 12px; border-radius: 12px; }
+    body.home-page #main-content .h-home-route__glyph { width: 58px; height: 58px; min-height: 58px; }
+    body.home-page #main-content .h-home-route:last-child { min-height: 126px; grid-template-columns: 66px minmax(0, 1fr); }
+    body.home-page #main-content .h-home-route:last-child .h-home-route__glyph { width: 66px; height: 66px; min-height: 66px; }
+    body.home-page #main-content .h-home-route__copy strong { font-size: 13.5px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page #main-content .h-home-route,
+    body.home-page #main-content .h-home-route::before,
+    body.home-page #main-content .h-home-route::after,
+    body.home-page #main-content .h-route-object,
+    body.home-page #main-content .h-home-route__arrow { transition: none; }
+  }
+</style>

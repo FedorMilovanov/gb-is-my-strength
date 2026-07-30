@@ -2,7 +2,7 @@
 
 ## Scope
 
-This contract governs the production-like Chromium and WebKit checks for the home-page shell, mobile navigation, command-palette search, Hebrew interaction, progress indicator and no-JavaScript navigation.
+This contract governs the production-like Chromium and WebKit checks for the home-page shell, mobile navigation, command-palette search, Hebrew interaction, progress indicator, direction artwork and no-JavaScript navigation.
 
 ## Canonical search behavior
 
@@ -34,3 +34,5 @@ On exact Site head `aebfe45d60b8f7df64ac624e0a0a63a80691ce00`, the WebKit contra
 ## Evidence rule
 
 A final successful run must still prove all browser modes required by `scripts/home-browser-contract.mjs`, including WebKit and no-JavaScript navigation. A retry alone is not closure when the same failure reproduces; the condition must be modeled explicitly.
+
+The five direction PNGs must pass both source and browser evidence. A PNG signature or non-zero `naturalWidth` is insufficient: the source contract fully decodes each file and measures non-transparent pixel coverage, while the browser contract awaits `HTMLImageElement.decode()` and verifies rendered alpha coverage through a same-origin canvas. Direction art loads eagerly at low fetch priority because these small second-screen assets must render deterministically without competing with first-view content.
