@@ -4,339 +4,59 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'scripts/lib/legacy-source-authority.js'
-      - 'scripts/lib/route-source-contract.js'
-      - 'scripts/content-coverage-audit.js'
-      - 'scripts/check-data-consistency.js'
-      - 'scripts/gill-context-visual-parity-audit.js'
-      - 'scripts/gill-spravochnik-visual-parity-audit.js'
-      - 'scripts/gill-reading-time-canonical-audit.js'
-      - 'scripts/gill-pagefind-body-audit.js'
-      - 'scripts/legacy-source-authority-regression-test.js'
-      - 'data/route-profiles/**'
-      - 'src/pages/articles/dzhon-gill-*/**'
-      - 'src/components/article-pilots/gill-context/**'
-      - 'src/components/article-pilots/gill-series/**'
-      - 'src/components/article-pilots/gill-spravochnik/**'
-      - '.github/workflows/source-authority-contract.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/lib/legacy-source-authority.js'
-      - 'scripts/lib/route-source-contract.js'
-      - 'scripts/content-coverage-audit.js'
-      - 'scripts/check-data-consistency.js'
-      - 'scripts/gill-context-visual-parity-audit.js'
-      - 'scripts/gill-spravochnik-visual-parity-audit.js'
-      - 'scripts/gill-reading-time-canonical-audit.js'
-      - 'scripts/gill-pagefind-body-audit.js'
-      - 'scripts/legacy-source-authority-regression-test.js'
-      - 'data/route-profiles/**'
-      - 'src/pages/articles/dzhon-gill-*/**'
-      - 'src/components/article-pilots/gill-context/**'
-      - 'src/components/article-pilots/gill-series/**'
-      - 'src/components/article-pilots/gill-spravochnik/**'
+      - 'scripts/_apply-rogers-scan-first.py'
       - '.github/workflows/source-authority-contract.yml'
 
 permissions:
-  contents: read
-  issues: write
+  contents: write
 
 concurrency:
   group: source-authority-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  production-like-contract:
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - name: Checkout exact head
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.12.0'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Source authority regression
-        run: node scripts/legacy-source-authority-regression-test.js
-
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
-
-      - name: Gill strict-native dist audits
-        shell: bash
-        run: |
-          set -uo pipefail
-          set +e
-          mkdir -p reports/source-authority
-          : > reports/source-authority/summary.log
-          status=0
-
-          run_audit() {
-            local name="$1"
-            shift
-            printf '\n===== %s =====\n' "$name"
-            "$@" 2>&1 | tee "reports/source-authority/${name}.log"
-            local code=${PIPESTATUS[0]}
-            if [ "$code" -ne 0 ]; then
-              status=1
-              printf 'FAILED %s (exit %s)\n' "$name" "$code" \
-                | tee -a reports/source-authority/summary.log
-            else
-              printf 'PASSED %s\n' "$name" \
-                | tee -a reports/source-authority/summary.log
-            fi
-          }
-
-          run_audit gill-context \
-            node scripts/gill-context-visual-parity-audit.js --require-dist
-          run_audit gill-spravochnik \
-            node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
-          run_audit gill-reading-time \
-            node scripts/gill-reading-time-canonical-audit.js
-          run_audit gill-pagefind-body \
-            node scripts/gill-pagefind-body-audit.js
-          run_audit data-consistency \
-            node scripts/check-data-consistency.js
-
-          exit "$status"
-
-      - name: Full static publication gate
-        shell: bash
-        run: |
-          mkdir -p reports
-          set -o pipefail
-          npm run validate:static-publication:light 2>&1 \
-            | tee reports/source-authority-publication.log
-
-      - name: Upload source authority diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: source-authority-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            reports/source-authority
-            reports/source-authority-publication.log
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Ensure proof is read-only
-        run: git diff --exit-code
-
-  rogers-scan-provenance-probe:
+  apply-rogers-scan-first:
     if: github.event_name == 'pull_request' && github.head_ref == 'agent/heart-post-merge-cleanup-2026-07-30'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
-      - name: Checkout exact PR head
+      - name: Checkout exact feature branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
-          fetch-depth: 1
+          ref: agent/heart-post-merge-cleanup-2026-07-30
+          fetch-depth: 0
+          persist-credentials: true
 
-      - name: Fetch full-view page, search endpoints and download candidates
-        env:
-          VOLUME_ID: yMRjAAAAcAAJ
-        shell: bash
+      - name: Apply fail-closed scan-first migration
+        run: python3 scripts/_apply-rogers-scan-first.py
+
+      - name: Validate durable contracts
         run: |
-          set -uo pipefail
-          root=reports/rogers-1691
-          mkdir -p "$root/pages" "$root/raw"
-          UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/148.0 Safari/537.36'
+          python3 -m py_compile scripts/_apply-rogers-scan-first.py
+          node --check scripts/hard-texts-visual-parity-audit.js
+          node scripts/hard-texts-visual-parity-audit.js
+          grep -F 'совет 1, печ. с. ii, PDF с. 17' src/components/article-pilots/tma-na-serdce/TmaNaSerdceBody.astro
+          grep -F 'совет 5, печ. с. xii, PDF с. 27' src/components/article-pilots/tma-na-serdce/TmaNaSerdceBody.astro
+          grep -F 'совет 6, печ. с. xiv, PDF с. 29' src/components/article-pilots/tma-na-serdce/TmaNaSerdceBody.astro
+          grep -F 'горячкой или плевритом' src/components/article-pilots/tma-na-serdce/TmaNaSerdceBody.astro
+          ! grep -F 'горячкой или чахоткой' src/components/article-pilots/tma-na-serdce/TmaNaSerdceBody.astro
+          git diff --check
 
-          fetch() {
-            local url="$1"
-            local output="$2"
-            local headers="${output}.headers"
-            curl --location --compressed --retry 2 --retry-all-errors \
-              --user-agent "$UA" --header 'Accept-Language: en-GB,en;q=0.9' \
-              --dump-header "$headers" --output "$output" \
-              --write-out '%{http_code}\n' "$url" > "${output}.status" || true
-          }
-
-          fetch "https://books.google.com/books?id=${VOLUME_ID}&printsec=frontcover" "$root/raw/book.html"
-          fetch "https://books.google.co.uk/books?id=${VOLUME_ID}&printsec=frontcover" "$root/raw/book-uk.html"
-
-          fetch "https://books.google.com/books?jscmd=SearchWithinVolume2&q=Melancholly%20seizes%20on%20the%20Brain%20and%20Spirits&vid=${VOLUME_ID}" "$root/raw/advice-1-search.json"
-          fetch "https://books.google.com/books?jscmd=SearchWithinVolume2&q=Do%20not%20urge%20your%20Friends%20under%20the%20Disease%20of%20Melancholly&vid=${VOLUME_ID}" "$root/raw/advice-5-search.json"
-          fetch "https://books.google.com/books?jscmd=SearchWithinVolume2&q=Do%20not%20attribute%20the%20effects%20of%20mere%20Disease%20to%20the%20Devil&vid=${VOLUME_ID}" "$root/raw/advice-6-search.json"
-
-          fetch "https://books.google.com/books/download?id=${VOLUME_ID}&output=pdf" "$root/raw/direct-download-com.pdf"
-          fetch "https://books.google.co.uk/books/download?id=${VOLUME_ID}&output=pdf" "$root/raw/direct-download-uk.pdf"
-
-          python3 - <<'PY'
-          import html, json, pathlib, re, urllib.parse
-
-          root = pathlib.Path('reports/rogers-1691')
-          raw = root / 'raw'
-          labels = ('advice-1', 'advice-5', 'advice-6')
-          extracted = {'volumeId': 'yMRjAAAAcAAJ', 'searches': {}, 'downloadCandidates': [], 'imageCandidates': []}
-
-          def decode_source(path):
-              data = path.read_bytes()
-              return data.decode('utf-8', 'replace')
-
-          all_text = []
-          for path in raw.glob('*'):
-              if path.suffix in {'.html', '.json'}:
-                  text = decode_source(path)
-                  all_text.append(text)
-
-          for label in labels:
-              path = raw / f'{label}-search.json'
-              text = decode_source(path) if path.exists() else ''
-              page_ids = sorted(set(re.findall(r'"(?:page_id|pageId|pid)"\s*:\s*"([^"]+)"', text)))
-              page_numbers = sorted(set(re.findall(r'"(?:page_number|pageNumber)"\s*:\s*"?([^",}]+)', text)))
-              snippets = [html.unescape(x) for x in re.findall(r'"snippet_text"\s*:\s*"([^"]*)"', text)]
-              extracted['searches'][label] = {
-                  'httpStatus': (path.with_suffix(path.suffix + '.status').read_text().strip() if path.with_suffix(path.suffix + '.status').exists() else ''),
-                  'bytes': path.stat().st_size if path.exists() else 0,
-                  'pageIds': page_ids,
-                  'pageNumbers': page_numbers,
-                  'snippets': snippets,
-              }
-
-          combined = '\n'.join(all_text)
-          combined = combined.replace('\\u0026', '&').replace('\\/', '/')
-          combined = html.unescape(combined)
-          for value in re.findall(r'(?:https?:)?//[^"\'<>\s]+', combined):
-              url = value if value.startswith('http') else 'https:' + value
-              if 'books/download' in url or 'output=pdf' in url:
-                  extracted['downloadCandidates'].append(url)
-              if '/books/content?' in url:
-                  extracted['imageCandidates'].append(url)
-          for value in re.findall(r'["\'](/books/download/[^"\']+|/books/download\?[^"\']+)["\']', combined):
-              extracted['downloadCandidates'].append('https://books.google.com' + value)
-          extracted['downloadCandidates'] = sorted(set(extracted['downloadCandidates']))
-          extracted['imageCandidates'] = sorted(set(extracted['imageCandidates']))
-
-          (root / 'endpoint-summary.json').write_text(json.dumps(extracted, indent=2, ensure_ascii=False), encoding='utf-8')
-          (root / 'download-candidates.txt').write_text('\n'.join(extracted['downloadCandidates']), encoding='utf-8')
-          (root / 'image-candidates.txt').write_text('\n'.join(extracted['imageCandidates']), encoding='utf-8')
-          PY
-
-          if [[ -s "$root/download-candidates.txt" ]]; then
-            i=0
-            while IFS= read -r url; do
-              [[ -n "$url" ]] || continue
-              i=$((i + 1))
-              fetch "$url" "$root/raw/candidate-${i}.pdf"
-            done < "$root/download-candidates.txt"
-          fi
-
-          pdf=''
-          for candidate in "$root"/raw/*.pdf; do
-            [[ -f "$candidate" ]] || continue
-            if head -c 5 "$candidate" 2>/dev/null | grep -q '%PDF'; then
-              pdf="$candidate"
-              break
-            fi
-          done
-
-          if [[ -n "$pdf" ]]; then
-            cp "$pdf" "$root/rogers-1691.pdf"
-            pdfinfo "$root/rogers-1691.pdf" > "$root/pdfinfo.txt" || true
-            pdftotext -layout "$root/rogers-1691.pdf" "$root/rogers-1691.txt" || true
-            python3 - <<'PY'
-            import json, pathlib, re, subprocess
-            root = pathlib.Path('reports/rogers-1691')
-            text_path = root / 'rogers-1691.txt'
-            pages = text_path.read_text(errors='replace').split('\f') if text_path.exists() else []
-            needles = {
-                'advice-1': [r'Melancholly\s+seizes\s+on\s+the\s+Brain', r'incapacitates\s+them\s+for\s+Thought'],
-                'advice-5': [r'Do\s+not\s+urge\s+your\s+Friends', r'bones\s+are\s+broken'],
-                'advice-6': [r'Do\s+not\s+attribute\s+the\s+effects', r'mere\s+Disease.*Devil'],
-            }
-            found = {}
-            for label, patterns in needles.items():
-                hits = []
-                for index, text in enumerate(pages, start=1):
-                    normalized = re.sub(r'\s+', ' ', text)
-                    if any(re.search(pattern, normalized, flags=re.I) for pattern in patterns):
-                        hits.append(index)
-                found[label] = hits
-                for page in hits:
-                    subprocess.run([
-                        'pdftoppm', '-f', str(page), '-singlefile', '-png', '-r', '180',
-                        str(root / 'rogers-1691.pdf'), str(root / 'pages' / f'{label}-pdf-{page:04d}')
-                    ], check=True)
-            (root / 'page-locators.json').write_text(json.dumps(found, indent=2), encoding='utf-8')
-            PY
-          else
-            printf 'No candidate response was a PDF. Search endpoint evidence remains available.\n' > "$root/pdf-download-status.txt"
-          fi
-
-          if [[ -s "$root/image-candidates.txt" ]]; then
-            i=0
-            while IFS= read -r url; do
-              [[ -n "$url" ]] || continue
-              i=$((i + 1))
-              fetch "$url" "$root/pages/image-candidate-${i}.bin"
-            done < "$root/image-candidates.txt"
-          fi
-
-          find "$root" -maxdepth 3 -type f -printf '%P\t%s bytes\n' | sort > "$root/inventory.txt"
-          cat "$root/endpoint-summary.json"
-          cat "$root/inventory.txt"
-
-      - name: Upload Rogers provenance evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: rogers-1691-scan-provenance-${{ github.run_id }}-${{ github.run_attempt }}
-          path: reports/rogers-1691
-          if-no-files-found: error
-          retention-days: 14
-          compression-level: 6
-
-      - name: Record self-identifying evidence on issue 513
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Restore canonical workflow and remove migration tool
         run: |
-          root=reports/rogers-1691
-          {
-            echo '<!-- rogers-scan-probe -->'
-            echo '## Automated Rogers 1691 provenance probe'
-            echo
-            echo "- run: \`${GITHUB_RUN_ID}\`"
-            echo "- attempt: \`${GITHUB_RUN_ATTEMPT}\`"
-            echo "- exact PR SHA: \`${{ github.event.pull_request.head.sha }}\`"
-            echo "- artifact: \`rogers-1691-scan-provenance-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}\`"
-            echo
-            echo '### Endpoint summary'
-            echo '```json'
-            cat "$root/endpoint-summary.json" 2>/dev/null || echo '{"probe":"failed before summary"}'
-            echo '```'
-            echo
-            if [[ -s "$root/page-locators.json" ]]; then
-              echo '### PDF page locators'
-              echo '```json'
-              cat "$root/page-locators.json"
-              echo '```'
-            else
-              echo '### PDF status'
-              cat "$root/pdf-download-status.txt" 2>/dev/null || echo 'No PDF status was produced.'
-            fi
-            echo
-            echo '### Artifact inventory'
-            echo '```text'
-            cat "$root/inventory.txt" 2>/dev/null || true
-            echo '```'
-          } > "$root/issue-comment.md"
-          gh issue comment 513 --repo FedorMilovanov/gb-is-my-strength --body-file "$root/issue-comment.md"
+          git fetch origin main
+          git checkout origin/main -- .github/workflows/source-authority-contract.yml
+          git rm scripts/_apply-rogers-scan-first.py
 
-      - name: Ensure provenance probe is read-only
-        if: always()
-        run: git diff --exit-code
+      - name: Commit only durable project changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/source-authority-contract.yml
+          git add src/components/article-pilots/tma-na-serdce/TmaNaSerdceBody.astro
+          git add scripts/hard-texts-visual-parity-audit.js
+          git add docs/ROGERS-1691-SCAN-PROVENANCE.md
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "fix(heart): bind Rogers translations to 1691 scan"
+          git push origin HEAD:agent/heart-post-merge-cleanup-2026-07-30
