@@ -203,6 +203,17 @@ const lastPage = bookSequence.at(-1);
 if (lastPage?.id === 'spravochnik' && doneMin - lastPage.minutes === 704 && doneMin === 727) ok('last page completes progress exactly at 727 minutes');
 else bad(`last-page progress contract failed: ${JSON.stringify(lastPage)} / ${doneMin}`);
 
+// ── Rogers 1691 scan-first provenance contract ──────────────────────────────
+must(tmaBody, 'горячкой или плевритом', 'Rogers Pleurisie is translated as плеврит');
+mustNot(tmaBody, 'горячкой или чахоткой', 'retired mistranslation of Pleurisie');
+must(tmaBody, 'https://books.google.com/books?id=yMRjAAAAcAAJ&amp;printsec=frontcover', 'Rogers 1691 Google Books scan is primary provenance');
+must(tmaBody, 'совет 1, печ. с. ii, PDF с. 17', 'Rogers advice 1 has printed and PDF locator');
+must(tmaBody, 'совет 5, печ. с. xii, PDF с. 27', 'Rogers advice 5 has printed and PDF locator');
+must(tmaBody, 'совет 6, печ. с. xiv, PDF с. 29', 'Rogers advice 6 has printed and PDF locator');
+must(tmaBody, 'транскрипция EEBO-TCP Университета Мичигана', 'Michigan EEBO-TCP is classified as a transcription aid');
+must(tmaBody, 'не подменяют provenance открытого скана', 'Michigan transcription does not replace scan provenance');
+mustExist('docs/ROGERS-1691-SCAN-PROVENANCE.md', 'durable Rogers scan provenance record');
+
 // ── Forbidden generic shells ─────────────────────────────────────────────────
 for (const marker of ['import BaseLayout', '<BaseLayout', 'astro-card-grid']) {
   mustNot(page, marker, `forbidden page marker: ${marker}`);
