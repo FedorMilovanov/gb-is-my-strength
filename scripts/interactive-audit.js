@@ -394,8 +394,15 @@ async function checkHermenevtikaFootnotes(browser) {
   ) {
     push('hermenevtika-footnote-hover-layout-broken', HERMENEUTIKA_URL, openState);
   } else {
-    await desktop.mouse.move(openState.tip.centerX, openState.tip.centerY);
-    await desktop.waitForTimeout(420);
+    await desktop.mouse.move(openState.tip.centerX, openState.tip.centerY, { steps: 12 });
+    try {
+      await desktop.waitForFunction(() => {
+        const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
+        return Boolean(tip && tip.matches(':hover'));
+      }, undefined, { timeout: 2000 });
+    } catch (_) {
+      // Read the actual state below so the failure keeps useful evidence.
+    }
     const heldState = await readStaticFootnoteHoverState();
     if (!heldState.tipOpen || !heldState.tip?.inViewport) {
       push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, heldState);
