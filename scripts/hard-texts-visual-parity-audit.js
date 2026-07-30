@@ -203,6 +203,17 @@ const lastPage = bookSequence.at(-1);
 if (lastPage?.id === 'spravochnik' && doneMin - lastPage.minutes === 704 && doneMin === 727) ok('last page completes progress exactly at 727 minutes');
 else bad(`last-page progress contract failed: ${JSON.stringify(lastPage)} / ${doneMin}`);
 
+// ── tma editorial dateline parity contract ──────────────────────────────────
+must(tmaBody, '<span>Обн. 30 июля 2026</span>', 'tma visible modified date is 30 July 2026');
+mustNot(tmaBody, '<span>Обн. 29 июля 2026</span>', 'retired visible modified date');
+const tmaModifiedTimestamp = '2026-07-30T00:00:00+03:00';
+const tmaModifiedTimestampCount = tmaHead.split(tmaModifiedTimestamp).length - 1;
+if (tmaModifiedTimestampCount === 2) ok('tma Open Graph and JSON-LD modified timestamps agree on 30 July 2026');
+else bad(`tma machine modified timestamp count drift: ${tmaModifiedTimestampCount} (expected 2)`);
+must(tmaHead, "modified: '2026-07-30'", 'tma SITE_CONFIG modified date is 30 July 2026');
+mustNot(tmaHead, '2026-07-29T00:00:00+03:00', 'retired machine modified timestamp');
+mustNot(tmaHead, "modified: '2026-07-29'", 'retired SITE_CONFIG modified date');
+
 // ── Rogers 1691 scan-first provenance contract ──────────────────────────────
 must(tmaBody, 'горячкой или плевритом', 'Rogers Pleurisie is translated as плеврит');
 mustNot(tmaBody, 'горячкой или чахоткой', 'retired mistranslation of Pleurisie');
