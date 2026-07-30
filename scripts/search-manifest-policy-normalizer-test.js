@@ -7,6 +7,8 @@ const os = require('os');
 const path = require('path');
 const {
   buildManifestItem,
+  manifestMaxModifiedAt,
+  refreshGeneratedAt,
   seriesReadingTimes,
   seriesPolicySeeds,
   migrationCandidates,
@@ -38,6 +40,27 @@ const html = `<!doctype html><html><head>
 <script>window.SITE_CONFIG={page:{readingTime: 17}}</script>
 </head><body></body></html>`;
 const htmlWithoutRuntimeReadTime = html.replace('<script>window.SITE_CONFIG={page:{readingTime: 17}}</script>', '');
+
+const staleGeneratedAtManifest = {
+  generatedAt: '2026-07-29T00:12:25Z',
+  items: [
+    { modifiedTime: '2026-07-20T00:00:00+03:00' },
+    { modifiedTime: '2026-07-30T00:00:00+03:00' },
+    { modifiedTime: 'not-a-date' },
+  ],
+};
+assert.equal(manifestMaxModifiedAt(staleGeneratedAtManifest), '2026-07-29T21:00:00Z');
+assert.equal(refreshGeneratedAt(staleGeneratedAtManifest), true);
+assert.equal(staleGeneratedAtManifest.generatedAt, '2026-07-29T21:00:00Z');
+assert.equal(refreshGeneratedAt(staleGeneratedAtManifest), false);
+const newerGeneratedAtManifest = {
+  generatedAt: '2026-07-30T01:00:00Z',
+  items: [{ modifiedTime: '2026-07-30T00:00:00+03:00' }],
+};
+assert.equal(refreshGeneratedAt(newerGeneratedAtManifest), false);
+assert.equal(newerGeneratedAtManifest.generatedAt, '2026-07-30T01:00:00Z');
+assert.equal(manifestMaxModifiedAt({ items: [] }), null);
+assert.equal(refreshGeneratedAt({ items: [] }), false);
 
 const item = buildManifestItem(route, policy, html);
 assert.equal(item.id, 'fixture');
