@@ -155,7 +155,8 @@
     "overlay:special:browser:test": "node scripts/special-overlay-runtime-browser-test.js",
     "overlay:browser:all": "npm run overlay:browser:test && npm run overlay:map:browser:test && npm run overlay:special:browser:test",
     "nagornaya:bar-asset:contract": "node scripts/nagornaya-bar-asset-contract-test.js",
-    "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js"
+    "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js",
+    "visual:pixelmatch:contract": "node scripts/pixelmatch7-contract.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
