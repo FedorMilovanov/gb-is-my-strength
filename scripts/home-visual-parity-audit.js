@@ -262,11 +262,20 @@ for (const rejected of [
 
 const about = read('src/components/home/HomeSections/About.astro');
 for (const marker of [
-  'id="about"', 'h-drop-cap__letter', 'h-about-principles',
+  'id="about"', 'h-about-principles',
   'Библиотека, где содержание важнее шума',
+  '<p class="h-about-text">',
+  'Это не лента быстрых заметок',
+  'body.home-page #main-content .h-about-text::first-letter',
+]) must(about, marker, `About marker: ${marker}`);
+for (const retired of [
+  'h-drop-cap__letter',
   '<span class="sr-only">Это</span>',
   '<span aria-hidden="true"><span class="h-drop-cap__letter">Э</span>то</span>',
-]) must(about, marker, `About marker: ${marker}`);
+]) mustNot(about, retired, `retired duplicated About drop-cap markup: ${retired}`);
+count(about, /Это не лента быстрых заметок/g) === 1
+  ? ok('About lead exists exactly once in source')
+  : bad('About lead must exist exactly once in source');
 
 const favorites = read('src/components/home/HomeSections/Favorites.astro');
 must(favorites, '<h2 class="favorites-block__heading"', 'Favorites uses an h2 section heading');
@@ -311,6 +320,13 @@ if (dist) {
   count(dist, /class="h-ambient-word /g) === 32
     ? ok('dist / renders exactly 32 ambient phrases')
     : bad('dist / must render exactly 32 ambient phrases');
+  count(dist, /Это не лента быстрых заметок/g) === 1
+    ? ok('dist / About lead renders exactly once')
+    : bad('dist / About lead must render exactly once');
+  for (const retired of [
+    'h-drop-cap__letter',
+    '<span class="sr-only">Это</span>',
+  ]) mustNot(dist, retired, `dist / retired duplicated About drop-cap markup: ${retired}`);
   const distMainClose = dist.indexOf('</main>');
   const distFooter = dist.indexOf('<footer');
   const distSoli = dist.indexOf('class="article-end-sdg"', distFooter);
