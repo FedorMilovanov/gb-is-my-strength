@@ -1,0 +1,243 @@
+name: CI browser and print stability helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    if: github.event.pull_request.head.ref == 'agent/ci-browser-print-stability-helper-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - name: Checkout exact stability target
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: agent/ci-browser-print-stability-20260731
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Verify target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          expected="8322662260b1abb68ca89d059b3e67d3f839f844"
+          test "$actual" = "$expected" || {
+            echo "Target drift: expected $expected, got $actual" >&2
+            exit 2
+          }
+
+      - name: Harden browser and print harnesses
+        shell: bash
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('.')
+          browser = root / 'scripts/public-surface-cross-browser-matrix.mjs'
+          source = browser.read_text(encoding='utf-8')
+          signature = "async function exerciseOverlay(page, entry, profile, name, selectors) {\n  const trigger = await findVisible(page, selectors);"
+          assert source.count(signature) == 1, 'exerciseOverlay signature drift'
+          replacement = r'''async function inspectOpenOverlay(page, controls = null) {
+            return page.evaluate(({ controls }) => {
+              const visible = (node) => {
+                if (!node) return false;
+                const rect = node.getBoundingClientRect();
+                const style = getComputedStyle(node);
+                return rect.width > 0 && rect.height > 0 && style.display !== 'none' &&
+                  style.visibility !== 'hidden' && Number.parseFloat(style.opacity || '1') > 0.01;
+              };
+              const target = controls ? document.getElementById(String(controls).split(/\s+/)[0]) : null;
+              const fallbacks = [...document.querySelectorAll(
+                '[role="dialog"],.mobile-nav,.toc-overlay,.settings-overlay,.cp-backdrop,' +
+                '.gill-settings-overlay,.mso-backdrop,.mso-panel'
+              )].filter(visible);
+              const node = visible(target) ? target : fallbacks.at(-1);
+              if (!node) return { found: false, controls };
+              const rect = node.getBoundingClientRect();
+              return {
+                found: true,
+                controls,
+                descriptor: `${node.tagName.toLowerCase()}#${node.id || ''}.${String(node.className || '').slice(0, 120)}`,
+                rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+              };
+            }, { controls }).catch((error) => ({ found: true, controls, inspectionError: error.message }));
+          }
+
+          async function ensureOverlayClean(page, entry, profile, name) {
+            const initial = await inspectOpenOverlay(page);
+            if (!initial?.found) {
+              record(entry, profile, `interaction:${name}:preflight-clean`, true, 'already clean');
+              return true;
+            }
+            await page.keyboard.press('Escape').catch(() => {});
+            await page.waitForTimeout(180);
+            let state = await inspectOpenOverlay(page);
+            let recovery = 'escape';
+            let shot = null;
+            if (state?.found) {
+              shot = await capture(page, entry, profile, `${name}-preflight-open`);
+              await page.reload({ waitUntil: 'domcontentloaded' });
+              await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+              await page.waitForTimeout(180);
+              state = await inspectOpenOverlay(page);
+              recovery = 'reload';
+            }
+            const clean = !state?.found;
+            record(entry, profile, `interaction:${name}:preflight-clean`, clean,
+              JSON.stringify({ initial, state, recovery, shot }));
+            if (!clean) await capture(page, entry, profile, `${name}-preflight-recovery-failure`);
+            return clean;
+          }
+
+          async function exerciseOverlay(page, entry, profile, name, selectors) {
+            if (!await ensureOverlayClean(page, entry, profile, name)) return;
+            const trigger = await findVisible(page, selectors);'''
+          source = source.replace(signature, replacement)
+
+          closing = "  await page.keyboard.press('Escape').catch(() => {});\n  await page.waitForTimeout(100);\n}"
+          assert source.count(closing) == 1, 'overlay closing tail drift'
+          closing_replacement = r'''  await page.keyboard.press('Escape').catch(() => {});
+            await page.waitForTimeout(180);
+            let closingState = await inspectOpenOverlay(page, controls);
+            const closed = !closingState?.found;
+            let closeShot = null;
+            if (!closed) closeShot = await capture(page, entry, profile, `${name}-close-failure`);
+            record(entry, profile, `interaction:${name}:closes`, closed,
+              JSON.stringify({ controls, closingState, closeShot }));
+            if (!closed) {
+              await page.reload({ waitUntil: 'domcontentloaded' });
+              await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+              await page.waitForTimeout(180);
+              closingState = await inspectOpenOverlay(page, controls);
+              const recovered = !closingState?.found;
+              record(entry, profile, `interaction:${name}:state-recovered`, recovered,
+                JSON.stringify({ controls, closingState, recovery: 'reload' }));
+              if (!recovered) await capture(page, entry, profile, `${name}-state-recovery-failure`);
+            }
+          }'''
+          source = source.replace(closing, closing_replacement)
+          browser.write_text(source, encoding='utf-8')
+
+          print_contract = root / 'scripts/print-pagination-contract.mjs'
+          source = print_contract.read_text(encoding='utf-8')
+          readiness = "    await page.emulateMedia({ media: 'print' });\n    await page.evaluate(async () => { if (document.fonts?.ready) await document.fonts.ready; });\n    await page.waitForTimeout(250);"
+          assert source.count(readiness) == 1, 'print readiness block drift'
+          readiness_replacement = r'''    await page.evaluate(() => {
+              for (const image of document.images) {
+                image.loading = 'eager';
+                image.fetchPriority = 'high';
+              }
+            });
+            await page.emulateMedia({ media: 'print' });
+            const imageReadiness = await page.evaluate(async () => {
+              if (document.fonts?.ready) await document.fonts.ready;
+              const localImages = [...document.images].filter((image) => {
+                const source = image.currentSrc || image.src || '';
+                if (!source) return false;
+                try { return new URL(source, location.href).origin === location.origin || source.startsWith('data:'); }
+                catch { return true; }
+              });
+              const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+              await Promise.all(localImages.map(async (image) => {
+                if (!image.complete) {
+                  await Promise.race([
+                    new Promise((resolve) => {
+                      image.addEventListener('load', resolve, { once: true });
+                      image.addEventListener('error', resolve, { once: true });
+                    }),
+                    timeout(8000),
+                  ]);
+                }
+                if (typeof image.decode === 'function') {
+                  await Promise.race([image.decode().catch(() => {}), timeout(4000)]);
+                }
+              }));
+              const failures = localImages.filter((image) =>
+                !image.complete || ((image.currentSrc || image.src) && image.naturalWidth === 0)
+              ).map((image) => ({
+                src: image.currentSrc || image.src,
+                complete: image.complete,
+                naturalWidth: image.naturalWidth,
+                naturalHeight: image.naturalHeight,
+              }));
+              return { total: localImages.length, failures };
+            });
+            if (imageReadiness.failures.length) {
+              throw new Error(`PRINT IMAGE READINESS failed: ${JSON.stringify(imageReadiness)}`);
+            }
+            await page.waitForTimeout(120);'''
+          source = source.replace(readiness, readiness_replacement)
+          print_contract.write_text(source, encoding='utf-8')
+
+          guard = root / 'scripts/ci-browser-print-stability-contract-test.mjs'
+          guard.write_text(r'''#!/usr/bin/env node
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+
+          const browser = fs.readFileSync('scripts/public-surface-cross-browser-matrix.mjs', 'utf8');
+          assert.match(browser, /interaction:\$\{name\}:preflight-clean/);
+          assert.match(browser, /interaction:\$\{name\}:closes/);
+          assert.match(browser, /\.mso-backdrop/);
+          assert.match(browser, /page\.reload\(\{ waitUntil: 'domcontentloaded' \}\)/);
+          assert.doesNotMatch(browser, /force:\s*true/);
+
+          const print = fs.readFileSync('scripts/print-pagination-contract.mjs', 'utf8');
+          assert.match(print, /image\.loading = 'eager'/);
+          assert.match(print, /image\.decode\(\)/);
+          assert.match(print, /PRINT IMAGE READINESS failed/);
+          assert.match(print, /naturalWidth === 0/);
+          console.log('CI BROWSER/PRINT STABILITY CONTRACT: PASS');
+          ''', encoding='utf-8')
+
+          package = root / 'package.json'
+          data = json.loads(package.read_text(encoding='utf-8'))
+          cmd = 'node scripts/ci-browser-print-stability-contract-test.mjs'
+          if cmd not in data['scripts']['workflows:check']:
+              data['scripts']['workflows:check'] += ' && ' + cmd
+              package.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Validate source and build
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/public-surface-cross-browser-matrix.mjs
+          node --check scripts/print-pagination-contract.mjs
+          node scripts/ci-browser-print-stability-contract-test.mjs
+          npm ci
+          npm run workflows:policy
+          npm run strangler:build:production-like
+
+      - name: Validate print pagination with decoded images
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+          GB_PRINT_PAGINATION_ARTIFACT_DIR=reports/print-paper/stability node scripts/print-pagination-contract.mjs
+
+      - name: Commit stability hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/public-surface-cross-browser-matrix.mjs scripts/print-pagination-contract.mjs scripts/ci-browser-print-stability-contract-test.mjs package.json
+          git diff --cached --quiet && { echo 'No stability diff produced' >&2; exit 3; }
+          git diff --cached --check
+          git commit -m 'test(ci): harden overlay and print readiness'
+          git push origin HEAD:agent/ci-browser-print-stability-20260731
