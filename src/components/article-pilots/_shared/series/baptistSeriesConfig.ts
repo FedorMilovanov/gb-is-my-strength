@@ -99,6 +99,7 @@ bookItems.push(requireFlatItem('spravochnik'));
 
 export const BAPTIST_SERIES: SeriesConfig = defineSeriesConfig({
   ...BAPTIST_FLAT_SERIES,
+  seriesId: 'russian-baptism',
   seriesTitleFull: 'Баптисты России · История ЕХБ — книга статей',
   shape: 'book',
   items: bookItems,
