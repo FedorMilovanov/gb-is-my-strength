@@ -1,0 +1,169 @@
+name: Apply Pixelmatch 7 migration to visual lane
+
+on:
+  push:
+    branches:
+      - agent/pixelmatch7-bootstrap-20260731
+    paths:
+      - .github/workflows/apply-pixelmatch7-migration.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-pixelmatch7-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TARGET_BRANCH: dependabot/npm_and_yarn/pixelmatch-7.2.0
+      EXPECTED_TARGET_HEAD: ca31f7104be1a5b319ed2cdd6371d522a0fcbfe9
+
+    steps:
+      - name: Checkout exact target branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Reject target branch drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_TARGET_HEAD"
+
+      - name: Set up repository Node toolchain
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install exact lockfile
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Adapt CommonJS harness to Pixelmatch ESM
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'scripts/visual-parity-screenshots.js';
+          let source = fs.readFileSync(file, 'utf8');
+
+          const requireLine = "const pixelmatch = require('pixelmatch');";
+          if (!source.includes(requireLine)) {
+            throw new Error('expected CommonJS pixelmatch import was not found');
+          }
+          source = source.replace(requireLine,
+            "// Pixelmatch 6+ is ESM; load it once inside the existing async main.\nlet pixelmatch;");
+
+          const mainStart = "(async () => {\n  console.log(`[visual-parity] Starting at ${new Date().toISOString()}`);";
+          if (!source.includes(mainStart)) {
+            throw new Error('visual parity async main anchor was not found');
+          }
+          source = source.replace(mainStart,
+            "(async () => {\n  ({ default: pixelmatch } = await import('pixelmatch'));\n  console.log(`[visual-parity] Starting at ${new Date().toISOString()}`);");
+
+          const optionsAnchor = "    diffMask: false,\n  });";
+          if (!source.includes(optionsAnchor)) {
+            throw new Error('pixelmatch options anchor was not found');
+          }
+          source = source.replace(optionsAnchor,
+            "    diffMask: false,\n    // Preserve the v5 white-background alpha semantics for existing baselines.\n    checkerboard: false,\n  });");
+
+          fs.writeFileSync(file, source);
+
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.scripts ||= {};
+          pkg.scripts['visual:pixelmatch:contract'] = 'node scripts/pixelmatch7-contract.mjs';
+          fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
+          NODE
+
+          cat > scripts/pixelmatch7-contract.mjs <<'EOF'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import pixelmatch from 'pixelmatch';
+
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+          assert.equal(pkg.devDependencies?.pixelmatch, '^7.2.0');
+          assert.equal(lock.packages?.['node_modules/pixelmatch']?.version, '7.2.0');
+
+          const harness = fs.readFileSync('scripts/visual-parity-screenshots.js', 'utf8');
+          assert.doesNotMatch(harness, /require\(['"]pixelmatch['"]\)/,
+            'Pixelmatch 7 must not be loaded through CommonJS require');
+          assert.match(harness, /await import\(['"]pixelmatch['"]\)/,
+            'the CommonJS harness must use a controlled dynamic import');
+          assert.match(harness, /checkerboard:\s*false/,
+            'existing visual baselines require pre-v7 white alpha blending');
+
+          const transparentBlack = new Uint8Array([0, 0, 0, 0]);
+          const opaqueWhite = new Uint8Array([255, 255, 255, 255]);
+          const legacyOutput = new Uint8Array(4);
+          const modernOutput = new Uint8Array(4);
+
+          const legacyLike = pixelmatch(
+            transparentBlack,
+            opaqueWhite,
+            legacyOutput,
+            1,
+            1,
+            { threshold: 0.1, checkerboard: false },
+          );
+          const modernDefault = pixelmatch(
+            transparentBlack,
+            opaqueWhite,
+            modernOutput,
+            1,
+            1,
+            { threshold: 0.1, checkerboard: true },
+          );
+
+          assert.equal(legacyLike, 0,
+            'checkerboard:false must preserve the v5 transparent-vs-white result');
+          assert.equal(modernDefault, 1,
+            'the contract fixture must prove that v7 default semantics differ');
+
+          console.log('PIXELMATCH 7 ESM AND ALPHA CONTRACT: PASS');
+          EOF
+
+          mkdir -p docs/dependency-migrations
+          cat > docs/dependency-migrations/PIXELMATCH_7.md <<'EOF'
+          # Pixelmatch 7 migration
+
+          Pixelmatch 6 and newer are ESM-only. The existing CommonJS screenshot
+          harness therefore loads Pixelmatch through one controlled dynamic import
+          inside its existing async main function.
+
+          Pixelmatch 7 also changes semi-transparent pixel comparison by blending
+          against a checkerboard by default. This lane explicitly sets
+          `checkerboard: false` to preserve the measurements and owner-approved
+          baselines produced by Pixelmatch 5. A later baseline-policy change must
+          be a separate visual decision, never an incidental dependency update.
+
+          `npm run visual:pixelmatch:contract` verifies the package, import path,
+          explicit option and a one-pixel functional fixture proving the semantic
+          difference between old and new alpha blending.
+          EOF
+
+      - name: Verify migration contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/visual-parity-screenshots.js
+          npm run visual:pixelmatch:contract
+
+      - name: Commit and push only to the visual migration lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json scripts/visual-parity-screenshots.js scripts/pixelmatch7-contract.mjs docs/dependency-migrations/PIXELMATCH_7.md
+          git diff --cached --check
+          git commit -m "build(visual): adapt screenshot diff to Pixelmatch 7"
+          git push origin HEAD:"$TARGET_BRANCH"
