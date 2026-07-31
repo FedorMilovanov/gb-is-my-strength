@@ -1,0 +1,95 @@
+name: Run Astro 7 migrator from helper PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/run-astro7-migrator-from-pr.yml
+      - scripts/ci/apply-astro7-target.mjs
+
+permissions:
+  contents: write
+
+concurrency:
+  group: run-astro7-migrator-from-pr
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: github.head_ref == 'agent/astro7-bootstrap-20260731'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET_BRANCH: dependabot/npm_and_yarn/astro-7.1.4
+      EXPECTED_TARGET_HEAD: 755da5d98095729f39ab24374f1e62ee3c60e3f3
+
+    steps:
+      - name: Checkout trusted helper source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Stage helper outside the target checkout
+        run: cp scripts/ci/apply-astro7-target.mjs /tmp/apply-astro7-target.mjs
+
+      - name: Checkout exact Astro target branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Reject target branch drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_TARGET_HEAD"
+
+      - name: Set up repository Node toolchain
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Assert deterministic npm toolchain
+        run: test "$(npm --version)" = "10.9.0"
+
+      - name: Resolve coordinated Astro 7 package set
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install \
+            --save-dev \
+            --save-exact \
+            --package-lock-only \
+            --ignore-scripts \
+            --no-audit \
+            --no-fund \
+            astro@7.1.6 \
+            @astrojs/mdx@7.0.5 \
+            @astrojs/react@6.0.2 \
+            @astrojs/check@0.9.10 \
+            @astrojs/rss@4.0.19 \
+            @astrojs/sitemap@3.7.3 \
+            @astrojs/markdown-remark@7.2.2
+
+      - name: Write compatibility boundaries and guards
+        run: node /tmp/apply-astro7-target.mjs
+
+      - name: Remove superseded bot-branch bootstrap
+        run: git rm -f .github/workflows/astro7-migration-bootstrap.yml
+
+      - name: Verify resolved migration state
+        run: node scripts/astro7-migration-guard.mjs
+
+      - name: Commit and push only to Astro lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json astro.config.mjs scripts/astro7-migration-guard.mjs docs/dependency-migrations/ASTRO_7_PHASE_1.md
+          git diff --cached --check
+          git commit -m "build(astro): coordinate Astro 7.1.6 migration"
+          git push origin HEAD:"$TARGET_BRANCH"
