@@ -63,8 +63,14 @@ jobs:
           node scripts/workflow-linkage-regression-test.js
           npm run astro:check
           npm run astro:build
-          ! git grep -n -I -E '22\.12\.0|10\.9\.0' -- .github/workflows scripts/check-workflows.js scripts/deployment-provenance-contract-test.mjs scripts/record-deployment-witness-contract-test.cjs scripts/release-pipeline-contract-test.mjs data/release-toolchain.json
-          ! git grep -n -I -E "node-version:\s*['\"]22['\"]" -- .github/workflows
+          if git grep -n -I -E '22\.12\.0|10\.9\.0' -- .github/workflows scripts/check-workflows.js scripts/deployment-provenance-contract-test.mjs scripts/record-deployment-witness-contract-test.cjs scripts/release-pipeline-contract-test.mjs data/release-toolchain.json; then
+            echo 'Legacy Node/npm pin remains in permanent surfaces' >&2
+            exit 1
+          fi
+          if git grep -n -I -E "node-version:\s*['\"]22['\"]" -- .github/workflows; then
+            echo 'Floating Node 22 workflow declaration remains' >&2
+            exit 1
+          fi
           git diff --check
 
       - name: Verify exact permanent file set
@@ -76,7 +82,10 @@ jobs:
           git diff --name-only | sort -u > /tmp/actual.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           test -s /tmp/actual.txt
-          ! grep -E 'node22-current-main-export|node22-current-main-builder|node22-toolchain-export' /tmp/actual.txt
+          if grep -E 'node22-current-main-export|node22-current-main-builder|node22-toolchain-export' /tmp/actual.txt; then
+            echo 'Helper surface leaked into permanent export' >&2
+            exit 1
+          fi
 
       - name: Package validated permanent files
         shell: bash
