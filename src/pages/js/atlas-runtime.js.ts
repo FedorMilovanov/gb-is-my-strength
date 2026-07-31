@@ -1,8 +1,9 @@
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 export const prerender = true;
 
-const runtimeSource = new URL('../../runtime/atlas-runtime.js', import.meta.url);
+const runtimeSource = path.join(process.cwd(), 'src/runtime/atlas-runtime.js');
 
 export async function GET() {
   const runtime = await readFile(runtimeSource, 'utf8');
