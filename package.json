@@ -155,20 +155,22 @@
     "overlay:special:browser:test": "node scripts/special-overlay-runtime-browser-test.js",
     "overlay:browser:all": "npm run overlay:browser:test && npm run overlay:map:browser:test && npm run overlay:special:browser:test",
     "nagornaya:bar-asset:contract": "node scripts/nagornaya-bar-asset-contract-test.js",
-    "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js"
+    "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js",
+    "astro7:migration:guard": "node scripts/astro7-migration-guard.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "@astrojs/mdx": "^6.0.3",
-    "@astrojs/react": "^5.0.0",
-    "@astrojs/rss": "^4.0.18",
-    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/check": "0.9.10",
+    "@astrojs/markdown-remark": "7.2.2",
+    "@astrojs/mdx": "7.0.5",
+    "@astrojs/react": "6.0.2",
+    "@astrojs/rss": "4.0.19",
+    "@astrojs/sitemap": "3.7.3",
     "@dagrejs/dagre": "^3.0.0",
     "@xyflow/react": "^12.11.0",
-    "astro": "^7.1.4",
+    "astro": "7.1.6",
     "pixelmatch": "^5.3.0",
     "playwright": "^1.61.1",
     "pngjs": "^7.0.0",
