@@ -86,7 +86,7 @@ function versionedStylesheet(href: string) {
     .replace(/^(?:\.\.\/)+/, '')
     .replace(/^\//, '')
     .split('?')[0];
-  return ASSET_VERSIONS[clean] ? assetUrl(clean) : href;
+  return Object.prototype.hasOwnProperty.call(ASSET_VERSIONS, clean) ? assetUrl(clean) : href;
 }
 
 // Legacy runtime I/O and dead helper functions removed (REF-01 / REF-02).
