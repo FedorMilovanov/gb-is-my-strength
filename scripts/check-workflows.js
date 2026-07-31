@@ -16,12 +16,12 @@ const {
 const ROOT = path.resolve(__dirname, '..');
 const issues = [];
 const RELEASE_ACTION_PINS = Object.freeze({
-  checkout: 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4',
-  setupNode: 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4',
-  uploadArtifact: 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4',
-  downloadArtifact: 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4',
-  uploadPages: 'actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3',
-  deployPages: 'actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4',
+  checkout: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1',
+  setupNode: 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0',
+  uploadArtifact: 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1',
+  downloadArtifact: 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1',
+  uploadPages: 'actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0',
+  deployPages: 'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0',
 });
 function read(rel) {
   const absolute = path.join(ROOT, rel);
@@ -153,7 +153,7 @@ for (const [pattern, message] of [
   [/npm run ci:check/, 'must run root publication gates'],
   [/npm run astro:audit:about:shots/, 'must generate about screenshots'],
   [/npm run strangler:deploy-readiness/, 'must run production-like readiness'],
-  [/actions\/upload-artifact@v4/, 'must upload review artifacts without deploying'],
+  [/actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/, 'must upload review artifacts without deploying'],
 ]) must(distDryRunPath, distDryRun, pattern, message);
 const expectedDryRunRoutes = [
   'articles/index.html', 'biografii/index.html', 'hard-texts/index.html', 'pastor-series/index.html',

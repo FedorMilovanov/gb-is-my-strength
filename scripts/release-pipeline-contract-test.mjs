@@ -7,12 +7,12 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(ROOT, relative), 'utf8');
 const PINS = Object.freeze({
-  checkout: 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4',
-  setupNode: 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4',
-  uploadArtifact: 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4',
-  downloadArtifact: 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4',
-  uploadPages: 'actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3',
-  deployPages: 'actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4',
+  checkout: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1',
+  setupNode: 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0',
+  uploadArtifact: 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1',
+  downloadArtifact: 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1',
+  uploadPages: 'actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0',
+  deployPages: 'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0',
 });
 const count = (text, pattern) => (text.match(pattern) || []).length;
 function boundedJobs(workflow) {
@@ -97,8 +97,8 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   if (count(workflow, /npm run strangler:build:production-like/g) !== 1) problems.push('release production build count drift');
   if (count(workflow, /release-tools\/write-deployment-provenance\.mjs/g) !== 2) problems.push('trusted provenance tool reference count drift');
   if (count(workflow, /actions\/checkout@/g) !== 1) problems.push('release checkout count drift');
-  if (count(workflow, /actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02/g) !== 3) problems.push('release upload-artifact pin/count drift');
-  if (count(workflow, /actions\/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093/g) !== 1) problems.push('release download-artifact pin/count drift');
+  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 3) problems.push('release upload-artifact pin/count drift');
+  if (count(workflow, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/g) !== 1) problems.push('release download-artifact pin/count drift');
   for (const pin of Object.values(PINS)) if (!workflow.includes(pin)) problems.push(`release action pin drift: ${pin.split('@')[0]}`);
   if (/uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i.test(workflow)) problems.push('release uses mutable action tag');
   for (const forbidden of [/actions\/checkout@/, /\bnpm ci\b/, /strangler:build/, /cache-bust\.js/, /validate:static-publication/, /pagefind:build/]) {
@@ -165,7 +165,7 @@ const mutations = [
   ['deploy control SHA aliased', { ...sources, workflow: sources.workflow.replace('EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}', 'EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.release_sha }}') }],
   ['Pages before verify', { ...sources, workflow: sources.workflow.replace('Verify downloaded candidate identity', '__VERIFY__').replace('Upload exact candidate as Pages artifact', 'Verify downloaded candidate identity').replace('__VERIFY__', 'Upload exact candidate as Pages artifact') }],
   ['generic and TTS reversed', { ...sources, workflow: sources.workflow.replace('Verify generic live release contract', '__GENERIC__').replace('Verify live TTS capability extension', 'Verify generic live release contract').replace('__GENERIC__', 'Verify live TTS capability extension') }],
-  ['mutable deploy action', { ...sources, workflow: sources.workflow.replace(PINS.deployPages, 'actions/deploy-pages@v4') }],
+  ['mutable deploy action', { ...sources, workflow: sources.workflow.replace(PINS.deployPages, 'actions/deploy-pages@v5') }],
   ['manifest release/control aliased', { ...sources, library: sources.library.replace('controlPlaneSha,\n    immutablePath', 'controlPlaneSha: releaseSha,\n    immutablePath') }],
   ['candidate addressed by control plane', { ...sources, library: sources.library.replace('`${releaseSha}:${runIdentity}`', '`${controlPlaneSha}:${runIdentity}`') }],
   ['writer boundary bypassed', { ...sources, writer: sources.writer.replace('const boundary = assertReleaseControlPlaneBoundary({', 'const boundary = (() => ({ checked: false }))({') }],
