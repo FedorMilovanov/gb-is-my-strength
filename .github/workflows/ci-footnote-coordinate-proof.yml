@@ -1,0 +1,204 @@
+name: CI footnote coordinate proof
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  prove:
+    if: github.event.pull_request.head.ref == 'agent/ci-footnote-coordinate-proof-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact canonical CI branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/ci-browser-print-stability-20260731
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Verify exact target
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          expected="60c153b19ef9e6f6a4c7dfe25d4f7271c7f9120d"
+          test "$actual" = "$expected" || {
+            echo "Target drift: expected $expected, got $actual" >&2
+            exit 2
+          }
+
+      - name: Apply coordinate-driven hover contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              assert count == 1, f'{label} drift: expected 1 match, found {count}'
+              return text.replace(old, new)
+
+          audit = Path('scripts/interactive-audit.js')
+          source = audit.read_text(encoding='utf-8')
+
+          opening = (
+              "  const hoverMarker = desktop.locator('[data-audit-footnote=\"40\"]');\n"
+              "  await hoverMarker.scrollIntoViewIfNeeded();\n"
+              "  await hoverMarker.hover({ force: true });\n"
+              "  await desktop.waitForTimeout(250);\n"
+          )
+          replacement = (
+              "  const hoverMarker = desktop.locator('[data-audit-footnote=\"40\"]');\n"
+              "  await hoverMarker.scrollIntoViewIfNeeded();\n"
+              "  await waitForScrollSettled(desktop);\n"
+              "  const hoverMarkerBox = await hoverMarker.boundingBox();\n"
+              "  if (hoverMarkerBox) {\n"
+              "    await desktop.mouse.move(\n"
+              "      hoverMarkerBox.x + hoverMarkerBox.width / 2,\n"
+              "      hoverMarkerBox.y + hoverMarkerBox.height / 2,\n"
+              "      { steps: 1 },\n"
+              "    );\n"
+              "    try {\n"
+              "      await desktop.waitForFunction(() => Boolean(\n"
+              "        document.querySelector('[data-audit-footnote=\"40\"][aria-expanded=\"true\"]') &&\n"
+              "        document.querySelector('.tooltip.gb-floating-tip.is-open')\n"
+              "      ), undefined, { timeout: 2000 });\n"
+              "    } catch (_) {\n"
+              "      // Read the actual state below so the failure keeps useful evidence.\n"
+              "    }\n"
+              "  } else {\n"
+              "    push('hermenevtika-footnote-hover-marker-not-visible', HERMENEUTIKA_URL, null);\n"
+              "  }\n"
+          )
+          source = replace_once(source, opening, replacement, 'footnote opening block')
+
+          state = (
+              "      markerOpen: marker?.getAttribute('aria-expanded') === 'true',\n"
+              "      tipOpen: !!tip,\n"
+              "      tip: tip && rect && style ? {"
+          )
+          state_replacement = (
+              "      markerOpen: marker?.getAttribute('aria-expanded') === 'true',\n"
+              "      tipOpen: !!tip,\n"
+              "      tipHovered: Boolean(tip && tip.matches(':hover')),\n"
+              "      tip: tip && rect && style ? {"
+          )
+          source = replace_once(source, state, state_replacement, 'footnote state block')
+
+          transition = (
+              "  } else {\n"
+              "    await desktop.mouse.move(openState.tip.centerX, openState.tip.centerY, { steps: 12 });\n"
+              "    try {\n"
+              "      await desktop.waitForFunction(() => {\n"
+              "        const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');\n"
+              "        return Boolean(tip && tip.matches(':hover'));\n"
+              "      }, undefined, { timeout: 2000 });\n"
+              "    } catch (_) {\n"
+              "      // Read the actual state below so the failure keeps useful evidence.\n"
+              "    }\n"
+              "    const heldState = await readStaticFootnoteHoverState();\n"
+              "    if (!heldState.tipOpen || !heldState.tip?.inViewport) {\n"
+              "      push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, heldState);\n"
+              "    }\n"
+              "  }"
+          )
+          transition_replacement = (
+              "  } else {\n"
+              "    const markerCenterX = hoverMarkerBox\n"
+              "      ? hoverMarkerBox.x + hoverMarkerBox.width / 2\n"
+              "      : openState.tip.centerX;\n"
+              "    const markerCenterY = hoverMarkerBox\n"
+              "      ? hoverMarkerBox.y + hoverMarkerBox.height / 2\n"
+              "      : openState.tip.centerY;\n"
+              "    const tipEntryX = Math.min(\n"
+              "      Math.max(markerCenterX, openState.tip.left + 2),\n"
+              "      openState.tip.right - 2,\n"
+              "    );\n"
+              "    const tipEntryY = openState.tip.top >= markerCenterY\n"
+              "      ? openState.tip.top + 2\n"
+              "      : openState.tip.bottom - 2;\n"
+              "    await desktop.mouse.move(tipEntryX, tipEntryY, { steps: 1 });\n"
+              "    try {\n"
+              "      await desktop.waitForFunction(() => {\n"
+              "        const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');\n"
+              "        return Boolean(tip && tip.matches(':hover'));\n"
+              "      }, undefined, { timeout: 1200 });\n"
+              "    } catch (_) {\n"
+              "      // Read the actual state below so the failure keeps useful evidence.\n"
+              "    }\n"
+              "    const heldState = await readStaticFootnoteHoverState();\n"
+              "    if (!heldState.tipOpen || !heldState.tipHovered || !heldState.tip?.inViewport) {\n"
+              "      push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, heldState);\n"
+              "    }\n"
+              "  }"
+          )
+          source = replace_once(source, transition, transition_replacement, 'footnote transition block')
+          audit.write_text(source, encoding='utf-8')
+
+          contract = Path('scripts/ci-browser-print-stability-contract-test.mjs')
+          text = contract.read_text(encoding='utf-8')
+          anchor = "assert.doesNotMatch(browser, /force:\\s*true/);\n"
+          addition = (
+              "assert.doesNotMatch(browser, /force:\\s*true/);\n\n"
+              "const interactive = fs.readFileSync('scripts/interactive-audit.js', 'utf8');\n"
+              "assert.match(interactive, /await waitForScrollSettled\\(desktop\\)/);\n"
+              "assert.match(interactive, /const hoverMarkerBox = await hoverMarker\\.boundingBox\\(\\)/);\n"
+              "assert.match(interactive, /desktop\\.mouse\\.move\\(tipEntryX, tipEntryY, \\{ steps: 1 \\}\\)/);\n"
+              "assert.match(interactive, /tipHovered: Boolean\\(tip && tip\\.matches\\(':hover'\\)\\)/);\n"
+              "assert.doesNotMatch(interactive, /hoverMarker\\.hover\\(/);\n"
+              "assert.doesNotMatch(interactive, /openState\\.tip\\.centerY, \\{ steps: 12 \\}/);\n"
+          )
+          text = replace_once(text, anchor, addition, 'stability contract anchor')
+          contract.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Validate and build
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v22.12.0"
+          test "$(npm --version)" = "10.9.0"
+          node --check scripts/interactive-audit.js
+          node --check scripts/ci-browser-print-stability-contract-test.mjs
+          node scripts/ci-browser-print-stability-contract-test.mjs
+          git diff --check
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+
+      - name: Prove three consecutive full audits
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 -d dist > /tmp/gb-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          for attempt in 1 2 3; do
+            echo "=== interactive audit attempt $attempt/3 ==="
+            AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit
+          done
+
+      - name: Transfer only proven source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/interactive-audit.js scripts/ci-browser-print-stability-contract-test.mjs
+          git diff --cached --quiet && { echo 'No proven source diff produced' >&2; exit 3; }
+          git diff --cached --check
+          git commit -m 'test(ci): model footnote hover with real pointer coordinates'
+          git push origin HEAD:agent/ci-browser-print-stability-20260731
