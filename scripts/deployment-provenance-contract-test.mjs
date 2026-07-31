@@ -23,7 +23,7 @@ function writeJson(filePath, value) { write(filePath, `${JSON.stringify(value, n
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'release-provenance-'));
   const dist = path.join(root, 'dist');
-  writeJson(path.join(root, 'data/release-toolchain.json'), { schemaVersion: 1, node: '22.12.0', npm: '10.9.0' });
+  writeJson(path.join(root, 'data/release-toolchain.json'), { schemaVersion: 1, node: '22.23.1', npm: '10.9.8' });
   writeJson(path.join(root, 'data/route-profiles/home.json'), { route: '/', currentStatus: 'production-dist' });
   writeJson(path.join(root, 'data/route-profiles/about.json'), { route: '/about/', currentStatus: 'production-dist' });
   writeJson(path.join(root, 'package-lock.json'), { name: 'fixture', lockfileVersion: 3 });
@@ -61,8 +61,8 @@ const identity = {
   runId: 123456789,
   runAttempt: 2,
   eventName: 'push',
-  actualNodeVersion: 'v22.12.0',
-  actualNpmVersion: '10.9.0',
+  actualNodeVersion: 'v22.23.1',
+  actualNpmVersion: '10.9.8',
   generatedAt: '2026-07-26T00:00:00.000Z',
 };
 
@@ -85,8 +85,8 @@ try {
   assert.equal(manifest.immutablePath, `/deployments/${identity.releaseSha}/${identity.runId}-${identity.runAttempt}.json`);
   assert.equal(manifest.workflow.stage, 'readiness');
   assert.deepEqual(manifest.build.routeCounts, { profiles: 2, html: 2, sitemap: 2 });
-  assert.equal(manifest.build.node, '22.12.0');
-  assert.equal(manifest.build.npm, '10.9.0');
+  assert.equal(manifest.build.node, '22.23.1');
+  assert.equal(manifest.build.npm, '10.9.8');
   assert.ok(manifest.build.pagefindDigest.startsWith('sha256:'));
   assert.equal(Object.hasOwn(manifest, 'commitSha'), false, 'ambiguous commitSha must not remain');
   assert.equal(Object.hasOwn(manifest, 'tts'), false, 'TTS must not remain top-level');
