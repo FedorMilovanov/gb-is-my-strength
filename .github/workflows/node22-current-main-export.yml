@@ -1,0 +1,97 @@
+name: Node 22 current-main validated export helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.event.pull_request.head.ref == 'agent/node22-current-main-export-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout exact current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: c58e938f60a215c33476b628639ab496065f48e9
+          path: target
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Checkout builder source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/node22-current-main-export-20260731
+          path: helper
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify exact target and builder heads
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C target rev-parse HEAD)" = 'c58e938f60a215c33476b628639ab496065f48e9'
+          test "$(git -C helper rev-parse HEAD)" = '${{ github.event.pull_request.head.sha }}'
+
+      - name: Build deterministic combined tree
+        run: python3 helper/scripts/node22-current-main-builder.py target
+
+      - name: Set up exact Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+          cache-dependency-path: target/package-lock.json
+
+      - name: Validate permanent contracts and production build
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = 'v22.23.1'
+          test "$(npm --version)" = '10.9.8'
+          npm ci
+          npm run workflows:policy
+          node scripts/node-toolchain-pin-contract-test.mjs
+          node scripts/github-actions-global-pin-contract-test.mjs
+          node scripts/deployment-provenance-contract-test.mjs
+          node scripts/release-pipeline-contract-test.mjs
+          node scripts/record-deployment-witness-contract-test.cjs
+          node scripts/workflow-linkage-regression-test.js
+          npm run astro:check
+          npm run astro:build
+          ! git grep -n -I -E '22\.12\.0|10\.9\.0' -- .github/workflows scripts/check-workflows.js scripts/deployment-provenance-contract-test.mjs scripts/record-deployment-witness-contract-test.cjs scripts/release-pipeline-contract-test.mjs data/release-toolchain.json
+          ! git grep -n -I -E "node-version:\s*['\"]22['\"]" -- .github/workflows
+          git diff --check
+
+      - name: Verify exact permanent file set
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          sort -u reports/node22-export/changed-files.txt > /tmp/expected.txt
+          git diff --name-only | sort -u > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          test -s /tmp/actual.txt
+          ! grep -E 'node22-current-main-export|node22-current-main-builder|node22-toolchain-export' /tmp/actual.txt
+
+      - name: Package validated permanent files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp target/reports/node22-export/changed-files.txt node22-current-main-files.txt
+          (cd target && tar -czf ../node22-current-main-files.tgz -T reports/node22-export/changed-files.txt)
+          tar -tzf node22-current-main-files.tgz
+
+      - name: Upload validated combined tree
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: node22-current-main-validated
+          path: |
+            node22-current-main-files.tgz
+            node22-current-main-files.txt
+          if-no-files-found: error
+          retention-days: 2
