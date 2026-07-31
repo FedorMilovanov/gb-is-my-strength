@@ -1,0 +1,171 @@
+name: Node 22.23.1 toolchain migrator helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.event.pull_request.head.ref == 'agent/node22-toolchain-migrator-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact Node validation branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/node22-lts-patch-validation-20260731
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Verify expected target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          expected="0f454961a8066e13b376d0615d51aea4d3167ff7"
+          test "$actual" = "$expected" || {
+            echo "Target drift: expected $expected, got $actual" >&2
+            exit 2
+          }
+
+      - name: Apply scoped toolchain migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          root = Path('.')
+          workflows = sorted((root / '.github' / 'workflows').glob('*.yml'))
+          changed = []
+
+          for path in workflows:
+              text = path.read_text(encoding='utf-8')
+              original = text
+              text = text.replace('22.12.0', '22.23.1')
+              text = text.replace('Node 22.12', 'Node 22.23.1')
+              # Make every setup-node runtime deterministic, including previously floating 22.
+              text = re.sub(r"(node-version:\s*)['\"]22['\"]", r"\1'22.23.1'", text)
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  changed.append(str(path))
+
+          scoped_files = [
+              root / 'scripts' / 'check-workflows.js',
+              root / 'scripts' / 'deployment-provenance-contract-test.mjs',
+              root / 'scripts' / 'record-deployment-witness-contract-test.cjs',
+              root / 'scripts' / 'release-pipeline-contract-test.mjs',
+          ]
+          for path in scoped_files:
+              text = path.read_text(encoding='utf-8')
+              original = text
+              text = text.replace('22.12.0', '22.23.1').replace('10.9.0', '10.9.8')
+              text = text.replace('Node 22.12', 'Node 22.23.1')
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  changed.append(str(path))
+
+          guard = root / 'scripts' / 'node-toolchain-pin-contract-test.mjs'
+          guard.write_text(r'''#!/usr/bin/env node
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { fileURLToPath } from 'node:url';
+
+          const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+          const toolchain = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/release-toolchain.json'), 'utf8'));
+          assert.match(toolchain.node, /^22\.\d+\.\d+$/, 'canonical Node must be an exact Node 22 patch');
+          assert.match(toolchain.npm, /^10\.\d+\.\d+$/, 'canonical npm must be an exact npm 10 patch');
+
+          const workflowDir = path.join(ROOT, '.github', 'workflows');
+          const files = fs.readdirSync(workflowDir).filter((name) => name.endsWith('.yml')).sort();
+          const declarations = [];
+          const mismatches = [];
+          for (const name of files) {
+            const source = fs.readFileSync(path.join(workflowDir, name), 'utf8');
+            for (const match of source.matchAll(/node-version:\s*['\"]?([^'\"\s#]+)['\"]?/g)) {
+              const value = match[1];
+              declarations.push({ name, value });
+              if (value !== toolchain.node) mismatches.push(`${name}: node-version ${value}`);
+            }
+          }
+          assert.ok(declarations.length >= 35, `expected at least 35 setup-node declarations, found ${declarations.length}`);
+          assert.deepEqual(mismatches, [], `all workflow Node runtimes must equal ${toolchain.node}:\n${mismatches.join('\n')}`);
+
+          const deploy = fs.readFileSync(path.join(workflowDir, 'deploy.yml'), 'utf8');
+          assert.match(deploy, new RegExp(`RELEASE_NODE_VERSION:\\s*['\"]${toolchain.node.replaceAll('.', '\\.')}['\"]`));
+          assert.match(deploy, new RegExp(`RELEASE_NPM_VERSION:\\s*['\"]${toolchain.npm.replaceAll('.', '\\.')}['\"]`));
+          const candidate = fs.readFileSync(path.join(workflowDir, 'deploy-candidate-contract.yml'), 'utf8');
+          assert.ok(candidate.includes(`npm@${toolchain.npm}`), 'deploy candidate must install canonical npm');
+          console.log(`NODE TOOLCHAIN PIN CONTRACT: PASS (${declarations.length} exact workflow declarations; Node ${toolchain.node}; npm ${toolchain.npm})`);
+          ''', encoding='utf-8')
+          changed.append(str(guard))
+
+          package = root / 'package.json'
+          data = json.loads(package.read_text(encoding='utf-8'))
+          current = data['scripts']['workflows:check']
+          guard_cmd = 'node scripts/node-toolchain-pin-contract-test.mjs'
+          if guard_cmd not in current:
+              data['scripts']['workflows:check'] = current + ' && ' + guard_cmd
+              package.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+              changed.append(str(package))
+
+          doc = root / 'docs' / 'dependency-migrations' / 'NODE_22_LTS_PATCH.md'
+          doc.parent.mkdir(parents=True, exist_ok=True)
+          doc.write_text('''# Node 22 LTS patch migration\n\nCanonical release toolchain: Node 22.23.1 and npm 10.9.8.\n\nSafety rules:\n\n- every GitHub Actions `node-version` is an exact patch, never floating `22`;\n- release workflows verify both `process.version` and `npm --version`;\n- historical audit documents and the compatible `engines >=22.12.0` floor are not rewritten;\n- the permanent node-toolchain pin contract is part of `workflows:check`;\n- Node 24/npm 11 remains a separate future major migration.\n''', encoding='utf-8')
+          changed.append(str(doc))
+
+          print('Changed files:')
+          for item in sorted(set(changed)):
+              print(item)
+          PY
+
+      - name: Set up exact Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Verify exact Node and npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "const assert=require('node:assert/strict'); const t=require('./data/release-toolchain.json'); assert.equal(process.version, 'v'+t.node)"
+          test "$(npm --version)" = "$(node -p "require('./data/release-toolchain.json').npm")"
+
+      - name: Install and validate permanent contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run workflows:policy
+          node scripts/deployment-provenance-contract-test.mjs
+          node scripts/release-pipeline-contract-test.mjs
+          node scripts/record-deployment-witness-contract-test.cjs
+          node scripts/workflow-linkage-regression-test.js
+          npm run astro:check
+          npm run astro:build
+
+      - name: Prove old active pins are gone
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! git grep -n -I -E '22\.12\.0|10\.9\.0' -- .github/workflows scripts/check-workflows.js scripts/deployment-provenance-contract-test.mjs scripts/record-deployment-witness-contract-test.cjs scripts/release-pipeline-contract-test.mjs data/release-toolchain.json
+          ! git grep -n -I -E "node-version:\\s*['\"]22['\"]" -- .github/workflows
+          git diff --check
+
+      - name: Commit migration to target branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows data/release-toolchain.json package.json scripts/check-workflows.js scripts/deployment-provenance-contract-test.mjs scripts/record-deployment-witness-contract-test.cjs scripts/release-pipeline-contract-test.mjs scripts/node-toolchain-pin-contract-test.mjs docs/dependency-migrations/NODE_22_LTS_PATCH.md
+          git diff --cached --quiet && { echo 'No migration diff produced' >&2; exit 3; }
+          git commit -m 'build(toolchain): pin Node 22.23.1 and npm 10.9.8'
+          git push origin HEAD:agent/node22-lts-patch-validation-20260731
