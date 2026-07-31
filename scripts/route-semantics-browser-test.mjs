@@ -130,6 +130,45 @@ async function launchBrowser() {
   return chromium.launch();
 }
 
+async function createCoverageContext(browser, base) {
+  const context = await browser.newContext({
+    viewport: COVERAGE_VIEWPORT,
+    serviceWorkers: 'block',
+  });
+  await context.addInitScript(() => {
+    const original = EventTarget.prototype.addEventListener;
+    const targets = new WeakMap();
+    window.__gbDuplicateListenerRegistrations = [];
+    EventTarget.prototype.addEventListener = function addEventListener(type, listener, options) {
+      if (listener && (typeof listener === 'function' || typeof listener.handleEvent === 'function')) {
+        const capture = typeof options === 'boolean' ? options : Boolean(options?.capture);
+        let byKey = targets.get(this);
+        if (!byKey) {
+          byKey = new Map();
+          targets.set(this, byKey);
+        }
+        const key = `${type}:${capture ? 'capture' : 'bubble'}`;
+        let listeners = byKey.get(key);
+        if (!listeners) {
+          listeners = new WeakSet();
+          byKey.set(key, listeners);
+        }
+        if (listeners.has(listener)) window.__gbDuplicateListenerRegistrations.push(key);
+        else listeners.add(listener);
+      }
+      return original.call(this, type, listener, options);
+    };
+  });
+  await context.route('**/*', async (requestRoute) => {
+    const request = requestRoute.request();
+    const url = request.url();
+    if (!url.startsWith(base) && !url.startsWith('data:') && !url.startsWith('blob:')) return requestRoute.abort();
+    if (['image', 'media', 'font'].includes(request.resourceType())) return requestRoute.abort();
+    return requestRoute.continue();
+  });
+  return context;
+}
+
 function normalizeAssetPath(url, base) {
   if (!url || !url.startsWith(base)) return null;
   return new URL(url).pathname.replace(/^\/+/, '');
@@ -215,40 +254,8 @@ try {
     }
   }
 
-  const context = await browser.newContext({ viewport: COVERAGE_VIEWPORT });
-  await context.addInitScript(() => {
-    const original = EventTarget.prototype.addEventListener;
-    const targets = new WeakMap();
-    window.__gbDuplicateListenerRegistrations = [];
-    EventTarget.prototype.addEventListener = function addEventListener(type, listener, options) {
-      if (listener && (typeof listener === 'function' || typeof listener.handleEvent === 'function')) {
-        const capture = typeof options === 'boolean' ? options : Boolean(options?.capture);
-        let byKey = targets.get(this);
-        if (!byKey) {
-          byKey = new Map();
-          targets.set(this, byKey);
-        }
-        const key = `${type}:${capture ? 'capture' : 'bubble'}`;
-        let listeners = byKey.get(key);
-        if (!listeners) {
-          listeners = new WeakSet();
-          byKey.set(key, listeners);
-        }
-        if (listeners.has(listener)) window.__gbDuplicateListenerRegistrations.push(key);
-        else listeners.add(listener);
-      }
-      return original.call(this, type, listener, options);
-    };
-  });
-  await context.route('**/*', async (requestRoute) => {
-    const request = requestRoute.request();
-    const url = request.url();
-    if (!url.startsWith(base) && !url.startsWith('data:') && !url.startsWith('blob:')) return requestRoute.abort();
-    if (['image', 'media', 'font'].includes(request.resourceType())) return requestRoute.abort();
-    return requestRoute.continue();
-  });
-
   for (const entry of productionEntries) {
+    const context = await createCoverageContext(browser, base);
     const page = await context.newPage();
     const pageErrors = [];
     const badResponses = [];
@@ -361,8 +368,8 @@ try {
       features,
     });
     await page.close();
+    await context.close();
   }
-  await context.close();
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
