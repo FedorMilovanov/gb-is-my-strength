@@ -152,7 +152,10 @@ const baseLayout = read('src/layouts/BaseLayout.astro');
 check('Relations: compiler validates catalog, derives series and imports legacy fallback', relationEngine.includes('function compileCatalog') && relationEngine.includes('function compileSeries') && relationEngine.includes('function compileLegacy') && relationEngine.includes('legacy-import'));
 check('Relations: compiler creates ranked article projections without series duplication', relationEngine.includes('function buildProjections') && relationEngine.includes('sameSeries') && relationEngine.includes('.slice(0, 4)'));
 check('Relations: compiler fails on ambiguous series ownership', relationEngine.includes('seriesOwnerByUrl') && relationEngine.includes('belongs to both'));
-check('Relations: compiler rejects synthetic series node id collisions instead of renumbering deep links', relationEngine.includes('series node id collision') && !relationEngine.includes('while (byId.has(id))'));
+check('Relations: compiler rejects synthetic series node id collisions instead of renumbering deep links',
+  relationEngine.includes('synthetic series node id') &&
+  relationEngine.includes('collides with an existing node') &&
+  !relationEngine.includes('while (byId.has(id))'));
 check('Relations: compiler validates draft and deprecated endpoints before status handling', relationEngine.indexOf('references invalid endpoints') < relationEngine.indexOf("status === 'draft'"));
 check('Relations: composition root compiles and recursively freezes once', relationComposition.includes("import graphData from '../../../data/links-graph.json'") && relationComposition.includes("import seriesData from '../../../data/series.json'") && relationComposition.includes("import catalogData from '../../../data/relations.json'") && relationComposition.includes('function deepFreeze') && (relationComposition.match(/compileRelations\(/g) || []).length === 1);
 check('Relations: endpoint serves canonical singleton', relationEndpoint.includes('export const prerender = true') && relationEndpoint.includes("import compiledRelations from '../../lib/relations/compiled'") && !relationEndpoint.includes('compileRelations('));
@@ -191,7 +194,7 @@ function relationImportsOutsideComposition(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const file = path.join(dir, entry.name);
     if (entry.isDirectory()) offenders.push(...relationImportsOutsideComposition(file));
-    else if (/\.(astro|ts|tsx)$/.test(entry.name)) {
+    else if (/\.(astro|ts|tsx)$/.test(entry.name) && !entry.name.endsWith('.d.ts')) {
       const relative = path.relative(ROOT, file).replace(/\\/g, '/');
       if (relative === 'src/lib/relations/compiled.ts') continue;
       if (fs.readFileSync(file, 'utf8').includes('compileRelations(')) offenders.push(relative);

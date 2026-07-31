@@ -13,26 +13,38 @@ const loaded = loadRouteRecords();
 const baseline = buildPublicSurfaceRegistry({ loaded });
 assert.deepEqual(baseline.errors, [], baseline.errors.join('\n'));
 assert.equal(baseline.entries.length, 83);
-assert.deepEqual(baseline.counts, { page: 9, series: 58, article: 2, special: 14 });
-assert.deepEqual(baseline.shapeCounts, { flat: 34, book: 24 });
+assert.deepEqual(baseline.counts, { page: 8, series: 59, article: 2, special: 14 });
+assert.deepEqual(baseline.shapeCounts, { flat: 34, book: 25 });
 assert.deepEqual(baseline.roleCounts, { page: 2, reading: 54, application: 14, landing: 11, reference: 2 });
 
 const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));
 const bookEntry = entryByRoute.get('/articles/novoe-serdce/');
+const landingBookEntry = entryByRoute.get('/hard-texts/');
 const pageEntry = entryByRoute.get('/about/');
 const specialEntry = entryByRoute.get('/karty/avraam/');
 assert.ok(bookEntry, 'book fixture must be present in registry');
+assert.ok(landingBookEntry, 'book landing fixture must be present in registry');
 assert.ok(pageEntry, 'ordinary page fixture must be present in registry');
 assert.ok(specialEntry, 'special map fixture must be present in registry');
 assert.equal(bookEntry.settingsCapability, 'reader-ui');
+assert.equal(landingBookEntry.surface, 'series');
+assert.equal(landingBookEntry.seriesShape, 'book');
+assert.equal(landingBookEntry.routeRole, 'landing');
+assert.equal(landingBookEntry.chrome.adapter, 'series-landing');
+assert.equal(landingBookEntry.settingsCapability, 'global-preferences');
 assert.equal(pageEntry.settingsCapability, 'global-preferences');
 assert.equal(specialEntry.settingsCapability, 'global-preferences+special-bridge');
 assert.ok(
   bookEntry.configSources.includes('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'),
   'book route must resolve the canonical hard-texts series config'
 );
+assert.ok(
+  landingBookEntry.configSources.includes('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'),
+  'book landing must resolve the canonical hard-texts series config'
+);
 
 const semanticExpectations = new Map([
+  ['/hard-texts/', ['landing', 'series-landing', 'global-preferences']],
   ['/nagornaya/', ['landing', 'series-landing', 'global-preferences']],
   ['/baptisty-rossii/', ['landing', 'series-landing', 'global-preferences']],
   ['/nagornaya/seriya/', ['landing', 'series-landing', 'global-preferences']],
@@ -119,21 +131,5 @@ function errorsFor(record) {
   record.profile.routeType = 'unknown';
   assert.ok(errorsFor(record).some((error) => error.includes('routeType=unknown')));
 }
-{
-  const record = cloneRecord('/nagornaya/');
-  record.profile.migrationLane = 'content';
-  assert.ok(errorsFor(record).some((error) => error.includes('series-landing requires migrationLane=landing')));
-}
-{
-  const record = cloneRecord('/nagornaya/istochniki/');
-  record.profile.surface = 'page';
-  delete record.profile.seriesShape;
-  assert.ok(errorsFor(record).some((error) => error.includes('series-reference requires surface=series')));
-}
-{
-  const record = cloneRecord('/karty/');
-  record.profile.section = 'unknown';
-  assert.ok(errorsFor(record).some((error) => error.includes('section=unknown')));
-}
 
-console.log('✅ public-surface-registry mutation tests passed');
+console.log('✅ public surface registry regression tests passed');

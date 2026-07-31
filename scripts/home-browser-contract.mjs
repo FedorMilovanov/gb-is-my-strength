@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { chromium, webkit } from 'playwright';
+import { runResponsiveEvidence, runResponsiveNoJavaScript } from './home-responsive-evidence-contract.mjs';
 
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
@@ -29,6 +30,9 @@ function contentType(filePath) {
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
     '.webp': 'image/webp',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
     '.woff2': 'font/woff2',
   }[extension] || 'application/octet-stream';
 }
@@ -126,6 +130,7 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     viewport: { width: 390, height: 844 },
     reducedMotion: 'reduce',
     locale: 'ru-RU',
+    colorScheme: 'light',
   });
   const page = await context.newPage();
   const runtimeErrors = [];
@@ -141,6 +146,18 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await page.waitForSelector('#hMobileMenuBtn');
     assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), true, 'home has horizontal overflow');
+    assert.equal(await page.locator('#hScriptureBg').count(), 0, 'legacy ambient hook remains');
+    assert.equal(await page.locator('#heroSearchBar').getAttribute('href'), '/articles/', 'hero search fallback missing');
+    assert.equal(await page.locator('a[href="/articles/krajne-li-isporcheno-serdce/"]').count(), 1, 'Jeremiah card route is wrong');
+    assert.equal(await page.locator('#publikacii[data-pagefind-ignore]').count(), 1, 'publication catalogue is not ignored by Pagefind');
+
+    const themeToggle = page.locator('#themeToggle');
+    await themeToggle.click();
+    await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+    assert.equal(await themeToggle.getAttribute('aria-pressed'), 'true', 'visible theme control did not enter dark state');
+    await themeToggle.click();
+    await page.waitForFunction(() => !document.documentElement.classList.contains('dark'));
+    assert.equal(await themeToggle.getAttribute('aria-pressed'), 'false', 'visible theme control did not return to light state');
 
     const menuButton = page.locator('#hMobileMenuBtn');
     const menuPanel = page.locator('#hMobileNav');
@@ -215,6 +232,10 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await page.keyboard.press('Control+K');
     const searchInput = page.locator('.cp-input');
     await searchInput.waitFor({ state: 'visible' });
+    await page.waitForFunction(() => {
+      const input = document.querySelector('.cp-input');
+      return input !== null && input === document.activeElement;
+    });
     assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, 'canonical Ctrl+K did not focus search input');
     assert.equal(await page.locator('.cp-backdrop').count(), 1, 'search initialized more than once');
     await page.keyboard.press('Escape');
@@ -277,7 +298,12 @@ async function runNoJavaScript(browserName, browserType, baseUrl) {
     const noJsNavigation = page.locator('.h-nojs-nav');
     await noJsNavigation.waitFor({ state: 'visible' });
     assert.ok(await noJsNavigation.locator('a[href]').count() >= 6, 'no-JS navigation is incomplete');
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), true, 'no-JS home has horizontal overflow');
+    assert.equal(await page.locator('#heroSearchBar').getAttribute('href'), '/articles/', 'no-JS search fallback missing');
+    const sacred = page.locator('.h-sacred-block--hero button.hb-w, .h-sacred-block--hero button.h-tetra');
+    assert.equal(await sacred.count(), 9, 'no-JS Habakkuk control count changed');
+    for (let index = 0; index < await sacred.count(); index += 1) {
+      assert.equal(await sacred.nth(index).isDisabled(), true, `no-JS Habakkuk control ${index + 1} is enabled`);
+    }
     return { browser: `${browserName}-no-js`, result: 'PASS' };
   } finally {
     await context.close();
@@ -295,6 +321,8 @@ async function main() {
       assert.ok(browserType, `unsupported browser: ${browserName}`);
       results.push(await runInteractiveBrowser(browserName, browserType, server.baseUrl));
       results.push(await runNoJavaScript(browserName, browserType, server.baseUrl));
+      results.push(await runResponsiveEvidence(browserName, browserType, server.baseUrl));
+      results.push(await runResponsiveNoJavaScript(browserName, browserType, server.baseUrl));
     }
     fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ result: 'PASS', results }, null, 2)}\n`);
     console.log(`Home browser contract: PASS (${results.length} browser modes)`);

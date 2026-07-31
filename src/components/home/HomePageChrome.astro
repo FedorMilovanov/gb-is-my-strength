@@ -9,9 +9,6 @@
      Reading progress itself is rendered by the ring around #hScrollTop. -->
 <div id="hReadingProgress" hidden aria-hidden="true" data-home-scroll-hook></div>
 
-<!-- ══════════════════════════════════════════════════════
-     SMART NAVBAR
-══════════════════════════════════════════════════════ -->
 <nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
   <div class="h-navbar__inner">
     <a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
@@ -30,9 +27,6 @@
     </ul>
 
     <div class="mobile-controls">
-      {/* Static search icon: search.js used to inject #gbSearchBtn only after
-          its lazy load (first interaction), so the header had no search icon
-          on first paint. Rendered here up-front; search.js dedupes by id. */}
       <button
         class="gb-nav-search-icon"
         id="gbSearchBtn"
@@ -82,12 +76,20 @@
 <div class="h-mobile-nav" id="hMobileNav" role="dialog" aria-modal="true" aria-labelledby="hMobileNavTitle" aria-hidden="true">
   <div class="h-mobile-nav__head">
     <p id="hMobileNavTitle">Библиотека</p>
-    <button type="button" data-action="open-search" data-close-nav>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      Найти материал
-    </button>
+    <div class="h-mobile-nav__head-actions">
+      <button type="button" data-action="open-search" data-close-nav>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        Найти материал
+      </button>
+      <button class="h-mobile-nav__close" type="button" data-close-nav aria-label="Закрыть меню">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <line x1="5" y1="5" x2="19" y2="19"></line>
+          <line x1="19" y1="5" x2="5" y2="19"></line>
+        </svg>
+      </button>
+    </div>
   </div>
   <div class="h-mobile-nav__primary">
     <a href="/articles/" data-close-nav><span>01</span>Статьи и ответы</a>
@@ -106,10 +108,6 @@
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
 
 <div class="home-v20">
-  <div class="h-scripture-bg" aria-hidden="true" id="hScriptureBg">
-    <!-- Phrases injected by JS -->
-  </div>
-
   <slot />
 </div><!-- /.home-v20 -->
 
@@ -121,6 +119,44 @@
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"></polyline></svg>
   </span>
 </button>
+
+<style is:global>
+  body.home-page .h-mobile-nav__head-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  body.home-page .h-mobile-nav__close {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--h-muted);
+    cursor: pointer;
+  }
+
+  body.home-page .h-mobile-nav__close:is(:hover, :focus-visible) {
+    background: var(--h-surface);
+    color: var(--h-accent);
+  }
+
+  body.home-page .h-mobile-nav__close:focus-visible {
+    outline: 2px solid var(--h-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page .h-mobile-nav__close {
+      transition: none;
+    }
+  }
+</style>
 
 <script is:inline>
 window.SITE_CONFIG = {
@@ -165,10 +201,23 @@ window.SITE_CONFIG = {
     const isOpen = () => trigger.getAttribute('aria-expanded') === 'true' && panel.classList.contains('open');
     const desktopMedia = window.matchMedia('(min-width: 761px)');
     const desktopFocusTarget = document.querySelector('.h-nav-links a');
+    const inertRoots = [
+      document.querySelector('.home-v20'),
+      document.getElementById('hScrollTop'),
+      document.querySelector('.h-nav-logo'),
+      document.querySelector('.h-nav-links'),
+      document.getElementById('gbSearchBtn'),
+      document.getElementById('themeToggle'),
+    ].filter(Boolean);
     let wasOpen = false;
+
+    const syncModalIsolation = (open) => {
+      inertRoots.forEach((root) => root.toggleAttribute('inert', open));
+    };
 
     const syncFocus = () => {
       const open = isOpen();
+      syncModalIsolation(open);
       if (open && !wasOpen) {
         requestAnimationFrame(() => controls()[0]?.focus({ preventScroll: true }));
       } else if (!open && wasOpen && panel.contains(document.activeElement)) {
@@ -194,6 +243,7 @@ window.SITE_CONFIG = {
     desktopMedia.addEventListener('change', closeAtDesktopBreakpoint);
     window.addEventListener('pageshow', (event) => {
       if (event.persisted) window.closeMobileNav?.();
+      else syncFocus();
     });
 
     document.addEventListener('keydown', (event) => {
@@ -212,6 +262,8 @@ window.SITE_CONFIG = {
         first.focus();
       }
     }, true);
+
+    syncFocus();
   })();
 </script>
 <script is:inline>

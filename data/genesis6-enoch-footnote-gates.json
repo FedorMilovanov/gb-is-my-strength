@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "seriesId": "genesis-6",
-  "releaseState": "blocked",
+  "releaseState": "published",
   "articles": [
     {
       "articleKey": "6A",
@@ -81,8 +81,8 @@
     "failOnFootnoteRegression": true,
     "targetIsPublicationGate": true,
     "allowDraftBelowTarget": false,
-    "requireDraft": true,
-    "requireNoindex": true,
+    "requireDraft": false,
+    "requireNoindex": false,
     "requireSourcesRequired": true,
     "requireDefinedReferences": true,
     "requireUsedDefinitions": true,

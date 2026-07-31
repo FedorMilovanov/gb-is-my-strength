@@ -23,7 +23,8 @@ function Invoke-Git {
 }
 
 Invoke-Git rev-parse --is-inside-work-tree | Out-Null
-Invoke-Git fetch origin main --prune
+Invoke-Git fetch --all --prune
+Invoke-Git rev-parse --verify "$Base^{commit}" | Out-Null
 
 $date = Get-Date -Format "yyyy-MM-dd"
 $slug = $Name.ToLowerInvariant()
@@ -33,14 +34,16 @@ $parentPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Parent))
 if ($Mode -eq "Task") {
     $branch = "lane/$slug-$date"
     $path = Join-Path $parentPath "gb-wt-$slug"
+    Invoke-Git check-ref-format --branch $branch | Out-Null
     Invoke-Git worktree add -b $branch $path $Base
     Write-Host ""
     Write-Host "Created local product worktree:"
     Write-Host "  Path:   $path"
     Write-Host "  Branch: $branch"
+    Write-Host "  Base:   $Base"
     Write-Host ""
-    Write-Host "Before push: declare ownership, inspect active PR overlap, run scoped checks,"
-    Write-Host "and prepare one canonical draft PR."
+    Write-Host "Declare ownership and overlap, then work locally."
+    Write-Host "Push and open the draft PR after the first meaningful recoverable commit."
 }
 else {
     $path = Join-Path $parentPath "gb-diag-$slug"
@@ -50,6 +53,6 @@ else {
     Write-Host "  Path: $path"
     Write-Host "  Base: $Base"
     Write-Host ""
-    Write-Host "Do not push a diagnostic branch. Capture evidence, then remove the worktree."
-    Write-Host "If the experiment becomes product work, create one local lane branch first."
+    Write-Host "Do not push disposable diagnostic noise. Capture evidence locally or as an artifact."
+    Write-Host "If the result becomes useful, create a lane branch, commit it, push, and open one draft PR."
 }

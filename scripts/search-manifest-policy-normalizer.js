@@ -29,6 +29,25 @@ function writeJson(file, value) {
   fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
 }
 
+function manifestMaxModifiedAt(manifest) {
+  let max = null;
+  for (const item of Array.isArray(manifest?.items) ? manifest.items : []) {
+    const value = Date.parse(String(item?.modifiedTime || ''));
+    if (Number.isFinite(value) && (max === null || value > max)) max = value;
+  }
+  return max === null ? null : new Date(max).toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+function refreshGeneratedAt(manifest) {
+  const maxModifiedAt = manifestMaxModifiedAt(manifest);
+  if (!maxModifiedAt) return false;
+  const current = Date.parse(String(manifest?.generatedAt || ''));
+  const target = Date.parse(maxModifiedAt);
+  if (Number.isFinite(current) && current >= target) return false;
+  manifest.generatedAt = maxModifiedAt;
+  return true;
+}
+
 function routeToDistFile(route, distRoot) {
   const clean = normalizeRoute(route).replace(/^\/+|\/+$/g, '');
   return path.join(distRoot, clean, 'index.html');
@@ -91,7 +110,101 @@ function routeId(route) {
   return normalized.replace(/^\/+|\/+$/g, '').split('/').pop();
 }
 
-function buildManifestItem(route, policy, html) {
+function joinRoute(baseUrl, slug) {
+  return normalizeRoute(`${String(baseUrl || '/').replace(/\/+$/, '')}/${String(slug || '').replace(/^\/+|\/+$/g, '')}/`);
+}
+
+function seriesReadingTimes(seriesData) {
+  const result = new Map();
+  for (const [seriesId, series] of Object.entries(seriesData || {})) {
+    if (!series?.baseUrl || !Array.isArray(series.parts)) continue;
+    for (const part of series.parts) {
+      if (part?.status !== 'published') continue;
+      if (!part.slug) throw new Error(`${seriesId}: published series part missing slug`);
+      if (!Number.isInteger(part.readingTime) || part.readingTime < 1) {
+        throw new Error(`${seriesId}/${part.slug}: published series part missing positive readingTime`);
+      }
+      const route = joinRoute(series.baseUrl, part.slug);
+      if (result.has(route) && result.get(route) !== part.readingTime) {
+        throw new Error(`${route}: conflicting canonical series readingTime`);
+      }
+      result.set(route, part.readingTime);
+    }
+  }
+  return result;
+}
+
+function seriesPolicySeeds(seriesData) {
+  const byRoute = new Map();
+  for (const [seriesId, series] of Object.entries(seriesData || {})) {
+    const declaration = series?.searchPolicy;
+    if (!declaration) continue;
+    for (const field of ['librarySection', 'topicCategory']) {
+      if (!declaration[field] || typeof declaration[field] !== 'string') {
+        throw new Error(`${seriesId}: searchPolicy.${field} must be a non-empty string`);
+      }
+    }
+
+    const addSeed = (route, policy) => {
+      const normalized = normalizeRoute(route);
+      if (byRoute.has(normalized)) throw new Error(`${normalized}: duplicate series search policy seed`);
+      byRoute.set(normalized, { route: normalized, policy });
+    };
+
+    if (declaration.landingRoute) {
+      addSeed(declaration.landingRoute, {
+        indexPolicy: 'index',
+        pagefindPolicy: 'include',
+        searchManifestPolicy: 'exclude',
+        sitemapPolicy: 'include',
+        rssPolicy: 'exclude',
+        contentKind: 'landing',
+        librarySection: declaration.librarySection,
+        topicCategory: declaration.topicCategory,
+      });
+    }
+
+    if (!series?.baseUrl || !Array.isArray(series.parts)) {
+      throw new Error(`${seriesId}: searchPolicy requires baseUrl and parts`);
+    }
+    for (const part of series.parts) {
+      if (part?.status !== 'published') continue;
+      if (!part.slug) throw new Error(`${seriesId}: published series part missing slug`);
+      addSeed(joinRoute(series.baseUrl, part.slug), {
+        indexPolicy: 'index',
+        pagefindPolicy: 'include',
+        searchManifestPolicy: 'exclude',
+        sitemapPolicy: 'include',
+        rssPolicy: 'include',
+        contentKind: 'series-article',
+        librarySection: declaration.librarySection,
+        topicCategory: declaration.topicCategory,
+      });
+    }
+  }
+  return [...byRoute.values()].sort((a, b) => a.route.localeCompare(b.route, 'ru'));
+}
+
+function applyPolicySeeds({ policyRegistry, seriesData, productionRecords }) {
+  if (!policyRegistry.routes || typeof policyRegistry.routes !== 'object') policyRegistry.routes = {};
+  const productionRoutes = new Set(
+    (productionRecords || [])
+      .filter((record) => record?.owner?.status === 'production-dist')
+      .map((record) => normalizeRoute(record.route))
+  );
+  const seeded = [];
+  for (const seed of seriesPolicySeeds(seriesData)) {
+    if (!productionRoutes.has(seed.route)) {
+      throw new Error(`${seed.route}: series search policy seed has no production route`);
+    }
+    if (policyRegistry.routes[seed.route]) continue;
+    policyRegistry.routes[seed.route] = seed.policy;
+    seeded.push(seed.route);
+  }
+  return seeded;
+}
+
+function buildManifestItem(route, policy, html, fallbackReadTime = null) {
   const title = firstMeta(html, 'property', 'og:title')
     || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
   const description = firstMeta(html, 'name', 'description')
@@ -102,7 +215,8 @@ function buildManifestItem(route, policy, html) {
   const tags = [...new Set(metaValues(html, 'property', 'article:tag'))];
   const publishedTime = firstMeta(html, 'property', 'article:published_time');
   const modifiedTime = firstMeta(html, 'property', 'article:modified_time') || publishedTime;
-  const readTime = readingTime(html);
+  const htmlReadTime = readingTime(html);
+  const readTime = Number.isInteger(htmlReadTime) ? htmlReadTime : fallbackReadTime;
 
   const missing = [];
   if (!title) missing.push('title');
@@ -166,8 +280,10 @@ function migrationCandidates({ policyRegistry, manifest, productionRecords, prom
   return candidates.sort((a, b) => a.route.localeCompare(b.route, 'ru'));
 }
 
-function applyMigration({ policyRegistry, manifest, productionRecords, distRoot, promoteRssArticles }) {
+function applyMigration({ policyRegistry, manifest, seriesData, productionRecords, distRoot, promoteRssArticles }) {
   if (!Array.isArray(manifest.items)) manifest.items = [];
+  const canonicalReadTimes = seriesReadingTimes(seriesData);
+  const seeded = applyPolicySeeds({ policyRegistry, seriesData, productionRecords });
   const candidates = migrationCandidates({
     policyRegistry,
     manifest,
@@ -188,7 +304,12 @@ function applyMigration({ policyRegistry, manifest, productionRecords, distRoot,
     if (candidate.alreadyInManifest) continue;
     const distFile = routeToDistFile(route, distRoot);
     if (!fs.existsSync(distFile)) throw new Error(`${route}: missing built HTML ${distFile}`);
-    const item = buildManifestItem(route, policy, fs.readFileSync(distFile, 'utf8'));
+    const item = buildManifestItem(
+      route,
+      policy,
+      fs.readFileSync(distFile, 'utf8'),
+      canonicalReadTimes.get(route) || null
+    );
     if (ids.has(item.id)) throw new Error(`${route}: duplicate manifest id ${item.id}`);
     if (urls.has(item.url)) throw new Error(`${route}: duplicate manifest url ${item.url}`);
     ids.add(item.id);
@@ -197,7 +318,7 @@ function applyMigration({ policyRegistry, manifest, productionRecords, distRoot,
     added.push(route);
   }
 
-  return { candidates, promoted, added };
+  return { seeded, candidates, promoted, added };
 }
 
 function main() {
@@ -205,36 +326,46 @@ function main() {
   const distRoot = path.resolve(ROOT, options.dist);
   const policyFile = path.join(ROOT, 'data/route-search-policy.json');
   const manifestFile = path.join(ROOT, 'data/search-manifest.json');
+  const seriesFile = path.join(ROOT, 'data/series.json');
   const policyRegistry = readJson(policyFile);
   const manifest = readJson(manifestFile);
+  const seriesData = readJson(seriesFile);
   const { loadRouteRecords } = require('./lib/effective-route-registry');
   const loaded = loadRouteRecords();
   const result = applyMigration({
     policyRegistry,
     manifest,
+    seriesData,
     productionRecords: loaded.records,
     distRoot,
     promoteRssArticles: options.promoteRssArticles,
   });
+  const migrationChanged = Boolean(result.seeded.length || result.promoted.length || result.added.length);
+  const generatedAtRefreshed = migrationChanged ? false : refreshGeneratedAt(manifest);
 
+  console.log(`Search policy seeds: ${result.seeded.length}`);
+  for (const route of result.seeded) console.log(`SEED ${route}`);
   console.log(`Search manifest migration candidates: ${result.candidates.length}`);
   for (const route of result.promoted) console.log(`PROMOTE ${route}`);
   for (const route of result.added) console.log(`ADD ${route}`);
+  console.log(`Search manifest generatedAt refreshed: ${generatedAtRefreshed ? 'yes' : 'no'}`);
 
   if (!options.write) {
-    if (result.promoted.length || result.added.length) process.exitCode = 1;
+    if (result.seeded.length || result.promoted.length || result.added.length || generatedAtRefreshed) process.exitCode = 1;
     return;
   }
 
-  if (!result.promoted.length && !result.added.length) {
-    console.log('No search manifest migration changes required.');
+  if (!migrationChanged && !generatedAtRefreshed) {
+    console.log('No search policy or manifest migration changes required.');
     return;
   }
-  policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
-  manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-  writeJson(policyFile, policyRegistry);
+  if (migrationChanged) {
+    policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
+    manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+    writeJson(policyFile, policyRegistry);
+  }
   writeJson(manifestFile, manifest);
-  console.log(`Wrote ${result.promoted.length} policy promotion(s) and ${result.added.length} manifest item(s).`);
+  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s), ${result.added.length} manifest item(s) and generatedAt refresh=${generatedAtRefreshed}.`);
 }
 
 if (require.main === module) {
@@ -249,6 +380,8 @@ if (require.main === module) {
 module.exports = {
   SEARCHABLE_ARTICLE_KINDS,
   parseArgs,
+  manifestMaxModifiedAt,
+  refreshGeneratedAt,
   attr,
   metaValues,
   firstMeta,
@@ -257,6 +390,10 @@ module.exports = {
   readingTime,
   contentKindToManifestType,
   routeId,
+  joinRoute,
+  seriesReadingTimes,
+  seriesPolicySeeds,
+  applyPolicySeeds,
   buildManifestItem,
   migrationCandidates,
   applyMigration,

@@ -63,6 +63,10 @@ const robots = indexable
   ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
   : 'noindex, nofollow, noarchive';
 const ogImage = `${SITE.url}${item.cover.replace(/^\.\.\/\.\./, '')}`;
+const personId = `${SITE.url}/about/#person`;
+const logoId = `${SITE.url}/#logo`;
+const breadcrumbsId = `${canonical}#breadcrumbs`;
+const articleId = `${canonical}#article`;
 const dateRu = (value: string) => new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
 }).format(new Date(value));
@@ -70,8 +74,51 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
     {
+      '@type': 'Organization',
+      '@id': SITE.orgId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      logo: {
+        '@type': 'ImageObject',
+        '@id': logoId,
+        url: `${SITE.url}/images/og-preview-1200x630.webp`,
+        width: 1200,
+        height: 630,
+      },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': SITE.websiteId,
+      url: `${SITE.url}/`,
+      name: SITE.name,
+      inLanguage: 'ru',
+      publisher: { '@id': SITE.orgId },
+    },
+    {
+      '@type': 'Person',
+      '@id': personId,
+      name: SITE.authorName,
+      url: `${SITE.url}/about/`,
+    },
+    {
+      '@type': 'WebPage',
+      '@id': canonical,
+      url: canonical,
+      name: frontmatter.h1,
+      description: frontmatter.description,
+      inLanguage: 'ru',
+      isPartOf: { '@id': SITE.websiteId },
+      breadcrumb: { '@id': breadcrumbsId },
+      primaryImageOfPage: {
+        '@type': 'ImageObject',
+        url: ogImage,
+        width: 1200,
+        height: 675,
+      },
+    },
+    {
       '@type': 'Article',
-      '@id': `${canonical}#article`,
+      '@id': articleId,
       headline: frontmatter.h1,
       description: frontmatter.description,
       url: canonical,
@@ -79,14 +126,14 @@ const jsonLd = {
       image: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 675 },
       datePublished: frontmatter.publishedAt,
       dateModified: frontmatter.updatedAt,
-      author: { '@id': `${SITE.url}/about/#person` },
-      publisher: { '@id': `${SITE.url}/#organization` },
+      author: { '@id': personId },
+      publisher: { '@id': SITE.orgId },
       isPartOf: { '@type': 'CreativeWorkSeries', name: GENESIS6_SERIES.seriesTitleFull, url: `${SITE.url}/hard-texts/genesis-6/` },
-      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+      mainEntityOfPage: { '@id': canonical },
     },
     {
       '@type': 'BreadcrumbList',
-      '@id': `${canonical}#breadcrumbs`,
+      '@id': breadcrumbsId,
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
         { '@type': 'ListItem', position: 2, name: 'Трудные тексты', item: `${SITE.url}/hard-texts/` },

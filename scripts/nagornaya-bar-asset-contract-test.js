@@ -10,8 +10,10 @@ const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const ASSET = 'js/nagornaya-bar-extras.js';
 const COMPACT_COMPONENT = 'src/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';
+const RUNTIME_COMPONENT = 'src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro';
 const CHAST3_PAGE = 'src/pages/nagornaya/chast-3/index.astro';
 const COMPACT_IMPORT = "import NagornayaCompactBottomBar from '@/components/nagornaya/_shared/NagornayaCompactBottomBar.astro';";
+const RUNTIME_IMPORT = "import NagornayaPageFooterRuntime from '@/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro';";
 const assetAbs = path.join(ROOT, ASSET);
 const expectedHash = crypto.createHash('md5').update(fs.readFileSync(assetAbs)).digest('hex').slice(0, 8);
 
@@ -19,7 +21,7 @@ function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
 }
 
-function assertPageContract(rel) {
+function assertAssetContract(rel) {
   const source = read(rel);
   const escaped = ASSET.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const refs = [...source.matchAll(new RegExp(`(?:\\.\\.\\/)*${escaped}\\?v=([a-f0-9]{8})`, 'g'))];
@@ -38,6 +40,13 @@ function assertCompactFooterContract(rel) {
   const source = read(rel);
   assert(source.includes(COMPACT_IMPORT), `${rel}: compact bottom-bar component import is missing`);
   assert(source.includes('<NagornayaCompactBottomBar />'), `${rel}: compact bottom-bar component mount is missing`);
+}
+
+function assertRuntimeFooterContract(rel) {
+  const source = read(rel);
+  assert(source.includes(RUNTIME_IMPORT), `${rel}: canonical footer runtime import is missing`);
+  assert(source.includes('<NagornayaPageFooterRuntime />'), `${rel}: canonical footer runtime mount is missing`);
+  assert(!source.includes(ASSET), `${rel}: shared runtime assets must not be duplicated in route footers`);
 }
 
 const compact = read(COMPACT_COMPONENT);
@@ -72,11 +81,12 @@ assert.match(compact, /\.gb-ember-expand[\s\S]*?position:\s*fixed\s*!important/,
 assert.match(compact, /\.gb-ember-expand[\s\S]*?left:[\s\S]*?right:/, `${COMPACT_COMPONENT}: narrow speed sheet must be bounded on both viewport edges`);
 assert.match(compact, /\.gb-ember-expand[\s\S]*?transform:\s*none\s*!important/, `${COMPACT_COMPONENT}: narrow speed sheet must cancel the desktop centering transform`);
 
+assertAssetContract(RUNTIME_COMPONENT);
 for (let part = 1; part <= 5; part += 1) {
   const footer = `src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`;
-  assertPageContract(footer);
+  assertRuntimeFooterContract(footer);
   assertCompactFooterContract(footer);
-  assertPageContract(`nagornaya/chast-${part}/index.html`);
+  assertAssetContract(`nagornaya/chast-${part}/index.html`);
 }
 
 const adversarial = path.join(ROOT, 'src', '__nagornaya_bar_revision_adversarial.astro');
@@ -100,4 +110,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: 10 page sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/table containment, Part III matrix/summary stacking, priority and speed-sheet contracts, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: shared Astro runtime owner, 5 native mounts, 5 legacy sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/table containment, Part III matrix/summary stacking, priority and speed-sheet contracts, adversarial v=1 rejected`);

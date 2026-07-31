@@ -13,18 +13,35 @@ const RESEARCH_ROOT = path.resolve(
   rootArg >= 0 ? args[rootArg + 1] : process.env.GENESIS6_RESEARCH_ROOT || path.join(ROOT, '_external/Research'),
 );
 const PROVENANCE_PATH = path.join(ROOT, 'data/genesis6-research-provenance.json');
+const SERIES_DATA_PATH = path.join(
+  ROOT,
+  'src/components/article-pilots/_shared/series/genesis6SeriesData.ts',
+);
+const IMAGE_MANIFEST_PATH = path.join(ROOT, 'public/images/articles/genesis6/manifest.json');
+const OWNERSHIP_PATH = path.join(ROOT, 'migration/page-ownership.json');
+const ROUTE_PROFILE_DIR = path.join(ROOT, 'data/route-profiles');
 
-const EXPECTED_RESEARCH_COMMIT = '0a9105c499fa801f4095bce7ec311fcb728206a7';
+const EXPECTED_RESEARCH_COMMIT = '753e09027d4a33af5659ce1221ef8371e9dfae22';
 const EXPECTED_LEGACY_DIGEST = '95320cc56c678fcacf4f24985f96150c231b1d91338349c19005e277b16125dd';
-const EXPECTED_EXTENSION_DIGEST = '8cfdadd344f15a752ee279d1c1122079fcacbbd97650dd39151872e5618099ef';
+const EXPECTED_EXTENSION_DIGEST = '947e7b86705fd1729f86f0f99c60afee9b850f794d439729698be7d2f1edaaf7';
 const EXPECTED_READER_ORDER = ['6', '6A', '6B', '7', '8', '9'];
-const EXPECTED_BLOCKING_HOLDS = [
-  '1-enoch-70-71-son-of-man',
-  'astronomical-book-version-plurality',
-];
+const EXPECTED_TOTAL_MINUTES = 170;
+const EXPECTED_SITE_RELEASE = {
+  publicationDate: '2026-07-29',
+  canonicalState: {
+    draft: false,
+    noindex: false,
+    sourcesRequired: true,
+  },
+  routeStatus: 'production-dist',
+  productionWitnessSeparate: true,
+};
+const EXPECTED_BLOCKING_HOLDS = [];
 const EXPECTED_PRESERVED_UNCERTAINTY = [
   '1-enoch-10-8-interpretive-scope',
   '1-enoch-15-8-12-version-details-and-demon-identity',
+  '1-enoch-70-71-composition-and-figure-identity',
+  'astronomical-book-reconstruction-direction-and-joins',
   'parables-date-and-witness-form',
   'animal-apocalypse-decomposition',
   'chapter-108-relation-to-epistle',
@@ -43,6 +60,18 @@ const EXPECTED_EVIDENCE_RESOLUTIONS = [
     documentId: 'GEN6-ENOCH-15-8-12-DECISION-LXI',
     evidence: "Greek Syncellus and Codex Panopolitanus plus full Ge'ez preserve the core model; Aramaic 4Q204 is contextual/partial",
   },
+  {
+    id: '1-enoch-70-71-son-of-man',
+    resolution: 'direct-address-established-composition-and-identity-qualified',
+    documentId: 'GEN6-ENOCH-70-71-DECISION-LXV',
+    evidence: 'LXII evidence chain plus modern critical translation support second-person 71:14; Charles third-person is an emendation; composition and total identity remain qualified',
+  },
+  {
+    id: 'astronomical-book-version-plurality',
+    resolution: 'textual-plurality-established-evolution-model-qualified',
+    documentId: 'GEN6-ENOCH-ASTRONOMICAL-DECISION-LXVI',
+    evidence: "4Q208/4Q209 continuity and scheme-level plurality are established by Ratzon's full reconstruction; direction of adaptation and exact joins remain qualified",
+  },
 ];
 const EXPECTED_POLICY_RESOLUTIONS = [
   {
@@ -59,12 +88,40 @@ const EXPECTED_SITE_ACCEPTANCE = {
 const DECISION_DOCUMENTS = new Map([
   [
     'GEN6-ENOCH-10-8-DECISION-LX',
-    'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LX_10_8_VERSION_CONTROL_DECISION.md',
+    {
+      path: 'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LX_10_8_VERSION_CONTROL_DECISION.md',
+      requiredFor: ['6B'],
+    },
   ],
   [
     'GEN6-ENOCH-15-8-12-DECISION-LXI',
-    'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LXI_15_8_12_DEMON_ORIGIN_VERSION_CONTROL_DECISION.md',
+    {
+      path: 'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LXI_15_8_12_DEMON_ORIGIN_VERSION_CONTROL_DECISION.md',
+      requiredFor: ['6B'],
+    },
   ],
+  [
+    'GEN6-ENOCH-70-71-DECISION-LXV',
+    {
+      path: 'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LXV_70_71_SON_OF_MAN_AUTHORITY_DECISION.md',
+      requiredFor: ['6B'],
+    },
+  ],
+  [
+    'GEN6-ENOCH-ASTRONOMICAL-DECISION-LXVI',
+    {
+      path: 'ТРУДНЫЕ ТЕКСТЫ/1_ENOCH_LXVI_ASTRONOMICAL_BOOK_VERSION_PLURALITY_AUTHORITY_DECISION.md',
+      requiredFor: ['6A', '6B'],
+    },
+  ],
+]);
+const EXPECTED_ASSET_IDS = new Map([
+  ['6', '06-enoch-prophesied-and-apostolic-witness'],
+  ['6A', '03-what-is-first-enoch'],
+  ['6B', '04-book-of-watchers'],
+  ['7', '07-angels-kept-under-darkness'],
+  ['8', '08-spirits-in-prison'],
+  ['9', '09-gospel-preached-to-the-dead'],
 ]);
 
 const failures = [];
@@ -82,6 +139,7 @@ const parseScalar = (raw) => {
   const value = raw.trim();
   if (value === 'true') return true;
   if (value === 'false') return false;
+  if (/^-?\d+(?:\.\d+)?$/.test(value)) return Number(value);
   return value.replace(/^["']|["']$/g, '');
 };
 const frontmatterBlock = (source) => source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
@@ -113,9 +171,33 @@ const frontmatterList = (source, key) => {
 const requireEqual = (actual, expected, label) => {
   if (!isDeepStrictEqual(actual, expected)) fail(`${label} drift`);
 };
+const countFootnoteDefinitions = (source) => source.match(/^\[\^\d+\]:/gm)?.length || 0;
+const parseSeriesItems = (source) => {
+  const items = [];
+  const pattern = /\{\s*id:\s*'([^']+)',[\s\S]*?slug:\s*'([^']+)',[\s\S]*?minutes:\s*(\d+),[\s\S]*?cover:\s*'([^']+)',[\s\S]*?coverAvif:\s*'([^']+)',[\s\S]*?coverAlt:\s*'([^']+)',[\s\S]*?\n\s*\},/g;
+  for (const match of source.matchAll(pattern)) {
+    items.push({
+      id: match[1],
+      slug: match[2],
+      minutes: Number(match[3]),
+      cover: match[4],
+      coverAvif: match[5],
+      coverAlt: match[6],
+    });
+  }
+  return items;
+};
 
-if (!isFile(PROVENANCE_PATH)) {
-  console.error('ERROR genesis6 research provenance: missing data/genesis6-research-provenance.json');
+for (const [label, file] of [
+  ['provenance', PROVENANCE_PATH],
+  ['Genesis series data', SERIES_DATA_PATH],
+  ['Genesis image manifest', IMAGE_MANIFEST_PATH],
+  ['route ownership manifest', OWNERSHIP_PATH],
+]) {
+  if (!isFile(file)) fail(`missing ${label}: ${file}`);
+}
+if (failures.length) {
+  for (const message of failures) console.error(`ERROR genesis6 research provenance: ${message}`);
   process.exit(1);
 }
 
@@ -123,22 +205,26 @@ const provenance = readJson(PROVENANCE_PATH);
 if (provenance.schemaVersion !== 6 || provenance.seriesId !== 'genesis-6') {
   fail('invalid provenance schemaVersion/seriesId');
 }
-if (provenance.releaseState !== 'blocked') fail('releaseState must remain blocked');
+if (provenance.releaseState !== 'published') fail('releaseState must be published');
+requireEqual(provenance.siteRelease, EXPECTED_SITE_RELEASE, 'site release');
 requireEqual(provenance.readerOrder, EXPECTED_READER_ORDER, 'readerOrder');
-if (provenance.publicationPolicy?.defaultState !== 'draft-noindex') fail('defaultState must be draft-noindex');
+if (provenance.publicationPolicy?.defaultState !== 'published-indexable') {
+  fail('defaultState must be published-indexable');
+}
 for (const field of [
   'requiresExactResearchCommit',
   'requiresManifestDigest',
   'requiresExtensionManifestDigest',
   'requiresExactHeadSiteEvidence',
   'productionWitnessSeparate',
-  'requiresAllSeriesArticlesDraftNoindex',
+  'requiresAllSeriesArticlesPublishedIndexable',
   'requiresExactCanonicalOverride',
   'requiresExactRelatedGraph',
   'requiresOrderedForwardLinks',
   'requiresExactHoldClassification',
   'requiresNoReproductionRightsResolution',
   'requiresEvidenceResolutionBinding',
+  'requiresProductionRouteOwnership',
 ]) {
   if (provenance.publicationPolicy?.[field] !== true) fail(`publicationPolicy.${field} must be true`);
 }
@@ -147,7 +233,7 @@ const research = provenance.research || {};
 if (research.repository !== 'FedorMilovanov/Research') fail('unexpected Research repository');
 if (research.commit !== EXPECTED_RESEARCH_COMMIT) fail('Research commit pin drift');
 if (research.manifestSha256 !== EXPECTED_LEGACY_DIGEST) fail('legacy manifest digest pin drift');
-if (research.extension?.schemaVersion !== 4) fail('extension schemaVersion must be 4');
+if (research.extension?.schemaVersion !== 6) fail('extension schemaVersion must be 6');
 if (research.extension?.manifestSha256 !== EXPECTED_EXTENSION_DIGEST) fail('extension manifest digest pin drift');
 requireEqual(research.extension?.blockingHolds, EXPECTED_BLOCKING_HOLDS, 'blocking HOLD classification');
 requireEqual(
@@ -231,8 +317,8 @@ if (legacyManifest && legacyLedger) {
 }
 
 if (extensionManifest && extensionLedger) {
-  if (extensionManifest.schemaVersion !== 4 || extensionLedger.schemaVersion !== 4) {
-    fail('extension manifest/ledger schemaVersion must be 4');
+  if (extensionManifest.schemaVersion !== 6 || extensionLedger.schemaVersion !== 6) {
+    fail('extension manifest/ledger schemaVersion must be 6');
   }
   if (extensionManifest.seriesId !== 'genesis-6' || extensionLedger.seriesId !== 'genesis-6') {
     fail('extension manifest/ledger series mismatch');
@@ -254,36 +340,41 @@ if (extensionManifest && extensionLedger) {
   requireEqual(extensionLedger.releaseDecision?.resolvedByEvidence, EXPECTED_EVIDENCE_RESOLUTIONS, 'ledger evidence resolutions');
   requireEqual(extensionManifest.holdRegistry?.resolvedByPolicy, EXPECTED_POLICY_RESOLUTIONS, 'manifest policy resolutions');
   requireEqual(extensionLedger.releaseDecision?.resolvedByPolicy, EXPECTED_POLICY_RESOLUTIONS, 'ledger policy resolutions');
-  if (extensionManifest.siteAcceptance?.publicationAuthorized !== false) fail('site acceptance must not authorize publication');
+  if (extensionManifest.siteAcceptance?.publicationAuthorized !== false) {
+    fail('historical Research site acceptance must remain non-authorizing');
+  }
   if (
     extensionLedger.releaseDecision?.state !== 'blocked' ||
     extensionLedger.releaseDecision?.mayPublish !== false ||
-    extensionLedger.releaseDecision?.mayRemoveNoindex !== false
+    extensionLedger.releaseDecision?.mayRemoveNoindex !== false ||
+    extensionLedger.releaseDecision?.researchBlockersClosed !== true ||
+    extensionLedger.releaseDecision?.siteImplementationRequired !== true ||
+    extensionLedger.releaseDecision?.explicitPublicationPassRequired !== true
   ) {
-    fail('extension release must remain fail-closed');
+    fail('historical Research extension release record must remain fail-closed');
   }
 
   const documents = new Map((extensionManifest.documents || []).map((item) => [item.id, item]));
   for (const resolution of EXPECTED_EVIDENCE_RESOLUTIONS) {
     const document = documents.get(resolution.documentId);
-    const expectedPath = DECISION_DOCUMENTS.get(resolution.documentId);
+    const decision = DECISION_DOCUMENTS.get(resolution.documentId);
     requireEqual(
       document,
       {
         id: resolution.documentId,
-        path: expectedPath,
+        path: decision?.path,
         role: 'locus-version-control-decision',
-        requiredFor: ['6B'],
+        requiredFor: decision?.requiredFor,
       },
       `decision binding ${resolution.documentId}`,
     );
-    if (!isFile(path.join(RESEARCH_ROOT, expectedPath))) fail(`missing decision file ${resolution.documentId}`);
+    if (!decision || !isFile(path.join(RESEARCH_ROOT, decision.path))) fail(`missing decision file ${resolution.documentId}`);
   }
 
   const manifestBundles = new Map((extensionManifest.draftArticles || []).map((item) => [item.bundleId, item]));
   const ledgerBundles = new Map((extensionLedger.bundles || []).map((item) => [item.bundleId, item]));
   if (!Array.isArray(provenance.draftArticles) || provenance.draftArticles.length !== 2) {
-    fail('exactly two extension bindings required');
+    fail('exactly two historical extension bindings required');
   }
   for (const binding of provenance.draftArticles || []) {
     const expected = {
@@ -311,6 +402,7 @@ const expectedSiteSlugs = new Set([
 ]);
 if (expectedSiteSlugs.size !== 6) fail('Research bindings must resolve to six unique slugs');
 
+const articleSources = new Map();
 for (const articleKey of EXPECTED_READER_ORDER) {
   const contract = siteContracts.get(articleKey);
   if (!contract) {
@@ -323,13 +415,14 @@ for (const articleKey of EXPECTED_READER_ORDER) {
     continue;
   }
   const source = fs.readFileSync(articleFile, 'utf8');
+  articleSources.set(articleKey, source);
   const expectedScalars = {
     slug: contract.slug,
     section: 'hard-texts',
     author: 'fedor-milovanov',
     series: 'genesis-6',
-    draft: true,
-    noindex: true,
+    draft: false,
+    noindex: false,
     sourcesRequired: true,
     canonicalOverride: `https://gospod-bog.ru/hard-texts/${contract.slug}/`,
     sourceMode: 'rendered',
@@ -351,20 +444,105 @@ for (let index = 0; index < EXPECTED_READER_ORDER.length - 1; index += 1) {
   }
 }
 
-const article6BPath = path.join(ROOT, 'src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx');
-if (isFile(article6BPath)) {
-  const article6B = fs.readFileSync(article6BPath, 'utf8');
-  for (const marker of [
-    'DIFFICULT-TO-HARMONIZE / INTERNAL-TENSION / TEXT-ESTABLISHED / INTERPRETATION-QUALIFIED',
-    'TEXT-DIRECT / HISTORICAL-BACKGROUND / UNSUPPORTED-ELABORATION',
-    'GEN6-ENOCH-10-8-DECISION-LX',
-    'GEN6-ENOCH-15-8-12-DECISION-LXI',
-  ]) {
-    if (!article6B.includes(marker)) fail(`article 6B missing final authority marker: ${marker}`);
+const ownership = readJson(OWNERSHIP_PATH);
+const publicationRoutes = [
+  { route: '/hard-texts/genesis-6/', profile: 'hard-texts-genesis-6.json' },
+  ...EXPECTED_READER_ORDER.map((articleKey) => {
+    const contract = siteContracts.get(articleKey);
+    return {
+      route: `/hard-texts/${contract?.slug}/`,
+      profile: `hard-texts-${contract?.slug}.json`,
+    };
+  }),
+];
+for (const { route, profile } of publicationRoutes) {
+  const profileFile = path.join(ROUTE_PROFILE_DIR, profile);
+  if (!isFile(profileFile)) {
+    fail(`missing publication route profile ${profile}`);
+    continue;
   }
-  if (article6B.includes('окончательное сопоставление всех версионных форм locus остаётся `HOLD`')) {
-    fail('article 6B retains stale 15:8–12 version HOLD wording');
+  const routeProfile = readJson(profileFile);
+  if (routeProfile.route !== route) fail(`${route} profile route drift`);
+  if (routeProfile.currentStatus !== 'production-dist') fail(`${route} profile must be production-dist`);
+  if (routeProfile.seo?.indexable === false) fail(`${route} profile retains non-indexable staging policy`);
+  if (ownership.routes?.[route]?.owner !== 'astro') fail(`${route} ownership must remain astro`);
+  if (ownership.routes?.[route]?.status !== 'production-dist') fail(`${route} ownership must be production-dist`);
+}
+
+const seriesItems = parseSeriesItems(fs.readFileSync(SERIES_DATA_PATH, 'utf8'));
+if (seriesItems.length !== EXPECTED_READER_ORDER.length) fail('Genesis series data must contain exactly six reader items');
+const imageManifest = readJson(IMAGE_MANIFEST_PATH);
+if (imageManifest.seriesId !== 'genesis-6' || imageManifest.visualReview?.status !== 'approved') {
+  fail('Genesis image manifest must remain the approved series manifest');
+}
+const manifestAssets = new Map((imageManifest.assets || []).map((asset) => [asset.id, asset]));
+let completedMinutes = 0;
+for (let index = 0; index < EXPECTED_READER_ORDER.length; index += 1) {
+  const articleKey = EXPECTED_READER_ORDER[index];
+  const contract = siteContracts.get(articleKey);
+  const item = seriesItems[index];
+  const source = articleSources.get(articleKey);
+  if (!contract || !item || !source) continue;
+  if (item.slug !== contract.slug) fail(`${articleKey} series item order/slug drift`);
+  const frontmatterMinutes = frontmatterValue(source, 'readingTime');
+  if (item.minutes !== frontmatterMinutes) {
+    fail(`${articleKey} reading time drift: series ${item.minutes}, frontmatter ${frontmatterMinutes}`);
   }
+  completedMinutes += item.minutes;
+  if (completedMinutes > EXPECTED_TOTAL_MINUTES) {
+    fail(`${articleKey} reading progress exceeds 100%: ${completedMinutes}/${EXPECTED_TOTAL_MINUTES}`);
+  }
+
+  const assetId = EXPECTED_ASSET_IDS.get(articleKey);
+  const asset = manifestAssets.get(assetId);
+  if (!asset) {
+    fail(`${articleKey} missing approved manifest asset ${assetId}`);
+    continue;
+  }
+  if (!item.cover.endsWith(`/images/articles/genesis6/${assetId}.webp`)) fail(`${articleKey} WebP cover drift`);
+  if (!item.coverAvif.endsWith(`/images/articles/genesis6/${assetId}.avif`)) fail(`${articleKey} AVIF cover drift`);
+  if (item.coverAlt !== asset.alt) fail(`${articleKey} rendered cover alt differs from approved manifest`);
+  if (asset.variants?.webp?.file !== `${assetId}.webp` || asset.variants?.avif?.file !== `${assetId}.avif`) {
+    fail(`${articleKey} manifest variant filename drift`);
+  }
+}
+if (completedMinutes !== EXPECTED_TOTAL_MINUTES) {
+  fail(`Genesis series total minutes ${completedMinutes} != ${EXPECTED_TOTAL_MINUTES}`);
+}
+
+const article6A = articleSources.get('6A') || '';
+const article6B = articleSources.get('6B') || '';
+if (countFootnoteDefinitions(article6A) !== 27) fail('article 6A must retain exactly 27 footnote groups');
+if (countFootnoteDefinitions(article6B) !== 26) fail('article 6B must retain exactly 26 footnote groups');
+
+for (const marker of [
+  'GEN6-ENOCH-ASTRONOMICAL-DECISION-LXVI',
+  'SAME-COMPOSITION / GENUINE-TEXTUAL-PLURALITY',
+  'astronomical-book-reconstruction-direction-and-joins',
+]) {
+  if (!article6A.includes(marker)) fail(`article 6A missing LXVI authority marker: ${marker}`);
+}
+for (const marker of [
+  'DIFFICULT-TO-HARMONIZE / INTERNAL-TENSION / TEXT-ESTABLISHED / INTERPRETATION-QUALIFIED',
+  'TEXT-DIRECT / HISTORICAL-BACKGROUND / UNSUPPORTED-ELABORATION',
+  'GEN6-ENOCH-10-8-DECISION-LX',
+  'GEN6-ENOCH-15-8-12-DECISION-LXI',
+  'GEN6-ENOCH-70-71-DECISION-LXV',
+  'GEN6-ENOCH-ASTRONOMICAL-DECISION-LXVI',
+  'DIRECT-ADDRESS-ESTABLISHED / COMPOSITION-AND-IDENTITY-QUALIFIED',
+  'TEXTUAL-PLURALITY-ESTABLISHED / EVOLUTION-MODEL-QUALIFIED',
+  '1-enoch-70-71-composition-and-figure-identity',
+  'astronomical-book-reconstruction-direction-and-joins',
+]) {
+  if (!article6B.includes(marker)) fail(`article 6B missing final authority marker: ${marker}`);
+}
+for (const staleMarker of [
+  'окончательное сопоставление всех версионных форм locus остаётся `HOLD`',
+  'POTENTIAL-CHRISTOLOGICAL-CONFLICT / TEXT-VARIANT / HOLD',
+  'DIFFICULT-TO-HARMONIZE / VERSION-HOLD',
+  'окончательный христологический вердикт по 70–71 должен оставаться `HOLD`',
+]) {
+  if (article6B.includes(staleMarker)) fail(`article 6B retains stale authority wording: ${staleMarker}`);
 }
 
 if (failures.length) {
@@ -374,7 +552,7 @@ if (failures.length) {
 
 console.log(
   `Genesis 6 Research provenance: PASS (${EXPECTED_RESEARCH_COMMIT}, ` +
-    `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} extension bundles, ` +
+    `${provenance.articles.length} legacy bundles, ${provenance.draftArticles.length} historical extension bundles, ` +
     `${EXPECTED_BLOCKING_HOLDS.length} blocking HOLDs, ${EXPECTED_EVIDENCE_RESOLUTIONS.length} evidence resolutions, ` +
-    `${provenance.siteArticles.length} site contracts, release ${provenance.releaseState})`,
+    `${provenance.siteArticles.length} published site contracts, ${EXPECTED_TOTAL_MINUTES} total minutes, release ${provenance.releaseState})`,
 );
