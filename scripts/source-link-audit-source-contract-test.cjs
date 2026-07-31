@@ -10,9 +10,9 @@ const ROOT = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 
 const PINS = Object.freeze({
-  checkout: 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4',
-  setupNode: 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4',
-  uploadArtifact: 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4',
+  checkout: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1',
+  setupNode: 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0',
+  uploadArtifact: 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1',
 });
 
 function countLiteral(source, literal) {
@@ -87,9 +87,9 @@ const mutations = [
     "const digest = crypto.createHash('sha256').update(raw, 'utf8').digest('hex').slice(0, 32);\n    return `invalid-url:sha256:${digest}:bytes:${Buffer.byteLength(raw, 'utf8')}`;",
     "return String(value || '').slice(0, 300);",
   ), workflow }],
-  ['mutable checkout tag', { source, workflow: workflow.replaceAll(PINS.checkout, 'actions/checkout@v4') }],
-  ['mutable setup-node tag', { source, workflow: workflow.replaceAll(PINS.setupNode, 'actions/setup-node@v4') }],
-  ['mutable upload-artifact tag', { source, workflow: workflow.replace(PINS.uploadArtifact, 'actions/upload-artifact@v4') }],
+  ['mutable checkout tag', { source, workflow: workflow.replaceAll(PINS.checkout, 'actions/checkout@v7') }],
+  ['mutable setup-node tag', { source, workflow: workflow.replaceAll(PINS.setupNode, 'actions/setup-node@v7') }],
+  ['mutable upload-artifact tag', { source, workflow: workflow.replace(PINS.uploadArtifact, 'actions/upload-artifact@v7') }],
   ['source contract execution removed', { source, workflow: workflow.replace('          node scripts/source-link-audit-source-contract-test.cjs\n', '') }],
   ['source contract path trigger removed', { source, workflow: workflow.replace("      - 'scripts/source-link-audit-source-contract-test.cjs'\n", '') }],
   ['evidence upload made optional', { source, workflow: workflow.replace('if-no-files-found: error', 'if-no-files-found: warn') }],
