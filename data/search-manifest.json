@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-23T14:25:11Z",
+  "generatedAt": "2026-07-29T21:00:00Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -1087,8 +1087,8 @@
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
-      "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 26
+      "modifiedTime": "2026-07-30T00:00:00+03:00",
+      "readTime": 34
     },
     {
       "id": "serdce-pod-skorbyu",
@@ -1335,6 +1335,102 @@
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
       "readTime": 23
+    },
+    {
+      "id": "angely-pod-mrakom-iuda-6-7-2-petra-2",
+      "type": "article",
+      "url": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
+      "title": "Ангелы под мраком: Иуд. 6–7, 2 Петра 2 и Бытие 6 | Господь Бог — Сила Моя",
+      "description": "Что Иуда и Пётр прямо говорят о согрешивших ангелах, как Иуд. 7 связан с Быт. 6 и почему Енохов фон нельзя превращать в слова канонического текста.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/genesis6/07-angels-kept-under-darkness.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-29T00:00:00+03:00",
+      "modifiedTime": "2026-07-29T00:00:00+03:00",
+      "readTime": 24
+    },
+    {
+      "id": "blagovestie-mertvym-1-petra-4-5-6",
+      "type": "article",
+      "url": "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/",
+      "title": "Благовестие мёртвым: что означает 1 Петра 4:5–6 | Господь Бог — Сила Моя",
+      "description": "Кому было благовествовано в 1 Петра 4:6, были ли они уже мертвы и почему стих не учит всеобщему второму шансу или крещению за умерших.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/genesis6/09-gospel-preached-to-the-dead.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-29T00:00:00+03:00",
+      "modifiedTime": "2026-07-29T00:00:00+03:00",
+      "readTime": 19
+    },
+    {
+      "id": "duhi-v-temnice-noi-kreshchenie-pobeda",
+      "type": "article",
+      "url": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+      "title": "Духи в темнице, Ной и крещение: 1 Петра 3:18–22 | Господь Бог — Сила Моя",
+      "description": "Кто такие духи в темнице, что Христос им провозгласил и как понимать слова «крещение спасает» без крещального автоматизма и без удаления водного знака.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/genesis6/08-spirits-in-prison.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-29T00:00:00+03:00",
+      "modifiedTime": "2026-07-29T00:00:00+03:00",
+      "readTime": 28
+    },
+    {
+      "id": "enoh-prorochestvoval-iuda-14-15-4q204",
+      "type": "article",
+      "url": "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/",
+      "title": "Енох пророчествовал: Иуд. 14–15, 1 Енох 1:9 и 4Q204 | Господь Бог — Сила Моя",
+      "description": "Аккуратный разбор слов Иуды о пророчестве Еноха: связь с 1 Енох 1:9, границы данных 4Q204, варианты текста и неизвестный путь передачи оракула.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/genesis6/06-enoch-prophesied-and-apostolic-witness.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-29T00:00:00+03:00",
+      "modifiedTime": "2026-07-29T00:00:00+03:00",
+      "readTime": 19
+    },
+    {
+      "id": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
+      "type": "article",
+      "url": "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/",
+      "title": "Книга Еноха, которой не было: как разные произведения стали одним корпусом | Господь Бог — Сила Моя",
+      "description": "Что современный читатель называет 1 Енохом: состав корпуса, Кумранские фрагменты, Codex Panopolitanus, эфиопская передача, реконструкции и границы исторических выводов.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/genesis6/03-what-is-first-enoch.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-29T00:00:00+03:00",
+      "modifiedTime": "2026-07-29T00:00:00+03:00",
+      "readTime": 38
+    },
+    {
+      "id": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
+      "type": "article",
+      "url": "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/",
+      "title": "Можно ли доверять 1 Еноху: канонический аудит его богословия | Господь Бог — Сила Моя",
+      "description": "Что в разных книгах 1 Еноха согласуется с Библией, что сохраняет древний фон, что остаётся неподтверждённым, а что трудно согласовать с ясным учением Писания.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/genesis6/04-book-of-watchers.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-07-29T00:00:00+03:00",
+      "modifiedTime": "2026-07-29T00:00:00+03:00",
+      "readTime": 42
     }
   ]
 }

@@ -6,9 +6,6 @@ on:
       - 'scripts/branch-hygiene-report.py'
       - '.github/workflows/branch-hygiene-report.yml'
   workflow_dispatch:
-  schedule:
-    # Weekly Monday 04:10 UTC. Report only; no refs or PRs are mutated.
-    - cron: '10 4 * * 1'
 
 permissions:
   contents: read

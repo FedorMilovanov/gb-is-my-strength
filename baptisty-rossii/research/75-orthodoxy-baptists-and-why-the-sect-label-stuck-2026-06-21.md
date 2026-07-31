@@ -3,6 +3,8 @@
 **Date:** 2026-06-21  
 **Purpose:** isolate one of the most important explanatory threads for the whole `baptisty-rossii` series: not merely that Baptists were called a sect, but *why the label endured* across imperial, public, and Soviet settings.
 
+> **Source-control note, 2026-07-30:** this file is an interpretive thesis, not a self-sufficient factual source. Before publication, use the claim-to-source matrix in [`75A-sect-label-claim-to-source-control-2026-07-30.md`](./75A-sect-label-claim-to-source-control-2026-07-30.md), which links each section to primary-era witnesses, academic synthesis and the project’s master source ledgers.
+
 ---
 
 ## 1. The label endured because it named more than doctrine
@@ -50,6 +52,7 @@ One might think that Baptist sobriety, literacy, industriousness and family disc
 But in fact those same traits could intensify fear.
 
 Why?
+
 Because a disciplined minority that persuades others looks more dangerous than a merely exotic fringe.
 
 Hostile observers could say, in effect:
@@ -127,6 +130,7 @@ In such a setting, “sect” becomes the perfect shorthand category.
 The imperial world died, but the label did not.
 
 Why?
+
 Because the social function of the word remained useful.
 
 ### Under empire
@@ -172,3 +176,15 @@ This dossier should feed at least three later article-grade modules:
 1. **Почему слово «секта» прилипло к баптистам?**
 2. **Как православие и государство по-разному, но сходно боялись баптизма**
 3. **Почему трезвость, Библия и миссия не снимали подозрение, а усиливали его**
+
+---
+
+## 11. Controlled source apparatus
+
+The source matrix is maintained separately so that later additions do not blur the distinction between the interpretive thesis and its evidence:
+
+- [`75A-sect-label-claim-to-source-control-2026-07-30.md`](./75A-sect-label-claim-to-source-control-2026-07-30.md)
+- [`00-master-source-index-glossary-map.md`](./00-master-source-index-glossary-map.md)
+- [`27-origins-web-source-ledger-30plus-2026-06-18.md`](./27-origins-web-source-ledger-30plus-2026-06-18.md)
+
+Publication remains blocked until the Soviet-continuity section includes at least one dated imperial usage and one dated Soviet usage from primary or near-primary evidence.

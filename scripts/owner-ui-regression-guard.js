@@ -74,17 +74,18 @@ mustContain('baptisty-rossii/index.html', '10 частей · живая исс�
 mustContain('css/site.css', 'Russian Baptists series landing', 'Russian Baptists premium landing CSS guard');
 mustContain('css/site.css', 'grid-template-columns:repeat(3,minmax(0,1fr))', 'Russian Baptists desktop compact card grid');
 
-// Doctrine: future agents must see the owner rule.
+// Doctrine: operational AGENTS.md is intentionally concise; detailed owner
+// invariants are preserved byte-for-byte in AGENTS-REFERENCE.md.
 mustContain('docs/OWNER-REQUIREMENTS.md', '95%+ визуального совпадения', 'Astro 95% visual parity doctrine');
 mustContain('docs/OWNER-REQUIREMENTS.md', 'H1/H2/SEO/word-count не считаются визуальным переносом', 'SEO is not visual parity doctrine');
 mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', 'Astro — не самоцель', 'premium Astro roadmap exists');
 mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', '95%+ визуального совпадения legacy → Astro', 'roadmap visual parity target');
-mustContain('AGENTS.md', 'Astro migration — premium visual parity only', 'AGENTS visual parity doctrine');
+mustContain('AGENTS-REFERENCE.md', 'Astro migration — premium visual parity only', 'reference visual parity doctrine');
 
 // PremiumControls protected subsystem guard (PC-001..PC-007)
 mustContain('src/components/ui/premium-controls/PremiumControlAnchor.astro', 'data-pc-anchor', 'PremiumControlAnchor component exists');
 mustContain('src/components/ui/floating-cluster/RomanNumeral.astro', 'gb-roman', 'RomanNumeral component exists');
-mustContain('AGENTS.md', '3.10 PremiumControls / Floating Cluster', 'AGENTS.md Section 3.10 PremiumControls protected status');
+mustContain('AGENTS-REFERENCE.md', '3.10 PremiumControls / Floating Cluster', 'reference PremiumControls protected status');
 
 console.log('\nOWNER UI REGRESSION GUARD');
 if (problems.length) {

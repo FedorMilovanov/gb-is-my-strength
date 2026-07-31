@@ -6,12 +6,12 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const {
   ROOT,
-  REGISTRY_FILE,
   eligibleRecords,
   sharedProjectionData,
   observeRoute,
   mergeObservedRecord,
   readRegistry,
+  writeRegistry,
   validateRecordShape,
 } = require('./lib/editorial-metadata');
 
@@ -66,7 +66,7 @@ function validateRegistry(registry) {
   return errors;
 }
 
-function writeRegistry() {
+function materializeRegistry() {
   buildDist();
   if (!fs.existsSync(DIST)) throw new Error('dist/ missing; run with --build or build production-like dist first');
 
@@ -84,10 +84,8 @@ function writeRegistry() {
   }
 
   const registry = stableRegistry(records, gitHead());
-  const content = `${JSON.stringify(registry, null, 2)}\n`;
-  fs.mkdirSync(path.dirname(REGISTRY_FILE), { recursive: true });
-  fs.writeFileSync(REGISTRY_FILE, content, 'utf8');
-  console.log(`✅ Wrote ${path.relative(ROOT, REGISTRY_FILE).replace(/\\/g, '/')} (${records.size} records)`);
+  writeRegistry(registry);
+  console.log(`✅ Wrote editorial metadata registry (${records.size} records)`);
 }
 
 function checkRegistry() {
@@ -105,7 +103,7 @@ function checkRegistry() {
 }
 
 try {
-  if (WRITE) writeRegistry();
+  if (WRITE) materializeRegistry();
   if (CHECK) checkRegistry();
 } catch (error) {
   console.error(`❌ ${error.message}`);

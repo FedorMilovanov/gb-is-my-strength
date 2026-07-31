@@ -6,8 +6,14 @@ on:
     branches: [main]
     paths:
       - "feed.xml"
+      - "sitemap.xml"
+      - "data/route-profiles/**"
       - "data/route-search-policy.json"
       - "data/search-manifest.json"
+      - "data/series.json"
+      - "migration/page-ownership.json"
+      - "src/content/**"
+      - "src/pages/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
       - "scripts/search-manifest-policy-normalizer.js"
@@ -20,8 +26,14 @@ on:
     branches: [main]
     paths:
       - "feed.xml"
+      - "sitemap.xml"
+      - "data/route-profiles/**"
       - "data/route-search-policy.json"
       - "data/search-manifest.json"
+      - "data/series.json"
+      - "migration/page-ownership.json"
+      - "src/content/**"
+      - "src/pages/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
       - "scripts/search-manifest-policy-normalizer.js"

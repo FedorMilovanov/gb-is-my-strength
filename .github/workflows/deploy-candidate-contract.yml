@@ -1,0 +1,112 @@
+name: Deploy Candidate Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "data/**"
+      - "migration/**"
+      - "css/**"
+      - "js/**"
+      - "images/**"
+      - "fonts/**"
+      - "audio/**"
+      - "*.html"
+      - "*.xml"
+      - "*.txt"
+      - "CNAME"
+      - "manifest.json"
+      - "package.json"
+      - "package-lock.json"
+      - "astro.config.mjs"
+      - "scripts/copy-legacy-to-dist.js"
+      - "scripts/astro-cache-bust-postbuild.js"
+      - "scripts/build-pagefind.js"
+      - "scripts/cache-bust-assets.js"
+      - "scripts/project-relations-to-dist.mjs"
+      - "scripts/dist-publication-audit.js"
+      - "scripts/series-reader-fragment-audit.js"
+      - "scripts/extract-url-contract.js"
+      - "scripts/compare-url-contract.js"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/deploy-candidate-contract.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-candidate-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  production-like-candidate:
+    name: Build and audit production-like candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up release Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Pin release npm
+        run: npm install --global npm@10.9.0
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index into dist
+        run: npm run pagefind:build:dist
+
+      - name: Series reader fragment contract
+        run: node scripts/series-reader-fragment-audit.js
+
+      - name: Production-like dist publication audit
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/dist-publication-audit.js --require-pagefind --forbid-dev 2>&1 \
+            | tee reports/dist-publication-audit.log
+
+      - name: Public URL contract compare on candidate dist
+        shell: bash
+        run: |
+          mkdir -p reports
+          set +e
+          set -o pipefail
+          npm run contract:extract:dist 2>&1 | tee reports/url-contract-compare.log
+          extract_status=${PIPESTATUS[0]}
+          npm run contract:compare:dist 2>&1 | tee -a reports/url-contract-compare.log
+          compare_status=${PIPESTATUS[0]}
+          if [ "$extract_status" -ne 0 ] || [ "$compare_status" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Upload deploy-candidate diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-candidate-contract-${{ github.run_id }}
+          path: |
+            reports/relation-projection.json
+            reports/dist-publication-audit.json
+            reports/dist-publication-audit.log
+            reports/series-reader-fragment-audit.json
+            reports/url-contract-dist.json
+            reports/url-contract-dist.md
+            reports/url-contract-compare.log
+          if-no-files-found: error
+          retention-days: 14

@@ -33,8 +33,8 @@ if (!fs.existsSync(gatePath)) {
 
 const gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
 if (gate.schemaVersion !== 2 || gate.seriesId !== 'genesis-6') fail('invalid schemaVersion/seriesId');
-if (gate.releaseState !== 'blocked') {
-  fail('releaseState must remain blocked until a separate publication transaction');
+if (!['blocked', 'published'].includes(gate.releaseState)) {
+  fail('releaseState must be blocked or published');
 }
 if (!Array.isArray(gate.articles) || gate.articles.length !== 2) {
   fail('exactly two extension articles are required');
@@ -85,11 +85,11 @@ for (const article of gate.articles) {
 
   if (frontmatterValue(source, 'slug') !== article.slug) fail(`${article.articleKey} slug drift`);
   if (frontmatterValue(source, 'series') !== 'genesis-6') fail(`${article.articleKey} series drift`);
-  if (gate.policy?.requireDraft && frontmatterValue(source, 'draft') !== true) {
-    fail(`${article.articleKey} must remain draft`);
+  if (typeof gate.policy?.requireDraft === 'boolean' && frontmatterValue(source, 'draft') !== gate.policy.requireDraft) {
+    fail(`${article.articleKey} draft must be ${gate.policy.requireDraft}`);
   }
-  if (gate.policy?.requireNoindex && frontmatterValue(source, 'noindex') !== true) {
-    fail(`${article.articleKey} must remain noindex`);
+  if (typeof gate.policy?.requireNoindex === 'boolean' && frontmatterValue(source, 'noindex') !== gate.policy.requireNoindex) {
+    fail(`${article.articleKey} noindex must be ${gate.policy.requireNoindex}`);
   }
   if (gate.policy?.requireSourcesRequired && frontmatterValue(source, 'sourcesRequired') !== true) {
     fail(`${article.articleKey} must require sources`);
@@ -159,5 +159,5 @@ if (!process.exitCode) {
   const detail = results
     .map((item) => `${item.articleKey} ${item.definitions}/${item.target} exact definitions, ${item.uniqueReferences} used ids, ${item.references} references`)
     .join('; ');
-  console.log(`Genesis 6 Enoch footnote gate: PASS (${detail}; release blocked pending separate publication transaction)`);
+  console.log(`Genesis 6 Enoch footnote gate: PASS (${detail}; release state ${gate.releaseState}, sourcesRequired preserved)`);
 }

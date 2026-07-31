@@ -1,46 +1,50 @@
 ---
 /**
- * MobileChromePage — адаптер движка «page» (план GILL_RESEARCH_3_ENGINES §8):
- * мобильная обвязка для НЕконтентных страниц (каталоги/лендинги/карты).
+ * MobileChromePage — лёгкий landing/page-адаптер общего mobile chrome.
  *
- *   Top: Back · Home · Глобальный Поиск   |   Bottom: нет (по умолчанию)
+ * Используется обычными каталогами с engine='page' и книжными лендингами с
+ * engine='series'. UI намеренно одинаков: Back · Home · Глобальный поиск,
+ * без reader-progress, TTS, Save и Learning — эти возможности принадлежат
+ * страницам чтения, а не полке книги.
  *
  * Принципы:
- *  - НЕТ Learning/TTS/прогресса чтения/Save — этому движку они запрещены.
  *  - Поиск НЕ создаёт второй поиск: клик по кнопке обрабатывает СОБСТВЕННЫЙ
  *    скрипт адаптера — он вызывает GBSearch.open() напрямую, если палитра уже
  *    загружена, иначе диспатчит синтетический Ctrl/⌘+K. Оба сайтовых
- *    lazy-loader'а (articles-стиль в футере страниц v20 И BaseLayout) слушают
- *    именно keydown Ctrl/⌘+K → лениво грузят js/search.js и открывают палитру.
- *    Единый триггер портируется на любой тип страницы без дубль-открытия
- *    (не полагаемся на класс/атрибут-хук конкретного лоадера).
+ *    lazy-loader'а слушают именно keydown Ctrl/⌘+K → лениво грузят js/search.js
+ *    и открывают палитру.
  *  - Без «двойной шапки»: у страниц v20 родной fixed-navbar (#hNavbar, 58px)
  *    с автоскрытием (.nav-hidden при скролле вниз). Бар движка спрятан, пока
- *    navbar виден, и выезжает, когда navbar уехал, — постоянный доступ к
- *    Назад/Домой/Поиску без конкуренции с родным хедером. Фолбэк (нет
- *    #hNavbar): порог 160px скролла.
- *  - Самодостаточен: scoped-стили на сайтовых токенах (--bg/--text/--accent…),
- *    floating-cluster.css НЕ требуется (прецедент: HermenevtikaMobileBar).
+ *    navbar виден, и выезжает, когда navbar уехал. Фолбэк без #hNavbar —
+ *    после 160px скролла.
+ *  - Самодостаточен: scoped-стили на сайтовых токенах; floating-cluster.css
+ *    не требуется.
  */
 import MobileChromeShell from './MobileChromeShell.astro';
+import type { MobileChromeEngine } from './mobileChromeTypes';
 import { assetUrl } from '@/lib/asset-version';
 
 interface Props {
+  /** Семантический движок поверхности: page или series landing. */
+  engine?: MobileChromeEngine;
   /** Куда ведёт «Назад», если истории нет (прямой заход). */
   backHref: string;
   homeHref?: string;
   searchLabel?: string;
 }
-const { backHref, homeHref = '/', searchLabel = 'Поиск по сайту…' } = Astro.props as Props;
+const {
+  engine = 'page',
+  backHref,
+  homeHref = '/',
+  searchLabel = 'Поиск по сайту…',
+} = Astro.props as Props;
 
 // Кэш-бастнутый путь палитры — движок сам догружает её на страницах без
-// сайтового lazy-loader'а (karty/map/konfessii), поэтому поиск работает везде.
+// сайтового lazy-loader'а, поэтому поиск работает везде.
 const searchSrc = assetUrl('js/search.js');
-// Стили палитры — на страницах без command-palette.css (map/konfessii) движок
-// подгружает их сам, иначе оверлей открылся бы неоформленным.
 const paletteCss = assetUrl('css/command-palette.css');
 ---
-<MobileChromeShell engine="page" topClass="mcp-top" id="mobileChromePage">
+<MobileChromeShell engine={engine} topClass="mcp-top" id="mobileChromePage">
   <button class="mcp-icon" id="mcpBackBtn" type="button" aria-label="Назад" data-back-href={backHref} slot="top-leading">
     <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
   </button>
@@ -48,9 +52,8 @@ const paletteCss = assetUrl('css/command-palette.css');
     <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></svg>
   </a>
 
-  <!-- Клик обрабатывает скрипт адаптера (см. ниже), а НЕ класс/атрибут-хук
-       конкретного лоадера: .gb-search-btn коллидирует с command-palette.css
-       (прячет текстовый span), а data-fc-action работает не на всех страницах. -->
+  <!-- Клик обрабатывает скрипт адаптера, а не класс/атрибут-хук конкретного
+       лоадера: так один поиск работает на page и series landing. -->
   <button class="mcp-search" type="button" aria-label="Открыть поиск по сайту" data-search-src={searchSrc} data-palette-css={paletteCss} slot="top-primary">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
     <span>{searchLabel}</span>
@@ -59,7 +62,7 @@ const paletteCss = assetUrl('css/command-palette.css');
 </MobileChromeShell>
 
 <style is:global>
-  /* Движок «page» живёт только на мобильной ширине. */
+  /* Лёгкий landing chrome живёт только на мобильной ширине. */
   .mcp-top { display: none; }
   @media (max-width: 63.99em) {
     .mcp-top {
@@ -109,7 +112,6 @@ const paletteCss = assetUrl('css/command-palette.css');
       border: 1px solid var(--border, #e5e2dc); border-radius: 5px;
       font: 600 9.5px/1.3 var(--font-body, 'Source Sans 3', system-ui, sans-serif);
       color: var(--muted, #6a6a6a); background: transparent;
-      /* На тач-девайсах хоткей неуместен. */
       display: none;
     }
     @media (hover: hover) and (pointer: fine) { .mcp-search kbd { display: inline-block; } }
@@ -131,11 +133,6 @@ const paletteCss = assetUrl('css/command-palette.css');
       }
     });
 
-    // Поиск: самодостаточный триггер. Прямой вызов, если палитра готова; иначе
-    // ленивая догрузка js/search.js через ТЕ ЖЕ флаги-гварды, что и сайтовые
-    // lazy-loader'ы (__gbSearchLoading/__gbSearchBootRequested/OpenAfterLoad) —
-    // на страницах с готовым лоадером двойной загрузки не будет, а на страницах
-    // без него (karty/map/konfessii) движок догружает палитру сам.
     const search = root.querySelector('.mcp-search') as HTMLElement | null;
     search?.addEventListener('click', (e) => {
       e.preventDefault();
@@ -145,7 +142,6 @@ const paletteCss = assetUrl('css/command-palette.css');
         __gbSearchBootRequested?: boolean;
         __gbSearchOpenAfterLoad?: boolean;
       };
-      // Гарантируем стили палитры (на страницах без command-palette.css).
       const pcss = search.dataset.paletteCss;
       if (pcss && !document.querySelector('link[data-mcp-palette-css]')) {
         const href = pcss.split('?')[0];
@@ -164,7 +160,7 @@ const paletteCss = assetUrl('css/command-palette.css');
         return;
       }
       w.__gbSearchOpenAfterLoad = true;
-      if (w.__gbSearchLoading || w.__gbSearchBootRequested) return; // лоадер уже стартовал
+      if (w.__gbSearchLoading || w.__gbSearchBootRequested) return;
       w.__gbSearchLoading = true;
       w.__gbSearchBootRequested = true;
       const s = document.createElement('script');
@@ -175,8 +171,6 @@ const paletteCss = assetUrl('css/command-palette.css');
       document.head.appendChild(s);
     });
 
-    // Показ бара: когда родной navbar уехал (.nav-hidden) — либо, без navbar,
-    // после 160px скролла. Никакой двойной шапки в верхней точке страницы.
     const navbar = document.getElementById('hNavbar');
     let ticking = false;
     function sync() {

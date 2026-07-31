@@ -88,6 +88,21 @@ async function openPage(browser, urlPath, viewport = { width: 1200, height: 800 
   return page;
 }
 
+async function waitForScrollSettled(page, timeout = 2000) {
+  const deadline = Date.now() + timeout;
+  let previous = null;
+  let stableReads = 0;
+  while (Date.now() < deadline) {
+    const current = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+    if (previous && Math.abs(current.x - previous.x) < 0.5 && Math.abs(current.y - previous.y) < 0.5) stableReads += 1;
+    else stableReads = 0;
+    if (stableReads >= 2) return;
+    previous = current;
+    await page.waitForTimeout(50);
+  }
+  throw new Error(`scroll did not settle within ${timeout}ms`);
+}
+
 async function checkSeries(browser) {
   for (const url of SERIES_URLS) {
     // Production now contains two legitimate series shells:
@@ -252,12 +267,16 @@ async function checkGlossary(browser) {
 
       const target = terms.first();
       if (!readinessError) {
-        await target.scrollIntoViewIfNeeded();
-        await target.hover();
         try {
+          await target.scrollIntoViewIfNeeded();
+          await waitForScrollSettled(page);
+          // The glossary controller explicitly supports focus/blur. Use the
+          // deterministic keyboard path after scrolling has stopped so a late
+          // scroll event cannot immediately close an otherwise healthy tooltip.
+          await target.focus();
           await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'attached', timeout: 2000 });
         } catch (error) {
-          readinessError = `open timeout: ${String(error.message || error).slice(0, 400)}`;
+          readinessError = `open failed: ${String(error.message || error).slice(0, 400)}`;
         }
       }
 
@@ -303,7 +322,7 @@ async function checkGlossary(browser) {
           ? 'glossary-tooltip-did-not-open'
           : 'glossary-tooltip-runtime-not-ready';
         push(kind, url, { error: readinessError, ...state });
-      } else if (!state.tip || state.tip.w < 100 || state.tip.h < 50 || state.tip.top < 0 || state.tip.bottom > 651 || /rgba\(0, 0, 0, 0\)/.test(state.tip.bg) || state.tip.innerDisplay !== 'block') {
+      } else if (state.target?.ariaExpanded !== 'true' || !state.tip || state.tip.w < 100 || state.tip.h < 50 || state.tip.top < 0 || state.tip.bottom > 651 || /rgba\(0, 0, 0, 0\)/.test(state.tip.bg) || state.tip.innerDisplay !== 'block') {
         push('glossary-tooltip-bad-layout', url, state);
       }
     }
@@ -346,19 +365,67 @@ async function checkHermenevtikaFootnotes(browser) {
   await hoverMarker.scrollIntoViewIfNeeded();
   await hoverMarker.hover({ force: true });
   await desktop.waitForTimeout(250);
-  let openState = await desktop.evaluate(() => ({
-    markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
-    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
-  }));
-  if (!openState.tipOpen) push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
-  if (openState.tipOpen) {
-    await desktop.locator('.gb-floating-tip.is-open').hover({ force: true });
-    await desktop.waitForTimeout(180);
-    openState = await desktop.evaluate(() => ({
-      markerOpen: document.querySelector('[data-audit-footnote="40"]')?.getAttribute('aria-expanded') === 'true',
-      tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
-    }));
-    if (!openState.tipOpen) push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, openState);
+
+  const readStaticFootnoteHoverState = () => desktop.evaluate(() => {
+    const marker = document.querySelector('[data-audit-footnote="40"]');
+    const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
+    const rect = tip ? tip.getBoundingClientRect() : null;
+    const style = tip ? getComputedStyle(tip) : null;
+    const epsilon = 1;
+    return {
+      markerOpen: marker?.getAttribute('aria-expanded') === 'true',
+      tipOpen: !!tip,
+      tip: tip && rect && style ? {
+        position: style.position,
+        display: style.display,
+        visibility: style.visibility,
+        opacity: Number(style.opacity),
+        textLength: (tip.textContent || '').trim().length,
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        left: Math.round(rect.left),
+        top: Math.round(rect.top),
+        right: Math.round(rect.right),
+        bottom: Math.round(rect.bottom),
+        centerX: rect.left + rect.width / 2,
+        centerY: rect.top + rect.height / 2,
+        inViewport:
+          rect.left >= -epsilon &&
+          rect.top >= -epsilon &&
+          rect.right <= window.innerWidth + epsilon &&
+          rect.bottom <= window.innerHeight + epsilon,
+      } : null,
+    };
+  });
+
+  let openState = await readStaticFootnoteHoverState();
+  if (!openState.tipOpen) {
+    push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
+  } else if (
+    openState.tip.position !== 'fixed' ||
+    openState.tip.display === 'none' ||
+    openState.tip.visibility === 'hidden' ||
+    openState.tip.opacity < 0.9 ||
+    openState.tip.textLength < 20 ||
+    openState.tip.width < 80 ||
+    openState.tip.height < 20 ||
+    !openState.tip.inViewport
+  ) {
+    push('hermenevtika-footnote-hover-layout-broken', HERMENEUTIKA_URL, openState);
+  } else {
+    await desktop.mouse.move(openState.tip.centerX, openState.tip.centerY, { steps: 12 });
+    try {
+      await desktop.waitForFunction(() => {
+        const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
+        return Boolean(tip && tip.matches(':hover'));
+      }, undefined, { timeout: 2000 });
+    } catch (_) {
+      // Read the actual state below so the failure keeps useful evidence.
+    }
+    const heldState = await readStaticFootnoteHoverState();
+    if (!heldState.tipOpen || !heldState.tip?.inViewport) {
+      push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, heldState);
+    }
   }
   await desktop.keyboard.press('Escape');
   await desktop.locator('[data-audit-footnote="72"]').focus();

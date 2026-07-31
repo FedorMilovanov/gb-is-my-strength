@@ -5,6 +5,28 @@
     min-inline-size: 0;
   }
 
+  @media (max-width: 63.999rem) {
+    /*
+     * The fixed mobile bar is the interaction owner. WebKit can otherwise
+     * hit-test text underneath a transparent control surface while the
+     * button remains visibly on top. Keep the whole control rectangle
+     * pointer-active and make its decorative text children transparent to
+     * pointer targeting, so touch/click always resolves to the native button.
+     */
+    [data-gill-v16] .mobile-bottom-bar,
+    [data-gill-v16] .mobile-btoc-section {
+      pointer-events: auto !important;
+    }
+
+    [data-gill-v16] .mobile-btoc-section {
+      touch-action: manipulation;
+    }
+
+    [data-gill-v16] .mobile-btoc-section > * {
+      pointer-events: none !important;
+    }
+  }
+
   @media (max-width: 48rem) {
     [data-gill-v16] .article-body > * {
       min-inline-size: 0;

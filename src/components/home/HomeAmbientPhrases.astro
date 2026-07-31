@@ -1,0 +1,230 @@
+---
+type AmbientPhrase = {
+  type: 'hebrew' | 'greek' | 'latin';
+  text: string;
+  meaning: string;
+  source: string;
+  side: 'left' | 'right';
+  top: number;
+  edge: number;
+  size: number;
+};
+
+const phrases: AmbientPhrase[] = [
+  { type: 'greek', text: 'ἐν ἀρχῇ ἦν ὁ λόγος', meaning: 'В начале было Слово', source: 'Ин. 1:1', side: 'left', top: 2, edge: 2.8, size: 1.42 },
+  { type: 'hebrew', text: 'שְׁמַע יִשְׂרָאֵל', meaning: 'Слушай, Израиль', source: 'Втор. 6:4', side: 'left', top: 8, edge: 3.7, size: 1.86 },
+  { type: 'hebrew', text: 'יהוה צְבָאוֹת', meaning: 'Яхве-Цеваот — Господь Воинств', source: '1 Цар. 1:3', side: 'left', top: 14, edge: 2.4, size: 1.62 },
+  { type: 'greek', text: 'καὶ ὁ λόγος ἦν πρὸς τὸν θεόν', meaning: 'И Слово было у Бога', source: 'Ин. 1:1', side: 'left', top: 20, edge: 3.4, size: 1.18 },
+  { type: 'latin', text: 'Soli Deo Gloria', meaning: 'Единому Богу — слава', source: 'ср. Рим. 11:36', side: 'left', top: 26, edge: 2.6, size: 1.32 },
+  { type: 'hebrew', text: 'יהוה רֹפְאֶךָ', meaning: 'Яхве-Рафа — Господь-Целитель', source: 'Исх. 15:26', side: 'left', top: 32, edge: 3.7, size: 1.7 },
+  { type: 'hebrew', text: 'מִזְמוֹר לְדָוִד', meaning: 'Псалом Давида', source: 'Пс. 23:1 и др.', side: 'left', top: 38, edge: 2.1, size: 1.78 },
+  { type: 'hebrew', text: 'יהוה שָׁלוֹם', meaning: 'Яхве-Шалом — Господь есть мир', source: 'Суд. 6:24', side: 'left', top: 44, edge: 3.9, size: 1.7 },
+  { type: 'latin', text: 'Coram Deo', meaning: 'Пред лицем Божиим', source: 'Пс. 16:8', side: 'left', top: 50, edge: 2.5, size: 1.28 },
+  { type: 'hebrew', text: 'יהוה נִסִּי', meaning: 'Яхве-Нисси — Господь — знамя моё', source: 'Исх. 17:15', side: 'left', top: 56, edge: 3.4, size: 1.62 },
+  { type: 'hebrew', text: 'חַסְדּוֹ לְעוֹלָם', meaning: 'Милость Его — вовек', source: 'Пс. 135', side: 'left', top: 62, edge: 2.2, size: 1.72 },
+  { type: 'hebrew', text: 'יהוה צִדְקֵנוּ', meaning: 'Яхве-Цидкену — Господь — праведность наша', source: 'Иер. 23:6', side: 'left', top: 68, edge: 3.8, size: 1.66 },
+  { type: 'greek', text: 'ἐν ἀρχῇ ἐποίησεν ὁ θεός', meaning: 'В начале сотворил Бог', source: 'Быт. 1:1, LXX', side: 'left', top: 74, edge: 2.5, size: 1.2 },
+  { type: 'hebrew', text: 'אֵל רֹאִי', meaning: 'Бог видящий', source: 'Быт. 16:13', side: 'left', top: 80, edge: 4.1, size: 1.58 },
+  { type: 'hebrew', text: 'יהוה שָׁמָּה', meaning: 'Яхве-Шамма — Господь там', source: 'Иез. 48:35', side: 'left', top: 88, edge: 2.6, size: 1.66 },
+  { type: 'hebrew', text: 'כִּי לְעוֹלָם חַסְדּוֹ', meaning: 'Ибо вовек милость Его', source: 'Пс. 135', side: 'left', top: 96, edge: 3.5, size: 1.62 },
+
+  { type: 'hebrew', text: 'בְּרֵאשִׁית בָּרָא', meaning: 'В начале сотворил', source: 'Быт. 1:1', side: 'right', top: 5, edge: 2.6, size: 1.78 },
+  { type: 'latin', text: 'In principio erat Verbum', meaning: 'В начале было Слово', source: 'Ин. 1:1', side: 'right', top: 11, edge: 3.7, size: 1.22 },
+  { type: 'hebrew', text: 'אֵל עוֹלָם', meaning: 'Бог вечный', source: 'Быт. 21:33', side: 'right', top: 17, edge: 2.3, size: 1.64 },
+  { type: 'hebrew', text: 'יהוה יִרְאֶה', meaning: 'Яхве-Ире — Господь усмотрит', source: 'Быт. 22:14', side: 'right', top: 23, edge: 3.6, size: 1.7 },
+  { type: 'hebrew', text: 'תּוֹרַת אֱמֶת', meaning: 'Закон истины', source: 'Мал. 2:6', side: 'right', top: 29, edge: 2.4, size: 1.66 },
+  { type: 'greek', text: 'ἅγιος ἅγιος ἅγιος', meaning: 'Свят, свят, свят', source: 'Откр. 4:8', side: 'right', top: 35, edge: 3.8, size: 1.48 },
+  { type: 'latin', text: 'Verbum Domini manet', meaning: 'Слово Господне пребывает вовек', source: '1 Пет. 1:25', side: 'right', top: 41, edge: 2.4, size: 1.16 },
+  { type: 'greek', text: 'τὸ ἄλφα καὶ τὸ ὦ', meaning: 'Альфа и Омега', source: 'Откр. 1:8', side: 'right', top: 47, edge: 3.9, size: 1.4 },
+  { type: 'hebrew', text: 'הַשָּׁמַיִם מְסַפְּרִים כְּבוֹד', meaning: 'Небеса проповедуют славу', source: 'Пс. 18:2', side: 'right', top: 53, edge: 1.8, size: 1.42 },
+  { type: 'hebrew', text: 'יהוה מְקַדִּשְׁכֶם', meaning: 'Яхве-Мекаддишкем — Господь освящающий', source: 'Лев. 20:8', side: 'right', top: 59, edge: 3.2, size: 1.48 },
+  { type: 'greek', text: 'ὁ ὢν καὶ ὁ ἦν καὶ ὁ ἐρχόμενος', meaning: 'Который есть, был и грядёт', source: 'Откр. 1:8', side: 'right', top: 65, edge: 1.9, size: 1.12 },
+  { type: 'latin', text: 'Sanctus Sanctus Sanctus', meaning: 'Свят, свят, свят', source: 'Ис. 6:3; Откр. 4:8', side: 'right', top: 71, edge: 3.2, size: 1.24 },
+  { type: 'greek', text: 'κύριος παντοκράτωρ', meaning: 'Господь Вседержитель', source: 'Откр. 1:8', side: 'right', top: 77, edge: 2.2, size: 1.46 },
+  { type: 'latin', text: 'Gloria in excelsis Deo', meaning: 'Слава в вышних Богу', source: 'Лк. 2:14, Vulgata', side: 'right', top: 84, edge: 3.7, size: 1.2 },
+  { type: 'hebrew', text: 'יהוה רֹעִי', meaning: 'Яхве-Рои — Господь — Пастырь мой', source: 'Пс. 22:1', side: 'right', top: 91, edge: 2.3, size: 1.72 },
+  { type: 'hebrew', text: 'אוֹר לְרַגְלִי דְבָרֶךָ', meaning: 'Светильник ноге моей — слово Твоё', source: 'Пс. 118:105', side: 'right', top: 97.5, edge: 3.1, size: 1.42 },
+];
+
+const languageCode = (type: AmbientPhrase['type']) => type === 'hebrew' ? 'he' : type === 'greek' ? 'grc' : 'la';
+---
+
+<div class="h-ambient-native" aria-hidden="true" data-pagefind-ignore>
+  {phrases.map((phrase) => (
+    <span
+      class={`h-ambient-word h-ambient-word--${phrase.type} h-ambient-word--${phrase.side}`}
+      lang={languageCode(phrase.type)}
+      style={`--ambient-top:${phrase.top}%;--ambient-edge:${phrase.edge}%;--ambient-size:${phrase.size}rem;`}
+    >
+      <span class="h-ambient-word__text">{phrase.text}</span>
+      <span class="h-ambient-word__tooltip">
+        <span class="h-ambient-word__meaning">{phrase.meaning}</span>
+        <span class="h-ambient-word__source">{phrase.source}</span>
+      </span>
+    </span>
+  ))}
+</div>
+
+<style is:global>
+  body.home-page .h-ambient-native {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  body.home-page .h-ambient-word {
+    position: absolute;
+    top: var(--ambient-top);
+    display: none;
+    max-width: min(21rem, 24vw);
+    font-size: var(--ambient-size);
+    line-height: 1.22;
+    white-space: nowrap;
+    pointer-events: none;
+    isolation: isolate;
+  }
+
+  body.home-page .h-ambient-word--left { left: var(--ambient-edge); }
+  body.home-page .h-ambient-word--right { right: var(--ambient-edge); text-align: right; }
+
+  /* Keep the opening Greek phrase clear of the typographic project mark. */
+  body.home-page .h-ambient-word:first-child { top: 4.15%; }
+
+  body.home-page .h-ambient-word--hebrew {
+    direction: rtl;
+    font-family: var(--f-hebrew);
+    font-weight: 450;
+  }
+
+  body.home-page .h-ambient-word--greek {
+    direction: ltr;
+    font-family: "Noto Serif Greek", "Times New Roman", serif;
+    font-weight: 400;
+  }
+
+  body.home-page .h-ambient-word--latin {
+    direction: ltr;
+    font-family: var(--f-body);
+    font-style: italic;
+    font-weight: 560;
+  }
+
+  /* Ambient writing must stay behind the reading hierarchy. It remains
+     discoverable, but no longer competes with card labels and metadata. */
+  body.home-page .h-ambient-word__text {
+    display: block;
+    color: rgba(28, 41, 44, 0.095);
+    filter: blur(0.22px);
+    text-shadow: 0 9px 30px rgba(126, 88, 35, 0.035);
+    transition: color .55s ease, filter .55s ease, transform .7s cubic-bezier(.16, 1, .3, 1), text-shadow .55s ease;
+  }
+
+  html.dark body.home-page .h-ambient-word__text {
+    color: rgba(231, 221, 201, 0.11);
+    text-shadow: 0 10px 34px rgba(66, 196, 213, 0.03);
+  }
+
+  body.home-page .h-ambient-word__tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    width: max-content;
+    min-width: 168px;
+    max-width: 270px;
+    display: grid;
+    gap: 5px;
+    padding: 11px 13px 10px;
+    border: 1px solid var(--h-border-strong);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--h-surface-solid) 94%, transparent);
+    box-shadow: 0 22px 54px -32px rgba(42, 28, 10, .48), inset 0 1px rgba(255, 255, 255, .35);
+    color: var(--h-heading);
+    direction: ltr;
+    text-align: left;
+    white-space: normal;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity .26s ease, visibility 0s linear .26s, transform .45s cubic-bezier(.16, 1, .3, 1);
+    pointer-events: none;
+  }
+
+  body.home-page .h-ambient-word--left .h-ambient-word__tooltip { left: 0; }
+  body.home-page .h-ambient-word--right .h-ambient-word__tooltip { right: 0; }
+
+  html.dark body.home-page .h-ambient-word__tooltip {
+    background: rgba(8, 15, 17, .96);
+    box-shadow: 0 24px 62px -30px rgba(0, 0, 0, .95), inset 0 1px rgba(255, 255, 255, .045);
+  }
+
+  body.home-page .h-ambient-word__meaning {
+    font-family: var(--f-body);
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+
+  body.home-page .h-ambient-word__source {
+    color: var(--h-accent);
+    font-family: var(--f-ui);
+    font-size: 8px;
+    font-style: normal;
+    font-weight: 760;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+
+  @media (min-width: 1220px) and (hover: hover) and (pointer: fine) {
+    body.home-page .h-ambient-word {
+      display: block;
+      pointer-events: auto;
+    }
+
+    body.home-page .h-ambient-word:hover {
+      z-index: 5;
+    }
+
+    body.home-page .h-ambient-word:hover .h-ambient-word__text {
+      color: color-mix(in srgb, var(--h-heading) 72%, transparent);
+      filter: none;
+      transform: translateY(-3px);
+      text-shadow: 0 10px 30px rgba(84, 58, 20, .13);
+    }
+
+    html.dark body.home-page .h-ambient-word:hover .h-ambient-word__text {
+      color: color-mix(in srgb, var(--h-heading) 78%, transparent);
+      text-shadow: 0 10px 34px rgba(66, 196, 213, .11);
+    }
+
+    body.home-page .h-ambient-word:hover .h-ambient-word__tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition-delay: .06s, 0s, .06s;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) and (min-width: 1220px) {
+    body.home-page .h-ambient-word__text {
+      animation: h-ambient-breathe 18s ease-in-out infinite;
+    }
+
+    body.home-page .h-ambient-word:nth-child(3n) .h-ambient-word__text { animation-delay: -6s; }
+    body.home-page .h-ambient-word:nth-child(3n + 2) .h-ambient-word__text { animation-delay: -12s; }
+  }
+
+  @keyframes h-ambient-breathe {
+    0%, 100% { opacity: .78; }
+    50% { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page .h-ambient-word__text,
+    body.home-page .h-ambient-word__tooltip {
+      animation: none;
+      transition: none;
+    }
+  }
+</style>

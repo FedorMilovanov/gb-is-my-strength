@@ -1,11 +1,11 @@
 {
   "note": "Owner-approved visual comparison policy per public route. legacy-diff measures root legacy HTML against production-like dist; native-contract routes intentionally retired legacy presentation and are blocked by the named source/dist and browser guards instead. Never promote a route to native-contract merely to silence a screenshot failure.",
   "tolerancePct": 0.5,
-  "updatedAt": "2026-07-27",
+  "updatedAt": "2026-07-30",
   "baselineType": "policy-aware-legacy-vs-dist-pixel",
   "baselineSource": "repo-root-html-vs-dist",
   "routeArchitectureAtApproval": "mixed: legacy parity + native Astro + shared series chrome + built-app maps",
-  "sourceMainSha": "7187c32a39e1d5b185dbf385f651da0906911d74",
+  "sourceMainSha": "90cccf7ebf1cd3c3fe913041960cafe80104c7a1",
   "policy": {
     "newRouteDefault": "advisory-warn-only",
     "strictNewRoutesMode": "available via --strict-new-routes",
@@ -58,14 +58,14 @@
     },
     "/hard-texts/": {
       "mode": "native-contract",
-      "reason": "The strict-native landing renders the current series cards and metadata from first-class Astro components; root legacy HTML is retained as historical evidence and omits the current Materials section.",
+      "reason": "The strict-native book landing derives its current article inventory and metadata from the active hard-texts series config; root legacy HTML is retained as historical evidence and omits the current book structure.",
       "requiredGuards": [
         "scripts/hard-texts-visual-parity-audit.js",
         "scripts/check-data-consistency.js",
         "scripts/public-surface-browser-matrix.mjs"
       ],
-      "reviewedAt": "2026-07-22",
-      "reviewedSourceSha": "aeae401d782d769dad582395f2045fa79c020f42"
+      "reviewedAt": "2026-07-30",
+      "reviewedSourceSha": "3c4a968d0419fb6d2ac969724b863a49df7085a3"
     },
     "/map/": {
       "mode": "native-contract",
