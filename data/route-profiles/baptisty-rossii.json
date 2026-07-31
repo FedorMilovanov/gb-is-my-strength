@@ -1,11 +1,11 @@
 {
   "route": "/baptisty-rossii/",
-  "profiledAt": "2026-06-22",
+  "profiledAt": "2026-07-31",
   "migrationLane": "landing",
   "routeType": "series-landing",
   "surfaceContractVersion": 1,
   "surface": "series",
-  "seriesShape": "flat",
+  "seriesShape": "book",
   "section": "baptisty-rossii",
   "slug": null,
   "currentStatus": "production-dist",
@@ -17,12 +17,13 @@
   "visualParity": {
     "mode": "native-contract",
     "legacyComparison": "diagnostic-only",
+    "reason": "The strict-native landing remains visually guarded while the published article reader is now grouped by the canonical book-shaped series config. Existing URLs and 229 total reading minutes are preserved.",
     "requiredGuards": [
       "scripts/baptisty-rossii-visual-parity-audit.js",
       "scripts/public-surface-browser-matrix.mjs"
     ],
-    "reviewedAt": "2026-07-22",
-    "reviewedSourceSha": "f9439ef303601e1dc68b5c40ff4d0e1ec8db6a3e"
+    "reviewedAt": "2026-07-31",
+    "reviewedSourceSha": "dec072be664c91ef3d058bfa9f30fc92e02e1b6e"
   },
   "cssPilot": null,
   "migrationMode": "strict-native",
