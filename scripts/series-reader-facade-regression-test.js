@@ -8,6 +8,7 @@ const { auditSeriesFragments } = require('./series-reader-fragment-audit');
 
 const ROOT = path.resolve(__dirname, '..');
 const FACADE = path.join(ROOT, 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro');
+const HEART_SERIES_DATA = path.join(ROOT, 'src/components/article-pilots/_shared/heartSeriesData.ts');
 const DIST = path.join(ROOT, 'dist');
 const IMPLEMENTATION_IMPORT = "import GillSeriesChrome from '../../gill-series/GillSeriesChrome.astro';";
 const DIRECT_IMPORT_RE = /import\s+[A-Za-z_$][\w$]*\s+from\s+['"][^'"]*GillSeriesChrome\.astro['"]/;
@@ -30,6 +31,13 @@ assert.ok(facade.includes('<GillSeriesChrome pageId={pageId} config={config}>'),
 assert.ok(facade.includes('<slot />'), 'façade must forward the default slot');
 assert.equal(typeof auditSeriesFragments, 'function', 'series fragment audit must expose its reusable contract');
 
+const heartSeriesData = fs.readFileSync(HEART_SERIES_DATA, 'utf8');
+const heartProgress = heartSeriesData.match(/export function heartProgress\([\s\S]*?\n}\n/);
+assert.ok(heartProgress, 'heartProgress implementation must remain present');
+assert.match(heartProgress[0], /const item = heartItem\(pageId\);/, 'heartProgress must fail closed through heartItem');
+assert.match(heartProgress[0], /partMin:\s*item\.minutes/, 'heartProgress must use the validated item');
+assert.doesNotMatch(heartProgress[0], /HEART_SERIES_ITEMS\[idx\]\.minutes/, 'heartProgress must not dereference an unchecked index');
+
 const sourceFiles = walk(path.join(ROOT, 'src')).filter((file) => /\.(?:astro|ts|tsx|js|jsx|mjs|cjs)$/.test(file));
 const illegal = [];
 let facadeImports = 0;
@@ -48,4 +56,4 @@ if (fs.existsSync(DIST)) {
   assert.equal(report.result, 'PASS', `rendered series fragment contract failed: ${report.errors.join('; ')}`);
 }
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; fragment audit registered`);
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; heart progress fail-closed; fragment audit registered`);
