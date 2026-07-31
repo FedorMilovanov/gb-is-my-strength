@@ -10,6 +10,15 @@ const {
   routeToUrl,
 } = require('./sitemap-route-contract');
 
+const INDEXABLE_SOCIAL_META = Object.freeze([
+  Object.freeze({ attr: 'property', name: 'og:image' }),
+  Object.freeze({ attr: 'property', name: 'og:image:width' }),
+  Object.freeze({ attr: 'property', name: 'og:image:height' }),
+  Object.freeze({ attr: 'name', name: 'twitter:image' }),
+  Object.freeze({ attr: 'name', name: 'twitter:site' }),
+  Object.freeze({ attr: 'name', name: 'twitter:creator' }),
+]);
+
 function routeToHtmlFile(route) {
   const normalized = normalizeRoute(route);
   return normalized === '/'
@@ -46,11 +55,28 @@ function expectedSeoRouteEntries(options = {}) {
   return [...byRoute.values()].sort((a, b) => a.route.localeCompare(b.route));
 }
 
+function metaValues(html, attr, name) {
+  const wantedAttr = String(attr).toLowerCase();
+  const wantedName = String(name).toLowerCase();
+  const values = [];
+
+  for (const match of String(html || '').matchAll(/<meta\b[^>]*>/gi)) {
+    const attributes = new Map();
+    for (const attribute of match[0].matchAll(/\b([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
+      attributes.set(
+        attribute[1].toLowerCase(),
+        attribute[2] ?? attribute[3] ?? ''
+      );
+    }
+    if ((attributes.get(wantedAttr) || '').toLowerCase() !== wantedName) continue;
+    values.push(attributes.has('content') ? attributes.get('content') : '');
+  }
+
+  return values;
+}
+
 function getMeta(html, attr, name) {
-  const escaped = String(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re1 = new RegExp(`<meta\\s+[^>]*${attr}=["']${escaped}["'][^>]*content=["']([^"']*)["'][^>]*>`, 'i');
-  const re2 = new RegExp(`<meta\\s+[^>]*content=["']([^"']*)["'][^>]*${attr}=["']${escaped}["'][^>]*>`, 'i');
-  return html.match(re1)?.[1] ?? html.match(re2)?.[1] ?? '';
+  return metaValues(html, attr, name)[0] ?? '';
 }
 
 function getCanonical(html) {
@@ -65,6 +91,18 @@ function canonicalCount(html) {
 
 function hasNoindex(html) {
   return /(?:^|[,\s])noindex(?:$|[,\s])/i.test(getMeta(html, 'name', 'robots'));
+}
+
+function auditIndexableSocialMeta(html, route) {
+  const errors = [];
+  for (const { attr, name } of INDEXABLE_SOCIAL_META) {
+    const values = metaValues(html, attr, name);
+    const nonEmpty = values.length === 1 && values[0].trim() !== '';
+    if (nonEmpty) continue;
+    const found = values.length === 1 ? '1 empty value' : `${values.length} values`;
+    errors.push(`${route}: expected exactly one non-empty ${name} meta, found ${found}`);
+  }
+  return errors;
 }
 
 function auditSeoRouteFiles(rootDir, options = {}) {
@@ -99,6 +137,7 @@ function auditSeoRouteFiles(rootDir, options = {}) {
     if (entry.indexable) {
       indexable += 1;
       if (pageNoindex) errors.push(`${entry.route}: indexable registry route renders noindex`);
+      errors.push(...auditIndexableSocialMeta(html, entry.route));
     } else {
       noindex += 1;
       if (!pageNoindex) errors.push(`${entry.route}: seo.indexable=false route must render noindex`);
@@ -120,12 +159,15 @@ function auditSeoRouteFiles(rootDir, options = {}) {
 }
 
 module.exports = {
+  INDEXABLE_SOCIAL_META,
   routeToHtmlFile,
   isProductionSeoRoute,
   expectedSeoRouteEntries,
+  metaValues,
   getMeta,
   getCanonical,
   canonicalCount,
   hasNoindex,
+  auditIndexableSocialMeta,
   auditSeoRouteFiles,
 };
