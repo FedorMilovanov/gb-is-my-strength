@@ -59,6 +59,12 @@ jobs:
               replacement: '    <!-- BREADCRUMB + HERO -->\n    <main id="main-content">\n    <section class="h-hero" data-pagefind-body aria-label="Серия статей">\n      <nav',
               label: 'crossed main and hero section nesting',
             },
+            {
+              file: 'src/components/ui/floating-cluster/SingleArticleCluster.astro',
+              anchor: '  {settings && (\n    <!-- ⚙ Настройки чтения (одиночная статья). Нейтральная кнопка: страница\n         сама привязывает её к своему листу настроек (ReaderSettings шлёт\n         событие \'hm:open-settings\'). НЕ связана с Gill-листом серий. -->\n    <button',
+              replacement: '  <!-- ⚙ Настройки чтения (одиночная статья). Нейтральная кнопка: страница\n       сама привязывает её к своему листу настроек (ReaderSettings шлёт\n       событие \'hm:open-settings\'). НЕ связана с Gill-листом серий. -->\n  {settings && (\n    <button',
+              label: 'HTML comment inside conditional expression',
+            },
           ];
 
           for (const repair of repairs) {
@@ -94,7 +100,8 @@ jobs:
           git add \
             src/components/article-pilots/antisovetov/AntisovetovBody.astro \
             src/components/article-pilots/serdce-iduh/SerdceIDuhBody.astro \
-            src/components/nagornaya/seriya/NagornayaSeriyaBody.astro
+            src/components/nagornaya/seriya/NagornayaSeriyaBody.astro \
+            src/components/ui/floating-cluster/SingleArticleCluster.astro
           git diff --cached --check
           git commit -m "fix(astro7): repair strict HTML structure"
           git push origin HEAD:agent/astro7-phase1-validation-20260731
