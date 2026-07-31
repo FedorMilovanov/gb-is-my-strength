@@ -112,6 +112,12 @@ data/route-profiles/*.json
 `migration/route-migration-matrix.json` — derived output canonical generator; не правь
 его вручную для добавления или переопределения route.
 
+Для контента серии «Джон Гилл» действует **правило шести поверхностей**: фактическая
+правка считается внедрённой только после проверки всех шести Gill-поверхностей
+(Astro-компоненты, route-файлы, MDX, legacy-зеркала, реестры `data/`, search-манифест).
+Реестр закрытых утверждений — `data/gill-verified-claims.json`, гейт —
+`npm run gill:claims:surface:audit`. Полное правило: `AGENTS-REFERENCE.md` §9.20.1.
+
 ## 7. Protected paths
 
 Следующие поверхности как минимум `SYSTEM` и требуют explicit scope + exact-head evidence:
