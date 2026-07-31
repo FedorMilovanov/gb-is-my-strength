@@ -3,8 +3,9 @@
  * Final production-like dist normalizer.
  *
  * Runs after Astro and legacy-copy, synchronizes asset hashes, materializes the
- * Atlas browser runtime, hardens CSP and executes the canonical build-time
- * relation projector. Every phase is deterministic and fail-closed.
+ * Atlas browser runtime, hardens CSP, projects sitemap images from canonical
+ * page metadata and executes the canonical build-time relation projector.
+ * Every phase is deterministic and fail-closed.
  */
 'use strict';
 
@@ -12,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
+const { projectSitemapImages } = require('./lib/sitemap-image-projection');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -177,6 +179,8 @@ const projector = spawnSync(process.execPath, [PROJECTOR, ...(DRY_RUN ? ['--dry-
 if (projector.error) throw projector.error;
 if (projector.status !== 0) throw new Error(`Relation projector failed with exit code ${projector.status}`);
 
+const sitemapImages = projectSitemapImages({ root: DIST, htmlFiles, dryRun: DRY_RUN });
+
 console.log(`\n⚡ astro-cache-bust-postbuild.js${DRY_RUN ? ' [DRY RUN]' : ''}\n`);
 console.log(`  HTML files scanned:       ${htmlFiles.length}`);
 console.log(`  Files touched:            ${filesTouched}`);
@@ -184,4 +188,5 @@ console.log(`  Hash replacements:        ${replacements}`);
 console.log(`  Governed runtime assets:  ${RUNTIME_ASSETS.length}`);
 console.log(`  CSP files touched:        ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed}, wasm fixed: ${cspWasmFixed})`);
 console.log(`  CSP WASM verified:        ${cspWasmVerified}`);
-console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, CSP, Atlas and relation projection drift → 0');
+console.log(`  Sitemap images:           ${sitemapImages.inserted} inserted, ${sitemapImages.replaced} synchronized, ${sitemapImages.unchanged} unchanged`);
+console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, CSP, Atlas, sitemap image and relation projection drift → 0');

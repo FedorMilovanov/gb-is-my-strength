@@ -17,6 +17,8 @@ interface Props {
   ogImage?: string;
   ogImageType?: string;
   ogImageAlt?: string;
+  ogImageWidth?: string;
+  ogImageHeight?: string;
   ogTitle?: string;
   ogDescription?: string;
   ogType?: 'website' | 'article' | 'profile';
@@ -44,6 +46,8 @@ const {
   ogImage,
   ogImageType,
   ogImageAlt,
+  ogImageWidth,
+  ogImageHeight,
   ogTitle,
   ogDescription,
   ogType,
@@ -128,6 +132,8 @@ const searchSrc = assetUrl('js/search.js');
       ogImage={ogImage}
       ogImageType={ogImageType}
       ogImageAlt={ogImageAlt}
+      ogImageWidth={ogImageWidth}
+      ogImageHeight={ogImageHeight}
       ogTitle={ogTitle}
       ogDescription={ogDescription}
       ogType={ogType}
