@@ -155,7 +155,8 @@
     "overlay:special:browser:test": "node scripts/special-overlay-runtime-browser-test.js",
     "overlay:browser:all": "npm run overlay:browser:test && npm run overlay:map:browser:test && npm run overlay:special:browser:test",
     "nagornaya:bar-asset:contract": "node scripts/nagornaya-bar-asset-contract-test.js",
-    "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js"
+    "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js",
+    "visual:pixelmatch:contract": "node scripts/pixelmatch7-contract.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -169,7 +170,7 @@
     "@dagrejs/dagre": "^3.0.0",
     "@xyflow/react": "^12.11.2",
     "astro": "^6.4.6",
-    "pixelmatch": "^5.3.0",
+    "pixelmatch": "^7.2.0",
     "playwright": "^1.62.0",
     "pngjs": "^7.0.0",
     "react": "^19.2.8",

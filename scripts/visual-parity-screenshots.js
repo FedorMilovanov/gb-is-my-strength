@@ -35,7 +35,8 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { PNG } = require('pngjs');
-const pixelmatch = require('pixelmatch');
+// Pixelmatch 6+ is ESM; load it once inside the existing async main.
+let pixelmatch;
 
 process.env.PLAYWRIGHT_BROWSERS_PATH =
   process.env.PLAYWRIGHT_BROWSERS_PATH ||
@@ -349,6 +350,8 @@ function diffPng(aFile, bFile, diffFile) {
     threshold: PIXEL_THRESHOLD,
     includeAA: false,
     diffMask: false,
+    // Preserve the v5 white-background alpha semantics for existing baselines.
+    checkerboard: false,
   });
   fs.writeFileSync(diffFile, PNG.sync.write(diff));
   const pct = (mismatched / (width * height)) * 100;
@@ -371,6 +374,7 @@ function writeSummary(OUT_DIR, summary) {
 
 // ---------- main ----------
 (async () => {
+  ({ default: pixelmatch } = await import('pixelmatch'));
   console.log(`[visual-parity] Starting at ${new Date().toISOString()}`);
   console.log(`[visual-parity] Node ${process.version}, cwd ${process.cwd()}`);
   console.log(`[visual-parity] PLAYWRIGHT_BROWSERS_PATH=${process.env.PLAYWRIGHT_BROWSERS_PATH}`);
