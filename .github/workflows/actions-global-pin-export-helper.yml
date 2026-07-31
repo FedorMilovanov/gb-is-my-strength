@@ -1,0 +1,87 @@
+name: Global GitHub Actions immutable pin export helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.event.pull_request.head.ref == 'agent/actions-global-pin-export-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout exact Actions target
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/github-actions-vnext-final-validation-20260731
+          path: target
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Checkout exporter source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/actions-global-pin-export-20260731
+          path: helper
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git -C target rev-parse HEAD)"
+          expected="c72dce74b20af6794127de8b522a3bce36f51e3b"
+          test "$actual" = "$expected" || {
+            echo "Target drift: expected $expected, got $actual" >&2
+            exit 2
+          }
+
+      - name: Prepare global immutable pin tree
+        run: python3 helper/scripts/actions-global-pin-export.py target
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.12.0'
+          cache: npm
+          cache-dependency-path: target/package-lock.json
+
+      - name: Validate policy, source links and release contracts
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/github-actions-global-pin-contract-test.mjs
+          npm run workflows:policy
+          npm run source:links
+          node scripts/release-pipeline-contract-test.mjs
+          node scripts/deployment-provenance-contract-test.mjs
+          node scripts/record-deployment-witness-contract-test.cjs
+          node scripts/workflow-linkage-regression-test.js
+          npm run astro:check
+          npm run astro:build
+          ! git grep -n -I -E 'uses:\s*[^./][^[:space:]#]+@(v[0-9]+|main|master|latest)([[:space:]#]|$)' -- .github/workflows
+          git diff --check
+
+      - name: Package validated changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp target/reports/actions-global-pin-export/changed-files.txt actions-global-pin-changed-files.txt
+          (cd target && tar -czf ../actions-global-pin-files.tgz -T reports/actions-global-pin-export/changed-files.txt)
+          tar -tzf actions-global-pin-files.tgz
+
+      - name: Upload validated immutable-pin export
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: actions-global-pin-validated-export
+          path: |
+            actions-global-pin-files.tgz
+            actions-global-pin-changed-files.txt
+          if-no-files-found: error
+          retention-days: 2
