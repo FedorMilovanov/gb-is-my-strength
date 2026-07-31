@@ -6,7 +6,7 @@ const { execFileSync } = require('child_process');
 const { normalizeRoute } = require('./rss-route-contract');
 
 const CLOSEOUT_BRANCH = 'fix/astro7-antisovetov-semantic-closeout-20260731';
-const CLOSEOUT_MAIN = '7c92ebd46499af59a4da268c0d27ae7be3f2c1fb';
+const CLOSEOUT_MAIN = '52892a60e72bc004471c7e822441445211350939';
 const REPO_ROOT = path.resolve(__dirname, '../..');
 
 function git(...args) {
