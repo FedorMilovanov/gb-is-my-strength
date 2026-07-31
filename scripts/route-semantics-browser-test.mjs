@@ -22,6 +22,11 @@ const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const REPORT = join(ROOT, 'reports', 'route-semantics-browser.json');
+const SALVAGE_SNAPSHOT = Object.freeze({
+  contract: 'A03-runtime-markup-coverage',
+  schemaVersion: 1,
+  path: 'reports/salvage/A03-runtime-markup-coverage.json',
+});
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -404,6 +409,7 @@ const failures = results.filter((item) => !item.ok);
 await mkdir(dirname(REPORT), { recursive: true });
 await writeFile(REPORT, JSON.stringify({
   schemaVersion: 2,
+  salvageSnapshot: SALVAGE_SNAPSHOT,
   generatedAt: new Date().toISOString(),
   total: results.length,
   passed: results.length - failures.length,
