@@ -79,7 +79,14 @@ jobs:
         run: |
           set -euo pipefail
           sort -u reports/node22-export/changed-files.txt > /tmp/expected.txt
-          git diff --name-only | sort -u > /tmp/actual.txt
+          git diff --name-only > /tmp/actual.txt
+          while IFS= read -r path; do
+            if ! git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
+              test -f "$path"
+              printf '%s\n' "$path" >> /tmp/actual.txt
+            fi
+          done < /tmp/expected.txt
+          sort -u -o /tmp/actual.txt /tmp/actual.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           test -s /tmp/actual.txt
           if grep -E 'node22-current-main-export|node22-current-main-builder|node22-toolchain-export' /tmp/actual.txt; then
