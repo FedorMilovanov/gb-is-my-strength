@@ -1,0 +1,88 @@
+name: Node 22.23.1 validated export helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.event.pull_request.head.ref == 'agent/node22-toolchain-export-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact Node target
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/node22-lts-patch-validation-20260731
+          path: target
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Checkout exporter source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/node22-toolchain-export-20260731
+          path: helper
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git -C target rev-parse HEAD)"
+          expected="0f454961a8066e13b376d0615d51aea4d3167ff7"
+          test "$actual" = "$expected" || {
+            echo "Target drift: expected $expected, got $actual" >&2
+            exit 2
+          }
+
+      - name: Prepare deterministic migration tree
+        run: python3 helper/scripts/node22-toolchain-export.py target
+
+      - name: Set up exact Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+          cache-dependency-path: target/package-lock.json
+
+      - name: Validate exact runtime and permanent contracts
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "const assert=require('node:assert/strict'); const t=require('./data/release-toolchain.json'); assert.equal(process.version, 'v'+t.node)"
+          test "$(npm --version)" = "$(node -p "require('./data/release-toolchain.json').npm")"
+          npm ci
+          npm run workflows:policy
+          node scripts/deployment-provenance-contract-test.mjs
+          node scripts/release-pipeline-contract-test.mjs
+          node scripts/record-deployment-witness-contract-test.cjs
+          node scripts/workflow-linkage-regression-test.js
+          npm run astro:check
+          npm run astro:build
+          ! git grep -n -I -E '22\.12\.0|10\.9\.0' -- .github/workflows scripts/check-workflows.js scripts/deployment-provenance-contract-test.mjs scripts/record-deployment-witness-contract-test.cjs scripts/release-pipeline-contract-test.mjs data/release-toolchain.json
+          ! git grep -n -I -E "node-version:\\s*['\"]22['\"]" -- .github/workflows
+          git diff --check
+
+      - name: Package validated changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp target/reports/node22-export/changed-files.txt node22-changed-files.txt
+          (cd target && tar -czf ../node22-migration-files.tgz -T reports/node22-export/changed-files.txt)
+          tar -tzf node22-migration-files.tgz
+
+      - name: Upload validated migration export
+        uses: actions/upload-artifact@ea165f8d65b6e75b5404495e3d13fd6403c1501 # v4
+        with:
+          name: node22-validated-migration
+          path: |
+            node22-migration-files.tgz
+            node22-changed-files.txt
+          if-no-files-found: error
+          retention-days: 2
