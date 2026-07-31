@@ -1,80 +1,6 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
 const { normalizeRoute } = require('./rss-route-contract');
-
-const CLOSEOUT_BRANCH = 'fix/astro7-antisovetov-semantic-closeout-20260731';
-const CLOSEOUT_MAIN = '52892a60e72bc004471c7e822441445211350939';
-const REPO_ROOT = path.resolve(__dirname, '../..');
-
-function git(...args) {
-  return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
-}
-
-function run(...args) {
-  execFileSync(args[0], args.slice(1), { cwd: REPO_ROOT, stdio: 'inherit' });
-}
-
-function maybeRunAntisovetovSemanticCloseout() {
-  if (process.env.GITHUB_JOB !== 'search-manifest-autofix') return;
-  if (process.env.GITHUB_HEAD_REF !== CLOSEOUT_BRANCH) return;
-
-  const localHead = git('rev-parse', 'HEAD');
-  const remoteHead = git('ls-remote', 'origin', `refs/heads/${CLOSEOUT_BRANCH}`).split(/\s+/u)[0];
-  const remoteMain = git('ls-remote', 'origin', 'refs/heads/main').split(/\s+/u)[0];
-  if (localHead !== remoteHead) throw new Error(`closeout head drift: local=${localHead} remote=${remoteHead}`);
-  if (remoteMain !== CLOSEOUT_MAIN) throw new Error(`closeout main drift: expected=${CLOSEOUT_MAIN} actual=${remoteMain}`);
-
-  const rel = 'src/components/article-pilots/antisovetov/AntisovetovBody.astro';
-  const file = path.join(REPO_ROOT, rel);
-  const source = fs.readFileSync(file, 'utf8');
-  const restored = '<p><strong>Ритуальное извинение:</strong> Пастора ловят на систематическом искажении фактов перед общиной.';
-  if (source.includes(restored)) {
-    console.log('Antisovetov semantic closeout already present.');
-    return;
-  }
-
-  const before = `<p class="mb-6">Безопасное извинение звучит общо: «если кого-то ранил», «мы все несовершенны». В нём нет имени конкретного греха и пострадавших душ. Это не покаяние — это мягкая смена освещения на сцене. Если обвинения слишком доказаны — стань «мучеником»: «На служителей всегда идут атаки дьявола». Ответственность превращается в гонение, а проверка фактов — в нападение на дело Божье. Настоящая сломленность не просит сохранить трон. Лживый пастор не приходит к покаянию о систематическом искажении фактов перед общиной. Он выходит на кафедру, пускает слезу и произносит: «Братья, я признаю, что вкралась досадная неточность в коммуникации из-за моей усталости. Прошу прощения, если это кого-то смутило». Зал аплодирует его смирению. Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>
-<div class="note-box">
-<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>`;
-  const after = `<p class="mb-6">Безопасное извинение звучит общо: «если кого-то ранил», «мы все несовершенны». В нём нет имени конкретного греха и пострадавших душ. Это не покаяние — это мягкая смена освещения на сцене. Если обвинения слишком доказаны — стань «мучеником»: «На служителей всегда идут атаки дьявола». Ответственность превращается в гонение, а проверка фактов — в нападение на дело Божье. Настоящая сломленность не просит сохранить трон.</p>
-<div class="note-box">
-<div class="anti-kicker" style="margin-bottom:12px">Как это выглядит на практике</div>
-<p><strong>Ритуальное извинение:</strong> Пастора ловят на систематическом искажении фактов перед общиной. Он выходит на кафедру, пускает слезу и произносит: «Братья, я признаю, что вкралась досадная неточность в коммуникации из-за моей усталости. Прошу прощения, если это кого-то смутило». Зал аплодирует его смирению. Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>
-</div>
-<div class="note-box">
-<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>`;
-  if (source.split(before).length - 1 !== 1) throw new Error('expected exactly one collapsed Antisovetov semantic witness');
-  const repaired = source.replace(before, after);
-  if (repaired.split(after).length - 1 !== 1) throw new Error('expected exactly one restored Antisovetov semantic block');
-  if (!repaired.includes(restored)) throw new Error('restored ritual-apology paragraph is missing');
-  if (repaired.includes('Настоящая сломленность не просит сохранить трон. Лживый пастор')) {
-    throw new Error('collapsed Antisovetov paragraph remains');
-  }
-  fs.writeFileSync(file, repaired, 'utf8');
-
-  if (git('diff', '--name-only') !== rel) throw new Error('semantic closeout modified an unexpected path');
-  run('git', 'diff', '--check');
-  run('npm', 'run', 'astro:7:satteri:contract');
-  run('npm', 'run', 'astro:check');
-  run('npm', 'run', 'astro:build');
-  run('npm', 'run', 'content:parity');
-
-  const stillRemoteHead = git('ls-remote', 'origin', `refs/heads/${CLOSEOUT_BRANCH}`).split(/\s+/u)[0];
-  const stillRemoteMain = git('ls-remote', 'origin', 'refs/heads/main').split(/\s+/u)[0];
-  if (stillRemoteHead !== localHead) throw new Error(`closeout head moved during validation: ${stillRemoteHead}`);
-  if (stillRemoteMain !== CLOSEOUT_MAIN) throw new Error(`closeout main moved during validation: ${stillRemoteMain}`);
-
-  git('config', 'user.name', 'github-actions[bot]');
-  git('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com');
-  run('git', 'add', '--', rel);
-  run('git', 'commit', '-m', 'fix(content): restore Antisovetov ritual-apology note box');
-  run('git', 'push', 'origin', `HEAD:${CLOSEOUT_BRANCH}`);
-}
-
-maybeRunAntisovetovSemanticCloseout();
 
 const POLICY_FIELDS = Object.freeze([
   'indexPolicy',
@@ -129,7 +55,9 @@ function validatePolicyShape(route, policy) {
 
   if (policy.indexPolicy === 'noindex') {
     for (const field of ['pagefindPolicy', 'searchManifestPolicy', 'sitemapPolicy', 'rssPolicy']) {
-      if (policy[field] !== 'exclude') problems.push(`${route}: noindex requires ${field}=exclude`);
+      if (policy[field] !== 'exclude') {
+        problems.push(`${route}: noindex requires ${field}=exclude`);
+      }
     }
   }
 
@@ -150,9 +78,13 @@ function compareObserved(route, policy, observed) {
   }
 
   if (policy.pagefindPolicy === 'include') {
-    if (observed.dist.pagefindBodyCount < 1) problems.push(`${route}: pagefindPolicy=include but dist has no data-pagefind-body`);
+    if (observed.dist.pagefindBodyCount < 1) {
+      problems.push(`${route}: pagefindPolicy=include but dist has no data-pagefind-body`);
+    }
   } else if (policy.pagefindPolicy === 'metadata-only') {
-    if (observed.dist.pagefindBodyCount !== 0) problems.push(`${route}: pagefindPolicy=metadata-only but dist has data-pagefind-body`);
+    if (observed.dist.pagefindBodyCount !== 0) {
+      problems.push(`${route}: pagefindPolicy=metadata-only but dist has data-pagefind-body`);
+    }
     if (observed.dist.pagefindMetaCount < 1 && observed.dist.pagefindFilterCount < 1) {
       problems.push(`${route}: pagefindPolicy=metadata-only but dist has no Pagefind metadata/filter marker`);
     }
@@ -168,7 +100,9 @@ function compareObserved(route, policy, observed) {
   for (const [policyField, observedField] of membershipChecks) {
     const expected = boolPolicy(policy[policyField]);
     const actual = Boolean(observed.membership[observedField]);
-    if (actual !== expected) problems.push(`${route}: ${policyField}=${policy[policyField]} but observed ${observedField}=${actual}`);
+    if (actual !== expected) {
+      problems.push(`${route}: ${policyField}=${policy[policyField]} but observed ${observedField}=${actual}`);
+    }
   }
 
   return problems;
