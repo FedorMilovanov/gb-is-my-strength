@@ -8,6 +8,9 @@ const PAGE_REL = 'src/pages/baptisty-rossii/index.astro';
 const BASE_REL = 'src/components/baptisty-rossii';
 const BODY_REL = `${BASE_REL}/BaptistyRossiiBody.astro`;
 const HEAD_REL = `${BASE_REL}/BaptistyRossiiPageHead.astro`;
+const BOOK_CONFIG_REL = 'src/components/article-pilots/_shared/series/baptistSeriesConfig.ts';
+const FLAT_CONFIG_REL = 'src/components/article-pilots/_shared/series/baptistFlatSeriesConfig.ts';
+const PROFILE_REL = 'data/route-profiles/baptisty-rossii.json';
 const FORBIDDEN = ['loadLegacyFullDocument', 'headHtml', 'bodyHtml', 'bodyAttributes', '?raw', 'set:html', '_legacy'];
 const MIN_RATIO = 0.95;
 const MAX_RATIO = 1.10;
@@ -27,8 +30,13 @@ const legacy = read(LEGACY_REL);
 const page = read(PAGE_REL);
 const body = read(BODY_REL);
 const head = read(HEAD_REL);
+const bookConfig = read(BOOK_CONFIG_REL);
+const flatConfig = read(FLAT_CONFIG_REL);
+const profile = JSON.parse(read(PROFILE_REL));
 mustExist(BODY_REL, 'BaptistyRossiiBody.astro');
 mustExist(HEAD_REL, 'BaptistyRossiiPageHead.astro');
+mustExist(BOOK_CONFIG_REL, 'Baptist public book config');
+mustExist(FLAT_CONFIG_REL, 'Baptist preserved publication inventory');
 if (exists(`${BASE_REL}/_legacy`)) bad('landing _legacy directory must be retired'); else ok('landing _legacy directory retired');
 for (const token of FORBIDDEN) mustNotContain('landing route/body/head scope', [page,body,head].join('\n'), token);
 mustContain('route imports native head', page, 'BaptistyRossiiPageHead');
@@ -38,9 +46,34 @@ mustContain('route explicit total minutes', page, 'data-gbs2-total-min="229"');
 mustContain('route pagefind body marker', body, 'data-pagefind-body');
 for (const marker of ['rel="canonical"','window.SITE_CONFIG','application/ld+json','mc.yandex.ru']) mustContain('head contract', head, marker);
 for (const marker of ['gbs2-mobile-head','gbs2-rail','gbs2-hero','article-body','gbs2-bbar','gbs2-sheet','Баптисты России']) mustContain('landing body marker', body, marker);
+
+console.log('\nBAPTISTY-ROSSII BOOK CONTRACT');
+mustContain('public config uses canonical book shape', bookConfig, "shape: 'book'");
+mustContain('public config validates through engine', bookConfig, 'defineSeriesConfig({');
+mustContain('public config preserves flat source inventory', bookConfig, "from './baptistFlatSeriesConfig'");
+mustContain('flat source preserves total minutes', flatConfig, 'readingProgressTotalMin: 229');
+for (const id of [
+  'origins-and-first-brotherhood',
+  'networks-unions-and-conscience',
+  'soviet-night-and-one-union',
+  'conscience-split-and-underground-memory',
+]) mustContain('book chapter registry', bookConfig, id);
+for (const id of [
+  'noch-na-kure', 'yuzhnaya-shtunda', 'dva-sezda-1884',
+  'peterburgskaya-liniya', 'goneniya-i-sovest',
+  'sovetskaya-noch', 'vsehib-1944',
+  'iniciativnaya-gruppa', 'podpolnaya-pechat',
+]) mustContain('published article retained', bookConfig, id);
+mustContain('book articles use Arabic marks', bookConfig, "mark: { kind: 'arabic'");
+mustContain('reference endpaper retained', bookConfig, "requireFlatItem('spravochnik')");
+if (profile.seriesShape === 'book') ok('route profile: seriesShape=book');
+else bad(`route profile: expected seriesShape=book, found ${profile.seriesShape}`);
+if (profile.routeType === 'series-landing' && profile.surface === 'series') ok('route profile remains a series landing');
+else bad('route profile lost series landing semantics');
+
 const lw=wordCount(bodyInner(legacy)), rw=wordCount(body), ratio=rw/Math.max(1,lw);
 console.log(`landing words: legacy=${lw}; body=${rw}; ratio=${ratio.toFixed(2)}`);
 if (ratio >= MIN_RATIO && ratio <= MAX_RATIO) ok(`landing word-count parity within threshold (${ratio.toFixed(2)})`); else bad(`landing word-count ratio out of threshold (${ratio.toFixed(2)})`);
 console.log('\nBAPTISTY-ROSSII VISUAL PARITY AUDIT');
 if (problems.length){ console.log(`❌ ${problems.length} problem(s). /baptisty-rossii/ strict-native contract violated.`); process.exit(1); }
-console.log('✅ /baptisty-rossii/ is strict-native and guarded');
+console.log('✅ /baptisty-rossii/ is strict-native, book-shaped and guarded');
