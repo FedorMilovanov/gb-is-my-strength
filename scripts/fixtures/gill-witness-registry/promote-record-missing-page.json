@@ -1,0 +1,34 @@
+{
+  "fixture": "promote-record-missing-page",
+  "description": "Negative mutation: a PROMOTE witness must fail closed without an exact page or stable locator.",
+  "mutation": {
+    "id": "A01-WITNESS-TOPLADY-WHOLE-CIRCLE",
+    "disposition": "PROMOTE",
+    "publicProjection": [
+      "src/components/article-pilots/gill-part2/GillPart2ArticleBody.astro"
+    ],
+    "quote": {
+      "translation": "Если о ком-либо можно предположить, что он прошёл весь круг человеческого знания, — то это доктор Гилл.",
+      "original": "If any one man can be supposed to have trod the whole circle of human learning, it was Dr. Gill."
+    },
+    "attribution": "Augustus Toplady",
+    "work": "Unresolved secondary attribution",
+    "edition": "Unresolved",
+    "locator": null,
+    "context": "General estimate of Gill's learning.",
+    "rights": {
+      "status": "NOT_CLEARED"
+    },
+    "verification": {
+      "status": "SECONDARY_ONLY"
+    }
+  },
+  "expected": {
+    "valid": false,
+    "errors": [
+      "PROMOTE requires locator",
+      "PROMOTE requires cleared rights",
+      "PROMOTE requires source-page verification"
+    ]
+  }
+}
