@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   export:
@@ -18,7 +18,7 @@ jobs:
         with:
           ref: agent/node22-lts-patch-validation-20260731
           path: target
-          persist-credentials: false
+          persist-credentials: true
           fetch-depth: 1
 
       - name: Checkout exporter source
@@ -73,7 +73,7 @@ jobs:
           npm run astro:check
           npm run astro:build
           ! git grep -n -I -E '22\.12\.0|10\.9\.0' -- .github/workflows scripts/check-workflows.js scripts/deployment-provenance-contract-test.mjs scripts/record-deployment-witness-contract-test.cjs scripts/release-pipeline-contract-test.mjs data/release-toolchain.json
-          ! git grep -n -I -E "node-version:\\s*['\"]22['\"]" -- .github/workflows
+          ! git grep -n -I -E "node-version:\s*['\"]22['\"]" -- .github/workflows
           git diff --check
 
       - name: Package validated changed files
@@ -84,10 +84,26 @@ jobs:
           (cd target && tar -czf ../node22-migration-files.tgz -T reports/node22-export/changed-files.txt)
           tar -tzf node22-migration-files.tgz
 
+      - name: Transfer only validated files to canonical Node lane
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          sort -u reports/node22-export/changed-files.txt > /tmp/node22-expected-files.txt
+          git add --pathspec-from-file=reports/node22-export/changed-files.txt
+          git diff --cached --name-only | sort -u > /tmp/node22-actual-files.txt
+          diff -u /tmp/node22-expected-files.txt /tmp/node22-actual-files.txt
+          git diff --cached --check
+          test -s /tmp/node22-actual-files.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(toolchain): apply validated Node 22.23.1 migration'
+          git push origin HEAD:agent/node22-lts-patch-validation-20260731
+
       - name: Upload validated migration export
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: node22-validated-migration-v3
+          name: node22-validated-migration-v4
           path: |
             node22-migration-files.tgz
             node22-changed-files.txt
