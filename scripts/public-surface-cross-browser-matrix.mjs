@@ -150,7 +150,60 @@ async function inspectTrigger(trigger) {
   }).catch(() => null);
 }
 
+async function inspectOpenOverlay(page, controls = null) {
+  return page.evaluate(({ controls }) => {
+    const visible = (node) => {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' &&
+        style.visibility !== 'hidden' && Number.parseFloat(style.opacity || '1') > 0.01;
+    };
+    const target = controls ? document.getElementById(String(controls).split(/\s+/)[0]) : null;
+    const fallbacks = [...document.querySelectorAll(
+      '[role="dialog"],.mobile-nav,.toc-overlay,.settings-overlay,.cp-backdrop,' +
+      '.gill-settings-overlay,.mso-backdrop,.mso-panel'
+    )].filter(visible);
+    const node = visible(target) ? target : fallbacks.at(-1);
+    if (!node) return { found: false, controls };
+    const rect = node.getBoundingClientRect();
+    return {
+      found: true,
+      controls,
+      descriptor: `${node.tagName.toLowerCase()}#${node.id || ''}.${String(node.className || '').slice(0, 120)}`,
+      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+    };
+  }, { controls }).catch((error) => ({ found: true, controls, inspectionError: error.message }));
+}
+
+async function ensureOverlayClean(page, entry, profile, name) {
+  const initial = await inspectOpenOverlay(page);
+  if (!initial?.found) {
+    record(entry, profile, `interaction:${name}:preflight-clean`, true, 'already clean');
+    return true;
+  }
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(180);
+  let state = await inspectOpenOverlay(page);
+  let recovery = 'escape';
+  let shot = null;
+  if (state?.found) {
+    shot = await capture(page, entry, profile, `${name}-preflight-open`);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(180);
+    state = await inspectOpenOverlay(page);
+    recovery = 'reload';
+  }
+  const clean = !state?.found;
+  record(entry, profile, `interaction:${name}:preflight-clean`, clean,
+    JSON.stringify({ initial, state, recovery, shot }));
+  if (!clean) await capture(page, entry, profile, `${name}-preflight-recovery-failure`);
+  return clean;
+}
+
 async function exerciseOverlay(page, entry, profile, name, selectors) {
+  if (!await ensureOverlayClean(page, entry, profile, name)) return;
   const trigger = await findVisible(page, selectors);
   if (!trigger) return;
   const controls = await trigger.getAttribute('aria-controls');
@@ -207,7 +260,23 @@ async function exerciseOverlay(page, entry, profile, name, selectors) {
     if (!inside) await capture(page, entry, profile, `${name}-outside-viewport`);
   }
   await page.keyboard.press('Escape').catch(() => {});
-  await page.waitForTimeout(100);
+  await page.waitForTimeout(180);
+  let closingState = await inspectOpenOverlay(page, controls);
+  const closed = !closingState?.found;
+  let closeShot = null;
+  if (!closed) closeShot = await capture(page, entry, profile, `${name}-close-failure`);
+  record(entry, profile, `interaction:${name}:closes`, closed,
+    JSON.stringify({ controls, closingState, closeShot }));
+  if (!closed) {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(180);
+    closingState = await inspectOpenOverlay(page, controls);
+    const recovered = !closingState?.found;
+    record(entry, profile, `interaction:${name}:state-recovered`, recovered,
+      JSON.stringify({ controls, closingState, recovery: 'reload' }));
+    if (!recovered) await capture(page, entry, profile, `${name}-state-recovery-failure`);
+  }
 }
 
 async function inspectScroll(page, entry, profile) {
