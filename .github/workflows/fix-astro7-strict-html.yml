@@ -53,6 +53,12 @@ jobs:
               replacement: '«Предузнал» — <em lang="el">προέγνω</em> (<em>проэгно́</em>) — здесь',
               label: 'unmatched closing em',
             },
+            {
+              file: 'src/components/nagornaya/seriya/NagornayaSeriyaBody.astro',
+              anchor: '    <!-- BREADCRUMB + HERO -->\n    <section class="h-hero" data-pagefind-body aria-label="Серия статей">\n<main id="main-content">\n      <nav',
+              replacement: '    <!-- BREADCRUMB + HERO -->\n    <main id="main-content">\n    <section class="h-hero" data-pagefind-body aria-label="Серия статей">\n      <nav',
+              label: 'crossed main and hero section nesting',
+            },
           ];
 
           for (const repair of repairs) {
@@ -87,7 +93,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
             src/components/article-pilots/antisovetov/AntisovetovBody.astro \
-            src/components/article-pilots/serdce-iduh/SerdceIDuhBody.astro
+            src/components/article-pilots/serdce-iduh/SerdceIDuhBody.astro \
+            src/components/nagornaya/seriya/NagornayaSeriyaBody.astro
           git diff --cached --check
           git commit -m "fix(astro7): repair strict HTML structure"
           git push origin HEAD:agent/astro7-phase1-validation-20260731
