@@ -1417,6 +1417,53 @@ era-timeline. Живые эталоны: 5 страниц Гилла + 2 hard-te
   * Если восстанавливаешь Gill-текст из старого git history, после вставки **обязательно** перепроверь `fn-marker` / `fn-marker--dove` вручную. Старые коммиты могли содержать формально «сбалансированные», но семантически сломанные span-обёртки, когда outer-marker проглатывает абзац.
   * После любого history-restore для Gill-страниц: (1) grep по `<figure class="article-img` + captions, (2) browser-check desktop+mobile, (3) verify no stale preload remains for removed/replaced image family.
 
+### 9.20.1 John Gill — правило шести поверхностей (claim surface rule)
+
+**Проблема, которую закрывает правило.** Резолюция исследования внедрялась в тот файл,
+над которым шла работа, и не проверялась на остальных Gill-поверхностях. Так ошибка даты
+первого издания (`1767` вместо `1769` для *A Body of Doctrinal Divinity*) пережила
+несколько волн: `GillSpravochnikSectionWorks.astro` уже был исправлен по тому 56, а
+карточка «Коротко» той же страницы продолжала публиковать `1767` — страница
+противоречила сама себе.
+
+**Правило.** Исследовательская резолюция считается внедрённой **только** после проверки
+всех шести поверхностей серии:
+
+```text
+1. src/components/article-pilots/gill-{context,part1,part2,part3,part4,spravochnik,series}/**
+2. src/pages/articles/dzhon-gill-*/**
+3. src/content/articles/dzhon-gill-*.mdx
+4. articles/dzhon-gill-*/index.html          (reference-only зеркала)
+5. data/series.json, data/links-graph.json, data/editorial-metadata.json
+6. data/search-manifest.json, data/route-profiles/articles-dzhon-gill-*.json
+```
+
+**Механизм.** Правило исполняемое, а не только текстовое:
+
+- реестр верифицированных утверждений — `data/gill-verified-claims.json`;
+- гейт — `npm run gill:claims:surface:audit`
+  (`scripts/gill-claim-surface-audit.js`), включён в `validate:static-publication`
+  и `validate:static-publication:light`.
+
+Гейт прогоняет запрещённые паттерны каждого утверждения по всем шести поверхностям.
+Severity зависит от авторитета поверхности: production-поверхности (Astro/route/MDX/data)
+дают блокирующую ошибку, `reference-only` legacy-зеркала — предупреждение
+(`--strict-legacy` поднимает их до блокирующих). Аудит также падает, если какой-то класс
+поверхностей вообще не найден: неполный набор создавал бы ложную уверенность.
+
+**Порядок при новой резолюции исследования.**
+
+1. Добавить/обновить запись в `data/gill-verified-claims.json`: `id`, `research`
+   (том корпуса), `verified` (что именно закрыто), `forbidden` (паттерны опровергнутых
+   формулировок) и при необходимости `requiredNear` (обязательная оговорка рядом с
+   утверждением — так защищён провенанс письма Сперджена к Спиллеру).
+2. Прогнать `npm run gill:claims:surface:audit` и починить **все** поверхности.
+3. Не «чинить» гейт ослаблением паттерна: паттерн описывает исторический факт, а не
+   удобство прохождения проверки.
+
+Реестр — единственный источник правды по закрытым утверждениям Gill. Дублировать эти
+факты в других документах не нужно: они ссылаются на реестр (Single-Writer-Per-Fact).
+
 ### 9.21 Glossary/tooltips in summaries — HARD LOCK
 
   * `.summary-card` / блок «Коротко» — **только краткий plain-text summary**. Внутри summary-card запрещены `.gterm`, `.gtip`, всплывающие glossary-карточки, dotted underline и любые interactive tooltip terms. Термины и всплывающие пояснения допустимы в основном тексте статьи, но не в summary.
