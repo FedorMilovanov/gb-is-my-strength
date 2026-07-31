@@ -4473,18 +4473,19 @@ const JS_SIZE_FLOORS = {
   } else {
     R.ok('Home page has no duplicated dashboard, rail, paths, hero hub, or bottom dock');
   }
-  const routeCount = (html.match(/class=["'][^"']*h-home-route h-reveal/gi) || []).length;
-  if (routeCount !== 4) {
-    R.err(`Home library gateway must expose exactly four primary routes (${routeCount} found)`);
+  const directions = fs.readFileSync(path.join(ROOT, 'src/components/home/HomeSections/Directions.astro'), 'utf8');
+  const routeData = directions.match(/\bconst\s+routes\s*=\s*\[([\s\S]*?)\n\];/);
+  const actualRoutes = routeData
+    ? [...routeData[1].matchAll(/\bhref:\s*["']([^"']+)["']/g)].map((match) => match[1])
+    : [];
+  const requiredRoutes = ['/articles/', '/nagornaya/', '/biografii/', '/karty/', '/konfessii/'];
+  const uniqueRoutes = new Set(actualRoutes);
+  if (actualRoutes.length !== requiredRoutes.length || uniqueRoutes.size !== actualRoutes.length) {
+    R.err(`Home library gateway route data must expose five unique routes (${actualRoutes.length} entries, ${uniqueRoutes.size} unique)`);
+  } else if (actualRoutes.some((href, index) => href !== requiredRoutes[index])) {
+    R.err(`Home library gateway route order drift: expected ${requiredRoutes.join(' → ')}, found ${actualRoutes.join(' → ')}`);
   } else {
-    R.ok('Home library gateway exposes exactly four primary routes');
-  }
-  const requiredLinks = ['/articles/', '/nagornaya/', '/biografii/', '/karty/'];
-  const missing = requiredLinks.filter((href) => !html.includes(`href="${href}"`) && !html.includes(`href='${href}'`));
-  if (missing.length) {
-    R.err(`Home library gateway missing primary links: ${missing.join(', ')}`);
-  } else {
-    R.ok('Home library gateway includes the four primary links');
+    R.ok('Home library gateway exposes the five canonical routes in order');
   }
   const main = fs.readFileSync(path.join(ROOT, 'src/components/home/HomeMain.astro'), 'utf8');
   if (main.indexOf('<Publications />') === -1 || main.indexOf('<Planned />') === -1 || main.indexOf('<Publications />') > main.indexOf('<Planned />')) {

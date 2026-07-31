@@ -1,26 +1,27 @@
 ---
 /**
- * HardTextsSeriesMapSection.astro — GBS-style timeline + series CTA for /hard-texts/.
+ * HardTextsSeriesMapSection.astro — four-chapter book map + series CTA.
  *
- * Refactoring 6.0 parallel pilot. Legacy-faithful Astro markup, no content
- * or class renaming.
+ * The map follows the active book-shaped series config rather than the retired
+ * three-part pilot model.
  */
 ---
-<section class="h-section h-reveal gbs2-scope" style="padding-top:0;" aria-label="Карта серии по текстам Писания">
-  <section aria-label="Карта серии по текстам" class="gbs2-timeline">
-    <div class="gbs2-tl-head"><span>Карта серии</span><span>Иер 17 → Рим 8</span></div>
-    <div class="gbs2-tl-track" style="grid-template-columns:repeat(3,minmax(90px,1fr));">
+<section class="h-section h-reveal gbs2-scope" style="padding-top:0;" aria-label="Карта книги о человеческом сердце">
+  <section aria-label="Карта книги по главам" class="gbs2-timeline">
+    <div class="gbs2-tl-head"><span>Карта книги</span><span>Диагноз → жизнь Духом</span></div>
+    <div class="gbs2-tl-track" style="grid-template-columns:repeat(4,minmax(90px,1fr));">
       <span aria-hidden="true" class="gbs2-tl-line"></span>
-      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Иеремия 17</span>Диагноз сердца</div>
-      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Римлянам 7</span>Война внутри</div>
-      <div class="gbs2-tl-item" style="opacity:.55;"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Римлянам 8</span>Свобода Духа</div>
+      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава I</span>Диагноз сердца</div>
+      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава II</span>Сердце на войне</div>
+      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава III</span>Перелом и перемена</div>
+      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава IV</span>Жизнь Духом</div>
     </div>
   </section>
 
-  <nav aria-label="Начать чтение серии" class="gbs2-next" style="margin-top:clamp(20px,3vw,32px);">
+  <nav aria-label="Начать чтение книги" class="gbs2-next" style="margin-top:clamp(20px,3vw,32px);">
     <a class="gbs2-next-card" href="../articles/krajne-li-isporcheno-serdce/">
       <span class="gbs2-next-cover" style="background-image:url('../images/og-krajne-isporcheno-600w.webp')"></span>
-      <span><span class="gbs2-next-eyebrow">Начать серию · Часть 1 из 3 · ~41 мин</span>
+      <span><span class="gbs2-next-eyebrow">Начать книгу · Глава I · Статья 1 · ~41 мин</span>
       <span class="gbs2-next-title">Крайне ли испорчено сердце верующего?</span>
       <span class="gbs2-next-desc">Иеремия 17: исторический фон, два образа доверия и диагноз, который нельзя выносить за скобки Евангелия.</span></span>
     </a>

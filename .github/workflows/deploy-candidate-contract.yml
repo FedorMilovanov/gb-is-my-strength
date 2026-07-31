@@ -26,6 +26,7 @@ on:
       - "scripts/cache-bust-assets.js"
       - "scripts/project-relations-to-dist.mjs"
       - "scripts/dist-publication-audit.js"
+      - "scripts/series-reader-fragment-audit.js"
       - "scripts/extract-url-contract.js"
       - "scripts/compare-url-contract.js"
       - ".github/workflows/deploy.yml"
@@ -69,6 +70,9 @@ jobs:
       - name: Build Pagefind index into dist
         run: npm run pagefind:build:dist
 
+      - name: Series reader fragment contract
+        run: node scripts/series-reader-fragment-audit.js
+
       - name: Production-like dist publication audit
         shell: bash
         run: |
@@ -100,6 +104,7 @@ jobs:
             reports/relation-projection.json
             reports/dist-publication-audit.json
             reports/dist-publication-audit.log
+            reports/series-reader-fragment-audit.json
             reports/url-contract-dist.json
             reports/url-contract-dist.md
             reports/url-contract-compare.log

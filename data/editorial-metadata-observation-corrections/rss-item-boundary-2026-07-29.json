@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "id": "rss-item-boundary-parser-correction-2026-07-29",
+  "sourceCommit": "c264315cab36fe56771649199e59a810677ce9e1",
+  "field": "rssPublishedAt",
+  "reason": "The previous feed observer matched the first RSS item and only looked ahead for a route link elsewhere in the feed, freezing one unrelated pubDate across multiple routes. These corrections replace only the observed RSS projection after item-boundary parsing was fixed; editorialPublishedAt and editorialModifiedAt remain unchanged.",
+  "changes": {
+    "/articles/20-antisovetov-pastoru/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-05-12T21:00:00.000Z"
+    },
+    "/articles/chto-bibliya-nazyvaet-serdcem/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/dzhon-gill-chast-1-chelovek/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-05-25T21:00:00.000Z"
+    },
+    "/articles/dzhon-gill-chast-2-uchenyi/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-05-25T21:00:00.000Z"
+    },
+    "/articles/dzhon-gill-chast-3-nasledie/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-05-25T21:00:00.000Z"
+    },
+    "/articles/dzhon-gill-chast-4-ekzeget/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-08T21:00:00.000Z"
+    },
+    "/articles/dzhon-gill-istoricheskiy-kontekst/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-05-31T21:00:00.000Z"
+    },
+    "/articles/dzhon-gill-spravochnik/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-05-31T21:00:00.000Z"
+    },
+    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2016-08-31T21:00:00.000Z"
+    },
+    "/articles/kak-menyaetsya-serdce/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/kod-da-vinchi/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-03-31T21:00:00.000Z"
+    },
+    "/articles/krajne-li-isporcheno-serdce/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-03-31T21:00:00.000Z"
+    },
+    "/articles/novoe-serdce/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/osvobozhdennoe-serdce/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/religioznoe-serdce/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-01T21:00:00.000Z"
+    },
+    "/articles/serdce-hrista-k-nemoshchnym/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/serdce-i-duh/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/serdce-i-iskushenie/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/skrytye-idoly-serdca/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/strah-bozhij-rabskij-ili-synovnij/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/svoboda-vo-hriste/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/articles/tma-na-serdce/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-07-10T21:00:00.000Z"
+    },
+    "/baptisty-rossii/dva-sezda-1884/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/goneniya-i-sovest/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/iniciativnaya-gruppa/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/noch-na-kure/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/peterburgskaya-liniya/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/podpolnaya-pechat/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/sovetskaya-noch/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/spravochnik/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/vsehib-1944/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    },
+    "/baptisty-rossii/yuzhnaya-shtunda/": {
+      "from": "2026-07-11T21:00:00.000Z",
+      "to": "2026-06-17T21:00:00.000Z"
+    }
+  }
+}

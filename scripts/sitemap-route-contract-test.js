@@ -17,8 +17,20 @@ const sitemap = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
 const loaded = loadRouteRecords();
 const expectedRoutes = expectedSitemapRoutes({ loaded });
 const baseline = auditSitemapCoverage(sitemap, { loaded });
+const genesis6Routes = [
+  '/hard-texts/genesis-6/',
+  '/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/',
+  '/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/',
+  '/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/',
+  '/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/',
+  '/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/',
+  '/hard-texts/blagovestie-mertvym-1-petra-4-5-6/',
+];
 
-assert.equal(expectedRoutes.length, 66, 'canonical indexable production sitemap surface must contain 66 routes');
+assert.equal(expectedRoutes.length, 73, 'canonical indexable production sitemap surface must contain 73 routes');
+for (const route of genesis6Routes) {
+  assert.ok(expectedRoutes.includes(route), `${route}: published Genesis 6 route must be required in sitemap`);
+}
 assert.ok(!expectedRoutes.includes('/konfessii/russkij-baptizm/_app/'), 'built app asset must not be a public sitemap route');
 const explicitNoindexRoutes = loaded.records
   .filter((record) => record.owner?.status === 'production-dist' && record.profile?.seo?.indexable === false)
@@ -39,7 +51,7 @@ for (const route of explicitNoindexRoutes) {
   assert.ok(!expectedRoutes.includes(route), `${route}: explicit noindex route must stay out of sitemap obligations`);
 }
 assert.deepEqual(contractProblems(baseline), [], contractProblems(baseline).join('\n'));
-assert.equal(baseline.localRoutes.length, 66, 'sitemap must contain exactly the canonical indexable route count');
+assert.equal(baseline.localRoutes.length, 73, 'sitemap must contain exactly the canonical indexable route count');
 
 function rootHtmlForRoute(route) {
   return path.join(ROOT, route === '/' ? 'index.html' : route.replace(/^\//, '') + 'index.html');
@@ -118,5 +130,5 @@ const foreignResult = auditSitemapCoverage(
 assert.ok(foreignResult.foreignUrls.includes(foreignUrl), 'foreign sitemap URL must fail');
 
 console.log(
-  `✅ sitemap route contract: ${baseline.expectedRoutes.length} indexable registry routes, Astro-only mutation ${astroOnlyRoute} blocked`
+  `✅ sitemap route contract: ${baseline.expectedRoutes.length} indexable registry routes, seven Genesis 6 routes required, Astro-only mutation ${astroOnlyRoute} blocked`
 );
