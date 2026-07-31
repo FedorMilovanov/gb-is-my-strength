@@ -76,6 +76,19 @@ jobs:
             source = source.replace(repair.anchor, repair.replacement);
             fs.writeFileSync(repair.file, source);
           }
+
+          const faqFile = 'src/components/article-pilots/kod-da-vinchi/KodDaVinchiSectionFaq.astro';
+          let faq = fs.readFileSync(faqFile, 'utf8');
+          const itemCount = (faq.match(/class="faq-accordion__item"/g) || []).length;
+          const broken = '          <span aria-hidden="true" class="faq-accordion__icon">\n        </button>\n</span><div class="faq-accordion__body"';
+          const fixed = '          <span aria-hidden="true" class="faq-accordion__icon"></span>\n        </button>\n<div class="faq-accordion__body"';
+          const brokenCount = faq.split(broken).length - 1;
+          if (itemCount < 1 || brokenCount !== itemCount) {
+            throw new Error(`Expected one crossed icon span per FAQ item; items=${itemCount}, broken=${brokenCount}`);
+          }
+          faq = faq.replaceAll(broken, fixed);
+          if (faq.includes(broken)) throw new Error('FAQ crossed icon span remains after repair');
+          fs.writeFileSync(faqFile, faq);
           NODE
 
       - name: Install exact dependencies
@@ -101,7 +114,8 @@ jobs:
             src/components/article-pilots/antisovetov/AntisovetovBody.astro \
             src/components/article-pilots/serdce-iduh/SerdceIDuhBody.astro \
             src/components/nagornaya/seriya/NagornayaSeriyaBody.astro \
-            src/components/ui/floating-cluster/SingleArticleCluster.astro
+            src/components/ui/floating-cluster/SingleArticleCluster.astro \
+            src/components/article-pilots/kod-da-vinchi/KodDaVinchiSectionFaq.astro
           git diff --cached --check
           git commit -m "fix(astro7): repair strict HTML structure"
           git push origin HEAD:agent/astro7-phase1-validation-20260731
