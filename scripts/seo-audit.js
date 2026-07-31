@@ -14,6 +14,12 @@
 const fs = require('fs');
 const path = require('path');
 const { auditSeoRouteFiles } = require('./lib/seo-route-contract');
+const {
+  approvedSocialImageProfileLabel,
+  auditSitemapImages,
+  isApprovedSocialImageDimensions,
+  readImageDimensions,
+} = require('./lib/sitemap-image-projection');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const BASE = 'https://gospod-bog.ru';
@@ -166,10 +172,25 @@ for (const p of htmlFiles) {
     const type = getMeta(html, 'property', 'og:image:type');
     if (!w || !h) err(file, 'og:image width/height missing');
     if (!type) warn(file, 'og:image:type missing');
-    if ((w && w !== '1200') || (h && h !== '630')) warn(file, `og:image dimensions are ${w}x${h}, recommended 1200x630`);
+    if (w && h && !isApprovedSocialImageDimensions(w, h)) {
+      const message = `og:image dimensions are ${w}x${h}; approved profiles: ${approvedSocialImageProfileLabel()}`;
+      if (options.registry) err(file, message); else warn(file, message);
+    }
     if (ogImage.startsWith(`${BASE}/`)) {
       const imgPath = path.join(AUDIT_ROOT, ogImage.slice(BASE.length + 1));
-      if (!fs.existsSync(imgPath)) err(file, `og:image file missing: ${ogImage}`);
+      if (!fs.existsSync(imgPath)) {
+        err(file, `og:image file missing: ${ogImage}`);
+      } else if (options.registry) {
+        try {
+          const actual = readImageDimensions(imgPath);
+          if (String(actual.width) !== w || String(actual.height) !== h) {
+            err(file, `og:image metadata ${w}x${h} does not match file ${actual.width}x${actual.height}: ${ogImage}`);
+          }
+          if (type && type !== actual.type) err(file, `og:image:type ${type} does not match file type ${actual.type}`);
+        } catch (error) {
+          err(file, error.message);
+        }
+      }
     }
   }
 
@@ -225,7 +246,7 @@ if (!fs.existsSync(path.join(AUDIT_ROOT, 'robots.txt'))) {
   }
 }
 
-// sitemap image namespace and unique loc.
+// sitemap image namespace, uniqueness, ownership and byte parity.
 if (!fs.existsSync(path.join(AUDIT_ROOT, 'sitemap.xml'))) {
   err('sitemap.xml', 'missing');
 } else {
@@ -234,10 +255,12 @@ if (!fs.existsSync(path.join(AUDIT_ROOT, 'sitemap.xml'))) {
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
   const dupLocs = [...new Set(locs.filter((x, i) => locs.indexOf(x) !== i))];
   if (dupLocs.length) err('sitemap.xml', `duplicate loc entries: ${dupLocs.join(', ')}`);
-  for (const block of sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
-    const loc = block[1].match(/<loc>([^<]+)<\/loc>/)?.[1];
-    if (!loc) continue;
-    if (!/<image:image>/.test(block[1])) warn('sitemap.xml', `URL without image:image: ${loc}`);
+  if (options.registry) {
+    const sitemapAudit = auditSitemapImages({ root: AUDIT_ROOT, htmlFiles });
+    for (const problem of sitemapAudit.errors) err('sitemap.xml', problem);
+    if (!sitemapAudit.errors.length) ok(`sitemap images match ${sitemapAudit.counts.entries} canonical page OG owners`);
+  } else {
+    ok('source sitemap image projection is finalized and verified by the production-like postbuild');
   }
 }
 
