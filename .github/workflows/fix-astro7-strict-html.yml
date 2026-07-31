@@ -1,0 +1,76 @@
+name: Fix Astro 7 strict HTML finding
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/fix-astro7-strict-html.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fix-astro7-strict-html
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: github.head_ref == 'agent/astro7-phase1-validation-20260731'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Remove the proven unmatched closing div
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'src/components/article-pilots/antisovetov/AntisovetovBody.astro';
+          let source = fs.readFileSync(file, 'utf8');
+          const anchor = 'Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>\n</div>\n<div class="note-box">\n<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>';
+          const replacement = 'Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>\n<div class="note-box">\n<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>';
+          const occurrences = source.split(anchor).length - 1;
+          if (occurrences !== 1) {
+            throw new Error(`Expected one proven unmatched-div anchor, found ${occurrences}`);
+          }
+          source = source.replace(anchor, replacement);
+          fs.writeFileSync(file, source);
+          NODE
+
+      - name: Install exact dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify Astro 7 migration and strict build
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run astro7:migration:guard
+          npm run astro:build
+
+      - name: Remove this one-shot workflow
+        run: git rm -f .github/workflows/fix-astro7-strict-html.yml
+
+      - name: Commit validated repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/article-pilots/antisovetov/AntisovetovBody.astro
+          git diff --cached --check
+          git commit -m "fix(astro7): repair strict HTML structure"
+          git push origin HEAD:agent/astro7-phase1-validation-20260731
