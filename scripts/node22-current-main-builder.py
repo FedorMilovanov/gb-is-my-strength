@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import runpy
+import subprocess
 import sys
 import textwrap
 from pathlib import Path
@@ -86,16 +87,53 @@ workflow_path = target / ".github/workflows/node-toolchain-contract.yml"
 workflow_path.write_text(node_workflow, encoding="utf-8")
 
 manifest_path = target / "reports/node22-export/changed-files.txt"
-entries = {line.strip() for line in manifest_path.read_text(encoding="utf-8").splitlines() if line.strip()}
-entries.update({"data/release-toolchain.json", ".github/workflows/node-toolchain-contract.yml"})
+candidates = {
+    line.strip()
+    for line in manifest_path.read_text(encoding="utf-8").splitlines()
+    if line.strip()
+}
+candidates.update({"data/release-toolchain.json", ".github/workflows/node-toolchain-contract.yml"})
+
 for forbidden in (
     ".github/workflows/node22-current-main-export.yml",
     "scripts/node22-current-main-builder.py",
     "scripts/node22-toolchain-export.py",
     "scripts/node22-toolchain-export-v3.py",
 ):
-    entries.discard(forbidden)
+    candidates.discard(forbidden)
+
+# Mark any newly created candidate paths as intent-to-add so one Git diff command
+# reports both tracked modifications and genuinely new permanent files. Then
+# remove the temporary index markers; the working tree remains unchanged.
+sorted_candidates = sorted(candidates)
+subprocess.run(
+    ["git", "-C", str(target), "add", "-N", "--", *sorted_candidates],
+    check=True,
+)
+try:
+    diff_output = subprocess.check_output(
+        ["git", "-C", str(target), "diff", "--name-only", "--", *sorted_candidates],
+        text=True,
+    )
+finally:
+    subprocess.run(
+        ["git", "-C", str(target), "reset", "--", *sorted_candidates],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+
+entries = {line.strip() for line in diff_output.splitlines() if line.strip()}
+unexpected = entries - candidates
+if unexpected:
+    raise SystemExit(f"Unexpected paths in Node export diff: {sorted(unexpected)}")
+if not entries:
+    raise SystemExit("Node export produced no changed permanent files")
+
+for path in entries:
+    if "node22-current-main-export" in path or "node22-current-main-builder" in path or "node22-toolchain-export" in path:
+        raise SystemExit(f"Helper surface leaked into permanent export: {path}")
+
 manifest_path.write_text("\n".join(sorted(entries)) + "\n", encoding="utf-8")
-print(f"Prepared current-main combined Node migration: {len(entries)} permanent files")
+print(f"Prepared current-main combined Node migration: {len(entries)} changed permanent files")
 for entry in sorted(entries):
     print(entry)
