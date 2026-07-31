@@ -1,30 +1,33 @@
 name: Antisovetov Semantic Closeout Transaction
 
 on:
-  push:
-    branches:
-      - fix/astro7-antisovetov-semantic-closeout-20260731
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
 
 concurrency:
-  group: antisovetov-semantic-closeout
+  group: antisovetov-semantic-closeout-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   repair:
+    if: >-
+      github.event.pull_request.head.ref == 'fix/astro7-antisovetov-semantic-closeout-20260731' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
-      EXPECTED_HEAD: ${{ github.sha }}
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
       EXPECTED_MAIN: 7c92ebd46499af59a4da268c0d27ae7be3f2c1fb
-      HEAD_BRANCH: fix/astro7-antisovetov-semantic-closeout-20260731
+      HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
     steps:
-      - name: Checkout exact transaction head
+      - name: Checkout exact PR head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: true
           fetch-depth: 0
 
@@ -48,6 +51,11 @@ jobs:
 
           path = Path('src/components/article-pilots/antisovetov/AntisovetovBody.astro')
           source = path.read_text(encoding='utf-8')
+          restored = '<p><strong>Ритуальное извинение:</strong> Пастора ловят на систематическом искажении фактов перед общиной.'
+          if source.count(restored) == 1:
+              print('Semantic block is already restored.')
+              raise SystemExit(0)
+
           before = '''<p class="mb-6">Безопасное извинение звучит общо: «если кого-то ранил», «мы все несовершенны». В нём нет имени конкретного греха и пострадавших душ. Это не покаяние — это мягкая смена освещения на сцене. Если обвинения слишком доказаны — стань «мучеником»: «На служителей всегда идут атаки дьявола». Ответственность превращается в гонение, а проверка фактов — в нападение на дело Божье. Настоящая сломленность не просит сохранить трон. Лживый пастор не приходит к покаянию о систематическом искажении фактов перед общиной. Он выходит на кафедру, пускает слезу и произносит: «Братья, я признаю, что вкралась досадная неточность в коммуникации из-за моей усталости. Прошу прощения, если это кого-то смутило». Зал аплодирует его смирению. Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>
 <div class="note-box">
 <span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>'''
@@ -63,7 +71,7 @@ jobs:
           repaired = source.replace(before, after, 1)
           for marker in (
               '<div class="anti-kicker" style="margin-bottom:12px">Как это выглядит на практике</div>',
-              '<p><strong>Ритуальное извинение:</strong> Пастора ловят на систематическом искажении фактов перед общиной.',
+              restored,
               'Настоящая сломленность не просит сохранить трон.</p>',
           ):
               if repaired.count(marker) != 1:
@@ -72,6 +80,11 @@ jobs:
               raise SystemExit('collapsed paragraph remains')
           path.write_text(repaired, encoding='utf-8', newline='\n')
           PY
+
+          if git diff --quiet -- src/components/article-pilots/antisovetov/AntisovetovBody.astro; then
+            echo 'No source commit required.'
+            exit 0
+          fi
 
           test "$(git diff --name-only)" = 'src/components/article-pilots/antisovetov/AntisovetovBody.astro'
           git diff --check
