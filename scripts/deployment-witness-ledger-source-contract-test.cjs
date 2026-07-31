@@ -7,9 +7,9 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 const PINS = Object.freeze({
-  githubScript: 'actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7',
-  checkout: 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4',
-  download: 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4',
+  githubScript: 'actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0',
+  checkout: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1',
+  download: 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1',
 });
 const LOCK = 'group: deployment-witness-${{ needs.resolve.outputs.run_id }}';
 
