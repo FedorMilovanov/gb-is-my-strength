@@ -1,0 +1,75 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const mappings = Object.freeze([
+  ['actions/checkout', '11d5960a326750d5838078e36cf38b85af677262', '3d3c42e5aac5ba805825da76410c181273ba90b1', '7.0.1'],
+  ['actions/setup-node', '49933ea5288caeca8642d1e84afbd3f7d6820020', '820762786026740c76f36085b0efc47a31fe5020', '7.0.0'],
+  ['actions/upload-artifact', 'ea165f8d65b6e75b540449e92b4886f43607fa02', '043fb46d1a93c77aae656e7c1c64a875d1fc6a0a', '7.0.1'],
+  ['actions/download-artifact', 'd3f86a106a0bac45b974a628896c90dbdf5c8093', '3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c', '8.0.1'],
+  ['actions/upload-pages-artifact', '56afc609e74202658d3ffba0e8f6dda462b719fa', 'fc324d3547104276b827a68afc52ff2a11cc49c9', '5.0.0'],
+  ['actions/deploy-pages', 'd6db90164ac5ed86f2b6aed7e0febac5b3c0c03e', 'cd2ce8fcbc39b97be8ca5fce6e763baed58fa128', '5.0.0'],
+  ['actions/github-script', 'f28e40c7f34bde8b3046d885e986cb6290c5673b', '3a2844b7e9c422d3c10d287c895573f7108da1b3', '9.0.0'],
+]);
+const extensions = new Set(['.js', '.cjs', '.mjs', '.md', '.yml', '.yaml', '.json']);
+const roots = ['scripts', 'docs', '.github/workflows'];
+const changed = [];
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function migrateFile(file) {
+  let source = fs.readFileSync(file, 'utf8');
+  const original = source;
+
+  for (const [action, oldSha, newSha, version] of mappings) {
+    source = source.replace(
+      new RegExp(`${escapeRegExp(action)}@${oldSha}(?:\\s+#\\s+v[^\\s'\"]+)?`, 'g'),
+      `${action}@${newSha} # v${version}`,
+    );
+  }
+
+  if (file === path.normalize('scripts/check-workflows.js')) {
+    const oldDryRun = '/actions\\/upload-artifact@v4/';
+    const newDryRun = '/actions\\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/';
+    const occurrences = source.split(oldDryRun).length - 1;
+    if (occurrences !== 1) {
+      throw new Error(`Expected one dist-dry-run mutable-tag policy, found ${occurrences}`);
+    }
+    source = source.replace(oldDryRun, newDryRun);
+  }
+
+  if (source !== original) {
+    fs.writeFileSync(file, source);
+    changed.push(file);
+  }
+}
+
+function walk(directory) {
+  if (!fs.existsSync(directory)) return;
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) walk(absolute);
+    else if (extensions.has(path.extname(entry.name))) migrateFile(absolute);
+  }
+}
+
+for (const root of roots) walk(root);
+if (!changed.includes(path.normalize('scripts/check-workflows.js'))) {
+  throw new Error('Workflow policy guard was not migrated');
+}
+
+fs.mkdirSync('docs/dependency-migrations', { recursive: true });
+fs.writeFileSync('docs/dependency-migrations/GITHUB_ACTIONS_VNEXT.md', `# GitHub Actions immutable major migration
+
+The control plane targets checkout 7.0.1, setup-node 7.0.0, upload-artifact
+7.0.1, download-artifact 8.0.1, upload-pages-artifact 5.0.0, deploy-pages
+5.0.0 and github-script 9.0.0 through immutable 40-character SHA pins.
+
+Workflow policy, source-link, release, deployment and TTS witnesses are updated
+as one transaction. Build-once ordering, exact candidate identity, provenance,
+artifact immutability, Pages ordering, dist-dry-run and trusted-default-branch
+execution remain fail closed.
+
+The Gill print pagination witness remains a separate visual/print issue.
+`);
+
+console.log(`ACTIONS CONTROL-PLANE MIGRATION: ${changed.length} files updated`);
+for (const file of changed.sort()) console.log(`- ${file}`);
