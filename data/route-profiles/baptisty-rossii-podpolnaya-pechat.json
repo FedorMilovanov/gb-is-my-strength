@@ -1,11 +1,11 @@
 {
   "route": "/baptisty-rossii/podpolnaya-pechat/",
-  "profiledAt": "2026-06-22",
+  "profiledAt": "2026-07-31",
   "migrationLane": "content",
   "routeType": "series-article",
   "surfaceContractVersion": 1,
   "surface": "series",
-  "seriesShape": "flat",
+  "seriesShape": "book",
   "section": "baptisty-rossii",
   "slug": "podpolnaya-pechat",
   "currentStatus": "production-dist",
