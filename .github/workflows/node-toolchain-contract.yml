@@ -1,0 +1,56 @@
+name: Node Toolchain Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - 'data/release-toolchain.json'
+      - 'docs/dependency-migrations/NODE_22_LTS_PATCH.md'
+      - 'package.json'
+      - 'scripts/check-workflows.js'
+      - 'scripts/node-toolchain-pin-contract-test.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - 'data/release-toolchain.json'
+      - 'docs/dependency-migrations/NODE_22_LTS_PATCH.md'
+      - 'package.json'
+      - 'scripts/check-workflows.js'
+      - 'scripts/node-toolchain-pin-contract-test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: node-toolchain-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-pins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Enforce workflow and toolchain contracts
+        run: |
+          node scripts/check-workflows.js
+          node scripts/node-toolchain-pin-contract-test.mjs
+
+      - name: Lint this workflow
+        run: node scripts/run-actionlint.mjs -no-color .github/workflows/node-toolchain-contract.yml
+
+      - name: Ensure validation is read-only
+        run: git diff --exit-code

@@ -96,8 +96,8 @@ function genericReport(overrides = {}) {
         candidateId: `${RELEASE_SHA}:${RUN_ID}-${RUN_ATTEMPT}`,
         candidateDigest: TREE_DIGEST,
         build: {
-          node: '22.12.0',
-          npm: '10.9.0',
+          node: '22.23.1',
+          npm: '10.9.8',
           packageLockDigest: `sha256:${'1'.repeat(64)}`,
           routeRegistryDigest: `sha256:${'2'.repeat(64)}`,
           pagefindDigest: `sha256:${'3'.repeat(64)}`,
