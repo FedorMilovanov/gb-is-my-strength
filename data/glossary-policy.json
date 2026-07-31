@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "rootSelectors": [
     "article",
     "main[data-pagefind-body]"
@@ -45,6 +45,8 @@
     ".btip",
     ".gtip",
     ".quiz-wrapper",
+    ".flip-card",
+    ".error-flip-card",
     ".gbs2-timeline",
     ".gbs2-next",
     "[data-glossary-skip]",
@@ -88,6 +90,8 @@
     ".tooltip",
     ".btip",
     ".quiz-wrapper",
+    ".flip-card",
+    ".error-flip-card",
     ".gbs2-timeline",
     ".gbs2-next",
     "[data-glossary-skip]",
