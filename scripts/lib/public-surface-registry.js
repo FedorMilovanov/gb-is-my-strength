@@ -136,6 +136,7 @@ function derivePublicSurfaceEntry(record, mobileEntries = parseMobileChromeRegis
   const profile = record.profile || {};
   const routeRole = deriveRouteRole(profile);
   const chrome = deriveChrome(record, mobileEntries, routeRole);
+  const configSources = profile.surface === 'series' ? seriesConfigSources(record) : [];
   return {
     route: record.route,
     surface: profile.surface || null,
@@ -150,10 +151,11 @@ function derivePublicSurfaceEntry(record, mobileEntries = parseMobileChromeRegis
     profileFile: record.profileFile || null,
     chrome,
     settingsCapability: settingsCapability(record, chrome, routeRole),
-    configSources: profile.surface === 'series' ? seriesConfigSources(record) : [],
+    configSources,
     facts: {
       importsSeriesFacade: hasResolvedImport(record, SERIES_FACADE),
       importsBookConfig: hasResolvedImport(record, BOOK_CONFIG),
+      hasExplicitSeriesConfig: configSources.some((source) => source !== GILL_DEFAULT_CONFIG),
       historicalImplementationLeaks: historicalImplementationLeaks(record).map(
         (item) => `${item.importer} -> ${item.resolved}`
       ),
@@ -191,8 +193,8 @@ function validatePublicSurfaceRecord(record, entry, mobileEntries) {
   if (entry.facts.importsBookConfig && !(surface === 'series' && shape === 'book')) {
     issue('hardTextsSeriesConfig import requires surface=series and seriesShape=book');
   }
-  if (surface === 'series' && shape === 'book' && !entry.facts.importsBookConfig) {
-    issue('seriesShape=book requires resolved hardTextsSeriesConfig import');
+  if (surface === 'series' && shape === 'book' && !entry.facts.hasExplicitSeriesConfig) {
+    issue('seriesShape=book requires a resolved explicit series config import');
   }
   if (entry.facts.historicalImplementationLeaks.length) {
     issue(`direct GillSeriesChrome import outside façade: ${entry.facts.historicalImplementationLeaks.join(', ')}`);
