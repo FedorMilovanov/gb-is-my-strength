@@ -75,9 +75,50 @@ try {
       window.scrollTo(0, Math.max(0, target));
     });
     await page.waitForTimeout(120);
-    await page.emulateMedia({ media: 'print' });
-    await page.evaluate(async () => { if (document.fonts?.ready) await document.fonts.ready; });
-    await page.waitForTimeout(250);
+    await page.evaluate(() => {
+    for (const image of document.images) {
+      image.loading = 'eager';
+      image.fetchPriority = 'high';
+    }
+  });
+  await page.emulateMedia({ media: 'print' });
+  const imageReadiness = await page.evaluate(async () => {
+    if (document.fonts?.ready) await document.fonts.ready;
+    const localImages = [...document.images].filter((image) => {
+      const source = image.currentSrc || image.src || '';
+      if (!source) return false;
+      try { return new URL(source, location.href).origin === location.origin || source.startsWith('data:'); }
+      catch { return true; }
+    });
+    const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    await Promise.all(localImages.map(async (image) => {
+      if (!image.complete) {
+        await Promise.race([
+          new Promise((resolve) => {
+            image.addEventListener('load', resolve, { once: true });
+            image.addEventListener('error', resolve, { once: true });
+          }),
+          timeout(8000),
+        ]);
+      }
+      if (typeof image.decode === 'function') {
+        await Promise.race([image.decode().catch(() => {}), timeout(4000)]);
+      }
+    }));
+    const failures = localImages.filter((image) =>
+      !image.complete || ((image.currentSrc || image.src) && image.naturalWidth === 0)
+    ).map((image) => ({
+      src: image.currentSrc || image.src,
+      complete: image.complete,
+      naturalWidth: image.naturalWidth,
+      naturalHeight: image.naturalHeight,
+    }));
+    return { total: localImages.length, failures };
+  });
+  if (imageReadiness.failures.length) {
+    throw new Error(`PRINT IMAGE READINESS failed: ${JSON.stringify(imageReadiness)}`);
+  }
+  await page.waitForTimeout(120);
 
     const setup = await page.evaluate((routeIndex) => {
       const api = window.GBPrintPagination;
