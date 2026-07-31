@@ -3,7 +3,7 @@ name: Antisovetov Semantic Closeout Transaction
 on:
   pull_request:
     branches: [main]
-    types: [synchronize]
+    types: [synchronize, labeled]
 
 permissions:
   contents: write
