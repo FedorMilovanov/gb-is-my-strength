@@ -176,9 +176,10 @@ export const HEART_TOTAL_MIN = HEART_SERIES_ITEMS.reduce((s, i) => s + i.minutes
 /** Series reading-progress attributes for the page wrapper. done = running sum
  *  of everything before this entry; part = this entry; total = whole series. */
 export function heartProgress(pageId: HeartPageId): { doneMin: number; partMin: number; totalMin: number } {
-  const idx = heartIndex(pageId);
-  const doneMin = HEART_SERIES_ITEMS.slice(0, Math.max(0, idx)).reduce((s, i) => s + i.minutes, 0);
-  return { doneMin, partMin: HEART_SERIES_ITEMS[idx].minutes, totalMin: HEART_TOTAL_MIN };
+  const item = heartItem(pageId);
+  const idx = HEART_SERIES_ITEMS.indexOf(item);
+  const doneMin = HEART_SERIES_ITEMS.slice(0, idx).reduce((s, i) => s + i.minutes, 0);
+  return { doneMin, partMin: item.minutes, totalMin: HEART_TOTAL_MIN };
 }
 
 /** #gbs2Meta text: «Часть N из M» for roman pages, own label for label pages. */
