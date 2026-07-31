@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const { loadRouteRecords } = require('./lib/effective-route-registry');
 const {
+  INDEXABLE_SOCIAL_META,
   expectedSeoRouteEntries,
   auditSeoRouteFiles,
 } = require('./lib/seo-route-contract');
@@ -64,10 +65,31 @@ assert.ok(
   'a new Astro-only production route must become an SEO audit obligation automatically'
 );
 
-function htmlDocument({ canonical, robots }) {
+const SOCIAL_VALUES = Object.freeze({
+  'og:image': 'https://gospod-bog.ru/assets/social/fixture.jpg',
+  'og:image:width': '1200',
+  'og:image:height': '630',
+  'twitter:image': 'https://gospod-bog.ru/assets/social/fixture.jpg',
+  'twitter:site': '@gospod_bog_ru',
+  'twitter:creator': '@gospod_bog_ru',
+});
+
+function socialMetadata({ duplicate, empty } = {}) {
+  return INDEXABLE_SOCIAL_META.map(({ attr, name }, index) => {
+    const value = empty === name ? '' : SOCIAL_VALUES[name];
+    const orderedTag = index % 2 === 0
+      ? `<meta ${attr}="${name}" content="${value}">`
+      : `<meta content="${value}" ${attr}="${name}">`;
+    return duplicate === name ? `${orderedTag}${orderedTag}` : orderedTag;
+  }).join('');
+}
+
+function htmlDocument({ canonical, robots, social = true, duplicateSocial, emptySocial }) {
   return `<!doctype html><html><head>${
     canonical ? `<link rel="canonical" href="${canonical}">` : ''
-  }${robots ? `<meta name="robots" content="${robots}">` : ''}</head><body></body></html>`;
+  }${robots ? `<meta name="robots" content="${robots}">` : ''}${
+    social ? socialMetadata({ duplicate: duplicateSocial, empty: emptySocial }) : ''
+  }</head><body></body></html>`;
 }
 
 function writeRoute(root, entry, html) {
@@ -92,7 +114,7 @@ const hidden = {
 
 try {
   writeRoute(fixtureRoot, indexable, htmlDocument({ canonical: indexable.canonical }));
-  writeRoute(fixtureRoot, hidden, htmlDocument({ canonical: hidden.canonical, robots: 'noindex, follow' }));
+  writeRoute(fixtureRoot, hidden, htmlDocument({ canonical: hidden.canonical, robots: 'noindex, follow', social: false }));
 
   const clean = auditSeoRouteFiles(fixtureRoot, { entries: [indexable, hidden] });
   assert.deepEqual(clean.errors, [], clean.errors.join('\n'));
@@ -112,8 +134,35 @@ try {
     'indexable route must not render noindex'
   );
 
+  writeRoute(fixtureRoot, indexable, htmlDocument({ canonical: indexable.canonical, social: false }));
+  assert.ok(
+    auditSeoRouteFiles(fixtureRoot, { entries: [indexable, hidden] }).errors
+      .some((error) => error.includes('expected exactly one non-empty og:image meta, found 0 values')),
+    'indexable route must render the complete social metadata set'
+  );
+
+  writeRoute(fixtureRoot, indexable, htmlDocument({
+    canonical: indexable.canonical,
+    emptySocial: 'twitter:site',
+  }));
+  assert.ok(
+    auditSeoRouteFiles(fixtureRoot, { entries: [indexable, hidden] }).errors
+      .some((error) => error.includes('expected exactly one non-empty twitter:site meta, found 1 empty value')),
+    'empty social metadata must fail'
+  );
+
+  writeRoute(fixtureRoot, indexable, htmlDocument({
+    canonical: indexable.canonical,
+    duplicateSocial: 'og:image',
+  }));
+  assert.ok(
+    auditSeoRouteFiles(fixtureRoot, { entries: [indexable, hidden] }).errors
+      .some((error) => error.includes('expected exactly one non-empty og:image meta, found 2 values')),
+    'duplicate social metadata must fail'
+  );
+
   writeRoute(fixtureRoot, indexable, htmlDocument({ canonical: indexable.canonical }));
-  writeRoute(fixtureRoot, hidden, htmlDocument({ canonical: hidden.canonical }));
+  writeRoute(fixtureRoot, hidden, htmlDocument({ canonical: hidden.canonical, social: false }));
   assert.ok(
     auditSeoRouteFiles(fixtureRoot, { entries: [indexable, hidden] }).errors
       .some((error) => error.includes('seo.indexable=false route must render noindex')),
@@ -130,4 +179,4 @@ try {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
-console.log(`✅ seo-route-contract: ${baseline.length} production routes (${baseline.filter((entry) => entry.indexable).length} indexable, ${baseline.filter((entry) => !entry.indexable).length} noindex); seven Genesis 6 routes required`);
+console.log(`✅ seo-route-contract: ${baseline.length} production routes (${baseline.filter((entry) => entry.indexable).length} indexable, ${baseline.filter((entry) => !entry.indexable).length} noindex); exact-one social metadata enforced; seven Genesis 6 routes required`);
