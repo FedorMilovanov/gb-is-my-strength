@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "updated": "2026-08-01",
+  "sourceMain": "abf1edba190280e554dfda085bef9fb6594c896d",
+  "description": "Каноническая A01-матрица исторических GillWitness-кандидатов. Реестр не является вторым Gill claim engine: он фиксирует provenance и разрешает public projection только для PROMOTE.",
+  "policy": {
+    "allowedDispositions": [
+      "PROMOTE",
+      "REFERENCE",
+      "SUPERSEDED",
+      "BLOCKED_PROVENANCE"
+    ],
+    "publicProjectionRule": "publicProjection может быть непустым только при disposition PROMOTE.",
+    "promoteRequiredEvidence": [
+      "quote.original",
+      "quote.translation",
+      "attribution",
+      "work",
+      "edition",
+      "locator",
+      "context",
+      "rights.status",
+      "verification.status"
+    ],
+    "componentContract": {
+      "input": "stable registry id only",
+      "render": "PROMOTE only",
+      "translationFirst": true,
+      "originalOutsideDefaultPagefindAndTts": true,
+      "reuseExistingPrimitives": [
+        "manuscript-quote",
+        "details/disclosure"
+      ],
+      "forbidNewEngine": true
+    }
+  },
+  "storyMap": {
+    "disposition": "DELETE_DEAD_RUNTIME",
+    "action": "NO_OP_NO_CURRENT_RUNTIME",
+    "currentRuntimePaths": [],
+    "historicalPr79Paths": [],
+    "reason": "PR #79 changed exactly three non-StoryMap files; current repository search found no Gill StoryMap owner/runtime; no PROMOTE record exists."
+  },
+  "records": [
+    {
+      "id": "A01-WITNESS-TOPLADY-WHOLE-CIRCLE",
+      "origin": {
+        "repository": "FedorMilovanov/gb-is-my-strength",
+        "pullRequest": 79,
+        "commit": "7106dfe8998243047b0788ea80112f620000faa6",
+        "path": "src/components/article-pilots/gill-part2/GillPart2ArticleBody.astro"
+      },
+      "disposition": "BLOCKED_PROVENANCE",
+      "publicProjection": [],
+      "quote": {
+        "translation": "Если о ком-либо можно предположить, что он прошёл весь круг человеческого знания, — то это доктор Гилл.",
+        "original": "If any one man can be supposed to have trod the whole circle of human learning, it was Dr. Gill.",
+        "originalLanguage": "en",
+        "translationStatus": "HISTORICAL_PR79_EDITORIAL"
+      },
+      "attribution": "Augustus Toplady",
+      "work": null,
+      "edition": null,
+      "locator": null,
+      "context": "Общая оценка широты учёности Гилла; точный контекст произведения не установлен.",
+      "rights": {
+        "status": "NOT_CLEARED",
+        "note": "Короткая цитата не заменяет установление точного источника и publication status."
+      },
+      "verification": {
+        "status": "SECONDARY_ONLY",
+        "researchAuthority": "Research/Джон Гилл/17_BIOGRAPHICAL_PRIMARY_SOURCES_AND_VERIFICATION.md",
+        "researchLevel": "C",
+        "visualPageVerified": false,
+        "note": "Research vol. 17 explicitly records the quotation as quoted through secondary literature."
+      },
+      "blockers": [
+        "exact work/edition not established",
+        "page or stable locator not established",
+        "original source page not visually verified",
+        "rights/publication decision not established"
+      ]
+    },
+    {
+      "id": "A01-WITNESS-SPURGEON-SPILLER-1855",
+      "origin": {
+        "repository": "FedorMilovanov/Research",
+        "path": "Джон Гилл/57_SPURGEON_1855_LETTER_PROVENANCE_RESOLVED.md"
+      },
+      "disposition": "REFERENCE",
+      "publicProjection": [],
+      "quote": {
+        "translation": "Мой ежедневный труд — возрождать старые учения Гилла, Оуэна, Кальвина, Августина и Христа.",
+        "original": "my daily labour is to revive the old doctrines of Gill, Owen, Calvin, Augustine and Christ",
+        "originalLanguage": "en",
+        "translationStatus": "A01_EDITORIAL"
+      },
+      "attribution": "Charles Haddon Spurgeon",
+      "work": "Letter to Charles Spiller, 13 February 1855",
+      "edition": "First known print reported by Iain Murray: The Baptist Times, 17 January 1963",
+      "locator": null,
+      "context": "Early London ministry and controversy; evidence of conscious doctrinal inheritance, not identity with Gill's whole theological system.",
+      "rights": {
+        "status": "REFERENCE_ONLY",
+        "note": "Exact Baptist Times page/facsimile and manuscript publication status remain unresolved."
+      },
+      "verification": {
+        "status": "PROVENANCE_RESOLVED_NOT_VISUALLY_VERIFIED",
+        "researchAuthority": "Research/Джон Гилл/57_SPURGEON_1855_LETTER_PROVENANCE_RESOLVED.md",
+        "visualPageVerified": false,
+        "note": "Addressee, date and first known print are resolved through Murray; manuscript location and exact issue page are not."
+      },
+      "blockers": [
+        "exact Baptist Times page not established",
+        "manuscript location not established",
+        "facsimile not visually verified",
+        "rights/publication decision remains reference-only"
+      ]
+    }
+  ]
+}
