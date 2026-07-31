@@ -15,8 +15,8 @@ const principles = [
   <div class="h-about__copy">
     <p class="h-about-label">О проекте</p>
     <h2 id="hAboutLabel">Библиотека, где содержание важнее шума</h2>
-    <p class="h-about-text h-drop-cap">
-      <span class="sr-only">Это</span><span aria-hidden="true"><span class="h-drop-cap__letter">Э</span>то</span> не лента быстрых заметок и не коллекция удобных цитат. Здесь собраны авторские статьи, переводы зарубежных богословов, экзегетические разборы, биографии и ответы на вопросы, которые нельзя честно решить одним абзацем.
+    <p class="h-about-text">
+      Это не лента быстрых заметок и не коллекция удобных цитат. Здесь собраны авторские статьи, переводы зарубежных богословов, экзегетические разборы, биографии и ответы на вопросы, которые нельзя честно решить одним абзацем.
     </p>
     <p class="h-about-small">
       Библиотеку ведёт <a href="/about/">Фёдор Милованов</a>. Переведённые материалы публикуются в ознакомительных целях и снимаются по запросу правообладателя.
@@ -46,6 +46,10 @@ const principles = [
 
   body.home-page #main-content .h-about-text {
     max-width: 680px;
+  }
+
+  body.home-page #main-content .h-about-text::first-letter {
+    color: var(--h-gold);
   }
 
   body.home-page #main-content .h-about-principles li {
@@ -107,10 +111,11 @@ const principles = [
       line-height: 1.7;
     }
 
-    body.home-page #main-content .h-drop-cap__letter {
+    body.home-page #main-content .h-about-text::first-letter {
+      float: left;
+      margin: .08em .12em 0 0;
       font-size: 3.7em;
       line-height: .76;
-      padding-right: .1em;
     }
 
     body.home-page #main-content .h-about-small {
