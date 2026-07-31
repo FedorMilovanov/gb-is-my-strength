@@ -73,11 +73,26 @@ if (!satteriApi.isSatteriProcessor(processor)) fail('Satteri processor identity 
 if (processor.name !== 'satteri' || typeof processor.createRenderer !== 'function') {
   fail('Satteri processor did not initialize with the native renderer contract');
 }
-if (packageJson.scripts?.['astro:check'] !== 'npm run astro:7:satteri:contract && ASTRO_TELEMETRY_DISABLED=1 astro check') {
+const astroCliPath = path.join(root, 'scripts', 'astro-cli.mjs');
+if (!fs.existsSync(astroCliPath)) fail('cross-platform Astro CLI launcher is missing');
+const astroCli = fs.readFileSync(astroCliPath, 'utf8');
+if (!/ASTRO_TELEMETRY_DISABLED:\s*'1'/u.test(astroCli)) {
+  fail('Astro CLI launcher must disable telemetry through the child environment');
+}
+if (!/spawnSync\(process\.execPath/u.test(astroCli)) {
+  fail('Astro CLI launcher must execute Astro through Node without a platform shell');
+}
+if (packageJson.scripts?.['astro:dev'] !== 'node scripts/astro-cli.mjs dev') {
+  fail('astro:dev must use the cross-platform Astro CLI launcher');
+}
+if (packageJson.scripts?.['astro:check'] !== 'npm run astro:7:satteri:contract && node scripts/astro-cli.mjs check') {
   fail('astro:check must remain fail-closed through this contract');
 }
-if (packageJson.scripts?.['astro:build'] !== 'npm run dist:clean && npm run astro:check && ASTRO_TELEMETRY_DISABLED=1 astro build') {
+if (packageJson.scripts?.['astro:build'] !== 'npm run dist:clean && npm run astro:check && node scripts/astro-cli.mjs build') {
   fail('astro:build must invoke the guarded astro:check path');
+}
+if (packageJson.scripts?.['astro:preview'] !== 'node scripts/astro-cli.mjs preview') {
+  fail('astro:preview must use the cross-platform Astro CLI launcher');
 }
 
 console.log(`ASTRO 7 SATTERI CONTRACT: PASS (Astro ${astroPackage.version}; Satteri ${satteriPackage.version}; native defaults; no Unified override)`);
