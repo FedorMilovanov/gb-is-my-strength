@@ -1,4 +1,4 @@
-name: Fix Astro 7 strict HTML finding
+name: Fix Astro 7 strict HTML findings
 
 on:
   pull_request:
@@ -33,22 +33,37 @@ jobs:
           node-version: '22.12.0'
           cache: npm
 
-      - name: Remove the proven unmatched closing div
+      - name: Repair proven strict HTML findings
         shell: bash
         run: |
           set -euo pipefail
           node <<'NODE'
           const fs = require('node:fs');
-          const file = 'src/components/article-pilots/antisovetov/AntisovetovBody.astro';
-          let source = fs.readFileSync(file, 'utf8');
-          const anchor = 'Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>\n</div>\n<div class="note-box">\n<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>';
-          const replacement = 'Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>\n<div class="note-box">\n<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>';
-          const occurrences = source.split(anchor).length - 1;
-          if (occurrences !== 1) {
-            throw new Error(`Expected one proven unmatched-div anchor, found ${occurrences}`);
+
+          const repairs = [
+            {
+              file: 'src/components/article-pilots/antisovetov/AntisovetovBody.astro',
+              anchor: 'Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>\n</div>\n<div class="note-box">\n<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>',
+              replacement: 'Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>\n<div class="note-box">\n<span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>',
+              label: 'unmatched closing div',
+            },
+            {
+              file: 'src/components/article-pilots/serdce-iduh/SerdceIDuhBody.astro',
+              anchor: '«Предузнал» — <em lang="el">προέγνω</em> (*проэгно́</em>) — здесь',
+              replacement: '«Предузнал» — <em lang="el">προέγνω</em> (<em>проэгно́</em>) — здесь',
+              label: 'unmatched closing em',
+            },
+          ];
+
+          for (const repair of repairs) {
+            let source = fs.readFileSync(repair.file, 'utf8');
+            const occurrences = source.split(repair.anchor).length - 1;
+            if (occurrences !== 1) {
+              throw new Error(`Expected one ${repair.label} anchor in ${repair.file}, found ${occurrences}`);
+            }
+            source = source.replace(repair.anchor, repair.replacement);
+            fs.writeFileSync(repair.file, source);
           }
-          source = source.replace(anchor, replacement);
-          fs.writeFileSync(file, source);
           NODE
 
       - name: Install exact dependencies
@@ -64,13 +79,15 @@ jobs:
       - name: Remove this one-shot workflow
         run: git rm -f .github/workflows/fix-astro7-strict-html.yml
 
-      - name: Commit validated repair
+      - name: Commit validated repairs
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/components/article-pilots/antisovetov/AntisovetovBody.astro
+          git add \
+            src/components/article-pilots/antisovetov/AntisovetovBody.astro \
+            src/components/article-pilots/serdce-iduh/SerdceIDuhBody.astro
           git diff --cached --check
           git commit -m "fix(astro7): repair strict HTML structure"
           git push origin HEAD:agent/astro7-phase1-validation-20260731
