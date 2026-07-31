@@ -216,8 +216,7 @@ try {
   }
 
   const context = await browser.newContext({ viewport: COVERAGE_VIEWPORT });
-  const page = await context.newPage();
-  await page.addInitScript(() => {
+  await context.addInitScript(() => {
     const original = EventTarget.prototype.addEventListener;
     const targets = new WeakMap();
     window.__gbDuplicateListenerRegistrations = [];
@@ -241,7 +240,7 @@ try {
       return original.call(this, type, listener, options);
     };
   });
-  await page.route('**/*', async (requestRoute) => {
+  await context.route('**/*', async (requestRoute) => {
     const request = requestRoute.request();
     const url = request.url();
     if (!url.startsWith(base) && !url.startsWith('data:') && !url.startsWith('blob:')) return requestRoute.abort();
@@ -250,16 +249,26 @@ try {
   });
 
   for (const entry of productionEntries) {
+    const page = await context.newPage();
     const pageErrors = [];
     const badResponses = [];
     const failedRequests = [];
-    page.removeAllListeners('pageerror');
-    page.removeAllListeners('response');
-    page.removeAllListeners('requestfailed');
+    let navigationError = '';
+    let response = null;
+    let facts = {
+      scripts: [],
+      styles: [],
+      features: Object.fromEntries(FEATURE_CONTRACTS.map((feature) => [feature.id, {
+        markupCount: 0,
+        inlineRuntime: false,
+        inlineStyle: false,
+      }])),
+      duplicateListeners: [],
+    };
     page.on('pageerror', (error) => pageErrors.push(String(error).slice(0, 240)));
-    page.on('response', (response) => {
-      if (response.url().startsWith(base) && response.status() >= 400) {
-        badResponses.push({ url: response.url().slice(base.length), status: response.status() });
+    page.on('response', (routeResponse) => {
+      if (routeResponse.url().startsWith(base) && routeResponse.status() >= 400) {
+        badResponses.push({ url: routeResponse.url().slice(base.length), status: routeResponse.status() });
       }
     });
     page.on('requestfailed', (request) => {
@@ -268,32 +277,37 @@ try {
       failedRequests.push({ url: request.url().slice(base.length), error: request.failure()?.errorText || 'failed' });
     });
 
-    const response = await page.goto(base + entry.route, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    await page.waitForTimeout(80);
-    const facts = await page.evaluate((features) => {
-      const scripts = [...document.scripts].map((node) => node.src).filter(Boolean);
-      const styles = [...document.querySelectorAll('link[rel~="stylesheet"]')].map((node) => node.href).filter(Boolean);
-      const inlineScripts = [...document.scripts].filter((node) => !node.src).map((node) => node.textContent || '');
-      const inlineStyles = [...document.querySelectorAll('style')].map((node) => node.textContent || '');
-      const bodyText = document.body?.textContent || '';
-      const featureFacts = {};
-      for (const feature of features) {
-        let markupCount = 0;
-        for (const selector of feature.selectors || []) markupCount += document.querySelectorAll(selector).length;
-        if (feature.textMarker && bodyText.includes(feature.textMarker)) markupCount += 1;
-        featureFacts[feature.id] = {
-          markupCount,
-          inlineRuntime: inlineScripts.some((text) => text.includes(feature.token)),
-          inlineStyle: inlineStyles.some((text) => text.includes(feature.token)),
+    try {
+      response = await page.goto(base + entry.route, { waitUntil: 'commit', timeout: 15000 });
+      await page.waitForFunction(() => document.readyState !== 'loading', undefined, { timeout: 15000 });
+      await page.waitForTimeout(80);
+      facts = await page.evaluate((features) => {
+        const scripts = [...document.scripts].map((node) => node.src).filter(Boolean);
+        const styles = [...document.querySelectorAll('link[rel~="stylesheet"]')].map((node) => node.href).filter(Boolean);
+        const inlineScripts = [...document.scripts].filter((node) => !node.src).map((node) => node.textContent || '');
+        const inlineStyles = [...document.querySelectorAll('style')].map((node) => node.textContent || '');
+        const bodyText = document.body?.textContent || '';
+        const featureFacts = {};
+        for (const feature of features) {
+          let markupCount = 0;
+          for (const selector of feature.selectors || []) markupCount += document.querySelectorAll(selector).length;
+          if (feature.textMarker && bodyText.includes(feature.textMarker)) markupCount += 1;
+          featureFacts[feature.id] = {
+            markupCount,
+            inlineRuntime: inlineScripts.some((text) => text.includes(feature.token)),
+            inlineStyle: inlineStyles.some((text) => text.includes(feature.token)),
+          };
+        }
+        return {
+          scripts,
+          styles,
+          features: featureFacts,
+          duplicateListeners: [...new Set(window.__gbDuplicateListenerRegistrations || [])],
         };
-      }
-      return {
-        scripts,
-        styles,
-        features: featureFacts,
-        duplicateListeners: [...new Set(window.__gbDuplicateListenerRegistrations || [])],
-      };
-    }, FEATURE_CONTRACTS);
+      }, FEATURE_CONTRACTS);
+    } catch (error) {
+      navigationError = String(error?.message || error).slice(0, 500);
+    }
 
     const scripts = facts.scripts.map((url) => normalizeAssetPath(url, base)).filter(Boolean);
     const styles = facts.styles.map((url) => normalizeAssetPath(url, base)).filter(Boolean);
@@ -319,6 +333,13 @@ try {
       );
     }
 
+    record(
+      entry.route,
+      'coverage',
+      'document:navigation',
+      navigationError === '',
+      navigationError || 'committed and DOM parsed',
+    );
     record(entry.route, 'coverage', 'document:status', response?.status() === 200, response?.status() ?? 'no response');
     record(entry.route, 'coverage', 'runtime:no-pageerror', pageErrors.length === 0, pageErrors.join(' | '));
     record(entry.route, 'coverage', 'runtime:no-dead-local-request', badResponses.length === 0 && failedRequests.length === 0, JSON.stringify({ badResponses, failedRequests }));
@@ -330,6 +351,7 @@ try {
       owner: entry.owner,
       source: entry.source,
       responseStatus: response?.status() ?? null,
+      navigationError,
       pageErrors,
       badResponses,
       failedRequests,
@@ -338,6 +360,7 @@ try {
       styles,
       features,
     });
+    await page.close();
   }
   await context.close();
 } finally {
