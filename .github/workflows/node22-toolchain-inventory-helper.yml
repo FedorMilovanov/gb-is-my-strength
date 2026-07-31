@@ -1,0 +1,61 @@
+name: Node 22 toolchain inventory helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    if: github.event.pull_request.head.ref == 'agent/node22-toolchain-inventory-20260731'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact Node validation branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: agent/node22-lts-patch-validation-20260731
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify expected target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          expected="5cab93c58dd16f0506980d43d8c81d34847644d2"
+          test "$actual" = "$expected" || {
+            echo "Target drift: expected $expected, got $actual" >&2
+            exit 2
+          }
+
+      - name: Inventory exact toolchain literals
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          {
+            echo '=== 22.12.0 ==='
+            git grep -n -I -E '22\.12\.0' -- . ':!package-lock.json' || true
+            echo
+            echo '=== 10.9.0 ==='
+            git grep -n -I -E '10\.9\.0' -- . ':!package-lock.json' || true
+            echo
+            echo '=== Node 22.12 labels ==='
+            git grep -n -I -E 'Node 22\.12|node 22\.12|NODE 22\.12' -- . ':!package-lock.json' || true
+            echo
+            echo '=== setup-node declarations ==='
+            git grep -n -I -E 'node-version:|setup-node@' -- .github/workflows || true
+          } | tee reports/node22-toolchain-inventory.txt
+          test -s reports/node22-toolchain-inventory.txt
+
+      - name: Publish inventory summary
+        shell: bash
+        run: |
+          {
+            echo '## Node 22 toolchain inventory'
+            echo '```text'
+            cat reports/node22-toolchain-inventory.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
