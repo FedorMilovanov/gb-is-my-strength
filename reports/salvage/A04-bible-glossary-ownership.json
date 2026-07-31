@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 3,
+  "contract": "A04-bible-glossary-unification",
+  "baselineMainSha": "dec072be664c91ef3d058bfa9f30fc92e02e1b6e",
+  "mission": "Unify ownership of Bible references, verse previews, glossary terms, footnotes, and original-language data without restoring dormant UI or creating another tooltip runtime.",
+  "astro7Boundary": {
+    "activeMigrationPullRequest": 549,
+    "touchedHere": [],
+    "excluded": [
+      "astro.config.mjs",
+      "package.json",
+      "package-lock.json",
+      "scripts/astro7-migration-guard.mjs",
+      "src/components/**",
+      "src/pages/**",
+      ".github/workflows/**"
+    ],
+    "compatibilityRule": "A04 extends the production-like route witness and canonical glossary policy only; it remains dependency/config neutral."
+  },
+  "sourceContracts": {
+    "bibleRegistry": {
+      "path": "data/bible/books.json",
+      "expectedBooks": 66,
+      "expectedTestamentCounts": { "OT": 39, "NT": 27 },
+      "defaultTranslationByTestament": { "OT": "synodal", "NT": "kassian" },
+      "decision": "KEEP_CURRENT",
+      "owner": "canonical registry; scripts/bible-reference-contract.mjs --strict owns parser, resolution and provenance",
+      "materializationPolicy": "registry completeness is distinct from corpus materialization; catalogue-only books are reported, not fabricated"
+    },
+    "glossaryPolicy": {
+      "path": "data/glossary-policy.json",
+      "decision": "KEEP_AND_HARDEN",
+      "owner": "canonical glossary hydration and placement policy",
+      "forbiddenInteractiveAncestors": [
+        ".quiz-wrapper",
+        ".flip-card",
+        ".error-flip-card"
+      ],
+      "reason": "each ancestor owns keyboard/touch activation; nested glossary buttons would create competing controls"
+    },
+    "originalWords": {
+      "path": "data/original-words.json",
+      "requiredLexicalFields": ["lang", "original", "transliteration", "gloss", "definition", "source"],
+      "metadataKeyPolicy": "keys beginning with _ are metadata and are never counted as lexical entries",
+      "allowedLanguages": ["he", "el"],
+      "decision": "KEEP_DATA_ONLY",
+      "owner": "editorial original-language registry",
+      "uiReadiness": "BLOCKED",
+      "missingUiContract": ["explicit lemma id", "morphology", "canonical verse linkage"]
+    },
+    "legacyVerses": {
+      "path": "data/verses.json",
+      "decision": "DELETE_WITH_LEGACY_RUNTIME",
+      "owner": null,
+      "reason": "flat mixed dataset is superseded by the canonical book registry"
+    }
+  },
+  "surfaces": {
+    "bibleReference": {
+      "trigger": ".bref[data-ref]",
+      "content": ".btip",
+      "kind": "shared floating tooltip; mobile viewport constrained",
+      "activation": "desktop focus/click; mobile touch/touch-toggle; Escape close",
+      "runtime": "SiteUtils.makeTooltipController",
+      "dataOwner": "strict Bible reference contract + canonical registry/corpus",
+      "decision": "KEEP_CURRENT"
+    },
+    "glossaryTerm": {
+      "trigger": ".gterm",
+      "content": ".gtip",
+      "kind": "shared tooltip/mobile sheet",
+      "activation": "desktop focus/click; mobile touch/touch-toggle; Escape close",
+      "runtime": "SiteUtils.makeTooltipController",
+      "dataOwner": "canonical glossary registry + data/glossary-policy.json",
+      "decision": "KEEP_CURRENT",
+      "placementForbiddenAncestors": [".quiz-wrapper", ".flip-card", ".error-flip-card"]
+    },
+    "footnote": {
+      "trigger": ".fn-marker",
+      "content": ".tooltip",
+      "kind": "authored static note through shared tooltip/mobile-sheet runtime",
+      "activation": "desktop focus/click; mobile touch/touch-toggle; Escape close",
+      "runtime": "SiteUtils.makeTooltipController",
+      "dataOwner": "route author/content source",
+      "decision": "KEEP_CURRENT",
+      "documentedException": ".fn-marker.map-trigger belongs to the map popover owner"
+    },
+    "legacyVerse": {
+      "trigger": ".gbx-verse",
+      "content": ".gbx-verse-tip",
+      "kind": "dormant custom popover",
+      "runtime": "js/site.js §1.9",
+      "dataOwner": "data/verses.json",
+      "decision": "DELETE_DEAD_RUNTIME",
+      "publicMarkupAllowed": false
+    },
+    "legacyOriginalWord": {
+      "trigger": ".gbx-ow",
+      "content": ".gbx-ow-card",
+      "kind": "dormant custom card",
+      "runtime": "js/site.js §1.10",
+      "dataOwner": "data/original-words.json",
+      "decision": "DELETE_DEAD_RUNTIME_KEEP_DATA",
+      "publicMarkupAllowed": false
+    }
+  },
+  "observedRemediation": {
+    "nestedControlFailingHead": "2e72adea6413824fc4cb0ae19903c9cb416a1f3e",
+    "route": "/articles/kod-da-vinchi/",
+    "nestedGlossaryControls": 9,
+    "ancestorBreakdown": {
+      ".error-flip-card": 5,
+      ".flip-card": 4
+    },
+    "fix": "forbid glossary hydration and manual placement inside both interactive card owners",
+    "witnessCorrections": [
+      "open state is trigger is-open + aria-expanded + active body-mounted tooltip",
+      "no undocumented html.gb-tooltip-open class is required",
+      "mobile close uses the controller's direct second-touch toggle path instead of an interception-sensitive page corner"
+    ]
+  },
+  "ownershipGraph": {
+    "nodes": [
+      "data/bible/books.json",
+      "scripts/bible-reference-contract.mjs --strict",
+      "data/bible/synodal/*.json",
+      "data/bible/kassian/*.json",
+      ".bref/.btip",
+      "canonical glossary registry",
+      "data/glossary-policy.json",
+      ".gterm/.gtip",
+      "interactive card owners",
+      "authored footnote markup",
+      ".fn-marker/.tooltip",
+      "SiteUtils.makeTooltipController",
+      "data/original-words.json",
+      "legacy .gbx-verse runtime",
+      "legacy .gbx-ow runtime",
+      "data/verses.json"
+    ],
+    "edges": [
+      ["data/bible/books.json", "data/bible/synodal/*.json", "selects OT owner"],
+      ["data/bible/books.json", "data/bible/kassian/*.json", "selects NT owner"],
+      ["data/bible/books.json", "scripts/bible-reference-contract.mjs --strict", "catalogue input"],
+      ["data/bible/synodal/*.json", "scripts/bible-reference-contract.mjs --strict", "OT materialization"],
+      ["data/bible/kassian/*.json", "scripts/bible-reference-contract.mjs --strict", "NT materialization"],
+      ["scripts/bible-reference-contract.mjs --strict", ".bref/.btip", "resolves public reference"],
+      ["canonical glossary registry", ".gterm/.gtip", "provides definition"],
+      ["data/glossary-policy.json", ".gterm/.gtip", "owns safe placement"],
+      ["data/glossary-policy.json", "interactive card owners", "forbids nested glossary controls"],
+      ["authored footnote markup", ".fn-marker/.tooltip", "provides note"],
+      ["SiteUtils.makeTooltipController", ".bref/.btip", "owns interaction"],
+      ["SiteUtils.makeTooltipController", ".gterm/.gtip", "owns interaction"],
+      ["SiteUtils.makeTooltipController", ".fn-marker/.tooltip", "owns interaction"],
+      ["data/original-words.json", "legacy .gbx-ow runtime", "historical consumer only"],
+      ["data/verses.json", "legacy .gbx-verse runtime", "historical consumer only"]
+    ]
+  },
+  "enforcedBy": {
+    "entrypoint": "scripts/route-semantics-browser-test.mjs",
+    "unchangedCore": "scripts/route-semantics-browser-core.mjs",
+    "a04Witness": "scripts/a04-bible-glossary-browser-test.mjs",
+    "dynamicReport": "reports/route-semantics-browser.json",
+    "productionRouteSource": "canonical public-surface registry",
+    "coverageModel": "all-route ownership census plus representative real desktop/mobile witness per current surface",
+    "webkitOwner": "Public surfaces — webkit touch/scroll on the same canonical route registry",
+    "contracts": [
+      "66-book registry and 39/27 testament split",
+      "OT Synodal and NT Kassian ownership",
+      "explicit materialized/catalogue-only census",
+      "original-word lexical schema and source provenance",
+      "metadata keys excluded from lexical entries",
+      "all production routes scanned",
+      "trigger-to-content exact pairing and non-empty content",
+      "no authored nested interactive controls",
+      "real hit-testable desktop/mobile witness for every current surface",
+      "focusability and actual activation contract",
+      "open and Escape/second-touch close",
+      "focus continuity",
+      "shared body-level tooltip ownership and viewport containment",
+      "reduced-motion execution",
+      "zero public legacy .gbx-verse/.gbx-ow markup"
+    ]
+  },
+  "physicalCleanupBoundary": {
+    "status": "DECISION_FINAL; PHYSICAL_REMOVAL_REQUIRES_ATOMIC_SOURCE_PATCH",
+    "reason": "The dormant runtime, matching CSS and flat verse dataset are coupled. Partial deletion or a compatibility bridge would create latent broken behavior.",
+    "requiredAtomicPaths": [
+      "js/site.js §1.9-§1.10",
+      "css/site.css legacy .gbx-verse* and .gbx-ow* rules",
+      "data/verses.json"
+    ],
+    "mustRemain": [
+      "data/original-words.json",
+      "data/bible/books.json",
+      "data/bible/synodal/*.json",
+      "data/bible/kassian/*.json"
+    ]
+  }
+}
