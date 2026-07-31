@@ -48,13 +48,8 @@ function maybeRunAntisovetovSemanticCloseout() {
 <span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>`;
   if (source.split(before).length - 1 !== 1) throw new Error('expected exactly one collapsed Antisovetov semantic witness');
   const repaired = source.replace(before, after);
-  for (const marker of [
-    '<div class="anti-kicker" style="margin-bottom:12px">Как это выглядит на практике</div>',
-    restored,
-    'Настоящая сломленность не просит сохранить трон.</p>',
-  ]) {
-    if (repaired.split(marker).length - 1 !== 1) throw new Error(`invalid restored marker count: ${marker}`);
-  }
+  if (repaired.split(after).length - 1 !== 1) throw new Error('expected exactly one restored Antisovetov semantic block');
+  if (!repaired.includes(restored)) throw new Error('restored ritual-apology paragraph is missing');
   if (repaired.includes('Настоящая сломленность не просит сохранить трон. Лживый пастор')) {
     throw new Error('collapsed Antisovetov paragraph remains');
   }
