@@ -1,0 +1,80 @@
+name: Global GitHub Actions pin inventory helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    if: github.event.pull_request.head.ref == 'agent/actions-global-pin-inventory-20260731'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact Actions validation head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/github-actions-vnext-final-validation-20260731
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify exact target
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          expected="c72dce74b20af6794127de8b522a3bce36f51e3b"
+          test "$actual" = "$expected" || {
+            echo "Target drift: expected $expected, got $actual" >&2
+            exit 2
+          }
+
+      - name: Inventory every uses declaration
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/actions-pins
+          python3 <<'PY'
+          import json
+          import re
+          from collections import Counter
+          from pathlib import Path
+
+          rows = []
+          for path in sorted(Path('.github/workflows').glob('*.yml')):
+              for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
+                  match = re.search(r'^\s*-?\s*uses:\s*([^\s#]+)', line)
+                  if not match:
+                      continue
+                  value = match.group(1).strip('"\'')
+                  if value.startswith('./'):
+                      kind = 'local'
+                  elif value.startswith('docker://'):
+                      kind = 'docker'
+                  elif '@' not in value:
+                      kind = 'invalid'
+                  else:
+                      ref = value.rsplit('@', 1)[1]
+                      kind = 'immutable' if re.fullmatch(r'[0-9a-fA-F]{40}', ref) else 'mutable'
+                  rows.append({'file': path.as_posix(), 'line': number, 'uses': value, 'kind': kind})
+
+          counts = Counter(row['kind'] for row in rows)
+          unique = sorted({row['uses'] for row in rows})
+          mutable = [row for row in rows if row['kind'] in {'mutable', 'invalid'}]
+          data = {'counts': dict(counts), 'unique': unique, 'mutable': mutable, 'all': rows}
+          Path('reports/actions-pins/inventory.json').write_text(json.dumps(data, indent=2) + '\n')
+
+          lines = ['# Global GitHub Actions pin inventory', '']
+          lines.append('Counts: ' + ', '.join(f'{key}={value}' for key, value in sorted(counts.items())))
+          lines += ['', '## Unique action identities', '']
+          lines += [f'- `{value}`' for value in unique]
+          lines += ['', '## Mutable or invalid declarations', '', '| File | Line | Uses |', '|---|---:|---|']
+          lines += [f"| `{row['file']}` | {row['line']} | `{row['uses']}` |" for row in mutable]
+          Path('reports/actions-pins/inventory.md').write_text('\n'.join(lines) + '\n')
+          print('\n'.join(lines))
+          assert rows, 'no uses declarations found'
+          PY
+
+      - name: Publish inventory summary
+        run: cat reports/actions-pins/inventory.md >> "$GITHUB_STEP_SUMMARY"
