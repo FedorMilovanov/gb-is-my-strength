@@ -8,8 +8,9 @@
  *                 (Гилл: SeriesReaderChrome→GillSeriesMobileBar; Герменевтика:
  *                 HermenevtikaBody→HermenevtikaMobileBar). Запись фиксирует
  *                 движок/адаптер как контракт и не требует подключения.
- *  - 'registry' — страница подключает адаптер сама через mobileChromeFor():
- *                 первый потребитель — каталог /articles/ (пилот page-движка).
+ *  - 'registry' — страница подключает адаптер сама через mobileChromeFor().
+ *                 Каталоги используют default-page; книжный landing может
+ *                 использовать тот же лёгкий shell с engine='series'.
  *
  * Rollout: новые страницы добавляются записями сюда; после freeze профиль
  * маршрута в data/route-profiles/*.json зеркалит поле mobileChrome.
@@ -19,9 +20,9 @@ import type { MobileChromeEngine } from './mobileChromeTypes';
 export interface MobileChromeRegistryEntry {
   enabled: boolean;
   engine: MobileChromeEngine;
-  adapter: 'gill' | 'hermenevtika' | 'default-page';
+  adapter: 'gill' | 'hermenevtika' | 'default-page' | 'series-landing';
   mount: 'static' | 'registry';
-  /** Для page-движка: фолбэк «Назад» при прямом заходе без истории. */
+  /** Для landing/page-движка: фолбэк «Назад» при прямом заходе без истории. */
   backHref?: string;
 }
 
@@ -38,10 +39,12 @@ export const MOBILE_CHROME_ROUTES: Record<string, MobileChromeRegistryEntry> = {
   '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/':
     { enabled: true, engine: 'article', adapter: 'hermenevtika', mount: 'static' },
 
+  // --- series landing: книжная полка без reader-progress ---
+  '/hard-texts/': { enabled: true, engine: 'series', adapter: 'series-landing', mount: 'registry', backHref: '/' },
+
   // --- page: каталоги/лендинги — Back·Home·Глобальный Поиск сверху ---
   '/articles/':    { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
   '/biografii/':   { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
-  '/hard-texts/':  { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
   '/rodosloviye/': { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
   '/karty/':       { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
   '/konfessii/':   { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },

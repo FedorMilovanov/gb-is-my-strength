@@ -69,3 +69,18 @@
 
   <div class="h-ornament" aria-hidden="true" style="margin-top:28px;">✦</div>
 </section>
+
+<style is:global>
+  /* This lower mirror is decorative: the full Russian quotation already sits
+     beside it, so reduced-motion must never superimpose translation backs over
+     the Hebrew letterforms. */
+  body.home-page #main-content .h-sacred-block--mirror .hb-front {
+    visibility: visible;
+    opacity: .82 !important;
+  }
+
+  body.home-page #main-content .h-sacred-block--mirror .hb-back {
+    visibility: hidden;
+    opacity: 0 !important;
+  }
+</style>

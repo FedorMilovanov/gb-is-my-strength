@@ -1,97 +1,45 @@
 ## Purpose
 
-<!-- One verifiable result. -->
+<!-- One independently mergeable result. -->
 
 Closes #
 
-## Transaction
+## Lane
 
 - Mode: `FAST | LANE | SYSTEM`
-- Execution: `LOCAL_WORKTREE -> REMOTE_PR | DETACHED_PROMOTED -> REMOTE_PR | RECOVERY`
-- Canonical branch:
-- Owner:
+- Branch / owner:
 - Base / rollback SHA:
-- Dependencies / active adjacent PRs:
-- Successor of: `none | PR #... at SHA ...`
-
-## Exact scope
-
-### Allowed files
-
-```text
-```
-
-### Forbidden files
-
-```text
-```
-
-### Protected surfaces touched
-
-- [ ] none
-- [ ] governance / workflows
-- [ ] shared runtime / layouts / CSS / JS
-- [ ] migration / registries / shared data
-- [ ] deploy / service worker / publication
-- [ ] owner-sensitive content or UI
-
-## Source of truth
-
-<!-- Current files, exact SHA, owner decision or verified sources. -->
+- Scope:
+- Adjacent active work / overlap:
+- Source of truth:
 
 ## Change
 
 <!-- What changed and why. -->
 
-## Parallel-agent safety
-
-- [ ] I inspected open PRs and known active branches for file overlap.
-- [ ] I did not reset, rebase, force-push, close or delete another owner’s branch.
-- [ ] Out-of-scope findings were recorded separately.
-
 ## Verification
 
-### Iteration
-
 ```text
-command -> result
+check -> result
 ```
 
-### Exact-head CI
+- Failed or unavailable checks affecting confidence: `none | ...`
+- Production evidence, only if claimed:
 
-- Head SHA:
-- Required checks:
-- Run IDs / artifacts:
-- Failed or unavailable checks:
+## Merge safety
 
-### Production witness
+- [ ] The diff matches the lane scope and required checks cover the final PR head.
+- [ ] No other owner’s active branch or ref was changed.
+- [ ] Unresolved review threads are handled; temporary automation introduced here is removed.
 
-- [ ] Not claimed by this PR
-- [ ] Exact deployed SHA and live evidence recorded
+## Progress — delete when not useful
 
-## Decomposition decision
+- Status: `active | blocked | ready-for-review`
+- Next / blocker / handoff:
 
-- [ ] Within 20 files / 1000 changed lines / 3 protected subsystems
-- [ ] Larger transaction justified below
+## Recovery or decomposition — delete unless applicable
 
-Why this cannot be split:
-
-Independent rollback units and review order:
-
-## Branch disposition
-
-After merge or close:
-
-- [ ] active branch remains protected until owner decision
-- [ ] merged branch may be deleted after recorded verification
-- [ ] closed-unmerged forensic review required
-- [ ] unique evidence materialized at:
-- [ ] predecessor replacement table recorded
-
-## Final assertions
-
-- [ ] Actual diff matches declared scope
-- [ ] No temporary workflow, trigger, writer or patcher remains
-- [ ] Review conversations are resolved
-- [ ] No green claim relies on an earlier SHA
-- [ ] No publication claim is inferred from source merge alone
+- Independent rollback units:
+- Predecessor / successor:
+- Unique material transferred, rejected or preserved:
+- Final predecessor disposition:

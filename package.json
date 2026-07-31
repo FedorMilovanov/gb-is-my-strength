@@ -29,7 +29,7 @@
     "engine:sweep": "node scripts/engine-sweep.mjs && node scripts/map-runtime-fallback-browser-test.mjs",
     "engine:guard": "npm run engine:contracts && npm run gill:chrome:guard && npm run engine:sweep",
     "visual-audit": "node scripts/visual-audit.js",
-    "interactive-audit": "node scripts/interactive-audit.js",
+    "interactive-audit": "node scripts/interactive-audit-runner.js",
     "readable-audit": "node scripts/readable-audit.js",
     "audit:premium-controls:dist": "node scripts/premium-controls-rollout-audit.js",
     "audit:premium-controls:build": "node scripts/premium-controls-rollout-audit.js --build",

@@ -16,10 +16,13 @@
  *   • .gb-theme-toggle + data-fc-action="theme" — 2-состояние день/ночь через
  *     sitewide toggleTheme;
  *   • .theme-icon-sun (circle r=4.5 + лучи) и .theme-icon-moon (полумесяц);
- *   • gear/шестерёнка у кнопки «Настройки чтения» (path M19.4 15a1.65…).
+ *   • gear/шестерёнка у кнопки «Настройки чтения» (path M19.4 15a1.65…);
+ *   • один native interaction owner: ReaderActionsRuntime.
  * Запрещено (откат):
  *   • data-gill-theme-cycle / class="theme-glyph" (самодельный text-glyph);
- *   • sliders-иконка настроек (path "M4 7h10M18 7h2").
+ *   • sliders-иконка настроек (path "M4 7h10M18 7h2");
+ *   • legacy enhancements.js рядом с native article interactions;
+ *   • DOM-observer/удаление .reader-setting-btn после рендера.
  */
 'use strict';
 const fs = require('fs');
@@ -35,6 +38,7 @@ function mustNot(hay, needle, label) { !hay.includes(needle) ? ok(`no ${label}`)
 console.log('\n═══ Gill canonical mobile-chrome guard (ref v2.9) ═══\n');
 
 const bar = read('src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
+const chrome = read('src/components/article-pilots/gill-series/GillSeriesChrome.astro');
 
 // ── Canonical theme toggle (day/night SVG icon-swap) ──────────────────────────
 must(bar, 'gb-theme-toggle', 'канонический .gb-theme-toggle присутствует');
@@ -54,6 +58,13 @@ mustNot(bar, 'M4 7h10M18 7h2', 'sliders-иконка настроек (до-ка
 
 // ── Theme sync must exist (regression I introduced on the canon swap) ─────────
 must(bar, 'syncGillThemeSegment', 'синхронизация сегмента «Тема» листа настроек');
+
+// ── Native ownership: never load and then delete legacy controls ───────────────
+must(chrome, '<ReaderActionsRuntime />', 'native ReaderActionsRuntime является владельцем interactions');
+mustNot(chrome, 'enhancements.js', 'legacy enhancements bundle на Gill routes');
+mustNot(chrome, 'MutationObserver', 'observer-патч удаления reader controls');
+mustNot(chrome, "matches('.reader-setting-btn')", 'runtime-удаление .reader-setting-btn');
+mustNot(chrome, 'gbLegacyReaderSettingsRetired', 'переходный legacy-retired marker');
 
 console.log('');
 if (problems.length) {

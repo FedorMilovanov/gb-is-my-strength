@@ -55,6 +55,13 @@ function withoutNoscript(source) {
   return source.replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, '');
 }
 
+function isExternalTelemetryNetworkNoise(text) {
+  const value = String(text || '');
+  const yandexTelemetryHost = /(?:https?|wss):\/\/(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)(?:[/:]|$)/i.test(value);
+  const networkFailure = /(?:WebSocket connection|Failed to load resource|net::ERR_|handshake|response code:\s*[45]\d\d|status(?: code)?[=:]?\s*[45]\d\d)/i.test(value);
+  return yandexTelemetryHost && networkFailure;
+}
+
 function chooseLiveRoot() {
   if (process.env.KONFESSII_AUDIT_ROOT) return path.resolve(process.env.KONFESSII_AUDIT_ROOT);
   const distWrap = path.join(DIST, WRAP_REL);
@@ -107,6 +114,17 @@ function finish() {
 }
 
 console.log('\n🌍 KONFESSII 3D-MAP AUDIT (регресс-защита отдела)\n');
+
+assert(
+  isExternalTelemetryNetworkNoise("WebSocket connection to 'wss://mc.yandex.com/solid.ws' failed: Error during WebSocket handshake: Unexpected response code: 504"),
+  'I1 audit policy: external Yandex telemetry network failure is classified as noise',
+  'I1 audit policy: Yandex telemetry network failure classification is missing',
+);
+assert(
+  !isExternalTelemetryNetworkNoise("Uncaught TypeError: application crashed at https://mc.yandex.com/runtime.js"),
+  'I1 audit policy: application errors remain fatal even when text mentions Yandex',
+  'I1 audit policy: application error was incorrectly suppressed',
+);
 
 const wrap = read(WRAP_REL);
 const app = read(APP_REL);
@@ -255,7 +273,8 @@ if (chromium) (async () => {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('console', (message) => {
-      if (message.type() === 'error' && !message.text().includes('manifest')) errors.push(message.text().slice(0, 140));
+      const text = message.text();
+      if (message.type() === 'error' && !text.includes('manifest') && !isExternalTelemetryNetworkNoise(text)) errors.push(text.slice(0, 140));
     });
 
     const response = await page.goto(wrapUrl, { waitUntil: 'load', timeout: 30000 });

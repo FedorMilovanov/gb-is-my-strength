@@ -10,10 +10,13 @@ const {
 
 const SITE = 'https://gospod-bog.ru';
 const REGISTRY_FILE = path.join(ROOT, 'data/editorial-metadata.json');
+const REGISTRY_SUPPLEMENTS_DIR = path.join(ROOT, 'data/editorial-metadata-supplements');
+const REGISTRY_OBSERVATION_CORRECTIONS_DIR = path.join(ROOT, 'data/editorial-metadata-observation-corrections');
 const SEARCH_MANIFEST_FILE = path.join(ROOT, 'data/search-manifest.json');
 const SITEMAP_FILE = path.join(ROOT, 'sitemap.xml');
 const FEED_FILE = path.join(ROOT, 'feed.xml');
 const ALLOWED_REVIEW_STATUS = new Set(['migration-freeze-unverified', 'inconsistent-needs-review', 'approved']);
+const ALLOWED_OBSERVATION_CORRECTION_FIELDS = new Set(['rssPublishedAt']);
 
 function stripTags(value) {
   return String(value || '')
@@ -119,9 +122,13 @@ function sitemapObservation(routeUrl, sitemapXml) {
 }
 
 function feedObservation(routeUrl, feedXml) {
-  const escaped = routeUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const item = feedXml.match(new RegExp(`<item>(?=[\\s\\S]*?<link>${escaped}<\\/link>)([\\s\\S]*?)<\\/item>`, 'i'))?.[1] || '';
-  return normalizeInstant(item.match(/<pubDate>([^<]+)<\/pubDate>/i)?.[1]);
+  for (const match of String(feedXml).matchAll(/<item>([\s\S]*?)<\/item>/gi)) {
+    const item = match[1];
+    const link = item.match(/<link>([^<]+)<\/link>/i)?.[1]?.trim() || null;
+    if (link !== routeUrl) continue;
+    return normalizeInstant(item.match(/<pubDate>([^<]+)<\/pubDate>/i)?.[1]);
+  }
+  return null;
 }
 
 function observeRoute(record, distRoot, shared) {
@@ -209,8 +216,153 @@ function sharedProjectionData() {
   };
 }
 
+function sortedRecords(records) {
+  return Object.fromEntries(
+    Object.entries(records || {}).sort(([a], [b]) => a.localeCompare(b, 'ru'))
+  );
+}
+
+function sortedJsonFiles(directory) {
+  if (!fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory)
+    .filter((name) => name.endsWith('.json'))
+    .sort((a, b) => a.localeCompare(b, 'ru'))
+    .map((name) => path.join(directory, name));
+}
+
+function registrySupplementFiles() {
+  return sortedJsonFiles(REGISTRY_SUPPLEMENTS_DIR);
+}
+
+function registryObservationCorrectionFiles() {
+  return sortedJsonFiles(REGISTRY_OBSERVATION_CORRECTIONS_DIR);
+}
+
+function applyObservationCorrections(records) {
+  const corrections = [];
+  const claimed = new Set();
+
+  for (const file of registryObservationCorrectionFiles()) {
+    const ledger = readJson(file, null);
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
+    if (
+      !ledger ||
+      ledger.version !== 1 ||
+      !ALLOWED_OBSERVATION_CORRECTION_FIELDS.has(ledger.field) ||
+      !ledger.changes ||
+      typeof ledger.changes !== 'object'
+    ) {
+      throw new Error(`${rel}: invalid editorial metadata observation correction ledger`);
+    }
+
+    for (const [route, change] of Object.entries(ledger.changes).sort(([a], [b]) => a.localeCompare(b, 'ru'))) {
+      const identity = `${route}\u0000${ledger.field}`;
+      if (claimed.has(identity)) throw new Error(`${route}: duplicate ${ledger.field} correction ownership in ${rel}`);
+      claimed.add(identity);
+
+      const record = records[route];
+      if (!record) throw new Error(`${route}: correction in ${rel} has no registry record`);
+      if (!change || !Object.prototype.hasOwnProperty.call(change, 'from') || !Object.prototype.hasOwnProperty.call(change, 'to')) {
+        throw new Error(`${route}: correction in ${rel} must declare from and to`);
+      }
+
+      const current = record.observations?.[ledger.field] ?? null;
+      if (current !== change.from) {
+        throw new Error(`${route}: ${ledger.field} correction source mismatch in ${rel}: expected ${JSON.stringify(change.from)}, found ${JSON.stringify(current)}`);
+      }
+
+      records[route] = {
+        ...record,
+        observations: {
+          ...(record.observations || {}),
+          [ledger.field]: change.to,
+        },
+      };
+      corrections.push({ file, route, field: ledger.field, from: change.from, to: change.to });
+    }
+  }
+
+  return corrections;
+}
+
+function readRegistrySources() {
+  const base = readJson(REGISTRY_FILE, null);
+  if (!base) return { registry: null, ownership: new Map(), supplements: [], corrections: [] };
+
+  const mergedRecords = { ...(base.records || {}) };
+  const ownership = new Map();
+  const supplements = [];
+  let sourceCommit = base.sourceCommit;
+
+  for (const file of registrySupplementFiles()) {
+    const supplement = readJson(file, null);
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
+    if (!supplement || supplement.version !== 1 || !supplement.records || typeof supplement.records !== 'object') {
+      throw new Error(`${rel}: invalid editorial metadata supplement`);
+    }
+    for (const [route, record] of Object.entries(supplement.records)) {
+      if (Object.prototype.hasOwnProperty.call(mergedRecords, route)) {
+        throw new Error(`${route}: duplicate editorial metadata ownership in ${rel}`);
+      }
+      mergedRecords[route] = record;
+      ownership.set(route, file);
+    }
+    if (supplement.sourceCommit) sourceCommit = supplement.sourceCommit;
+    supplements.push({ file, value: supplement });
+  }
+
+  const corrections = applyObservationCorrections(mergedRecords);
+
+  return {
+    registry: { ...base, sourceCommit, records: sortedRecords(mergedRecords) },
+    ownership,
+    supplements,
+    corrections,
+  };
+}
+
 function readRegistry() {
-  return readJson(REGISTRY_FILE, null);
+  return readRegistrySources().registry;
+}
+
+function writeRegistry(registry) {
+  const { ownership, supplements, corrections } = readRegistrySources();
+  const storageRecords = Object.fromEntries(
+    Object.entries(registry.records || {}).map(([route, record]) => [route, {
+      ...record,
+      observations: { ...(record.observations || {}) },
+    }])
+  );
+
+  for (const correction of corrections) {
+    const record = storageRecords[correction.route];
+    if (!record) throw new Error(`${correction.route}: corrected record missing during registry write`);
+    const current = record.observations?.[correction.field] ?? null;
+    if (current !== correction.to) {
+      throw new Error(`${correction.route}: corrected ${correction.field} write mismatch: expected ${JSON.stringify(correction.to)}, found ${JSON.stringify(current)}`);
+    }
+    record.observations[correction.field] = correction.from;
+  }
+
+  const baseRecords = {};
+  const supplementValues = new Map(
+    supplements.map(({ file, value }) => [file, { ...value, records: {} }])
+  );
+
+  for (const [route, record] of Object.entries(storageRecords)) {
+    const ownerFile = ownership.get(route);
+    if (ownerFile) supplementValues.get(ownerFile).records[route] = record;
+    else baseRecords[route] = record;
+  }
+
+  const base = { ...registry, records: sortedRecords(baseRecords) };
+  fs.mkdirSync(path.dirname(REGISTRY_FILE), { recursive: true });
+  fs.writeFileSync(REGISTRY_FILE, `${JSON.stringify(base, null, 2)}\n`, 'utf8');
+
+  for (const [file, supplement] of supplementValues) {
+    supplement.records = sortedRecords(supplement.records);
+    fs.writeFileSync(file, `${JSON.stringify(supplement, null, 2)}\n`, 'utf8');
+  }
 }
 
 function validateRecordShape(record, route) {
@@ -228,6 +380,8 @@ module.exports = {
   ROOT,
   SITE,
   REGISTRY_FILE,
+  REGISTRY_SUPPLEMENTS_DIR,
+  REGISTRY_OBSERVATION_CORRECTIONS_DIR,
   ALLOWED_REVIEW_STATUS,
   normalizeInstant,
   eligibleRecords,
@@ -235,5 +389,6 @@ module.exports = {
   observeRoute,
   mergeObservedRecord,
   readRegistry,
+  writeRegistry,
   validateRecordShape,
 };
