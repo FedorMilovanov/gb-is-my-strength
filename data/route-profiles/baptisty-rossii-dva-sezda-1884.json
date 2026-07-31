@@ -1,11 +1,11 @@
 {
   "route": "/baptisty-rossii/dva-sezda-1884/",
-  "profiledAt": "2026-06-22",
+  "profiledAt": "2026-07-31",
   "migrationLane": "content",
   "routeType": "series-article",
   "surfaceContractVersion": 1,
   "surface": "series",
-  "seriesShape": "flat",
+  "seriesShape": "book",
   "section": "baptisty-rossii",
   "slug": "dva-sezda-1884",
   "currentStatus": "production-dist",

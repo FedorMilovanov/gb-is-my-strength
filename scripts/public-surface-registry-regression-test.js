@@ -14,19 +14,25 @@ const baseline = buildPublicSurfaceRegistry({ loaded });
 assert.deepEqual(baseline.errors, [], baseline.errors.join('\n'));
 assert.equal(baseline.entries.length, 83);
 assert.deepEqual(baseline.counts, { page: 8, series: 59, article: 2, special: 14 });
-assert.deepEqual(baseline.shapeCounts, { flat: 34, book: 25 });
+assert.deepEqual(baseline.shapeCounts, { flat: 24, book: 35 });
 assert.deepEqual(baseline.roleCounts, { page: 2, reading: 54, application: 14, landing: 11, reference: 2 });
 
 const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));
 const bookEntry = entryByRoute.get('/articles/novoe-serdce/');
+const baptistBookEntry = entryByRoute.get('/baptisty-rossii/noch-na-kure/');
 const landingBookEntry = entryByRoute.get('/hard-texts/');
 const pageEntry = entryByRoute.get('/about/');
 const specialEntry = entryByRoute.get('/karty/avraam/');
 assert.ok(bookEntry, 'book fixture must be present in registry');
+assert.ok(baptistBookEntry, 'Baptist book fixture must be present in registry');
 assert.ok(landingBookEntry, 'book landing fixture must be present in registry');
 assert.ok(pageEntry, 'ordinary page fixture must be present in registry');
 assert.ok(specialEntry, 'special map fixture must be present in registry');
 assert.equal(bookEntry.settingsCapability, 'reader-ui');
+assert.equal(baptistBookEntry.surface, 'series');
+assert.equal(baptistBookEntry.seriesShape, 'book');
+assert.equal(baptistBookEntry.routeRole, 'reading');
+assert.equal(baptistBookEntry.settingsCapability, 'reader-ui');
 assert.equal(landingBookEntry.surface, 'series');
 assert.equal(landingBookEntry.seriesShape, 'book');
 assert.equal(landingBookEntry.routeRole, 'landing');
@@ -37,6 +43,10 @@ assert.equal(specialEntry.settingsCapability, 'global-preferences+special-bridge
 assert.ok(
   bookEntry.configSources.includes('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'),
   'book route must resolve the canonical hard-texts series config'
+);
+assert.ok(
+  baptistBookEntry.configSources.includes('src/components/article-pilots/_shared/series/baptistSeriesConfig.ts'),
+  'Baptist book route must resolve its explicit series config'
 );
 assert.ok(
   landingBookEntry.configSources.includes('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'),
@@ -124,7 +134,7 @@ function errorsFor(record) {
   const record = cloneRecord('/about/');
   record.profile.surface = 'series';
   record.profile.seriesShape = 'book';
-  assert.ok(errorsFor(record).some((error) => error.includes('requires resolved hardTextsSeriesConfig import')));
+  assert.ok(errorsFor(record).some((error) => error.includes('requires a resolved explicit series config import')));
 }
 {
   const record = cloneRecord('/nagornaya/');
