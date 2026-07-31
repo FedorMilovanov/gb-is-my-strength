@@ -1,0 +1,118 @@
+name: npm security inventory helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.event.pull_request.head.ref == 'agent/npm-security-inventory-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: 8322662260b1abb68ca89d059b3e67d3f839f844
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install exact lockfile
+        run: npm ci
+
+      - name: Capture audit, dependency paths and outdated inventory
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p reports/npm-security
+          npm audit --json > reports/npm-security/audit.json
+          audit_status=$?
+          npm outdated --json > reports/npm-security/outdated.json
+          outdated_status=$?
+          npm ls --all --json > reports/npm-security/tree.json
+          tree_status=$?
+          printf '{"audit":%s,"outdated":%s,"tree":%s}\n' "$audit_status" "$outdated_status" "$tree_status" > reports/npm-security/exit-status.json
+          exit 0
+
+      - name: Build deterministic advisory summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('reports/npm-security')
+          audit = json.loads((root / 'audit.json').read_text())
+          vulnerabilities = audit.get('vulnerabilities', {})
+          rows = []
+          for name, item in vulnerabilities.items():
+              via = item.get('via', [])
+              advisories = []
+              for entry in via:
+                  if isinstance(entry, str):
+                      advisories.append(entry)
+                  else:
+                      advisories.append({
+                          'source': entry.get('source'),
+                          'title': entry.get('title'),
+                          'severity': entry.get('severity'),
+                          'range': entry.get('range'),
+                          'url': entry.get('url'),
+                          'cwe': entry.get('cwe'),
+                      })
+              rows.append({
+                  'package': name,
+                  'severity': item.get('severity'),
+                  'direct': item.get('isDirect'),
+                  'range': item.get('range'),
+                  'nodes': item.get('nodes', []),
+                  'fixAvailable': item.get('fixAvailable'),
+                  'via': advisories,
+              })
+          rank = {'critical': 0, 'high': 1, 'moderate': 2, 'low': 3, 'info': 4}
+          rows.sort(key=lambda row: (rank.get(row['severity'], 9), row['package']))
+          summary = {
+              'metadata': audit.get('metadata', {}),
+              'packages': rows,
+          }
+          (root / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n')
+
+          lines = ['# npm security inventory', '']
+          meta = audit.get('metadata', {}).get('vulnerabilities', {})
+          lines.append('Counts: ' + ', '.join(f'{key}={value}' for key, value in meta.items()))
+          lines.append('')
+          lines.append('| Package | Severity | Direct | Range | Fix available | Dependency nodes |')
+          lines.append('|---|---|---:|---|---|---|')
+          for row in rows:
+              fix = row['fixAvailable']
+              if isinstance(fix, dict):
+                  fix_text = f"{fix.get('name')}@{fix.get('version')} force={fix.get('isSemVerMajor')}"
+              else:
+                  fix_text = str(fix)
+              nodes = ', '.join(row['nodes'][:4])
+              lines.append(f"| `{row['package']}` | {row['severity']} | {row['direct']} | `{row['range']}` | `{fix_text}` | `{nodes}` |")
+          (root / 'summary.md').write_text('\n'.join(lines) + '\n')
+          print('\n'.join(lines))
+          PY
+
+      - name: Publish summary
+        shell: bash
+        run: cat reports/npm-security/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload exact audit evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b5404495e3d13fd6403c1501 # v4
+        with:
+          name: npm-security-inventory-main-83226622
+          path: reports/npm-security
+          if-no-files-found: error
+          retention-days: 3
