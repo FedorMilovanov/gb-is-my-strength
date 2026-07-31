@@ -74,8 +74,9 @@
     }
   }
 
-  /* Five routes end with one centred card. A future sixth route automatically
-     removes the odd-item rule and completes a normal two-card row. */
+  /* Five routes end with one centred card. Give the intentional singleton enough
+     measure for its longest label and description. A future sixth route removes
+     the odd-item rule automatically and completes a normal two-card row. */
   @media (max-width: 760px) {
     body.home-page #main-content .h-home-route:last-child {
       width: auto;
@@ -92,7 +93,7 @@
     }
 
     body.home-page #main-content .h-home-route:last-child:nth-child(odd) {
-      width: calc((100% - 10px) / 2);
+      width: min(236px, calc(100% - 32px));
       grid-column: 1 / -1;
       justify-self: center;
     }
@@ -111,7 +112,7 @@
     }
 
     body.home-page #main-content .h-home-route:last-child:nth-child(odd) {
-      width: calc((100% - 8px) / 2);
+      width: min(212px, calc(100% - 24px));
     }
   }
 
