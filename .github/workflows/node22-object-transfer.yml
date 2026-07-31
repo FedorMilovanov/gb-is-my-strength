@@ -40,20 +40,20 @@ jobs:
       - name: Rebuild and verify every artifact blob
         run: python3 helper/scripts/node22-object-transfer.py target helper
 
-      - name: Upload objects with an impossible canonical lease
+      - name: Upload objects through workflow-permission rejection
         shell: bash
         run: |
           set -euo pipefail
+          staging_ref='refs/heads/agent/node22-object-transfer-staging-20260731'
+          test -z "$(git -C target ls-remote origin "$staging_ref")"
           set +e
-          git -C target push \
-            --force-with-lease=refs/heads/agent/node22-lts-patch-validation-20260731:0000000000000000000000000000000000000000 \
-            origin HEAD:refs/heads/agent/node22-lts-patch-validation-20260731 \
+          git -C target push origin "HEAD:$staging_ref" \
             > target/reports/node22-object-transfer/push.log 2>&1
           status=$?
           set -e
           test "$status" -ne 0
-          grep -E 'stale info|rejected|fetch first|non-fast-forward|workflow' target/reports/node22-object-transfer/push.log
-          test "$(git -C target ls-remote origin refs/heads/agent/node22-lts-patch-validation-20260731 | cut -f1)" != "$(cat target/reports/node22-object-transfer/commit-sha.txt)"
+          grep -E 'workflow|workflows permission|refusing to allow a GitHub App' target/reports/node22-object-transfer/push.log
+          test -z "$(git -C target ls-remote origin "$staging_ref")"
 
       - name: Upload exact object identities
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
