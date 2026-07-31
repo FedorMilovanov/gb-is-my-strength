@@ -59,8 +59,17 @@ function rewriteAstro(source, hashes) {
   for (const [asset, hash] of Object.entries(hashes)) {
     if (!hash) continue;
     const escapedAsset = asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s"'&}>]+`, 'g');
-    updated = updated.replace(re, (_match, prefix) => `${prefix}${asset}?v=${hash}`);
+    const versionedRe = new RegExp(`((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[^\\s"'&}>]+`, 'g');
+    updated = updated.replace(versionedRe, (_match, prefix) => `${prefix}${asset}?v=${hash}`);
+
+    // Only static HTML-like href/src attributes are upgraded from an
+    // unversioned reference. Calls such as assetUrl('js/site.js') are code,
+    // not source URLs, and must remain untouched.
+    const directAttrRe = new RegExp(`(\\b(?:href|src)\\s*=\\s*["'])((?:\\.\\.\\/)*|/?)${escapedAsset}(["'])`, 'g');
+    updated = updated.replace(
+      directAttrRe,
+      (_match, open, prefix, close) => `${open}${prefix}${asset}?v=${hash}${close}`
+    );
   }
   return updated;
 }
@@ -88,6 +97,26 @@ function expectedAssetVersionHelper(source, hashes) {
   );
 }
 
+function assertRewriteAstroContract() {
+  const fixture = [
+    '<link rel="stylesheet" href="/css/site.css">',
+    '<script src="../../js/site.js"></script>',
+    "<script>assetUrl('js/site.js')</script>",
+  ].join('\n');
+  const expected = [
+    '<link rel="stylesheet" href="/css/site.css?v=11111111">',
+    '<script src="../../js/site.js?v=22222222"></script>',
+    "<script>assetUrl('js/site.js')</script>",
+  ].join('\n');
+  const actual = rewriteAstro(fixture, {
+    'css/site.css': '11111111',
+    'js/site.js': '22222222',
+  });
+  if (actual !== expected) {
+    throw new Error(`Astro asset rewrite contract failed\nEXPECTED:\n${expected}\nACTUAL:\n${actual}`);
+  }
+}
+
 function inspectFile(file, transform, hashes, changes) {
   const source = fs.readFileSync(file, 'utf8');
   const expected = transform(source, hashes);
@@ -98,6 +127,7 @@ function inspectFile(file, transform, hashes, changes) {
 
 function main() {
   console.log(`\n⚡ asset revision ${WRITE ? 'WRITE' : 'READ-ONLY CHECK'}\n`);
+  assertRewriteAstroContract();
   const hashes = {};
   const missingAssets = [];
   for (const asset of ASSETS) {
