@@ -14,7 +14,7 @@ const baseline = buildPublicSurfaceRegistry({ loaded });
 assert.deepEqual(baseline.errors, [], baseline.errors.join('\n'));
 assert.equal(baseline.entries.length, 83);
 assert.deepEqual(baseline.counts, { page: 8, series: 59, article: 2, special: 14 });
-assert.deepEqual(baseline.shapeCounts, { flat: 24, book: 35 });
+assert.deepEqual(baseline.shapeCounts, { flat: 23, book: 36 });
 assert.deepEqual(baseline.roleCounts, { page: 2, reading: 54, application: 14, landing: 11, reference: 2 });
 
 const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));

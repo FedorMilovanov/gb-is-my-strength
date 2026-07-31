@@ -3,9 +3,9 @@
  *
  * The full page chrome data and the original flat publication inventory remain
  * in baptistFlatSeriesConfig.ts. This module is the public source of truth for
- * the reader: four book chapters group the nine already published historical
- * articles, while the source reference remains an endpaper. No route, reading
- * time or article body is duplicated here.
+ * the reader and the landing: four book chapters group the nine already
+ * published historical articles, while the source reference remains an
+ * endpaper. No route, reading time or article body is duplicated here.
  */
 import {
   SERIES_CONFIGS,
@@ -15,34 +15,46 @@ import {
 } from './seriesConfig';
 import { BAPTIST_SERIES as BAPTIST_FLAT_SERIES } from './baptistFlatSeriesConfig';
 
-interface BaptistBookChapter {
+export interface BaptistBookChapter {
   id: string;
   roman: string;
   title: string;
   shortTitle: string;
+  description: string;
   articleIds: readonly string[];
 }
 
-const BOOK_CHAPTERS: readonly BaptistBookChapter[] = [
+export const BAPTIST_BOOK_META = {
+  title: 'Баптисты России',
+  subtitle: 'История Евангелия, свободы и совести',
+  deck: 'От ночного крещения на Куре до подпольных типографий и церковной памяти',
+  publishedLabel: '4 главы · 9 статей + справочник',
+  roadmapLabel: 'Расширяемая редакционная архитектура · 17–20 статей',
+} as const;
+
+export const BAPTIST_BOOK_CHAPTERS: readonly BaptistBookChapter[] = [
   {
     id: 'origins-and-first-brotherhood',
     roman: 'I',
-    title: 'Почва и рождение братства',
+    title: 'Рождение братства',
     shortTitle: '1867–1884 · Тифлис, юг и первые союзы',
+    description: 'Тифлисская почва, южная штунда и две организационные развилки 1884 года.',
     articleIds: ['noch-na-kure', 'yuzhnaya-shtunda', 'dva-sezda-1884'],
   },
   {
-    id: 'networks-unions-and-conscience',
+    id: 'awakening-unions-and-conscience',
     roman: 'II',
-    title: 'Сети, союзы и совесть',
+    title: 'Пробуждение, союзы и свобода совести',
     shortTitle: '1874–1929 · Петербург, Проханов и военный вопрос',
+    description: 'Петербургское пробуждение, союзные проекты, печатная культура и борьба за свободу совести.',
     articleIds: ['peterburgskaya-liniya', 'goneniya-i-sovest'],
   },
   {
     id: 'soviet-night-and-one-union',
     roman: 'III',
-    title: 'Советская ночь и один союз',
+    title: 'Советская ночь и единый центр',
     shortTitle: '1929–1945 · Разгром, война и ВСЕХиБ',
+    description: 'Закон 1929 года, разрушение церковной инфраструктуры, война и формирование единого союзного центра.',
     articleIds: ['sovetskaya-noch', 'vsehib-1944'],
   },
   {
@@ -50,6 +62,7 @@ const BOOK_CHAPTERS: readonly BaptistBookChapter[] = [
     roman: 'IV',
     title: 'Разлом совести и подпольная память',
     shortTitle: '1960–1991 · Совет Церквей, узники и самиздат',
+    description: 'Инициативная группа, Совет Церквей, узники, семьи и подпольная издательская сеть.',
     articleIds: ['iniciativnaya-gruppa', 'podpolnaya-pechat'],
   },
 ];
@@ -66,7 +79,7 @@ function minutesOf(id: string): number {
   return minutes;
 }
 
-const bookItems: SeriesItem[] = BOOK_CHAPTERS.flatMap((chapter) => {
+const bookItems: SeriesItem[] = BAPTIST_BOOK_CHAPTERS.flatMap((chapter) => {
   const firstArticle = requireFlatItem(chapter.articleIds[0]);
   const chapterMinutes = chapter.articleIds.reduce((sum, id) => sum + minutesOf(id), 0);
   const chapterItem: SeriesItem = {
@@ -100,7 +113,8 @@ bookItems.push(requireFlatItem('spravochnik'));
 export const BAPTIST_SERIES: SeriesConfig = defineSeriesConfig({
   ...BAPTIST_FLAT_SERIES,
   seriesId: 'russian-baptism',
-  seriesTitleFull: 'Баптисты России · История ЕХБ — книга статей',
+  seriesTitle: BAPTIST_BOOK_META.title,
+  seriesTitleFull: `${BAPTIST_BOOK_META.title} · ${BAPTIST_BOOK_META.subtitle}`,
   shape: 'book',
   items: bookItems,
 });

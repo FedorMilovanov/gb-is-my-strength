@@ -1,0 +1,312 @@
+---
+import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
+import {
+  BAPTIST_BOOK_CHAPTERS,
+  BAPTIST_BOOK_META,
+  BAPTIST_SERIES,
+} from '@/components/article-pilots/_shared/series/baptistSeriesConfig';
+
+const itemById = new Map(BAPTIST_SERIES.items.map((item) => [item.id, item]));
+
+const coverFor = (pageId: string) => {
+  const cover = BAPTIST_SERIES.pages[pageId]?.railCover;
+  if (!cover) throw new Error(`[baptists-landing] Missing cover for ${pageId}`);
+  return cover.replace(/^\.\.\/\.\.\//, '../');
+};
+
+const chapters = BAPTIST_BOOK_CHAPTERS.map((chapter) => {
+  const articles = chapter.articleIds.map((id) => {
+    const item = itemById.get(id);
+    const page = BAPTIST_SERIES.pages[id];
+    if (!item || !page) throw new Error(`[baptists-landing] Missing published article ${id}`);
+    return {
+      id,
+      href: item.href,
+      mark: item.mark.value,
+      title: page.title,
+      shortTitle: item.shortTitle,
+      readingTime: item.readingTime,
+      cover: coverFor(id),
+    };
+  });
+  const totalMinutes = articles.reduce((sum, article) => sum + Number.parseInt(article.readingTime, 10), 0);
+  return { ...chapter, articles, totalMinutes };
+});
+
+const publishedArticles = chapters.flatMap((chapter) => chapter.articles);
+const reference = itemById.get('spravochnik');
+const referencePage = BAPTIST_SERIES.pages.spravochnik;
+if (!reference || !referencePage) throw new Error('[baptists-landing] Missing reference endpaper');
+
+const totalMinutes = publishedArticles.reduce(
+  (sum, article) => sum + Number.parseInt(article.readingTime, 10),
+  Number.parseInt(reference.readingTime, 10),
+);
+
+const landingToc = [
+  { href: '#book-structure', label: 'Как устроена книга' },
+  ...chapters.map((chapter) => ({ href: `#chapter-${chapter.roman.toLowerCase()}`, label: chapter.title })),
+  { href: '#reference', label: 'Научный аппарат' },
+  { href: '#editorial-roadmap', label: 'Расширяемая архитектура' },
+  { href: '#research-base', label: 'Источники и архив' },
+];
+---
+
+<script is:inline defer src="../../js/floating-cluster-controller.js?v=2b92a1a5"></script>
+<a class="skip-link" href="#main-content">Перейти к содержимому</a>
+
+<div class="gbs2-mobile-head">
+  <img alt="" height="315" src="../images/baptisty-rossii/cover-landing.webp" width="600" />
+  <div class="gbs2-mobile-title">
+    <span>Книга · История ЕХБ</span>
+    <b>{BAPTIST_BOOK_META.title}</b>
+  </div>
+  <div class="gbs2-mobile-actions">
+    <button aria-label="Переключить тему" class="gbs2-mctl" data-gbs2-theme type="button">◐</button>
+    <button aria-label="Поиск" class="gbs2-mctl" data-gbs2-search type="button">⌕</button>
+  </div>
+</div>
+
+<div class="gbs2-world">
+  <aside class="gbs2-rail" aria-label={`Книга «${BAPTIST_BOOK_META.title}»`}>
+    <div class="gbs2-rhead">
+      <div class="gbs2-kicker">Книга · История ЕХБ</div>
+      <h2 class="gbs2-rtitle">{BAPTIST_BOOK_META.title}</h2>
+      <div class="gbs2-rsub">{BAPTIST_BOOK_META.publishedLabel}</div>
+      <div class="gbs2-rprogress">
+        <div class="gbs2-ring" aria-hidden="true">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle class="t" cx="22" cy="22" r="18"></circle>
+            <circle class="f" id="gbs2Ring" cx="22" cy="22" r="18" stroke-dasharray="113" stroke-dashoffset="113"></circle>
+          </svg>
+          <b id="gbs2Pct">0%</b>
+        </div>
+        <div><small>Опубликовано</small><span id="gbs2Meta">4 главы · {totalMinutes} мин</span></div>
+      </div>
+    </div>
+
+    <div class="gbs2-rmid">
+      <nav class="gbs2-parts" aria-label="Главы и статьи книги">
+        {chapters.map((chapter) => (
+          <>
+            <div class="gbs2-toch">
+              <span>Глава <RomanNumeral value={chapter.roman} /></span>
+              <span class="gbs2-count">{chapter.articles.length} статьи</span>
+            </div>
+            {chapter.articles.map((article) => (
+              <a class="gbs2-part" href={article.href}>
+                <span class="gbs2-thumb">
+                  <img src={article.cover} alt="" width="600" height="315" loading="lazy" decoding="async" />
+                </span>
+                <span>
+                  <span class="gbs2-pn">Статья {article.mark} · {article.readingTime}</span>
+                  <span class="gbs2-pt">{article.title}</span>
+                  <span class="gbs2-ps">{article.shortTitle}</span>
+                </span>
+                <span class="gbs2-check" aria-hidden="true">✓</span>
+              </a>
+            ))}
+          </>
+        ))}
+        <div class="gbs2-toch"><span>Форзац</span><span class="gbs2-count">справочник</span></div>
+        <a class="gbs2-part" href={reference.href}>
+          <span class="gbs2-thumb">
+            <img src={coverFor('spravochnik')} alt="" width="600" height="315" loading="lazy" decoding="async" />
+          </span>
+          <span>
+            <span class="gbs2-pn">Научный аппарат · {reference.readingTime}</span>
+            <span class="gbs2-pt">{referencePage.title}</span>
+            <span class="gbs2-ps">{reference.shortTitle}</span>
+          </span>
+          <span class="gbs2-check" aria-hidden="true">✓</span>
+        </a>
+      </nav>
+
+      <section class="gbs2-current" aria-label="Обзор книги" style="--gbs2-cover:url('../images/baptisty-rossii/cover-landing.webp')">
+        <div class="gbs2-current-cover" aria-hidden="true"></div>
+        <div class="gbs2-current-body">
+          <div class="gbs2-current-label">Сейчас</div>
+          <div class="gbs2-current-title">{BAPTIST_BOOK_META.subtitle}</div>
+          <div class="gbs2-curbar"><i id="gbs2Curbar"></i></div>
+        </div>
+        <div class="gbs2-toch">
+          <span>Оглавление книги</span>
+          <span class="gbs2-count" id="gbs2Count">1 / {landingToc.length}</span>
+        </div>
+        <div class="gbs2-tocscroll">
+          <ul class="gbs2-toc" id="gbs2Toc">
+            <span class="gbs2-track" aria-hidden="true"><i></i></span>
+            {landingToc.map((item, index) => (
+              <li><a href={item.href} class:list={{ 'gbs2-active': index === 0 }}><span class="gbs2-dot" aria-hidden="true"></span>{item.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <div class="gbs2-rfoot" data-fc-root data-fc-mode="series-lite" data-fc-variant="baptisty">
+      <button class="gbs2-ctl" type="button" data-gbs2-theme aria-label="Переключить тему">◐</button>
+      <button class="gbs2-ctl" type="button" data-gbs2-font="down" aria-label="Уменьшить шрифт">A−</button>
+      <button class="gbs2-ctl" type="button" data-gbs2-font="up" aria-label="Увеличить шрифт">A+</button>
+      <button class="gbs2-ctl" type="button" data-gbs2-share aria-label="Поделиться">↗</button>
+      <button class="gbs2-ctl" type="button" data-gbs2-search aria-label="Поиск">⌕</button>
+      <button type="button" class="gb-ember gbs2-ctl" data-state="idle" style="--p:0;--ember-size:32px;--ring-color:var(--color-accent-gold-bright,#d8aa6d)" data-fc-action="play" aria-label="Озвучка">
+        <svg class="gb-ember__ring-svg" viewBox="0 0 100 100" aria-hidden="true"><circle class="gb-ember__ring-track" cx="50" cy="50" r="45"/><circle class="gb-ember__ring-progress" cx="50" cy="50" r="45"/></svg>
+        <svg class="gb-ember__glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.8v14.4L18.5 12 7 4.8z"/></svg>
+        <svg class="gb-ember__pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>
+        <svg class="gb-ember__check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.1L19 7"/></svg>
+      </button>
+      <button type="button" class="gb-save gbs2-ctl" data-fc-action="save" aria-label="Сохранить" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <a class="gbs2-home" href="../konfessii/russkij-baptizm/">3D-карта</a>
+    </div>
+  </aside>
+
+  <div class="page-wrap" id="content">
+    <nav class="breadcrumb">
+      <ol class="breadcrumb__list">
+        <li class="breadcrumb__item"><a class="breadcrumb__link" href="../">Главная</a></li>
+        <li class="breadcrumb__item" aria-current="page"><span class="breadcrumb__current">{BAPTIST_BOOK_META.title}</span></li>
+      </ol>
+    </nav>
+
+    <main id="main-content">
+      <figure class="gbs2-hero" data-n="1867–1991">
+        <img src="../images/baptisty-rossii/cover-landing.webp" alt={`Обложка книги «${BAPTIST_BOOK_META.title}»`} width="1200" height="630" decoding="async" />
+        <figcaption class="gbs2-hero-cap"><i aria-hidden="true"></i>Книга статей · русский баптизм и ЕХБ</figcaption>
+      </figure>
+
+      <header class="article-header gbs2-head">
+        <span class="gbs2-kinetic" aria-hidden="true">ЕХБ</span>
+        <p class="section-label reveal">История · Конфессии · Русский баптизм</p>
+        <h1>{BAPTIST_BOOK_META.title}</h1>
+        <p class="article-desc reveal"><strong>{BAPTIST_BOOK_META.subtitle}.</strong> {BAPTIST_BOOK_META.deck}.</p>
+        <p class="article-byline reveal">
+          <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
+          <span class="article-byline__sep">·</span>
+          <time datetime="2026-06-13">13 июня 2026</time>
+        </p>
+      </header>
+
+      <article class="article-body" data-pagefind-body>
+        <section class="summary-card" data-speakable>
+          <h2 class="summary-card__head">Как читать книгу</h2>
+          <ol class="summary-card__body">
+            <li class="summary-card__item"><span class="summary-card__num" aria-hidden="true" data-num="01"></span><p class="summary-card__text">Опубликованный корпус образует четыре главы: девять самостоятельных исторических статей и отдельный справочник источников.</p></li>
+            <li class="summary-card__item"><span class="summary-card__num" aria-hidden="true" data-num="02"></span><p class="summary-card__text">Римские цифры обозначают главы книги, а арабские — статьи внутри каждой главы. Все существующие адреса и поисковая история сохранены.</p></li>
+            <li class="summary-card__item"><span class="summary-card__num" aria-hidden="true" data-num="03"></span><p class="summary-card__text">Расширяемая архитектура рассчитана ориентировочно на 17–20 статей. Точное число определяется самостоятельностью вопроса и готовностью доказательной базы, а не заранее выбранной симметрией.</p></li>
+          </ol>
+        </section>
+
+        <div class="note-box"><strong>Связь с картой.</strong> Интерактивная 3D-карта остаётся в разделе <a href="../konfessii/russkij-baptizm/">«Конфессии / русский баптизм»</a>. Книга даёт карте проверяемый текстовый слой: даты, документы, биографии и уровни уверенности.</div>
+
+        <h2 id="book-structure">Как устроена опубликованная книга</h2>
+        <p>Это уже не плоская последовательность выпусков. Нынешние статьи собраны в четыре смысловые главы: возникновение братства, дореволюционное пробуждение и свобода совести, советское разрушение и формирование единого центра, затем разлом 1960-х и подпольная память. Такой порядок сохраняет хронологию, но не сводит историю к одной прямой линии.</p>
+
+        {chapters.map((chapter) => (
+          <section aria-labelledby={`chapter-${chapter.roman.toLowerCase()}`}>
+            <h2 id={`chapter-${chapter.roman.toLowerCase()}`}>Глава <RomanNumeral value={chapter.roman} />. {chapter.title}</h2>
+            <p><strong>{chapter.shortTitle}</strong></p>
+            <p>{chapter.description}</p>
+            <div class="h-article-list" style="display:grid;gap:16px;">
+              {chapter.articles.map((article) => (
+                <a class="h-article-card" href={article.href}>
+                  <div class="h-article-thumb"><img src={article.cover} alt="" width="160" height="108" loading="lazy" decoding="async" /></div>
+                  <div class="h-article-body">
+                    <div class="h-article-kicker">Статья {article.mark} · {article.readingTime}</div>
+                    <h3 class="h-article-title">{article.title}</h3>
+                    <p class="h-article-abstract">{article.shortTitle}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+
+        <section aria-labelledby="reference">
+          <h2 id="reference">Научный аппарат</h2>
+          <p>Справочник вынесен из нумерации глав. Это форзац книги: люди, даты, документы, спорные узлы, уровни источников и пояснения к тому, что подтверждено первичным свидетельством, а что остаётся поздней реконструкцией.</p>
+          <div class="h-article-list" style="display:grid;gap:16px;">
+            <a class="h-article-card" href={reference.href}>
+              <div class="h-article-thumb"><img src={coverFor('spravochnik')} alt="" width="160" height="108" loading="lazy" decoding="async" /></div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Форзац · {reference.readingTime}</div>
+                <h3 class="h-article-title">{referencePage.title}</h3>
+                <p class="h-article-abstract">{reference.shortTitle}</p>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <h2 id="editorial-roadmap">Расширяемая архитектура книги</h2>
+        <p>{BAPTIST_BOOK_META.roadmapLabel} — это редакционный диапазон, а не заявление о уже существующих маршрутах. Новая консолидация 1917–1926 годов показывает, что материала достаточно не для одной перегруженной статьи, а для нескольких самостоятельных вопросов с разными первичными корпусами.</p>
+        <div class="note-box"><strong>Проверенная логика расширения.</strong> Текущие четыре главы остаются публичным каркасом. Внутри них будут появляться новые статьи; пятая глава будет добавлена только тогда, когда появятся реальные маршруты об эмиграции, диаспоре, возвращении архивов и истории после 1991 года.</div>
+        <h3>Какие узлы уже обеспечены материалом</h3>
+        <ol>
+          <li><strong>Глава II.</strong> Петербургское пробуждение; два союзных проекта Мазаева и Проханова; периодика и издательство «Слово истины»; революционное окно 1917–1921 годов; помощь голодающим и международные сети 1921–1924 годов; богословская школа и College Fund; военный вопрос и Стокгольм 1923 года.</li>
+          <li><strong>Глава III.</strong> Создание образа «сектанта-врага»; закон 1929 года и административный механизм закрытия общин; разгром союзов и Большой террор; военный поворот 1942–1944 годов; устройство единого центра после образования ВСЕХиБ.</li>
+          <li><strong>Глава IV.</strong> «Положение» и «Инструктивное письмо» 1960 года; Инициативная группа и Совет Церквей; узники, семьи и ходатайства; подпольная периодика, издательство «Христианин» и сеть типографий.</li>
+        </ol>
+        <p>Новые статьи не создаются ради числа. Каждая должна иметь самостоятельный вопрос, достаточный корпус первичных и вторичных источников, проверяемую хронологию и собственный набор иллюстраций с установленным происхождением. Поэтому безопасная оценка — 17–20 статей, а не семнадцать пустых глав или фиктивных адресов.</p>
+
+        <h2 id="research-base">Источники и архив</h2>
+        <p>Основание книги — не один пересказ, а несколько слоёв свидетельств: письма и протоколы, законодательные и ведомственные документы, периодические издания, воспоминания участников, исследования историков, подписанные фотографии и ответы архивов и библиотек.</p>
+        <p>Наличие ссылки ещё не означает, что файл проверен; найденный PDF ещё не означает, что он сохранён в архиве; подпись к фотографии ещё не заменяет проверку прав на публикацию. Поэтому журналы, факсимиле и фотографии внедряются в статьи только после физической проверки файла, страницы, подписи, происхождения и допустимого режима использования.</p>
+      </article>
+
+      <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
+    </main>
+  </div>
+</div>
+
+<button class="gbs2-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet"><b id="gbs2MobPct">0%</b><span id="gbs2MobSec">Книга</span></button>
+<div class="gbs2-sheet" id="gbs2Sheet" aria-hidden="true">
+  <div class="gbs2-sheet-backdrop" data-gbs2-close></div>
+  <section class="gbs2-sheet-panel" role="dialog" aria-modal="true" aria-label={`Книга ${BAPTIST_BOOK_META.title}`}>
+    <div class="gbs2-sheet-grab" aria-hidden="true"></div>
+    <header class="gbs2-sheet-head">
+      <div><span>Книга</span><b>{BAPTIST_BOOK_META.title}</b></div>
+      <button type="button" class="gbs2-sheet-close" data-gbs2-close aria-label="Закрыть">×</button>
+    </header>
+    <div class="gbs2-sheet-tabs" role="tablist">
+      <button type="button" class="gbs2-sheet-tab gbs2-on" data-gbs2-tab="parts">Главы</button>
+      <button type="button" class="gbs2-sheet-tab" data-gbs2-tab="toc">На странице</button>
+    </div>
+    <div class="gbs2-sheet-body">
+      <div class="gbs2-sheet-pane gbs2-on" data-gbs2-pane="parts">
+        <div class="gbs2-sheet-parts">
+          {chapters.map((chapter) => (
+            <>
+              <div class="gbs2-toch"><span>Глава <RomanNumeral value={chapter.roman} /></span><span class="gbs2-count">{chapter.articles.length} статьи</span></div>
+              {chapter.articles.map((article) => (
+                <a class="gbs2-sheet-part" href={article.href}>
+                  <img src={article.cover} alt="" width="600" height="315" />
+                  <span><b>{article.mark}. {article.title}</b><small>{article.readingTime}</small></span>
+                </a>
+              ))}
+            </>
+          ))}
+          <a class="gbs2-sheet-part" href={reference.href}>
+            <img src={coverFor('spravochnik')} alt="" width="600" height="315" />
+            <span><b>{referencePage.title}</b><small>{reference.readingTime}</small></span>
+          </a>
+        </div>
+      </div>
+      <nav class="gbs2-sheet-pane" data-gbs2-pane="toc" aria-label="Оглавление книги">
+        <div class="gbs2-sheet-parts">
+          {landingToc.map((item) => <a class="gbs2-sheet-part" href={item.href}><span><b>{item.label}</b></span></a>)}
+        </div>
+      </nav>
+    </div>
+  </section>
+</div>
+
+<script is:inline defer src="../js/site-utils.js?v=30ed46cf"></script>
+<script is:inline defer src="../js/scroll-perf.js?v=454d6f7b"></script>
+<script is:inline defer src="../js/site.js?v=38b94307"></script>
+<script is:inline defer src="../js/glossary.js?v=81fc28c2"></script>
+<script is:inline defer src="../js/sw-register.js?v=7a8bd1e7"></script>
+<script is:inline>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src="../js/search.js?v=b0fd43b8";function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function key(e){(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()==="k"&&(e.preventDefault(),load(true))}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("keydown",key,true);document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>
+<script is:inline defer src="../js/highlights.js?v=25484760"></script>
+<script is:inline defer src="../js/enhancements.js?v=cbbdb283"></script>

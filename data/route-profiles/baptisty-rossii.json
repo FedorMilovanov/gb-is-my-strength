@@ -1,11 +1,11 @@
 {
   "route": "/baptisty-rossii/",
-  "profiledAt": "2026-06-22",
+  "profiledAt": "2026-07-31",
   "migrationLane": "landing",
   "routeType": "series-landing",
   "surfaceContractVersion": 1,
   "surface": "series",
-  "seriesShape": "flat",
+  "seriesShape": "book",
   "section": "baptisty-rossii",
   "slug": null,
   "currentStatus": "production-dist",
