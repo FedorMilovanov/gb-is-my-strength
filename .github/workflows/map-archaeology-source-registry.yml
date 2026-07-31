@@ -36,11 +36,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Set up Node 22.12
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.12.0'
       - name: Validate source syntax and shared boundary
@@ -70,7 +70,7 @@ jobs:
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-archaeology-source-registry.yml
       - name: Upload registry audits
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: map-archaeology-source-registry-${{ github.run_id }}
           path: |

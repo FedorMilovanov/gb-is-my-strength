@@ -30,7 +30,7 @@ function workflow({
   event = 'workflow_run',
   workflowPermissions = 'contents: read',
   jobPermissions = '',
-  uses = 'actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b',
+  uses = 'actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0',
   jobId = 'record',
   extraJob = '',
   marker = '# trusted-marker',

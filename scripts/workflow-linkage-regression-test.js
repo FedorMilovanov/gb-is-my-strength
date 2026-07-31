@@ -9,10 +9,10 @@ const ROOT = path.resolve(__dirname, '..');
 const DIAGNOSTICS_PATH = '.github/workflows/indexnow.yml';
 const RELEASE_PATH = '.github/workflows/deploy.yml';
 const PINS = Object.freeze({
-  checkout: 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4',
-  downloadArtifact: 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4',
-  uploadPages: 'actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3',
-  deployPages: 'actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4',
+  checkout: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1',
+  downloadArtifact: 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1',
+  uploadPages: 'actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0',
+  deployPages: 'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0',
 });
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
