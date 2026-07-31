@@ -1,0 +1,64 @@
+name: Node 22 object transfer helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  transfer:
+    if: github.event.pull_request.head.ref == 'agent/node22-current-main-export-20260731'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact frozen main with transport credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: c58e938f60a215c33476b628639ab496065f48e9
+          path: target
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Checkout exact helper source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/node22-current-main-export-20260731
+          path: helper
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify exact authorities
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C target rev-parse HEAD)" = 'c58e938f60a215c33476b628639ab496065f48e9'
+          test "$(git -C helper rev-parse HEAD)" = '${{ github.event.pull_request.head.sha }}'
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = 'c58e938f60a215c33476b628639ab496065f48e9'
+
+      - name: Rebuild and verify every artifact blob
+        run: python3 helper/scripts/node22-object-transfer.py target helper
+
+      - name: Upload objects with an impossible canonical lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          git -C target push \
+            --force-with-lease=refs/heads/agent/node22-lts-patch-validation-20260731:0000000000000000000000000000000000000000 \
+            origin HEAD:refs/heads/agent/node22-lts-patch-validation-20260731 \
+            > target/reports/node22-object-transfer/push.log 2>&1
+          status=$?
+          set -e
+          test "$status" -ne 0
+          grep -E 'stale info|rejected|fetch first|non-fast-forward|workflow' target/reports/node22-object-transfer/push.log
+          test "$(git ls-remote origin refs/heads/agent/node22-lts-patch-validation-20260731 | cut -f1)" != "$(cat target/reports/node22-object-transfer/commit-sha.txt)"
+
+      - name: Upload exact object identities
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: node22-clean-object-identities
+          path: target/reports/node22-object-transfer/
+          if-no-files-found: error
+          retention-days: 2
