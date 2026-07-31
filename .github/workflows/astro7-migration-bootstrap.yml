@@ -1,0 +1,187 @@
+name: Astro 7 migration bootstrap
+
+on:
+  push:
+    branches:
+      - dependabot/npm_and_yarn/astro-7.1.4
+    paths:
+      - .github/workflows/astro7-migration-bootstrap.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: astro7-migration-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout exact migration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: dependabot/npm_and_yarn/astro-7.1.4
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up repository Node toolchain
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Assert deterministic npm toolchain
+        run: test "$(npm --version)" = "10.9.0"
+
+      - name: Apply coordinated Astro 7 package and compatibility changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const packagePath = 'package.json';
+          const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+          const expected = {
+            astro: '7.1.6',
+            '@astrojs/mdx': '7.0.5',
+            '@astrojs/react': '6.0.2',
+            '@astrojs/check': '0.9.10',
+            '@astrojs/rss': '4.0.19',
+            '@astrojs/sitemap': '3.7.3',
+            '@astrojs/markdown-remark': '7.2.2',
+          };
+
+          pkg.devDependencies ||= {};
+          for (const [name, version] of Object.entries(expected)) {
+            pkg.devDependencies[name] = version;
+          }
+          pkg.scripts ||= {};
+          pkg.scripts['astro7:migration:guard'] = 'node scripts/astro7-migration-guard.mjs';
+          fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`);
+
+          fs.writeFileSync('astro.config.mjs', `import { defineConfig } from 'astro/config';
+          import mdx from '@astrojs/mdx';
+          import sitemap from '@astrojs/sitemap';
+          import react from '@astrojs/react';
+          import { unified } from '@astrojs/markdown-remark';
+
+          export default defineConfig({
+            site: 'https://gospod-bog.ru',
+            trailingSlash: 'always',
+            output: 'static',
+
+            // Phase 1 compatibility boundary: preserve Astro 6 inline whitespace
+            // while the repository's text, MDX and visual contracts validate Astro 7.
+            compressHTML: true,
+
+            // Phase 1 compatibility boundary: keep the proven unified pipeline.
+            // Sätteri adoption is intentionally deferred to a separate measured PR.
+            markdown: {
+              processor: unified(),
+            },
+
+            integrations: [
+              mdx(),
+              sitemap({
+                filter: (page) => !page.includes('/izbrannoe'), // personal/localStorage page — noindex, not for search engines
+              }),
+              react(),
+            ],
+          });
+          `);
+
+          fs.writeFileSync('scripts/astro7-migration-guard.mjs', `import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+
+          const expected = Object.freeze({
+            astro: '7.1.6',
+            '@astrojs/mdx': '7.0.5',
+            '@astrojs/react': '6.0.2',
+            '@astrojs/check': '0.9.10',
+            '@astrojs/rss': '4.0.19',
+            '@astrojs/sitemap': '3.7.3',
+            '@astrojs/markdown-remark': '7.2.2',
+          });
+
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+          const rootLock = lock.packages?.['']?.devDependencies ?? {};
+
+          for (const [name, version] of Object.entries(expected)) {
+            assert.equal(pkg.devDependencies?.[name], version, \
+              \\`package.json must pin \\${name}@\\${version}\\`);
+            assert.equal(rootLock[name], version, \
+              \\`package-lock root must pin \\${name}@\\${version}\\`);
+            assert.equal(lock.packages?.[\\`node_modules/\\${name}\\`]?.version, version, \
+              \\`package-lock must resolve \\${name}@\\${version}\\`);
+          }
+
+          const config = fs.readFileSync('astro.config.mjs', 'utf8');
+          assert.match(config, /compressHTML:\\s*true/, 'Astro 7 phase 1 must preserve Astro 6 whitespace semantics');
+          assert.match(config, /import\\s*\\{\\s*unified\\s*\\}\\s*from\\s*['\"]@astrojs\\/markdown-remark['\"]/, \
+            'Astro 7 phase 1 must import the unified processor');
+          assert.match(config, /processor:\\s*unified\\(\\)/, \
+            'Astro 7 phase 1 must keep the unified Markdown processor');
+
+          const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(Number);
+          assert.ok(nodeMajor > 22 || (nodeMajor === 22 && nodeMinor >= 12), \
+            \\`Astro 7 requires Node >=22.12; found \\${process.versions.node}\\`);
+
+          console.log('ASTRO 7 COORDINATED MIGRATION GUARD: PASS');
+          `);
+
+          fs.mkdirSync('docs/dependency-migrations', { recursive: true });
+          fs.writeFileSync('docs/dependency-migrations/ASTRO_7_PHASE_1.md', `# Astro 7 phase 1 migration
+
+This lane upgrades the framework as one compatible unit instead of merging the
+incomplete single-package Dependabot bump.
+
+## Pinned migration set
+
+- Astro 7.1.6
+- MDX integration 7.0.5
+- React integration 6.0.2
+- Astro Check 0.9.10
+- RSS 4.0.19
+- Sitemap 3.7.3
+- Unified Markdown processor 7.2.2
+
+## Safety boundaries
+
+1. \`compressHTML: true\` preserves Astro 6 inline-whitespace behavior.
+2. \`unified()\` preserves the proven Markdown/MDX pipeline.
+3. Sätteri and JSX whitespace are deferred to separate evidence-backed PRs.
+4. \`npm run astro7:migration:guard\` verifies package, lockfile and config drift.
+5. No baseline screenshot may be rewritten merely to make this migration green.
+
+## Required evidence before merge to main
+
+- clean \`npm ci\` on Node 22.12 / npm 10.9.0;
+- Astro check and production build;
+- strict content and MDX parity;
+- URL, Pagefind, JSON-LD and service-worker contracts;
+- production visual parity and browser smoke;
+- full repository publication gate.
+`);
+          NODE
+
+      - name: Generate deterministic lockfile without lifecycle scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Verify coordinated migration state
+        run: node scripts/astro7-migration-guard.mjs
+
+      - name: Commit generated migration state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json astro.config.mjs scripts/astro7-migration-guard.mjs docs/dependency-migrations/ASTRO_7_PHASE_1.md
+          git diff --cached --check
+          git commit -m "build(astro): coordinate Astro 7.1.6 migration"
+          git push origin HEAD:dependabot/npm_and_yarn/astro-7.1.4
