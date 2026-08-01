@@ -102,10 +102,7 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords }) {
 function renderFeed({ policyRegistry, manifest, productionRecords, siteUrl }) {
   const base = String(siteUrl || manifest?.project?.url || DEFAULT_SITE_URL).replace(/\/+$/, '');
   const entries = canonicalRssEntries({ policyRegistry, manifest, productionRecords });
-  const lastBuildDate = entries.reduce(
-    (latest, item) => Math.max(latest, item.published.getTime(), item.modified.getTime()),
-    Number.NEGATIVE_INFINITY
-  );
+  const lastBuildDate = parseDate(manifest?.generatedAt, 'search manifest generatedAt');
   const title = manifest?.project?.name || 'Господь Бог — Сила Моя';
   const lines = [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -118,7 +115,7 @@ function renderFeed({ policyRegistry, manifest, productionRecords, siteUrl }) {
     `    <link>${xmlEscape(base + '/')}</link>`,
     `    <description><![CDATA[${cdata(CHANNEL_DESCRIPTION)}]]></description>`,
     '    <language>ru</language>',
-    `    <lastBuildDate>${new Date(lastBuildDate).toUTCString()}</lastBuildDate>`,
+    `    <lastBuildDate>${lastBuildDate.toUTCString()}</lastBuildDate>`,
     '    <ttl>1440</ttl>',
     '    <image>',
     `      <url>${xmlEscape(base + '/images/og-preview-1200x630.webp')}</url>`,
