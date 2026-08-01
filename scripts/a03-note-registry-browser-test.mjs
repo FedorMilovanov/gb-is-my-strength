@@ -19,7 +19,7 @@ const registryFile = path.join(DIST, 'data', 'note-registry.json');
 assert.ok(fs.existsSync(registryFile), 'dist/data/note-registry.json missing');
 const registry = JSON.parse(fs.readFileSync(registryFile, 'utf8'));
 assert.equal(registry.interactionOwner, 'SiteUtils.makeTooltipController');
-const routes = Object.keys(registry.routes || {}).filter((route) => registry.routes[route]?.count > 0).sort();
+const routes = Object.keys(registry.routes || {}).filter((candidate) => registry.routes[candidate]?.count > 0).sort();
 assert.ok(routes.length > 0, 'NoteRegistry has no routes');
 const route = routes[0];
 const first = registry.routes[route].notes[0];
@@ -29,10 +29,10 @@ const surface = {
 };
 
 const results = [];
-const check = (contract, ok, detail = '') => {
-  const row = { engine: engineName, route, contract, ok: Boolean(ok), detail: String(detail || '') };
+const check = (contract, ok, detail = '', checkedRoute = route) => {
+  const row = { engine: engineName, route: checkedRoute, contract, ok: Boolean(ok), detail: String(detail || '') };
   results.push(row);
-  if (!row.ok) throw new Error(`${contract}: ${row.detail}`);
+  if (!row.ok) throw new Error(`${contract} [${checkedRoute}]: ${row.detail}`);
 };
 
 function geometryFacts(node) {
@@ -50,7 +50,22 @@ function geometryFacts(node) {
     parentDisplay: parentStyle?.display || '',
     parentVisibility: parentStyle?.visibility || '',
     count: node.querySelectorAll('li').length,
+    visibleItems: [...node.querySelectorAll('li')].filter((item) => {
+      const itemStyle = getComputedStyle(item);
+      const itemRect = item.getBoundingClientRect();
+      return itemStyle.display !== 'none' && itemStyle.visibility === 'visible' && itemRect.width > 1 && itemRect.height > 1;
+    }).length,
   };
+}
+
+function visibleGeometry(facts, expectedCount) {
+  return facts.display !== 'none' &&
+    facts.position === 'static' &&
+    facts.visibility === 'visible' &&
+    facts.width > 1 &&
+    facts.height > 1 &&
+    facts.count === expectedCount &&
+    facts.visibleItems === expectedCount;
 }
 
 const { server, base } = await serve();
@@ -109,31 +124,40 @@ try {
     const noJs = await browser.newContext({ viewport: DESKTOP, javaScriptEnabled: false, serviceWorkers: 'block' });
     await configureContext(noJs, base);
     const noJsPage = await noJs.newPage();
-    await noJsPage.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    const noJsFacts = await noJsPage.locator('[data-note-registry-endnotes]').evaluate(geometryFacts);
-    check(
-      'no-js:endnotes-visible',
-      noJsFacts.display !== 'none' && noJsFacts.position === 'static' && noJsFacts.visibility === 'visible' && noJsFacts.width > 1 && noJsFacts.height > 1,
-      JSON.stringify(noJsFacts),
-    );
+    for (const checkedRoute of routes) {
+      const noJsResponse = await noJsPage.goto(base + checkedRoute, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      check('no-js:document-status', noJsResponse?.status() === 200, noJsResponse?.status(), checkedRoute);
+      const noJsFacts = await noJsPage.locator('[data-note-registry-endnotes]').evaluate(geometryFacts);
+      check(
+        'no-js:endnotes-visible',
+        visibleGeometry(noJsFacts, registry.routes[checkedRoute].count),
+        JSON.stringify(noJsFacts),
+        checkedRoute,
+      );
+    }
     await noJs.close();
 
     const printContext = await browser.newContext({ viewport: DESKTOP, serviceWorkers: 'block' });
     await configureContext(printContext, base);
     const printPage = await printContext.newPage();
-    await printPage.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await printPage.emulateMedia({ media: 'print' });
-    const printFacts = await printPage.locator('[data-note-registry-endnotes]').evaluate(geometryFacts);
-    check(
-      'print:endnotes-visible',
-      printFacts.display !== 'none' && printFacts.position === 'static' && printFacts.visibility === 'visible' && printFacts.width > 1 && printFacts.height > 1,
-      JSON.stringify(printFacts),
-    );
     fs.mkdirSync(REPORTS, { recursive: true });
-    const pdfFile = path.join(REPORTS, 'a03-note-registry-print.pdf');
-    await printPage.pdf({ path: pdfFile, format: 'A4', printBackground: true });
-    const pdf = fs.readFileSync(pdfFile);
-    check('print:pdf-generated', pdf.subarray(0, 4).toString() === '%PDF' && pdf.length > 1000, `${pdf.length} bytes`);
+    for (const checkedRoute of routes) {
+      const printResponse = await printPage.goto(base + checkedRoute, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      check('print:document-status', printResponse?.status() === 200, printResponse?.status(), checkedRoute);
+      const printFacts = await printPage.locator('[data-note-registry-endnotes]').evaluate(geometryFacts);
+      check(
+        'print:endnotes-visible',
+        visibleGeometry(printFacts, registry.routes[checkedRoute].count),
+        JSON.stringify(printFacts),
+        checkedRoute,
+      );
+      const routeSlug = checkedRoute.replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9а-яё]+/gi, '-') || 'home';
+      const pdfFile = path.join(REPORTS, `a03-note-registry-print-${routeSlug}.pdf`);
+      await printPage.pdf({ path: pdfFile, format: 'A4', printBackground: true });
+      const pdf = fs.readFileSync(pdfFile);
+      check('print:pdf-generated', pdf.subarray(0, 4).toString() === '%PDF' && pdf.length > 1000, `${pdf.length} bytes`, checkedRoute);
+    }
     await printContext.close();
   }
 
@@ -142,7 +166,8 @@ try {
     schemaVersion: 1,
     contract: 'A03-note-registry-browser',
     engine: engineName,
-    route,
+    primaryRoute: route,
+    checkedRoutes: routes,
     registryRoutes: registry.routeCount,
     registryNotes: registry.noteCount,
     total: results.length,
@@ -154,13 +179,14 @@ try {
   fs.writeFileSync(path.join(REPORTS, `a03-note-registry-browser-${engineName}.md`), [
     `# A03 NoteRegistry — ${engineName}`,
     '',
-    `- Route: \`${route}\``,
+    `- Primary route: \`${route}\``,
+    `- Geometry routes: **${routes.length}/${routes.length}**`,
     `- Registry routes/notes: **${registry.routeCount}/${registry.noteCount}**`,
     `- Passed: **${report.passed}/${report.total}**`,
     `- Interaction owner: \`${registry.interactionOwner}\``,
     '',
   ].join('\n'));
-  console.log(`A03 NoteRegistry ${engineName}: ${report.passed}/${report.total}; route=${route}; notes=${registry.noteCount}`);
+  console.log(`A03 NoteRegistry ${engineName}: ${report.passed}/${report.total}; routes=${routes.length}; notes=${registry.noteCount}`);
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
