@@ -14,6 +14,7 @@ const CLOSED_TOOLTIP_POINTER_RULE = '.fn-marker:not(.is-open)>.tooltip{pointer-e
 const LEGACY_FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip{pointer-events:none}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto}';
 const PRIORITY_FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}';
 const FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip,body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}';
+const MOBILE_TOOLTIP_CLOSE_RULE = '@media(max-width:768px){body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{padding-right:3.25rem!important}.gb-floating-tip>.gb-tooltip-close{position:absolute;top:.55rem;right:.55rem;z-index:3;display:grid;place-items:center;width:2.35rem;height:2.35rem;margin:0;padding:0;border:1px solid currentColor;border-radius:999px;background:Canvas;color:CanvasText;font:700 1.45rem/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;opacity:.92}.gb-floating-tip>.gb-tooltip-close:focus-visible{outline:3px solid currentColor;outline-offset:2px}}';
 
 function normalizeTooltipStyles(source) {
   let changes = 0;
@@ -49,6 +50,11 @@ function normalizeTooltipStyles(source) {
     changes += 1;
   }
 
+  if (!output.includes(MOBILE_TOOLTIP_CLOSE_RULE)) {
+    output = `${output.trimEnd()}\n${MOBILE_TOOLTIP_CLOSE_RULE}\n`;
+    changes += 1;
+  }
+
   if (verticalMatches !== 1) {
     throw new Error(`Expected exactly one .fn-marker--dove vertical-align rule, found ${verticalMatches}.`);
   }
@@ -69,7 +75,7 @@ function main() {
   projectA03Sources();
   const source = fs.readFileSync(CSS_FILE, 'utf8');
   const result = normalizeTooltipStyles(source);
-  console.log(`Tooltip style normalizer: ${result.changes} change(s); vertical-align=${TARGET_VERTICAL_ALIGN}; hover=${TARGET_HOVER_TRANSFORM}; closed-tooltip pointer shield=on; open floating surface pass-through=specific.`);
+  console.log(`Tooltip style normalizer: ${result.changes} change(s); vertical-align=${TARGET_VERTICAL_ALIGN}; hover=${TARGET_HOVER_TRANSFORM}; closed-tooltip pointer shield=on; open floating surface pass-through=specific; mobile close control=on.`);
 
   if (WRITE && result.output !== source) {
     fs.writeFileSync(CSS_FILE, result.output);
@@ -86,5 +92,6 @@ else module.exports = {
   CLOSED_TOOLTIP_POINTER_RULE,
   LEGACY_FLOATING_TOOLTIP_POINTER_RULE,
   PRIORITY_FLOATING_TOOLTIP_POINTER_RULE,
-  FLOATING_TOOLTIP_POINTER_RULE
+  FLOATING_TOOLTIP_POINTER_RULE,
+  MOBILE_TOOLTIP_CLOSE_RULE
 };
