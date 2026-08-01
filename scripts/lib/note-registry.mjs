@@ -365,17 +365,23 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
   });
 
   if (errors.length) return { html, notes, errors, changed: false };
+  if (notes.length) {
+    const containsEveryMarker = (node) => markers.every((marker) => marker.start >= node.openEnd && marker.end <= node.endStart);
+    const byNarrowestRange = (left, right) => (left.endStart - left.openEnd) - (right.endStart - right.openEnd);
+    const searchable = parsed.all
+      .filter((node) => Object.prototype.hasOwnProperty.call(node.attrs, 'data-pagefind-body') && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
+    const fallback = parsed.all
+      .filter((node) => (node.tag === 'main' || node.tag === 'article') && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
+    const insertion = searchable?.endStart ?? fallback?.endStart ?? -1;
+    if (insertion < 0) errors.push(`${route}: notes exist but no common searchable, main or article insertion point`);
+    else patches.push({ start: insertion, end: insertion, value: `\n${buildEndnotes(route, notes)}\n` });
+  }
+  if (errors.length) return { html, notes, errors, changed: false };
   let projected = html;
   for (const patch of patches.sort((a, b) => b.start - a.start)) {
     projected = projected.slice(0, patch.start) + patch.value + projected.slice(patch.end);
-  }
-  if (notes.length) {
-    const block = buildEndnotes(route, notes);
-    const closeMain = projected.lastIndexOf('</main>');
-    const closeArticle = projected.lastIndexOf('</article>');
-    const insertion = closeMain >= 0 ? closeMain : closeArticle;
-    if (insertion < 0) errors.push(`${route}: notes exist but no </main> or </article> insertion point`);
-    else projected = projected.slice(0, insertion) + `\n${block}\n` + projected.slice(insertion);
   }
   return { html: projected, notes, errors, changed: projected !== inputHtml };
 }
