@@ -68,9 +68,24 @@ function jobSection(workflow, name, nextName = null) {
   const start = workflow.indexOf(marker);
   if (start < 0) return '';
   const offset = start + marker.length;
-  if (!nextName) return workflow.slice(offset);
-  const end = workflow.indexOf(`\n  ${nextName}:\n`, offset);
-  return end < 0 ? workflow.slice(offset) : workflow.slice(offset, end);
+  if (nextName) {
+    const end = workflow.indexOf(`\n  ${nextName}:\n`, offset);
+    return end < 0 ? workflow.slice(offset) : workflow.slice(offset, end);
+  }
+  const rest = workflow.slice(offset);
+  const next = rest.search(/\n  [A-Za-z0-9_-]+:\n/);
+  return next < 0 ? rest : rest.slice(0, next);
+}
+
+function withoutJob(workflow, name) {
+  const marker = `\n  ${name}:\n`;
+  const start = workflow.indexOf(marker);
+  if (start < 0) return workflow;
+  const offset = start + marker.length;
+  const rest = workflow.slice(offset);
+  const next = rest.search(/\n  [A-Za-z0-9_-]+:\n/);
+  const end = next < 0 ? workflow.length : offset + next;
+  return workflow.slice(0, start) + workflow.slice(end);
 }
 
 function loadWorkflowTexts() {
@@ -89,16 +104,100 @@ function loadWorkflowTexts() {
   );
 }
 
+function checkNoUndeclaredWrites(file, text) {
+  for (const [pattern, label] of FORBIDDEN_VALIDATION_WRITES) {
+    mustNot(file, text, pattern, `active workflow contains undeclared source mutation: ${label}`);
+  }
+  mustNot(file, text, /^\s{4,}contents:\s*write\s*$/m, 'job-level contents: write requires an explicit capability contract');
+}
+
+function checkAutofixCapability(file, text, jobName, requiredPatterns) {
+  const job = jobSection(text, jobName);
+  if (!job) {
+    issues.push(`${file}: explicit autofix job missing: ${jobName}`);
+    return;
+  }
+
+  must(file, job, /github\.event_name == 'pull_request'/, `${jobName} must be pull-request-only`);
+  must(file, job, /contains\(github\.event\.pull_request\.labels\.\*\.name,\s*'autofix'\)/, `${jobName} must require the autofix label`);
+  must(file, job, /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/, `${jobName} must reject fork write capability`);
+  must(file, job, /permissions:\s*\n\s*contents:\s*write/, `${jobName} must declare job-local contents: write`);
+  must(file, job, /ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.ref\s*\}\}/, `${jobName} must checkout the exact PR branch`);
+  must(file, job, /git diff --check/, `${jobName} must validate generated diff`);
+  must(file, job, /\bgit commit\b/, `${jobName} must publish only an intentional commit`);
+  must(file, job, /\bgit push origin "HEAD:\$\{HEAD_REF\}"/, `${jobName} must push only to the checked PR branch`);
+
+  for (const [pattern, message] of requiredPatterns) must(file, job, pattern, `${jobName} ${message}`);
+
+  const ordinary = withoutJob(text, jobName);
+  checkNoUndeclaredWrites(file, ordinary);
+}
+
+function checkTransactionalMetadataCapture(file, text) {
+  mustNot(file, text, /^\s{4,}contents:\s*write\s*$/m, 'transactional observation capture must not receive write credentials');
+  must(file, text, /editorial-metadata-registry\.js --write/, 'must retain explicit observation capture command');
+  must(file, text, /restore_registry\(\)/, 'temporary registry write must define a restore function');
+  must(file, text, /trap restore_registry EXIT/, 'temporary registry write must restore on failure');
+  must(file, text, /git diff --exit-code -- data\/editorial-metadata\.json/, 'temporary registry write must prove exact-file restoration');
+  mustNot(file, text, /\bgit\s+(?:commit|push)\b/, 'transactional observation capture must never publish source changes');
+
+  const scrubbed = text.replace(/editorial-metadata-registry\.js --write/g, 'editorial-metadata-registry.js --transactional-observation');
+  checkNoUndeclaredWrites(file, scrubbed);
+}
+
+function topLevelPermissions(workflow) {
+  const match = workflow.match(/^permissions:\s*\n((?:^[ \t]+.*(?:\n|$))*)/m);
+  return match ? match[1] : '';
+}
+
 function checkWorkflowBasics(workflowTexts) {
+  const explicitCapabilities = new Set([
+    '.github/workflows/editorial-metadata-v3.yml',
+    '.github/workflows/glossary-contract.yml',
+    '.github/workflows/search-manifest-policy.yml',
+  ]);
+
   for (const [rel, text] of Object.entries(workflowTexts)) {
     must(rel, text, /^name:\s*.+/m, 'missing workflow name');
     must(rel, text, /^on:\s*$/m, 'missing on: block');
-    must(rel, text, /^permissions:\s*$/m, 'missing top-level permissions block');
-    mustNot(rel, text, /^\s*contents:\s*write\s*$/m, 'ordinary workflows must not receive contents: write');
-    for (const [pattern, label] of FORBIDDEN_VALIDATION_WRITES) {
-      mustNot(rel, text, pattern, `active workflow contains forbidden source mutation: ${label}`);
+    const permissions = topLevelPermissions(text);
+    if (!permissions) issues.push(`${rel}: missing top-level permissions block`);
+    else {
+      must(rel, permissions, /^\s{2}contents:\s*read\s*$/m, 'top-level permissions must include contents: read');
+      mustNot(rel, permissions, /^\s{2}contents:\s*write\s*$/m, 'top-level contents: write is forbidden');
     }
+    if (!explicitCapabilities.has(rel)) checkNoUndeclaredWrites(rel, text);
   }
+
+  checkTransactionalMetadataCapture(
+    '.github/workflows/editorial-metadata-v3.yml',
+    workflowTexts['.github/workflows/editorial-metadata-v3.yml'] || '',
+  );
+
+  checkAutofixCapability(
+    '.github/workflows/glossary-contract.yml',
+    workflowTexts['.github/workflows/glossary-contract.yml'] || '',
+    'placement-autofix',
+    [
+      [/glossary-placement-normalizer\.js --write/, 'must own glossary placement generation'],
+      [/tooltip-trigger-normalizer\.js --write/, 'must own tooltip trigger generation'],
+      [/tooltip-style-normalizer\.js --write/, 'must own tooltip style generation'],
+      [/cache-bust\.js --write/, 'must explicitly regenerate asset revisions'],
+      [/glossary-contract-audit\.js[\s\S]*cache-bust\.js/, 'must validate generated source before commit'],
+    ],
+  );
+
+  checkAutofixCapability(
+    '.github/workflows/search-manifest-policy.yml',
+    workflowTexts['.github/workflows/search-manifest-policy.yml'] || '',
+    'search-manifest-autofix',
+    [
+      [/search-manifest-policy-normalizer\.js[\s\S]*--write/, 'must own search membership generation'],
+      [/rss-feed-normalizer\.js --write/, 'must own deterministic RSS generation'],
+      [/rss-feed-normalizer\.js --check[\s\S]*search-index-policy-inventory\.js/, 'must validate generated search policy before commit'],
+      [/git diff --name-only[\s\S]*unexpected-search-autofix-paths/, 'must fail closed on undeclared output paths'],
+    ],
+  );
 }
 
 function checkPackageScripts(scripts) {
@@ -287,6 +386,7 @@ if (issues.length) {
 }
 console.log('✅ Workflow Policy v2 passed');
 console.log('✅ Validation is source-read-only and least-privilege');
+console.log('✅ Explicit autofix and transactional write capabilities are isolated and fail-closed');
 console.log('✅ Production route coverage is registry-driven');
 console.log('✅ Candidate build, immutable promotion and live witnesses remain separated');
 console.log('✅ Actionlint and SYSTEM gate notification coverage remain blocking');
