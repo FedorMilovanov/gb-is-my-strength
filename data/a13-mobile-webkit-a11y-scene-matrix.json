@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "authority_id": "A13-MOBILE-WEBKIT-A11Y-2026-08-01",
+  "status": "ACTIVE_CONTRACT",
+  "production_claim": false,
+  "browsers": ["chromium", "webkit"],
+  "routes": [
+    { "id": "home", "path": "/", "surface": "landing" },
+    { "id": "article", "path": "/articles/20-antisovetov-pastoru/", "surface": "article" },
+    { "id": "series", "path": "/nagornaya/chast-3/", "surface": "series" },
+    { "id": "map", "path": "/karty/avraam/", "surface": "map-stage", "owner_selector": "#stage" }
+  ],
+  "viewport_contract": {
+    "narrow_widths": [320, 360, 390],
+    "breakpoint_widths": [1199, 1200, 1201],
+    "height": 900,
+    "max_root_overflow_px": 2
+  },
+  "scenes": [
+    {
+      "id": "responsive-root-overflow",
+      "browsers": ["chromium", "webkit"],
+      "routes": ["home", "article", "series", "map"],
+      "widths": [320, 360, 390, 1199, 1200, 1201],
+      "assertions": ["document-loads", "no-root-horizontal-overflow", "route-owner-visible"]
+    },
+    {
+      "id": "zoom-200-layout-equivalent",
+      "browsers": ["chromium", "webkit"],
+      "routes": ["home", "article", "series"],
+      "widths": [320],
+      "physical_width": 640,
+      "scale": 2,
+      "assertions": ["no-root-horizontal-overflow", "main-remains-visible", "focusable-controls-remain-reachable"]
+    },
+    {
+      "id": "home-mobile-modal-lifecycle",
+      "browsers": ["chromium", "webkit"],
+      "routes": ["home"],
+      "widths": [390],
+      "assertions": ["keyboard-open", "focus-enters-dialog", "background-inert", "escape-close", "focus-return", "scroll-lock-restored"]
+    },
+    {
+      "id": "touch-scroll-webkit",
+      "browsers": ["webkit"],
+      "routes": ["home", "article", "series", "map"],
+      "widths": [320, 390],
+      "assertions": ["touch-context", "vertical-scroll-progress", "no-root-horizontal-overflow"]
+    },
+    {
+      "id": "reduced-motion",
+      "browsers": ["chromium", "webkit"],
+      "routes": ["home", "article", "series", "map"],
+      "widths": [390],
+      "assertions": ["reduced-motion-media-active", "page-remains-operable", "no-root-horizontal-overflow"]
+    },
+    {
+      "id": "forced-colors-focus",
+      "browsers": ["chromium"],
+      "routes": ["home", "article", "series", "map"],
+      "widths": [390],
+      "assertions": ["forced-colors-media-active", "keyboard-focus-visible", "focused-control-has-visible-geometry", "no-root-horizontal-overflow"]
+    }
+  ],
+  "existing_evidence": {
+    "runtime_interactive_run": 30705346893,
+    "runtime_attempt_2_artifact": 8820338248,
+    "home_browser_artifact": 8820197480,
+    "visual_parity_run": 30705346892,
+    "visual_parity_artifact": 8820257280,
+    "overlay_runtime_run": 30705346909,
+    "notes": "Existing exact-head evidence proves 43-page runtime coverage, Home Chromium/WebKit lifecycle, 390/1280 visual scenes, and Chromium/Firefox/WebKit overlay focus, Escape, restore, landscape and reduced-motion behavior. This matrix adds the missing boundary, zoom-equivalent, forced-colors and touch scenes without changing product runtime."
+  }
+}
