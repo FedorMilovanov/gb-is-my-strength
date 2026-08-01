@@ -5,6 +5,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const MapEngine = require('../karty/_engine/map-engine.js');
+const { auditGeometry } = require('./atlas-label-audit.js');
 
 const root = path.join(__dirname, '..');
 const readRoute = (slug) => JSON.parse(fs.readFileSync(path.join(root, 'karty', slug, 'route.json'), 'utf8'));
@@ -81,4 +82,21 @@ assert(!source.includes('ARCHAEOLOGY_REFERENCES'), 'hardcoded archaeology corpus
 assert(!source.includes('_classifySource'), 'keyword-based source classification must not return');
 assert(!source.includes('_renderArchaeologyFooter'), 'legacy archaeology footer must not return');
 
-console.log('✅ map layer membership/theme/authored-route/projection regression guard passed');
+const geometryFixture = {
+  meta: { canvas: { w: 200, h: 120 } },
+  places: [
+    { id: 'same-a', name: 'А', x: 80, y: 60, side: 'r' },
+    { id: 'same-b', name: 'Б', x: 80, y: 60, side: 'l' },
+    { id: 'clipped', name: 'Длинная подпись', x: 2, y: 8, side: 'l' },
+    { id: 'safe-edge', name: 'Край', x: 185, y: 100, side: 'l' },
+  ],
+};
+const geometryReport = auditGeometry(geometryFixture, 'map-contract');
+assert(
+  geometryReport.markerPairs.some((pair) => pair.a === 'same-a' && pair.b === 'same-b' && pair.distance === 0),
+  'geometry contract must detect exact marker overlap'
+);
+assert(geometryReport.clippedLabels.includes('clipped'), 'geometry contract must detect labels outside the canvas');
+assert(geometryReport.safeAreaHits.includes('safe-edge'), 'geometry contract must detect edge safe-area intrusion');
+
+console.log('✅ map layer membership/theme/authored-route/projection/geometry regression guard passed');
