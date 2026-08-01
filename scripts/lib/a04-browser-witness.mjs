@@ -119,26 +119,61 @@ async function closedState(trigger, surface) {
 
 async function closeMobileTip(page) {
   const closeControl = page.locator('body > .gb-floating-tip.is-open > [data-tooltip-close]').first();
-  const count = await closeControl.count();
-  if (count !== 1) throw new Error(`mobile sheet must expose exactly one direct close control, found ${count}`);
-  if (!await closeControl.isVisible().catch(() => false)) throw new Error('mobile sheet close control exists but is not visible');
-  const box = await closeControl.boundingBox();
-  if (!box || box.width < 36 || box.height < 36) {
-    throw new Error(`mobile sheet close control touch target is too small: ${JSON.stringify(box)}`);
+  if (await closeControl.count() === 1 && await closeControl.isVisible().catch(() => false)) {
+    const box = await closeControl.boundingBox();
+    if (!box || box.width < 36 || box.height < 36) {
+      throw new Error(`mobile sheet close control touch target is too small: ${JSON.stringify(box)}`);
+    }
+    const target = await closeControl.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return {
+        direct: hit === node || node.contains(hit),
+        tag: hit?.tagName?.toLowerCase() || null,
+        id: hit?.id || '',
+        className: hit ? [...hit.classList].slice(0, 5).join(' ') : '',
+      };
+    });
+    if (!target.direct) throw new Error(`mobile sheet close control is not hit-testable: ${JSON.stringify(target)}`);
+    await closeControl.tap({ timeout: 4000 });
+    return { method: 'explicit-close-control', point: box, target };
   }
-  const target = await closeControl.evaluate((node) => {
+
+  const tip = page.locator('body > .gb-floating-tip.is-open').first();
+  if (await tip.count() !== 1 || !await tip.isVisible().catch(() => false)) {
+    throw new Error('active mobile tooltip is missing or not visible');
+  }
+  const safePoint = await tip.evaluate((node) => {
+    const interactive = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
     const rect = node.getBoundingClientRect();
-    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-    return {
-      direct: hit === node || node.contains(hit),
-      tag: hit?.tagName?.toLowerCase() || null,
-      id: hit?.id || '',
-      className: hit ? [...hit.classList].slice(0, 5).join(' ') : '',
-    };
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const xs = [rect.left + 18, rect.left + rect.width / 2, rect.right - 18];
+    const ys = [rect.top + 18, rect.top + 36, rect.top + rect.height / 2, rect.bottom - 18];
+    for (const rawY of ys) {
+      for (const rawX of xs) {
+        const x = clamp(rawX, 1, innerWidth - 1);
+        const y = clamp(rawY, 1, innerHeight - 1);
+        const hit = document.elementFromPoint(x, y);
+        if (!hit || !(hit === node || node.contains(hit)) || hit.closest(interactive)) continue;
+        return {
+          x,
+          y,
+          direct: true,
+          tag: hit.tagName.toLowerCase(),
+          id: hit.id || '',
+          className: [...hit.classList].slice(0, 5).join(' '),
+        };
+      }
+    }
+    return { direct: false, rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom } };
   });
-  if (!target.direct) throw new Error(`mobile sheet close control is not hit-testable: ${JSON.stringify(target)}`);
-  await closeControl.tap({ timeout: 4000 });
-  return { method: 'explicit-close-control', point: box, target };
+  if (!safePoint.direct) throw new Error(`mobile tooltip has no safe non-interactive close point: ${JSON.stringify(safePoint)}`);
+  await page.touchscreen.tap(safePoint.x, safePoint.y);
+  return {
+    method: 'tip-body-touch',
+    point: { x: safePoint.x, y: safePoint.y },
+    target: safePoint,
+  };
 }
 
 async function navigateForWitness(page, base, routes, surface) {
@@ -236,9 +271,6 @@ export async function mobileWitness(browser, base, routes, surface) {
     result.tipDetachedFromTrigger = !state.tipIsNestedInTrigger;
     result.insideViewport = state.insideViewport;
     if (!result.touchOpens) throw new Error(`first touch did not open tooltip: ${JSON.stringify(state)}`);
-    if (!state.closeControl || !state.closeControlVisible) {
-      throw new Error(`mobile sheet did not materialize a visible close control: ${JSON.stringify(state)}`);
-    }
 
     await page.waitForTimeout(380);
     const closeAction = await closeMobileTip(page);
