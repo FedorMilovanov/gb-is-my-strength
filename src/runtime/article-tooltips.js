@@ -1,4 +1,4 @@
-const VERSION = 11;
+const VERSION = 12;
 const OWNER = 'site-utils-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
@@ -474,11 +474,11 @@ export function installArticleTooltips() {
     if (containsOwnedSurface(active, event.target)) cancelClose();
     else scheduleClose();
   }, true);
-  document.addEventListener('touchstart', (event) => {
+  window.addEventListener('touchstart', (event) => {
     touchStart = touchPoint(event, 'touches');
     touchMoved = false;
   }, { capture: true, passive: true });
-  document.addEventListener('touchmove', (event) => {
+  window.addEventListener('touchmove', (event) => {
     const point = touchPoint(event, 'touches');
     if (!touchStart || !point) {
       touchMoved = true;
@@ -488,7 +488,7 @@ export function installArticleTooltips() {
     const dy = point.y - touchStart.y;
     if (dx * dx + dy * dy > TOUCH_SLOP_SQUARED) touchMoved = true;
   }, { capture: true, passive: true });
-  document.addEventListener('touchend', (event) => {
+  window.addEventListener('touchend', (event) => {
     const record = active;
     const moved = touchMoved;
     const target = touchTarget(event);
