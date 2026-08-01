@@ -50,8 +50,10 @@ jobs:
       - name: Validate editorial workflow transaction contract
         run: node scripts/editorial-metadata-workflow-contract-test.js
 
-      - name: Validate registry refresh preserves editorial decisions
-        run: node scripts/editorial-metadata-registry-preservation-test.js
+      - name: Validate registry preservation and approval gate
+        run: |
+          node scripts/editorial-metadata-registry-preservation-test.js
+          node scripts/editorial-metadata-v3-approval-gate-test.js
 
       - name: Validate RSS technical clock contract
         run: node scripts/rss-feed-normalizer-test.js
