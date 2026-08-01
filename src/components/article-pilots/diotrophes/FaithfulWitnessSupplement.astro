@@ -1,0 +1,156 @@
+---
+import manifest from '../../../../data/diotrophes-wave11-faithful-witness-manifest.json';
+import caseData from '../../../../data/diotrophes-wave11-faithful-witness-cases.json';
+import responseData from '../../../../data/diotrophes-wave11-faithful-witness-responses.json';
+import sourceData from '../../../../data/diotrophes-wave11-faithful-witness-sources.json';
+
+const content = manifest;
+const pathways = caseData.casePathways;
+const responses = responseData.faithfulResponses;
+const readerSources = sourceData.readerSources;
+---
+
+<section
+  class="article-body faithful-witness-supplement"
+  id="faithful-witness-under-pressure"
+  data-wave11-faithful-witness="true"
+  data-faithful-cases={content.counts.casePathways}
+  data-faithful-responses={content.counts.faithfulResponses}
+  data-authority-sources={content.counts.totalAuthoritySources}
+  data-reader-links={content.counts.totalReaderLinks}
+>
+  <header class="article-header">
+    <p class="anti-kicker">Wave 11 · верные люди в трудной церковной ситуации</p>
+    <h2>Как сохраняли верность Богу, не превращая послушание лидеру в молчание</h2>
+    <p>
+      Предыдущая часть показала механизмы власти. Здесь центр переносится на тех, кто жил
+      внутри кризиса: сестёр и братьев, рядовых членов, сотрудников, пасторов-собратьев,
+      старейшин, попечителей и защитников пострадавших. Они часто не хотели разрушать церковь,
+      не отрицали добра, полученного через служение, и не начинали с публичного обвинения.
+      Но постепенно обнаруживали, что любовь к общине требует не только терпения, а правды,
+      защиты слабого и реальной подотчётности.
+    </p>
+  </header>
+
+  <div class="warn-box">
+    <strong>Главная граница.</strong>
+    Несогласие не равно злоупотреблению, сообщение не равно доказанному факту, а сильный
+    характер не равен диотрефству. Но церковная лояльность не требует скрывать преступление,
+    возвращать уязвимого человека один на один к контролирующему лидеру или считать всякую
+    независимую проверку мятежом.
+  </div>
+
+  <aside class="summary-card" aria-labelledby="faithful-witness-summary">
+    <h3 id="faithful-witness-summary">Что повторялось в зрелых путях</h3>
+    <ul>
+      <li>люди называли конкретные решения и действия, а не ставили психологический диагноз;</li>
+      <li>там, где это было безопасно, пытались говорить внутри и привлекали нескольких служителей;</li>
+      <li>сохраняли письма, даты и решения, чтобы отличить память от документа;</li>
+      <li>искали независимое подтверждение, а не собирали партию слухов;</li>
+      <li>обращались к старейшинам, попечителям, сети или деноминации, способным реально ограничить лидера;</li>
+      <li>при преступлении и риске для уязвимых не заменяли гражданскую власть церковной беседой;</li>
+      <li>после кризиса добивались не только смены имени, но исправления устройства власти.</li>
+    </ul>
+  </aside>
+
+  <h2 id="fifteen-faithful-pathways">Пятнадцать реальных путей</h2>
+  <p>
+    Ни один путь не объявляется универсальной схемой. В одних случаях был безопасен личный
+    разговор; в других требование «сначала иди к пастору» вернуло бы уязвимого человека под
+    тот же контроль. Одни участники годами оставались внутри и пытались исправить процесс,
+    другие ушли ради защиты семьи, но продолжили давать свидетельства независимой проверке.
+    У каждого кейса ниже указаны не только действия, но и граница допустимого вывода.
+  </p>
+
+  <div class="case-grid faithful-pathway-grid">
+    {pathways.map((pathway) => (
+      <section class="note-box evidence-card faithful-pathway" id={`faithful-${pathway.id}`} data-faithful-case={pathway.id}>
+        <h3>{pathway.name}</h3>
+        <p><strong>Кто действовал:</strong> {pathway.actors}.</p>
+        <p><strong>Напряжение верности:</strong> {pathway.loyaltyTension}</p>
+        <ol class="action-chain">
+          {pathway.steps.map((step) => <li>{step}</li>)}
+        </ol>
+        <p><strong>Урок:</strong> {pathway.lesson}</p>
+        <p class="muted"><strong>Граница:</strong> {pathway.boundary}</p>
+        <p class="source-ref">Research records: {pathway.sourceIds.join(', ')}</p>
+      </section>
+    ))}
+  </div>
+
+  <aside class="note-box positive-comparator" id="positive-board-comparator">
+    <h2>Контрпример: когда совет действительно действует</h2>
+    <p>
+      История The Journey и Darrin Patrick важна не как ещё один скандал, а как проверка всей
+      рамки. Старейшины не отрицали даров основателя и не ограничились одним резким эпизодом.
+      Они описали повторные вмешательства, привлекали пасторов-собратьев, единогласно
+      отстранили лидера, организовали заботу об общине и позднее проводили встречи, где
+      слушали членов. Это показывает, что сильная церковная власть и верность основателю не
+      исключают реального ограничения: совет может действовать без публичной демонизации и
+      без превращения всей церкви в собственность одного человека.
+    </p>
+    <p class="muted">
+      Последующая трагическая смерть Darrin Patrick не используется для объяснения её причин,
+      посмертного диагноза или отмены решения старейшин 2016 года.
+    </p>
+  </aside>
+
+  <h2 id="twenty-faithful-responses">Двадцать верных ответов</h2>
+  <p>
+    Эти ответы соотносятся с темами «20 антисоветов пастору»: не дают нового механического
+    закона, а показывают, чем зрелое действие отличается и от слепого молчания, и от
+    мгновенного публичного приговора.
+  </p>
+
+  <div class="case-grid faithful-response-grid">
+    {responses.map((item, index) => (
+      <section class="note-box faithful-response" id={`faithful-response-${String(index + 1).padStart(2, '0')}`} data-faithful-response={item.id}>
+        <h3>{index + 1}. {item.title}</h3>
+        <p><strong>Сложность:</strong> {item.tension}</p>
+        <p><strong>Верный ответ:</strong> {item.response}</p>
+        <p class="muted"><strong>Где этого недостаточно:</strong> {item.limit}</p>
+        <p class="source-ref">Кейсы: {item.caseIds.join(', ')} · Писание: {item.scriptures.join('; ')}</p>
+      </section>
+    ))}
+  </div>
+
+  <section class="note-box decision-ladder" id="faithful-decision-ladder">
+    <h2>Практическая лестница различения</h2>
+    <ol>
+      <li><strong>Что именно произошло?</strong> Отделить наблюдаемое действие от диагноза характера.</li>
+      <li><strong>Есть ли непосредственный риск?</strong> Защита ребёнка, уязвимого взрослого и сообщение о преступлении идут раньше внутреннего удобства.</li>
+      <li><strong>Безопасен ли прямой разговор?</strong> При обычном личном конфликте — да; при принуждении, страхе или захваченной власти — не обязательно.</li>
+      <li><strong>Кто ещё обладает независимым знанием?</strong> Не собирать слухи, а искать документы, очевидцев и совпадающие самостоятельные сообщения.</li>
+      <li><strong>Кто реально может ограничить лидера?</strong> Проверить полномочия старейшин, попечителей, сети или деноминации.</li>
+      <li><strong>Нужна ли независимая проверка?</strong> Зафиксировать её мандат, доступ к документам, отвод конфликтующих лиц и способ публикации вывода.</li>
+      <li><strong>Нужно ли выйти наружу?</strong> Гражданская власть обязательна при преступлении; публичность может стать поздним шагом при сохраняющемся риске или захваченной процедуре.</li>
+      <li><strong>Что изменилось после признания?</strong> Проверять не только слова, но доступ к власти, защиту уязвимых, возмещение, надзор и пригодность к должности.</li>
+    </ol>
+  </section>
+
+  <section class="reading-list-section" id="faithful-witness-sources" data-new-reader-links={content.counts.newReaderLinks}>
+    <h2>Новые источники Wave 11</h2>
+    <p>
+      Эти 33 ссылки добавляются к прежним 40 читательским ссылкам статьи. A1/A2/A3 дают
+      государственные, независимые или институциональные документы; класс B1 используется только
+      для хронологии, воспроизведения письма или позиции участника рядом с источниками класса A.
+    </p>
+    <ol>
+      {readerSources.map((source) => (
+        <li>
+          <a href={source.href} rel="noopener noreferrer">{source.label}</a>
+          <span class="muted"> — {source.class}</span>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <div class="warn-box">
+    <strong>Что эта часть не разрешает.</strong>
+    Она не разрешает объявлять всякого строгого пастора опасным, верить любому слуху,
+    нарушать частную жизнь пострадавшего, игнорировать право ответа или использовать
+    публичность как месть. Она также не разрешает совету требовать от жертвы приватной встречи
+    с предполагаемым виновником, подменять полицию церковной беседой или объявлять лидера
+    восстановленным только потому, что он снова собрал аудиторию.
+  </div>
+</section>
