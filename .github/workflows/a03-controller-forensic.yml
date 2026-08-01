@@ -1,9 +1,9 @@
 name: A03 Controller Forensic
 
 on:
-  push:
+  pull_request:
     branches:
-      - audit/a03-controller-ownership-20260801
+      - main
     paths:
       - .github/workflows/a03-controller-forensic.yml
 
@@ -12,10 +12,12 @@ permissions:
 
 jobs:
   enumerate:
+    if: github.head_ref == 'audit/a03-controller-ownership-20260801'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: true
           fetch-depth: 0
       - name: Enumerate controller registrations
@@ -25,17 +27,12 @@ jobs:
           mkdir -p reports
           python3 - <<'PY'
           from pathlib import Path
-          import json, re
+          import json, re, subprocess
 
           root = Path('.')
           allowed = {'.js', '.mjs', '.cjs', '.astro', '.html'}
           excluded = {'.git', 'node_modules', 'dist', 'reports'}
           rows = []
-          patterns = [
-              re.compile(r'makeTooltipController\s*\('),
-              re.compile(r'_tooltipControllers'),
-              re.compile(r'mobileSheet'),
-          ]
           for path in sorted(root.rglob('*')):
               if not path.is_file() or path.suffix not in allowed:
                   continue
@@ -45,22 +42,23 @@ jobs:
                   text = path.read_text(encoding='utf-8')
               except Exception:
                   continue
-              if not any(p.search(text) for p in patterns):
-                  continue
               for match in re.finditer(r'makeTooltipController\s*\(', text):
-                  start = max(0, match.start() - 260)
-                  end = min(len(text), match.start() + 700)
-                  snippet = text[start:end].replace('\n', ' ')
-                  rows.append({'path': str(path), 'offset': match.start(), 'snippet': snippet})
+                  start = max(0, match.start() - 320)
+                  end = min(len(text), match.start() + 900)
+                  rows.append({
+                      'path': str(path),
+                      'offset': match.start(),
+                      'snippet': text[start:end].replace('\n', ' '),
+                  })
           data = {
-              'head': __import__('subprocess').check_output(['git','rev-parse','HEAD'], text=True).strip(),
+              'head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
               'registrations': rows,
               'count': len(rows),
           }
           Path('reports/a03-controller-ownership.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
           md = ['# A03 tooltip controller ownership', '', f"Head: `{data['head']}`", f"Registrations: **{len(rows)}**", '']
-          for i, row in enumerate(rows, 1):
-              md += [f"## {i}. `{row['path']}` @ {row['offset']}", '', '```text', row['snippet'], '```', '']
+          for index, row in enumerate(rows, 1):
+              md += [f"## {index}. `{row['path']}` @ {row['offset']}", '', '```text', row['snippet'], '```', '']
           Path('reports/a03-controller-ownership.md').write_text('\n'.join(md), encoding='utf-8')
           PY
       - name: Commit report
