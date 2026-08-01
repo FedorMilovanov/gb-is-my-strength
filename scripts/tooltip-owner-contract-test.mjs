@@ -30,6 +30,8 @@ assert.match(nativeTooltips, /controller\.activeEl = anchor/, 'native active anc
 assert.match(nativeTooltips, /controller\.activeTip = tip/, 'native active tooltip must be reflected in the public controller record');
 assert.match(nativeTooltips, /return anchor\.matches\(candidate\.anchorSel\)/, 'controller lookup must allow the canonical owner to materialize a lazy scripture tip');
 assert.match(nativeTooltips, /window\.addEventListener\('keydown',[\s\S]*event\.key === 'Escape'[\s\S]*closeController\(controller, 'escape'\)[\s\S]*}, true\);/, 'the active public controller must close directly from window-capture Escape');
+assert.equal(count(nativeTooltips, /closeOnEscape: false/g), 1, 'OverlayRuntime must not compete with the native tooltip controller for Escape');
+assert.equal(count(nativeTooltips, /closeOnEscape: true/g), 0, 'native tooltip overlays must not register a second Escape owner');
 assert.doesNotMatch(nativeTooltips, /document\.addEventListener\('keydown',[\s\S]*closeController\(controller, 'escape'\)/, 'native Escape ownership must not remain below the document propagation boundary');
 assert.doesNotMatch(nativeTooltips, /controller\.close\(false, 'escape'\)/, 'Escape must not pass through a wrapper whose force semantics vary by controller implementation');
 assert.match(nativeTooltips, /onRequestClose:[\s\S]*closeController\(controller, requestedReason, true\);[\s\S]*return true/, 'OverlayRuntime Escape requests must synchronously finalize native tooltip state before the record is closed');

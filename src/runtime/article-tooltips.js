@@ -387,7 +387,7 @@ function openController(controller, anchor, reason = 'open') {
       runtime.open(OWNER, {
         element: tip,
         opener: anchor,
-        closeOnEscape: true,
+        closeOnEscape: false,
         trapFocus: false,
         restoreFocus: true,
         lockScroll: true,
