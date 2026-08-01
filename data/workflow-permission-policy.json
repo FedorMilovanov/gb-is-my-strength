@@ -120,14 +120,14 @@
           "permissions": {
             "contents": "write"
           },
-          "purpose": "Apply deterministic registered headline, tooltip touch, and asset-revision normalization to an explicitly labelled same-repository pull request",
+          "purpose": "Normalize registered article document titles to their canonical social and structured-data headline on an explicitly labelled same-repository pull request",
           "allowedEvents": [
             "pull_request"
           ],
           "repositoryBoundary": "same-repository pull request only",
           "branchBoundary": "exact pull-request head branch carrying the autofix label",
           "mutationTargets": [
-            "registered article PageHead title text, shared tooltip runtime, and generated asset revisions on the pull-request source branch"
+            "registered article PageHead title text on the pull-request source branch"
           ],
           "requiresConcurrency": true,
           "requiredMarkers": [
