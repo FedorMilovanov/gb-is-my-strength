@@ -393,7 +393,7 @@ function openController(controller, anchor, reason = 'open') {
         lockScroll: true,
         onRequestClose: (closeReason) => {
           const requestedReason = closeReason || 'request';
-          window.queueMicrotask(() => closeController(controller, requestedReason, true));
+          closeController(controller, requestedReason, true);
           return true;
         },
         reason,

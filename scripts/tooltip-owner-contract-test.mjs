@@ -30,7 +30,7 @@ assert.match(nativeTooltips, /controller\.activeEl = anchor/, 'native active anc
 assert.match(nativeTooltips, /controller\.activeTip = tip/, 'native active tooltip must be reflected in the public controller record');
 assert.match(nativeTooltips, /return anchor\.matches\(candidate\.anchorSel\)/, 'controller lookup must allow the canonical owner to materialize a lazy scripture tip');
 assert.match(nativeTooltips, /event\.key === 'Escape' && controller/, 'the same active public controller must provide the Escape fallback for desktop and mobile sheets');
-assert.match(nativeTooltips, /onRequestClose:[\s\S]*queueMicrotask\(\(\) => closeController\(controller, requestedReason, true\)\)[\s\S]*return true/, 'OverlayRuntime Escape requests must close their record before native tooltip state is finalized');
+assert.match(nativeTooltips, /onRequestClose:[\s\S]*closeController\(controller, requestedReason, true\);[\s\S]*return true/, 'OverlayRuntime Escape requests must synchronously finalize native tooltip state before the record is closed');
 assert.doesNotMatch(nativeTooltips, /onRequestClose:[\s\S]*closeController\(controller, closeReason \|\| 'request'\)[\s\S]*return false/, 'OverlayRuntime requests must not recursively close the same overlay record');
 assert.doesNotMatch(nativeTooltips, /close\.addEventListener\(/, 'generated close controls must not add a second local event owner');
 assert.match(nativeTooltips, /const TOUCH_SLOP_SQUARED = 144/, 'native mobile touch ownership must preserve the proven 12px slop');
