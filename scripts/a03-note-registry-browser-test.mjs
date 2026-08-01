@@ -155,6 +155,8 @@ try {
       const routeSlug = checkedRoute.replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9а-яё]+/gi, '-') || 'home';
       const pdfFile = path.join(REPORTS, `a03-note-registry-print-${routeSlug}.pdf`);
       await printPage.pdf({ path: pdfFile, format: 'A4', printBackground: true });
+      const canonicalPdfFile = path.join(REPORTS, 'a03-note-registry-print.pdf');
+      if (!fs.existsSync(canonicalPdfFile)) fs.copyFileSync(pdfFile, canonicalPdfFile);
       const pdf = fs.readFileSync(pdfFile);
       check('print:pdf-generated', pdf.subarray(0, 4).toString() === '%PDF' && pdf.length > 1000, `${pdf.length} bytes`, checkedRoute);
     }
