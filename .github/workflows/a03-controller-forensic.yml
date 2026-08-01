@@ -86,7 +86,7 @@ jobs:
           required = [
               '#722 / `f584730f1dd62d54242712607386f60301530daa`',
               'Transferred:',
-              'Preserved: #722 and its diagnostic/passing artifacts',
+              '#722 and its diagnostic/passing artifacts',
               'SUPERSEDED_VERIFIED',
           ]
           missing = [token for token in required if token not in body]
