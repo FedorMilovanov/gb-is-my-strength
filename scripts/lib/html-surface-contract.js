@@ -27,11 +27,15 @@ function stripNonMarkupBlocks(html) {
 
 function getAttr(tag, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return tag.match(new RegExp(`\\b${escaped}\\s*=\\s*(["'])(.*?)\\1`, 'i'))?.[2] ?? null;
+  return tag.match(new RegExp(`(?:^|\\s)${escaped}\\s*=\\s*(["'])(.*?)\\1`, 'i'))?.[2] ?? null;
 }
 
 function tags(html, tagName) {
   return [...String(html || '').matchAll(new RegExp(`<${tagName}\\b[^>]*>`, 'gi'))].map((match) => match[0]);
+}
+
+function openingTags(html) {
+  return [...String(html || '').matchAll(/<[a-zA-Z][\w:-]*(?:\s[^<>]*?)?>/g)].map((match) => match[0]);
 }
 
 function metaContent(html, key, attr = 'property') {
@@ -208,7 +212,7 @@ function auditHtmlDocument({ html, route, entry, root, knownRoutes = new Set() }
   }
 
   const noSvg = stripSvg(markup);
-  const ids = [...noSvg.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)].map((match) => match[2]).filter(Boolean);
+  const ids = openingTags(noSvg).map((tag) => getAttr(tag, 'id')).filter(Boolean);
   const seen = new Set();
   for (const id of ids) {
     if (seen.has(id)) issue('error', 'duplicate-id', id);

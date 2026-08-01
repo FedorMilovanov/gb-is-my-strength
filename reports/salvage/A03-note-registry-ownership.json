@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "task": "A03 NoteRegistry ownership",
+  "decision": "KEEP_AUTHORED_SOURCE_UNIFY_FINAL_PROJECTIONS",
+  "source": {
+    "selector": ".fn-marker:not(.map-trigger)",
+    "payload": ".tooltip",
+    "status": "authored-static-source"
+  },
+  "owners": {
+    "dataCaptureAndStableIds": "scripts/lib/note-registry.mjs",
+    "interaction": "SiteUtils.makeTooltipController",
+    "mobileToggle": "touchend on the owned footnote marker",
+    "compatibilityClick": "consume the next physical click event once; preserve keyboard activation and interactive tooltip descendants",
+    "productionHook": "scripts/astro-cache-bust-postbuild.js",
+    "routeBrowserAuthority": ".github/workflows/route-registry-validators.yml"
+  },
+  "interactionWitness": {
+    "mobileSequence": [
+      "first touch opens",
+      "second touch closes",
+      "third independent touch reopens"
+    ],
+    "engines": [
+      "chromium",
+      "webkit"
+    ],
+    "failClosed": true
+  },
+  "forbidden": [
+    "second tooltip controller",
+    "second note registry",
+    "runtime-only note discovery as source of truth",
+    "ordinal-derived stable identity",
+    "nested authored button inside a footnote marker",
+    "print-only duplicate note text authored separately",
+    "time-only compatibility-click suppression"
+  ],
+  "downstream": {
+    "agent04": "consume data-speakable endnotes; preserve SiteUtils interaction owner",
+    "agent12Phase2": "consume generated print endnotes and physical PDF witness"
+  }
+}
