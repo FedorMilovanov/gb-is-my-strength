@@ -217,6 +217,7 @@ export async function mobileWitness(browser, base, routes, surface) {
     const reopened = await ownerState(trigger, surface);
     result.reopenedState = reopened;
     result.thirdTouchReopens = reopened.anchorOpen && reopened.ariaExpanded === 'true' && reopened.activeTip;
+    if (!result.thirdTouchReopens) throw new Error(`third touch did not reopen tooltip: ${JSON.stringify(reopened)}`);
   } catch (error) {
     result.error = String(error?.message || error).slice(0, 500);
   } finally {
