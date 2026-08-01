@@ -35,12 +35,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/wave10-files.txt
+          base_sha='${{ github.event.pull_request.base.sha }}'
+          if [[ -z "$base_sha" ]]; then
+            echo 'Pull-request base SHA is unavailable.' >&2
+            exit 1
+          fi
+          git cat-file -e "${base_sha}^{commit}" 2>/dev/null || git fetch --no-tags origin "$base_sha"
+          git diff --name-only "${base_sha}...HEAD" > /tmp/wave10-files.txt
 
           owned="$(grep -E '^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$' /tmp/wave10-files.txt || true)"
           if [[ -z "$owned" ]]; then
-            echo 'No Wave 10-owned files differ from the current base; treating this path-filter synchronization event as a no-op.'
+            echo 'No Wave 10-owned files differ from the event base SHA; treating this path-filter synchronization event as a no-op.'
             echo 'active=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
