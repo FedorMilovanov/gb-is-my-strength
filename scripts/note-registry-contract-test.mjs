@@ -44,8 +44,13 @@ const searchableProjection = collectAndProjectHtml(`<!doctype html><html><body><
 assert.deepEqual(searchableProjection.errors, []);
 assert.match(
   searchableProjection.html,
+  /<article data-pagefind-body>[\s\S]*<\/article>\s*[\s\S]*data-note-registry-endnotes data-speakable data-pagefind-body/,
+  'generated endnotes must follow the article as a separate Pagefind body'
+);
+assert.doesNotMatch(
+  searchableProjection.html,
   /<article data-pagefind-body>[\s\S]*data-note-registry-endnotes[\s\S]*<\/article>/,
-  'generated endnotes must remain inside the common Pagefind body'
+  'generated endnotes must not inherit route-local article print clipping'
 );
 
 const reordered = source.replace(
