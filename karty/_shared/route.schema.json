@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://gospod-bog.ru/karty/_shared/route.schema.json",
-  "$comment": "places[].id must be unique within a single route. Validated at runtime by scripts/validate-map-routes.js (findDuplicateIds). JSON Schema 2020-12 has no built-in 'unique by property' keyword — schema-level uniqueItems: true checks deep equality, not what we need.",
+  "$comment": "places[].id and stories[].id must be unique within a single route. Validated at runtime by scripts/validate-map-routes.js (findDuplicateIds) and scripts/map-layers-theme-regression-test.js. JSON Schema 2020-12 has no built-in 'unique by property' keyword — schema-level uniqueItems: true checks deep equality, not what we need. Story ids intentionally allow underscore because they are internal filter/deep-link identifiers, not public route slugs.",
   "title": "GB Historical Map Route",
   "type": "object",
   "required": ["meta", "stories", "places", "stages"],
@@ -38,7 +38,7 @@
         "required": ["id", "label"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "id": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
           "label": { "type": "string", "minLength": 1 },
           "description": { "type": "string" },
           "desc": { "type": "string" },

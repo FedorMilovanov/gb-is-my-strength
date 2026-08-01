@@ -10,6 +10,34 @@ const { auditGeometry } = require('./atlas-label-audit.js');
 const root = path.join(__dirname, '..');
 const readRoute = (slug) => JSON.parse(fs.readFileSync(path.join(root, 'karty', slug, 'route.json'), 'utf8'));
 
+const routeSchema = JSON.parse(
+  fs.readFileSync(path.join(root, 'karty/_shared/route.schema.json'), 'utf8')
+);
+const storyIdPatternSource = routeSchema.properties?.stories?.items?.properties?.id?.pattern;
+assert.strictEqual(
+  storyIdPatternSource,
+  '^[a-z0-9_-]+$',
+  'story id schema must allow the canonical internal underscore vocabulary'
+);
+const storyIdPattern = new RegExp(storyIdPatternSource);
+const routeSlugs = fs.readdirSync(path.join(root, 'karty'), { withFileTypes: true })
+  .filter((entry) =>
+    entry.isDirectory() &&
+    !entry.name.startsWith('_') &&
+    fs.existsSync(path.join(root, 'karty', entry.name, 'route.json'))
+  )
+  .map((entry) => entry.name)
+  .sort();
+const allRoutes = routeSlugs.map((slug) => ({ slug, route: readRoute(slug) }));
+for (const { slug, route } of allRoutes) {
+  for (const story of route.stories || []) {
+    assert(
+      storyIdPattern.test(story.id || ''),
+      `${slug}: invalid story id ${story.id}`
+    );
+  }
+}
+
 assert.strictEqual(MapEngine.version, '0.56.0', 'layers/theme contract belongs to map-engine v0.56.0');
 
 const avraam = readRoute('avraam');
@@ -99,4 +127,4 @@ assert(
 assert(geometryReport.clippedLabels.includes('clipped'), 'geometry contract must detect labels outside the canvas');
 assert(geometryReport.safeAreaHits.includes('safe-edge'), 'geometry contract must detect edge safe-area intrusion');
 
-console.log('✅ map layer membership/theme/authored-route/projection/geometry regression guard passed');
+console.log(`✅ map layer membership/theme/authored-route/projection/geometry/story-id regression guard passed (${allRoutes.length} routes)`);
