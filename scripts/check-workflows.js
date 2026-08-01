@@ -126,11 +126,16 @@ function checkAutofixCapability(file, text, jobName, requiredPatterns) {
   must(file, job, /git diff --check/, `${jobName} must validate generated diff`);
   must(file, job, /\bgit commit\b/, `${jobName} must publish only an intentional commit`);
   must(file, job, /\bgit push origin "HEAD:\$\{HEAD_REF\}"/, `${jobName} must push only to the checked PR branch`);
+  must(file, job, /--write\b/, `${jobName} must invoke an explicit writer`);
+  const writeAt = job.search(/--write\b/);
+  const validateAt = job.search(/\n\s*- name:\s+Validate/i);
+  const commitAt = job.search(/\bgit commit\b/);
+  if (writeAt < 0 || validateAt < writeAt || commitAt < validateAt) {
+    issues.push(`${file}: ${jobName} must write, validate, then commit in that order`);
+  }
+  mustNot(file, job, /\bgit add (?:-A|\.)\b/, `${jobName} must not stage untracked repository-wide changes`);
 
   for (const [pattern, message] of requiredPatterns) must(file, job, pattern, `${jobName} ${message}`);
-
-  const ordinary = withoutJob(text, jobName);
-  checkNoUndeclaredWrites(file, ordinary);
 }
 
 function checkTransactionalMetadataCapture(file, text) {
@@ -150,13 +155,42 @@ function topLevelPermissions(workflow) {
   return match ? match[1] : '';
 }
 
-function checkWorkflowBasics(workflowTexts) {
-  const explicitCapabilities = new Set([
-    '.github/workflows/editorial-metadata-v3.yml',
-    '.github/workflows/glossary-contract.yml',
-    '.github/workflows/search-manifest-policy.yml',
-  ]);
+const KNOWN_AUTOFIX_RATCHETS = Object.freeze({
+  '.github/workflows/glossary-contract.yml:placement-autofix': [
+    [/glossary-placement-normalizer\.js --write/, 'must own glossary placement generation'],
+    [/tooltip-trigger-normalizer\.js --write/, 'must own tooltip trigger generation'],
+    [/tooltip-style-normalizer\.js --write/, 'must own tooltip style generation'],
+    [/cache-bust\.js --write/, 'must explicitly regenerate asset revisions'],
+    [/glossary-contract-audit\.js[\s\S]*cache-bust\.js/, 'must validate generated source before commit'],
+  ],
+  '.github/workflows/search-manifest-policy.yml:search-manifest-autofix': [
+    [/search-manifest-policy-normalizer\.js[\s\S]*--write/, 'must own search membership generation'],
+    [/rss-feed-normalizer\.js --write/, 'must own deterministic RSS generation'],
+    [/rss-feed-normalizer\.js --check[\s\S]*search-index-policy-inventory\.js/, 'must validate generated search policy before commit'],
+    [/git diff --name-only[\s\S]*unexpected-search-autofix-paths/, 'must fail closed on undeclared output paths'],
+  ],
+  '.github/workflows/indexnow.yml:headline-autofix': [
+    [/article-headline-contract\.js --write/, 'must own headline normalization'],
+    [/article-headline-contract\.js[\s\S]*editorial-metadata-registry\.js --check[\s\S]*cache-bust\.js/, 'must validate headline, editorial registry and asset revisions before commit'],
+  ],
+});
 
+function workflowJobNames(workflow) {
+  const jobs = workflow.match(/^jobs:\s*\n([\s\S]*)$/m);
+  if (!jobs) return [];
+  const names = [];
+  const pattern = /^  ([A-Za-z0-9_-]+):\s*$/gm;
+  let match;
+  while ((match = pattern.exec(jobs[1]))) names.push(match[1]);
+  return names;
+}
+
+function isWriteCapabilityJob(job) {
+  return /^\s*permissions:\s*\n\s*contents:\s*write\s*$/m.test(job)
+    || FORBIDDEN_VALIDATION_WRITES.some(([pattern]) => pattern.test(job));
+}
+
+function checkWorkflowBasics(workflowTexts) {
   for (const [rel, text] of Object.entries(workflowTexts)) {
     must(rel, text, /^name:\s*.+/m, 'missing workflow name');
     must(rel, text, /^on:\s*$/m, 'missing on: block');
@@ -166,38 +200,28 @@ function checkWorkflowBasics(workflowTexts) {
       must(rel, permissions, /^\s{2}contents:\s*read\s*$/m, 'top-level permissions must include contents: read');
       mustNot(rel, permissions, /^\s{2}contents:\s*write\s*$/m, 'top-level contents: write is forbidden');
     }
-    if (!explicitCapabilities.has(rel)) checkNoUndeclaredWrites(rel, text);
+
+    let ordinary = text;
+    let capabilityScan = text;
+    if (rel === '.github/workflows/editorial-metadata-v3.yml') {
+      checkTransactionalMetadataCapture(rel, text);
+      capabilityScan = capabilityScan.replace(
+        /editorial-metadata-registry\.js --write/g,
+        'editorial-metadata-registry.js --transactional-observation',
+      );
+      ordinary = capabilityScan;
+    }
+
+    for (const jobName of workflowJobNames(capabilityScan)) {
+      const job = jobSection(capabilityScan, jobName);
+      if (!isWriteCapabilityJob(job)) continue;
+      const ratchets = KNOWN_AUTOFIX_RATCHETS[`${rel}:${jobName}`] || [];
+      checkAutofixCapability(rel, text, jobName, ratchets);
+      ordinary = withoutJob(ordinary, jobName);
+    }
+
+    checkNoUndeclaredWrites(rel, ordinary);
   }
-
-  checkTransactionalMetadataCapture(
-    '.github/workflows/editorial-metadata-v3.yml',
-    workflowTexts['.github/workflows/editorial-metadata-v3.yml'] || '',
-  );
-
-  checkAutofixCapability(
-    '.github/workflows/glossary-contract.yml',
-    workflowTexts['.github/workflows/glossary-contract.yml'] || '',
-    'placement-autofix',
-    [
-      [/glossary-placement-normalizer\.js --write/, 'must own glossary placement generation'],
-      [/tooltip-trigger-normalizer\.js --write/, 'must own tooltip trigger generation'],
-      [/tooltip-style-normalizer\.js --write/, 'must own tooltip style generation'],
-      [/cache-bust\.js --write/, 'must explicitly regenerate asset revisions'],
-      [/glossary-contract-audit\.js[\s\S]*cache-bust\.js/, 'must validate generated source before commit'],
-    ],
-  );
-
-  checkAutofixCapability(
-    '.github/workflows/search-manifest-policy.yml',
-    workflowTexts['.github/workflows/search-manifest-policy.yml'] || '',
-    'search-manifest-autofix',
-    [
-      [/search-manifest-policy-normalizer\.js[\s\S]*--write/, 'must own search membership generation'],
-      [/rss-feed-normalizer\.js --write/, 'must own deterministic RSS generation'],
-      [/rss-feed-normalizer\.js --check[\s\S]*search-index-policy-inventory\.js/, 'must validate generated search policy before commit'],
-      [/git diff --name-only[\s\S]*unexpected-search-autofix-paths/, 'must fail closed on undeclared output paths'],
-    ],
-  );
 }
 
 function checkPackageScripts(scripts) {
@@ -306,10 +330,10 @@ function checkDistDryRun(file, text) {
 function checkSupportingWorkflows(workflowTexts) {
   const diagnosticsPath = '.github/workflows/indexnow.yml';
   const diagnostics = workflowTexts[diagnosticsPath] || read(diagnosticsPath);
-  must(diagnosticsPath, diagnostics, /^permissions:\s*\n\s*contents:\s*read\s*$/m, 'must remain read-only');
+  must(diagnosticsPath, diagnostics, /^permissions:\s*\n\s*contents:\s*read\s*$/m, 'must remain read-only at top level');
   must(diagnosticsPath, diagnostics, /editorial-metadata-registry\.js --check/, 'must validate metadata registry');
   must(diagnosticsPath, diagnostics, /node scripts\/cache-bust\.js/, 'must check asset revisions without writing');
-  mustNot(diagnosticsPath, diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit|playwright install/, 'must not duplicate candidate installation or build');
+  mustNot(diagnosticsPath, jobSection(diagnostics, 'diagnostics'), /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit|playwright install/, 'diagnostics job must not duplicate candidate installation or build');
 
   const sourceLinksPath = '.github/workflows/source-links.yml';
   const sourceLinks = workflowTexts[sourceLinksPath] || read(sourceLinksPath);
