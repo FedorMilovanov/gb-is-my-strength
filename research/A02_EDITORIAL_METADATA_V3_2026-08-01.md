@@ -1,47 +1,48 @@
 # Agent 02 — Editorial Metadata v3
 
 **Дата:** 2026-08-01  
-**Статус:** `IMPLEMENTATION_IN_PROGRESS`  
+**Статус:** `SOURCE_CONTRACT_DONE_WITH_EDITORIAL_REVIEW_BLOCKERS`  
 **Production claim:** `no`
 
-## Цель
+## Итог
 
-Сделать существующий `data/editorial-metadata.json` единственным владельцем
-редакционных дат и развернуть направление зависимости:
+Существующий `data/editorial-metadata.json` закреплён как единственный владелец
+редакционных дат. Второй registry не создан.
+
+Направление зависимости теперь определено так:
 
 ```text
-editorial registry → final dist projections
+approved editorial decision → final dist projections
+unapproved registry record → frozen observations, drift blocked
+technical build clock → RSS channel lastBuildDate only
 ```
 
-Вместо прежнего режима, где registry в основном замораживал уже наблюдённые
-PageHead/RSS/sitemap/search значения.
+## Найденная граница безопасности
 
-## Найденный системный разрыв
+В canonical registry находятся 49 eligible records:
 
-Текущий freeze-registry уже правильно отделяет editorial decisions от
-observation snapshots и сохраняет решения при refresh. Но финальные поверхности
-продолжали получать даты из локальных PageHead и `data/search-manifest.json`.
-RSS `lastBuildDate` дополнительно вычислялся из item editorial dates.
+- `approved`: **0**;
+- `inconsistent-needs-review`: **43**;
+- `migration-freeze-unverified`: **6**.
 
-Это оставляло два класса риска:
-
-1. техническая сборка могла сдвинуть проекцию, не изменяя editorial decision;
-2. registry проверял результат, но не являлся финальным producer.
+Поэтому Agent 02 не повышает ни одну кандидатную дату до публичной canonical
+даты без editorial approval. Это предотвращает массовую тихую замену дат,
+полученных прежним observation-priority алгоритмом.
 
 ## Контракт v3
 
-- существующий registry остаётся единственным владельцем;
-- отдельный второй registry не создаётся;
-- `null` означает «дата неизвестна» и никогда не заменяется Git/build временем;
-- technical sources запрещены для editorial fields;
+- `null` — явная семантика «дата неизвестна»;
+- Git commit, file mtime, cache-bust, asset revision и build timestamp запрещены
+  как источники editorial publication/modification dates;
 - approved record блокируется, если modification предшествует publication;
-- future dates, missing fields, duplicate identities и duplicate PageHead date tags
-  являются blocking defects;
-- final production-like `dist` получает даты из registry после Astro/legacy copy;
-- RSS item `pubDate` — editorial;
-- RSS channel `lastBuildDate` — только technical build clock.
+- future dates, missing fields, duplicate identities и duplicate PageHead date
+  tags являются blocking defects;
+- projector получает только records со статусом `approved`;
+- unapproved records обязаны сохранять frozen observation surface без drift;
+- RSS item `pubDate` остаётся editorial;
+- RSS channel `lastBuildDate` использует отдельный deterministic technical clock.
 
-## Проекции
+## Подготовленные проекции для approved records
 
 Projector синхронизирует:
 
@@ -51,31 +52,52 @@ Projector синхронизирует:
 - Pagefind metadata;
 - `dist/data/search-manifest.json`;
 - sitemap `lastmod`;
-- RSS item `pubDate`;
-- RSS channel `lastBuildDate`.
+- RSS item `pubDate`.
 
-## Миграционная граница
+Production-like postbuild вызывает canonical registry CLI, а не библиотеку
+напрямую. Approval-gate закреплён отдельным regression test.
 
-Hardcoded PageHead dates пока остаются как source fallback и historical
-observation. Финальный deploy candidate нормализуется из registry. Это позволяет
-не переписывать десятки owner-sensitive PageHead файлов одной транзакцией и не
-выдумывать отсутствующие даты.
+## Подтверждённый production-like результат
 
-## Активная параллельная работа
+На проверочном exact head:
 
-PR #669 владеет только Karty inventory/audit files. Metadata-v3 lane не касается
-ни одного Karty path.
+- registry records: **49**;
+- approved/projected: **0**;
+- blocked pending editorial review: **49**;
+- HTML matched/changed: **0 / 0**;
+- search manifest matched/changed: **0 / false**;
+- sitemap matched/changed: **0 / 0**;
+- RSS item matched: **0**;
+- RSS channel technical clock: обновлён;
+- editorial drift между frozen и observed snapshots: **0**;
+- единственный machine diff: `sourceCommit` boundary.
 
-## Definition of done
+## Артефакты и owners
 
-Финальный статус станет `DONE` только после:
+- schema: `data/editorial-metadata.schema.json`;
+- migration inventory: `data/editorial-metadata-migration-inventory.json`;
+- semantic validator/projector: `scripts/lib/editorial-metadata-v3.js`;
+- canonical CLI: `scripts/editorial-metadata-registry.js`;
+- approval gate: `scripts/editorial-metadata-v3-approval-gate-test.js`;
+- production hook: `scripts/astro-cache-bust-postbuild.js`;
+- dedicated workflow owner: `.github/workflows/editorial-metadata-v3.yml`.
 
-- schema/data + adversarial mutation tests;
-- production-like build и projection report;
-- SEO/JSON-LD/sitemap/RSS/search checks;
-- Editorial Dateline и Pagefind checks;
-- exact-head CI;
-- review threads = 0;
-- guarded squash merge;
-- merged-main verification и branch cleanup;
-- обновлённого переносимого handoff MD.
+## Параллельная работа
+
+PR #669 владел Karty inventory/audit files. Metadata-v3 lane не касалась ни
+одного Karty path.
+
+## Downstream handoff для Agent 05
+
+Agent 05 может считать canonical owners перечисленными выше. Он не должен:
+
+- создавать второй date registry;
+- поднимать unapproved records до canonical dates;
+- использовать Git/build/cache timestamps как editorial dates;
+- удалять source PageHead dates до отдельной approved migration lane.
+
+## Production boundary
+
+Source contract и production-like candidate проверяются CI. Live deployment
+этим отчётом не заявляется. Editorial approval 49 записей остаётся отдельной
+содержательной работой владельца, а не техническим auto-fix.
