@@ -138,7 +138,7 @@ async function run() {
     await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('#stage #me-paths .me-route-main')), null, { timeout: 20000 });
 
     report.engineVersion = await page.evaluate(() => window.MapEngine?.version || null);
-    assert(report.engineVersion === '0.56.0', 'MapEngine public version is not synchronized with v0.56 renderer', { engineVersion: report.engineVersion });
+    assert(report.engineVersion === '0.57.0', 'MapEngine public version is not synchronized with v0.57 renderer', { engineVersion: report.engineVersion });
 
     const fallback = await collectRenderedPaths(page, '#stage');
     assert(fallback.main.length > 0, 'Ishod generated fallback paths are missing', fallback);
@@ -241,8 +241,8 @@ async function run() {
     await page.waitForFunction((id) => document.querySelectorAll(`#${id} #me-paths .me-route-main`).length === 1, fixtureId, { timeout: 10000 });
     const highStageFallback = await collectRenderedPaths(page, `#${fixtureId}`);
     assert(highStageFallback.main[0].stageIndex === 7 && highStageFallback.main[0].source === 'generated', 'high-stage generated fallback metadata drift', highStageFallback);
-    assert(normalizeColor(highStageFallback.main[0].stroke) === normalizeColor(COLOR_TOKENS.gold), 'high-stage generated fallback changed legacy gold color', highStageFallback.main[0]);
-    assert(highStageFallback.main[0].markerEnd === 'url(#me-arrow-0)', 'high-stage generated fallback arrow is missing or mismatched', highStageFallback.main[0]);
+    assert(normalizeColor(highStageFallback.main[0].stroke) === normalizeColor('hsl(7 48% 58%)'), 'high-stage generated fallback lost deterministic extended-stage color', highStageFallback.main[0]);
+    assert(highStageFallback.main[0].markerEnd === 'url(#me-arrow-generated-7-0)', 'high-stage generated fallback arrow is missing or mismatched', highStageFallback.main[0]);
     report.highStageFallback = {
       stage: highStageFallback.main[0].stageIndex,
       stroke: highStageFallback.main[0].stroke,
