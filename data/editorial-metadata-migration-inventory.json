@@ -13,6 +13,11 @@
       "originalWorkPublishedAt"
     ],
     "unknownSemantics": "null",
+    "projectionGate": {
+      "approved": "project canonical editorial dates to final dist",
+      "inconsistent-needs-review": "retain frozen observations and block drift",
+      "migration-freeze-unverified": "retain frozen observations and block drift"
+    },
     "forbiddenSources": [
       "Git commit time",
       "file mtime",
@@ -30,38 +35,38 @@
     {
       "surface": "PageHead OpenGraph",
       "fields": ["article:published_time", "article:modified_time"],
-      "finalOwner": "editorial registry dist projector"
+      "finalOwner": "approved editorial registry decision or frozen registry observation"
     },
     {
       "surface": "Article JSON-LD",
       "fields": ["datePublished", "dateModified"],
-      "finalOwner": "editorial registry dist projector"
+      "finalOwner": "approved editorial registry decision or frozen registry observation"
     },
     {
       "surface": "Editorial Dateline",
       "fields": ["existing published time", "existing article-updated time"],
-      "finalOwner": "editorial registry dist projector",
-      "rule": "update existing semantic time elements; do not invent visible datelines"
+      "finalOwner": "approved editorial registry decision or frozen registry observation",
+      "rule": "update existing semantic time elements only after approval; do not invent visible datelines"
     },
     {
       "surface": "Pagefind",
       "fields": ["publishedTime", "modifiedTime"],
-      "finalOwner": "editorial registry dist projector"
+      "finalOwner": "approved editorial registry decision or frozen registry observation"
     },
     {
       "surface": "Search manifest",
       "fields": ["publishedTime", "modifiedTime"],
-      "finalOwner": "editorial registry dist projector"
+      "finalOwner": "approved editorial registry decision or frozen registry observation"
     },
     {
       "surface": "Sitemap",
       "fields": ["lastmod"],
-      "finalOwner": "editorial registry dist projector"
+      "finalOwner": "approved editorial registry decision or frozen registry observation"
     },
     {
       "surface": "RSS item",
       "fields": ["pubDate"],
-      "finalOwner": "editorial registry dist projector"
+      "finalOwner": "approved editorial registry decision or frozen registry observation"
     },
     {
       "surface": "RSS channel",
@@ -70,8 +75,8 @@
     }
   ],
   "migrationBoundary": {
-    "sourcePageHeads": "retained as migration observations and visual/source fallback",
-    "finalDistribution": "normalized after Astro and legacy copy",
+    "sourcePageHeads": "retained as frozen observations until explicit editorial approval",
+    "finalDistribution": "approved records normalize after Astro and legacy copy; unapproved records must remain byte-semantically frozen",
     "inventedDates": false
   },
   "adjacentActiveWork": {
