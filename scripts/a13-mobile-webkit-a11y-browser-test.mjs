@@ -28,6 +28,9 @@ function validateMatrix() {
   assert.equal(matrix.production_claim, false);
   assert.equal(new Set(matrix.routes.map(({ id }) => id)).size, matrix.routes.length, 'route ids must be unique');
   assert.equal(new Set(matrix.scenes.map(({ id }) => id)).size, matrix.scenes.length, 'scene ids must be unique');
+  for (const route of matrix.routes) {
+    if (route.surface === 'map-stage') assert.equal(route.owner_selector, '#stage');
+  }
 }
 
 function probeServer(url) {
@@ -79,8 +82,9 @@ async function load(page, route) {
   await page.waitForTimeout(120);
 }
 
-async function geometry(page) {
-  return page.evaluate(() => {
+async function geometry(page, route) {
+  const ownerSelector = route.owner_selector || 'main, [role="main"]';
+  return page.evaluate((selector) => {
     const root = document.documentElement;
     const body = document.body;
     const visible = (element) => {
@@ -88,37 +92,30 @@ async function geometry(page) {
       const style = getComputedStyle(element);
       return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
     };
-    const mains = [...document.querySelectorAll('main, [role="main"]')];
-    const applications = [...document.querySelectorAll('[role="application"]')];
+    const owners = [...document.querySelectorAll(selector)];
     const focusable = [...document.querySelectorAll(
       'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',
     )].filter(visible);
     return {
+      ownerSelector: selector,
+      ownerCount: owners.length,
+      visibleOwner: owners.some(visible),
       clientWidth: root.clientWidth,
       scrollWidth: Math.max(root.scrollWidth, body?.scrollWidth || 0),
       scrollHeight: Math.max(root.scrollHeight, body?.scrollHeight || 0),
-      mainCount: mains.length,
-      visibleMain: mains.some(visible),
-      applicationCount: applications.length,
-      visibleApplication: applications.some(visible),
       focusableCount: focusable.length,
     };
-  });
+  }, ownerSelector);
 }
 
-function checkGeometry(metrics, label, route) {
+function checkGeometry(metrics, label) {
   const overflow = metrics.scrollWidth - metrics.clientWidth;
   assert.ok(
     overflow <= matrix.viewport_contract.max_root_overflow_px,
     `${label} root overflow ${overflow}px (scrollWidth=${metrics.scrollWidth}, clientWidth=${metrics.clientWidth})`,
   );
-  if (route.surface === 'application') {
-    assert.equal(metrics.applicationCount, 1, `${label} application landmarks=${metrics.applicationCount}`);
-    assert.equal(metrics.visibleApplication, true, `${label} application landmark is hidden`);
-  } else {
-    assert.equal(metrics.mainCount, 1, `${label} main landmarks=${metrics.mainCount}`);
-    assert.equal(metrics.visibleMain, true, `${label} main is hidden`);
-  }
+  assert.equal(metrics.ownerCount, 1, `${label} route owners ${metrics.ownerSelector}=${metrics.ownerCount}`);
+  assert.equal(metrics.visibleOwner, true, `${label} route owner ${metrics.ownerSelector} is hidden`);
   assert.ok(metrics.focusableCount > 0, `${label} has no reachable controls`);
   return overflow;
 }
@@ -145,8 +142,8 @@ async function responsive(browserName, browserType) {
             const pageErrors = [];
             page.on('pageerror', (error) => pageErrors.push(error.message));
             await load(page, route);
-            const metrics = await geometry(page);
-            const overflow = checkGeometry(metrics, label, route);
+            const metrics = await geometry(page, route);
+            const overflow = checkGeometry(metrics, label);
             assert.deepEqual(pageErrors, [], `${label} page errors: ${pageErrors.join(' | ')}`);
             note('responsive-root-overflow', browserName, route.id, { width, overflow, metrics });
           });
@@ -171,8 +168,8 @@ async function zoomEquivalent(browserName, browserType) {
           deviceScaleFactor: 2,
         }, async (page) => {
           await load(page, route);
-          const metrics = await geometry(page);
-          const overflow = checkGeometry(metrics, label, route);
+          const metrics = await geometry(page, route);
+          const overflow = checkGeometry(metrics, label);
           const focus = await page.evaluate(() => {
             const visible = (element) => {
               const rect = element.getBoundingClientRect();
@@ -292,13 +289,13 @@ async function touchWebKit() {
             isMobile: true,
           }, async (page) => {
             await load(page, route);
-            const before = await geometry(page);
+            const before = await geometry(page, route);
             const targetY = Math.min(640, Math.max(0, before.scrollHeight - 780));
             await page.evaluate((y) => scrollTo(0, y), targetY);
             await page.waitForTimeout(160);
-            const after = await geometry(page);
+            const after = await geometry(page, route);
             const scrollY = await page.evaluate(() => window.scrollY);
-            const overflow = checkGeometry(after, label, route);
+            const overflow = checkGeometry(after, label);
             if (targetY > 0) assert.ok(scrollY > 0, `${label} made no vertical scroll progress`);
             note('touch-scroll-webkit', 'webkit', route.id, { width, targetY, scrollY, overflow });
           });
@@ -333,8 +330,8 @@ async function mediaScene(scene, browserName, browserType, options, mediaQuery) 
             });
             assert.ok(focus?.width > 0 && focus?.height > 0, `${label} focus geometry missing`);
           }
-          const metrics = await geometry(page);
-          const overflow = checkGeometry(metrics, label, route);
+          const metrics = await geometry(page, route);
+          const overflow = checkGeometry(metrics, label);
           note(scene, browserName, route.id, { width: 390, overflow, focus });
         });
       } catch (error) {
