@@ -8,7 +8,11 @@ name: Notify on Workflow Failure
 on:
   workflow_run:
     workflows:
+      - "Native Source Contract"
+      - "Route Registry Validators"
       - "Metadata & IndexNow Readiness"
+      - "Search Manifest Policy"
+      - "Deploy Candidate Contract"
       - "Deploy to GitHub Pages"
       - "Deployment Witness Ledger"
       - "Source Link Audit"
