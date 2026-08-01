@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "task": "A03 NoteRegistry ownership",
+  "decision": "KEEP_AUTHORED_SOURCE_UNIFY_FINAL_PROJECTIONS",
+  "source": {
+    "selector": ".fn-marker:not(.map-trigger)",
+    "payload": ".tooltip",
+    "status": "authored-static-source"
+  },
+  "owners": {
+    "dataCaptureAndStableIds": "scripts/lib/note-registry.mjs",
+    "interaction": "SiteUtils.makeTooltipController",
+    "productionHook": "scripts/astro-cache-bust-postbuild.js",
+    "routeBrowserAuthority": ".github/workflows/route-registry-validators.yml"
+  },
+  "forbidden": [
+    "second tooltip controller",
+    "second note registry",
+    "runtime-only note discovery as source of truth",
+    "ordinal-derived stable identity",
+    "nested authored button inside a footnote marker",
+    "print-only duplicate note text authored separately"
+  ],
+  "downstream": {
+    "agent04": "consume data-speakable endnotes; preserve SiteUtils interaction owner",
+    "agent12Phase2": "consume generated print endnotes and physical PDF witness"
+  }
+}

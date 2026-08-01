@@ -46,6 +46,8 @@ assert(contracts(valid.replace('/target/', '/missing/')).has('link-target'));
 assert(contracts(valid.replace('<h1>Article</h1>', '')).has('document-h1'));
 assert(contracts(valid.replace('<script>window.ok = true;</script>', '<script>const = ;</script>')).has('inline-script-syntax'));
 assert(contracts(valid.replace('<div class="article-byline"></div>', '<div id="dup"></div><div id="dup"></div>')).has('duplicate-id'));
+assert(!contracts(valid.replace('<div class="article-byline"></div>', '<div id="note-ref-a" data-note-id="note-a"></div><div id="note-tip-a" data-note-id="note-a"></div><div id="note-end-a" data-note-id="note-a"></div>')).has('duplicate-id'));
+assert(contracts(valid.replace('<div class="article-byline"></div>', '<div data-note-id="note-a" id="dup"></div><div data-note-id="note-a" id="dup"></div>')).has('duplicate-id'));
 assert(contracts(valid.replace('{"@context":"https://schema.org","@type":"Article"}', '{bad json')).has('jsonld-parse'));
 
 put('article/index.html', valid);
