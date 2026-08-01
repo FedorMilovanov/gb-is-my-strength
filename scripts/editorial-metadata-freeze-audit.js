@@ -21,6 +21,10 @@ function readJson(file, fallback) {
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback;
 }
 
+function same(a, b) {
+  return (a || null) === (b || null);
+}
+
 function distSharedProjectionData() {
   const sitemapFiles = fs.existsSync(DIST)
     ? fs.readdirSync(DIST)
@@ -40,7 +44,7 @@ function compareProjection(route, label, actual, expected, required) {
   const normalizedExpected = normalizeInstant(expected);
   const normalizedActual = normalizeInstant(actual);
   if (normalizedExpected === null) {
-    if (normalizedActual !== null) errors.push(`${route}: ${label} must be absent while editorial date is unknown`);
+    if (normalizedActual !== null) errors.push(`${route}: ${label} must be absent while approved editorial date is unknown`);
     return;
   }
   if (required && normalizedActual === null) {
@@ -69,8 +73,18 @@ function canonicalProjectionChecks(route, record, current) {
   compareProjection(route, 'visibleModifiedAt', current.observations.visibleModifiedAt, modified, false);
 }
 
+function frozenProjectionChecks(route, record, current) {
+  for (const [field, frozenValue] of Object.entries(record.observations || {})) {
+    const currentValue = current.observations[field] ?? null;
+    if (!same(frozenValue, currentValue)) {
+      errors.push(`${route}: unapproved frozen ${field} changed ${frozenValue || 'null'} -> ${currentValue || 'null'}`);
+    }
+  }
+}
+
 console.log('=== Editorial Metadata v3 Projection Audit ===');
-console.log('Registry decisions own final dist dates; observation snapshots remain migration evidence.');
+console.log('Approved decisions own final dist dates.');
+console.log('Unapproved records retain their frozen observations until editorial review.');
 console.log('RSS channel lastBuildDate is technical and is intentionally outside editorial comparison.');
 console.log('');
 
@@ -103,18 +117,20 @@ for (const [route, record] of Object.entries(registry.records || {})) {
   if (record.canonical !== current.canonical) errors.push(`${route}: canonical changed ${record.canonical} -> ${current.canonical}`);
   if (record.metadataSource !== current.metadataSource) errors.push(`${route}: metadataSource changed ${record.metadataSource} -> ${current.metadataSource}`);
 
-  canonicalProjectionChecks(route, record, current);
-
-  for (const [field, historical] of Object.entries(record.observations || {})) {
-    const finalValue = current.observations[field] ?? null;
-    if ((historical ?? null) !== finalValue) {
-      warnings.push(`${route}: historical ${field}=${historical || 'null'} converged to ${finalValue || 'null'}`);
+  if (record.reviewStatus === 'approved') {
+    approved += 1;
+    canonicalProjectionChecks(route, record, current);
+    for (const [field, historical] of Object.entries(record.observations || {})) {
+      const finalValue = current.observations[field] ?? null;
+      if ((historical ?? null) !== finalValue) {
+        warnings.push(`${route}: approved ${field} converged ${historical || 'null'} -> ${finalValue || 'null'}`);
+      }
     }
+  } else {
+    frozenProjectionChecks(route, record, current);
+    if (record.reviewStatus === 'inconsistent-needs-review') inconsistent += 1;
+    else frozen += 1;
   }
-
-  if (record.reviewStatus === 'approved') approved++;
-  else if (record.reviewStatus === 'inconsistent-needs-review') inconsistent++;
-  else frozen++;
 }
 
 for (const route of eligibleByRoute.keys()) {
@@ -122,10 +138,10 @@ for (const route of eligibleByRoute.keys()) {
 }
 
 console.log(`Eligible routes: ${eligible.length}`);
-console.log(`Approved: ${approved}`);
-console.log(`Inconsistent decisions awaiting editorial review: ${inconsistent}`);
-console.log(`Migration decisions awaiting approval: ${frozen}`);
-console.log(`Historical projection differences normalized by v3: ${warnings.length}`);
+console.log(`Approved and projected: ${approved}`);
+console.log(`Inconsistent, blocked pending editorial review: ${inconsistent}`);
+console.log(`Migration freezes awaiting approval: ${frozen}`);
+console.log(`Approved historical differences normalized by v3: ${warnings.length}`);
 
 if (warnings.length) {
   warnings.slice(0, 20).forEach((warning) => console.log(`  - ${warning}`));
@@ -139,4 +155,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('✅ Final metadata projections converge on the editorial registry');
+console.log('✅ Approved metadata converges; unapproved projections remain frozen');
