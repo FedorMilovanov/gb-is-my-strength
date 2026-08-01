@@ -147,10 +147,19 @@ function authoredContext(html, marker) {
   const containerAnchor = container
     ? [container.attrs.id, container.attrs['data-section-id'], container.attrs['data-source-id']].filter(Boolean).join(' ')
     : '';
-  const local = container
-    ? stripTags(`${html.slice(container.openEnd, marker.start)} ${html.slice(marker.end, container.endStart)}`).slice(0, 1024)
+  const before = container
+    ? stripTags(html.slice(container.openEnd, marker.start)).slice(-768)
     : '';
-  return `${nearestHeadingContext(html, marker)} ${containerAnchor} ${local}`.replace(/\s+/g, ' ').trim();
+  const after = container
+    ? stripTags(html.slice(marker.end, container.endStart)).slice(0, 768)
+    : '';
+  return [
+    nearestHeadingContext(html, marker),
+    container?.tag || '',
+    containerAnchor,
+    `before:${before}`,
+    `after:${after}`,
+  ].join(' ').replace(/\s+/g, ' ').trim();
 }
 
 function contentHash(route, text, context) {
