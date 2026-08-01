@@ -1,4 +1,4 @@
-const VERSION = 14;
+const VERSION = 15;
 const OWNER = 'site-utils-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
@@ -281,14 +281,14 @@ function restore(controller) {
   }
 }
 
-function closeController(controller, reason = 'close') {
+function closeController(controller, reason = 'close', overlayManaged = false) {
   cancelClose();
   const state = controller?._gbState;
   const anchor = controller?.activeEl;
   if (!state || !anchor || !controller.activeTip) return false;
   anchor.classList.remove('is-open');
   anchor.setAttribute('aria-expanded', 'false');
-  if (state.mobileSheet) {
+  if (state.mobileSheet && !overlayManaged) {
     if (overlayRuntime()) overlayRuntime().close(OWNER, reason);
     else window.SiteUtils?.unlockScroll?.(`overlay:${OWNER}`);
   }
@@ -392,8 +392,9 @@ function openController(controller, anchor, reason = 'open') {
         restoreFocus: true,
         lockScroll: true,
         onRequestClose: (closeReason) => {
-          closeController(controller, closeReason || 'request');
-          return false;
+          const requestedReason = closeReason || 'request';
+          window.queueMicrotask(() => closeController(controller, requestedReason, true));
+          return true;
         },
         reason,
       });
