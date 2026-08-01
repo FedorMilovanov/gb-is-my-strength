@@ -4,7 +4,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const WRITE = process.argv.includes('--write');
@@ -121,17 +120,8 @@ function assertSelfContract() {
   assert.equal(metaContent(fixed, 'property', 'og:title'), config.canonicalHeadline, 'attribute order must not affect metadata parsing');
 }
 
-function normalizeRegisteredRuntime() {
-  const normalizer = path.join(__dirname, 'site-tooltip-touch-normalizer.js');
-  execFileSync(process.execPath, [normalizer, ...(WRITE ? ['--write'] : [])], { stdio: 'inherit' });
-  if (WRITE) {
-    execFileSync(process.execPath, [path.join(__dirname, 'cache-bust.js'), '--write'], { stdio: 'inherit' });
-  }
-}
-
 function main() {
   assertSelfContract();
-  normalizeRegisteredRuntime();
   const failures = [];
   const changed = [];
 
