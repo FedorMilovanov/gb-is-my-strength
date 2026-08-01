@@ -122,33 +122,41 @@ async function closeMobileTip(page, trigger, surface) {
     }
   }
 
-  const point = await page.evaluate((data) => {
+  const point = await trigger.evaluate((anchor, data) => {
     const interactive = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
     const tip = [...document.querySelectorAll(data.tip)].find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
     if (!tip) return null;
     const rect = tip.getBoundingClientRect();
-    const insetX = Math.min(18, Math.max(4, rect.width * 0.04));
-    const insetY = Math.min(18, Math.max(4, rect.height * 0.04));
-    const xs = [rect.left + insetX, rect.right - insetX, rect.left + rect.width / 2];
-    const ys = [rect.top + insetY, rect.bottom - insetY, rect.top + rect.height / 2];
-    for (const y of ys) {
-      for (const x of xs) {
-        if (x < 1 || y < 1 || x > innerWidth - 1 || y > innerHeight - 1) continue;
-        const target = document.elementFromPoint(x, y);
-        if (target && tip.contains(target) && !target.closest(interactive)) {
-          return { x, y, target: target.tagName.toLowerCase(), targetId: target.id || '' };
-        }
-      }
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const gap = 16;
+    const candidates = [
+      { x: centerX, y: rect.top - gap },
+      { x: rect.left - gap, y: centerY },
+      { x: rect.right + gap, y: centerY },
+      { x: centerX, y: rect.bottom + gap },
+      { x: 10, y: 10 },
+      { x: innerWidth - 10, y: 10 },
+    ];
+    for (const candidate of candidates) {
+      const x = Math.max(1, Math.min(innerWidth - 1, candidate.x));
+      const y = Math.max(1, Math.min(innerHeight - 1, candidate.y));
+      const target = document.elementFromPoint(x, y);
+      if (!target) continue;
+      if (tip.contains(target) || anchor.contains(target) || target.closest(interactive)) continue;
+      return {
+        x,
+        y,
+        target: target.tagName.toLowerCase(),
+        targetId: target.id || '',
+        targetClass: [...target.classList].slice(0, 5).join(' '),
+      };
     }
     return null;
   }, surface);
-  if (point) {
-    await page.touchscreen.tap(point.x, point.y);
-    return { method: 'non-interactive-tip-surface', point };
-  }
-
-  await trigger.tap({ timeout: 4000 });
-  return { method: 'trigger-fallback', point: null };
+  if (!point) throw new Error('no physical outside-tip close surface found');
+  await page.touchscreen.tap(point.x, point.y);
+  return { method: 'outside-tip-surface', point };
 }
 
 async function navigateForWitness(page, base, routes, surface) {
