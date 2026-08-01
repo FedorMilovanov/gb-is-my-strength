@@ -10,6 +10,7 @@ const {
   LEGACY_FLOATING_TOOLTIP_POINTER_RULE,
   PRIORITY_FLOATING_TOOLTIP_POINTER_RULE,
   FLOATING_TOOLTIP_POINTER_RULE,
+  LEGACY_MOBILE_TOOLTIP_CLOSE_RULE,
   MOBILE_TOOLTIP_CLOSE_RULE
 } = require('./tooltip-style-normalizer.js');
 
@@ -32,6 +33,8 @@ assert.match(FLOATING_TOOLTIP_POINTER_RULE, /pointer-events:auto!important/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\.tooltip\.gb-floating-tip a/);
 assert.match(FLOATING_TOOLTIP_POINTER_RULE, /\[role="button"\]/);
 assert.match(MOBILE_TOOLTIP_CLOSE_RULE, /@media\(max-width:768px\)/);
+assert.match(MOBILE_TOOLTIP_CLOSE_RULE, /padding-right:3\.25rem}/);
+assert.doesNotMatch(MOBILE_TOOLTIP_CLOSE_RULE, /padding-right:3\.25rem!important/);
 assert.match(MOBILE_TOOLTIP_CLOSE_RULE, /\.gb-floating-tip>\.gb-tooltip-close/);
 assert.match(MOBILE_TOOLTIP_CLOSE_RULE, /width:2\.35rem/);
 assert.match(MOBILE_TOOLTIP_CLOSE_RULE, /height:2\.35rem/);
@@ -51,6 +54,13 @@ for (const priorRule of [LEGACY_FLOATING_TOOLTIP_POINTER_RULE, PRIORITY_FLOATING
   assert.ok(!upgraded.output.includes(priorRule));
   assert.equal(normalizeTooltipStyles(upgraded.output).changes, 0, 'upgraded rule must remain idempotent');
 }
+
+const legacyCloseFixture = first.output.replace(MOBILE_TOOLTIP_CLOSE_RULE, LEGACY_MOBILE_TOOLTIP_CLOSE_RULE);
+const upgradedCloseRule = normalizeTooltipStyles(legacyCloseFixture);
+assert.equal(upgradedCloseRule.changes, 1, 'legacy mobile close priority must be removed exactly once');
+assert.ok(upgradedCloseRule.output.includes(MOBILE_TOOLTIP_CLOSE_RULE));
+assert.ok(!upgradedCloseRule.output.includes(LEGACY_MOBILE_TOOLTIP_CLOSE_RULE));
+assert.equal(normalizeTooltipStyles(upgradedCloseRule.output).changes, 0, 'canonical mobile close rule must remain idempotent');
 
 const missingCloseRule = first.output.replace(`\n${MOBILE_TOOLTIP_CLOSE_RULE}\n`, '\n');
 const restoredCloseRule = normalizeTooltipStyles(missingCloseRule);
