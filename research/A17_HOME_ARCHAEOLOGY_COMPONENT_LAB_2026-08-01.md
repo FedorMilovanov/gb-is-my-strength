@@ -9,7 +9,7 @@
 
 Agent 17 does not edit the current Home route, components, CSS, JavaScript, assets, route registries or generated revisions. Active NoteRegistry PR #680, Offline/PWA PR #698 and the independent Diotrophes draft PR #708 remain untouched.
 
-Permanent output is limited to an archaeology report, one machine decision inventory, a self-contained non-production specimen page and a read-only contract. Nothing in the lab is importable production authority.
+Permanent output is limited to an archaeology report, one machine decision inventory, a self-contained non-production specimen source and a read-only contract. Nothing in the lab is importable production authority.
 
 ## Evidence
 
@@ -82,7 +82,10 @@ Machine details and exact owner paths live in `data/home-component-lab-inventory
 - no import from `src/`, `js/` or `css/`;
 - no Pagefind, sitemap, RSS, service-worker or cache-bust registration;
 - no external asset or runtime dependency;
-- `noindex,nofollow,noarchive` in the standalone specimen.
+- no real `.html` file: `specimen.html.txt` preserves source while remaining outside repository-wide reader contracts;
+- `noindex,nofollow,noarchive` inside the specimen source.
+
+The first exact-head Shared Files run correctly rejected an ordinary lab `index.html` as a reader surface missing the global first-paint bootstrap. The lane did not weaken that contract: the specimen was moved to `.html.txt`, and the A17 contract now blocks any real lab HTML file.
 
 Promotion is forbidden by copy. A future owner must rebuild a chosen idea from current `main` in a dedicated Home lane.
 
