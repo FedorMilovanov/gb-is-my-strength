@@ -1,11 +1,9 @@
-const VERSION = 12;
+const VERSION = 13;
 const OWNER = 'site-utils-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
 const TOUCH_SLOP_SQUARED = 144;
 
-let active = null;
-let activeController = null;
 let closeTimer = 0;
 let pointerEpoch = 0;
 let pointerX = null;
@@ -34,10 +32,14 @@ function controllerMobileSheet(controller) {
   return window.matchMedia(`(max-width: ${breakpoint}px)`).matches;
 }
 
+function activeController() {
+  return siteUtils()._tooltipControllers.find((candidate) => candidate.activeEl && candidate.activeTip) || null;
+}
+
 function controllerFor(anchor) {
   return siteUtils()._tooltipControllers.find((candidate) => {
     try {
-      return anchor.matches(candidate.anchorSel) && Boolean(anchor.querySelector(candidate.tipSel));
+      return anchor.matches(candidate.anchorSel) && Boolean(inlineTip(anchor, false, candidate.tipSel));
     } catch {
       return false;
     }
@@ -50,22 +52,24 @@ function registerController(anchorSel, tipSel, opts = {}) {
   if (existing) return { open: existing.open, close: existing.close };
 
   const controller = {
+    owner: OWNER,
     anchorSel,
     tipSel,
     opts: { ...opts },
     activeEl: null,
     activeTip: null,
+    _gbState: null,
     isDesktop() {
       return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     },
     isMobileSheet() {
       return controllerMobileSheet(controller);
     },
-    open(anchor) {
-      openTooltip(anchor, 'api');
+    open(anchor, reason = 'api') {
+      openController(controller, anchor, reason);
     },
-    close(force = false) {
-      if (activeController === controller) closeTooltip(force ? 'force' : 'close');
+    close(force = false, reason = 'close') {
+      closeController(controller, force ? 'force' : reason);
     },
   };
   api._tooltipControllers.push(controller);
@@ -95,8 +99,13 @@ function cancelClose() {
   closeTimer = 0;
 }
 
-function containsOwnedSurface(record, target) {
-  return Boolean(record && target instanceof Node && (record.anchor.contains(target) || record.tip.contains(target)));
+function containsOwnedSurface(controller, target) {
+  return Boolean(
+    controller?.activeEl &&
+    controller?.activeTip &&
+    target instanceof Node &&
+    (controller.activeEl.contains(target) || controller.activeTip.contains(target)),
+  );
 }
 
 function recordPointerMovement(event) {
@@ -114,26 +123,27 @@ function recordPointerMovement(event) {
   return moved;
 }
 
-function settleHover(record) {
+function settleHover(controller) {
   window.requestAnimationFrame(() => {
-    if (active !== record || record.reason !== 'hover') return;
-    record.hoverSettled = true;
-    record.pointerBaseline = pointerEpoch;
+    const state = controller?._gbState;
+    if (!state || state.reason !== 'hover') return;
+    state.hoverSettled = true;
+    state.pointerBaseline = pointerEpoch;
   });
 }
 
-function scheduleClose(delay = 220) {
+function scheduleClose(controller = activeController(), delay = 220) {
   cancelClose();
-  const record = active;
-  if (!record) return;
+  if (!controller?._gbState) return;
   closeTimer = window.setTimeout(() => {
     closeTimer = 0;
-    if (active !== record) return;
+    const state = controller._gbState;
+    if (!state || activeController() !== controller) return;
     const focused = document.activeElement;
-    if (focused === record.anchor || record.tip.contains(focused)) return;
-    if (record.anchor.matches(':hover') || record.tip.matches(':hover')) return;
-    if (record.reason === 'hover' && (!record.hoverSettled || pointerEpoch === record.pointerBaseline)) return;
-    closeTooltip('leave');
+    if (focused === controller.activeEl || controller.activeTip.contains(focused)) return;
+    if (controller.activeEl.matches(':hover') || controller.activeTip.matches(':hover')) return;
+    if (state.reason === 'hover' && (!state.hoverSettled || pointerEpoch === state.pointerBaseline)) return;
+    closeController(controller, 'leave');
   }, delay);
 }
 
@@ -164,10 +174,11 @@ function createScriptureTip(anchor) {
   return tip;
 }
 
-function inlineTip(anchor) {
+function inlineTip(anchor, create = true, selector = '') {
+  if (selector) return anchor.querySelector(selector);
   if (anchor.matches('.gterm')) return anchor.querySelector('.gtip');
   if (anchor.matches('.fn-marker')) return anchor.querySelector('.tooltip');
-  if (anchor.matches('.bref[data-ref]')) return anchor.querySelector('.btip') || createScriptureTip(anchor);
+  if (anchor.matches('.bref[data-ref]')) return anchor.querySelector('.btip') || (create ? createScriptureTip(anchor) : null);
   return null;
 }
 
@@ -191,7 +202,8 @@ function prepareGlossaryTip(tip) {
     expand.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     frame.classList.toggle('is-expanded', expanded);
     if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
-    if (active?.tip === tip) position(tip, active.anchor);
+    const controller = activeController();
+    if (controller?.activeTip === tip) position(controller);
   });
 }
 
@@ -208,9 +220,12 @@ function clearAuthoritativeGeometry(tip) {
   for (const property of ['left', 'top', 'right', 'bottom', 'max-height']) tip.style.removeProperty(property);
 }
 
-function position(tip, anchor) {
-  const sheet = active?.tip === tip && active.mobileSheet;
-  if (sheet) {
+function position(controller) {
+  const state = controller?._gbState;
+  const tip = controller?.activeTip;
+  const anchor = controller?.activeEl;
+  if (!state || !tip || !anchor) return;
+  if (state.mobileSheet) {
     clearAuthoritativeGeometry(tip);
     setImportant(tip.style, 'left', '0px');
     setImportant(tip.style, 'right', '0px');
@@ -226,7 +241,6 @@ function position(tip, anchor) {
   setImportant(tip.style, 'right', 'auto');
   setImportant(tip.style, 'bottom', 'auto');
   setImportant(tip.style, 'max-height', `${Math.max(160, window.innerHeight - margin * 2)}px`);
-
   const anchorRect = anchor.getBoundingClientRect();
   const tipRect = tip.getBoundingClientRect();
   const width = Math.min(tipRect.width, Math.max(0, window.innerWidth - margin * 2));
@@ -236,7 +250,6 @@ function position(tip, anchor) {
   let top = anchorRect.top - height - gap;
   if (top < margin) top = anchorRect.bottom + gap;
   top = Math.max(margin, Math.min(top, window.innerHeight - margin - height));
-
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
   setImportant(tip.style, 'top', `${Math.round(top)}px`);
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
@@ -254,118 +267,121 @@ function ensureMobileClose(tip, controller) {
   tip.insertBefore(close, tip.firstChild);
 }
 
-function restore(record) {
-  const { tip, placeholder } = record;
+function restore(controller) {
+  const state = controller?._gbState;
+  const tip = controller?.activeTip;
+  if (!state || !tip) return;
   tip.classList.remove('gb-floating-tip', 'is-open');
   clearAuthoritativeGeometry(tip);
   tip.style.removeProperty('position');
   tip.style.removeProperty('--gb-tip-arrow-x');
-  if (placeholder?.parentNode) {
-    placeholder.parentNode.insertBefore(tip, placeholder);
-    placeholder.remove();
+  if (state.placeholder?.parentNode) {
+    state.placeholder.parentNode.insertBefore(tip, state.placeholder);
+    state.placeholder.remove();
   }
 }
 
-export function closeTooltip(reason = 'close') {
+function closeController(controller, reason = 'close') {
   cancelClose();
-  const record = active;
-  const controller = activeController;
-  if (!record) return;
-  active = null;
-  activeController = null;
-  record.anchor.classList.remove('is-open');
-  record.anchor.setAttribute('aria-expanded', 'false');
-  if (record.mobileSheet) {
+  const state = controller?._gbState;
+  const anchor = controller?.activeEl;
+  if (!state || !anchor || !controller.activeTip) return false;
+  anchor.classList.remove('is-open');
+  anchor.setAttribute('aria-expanded', 'false');
+  if (state.mobileSheet) {
     if (overlayRuntime()) overlayRuntime().close(OWNER, reason);
     else window.SiteUtils?.unlockScroll?.(`overlay:${OWNER}`);
   }
-  restore(record);
-  if (controller) {
-    controller.activeEl = null;
-    controller.activeTip = null;
-  }
-  if (!siteUtils()._tooltipControllers.some((candidate) => candidate.activeEl)) {
-    document.documentElement.classList.remove('gb-tooltip-open');
-  }
+  restore(controller);
+  controller.activeEl = null;
+  controller.activeTip = null;
+  controller._gbState = null;
+  if (!activeController()) document.documentElement.classList.remove('gb-tooltip-open');
+  if (!state.mobileSheet && /^escape/.test(reason)) anchor.focus({ preventScroll: true });
+  return true;
 }
 
-function openTooltip(anchor, reason = 'open') {
-  if (reason === 'hover' && active && active.anchor !== anchor && active.reason !== 'hover'
-    && pointerEpoch === active.pointerBaseline) return;
-  cancelClose();
-  const tip = prepareTip(inlineTip(anchor));
-  const controller = controllerFor(anchor);
-  if (!tip || !controller) return;
-  if (active?.anchor === anchor) {
-    active.reason = reason;
-    active.pointerBaseline = pointerEpoch;
-    if (reason === 'hover') {
-      active.hoverSettled = false;
-      settleHover(active);
+export function closeTooltip(reason = 'close') {
+  const controller = activeController();
+  return controller ? closeController(controller, reason) : false;
+}
+
+function bindTipInteraction(tip) {
+  if (tip.dataset.gbInteractionBound === '1') return;
+  tip.dataset.gbInteractionBound = '1';
+  tip.addEventListener('pointerenter', cancelClose);
+  tip.addEventListener('mouseenter', cancelClose);
+  tip.addEventListener('pointerleave', () => scheduleClose());
+  tip.addEventListener('mouseleave', () => scheduleClose());
+  tip.addEventListener('click', (event) => {
+    const controller = activeController();
+    if (!controller || controller.activeTip !== tip) return;
+    const close = event.target instanceof Element ? event.target.closest('[data-tooltip-close]') : null;
+    if (close && tip.contains(close)) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeController(controller, 'control');
+      return;
     }
-    position(tip, anchor);
+    const interactive = event.target instanceof Element ? event.target.closest(INTERACTIVE) : null;
+    if (interactive && tip.contains(interactive)) {
+      event.stopPropagation();
+      return;
+    }
+    if (mobileViewport()) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeController(controller, 'surface');
+      return;
+    }
+    event.stopPropagation();
+  });
+}
+
+function openController(controller, anchor, reason = 'open') {
+  if (!controller || !anchor) return;
+  const current = activeController();
+  if (current && current !== controller) current.close(true, 'replace');
+  if (controller.activeEl === anchor && controller._gbState) {
+    controller._gbState.reason = reason;
+    controller._gbState.pointerBaseline = pointerEpoch;
+    if (reason === 'hover') {
+      controller._gbState.hoverSettled = false;
+      settleHover(controller);
+    }
+    position(controller);
     return;
   }
-  closeTooltip('replace');
-  cancelClose();
+  if (controller._gbState) closeController(controller, 'replace');
 
+  const tip = prepareTip(inlineTip(anchor));
+  if (!tip) return;
   const placeholder = document.createComment('gb-inline-tooltip');
   tip.parentNode?.insertBefore(placeholder, tip);
   document.body.appendChild(tip);
   ensureMobileClose(tip, controller);
+  bindTipInteraction(tip);
   tip.classList.add('gb-floating-tip', 'is-open');
   anchor.classList.add('is-open');
   anchor.setAttribute('aria-expanded', 'true');
   document.documentElement.classList.add('gb-tooltip-open');
 
-  activeController = controller;
-  active = {
-    anchor,
-    tip,
+  controller.activeEl = anchor;
+  controller.activeTip = tip;
+  controller._gbState = {
     placeholder,
     mobileSheet: controller.isMobileSheet(),
     reason,
     hoverSettled: reason !== 'hover',
     pointerBaseline: pointerEpoch,
   };
-  controller.activeEl = anchor;
-  controller.activeTip = tip;
-  position(tip, anchor);
+  position(controller);
   window.requestAnimationFrame(() => {
-    if (active?.tip === tip) position(tip, anchor);
+    if (controller.activeTip === tip) position(controller);
   });
-  if (reason === 'hover') settleHover(active);
+  if (reason === 'hover') settleHover(controller);
 
-  if (tip.dataset.gbInteractionBound !== '1') {
-    tip.dataset.gbInteractionBound = '1';
-    tip.addEventListener('pointerenter', cancelClose);
-    tip.addEventListener('mouseenter', cancelClose);
-    tip.addEventListener('pointerleave', () => scheduleClose());
-    tip.addEventListener('mouseleave', () => scheduleClose());
-    tip.addEventListener('click', (event) => {
-      const close = event.target instanceof Element ? event.target.closest('[data-tooltip-close]') : null;
-      if (close && tip.contains(close)) {
-        event.preventDefault();
-        event.stopPropagation();
-        closeTooltip('control');
-        return;
-      }
-      const interactive = event.target instanceof Element ? event.target.closest(INTERACTIVE) : null;
-      if (interactive && tip.contains(interactive)) {
-        event.stopPropagation();
-        return;
-      }
-      if (mobileViewport()) {
-        event.preventDefault();
-        event.stopPropagation();
-        closeTooltip('surface');
-        return;
-      }
-      event.stopPropagation();
-    });
-  }
-
-  if (active.mobileSheet) {
+  if (controller._gbState.mobileSheet) {
     const runtime = overlayRuntime();
     if (runtime) {
       runtime.open(OWNER, {
@@ -376,7 +392,7 @@ function openTooltip(anchor, reason = 'open') {
         restoreFocus: true,
         lockScroll: true,
         onRequestClose: (closeReason) => {
-          closeTooltip(closeReason || 'request');
+          closeController(controller, closeReason || 'request');
           return false;
         },
         reason,
@@ -387,8 +403,9 @@ function openTooltip(anchor, reason = 'open') {
 
 function initializeAnchor(anchor) {
   if (!(anchor instanceof Element) || anchor.dataset.gbTooltipReady === '1') return;
+  const controller = controllerFor(anchor);
   const tip = prepareTip(inlineTip(anchor));
-  if (!tip || !controllerFor(anchor)) return;
+  if (!controller || !tip) return;
   anchor.dataset.gbTooltipReady = '1';
   anchor.setAttribute('aria-expanded', 'false');
   if (!anchor.hasAttribute('tabindex') && !anchor.matches('button, a[href], input, select, textarea')) anchor.tabIndex = 0;
@@ -396,43 +413,42 @@ function initializeAnchor(anchor) {
 
   const openHover = (event) => {
     if (event.pointerType === 'touch' || mobileViewport()) return;
-    openTooltip(anchor, 'hover');
+    openController(controller, anchor, 'hover');
   };
   const leaveHover = (event) => {
     if (event.pointerType === 'touch' || mobileViewport()) return;
-    if (containsOwnedSurface(active, event.relatedTarget)) {
+    if (containsOwnedSurface(controller, event.relatedTarget)) {
       cancelClose();
       return;
     }
-    scheduleClose();
+    scheduleClose(controller);
   };
-
   anchor.addEventListener('pointerenter', openHover);
   anchor.addEventListener('mouseenter', openHover);
   anchor.addEventListener('pointerleave', leaveHover);
   anchor.addEventListener('mouseleave', leaveHover);
-  anchor.addEventListener('focus', () => openTooltip(anchor, 'focus'));
-  anchor.addEventListener('blur', () => scheduleClose(120));
+  anchor.addEventListener('focus', () => openController(controller, anchor, 'focus'));
+  anchor.addEventListener('blur', () => scheduleClose(controller, 120));
   anchor.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
     cancelClose();
-    if (active?.anchor !== anchor) {
-      openTooltip(anchor, 'click');
+    if (controller.activeEl !== anchor) {
+      openController(controller, anchor, 'click');
       return;
     }
-    if (active.reason === 'click') closeTooltip('toggle');
+    if (controller._gbState?.reason === 'click') closeController(controller, 'toggle');
     else {
-      active.reason = 'click';
-      active.pointerBaseline = pointerEpoch;
+      controller._gbState.reason = 'click';
+      controller._gbState.pointerBaseline = pointerEpoch;
     }
   });
   anchor.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     cancelClose();
-    if (active?.anchor === anchor && active.reason === 'keyboard') closeTooltip('toggle');
-    else openTooltip(anchor, 'keyboard');
+    if (controller.activeEl === anchor && controller._gbState?.reason === 'keyboard') closeController(controller, 'toggle');
+    else openController(controller, anchor, 'keyboard');
   });
 }
 
@@ -447,9 +463,10 @@ function touchPoint(event, listName) {
 }
 
 function touchTarget(event) {
+  if (event.target instanceof Element) return event.target;
   const point = touchPoint(event, 'changedTouches');
-  if (point && document.elementFromPoint) return document.elementFromPoint(point.x, point.y) || event.target;
-  return event.target;
+  if (point && document.elementFromPoint) return document.elementFromPoint(point.x, point.y);
+  return null;
 }
 
 export function initGlossaryTooltips(scope = document) {
@@ -470,9 +487,10 @@ export function installArticleTooltips() {
   document.addEventListener('gb:quiz-rendered', (event) => initInlineTooltips(event.detail?.root || document));
   document.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch' || !recordPointerMovement(event)) return;
-    if (!active || active.mobileSheet || active.reason !== 'hover') return;
-    if (containsOwnedSurface(active, event.target)) cancelClose();
-    else scheduleClose();
+    const controller = activeController();
+    if (!controller || controller._gbState?.mobileSheet || controller._gbState?.reason !== 'hover') return;
+    if (containsOwnedSurface(controller, event.target)) cancelClose();
+    else scheduleClose(controller);
   }, true);
   window.addEventListener('touchstart', (event) => {
     touchStart = touchPoint(event, 'touches');
@@ -489,41 +507,62 @@ export function installArticleTooltips() {
     if (dx * dx + dy * dy > TOUCH_SLOP_SQUARED) touchMoved = true;
   }, { capture: true, passive: true });
   window.addEventListener('touchend', (event) => {
-    const record = active;
+    const controller = activeController();
     const moved = touchMoved;
     const target = touchTarget(event);
     resetTouchState();
-    if (!record || moved || !(target instanceof Element)) return;
+    if (!controller || moved || !(target instanceof Element)) return;
     const close = target.closest('[data-tooltip-close]');
-    if (close && record.tip.contains(close)) {
+    if (close && controller.activeTip.contains(close)) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation?.();
-      closeTooltip('control-touchend');
+      controller.close(true, 'control-touchend');
       return;
     }
-    if (!record.tip.contains(target)) return;
+    if (!controller.activeTip.contains(target)) return;
     const interactive = target.closest(INTERACTIVE);
-    if (interactive && record.tip.contains(interactive)) return;
+    if (interactive && controller.activeTip.contains(interactive)) return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
-    closeTooltip('surface-touchend');
+    controller.close(true, 'surface-touchend');
   }, { capture: true, passive: false });
   document.addEventListener('pointerdown', (event) => {
-    if (!active) return;
-    if (containsOwnedSurface(active, event.target)) return;
-    closeTooltip('outside');
+    const controller = activeController();
+    if (!controller || containsOwnedSurface(controller, event.target)) return;
+    controller.close(true, 'outside');
   }, true);
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && active && !active.mobileSheet) closeTooltip('escape');
+    const controller = activeController();
+    if (event.key === 'Escape' && controller && !controller._gbState?.mobileSheet) {
+      event.preventDefault();
+      controller.close(false, 'escape');
+    }
   }, true);
-  window.addEventListener('resize', () => active && position(active.tip, active.anchor), { passive: true });
+  window.addEventListener('resize', () => {
+    const controller = activeController();
+    if (controller) position(controller);
+  }, { passive: true });
   window.addEventListener('scroll', () => {
-    if (!active || active.mobileSheet) return;
-    if (!active.anchor.isConnected) closeTooltip('detached');
-    else position(active.tip, active.anchor);
+    const controller = activeController();
+    if (!controller || controller._gbState?.mobileSheet) return;
+    if (!controller.activeEl.isConnected) controller.close(true, 'detached');
+    else position(controller);
   }, { passive: true, capture: true });
-  window.GBArticleTooltips = Object.freeze({ version: VERSION, init: initInlineTooltips, close: closeTooltip });
+  window.GBArticleTooltips = Object.freeze({
+    version: VERSION,
+    init: initInlineTooltips,
+    close: closeTooltip,
+    snapshot: () => {
+      const controller = activeController();
+      return controller ? {
+        anchorSel: controller.anchorSel,
+        tipSel: controller.tipSel,
+        active: true,
+        mobileSheet: Boolean(controller._gbState?.mobileSheet),
+      } : { active: false };
+    },
+  });
   return window.GBArticleTooltips;
 }
