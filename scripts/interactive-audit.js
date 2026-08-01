@@ -481,13 +481,34 @@ async function checkHermenevtikaFootnotes(browser) {
     };
   });
   if (!mobileState.markerOpen || !mobileState.tipOpen || mobileState.generatedClose !== 1 || mobileState.unexpectedInteractive !== 0 || !mobileState.scrollLocked) push('hermenevtika-mobile-footnote-sheet-contract', HERMENEUTIKA_URL, mobileState);
+  const mobileEscapeReady = await mobile.evaluate(() => {
+    const tip = document.querySelector('.gb-floating-tip.is-open');
+    const close = tip?.querySelector('[data-tooltip-close][data-gb-generated-close="1"]');
+    window.__gbAuditEscapeEvents = [];
+    window.addEventListener('keydown', (event) => {
+      window.__gbAuditEscapeEvents.push({ key: event.key, code: event.code, defaultPrevented: event.defaultPrevented });
+    }, { capture: true, once: true });
+    close?.focus({ preventScroll: true });
+    return {
+      closePresent: !!close,
+      closeFocused: document.activeElement === close,
+      activeTag: document.activeElement?.tagName || '',
+      controller: window.GBArticleTooltips?.snapshot?.() || null,
+      overlayOwner: window.OverlayRuntime?.topLayer?.()?.ownerId || '',
+    };
+  });
+  if (!mobileEscapeReady.closePresent || !mobileEscapeReady.closeFocused) push('hermenevtika-mobile-footnote-escape-focus-unavailable', HERMENEUTIKA_URL, mobileEscapeReady);
   await mobile.keyboard.press('Escape');
   await mobile.waitForTimeout(250);
   const mobileClosed = await mobile.evaluate(() => ({
     tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
     scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden',
+    escapeEvents: window.__gbAuditEscapeEvents || [],
+    controller: window.GBArticleTooltips?.snapshot?.() || null,
+    overlayOwner: window.OverlayRuntime?.topLayer?.()?.ownerId || '',
+    activeTag: document.activeElement?.tagName || '',
   }));
-  if (mobileClosed.tipOpen || mobileClosed.scrollLocked) push('hermenevtika-mobile-footnote-sheet-did-not-close', HERMENEUTIKA_URL, mobileClosed);
+  if (mobileClosed.tipOpen || mobileClosed.scrollLocked) push('hermenevtika-mobile-footnote-sheet-did-not-close', HERMENEUTIKA_URL, { before: mobileEscapeReady, after: mobileClosed });
   await mobile.close();
   stats.footnotes++;
 }

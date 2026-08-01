@@ -29,8 +29,9 @@ assert.equal(count(nativeTooltips, /api\.makeTooltipController\('\.gterm', '\.gt
 assert.match(nativeTooltips, /controller\.activeEl = anchor/, 'native active anchor must be reflected in the public controller record');
 assert.match(nativeTooltips, /controller\.activeTip = tip/, 'native active tooltip must be reflected in the public controller record');
 assert.match(nativeTooltips, /return anchor\.matches\(candidate\.anchorSel\)/, 'controller lookup must allow the canonical owner to materialize a lazy scripture tip');
-assert.match(nativeTooltips, /window\.addEventListener\('keydown',[\s\S]*event\.key === 'Escape'[\s\S]*event\.stopImmediatePropagation\?\.\(\)[\s\S]*controller\.close\(false, 'escape'\)[\s\S]*}, true\);/, 'the same active public controller must consume Escape at window capture above downstream document handlers');
-assert.doesNotMatch(nativeTooltips, /document\.addEventListener\('keydown',[\s\S]*controller\.close\(false, 'escape'\)/, 'native Escape ownership must not remain below the document propagation boundary');
+assert.match(nativeTooltips, /window\.addEventListener\('keydown',[\s\S]*event\.key === 'Escape'[\s\S]*closeController\(controller, 'escape'\)[\s\S]*}, true\);/, 'the active public controller must close directly from window-capture Escape');
+assert.doesNotMatch(nativeTooltips, /document\.addEventListener\('keydown',[\s\S]*closeController\(controller, 'escape'\)/, 'native Escape ownership must not remain below the document propagation boundary');
+assert.doesNotMatch(nativeTooltips, /controller\.close\(false, 'escape'\)/, 'Escape must not pass through a wrapper whose force semantics vary by controller implementation');
 assert.match(nativeTooltips, /onRequestClose:[\s\S]*closeController\(controller, requestedReason, true\);[\s\S]*return true/, 'OverlayRuntime Escape requests must synchronously finalize native tooltip state before the record is closed');
 assert.doesNotMatch(nativeTooltips, /onRequestClose:[\s\S]*closeController\(controller, closeReason \|\| 'request'\)[\s\S]*return false/, 'OverlayRuntime requests must not recursively close the same overlay record');
 assert.doesNotMatch(nativeTooltips, /close\.addEventListener\(/, 'generated close controls must not add a second local event owner');

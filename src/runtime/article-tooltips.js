@@ -538,8 +538,7 @@ export function installArticleTooltips() {
     const controller = activeController();
     if ((event.key === 'Escape' || event.key === 'Esc') && controller) {
       event.preventDefault();
-      event.stopImmediatePropagation?.();
-      controller.close(false, 'escape');
+      closeController(controller, 'escape');
     }
   }, true);
   window.addEventListener('resize', () => {
