@@ -31,6 +31,16 @@ assert.match(projected.html, /<noscript data-note-registry-noscript>/);
 assert.match(projected.html, /@media print/);
 assert.equal(collectAndProjectHtml(projected.html, route).html, projected.html, 'projection must be idempotent');
 
+const searchableProjection = collectAndProjectHtml(`<!doctype html><html><body><main>
+<article data-pagefind-body><p>Searchable <span class="fn-marker">1<span class="tooltip">Indexed note.</span></span></p></article>
+</main></body></html>`, route);
+assert.deepEqual(searchableProjection.errors, []);
+assert.match(
+  searchableProjection.html,
+  /<article data-pagefind-body>[\s\S]*data-note-registry-endnotes[\s\S]*<\/article>/,
+  'generated endnotes must remain inside the common Pagefind body'
+);
+
 const reordered = source.replace(
   '<p>Alpha <span class="fn-marker">[1]<span class="tooltip">First <em>note</em>.</span></span></p>\n<p>Map',
   '<p>Beta <span class="fn-marker">[2]<span class="tooltip">Second note.</span></span></p>\n<p>Map'
