@@ -286,7 +286,7 @@ function buildEndnotes(route, notes) {
 @media print{.gb-note-endnotes{display:block!important;position:static!important;width:auto!important;height:auto!important;max-height:none!important;margin:2rem 0 0!important;padding:0!important;overflow:visible!important;clip:auto!important;clip-path:none!important;visibility:visible!important;opacity:1!important;content-visibility:visible!important;contain:none!important;transform:none!important;color:#111!important;font-size:10pt!important;line-height:1.45!important;break-before:auto!important;page-break-before:auto!important;break-after:auto!important;page-break-after:auto!important}.gb-note-endnotes,.gb-note-endnotes *{visibility:visible!important;opacity:1!important;content-visibility:visible!important;clip:auto!important;clip-path:none!important;transform:none!important;color:#111!important}.gb-note-endnotes h2{display:block!important;font-size:18pt!important;line-height:1.2!important;break-after:avoid-page!important;page-break-after:avoid!important}.gb-note-endnotes ol{display:block!important;margin:.75rem 0 0!important;padding-left:1.5rem!important;list-style:decimal!important;overflow:visible!important;font-size:10pt!important;line-height:1.45!important}.gb-note-endnotes li{display:list-item!important;position:static!important;width:auto!important;height:auto!important;max-height:none!important;margin:0 0 .55rem!important;padding:0!important;overflow:visible!important;clip:auto!important;white-space:normal!important;font-size:10pt!important;line-height:1.45!important;break-inside:auto!important;page-break-inside:auto!important}.gb-note-endnotes__content{display:inline!important;position:static!important;width:auto!important;height:auto!important;overflow:visible!important;white-space:normal!important}.fn-marker>.tooltip{display:none!important}.gb-note-endnotes__back{display:none!important}}
 </style>
 <noscript data-note-registry-noscript><style>.gb-note-endnotes{position:static!important;width:auto!important;height:auto!important;margin:2rem 0!important;overflow:visible!important;clip:auto!important}</style></noscript>
-<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable aria-labelledby="${headingId}">
+<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable data-pagefind-body aria-labelledby="${headingId}">
   <h2 id="${headingId}">Примечания</h2>
   <ol>
 ${items}
@@ -370,13 +370,16 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
   if (notes.length) {
     const containsEveryMarker = (node) => markers.every((marker) => marker.start >= node.openEnd && marker.end <= node.endStart);
     const byNarrowestRange = (left, right) => (left.endStart - left.openEnd) - (right.endStart - right.openEnd);
+    const articleOwner = parsed.all
+      .filter((node) => node.tag === 'article' && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
     const searchable = parsed.all
       .filter((node) => Object.prototype.hasOwnProperty.call(node.attrs, 'data-pagefind-body') && containsEveryMarker(node))
       .sort(byNarrowestRange)[0];
     const fallback = parsed.all
       .filter((node) => (node.tag === 'main' || node.tag === 'article') && containsEveryMarker(node))
       .sort(byNarrowestRange)[0];
-    const insertion = searchable?.endStart ?? fallback?.endStart ?? -1;
+    const insertion = articleOwner?.end ?? searchable?.endStart ?? fallback?.endStart ?? -1;
     if (insertion < 0) errors.push(`${route}: notes exist but no common searchable, main or article insertion point`);
     else patches.push({ start: insertion, end: insertion, value: `\n${buildEndnotes(route, notes)}\n` });
   }
