@@ -87,9 +87,8 @@ async function ownerState(trigger, surface) {
     const activeTip = [...document.querySelectorAll(data.tip)]
       .find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
     const rect = activeTip?.getBoundingClientRect() || null;
-    const close = activeTip
-      ? [...activeTip.children].find((node) => node.matches?.('[data-tooltip-close]')) || null
-      : null;
+    const closeControls = activeTip ? [...activeTip.querySelectorAll('[data-tooltip-close]')] : [];
+    const close = closeControls.length === 1 ? closeControls[0] : null;
     const closeRect = close?.getBoundingClientRect() || null;
     const controller = (window.SiteUtils?._tooltipControllers || [])
       .find((candidate) => candidate.activeEl === anchor) || null;
@@ -109,6 +108,7 @@ async function ownerState(trigger, surface) {
       controllerMobileSheetActive: Boolean(controller?.isMobileSheet?.()),
       tipContainsInteractive: Boolean(activeTip?.querySelector('a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])')),
       tipIsNestedInTrigger: Boolean(activeTip && anchor.contains(activeTip)),
+      closeControlCount: closeControls.length,
       closeControl: Boolean(close),
       closeControlVisible: Boolean(closeRect && closeRect.width > 0 && closeRect.height > 0 && getComputedStyle(close).visibility !== 'hidden'),
       closeControlRect: closeRect ? { left: closeRect.left, top: closeRect.top, right: closeRect.right, bottom: closeRect.bottom } : null,
@@ -135,7 +135,9 @@ async function closeMobileTip(page, trigger, surface) {
       .find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
     if (!tip) return { error: 'active floating tip missing' };
 
-    const close = [...tip.children].find((node) => node.matches?.('[data-tooltip-close]')) || null;
+    const closeControls = [...tip.querySelectorAll('[data-tooltip-close]')];
+    if (closeControls.length > 1) return { error: `multiple tooltip close controls: ${closeControls.length}` };
+    const close = closeControls[0] || null;
     const candidates = [];
     if (close) {
       const rect = close.getBoundingClientRect();
