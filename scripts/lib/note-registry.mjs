@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 export const GENERATED_START = '<!-- NOTE_REGISTRY:START -->';
 export const GENERATED_END = '<!-- NOTE_REGISTRY:END -->';
 const VOID = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+const RAW_TEXT = new Set(['script','style','textarea','title']);
 const INTERACTIVE_TAGS = new Set(['a','button','input','select','textarea','summary']);
 const CONTEXT_TAGS = new Set(['p','li','blockquote','td','th','dd','dt','figcaption','caption']);
 const STABLE_ID_RE = /^[a-z][a-z0-9-]{2,127}$/;
@@ -76,7 +77,23 @@ export function parseElements(html) {
     if (node.parent) node.parent.children.push(node); else roots.push(node);
     all.push(node);
     const selfClosing = raw.endsWith('/>') || VOID.has(tag);
-    if (!selfClosing) stack.push(node);
+    if (selfClosing) continue;
+    if (RAW_TEXT.has(tag)) {
+      const closeRe = new RegExp(`</${tag}\\s*>`, 'ig');
+      closeRe.lastIndex = re.lastIndex;
+      const close = closeRe.exec(html);
+      if (close) {
+        node.endStart = close.index;
+        node.end = closeRe.lastIndex;
+        re.lastIndex = closeRe.lastIndex;
+      } else {
+        node.endStart = html.length;
+        node.end = html.length;
+        re.lastIndex = html.length;
+      }
+      continue;
+    }
+    stack.push(node);
   }
   while (stack.length) {
     const node = stack.pop();
@@ -141,9 +158,47 @@ function nearestHeadingContext(html, marker) {
   return `${anchor} ${stripTags(last[3])}`.trim();
 }
 
+function lexicalContextContainer(html, marker) {
+  const candidates = [];
+  for (const tag of CONTEXT_TAGS) {
+    const tokenRe = new RegExp(`<\\/?${tag}\\b[^>]*>`, 'gi');
+    const stack = [];
+    let match;
+    while ((match = tokenRe.exec(html)) && match.index < marker.start) {
+      const raw = match[0];
+      if (raw.startsWith('</')) stack.pop();
+      else if (!raw.endsWith('/>')) {
+        stack.push({
+          tag,
+          start: match.index,
+          openEnd: tokenRe.lastIndex,
+          openTag: raw,
+          attrs: parseAttributes(raw),
+        });
+      }
+    }
+    const open = stack.at(-1);
+    if (!open) continue;
+    let depth = 1;
+    tokenRe.lastIndex = marker.end;
+    while ((match = tokenRe.exec(html))) {
+      const raw = match[0];
+      if (raw.startsWith('</')) depth -= 1;
+      else if (!raw.endsWith('/>')) depth += 1;
+      if (depth === 0) {
+        candidates.push({ ...open, endStart: match.index, end: tokenRe.lastIndex });
+        break;
+      }
+    }
+  }
+  return candidates.sort((left, right) => right.start - left.start)[0] || null;
+}
+
 function authoredContext(html, marker) {
-  let container = marker.parent;
-  while (container && !CONTEXT_TAGS.has(container.tag)) container = container.parent;
+  const lexical = lexicalContextContainer(html, marker);
+  let tree = marker.parent;
+  while (tree && !CONTEXT_TAGS.has(tree.tag)) tree = tree.parent;
+  const container = lexical || tree;
   const containerAnchor = container
     ? [container.attrs.id, container.attrs['data-section-id'], container.attrs['data-source-id']].filter(Boolean).join(' ')
     : '';
@@ -205,8 +260,7 @@ function removeGenerated(html) {
 }
 
 function findDirectTip(marker) {
-  const tips = descendants(marker, (node) => classes(node).has('tooltip'));
-  return tips;
+  return descendants(marker, (node) => classes(node).has('tooltip'));
 }
 
 function nestedControlsOutsideTip(marker, tip) {
