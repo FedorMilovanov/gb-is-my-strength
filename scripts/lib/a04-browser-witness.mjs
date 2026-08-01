@@ -4,6 +4,12 @@ import { DESKTOP, MOBILE, INTERACTIVE, configureContext } from './a04-contract.m
 export async function inspectRoute(page, surfaces, legacy) {
   return page.evaluate(({ surfaces, legacy, interactiveSelector }) => {
     const isException = (node, selector) => Boolean(selector && (node.matches(selector) || node.closest(selector)));
+    const describe = (node) => {
+      if (!node) return null;
+      const id = node.id ? `#${node.id}` : '';
+      const classes = [...node.classList].slice(0, 5).map((name) => `.${name}`).join('');
+      return `${node.tagName.toLowerCase()}${id}${classes}`;
+    };
     const inspect = (surface) => {
       const raw = [...document.querySelectorAll(surface.trigger)];
       const exceptions = raw.filter((node) => isException(node, surface.exception));
@@ -12,12 +18,6 @@ export async function inspectRoute(page, surfaces, legacy) {
       let empty = 0;
       let nested = 0;
       const nestedSamples = [];
-      const describe = (node) => {
-        if (!node) return null;
-        const id = node.id ? `#${node.id}` : '';
-        const classes = [...node.classList].slice(0, 5).map((name) => `.${name}`).join('');
-        return `${node.tagName.toLowerCase()}${id}${classes}`;
-      };
       for (const trigger of owned) {
         const tips = [...trigger.querySelectorAll(surface.tip)];
         if (tips.length !== 1) unpaired += 1;
@@ -82,78 +82,17 @@ async function findHitTestableTrigger(page, surface) {
   return null;
 }
 
-async function physicalTriggerTap(page, trigger, label) {
-  await trigger.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
-  await page.waitForTimeout(120);
-  const point = await trigger.evaluate((node, label) => {
-    const rect = node.getBoundingClientRect();
-    const style = getComputedStyle(node);
-    const describe = (target) => target ? {
-      tag: target.tagName?.toLowerCase() || null,
-      id: target.id || '',
-      className: [...(target.classList || [])].slice(0, 5).join(' '),
-    } : null;
-    if (rect.width <= 0 || rect.height <= 0 || style.display === 'none' || style.visibility === 'hidden') {
-      return {
-        hit: false,
-        label,
-        reason: 'trigger-not-visible',
-        rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-      };
-    }
-    const fractions = [
-      [0.5, 0.5],
-      [0.25, 0.5], [0.75, 0.5],
-      [0.5, 0.25], [0.5, 0.75],
-      [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75],
-    ];
-    const attempts = [];
-    for (const [fx, fy] of fractions) {
-      const x = Math.max(1, Math.min(innerWidth - 1, rect.left + rect.width * fx));
-      const y = Math.max(1, Math.min(innerHeight - 1, rect.top + rect.height * fy));
-      const top = document.elementFromPoint(x, y);
-      const owned = Boolean(top && (top === node || node.contains(top)));
-      attempts.push({ x, y, owned, top: describe(top) });
-      if (owned) {
-        return {
-          hit: true,
-          label,
-          x,
-          y,
-          top: describe(top),
-          rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-          attempts,
-        };
-      }
-    }
-    return {
-      hit: false,
-      label,
-      reason: 'no-hit-testable-trigger-point',
-      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-      attempts,
-    };
-  }, label);
-  if (!point.hit) throw new Error(`${label} has no hit-testable trigger point: ${JSON.stringify(point)}`);
-  await page.touchscreen.tap(point.x, point.y);
-  return point;
-}
-
 async function ownerState(trigger, surface) {
   return trigger.evaluate((anchor, data) => {
-    const activeTip = [...document.querySelectorAll(data.tip)].find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
+    const activeTip = [...document.querySelectorAll(data.tip)]
+      .find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
     const rect = activeTip?.getBoundingClientRect() || null;
-    const close = activeTip?.querySelector(':scope > [data-tooltip-close]') || null;
+    const close = activeTip
+      ? [...activeTip.children].find((node) => node.matches?.('[data-tooltip-close]')) || null
+      : null;
     const closeRect = close?.getBoundingClientRect() || null;
-    const anchorRect = anchor.getBoundingClientRect();
-    const anchorCenter = {
-      x: anchorRect.left + anchorRect.width / 2,
-      y: anchorRect.top + anchorRect.height / 2,
-    };
-    const anchorTop = document.elementFromPoint(
-      Math.max(1, Math.min(innerWidth - 1, anchorCenter.x)),
-      Math.max(1, Math.min(innerHeight - 1, anchorCenter.y)),
-    );
+    const controller = (window.SiteUtils?._tooltipControllers || [])
+      .find((candidate) => candidate.activeEl === anchor) || null;
     return {
       anchorOpen: anchor.classList.contains('is-open'),
       ariaExpanded: anchor.getAttribute('aria-expanded'),
@@ -163,18 +102,16 @@ async function ownerState(trigger, surface) {
       insideViewport: Boolean(rect && rect.left >= -6 && rect.top >= -6 && rect.right <= innerWidth + 6 && rect.bottom <= innerHeight + 6),
       rootOpen: document.documentElement.classList.contains('gb-tooltip-open'),
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      mobileMedia: matchMedia('(max-width: 768px)').matches,
+      innerWidth,
+      visualViewportWidth: window.visualViewport?.width ?? null,
+      controllerMobileSheet: Boolean(controller?.opts?.mobileSheet),
+      controllerMobileSheetActive: Boolean(controller?.isMobileSheet?.()),
       tipContainsInteractive: Boolean(activeTip?.querySelector('a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])')),
       tipIsNestedInTrigger: Boolean(activeTip && anchor.contains(activeTip)),
       closeControl: Boolean(close),
       closeControlVisible: Boolean(closeRect && closeRect.width > 0 && closeRect.height > 0 && getComputedStyle(close).visibility !== 'hidden'),
       closeControlRect: closeRect ? { left: closeRect.left, top: closeRect.top, right: closeRect.right, bottom: closeRect.bottom } : null,
-      anchorRect: { left: anchorRect.left, top: anchorRect.top, right: anchorRect.right, bottom: anchorRect.bottom },
-      anchorCenterHit: Boolean(anchorTop && (anchorTop === anchor || anchor.contains(anchorTop))),
-      anchorCenterTop: anchorTop ? {
-        tag: anchorTop.tagName?.toLowerCase() || null,
-        id: anchorTop.id || '',
-        className: [...(anchorTop.classList || [])].slice(0, 5).join(' '),
-      } : null,
       rect: rect ? { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom } : null,
     };
   }, surface);
@@ -185,9 +122,63 @@ async function closedState(trigger, surface) {
     anchorOpen: anchor.classList.contains('is-open'),
     ariaExpanded: anchor.getAttribute('aria-expanded'),
     focusOnTrigger: document.activeElement === anchor,
-    anyOpenTip: [...document.querySelectorAll(data.tip)].some((node) => node.classList.contains('is-open') || node.classList.contains('gb-floating-tip')),
+    anyOpenTip: [...document.querySelectorAll(data.tip)]
+      .some((node) => node.classList.contains('is-open') || node.classList.contains('gb-floating-tip')),
     rootOpen: document.documentElement.classList.contains('gb-tooltip-open'),
   }), surface);
+}
+
+async function closeMobileTip(page, trigger, surface) {
+  const action = await trigger.evaluate((anchor, data) => {
+    const interactive = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
+    const tip = [...document.querySelectorAll(data.tip)]
+      .find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
+    if (!tip) return { error: 'active floating tip missing' };
+
+    const close = [...tip.children].find((node) => node.matches?.('[data-tooltip-close]')) || null;
+    const candidates = [];
+    if (close) {
+      const rect = close.getBoundingClientRect();
+      candidates.push({ method: 'explicit-close-control', x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, owner: close });
+    }
+
+    const rect = tip.getBoundingClientRect();
+    const ratios = [
+      [0.08, 0.12], [0.5, 0.12], [0.92, 0.12],
+      [0.08, 0.5], [0.92, 0.5],
+      [0.08, 0.88], [0.5, 0.88], [0.92, 0.88],
+    ];
+    for (const [xRatio, yRatio] of ratios) {
+      candidates.push({
+        method: 'noninteractive-tip-surface',
+        x: rect.left + rect.width * xRatio,
+        y: rect.top + rect.height * yRatio,
+        owner: tip,
+      });
+    }
+
+    for (const candidate of candidates) {
+      const x = Math.max(1, Math.min(innerWidth - 1, candidate.x));
+      const y = Math.max(1, Math.min(innerHeight - 1, candidate.y));
+      const target = document.elementFromPoint(x, y);
+      if (!target || !tip.contains(target)) continue;
+      if (candidate.method === 'explicit-close-control') {
+        if (!(target === close || close?.contains(target))) continue;
+      } else if (target.closest(interactive)) {
+        continue;
+      }
+      return {
+        method: candidate.method,
+        point: { x, y },
+        target: `${target.tagName.toLowerCase()}#${target.id || ''}.${String(target.className || '').slice(0, 100)}`,
+      };
+    }
+    return { error: 'no hit-testable explicit control or noninteractive tip surface' };
+  }, surface);
+
+  if (action.error) throw new Error(action.error);
+  await page.touchscreen.tap(action.point.x, action.point.y);
+  return action;
 }
 
 async function navigateForWitness(page, base, routes, surface) {
@@ -264,7 +255,7 @@ export async function mobileWitness(browser, base, routes, surface) {
     route: null, triggerIndex: null, responseStatus: null, pageErrors: [],
     reducedMotion: false, touchOpens: false, mountedToBody: false,
     tipDetachedFromTrigger: false, insideViewport: false, secondTouchCloses: false,
-    thirdTouchReopens: false, closeMethod: '', touchPoints: [],
+    thirdTouchReopens: false, closeMethod: '', closePoint: null, closeTarget: null,
     openState: null, closedState: null, reopenedState: null, error: '',
   };
   try {
@@ -276,7 +267,7 @@ export async function mobileWitness(browser, base, routes, surface) {
     });
     const trigger = witness.trigger;
     result.reducedMotion = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-    result.touchPoints.push(await physicalTriggerTap(page, trigger, 'first-touch'));
+    await trigger.tap({ timeout: 4000 });
     await page.waitForTimeout(180);
     const state = await ownerState(trigger, surface);
     result.openState = state;
@@ -284,27 +275,27 @@ export async function mobileWitness(browser, base, routes, surface) {
     result.mountedToBody = state.mountedToBody;
     result.tipDetachedFromTrigger = !state.tipIsNestedInTrigger;
     result.insideViewport = state.insideViewport;
-    if (!result.touchOpens) throw new Error(`first physical touch did not open tooltip: ${JSON.stringify(state)}`);
+    if (!result.touchOpens) throw new Error(`first touch did not open tooltip: ${JSON.stringify(state)}`);
 
-    // SiteUtils deliberately suppresses the compatibility click generated after
-    // a touch for 1600 ms. Wait past that owner-defined window so Chromium and
-    // WebKit exercise the same second user interaction instead of racing it.
-    await page.waitForTimeout(1750);
-    result.touchPoints.push(await physicalTriggerTap(page, trigger, 'second-touch'));
-    result.closeMethod = 'physical-trigger-toggle-after-suppression-window';
+    await page.waitForTimeout(380);
+    const closeAction = await closeMobileTip(page, trigger, surface);
+    result.closeMethod = closeAction.method;
+    result.closePoint = closeAction.point;
+    result.closeTarget = closeAction.target;
     await page.waitForTimeout(300);
     const closed = await closedState(trigger, surface);
     result.closedState = closed;
     result.secondTouchCloses = !closed.anchorOpen && !closed.anyOpenTip;
-    if (!result.secondTouchCloses) throw new Error(`second physical touch did not close tooltip via ${result.closeMethod}: ${JSON.stringify(closed)}`);
+    if (!result.secondTouchCloses) throw new Error(`second touch did not close tooltip via ${result.closeMethod}: ${JSON.stringify(closed)}`);
 
-    await page.waitForTimeout(1750);
-    result.touchPoints.push(await physicalTriggerTap(page, trigger, 'third-touch'));
+    await trigger.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(140);
+    await trigger.tap({ timeout: 4000 });
     await page.waitForTimeout(220);
     const reopened = await ownerState(trigger, surface);
     result.reopenedState = reopened;
     result.thirdTouchReopens = reopened.anchorOpen && reopened.ariaExpanded === 'true' && reopened.activeTip;
-    if (!result.thirdTouchReopens) throw new Error(`third physical touch did not reopen tooltip: ${JSON.stringify(reopened)}`);
+    if (!result.thirdTouchReopens) throw new Error(`third touch did not reopen tooltip: ${JSON.stringify(reopened)}`);
   } catch (error) {
     result.error = String(error?.message || error).slice(0, 500);
   } finally {
