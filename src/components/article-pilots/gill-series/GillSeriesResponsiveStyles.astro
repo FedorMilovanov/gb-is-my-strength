@@ -34,6 +34,29 @@
     body[data-gbs2-series] .bookmark-toast {
       bottom: calc(72px + env(safe-area-inset-bottom, 0px));
     }
+
+    /*
+     * The resume prompt's copy is not interactive. A late WebKit prompt can
+     * appear between preflight and a physical TOC tap; make only its authored
+     * controls hit-testable so decorative text never masks the fixed reader
+     * bar. The prompt remains visible and its close/resume actions still work.
+     */
+    body[data-gbs2-series] .bookmark-toast.show {
+      pointer-events: none;
+    }
+
+    body[data-gbs2-series] .bookmark-toast.show :is(
+      button,
+      a[href],
+      input,
+      select,
+      textarea,
+      [role="button"],
+      [role="link"],
+      [tabindex]:not([tabindex="-1"])
+    ) {
+      pointer-events: auto;
+    }
   }
 
   @media (max-width: 48rem) {
