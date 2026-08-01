@@ -8,6 +8,8 @@ const ROOT = path.join(__dirname, '..');
 const FILE = path.join(ROOT, 'js', 'site.js');
 const WRITE = process.argv.includes('--write');
 
+const REGISTRY_SPLIT_V1 = 'if(window.SiteUtils)for(var a in r)Object.prototype.hasOwnProperty.call(r,a)&&(window.SiteUtils[a]=r[a]);else window.SiteUtils=r;';
+const REGISTRY_SHARED_V2 = 'if(window.SiteUtils){for(var a in r)Object.prototype.hasOwnProperty.call(r,a)&&(window.SiteUtils[a]=r[a]);r=window.SiteUtils}else window.SiteUtils=r;';
 const MOUNT_V1 = 'mountTip:function(e){e&&(e.parentNode!==document.body&&(o.tipPlaceholder=document.createComment("gb-tooltip-placeholder"),e.parentNode.insertBefore(o.tipPlaceholder,e),document.body.appendChild(e)),e.classList.add("gb-floating-tip","is-open"),o.activeTip=e)}';
 const MOUNT_V2 = 'mountTip:function(e){if(e){if(e.parentNode!==document.body&&(o.tipPlaceholder=document.createComment("gb-tooltip-placeholder"),e.parentNode.insertBefore(o.tipPlaceholder,e),document.body.appendChild(e)),o.isMobileSheet()&&!e.querySelector("[data-tooltip-close]")){var t=document.createElement("button");t.type="button",t.className="gb-tooltip-close",t.setAttribute("data-tooltip-close",""),t.setAttribute("data-gb-generated-close","1"),t.setAttribute("aria-label","Закрыть подсказку"),t.textContent="×",e.insertBefore(t,e.firstChild)}e.classList.add("gb-floating-tip","is-open"),o.activeTip=e}}';
 const START_V1 = 'document.addEventListener("touchstart",function(){i._tooltipTouchMoved=!1},{passive:!0})';
@@ -49,6 +51,11 @@ function normalize(source, before, after, label) {
 
 const source = fs.readFileSync(FILE, 'utf8');
 let next = source;
+if (count(next, REGISTRY_SHARED_V2) === 1) {
+  if (count(next, REGISTRY_SPLIT_V1) !== 0) throw new Error('Site tooltip registry identity has mixed migration stages');
+} else {
+  next = normalize(next, REGISTRY_SPLIT_V1, REGISTRY_SHARED_V2, 'Site tooltip shared registry identity');
+}
 if (count(next, MOUNT_V2) === 1) {
   if (count(next, MOUNT_V1) !== 0) throw new Error('Site tooltip mobile close control has mixed migration stages');
 } else {
@@ -100,9 +107,9 @@ if (count(next, POINTER_CORRIDOR_V2) === 1) {
 }
 
 if (next === source) {
-  console.log('✅ Site tooltip touch contract already normalized');
+  console.log('✅ Site tooltip touch and shared registry contracts already normalized');
   process.exit(0);
 }
 
 fs.writeFileSync(FILE, next, 'utf8');
-console.log('✅ Site tooltip touch contract normalized with a mobile close control, 12px touch slop, recent-touch WebKit click dedupe, keyboard preservation, desktop portal hit-testing and a 28px geometric pointer corridor');
+console.log('✅ Site tooltip contract normalized with one public registry identity, a mobile close control, 12px touch slop, recent-touch WebKit click dedupe, keyboard preservation, desktop portal hit-testing and a 28px geometric pointer corridor');
