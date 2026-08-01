@@ -8,6 +8,8 @@ const ROOT = path.join(__dirname, '..');
 const FILE = path.join(ROOT, 'js', 'site.js');
 const WRITE = process.argv.includes('--write');
 
+const MOUNT_V1 = 'mountTip:function(e){e&&(e.parentNode!==document.body&&(o.tipPlaceholder=document.createComment("gb-tooltip-placeholder"),e.parentNode.insertBefore(o.tipPlaceholder,e),document.body.appendChild(e)),e.classList.add("gb-floating-tip","is-open"),o.activeTip=e)}';
+const MOUNT_V2 = 'mountTip:function(e){if(e){if(e.parentNode!==document.body&&(o.tipPlaceholder=document.createComment("gb-tooltip-placeholder"),e.parentNode.insertBefore(o.tipPlaceholder,e),document.body.appendChild(e)),o.isMobileSheet()&&!e.querySelector("[data-tooltip-close]")){var t=document.createElement("button");t.type="button",t.className="gb-tooltip-close",t.setAttribute("data-tooltip-close",""),t.setAttribute("data-gb-generated-close","1"),t.setAttribute("aria-label","Закрыть подсказку"),t.textContent="×",e.insertBefore(t,e.firstChild)}e.classList.add("gb-floating-tip","is-open"),o.activeTip=e}}';
 const START_V1 = 'document.addEventListener("touchstart",function(){i._tooltipTouchMoved=!1},{passive:!0})';
 const START_V2 = 'document.addEventListener("touchstart",function(){i._tooltipTouchMoved=!1,i._tooltipPendingClickAnchor=null,i._tooltipPendingClickUntil=0},{passive:!0})';
 const START_V3 = 'document.addEventListener("touchstart",function(){i._tooltipTouchMoved=!1,Date.now()>(i._tooltipPendingClickUntil||0)&&(i._tooltipPendingClickAnchor=null,i._tooltipPendingClickUntil=0)},{passive:!0})';
@@ -47,6 +49,11 @@ function normalize(source, before, after, label) {
 
 const source = fs.readFileSync(FILE, 'utf8');
 let next = source;
+if (count(next, MOUNT_V2) === 1) {
+  if (count(next, MOUNT_V1) !== 0) throw new Error('Site tooltip mobile close control has mixed migration stages');
+} else {
+  next = normalize(next, MOUNT_V1, MOUNT_V2, 'Site tooltip mobile close control');
+}
 if (count(next, START_V4) === 1) {
   if (count(next, START_V1) !== 0 || count(next, START_V2) !== 0 || count(next, START_V3) !== 0) throw new Error('Site tooltip touchstart contract has mixed migration stages');
 } else if (count(next, START_V3) === 1) {
@@ -98,4 +105,4 @@ if (next === source) {
 }
 
 fs.writeFileSync(FILE, next, 'utf8');
-console.log('✅ Site tooltip touch contract normalized with 12px touch slop, recent-touch WebKit click dedupe, keyboard preservation, desktop portal hit-testing and a 28px geometric pointer corridor');
+console.log('✅ Site tooltip touch contract normalized with a mobile close control, 12px touch slop, recent-touch WebKit click dedupe, keyboard preservation, desktop portal hit-testing and a 28px geometric pointer corridor');
