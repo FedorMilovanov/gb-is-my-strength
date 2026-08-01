@@ -35,8 +35,14 @@ function normalize(source, before, after, label) {
 
 const source = fs.readFileSync(FILE, 'utf8');
 let next = normalize(source, TOUCH_V1, TOUCH_V2, 'Site tooltip touchend contract');
-next = normalize(next, CLICK_V1, CLICK_V2, 'Site tooltip mobile click fallback');
-next = normalize(next, CLICK_V2, CLICK_V3, 'Site tooltip desktop portal hit-test fallback');
+if (count(next, CLICK_V3) === 1) {
+  if (count(next, CLICK_V1) !== 0 || count(next, CLICK_V2) !== 0) {
+    throw new Error('Site tooltip click contract has mixed migration stages');
+  }
+} else {
+  next = normalize(next, CLICK_V1, CLICK_V2, 'Site tooltip mobile click fallback');
+  next = normalize(next, CLICK_V2, CLICK_V3, 'Site tooltip desktop portal hit-test fallback');
+}
 
 if (next === source) {
   console.log('✅ Site tooltip touch contract already normalized');
