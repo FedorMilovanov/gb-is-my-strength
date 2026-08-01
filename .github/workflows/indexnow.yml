@@ -42,34 +42,30 @@ jobs:
         with:
           node-version: '22.23.1'
 
-      - name: Normalize registered source contracts
-        run: |
-          node scripts/article-headline-contract.js --write
-          node scripts/site-tooltip-touch-normalizer.js --write
-          node scripts/cache-bust.js --write
+      - name: Normalize registered article headlines
+        run: node scripts/article-headline-contract.js --write
 
-      - name: Validate normalized source tree
+      - name: Validate normalized metadata tree
         run: |
           node scripts/article-headline-contract.js
-          node scripts/site-tooltip-touch-normalizer.js
           node scripts/editorial-metadata-registry.js --check
           node scripts/cache-bust.js
 
-      - name: Commit normalized sources
+      - name: Commit normalized headline
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
           if git diff --quiet; then
-            echo "No source normalization changes required."
+            echo "No headline normalization changes required."
             exit 0
           fi
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
-          git commit -m "fix(runtime): normalize registered source contracts"
+          git commit -m "fix(metadata): normalize canonical article headline"
           git push origin "HEAD:${HEAD_REF}"
 
   diagnostics:
@@ -95,9 +91,6 @@ jobs:
 
       - name: Validate canonical article headlines
         run: node scripts/article-headline-contract.js
-
-      - name: Validate tooltip touch contract
-        run: node scripts/site-tooltip-touch-normalizer.js
 
       - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
