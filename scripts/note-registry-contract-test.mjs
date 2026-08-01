@@ -52,6 +52,15 @@ const longContext = collectAndProjectHtml(`<main><h2 id="section">Section</h2>
 assert.deepEqual(longContext.errors, [], 'immediate authored context must disambiguate notes after a long shared prefix');
 assert.equal(new Set(longContext.notes.map((note) => note.id)).size, 2);
 
+const rawTextPoison = collectAndProjectHtml(`<main><h2 id="section">Section</h2>
+<p><script>const template = "</main>";</script>
+Achan authored clause <span class="fn-marker">30<span class="tooltip">Ibid., 311.</span></span> Achan tail.
+${'middle '.repeat(180)}
+Bribe authored clause <span class="fn-marker">38<span class="tooltip">Ibid., 311.</span></span> Bribe tail.</p>
+</main>`, route);
+assert.deepEqual(rawTextPoison.errors, [], 'raw-text HTML strings must not corrupt authored note context');
+assert.equal(new Set(rawTextPoison.notes.map((note) => note.id)).size, 2);
+
 const ambiguous = collectAndProjectHtml(`<main><h2 id="section">Section</h2>
 <p>Same clause <span class="fn-marker">1<span class="tooltip">Same note.</span></span> same tail</p>
 <p>Same clause <span class="fn-marker">2<span class="tooltip">Same note.</span></span> same tail</p>
