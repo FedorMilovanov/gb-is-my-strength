@@ -72,7 +72,7 @@ assert.equal(schema.properties.interactionOwner.const, 'SiteUtils.makeTooltipCon
 const site = fs.readFileSync(path.join(ROOT, 'js', 'site.js'), 'utf8');
 assert.match(site, /makeTooltipController:function/);
 const a04Contract = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'a04-contract.mjs'), 'utf8');
-assert.match(a04Contract, /defaultSelector:\s*'\.fn-marker:not\(\.map-trigger\)'/);
+assert.match(a04Contract, /id:\s*'footnote',\s*trigger:\s*'\.fn-marker',\s*tip:\s*'\.tooltip',\s*exception:\s*'\.map-trigger'/);
 const moduleSource = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'note-registry.mjs'), 'utf8');
 assert.doesNotMatch(moduleSource, /addEventListener\s*\(/, 'NoteRegistry must not create a second interaction runtime');
 
