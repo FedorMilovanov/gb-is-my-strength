@@ -58,6 +58,7 @@ jobs:
   home-browser-contract:
     name: Home Chromium WebKit contract
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
       - name: Checkout exact source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -75,7 +76,7 @@ jobs:
         run: npm ci
 
       - name: Install Chromium and WebKit for Playwright
-        run: npx playwright install --with-deps chromium webkit
+        run: timeout 12m npx playwright install --with-deps chromium webkit
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
@@ -109,6 +110,7 @@ jobs:
   interactive-audit:
     needs: home-browser-contract
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
       - name: Checkout exact source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -174,7 +176,7 @@ jobs:
 
       - name: Install Chromium and WebKit for Playwright
         if: steps.audit-scope.outputs.run == 'true'
-        run: npx playwright install --with-deps chromium webkit
+        run: timeout 12m npx playwright install --with-deps chromium webkit
 
       - name: Build production-like dist
         if: steps.audit-scope.outputs.run == 'true'
