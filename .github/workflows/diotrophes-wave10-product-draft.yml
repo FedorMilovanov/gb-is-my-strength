@@ -31,11 +31,21 @@ jobs:
         run: npm ci
 
       - name: Enforce bounded Wave 10 diff
+        id: scope
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin "${{ github.base_ref }}" --depth=1
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/wave10-files.txt
+
+          owned="$(grep -E '^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$' /tmp/wave10-files.txt || true)"
+          if [[ -z "$owned" ]]; then
+            echo 'No Wave 10-owned files differ from the current base; treating this path-filter synchronization event as a no-op.'
+            echo 'active=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo 'active=true' >> "$GITHUB_OUTPUT"
           unexpected="$(grep -Ev '^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$' /tmp/wave10-files.txt || true)"
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected Wave 10 files:' >&2
@@ -44,10 +54,13 @@ jobs:
           fi
 
       - name: Validate evidence and publication boundaries
+        if: steps.scope.outputs.active == 'true'
         run: node scripts/diotrophes-wave10-contract.mjs
 
       - name: Type-check Astro draft
+        if: steps.scope.outputs.active == 'true'
         run: npm run astro:check
 
       - name: Ensure validation is read-only
+        if: steps.scope.outputs.active == 'true'
         run: git diff --exit-code
