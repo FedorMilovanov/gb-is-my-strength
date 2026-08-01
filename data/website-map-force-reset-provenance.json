@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "incidentId": "A08-WEBSITE-MAP-FORCE-RESET-2026-07",
+  "branch": "claude/website-map-audit-ik3ypo",
+  "status": "BLOCKED_PROVENANCE",
+  "exactHead": null,
+  "currentMainAtInvestigation": "be970bfc13882119e99605ba1689605af4a4af8a",
+  "productionClaim": false,
+  "decision": {
+    "summary": "The branch is proven to have been force-reset to a shared governance checkpoint, but no direct pre-reset ref, reflog, PR head, or Actions artifact proves its immediately preceding head.",
+    "promotionRule": "RECOVERED_EXACT_HEAD requires a direct pre-reset ref/reflog/PR-head/immutable artifact that names the SHA. Session ordering and content similarity are candidate evidence only.",
+    "prohibitedInference": "Do not promote the latest commit from the same Claude session to exact branch head without direct ref evidence."
+  },
+  "observations": {
+    "postResetRemoteRef": {
+      "sha": "0f7cefbb20abb17c65872e53c00c733c480f2a97",
+      "committedAt": "2026-07-28T13:48:52+03:00",
+      "subject": "docs(governance): preserve agent work with durable checkpoints (#484)",
+      "driveEvidence": {
+        "fileId": "1duSRvMPOemunrgg58SZP9bP3R4Ojl-rs",
+        "name": "000005__04-all-refs.txt",
+        "evidenceLineSha256": "68fa9da6ce21d85aa084ae83a5a6b168fb756aae70aac946b622dddf7ad4670e",
+        "verificationMethod": "Google Drive text fetch and exact branch-line match",
+        "verifiedAt": "2026-08-01"
+      }
+    },
+    "currentGitHubBranch": "absent in gb-is-my-strength at investigation time",
+    "pullRequest": "no PR found for the exact branch name in the three allowed repositories",
+    "actions": "no PR-triggered workflow run found for the terminal session candidate",
+    "driveReflogOrFsck": "not found in the accessible forensic bundle",
+    "sameNameCrossRepoRefs": [
+      {
+        "repository": "FedorMilovanov/AuditRepo",
+        "sha": "32f0c45e37b14a383b89616cc0017394a24b77fb",
+        "relationshipToMain": "ancestor",
+        "role": "audit-session evidence, not product branch-head proof"
+      },
+      {
+        "repository": "FedorMilovanov/Research",
+        "sha": "0659e20c15ab1221f09b62aaf0d3746a24f399ed",
+        "relationshipToMain": "ancestor",
+        "role": "research-session evidence, not product branch-head proof"
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "sha": "26a344f042a6d907a3c3de96540a9f241256739d",
+      "rank": 1,
+      "confidence": "HIGH_CANDIDATE_NOT_EXACT",
+      "acceptedAsExact": false,
+      "evidence": [
+        "latest accessible gb-is-my-strength commit carrying Claude session 01MhT2bkRHUuPpdhpzrBtjm7",
+        "commit timestamp 2026-07-17T23:36:34Z",
+        "GitHub compare proves the commit is an ancestor of current main",
+        "the full commit object remains accessible"
+      ],
+      "blockingGap": "No immutable record directly binds claude/website-map-audit-ik3ypo to this SHA immediately before force-reset."
+    },
+    {
+      "sha": "0f7cefbb20abb17c65872e53c00c733c480f2a97",
+      "rank": 2,
+      "confidence": "EXACT_POST_RESET_REF_ONLY",
+      "acceptedAsExact": false,
+      "evidence": [
+        "exact branch line in the 2026-07-28 all-refs snapshot"
+      ],
+      "blockingGap": "This is the proven replacement checkpoint, not the missing pre-reset website-map head."
+    }
+  ],
+  "closure": {
+    "closedQuestion": "Whether the original website-map branch head can be stated exactly from currently accessible evidence",
+    "answer": "No. The original head is not provable; the task is closed as BLOCKED_PROVENANCE.",
+    "unblockers": [
+      "an older clone whose reflog or packed-refs predates the reset",
+      "a GitHub audit-log/ref-update record naming old and new SHA",
+      "an Actions artifact or log that names the branch and exact head",
+      "a PR record retaining the original product head SHA"
+    ],
+    "branchDisposition": "UNKNOWN_PROTECTED; do not delete or rewrite evidence solely from this report"
+  }
+}
