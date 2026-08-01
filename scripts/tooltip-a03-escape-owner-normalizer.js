@@ -16,7 +16,8 @@ function count(source, needle) {
 function replaceExact(source, before, after, label) {
   const beforeCount = count(source, before);
   const afterCount = count(source, after);
-  if (afterCount === 1 && beforeCount === 0) return { output: source, changed: false };
+  const nested = after.includes(before);
+  if (afterCount === 1 && beforeCount === (nested ? 1 : 0)) return { output: source, changed: false };
   if (beforeCount !== 1 || afterCount !== 0) {
     throw new Error(`${label} refused input: before=${beforeCount}, after=${afterCount}`);
   }
