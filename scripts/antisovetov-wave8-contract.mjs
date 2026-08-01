@@ -32,6 +32,8 @@ forbidText('Гомеостаз и вторичная травма', 'secondary-t
 forbidText('письменные records', 'English records in Russian prose');
 forbidText('safeguarding-ответственные', 'hybrid safeguarding label');
 forbidText('компетентности в safeguarding', 'hybrid safeguarding competence phrase');
+forbidText('ответственные за защиту детей и уязвимых и межцерковные структуры', 'ambiguous double conjunction in guidance');
+forbidText('18 по защите детей и уязвимых и пастырскому управлению', 'ambiguous source-count wording');
 
 requireText('В некоторых принуждающих или духовно небезопасных системах первоначальная теплота может стать условной', 'bounded conditional-warmth wording');
 requireText('за честный вопрос не наказывают холодом, лишением служения или духовным ярлыком', 'psychological-safety boundary');
@@ -42,6 +44,8 @@ requireText('1 Тим. 5:19 прежде всего задаёт правило 
 requireText('защищённые или конфиденциальные каналы сообщения', 'protected-reporting boundary');
 requireText('предполагаемом преступлении, непосредственной опасности', 'law-enforcement scope boundary');
 requireText('компетентности в защите детей и уязвимых, отсутствия конфликта интересов', 'external helper competence boundary');
+requireText('а также межцерковные структуры', 'clear guidance list');
+requireText('18 источников о защите детей и уязвимых и о пастырском управлении', 'clear source-count wording');
 requireText('ὑπόκρισις) — притворство и лицемерие', 'lexical correction');
 requireText('Авторская аналитическая формула: «отрицательный отбор пресвитеров»', 'authorial-term boundary');
 requireText('data-audit-sources="54"', '54-source audit marker');
