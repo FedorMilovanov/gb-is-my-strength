@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "authority_id": "A17-HOME-COMPONENT-LAB-2026-08-01",
+  "observed_at": "2026-08-01T12:55:00Z",
+  "product_main": "41617252e18939599e1e3f45e62d8d10d0fd1b27",
+  "visual_evidence": {
+    "exact_head": "404db8d14087d29522e56f190717d6224e8e3bfb",
+    "workflow_run": 30679376588,
+    "artifact_id": 8811768705,
+    "artifact_name": "visual-parity-reports",
+    "artifact_bytes": 46374395,
+    "sha256": "ae956b28f5263d6c9712903d1a892c83dfd331f838d3787551e2d7ff2e083758",
+    "applicability": "HOME_VISUAL_AND_RUNTIME_OWNERS_UNCHANGED_TO_PRODUCT_MAIN"
+  },
+  "progressive_evidence": {
+    "status": "PASS",
+    "normal_mobile": { "viewport": 390, "scroll_width": 390, "visible_reveal_surfaces": 13, "runtime_errors": 0 },
+    "no_javascript_mobile": { "viewport": 390, "scroll_width": 390, "visible_reveal_surfaces": 13, "fallback_links": 8, "script_controls_hidden": true },
+    "print_desktop": { "viewport": 1280, "scroll_width": 1280, "visible_reveal_surfaces": 13, "runtime_errors": 0 },
+    "no_intersection_observer_mobile": { "viewport": 390, "scroll_width": 390, "visible_reveal_surfaces": 13, "runtime_errors": 0 }
+  },
+  "production_boundary": {
+    "lab_root": "research/component-lab/home/",
+    "specimen_source": "research/component-lab/home/specimen.html.txt",
+    "reader_html_extension_allowed": false,
+    "production_dependency_allowed": false,
+    "route_registration_allowed": false,
+    "asset_pipeline_registration_allowed": false,
+    "runtime_import_allowed": false
+  },
+  "decisions": [
+    {
+      "id": "sacred-word-inline-flip",
+      "status": "KEEP_CURRENT",
+      "current_owner": "src/components/home/HomeHero.astro",
+      "historical_value": "Hebrew source text, local translation reveal and source citation remain a distinctive owner-approved interaction.",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#sacred-word-inline-flip",
+      "owner_action": "No redesign. Any implementation change requires a dedicated Home owner lane and interaction evidence."
+    },
+    {
+      "id": "search-first-library-entry",
+      "status": "KEEP_CURRENT",
+      "current_owner": "src/components/home/HomeHero.astro",
+      "historical_value": "The native redesign replaces the legacy feature-card preamble with a direct library-search entry while retaining the same substantive library below.",
+      "lab_specimen": null,
+      "owner_action": "Keep as current production hierarchy."
+    },
+    {
+      "id": "five-direction-gateway",
+      "status": "KEEP_CURRENT",
+      "current_owner": "src/components/home/HomeSections/Directions.astro",
+      "historical_value": "Five visual direction cards provide a compact high-level map of the library and are centred correctly at 390 px.",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#five-direction-gateway",
+      "owner_action": "Keep current owner and derived destinations; do not duplicate the grid."
+    },
+    {
+      "id": "legacy-functional-index",
+      "status": "LAB_ONLY",
+      "current_owner": null,
+      "historical_value": "The legacy top-of-page functional cards exposed reading, chronology, research and confession entry points with high information density.",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#legacy-functional-index",
+      "owner_action": "Use only as a reference for future information architecture; do not restore the whole legacy preamble."
+    },
+    {
+      "id": "route-card-tilt-motion",
+      "status": "LAB_ONLY",
+      "current_owner": "css/home.css and js/site.js",
+      "historical_value": "Subtle depth can help route cards, but motion must be optional and cannot carry meaning.",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#route-card-tilt-motion",
+      "owner_action": "Any future use must preserve keyboard equivalence and prefers-reduced-motion suppression."
+    },
+    {
+      "id": "single-semantic-home-tree",
+      "status": "KEEP_CURRENT",
+      "current_owner": "src/components/home/HomeMain.astro",
+      "historical_value": "Desktop, mobile, no-JS and print share one semantic section tree; no duplicate mobile or legacy fallback tree remains.",
+      "lab_specimen": null,
+      "owner_action": "Protected invariant."
+    },
+    {
+      "id": "legacy-blue-paper-palette",
+      "status": "REFERENCE_ONLY",
+      "current_owner": null,
+      "historical_value": "The cool paper palette is a valid historical direction but conflicts with the current warm parchment and deep-umber owner decision.",
+      "lab_specimen": null,
+      "owner_action": "Keep only in screenshots and archaeology records."
+    },
+    {
+      "id": "direct-main-responsive-experiments",
+      "status": "SUPERSEDED",
+      "current_owner": null,
+      "historical_value": "Short-lived direct-main responsive experiments were reverted and then represented by reviewed PR #534 and later Home waves.",
+      "lab_specimen": null,
+      "owner_action": "Do not recover or use as implementation authority."
+    }
+  ]
+}
