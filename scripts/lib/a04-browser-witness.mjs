@@ -186,7 +186,7 @@ export async function mobileWitness(browser, base, routes, surface) {
     route: null, triggerIndex: null, responseStatus: null, pageErrors: [],
     reducedMotion: false, touchOpens: false, mountedToBody: false,
     tipDetachedFromTrigger: false, insideViewport: false, secondTouchCloses: false,
-    openState: null, closedState: null, error: '',
+    thirdTouchReopens: false, openState: null, closedState: null, reopenedState: null, error: '',
   };
   try {
     const witness = await navigateForWitness(page, base, routes, surface);
@@ -211,6 +211,12 @@ export async function mobileWitness(browser, base, routes, surface) {
     const closed = await closedState(trigger, surface);
     result.closedState = closed;
     result.secondTouchCloses = !closed.anchorOpen && !closed.anyOpenTip;
+    await page.waitForTimeout(120);
+    await trigger.tap({ timeout: 4000 });
+    await page.waitForTimeout(180);
+    const reopened = await ownerState(trigger, surface);
+    result.reopenedState = reopened;
+    result.thirdTouchReopens = reopened.anchorOpen && reopened.ariaExpanded === 'true' && reopened.activeTip;
   } catch (error) {
     result.error = String(error?.message || error).slice(0, 500);
   } finally {
