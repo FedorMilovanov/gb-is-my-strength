@@ -1,82 +1,90 @@
-name: A03 Controller Forensic
+name: Retire Superseded A03 Support Branches
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - audit/a03-controller-ownership-20260801
     paths:
       - .github/workflows/a03-controller-forensic.yml
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
-  enumerate:
-    if: github.head_ref == 'audit/a03-controller-ownership-20260801'
+  retire:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: true
           fetch-depth: 0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: '22.23.1'
-          cache: npm
-      - run: npm ci
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
-      - name: Enumerate source and dist controller registrations
+      - name: Verify exact dispositions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p reports
+          git fetch --no-tags origin \
+            main \
+            agent/mobile-webkit-a11y-20260801 \
+            fix/diotrophes-wave11-bounded-diff-guard-20260801
           python3 - <<'PY'
-          from pathlib import Path
-          import json, re, subprocess
+          import json, os, subprocess, urllib.parse, urllib.request
 
-          roots = [Path('js'), Path('src'), Path('scripts'), Path('dist')]
-          allowed = {'.js', '.mjs', '.cjs', '.astro', '.html'}
-          rows = []
-          tokens = ('makeTooltipController', '_tooltipControllers', 'mobileSheet')
-          for root in roots:
-              if not root.exists():
-                  continue
-              for path in sorted(root.rglob('*')):
-                  if not path.is_file() or path.suffix not in allowed:
-                      continue
-                  try:
-                      text = path.read_text(encoding='utf-8')
-                  except Exception:
-                      continue
-                  if not any(token in text for token in tokens):
-                      continue
-                  for token in tokens:
-                      for match in re.finditer(re.escape(token), text):
-                          start = max(0, match.start() - 360)
-                          end = min(len(text), match.start() + 1100)
-                          rows.append({
-                              'root': root.name,
-                              'path': str(path),
-                              'token': token,
-                              'offset': match.start(),
-                              'snippet': text[start:end].replace('\n', ' '),
-                          })
-          data = {
-              'head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
-              'count': len(rows),
-              'matches': rows,
+          repo = os.environ['REPO']
+          token = os.environ['GH_TOKEN']
+          api = 'https://api.github.com/repos/' + repo
+
+          def get(path):
+              req = urllib.request.Request(api + path, headers={
+                  'Authorization': 'Bearer ' + token,
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+              })
+              with urllib.request.urlopen(req) as response:
+                  return json.load(response)
+
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+
+          expected = {
+              'agent/mobile-webkit-a11y-20260801': 'f584730f1dd62d54242712607386f60301530daa',
+              'fix/diotrophes-wave11-bounded-diff-guard-20260801': '95f4b4fa912468a474980293ea254c60ed02624c',
           }
-          Path('reports/a03-dist-controller-ownership.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          for branch, sha in expected.items():
+              actual = git('rev-parse', 'origin/' + branch)
+              if actual != sha:
+                  raise SystemExit(f'{branch}: expected {sha}, got {actual}')
+              opened = get('/pulls?state=open&head=' + urllib.parse.quote('FedorMilovanov:' + branch))
+              if opened:
+                  raise SystemExit(f'{branch}: still has open PR(s)')
+
+          p721, p722, p726, p728 = (get(f'/pulls/{n}') for n in (721, 722, 726, 728))
+          if not (p721['state'] == 'closed' and p721['merged_at'] is None and p721['head']['sha'] == expected['fix/diotrophes-wave11-bounded-diff-guard-20260801']):
+              raise SystemExit('PR #721 disposition mismatch')
+          if not (p722['state'] == 'closed' and p722['merged_at'] is None and p722['head']['sha'] == expected['agent/mobile-webkit-a11y-20260801']):
+              raise SystemExit('PR #722 disposition mismatch')
+          if not (p726['merged_at'] and p726['merge_commit_sha'] == '0ea8d5a27190a6c035235d2528f1c63d13951231'):
+              raise SystemExit('PR #726 successor mismatch')
+          if not (p728['merged_at'] and p728['head']['sha'] == '179b58b8a6fabfee77c9a15a3da767e33365ccd6'):
+              raise SystemExit('PR #728 successor mismatch')
+
+          subprocess.check_call(['git', 'merge-base', '--is-ancestor', '0ea8d5a27190a6c035235d2528f1c63d13951231', 'origin/main'])
+          paths = [
+              '.github/workflows/interactive-audit.yml',
+              'data/a13-mobile-webkit-a11y-scene-matrix.json',
+              'scripts/a13-mobile-webkit-a11y-browser-test.mjs',
+              'research/A13_MOBILE_WEBKIT_A11Y_2026-08-01.md',
+          ]
+          subprocess.check_call(['git', 'diff', '--quiet', 'f584730f1dd62d54242712607386f60301530daa', '179b58b8a6fabfee77c9a15a3da767e33365ccd6', '--', *paths])
+          print('Exact successor and blob-equivalence checks passed.')
           PY
-      - name: Commit report
+      - name: Delete superseded and forensic refs
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -f reports/a03-dist-controller-ownership.json
-          git commit -m "chore(forensic): record built A03 controller ownership" || exit 0
-          git push origin HEAD:audit/a03-controller-ownership-20260801
+          git push origin --delete agent/mobile-webkit-a11y-20260801
+          git push origin --delete fix/diotrophes-wave11-bounded-diff-guard-20260801
+          git push origin --delete audit/a03-controller-ownership-20260801
