@@ -107,4 +107,22 @@ assert(!source.includes('setTimeout(loadSavedState, 1000)'), 'saved state must n
 assert(!/const first=\(route\.places\|\|\[\]\)\[0\];[\s\S]{0,120}flyTo\(first\.x/.test(source), 'first-place flyTo must not override viewport_init');
 assert(source.includes('const url=buildMapStateUrl(location,st);'), 'Share must use the same URL builder as runtime state sync');
 
-console.log('✅ map initial-state/deep-link regression guard passed');
+const avraamPage = fs.readFileSync(path.join(root, 'src/pages/karty/avraam/index.astro'), 'utf8');
+assert(
+  avraamPage.includes("document.querySelector('h1.sr-only[data-pagefind-body]')"),
+  'Avraam route must target the no-JS fallback heading explicitly'
+);
+assert(
+  /data-map-state'\)\s*!==\s*'ready'[\s\S]*?fallbackHeading\.remove\(\)/.test(avraamPage),
+  'fallback heading must be removed only after MapEngine reaches ready state'
+);
+assert(
+  /new MutationObserver[\s\S]*?attributeFilter:\s*\['data-map-state'\]/.test(avraamPage),
+  'Avraam route must observe the exact runtime readiness attribute'
+);
+assert(
+  !/fallbackHeading\.(?:remove|setAttribute)\([^)]*\)[\s\S]*?data-map-state'\)\s*!==\s*'ready'/.test(avraamPage),
+  'fallback heading must remain available before success and on runtime failure'
+);
+
+console.log('✅ map initial-state/deep-link/Avraam heading lifecycle regression guard passed');
