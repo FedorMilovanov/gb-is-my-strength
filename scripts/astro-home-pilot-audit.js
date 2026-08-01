@@ -16,6 +16,14 @@ const DIST = path.join(ROOT, 'dist');
 const SITE = 'https://gospod-bog.ru/';
 const NO_BUILD = process.argv.includes('--no-build');
 const MIN_WORD_RATIO = 0.72;
+const HOME_Z_TOKENS = [
+  '--z-bottom-bar',
+  '--z-dropdown-high',
+  '--z-elevated',
+  '--z-sticky',
+  '--z-toast-high',
+  '--z-tooltip-low',
+];
 
 const problems = [];
 const notes = [];
@@ -52,6 +60,17 @@ function canonical(html) {
   for (const link of links) {
     const attrs = link[1];
     if (!/\brel=["']canonical["']/i.test(attrs)) continue;
+    return attrs.match(/\bhref=["']([^"']+)["']/i)?.[1]?.trim() || '';
+  }
+  return '';
+}
+function alternate(html, hreflang) {
+  const links = [...html.matchAll(/<link\b([^>]+)>/gi)];
+  for (const link of links) {
+    const attrs = link[1];
+    if (!/\brel=["']alternate["']/i.test(attrs)) continue;
+    const lang = attrs.match(/\bhreflang=["']([^"']+)["']/i)?.[1]?.trim();
+    if (lang !== hreflang) continue;
     return attrs.match(/\bhref=["']([^"']+)["']/i)?.[1]?.trim() || '';
   }
   return '';
@@ -95,17 +114,38 @@ function main() {
   else ok('public Astro home has no technical shadow badge');
 
   mustEqual('home canonical', canonical(astro), SITE);
+  mustEqual('home hreflang ru', alternate(astro, 'ru'), SITE);
+  mustEqual('home hreflang x-default', alternate(astro, 'x-default'), SITE);
   mustEqual('home title mirrors legacy', title(astro), title(legacy));
   mustEqual('home meta description mirrors legacy', meta(astro, 'description'), meta(legacy, 'description'));
   mustEqual('home H1 mirrors legacy', h1(astro), h1(legacy));
   if (hasNoindex(astro)) bad(`home unexpectedly noindex: ${meta(astro, 'robots')}`);
   else ok('home is indexable');
+  mustContain('home SearchAction type', astro, 'SearchAction');
+  mustContain('home SearchAction target', astro, 'https://gospod-bog.ru/?q={search_term_string}');
+  mustContain('home SearchAction query input', astro, 'required name=search_term_string');
   mustContain('home pagefind body', astro, 'data-pagefind-body');
   mustContain('home responsive library gateway', astro, 'h-home-gateway');
   mustContain('home interactive Habakkuk text', astro, 'Аввакум 3:19');
   for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths', 'h-mobile-hero-hub']) {
     if (astro.includes(rejected)) bad(`home contains rejected mobile experiment: ${rejected}`);
     else ok(`home has no rejected mobile experiment: ${rejected}`);
+  }
+
+  const siteCssFile = path.join(DIST, 'css', 'site.css');
+  const homeCssFile = path.join(DIST, 'css', 'home.css');
+  if (!fs.existsSync(siteCssFile) || !fs.existsSync(homeCssFile)) {
+    bad('home stylesheet contract missing site.css or home.css');
+  } else {
+    const siteCss = read(siteCssFile);
+    const siteCssIndex = astro.indexOf('css/site.css');
+    const homeCssIndex = astro.indexOf('css/home.css');
+    if (siteCssIndex >= 0 && homeCssIndex > siteCssIndex) ok('site.css loads before home.css');
+    else bad('home stylesheet order must load site.css before home.css');
+    for (const token of HOME_Z_TOKENS) {
+      if (new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`).test(siteCss)) ok(`home z-index token defined: ${token}`);
+      else bad(`home z-index token missing from site.css: ${token}`);
+    }
   }
 
   const legacyWords = wordCount(legacy);
