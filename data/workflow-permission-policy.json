@@ -114,6 +114,30 @@
         }
       }
     },
+    ".github/workflows/indexnow.yml": {
+      "jobs": {
+        "headline-autofix": {
+          "permissions": {
+            "contents": "write"
+          },
+          "purpose": "Apply deterministic registered headline, tooltip touch, and asset-revision normalization to an explicitly labelled same-repository pull request",
+          "allowedEvents": [
+            "pull_request"
+          ],
+          "repositoryBoundary": "same-repository pull request only",
+          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "mutationTargets": [
+            "registered article PageHead title text, shared tooltip runtime, and generated asset revisions on the pull-request source branch"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "contains(github.event.pull_request.labels.*.name, 'autofix')",
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            "ref: ${{ github.event.pull_request.head.ref }}"
+          ]
+        }
+      }
+    },
     ".github/workflows/search-manifest-policy.yml": {
       "jobs": {
         "search-manifest-autofix": {
