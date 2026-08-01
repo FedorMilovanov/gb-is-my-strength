@@ -110,19 +110,38 @@ function checkRegistry() {
 }
 
 function projectDist() {
+  const registry = readRegistry();
+  const errors = validateRegistryV3(registry);
+  if (errors.length) throw new Error(`Editorial Metadata v3 invalid:\n- ${errors.join('\n- ')}`);
+
+  const approvedRecords = Object.fromEntries(
+    Object.entries(registry.records || {}).filter(([, record]) => record.reviewStatus === 'approved')
+  );
+  const totalRecords = Object.keys(registry.records || {}).length;
+  const blockedRecords = totalRecords - Object.keys(approvedRecords).length;
   const report = projectRegistryToDist({
     distRoot: DIST,
     dryRun: DRY_RUN,
+    registry: { ...registry, records: approvedRecords },
   });
+  report.totalRegistryRecords = totalRecords;
+  report.approvedRecords = Object.keys(approvedRecords).length;
+  report.blockedEditorialReview = blockedRecords;
+  if (!DRY_RUN) {
+    const reportFile = path.join(ROOT, 'reports', 'editorial-metadata-v3-projection.json');
+    fs.writeFileSync(reportFile, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  }
+
   console.log('=== Editorial Metadata v3 Projection ===');
-  console.log(`Registry records: ${report.records}`);
+  console.log(`Registry records: ${report.totalRegistryRecords}`);
+  console.log(`Approved/blocked: ${report.approvedRecords}/${report.blockedEditorialReview}`);
   console.log(`HTML matched/changed: ${report.htmlMatched}/${report.htmlChanged}`);
   console.log(`Search manifest matched: ${report.searchManifestMatched}`);
   console.log(`Sitemap files/routes: ${report.sitemapFiles}/${report.sitemapMatched}`);
   console.log(`RSS matched: ${report.rssMatched}`);
   console.log(`Unknown publication/modification dates: ${report.unknownPublished}/${report.unknownModified}`);
   console.log(`Technical build instant: ${report.technicalBuildInstant}`);
-  console.log(DRY_RUN ? '✅ Editorial Metadata v3 dry-run passed' : '✅ Editorial Metadata v3 projected to final dist');
+  console.log(DRY_RUN ? '✅ Editorial Metadata v3 dry-run passed' : '✅ Editorial Metadata v3 projected approved decisions to final dist');
 }
 
 try {
