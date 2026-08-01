@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -125,6 +126,7 @@ try {
   fs.rmSync(dist, { recursive: true, force: true });
 }
 
+execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'site-tooltip-touch-normalizer.js')], { stdio: 'inherit' });
 const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'note-registry.schema.json'), 'utf8'));
 assert.equal(schema.properties.interactionOwner.const, 'SiteUtils.makeTooltipController');
 const site = fs.readFileSync(path.join(ROOT, 'js', 'site.js'), 'utf8');

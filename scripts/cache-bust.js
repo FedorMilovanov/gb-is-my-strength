@@ -17,19 +17,11 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-let WRITE = process.argv.includes('--write');
+const WRITE = process.argv.includes('--write');
+const CHECK = !WRITE;
 const { ASSETS } = require('./cache-bust-assets');
-
-function normalizeTooltipTouchOnce() {
-  const site = path.join(ROOT, 'js', 'site.js');
-  const before = fs.readFileSync(site, 'utf8');
-  execFileSync(process.execPath, [path.join(__dirname, 'site-tooltip-touch-normalizer.js'), '--write'], { stdio: 'inherit' });
-  const after = fs.readFileSync(site, 'utf8');
-  if (after !== before) WRITE = true;
-}
 
 function md5short(relPath) {
   const abs = path.join(ROOT, relPath);
@@ -134,7 +126,6 @@ function inspectFile(file, transform, hashes, changes) {
 }
 
 function main() {
-  normalizeTooltipTouchOnce();
   console.log(`\n⚡ asset revision ${WRITE ? 'WRITE' : 'READ-ONLY CHECK'}\n`);
   assertRewriteAstroContract();
   const hashes = {};
