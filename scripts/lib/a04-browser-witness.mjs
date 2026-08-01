@@ -86,6 +86,8 @@ async function ownerState(trigger, surface) {
   return trigger.evaluate((anchor, data) => {
     const activeTip = [...document.querySelectorAll(data.tip)].find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
     const rect = activeTip?.getBoundingClientRect() || null;
+    const close = activeTip?.querySelector(':scope > [data-tooltip-close]') || null;
+    const closeRect = close?.getBoundingClientRect() || null;
     return {
       anchorOpen: anchor.classList.contains('is-open'),
       ariaExpanded: anchor.getAttribute('aria-expanded'),
@@ -97,6 +99,9 @@ async function ownerState(trigger, surface) {
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
       tipContainsInteractive: Boolean(activeTip?.querySelector('a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])')),
       tipIsNestedInTrigger: Boolean(activeTip && anchor.contains(activeTip)),
+      closeControl: Boolean(close),
+      closeControlVisible: Boolean(closeRect && closeRect.width > 0 && closeRect.height > 0 && getComputedStyle(close).visibility !== 'hidden'),
+      closeControlRect: closeRect ? { left: closeRect.left, top: closeRect.top, right: closeRect.right, bottom: closeRect.bottom } : null,
       rect: rect ? { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom } : null,
     };
   }, surface);
@@ -112,51 +117,28 @@ async function closedState(trigger, surface) {
   }), surface);
 }
 
-async function closeMobileTip(page, trigger, surface) {
-  const closeControl = page.locator(`${surface.tip}.gb-floating-tip.is-open [data-tooltip-close]`).first();
-  if (await closeControl.count()) {
-    const visible = await closeControl.isVisible().catch(() => false);
-    if (visible) {
-      await closeControl.tap({ timeout: 4000 });
-      return { method: 'explicit-close-control', point: null };
-    }
+async function closeMobileTip(page) {
+  const closeControl = page.locator('body > .gb-floating-tip.is-open > [data-tooltip-close]').first();
+  const count = await closeControl.count();
+  if (count !== 1) throw new Error(`mobile sheet must expose exactly one direct close control, found ${count}`);
+  if (!await closeControl.isVisible().catch(() => false)) throw new Error('mobile sheet close control exists but is not visible');
+  const box = await closeControl.boundingBox();
+  if (!box || box.width < 36 || box.height < 36) {
+    throw new Error(`mobile sheet close control touch target is too small: ${JSON.stringify(box)}`);
   }
-
-  const point = await trigger.evaluate((anchor, data) => {
-    const interactive = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
-    const tip = [...document.querySelectorAll(data.tip)].find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
-    if (!tip) return null;
-    const rect = tip.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const gap = 16;
-    const candidates = [
-      { x: centerX, y: rect.top - gap },
-      { x: rect.left - gap, y: centerY },
-      { x: rect.right + gap, y: centerY },
-      { x: centerX, y: rect.bottom + gap },
-      { x: 10, y: 10 },
-      { x: innerWidth - 10, y: 10 },
-    ];
-    for (const candidate of candidates) {
-      const x = Math.max(1, Math.min(innerWidth - 1, candidate.x));
-      const y = Math.max(1, Math.min(innerHeight - 1, candidate.y));
-      const target = document.elementFromPoint(x, y);
-      if (!target) continue;
-      if (tip.contains(target) || anchor.contains(target) || target.closest(interactive)) continue;
-      return {
-        x,
-        y,
-        target: target.tagName.toLowerCase(),
-        targetId: target.id || '',
-        targetClass: [...target.classList].slice(0, 5).join(' '),
-      };
-    }
-    return null;
-  }, surface);
-  if (!point) throw new Error('no physical outside-tip close surface found');
-  await page.touchscreen.tap(point.x, point.y);
-  return { method: 'outside-tip-surface', point };
+  const target = await closeControl.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return {
+      direct: hit === node || node.contains(hit),
+      tag: hit?.tagName?.toLowerCase() || null,
+      id: hit?.id || '',
+      className: hit ? [...hit.classList].slice(0, 5).join(' ') : '',
+    };
+  });
+  if (!target.direct) throw new Error(`mobile sheet close control is not hit-testable: ${JSON.stringify(target)}`);
+  await closeControl.tap({ timeout: 4000 });
+  return { method: 'explicit-close-control', point: box, target };
 }
 
 async function navigateForWitness(page, base, routes, surface) {
@@ -233,7 +215,7 @@ export async function mobileWitness(browser, base, routes, surface) {
     route: null, triggerIndex: null, responseStatus: null, pageErrors: [],
     reducedMotion: false, touchOpens: false, mountedToBody: false,
     tipDetachedFromTrigger: false, insideViewport: false, secondTouchCloses: false,
-    thirdTouchReopens: false, closeMethod: '', closePoint: null,
+    thirdTouchReopens: false, closeMethod: '', closePoint: null, closeTarget: null,
     openState: null, closedState: null, reopenedState: null, error: '',
   };
   try {
@@ -254,11 +236,15 @@ export async function mobileWitness(browser, base, routes, surface) {
     result.tipDetachedFromTrigger = !state.tipIsNestedInTrigger;
     result.insideViewport = state.insideViewport;
     if (!result.touchOpens) throw new Error(`first touch did not open tooltip: ${JSON.stringify(state)}`);
+    if (!state.closeControl || !state.closeControlVisible) {
+      throw new Error(`mobile sheet did not materialize a visible close control: ${JSON.stringify(state)}`);
+    }
 
     await page.waitForTimeout(380);
-    const closeAction = await closeMobileTip(page, trigger, surface);
+    const closeAction = await closeMobileTip(page);
     result.closeMethod = closeAction.method;
     result.closePoint = closeAction.point;
+    result.closeTarget = closeAction.target;
     await page.waitForTimeout(300);
     const closed = await closedState(trigger, surface);
     result.closedState = closed;
