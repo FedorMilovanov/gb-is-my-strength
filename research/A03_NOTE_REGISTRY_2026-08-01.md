@@ -46,6 +46,17 @@ sticky path, — чтобы поздний reflow не закрывал прим
 body-mounted surface. Изменение прошло через существующий label-gated same-repo
 autofix capability; label удалён до финального human-authored exact head.
 
+## WebKit mobile compatibility click
+
+WebKit может послать synthetic click с `detail=0` сразу после уже обработанного
+touchend. Одного `MouseEvent.detail` недостаточно, чтобы отличить такой click от
+клавиатурной активации: при втором касании tooltip закрывался на touchend и тут
+же открывался обратно compatibility-click событием. Существующий pending token
+теперь учитывает также свежесть последнего touch (700 ms). Поэтому detail-zero
+click подавляется только в коротком post-touch окне, а обычная клавиатурная
+активация вне этого окна сохраняется. Новый controller или mobile-only engine не
+создаётся.
+
 ## Параллельность
 
 Karty PR #669 и Nagornaya PR #678 не пересекаются с NoteRegistry scope.
