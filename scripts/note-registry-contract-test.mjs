@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -43,19 +44,37 @@ assert.deepEqual(
   'stable IDs must not depend on document ordinal'
 );
 
-const contextualRepeat = collectAndProjectHtml(
-  '<main><p>Alpha <span class="fn-marker">1<span class="tooltip">Same</span></span></p><p>Beta <span class="fn-marker">2<span class="tooltip">Same</span></span></p></main>',
-  route
-);
-assert.deepEqual(contextualRepeat.errors, []);
-assert.equal(new Set(contextualRepeat.notes.map((note) => note.id)).size, 2, 'same note text in different authored contexts needs distinct stable IDs');
+const repeatedPrefix = 'same-prefix '.repeat(120);
+const longContext = collectAndProjectHtml(`<main><h2 id="section">Section</h2>
+<p>${repeatedPrefix}first authored clause <span class="fn-marker">1<span class="tooltip">Same note.</span></span> first tail</p>
+<p>${repeatedPrefix}second authored clause <span class="fn-marker">2<span class="tooltip">Same note.</span></span> second tail</p>
+</main>`, route);
+assert.deepEqual(longContext.errors, [], 'immediate authored context must disambiguate notes after a long shared prefix');
+assert.equal(new Set(longContext.notes.map((note) => note.id)).size, 2);
 
-const headingRepeat = collectAndProjectHtml(
-  '<main><h2 id="alpha">Alpha</h2><p>Identical <span class="fn-marker">1<span class="tooltip">Same</span></span></p><h2 id="beta">Beta</h2><p>Identical <span class="fn-marker">2<span class="tooltip">Same</span></span></p></main>',
-  route
+const ambiguous = collectAndProjectHtml(`<main><h2 id="section">Section</h2>
+<p>Same clause <span class="fn-marker">1<span class="tooltip">Same note.</span></span> same tail</p>
+<p>Same clause <span class="fn-marker">2<span class="tooltip">Same note.</span></span> same tail</p>
+</main>`, route);
+assert.match(ambiguous.errors.join('\n'), /duplicate note id/, 'truly ambiguous notes must fail closed');
+
+const authoredAmbiguous = collectAndProjectHtml(`<main><h2 id="section">Section</h2>
+<p>Same clause <span class="fn-marker" data-note-id="fixture-source-a">1<span class="tooltip">Same note.</span></span> same tail</p>
+<p>Same clause <span class="fn-marker" data-note-id="fixture-source-b">2<span class="tooltip">Same note.</span></span> same tail</p>
+</main>`, route);
+assert.deepEqual(authoredAmbiguous.errors, []);
+assert.deepEqual(authoredAmbiguous.notes.map((note) => note.id), ['fixture-source-a', 'fixture-source-b']);
+
+const authoredAmbiguousReordered = collectAndProjectHtml(`<main><h2 id="section">Section</h2>
+<p>Same clause <span class="fn-marker" data-note-id="fixture-source-b">2<span class="tooltip">Same note.</span></span> same tail</p>
+<p>Same clause <span class="fn-marker" data-note-id="fixture-source-a">1<span class="tooltip">Same note.</span></span> same tail</p>
+</main>`, route);
+assert.deepEqual(authoredAmbiguousReordered.errors, []);
+assert.deepEqual(
+  authoredAmbiguousReordered.notes.map((note) => note.id).sort(),
+  authoredAmbiguous.notes.map((note) => note.id).sort(),
+  'authored IDs must remain stable when ambiguous notes are reordered'
 );
-assert.deepEqual(headingRepeat.errors, []);
-assert.equal(new Set(headingRepeat.notes.map((note) => note.id)).size, 2, 'nearest authored heading must disambiguate identical local contexts without using ordinal');
 
 const orphan = collectAndProjectHtml('<main><span class="fn-marker">[1]</span></main>', route);
 assert.match(orphan.errors.join('\n'), /expected one \.tooltip, found 0/);
@@ -85,9 +104,8 @@ const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'note-registry
 assert.equal(schema.properties.interactionOwner.const, 'SiteUtils.makeTooltipController');
 const site = fs.readFileSync(path.join(ROOT, 'js', 'site.js'), 'utf8');
 assert.match(site, /makeTooltipController:function/);
-const a04Contract = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'a04-contract.mjs'), 'utf8');
-assert.match(a04Contract, /id:\s*'footnote',\s*trigger:\s*'\.fn-marker',\s*tip:\s*'\.tooltip',\s*exception:\s*'\.map-trigger'/);
+assert.match(site, /\.fn-marker:not\(\.map-trigger\)/);
 const moduleSource = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'note-registry.mjs'), 'utf8');
 assert.doesNotMatch(moduleSource, /addEventListener\s*\(/, 'NoteRegistry must not create a second interaction runtime');
 
-console.log('A03 NoteRegistry stable IDs, mutations and unified projections passed');
+console.log('✅ A03 NoteRegistry stable IDs, mutations and unified projections passed');
