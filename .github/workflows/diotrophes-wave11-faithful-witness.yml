@@ -1,0 +1,69 @@
+name: Diotrophes Wave 11 Faithful Witness
+
+on:
+  pull_request:
+    paths:
+      - 'data/diotrophes-wave11-faithful-witness-manifest.json'
+      - 'data/diotrophes-wave11-faithful-witness-cases.json'
+      - 'data/diotrophes-wave11-faithful-witness-responses.json'
+      - 'data/diotrophes-wave11-faithful-witness-sources.json'
+      - 'src/components/article-pilots/diotrophes/FaithfulWitnessSupplement.astro'
+      - 'src/components/article-pilots/diotrophes/DiotrophesWave11Draft.astro'
+      - 'scripts/diotrophes-wave11-faithful-witness-contract.mjs'
+      - 'research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01.md'
+      - '.github/workflows/diotrophes-wave11-faithful-witness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Enforce bounded Wave 11 diff
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/wave11-files.txt
+          pattern='^(data/diotrophes-wave11-faithful-witness-(manifest|cases|responses|sources)\.json|src/components/article-pilots/diotrophes/FaithfulWitnessSupplement\.astro|src/components/article-pilots/diotrophes/DiotrophesWave11Draft\.astro|scripts/diotrophes-wave11-faithful-witness-contract\.mjs|research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01\.md|\.github/workflows/diotrophes-wave11-faithful-witness\.yml)$'
+          owned="$(grep -E "$pattern" /tmp/wave11-files.txt || true)"
+          if [[ -z "$owned" ]]; then
+            echo 'No Wave 11-owned files differ from current base; treating synchronization as a no-op.'
+            echo 'active=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo 'active=true' >> "$GITHUB_OUTPUT"
+          unexpected="$(grep -Ev "$pattern" /tmp/wave11-files.txt || true)"
+          if [[ -n "$unexpected" ]]; then
+            echo 'Unexpected Wave 11 files:' >&2
+            printf '%s\n' "$unexpected" >&2
+            exit 1
+          fi
+
+      - name: Validate evidence and publication boundaries
+        if: steps.scope.outputs.active == 'true'
+        run: node scripts/diotrophes-wave11-faithful-witness-contract.mjs
+
+      - name: Type-check Astro draft
+        if: steps.scope.outputs.active == 'true'
+        run: npm run astro:check
+
+      - name: Ensure validation is read-only
+        if: steps.scope.outputs.active == 'true'
+        run: git diff --exit-code
