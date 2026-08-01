@@ -249,4 +249,10 @@ function main() {
   if (GATE && total > 0) process.exit(1);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  auditGeometry,
+  labelBox,
+  mapBounds,
+};
