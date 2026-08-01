@@ -25,6 +25,15 @@
     [data-gill-v16] .mobile-btoc-section > * {
       pointer-events: none !important;
     }
+
+    /*
+     * Series routes own a fixed bottom bar but do not depend on the legacy
+     * body.has-bottom-bar class. Keep the native resume prompt above that bar
+     * so its copy and actions never intercept the primary mobile controls.
+     */
+    body[data-gbs2-series] .bookmark-toast {
+      bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   @media (max-width: 48rem) {
