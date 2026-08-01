@@ -14,11 +14,13 @@ on:
       - "migration/page-ownership.json"
       - "src/content/**"
       - "src/pages/**"
+      - "src/components/nagornaya/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-index-policy-inventory.js"
+      - "scripts/discovery-followups-browser-test.mjs"
       - "scripts/lib/search-index-policy-contract.js"
       - "scripts/lib/rss-route-contract.js"
       - ".github/workflows/search-manifest-policy.yml"
@@ -34,11 +36,13 @@ on:
       - "migration/page-ownership.json"
       - "src/content/**"
       - "src/pages/**"
+      - "src/components/nagornaya/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-index-policy-inventory.js"
+      - "scripts/discovery-followups-browser-test.mjs"
       - "scripts/lib/search-index-policy-contract.js"
       - "scripts/lib/rss-route-contract.js"
       - ".github/workflows/search-manifest-policy.yml"
@@ -72,6 +76,7 @@ jobs:
           node --check scripts/search-manifest-policy-normalizer-test.js
           node --check scripts/rss-feed-normalizer.js
           node --check scripts/rss-feed-normalizer-test.js
+          node --check scripts/discovery-followups-browser-test.mjs
 
       - name: Test normalizer mutations and idempotence
         run: |
@@ -80,6 +85,65 @@ jobs:
 
       - name: Require deterministic RSS projection
         run: node scripts/rss-feed-normalizer.js --check
+
+  discovery-followups-contract:
+    name: Pagefind scripture, noindex and RSS contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index
+        run: npm run pagefind:build:dist
+
+      - name: Verify route policy and Nagornaya registries
+        run: |
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+          node scripts/nagornaya-source-integrity-regression-test.js
+          npm run nagornaya:visual-parity:audit
+
+      - name: Run real Pagefind discovery queries
+        env:
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: >-
+          node scripts/discovery-followups-browser-test.mjs
+          --dist=dist
+          --report=reports/a15-discovery-followups
+
+      - name: Publish evidence summary
+        run: cat reports/a15-discovery-followups.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload discovery evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: a15-discovery-followups-${{ github.run_id }}
+          path: |
+            reports/a15-discovery-followups.json
+            reports/a15-discovery-followups.md
+            reports/search-index-policy-inventory.json
+            reports/search-index-policy-inventory.md
+          if-no-files-found: error
+          retention-days: 30
 
   search-manifest-autofix:
     name: Search manifest and RSS autofix
