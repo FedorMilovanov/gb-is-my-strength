@@ -3,7 +3,14 @@
  * KartyHeroSection.astro — hero + featured Avraam card for /karty/.
  *
  * Refactoring 6.0 parallel pilot: preserve legacy structure/classes/text.
+ * Counts are derived from the governed route inventory so a newly added
+ * audit-pending map cannot desynchronise the hub and its fail-closed validator.
  */
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const { getKartyHubInventory } = require('../../lib/karty-hub-inventory.cjs');
+const { routeCount, publishedCount, auditCount } = getKartyHubInventory();
 ---
 <section class="karty-hero" aria-labelledby="mapsTitle">
   <div class="karty-hero__inner">
@@ -12,9 +19,15 @@
       <h1 id="mapsTitle">Библейские карты</h1>
       <div class="he" lang="he">מַפּוֹת</div>
       <p class="desc">Карты должны помогать видеть текст Писания в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и исторический контекст. Поэтому на витрине остаётся только то, что прошло визуальную проверку.</p>
-      <div class="karty-hero__meta" aria-label="Статус раздела">
-        <div class="karty-stat"><b>1</b><span>карта открыта</span></div>
-        <div class="karty-stat"><b>9</b><span>на аудите</span></div>
+      <div
+        class="karty-hero__meta"
+        aria-label="Статус раздела"
+        data-route-count={routeCount}
+        data-published-count={publishedCount}
+        data-audit-count={auditCount}
+      >
+        <div class="karty-stat"><b>{publishedCount}</b><span>карта открыта</span></div>
+        <div class="karty-stat"><b>{auditCount}</b><span>на аудите</span></div>
         <div class="karty-stat"><b>0</b><span>черновиков на витрине</span></div>
       </div>
     </div>
