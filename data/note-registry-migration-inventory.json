@@ -7,12 +7,14 @@
   "generatedRegistry": "dist/data/note-registry.json",
   "stableIdentity": {
     "preferred": "authored data-note-id",
-    "fallback": "route + normalized note content + nearest authored semantic context SHA-256 prefix",
+    "fallback": "route + normalized note content + nearest authored heading/semantic context SHA-256 prefix",
+    "headingAnchor": "nearest preceding h1–h6 id/data-section-id and text",
     "contextContainers": ["p", "li", "blockquote", "td", "th", "dd", "dt", "figcaption", "caption"],
+    "contextAnchors": ["id", "data-section-id", "data-source-id"],
     "ordinalSeparated": true,
     "renumberingMayChangeStableId": false,
-    "sameTextInDifferentAuthoredContextsMayShareStableId": false,
-    "sameTextInSameAuthoredContextIsBlockingDuplicate": true
+    "sameTextInDifferentAuthoredSectionsMayShareStableId": false,
+    "sameTextInSameAuthoredSectionAndContextIsBlockingDuplicate": true
   },
   "projections": [
     "body-mounted popover through existing controller",
