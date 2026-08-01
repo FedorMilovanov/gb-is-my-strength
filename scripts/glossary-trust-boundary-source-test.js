@@ -10,6 +10,7 @@ const runtime = fs.readFileSync(path.join(ROOT, "js", "glossary.js"), "utf8");
 const browserFixture = fs.readFileSync(path.join(ROOT, "scripts", "glossary-security-browser-test.js"), "utf8");
 
 assert.doesNotMatch(runtime, /\binnerHTML\s*=/, "glossary dictionary data must never enter innerHTML");
+assert.doesNotMatch(runtime, /\binsertAdjacentHTML\s*\(|\bouterHTML\s*=/, "alternate raw-HTML sinks must remain absent");
 assert.match(runtime, /function\s+inline\s*\(/, "runtime must retain the explicit inline allowlist renderer");
 assert.match(runtime, /document\.createElement\("em"\)/, "semantic emphasis must be created through DOM APIs");
 assert.match(runtime, /document\.createTextNode\(s\.slice\(/, "non-allowlisted markup must remain text");
