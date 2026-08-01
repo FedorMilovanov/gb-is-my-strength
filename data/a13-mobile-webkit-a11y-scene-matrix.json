@@ -8,7 +8,7 @@
     { "id": "home", "path": "/", "surface": "landing" },
     { "id": "article", "path": "/articles/20-antisovetov-pastoru/", "surface": "article" },
     { "id": "series", "path": "/nagornaya/chast-3/", "surface": "series" },
-    { "id": "map", "path": "/karty/avraam/", "surface": "application" }
+    { "id": "map", "path": "/karty/avraam/", "surface": "map-stage", "owner_selector": "#stage" }
   ],
   "viewport_contract": {
     "narrow_widths": [320, 360, 390],
@@ -22,7 +22,7 @@
       "browsers": ["chromium", "webkit"],
       "routes": ["home", "article", "series", "map"],
       "widths": [320, 360, 390, 1199, 1200, 1201],
-      "assertions": ["document-loads", "no-root-horizontal-overflow", "one-main-landmark"]
+      "assertions": ["document-loads", "no-root-horizontal-overflow", "route-owner-visible"]
     },
     {
       "id": "zoom-200-layout-equivalent",
