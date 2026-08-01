@@ -1,0 +1,74 @@
+name: A03 Controller Forensic
+
+on:
+  push:
+    branches:
+      - audit/a03-controller-ownership-20260801
+    paths:
+      - .github/workflows/a03-controller-forensic.yml
+
+permissions:
+  contents: write
+
+jobs:
+  enumerate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Enumerate controller registrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root = Path('.')
+          allowed = {'.js', '.mjs', '.cjs', '.astro', '.html'}
+          excluded = {'.git', 'node_modules', 'dist', 'reports'}
+          rows = []
+          patterns = [
+              re.compile(r'makeTooltipController\s*\('),
+              re.compile(r'_tooltipControllers'),
+              re.compile(r'mobileSheet'),
+          ]
+          for path in sorted(root.rglob('*')):
+              if not path.is_file() or path.suffix not in allowed:
+                  continue
+              if any(part in excluded for part in path.parts):
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              if not any(p.search(text) for p in patterns):
+                  continue
+              for match in re.finditer(r'makeTooltipController\s*\(', text):
+                  start = max(0, match.start() - 260)
+                  end = min(len(text), match.start() + 700)
+                  snippet = text[start:end].replace('\n', ' ')
+                  rows.append({'path': str(path), 'offset': match.start(), 'snippet': snippet})
+          data = {
+              'head': __import__('subprocess').check_output(['git','rev-parse','HEAD'], text=True).strip(),
+              'registrations': rows,
+              'count': len(rows),
+          }
+          Path('reports/a03-controller-ownership.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          md = ['# A03 tooltip controller ownership', '', f"Head: `{data['head']}`", f"Registrations: **{len(rows)}**", '']
+          for i, row in enumerate(rows, 1):
+              md += [f"## {i}. `{row['path']}` @ {row['offset']}", '', '```text', row['snippet'], '```', '']
+          Path('reports/a03-controller-ownership.md').write_text('\n'.join(md), encoding='utf-8')
+          PY
+      - name: Commit report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add reports/a03-controller-ownership.json reports/a03-controller-ownership.md
+          git commit -m "chore(forensic): record A03 controller ownership" || exit 0
+          git push origin HEAD:audit/a03-controller-ownership-20260801
