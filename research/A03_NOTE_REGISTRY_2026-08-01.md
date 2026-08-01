@@ -46,16 +46,24 @@ sticky path, — чтобы поздний reflow не закрывал прим
 body-mounted surface. Изменение прошло через существующий label-gated same-repo
 autofix capability; label удалён до финального human-authored exact head.
 
-## WebKit mobile compatibility click
+## WebKit compatibility click
 
 WebKit может послать synthetic click с `detail=0` сразу после уже обработанного
-touchend. Одного `MouseEvent.detail` недостаточно, чтобы отличить такой click от
-клавиатурной активации: при втором касании tooltip закрывался на touchend и тут
-же открывался обратно compatibility-click событием. Существующий pending token
-теперь учитывает также свежесть последнего touch (700 ms). Поэтому detail-zero
-click подавляется только в коротком post-touch окне, а обычная клавиатурная
-активация вне этого окна сохраняется. Новый controller или mobile-only engine не
-создаётся.
+touchend. Существующий pending token учитывает свежесть последнего touch (700 ms),
+поэтому post-touch click не принимается за клавиатурную активацию. Этот guard
+остаётся отдельной защитой, но exact-head повтор доказал, что он не был корнем
+неустойчивого второго касания.
+
+## WebKit touch slop
+
+Предыдущий dispatcher объявлял прокруткой любой `touchmove`, даже единичный
+субпиксельный/малый jitter физического tap. Exact-head witness дал характерную
+последовательность: первое касание открывало tooltip, второе не меняло состояние,
+а третье закрывало его уже после истечения post-touch окна. Теперь `touchstart`
+фиксирует исходную точку, а `touchmove` становится прокруткой только после
+смещения более 12 CSS px. Меньшее движение сохраняет tap-cycle; реальный scroll
+по-прежнему закрывает tooltip. Новый controller, browser-specific branch или
+ослабление witness не добавляются.
 
 ## Параллельность
 
