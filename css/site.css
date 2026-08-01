@@ -1433,3 +1433,4 @@ html:not(.dark) .gtip.gb-floating-tip::before {
     display: flex;
   }
 }
+@media(max-width:768px){body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{padding-right:3.25rem!important}.gb-floating-tip>.gb-tooltip-close{position:absolute;top:.55rem;right:.55rem;z-index:3;display:grid;place-items:center;width:2.35rem;height:2.35rem;margin:0;padding:0;border:1px solid currentColor;border-radius:999px;background:Canvas;color:CanvasText;font:700 1.45rem/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;opacity:.92}.gb-floating-tip>.gb-tooltip-close:focus-visible{outline:3px solid currentColor;outline-offset:2px}}
