@@ -89,6 +89,7 @@ async function geometry(page) {
       return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
     };
     const mains = [...document.querySelectorAll('main, [role="main"]')];
+    const applications = [...document.querySelectorAll('[role="application"]')];
     const focusable = [...document.querySelectorAll(
       'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',
     )].filter(visible);
@@ -98,19 +99,26 @@ async function geometry(page) {
       scrollHeight: Math.max(root.scrollHeight, body?.scrollHeight || 0),
       mainCount: mains.length,
       visibleMain: mains.some(visible),
+      applicationCount: applications.length,
+      visibleApplication: applications.some(visible),
       focusableCount: focusable.length,
     };
   });
 }
 
-function checkGeometry(metrics, label) {
+function checkGeometry(metrics, label, route) {
   const overflow = metrics.scrollWidth - metrics.clientWidth;
   assert.ok(
     overflow <= matrix.viewport_contract.max_root_overflow_px,
     `${label} root overflow ${overflow}px (scrollWidth=${metrics.scrollWidth}, clientWidth=${metrics.clientWidth})`,
   );
-  assert.equal(metrics.mainCount, 1, `${label} main landmarks=${metrics.mainCount}`);
-  assert.equal(metrics.visibleMain, true, `${label} main is hidden`);
+  if (route.surface === 'application') {
+    assert.equal(metrics.applicationCount, 1, `${label} application landmarks=${metrics.applicationCount}`);
+    assert.equal(metrics.visibleApplication, true, `${label} application landmark is hidden`);
+  } else {
+    assert.equal(metrics.mainCount, 1, `${label} main landmarks=${metrics.mainCount}`);
+    assert.equal(metrics.visibleMain, true, `${label} main is hidden`);
+  }
   assert.ok(metrics.focusableCount > 0, `${label} has no reachable controls`);
   return overflow;
 }
@@ -138,7 +146,7 @@ async function responsive(browserName, browserType) {
             page.on('pageerror', (error) => pageErrors.push(error.message));
             await load(page, route);
             const metrics = await geometry(page);
-            const overflow = checkGeometry(metrics, label);
+            const overflow = checkGeometry(metrics, label, route);
             assert.deepEqual(pageErrors, [], `${label} page errors: ${pageErrors.join(' | ')}`);
             note('responsive-root-overflow', browserName, route.id, { width, overflow, metrics });
           });
@@ -164,7 +172,7 @@ async function zoomEquivalent(browserName, browserType) {
         }, async (page) => {
           await load(page, route);
           const metrics = await geometry(page);
-          const overflow = checkGeometry(metrics, label);
+          const overflow = checkGeometry(metrics, label, route);
           const focus = await page.evaluate(() => {
             const visible = (element) => {
               const rect = element.getBoundingClientRect();
@@ -231,7 +239,7 @@ async function homeModal(browserName, browserType) {
       });
       assert.deepEqual(opened, {
         expanded: 'true',
-        hidden: 'false',
+        hidden: null,
         focusInside: true,
         backgroundInert: true,
         scrollLocked: true,
@@ -290,7 +298,7 @@ async function touchWebKit() {
             await page.waitForTimeout(160);
             const after = await geometry(page);
             const scrollY = await page.evaluate(() => window.scrollY);
-            const overflow = checkGeometry(after, label);
+            const overflow = checkGeometry(after, label, route);
             if (targetY > 0) assert.ok(scrollY > 0, `${label} made no vertical scroll progress`);
             note('touch-scroll-webkit', 'webkit', route.id, { width, targetY, scrollY, overflow });
           });
@@ -326,7 +334,7 @@ async function mediaScene(scene, browserName, browserType, options, mediaQuery) 
             assert.ok(focus?.width > 0 && focus?.height > 0, `${label} focus geometry missing`);
           }
           const metrics = await geometry(page);
-          const overflow = checkGeometry(metrics, label);
+          const overflow = checkGeometry(metrics, label, route);
           note(scene, browserName, route.id, { width: 390, overflow, focus });
         });
       } catch (error) {
