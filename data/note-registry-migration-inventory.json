@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "task": "Agent 03 — Unified NoteRegistry",
+  "authoredSource": ".fn-marker:not(.map-trigger) > .tooltip",
+  "captureOwner": "scripts/lib/note-registry.mjs",
+  "interactionOwner": "SiteUtils.makeTooltipController",
+  "generatedRegistry": "dist/data/note-registry.json",
+  "stableIdentity": {
+    "preferred": "authored data-note-id",
+    "fallback": "route + normalized note content + nearest authored heading/semantic context SHA-256 prefix",
+    "headingAnchor": "nearest preceding h1–h6 id/data-section-id and text",
+    "contextContainers": ["p", "li", "blockquote", "td", "th", "dd", "dt", "figcaption", "caption"],
+    "contextAnchors": ["id", "data-section-id", "data-source-id"],
+    "ordinalSeparated": true,
+    "renumberingMayChangeStableId": false,
+    "sameTextInDifferentAuthoredSectionsMayShareStableId": false,
+    "sameTextInSameAuthoredSectionAndContextIsBlockingDuplicate": true
+  },
+  "projections": [
+    "body-mounted popover through existing controller",
+    "aria-describedby endnote relation",
+    "screen-reader endnotes",
+    "TTS data-speakable endnotes",
+    "Pagefind endnotes with inline tooltip ignored",
+    "print endnotes",
+    "no-JS endnotes"
+  ],
+  "failClosed": [
+    "orphan marker",
+    "multiple tooltips per marker",
+    "empty note",
+    "duplicate stable ID",
+    "authored ordinal drift",
+    "nested interactive control outside tooltip",
+    "duplicate final DOM IDs",
+    "malformed generated block",
+    "zero authored notes in production-like dist"
+  ],
+  "exceptions": [
+    {
+      "selector": ".fn-marker.map-trigger",
+      "owner": "Karty/MapEngine",
+      "reason": "interactive map trigger, not an authored textual footnote"
+    }
+  ],
+  "dependenciesUnblockedAfterMerge": [
+    "Agent 04 — ReaderProjection/TTS/controls",
+    "Agent 12 phase 2 — print/PDF endnotes"
+  ]
+}

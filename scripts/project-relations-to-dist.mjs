@@ -11,6 +11,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { projectNoteRegistry } from './lib/note-registry.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -253,4 +254,11 @@ if (!DRY_RUN) {
   await mkdir(dirname(REPORT_TARGET), { recursive: true });
   await writeFile(REPORT_TARGET, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 }
-console.log(`✅ relation projection: ${report.projectedPanels} panels, ${report.legacyBlocksRemoved} legacy blocks removed, runtime fetch eliminated`);
+
+const noteReport = projectNoteRegistry({
+  distRoot: DIST,
+  reportDir: join(ROOT, 'reports'),
+  dryRun: DRY_RUN,
+});
+console.log(`relation projection: ${report.projectedPanels} panels, ${report.legacyBlocksRemoved} legacy blocks removed, runtime fetch eliminated`);
+console.log(`note projection: ${noteReport.registry.noteCount} notes across ${noteReport.registry.routeCount} routes; interaction owner=${noteReport.registry.interactionOwner}`);

@@ -11,6 +11,7 @@ on:
       - "data/links-graph.json"
       - "data/relations.json"
       - "data/relations.schema.json"
+      - "data/note-registry*.json"
       - "data/nagornaya/source-registry*.json"
       - "migration/page-ownership.json"
       - "migration/route-migration-matrix.json"
@@ -33,6 +34,7 @@ on:
       - "sitemap.xml"
       - "package.json"
       - "package-lock.json"
+      - "reports/salvage/A03-note-registry-ownership.json"
       - "scripts/audit-pro.js"
       - "scripts/audit-pro-source-corpus-test.js"
       - "scripts/lib/audit-pro-source-corpus.js"
@@ -68,6 +70,10 @@ on:
       - "scripts/project-relations-to-dist.mjs"
       - "scripts/astro-cache-bust-postbuild.js"
       - "scripts/route-semantics-browser-test.mjs"
+      - "scripts/a03-note-registry-browser-test.mjs"
+      - "scripts/note-registry-projector.mjs"
+      - "scripts/note-registry-contract-test.mjs"
+      - "scripts/lib/note-registry.mjs"
       - "scripts/nagornaya-source-integrity-regression-test.js"
       - "scripts/nagornaya-source-registry-test.js"
       - "scripts/nagornaya-epistemic-ui-browser-test.mjs"
@@ -111,6 +117,9 @@ jobs:
 
       - name: Validate effective matrix contract without writing
         run: node scripts/sync-route-migration-matrix.js --check
+
+      - name: Validate NoteRegistry schema, stable IDs and mutations
+        run: node scripts/note-registry-contract-test.mjs
 
       - name: Route profile contract
         shell: bash
@@ -179,6 +188,9 @@ jobs:
           path: |
             reports/*.log
             reports/rss-route-contract.json
+            reports/salvage/A03-note-registry-ownership.json
+            data/note-registry.schema.json
+            data/note-registry-migration-inventory.json
             data/route-search-policy.json
             data/search-manifest.json
             migration/route-migration-matrix.json
@@ -244,7 +256,7 @@ jobs:
           GB_MATRIX_WORKERS: "4"
         run: node scripts/public-surface-browser-matrix.mjs
 
-      - name: Test route semantics in Chromium
+      - name: Test route semantics and NoteRegistry in Chromium
         run: node scripts/route-semantics-browser-test.mjs
 
       - name: Test Nagornaya epistemic UI in Chromium
@@ -263,7 +275,7 @@ jobs:
             reports/public-surface-browser-matrix.json \
             http://127.0.0.1:4177
 
-      - name: Upload browser, SEO and search-policy reports
+      - name: Upload browser, SEO, search-policy and NoteRegistry reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -277,6 +289,12 @@ jobs:
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
+            reports/a03-note-registry.json
+            reports/a03-note-registry.md
+            reports/a03-note-registry-browser-chromium.json
+            reports/a03-note-registry-browser-chromium.md
+            reports/a03-note-registry-print.pdf
+            dist/data/note-registry.json
             reports/nagornaya-epistemic-ui-browser.json
             reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
@@ -320,7 +338,12 @@ jobs:
           GB_CROSS_BROWSER_WORKERS: "2"
         run: node scripts/public-surface-cross-browser-matrix.mjs
 
-      - name: Upload ${{ matrix.engine }} cross-browser report
+      - name: Test NoteRegistry in ${{ matrix.engine }}
+        env:
+          GB_NOTE_BROWSER: ${{ matrix.engine }}
+        run: node scripts/a03-note-registry-browser-test.mjs
+
+      - name: Upload ${{ matrix.engine }} cross-browser and NoteRegistry reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -328,5 +351,9 @@ jobs:
           path: |
             reports/public-surface-cross-browser-${{ matrix.engine }}.json
             reports/public-surface-cross-browser-${{ matrix.engine }}.md
+            reports/a03-note-registry-browser-${{ matrix.engine }}.json
+            reports/a03-note-registry-browser-${{ matrix.engine }}.md
+            reports/a03-note-registry-print.pdf
+            dist/data/note-registry.json
           if-no-files-found: warn
           retention-days: 14
