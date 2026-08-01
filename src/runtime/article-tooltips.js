@@ -1,4 +1,4 @@
-const VERSION = 9;
+const VERSION = 10;
 const OWNER = 'site-utils-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
@@ -239,33 +239,16 @@ function position(tip, anchor) {
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
-function bindMobileClose(close) {
-  if (close.dataset.gbNativeCloseBound === '1') return;
-  close.dataset.gbNativeCloseBound = '1';
-  const closeNow = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation?.();
-    closeTooltip(event.type === 'pointerup' ? 'control-pointer' : 'control');
-  };
-  close.addEventListener('pointerup', closeNow);
-  close.addEventListener('click', closeNow);
-}
-
 function ensureMobileClose(tip, controller) {
-  if (!controller?.isMobileSheet?.()) return;
-  let close = tip.querySelector('[data-tooltip-close]');
-  if (!close) {
-    close = document.createElement('button');
-    close.type = 'button';
-    close.className = 'gb-tooltip-close';
-    close.dataset.tooltipClose = '';
-    close.dataset.gbGeneratedClose = '1';
-    close.setAttribute('aria-label', 'Закрыть подсказку');
-    close.textContent = '×';
-    tip.insertBefore(close, tip.firstChild);
-  }
-  bindMobileClose(close);
+  if (!controller?.isMobileSheet?.() || tip.querySelector('[data-tooltip-close]')) return;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'gb-tooltip-close';
+  close.dataset.tooltipClose = '';
+  close.dataset.gbGeneratedClose = '1';
+  close.setAttribute('aria-label', 'Закрыть подсказку');
+  close.textContent = '×';
+  tip.insertBefore(close, tip.firstChild);
 }
 
 function restore(record) {
@@ -474,6 +457,14 @@ export function installArticleTooltips() {
   }, true);
   document.addEventListener('pointerdown', (event) => {
     if (!active) return;
+    const close = event.target instanceof Element ? event.target.closest('[data-tooltip-close]') : null;
+    if (close && active.tip.contains(close)) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      closeTooltip('control-pointerdown');
+      return;
+    }
     if (containsOwnedSurface(active, event.target)) return;
     closeTooltip('outside');
   }, true);
