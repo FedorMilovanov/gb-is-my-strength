@@ -16,18 +16,28 @@ const AFTER_EMPTY_GUARD = "function buildEndnotes(route, notes) {\n  if (!notes.
 const BEFORE_CONTRACT = "execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'site-tooltip-touch-normalizer.js')], { stdio: 'inherit' });";
 const AFTER_CONTRACT = `${BEFORE_CONTRACT}\nexecFileSync(process.execPath, [path.join(ROOT, 'scripts', 'note-print-normalizer.js')], { stdio: 'inherit' });`;
 
+function count(source, needle) {
+  return source.split(needle).length - 1;
+}
+
+function residualBeforeCount(source, before, after) {
+  return count(source.split(after).join(''), before);
+}
+
 function normalize(file, before, after, label) {
   const source = fs.readFileSync(file, 'utf8');
-  const beforeCount = source.split(before).length - 1;
-  const afterCount = source.split(after).length - 1;
-  if (afterCount === 1 && beforeCount === 0) return false;
-  if (beforeCount !== 1 || afterCount !== 0) {
-    throw new Error(`${label} normalizer refused input: before=${beforeCount}, after=${afterCount}`);
+  const afterCount = count(source, after);
+  const residualCount = residualBeforeCount(source, before, after);
+  if (afterCount === 1 && residualCount === 0) return false;
+  if (afterCount !== 0 || residualCount !== 1) {
+    throw new Error(`${label} normalizer refused input: residualBefore=${residualCount}, after=${afterCount}`);
   }
   if (!WRITE) throw new Error(`${label} is stale; rerun with --write`);
   const next = source.replace(before, after);
-  if (next.split(after).length - 1 !== 1 || next.includes(before)) {
-    throw new Error(`${label} target verification failed`);
+  const nextAfterCount = count(next, after);
+  const nextResidualCount = residualBeforeCount(next, before, after);
+  if (nextAfterCount !== 1 || nextResidualCount !== 0) {
+    throw new Error(`${label} target verification failed: residualBefore=${nextResidualCount}, after=${nextAfterCount}`);
   }
   fs.writeFileSync(file, next, 'utf8');
   return true;
