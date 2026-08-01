@@ -32,13 +32,13 @@ forbidText('Гомеостаз и вторичная травма', 'secondary-t
 
 requireText('В некоторых принуждающих или духовно небезопасных системах первоначальная теплота может стать условной', 'bounded conditional-warmth wording');
 requireText('за честный вопрос не наказывают холодом, лишением служения или духовным ярлыком', 'psychological-safety boundary');
-requireText('эффекты повторяющейся неконтролируемости', 'updated learned-helplessness wording');
+requireText('эффектов повторяющейся неконтролируемости', 'updated learned-helplessness wording');
 requireText('осторожная аналогия из семейно-системной и организационной теории', 'homeostasis analogy boundary');
 requireText('напряжение между несовместимыми убеждениями, обязательствами, знаниями или поступками', 'correct cognitive-dissonance wording');
 requireText('1 Тим. 5:19 прежде всего задаёт правило проверки свидетельств', '1 Timothy 5:19 evidentiary boundary');
 requireText('защищённые или конфиденциальные каналы сообщения', 'protected-reporting boundary');
 requireText('предполагаемом преступлении, непосредственной опасности', 'law-enforcement scope boundary');
-requireText('компетентность в safeguarding, отсутствие конфликта интересов', 'external helper competence boundary');
+requireText('компетентности в safeguarding, отсутствия конфликта интересов', 'external helper competence boundary');
 requireText('ὑπόκρισις) — притворство и лицемерие', 'lexical correction');
 requireText('Авторская аналитическая формула: «отрицательный отбор пресвитеров»', 'authorial-term boundary');
 requireText('data-audit-sources="54"', '54-source audit marker');
