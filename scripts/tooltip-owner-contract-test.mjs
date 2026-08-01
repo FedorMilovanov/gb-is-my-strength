@@ -28,9 +28,12 @@ assert.equal(count(nativeTooltips, /api\.makeTooltipController\('\.fn-marker', '
 assert.equal(count(nativeTooltips, /api\.makeTooltipController\('\.gterm', '\.gtip'/g), 1, 'native glossary owner must be unique');
 assert.match(nativeTooltips, /controller\.activeEl = anchor/, 'native active anchor must be reflected in the public controller record');
 assert.match(nativeTooltips, /controller\.activeTip = tip/, 'native active tooltip must be reflected in the public controller record');
+assert.match(nativeTooltips, /close\.addEventListener\('pointerup', closeNow\)/, 'native mobile close control must own the physical pointer release');
+assert.match(nativeTooltips, /close\.addEventListener\('click', closeNow\)/, 'native mobile close control must preserve keyboard and compatibility click closure');
+assert.match(nativeTooltips, /data-gb-native-close-bound|gbNativeCloseBound/, 'native mobile close binding must be idempotent');
 
 assert.match(witness, /querySelectorAll\('\[data-tooltip-close\]'\)/, 'browser witness must resolve close controls at any authored depth');
 assert.match(witness, /multiple tooltip close controls/, 'browser witness must fail closed on duplicate close controls');
 assert.doesNotMatch(witness, /\[\.\.\.activeTip\.children\].*data-tooltip-close/s, 'browser witness must not assume the close control is a direct child');
 
-console.log('✅ Tooltip owner contract: one public registry, unique selectors and one physical close control');
+console.log('✅ Tooltip owner contract: one public registry, unique selectors and one directly owned physical close control');
