@@ -275,6 +275,7 @@ function nestedControlsOutsideTip(marker, tip) {
 }
 
 function buildEndnotes(route, notes) {
+  if (!notes.length) return '';
   const routeSlug = stableRouteSlug(route);
   const headingId = `note-endnotes-${routeSlug}`;
   const items = notes.map((note) => `      <li id="${note.endnoteId}" data-note-id="${note.id}" data-note-ordinal="${note.ordinal}"><span class="gb-note-endnotes__ordinal" aria-hidden="true">${note.ordinal}.</span> ${note.html} <a class="gb-note-endnotes__back" href="#${note.refId}" aria-label="Вернуться к отметке ${note.ordinal}">↩</a></li>`).join('\n');
@@ -282,7 +283,7 @@ function buildEndnotes(route, notes) {
 <style data-note-registry-style>
 .gb-note-endnotes{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:normal!important;border:0!important}
 .gb-note-endnotes:focus-within{position:static!important;width:auto!important;height:auto!important;margin:2rem 0!important;overflow:visible!important;clip:auto!important}
-@media print{.gb-note-endnotes{position:static!important;width:auto!important;height:auto!important;margin:2rem 0!important;overflow:visible!important;clip:auto!important}.fn-marker>.tooltip{display:none!important}.gb-note-endnotes__back{display:none!important}}
+@media print{.gb-note-endnotes{display:block!important;position:static!important;width:auto!important;height:auto!important;max-height:none!important;margin:2rem 0 0!important;padding:0!important;overflow:visible!important;clip:auto!important;visibility:visible!important;opacity:1!important;break-before:auto!important;page-break-before:auto!important;break-after:auto!important;page-break-after:auto!important}.gb-note-endnotes h2{display:block!important;break-after:avoid-page!important;page-break-after:avoid!important}.gb-note-endnotes ol{display:block!important;margin:.75rem 0 0!important;padding-left:1.5rem!important;list-style:decimal!important;overflow:visible!important}.gb-note-endnotes li{display:list-item!important;position:static!important;width:auto!important;height:auto!important;max-height:none!important;overflow:visible!important;clip:auto!important;visibility:visible!important;opacity:1!important;break-inside:avoid-page!important;page-break-inside:avoid!important}.fn-marker>.tooltip{display:none!important}.gb-note-endnotes__back{display:none!important}}
 </style>
 <noscript data-note-registry-noscript><style>.gb-note-endnotes{position:static!important;width:auto!important;height:auto!important;margin:2rem 0!important;overflow:visible!important;clip:auto!important}</style></noscript>
 <section class="gb-note-endnotes" data-note-registry-endnotes data-speakable aria-labelledby="${headingId}">

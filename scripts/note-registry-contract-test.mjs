@@ -127,6 +127,7 @@ try {
 }
 
 execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'site-tooltip-touch-normalizer.js')], { stdio: 'inherit' });
+execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'note-print-normalizer.js')], { stdio: 'inherit' });
 const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'note-registry.schema.json'), 'utf8'));
 assert.equal(schema.properties.interactionOwner.const, 'SiteUtils.makeTooltipController');
 const site = fs.readFileSync(path.join(ROOT, 'js', 'site.js'), 'utf8');
