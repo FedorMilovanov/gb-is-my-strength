@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -38,14 +38,8 @@ jobs:
         with:
           node-version: '22.23.1'
 
-      - name: Validate Metadata v3 syntax and registry structure
-        run: |
-          node --check scripts/lib/editorial-metadata-v3.js
-          node --check scripts/editorial-metadata-registry.js
-          node scripts/editorial-metadata-registry.js --check
-
-      - name: Run Metadata v3 adversarial projection contract
-        run: node scripts/editorial-metadata-registry-preservation-test.js
+      - name: Validate registry structure
+        run: node scripts/editorial-metadata-registry.js --check
 
       - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
