@@ -32,6 +32,7 @@ const policyRegistry = {
   },
 };
 const manifest = {
+  generatedAt: '2026-07-25T10:00:00Z',
   project: {
     name: 'Тестовая библиотека',
     url: 'https://gospod-bog.ru/',
@@ -94,6 +95,8 @@ assert.equal(parsed.items[1].title, 'Старый & проверенный');
 assert.ok(rendered.includes('Новый &lt;материал&gt;'));
 assert.ok(rendered.includes(']]]]><![CDATA[>'));
 assert.ok(!rendered.includes('/excluded/'));
+assert.ok(rendered.includes('<lastBuildDate>Sat, 25 Jul 2026 10:00:00 GMT</lastBuildDate>'));
+assert.ok(!rendered.includes('<lastBuildDate>Wed, 22 Jul 2026 09:00:00 GMT</lastBuildDate>'));
 assert.equal(rendered, renderFeed({ policyRegistry, manifest, productionRecords: records }), 'render must be deterministic');
 
 assert.throws(
@@ -121,6 +124,14 @@ assert.throws(
     productionRecords: records,
   }),
   /non-production route/
+);
+assert.throws(
+  () => renderFeed({
+    policyRegistry,
+    manifest: { ...manifest, generatedAt: null },
+    productionRecords: records,
+  }),
+  /search manifest generatedAt: invalid date/
 );
 
 console.log('✅ deterministic RSS normalizer contract');
