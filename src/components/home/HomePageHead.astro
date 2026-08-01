@@ -24,6 +24,8 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 <meta name="keywords" content="богословие, реформатское богословие, библейские статьи, экзегеза, толкование Библии, Иеремия, Код да Винчи, герменевтика">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 <link rel="canonical" href="https://gospod-bog.ru/">
+<link rel="alternate" hreflang="ru" href="https://gospod-bog.ru/">
+<link rel="alternate" hreflang="x-default" href="https://gospod-bog.ru/">
 <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
 
 <!-- Open Graph -->
@@ -75,7 +77,15 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
       "publisher": {
         "@id": "https://gospod-bog.ru/#organization"
       },
-      "description": "Библиотека богословских материалов на русском языке: авторские статьи, переводы зарубежных богословов, подборки источников."
+      "description": "Библиотека богословских материалов на русском языке: авторские статьи, переводы зарубежных богословов, подборки источников.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://gospod-bog.ru/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
     },
     {
       "@type": "CollectionPage",
