@@ -7,6 +7,7 @@ export const GENERATED_START = '<!-- NOTE_REGISTRY:START -->';
 export const GENERATED_END = '<!-- NOTE_REGISTRY:END -->';
 const VOID = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
 const INTERACTIVE_TAGS = new Set(['a','button','input','select','textarea','summary']);
+const CONTEXT_TAGS = new Set(['p','li','blockquote','td','th','dd','dt','figcaption','caption']);
 const STABLE_ID_RE = /^[a-z][a-z0-9-]{2,127}$/;
 
 export function normalizeRoute(value) {
@@ -128,8 +129,20 @@ function stableRouteSlug(route) {
   return normalizeRoute(route).replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9а-яё]+/gi, '-').replace(/^-+|-+$/g, '') || 'home';
 }
 
-function contentHash(route, text) {
-  return crypto.createHash('sha256').update(`${normalizeRoute(route)}\0${text}`).digest('hex').slice(0, 12);
+function authoredContext(html, marker) {
+  let container = marker.parent;
+  while (container && !CONTEXT_TAGS.has(container.tag)) container = container.parent;
+  if (!container) return '';
+  const before = html.slice(container.openEnd, marker.start);
+  const after = html.slice(marker.end, container.endStart);
+  return stripTags(`${before} ${after}`).slice(0, 1024);
+}
+
+function contentHash(route, text, context) {
+  return crypto.createHash('sha256')
+    .update(`${normalizeRoute(route)}\0${text}\0${context}`)
+    .digest('hex')
+    .slice(0, 12);
 }
 
 function numericLabel(markerText) {
@@ -168,7 +181,8 @@ function removeGenerated(html) {
 }
 
 function findDirectTip(marker) {
-  return descendants(marker, (node) => classes(node).has('tooltip'));
+  const tips = descendants(marker, (node) => classes(node).has('tooltip'));
+  return tips;
 }
 
 function nestedControlsOutsideTip(marker, tip) {
@@ -232,7 +246,8 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
     const visibleOrdinal = numericLabel(markerText);
     const authoredId = String(marker.attrs['data-note-id'] || '').trim();
     if (authoredId && !STABLE_ID_RE.test(authoredId)) errors.push(`${route}: invalid authored data-note-id=${authoredId}`);
-    const id = authoredId || `${routeSlug}-note-${contentHash(route, noteText)}`;
+    const context = authoredContext(html, marker);
+    const id = authoredId || `${routeSlug}-note-${contentHash(route, noteText, context)}`;
     if (ids.has(id)) errors.push(`${route}: duplicate note id ${id} at ordinals ${ids.get(id)} and ${ordinal}`);
     else ids.set(id, ordinal);
     if (ordinals.has(ordinal)) errors.push(`${route}: duplicate ordinal ${ordinal}`);
