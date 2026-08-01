@@ -77,7 +77,6 @@ function normalizeTooltipStyles(source) {
 function projectA03Sources() {
   const suffix = WRITE ? ['--write'] : [];
   execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'site-tooltip-touch-normalizer.js'), ...suffix], { stdio: 'inherit' });
-  execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'tooltip-a03-escape-normalizer.js'), ...suffix], { stdio: 'inherit' });
   execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'note-print-normalizer.js'), ...suffix], { stdio: 'inherit' });
 }
 
