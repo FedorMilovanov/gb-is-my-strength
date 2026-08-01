@@ -14,7 +14,8 @@ const CLOSED_TOOLTIP_POINTER_RULE = '.fn-marker:not(.is-open)>.tooltip{pointer-e
 const LEGACY_FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip{pointer-events:none}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto}';
 const PRIORITY_FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}';
 const FLOATING_TOOLTIP_POINTER_RULE = '.tooltip.gb-floating-tip,.gtip.gb-floating-tip,body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{pointer-events:none!important}.tooltip.gb-floating-tip a,.tooltip.gb-floating-tip button,.tooltip.gb-floating-tip input,.tooltip.gb-floating-tip select,.tooltip.gb-floating-tip textarea,.tooltip.gb-floating-tip summary,.tooltip.gb-floating-tip [tabindex],.tooltip.gb-floating-tip [role="button"],.tooltip.gb-floating-tip [contenteditable]:not([contenteditable="false"]),.gtip.gb-floating-tip a,.gtip.gb-floating-tip button,.gtip.gb-floating-tip input,.gtip.gb-floating-tip select,.gtip.gb-floating-tip textarea,.gtip.gb-floating-tip summary,.gtip.gb-floating-tip [tabindex],.gtip.gb-floating-tip [role="button"],.gtip.gb-floating-tip [contenteditable]:not([contenteditable="false"]){pointer-events:auto!important}';
-const MOBILE_TOOLTIP_CLOSE_RULE = '@media(max-width:768px){body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{padding-right:3.25rem!important}.gb-floating-tip>.gb-tooltip-close{position:absolute;top:.55rem;right:.55rem;z-index:3;display:grid;place-items:center;width:2.35rem;height:2.35rem;margin:0;padding:0;border:1px solid currentColor;border-radius:999px;background:Canvas;color:CanvasText;font:700 1.45rem/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;opacity:.92}.gb-floating-tip>.gb-tooltip-close:focus-visible{outline:3px solid currentColor;outline-offset:2px}}';
+const LEGACY_MOBILE_TOOLTIP_CLOSE_RULE = '@media(max-width:768px){body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{padding-right:3.25rem!important}.gb-floating-tip>.gb-tooltip-close{position:absolute;top:.55rem;right:.55rem;z-index:3;display:grid;place-items:center;width:2.35rem;height:2.35rem;margin:0;padding:0;border:1px solid currentColor;border-radius:999px;background:Canvas;color:CanvasText;font:700 1.45rem/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;opacity:.92}.gb-floating-tip>.gb-tooltip-close:focus-visible{outline:3px solid currentColor;outline-offset:2px}}';
+const MOBILE_TOOLTIP_CLOSE_RULE = '@media(max-width:768px){body>.tooltip.gb-floating-tip.is-open,body>.gtip.gb-floating-tip.is-open{padding-right:3.25rem}.gb-floating-tip>.gb-tooltip-close{position:absolute;top:.55rem;right:.55rem;z-index:3;display:grid;place-items:center;width:2.35rem;height:2.35rem;margin:0;padding:0;border:1px solid currentColor;border-radius:999px;background:Canvas;color:CanvasText;font:700 1.45rem/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;opacity:.92}.gb-floating-tip>.gb-tooltip-close:focus-visible{outline:3px solid currentColor;outline-offset:2px}}';
 
 function normalizeTooltipStyles(source) {
   let changes = 0;
@@ -50,7 +51,15 @@ function normalizeTooltipStyles(source) {
     changes += 1;
   }
 
-  if (!output.includes(MOBILE_TOOLTIP_CLOSE_RULE)) {
+  const hasLegacyMobileCloseRule = output.includes(LEGACY_MOBILE_TOOLTIP_CLOSE_RULE);
+  const hasMobileCloseRule = output.includes(MOBILE_TOOLTIP_CLOSE_RULE);
+  if (hasLegacyMobileCloseRule && hasMobileCloseRule) {
+    throw new Error('Mobile tooltip close styles contain both legacy and canonical rules.');
+  }
+  if (hasLegacyMobileCloseRule) {
+    output = output.replace(LEGACY_MOBILE_TOOLTIP_CLOSE_RULE, MOBILE_TOOLTIP_CLOSE_RULE);
+    changes += 1;
+  } else if (!hasMobileCloseRule) {
     output = `${output.trimEnd()}\n${MOBILE_TOOLTIP_CLOSE_RULE}\n`;
     changes += 1;
   }
@@ -93,5 +102,6 @@ else module.exports = {
   LEGACY_FLOATING_TOOLTIP_POINTER_RULE,
   PRIORITY_FLOATING_TOOLTIP_POINTER_RULE,
   FLOATING_TOOLTIP_POINTER_RULE,
+  LEGACY_MOBILE_TOOLTIP_CLOSE_RULE,
   MOBILE_TOOLTIP_CLOSE_RULE
 };
