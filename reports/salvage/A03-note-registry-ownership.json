@@ -10,8 +10,22 @@
   "owners": {
     "dataCaptureAndStableIds": "scripts/lib/note-registry.mjs",
     "interaction": "SiteUtils.makeTooltipController",
+    "mobileToggle": "touchend on the owned footnote marker",
+    "compatibilityClick": "consume the next physical click event once; preserve keyboard activation and interactive tooltip descendants",
     "productionHook": "scripts/astro-cache-bust-postbuild.js",
     "routeBrowserAuthority": ".github/workflows/route-registry-validators.yml"
+  },
+  "interactionWitness": {
+    "mobileSequence": [
+      "first touch opens",
+      "second touch closes",
+      "third independent touch reopens"
+    ],
+    "engines": [
+      "chromium",
+      "webkit"
+    ],
+    "failClosed": true
   },
   "forbidden": [
     "second tooltip controller",
@@ -19,7 +33,8 @@
     "runtime-only note discovery as source of truth",
     "ordinal-derived stable identity",
     "nested authored button inside a footnote marker",
-    "print-only duplicate note text authored separately"
+    "print-only duplicate note text authored separately",
+    "time-only compatibility-click suppression"
   ],
   "downstream": {
     "agent04": "consume data-speakable endnotes; preserve SiteUtils interaction owner",
