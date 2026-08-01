@@ -1,19 +1,90 @@
-const VERSION = 7;
-const OWNER = 'article-inline-tooltip';
+const VERSION = 8;
+const OWNER = 'site-utils-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
+const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
 
 let active = null;
+let activeController = null;
 let closeTimer = 0;
 let pointerEpoch = 0;
 let pointerX = null;
 let pointerY = null;
 
+function siteUtils() {
+  window.SiteUtils = window.SiteUtils || {};
+  const api = window.SiteUtils;
+  if (!Array.isArray(api._tooltipControllers)) api._tooltipControllers = [];
+  return api;
+}
+
 function overlayRuntime() {
   return window.OverlayRuntime || window.SiteUtils?.OverlayRuntime || null;
 }
 
-function mobileMode() {
+function mobileViewport() {
   return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function controllerMobileSheet(controller) {
+  if (!controller?.opts?.mobileSheet) return false;
+  const breakpoint = Number(controller.opts.mobileSheetBreakpoint || 768);
+  return window.matchMedia(`(max-width: ${breakpoint}px)`).matches;
+}
+
+function controllerFor(anchor) {
+  return siteUtils()._tooltipControllers.find((candidate) => {
+    try {
+      return anchor.matches(candidate.anchorSel) && Boolean(anchor.querySelector(candidate.tipSel));
+    } catch {
+      return false;
+    }
+  }) || null;
+}
+
+function registerController(anchorSel, tipSel, opts = {}) {
+  const api = siteUtils();
+  const existing = api._tooltipControllers.find((candidate) => candidate.anchorSel === anchorSel && candidate.tipSel === tipSel);
+  if (existing) return { open: existing.open, close: existing.close };
+
+  const controller = {
+    anchorSel,
+    tipSel,
+    opts: { ...opts },
+    activeEl: null,
+    activeTip: null,
+    isDesktop() {
+      return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    },
+    isMobileSheet() {
+      return controllerMobileSheet(controller);
+    },
+    open(anchor) {
+      openTooltip(anchor, 'api');
+    },
+    close(force = false) {
+      if (activeController === controller) closeTooltip(force ? 'force' : 'close');
+    },
+  };
+  api._tooltipControllers.push(controller);
+  return { open: controller.open, close: controller.close };
+}
+
+function installSharedRegistry() {
+  const api = siteUtils();
+  if (typeof api.makeTooltipController !== 'function') api.makeTooltipController = registerController;
+  api.makeTooltipController('.bref[data-ref]', '.btip', {
+    extraCloseSelectors: ['.btoc-nav', '.btoc-panel', '#toc-panel'],
+  });
+  api.makeTooltipController('.fn-marker', '.tooltip', {
+    mobileSheet: true,
+    mobileSheetBreakpoint: 768,
+  });
+  api.makeTooltipController('.gterm', '.gtip', {
+    useFocusBlur: true,
+    mobileSheet: true,
+    mobileSheetBreakpoint: 768,
+  });
+  return api;
 }
 
 function cancelClose() {
@@ -21,7 +92,7 @@ function cancelClose() {
   closeTimer = 0;
 }
 
-function containsInteractive(record, target) {
+function containsOwnedSurface(record, target) {
   return Boolean(record && target instanceof Node && (record.anchor.contains(target) || record.tip.contains(target)));
 }
 
@@ -135,7 +206,8 @@ function clearAuthoritativeGeometry(tip) {
 }
 
 function position(tip, anchor) {
-  if (mobileMode()) {
+  const sheet = active?.tip === tip && active.mobileSheet;
+  if (sheet) {
     clearAuthoritativeGeometry(tip);
     setImportant(tip.style, 'left', '0px');
     setImportant(tip.style, 'right', '0px');
@@ -167,6 +239,18 @@ function position(tip, anchor) {
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
+function ensureMobileClose(tip, controller) {
+  if (!controller?.isMobileSheet?.() || tip.querySelector('[data-tooltip-close]')) return;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'gb-tooltip-close';
+  close.dataset.tooltipClose = '';
+  close.dataset.gbGeneratedClose = '1';
+  close.setAttribute('aria-label', 'Закрыть подсказку');
+  close.textContent = '×';
+  tip.insertBefore(close, tip.firstChild);
+}
+
 function restore(record) {
   const { tip, placeholder } = record;
   tip.classList.remove('gb-floating-tip', 'is-open');
@@ -182,15 +266,24 @@ function restore(record) {
 export function closeTooltip(reason = 'close') {
   cancelClose();
   const record = active;
+  const controller = activeController;
   if (!record) return;
   active = null;
+  activeController = null;
   record.anchor.classList.remove('is-open');
   record.anchor.setAttribute('aria-expanded', 'false');
-  if (record.mobile) {
+  if (record.mobileSheet) {
     if (overlayRuntime()) overlayRuntime().close(OWNER, reason);
     else window.SiteUtils?.unlockScroll?.(`overlay:${OWNER}`);
   }
   restore(record);
+  if (controller) {
+    controller.activeEl = null;
+    controller.activeTip = null;
+  }
+  if (!siteUtils()._tooltipControllers.some((candidate) => candidate.activeEl)) {
+    document.documentElement.classList.remove('gb-tooltip-open');
+  }
 }
 
 function openTooltip(anchor, reason = 'open') {
@@ -198,7 +291,8 @@ function openTooltip(anchor, reason = 'open') {
     && pointerEpoch === active.pointerBaseline) return;
   cancelClose();
   const tip = prepareTip(inlineTip(anchor));
-  if (!tip) return;
+  const controller = controllerFor(anchor);
+  if (!tip || !controller) return;
   if (active?.anchor === anchor) {
     active.reason = reason;
     active.pointerBaseline = pointerEpoch;
@@ -215,19 +309,24 @@ function openTooltip(anchor, reason = 'open') {
   const placeholder = document.createComment('gb-inline-tooltip');
   tip.parentNode?.insertBefore(placeholder, tip);
   document.body.appendChild(tip);
+  ensureMobileClose(tip, controller);
   tip.classList.add('gb-floating-tip', 'is-open');
   anchor.classList.add('is-open');
   anchor.setAttribute('aria-expanded', 'true');
+  document.documentElement.classList.add('gb-tooltip-open');
 
+  activeController = controller;
   active = {
     anchor,
     tip,
     placeholder,
-    mobile: mobileMode(),
+    mobileSheet: controller.isMobileSheet(),
     reason,
     hoverSettled: reason !== 'hover',
     pointerBaseline: pointerEpoch,
   };
+  controller.activeEl = anchor;
+  controller.activeTip = tip;
   position(tip, anchor);
   window.requestAnimationFrame(() => {
     if (active?.tip === tip) position(tip, anchor);
@@ -240,10 +339,30 @@ function openTooltip(anchor, reason = 'open') {
     tip.addEventListener('mouseenter', cancelClose);
     tip.addEventListener('pointerleave', () => scheduleClose());
     tip.addEventListener('mouseleave', () => scheduleClose());
-    tip.addEventListener('click', (event) => event.stopPropagation());
+    tip.addEventListener('click', (event) => {
+      const close = event.target instanceof Element ? event.target.closest('[data-tooltip-close]') : null;
+      if (close && tip.contains(close)) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeTooltip('control');
+        return;
+      }
+      const interactive = event.target instanceof Element ? event.target.closest(INTERACTIVE) : null;
+      if (interactive && tip.contains(interactive)) {
+        event.stopPropagation();
+        return;
+      }
+      if (mobileViewport()) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeTooltip('surface');
+        return;
+      }
+      event.stopPropagation();
+    });
   }
 
-  if (active.mobile) {
+  if (active.mobileSheet) {
     const runtime = overlayRuntime();
     if (runtime) {
       runtime.open(OWNER, {
@@ -266,19 +385,19 @@ function openTooltip(anchor, reason = 'open') {
 function initializeAnchor(anchor) {
   if (!(anchor instanceof Element) || anchor.dataset.gbTooltipReady === '1') return;
   const tip = prepareTip(inlineTip(anchor));
-  if (!tip) return;
+  if (!tip || !controllerFor(anchor)) return;
   anchor.dataset.gbTooltipReady = '1';
   anchor.setAttribute('aria-expanded', 'false');
   if (!anchor.hasAttribute('tabindex') && !anchor.matches('button, a[href], input, select, textarea')) anchor.tabIndex = 0;
   if (!anchor.hasAttribute('role') && !anchor.matches('button, a[href]')) anchor.setAttribute('role', 'button');
 
   const openHover = (event) => {
-    if (event.pointerType === 'touch' || mobileMode()) return;
+    if (event.pointerType === 'touch' || mobileViewport()) return;
     openTooltip(anchor, 'hover');
   };
   const leaveHover = (event) => {
-    if (event.pointerType === 'touch' || mobileMode()) return;
-    if (containsInteractive(active, event.relatedTarget)) {
+    if (event.pointerType === 'touch' || mobileViewport()) return;
+    if (containsOwnedSurface(active, event.relatedTarget)) {
       cancelClose();
       return;
     }
@@ -326,27 +445,27 @@ export function initInlineTooltips(scope = document) {
 
 export function installArticleTooltips() {
   if (window.GBArticleTooltips?.version === VERSION) return window.GBArticleTooltips;
-  window.SiteUtils = window.SiteUtils || {};
-  window.SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
+  const api = installSharedRegistry();
+  api.initGlossaryTooltips = initGlossaryTooltips;
   initInlineTooltips(document);
   document.addEventListener('gb:quiz-rendered', (event) => initInlineTooltips(event.detail?.root || document));
   document.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch' || !recordPointerMovement(event)) return;
-    if (!active || active.mobile || active.reason !== 'hover') return;
-    if (containsInteractive(active, event.target)) cancelClose();
+    if (!active || active.mobileSheet || active.reason !== 'hover') return;
+    if (containsOwnedSurface(active, event.target)) cancelClose();
     else scheduleClose();
   }, true);
   document.addEventListener('pointerdown', (event) => {
     if (!active) return;
-    if (containsInteractive(active, event.target)) return;
+    if (containsOwnedSurface(active, event.target)) return;
     closeTooltip('outside');
   }, true);
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && active && !active.mobile) closeTooltip('escape');
+    if (event.key === 'Escape' && active && !active.mobileSheet) closeTooltip('escape');
   }, true);
   window.addEventListener('resize', () => active && position(active.tip, active.anchor), { passive: true });
   window.addEventListener('scroll', () => {
-    if (!active || active.mobile) return;
+    if (!active || active.mobileSheet) return;
     if (!active.anchor.isConnected) closeTooltip('detached');
     else position(active.tip, active.anchor);
   }, { passive: true, capture: true });
