@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "task": "Agent 02 — Editorial Metadata v3",
+  "sourceOfTruth": {
+    "registry": "data/editorial-metadata.json",
+    "schema": "data/editorial-metadata.schema.json",
+    "validator": "scripts/lib/editorial-metadata-v3.js"
+  },
+  "editorialClock": {
+    "fields": [
+      "editorialPublishedAt",
+      "editorialModifiedAt",
+      "originalWorkPublishedAt"
+    ],
+    "unknownSemantics": "null",
+    "forbiddenSources": [
+      "Git commit time",
+      "file mtime",
+      "cache-bust revision",
+      "asset revision",
+      "build time or timestamp"
+    ]
+  },
+  "technicalClock": {
+    "surface": "feed.xml/channel/lastBuildDate",
+    "source": "GB_BUILD_INSTANT or exact HEAD committer time",
+    "mayPopulateEditorialFields": false
+  },
+  "projections": [
+    {
+      "surface": "PageHead OpenGraph",
+      "fields": ["article:published_time", "article:modified_time"],
+      "finalOwner": "editorial registry dist projector"
+    },
+    {
+      "surface": "Article JSON-LD",
+      "fields": ["datePublished", "dateModified"],
+      "finalOwner": "editorial registry dist projector"
+    },
+    {
+      "surface": "Editorial Dateline",
+      "fields": ["existing published time", "existing article-updated time"],
+      "finalOwner": "editorial registry dist projector",
+      "rule": "update existing semantic time elements; do not invent visible datelines"
+    },
+    {
+      "surface": "Pagefind",
+      "fields": ["publishedTime", "modifiedTime"],
+      "finalOwner": "editorial registry dist projector"
+    },
+    {
+      "surface": "Search manifest",
+      "fields": ["publishedTime", "modifiedTime"],
+      "finalOwner": "editorial registry dist projector"
+    },
+    {
+      "surface": "Sitemap",
+      "fields": ["lastmod"],
+      "finalOwner": "editorial registry dist projector"
+    },
+    {
+      "surface": "RSS item",
+      "fields": ["pubDate"],
+      "finalOwner": "editorial registry dist projector"
+    },
+    {
+      "surface": "RSS channel",
+      "fields": ["lastBuildDate"],
+      "finalOwner": "technical build clock"
+    }
+  ],
+  "migrationBoundary": {
+    "sourcePageHeads": "retained as migration observations and visual/source fallback",
+    "finalDistribution": "normalized after Astro and legacy copy",
+    "inventedDates": false
+  },
+  "adjacentActiveWork": {
+    "pullRequest": 669,
+    "owner": "Karty inventory",
+    "overlap": false,
+    "forbiddenPaths": [
+      "scripts/karty-visual-parity-audit.js",
+      "scripts/validate-map-routes.js",
+      "src/components/karty/KartyHeroSection.astro",
+      "src/lib/karty-hub-inventory.cjs"
+    ]
+  },
+  "downstream": {
+    "agent": 5,
+    "unblockedAfter": "merged Agent 02 exact head",
+    "canonicalOwners": [
+      "data/editorial-metadata.json",
+      "data/editorial-metadata.schema.json",
+      "scripts/lib/editorial-metadata.js",
+      "scripts/lib/editorial-metadata-v3.js",
+      "scripts/editorial-metadata-registry.js"
+    ]
+  }
+}
