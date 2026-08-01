@@ -15,6 +15,25 @@ const CSS_V3 = '@media print{.gb-note-endnotes{display:block!important;position:
 const PRINT_TERMINAL_MARKER = '.gb-note-endnotes__content{display:inline!important;';
 const ITEMS_V1 = 'const items = notes.map((note) => `      <li id="${note.endnoteId}" data-note-id="${note.id}" data-note-ordinal="${note.ordinal}"><span class="gb-note-endnotes__ordinal" aria-hidden="true">${note.ordinal}.</span> ${note.html} <a class="gb-note-endnotes__back" href="#${note.refId}" aria-label="Вернуться к отметке ${note.ordinal}">↩</a></li>`).join(\'\\n\');';
 const ITEMS_V2 = 'const items = notes.map((note) => `      <li id="${note.endnoteId}" data-note-id="${note.id}" data-note-ordinal="${note.ordinal}"><span class="gb-note-endnotes__ordinal" aria-hidden="true">${note.ordinal}.</span> <span class="gb-note-endnotes__content">${escapeHtml(note.text)}</span> <a class="gb-note-endnotes__back" href="#${note.refId}" aria-label="Вернуться к отметке ${note.ordinal}">↩</a></li>`).join(\'\\n\');';
+const SECTION_V1 = '<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable aria-labelledby="${headingId}">';
+const SECTION_V2 = '<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable data-pagefind-body aria-labelledby="${headingId}">';
+const INSERTION_V1 = `    const searchable = parsed.all
+      .filter((node) => Object.prototype.hasOwnProperty.call(node.attrs, 'data-pagefind-body') && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
+    const fallback = parsed.all
+      .filter((node) => (node.tag === 'main' || node.tag === 'article') && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
+    const insertion = searchable?.endStart ?? fallback?.endStart ?? -1;`;
+const INSERTION_V2 = `    const articleOwner = parsed.all
+      .filter((node) => node.tag === 'article' && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
+    const searchable = parsed.all
+      .filter((node) => Object.prototype.hasOwnProperty.call(node.attrs, 'data-pagefind-body') && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
+    const fallback = parsed.all
+      .filter((node) => (node.tag === 'main' || node.tag === 'article') && containsEveryMarker(node))
+      .sort(byNarrowestRange)[0];
+    const insertion = articleOwner?.end ?? searchable?.endStart ?? fallback?.endStart ?? -1;`;
 const BEFORE_EMPTY_GUARD = 'function buildEndnotes(route, notes) {\n  const routeSlug = stableRouteSlug(route);';
 const AFTER_EMPTY_GUARD = "function buildEndnotes(route, notes) {\n  if (!notes.length) return '';\n  const routeSlug = stableRouteSlug(route);";
 const BEFORE_CONTRACT = "execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'site-tooltip-touch-normalizer.js')], { stdio: 'inherit' });";
@@ -74,6 +93,8 @@ function normalizePrintCss() {
 const changed = [
   normalizePrintCss(),
   normalize(REGISTRY, ITEMS_V1, ITEMS_V2, 'NoteRegistry print text projection'),
+  normalize(REGISTRY, SECTION_V1, SECTION_V2, 'NoteRegistry explicit Pagefind endnotes surface'),
+  normalize(REGISTRY, INSERTION_V1, INSERTION_V2, 'NoteRegistry document-level endnotes insertion'),
   normalize(REGISTRY, BEFORE_EMPTY_GUARD, AFTER_EMPTY_GUARD, 'NoteRegistry empty-endnotes guard'),
   normalize(CONTRACT, BEFORE_CONTRACT, AFTER_CONTRACT, 'NoteRegistry print source contract'),
 ].some(Boolean);
