@@ -34,51 +34,20 @@ jobs:
       - name: Static root gates
         run: npm run ci:check
 
+      - name: Prove validation is source-read-only
+        run: git diff --exit-code
+
       - name: About visual review screenshots
         run: npm run astro:audit:about:shots
 
       - name: Production-like strangler readiness
         run: npm run strangler:deploy-readiness
 
-      - name: Verify production-like artifact shape
+      - name: Verify registry-owned production artifact shape
         run: |
-          test -f dist/index.html
-          test -f dist/about/index.html
-          test -f dist/articles/index.html
-          test -f dist/biografii/index.html
-          test -f dist/hard-texts/index.html
-          test -f dist/pastor-series/index.html
-          test -f dist/rodosloviye/index.html
-          test -f dist/nagornaya/index.html
-          test -f dist/nagornaya/seriya/index.html
-          test -f dist/nagornaya/istochniki/index.html
-          test -f dist/nagornaya/nakhodki/index.html
-          test -f dist/karty/index.html
-          test -f dist/karty/avraam/index.html
-          test -f dist/karty/ishod/index.html
-          test -f dist/konfessii/index.html
-          test -f dist/konfessii/russkij-baptizm/index.html
-          test -f dist/map/index.html
-          test -f dist/nagornaya/chast-1/index.html
-          test -f dist/nagornaya/chast-2/index.html
-          test -f dist/nagornaya/chast-3/index.html
-          test -f dist/nagornaya/chast-4/index.html
-          test -f dist/nagornaya/chast-5/index.html
-          test -f dist/articles/dzhon-gill-spravochnik/index.html
-          test -f dist/articles/dzhon-gill-istoricheskiy-kontekst/index.html
-          test -f dist/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html
-          test -f dist/articles/kod-da-vinchi/index.html
-          test -f dist/articles/dzhon-gill-chast-1-chelovek/index.html
-          test -f dist/articles/dzhon-gill-chast-2-uchenyi/index.html
-          test -f dist/articles/dzhon-gill-chast-3-nasledie/index.html
-          test -f dist/articles/dzhon-gill-chast-4-ekzeget/index.html
-          test -f dist/articles/krajne-li-isporcheno-serdce/index.html
-          test -f dist/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html
-          test -f dist/articles/20-antisovetov-pastoru/index.html
+          node scripts/check-page-ownership.js --dist --production-like
           test -f dist/pagefind/pagefind.js
           test -f dist/.nojekyll
-          test ! -e dist/dev/astro-test/index.html
-          test ! -e dist/dev/article-mdx-pilot/index.html
 
       - name: Upload production-like dist artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
