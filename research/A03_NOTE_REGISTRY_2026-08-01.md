@@ -65,6 +65,25 @@ touchend. Существующий pending token учитывает свежес
 по-прежнему закрывает tooltip. Новый controller, browser-specific branch или
 ослабление witness не добавляются.
 
+## Mobile sheet close control
+
+Физический Chromium/WebKit witness доказал отдельную продуктовую границу: после
+открытия body-mounted mobile sheet исходный marker может быть перекрыт, а tap по
+содержимому примечания обязан сохранять sheet открытым. Поэтому повторный tap по
+marker и tap по тексту не являются честным способом закрытия.
+
+Единый `SiteUtils.makeTooltipController` теперь при mount mobile sheet добавляет
+одну сгенерированную кнопку `[data-tooltip-close]` с `aria-label="Закрыть подсказку"`.
+Существующий capture-phase dispatcher уже владеет её закрытием; второй controller
+или route-local кнопки не создаются. Shared CSS задаёт 2.35-rem touch target,
+`touch-action: manipulation` и `:focus-visible`. Кнопка создаётся только для
+mobile-sheet режима, а authored содержимое и NoteRegistry не меняются.
+
+Runtime и CSS спроецированы только существующим label-gated writer. Writer diff
+содержал `js/site.js`, `css/site.css` и детерминированные asset revisions; после
+успешной записи `autofix` снят. Финальная матрица считается только от следующего
+human-authored exact head.
+
 ## Параллельность
 
 Karty PR #669 и Nagornaya PR #678 не пересекаются с NoteRegistry scope.
