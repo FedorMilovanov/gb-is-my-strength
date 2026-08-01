@@ -111,14 +111,16 @@ try {
   await context.close();
 
   const desktop = await desktopWitness(browser, base, routes, surface);
-  check('interaction:desktop-opens', desktop.opens && desktop.mountedToBody && desktop.tipDetachedFromTrigger, JSON.stringify(desktop));
-  check('interaction:escape-focus-return', desktop.escapeCloses && desktop.focusContinuity, JSON.stringify(desktop));
-  check('interaction:desktop-no-pageerror', desktop.pageErrors.length === 0 && !desktop.error, JSON.stringify(desktop));
+  const desktopRoute = desktop.route || route;
+  check('interaction:desktop-opens', desktop.opens && desktop.mountedToBody && desktop.tipDetachedFromTrigger, JSON.stringify(desktop), desktopRoute);
+  check('interaction:escape-focus-return', desktop.escapeCloses && desktop.focusContinuity, JSON.stringify(desktop), desktopRoute);
+  check('interaction:desktop-no-pageerror', desktop.pageErrors.length === 0 && !desktop.error, JSON.stringify(desktop), desktopRoute);
 
   const mobile = await mobileWitness(browser, base, routes, surface);
-  check('interaction:mobile-touch-cycle', mobile.touchOpens && mobile.secondTouchCloses, JSON.stringify(mobile));
-  check('interaction:mobile-owner-mount', mobile.mountedToBody && mobile.tipDetachedFromTrigger && mobile.insideViewport, JSON.stringify(mobile));
-  check('interaction:mobile-no-pageerror', mobile.pageErrors.length === 0 && !mobile.error, JSON.stringify(mobile));
+  const mobileRoute = mobile.route || route;
+  check('interaction:mobile-touch-cycle', mobile.touchOpens && mobile.secondTouchCloses && mobile.thirdTouchReopens, JSON.stringify(mobile), mobileRoute);
+  check('interaction:mobile-owner-mount', mobile.mountedToBody && mobile.tipDetachedFromTrigger && mobile.insideViewport, JSON.stringify(mobile), mobileRoute);
+  check('interaction:mobile-no-pageerror', mobile.pageErrors.length === 0 && !mobile.error, JSON.stringify(mobile), mobileRoute);
 
   if (engineName === 'chromium') {
     const noJs = await browser.newContext({ viewport: DESKTOP, javaScriptEnabled: false, serviceWorkers: 'block' });
