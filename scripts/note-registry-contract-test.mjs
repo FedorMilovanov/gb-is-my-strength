@@ -43,6 +43,13 @@ assert.deepEqual(
   'stable IDs must not depend on document ordinal'
 );
 
+const contextualRepeat = collectAndProjectHtml(
+  '<main><p>Alpha <span class="fn-marker">1<span class="tooltip">Same</span></span></p><p>Beta <span class="fn-marker">2<span class="tooltip">Same</span></span></p></main>',
+  route
+);
+assert.deepEqual(contextualRepeat.errors, []);
+assert.equal(new Set(contextualRepeat.notes.map((note) => note.id)).size, 2, 'same note text in different authored contexts needs distinct stable IDs');
+
 const orphan = collectAndProjectHtml('<main><span class="fn-marker">[1]</span></main>', route);
 assert.match(orphan.errors.join('\n'), /expected one \.tooltip, found 0/);
 const duplicate = collectAndProjectHtml('<main><span class="fn-marker">1<span class="tooltip">Same</span></span><span class="fn-marker">2<span class="tooltip">Same</span></span></main>', route);
