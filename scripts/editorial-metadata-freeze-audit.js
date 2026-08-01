@@ -7,43 +7,85 @@ const {
   ROOT,
   REGISTRY_FILE,
   eligibleRecords,
-  sharedProjectionData,
   observeRoute,
   readRegistry,
   normalizeInstant,
-  validateRecordShape,
 } = require('./lib/editorial-metadata');
+const { validateRegistryV3 } = require('./lib/editorial-metadata-v3');
 
 const DIST = path.join(ROOT, 'dist');
 const errors = [];
 const warnings = [];
 
+function readJson(file, fallback) {
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback;
+}
+
 function same(a, b) {
   return (a || null) === (b || null);
 }
 
-function canonicalProjectionChecks(route, record, current) {
-  const approved = record.reviewStatus === 'approved';
-  const published = normalizeInstant(record.editorialPublishedAt);
-  const modified = normalizeInstant(record.editorialModifiedAt);
-  if (!approved) return;
+function distSharedProjectionData() {
+  const sitemapFiles = fs.existsSync(DIST)
+    ? fs.readdirSync(DIST)
+        .filter((name) => /^sitemap(?:-\d+)?\.xml$/i.test(name))
+        .sort()
+    : [];
+  return {
+    searchItems: readJson(path.join(DIST, 'data', 'search-manifest.json'), { items: [] }).items || [],
+    sitemapXml: sitemapFiles.map((name) => fs.readFileSync(path.join(DIST, name), 'utf8')).join('\n'),
+    feedXml: fs.existsSync(path.join(DIST, 'feed.xml'))
+      ? fs.readFileSync(path.join(DIST, 'feed.xml'), 'utf8')
+      : '',
+  };
+}
 
-  const publishedFields = ['visiblePublishedAt', 'metaPublishedAt', 'jsonLdPublishedAt', 'searchPublishedAt', 'rssPublishedAt'];
-  const modifiedFields = ['visibleModifiedAt', 'metaModifiedAt', 'jsonLdModifiedAt', 'searchModifiedAt', 'sitemapLastmod'];
-
-  for (const field of publishedFields) {
-    const value = current.observations[field];
-    if (value && value !== published) errors.push(`${route}: approved ${field}=${value} != editorialPublishedAt=${published}`);
+function compareProjection(route, label, actual, expected, required) {
+  const normalizedExpected = normalizeInstant(expected);
+  const normalizedActual = normalizeInstant(actual);
+  if (normalizedExpected === null) {
+    if (normalizedActual !== null) errors.push(`${route}: ${label} must be absent while approved editorial date is unknown`);
+    return;
   }
-  for (const field of modifiedFields) {
-    const value = current.observations[field];
-    if (value && value !== modified) errors.push(`${route}: approved ${field}=${value} != editorialModifiedAt=${modified}`);
+  if (required && normalizedActual === null) {
+    errors.push(`${route}: ${label} missing; expected ${normalizedExpected}`);
+    return;
+  }
+  if (normalizedActual !== null && normalizedActual !== normalizedExpected) {
+    errors.push(`${route}: ${label}=${normalizedActual} != ${normalizedExpected}`);
   }
 }
 
-console.log('=== Editorial Metadata Freeze Audit ===');
-console.log('Unreviewed records freeze every observed projection separately.');
-console.log('Approved records additionally require convergence to canonical editorial dates.');
+function canonicalProjectionChecks(route, record, current) {
+  const published = record.editorialPublishedAt;
+  const modified = record.editorialModifiedAt;
+
+  compareProjection(route, 'metaPublishedAt', current.observations.metaPublishedAt, published, true);
+  compareProjection(route, 'jsonLdPublishedAt', current.observations.jsonLdPublishedAt, published, true);
+  compareProjection(route, 'searchPublishedAt', current.observations.searchPublishedAt, published, false);
+  compareProjection(route, 'rssPublishedAt', current.observations.rssPublishedAt, published, false);
+  compareProjection(route, 'visiblePublishedAt', current.observations.visiblePublishedAt, published, false);
+
+  compareProjection(route, 'metaModifiedAt', current.observations.metaModifiedAt, modified, true);
+  compareProjection(route, 'jsonLdModifiedAt', current.observations.jsonLdModifiedAt, modified, true);
+  compareProjection(route, 'searchModifiedAt', current.observations.searchModifiedAt, modified, false);
+  compareProjection(route, 'sitemapLastmod', current.observations.sitemapLastmod, modified || published, true);
+  compareProjection(route, 'visibleModifiedAt', current.observations.visibleModifiedAt, modified, false);
+}
+
+function frozenProjectionChecks(route, record, current) {
+  for (const [field, frozenValue] of Object.entries(record.observations || {})) {
+    const currentValue = current.observations[field] ?? null;
+    if (!same(frozenValue, currentValue)) {
+      errors.push(`${route}: unapproved frozen ${field} changed ${frozenValue || 'null'} -> ${currentValue || 'null'}`);
+    }
+  }
+}
+
+console.log('=== Editorial Metadata v3 Projection Audit ===');
+console.log('Approved decisions own final dist dates.');
+console.log('Unapproved records retain their frozen observations until editorial review.');
+console.log('RSS channel lastBuildDate is technical and is intentionally outside editorial comparison.');
 console.log('');
 
 if (!fs.existsSync(DIST)) {
@@ -51,12 +93,13 @@ if (!fs.existsSync(DIST)) {
   process.exit(1);
 }
 if (!fs.existsSync(REGISTRY_FILE)) {
-  console.error('❌ editorial metadata registry missing; run editorial-metadata-registry.js --write');
+  console.error('❌ editorial metadata registry missing');
   process.exit(1);
 }
 
 const registry = readRegistry();
-const shared = sharedProjectionData();
+errors.push(...validateRegistryV3(registry));
+const shared = distSharedProjectionData();
 const eligible = eligibleRecords();
 const eligibleByRoute = new Map(eligible.map((record) => [record.route, record]));
 let approved = 0;
@@ -69,23 +112,25 @@ for (const [route, record] of Object.entries(registry.records || {})) {
     errors.push(`${route}: registry route is no longer eligible/owned`);
     continue;
   }
-  for (const problem of validateRecordShape(record, route)) errors.push(`${route}: ${problem}`);
 
   const current = observeRoute(routeRecord, DIST, shared);
   if (record.canonical !== current.canonical) errors.push(`${route}: canonical changed ${record.canonical} -> ${current.canonical}`);
   if (record.metadataSource !== current.metadataSource) errors.push(`${route}: metadataSource changed ${record.metadataSource} -> ${current.metadataSource}`);
 
-  for (const [field, frozenValue] of Object.entries(record.observations || {})) {
-    const currentValue = current.observations[field] ?? null;
-    if (!same(frozenValue, currentValue)) {
-      errors.push(`${route}: frozen projection ${field} changed ${frozenValue || 'null'} -> ${currentValue || 'null'}`);
+  if (record.reviewStatus === 'approved') {
+    approved += 1;
+    canonicalProjectionChecks(route, record, current);
+    for (const [field, historical] of Object.entries(record.observations || {})) {
+      const finalValue = current.observations[field] ?? null;
+      if ((historical ?? null) !== finalValue) {
+        warnings.push(`${route}: approved ${field} converged ${historical || 'null'} -> ${finalValue || 'null'}`);
+      }
     }
+  } else {
+    frozenProjectionChecks(route, record, current);
+    if (record.reviewStatus === 'inconsistent-needs-review') inconsistent += 1;
+    else frozen += 1;
   }
-
-  canonicalProjectionChecks(route, record, current);
-  if (record.reviewStatus === 'approved') approved++;
-  else if (record.reviewStatus === 'inconsistent-needs-review') inconsistent++;
-  else frozen++;
 }
 
 for (const route of eligibleByRoute.keys()) {
@@ -93,20 +138,21 @@ for (const route of eligibleByRoute.keys()) {
 }
 
 console.log(`Eligible routes: ${eligible.length}`);
-console.log(`Approved: ${approved}`);
-console.log(`Inconsistent, needs editorial review: ${inconsistent}`);
-console.log(`Consistent migration freezes awaiting approval: ${frozen}`);
+console.log(`Approved and projected: ${approved}`);
+console.log(`Inconsistent, blocked pending editorial review: ${inconsistent}`);
+console.log(`Migration freezes awaiting approval: ${frozen}`);
+console.log(`Approved historical differences normalized by v3: ${warnings.length}`);
 
 if (warnings.length) {
-  console.log(`⚠️ Warnings (${warnings.length}):`);
-  warnings.forEach((warning) => console.log(`  - ${warning}`));
+  warnings.slice(0, 20).forEach((warning) => console.log(`  - ${warning}`));
+  if (warnings.length > 20) console.log(`  …and ${warnings.length - 20} more`);
 }
 
 if (errors.length) {
-  console.error(`❌ Editorial metadata freeze failed (${errors.length} error(s)):`);
+  console.error(`❌ Editorial Metadata v3 projection failed (${errors.length} error(s)):`);
   errors.slice(0, 100).forEach((error) => console.error(`  - ${error}`));
   if (errors.length > 100) console.error(`  …and ${errors.length - 100} more`);
   process.exit(1);
 }
 
-console.log('✅ Editorial metadata projections have not moved outside the registry contract');
+console.log('✅ Approved metadata converges; unapproved projections remain frozen');
