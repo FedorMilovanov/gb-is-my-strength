@@ -112,6 +112,45 @@ async function closedState(trigger, surface) {
   }), surface);
 }
 
+async function closeMobileTip(page, trigger, surface) {
+  const closeControl = page.locator(`${surface.tip}.gb-floating-tip.is-open [data-tooltip-close]`).first();
+  if (await closeControl.count()) {
+    const visible = await closeControl.isVisible().catch(() => false);
+    if (visible) {
+      await closeControl.tap({ timeout: 4000 });
+      return { method: 'explicit-close-control', point: null };
+    }
+  }
+
+  const point = await page.evaluate((data) => {
+    const interactive = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
+    const tip = [...document.querySelectorAll(data.tip)].find((node) => node.classList.contains('gb-floating-tip') && node.classList.contains('is-open')) || null;
+    if (!tip) return null;
+    const rect = tip.getBoundingClientRect();
+    const insetX = Math.min(18, Math.max(4, rect.width * 0.04));
+    const insetY = Math.min(18, Math.max(4, rect.height * 0.04));
+    const xs = [rect.left + insetX, rect.right - insetX, rect.left + rect.width / 2];
+    const ys = [rect.top + insetY, rect.bottom - insetY, rect.top + rect.height / 2];
+    for (const y of ys) {
+      for (const x of xs) {
+        if (x < 1 || y < 1 || x > innerWidth - 1 || y > innerHeight - 1) continue;
+        const target = document.elementFromPoint(x, y);
+        if (target && tip.contains(target) && !target.closest(interactive)) {
+          return { x, y, target: target.tagName.toLowerCase(), targetId: target.id || '' };
+        }
+      }
+    }
+    return null;
+  }, surface);
+  if (point) {
+    await page.touchscreen.tap(point.x, point.y);
+    return { method: 'non-interactive-tip-surface', point };
+  }
+
+  await trigger.tap({ timeout: 4000 });
+  return { method: 'trigger-fallback', point: null };
+}
+
 async function navigateForWitness(page, base, routes, surface) {
   for (const route of routes) {
     const pageErrors = [];
@@ -186,7 +225,8 @@ export async function mobileWitness(browser, base, routes, surface) {
     route: null, triggerIndex: null, responseStatus: null, pageErrors: [],
     reducedMotion: false, touchOpens: false, mountedToBody: false,
     tipDetachedFromTrigger: false, insideViewport: false, secondTouchCloses: false,
-    thirdTouchReopens: false, openState: null, closedState: null, reopenedState: null, error: '',
+    thirdTouchReopens: false, closeMethod: '', closePoint: null,
+    openState: null, closedState: null, reopenedState: null, error: '',
   };
   try {
     const witness = await navigateForWitness(page, base, routes, surface);
@@ -198,22 +238,29 @@ export async function mobileWitness(browser, base, routes, surface) {
     const trigger = witness.trigger;
     result.reducedMotion = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
     await trigger.tap({ timeout: 4000 });
-    await page.waitForTimeout(140);
+    await page.waitForTimeout(180);
     const state = await ownerState(trigger, surface);
     result.openState = state;
     result.touchOpens = state.anchorOpen && state.ariaExpanded === 'true' && state.activeTip;
     result.mountedToBody = state.mountedToBody;
     result.tipDetachedFromTrigger = !state.tipIsNestedInTrigger;
     result.insideViewport = state.insideViewport;
+    if (!result.touchOpens) throw new Error(`first touch did not open tooltip: ${JSON.stringify(state)}`);
+
     await page.waitForTimeout(380);
-    await trigger.tap({ timeout: 4000 });
-    await page.waitForTimeout(260);
+    const closeAction = await closeMobileTip(page, trigger, surface);
+    result.closeMethod = closeAction.method;
+    result.closePoint = closeAction.point;
+    await page.waitForTimeout(300);
     const closed = await closedState(trigger, surface);
     result.closedState = closed;
     result.secondTouchCloses = !closed.anchorOpen && !closed.anyOpenTip;
-    await page.waitForTimeout(120);
+    if (!result.secondTouchCloses) throw new Error(`second touch did not close tooltip via ${result.closeMethod}: ${JSON.stringify(closed)}`);
+
+    await trigger.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(140);
     await trigger.tap({ timeout: 4000 });
-    await page.waitForTimeout(180);
+    await page.waitForTimeout(220);
     const reopened = await ownerState(trigger, surface);
     result.reopenedState = reopened;
     result.thirdTouchReopens = reopened.anchorOpen && reopened.ariaExpanded === 'true' && reopened.activeTip;
