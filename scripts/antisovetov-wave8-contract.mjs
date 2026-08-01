@@ -29,6 +29,9 @@ forbidText('Лицемерие (ὑπόκρισις) — ношение маск
 forbidText('Когнитивный диссонанс — внутренний конфликт между тем, что человек ощущает, и тем, что ему объясняют', 'inaccurate cognitive-dissonance definition');
 forbidText('Любая система стремится к равновесию', 'universal system-homeostasis claim');
 forbidText('Гомеостаз и вторичная травма', 'secondary-trauma overreach');
+forbidText('письменные records', 'English records in Russian prose');
+forbidText('safeguarding-ответственные', 'hybrid safeguarding label');
+forbidText('компетентности в safeguarding', 'hybrid safeguarding competence phrase');
 
 requireText('В некоторых принуждающих или духовно небезопасных системах первоначальная теплота может стать условной', 'bounded conditional-warmth wording');
 requireText('за честный вопрос не наказывают холодом, лишением служения или духовным ярлыком', 'psychological-safety boundary');
@@ -38,7 +41,7 @@ requireText('напряжение между несовместимыми убе
 requireText('1 Тим. 5:19 прежде всего задаёт правило проверки свидетельств', '1 Timothy 5:19 evidentiary boundary');
 requireText('защищённые или конфиденциальные каналы сообщения', 'protected-reporting boundary');
 requireText('предполагаемом преступлении, непосредственной опасности', 'law-enforcement scope boundary');
-requireText('компетентности в safeguarding, отсутствия конфликта интересов', 'external helper competence boundary');
+requireText('компетентности в защите детей и уязвимых, отсутствия конфликта интересов', 'external helper competence boundary');
 requireText('ὑπόκρισις) — притворство и лицемерие', 'lexical correction');
 requireText('Авторская аналитическая формула: «отрицательный отбор пресвитеров»', 'authorial-term boundary');
 requireText('data-audit-sources="54"', '54-source audit marker');
