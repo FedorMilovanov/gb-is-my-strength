@@ -1,7 +1,7 @@
 # Agent 03 — единый NoteRegistry
 
 **Дата:** 2026-08-01  
-**Статус:** `IMPLEMENTATION_IN_PROGRESS`  
+**Статус:** `EXACT_HEAD_VERIFICATION`  
 **Production claim:** `no`
 
 ## Решение
@@ -36,6 +36,15 @@
 Блокируются orphan/multiple/empty notes, duplicate IDs, ordinal drift,
 nested authored controls, duplicate final DOM IDs, malformed generated block
 и отсутствие authored notes во всём production-like dist.
+
+## Desktop pointer corridor
+
+Floating tooltip shell остаётся hit-test transparent: новый interaction owner не
+добавляется. Существующий controller удерживает открытый tooltip по геометрии
+указателя. Коридор приведён к 28 px — тому же значению, которое уже использует
+sticky path, — чтобы поздний reflow не закрывал примечание между marker и
+body-mounted surface. Изменение прошло через существующий label-gated same-repo
+autofix capability; label удалён до финального human-authored exact head.
 
 ## Параллельность
 
