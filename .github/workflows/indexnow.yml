@@ -1,12 +1,12 @@
 name: Metadata & IndexNow Readiness
 
-# Lightweight read-only diagnostics only. Production readiness, the single
-# production-like build, candidate provenance and Pages promotion are owned by
-# deploy.yml. This workflow keeps an independent source metadata/revision signal
-# without duplicating npm installation or dist generation.
+# Lightweight diagnostics plus an explicit label-gated metadata normalizer.
+# Production readiness, the single production-like build, candidate provenance
+# and Pages promotion remain owned by deploy.yml.
 on:
   workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches: [main]
     paths:
@@ -20,6 +20,58 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  headline-autofix:
+    name: Canonical headline autofix
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Normalize registered source contracts
+        run: |
+          node scripts/article-headline-contract.js --write
+          node scripts/site-tooltip-touch-normalizer.js --write
+          node scripts/cache-bust.js --write
+
+      - name: Validate normalized source tree
+        run: |
+          node scripts/article-headline-contract.js
+          node scripts/site-tooltip-touch-normalizer.js
+          node scripts/editorial-metadata-registry.js --check
+          node scripts/cache-bust.js
+
+      - name: Commit normalized sources
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No source normalization changes required."
+            exit 0
+          fi
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "fix(runtime): normalize registered source contracts"
+          git push origin "HEAD:${HEAD_REF}"
+
   diagnostics:
     name: Validate source metadata without building dist
     runs-on: ubuntu-latest
@@ -40,6 +92,12 @@ jobs:
 
       - name: Validate registry structure
         run: node scripts/editorial-metadata-registry.js --check
+
+      - name: Validate canonical article headlines
+        run: node scripts/article-headline-contract.js
+
+      - name: Validate tooltip touch contract
+        run: node scripts/site-tooltip-touch-normalizer.js
 
       - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
