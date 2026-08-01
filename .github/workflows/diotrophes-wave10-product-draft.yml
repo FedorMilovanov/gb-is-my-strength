@@ -1,0 +1,53 @@
+name: Diotrophes Wave 10 Product Draft
+
+on:
+  pull_request:
+    paths:
+      - 'data/diotrophes-wave10-product-draft.json'
+      - 'src/components/article-pilots/diotrophes/**'
+      - 'scripts/diotrophes-wave10-contract.mjs'
+      - 'research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01.md'
+      - '.github/workflows/diotrophes-wave10-product-draft.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Enforce bounded Wave 10 diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/wave10-files.txt
+          unexpected="$(grep -Ev '^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$' /tmp/wave10-files.txt || true)"
+          if [[ -n "$unexpected" ]]; then
+            echo 'Unexpected Wave 10 files:' >&2
+            printf '%s\n' "$unexpected" >&2
+            exit 1
+          fi
+
+      - name: Validate evidence and publication boundaries
+        run: node scripts/diotrophes-wave10-contract.mjs
+
+      - name: Type-check Astro draft
+        run: npm run astro:check
+
+      - name: Ensure validation is read-only
+        run: git diff --exit-code
