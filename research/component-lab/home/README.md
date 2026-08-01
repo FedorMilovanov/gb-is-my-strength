@@ -9,13 +9,14 @@ This directory preserves bounded Home interaction and information-architecture s
 
 - Production code must not import, fetch, copy or link this directory.
 - No file here may be registered in route ownership, Pagefind, sitemap, RSS, service worker, cache-bust or deployment inputs.
+- A specimen must use the `.html.txt` suffix: repository-wide reader contracts intentionally classify every real `.html` file as a reader surface.
 - Specimens are explanatory reductions, not canonical markup.
 - Any promotion requires a new owner-approved Home lane built from current `main`, not a copy operation from this lab.
 - Accessibility and reduced-motion boundaries remain mandatory even for visual experiments.
 
 ## Specimens
 
-`index.html` contains four isolated references:
+`specimen.html.txt` contains four isolated references. Save a temporary local copy with an `.html` suffix only when manually viewing it outside the repository:
 
 1. `sacred-word-inline-flip` — semantic source/translation disclosure;
 2. `legacy-functional-index` — the useful information-density idea from the legacy preamble;
