@@ -6,8 +6,6 @@ import { fileURLToPath } from 'node:url';
 import { serve, configureContext, DESKTOP } from './lib/a04-contract.mjs';
 import { desktopWitness, mobileWitness } from './lib/a04-browser-witness.mjs';
 
-await import('./a03-touch-event-trace.mjs');
-
 const require = createRequire(import.meta.url);
 const playwright = require('playwright');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
