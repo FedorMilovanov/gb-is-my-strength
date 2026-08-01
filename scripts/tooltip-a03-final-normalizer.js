@@ -20,13 +20,15 @@ function count(source, needle) {
 function replaceExact(source, before, after, label) {
   const beforeCount = count(source, before);
   const afterCount = count(source, after);
-  if (beforeCount === 0 && afterCount === 1) return source;
+  const afterContainsBefore = after.includes(before);
+  if (afterCount === 1 && beforeCount === (afterContainsBefore ? 1 : 0)) return source;
   if (beforeCount !== 1 || afterCount !== 0) {
     throw new Error(`${label} normalizer refused input: before=${beforeCount}, after=${afterCount}`);
   }
   if (!WRITE) throw new Error(`${label} is stale; rerun with --write`);
   const next = source.replace(before, after);
-  if (count(next, before) !== 0 || count(next, after) !== 1) {
+  const validBeforeCount = afterContainsBefore ? 1 : 0;
+  if (count(next, before) !== validBeforeCount || count(next, after) !== 1) {
     throw new Error(`${label} target verification failed`);
   }
   return next;
