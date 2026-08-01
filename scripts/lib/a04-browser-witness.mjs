@@ -117,82 +117,6 @@ async function closedState(trigger, surface) {
   }), surface);
 }
 
-async function closeMobileTip(page) {
-  const closeControl = page.locator('body > .gb-floating-tip.is-open > [data-tooltip-close]').first();
-  if (await closeControl.count() === 1 && await closeControl.isVisible().catch(() => false)) {
-    const box = await closeControl.boundingBox();
-    if (!box || box.width < 36 || box.height < 36) {
-      throw new Error(`mobile sheet close control touch target is too small: ${JSON.stringify(box)}`);
-    }
-    const target = await closeControl.evaluate((node) => {
-      const rect = node.getBoundingClientRect();
-      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-      return {
-        direct: hit === node || node.contains(hit),
-        tag: hit?.tagName?.toLowerCase() || null,
-        id: hit?.id || '',
-        className: hit ? [...hit.classList].slice(0, 5).join(' ') : '',
-      };
-    });
-    if (!target.direct) throw new Error(`mobile sheet close control is not hit-testable: ${JSON.stringify(target)}`);
-    await closeControl.tap({ timeout: 4000 });
-    return { method: 'explicit-close-control', point: box, target };
-  }
-
-  const outsidePoint = await page.evaluate(() => {
-    const activeTip = document.querySelector('body > .gb-floating-tip.is-open');
-    if (!activeTip) return { direct: false, reason: 'active-tip-missing' };
-    const controllers = Array.isArray(window.SiteUtils?._tooltipControllers)
-      ? window.SiteUtils._tooltipControllers
-      : [];
-    const candidates = [
-      [8, 8],
-      [innerWidth - 8, 8],
-      [8, Math.max(8, Math.min(innerHeight - 8, innerHeight / 2))],
-      [innerWidth - 8, Math.max(8, Math.min(innerHeight - 8, innerHeight / 2))],
-      [innerWidth / 2, 8],
-    ];
-    for (const [rawX, rawY] of candidates) {
-      const x = Math.max(1, Math.min(innerWidth - 1, rawX));
-      const y = Math.max(1, Math.min(innerHeight - 1, rawY));
-      const hit = document.elementFromPoint(x, y);
-      if (!hit || activeTip.contains(hit)) continue;
-      const owned = controllers.some((controller) => {
-        const anchorSel = controller?.anchorSel;
-        const tipSel = controller?.tipSel;
-        return Boolean(
-          (anchorSel && hit.closest?.(anchorSel)) ||
-          (tipSel && hit.closest?.(tipSel))
-        );
-      });
-      if (owned) continue;
-      return {
-        x,
-        y,
-        direct: true,
-        tag: hit.tagName.toLowerCase(),
-        id: hit.id || '',
-        className: [...hit.classList].slice(0, 5).join(' '),
-      };
-    }
-    const rect = activeTip.getBoundingClientRect();
-    return {
-      direct: false,
-      reason: 'no-safe-outside-point',
-      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-    };
-  });
-  if (!outsidePoint.direct) {
-    throw new Error(`mobile tooltip has no safe outside close point: ${JSON.stringify(outsidePoint)}`);
-  }
-  await page.touchscreen.tap(outsidePoint.x, outsidePoint.y);
-  return {
-    method: 'outside-touch',
-    point: { x: outsidePoint.x, y: outsidePoint.y },
-    target: outsidePoint,
-  };
-}
-
 async function navigateForWitness(page, base, routes, surface) {
   for (const route of routes) {
     const pageErrors = [];
@@ -289,11 +213,12 @@ export async function mobileWitness(browser, base, routes, surface) {
     result.insideViewport = state.insideViewport;
     if (!result.touchOpens) throw new Error(`first touch did not open tooltip: ${JSON.stringify(state)}`);
 
-    await page.waitForTimeout(380);
-    const closeAction = await closeMobileTip(page);
-    result.closeMethod = closeAction.method;
-    result.closePoint = closeAction.point;
-    result.closeTarget = closeAction.target;
+    // SiteUtils deliberately suppresses the compatibility click generated after
+    // a touch for 1600 ms. Wait past that owner-defined window so Chromium and
+    // WebKit exercise the same second user interaction instead of racing it.
+    await page.waitForTimeout(1750);
+    await trigger.tap({ timeout: 4000 });
+    result.closeMethod = 'trigger-toggle-after-suppression-window';
     await page.waitForTimeout(300);
     const closed = await closedState(trigger, surface);
     result.closedState = closed;
@@ -301,7 +226,7 @@ export async function mobileWitness(browser, base, routes, surface) {
     if (!result.secondTouchCloses) throw new Error(`second touch did not close tooltip via ${result.closeMethod}: ${JSON.stringify(closed)}`);
 
     await trigger.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});
-    await page.waitForTimeout(140);
+    await page.waitForTimeout(1750);
     await trigger.tap({ timeout: 4000 });
     await page.waitForTimeout(220);
     const reopened = await ownerState(trigger, surface);
