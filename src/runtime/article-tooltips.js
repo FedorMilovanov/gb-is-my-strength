@@ -534,10 +534,11 @@ export function installArticleTooltips() {
     if (!controller || containsOwnedSurface(controller, event.target)) return;
     controller.close(true, 'outside');
   }, true);
-  document.addEventListener('keydown', (event) => {
+  window.addEventListener('keydown', (event) => {
     const controller = activeController();
-    if (event.key === 'Escape' && controller) {
+    if ((event.key === 'Escape' || event.key === 'Esc') && controller) {
       event.preventDefault();
+      event.stopImmediatePropagation?.();
       controller.close(false, 'escape');
     }
   }, true);
