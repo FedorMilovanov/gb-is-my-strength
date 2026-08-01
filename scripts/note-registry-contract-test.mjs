@@ -31,6 +31,12 @@ assert.match(projected.html, /<noscript data-note-registry-noscript>/);
 assert.match(projected.html, /@media print/);
 assert.equal(collectAndProjectHtml(projected.html, route).html, projected.html, 'projection must be idempotent');
 
+const inlineMarkup = collectAndProjectHtml(`<!doctype html><html><body><main data-pagefind-body>
+<p>Inline <span class="fn-marker">1<span class="tooltip">См.: <a href="#source">Rippon, <em>A Brief Memoir</em></a>.</span></span></p>
+</main></body></html>`, route);
+assert.deepEqual(inlineMarkup.errors, []);
+assert.equal(inlineMarkup.notes[0].text, 'См.: Rippon, A Brief Memoir.');
+
 const searchableProjection = collectAndProjectHtml(`<!doctype html><html><body><main>
 <article data-pagefind-body><p>Searchable <span class="fn-marker">1<span class="tooltip">Indexed note.</span></span></p></article>
 </main></body></html>`, route);
