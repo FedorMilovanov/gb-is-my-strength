@@ -92,6 +92,9 @@ jobs:
       - name: Validate canonical article headlines
         run: node scripts/article-headline-contract.js
 
+      - name: Validate Antisovetov Wave 8 source boundary
+        run: node scripts/antisovetov-wave8-contract.mjs
+
       - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
 
