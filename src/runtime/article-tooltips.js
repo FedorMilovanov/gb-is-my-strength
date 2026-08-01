@@ -1,7 +1,8 @@
-const VERSION = 10;
+const VERSION = 11;
 const OWNER = 'site-utils-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
+const TOUCH_SLOP_SQUARED = 144;
 
 let active = null;
 let activeController = null;
@@ -9,6 +10,8 @@ let closeTimer = 0;
 let pointerEpoch = 0;
 let pointerX = null;
 let pointerY = null;
+let touchStart = null;
+let touchMoved = false;
 
 function siteUtils() {
   window.SiteUtils = window.SiteUtils || {};
@@ -433,6 +436,22 @@ function initializeAnchor(anchor) {
   });
 }
 
+function resetTouchState() {
+  touchStart = null;
+  touchMoved = false;
+}
+
+function touchPoint(event, listName) {
+  const touch = event[listName]?.[0];
+  return touch ? { x: touch.clientX, y: touch.clientY } : null;
+}
+
+function touchTarget(event) {
+  const point = touchPoint(event, 'changedTouches');
+  if (point && document.elementFromPoint) return document.elementFromPoint(point.x, point.y) || event.target;
+  return event.target;
+}
+
 export function initGlossaryTooltips(scope = document) {
   const root = scope?.querySelectorAll ? scope : document;
   root.querySelectorAll('.gterm').forEach(initializeAnchor);
@@ -455,16 +474,44 @@ export function installArticleTooltips() {
     if (containsOwnedSurface(active, event.target)) cancelClose();
     else scheduleClose();
   }, true);
-  document.addEventListener('pointerdown', (event) => {
-    if (!active) return;
-    const close = event.target instanceof Element ? event.target.closest('[data-tooltip-close]') : null;
-    if (close && active.tip.contains(close)) {
+  document.addEventListener('touchstart', (event) => {
+    touchStart = touchPoint(event, 'touches');
+    touchMoved = false;
+  }, { capture: true, passive: true });
+  document.addEventListener('touchmove', (event) => {
+    const point = touchPoint(event, 'touches');
+    if (!touchStart || !point) {
+      touchMoved = true;
+      return;
+    }
+    const dx = point.x - touchStart.x;
+    const dy = point.y - touchStart.y;
+    if (dx * dx + dy * dy > TOUCH_SLOP_SQUARED) touchMoved = true;
+  }, { capture: true, passive: true });
+  document.addEventListener('touchend', (event) => {
+    const record = active;
+    const moved = touchMoved;
+    const target = touchTarget(event);
+    resetTouchState();
+    if (!record || moved || !(target instanceof Element)) return;
+    const close = target.closest('[data-tooltip-close]');
+    if (close && record.tip.contains(close)) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation?.();
-      closeTooltip('control-pointerdown');
+      closeTooltip('control-touchend');
       return;
     }
+    if (!record.tip.contains(target)) return;
+    const interactive = target.closest(INTERACTIVE);
+    if (interactive && record.tip.contains(interactive)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+    closeTooltip('surface-touchend');
+  }, { capture: true, passive: false });
+  document.addEventListener('pointerdown', (event) => {
+    if (!active) return;
     if (containsOwnedSurface(active, event.target)) return;
     closeTooltip('outside');
   }, true);
