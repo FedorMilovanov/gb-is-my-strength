@@ -51,11 +51,21 @@ for (const r of routes) {
   if (r.main !== `${r.prefix}Body`) mustExist(`${r.dir}/${r.prefix}PageFooter.astro`, `${r.slug}: native PageFooter`);
 
   const page = read(r.page);
+  const pageHead = read(`${r.dir}/${r.prefix}PageHead.astro`);
   must(page, '<!DOCTYPE html>', `${r.slug}: emits full document`);
   must(page, `${r.prefix}PageHead`, `${r.slug}: uses native PageHead`);
   must(page, r.main, `${r.slug}: uses balanced main/body component`);
 
-  const files = [page, read(`${r.dir}/${r.prefix}PageHead.astro`), read(`${r.dir}/${r.prefix}PageChrome.astro`), read(`${r.dir}/${r.main}.astro`)];
+  if (/^chast-[1-5]$/.test(r.slug)) {
+    must(page, 'bg-stone-900', `${r.slug}: body uses dark-capable Tailwind surface`);
+    mustNot(page, 'bg-stone-100', `${r.slug}: light-only body surface retired`);
+    const tailwindIndex = pageHead.indexOf('/nagornaya/tw.min.css');
+    const siteIndex = pageHead.indexOf('/css/site.css');
+    if (tailwindIndex >= 0 && siteIndex > tailwindIndex) ok(`${r.slug}: site light-mode override loads after Tailwind`);
+    else bad(`${r.slug}: expected tw.min.css before site.css for light-mode paper override`);
+  }
+
+  const files = [page, pageHead, read(`${r.dir}/${r.prefix}PageChrome.astro`), read(`${r.dir}/${r.main}.astro`)];
   if (exists(`${r.dir}/${r.prefix}PageFooter.astro`)) files.push(read(`${r.dir}/${r.prefix}PageFooter.astro`));
   for (const content of files) {
     for (const marker of ['loadLegacyFullDocument', '?raw', '_legacy/', '<Fragment set:html', 'import BaseLayout', '<BaseLayout', 'astro-card-grid', 'class="astro-page"']) {
