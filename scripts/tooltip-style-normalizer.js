@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 'use strict';
 
-const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -59,14 +58,7 @@ function normalizeTooltipStyles(source) {
   return { output, changes, verticalMatches, hoverMatches };
 }
 
-function projectA03Sources() {
-  const suffix = WRITE ? ['--write'] : [];
-  execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'site-tooltip-touch-normalizer.js'), ...suffix], { stdio: 'inherit' });
-  execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'note-print-normalizer.js'), ...suffix], { stdio: 'inherit' });
-}
-
 function main() {
-  projectA03Sources();
   const source = fs.readFileSync(CSS_FILE, 'utf8');
   const result = normalizeTooltipStyles(source);
   console.log(`Tooltip style normalizer: ${result.changes} change(s); vertical-align=${TARGET_VERTICAL_ALIGN}; hover=${TARGET_HOVER_TRANSFORM}; closed-tooltip pointer shield=on; open floating surface pass-through=specific.`);
