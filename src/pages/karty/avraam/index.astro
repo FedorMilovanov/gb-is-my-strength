@@ -16,5 +16,24 @@ import AvraamMap from '@/components/karty/avraam/AvraamMap.astro';
   </head>
   <body>
     <AvraamMap />
+    <script>
+      const stage = document.querySelector('[data-map-stage]');
+      const fallbackHeading = document.querySelector('h1.sr-only[data-pagefind-body]');
+
+      if (stage && fallbackHeading) {
+        const removeFallbackHeadingWhenReady = () => {
+          if (stage.getAttribute('data-map-state') !== 'ready') return false;
+          fallbackHeading.remove();
+          return true;
+        };
+
+        if (!removeFallbackHeadingWhenReady()) {
+          const observer = new MutationObserver(() => {
+            if (removeFallbackHeadingWhenReady()) observer.disconnect();
+          });
+          observer.observe(stage, { attributes: true, attributeFilter: ['data-map-state'] });
+        }
+      }
+    </script>
   </body>
 </html>
