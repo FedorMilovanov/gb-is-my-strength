@@ -32,6 +32,7 @@ jobs:
             main \
             agent/mobile-webkit-a11y-20260801 \
             fix/diotrophes-wave11-bounded-diff-guard-20260801
+          git fetch --no-tags origin refs/pull/728/head:refs/remotes/origin/pr-728-head
           python3 - <<'PY'
           import json, os, subprocess, urllib.parse, urllib.request
 
@@ -73,6 +74,9 @@ jobs:
           if not (p728['merged_at'] and p728['head']['sha'] == '179b58b8a6fabfee77c9a15a3da767e33365ccd6'):
               raise SystemExit('PR #728 successor mismatch')
 
+          successor = git('rev-parse', 'origin/pr-728-head')
+          if successor != p728['head']['sha']:
+              raise SystemExit(f'PR #728 immutable head mismatch: {successor}')
           subprocess.check_call(['git', 'merge-base', '--is-ancestor', '0ea8d5a27190a6c035235d2528f1c63d13951231', 'origin/main'])
           paths = [
               '.github/workflows/interactive-audit.yml',
@@ -80,7 +84,7 @@ jobs:
               'scripts/a13-mobile-webkit-a11y-browser-test.mjs',
               'research/A13_MOBILE_WEBKIT_A11Y_2026-08-01.md',
           ]
-          subprocess.check_call(['git', 'diff', '--quiet', 'f584730f1dd62d54242712607386f60301530daa', '179b58b8a6fabfee77c9a15a3da767e33365ccd6', '--', *paths])
+          subprocess.check_call(['git', 'diff', '--quiet', expected['agent/mobile-webkit-a11y-20260801'], successor, '--', *paths])
           print('Exact successor and blob-equivalence checks passed.')
           PY
       - name: Delete superseded and forensic refs
