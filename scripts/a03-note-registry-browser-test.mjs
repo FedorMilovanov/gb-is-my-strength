@@ -35,6 +35,24 @@ const check = (contract, ok, detail = '') => {
   if (!row.ok) throw new Error(`${contract}: ${row.detail}`);
 };
 
+function geometryFacts(node) {
+  const style = getComputedStyle(node);
+  const parentStyle = node.parentElement ? getComputedStyle(node.parentElement) : null;
+  const rect = node.getBoundingClientRect();
+  return {
+    display: style.display,
+    position: style.position,
+    visibility: style.visibility,
+    width: rect.width,
+    height: rect.height,
+    parentTag: node.parentElement?.tagName || '',
+    parentId: node.parentElement?.id || '',
+    parentDisplay: parentStyle?.display || '',
+    parentVisibility: parentStyle?.visibility || '',
+    count: node.querySelectorAll('li').length,
+  };
+}
+
 const { server, base } = await serve();
 const browser = await browserType.launch();
 try {
@@ -92,12 +110,12 @@ try {
     await configureContext(noJs, base);
     const noJsPage = await noJs.newPage();
     await noJsPage.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    const noJsFacts = await noJsPage.locator('[data-note-registry-endnotes]').evaluate((node) => {
-      const style = getComputedStyle(node);
-      const rect = node.getBoundingClientRect();
-      return { position: style.position, width: rect.width, height: rect.height, count: node.querySelectorAll('li').length };
-    });
-    check('no-js:endnotes-visible', noJsFacts.position === 'static' && noJsFacts.width > 1 && noJsFacts.height > 1, JSON.stringify(noJsFacts));
+    const noJsFacts = await noJsPage.locator('[data-note-registry-endnotes]').evaluate(geometryFacts);
+    check(
+      'no-js:endnotes-visible',
+      noJsFacts.display !== 'none' && noJsFacts.position === 'static' && noJsFacts.visibility === 'visible' && noJsFacts.width > 1 && noJsFacts.height > 1,
+      JSON.stringify(noJsFacts),
+    );
     await noJs.close();
 
     const printContext = await browser.newContext({ viewport: DESKTOP, serviceWorkers: 'block' });
@@ -105,12 +123,12 @@ try {
     const printPage = await printContext.newPage();
     await printPage.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await printPage.emulateMedia({ media: 'print' });
-    const printFacts = await printPage.locator('[data-note-registry-endnotes]').evaluate((node) => {
-      const style = getComputedStyle(node);
-      const rect = node.getBoundingClientRect();
-      return { position: style.position, width: rect.width, height: rect.height };
-    });
-    check('print:endnotes-visible', printFacts.position === 'static' && printFacts.width > 1 && printFacts.height > 1, JSON.stringify(printFacts));
+    const printFacts = await printPage.locator('[data-note-registry-endnotes]').evaluate(geometryFacts);
+    check(
+      'print:endnotes-visible',
+      printFacts.display !== 'none' && printFacts.position === 'static' && printFacts.visibility === 'visible' && printFacts.width > 1 && printFacts.height > 1,
+      JSON.stringify(printFacts),
+    );
     fs.mkdirSync(REPORTS, { recursive: true });
     const pdfFile = path.join(REPORTS, 'a03-note-registry-print.pdf');
     await printPage.pdf({ path: pdfFile, format: 'A4', printBackground: true });
