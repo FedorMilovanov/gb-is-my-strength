@@ -134,52 +134,18 @@ async function findVisible(page, selectors) {
 async function inspectTrigger(trigger) {
   return trigger.evaluate((node) => {
     const rect = node.getBoundingClientRect();
+    const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const top = document.elementFromPoint(point.x, point.y);
     const style = getComputedStyle(node);
-    const ratios = [
-      ['center', 0.5, 0.5],
-      ['left-center', 0.2, 0.5],
-      ['right-center', 0.8, 0.5],
-      ['top-center', 0.5, 0.25],
-      ['bottom-center', 0.5, 0.75],
-      ['top-left', 0.2, 0.25],
-      ['top-right', 0.8, 0.25],
-      ['bottom-left', 0.2, 0.75],
-      ['bottom-right', 0.8, 0.75],
-    ];
-    const candidates = ratios.map(([source, xRatio, yRatio]) => ({
-      source,
-      x: rect.left + rect.width * xRatio,
-      y: rect.top + rect.height * yRatio,
-    }));
-    let selected = null;
-    let firstBlocked = null;
-    for (const candidate of candidates) {
-      const inViewport = candidate.x >= 0 && candidate.y >= 0 && candidate.x <= innerWidth && candidate.y <= innerHeight;
-      if (!inViewport) continue;
-      const top = document.elementFromPoint(candidate.x, candidate.y);
-      const descriptor = top
-        ? `${top.tagName.toLowerCase()}#${top.id || ''}.${String(top.className || '').slice(0, 100)}`
-        : null;
-      if (!firstBlocked) firstBlocked = { ...candidate, top: descriptor };
-      if (top && (top === node || node.contains(top))) {
-        selected = { ...candidate, top: descriptor };
-        break;
-      }
-    }
-    const point = selected
-      ? { x: selected.x, y: selected.y }
-      : { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     return {
       rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
       point,
-      pointSource: selected?.source || 'none',
       position: style.position,
       fullyInViewport: rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.top >= 0 &&
         rect.right <= innerWidth && rect.bottom <= innerHeight,
-      pointInViewport: point.x >= 0 && point.y >= 0 && point.x <= innerWidth && point.y <= innerHeight,
-      hitTarget: Boolean(selected),
-      top: selected?.top || firstBlocked?.top || null,
-      candidatesChecked: candidates.length,
+      centerInViewport: point.x >= 0 && point.y >= 0 && point.x <= innerWidth && point.y <= innerHeight,
+      hitTarget: Boolean(top && (top === node || node.contains(top))),
+      top: top ? `${top.tagName.toLowerCase()}#${top.id || ''}.${String(top.className || '').slice(0, 100)}` : null,
     };
   }).catch(() => null);
 }
@@ -210,6 +176,40 @@ async function inspectOpenOverlay(page, controls = null) {
   }, { controls }).catch((error) => ({ found: true, controls, inspectionError: error.message }));
 }
 
+async function dismissResumePrompt(page) {
+  const state = await page.evaluate(() => {
+    const toast = document.getElementById('bookmarkToast');
+    if (!toast) return { found: false };
+    const rect = toast.getBoundingClientRect();
+    const style = getComputedStyle(toast);
+    const visible = !toast.hidden && rect.width > 0 && rect.height > 0 &&
+      style.display !== 'none' && style.visibility !== 'hidden' &&
+      Number.parseFloat(style.opacity || '1') > 0.01;
+    return {
+      found: visible,
+      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+      closeId: document.getElementById('bookmarkToastClose') ? 'bookmarkToastClose' : null,
+    };
+  }).catch((error) => ({ found: true, inspectionError: error.message }));
+  if (!state?.found) return { clean: true, state };
+  const close = page.locator('#bookmarkToastClose').first();
+  if (!await close.count() || !await close.isVisible().catch(() => false)) {
+    return { clean: false, state, error: 'visible bookmarkToast has no visible native close control' };
+  }
+  await close.click({ timeout: 3000 });
+  await page.waitForTimeout(460);
+  const remains = await page.evaluate(() => {
+    const toast = document.getElementById('bookmarkToast');
+    if (!toast) return false;
+    const rect = toast.getBoundingClientRect();
+    const style = getComputedStyle(toast);
+    return !toast.hidden && rect.width > 0 && rect.height > 0 &&
+      style.display !== 'none' && style.visibility !== 'hidden' &&
+      Number.parseFloat(style.opacity || '1') > 0.01;
+  }).catch(() => true);
+  return { clean: !remains, state, remains };
+}
+
 async function ensureOverlayClean(page, entry, profile, name) {
   const initial = await inspectOpenOverlay(page);
   if (!initial?.found) {
@@ -238,6 +238,16 @@ async function ensureOverlayClean(page, entry, profile, name) {
 
 async function exerciseOverlay(page, entry, profile, name, selectors) {
   if (!await ensureOverlayClean(page, entry, profile, name)) return;
+  const resume = await dismissResumePrompt(page);
+  if (!resume.clean) {
+    const shot = await capture(page, entry, profile, `${name}-resume-preflight-failure`);
+    record(entry, profile, `interaction:${name}:resume-preflight-clean`, false,
+      JSON.stringify({ ...resume, shot }));
+    return;
+  }
+  if (resume.state?.found) {
+    record(entry, profile, `interaction:${name}:resume-preflight-clean`, true, JSON.stringify(resume));
+  }
   const trigger = await findVisible(page, selectors);
   if (!trigger) return;
   const controls = await trigger.getAttribute('aria-controls');
@@ -254,14 +264,9 @@ async function exerciseOverlay(page, entry, profile, name, selectors) {
       await trigger.click({ timeout: 4000 });
     } catch (locatorError) {
       hit = await inspectTrigger(trigger);
-      if (!hit?.pointInViewport || !hit?.hitTarget) throw locatorError;
-      if (profile.mobile) {
-        activation = `touchscreen:${hit.pointSource}`;
-        await page.touchscreen.tap(hit.point.x, hit.point.y);
-      } else {
-        activation = `mouse:${hit.pointSource}`;
-        await page.mouse.click(hit.point.x, hit.point.y);
-      }
+      if (!hit?.centerInViewport || !hit?.hitTarget) throw locatorError;
+      activation = 'mouse';
+      await page.mouse.click(hit.point.x, hit.point.y);
     }
   } catch (error) {
     hit = await inspectTrigger(trigger);
