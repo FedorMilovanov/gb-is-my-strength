@@ -10,6 +10,7 @@ on:
       - "js/site*.js"
       - "scripts/glossary-*.js"
       - "scripts/reference-system-inventory.js"
+      - "scripts/site-tooltip-touch-normalizer.js"
       - "scripts/tooltip-*.js"
       - "src/**"
       - "articles/**"
@@ -28,6 +29,7 @@ on:
       - "js/site*.js"
       - "scripts/glossary-*.js"
       - "scripts/reference-system-inventory.js"
+      - "scripts/site-tooltip-touch-normalizer.js"
       - "scripts/tooltip-*.js"
       - "src/**"
       - "articles/**"
@@ -72,6 +74,7 @@ jobs:
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
+          node --check scripts/site-tooltip-touch-normalizer.js
 
       - name: Test glossary placement normalizer
         run: node scripts/glossary-placement-normalizer-test.js
@@ -86,6 +89,7 @@ jobs:
           node scripts/glossary-placement-normalizer.js --write
           node scripts/tooltip-trigger-normalizer.js --write
           node scripts/tooltip-style-normalizer.js --write
+          node scripts/site-tooltip-touch-normalizer.js --write
           node scripts/cache-bust.js --write
 
       - name: Validate normalized tree
@@ -93,6 +97,7 @@ jobs:
           node scripts/glossary-contract-audit.js
           node scripts/tooltip-trigger-normalizer.js
           node scripts/tooltip-style-normalizer.js
+          node scripts/site-tooltip-touch-normalizer.js
           node scripts/tooltip-icon-audit.js
           node scripts/cache-bust.js
 
@@ -141,6 +146,7 @@ jobs:
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
+          node --check scripts/site-tooltip-touch-normalizer.js
 
       - name: Test glossary placement normalizer
         run: node scripts/glossary-placement-normalizer-test.js
@@ -164,6 +170,7 @@ jobs:
           set -o pipefail
           node scripts/tooltip-icon-audit.js 2>&1 | tee reports/tooltip-icon-audit.log
           node scripts/tooltip-style-normalizer.js 2>&1 | tee reports/tooltip-style.log
+          node scripts/site-tooltip-touch-normalizer.js 2>&1 | tee reports/site-tooltip-touch.log
 
       - name: Lint workflow
         shell: bash
