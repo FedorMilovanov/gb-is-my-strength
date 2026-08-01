@@ -21,6 +21,8 @@
   },
   "production_boundary": {
     "lab_root": "research/component-lab/home/",
+    "specimen_source": "research/component-lab/home/specimen.html.txt",
+    "reader_html_extension_allowed": false,
     "production_dependency_allowed": false,
     "route_registration_allowed": false,
     "asset_pipeline_registration_allowed": false,
@@ -32,7 +34,7 @@
       "status": "KEEP_CURRENT",
       "current_owner": "src/components/home/HomeHero.astro",
       "historical_value": "Hebrew source text, local translation reveal and source citation remain a distinctive owner-approved interaction.",
-      "lab_specimen": "research/component-lab/home/index.html#sacred-word-inline-flip",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#sacred-word-inline-flip",
       "owner_action": "No redesign. Any implementation change requires a dedicated Home owner lane and interaction evidence."
     },
     {
@@ -48,7 +50,7 @@
       "status": "KEEP_CURRENT",
       "current_owner": "src/components/home/HomeSections/Directions.astro",
       "historical_value": "Five visual direction cards provide a compact high-level map of the library and are centred correctly at 390 px.",
-      "lab_specimen": "research/component-lab/home/index.html#five-direction-gateway",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#five-direction-gateway",
       "owner_action": "Keep current owner and derived destinations; do not duplicate the grid."
     },
     {
@@ -56,7 +58,7 @@
       "status": "LAB_ONLY",
       "current_owner": null,
       "historical_value": "The legacy top-of-page functional cards exposed reading, chronology, research and confession entry points with high information density.",
-      "lab_specimen": "research/component-lab/home/index.html#legacy-functional-index",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#legacy-functional-index",
       "owner_action": "Use only as a reference for future information architecture; do not restore the whole legacy preamble."
     },
     {
@@ -64,7 +66,7 @@
       "status": "LAB_ONLY",
       "current_owner": "css/home.css and js/site.js",
       "historical_value": "Subtle depth can help route cards, but motion must be optional and cannot carry meaning.",
-      "lab_specimen": "research/component-lab/home/index.html#route-card-tilt-motion",
+      "lab_specimen": "research/component-lab/home/specimen.html.txt#route-card-tilt-motion",
       "owner_action": "Any future use must preserve keyboard equivalence and prefers-reduced-motion suppression."
     },
     {
