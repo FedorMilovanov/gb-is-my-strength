@@ -75,6 +75,7 @@ jobs:
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
           node --check scripts/site-tooltip-touch-normalizer.js
+          node --check scripts/tooltip-owner-contract-test.mjs
 
       - name: Test glossary placement normalizer
         run: node scripts/glossary-placement-normalizer-test.js
@@ -98,6 +99,7 @@ jobs:
           node scripts/tooltip-trigger-normalizer.js
           node scripts/tooltip-style-normalizer.js
           node scripts/site-tooltip-touch-normalizer.js
+          node scripts/tooltip-owner-contract-test.mjs
           node scripts/tooltip-icon-audit.js
           node scripts/cache-bust.js
 
@@ -147,6 +149,7 @@ jobs:
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
           node --check scripts/site-tooltip-touch-normalizer.js
+          node --check scripts/tooltip-owner-contract-test.mjs
 
       - name: Test glossary placement normalizer
         run: node scripts/glossary-placement-normalizer-test.js
@@ -155,6 +158,7 @@ jobs:
         run: |
           node scripts/tooltip-trigger-normalizer-test.js
           node scripts/tooltip-style-normalizer-test.js
+          node scripts/tooltip-owner-contract-test.mjs
 
       - name: Audit glossary and references
         shell: bash
