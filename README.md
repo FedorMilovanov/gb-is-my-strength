@@ -2,7 +2,7 @@
 
 Богословский и редакционный сайт: экзегеза, история церкви, апологетика, переводы, серии и интерактивные библейские карты.
 
-Production публикуется GitHub Pages из **production-like `dist/`**, собранного из Astro 6, MDX/content collections и явно зарегистрированных legacy/special adapters. Корень репозитория не является Pages-артефактом.
+Production публикуется GitHub Pages из **production-like `dist/`**, собранного из Astro 7, MDX/content collections и явно зарегистрированных legacy/special adapters. Корень репозитория не является Pages-артефактом.
 
 ## Начать здесь
 
@@ -19,7 +19,7 @@ Production публикуется GitHub Pages из **production-like `dist/`**,
 ### Build и deploy
 
 - **Node:** `>=22.12.0`.
-- **Framework:** Astro 6 + MDX/content collections; React используется только внутри изолированных интерактивных приложений, а не как общий клиентский runtime.
+- **Framework:** Astro 7 + MDX/content collections; точная версия закреплена в `package.json`/`package-lock.json`. React используется только внутри изолированных интерактивных приложений, а не как общий клиентский runtime.
 - **Production output:** `npm run strangler:build:production-like` → `dist/`.
 - **Deploy source of truth:** `.github/workflows/deploy.yml`; Pages получает `dist/` через `actions/upload-pages-artifact`.
 - **Runtime:** статический HTML, CSS и vanilla JS; специальные карты/3D-приложения остаются capability adapters.
