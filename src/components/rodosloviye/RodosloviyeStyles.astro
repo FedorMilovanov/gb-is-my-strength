@@ -1,6 +1,11 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
+
+const stylesheets = [
+  assetUrl('fonts/fonts.css'),
+  assetUrl('css/site.css'),
+  assetUrl('css/command-palette.css'),
+  assetUrl('css/mobile-hotfix.css'),
+];
 ---
-  <link rel="stylesheet" href="/fonts/fonts.css">
-  <link rel="stylesheet" href="/css/site.css">
-  <link rel="stylesheet" href="/css/command-palette.css">
-  <link rel="stylesheet" href="/css/mobile-hotfix.css">
+{stylesheets.map((href) => <link rel="stylesheet" href={href} />)}

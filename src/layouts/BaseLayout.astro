@@ -5,7 +5,7 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 import Header from '@/components/ui/Header.astro';
 import Footer from '@/components/ui/Footer.astro';
 import { SITE } from '@/data/site';
-import { assetUrl } from '@/lib/asset-version';
+import { ASSET_VERSIONS, assetUrl } from '@/lib/asset-version';
 import '@/styles/tokens.css';
 import '@/styles/global.css';
 
@@ -81,6 +81,14 @@ function routeToLegacyFile(canonicalUrl: string) {
   }
 }
 
+function versionedStylesheet(href: string) {
+  const clean = String(href || '')
+    .replace(/^(?:\.\.\/)+/, '')
+    .replace(/^\//, '')
+    .split('?')[0];
+  return Object.prototype.hasOwnProperty.call(ASSET_VERSIONS, clean) ? assetUrl(clean) : href;
+}
+
 // Legacy runtime I/O and dead helper functions removed (REF-01 / REF-02).
 // Each remaining script is an explicit compatibility owner. Strict-native
 // article layouts disable site.js and receive ReaderActionsRuntime instead.
@@ -92,7 +100,7 @@ const runtimeConfig = {
     baseUrl: SITE.url,
     locale: SITE.locale,
   },
-  version: Date.now(),
+  version: ASSET_VERSIONS['js/glossary.js'],
   page: {
     id: runtimePageId,
     type: ogType === 'article' ? 'article' : 'page',
@@ -114,6 +122,13 @@ const runtimeScripts = [
   assetUrl('js/sw-register.js'),
 ];
 const searchSrc = assetUrl('js/search.js');
+const coreStylesheets = [
+  assetUrl('fonts/fonts.css'),
+  assetUrl('css/site.css'),
+  assetUrl('css/command-palette.css'),
+  assetUrl('css/mobile-hotfix.css'),
+];
+const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
 ---
 <!doctype html>
 <html lang="ru">
@@ -156,11 +171,8 @@ const searchSrc = assetUrl('js/search.js');
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Inter/inter-cyrillic-600.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-700.woff2" crossorigin />
-    <link rel="stylesheet" href="/fonts/fonts.css" />
-    <link rel="stylesheet" href="/css/site.css" />
-    <link rel="stylesheet" href="/css/command-palette.css" />
-    <link rel="stylesheet" href="/css/mobile-hotfix.css" />
-    {legacyStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
+    {coreStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
+    {routeStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
   </head>
   <body class={bodyClass}>
     <div class="astro-shell">
