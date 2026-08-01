@@ -84,6 +84,21 @@ Runtime и CSS спроецированы только существующим 
 успешной записи `autofix` снят. Финальная матрица считается только от следующего
 human-authored exact head.
 
+## CSS priority ceiling
+
+Source Authority показал единственный остаточный static defect: mobile close
+rule поднял число `!important` с разрешённых 200 до 201. Потолок не повышался и
+исключение не добавлялось. Tooltip style normalizer теперь мигрирует прежний
+`padding-right:3.25rem!important` в канонический `padding-right:3.25rem`, потому
+что правило уже ограничено `body > .gb-floating-tip.is-open` внутри mobile media
+query и не нуждается в дополнительном приоритете.
+
+Regression test требует ровно одно legacy→canonical преобразование,
+идемпотентность, сохранение 2.35-rem touch target, `touch-action` и
+`:focus-visible`. Штатный label-gated writer изменил только `css/site.css` и
+детерминированные asset revisions; `autofix` снят до этого human evidence head.
+Ожидаемая Source Authority граница снова равна 200, без ослабления gate.
+
 ## Параллельность
 
 Karty PR #669 и Nagornaya PR #678 не пересекаются с NoteRegistry scope.
