@@ -176,6 +176,40 @@ async function inspectOpenOverlay(page, controls = null) {
   }, { controls }).catch((error) => ({ found: true, controls, inspectionError: error.message }));
 }
 
+async function dismissResumePrompt(page) {
+  const state = await page.evaluate(() => {
+    const toast = document.getElementById('bookmarkToast');
+    if (!toast) return { found: false };
+    const rect = toast.getBoundingClientRect();
+    const style = getComputedStyle(toast);
+    const visible = !toast.hidden && rect.width > 0 && rect.height > 0 &&
+      style.display !== 'none' && style.visibility !== 'hidden' &&
+      Number.parseFloat(style.opacity || '1') > 0.01;
+    return {
+      found: visible,
+      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+      closeId: document.getElementById('bookmarkToastClose') ? 'bookmarkToastClose' : null,
+    };
+  }).catch((error) => ({ found: true, inspectionError: error.message }));
+  if (!state?.found) return { clean: true, state };
+  const close = page.locator('#bookmarkToastClose').first();
+  if (!await close.count() || !await close.isVisible().catch(() => false)) {
+    return { clean: false, state, error: 'visible bookmarkToast has no visible native close control' };
+  }
+  await close.click({ timeout: 3000 });
+  await page.waitForTimeout(460);
+  const remains = await page.evaluate(() => {
+    const toast = document.getElementById('bookmarkToast');
+    if (!toast) return false;
+    const rect = toast.getBoundingClientRect();
+    const style = getComputedStyle(toast);
+    return !toast.hidden && rect.width > 0 && rect.height > 0 &&
+      style.display !== 'none' && style.visibility !== 'hidden' &&
+      Number.parseFloat(style.opacity || '1') > 0.01;
+  }).catch(() => true);
+  return { clean: !remains, state, remains };
+}
+
 async function ensureOverlayClean(page, entry, profile, name) {
   const initial = await inspectOpenOverlay(page);
   if (!initial?.found) {
@@ -204,6 +238,16 @@ async function ensureOverlayClean(page, entry, profile, name) {
 
 async function exerciseOverlay(page, entry, profile, name, selectors) {
   if (!await ensureOverlayClean(page, entry, profile, name)) return;
+  const resume = await dismissResumePrompt(page);
+  if (!resume.clean) {
+    const shot = await capture(page, entry, profile, `${name}-resume-preflight-failure`);
+    record(entry, profile, `interaction:${name}:resume-preflight-clean`, false,
+      JSON.stringify({ ...resume, shot }));
+    return;
+  }
+  if (resume.state?.found) {
+    record(entry, profile, `interaction:${name}:resume-preflight-clean`, true, JSON.stringify(resume));
+  }
   const trigger = await findVisible(page, selectors);
   if (!trigger) return;
   const controls = await trigger.getAttribute('aria-controls');
