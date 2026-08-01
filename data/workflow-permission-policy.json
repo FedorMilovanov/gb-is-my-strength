@@ -12,10 +12,16 @@
             "pages": "write"
           },
           "purpose": "Promote the exact same-run candidate built by the read-only readiness job to GitHub Pages",
-          "allowedEvents": ["push", "workflow_dispatch"],
+          "allowedEvents": [
+            "push",
+            "workflow_dispatch"
+          ],
           "repositoryBoundary": "same repository; candidate and witness artifacts must belong to this exact workflow run",
           "branchBoundary": "control-plane SHA equals current main; release SHA equals it automatically or is an explicit historical main ancestor",
-          "mutationTargets": ["github-pages deployment", "OIDC deployment token"],
+          "mutationTargets": [
+            "github-pages deployment",
+            "OIDC deployment token"
+          ],
           "requiresConcurrency": true,
           "requiredMarkers": [
             "needs: readiness",
@@ -31,12 +37,22 @@
     ".github/workflows/deployment-witness-ledger.yml": {
       "jobs": {
         "record": {
-          "permissions": {"actions": "read", "contents": "read", "issues": "write", "pull-requests": "write"},
+          "permissions": {
+            "actions": "read",
+            "contents": "read",
+            "issues": "write",
+            "pull-requests": "write"
+          },
           "purpose": "Record an idempotent capability witness for one exact successful Pages deploy run",
-          "allowedEvents": ["workflow_dispatch", "workflow_run"],
+          "allowedEvents": [
+            "workflow_dispatch",
+            "workflow_run"
+          ],
           "repositoryBoundary": "same repository deploy run resolved through the Actions API",
           "branchBoundary": "main deployment control-plane SHA plus independently verified release SHA",
-          "mutationTargets": ["machine-marked deployment witness issue or pull-request thread"],
+          "mutationTargets": [
+            "machine-marked deployment witness issue or pull-request thread"
+          ],
           "requiresConcurrency": true,
           "requiredMarkers": [
             "workflowRun.head_repository && workflowRun.head_repository.full_name",
@@ -50,12 +66,20 @@
     ".github/workflows/notify-on-failure.yml": {
       "jobs": {
         "lifecycle": {
-          "permissions": {"actions": "read", "contents": "read", "issues": "write"},
+          "permissions": {
+            "actions": "read",
+            "contents": "read",
+            "issues": "write"
+          },
           "purpose": "Open, update, and recover one factual CI incident per workflow and branch or pull request identity",
-          "allowedEvents": ["workflow_run"],
+          "allowedEvents": [
+            "workflow_run"
+          ],
           "repositoryBoundary": "same repository workflow_run metadata; triggering branch code is never executed",
           "branchBoundary": "notifier implementation fetched from the trusted default branch",
-          "mutationTargets": ["machine-marked CI failure lifecycle issues"],
+          "mutationTargets": [
+            "machine-marked CI failure lifecycle issues"
+          ],
           "requiresConcurrency": true,
           "requiredMarkers": [
             "context.payload.repository.default_branch",
@@ -69,12 +93,18 @@
     ".github/workflows/glossary-contract.yml": {
       "jobs": {
         "placement-autofix": {
-          "permissions": {"contents": "write"},
+          "permissions": {
+            "contents": "write"
+          },
           "purpose": "Apply deterministic glossary, tooltip, and asset-revision normalization to an explicitly labelled same-repository pull request",
-          "allowedEvents": ["pull_request"],
+          "allowedEvents": [
+            "pull_request"
+          ],
           "repositoryBoundary": "same-repository pull request only",
           "branchBoundary": "exact pull-request head branch carrying the autofix label",
-          "mutationTargets": ["pull-request source branch glossary and tooltip normalization"],
+          "mutationTargets": [
+            "pull-request source branch glossary and tooltip normalization"
+          ],
           "requiresConcurrency": true,
           "requiredMarkers": [
             "contains(github.event.pull_request.labels.*.name, 'autofix')",
@@ -87,32 +117,23 @@
     ".github/workflows/indexnow.yml": {
       "jobs": {
         "headline-autofix": {
-          "permissions": {"contents": "write"},
+          "permissions": {
+            "contents": "write"
+          },
           "purpose": "Normalize registered article document titles to their canonical social and structured-data headline on an explicitly labelled same-repository pull request",
-          "allowedEvents": ["pull_request"],
+          "allowedEvents": [
+            "pull_request"
+          ],
           "repositoryBoundary": "same-repository pull request only",
           "branchBoundary": "exact pull-request head branch carrying the autofix label",
-          "mutationTargets": ["registered article PageHead title text on the pull-request source branch"],
+          "mutationTargets": [
+            "registered article PageHead title text on the pull-request source branch"
+          ],
           "requiresConcurrency": true,
           "requiredMarkers": [
             "contains(github.event.pull_request.labels.*.name, 'autofix')",
             "github.event.pull_request.head.repo.full_name == github.repository",
             "ref: ${{ github.event.pull_request.head.ref }}"
-          ]
-        },
-        "antisovetov-wave8-autofix": {
-          "permissions": {"contents": "write"},
-          "purpose": "Apply the Research Wave 7 audited wording and source-boundary corrections to the single Antisovetov authored source on an explicitly labelled same-repository pull request",
-          "allowedEvents": ["pull_request"],
-          "repositoryBoundary": "same-repository pull request only",
-          "branchBoundary": "exact pull-request head branch carrying the antisovetov-wave8-autofix label",
-          "mutationTargets": ["src/components/article-pilots/antisovetov/AntisovetovBody.astro on the pull-request source branch"],
-          "requiresConcurrency": true,
-          "requiredMarkers": [
-            "contains(github.event.pull_request.labels.*.name, 'antisovetov-wave8-autofix')",
-            "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.ref }}",
-            "test \"$(git diff --name-only)\" = \"src/components/article-pilots/antisovetov/AntisovetovBody.astro\""
           ]
         }
       }
@@ -120,12 +141,18 @@
     ".github/workflows/search-manifest-policy.yml": {
       "jobs": {
         "search-manifest-autofix": {
-          "permissions": {"contents": "write"},
+          "permissions": {
+            "contents": "write"
+          },
           "purpose": "Apply deterministic search-manifest and RSS normalization to an explicitly labelled same-repository pull request",
-          "allowedEvents": ["pull_request"],
+          "allowedEvents": [
+            "pull_request"
+          ],
           "repositoryBoundary": "same-repository pull request only",
           "branchBoundary": "exact pull-request head branch carrying the autofix label",
-          "mutationTargets": ["feed.xml and route/search policy manifests on the pull-request source branch"],
+          "mutationTargets": [
+            "feed.xml and route/search policy manifests on the pull-request source branch"
+          ],
           "requiresConcurrency": true,
           "requiredMarkers": [
             "contains(github.event.pull_request.labels.*.name, 'autofix')",
