@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { getKartyHubInventory } = require('../src/lib/karty-hub-inventory.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const ROUTES_ROOT = path.join(ROOT, 'karty');
@@ -128,11 +129,8 @@ function validateRoute(file) {
     if (!p.id || !/^[a-z0-9_-]+$/.test(p.id)) bad(`${where}: invalid id`);
     if (!p.name) bad(`${where}: missing name`);
     if (!isFiniteNum(p.x) || !isFiniteNum(p.y)) bad(`${where}: invalid coordinates`);
-    // Styled SVG coordinate system is wider than viewport; allow modest negative for future maps but catch absurd values.
     if (isFiniteNum(p.x) && (p.x < -250 || p.x > 2200)) bad(`${where}: x out of expected SVG range (${p.x})`);
     if (isFiniteNum(p.y) && (p.y < -250 || p.y > 1600)) bad(`${where}: y out of expected SVG range (${p.y})`);
-    // ctx/region — контекстные точки лексикона Атласа (Вавилон/Мари/Фаран,
-    // DEBT 2026-07-11), не привязаны к этапу маршрута.
     if (p.type !== 'ctx' && p.type !== 'region') {
       if (!Number.isInteger(p.stage) || p.stage < 0 || p.stage >= stages.length) bad(`${where}: stage ${p.stage} outside stages[]`);
     }
@@ -155,6 +153,7 @@ function validateRoute(file) {
   stories.forEach((story, i) => {
     const where = `${label}: stories[${i}] ${story?.id || '(no id)'}`;
     if (!story.id || !story.label) bad(`${where}: missing id/label`);
+    if (story.id && !/^[a-z0-9_-]+$/.test(story.id)) bad(`${where}: invalid id`);
     const pids = storyPlaces(story);
     const sids = storyStages(story);
     if (pids !== null && pids !== undefined) {
@@ -173,7 +172,6 @@ function validateRoute(file) {
   if (scientificVariants && typeof scientificVariants === 'object' && !Array.isArray(scientificVariants)) {
     Object.entries(scientificVariants).forEach(([pid, rows]) => {
       const where = `${label}: scientific_variants.${pid}`;
-      // scientific_variants may include contextual keys that are not rendered as places; keep non-blocking.
       if (!Array.isArray(rows)) bad(`${where}: must be array`);
       else rows.forEach((row, i) => {
         if (!row || typeof row !== 'object') return bad(`${where}[${i}]: not object`);
@@ -202,45 +200,68 @@ function validateRoute(file) {
   ok(`${label}: ${places.length} places · ${stages.length} stages · ${stories.length} stories`);
 }
 
-function hasAuditPendingDesign(htmlSrc, missingCount) {
-  if (!htmlSrc) return false;
-  if (missingCount <= 0) return false;
-  // 1) An explicit explanation that some maps are pending visual audit.
-  const hasExplicitMessage = /на\s+аудите|временно\s+не\s+на\s+витрине|только\s+после\s+визуального\s+аудита/i.test(htmlSrc);
-  if (!hasExplicitMessage) return false;
-  // 2) A numeric stat that matches the missing count. Patterns observed:
-  //      <div class="karty-stat"><b>9</b><span>на аудите</span></div>
-  //      <b>9</b><span>на аудите</span>
-  // We tolerate whitespace inside the stat markup.
-  const numericMatches = [...htmlSrc.matchAll(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*на\s+аудите\s*<\/span>/gi)];
-  if (!numericMatches.length) return false;
-  return numericMatches.some(m => parseInt(m[1], 10) === missingCount);
+function sameStringSet(left, right) {
+  const a = [...left].sort();
+  const b = [...right].sort();
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+function renderedCount(htmlSrc, label) {
+  const dataMatch = htmlSrc.match(new RegExp(`data-${label}-count=["'](\\d+)["']`, 'i'));
+  const visibleMatch = label === 'audit'
+    ? htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*на\s+аудите\s*<\/span>/i)
+    : htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*карта\s+открыта\s*<\/span>/i);
+  return {
+    data: dataMatch ? Number(dataMatch[1]) : null,
+    visible: visibleMatch ? Number(visibleMatch[1]) : null,
+  };
+}
+
+function hasGovernedAuditPendingDesign({ htmlSrc, heroSrc, missingIds, inventory, isBuiltHtml }) {
+  if (!htmlSrc || !missingIds.length) return false;
+  const explicitCopy = `${htmlSrc}\n${heroSrc}`;
+  if (!/на\s+аудите|временно\s+не\s+на\s+витрине|только\s+после\s+визуального\s+аудита/i.test(explicitCopy)) return false;
+  if (!sameStringSet(missingIds, inventory.auditSlugs)) return false;
+
+  const producerIsGoverned =
+    heroSrc.includes('getKartyHubInventory') &&
+    heroSrc.includes('data-audit-count={auditCount}') &&
+    heroSrc.includes('<b>{auditCount}</b><span>на аудите</span>') &&
+    heroSrc.includes('<b>{publishedCount}</b><span>карта открыта</span>');
+  if (!producerIsGoverned) return false;
+
+  if (!isBuiltHtml) return true;
+  const audit = renderedCount(htmlSrc, 'audit');
+  const published = renderedCount(htmlSrc, 'published');
+  return audit.data === inventory.auditCount &&
+    audit.visible === inventory.auditCount &&
+    published.data === inventory.publishedCount &&
+    published.visible === inventory.publishedCount;
 }
 
 function checkAstroHub(files) {
   const routeIds = files.map(f => path.basename(path.dirname(f))).sort();
+  const inventory = getKartyHubInventory(ROOT);
+  if (!sameStringSet(routeIds, inventory.routeSlugs)) {
+    bad(`karty hub inventory mismatch: validator=${routeIds.join(',')} inventory=${inventory.routeSlugs.join(',')}`);
+  }
 
-  // 1. Check built / root HTML for actual links (shadow-wrap or legacy)
-  const htmlCandidates = [
-    path.join(ROOT, 'dist', 'karty', 'index.html'),
-    path.join(ROOT, 'karty', 'index.html'),
-  ];
-  const htmlHub = htmlCandidates.find(p => fs.existsSync(p));
-  let htmlSrc = htmlHub ? fs.readFileSync(htmlHub, 'utf8') : '';
+  const distHub = path.join(ROOT, 'dist', 'karty', 'index.html');
+  const rootHub = path.join(ROOT, 'karty', 'index.html');
+  const htmlHub = [distHub, rootHub].find(p => fs.existsSync(p));
+  const htmlSrc = htmlHub ? fs.readFileSync(htmlHub, 'utf8') : '';
+  const isBuiltHtml = htmlHub === distHub;
 
   const missingFromHtml = routeIds.filter(id => {
     const hasAbsolute = htmlSrc.includes(`/karty/${id}/`);
-    // NB: regex literals do NOT interpolate ${id}; we use new RegExp(string) instead.
-    // The previous literal /href=["']\.\/[^"']*\b${id}\b[^"']*["']/ silently searched
-    // for the literal substring "${id}" and therefore reported every route as missing.
     const hasRelative = new RegExp(`href=["']\\.\\/[^"']*\\b${id}\\b[^"']*["']`).test(htmlSrc);
     return !hasAbsolute && !hasRelative;
   });
 
-  // 2. If HTML is missing links, check Astro source for explicit slugs or shadow-wrap comments
   const astroHub = path.join(ROOT, 'src', 'pages', 'karty', 'index.astro');
-  let astroSrc = '';
-  if (fs.existsSync(astroHub)) astroSrc = fs.readFileSync(astroHub, 'utf8');
+  const heroPath = path.join(ROOT, 'src', 'components', 'karty', 'KartyHeroSection.astro');
+  const astroSrc = fs.existsSync(astroHub) ? fs.readFileSync(astroHub, 'utf8') : '';
+  const heroSrc = fs.existsSync(heroPath) ? fs.readFileSync(heroPath, 'utf8') : '';
   const isShadowWrap = astroSrc.includes('loadLegacyFullDocument');
 
   const missingFromAstro = routeIds.filter(id => {
@@ -248,24 +269,22 @@ function checkAstroHub(files) {
     return !hasSlug;
   });
 
-  // If all links exist in HTML → full parity, ok.
-  // If some missing in HTML but Astro source is shadow-wrap AND declares slugs → warn, not fail (legacy hub may intentionally show subset).
-  // If some missing in HTML and Astro source is native → fail UNLESS the hub carries
-  //   an explicit "на аудите" / "временно не на витрине" message AND the count of missing
-  //   routes matches the figure mentioned in that message. This preserves the owner design
-  //   intent (e.g. AGENTS-r252 native pilot for /karty/ keeps Avraam as the only featured map
-  //   while 9 others are explicitly listed as pending visual audit).
   if (missingFromHtml.length === 0) {
     ok(`karty hub links all live route.json maps (${routeIds.length})`);
   } else if (isShadowWrap && missingFromAstro.length === 0) {
     ok(`karty hub is shadow-wrap; legacy HTML shows subset, Astro source declares all ${routeIds.length} slugs`);
-  } else if (hasAuditPendingDesign(htmlSrc, missingFromHtml.length)) {
-    ok(`karty hub uses audit-pending design: ${missingFromHtml.length} map(s) explicitly listed as 'на аудите' / 'временно не на витрине'`);
+  } else if (hasGovernedAuditPendingDesign({
+    htmlSrc,
+    heroSrc,
+    missingIds: missingFromHtml,
+    inventory,
+    isBuiltHtml,
+  })) {
+    ok(`karty hub uses governed audit inventory: ${inventory.publishedCount} published, ${inventory.auditCount} audit-pending`);
   } else {
     missingFromHtml.forEach(id => bad(`karty hub missing clickable route card for /karty/${id}/`));
   }
 
-  // 3. Stale "soon" checks against HTML (or Astro if no HTML)
   const checkSrc = htmlSrc || astroSrc;
   const staleSoon = routeIds.filter(id => {
     const idx = checkSrc.indexOf(`/karty/${id}/`) >= 0 ? checkSrc.indexOf(`/karty/${id}/`) : checkSrc.indexOf(`./${id}/`);
@@ -287,8 +306,6 @@ function main() {
     if (fs.existsSync(f)) files.push(f);
   }
   if (!files.length) bad('No karty/*/route.json files found');
-  // Листы Атласа (sheet-движок: meta.sheet_no без meta.id) — черновики §13-бис,
-  // маршрутный контракт и карточка на хабе к ним не применяются до «ДА» владельца.
   const routeFiles = files.filter(f => {
     try {
       const probe = JSON.parse(fs.readFileSync(f, 'utf8'));
