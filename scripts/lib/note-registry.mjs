@@ -129,13 +129,28 @@ function stableRouteSlug(route) {
   return normalizeRoute(route).replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9а-яё]+/gi, '-').replace(/^-+|-+$/g, '') || 'home';
 }
 
+function nearestHeadingContext(html, marker) {
+  const prefix = html.slice(0, marker.start);
+  const headingRe = /<h([1-6])\b([^>]*)>([\s\S]*?)<\/h\1>/gi;
+  let match;
+  let last = null;
+  while ((match = headingRe.exec(prefix))) last = match;
+  if (!last) return '';
+  const attrs = parseAttributes(`<h${last[1]}${last[2]}>`);
+  const anchor = attrs.id || attrs['data-section-id'] || '';
+  return `${anchor} ${stripTags(last[3])}`.trim();
+}
+
 function authoredContext(html, marker) {
   let container = marker.parent;
   while (container && !CONTEXT_TAGS.has(container.tag)) container = container.parent;
-  if (!container) return '';
-  const before = html.slice(container.openEnd, marker.start);
-  const after = html.slice(marker.end, container.endStart);
-  return stripTags(`${before} ${after}`).slice(0, 1024);
+  const containerAnchor = container
+    ? [container.attrs.id, container.attrs['data-section-id'], container.attrs['data-source-id']].filter(Boolean).join(' ')
+    : '';
+  const local = container
+    ? stripTags(`${html.slice(container.openEnd, marker.start)} ${html.slice(marker.end, container.endStart)}`).slice(0, 1024)
+    : '';
+  return `${nearestHeadingContext(html, marker)} ${containerAnchor} ${local}`.replace(/\s+/g, ' ').trim();
 }
 
 function contentHash(route, text, context) {
