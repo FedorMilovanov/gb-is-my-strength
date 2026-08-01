@@ -122,6 +122,7 @@ function stripTags(value) {
     .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' '))
     .replace(/\s+/g, ' ')
+    .replace(/\s+([,.;:!?…])/g, '$1')
     .trim();
 }
 
