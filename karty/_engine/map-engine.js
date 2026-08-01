@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.56 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.57 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -38,6 +38,35 @@ const MapEngine = (function() {
   // Shared route palette and tab vocabulary.
   const STAGE_COLORS = ['#e8c879','#e0813f','#4a9e6e','#cf5b6b','#8b6b4a','#4a80b4'];
   const ROUTE_PATH_COLORS=Object.freeze({gold:STAGE_COLORS[0],lot:STAGE_COLORS[1],war:STAGE_COLORS[3]});
+  let baseCssLeaseCount = 0;
+
+  function getStageColor(index=0){
+    const parsed=Number(index);
+    const normalized=Number.isFinite(parsed)?Math.max(0,Math.trunc(parsed)):0;
+    if(STAGE_COLORS[normalized])return STAGE_COLORS[normalized];
+    return `hsl(${(38+normalized*47)%360} 48% 58%)`;
+  }
+
+  function clientPointToView(rect,view,clientX,clientY){
+    const width=Number(rect?.width),height=Number(rect?.height);
+    const viewW=Number(view?.w),viewH=Number(view?.h);
+    if(!(width>0&&height>0&&viewW>0&&viewH>0))return {x:Number(view?.x)||0,y:Number(view?.y)||0};
+    const scale=Math.min(width/viewW,height/viewH);
+    const offsetX=(width-viewW*scale)/2;
+    const offsetY=(height-viewH*scale)/2;
+    const localX=Number(clientX)-(Number(rect.left)||0)-offsetX;
+    const localY=Number(clientY)-(Number(rect.top)||0)-offsetY;
+    return {
+      x:(Number(view.x)||0)+clamp(localX/scale,0,viewW),
+      y:(Number(view.y)||0)+clamp(localY/scale,0,viewH)
+    };
+  }
+
+  function distanceKm(p1,p2,kmPerUnit=DEFAULTS.kmPerUnit){
+    const dx=Number(p2?.x)-Number(p1?.x),dy=Number(p2?.y)-Number(p1?.y);
+    const unit=Number(kmPerUnit);
+    return Math.sqrt(dx*dx+dy*dy)*(Number.isFinite(unit)&&unit>0?unit:DEFAULTS.kmPerUnit);
+  }
   const TAB_LABELS = {story:'Сюжет',bible:'Писание',arch:'Археология',he:'Иврит',dispute:'Дискуссия',sci:'Наука',photos:'Фото',extra:'Библ.контекст'};
   const TAB_KEYS = ['story','bible','arch','he','dispute','sci','photos','extra'];
 
@@ -463,6 +492,8 @@ const MapEngine = (function() {
     // Cleanup tracking
     const _listeners = [];
     const _timers = [];
+    let baseCssLeaseActive = false;
+    let cleanupComplete = false;
     function _on(el, ev, fn, opts) { el.addEventListener(ev, fn, opts); _listeners.push({el, ev, fn, opts}); }
     function _tm(fn, ms) { const t = setTimeout(fn, ms); _timers.push(t); return t; }
     
@@ -472,15 +503,22 @@ const MapEngine = (function() {
     }
 
     function _cleanupAll() {
+      if(cleanupComplete)return;
+      cleanupComplete=true;
       _listeners.forEach(l => { try { l.el.removeEventListener(l.ev, l.fn, l.opts); } catch(e) {} });
       _listeners.length = 0;
       _timers.forEach(t => clearTimeout(t));
       _timers.length = 0;
       cancelAnimationFrame(rafId);
       if (tourTimer) clearTimeout(tourTimer);
-      // Remove injected CSS
-      const css = document.getElementById('me-base-css');
-      if (css) css.remove();
+      if(baseCssLeaseActive){
+        baseCssLeaseActive=false;
+        baseCssLeaseCount=Math.max(0,baseCssLeaseCount-1);
+        if(baseCssLeaseCount===0){
+          const css=document.getElementById('me-base-css');
+          if(css)css.remove();
+        }
+      }
     }
     const initVp = initialState.viewport || [cfg.W0/2,cfg.H0/2,cfg.W0];
     const rawCx=Number(initVp[0]),rawCy=Number(initVp[1]),rawW=Number(initVp[2]);
@@ -868,6 +906,8 @@ const MapEngine = (function() {
       `;
       document.head.appendChild(css);
     }
+    baseCssLeaseCount+=1;
+    baseCssLeaseActive=true;
 
     // Build DOM
     container.innerHTML='';
@@ -1017,7 +1057,7 @@ _on(searchInput,'input',()=>{
       }
       if (match) matchCount++;
       // Pulse the dot of matching marker
-      const dot = g.querySelector('circle:nth-child(3)');
+      const dot = g.querySelector('.me-marker-dot');
       if (dot && match) {
         dot.style.transition = 'r .15s cubic-bezier(.34,1.56,.64,1)';
         dot.setAttribute('r', '7');
@@ -1112,7 +1152,7 @@ header.appendChild(shareBtn);
       (route.stages||[]).forEach((st, i) => {
         const item = document.createElement('div');
         item.className = 'me-timeline__item';
-        item.innerHTML = `<span class="me-timeline__dot" style="background:${STAGE_COLORS[i]}"></span><span class="me-timeline__era">${esc(st.n)}</span><span class="me-timeline__label">${esc(st.age||st.t||'')}</span>`;
+        item.innerHTML = `<span class="me-timeline__dot" style="background:${getStageColor(i)}"></span><span class="me-timeline__era">${esc(st.n)}</span><span class="me-timeline__label">${esc(st.age||st.t||'')}</span>`;
         item.addEventListener('click', () => {
           const place = (route.places||[]).find(p => p.stage === i && visiblePlaces().some(v => v.id === p.id));
           if (place) open(place.id);
@@ -1138,7 +1178,7 @@ header.appendChild(shareBtn);
       route.timeline.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'me-life__item';
-        const clr = item.color || STAGE_COLORS[item.stage||0] || STAGE_COLORS[0];
+        const clr = item.color || getStageColor(item.stage||0);
         div.style.setProperty('--me-life-clr', clr);
         div.innerHTML = `<span class="me-life__dot" style="background:${clr}"></span><span class="me-life__era">${esc(item.era||'')}</span><span class="me-life__label">${esc(item.label||'')}</span>`;
         div.addEventListener('click', () => {
@@ -1155,7 +1195,7 @@ header.appendChild(shareBtn);
   
     // Zoom controls
     const zoomControls=document.createElement('div');zoomControls.className='me-zoom';
-    zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button><button class="me-zoom-btn" id="me-ruler-btn" title="Измерить расстояние" style="font-size:12px">⟍</button>';
+    zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button><button class="me-zoom-btn" data-measure title="Измерить расстояние" aria-pressed="false" style="font-size:12px">↔</button>';
     container.appendChild(zoomControls);
     // Zoom with hold-to-repeat
     let zoomRepeatTimer = null;
@@ -1268,7 +1308,7 @@ header.appendChild(shareBtn);
     }
     // Legend
 const legend=document.createElement('div');legend.className='me-legend';
-const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${STAGE_COLORS[i]}"></span>${st.t||''}</div>`).join('');
+const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${getStageColor(i)}"></span>${st.t||''}</div>`).join('');
 const sigLegend=route.signature?`<div class="me-legend__item me-legend__item--signature me-signature-note" data-signature-note="${esc(route.signature.type||'')}"><span class="me-legend__dot" style="background:#e8c879;box-shadow:0 0 8px rgba(232,200,121,.55)"></span><span class="me-legend__sig-body"><span class="me-legend__sig-label">${esc(route.signature.label||'Сигнатура карты')}</span>${route.signature.description?`<span class="me-legend__sig-desc">${esc(route.signature.description)}</span>`:''}</span></div>`:'';
 legend.innerHTML=`<div class="me-legend__title">Этапы <span class="me-legend__arrow">▾</span></div>${legendItems}${sigLegend}`;
 // Legend arrow rotation on expand
@@ -1295,7 +1335,7 @@ container.appendChild(panel);
         dot.setAttribute('cx', place.x);
         dot.setAttribute('cy', place.y);
         dot.setAttribute('r', '2.5');
-        dot.setAttribute('fill', STAGE_COLORS[place.stage||0]||'#888');
+        dot.setAttribute('fill', getStageColor(place.stage||0));
         dot.setAttribute('opacity', '0.7');
         mmDots.appendChild(dot);
       });
@@ -1388,7 +1428,7 @@ container.appendChild(panel);
       layerDefinitions.forEach((layer,i)=>{
         const id=String(layer.id||'');
         const row=document.createElement('div');row.className='me-layers__row';row.setAttribute('data-layer-id',id);
-        const color=layer.color||STAGE_COLORS[i]||'#888';
+        const color=layer.color||getStageColor(i);
         row.innerHTML=`<span class="me-layers__dot" style="background:${color}"></span><span class="me-layers__name">${esc(layer.label||id)}</span>`;
         const toggle=document.createElement('button');
         const enabled=layerState.get(id)!==false;
@@ -1493,7 +1533,7 @@ container.appendChild(panel);
       }
 
       function resolveRoutePathColor(colorKey,stageIndex){
-        const fallback=STAGE_COLORS[stageIndex]||STAGE_COLORS[0];
+        const fallback=getStageColor(stageIndex);
         const key=String(colorKey||'').trim();
         if(!key||key==='stage')return fallback;
         if(ROUTE_PATH_COLORS[key])return ROUTE_PATH_COLORS[key];
@@ -1507,8 +1547,7 @@ container.appendChild(panel);
         element.setAttribute('data-layer-any',membership.any.join(' '));
       }
 
-      function ensureAuthoredArrowMarker(stageIndex,pathIndex,color){
-        const id='me-arrow-authored-'+stageIndex+'-'+pathIndex;
+      function ensureRouteArrowMarker(id,color){
         if(defs.querySelector('#'+id))return id;
         const marker=document.createElementNS('http://www.w3.org/2000/svg','marker');
         marker.setAttribute('id',id);marker.setAttribute('markerWidth','10');marker.setAttribute('markerHeight','8');
@@ -1519,12 +1558,20 @@ container.appendChild(panel);
         return id;
       }
 
+      function ensureAuthoredArrowMarker(stageIndex,pathIndex,color){
+        return ensureRouteArrowMarker('me-arrow-authored-'+stageIndex+'-'+pathIndex,color);
+      }
+
+      function ensureGeneratedArrowMarker(stageIndex,pathIndex,color){
+        return ensureRouteArrowMarker('me-arrow-generated-'+stageIndex+'-'+pathIndex,color);
+      }
+
       function appendRenderedRoutePath(stageIndex,pathIndex,spec,membership){
         const color=resolveRoutePathColor(spec.colorKey,stageIndex);
         const sourceKind=spec.source||'generated';
         const markerId=sourceKind==='authored'
           ?ensureAuthoredArrowMarker(stageIndex,pathIndex,color)
-          :'me-arrow-'+(STAGE_COLORS[stageIndex]?stageIndex:0);
+          :ensureGeneratedArrowMarker(stageIndex,pathIndex,color);
         const common=(element,kind,className)=>{
           element.setAttribute('d',spec.d);element.setAttribute('fill','none');element.setAttribute('stroke',color);
           element.setAttribute('stroke-linecap','round');element.setAttribute('stroke-linejoin','round');
@@ -1757,7 +1804,7 @@ container.appendChild(panel);
       allPlaces.forEach(place=>{
         const inStory=visIds.has(place.id);
         const isActive=place.id===activePlaceId;
-        const color=STAGE_COLORS[place.stage]||STAGE_COLORS[0];
+        const color=getStageColor(place.stage);
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
         g.setAttribute('transform',`translate(${place.x},${place.y})`);
         g.setAttribute('data-place-id', place.id);
@@ -1767,8 +1814,8 @@ container.appendChild(panel);
         g.setAttribute('data-layer-any',membership.any.join(' '));
         g.setAttribute('data-layer-main','');
         g.style.cursor=inStory?'pointer':'default';
-        g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('circle:nth-child(3)');if(d){d.setAttribute('r','6');d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
-        g.addEventListener('mouseleave',()=>{const d=g.querySelector('circle:nth-child(3)');if(d){d.setAttribute('r',(place.id===activePlaceId)?'7':'4.5');d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity',(place.id===activePlaceId)?'0.5':'0');r2.setAttribute('r','12');}});
+        g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r','6');d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
+        g.addEventListener('mouseleave',()=>{const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',(place.id===activePlaceId)?'7':'4.5');d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity',(place.id===activePlaceId)?'0.5':'0');r2.setAttribute('r','12');}});
         g.style.opacity=inStory?'1':'.15';
         if(inStory){
               // Long-press detection for quick info tooltip
@@ -1797,7 +1844,7 @@ container.appendChild(panel);
       });
       g.addEventListener('pointerup', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
       g.addEventListener('pointerleave', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
-      g.addEventListener('click',()=>{if(longPressFired){longPressFired=false;return;}haptic();addRipple(svg,place.x,place.y,STAGE_COLORS[place.stage]);const d2=g.querySelector('circle:nth-child(3)');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
+      g.addEventListener('click',()=>{if(longPressFired){longPressFired=false;return;}haptic();addRipple(svg,place.x,place.y,getStageColor(place.stage));const d2=g.querySelector('.me-marker-dot');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
         g.addEventListener('dblclick',(e)=>{e.preventDefault();e.stopPropagation();flyTo(place.x,place.y,Math.min(view.w,450),600);});
       }
         
@@ -1830,7 +1877,7 @@ container.appendChild(panel);
         }
         dot.setAttribute('stroke',isActive?color:'#0b0f16');dot.setAttribute('stroke-width','2.5');
         dot.setAttribute('filter',isActive?'url(#me-glow-strong)':'url(#me-shadow)');
-        dot.classList.add('me-marker-spring');
+        dot.classList.add('me-marker-dot','me-marker-spring');
         dot.style.transition = 'r .2s ease, fill .2s ease, filter .2s ease';
         g.appendChild(dot);
         
@@ -1942,14 +1989,14 @@ container.appendChild(panel);
 
       // Head
       head.innerHTML=`
-        <div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${STAGE_COLORS[place.stage]||STAGE_COLORS[0]}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
+        <div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${getStageColor(place.stage)}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
         <div class="me-panel__name">${esc(place.name)}</div>
         ${place.he?`<div class="me-panel__he">${esc(place.he)}</div>`:''}
         ${place.kick?`<div class="me-panel__kick">${esc(place.kick)}</div>`:''}
         <div class="me-panel__meta">
           ${place.id1?`<span>${esc(place.id1)}</span>`:''}
           ${place.ep1?`<span>${esc(place.ep1)}</span>`:''}
-          ${stage?`<span style="border-color:${STAGE_COLORS[place.stage]||STAGE_COLORS[0]};color:${STAGE_COLORS[place.stage]||STAGE_COLORS[0]}">${esc(stage.n||'')}</span>`:''}
+          ${stage?`<span style="border-color:${getStageColor(place.stage)};color:${getStageColor(place.stage)}">${esc(stage.n||'')}</span>`:''}
           ${place.dispute?`<span style="border-color:rgba(207,128,112,.5);color:#cf8070">⚡ дискуссия</span>`:''}
           ${place.photos&&place.photos.length?`<span>📷 ${place.photos.length}</span>`:''}
         </div>`;
@@ -1981,7 +2028,7 @@ container.appendChild(panel);
         const relatedPlaces = relatedIds.map(rid => (route.places||[]).find(p => p.id === rid)).filter(Boolean);
         if (relatedPlaces.length > 0) {
           const relatedHtml = relatedPlaces.map(rp => {
-            const rc = STAGE_COLORS[rp.stage||0]||STAGE_COLORS[0];
+            const rc = getStageColor(rp.stage||0);
             return `<span class="me-related-chip" data-pid="${esc(rp.id)}" style="display:inline-block;padding:3px 10px;margin:2px 4px;border-radius:999px;border:1px solid ${rc};color:${rc};font-size:10px;cursor:pointer;transition:all .15s">${esc(rp.name)}</span>`;
           }).join('');
           const relatedSection = document.createElement('div');
@@ -2055,16 +2102,7 @@ container.appendChild(panel);
             <div><img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy" class="me-clickable-photo" data-src="${esc(ph.src||'')}" data-label="${esc(ph.label||'')}" data-credit="${esc(ph.credit||'')}">
             <div class="me-photo-label">${esc(ph.label||'')} · ${esc(ph.credit||'')}</div></div>
           `).join('');
-          // Wire up click-to-enlarge
-          content.querySelectorAll('.me-clickable-photo').forEach(img => {
-            img.style.cursor = 'pointer';
-            img.addEventListener('click', () => {
-              const src = img.dataset.src;
-              const label = img.dataset.label;
-              const credit = img.dataset.credit;
-              if (src) openPhoto(src, label, credit);
-            });
-          });
+          content.querySelectorAll('.me-clickable-photo').forEach(img => { img.style.cursor = 'pointer'; });
         } else {
           // Multi-photo gallery with dots
           const photosHtml = photos.map((ph,i) => `
@@ -2310,7 +2348,7 @@ container.appendChild(panel);
 
     function renderStages(){
       stagesBar.innerHTML=(route.stages||[]).map((st,i)=>`
-        <div class="me-stage-dot" style="color:${STAGE_COLORS[i]};cursor:pointer" data-stage="${i}">${esc(st.n||'')}</div>
+        <div class="me-stage-dot" style="color:${getStageColor(i)};cursor:pointer" data-stage="${i}">${esc(st.n||'')}</div>
       `).join('');
       // Click stage dot → open first place of that stage
       stagesBar.querySelectorAll('.me-stage-dot').forEach(dot => {
@@ -2520,13 +2558,15 @@ container.appendChild(panel);
       });
     }
     
-    // Make photos in panel clickable via delegation
-    panel.addEventListener('click', e => {
-      const img = e.target.closest('img');
-      if (!img || !img.src || !panel.contains(img)) return;
-      const container = img.closest('div');
-      const label = container?.querySelector('.me-photo-label');
-      openPhoto(img.src, label?.textContent || '', '');
+    // One gallery owner: delegation opens the canonical full-size source once.
+    _on(panel,'click',e=>{
+      const img=e.target.closest('img');
+      if(!img||!panel.contains(img))return;
+      const src=img.dataset.src||img.currentSrc||img.src;
+      if(!src)return;
+      const photoContainer=img.closest('div');
+      const label=img.dataset.label||photoContainer?.querySelector('.me-photo-label')?.textContent||'';
+      openPhoto(src,label,img.dataset.credit||'');
     });
 
     
@@ -2573,6 +2613,7 @@ container.appendChild(panel);
     function toggleMeasure() {
       measuring = !measuring;
       canvas.style.cursor = measuring ? 'crosshair' : '';
+      measureBtn?.setAttribute('aria-pressed',measuring?'true':'false');
       if (!measuring) {
         measureStart = null;
         measureLine.setAttribute('display','none');
@@ -2581,19 +2622,11 @@ container.appendChild(panel);
     }
     
     function svgPoint(e) {
-      const rect = canvas.getBoundingClientRect();
-      const sc = rect.width / view.w;
-      return {
-        x: view.x + (e.clientX - rect.left) / sc,
-        y: view.y + (e.clientY - rect.top) / sc
-      };
+      return clientPointToView(canvas.getBoundingClientRect(),view,e.clientX,e.clientY);
     }
     
-    function kmBetween(p1, p2) {
-      const dx = p2.x - p1.x;
-      const dy = p2.y - p1.y;
-      const svgDist = Math.sqrt(dx*dx + dy*dy);
-      return (svgDist * 0.92).toFixed(0); // 1 SVG unit ≈ 0.92 km
+    function kmBetween(p1,p2) {
+      return distanceKm(p1,p2,cfg.kmPerUnit).toFixed(0);
     }
     
     canvas.addEventListener('click', e => {
@@ -2624,15 +2657,8 @@ container.appendChild(panel);
       measureLine.setAttribute('y2', pt.y);
     });
     
-    // Add measure button to zoom controls
-    if (zoomControls) {
-      const measureBtn = document.createElement('button');
-      measureBtn.className = 'me-zoom-btn';
-      measureBtn.title = 'Измерить расстояние';
-      measureBtn.textContent = '↔';
-      measureBtn.addEventListener('click', toggleMeasure);
-      zoomControls.appendChild(measureBtn);
-    }
+    const measureBtn=zoomControls.querySelector('[data-measure]');
+    if(measureBtn)_on(measureBtn,'click',toggleMeasure);
 
     // ── Keyboard ──
     // v0.53 (D-3): рудимент me-hint удалён — дублировал me-shortcuts слово в слово,
@@ -2755,7 +2781,7 @@ container.appendChild(panel);
           g.style.transform = orig;
         });
         // Add spring animation to marker dots
-        const dot = g.querySelector('circle:nth-child(3)');
+        const dot = g.querySelector('.me-marker-dot');
         if (dot) {
           dot.style.animation = `meSpringIn .5s ${i * 60 + 50}ms cubic-bezier(.34,1.56,.64,1) both`;
           dot.addEventListener('animationend', function() { this.style.animation = ''; }, {once: true});
@@ -2907,9 +2933,10 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     parseMapStateFromLocation,resolveInitialMapState,buildMapStateUrl,
     normalizeLayerTokens,getPlaceLayerMembership,getStageLayerMembership,getMapThemePalette,
+    getStageColor,clientPointToView,distanceKm,
     // v0.3 rendering
     createMap,
-    version:'0.56.0',buildDate:'2026-07-25'
+    version:'0.57.0',buildDate:'2026-08-01'
   };
 })();
 
