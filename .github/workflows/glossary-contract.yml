@@ -132,6 +132,7 @@ jobs:
         run: |
           node --check js/glossary.js
           node --check scripts/glossary-contract-audit.js
+          node --check scripts/glossary-trust-boundary-source-test.js
           node --check scripts/reference-system-inventory.js
           node --check scripts/tooltip-icon-audit.js
 
@@ -154,6 +155,7 @@ jobs:
         run: |
           set -o pipefail
           node scripts/glossary-contract-audit.js 2>&1 | tee reports/glossary-contract.log
+          node scripts/glossary-trust-boundary-source-test.js 2>&1 | tee reports/glossary-trust-boundary.log
           node scripts/reference-system-inventory.js 2>&1 | tee reports/reference-system-inventory.log
 
       - name: Audit tooltip markers and styles
@@ -200,10 +202,13 @@ jobs:
       - name: Check browser fixtures
         run: |
           node --check scripts/glossary-runtime-browser-test.js
+          node --check scripts/glossary-security-browser-test.js
           node --check scripts/tooltip-marker-browser-test.js
 
-      - name: Run glossary browser fixture
-        run: node scripts/glossary-runtime-browser-test.js
+      - name: Run glossary browser fixtures
+        run: |
+          node scripts/glossary-runtime-browser-test.js
+          node scripts/glossary-security-browser-test.js
 
       - name: Run tooltip marker interactions
         shell: bash
