@@ -139,40 +139,57 @@ async function closeMobileTip(page) {
     return { method: 'explicit-close-control', point: box, target };
   }
 
-  const tip = page.locator('body > .gb-floating-tip.is-open').first();
-  if (await tip.count() !== 1 || !await tip.isVisible().catch(() => false)) {
-    throw new Error('active mobile tooltip is missing or not visible');
-  }
-  const safePoint = await tip.evaluate((node) => {
-    const interactive = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
-    const rect = node.getBoundingClientRect();
-    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-    const xs = [rect.left + 18, rect.left + rect.width / 2, rect.right - 18];
-    const ys = [rect.top + 18, rect.top + 36, rect.top + rect.height / 2, rect.bottom - 18];
-    for (const rawY of ys) {
-      for (const rawX of xs) {
-        const x = clamp(rawX, 1, innerWidth - 1);
-        const y = clamp(rawY, 1, innerHeight - 1);
-        const hit = document.elementFromPoint(x, y);
-        if (!hit || !(hit === node || node.contains(hit)) || hit.closest(interactive)) continue;
-        return {
-          x,
-          y,
-          direct: true,
-          tag: hit.tagName.toLowerCase(),
-          id: hit.id || '',
-          className: [...hit.classList].slice(0, 5).join(' '),
-        };
-      }
+  const outsidePoint = await page.evaluate(() => {
+    const activeTip = document.querySelector('body > .gb-floating-tip.is-open');
+    if (!activeTip) return { direct: false, reason: 'active-tip-missing' };
+    const controllers = Array.isArray(window.SiteUtils?._tooltipControllers)
+      ? window.SiteUtils._tooltipControllers
+      : [];
+    const candidates = [
+      [8, 8],
+      [innerWidth - 8, 8],
+      [8, Math.max(8, Math.min(innerHeight - 8, innerHeight / 2))],
+      [innerWidth - 8, Math.max(8, Math.min(innerHeight - 8, innerHeight / 2))],
+      [innerWidth / 2, 8],
+    ];
+    for (const [rawX, rawY] of candidates) {
+      const x = Math.max(1, Math.min(innerWidth - 1, rawX));
+      const y = Math.max(1, Math.min(innerHeight - 1, rawY));
+      const hit = document.elementFromPoint(x, y);
+      if (!hit || activeTip.contains(hit)) continue;
+      const owned = controllers.some((controller) => {
+        const anchorSel = controller?.anchorSel;
+        const tipSel = controller?.tipSel;
+        return Boolean(
+          (anchorSel && hit.closest?.(anchorSel)) ||
+          (tipSel && hit.closest?.(tipSel))
+        );
+      });
+      if (owned) continue;
+      return {
+        x,
+        y,
+        direct: true,
+        tag: hit.tagName.toLowerCase(),
+        id: hit.id || '',
+        className: [...hit.classList].slice(0, 5).join(' '),
+      };
     }
-    return { direct: false, rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom } };
+    const rect = activeTip.getBoundingClientRect();
+    return {
+      direct: false,
+      reason: 'no-safe-outside-point',
+      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+    };
   });
-  if (!safePoint.direct) throw new Error(`mobile tooltip has no safe non-interactive close point: ${JSON.stringify(safePoint)}`);
-  await page.touchscreen.tap(safePoint.x, safePoint.y);
+  if (!outsidePoint.direct) {
+    throw new Error(`mobile tooltip has no safe outside close point: ${JSON.stringify(outsidePoint)}`);
+  }
+  await page.touchscreen.tap(outsidePoint.x, outsidePoint.y);
   return {
-    method: 'tip-body-touch',
-    point: { x: safePoint.x, y: safePoint.y },
-    target: safePoint,
+    method: 'outside-touch',
+    point: { x: outsidePoint.x, y: outsidePoint.y },
+    target: outsidePoint,
   };
 }
 
