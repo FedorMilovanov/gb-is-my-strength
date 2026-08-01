@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gospod-bog.ru/schemas/editorial-metadata-v3.schema.json",
+  "title": "Editorial Metadata v3 registry",
+  "type": "object",
+  "required": ["version", "policy", "sourceCommit", "records"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "enum": [1, 3]
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "model",
+        "freezeMode",
+        "approvedRecordsRequireProjectionConvergence",
+        "technicalCommitsMayChangeEditorialDates"
+      ],
+      "properties": {
+        "model": { "const": "editorial-time-is-not-build-time" },
+        "freezeMode": { "type": "string", "minLength": 1 },
+        "approvedRecordsRequireProjectionConvergence": { "const": true },
+        "technicalCommitsMayChangeEditorialDates": { "const": false }
+      },
+      "additionalProperties": true
+    },
+    "sourceCommit": { "type": "string", "minLength": 1 },
+    "records": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/record" }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "nullableDateTime": {
+      "oneOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ]
+    },
+    "observations": {
+      "type": "object",
+      "properties": {
+        "visiblePublishedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "visibleModifiedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "metaPublishedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "metaModifiedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "jsonLdPublishedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "jsonLdModifiedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "searchPublishedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "searchModifiedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "sitemapLastmod": { "$ref": "#/$defs/nullableDateTime" },
+        "rssPublishedAt": { "$ref": "#/$defs/nullableDateTime" }
+      },
+      "additionalProperties": true
+    },
+    "record": {
+      "type": "object",
+      "required": [
+        "route",
+        "canonical",
+        "metadataSource",
+        "contentType",
+        "editorialPublishedAt",
+        "editorialModifiedAt",
+        "originalWorkPublishedAt",
+        "reviewStatus",
+        "provenance",
+        "observations"
+      ],
+      "properties": {
+        "route": { "type": "string", "pattern": "^/(?:.*?/)?$" },
+        "canonical": { "type": "string", "format": "uri" },
+        "title": { "type": "string" },
+        "metadataSource": { "type": "string", "minLength": 1 },
+        "contentType": { "type": "string", "minLength": 1 },
+        "editorialPublishedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "editorialModifiedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "originalWorkPublishedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "reviewStatus": {
+          "enum": [
+            "migration-freeze-unverified",
+            "inconsistent-needs-review",
+            "approved"
+          ]
+        },
+        "provenance": { "type": "string", "minLength": 1 },
+        "observations": { "$ref": "#/$defs/observations" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

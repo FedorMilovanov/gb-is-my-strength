@@ -14,11 +14,18 @@ const {
   writeRegistry,
   validateRecordShape,
 } = require('./lib/editorial-metadata');
+const {
+  validateRegistryV3,
+  projectRegistryToDist,
+} = require('./lib/editorial-metadata-v3');
 
 const WRITE = process.argv.includes('--write');
-const CHECK = process.argv.includes('--check') || !WRITE;
+const PROJECT_DIST = process.argv.includes('--project-dist');
+const DRY_RUN = process.argv.includes('--dry-run');
+const CHECK = process.argv.includes('--check') || (!WRITE && !PROJECT_DIST);
 const BUILD = process.argv.includes('--build');
-const DIST = path.join(ROOT, 'dist');
+const DIST_ARG = process.argv.find((arg) => arg.startsWith('--dist='));
+const DIST = path.resolve(ROOT, DIST_ARG ? DIST_ARG.slice('--dist='.length) : 'dist');
 
 function gitHead() {
   try {
@@ -63,7 +70,7 @@ function validateRegistry(registry) {
     if (!eligibleRoutes.has(route)) errors.push(`${route}: registry record has no eligible production route`);
     for (const problem of validateRecordShape(registry.records[route], route)) errors.push(`${route}: ${problem}`);
   }
-  return errors;
+  return [...errors, ...validateRegistryV3(registry)];
 }
 
 function materializeRegistry() {
@@ -99,12 +106,48 @@ function checkRegistry() {
     errors.forEach((error) => console.error(`  - ${error}`));
     process.exit(1);
   }
-  console.log('✅ Editorial metadata registry is structurally complete');
+  console.log('✅ Editorial metadata registry is structurally and semantically complete');
+}
+
+function projectDist() {
+  const registry = readRegistry();
+  const errors = validateRegistryV3(registry);
+  if (errors.length) throw new Error(`Editorial Metadata v3 invalid:\n- ${errors.join('\n- ')}`);
+
+  const approvedRecords = Object.fromEntries(
+    Object.entries(registry.records || {}).filter(([, record]) => record.reviewStatus === 'approved')
+  );
+  const totalRecords = Object.keys(registry.records || {}).length;
+  const blockedRecords = totalRecords - Object.keys(approvedRecords).length;
+  const report = projectRegistryToDist({
+    distRoot: DIST,
+    dryRun: DRY_RUN,
+    registry: { ...registry, records: approvedRecords },
+  });
+  report.totalRegistryRecords = totalRecords;
+  report.approvedRecords = Object.keys(approvedRecords).length;
+  report.blockedEditorialReview = blockedRecords;
+  if (!DRY_RUN) {
+    const reportFile = path.join(ROOT, 'reports', 'editorial-metadata-v3-projection.json');
+    fs.writeFileSync(reportFile, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  }
+
+  console.log('=== Editorial Metadata v3 Projection ===');
+  console.log(`Registry records: ${report.totalRegistryRecords}`);
+  console.log(`Approved/blocked: ${report.approvedRecords}/${report.blockedEditorialReview}`);
+  console.log(`HTML matched/changed: ${report.htmlMatched}/${report.htmlChanged}`);
+  console.log(`Search manifest matched: ${report.searchManifestMatched}`);
+  console.log(`Sitemap files/routes: ${report.sitemapFiles}/${report.sitemapMatched}`);
+  console.log(`RSS matched: ${report.rssMatched}`);
+  console.log(`Unknown publication/modification dates: ${report.unknownPublished}/${report.unknownModified}`);
+  console.log(`Technical build instant: ${report.technicalBuildInstant}`);
+  console.log(DRY_RUN ? '✅ Editorial Metadata v3 dry-run passed' : '✅ Editorial Metadata v3 projected approved decisions to final dist');
 }
 
 try {
   if (WRITE) materializeRegistry();
   if (CHECK) checkRegistry();
+  if (PROJECT_DIST) projectDist();
 } catch (error) {
   console.error(`❌ ${error.message}`);
   process.exit(1);

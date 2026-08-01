@@ -6,8 +6,14 @@ on:
       - main
     paths:
       - 'data/editorial-metadata.json'
+      - 'data/editorial-metadata.schema.json'
+      - 'data/editorial-metadata-migration-inventory.json'
       - 'scripts/editorial-metadata-*.js'
       - 'scripts/lib/editorial-metadata.js'
+      - 'scripts/lib/editorial-metadata-v3.js'
+      - 'scripts/astro-cache-bust-postbuild.js'
+      - 'scripts/rss-feed-normalizer.js'
+      - 'scripts/rss-feed-normalizer-test.js'
       - 'scripts/update-meta.js'
       - 'scripts/cache-bust.js'
       - '.github/workflows/editorial-metadata-v3.yml'
@@ -44,8 +50,13 @@ jobs:
       - name: Validate editorial workflow transaction contract
         run: node scripts/editorial-metadata-workflow-contract-test.js
 
-      - name: Validate registry refresh preserves editorial decisions
-        run: node scripts/editorial-metadata-registry-preservation-test.js
+      - name: Validate registry preservation and approval gate
+        run: |
+          node scripts/editorial-metadata-registry-preservation-test.js
+          node scripts/editorial-metadata-v3-approval-gate-test.js
+
+      - name: Validate RSS technical clock contract
+        run: node scripts/rss-feed-normalizer-test.js
 
       - name: Build production metadata surface and preserve committed freeze
         shell: bash
@@ -55,6 +66,14 @@ jobs:
           npm run strangler:build:production-like 2>&1 \
             | tee reports/editorial-metadata-build.log
           cp data/editorial-metadata.json reports/editorial-metadata-frozen.json
+
+      - name: Require final dist projection evidence and idempotence
+        shell: bash
+        run: |
+          test -f reports/editorial-metadata-v3-projection.json
+          node scripts/editorial-metadata-registry.js --project-dist --dry-run \
+            | tee reports/editorial-metadata-v3-idempotence.log
+          cat reports/editorial-metadata-v3-projection.json
 
       - name: Validate committed registry structure
         run: node scripts/editorial-metadata-registry.js --check
@@ -113,9 +132,13 @@ jobs:
           name: editorial-metadata-v3-${{ github.run_id }}
           path: |
             reports/editorial-metadata-*.log
+            reports/editorial-metadata-v3-projection.json
+            reports/editorial-metadata-v3-idempotence.log
             reports/editorial-metadata-frozen.json
             reports/editorial-metadata-observed.json
             reports/editorial-metadata-diff.json
             reports/asset-revision-drift.log
+            data/editorial-metadata.schema.json
+            data/editorial-metadata-migration-inventory.json
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
