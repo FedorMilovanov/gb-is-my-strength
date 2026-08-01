@@ -1,9 +1,9 @@
 name: Retire Superseded A03 Support Branches
 
 on:
-  push:
+  pull_request:
     branches:
-      - audit/a03-controller-ownership-20260801
+      - main
     paths:
       - .github/workflows/a03-controller-forensic.yml
 
@@ -13,10 +13,12 @@ permissions:
 
 jobs:
   retire:
+    if: github.head_ref == 'audit/a03-controller-ownership-20260801'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: true
           fetch-depth: 0
       - name: Verify exact dispositions
@@ -38,12 +40,12 @@ jobs:
           api = 'https://api.github.com/repos/' + repo
 
           def get(path):
-              req = urllib.request.Request(api + path, headers={
+              request = urllib.request.Request(api + path, headers={
                   'Authorization': 'Bearer ' + token,
                   'Accept': 'application/vnd.github+json',
                   'X-GitHub-Api-Version': '2022-11-28',
               })
-              with urllib.request.urlopen(req) as response:
+              with urllib.request.urlopen(request) as response:
                   return json.load(response)
 
           def git(*args):
@@ -61,7 +63,7 @@ jobs:
               if opened:
                   raise SystemExit(f'{branch}: still has open PR(s)')
 
-          p721, p722, p726, p728 = (get(f'/pulls/{n}') for n in (721, 722, 726, 728))
+          p721, p722, p726, p728 = (get(f'/pulls/{number}') for number in (721, 722, 726, 728))
           if not (p721['state'] == 'closed' and p721['merged_at'] is None and p721['head']['sha'] == expected['fix/diotrophes-wave11-bounded-diff-guard-20260801']):
               raise SystemExit('PR #721 disposition mismatch')
           if not (p722['state'] == 'closed' and p722['merged_at'] is None and p722['head']['sha'] == expected['agent/mobile-webkit-a11y-20260801']):
