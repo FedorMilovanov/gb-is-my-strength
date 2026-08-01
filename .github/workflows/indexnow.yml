@@ -38,8 +38,14 @@ jobs:
         with:
           node-version: '22.23.1'
 
-      - name: Validate registry structure
-        run: node scripts/editorial-metadata-registry.js --check
+      - name: Validate Metadata v3 syntax and registry structure
+        run: |
+          node --check scripts/lib/editorial-metadata-v3.js
+          node --check scripts/editorial-metadata-registry.js
+          node scripts/editorial-metadata-registry.js --check
+
+      - name: Run Metadata v3 adversarial projection contract
+        run: node scripts/editorial-metadata-registry-preservation-test.js
 
       - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
