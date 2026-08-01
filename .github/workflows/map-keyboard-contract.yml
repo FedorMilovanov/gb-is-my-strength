@@ -45,23 +45,25 @@ jobs:
           const fs = require('node:fs');
           const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
           const required = [
-            'map-engine.js v0.56',
-            "version:'0.56.0',buildDate:'2026-07-25'",
+            'map-engine.js v0.57',
+            "version:'0.57.0',buildDate:'2026-08-01'",
             'cfg.archaeologyProjection',
             'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
             '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
             'min-height:0;overflow-y:auto;overscroll-behavior:contain',
             'width:420px;max-height:calc(100% - 24px)',
             'const ROUTE_PATH_COLORS=Object.freeze',
-            'const fallback=STAGE_COLORS[stageIndex]||STAGE_COLORS[0]',
-            ":'me-arrow-'+(STAGE_COLORS[stageIndex]?stageIndex:0)",
+            'const fallback=getStageColor(stageIndex);',
+            'function ensureGeneratedArrowMarker(stageIndex,pathIndex,color)',
+            "const markerId=sourceKind==='authored'",
             "source:'authored'",
             "source:'generated'",
             'data-route-source',
             'data-route-dash',
             "common(under,'underlay','me-route-underlay')",
             "common(path,'main','me-route-main')",
-            'me-arrow-authored-'
+            'me-arrow-authored-',
+            'me-arrow-generated-'
           ];
           const missing = required.filter((needle) => !source.includes(needle));
           const staleLegacyArchaeology = /ARCHAEOLOGY_REFERENCES|_classifySource|_renderArchaeologyFooter/.test(source);
@@ -69,7 +71,7 @@ jobs:
             console.error('Missing or stale map source contract:', {missing, staleModulo: source.includes('stageIndex%STAGE_COLORS.length'), staleLegacyArchaeology});
             process.exit(1);
           }
-          console.log('PASS source map viewport, authored-path and v0.56 projection contracts');
+          console.log('PASS source map viewport, authored-path and v0.57 projection contracts');
           NODE
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml
