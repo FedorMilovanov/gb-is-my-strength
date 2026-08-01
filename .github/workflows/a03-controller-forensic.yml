@@ -14,13 +14,21 @@ jobs:
   enumerate:
     if: github.head_ref == 'audit/a03-controller-ownership-20260801'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: true
           fetch-depth: 0
-      - name: Enumerate controller registrations
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - run: npm ci
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+      - name: Enumerate source and dist controller registrations
         shell: bash
         run: |
           set -euo pipefail
@@ -29,37 +37,39 @@ jobs:
           from pathlib import Path
           import json, re, subprocess
 
-          root = Path('.')
+          roots = [Path('js'), Path('src'), Path('scripts'), Path('dist')]
           allowed = {'.js', '.mjs', '.cjs', '.astro', '.html'}
-          excluded = {'.git', 'node_modules', 'dist', 'reports'}
           rows = []
-          for path in sorted(root.rglob('*')):
-              if not path.is_file() or path.suffix not in allowed:
+          tokens = ('makeTooltipController', '_tooltipControllers', 'mobileSheet')
+          for root in roots:
+              if not root.exists():
                   continue
-              if any(part in excluded for part in path.parts):
-                  continue
-              try:
-                  text = path.read_text(encoding='utf-8')
-              except Exception:
-                  continue
-              for match in re.finditer(r'makeTooltipController\s*\(', text):
-                  start = max(0, match.start() - 320)
-                  end = min(len(text), match.start() + 900)
-                  rows.append({
-                      'path': str(path),
-                      'offset': match.start(),
-                      'snippet': text[start:end].replace('\n', ' '),
-                  })
+              for path in sorted(root.rglob('*')):
+                  if not path.is_file() or path.suffix not in allowed:
+                      continue
+                  try:
+                      text = path.read_text(encoding='utf-8')
+                  except Exception:
+                      continue
+                  if not any(token in text for token in tokens):
+                      continue
+                  for token in tokens:
+                      for match in re.finditer(re.escape(token), text):
+                          start = max(0, match.start() - 360)
+                          end = min(len(text), match.start() + 1100)
+                          rows.append({
+                              'root': root.name,
+                              'path': str(path),
+                              'token': token,
+                              'offset': match.start(),
+                              'snippet': text[start:end].replace('\n', ' '),
+                          })
           data = {
               'head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
-              'registrations': rows,
               'count': len(rows),
+              'matches': rows,
           }
-          Path('reports/a03-controller-ownership.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          md = ['# A03 tooltip controller ownership', '', f"Head: `{data['head']}`", f"Registrations: **{len(rows)}**", '']
-          for index, row in enumerate(rows, 1):
-              md += [f"## {index}. `{row['path']}` @ {row['offset']}", '', '```text', row['snippet'], '```', '']
-          Path('reports/a03-controller-ownership.md').write_text('\n'.join(md), encoding='utf-8')
+          Path('reports/a03-dist-controller-ownership.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
           PY
       - name: Commit report
         shell: bash
@@ -67,6 +77,6 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -f reports/a03-controller-ownership.json reports/a03-controller-ownership.md
-          git commit -m "chore(forensic): record A03 controller ownership" || exit 0
+          git add -f reports/a03-dist-controller-ownership.json
+          git commit -m "chore(forensic): record built A03 controller ownership" || exit 0
           git push origin HEAD:audit/a03-controller-ownership-20260801
