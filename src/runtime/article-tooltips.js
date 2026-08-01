@@ -1,4 +1,4 @@
-const VERSION = 13;
+const VERSION = 14;
 const OWNER = 'site-utils-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
@@ -39,7 +39,7 @@ function activeController() {
 function controllerFor(anchor) {
   return siteUtils()._tooltipControllers.find((candidate) => {
     try {
-      return anchor.matches(candidate.anchorSel) && Boolean(inlineTip(anchor, false, candidate.tipSel));
+      return anchor.matches(candidate.anchorSel);
     } catch {
       return false;
     }
@@ -535,7 +535,7 @@ export function installArticleTooltips() {
   }, true);
   document.addEventListener('keydown', (event) => {
     const controller = activeController();
-    if (event.key === 'Escape' && controller && !controller._gbState?.mobileSheet) {
+    if (event.key === 'Escape' && controller) {
       event.preventDefault();
       controller.close(false, 'escape');
     }

@@ -28,12 +28,14 @@ assert.equal(count(nativeTooltips, /api\.makeTooltipController\('\.fn-marker', '
 assert.equal(count(nativeTooltips, /api\.makeTooltipController\('\.gterm', '\.gtip'/g), 1, 'native glossary owner must be unique');
 assert.match(nativeTooltips, /controller\.activeEl = anchor/, 'native active anchor must be reflected in the public controller record');
 assert.match(nativeTooltips, /controller\.activeTip = tip/, 'native active tooltip must be reflected in the public controller record');
+assert.match(nativeTooltips, /return anchor\.matches\(candidate\.anchorSel\)/, 'controller lookup must allow the canonical owner to materialize a lazy scripture tip');
+assert.match(nativeTooltips, /event\.key === 'Escape' && controller/, 'the same active public controller must provide the Escape fallback for desktop and mobile sheets');
 assert.doesNotMatch(nativeTooltips, /close\.addEventListener\(/, 'generated close controls must not add a second local event owner');
 assert.match(nativeTooltips, /const TOUCH_SLOP_SQUARED = 144/, 'native mobile touch ownership must preserve the proven 12px slop');
 assert.match(nativeTooltips, /window\.addEventListener\('touchstart',[\s\S]*capture: true, passive: true/, 'native touch ownership must begin at window capture before downstream propagation can stop');
 assert.match(nativeTooltips, /window\.addEventListener\('touchmove',[\s\S]*TOUCH_SLOP_SQUARED[\s\S]*capture: true, passive: true/, 'native touch ownership must distinguish scrolling from a tap at window capture');
-assert.match(nativeTooltips, /window\.addEventListener\('touchend',[\s\S]*closest\('\[data-tooltip-close\]'\)[\s\S]*closeTooltip\('control-touchend'\)[\s\S]*capture: true, passive: false/, 'the canonical window touchend dispatcher must own physical mobile closure');
-assert.match(nativeTooltips, /closeTooltip\('surface-touchend'\)/, 'the canonical touchend dispatcher must preserve noninteractive surface closure');
+assert.match(nativeTooltips, /window\.addEventListener\('touchend',[\s\S]*closest\('\[data-tooltip-close\]'\)[\s\S]*controller\.close\(true, 'control-touchend'\)[\s\S]*capture: true, passive: false/, 'the canonical window touchend dispatcher must close through the active public controller');
+assert.match(nativeTooltips, /controller\.close\(true, 'surface-touchend'\)/, 'the canonical touchend dispatcher must preserve noninteractive surface closure through the public controller');
 assert.match(nativeTooltips, /stopImmediatePropagation\?\.\(\)/, 'the canonical window touchend dispatcher must suppress a duplicate compatibility click');
 assert.doesNotMatch(nativeTooltips, /document\.addEventListener\('touch(?:start|move|end)'/, 'native touch ownership must not remain below the propagation boundary');
 

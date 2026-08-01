@@ -465,13 +465,22 @@ async function checkHermenevtikaFootnotes(browser) {
   await mobileMarker.scrollIntoViewIfNeeded();
   await mobileMarker.tap();
   await mobile.waitForTimeout(300);
-  const mobileState = await mobile.evaluate(() => ({
-    markerOpen: document.querySelector('[data-audit-footnote="75"]')?.getAttribute('aria-expanded') === 'true',
-    tipOpen: !!document.querySelector('.gb-floating-tip.is-open'),
-    nestedInteractive: document.querySelectorAll('.gb-floating-tip.is-open button, .gb-floating-tip.is-open a, .gb-floating-tip.is-open [tabindex], .gb-floating-tip.is-open [role="button"], .gb-floating-tip.is-open .bref, .gb-floating-tip.is-open [data-ref]').length,
-    scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden',
-  }));
-  if (!mobileState.markerOpen || !mobileState.tipOpen || mobileState.nestedInteractive !== 0 || !mobileState.scrollLocked) push('hermenevtika-mobile-footnote-sheet-contract', HERMENEUTIKA_URL, mobileState);
+  const mobileState = await mobile.evaluate(() => {
+    const tip = document.querySelector('.gb-floating-tip.is-open');
+    const generatedClose = tip?.querySelectorAll('[data-tooltip-close][data-gb-generated-close="1"]').length || 0;
+    const unexpectedInteractive = tip
+      ? Array.from(tip.querySelectorAll('button, a, [tabindex], [role="button"], .bref, [data-ref]'))
+          .filter((node) => !node.matches('[data-tooltip-close][data-gb-generated-close="1"]')).length
+      : 0;
+    return {
+      markerOpen: document.querySelector('[data-audit-footnote="75"]')?.getAttribute('aria-expanded') === 'true',
+      tipOpen: !!tip,
+      generatedClose,
+      unexpectedInteractive,
+      scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden',
+    };
+  });
+  if (!mobileState.markerOpen || !mobileState.tipOpen || mobileState.generatedClose !== 1 || mobileState.unexpectedInteractive !== 0 || !mobileState.scrollLocked) push('hermenevtika-mobile-footnote-sheet-contract', HERMENEUTIKA_URL, mobileState);
   await mobile.keyboard.press('Escape');
   await mobile.waitForTimeout(250);
   const mobileClosed = await mobile.evaluate(() => ({
