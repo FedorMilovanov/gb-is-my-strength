@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "scripts/repository-history-forensic-audit.mjs"
+      - "scripts/website-map-force-reset-provenance-contract-test.mjs"
+      - "data/website-map-force-reset-provenance.json"
+      - "research/A08_WEBSITE_MAP_FORCE_RESET_FORENSICS_2026-08-01.md"
       - ".github/workflows/repository-history-forensic.yml"
   workflow_dispatch:
 
@@ -33,7 +36,12 @@ jobs:
           node-version: '22.23.1'
 
       - name: Validate audit syntax
-        run: node --check scripts/repository-history-forensic-audit.mjs
+        run: |
+          node --check scripts/repository-history-forensic-audit.mjs
+          node --check scripts/website-map-force-reset-provenance-contract-test.mjs
+
+      - name: Verify website-map force-reset provenance
+        run: node scripts/website-map-force-reset-provenance-contract-test.mjs
 
       - name: Inventory branches and closed PR heads
         env:
