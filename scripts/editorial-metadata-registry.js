@@ -14,11 +14,18 @@ const {
   writeRegistry,
   validateRecordShape,
 } = require('./lib/editorial-metadata');
+const {
+  validateRegistryV3,
+  projectRegistryToDist,
+} = require('./lib/editorial-metadata-v3');
 
 const WRITE = process.argv.includes('--write');
-const CHECK = process.argv.includes('--check') || !WRITE;
+const PROJECT_DIST = process.argv.includes('--project-dist');
+const DRY_RUN = process.argv.includes('--dry-run');
+const CHECK = process.argv.includes('--check') || (!WRITE && !PROJECT_DIST);
 const BUILD = process.argv.includes('--build');
-const DIST = path.join(ROOT, 'dist');
+const DIST_ARG = process.argv.find((arg) => arg.startsWith('--dist='));
+const DIST = path.resolve(ROOT, DIST_ARG ? DIST_ARG.slice('--dist='.length) : 'dist');
 
 function gitHead() {
   try {
@@ -63,7 +70,7 @@ function validateRegistry(registry) {
     if (!eligibleRoutes.has(route)) errors.push(`${route}: registry record has no eligible production route`);
     for (const problem of validateRecordShape(registry.records[route], route)) errors.push(`${route}: ${problem}`);
   }
-  return errors;
+  return [...errors, ...validateRegistryV3(registry)];
 }
 
 function materializeRegistry() {
@@ -99,12 +106,29 @@ function checkRegistry() {
     errors.forEach((error) => console.error(`  - ${error}`));
     process.exit(1);
   }
-  console.log('✅ Editorial metadata registry is structurally complete');
+  console.log('✅ Editorial metadata registry is structurally and semantically complete');
+}
+
+function projectDist() {
+  const report = projectRegistryToDist({
+    distRoot: DIST,
+    dryRun: DRY_RUN,
+  });
+  console.log('=== Editorial Metadata v3 Projection ===');
+  console.log(`Registry records: ${report.records}`);
+  console.log(`HTML matched/changed: ${report.htmlMatched}/${report.htmlChanged}`);
+  console.log(`Search manifest matched: ${report.searchManifestMatched}`);
+  console.log(`Sitemap files/routes: ${report.sitemapFiles}/${report.sitemapMatched}`);
+  console.log(`RSS matched: ${report.rssMatched}`);
+  console.log(`Unknown publication/modification dates: ${report.unknownPublished}/${report.unknownModified}`);
+  console.log(`Technical build instant: ${report.technicalBuildInstant}`);
+  console.log(DRY_RUN ? '✅ Editorial Metadata v3 dry-run passed' : '✅ Editorial Metadata v3 projected to final dist');
 }
 
 try {
   if (WRITE) materializeRegistry();
   if (CHECK) checkRegistry();
+  if (PROJECT_DIST) projectDist();
 } catch (error) {
   console.error(`❌ ${error.message}`);
   process.exit(1);
