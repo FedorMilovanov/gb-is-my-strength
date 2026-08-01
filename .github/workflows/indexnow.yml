@@ -1,6 +1,6 @@
 name: Metadata & IndexNow Readiness
 
-# Lightweight diagnostics plus an explicit label-gated metadata normalizer.
+# Lightweight diagnostics plus explicit label-gated source normalizers.
 # Production readiness, the single production-like build, candidate provenance
 # and Pages promotion remain owned by deploy.yml.
 on:
@@ -68,6 +68,52 @@ jobs:
           git commit -m "fix(metadata): normalize canonical article headline"
           git push origin "HEAD:${HEAD_REF}"
 
+  antisovetov-wave8-autofix:
+    name: Antisovetov Wave 8 source autofix
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'antisovetov-wave8-autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact pull request branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Apply audited Wave 8 corrections
+        run: node scripts/_temp-antisovetov-wave8-autofix.mjs
+
+      - name: Validate exact bounded result
+        run: |
+          node scripts/antisovetov-wave8-contract.mjs
+          node scripts/article-headline-contract.js
+          node scripts/editorial-metadata-registry.js --check
+          node scripts/cache-bust.js
+          test "$(git diff --name-only)" = "src/components/article-pilots/antisovetov/AntisovetovBody.astro"
+          git diff --check
+
+      - name: Commit only the authored article source
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/article-pilots/antisovetov/AntisovetovBody.astro
+          git commit -m "fix(content): apply audited Antisovetov source boundaries"
+          git push origin "HEAD:${HEAD_REF}"
+
   diagnostics:
     name: Validate source metadata without building dist
     runs-on: ubuntu-latest
@@ -91,6 +137,9 @@ jobs:
 
       - name: Validate canonical article headlines
         run: node scripts/article-headline-contract.js
+
+      - name: Validate Antisovetov Wave 8 source boundary
+        run: node scripts/antisovetov-wave8-contract.mjs
 
       - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
