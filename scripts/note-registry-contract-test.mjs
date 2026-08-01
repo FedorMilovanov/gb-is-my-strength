@@ -50,6 +50,13 @@ const contextualRepeat = collectAndProjectHtml(
 assert.deepEqual(contextualRepeat.errors, []);
 assert.equal(new Set(contextualRepeat.notes.map((note) => note.id)).size, 2, 'same note text in different authored contexts needs distinct stable IDs');
 
+const headingRepeat = collectAndProjectHtml(
+  '<main><h2 id="alpha">Alpha</h2><p>Identical <span class="fn-marker">1<span class="tooltip">Same</span></span></p><h2 id="beta">Beta</h2><p>Identical <span class="fn-marker">2<span class="tooltip">Same</span></span></p></main>',
+  route
+);
+assert.deepEqual(headingRepeat.errors, []);
+assert.equal(new Set(headingRepeat.notes.map((note) => note.id)).size, 2, 'nearest authored heading must disambiguate identical local contexts without using ordinal');
+
 const orphan = collectAndProjectHtml('<main><span class="fn-marker">[1]</span></main>', route);
 assert.match(orphan.errors.join('\n'), /expected one \.tooltip, found 0/);
 const duplicate = collectAndProjectHtml('<main><span class="fn-marker">1<span class="tooltip">Same</span></span><span class="fn-marker">2<span class="tooltip">Same</span></span></main>', route);
