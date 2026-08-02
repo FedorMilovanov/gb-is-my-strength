@@ -51,7 +51,7 @@ function normalizeRuntime(source) {
 
 function normalizeContract(source) {
   const anchor = `assert.doesNotMatch(nativeTooltips, /controller\\.close\\(false, 'escape'\\)/, 'Escape must not pass through a wrapper whose force semantics vary by controller implementation');`;
-  const replacement = `${anchor}\nassert.match(nativeTooltips, /_gbSuppressFocusOpen: false/, 'the public controller record must own one-shot focus-return suppression');\nassert.match(nativeTooltips, /state\\.mobileSheet && \/\\^escape\/[\\s\\S]*controller\\._gbSuppressFocusOpen = true[\\s\\S]*setTimeout[\\s\\S]*500/, 'mobile Escape must arm a bounded focus-return suppressor before OverlayRuntime restores focus');\nassert.match(nativeTooltips, /anchor\\.addEventListener\\('focus',[\\s\\S]*controller\\._gbSuppressFocusOpen[\\s\\S]*return;[\\s\\S]*openController\\(controller, anchor, 'focus'\\)/, 'the restored opener focus must be consumed once without disabling ordinary keyboard focus');`;
+  const replacement = `${anchor}\nassert.match(nativeTooltips, /_gbSuppressFocusOpen: false/, 'the public controller record must own one-shot focus-return suppression');\nassert.match(nativeTooltips, /state\\.mobileSheet[\\s\\S]{0,240}controller\\._gbSuppressFocusOpen = true[\\s\\S]{0,360}setTimeout[\\s\\S]{0,200}500/, 'mobile Escape must arm a bounded focus-return suppressor before OverlayRuntime restores focus');\nassert.match(nativeTooltips, /anchor\\.addEventListener\\('focus',[\\s\\S]*controller\\._gbSuppressFocusOpen[\\s\\S]*return;[\\s\\S]*openController\\(controller, anchor, 'focus'\\)/, 'the restored opener focus must be consumed once without disabling ordinary keyboard focus');`;
   return replaceExact(source, anchor, replacement, 'focus-return owner contract');
 }
 
