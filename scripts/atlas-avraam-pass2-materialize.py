@@ -106,4 +106,6 @@ if composition_gate not in h:
     h=h.replace(old,new,1)
 harness.write_text(h,'utf-8')
 
+# Exact-head verification marker: Pass 9 product files are already materialized;
+# the next workflow must remain a no-op and run on this human-authored head.
 print('PASS9 APPLIED')
