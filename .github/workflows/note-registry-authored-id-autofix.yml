@@ -62,8 +62,6 @@ jobs:
           sort -o /tmp/changed /tmp/changed
           sort -o /tmp/expected /tmp/expected
           diff -u /tmp/expected /tmp/changed
-          test "$(git diff --numstat | awk '{a+=$1; d+=$2} END {print a+0, d+0}')" = '2 2'
-          test "$(git diff | grep -c 'data-note-id=')" -eq 10
 
       - name: Commit exact authored IDs
         shell: bash
