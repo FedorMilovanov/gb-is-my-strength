@@ -59,6 +59,8 @@ function registerController(anchorSel, tipSel, opts = {}) {
     activeEl: null,
     activeTip: null,
     _gbState: null,
+    _gbSuppressFocusOpen: false,
+    _gbSuppressFocusTimer: 0,
     isDesktop() {
       return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     },
@@ -288,6 +290,14 @@ function closeController(controller, reason = 'close', overlayManaged = false) {
   if (!state || !anchor || !controller.activeTip) return false;
   anchor.classList.remove('is-open');
   anchor.setAttribute('aria-expanded', 'false');
+  if (state.mobileSheet && /^escape/.test(reason)) {
+    controller._gbSuppressFocusOpen = true;
+    if (controller._gbSuppressFocusTimer) window.clearTimeout(controller._gbSuppressFocusTimer);
+    controller._gbSuppressFocusTimer = window.setTimeout(() => {
+      controller._gbSuppressFocusOpen = false;
+      controller._gbSuppressFocusTimer = 0;
+    }, 500);
+  }
   if (state.mobileSheet && !overlayManaged) {
     if (overlayRuntime()) overlayRuntime().close(OWNER, reason);
     else window.SiteUtils?.unlockScroll?.(`overlay:${OWNER}`);
@@ -428,7 +438,15 @@ function initializeAnchor(anchor) {
   anchor.addEventListener('mouseenter', openHover);
   anchor.addEventListener('pointerleave', leaveHover);
   anchor.addEventListener('mouseleave', leaveHover);
-  anchor.addEventListener('focus', () => openController(controller, anchor, 'focus'));
+  anchor.addEventListener('focus', () => {
+    if (controller._gbSuppressFocusOpen) {
+      controller._gbSuppressFocusOpen = false;
+      if (controller._gbSuppressFocusTimer) window.clearTimeout(controller._gbSuppressFocusTimer);
+      controller._gbSuppressFocusTimer = 0;
+      return;
+    }
+    openController(controller, anchor, 'focus');
+  });
   anchor.addEventListener('blur', () => scheduleClose(controller, 120));
   anchor.addEventListener('click', (event) => {
     event.preventDefault();

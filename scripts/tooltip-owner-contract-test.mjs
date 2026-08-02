@@ -34,6 +34,9 @@ assert.equal(count(nativeTooltips, /closeOnEscape: false/g), 1, 'OverlayRuntime 
 assert.equal(count(nativeTooltips, /closeOnEscape: true/g), 0, 'native tooltip overlays must not register a second Escape owner');
 assert.doesNotMatch(nativeTooltips, /document\.addEventListener\('keydown',[\s\S]*closeController\(controller, 'escape'\)/, 'native Escape ownership must not remain below the document propagation boundary');
 assert.doesNotMatch(nativeTooltips, /controller\.close\(false, 'escape'\)/, 'Escape must not pass through a wrapper whose force semantics vary by controller implementation');
+assert.match(nativeTooltips, /_gbSuppressFocusOpen: false/, 'the public controller record must own one-shot focus-return suppression');
+assert.match(nativeTooltips, /state\.mobileSheet[\s\S]{0,240}controller\._gbSuppressFocusOpen = true[\s\S]{0,360}setTimeout[\s\S]{0,200}500/, 'mobile Escape must arm a bounded focus-return suppressor before OverlayRuntime restores focus');
+assert.match(nativeTooltips, /anchor\.addEventListener\('focus',[\s\S]*controller\._gbSuppressFocusOpen[\s\S]*return;[\s\S]*openController\(controller, anchor, 'focus'\)/, 'the restored opener focus must be consumed once without disabling ordinary keyboard focus');
 assert.match(nativeTooltips, /onRequestClose:[\s\S]*closeController\(controller, requestedReason, true\);[\s\S]*return true/, 'OverlayRuntime Escape requests must synchronously finalize native tooltip state before the record is closed');
 assert.doesNotMatch(nativeTooltips, /onRequestClose:[\s\S]*closeController\(controller, closeReason \|\| 'request'\)[\s\S]*return false/, 'OverlayRuntime requests must not recursively close the same overlay record');
 assert.doesNotMatch(nativeTooltips, /close\.addEventListener\(/, 'generated close controls must not add a second local event owner');
