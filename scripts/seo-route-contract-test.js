@@ -25,8 +25,8 @@ const GENESIS6_ROUTES = [
   '/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/',
 ];
 
-assert.equal(baseline.length, 82, 'all production-dist routes must be audited');
-assert.equal(baseline.filter((entry) => entry.indexable).length, 73, 'indexable route count');
+assert.equal(baseline.length, 83, 'all production-dist routes must be audited');
+assert.equal(baseline.filter((entry) => entry.indexable).length, 74, 'indexable route count');
 assert.equal(baseline.filter((entry) => !entry.indexable).length, 9, 'explicit noindex route count');
 assert.deepEqual(
   baseline
