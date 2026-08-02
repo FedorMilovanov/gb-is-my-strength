@@ -27,7 +27,7 @@ function sourceDataAudit(route){
   const scientificVariants=Object.values(route.scientific_variants||{}).reduce((sum,value)=>sum+(Array.isArray(value)?value.length:0),0);
   const stats=route.meta?.stats||{},failures=[];
   const expect=(label,actual,expected)=>{if(actual!==expected)failures.push(`${label}: ${actual} != ${expected}`)};
-  expect('stats.places',stats.places,places.length);
+  expect('stats.places',stats.places,routePlaces.length);
   expect('stats.route_places',stats.route_places,routePlaces.length);
   expect('stats.context_places',stats.context_places,contextPlaces.length);
   expect('stats.stages',stats.stages,stages.length);
