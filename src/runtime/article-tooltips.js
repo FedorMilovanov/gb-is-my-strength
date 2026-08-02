@@ -1,4 +1,4 @@
-const VERSION = 9;
+const VERSION = 10;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
@@ -23,6 +23,19 @@ function cancelClose() {
 
 function containsInteractive(record, target) {
   return Boolean(record && target instanceof Node && (record.anchor.contains(target) || record.tip.contains(target)));
+}
+
+function containsPoint(element, x, y) {
+  if (!(element instanceof Element) || !Number.isFinite(x) || !Number.isFinite(y)) return false;
+  const rect = element.getBoundingClientRect();
+  const epsilon = 1;
+  return rect.width > 0 && rect.height > 0 &&
+    x >= rect.left - epsilon && x <= rect.right + epsilon &&
+    y >= rect.top - epsilon && y <= rect.bottom + epsilon;
+}
+
+function pointerInside(record, x = pointerX, y = pointerY) {
+  return Boolean(record && (containsPoint(record.anchor, x, y) || containsPoint(record.tip, x, y)));
 }
 
 function currentPointerTarget() {
@@ -62,7 +75,7 @@ function scheduleClose(delay = 220) {
     if (active !== record) return;
     const focused = document.activeElement;
     if (focused === record.anchor || record.tip.contains(focused)) return;
-    if (containsInteractive(record, currentPointerTarget())) return;
+    if (containsInteractive(record, currentPointerTarget()) || pointerInside(record)) return;
     if (record.anchor.matches(':hover') || record.tip.matches(':hover')) return;
     if (record.reason === 'hover' && (!record.hoverSettled || pointerEpoch === record.pointerBaseline)) return;
     closeTooltip('leave');
@@ -339,7 +352,7 @@ export function installArticleTooltips() {
   document.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch' || !recordPointerMovement(event)) return;
     if (!active || active.mobile || active.reason !== 'hover') return;
-    if (containsInteractive(active, event.target)) cancelClose();
+    if (containsInteractive(active, event.target) || pointerInside(active, event.clientX, event.clientY)) cancelClose();
     else scheduleClose();
   }, true);
   document.addEventListener('pointerdown', (event) => {
