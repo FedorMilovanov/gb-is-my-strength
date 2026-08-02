@@ -47,20 +47,15 @@ async function pageDimensions(page) {
     height: Math.max(document.documentElement.scrollHeight, document.documentElement.clientHeight),
     viewportWidth: Math.max(1, window.innerWidth),
     viewportHeight: Math.max(1, window.innerHeight),
-    scrollY: Math.max(0, window.scrollY),
   }));
 }
 
-function boundedClip(dimensions, edge = 'top') {
-  const width = Math.max(1, Math.min(dimensions.width, dimensions.viewportWidth, 30_000));
-  const height = Math.max(1, Math.min(dimensions.height, dimensions.viewportHeight, 30_000));
-  const maxY = Math.max(0, dimensions.height - height);
-  const requestedY = edge === 'tail' ? maxY : 0;
+function boundedTopClip(dimensions) {
   return {
     x: 0,
-    y: Math.max(0, Math.min(requestedY, maxY)),
-    width,
-    height,
+    y: 0,
+    width: Math.max(1, Math.min(dimensions.width, dimensions.viewportWidth, 30_000)),
+    height: Math.max(1, Math.min(dimensions.height, dimensions.viewportHeight, 30_000)),
   };
 }
 
@@ -72,24 +67,12 @@ async function captureEvidenceScreenshot(page, engine, profileId) {
     return;
   }
 
-  // WebKit and Chromium reject any screenshot surface above 32,767 px.
-  // An explicit page-coordinate clip prevents WebKit from expanding a plain
-  // viewport screenshot to the oversized document backing surface.
-  const topClip = boundedClip(dimensions, 'top');
-  await page.screenshot({ path: primaryPath, clip: topClip, animations:'disabled', caret:'hide' });
-
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await page.waitForTimeout(100);
-  const tailDimensions = await pageDimensions(page);
-  const tailClip = boundedClip(tailDimensions, 'tail');
-  await page.screenshot({
-    path: join(OUT, `${engine}-${profileId}-tail.png`),
-    clip: tailClip,
-    animations:'disabled',
-    caret:'hide',
-  });
-  await page.evaluate(() => window.scrollTo(0, 0));
-  record(engine, `${profileId}-js`, 'segmented-screenshot', true, JSON.stringify({ dimensions, topClip, tailClip }));
+  // WebKit cannot address screenshot coordinates above its 32,767 px surface
+  // limit. Preserve deterministic evidence with one bounded top viewport;
+  // browser, no-JS, content, overflow and PDF assertions remain unchanged.
+  const clip = boundedTopClip(dimensions);
+  await page.screenshot({ path: primaryPath, clip, animations:'disabled', caret:'hide' });
+  record(engine, `${profileId}-js`, 'bounded-screenshot', true, JSON.stringify({ dimensions, clip }));
 }
 
 async function inspect(browserType, engine, profile) {
