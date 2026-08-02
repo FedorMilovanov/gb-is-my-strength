@@ -61,8 +61,8 @@ patch('karty/_engine/map-engine.js', [
   },
   {
     label: 'initial zoom bucket attribute',
-    old: `    svg.setAttribute('viewBox',\`${view.x} ${view.y} ${view.w} ${view.h}\`);\n    svg.setAttribute('preserveAspectRatio','xMidYMid meet');\n`,
-    next: `    svg.setAttribute('viewBox',\`${view.x} ${view.y} ${view.w} ${view.h}\`);
+    old: `    svg.setAttribute('viewBox',\`\${view.x} \${view.y} \${view.w} \${view.h}\`);\n    svg.setAttribute('preserveAspectRatio','xMidYMid meet');\n`,
+    next: `    svg.setAttribute('viewBox',\`\${view.x} \${view.y} \${view.w} \${view.h}\`);
     svg.setAttribute('preserveAspectRatio','xMidYMid meet');
     function semanticZoomBucket(width=view.w){
       if(width >= semanticOverviewMinW) return 'overview';
@@ -81,17 +81,17 @@ patch('karty/_engine/map-engine.js', [
   {
     label: 'apply semantic zoom and anchored compass',
     old: `    function applyViewBox(){
-      svg.setAttribute('viewBox',\`${view.x} ${view.y} ${view.w} ${view.h}\`);
+      svg.setAttribute('viewBox',\`\${view.x} \${view.y} \${view.w} \${view.h}\`);
       // Parallax compass tilt
       const compass = document.getElementById('me-compass');
       if (compass) {
         const tiltX = (view.x / cfg.W0 - 0.5) * 3;
-        compass.style.transform = \`rotate(${tiltX.toFixed(1)}deg)\`;
+        compass.style.transform = \`rotate(\${tiltX.toFixed(1)}deg)\`;
       }
       // Update scale bar
 `,
     next: `    function applyViewBox(){
-      svg.setAttribute('viewBox',\`${view.x} ${view.y} ${view.w} ${view.h}\`);
+      svg.setAttribute('viewBox',\`\${view.x} \${view.y} \${view.w} \${view.h}\`);
       applySemanticZoom();
       // Compass is anchored in screen space, not at a fixed map coordinate.
       const compass = svg.querySelector('#me-compass');
@@ -101,7 +101,7 @@ patch('karty/_engine/map-engine.js', [
         const tiltX=(view.x/cfg.W0-0.5)*3;
         const compassX=view.x+34*unitsPerPixel;
         const compassY=view.y+54*unitsPerPixel;
-        compass.setAttribute('transform',\`translate(${compassX.toFixed(2)},${compassY.toFixed(2)}) scale(${unitsPerPixel.toFixed(4)}) rotate(${tiltX.toFixed(1)})\`);
+        compass.setAttribute('transform',\`translate(\${compassX.toFixed(2)},\${compassY.toFixed(2)}) scale(\${unitsPerPixel.toFixed(4)}) rotate(\${tiltX.toFixed(1)})\`);
       }
       // Update scale bar
 `,
@@ -191,9 +191,9 @@ patch('scripts/avraam-reference-baseline.mjs', [
   },
   {
     label: 'fail closed overview bucket',
-    old: `    result.overview=await collectGeometry(page,\`${viewport.id}:overview\`);\n\n    const stories=await storyMetadata(page);`,
-    next: `    result.overview=await collectGeometry(page,\`${viewport.id}:overview\`);
-    if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(\`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}\`);
+    old: `    result.overview=await collectGeometry(page,\`\${viewport.id}:overview\`);\n\n    const stories=await storyMetadata(page);`,
+    next: `    result.overview=await collectGeometry(page,\`\${viewport.id}:overview\`);
+    if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(\`unexpected overview zoom bucket: \${result.overview.map.zoomBucket}\`);
 
     const stories=await storyMetadata(page);`,
   },
