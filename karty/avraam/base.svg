@@ -49,11 +49,11 @@
 
   <!-- Рельеф суши: feTurbulence текстура -->
   <filter id="terrainTex" x="0" y="0" width="100%" height="100%">
-    <feTurbulence type="fractalNoise" baseFrequency=".4 .35" numOctaves="4" seed="12" result="noise"/>
+    <feTurbulence type="fractalNoise" baseFrequency=".018 .012" numOctaves="3" seed="12" result="noise"/>
     <feColorMatrix type="matrix" values="0 0 0 0 .13
                                          0 0 0 0 .10
                                          0 0 0 0 .05
-                                         0 0 0 .08 0" result="tinted"/>
+                                         0 0 0 .13 0" result="tinted"/>
     <feComposite in="SourceGraphic" in2="tinted" operator="over"/>
   </filter>
 
@@ -153,7 +153,7 @@
 <g id="terrain" data-layer="base-geo">
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"/>
   <!-- Terrain texture overlay для глубины рельефа -->
-  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".48" filter="url(#terrainTex)"/>
+  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".3" filter="url(#terrainTex)"/>
 
   <!-- deserts / fertile tints -->
   <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"/>
@@ -509,50 +509,59 @@
     <ellipse cx="628" cy="740" rx="18" ry="10" fill="url(#mountainHatch)"/>
     <ellipse cx="628" cy="762" rx="18" ry="10" fill="url(#mountainHatch)"/>
   </g>
-  <g id="mountains" opacity=".55">
-    <!-- Гевал (Эйвал) — 940 м, к северу от Сихема — увеличен для видимости (MAPS-ANALYSIS P5) -->
-    <g class="lbl-z1">
-      <!-- Гевал — тройной хребет, крупнее -->
-      <path d="M610,733 C614,733 618,726 620,718 L622,712 L624,716 L626,709 L628,703 L630,709 L632,716 L634,712 L636,718 L638,726 L642,733 Z"
-        fill="rgba(110,98,65,.22)" stroke="#9b8d6a" stroke-width="1.5" stroke-linejoin="round"/>
-      <!-- Снеговая шапка Гевала -->
-      <path d="M624,716 L626,709 L628,703 L630,709 L632,716 L629,712 L628,706 L627,712 Z"
-        fill="rgba(245,240,230,.2)" stroke="rgba(245,240,230,.35)" stroke-width=".7"/>
-      <!-- Боковые пики -->
-      <path d="M614,733 L618,720 L622,726 L618,733 Z" fill="rgba(110,98,65,.15)" stroke="#9b8d6a" stroke-width=".9"/>
-      <path d="M634,733 L638,720 L642,726 L638,733 Z" fill="rgba(110,98,65,.15)" stroke="#9b8d6a" stroke-width=".9"/>
-      <text x="628" y="699" font-size="6" fill="#b09870" text-anchor="middle" letter-spacing=".12em" font-weight="600">ГЕВАЛ</text>
-      <text x="628" y="695" font-size="4.5" fill="#cdbd95" text-anchor="middle" opacity=".75">עֵיבָל · 940 м</text>
-      <text x="628" y="691" font-size="3.8" fill="#cdbd95" text-anchor="middle" opacity=".5">Втор 27–28 · Нав 8:30</text>
-    </g>
-    <!-- Геризим (Гризим) — 881 м, к югу от Сихема — крупнее -->
-    <g class="lbl-z1">
-      <path d="M610,773 C614,773 618,766 620,758 L622,752 L624,756 L626,749 L628,743 L630,749 L632,756 L634,752 L636,758 L638,766 L642,773 Z"
-        fill="rgba(110,98,65,.20)" stroke="#9b8d6a" stroke-width="1.5" stroke-linejoin="round"/>
-      <path d="M624,756 L626,749 L628,743 L630,749 L632,756 L629,752 L628,746 L627,752 Z"
-        fill="rgba(245,240,230,.18)" stroke="rgba(245,240,230,.3)" stroke-width=".7"/>
-      <path d="M614,773 L618,760 L622,766 L618,773 Z" fill="rgba(110,98,65,.13)" stroke="#9b8d6a" stroke-width=".9"/>
-      <path d="M634,773 L638,760 L642,766 L638,773 Z" fill="rgba(110,98,65,.13)" stroke="#9b8d6a" stroke-width=".9"/>
-      <text x="628" y="779" font-size="6" fill="#b09870" text-anchor="middle" letter-spacing=".12em" font-weight="600">ГЕРИЗИМ</text>
-      <text x="628" y="783" font-size="4.5" fill="#cdbd95" text-anchor="middle" opacity=".75">גְּרִזִּים · 881 м</text>
-      <text x="628" y="787" font-size="3.8" fill="#cdbd95" text-anchor="middle" opacity=".5">Втор 11:29 · Ин 4:20</text>
+  <g id="mountains" opacity=".72" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Гевал и Геризим: парные контурные хребты, без фантазийных снежных пиктограмм. -->
+    <g class="lbl-z1" data-relief="ebal-gerizim">
+      <path d="M607,734 C613,725 617,711 628,700 C639,710 644,724 649,734 Z"
+        fill="rgba(145,126,87,.10)" stroke="#9b8d6a" stroke-width="1.15"/>
+      <path d="M614,730 C620,720 622,711 628,706 C634,712 638,722 642,730"
+        stroke="#b19e72" stroke-width=".7" opacity=".72"/>
+      <path d="M619,726 C623,719 625,714 628,711 C632,716 635,721 638,726"
+        stroke="#c0ab7a" stroke-width=".45" opacity=".52"/>
+      <text x="628" y="697" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".12em">ГЕВАЛ</text>
+      <text x="628" y="692" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">עֵיבָל · 940 м</text>
+
+      <path d="M607,774 C613,765 617,751 628,741 C639,751 644,764 649,774 Z"
+        fill="rgba(145,126,87,.09)" stroke="#9b8d6a" stroke-width="1.1"/>
+      <path d="M614,770 C620,760 622,752 628,747 C634,753 638,762 642,770"
+        stroke="#b19e72" stroke-width=".68" opacity=".7"/>
+      <path d="M619,766 C623,759 625,755 628,752 C632,757 635,761 638,766"
+        stroke="#c0ab7a" stroke-width=".42" opacity=".5"/>
+      <text x="628" y="781" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+      <text x="628" y="786" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">גְּרִזִּים · 881 м</text>
     </g>
   </g>
 
 </g>
 
 <!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
-<!-- Горный хребет Ханаана (Иудейские горы) — более выразительный -->
-<g opacity=".34">
-  <!-- Кармил -->
-  <path d="M580,716 L585,706 L590,716 Z" fill="rgba(100,90,60,.5)" stroke="#8b7d5a" stroke-width="1"/>
-  <text x="580" y="702" font-size="3.5" fill="#8b7d5a" text-anchor="middle" opacity=".6" class="lbl-z1">הַכַּרְמֶל</text>
-  <!-- Хребет Самарии -->
-  <path d="M615,735 L618,726 L621,735 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
-  <path d="M622,730 L625,721 L628,730 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
-  <!-- Иудейские горы -->
-  <path d="M610,808 L614,799 L618,808 Z" fill="rgba(100,90,60,.45)" stroke="#8b7d5a" stroke-width=".9"/>
-  <path d="M618,800 L622,791 L626,800 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+<!-- Непрерывные хребты: схематическая гипсометрия, не точные изолинии. -->
+<g id="highlandRelief" class="lbl-z1" fill="none" stroke-linecap="round" pointer-events="none">
+  <!-- Центральное нагорье Ханаана: Самария → Иудея → Негев. -->
+  <path d="M625,686 C617,726 615,770 612,812 C608,848 600,884 586,918"
+    stroke="rgba(139,125,90,.11)" stroke-width="24"/>
+  <path d="M625,686 C617,726 615,770 612,812 C608,848 600,884 586,918"
+    stroke="#8b7d5a" stroke-width="1.25" opacity=".58"/>
+  <path d="M617,690 C610,732 607,774 604,814 C601,850 593,882 580,912"
+    stroke="#a18f65" stroke-width=".72" opacity=".38"/>
+  <path d="M634,690 C627,731 625,773 621,814 C618,849 610,886 594,922"
+    stroke="#6f644b" stroke-width=".72" opacity=".42"/>
+
+  <!-- Заиорданское плато: Галаад и Моав. -->
+  <path d="M704,646 C712,704 715,763 713,824 C712,874 718,923 732,972"
+    stroke="rgba(122,108,76,.09)" stroke-width="20"/>
+  <path d="M704,646 C712,704 715,763 713,824 C712,874 718,923 732,972"
+    stroke="#776b50" stroke-width="1.05" opacity=".44"/>
+  <path d="M694,652 C702,710 704,770 703,828 C702,878 708,925 719,965"
+    stroke="#9a875f" stroke-width=".6" opacity=".3"/>
+
+  <!-- Синайские массивы: мягкие слои без одиночной эмблемы-горы. -->
+  <path d="M470,1040 C510,1010 557,1008 603,1030 C646,1052 680,1092 704,1142"
+    stroke="rgba(143,105,61,.10)" stroke-width="30"/>
+  <path d="M470,1040 C510,1010 557,1008 603,1030 C646,1052 680,1092 704,1142"
+    stroke="#8c6d49" stroke-width="1.1" opacity=".45"/>
+  <path d="M488,1052 C527,1028 563,1027 600,1046 C636,1064 664,1098 686,1134"
+    stroke="#a17b4e" stroke-width=".65" opacity=".34"/>
 </g>
 <!-- Оронт (Сирия) — река севернее Дамаска -->
 <path fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"
@@ -580,15 +589,12 @@
 </g>
 
 <!-- ============ SINAI MOUNTAIN SYMBOL ============ -->
-<g id="sinaiPeak" class="lbl-z1" transform="translate(588,1120)" opacity=".5">
-  <!-- силуэт горы Синай -->
-  <path d="M-24,18 L-9,-10 L0,-24 L9,-10 L24,18 Z" fill="rgba(140,100,50,.18)" stroke="#9c7840" stroke-width="1.2" stroke-linejoin="round"/>
-  <!-- снежная шапка -->
-  <path d="M-5,-13 L0,-24 L5,-13 Z" fill="rgba(240,235,225,.18)" stroke="rgba(240,235,225,.3)" stroke-width=".6"/>
-  <!-- световой блик -->
-  <path d="M-9,-10 L0,-24 L-2,-10 Z" fill="rgba(240,235,225,.06)"/>
-  <text x="0" y="26" text-anchor="middle" font-size="5" fill="#a08040" letter-spacing=".15em">СИНАЙ</text>
-  <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
+<g id="sinaiPeak" class="lbl-z1" transform="translate(588,1120)" opacity=".66" fill="none" stroke-linecap="round">
+  <path d="M-24,15 C-16,4 -11,-8 0,-21 C11,-8 16,4 24,15" stroke="#9c7840" stroke-width="1.15"/>
+  <path d="M-16,13 C-10,4 -6,-4 0,-12 C7,-4 11,5 16,13" stroke="#bc9460" stroke-width=".65" opacity=".65"/>
+  <path d="M-8,10 C-4,4 -2,0 0,-4 C3,1 5,5 8,10" stroke="#d0aa73" stroke-width=".4" opacity=".5"/>
+  <text x="0" y="26" text-anchor="middle" font-size="4.8" fill="#aa824d" letter-spacing=".14em">СИНАЙ</text>
+  <text x="0" y="32" font-size="3.5" fill="#9a7648" text-anchor="middle" opacity=".72">הַר סִינַי · традиционный массив</text>
 </g>
 <!-- Хермон — гора у Дана -->
 <g class="lbl-z1" transform="translate(668,594)" opacity=".4">

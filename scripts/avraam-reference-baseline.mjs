@@ -66,7 +66,8 @@ async function collectGeometry(page,stateId){
     const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});
     const width=innerWidth,height=innerHeight,html=document.documentElement;
     const map=document.querySelector('.me-map,#mapRoot'),canvas=document.querySelector('.me-canvas'),svg=document.querySelector('.me-canvas svg,.me-map svg,#mapRoot svg');
-    const labels=[...document.querySelectorAll('svg text')].filter(isVisible).map((el,index)=>({index,...describe(el),box:rect(el)}));
+    const allLabels=[...document.querySelectorAll('svg text')].filter(isVisible).map((el,index)=>({index,...describe(el),box:rect(el)}));
+    const labels=allLabels.filter(({box})=>box.right>0&&box.bottom>0&&box.left<width&&box.top<height);
     const offscreenLabels=labels.filter(({box})=>box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1);
     const labelOverlaps=[];
     for(let i=0;i<labels.length;i+=1)for(let j=i+1;j<labels.length;j+=1){
@@ -149,6 +150,11 @@ async function runViewport(browser,viewport){
         const geometry=await collectGeometry(page,`${viewport.id}:story:${story.id}`);
         result.stories.push({...story,...selection,file,geometry});
         if(!selection.active||geometry.activeStory!==story.id)result.verificationFailures.push(`story activation failed: ${story.id}; active=${geometry.activeStory}`);
+        if(story.id!=='main'&&geometry.counts.routes===0)result.verificationFailures.push(`story route missing: ${story.id}`);
+        const overlapLimit=viewport.width<=560?4:6;
+        const clippedLimit=viewport.width<=560?4:6;
+        if(geometry.counts.labelOverlaps>overlapLimit)result.verificationFailures.push(`story label overlaps ${story.id}: ${geometry.counts.labelOverlaps}>${overlapLimit}`);
+        if(geometry.counts.offscreenLabels>clippedLimit)result.verificationFailures.push(`story clipped labels ${story.id}: ${geometry.counts.offscreenLabels}>${clippedLimit}`);
       }catch(error){result.stories.push({...story,error:error.message});result.verificationFailures.push(`story error ${story.id}: ${error.message}`)}
     }
 
