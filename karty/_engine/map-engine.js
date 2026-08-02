@@ -593,10 +593,10 @@ const MapEngine = (function() {
 .me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}
 
 /* Tabs */
-.me-tabs{display:flex;gap:0;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);overflow-x:auto}
-.me-tab{padding:8px 14px;min-height:44px;font-size:11px;border:none;background:none;color:#9aa2ae;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:inherit;white-space:nowrap;position:relative;top:1px;display:inline-flex;align-items:center;justify-content:center}
+.me-tabs{display:flex;gap:2px;padding:0 38px 0 12px;border-bottom:1px solid rgba(255,255,255,.06);overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain;mask-image:linear-gradient(to right,#000 0,#000 calc(100% - 34px),transparent)}.me-tabs::-webkit-scrollbar{display:none}
+.me-tab{padding:8px 14px;min-height:44px;font-size:11px;border:none;background:none;color:#9aa2ae;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:inherit;white-space:nowrap;position:relative;top:1px;display:inline-flex;align-items:center;justify-content:center;scroll-snap-align:center;flex:0 0 auto}
 .me-tab:hover{color:#e9e4d6}
-.me-tabs::after{content:'';position:sticky;right:0;width:20px;flex-shrink:0;background:linear-gradient(to right,transparent,rgba(13,17,26,.9));pointer-events:none}
+.me-tabs::after{content:'';position:sticky;right:-38px;width:38px;flex:0 0 38px;background:linear-gradient(to right,transparent,var(--me-panel-bg,rgba(13,17,26,.96)) 72%);pointer-events:none}
 .me-tab--active{color:#e8c879;border-bottom-color:#e8c879;background:linear-gradient(to top,rgba(232,200,121,.08),transparent)}
 
 /* Content */
@@ -641,11 +641,10 @@ const MapEngine = (function() {
 .me-nav button{flex:0;padding:6px 14px;min-height:44px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#9aa2ae;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
 .me-nav button:hover:not(:disabled){border-color:#e8c879;color:#e8c879}
 .me-nav button:disabled{opacity:.3;cursor:default}
-.me-nav__dots{flex:1;display:flex;justify-content:center;gap:4px}
-.me-nav__dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .2s}
-.me-nav__dot--active{background:#e8c879;transform:scale(1.4)}
-.me-nav__info{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
-.me-nav__counter{font-size:10px;color:#e8c879;font-weight:700;letter-spacing:.04em}
+.me-nav__info{display:flex;flex-direction:column;align-items:center;gap:7px;flex:1;min-width:0}
+.me-nav__counter{font-size:10px;color:var(--me-accent,#e8c879);font-weight:700;letter-spacing:.08em}
+.me-nav__progress{width:min(160px,100%);height:3px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}
+.me-nav__progress-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(to right,color-mix(in srgb,var(--me-accent,#e8c879) 58%,transparent),var(--me-accent,#e8c879));transition:width .3s ease}
 
 /* Markers & SVG filters */
 .me-marker-pulse{animation:mePulse 2s ease-in-out infinite}
@@ -867,6 +866,13 @@ const MapEngine = (function() {
 .me-life{opacity:.78;border-top:1px solid rgba(255,255,255,.035)}
 .me-map[data-zoom-bucket="region"] .me-life,.me-map[data-zoom-bucket="detail"] .me-life{opacity:.48}
 
+
+/* Premium quiet panel navigation: map first, contextual detail second. */
+.me-life{display:none!important}
+.me-map #me-compass{display:none!important}
+.me-theme-btn,.me-share-btn,.me-zoom-btn{border-radius:999px}
+.me-layers{border-radius:14px}
+
 /* Theme toggle */
 .me-theme-btn{position:absolute;top:10px;right:62px;z-index:15;width:44px;height:44px;min-width:44px;min-height:44px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
@@ -942,7 +948,7 @@ const MapEngine = (function() {
   .me-panel{left:12px;right:auto;bottom:12px;width:420px;max-height:calc(100% - 24px);border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(calc(-100% - 32px))}
   .me-panel--open{transform:translateX(0)}
   .me-header{padding:16px 20px}
-  .me-life{display:block}
+  .me-life{display:none!important}
   .me-panel__resize{display:block}
   .me-minimap{width:170px;height:128px;bottom:12px;right:60px}
   .me-intro__title{font-size:38px}
@@ -2089,10 +2095,10 @@ container.appendChild(panel);
         labelBg.setAttribute('width',textWidth+6);
         labelBg.setAttribute('height','14');
         labelBg.setAttribute('rx','3');
-        labelBg.setAttribute('fill','var(--me-label-bg,rgba(7,10,16,.68))');
+        labelBg.setAttribute('fill','var(--me-label-bg,rgba(7,10,16,.52))');
         labelBg.setAttribute('stroke','var(--me-border,rgba(255,255,255,.08))');
-        labelBg.setAttribute('stroke-width','0.5');
-        labelBg.setAttribute('opacity',inStory?'0.68':'0');
+        labelBg.setAttribute('stroke-width','0.35');
+        labelBg.setAttribute('opacity',inStory?'0.54':'0');
         labelBg.style.transition = 'opacity .3s';
         labelBg.style.pointerEvents = 'none';
         labelBg.classList.add('me-place-label-part','me-place-label-bg');
@@ -2161,9 +2167,12 @@ container.appendChild(panel);
         btn.addEventListener('click',()=>{
           tabsEl.querySelectorAll('.me-tab').forEach(b=>b.classList.remove('me-tab--active'));
           btn.classList.add('me-tab--active');
+          btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
           renderTabContent(btn.dataset.tab||'story',place);
         });
       });
+
+      requestAnimationFrame(()=>tabsEl.querySelector('.me-tab--active')?.scrollIntoView({block:'nearest',inline:'start'}));
 
       // Content
       renderTabContent(activeTab,place);
@@ -2171,9 +2180,10 @@ container.appendChild(panel);
       // Nav
       const totalInStory=vis.length;
     const counterText=idx>=0?`${idx+1} / ${totalInStory}`:'';
+    const progressPct=vis.length>1?Math.round((Math.max(0,idx)/(vis.length-1))*100):100;
     nav.innerHTML=`
         <button ${idx<=0?'disabled':''} id="me-prev" title="${idx>0?esc(vis[idx-1].name):''}">←</button>
-        <div class="me-nav__info"><span class="me-nav__counter">${idx+1} / ${vis.length}</span><div class="me-nav__dots">${vis.map((p,i)=>`<div class="me-nav__dot${i===idx?' me-nav__dot--active':''}"></div>`).join('')}</div></div>
+        <div class="me-nav__info"><span class="me-nav__counter">${idx+1} / ${vis.length}</span><div class="me-nav__progress" aria-hidden="true"><span class="me-nav__progress-fill" style="width:${progressPct}%"></span></div></div>
         <button ${idx>=vis.length-1?'disabled':''} id="me-next" title="${idx<vis.length-1?esc(vis[idx+1].name):''}">→</button>
       `;
       // Related places
@@ -2202,11 +2212,6 @@ container.appendChild(panel);
       }
       nav.querySelector('#me-prev')?.addEventListener('click',()=>{if(idx>0)open(vis[idx-1].id)});
       nav.querySelector('#me-next')?.addEventListener('click',()=>{if(idx<vis.length-1)open(vis[idx+1].id)});
-      // Clickable nav dots
-      nav.querySelectorAll('.me-nav__dot').forEach((dot,i) => {
-        dot.style.cursor = 'pointer';
-        dot.addEventListener('click', () => { if (i !== idx) open(vis[i].id); });
-      });
     }
 
     function _variantMeta(status='') {

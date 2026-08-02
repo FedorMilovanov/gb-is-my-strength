@@ -129,7 +129,7 @@ async function runViewport(browser,viewport){
   page.on('console',msg=>consoleEvents.push({type:msg.type(),text:msg.text().slice(0,1000)}));
   page.on('pageerror',err=>consoleEvents.push({type:'pageerror',text:err.message.slice(0,1000)}));
   page.on('requestfailed',req=>failedRequests.push({url:req.url(),method:req.method(),error:req.failure()?.errorText||'unknown'}));
-  const result={viewport,route:ROUTE_URL,introDismissed:false,overview:null,stories:[],places:[],tabs:[],keyboard:{},verificationFailures:[],consoleEvents,failedRequests,fatal:null};
+  const result={viewport,route:ROUTE_URL,introDismissed:false,overview:null,surfaces:{},stories:[],places:[],tabs:[],keyboard:{},verificationFailures:[],consoleEvents,failedRequests,fatal:null};
   try{
     await waitForMap(page);
     await screenshot(page,dir,'00-intro.png');
@@ -139,6 +139,26 @@ async function runViewport(browser,viewport){
     await screenshot(page,dir,'01-overview.png');
     result.overview=await collectGeometry(page,`${viewport.id}:overview`);
     if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
+
+    const themeButton=page.locator('.me-theme-btn').first();
+    if(await themeButton.isVisible().catch(()=>false)){
+      await themeButton.evaluate(el=>el.click());await page.waitForTimeout(180);
+      await screenshot(page,dir,'02-theme-alt.png');
+      result.surfaces.themeAlternative=await collectGeometry(page,`${viewport.id}:theme-alt`);
+      if(result.surfaces.themeAlternative.counts.offscreenControls>0)result.verificationFailures.push(`theme-alt offscreen controls: ${result.surfaces.themeAlternative.counts.offscreenControls}`);
+      if(result.surfaces.themeAlternative.counts.undersizedControls>0)result.verificationFailures.push(`theme-alt controls <44px: ${result.surfaces.themeAlternative.counts.undersizedControls}`);
+      await themeButton.evaluate(el=>el.click());await page.waitForTimeout(150);
+    }else result.verificationFailures.push('theme toggle missing');
+
+    const layerSummary=page.locator('.me-layers__summary').first();
+    if(await layerSummary.isVisible().catch(()=>false)){
+      await layerSummary.evaluate(el=>el.click());await page.waitForTimeout(160);
+      await screenshot(page,dir,'03-layers-expanded.png');
+      result.surfaces.layersExpanded=await collectGeometry(page,`${viewport.id}:layers-expanded`);
+      if(result.surfaces.layersExpanded.counts.offscreenControls>0)result.verificationFailures.push(`layers offscreen controls: ${result.surfaces.layersExpanded.counts.offscreenControls}`);
+      if(result.surfaces.layersExpanded.counts.undersizedControls>0)result.verificationFailures.push(`layers controls <44px: ${result.surfaces.layersExpanded.counts.undersizedControls}`);
+      await layerSummary.evaluate(el=>el.click());await page.waitForTimeout(120);
+    }else result.verificationFailures.push('layers summary missing');
 
     const stories=await storyMetadata(page);
     if(!stories.length)result.verificationFailures.push('no story chips found');
