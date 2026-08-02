@@ -94,7 +94,9 @@ const principles = [
     body.home-page #main-content .h-about {
       gap: 34px;
       margin-top: 34px;
-      padding: 50px 0 40px;
+      padding: 50px 0 42px;
+      border-top: 0;
+      border-bottom: 0;
     }
 
     body.home-page #main-content .h-about__copy h2 {
@@ -124,11 +126,23 @@ const principles = [
       line-height: 1.65;
     }
 
+    body.home-page #main-content .h-about-principles {
+      display: grid;
+      gap: 24px;
+      padding-inline: 2px;
+      border-top: 0;
+    }
+
     body.home-page #main-content .h-about-principles li {
       min-height: 0;
       grid-template-columns: 34px 1fr;
       gap: 15px;
-      padding: 19px 0;
+      padding: 0;
+      border-bottom: 0;
+    }
+
+    body.home-page #main-content .h-about-principles li::before {
+      display: none;
     }
 
     body.home-page #main-content .h-about-principles strong {
