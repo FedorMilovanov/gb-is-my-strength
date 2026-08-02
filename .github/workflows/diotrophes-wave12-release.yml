@@ -118,7 +118,7 @@ jobs:
           trap cleanup_boundary EXIT
           (
             cd "$boundary_dir"
-            node scripts/diotrophes-wave12-release-contract.mjs
+            node "${GITHUB_WORKSPACE}/scripts/diotrophes-wave12-release-contract.mjs"
           )
           cleanup_boundary
           trap - EXIT
