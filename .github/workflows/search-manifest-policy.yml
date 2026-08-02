@@ -164,10 +164,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout pull request branch
+      - name: Checkout exact pull request head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Set up Node 22.23.1
@@ -227,6 +227,10 @@ jobs:
         run: |
           if git diff --quiet -- feed.xml sitemap.xml data/route-search-policy.json data/search-manifest.json; then
             echo "No search policy, RSS or sitemap normalization required."
+            exit 0
+          fi
+          if ! git ls-remote --exit-code --heads origin "refs/heads/${HEAD_REF}" >/dev/null; then
+            echo "PR branch ${HEAD_REF} no longer exists; autofix result is obsolete."
             exit 0
           fi
           git config user.name "github-actions[bot]"
