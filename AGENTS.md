@@ -69,6 +69,30 @@ Required checks:
 - Workflow/control-plane diff требует соответствующих workflow/control-plane checks.
 - CSS/JS, route, content, data и runtime используют только свои targeted contracts.
 
+### 4.1 Verified backlog to zero — owner directive
+
+- Цель AuditRepo — последовательно довести **проверенный открытый backlog до нуля**.
+  `verified/MASTER_BUG_MATRIX.md` — durable registry найденных и верифицированных
+  проблем, а не телеметрия каждого коммита `main`, route count или deployment.
+- Не создавай authority-only синхронизацию только потому, что source `main` сдвинулся.
+  Обновляй AuditRepo, когда материально меняются disposition находки, её scope,
+  evidence, repair-readiness, счётчики или meaningful handoff.
+- Перед product mutation проверь находку на одном exact current anchor и присвой
+  фактический исход: `FIXED-CURRENT`, `STALE-ON-CURRENT-HEAD`, `FALSE-POSITIVE`,
+  `DUPLICATE/MERGED`, `CONFIRMED-CURRENT` либо `PARTIAL/NARROWED`.
+  Raw, suspected или историческая формулировка сама по себе не repair-ready.
+- Исправленное, устаревшее, ложное и дублированное закрывай канонически, а не удаляй
+  бесследно. Сохраняй provenance/evidence; при частичном исправлении сужай открытую
+  строку до реального остатка.
+- Product repair разрешён только для `CONFIRMED-CURRENT` проблемы с bounded root cause,
+  объявленным scope и применимыми checks. Не смешивай независимые кластеры в один
+  «починим все баги» PR.
+- После bounded source fix проверяй final PR head. Production witness нужен отдельно
+  только при production claim; старый зелёный SHA не переносится на новый.
+- Повторяй цикл `verify → close stale/fixed/false/duplicate → repair confirmed → reverify`,
+  пока open-счётчик не станет нулём. Не задерживай маленький доказанный repair ради
+  попытки сначала догнать матрицей каждое движение source.
+
 ## 5. Critical invariants
 
 Никогда без отдельного owner-approved SYSTEM scope:

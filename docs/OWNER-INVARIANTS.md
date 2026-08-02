@@ -1,7 +1,7 @@
 # OWNER INVARIANTS — канонический список инвариантов владельца
 
-**Updated:** 2026-07-24
-**Owner decision:** issue #219
+**Updated:** 2026-08-02
+**Owner decision:** issue #219 + direct owner directive 2026-08-02
 
 > Этот файл хранит устойчивые требования владельца, а не снимок конкретной ветки,
 > sandbox-сессии или UI-итерации. Менять его можно только по прямому решению владельца
@@ -72,3 +72,28 @@
     или установленные браузеры.
 14. **Временная автоматика не переживает свою транзакцию.** Writer, materializer,
     trigger, patcher и workflow удаляются до финального exact-head merge proof.
+
+## 5. Verified backlog и цель закрытия
+
+15. **AuditRepo — проверенный backlog, а не телеметрия `main`.** Матрица обязана хранить
+    подтверждённые проблемы, их disposition и evidence, но не должна догонять каждый
+    source commit, deploy, route count или временное движение active PR.
+16. **Цель владельца — довести verified open backlog до нуля.** Работа идёт циклом:
+    актуальная верификация → закрытие fixed/stale/false/duplicate → bounded repair
+    confirmed-current проблем → exact-head reverify.
+17. **Сначала verify, потом repair.** Исторический, raw или suspected claim не является
+    разрешением менять product. На одном exact source anchor нужно установить реальный
+    исход: fixed-current, stale-on-current-head, false-positive, duplicate/merged,
+    partial/narrowed либо confirmed-current.
+18. **Историю не стирать.** Реальную исправленную находку закрывать как fixed, устаревшую
+    как stale, ошибочную как false-positive, дубль как merged/duplicate. Evidence и
+    provenance сохраняются; частично исправленная строка остаётся открытой только в
+    суженной фактической формулировке.
+19. **Reconciliation должна быть пропорциональной.** AuditRepo обновляется при реальном
+    изменении статуса, scope, evidence, repair-readiness, счётчиков или meaningful handoff.
+    Отдельная синхронизация только ради нового `main` SHA не требуется и не должна
+    задерживать маленький доказанный repair.
+20. **Не превращать закрытие в мегапроект.** Подтверждённые проблемы ремонтируются
+    независимыми mergeable lanes по root cause/поверхности. Нельзя смешивать матричную
+    уборку, несвязанные product fixes, README/authority sync и production claims в один
+    гигантский PR. Каждый lane заканчивается применимыми checks на final head.
