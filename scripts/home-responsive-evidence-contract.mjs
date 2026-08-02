@@ -101,10 +101,10 @@ async function assertVisualRegressionContracts(page, width, height) {
       && first.bottom > second.top);
 
     /* Compare manuscript phrases with the actual rendered Home sections, not
-       the outer .home-content allocation. The wrapper includes intentionally
-       empty padding that belongs to the side rails; collision with a real child
-       surface is the visual regression the owner reported. */
-    const contentSurfaces = [...document.querySelectorAll('.home-content > *')]
+       the outer .home-content allocation. The ambient layer itself is a
+       full-page direct child and must not be treated as content it can collide
+       with. */
+    const contentSurfaces = [...document.querySelectorAll('.home-content > :not(.h-ambient-native)')]
       .map(rect)
       .filter((surface) => surface && surface.width > 0 && surface.height > 0);
     const visiblePhrases = [...document.querySelectorAll('.h-ambient-word')]
