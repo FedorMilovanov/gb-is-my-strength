@@ -28,11 +28,26 @@
 
     /*
      * Series routes own a fixed bottom bar but do not depend on the legacy
-     * body.has-bottom-bar class. Keep the native resume prompt above that bar
-     * so its copy and actions never intercept the primary mobile controls.
+     * body.has-bottom-bar class. Keep the native resume prompt above that bar.
      */
     body[data-gbs2-series] .bookmark-toast {
       bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /*
+     * WebKit may still hit-test wrapped resume copy below the toast box over
+     * the bar. The copy is informational, so it must not become a touch
+     * target; the close control and action buttons remain fully interactive.
+     */
+    body[data-gbs2-series] .bookmark-toast-copy,
+    body[data-gbs2-series] .bookmark-toast-copy * {
+      pointer-events: none !important;
+    }
+
+    body[data-gbs2-series] .bookmark-toast-close,
+    body[data-gbs2-series] .bookmark-toast-actions,
+    body[data-gbs2-series] .bookmark-toast-actions * {
+      pointer-events: auto !important;
     }
   }
 
