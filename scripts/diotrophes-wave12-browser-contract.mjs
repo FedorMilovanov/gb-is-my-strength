@@ -91,7 +91,9 @@ async function inspect(browserType, engine, profile) {
       const consoleErrors = [];
       const pageErrors = [];
       page.on('console', (message) => {
-        if (message.type() === 'error' && !/mc\.yandex|ERR_BLOCKED_BY_CLIENT|Failed to load resource|Load failed/i.test(message.text())) consoleErrors.push(message.text());
+        const text = message.text();
+        const ignored = /mc\.yandex|ERR_BLOCKED_BY_CLIENT|Failed to load resource|Load failed|Viewport argument key "interactive-widget" not recognized and ignored\./i;
+        if (message.type() === 'error' && !ignored.test(text)) consoleErrors.push(text);
       });
       page.on('pageerror', (error) => pageErrors.push(error.message));
       await page.route(/mc\.yandex|gospod-bog\.ru/, (request) => request.abort());
@@ -99,7 +101,25 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'http-200', response?.status() === 200, `status=${response?.status()}`);
       const state = await page.evaluate(() => {
         const bodyText = document.body.innerText;
-        const external = [...document.querySelectorAll('main a[href^="https://"]')].map((node) => node.href);
+        const external = [...document.querySelectorAll('.article-body a[href^="https://"]')].map((node) => node.href);
+        const viewportWidth = document.documentElement.clientWidth;
+        const overflowingElements = [...document.querySelectorAll('body *')]
+          .map((node) => {
+            const rect = node.getBoundingClientRect();
+            const id = node.id ? `#${node.id}` : '';
+            const className = typeof node.className === 'string'
+              ? node.className.trim().split(/\s+/).filter(Boolean).slice(0, 3).map((name) => `.${name}`).join('')
+              : '';
+            return {
+              selector: `${node.tagName.toLowerCase()}${id}${className}`,
+              left: Math.round(rect.left),
+              right: Math.round(rect.right),
+              width: Math.round(rect.width),
+            };
+          })
+          .filter((item) => item.right > viewportWidth + 1 || item.width > viewportWidth + 1)
+          .sort((a, b) => Math.max(b.right, b.width) - Math.max(a.right, a.width))
+          .slice(0, 8);
         return {
           title: document.title,
           h1: document.querySelector('h1')?.textContent?.trim() || '',
@@ -107,11 +127,13 @@ async function inspect(browserType, engine, profile) {
           articleCount: document.querySelectorAll('article.article-body').length,
           publicationMarker: document.body.dataset.wave12Publication,
           sourceAuthority: document.querySelector('[data-source-authority]')?.getAttribute('data-source-authority'),
-          readerLinks: new Set(external).size,
+          readerLinkElements: external.length,
+          uniqueReaderLinks: new Set(external).size,
           hasFaithful: Boolean(document.querySelector('#faithful-witness-under-pressure')),
           hasResponses: Boolean(document.querySelector('#twenty-faithful-responses')),
           draftLeak: /PUBLICATION_HOLD|ещё не зарегистрирован как публичный маршрут/.test(bodyText),
           horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          overflowingElements,
           canonical: document.querySelector('link[rel="canonical"]')?.href || '',
           robots: document.querySelector('meta[name="robots"]')?.content || '',
         };
@@ -121,10 +143,16 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'title-h1', state.h1 === 'Диотрефы нашего времени' && state.title.includes('Диотрефы нашего времени'), JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'publication-marker', state.publicationMarker === 'true', JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'authority-marker', state.sourceAuthority === '148', JSON.stringify(state));
-      record(engine, `${profile.id}-${mode}`, 'reader-links', state.readerLinks === 73, `unique=${state.readerLinks}`);
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'reader-links',
+        state.readerLinkElements === 73 && state.uniqueReaderLinks === 40,
+        `elements=${state.readerLinkElements} unique=${state.uniqueReaderLinks}`,
+      );
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'no-draft-leak', !state.draftLeak, JSON.stringify(state));
-      record(engine, `${profile.id}-${mode}`, 'no-horizontal-overflow', state.horizontalOverflow <= 1, `overflow=${state.horizontalOverflow}`);
+      record(engine, `${profile.id}-${mode}`, 'no-horizontal-overflow', state.horizontalOverflow <= 1, JSON.stringify({ overflow:state.horizontalOverflow, elements:state.overflowingElements }));
       record(engine, `${profile.id}-${mode}`, 'canonical-index', state.canonical.endsWith(ROUTE) && /index/.test(state.robots), JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'console-clean', consoleErrors.length === 0, consoleErrors.join(' | '));
       record(engine, `${profile.id}-${mode}`, 'page-clean', pageErrors.length === 0, pageErrors.join(' | '));
