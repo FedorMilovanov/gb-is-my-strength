@@ -481,6 +481,13 @@ const MapEngine = (function() {
     let activePlaceId = null;
     let activeStoryId = initialState.story;
     container.setAttribute('data-active-story',activeStoryId);
+    function activeMinViewWidth(){
+      const authored=matchMedia('(max-width:560px)').matches
+        ?route.meta?.mobile_story_min_widths?.[activeStoryId]
+        :route.meta?.story_min_widths?.[activeStoryId];
+      const parsed=Number(authored);
+      return Number.isFinite(parsed)&&parsed>0?Math.min(cfg.minW,parsed):cfg.minW;
+    }
     let touring = false;
     let tourStepIdx = 0;
     let rafId = null;
@@ -534,7 +541,7 @@ const MapEngine = (function() {
     const rawCx=Number(initVp[0]),rawCy=Number(initVp[1]),rawW=Number(initVp[2]);
     const initCx=Number.isFinite(rawCx)?rawCx:cfg.W0/2;
     const initCy=Number.isFinite(rawCy)?rawCy:cfg.H0/2;
-    const initW=clamp(Number.isFinite(rawW)&&rawW>0?rawW:cfg.W0,cfg.minW,cfg.maxW);
+    const initW=clamp(Number.isFinite(rawW)&&rawW>0?rawW:cfg.W0,activeMinViewWidth(),cfg.maxW);
     const initH=initW*cfg.H0/cfg.W0;
     view={
       x:clamp(initCx-initW/2,-cfg.padX,cfg.W0+cfg.padX-initW),
@@ -1078,7 +1085,7 @@ const MapEngine = (function() {
     }
     function viewHeightForWidth(width){return width*viewportAspect()}
     function clampViewAround(cx,cy,width){
-      const w=clamp(width,cfg.minW,cfg.maxW),h=viewHeightForWidth(w);
+      const w=clamp(width,activeMinViewWidth(),cfg.maxW),h=viewHeightForWidth(w);
       return{x:clamp(cx-w/2,-cfg.padX,cfg.W0+cfg.padX-w),y:clamp(cy-h/2,-cfg.padY,cfg.H0+cfg.padY-h),w,h};
     }
     const authoredMobileInit=route.meta?.mobile_viewport_init;
@@ -1400,7 +1407,7 @@ header.appendChild(shareBtn);
     let suppressZoomClickUntil = 0;
     function zoomOnce(dir) {
       const cx=view.x+view.w/2,cy=view.y+view.h/2;
-      const nw=dir==='in'?Math.max(cfg.minW,view.w*0.85):Math.min(cfg.maxW,view.w*1.15);
+      const nw=dir==='in'?Math.max(activeMinViewWidth(),view.w*0.85):Math.min(cfg.maxW,view.w*1.15);
       flyTo(cx,cy,nw,150);
     }
     function startZoomRepeat(dir) {
@@ -2637,7 +2644,7 @@ container.appendChild(panel);
       // (e.g. 0.72 or 0.85) while newer engine internals pass a viewBox width.
       // Treat small positive values as zoom factors to avoid collapsed 1px viewBoxes.
       if (typeof w === 'number' && w > 0 && w <= 10) w = cfg.W0 / w;
-      w = clamp(w || cfg.W0, cfg.minW, cfg.maxW);
+      w = clamp(w || cfg.W0, activeMinViewWidth(), cfg.maxW);
       const from={...view};
       const h=viewHeightForWidth(w);
       const to={x:clamp(cx-w/2,-cfg.padX,cfg.W0+cfg.padX-w),y:clamp(cy-h/2,-cfg.padY,cfg.H0+cfg.padY-h),w,h};
@@ -2689,7 +2696,7 @@ container.appendChild(panel);
           e.touches[0].clientY - e.touches[1].clientY
         );
         const scale = pinchDist0 / Math.max(1, dist);
-        const nw = clamp(pinchView0.w * scale, cfg.minW, cfg.maxW);
+        const nw = clamp(pinchView0.w * scale, activeMinViewWidth(), cfg.maxW);
         const cx = pinchView0.x + pinchView0.w / 2;
         const cy = pinchView0.y + pinchView0.h / 2;
         view.w = nw;
@@ -2709,7 +2716,7 @@ container.appendChild(panel);
       const sc=r.width/view.w;
       const mx=view.x+(e.clientX-r.left)/sc;
       const my=view.y+(e.clientY-r.top)/sc;
-      const nw=clamp(view.w*Math.exp(e.deltaY*.0014),cfg.minW,cfg.maxW);
+      const nw=clamp(view.w*Math.exp(e.deltaY*.0014),activeMinViewWidth(),cfg.maxW);
       const k=nw/view.w;
       view.x=clamp(mx-(mx-view.x)*k,-cfg.padX,cfg.W0+cfg.padX-nw);
       const nh=viewHeightForWidth(nw);
