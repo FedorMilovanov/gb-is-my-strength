@@ -1,4 +1,4 @@
-const VERSION = 7;
+const VERSION = 8;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
@@ -23,6 +23,11 @@ function cancelClose() {
 
 function containsInteractive(record, target) {
   return Boolean(record && target instanceof Node && (record.anchor.contains(target) || record.tip.contains(target)));
+}
+
+function currentPointerTarget() {
+  if (!Number.isFinite(pointerX) || !Number.isFinite(pointerY)) return null;
+  return document.elementFromPoint(pointerX, pointerY);
 }
 
 function recordPointerMovement(event) {
@@ -57,6 +62,7 @@ function scheduleClose(delay = 220) {
     if (active !== record) return;
     const focused = document.activeElement;
     if (focused === record.anchor || record.tip.contains(focused)) return;
+    if (containsInteractive(record, currentPointerTarget())) return;
     if (record.anchor.matches(':hover') || record.tip.matches(':hover')) return;
     if (record.reason === 'hover' && (!record.hoverSettled || pointerEpoch === record.pointerBaseline)) return;
     closeTooltip('leave');
