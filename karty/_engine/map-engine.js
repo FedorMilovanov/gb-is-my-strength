@@ -1541,8 +1541,8 @@ container.appendChild(panel);
         }
         const restrictive=[...info.all,...info.explicit].filter(id=>layerState.has(id));
         const alternatives=[...info.any].filter(id=>layerState.has(id));
-        const selectedStoryRoute=activeStoryId!=='main'&&el.getAttribute('data-story-active')==='1'&&el.matches('.me-route-main,.me-route-underlay,[data-route-segment]');
-        const hidden=!selectedStoryRoute&&(restrictive.some(id=>layerState.get(id)===false)||(alternatives.length>0&&!alternatives.some(id=>layerState.get(id)!==false)));
+        const selectedStoryElement=activeStoryId!=='main'&&el.getAttribute('data-story-active')==='1';
+        const hidden=!selectedStoryElement&&(restrictive.some(id=>layerState.get(id)===false)||(alternatives.length>0&&!alternatives.some(id=>layerState.get(id)!==false)));
         el.setAttribute('data-me-layer-hidden',hidden?'1':'0');
         if(hidden){
           el.style.opacity='0';el.style.visibility='hidden';el.style.pointerEvents='none';el.setAttribute('aria-hidden','true');

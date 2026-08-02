@@ -222,6 +222,12 @@ async function runViewport(browser,viewport){
         if(story.id!=='main'&&geometry.counts.routes===0)result.verificationFailures.push(`story route missing: ${story.id}`);
         const irrelevantMarkers=story.id==='main'?[]:geometry.markers.filter(marker=>marker.storyActive==='0');
         if(irrelevantMarkers.length)result.verificationFailures.push(`story irrelevant markers ${story.id}: ${irrelevantMarkers.map(marker=>marker.placeId||marker.text||marker.id).join(', ')}`);
+        const sourceStory=(SOURCE_ROUTE.stories||[]).find(item=>item.id===story.id);
+        const sourcePlaces=new Map((SOURCE_ROUTE.places||[]).map(place=>[place.id,place]));
+        const requiredStoryPlaces=(sourceStory?.places||sourceStory?.place_ids||[]).filter(id=>sourcePlaces.get(id)?.type!=='cand');
+        const visibleStoryPlaces=new Set(geometry.markers.map(marker=>marker.placeId).filter(Boolean));
+        const missingStoryPlaces=story.id==='main'?[]:requiredStoryPlaces.filter(id=>!visibleStoryPlaces.has(id));
+        if(missingStoryPlaces.length)result.verificationFailures.push(`story required markers missing ${story.id}: ${missingStoryPlaces.join(', ')}`);
         const overlapLimit=viewport.width<=560?4:6;
         const clippedLimit=viewport.width<=560?4:6;
         if(geometry.counts.labelOverlaps>overlapLimit)result.verificationFailures.push(`story label overlaps ${story.id}: ${geometry.counts.labelOverlaps}>${overlapLimit}`);
