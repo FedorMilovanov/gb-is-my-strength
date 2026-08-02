@@ -20,6 +20,7 @@ on:
       - "Visual Parity Guard — pixel-diff"
       - "Dist Strangler Dry Run"
       - "Shared Files Guard"
+      - "Product to Research release witness"
     types:
       - completed
 
@@ -67,3 +68,85 @@ jobs:
             }
 
             await loaded.exports({ github, context, core, workflowRun });
+
+      - name: Publish durable Product to Research success receipt
+        if: >-
+          github.event.workflow_run.name == 'Product to Research release witness' &&
+          github.event.workflow_run.conclusion == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const marker = '<!-- product-research-release-witness:v1 -->';
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+              owner,
+              repo,
+              run_id: run.id,
+              per_page: 100,
+            });
+            const visible = artifacts
+              .filter((artifact) => artifact && !artifact.expired)
+              .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+            const artifactLines = visible.length
+              ? visible.map((artifact) => `- **${artifact.name}** — ID ${artifact.id}, ${artifact.size_in_bytes} bytes`)
+              : ['- No unexpired artifact was returned.'];
+            const body = [
+              marker,
+              '# Product → Research release witness',
+              '',
+              '- **Conclusion:** `success`',
+              `- **Tested SHA:** \`${run.head_sha}\``,
+              `- **Run:** [${run.id} attempt ${run.run_attempt || 1}](${run.html_url})`,
+              `- **Branch:** \`${run.head_branch}\``,
+              `- **Event:** \`${run.event}\``,
+              `- **Created:** ${run.created_at}`,
+              `- **Updated:** ${run.updated_at}`,
+              '',
+              '## Passed boundaries',
+              '',
+              '- immutable Diotrophes Wave 12 release transaction;',
+              '- current Wave 10–12 authority, RSS, sitemap, Pagefind and links-graph contracts;',
+              '- current pastor-series native publication contract;',
+              '- Pihahiroth three-corridor static, desktop, mobile and no-JS contracts;',
+              '- current metadata, ownership, public-surface, Astro and map contracts;',
+              '- Wave 12 Chromium, WebKit, no-JS and print contract;',
+              '- clean tracked source tree after validation.',
+              '',
+              '## Evidence artifacts',
+              '',
+              ...artifactLines,
+              '',
+              'This receipt does not grant quotation, rights, or publication authority beyond the validated Product contracts.',
+            ].join('\n');
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'all',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && String(issue.body || '').includes(marker));
+            const title = `✅ Product release witness ${String(run.head_sha).slice(0, 12)}`;
+            if (existing) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existing.number,
+                title,
+                body,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+              core.info(`Updated Product release witness issue #${existing.number}`);
+            } else {
+              const created = await github.rest.issues.create({ owner, repo, title, body });
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: created.data.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+              core.info(`Created Product release witness issue #${created.data.number}`);
+            }
