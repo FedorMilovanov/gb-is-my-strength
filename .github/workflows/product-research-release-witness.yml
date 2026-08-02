@@ -40,12 +40,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends poppler-utils
 
-      - name: Validate immutable Wave 12 release transaction
+      - name: Validate immutable and transaction-scoped Wave 12 release
         shell: bash
         run: |
           set -euo pipefail
           git merge-base --is-ancestor "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY" HEAD
           node scripts/diotrophes-wave12-release-contract.mjs
+          node scripts/diotrophes-wave12-transaction-scope-contract.mjs
 
       - name: Validate current Wave 10 to 12 and canonical discovery authority
         run: |

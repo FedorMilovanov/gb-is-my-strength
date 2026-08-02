@@ -101,7 +101,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends poppler-utils
 
-      - name: Validate predecessor and immutable release authorities
+      - name: Validate predecessor immutable and transaction-scoped authorities
         shell: bash
         run: |
           set -euo pipefail
@@ -109,6 +109,7 @@ jobs:
           node scripts/diotrophes-wave11-faithful-witness-contract.mjs
           git merge-base --is-ancestor "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY" HEAD
           node scripts/diotrophes-wave12-release-contract.mjs
+          node scripts/diotrophes-wave12-transaction-scope-contract.mjs
           node scripts/diotrophes-wave12-canonical-discovery-contract.mjs
 
       - name: Validate route registries search contract and Astro types
