@@ -276,6 +276,22 @@ async function waitForSearchState(page, open) {
   }, open);
 }
 
+async function waitForProcessedSearch(page, query, expectedTitle) {
+  await page.waitForFunction(({ query: expectedQuery, expectedTitle: titleNeedle }) => {
+    const input = document.querySelector('.cp-input');
+    if (input?.value.trim() !== expectedQuery || document.querySelector('.cp-loading')) return false;
+    const headings = [...document.querySelectorAll('.cp-group-hd > span:first-child')]
+      .map((node) => node.textContent?.trim() || '');
+    const staleHeadings = new Set(['Рекомендуемое', 'Новое', 'Недавние запросы', 'Популярные исследования']);
+    const processed = headings.some((heading) => heading && !staleHeadings.has(heading));
+    const empty = Boolean(document.querySelector('.cp-empty'));
+    const titles = [...document.querySelectorAll('.cp-item-title')]
+      .map((node) => (node.textContent || '').toLocaleLowerCase('ru-RU'));
+    const titleMatched = !titleNeedle || titles.some((title) => title.includes(titleNeedle.toLocaleLowerCase('ru-RU')));
+    return (processed || empty) && titleMatched;
+  }, { query, expectedTitle });
+}
+
 async function assertSearchUnlocked(page, label) {
   const state = await page.evaluate(() => ({
     lockCount: Number(window.SiteUtils?._scrollLockCount || 0),
@@ -335,10 +351,11 @@ async function assertSearchLifecycle(page, browserName) {
   assert.ok(closeBox && closeBox.width >= 43 && closeBox.height >= 43, `${browserName}: search close target is smaller than 44px`);
 
   await input.fill('Нагорная проповедь');
-  await page.waitForFunction(() => document.querySelectorAll('.cp-item').length > 0 && !document.querySelector('.cp-loading'));
+  await waitForProcessedSearch(page, 'Нагорная проповедь', 'Нагорная проповедь');
   const resultCount = await page.locator('.cp-item').count();
   assert.ok(resultCount > 0, `${browserName}: canonical query returned no results`);
   assert.match((await page.locator('.cp-status').textContent()) || '', /\d+\s+рез\./, `${browserName}: result status is missing`);
+  assert.match((await page.locator('.cp-item-title').first().textContent()) || '', /Нагорная проповедь/i, `${browserName}: exact title query is not ranked first`);
   assert.equal(await page.locator('.cp-item.is-active').first().getAttribute('aria-selected'), 'true', `${browserName}: active search result is not announced`);
 
   const focusables = page.locator('#gbCommandPalette :is(input, button, a[href], [tabindex]:not([tabindex="-1"])):visible');
@@ -367,9 +384,25 @@ async function assertSearchLifecycle(page, browserName) {
   assert.equal(await page.locator('.cp-input').evaluate((element) => element === document.activeElement), true, `${browserName}: menu-to-search transition lost input focus`);
   assert.equal(await page.locator('.cp-backdrop').count(), 1, `${browserName}: menu transition duplicated search`);
 
+  const scopeGeometry = await page.evaluate(() => {
+    const row = document.querySelector('.cp-scope-row')?.getBoundingClientRect();
+    const first = document.querySelector('.cp-scope-chip:first-child')?.getBoundingClientRect();
+    const last = document.querySelector('.cp-scope-chip:last-child')?.getBoundingClientRect();
+    return row && first && last ? {
+      rowLeft: row.left,
+      rowRight: row.right,
+      firstLeft: first.left,
+      lastRight: last.right,
+    } : null;
+  });
+  assert.ok(scopeGeometry
+    && scopeGeometry.firstLeft >= scopeGeometry.rowLeft - 1
+    && scopeGeometry.lastRight <= scopeGeometry.rowRight + 1,
+  `${browserName}: mobile search scopes are clipped at rest`);
+
   await page.locator('.cp-input').fill('Иер 17:9');
-  await page.waitForFunction(() => !document.querySelector('.cp-loading'));
-  assert.ok(await page.locator('.cp-item, .cp-empty').count() > 0, `${browserName}: scripture query produced no stable state`);
+  await waitForProcessedSearch(page, 'Иер 17:9', 'сердц');
+  assert.ok(await page.locator('.cp-item').count() > 0, `${browserName}: scripture query returned no material`);
   await page.locator('.cp-home-close').click();
   await waitForSearchState(page, false);
   await assertSearchUnlocked(page, `${browserName} mobile close`);
@@ -429,7 +462,7 @@ async function captureCompactEvidence(page, browserName) {
   await page.evaluate(() => window.scrollTo(0, 0));
   let input = await openSearch(page, '#gbSearchBtn');
   await input.fill('Нагорная проповедь');
-  await page.waitForFunction(() => document.querySelectorAll('.cp-item').length > 0 && !document.querySelector('.cp-loading'));
+  await waitForProcessedSearch(page, 'Нагорная проповедь', 'Нагорная проповедь');
   await shot('chromium-search-desktop-light.png');
   await page.locator('.cp-home-close').click();
   await waitForSearchState(page, false);
@@ -437,7 +470,7 @@ async function captureCompactEvidence(page, browserName) {
   await setThemeForEvidence(page, true);
   input = await openSearch(page, '#gbSearchBtn');
   await input.fill('Нагорная проповедь');
-  await page.waitForFunction(() => document.querySelectorAll('.cp-item').length > 0 && !document.querySelector('.cp-loading'));
+  await waitForProcessedSearch(page, 'Нагорная проповедь', 'Нагорная проповедь');
   await shot('chromium-search-desktop-dark.png');
   await page.locator('.cp-home-close').click();
   await waitForSearchState(page, false);
@@ -450,7 +483,7 @@ async function captureCompactEvidence(page, browserName) {
 
   input = await openSearch(page, '#gbSearchBtn');
   await input.fill('Иер 17:9');
-  await page.waitForFunction(() => !document.querySelector('.cp-loading'));
+  await waitForProcessedSearch(page, 'Иер 17:9', 'сердц');
   await shot('chromium-search-mobile-light.png');
   await page.locator('.cp-home-close').click();
   await waitForSearchState(page, false);
