@@ -87,7 +87,6 @@ Allow: /llms.txt
 User-agent: Omgilibot
 Disallow: /
 
-
 # --- AUDIT V2 (2026-05): SEO-краулеры и доп. AI-training agents ---
 User-agent: AhrefsBot
 Disallow: /
@@ -120,5 +119,5 @@ User-agent: ImagesiftBot
 Disallow: /
 Allow: /llms.txt
 
-
 Sitemap: https://gospod-bog.ru/sitemap.xml
+Sitemap: https://gospod-bog.ru/sitemap-pastor-series.xml
