@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 root=Path('.')
 engine=root/'karty/_engine/map-engine.js'
@@ -15,10 +16,11 @@ def rep(text,old,new,label,count=1):
     return text.replace(old,new,count)
 
 # The light theme is a real cartographic palette, not a global sepia wash.
-s=rep(s,
-"light:Object.freeze({id:'light',bg:'#eee4d1',panelBg:'rgba(250,246,236,.97)',text:'#332b20',muted:'#6c6255',accent:'#986a16',controlBg:'rgba(250,246,236,.88)',border:'rgba(72,55,31,.22)',labelBg:'rgba(250,246,236,.9)',labelText:'#332b20',baseFill:'#d7c7a8',baseOpacity:'0.58',svgFilter:'sepia(.16) saturate(.72) brightness(1.28) contrast(.84)'})",
-"light:Object.freeze({id:'light',bg:'#e4d8c1',panelBg:'rgba(250,246,236,.98)',text:'#2e2418',muted:'#6b5b47',accent:'#8b5a0b',controlBg:'rgba(255,250,239,.94)',border:'rgba(72,51,27,.25)',labelBg:'rgba(255,249,235,.92)',labelText:'#2d2317',baseFill:'#d7c5a4',baseOpacity:'0.22',svgFilter:'none'})",
-'light palette')
+light_pattern=r"light:Object\.freeze\(\{id:'light'.*?\}\)"
+light_replacement="light:Object.freeze({id:'light',bg:'#e4d8c1',panelBg:'rgba(250,246,236,.98)',text:'#2e2418',muted:'#6b5b47',accent:'#8b5a0b',controlBg:'rgba(255,250,239,.94)',border:'rgba(72,51,27,.25)',labelBg:'rgba(255,249,235,.92)',labelText:'#2d2317',baseFill:'#d7c5a4',baseOpacity:'0.22',svgFilter:'none'})"
+s,n=re.subn(light_pattern,light_replacement,s,count=1)
+if n!=1:
+    raise SystemExit(f'MISSING light palette object: {n}')
 
 light_css='''
 /* Premium cartographic light palette: independent land, water, labels and chrome. */
@@ -65,7 +67,6 @@ s=rep(s,
 "  .me-story-chip{flex:0 0 auto}",
 "  .me-story-chip{flex:1 1 0;min-width:0;padding:8px 4px;font-size:9px;letter-spacing:-.015em}",
 'mobile story chip fit')
-s=s.replace('mobile story strip fits all five controls','mobile story strip fits all five controls')
 engine.write_text(s,'utf-8')
 
 # The surface evidence must assert the active theme rather than only geometry.
