@@ -17,6 +17,7 @@ on:
       - "src/components/nagornaya/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
+      - "scripts/sitemap-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-index-policy-inventory.js"
@@ -39,6 +40,7 @@ on:
       - "src/components/nagornaya/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
+      - "scripts/sitemap-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-index-policy-inventory.js"
@@ -57,7 +59,7 @@ concurrency:
 
 jobs:
   manifest-normalizer-contract:
-    name: Manifest and RSS normalizer contract
+    name: Manifest and RSS/sitemap normalizer contract
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -76,6 +78,7 @@ jobs:
           node --check scripts/search-manifest-policy-normalizer-test.js
           node --check scripts/rss-feed-normalizer.js
           node --check scripts/rss-feed-normalizer-test.js
+          node --check scripts/sitemap-policy-normalizer.js
           node --check scripts/discovery-followups-browser-test.mjs
 
       - name: Test normalizer mutations and idempotence
@@ -83,11 +86,13 @@ jobs:
           node scripts/search-manifest-policy-normalizer-test.js
           node scripts/rss-feed-normalizer-test.js
 
-      - name: Require deterministic RSS projection
-        run: node scripts/rss-feed-normalizer.js --check
+      - name: Require deterministic canonical discovery projection
+        run: |
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
 
   discovery-followups-contract:
-    name: Pagefind scripture, noindex and RSS contract
+    name: Pagefind scripture, noindex and RSS/sitemap contract
     runs-on: ubuntu-latest
     timeout-minutes: 35
 
@@ -117,6 +122,8 @@ jobs:
 
       - name: Verify route policy and Nagornaya registries
         run: |
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
           node scripts/search-index-policy-inventory.js --dist=dist --strict
           node scripts/nagornaya-source-integrity-regression-test.js
           npm run nagornaya:visual-parity:audit
@@ -146,7 +153,7 @@ jobs:
           retention-days: 30
 
   search-manifest-autofix:
-    name: Search manifest and RSS autofix
+    name: Search manifest, RSS and sitemap autofix
     if: >-
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.labels.*.name, 'autofix') &&
@@ -187,12 +194,15 @@ jobs:
           --promote-rss-articles
           --write
 
-      - name: Normalize deterministic RSS projection
-        run: node scripts/rss-feed-normalizer.js --write
+      - name: Normalize deterministic canonical discovery surfaces
+        run: |
+          node scripts/rss-feed-normalizer.js --write
+          node scripts/sitemap-policy-normalizer.js --write
 
       - name: Validate normalized production policy
         run: |
           node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
           node scripts/search-index-policy-inventory.js --dist=dist --strict
 
       - name: Validate focused diff
@@ -201,6 +211,7 @@ jobs:
           git diff --check
           git diff --name-only -- . \
             ':(exclude)feed.xml' \
+            ':(exclude)sitemap.xml' \
             ':(exclude)data/route-search-policy.json' \
             ':(exclude)data/search-manifest.json' > /tmp/unexpected-search-autofix-paths
           if [[ -s /tmp/unexpected-search-autofix-paths ]]; then
@@ -209,17 +220,17 @@ jobs:
             exit 1
           fi
 
-      - name: Commit search policy and RSS normalization
+      - name: Commit search policy and canonical discovery normalization
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          if git diff --quiet -- feed.xml data/route-search-policy.json data/search-manifest.json; then
-            echo "No search policy or RSS normalization required."
+          if git diff --quiet -- feed.xml sitemap.xml data/route-search-policy.json data/search-manifest.json; then
+            echo "No search policy, RSS or sitemap normalization required."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add feed.xml data/route-search-policy.json data/search-manifest.json
-          git commit -m "fix(search): align manifest and RSS with route policy"
+          git add feed.xml sitemap.xml data/route-search-policy.json data/search-manifest.json
+          git commit -m "fix(search): align manifest, RSS and sitemap with route policy"
           git push origin "HEAD:${HEAD_REF}"
