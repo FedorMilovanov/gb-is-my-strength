@@ -20,11 +20,12 @@ import DiotrophesWave11Draft from './DiotrophesWave11Draft.astro';
   </div>
 </SeriesReaderChrome>
 
-<style is:global>
+<style is:inline>
   /*
    * Direct no-JS media owner for the released Wave 12 route. The authored
    * image dimensions preserve aspect ratio, while WebKit otherwise keeps the
-   * 1536px intrinsic width before the runtime zoom wrapper exists.
+   * 1536px intrinsic width before the runtime zoom wrapper exists. This style
+   * remains inline so the no-JS witness does not depend on an external asset.
    */
   .wave12-publication-boundary .article-img.wide > picture,
   .wave12-publication-boundary .article-img.wide > picture > img {
