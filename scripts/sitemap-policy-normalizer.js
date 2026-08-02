@@ -9,6 +9,7 @@ const { normalizePolicyRoutes } = require('./lib/search-index-policy-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_SITE_URL = 'https://gospod-bog.ru';
+const NORMALIZER_VERSION = 1;
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = { write: false, check: false };
@@ -143,11 +144,11 @@ function main() {
 
   if (options.write) {
     if (result.xml === current) {
-      console.log('Sitemap already contains every route required by policy.');
+      console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: every policy route is already present.`);
       return;
     }
     fs.writeFileSync(sitemapFile, result.xml, 'utf8');
-    console.log(`Wrote sitemap.xml policy additions: ${result.missing.join(', ')}`);
+    console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: wrote policy additions: ${result.missing.join(', ')}`);
     return;
   }
 
@@ -156,7 +157,7 @@ function main() {
     console.error('Run: node scripts/sitemap-policy-normalizer.js --write');
     process.exit(1);
   }
-  console.log('✅ sitemap.xml contains every route required by policy');
+  console.log(`✅ Sitemap normalizer v${NORMALIZER_VERSION}: sitemap.xml contains every route required by policy`);
 }
 
 if (require.main === module) {
@@ -169,6 +170,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  NORMALIZER_VERSION,
   parseArgs,
   xmlEscape,
   manifestRouteMap,
