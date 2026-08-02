@@ -1,0 +1,82 @@
+name: NoteRegistry Authored ID Autofix
+
+on:
+  pull_request:
+    types: [synchronize, labeled]
+    branches: [main]
+
+concurrency:
+  group: note-registry-authored-id-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  write:
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Resolve live pull request branch
+        id: branch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}.git" "refs/heads/${HEAD_REF}" >/dev/null
+          echo 'exists=true' >> "$GITHUB_OUTPUT"
+
+      - name: Checkout exact pull request branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Apply exact authored IDs
+        run: |
+          node scripts/note-registry-authored-id-normalizer.mjs --write
+          node scripts/note-registry-authored-id-normalizer.mjs --check
+
+      - name: Validate focused source diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git diff --name-only > /tmp/changed
+          cat > /tmp/expected <<'PATHS'
+          src/components/article-pilots/hermenevtika/HermenevtikaBody.astro
+          src/components/article-pilots/krajne/KrajneBody.astro
+          PATHS
+          sort -o /tmp/changed /tmp/changed
+          sort -o /tmp/expected /tmp/expected
+          diff -u /tmp/expected /tmp/changed
+          test "$(git diff --numstat | awk '{a+=$1; d+=$2} END {print a+0, d+0}')" = '2 2'
+          test "$(git diff | grep -c 'data-note-id=')" -eq 10
+
+      - name: Commit exact authored IDs
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if ! git ls-remote --exit-code --heads origin "refs/heads/${HEAD_REF}" >/dev/null; then
+            echo "PR branch disappeared; result is obsolete."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/article-pilots/hermenevtika/HermenevtikaBody.astro src/components/article-pilots/krajne/KrajneBody.astro
+          git commit -m "fix(notes): assign explicit IDs to ambiguous citations"
+          git push origin "HEAD:${HEAD_REF}"
