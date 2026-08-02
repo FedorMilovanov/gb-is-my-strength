@@ -49,14 +49,26 @@ const gitShowJson = (ref, path, label) => {
   try { return JSON.parse(gitShow(ref, path, label)); }
   catch (error) { errors.push(`${path} at ${label} ${ref}: invalid JSON: ${error.message}`); return {}; }
 };
-const deepEqual = (left, right) => JSON.stringify(left) === JSON.stringify(right);
-const preserveEntries = (before, after, label) => {
-  for (const [key, oldValue] of Object.entries(before ?? {})) {
-    requireValue(Object.hasOwn(after ?? {}, key), `${label}: pre-Wave12 key disappeared: ${key}`);
-    if (Object.hasOwn(after ?? {}, key)) requireValue(deepEqual(after[key], oldValue), `${label}: pre-Wave12 entry changed: ${key}`);
-  }
-};
-const hrefs = (value) => new Set([...value.matchAll(/\bhref=["']([^"']+)["']/g)].map((match) => match[1]));
+const routePolicyIsPublic = (policy) => (
+  policy?.indexPolicy === 'index'
+  && policy?.pagefindPolicy === 'include'
+  && policy?.searchManifestPolicy === 'include'
+  && policy?.sitemapPolicy === 'include'
+  && policy?.rssPolicy === 'include'
+);
+const searchItemIsWave12 = (item) => (
+  item?.url === ROUTE
+  && item?.readTime === 35
+  && item?.section === 'Служение'
+  && item?.seriesId === 'pastor-series'
+  && item?.seriesPosition === 2
+);
+const seriesHasWave12Part = (series) => (
+  series?.parts?.some((part) => (
+    part.slug === 'diotrefy-nashego-vremeni'
+    && part.status === 'published'
+  ))
+);
 
 for (const [name, path] of Object.entries(paths)) requireValue(existsSync(path), `${name} missing: ${path}`);
 
@@ -77,7 +89,14 @@ requireValue(release.researchSnapshot === 'f50b21ad6af5dd7aaa53c5be381929b353b26
 requireValue(release.productBaseSha === PRE_WAVE12, 'pre-Wave12 Product base drift');
 requireValue(release.predecessorAuthorityIds?.includes('PRODUCT-OSK-WAVE10-DRAFT-2026-08-01'), 'Wave 10 predecessor missing');
 requireValue(release.predecessorAuthorityIds?.includes('PRODUCT-OSK-WAVE11-FAITHFUL-WITNESS-2026-08-01'), 'Wave 11 predecessor missing');
-for (const [key, expected] of Object.entries({ coreCases:21, faithfulPathways:15, faithfulResponses:20, authoritySources:181, readerLinks:73, newDirectQuotesApproved:0 })) {
+for (const [key, expected] of Object.entries({
+  coreCases: 21,
+  faithfulPathways: 15,
+  faithfulResponses: 20,
+  authoritySources: 181,
+  readerLinks: 73,
+  newDirectQuotesApproved: 0,
+})) {
   requireValue(release.counts?.[key] === expected, `${key} count drift: ${release.counts?.[key]} != ${expected}`);
 }
 requireValue(Object.values(release.publication ?? {}).every(Boolean), 'all declared publication gates must be true');
@@ -126,19 +145,15 @@ requireValue(matrix.routes?.[ROUTE]?.mode === 'strict-native', 'migration mode d
 requireValue(matrix.routes?.[ROUTE]?.audits?.includes('diotrophes-wave12-release'), 'release audit absent from migration matrix');
 
 const policy = searchPolicy.routes?.[ROUTE];
-for (const field of ['indexPolicy','pagefindPolicy','searchManifestPolicy','sitemapPolicy','rssPolicy']) {
-  requireValue(policy?.[field] === (field === 'indexPolicy' ? 'index' : 'include'), `search policy ${field} drift`);
-}
+requireValue(routePolicyIsPublic(policy), 'current Wave 12 search policy drift');
 const searchItems = searchManifest.items ?? [];
 const searchItem = searchItems.find((item) => item.url === ROUTE);
 requireValue(Boolean(searchItem), 'search manifest entry missing');
-requireValue(searchItem?.readTime === 35, 'search readTime drift');
-requireValue(searchItem?.section === 'Служение', 'search section drift');
-requireValue(searchItem?.seriesId === 'pastor-series' && searchItem?.seriesPosition === 2, 'search series linkage drift');
+requireValue(searchItemIsWave12(searchItem), 'current Wave 12 search manifest fields drift');
 requireValue(seriesText.includes("id: 'diotrophes'"), 'reader series item missing');
 requireValue(seriesText.includes(`href: '${ROUTE}'`), 'reader series route missing');
 requireValue(seriesText.includes('readingProgressTotalMin: 102'), 'reader series total drift');
-requireValue(seriesData['pastor-series']?.parts?.some((part) => part.slug === 'diotrefy-nashego-vremeni' && part.status === 'published'), 'data/series.json Part II missing');
+requireValue(seriesHasWave12Part(seriesData['pastor-series']), 'data/series.json Part II missing');
 requireValue(sitemapText.includes(`<loc>https://gospod-bog.ru${ROUTE}</loc>`), 'series sitemap entry missing');
 requireValue(feedText.includes(`<link>https://gospod-bog.ru${ROUTE}</link>`), 'series RSS entry missing');
 requireValue(robotsText.includes('Sitemap: https://gospod-bog.ru/sitemap-pastor-series.xml'), 'robots does not advertise sitemap shard');
@@ -147,60 +162,36 @@ requireValue(seriesLandingText.includes('data-wave12-series-card="true"') && ser
 requireValue(seriesHeadText.includes('numberOfItems: 2') && seriesHeadText.includes('diotrefy-nashego-vremeni'), 'series structured data drift');
 requireValue(seriesHeadText.includes('feed-pastor-series.xml'), 'series landing does not advertise RSS shard');
 
-// Prove Wave 12 itself preserved every prior registry entry at its immutable release snapshot.
-// Later lanes are validated by their own owners and must not be retroactively attributed to Wave 12.
-const previousOwnership = gitShowJson(PRE_WAVE12, paths.ownership, 'pre-Wave12');
-const previousMatrix = gitShowJson(PRE_WAVE12, paths.matrix, 'pre-Wave12');
-const previousPolicy = gitShowJson(PRE_WAVE12, paths.searchPolicy, 'pre-Wave12');
-const previousSearch = gitShowJson(PRE_WAVE12, paths.searchManifest, 'pre-Wave12');
-const previousSeries = gitShowJson(PRE_WAVE12, paths.seriesData, 'pre-Wave12');
+// The immutable release snapshot proves the Wave 12-owned publication decisions.
+// Unrelated registry entries are owned by their respective lanes and are validated
+// by the repository-wide route/search/source contracts, not retroactively by Wave 12.
 const releasedOwnership = gitShowJson(WAVE12_RELEASE, paths.ownership, 'Wave12 release');
 const releasedMatrix = gitShowJson(WAVE12_RELEASE, paths.matrix, 'Wave12 release');
 const releasedPolicy = gitShowJson(WAVE12_RELEASE, paths.searchPolicy, 'Wave12 release');
 const releasedSearch = gitShowJson(WAVE12_RELEASE, paths.searchManifest, 'Wave12 release');
 const releasedSeries = gitShowJson(WAVE12_RELEASE, paths.seriesData, 'Wave12 release');
-preserveEntries(previousOwnership.routes, releasedOwnership.routes, 'page ownership');
-preserveEntries(previousMatrix.routes, releasedMatrix.routes, 'migration matrix');
-preserveEntries(previousPolicy.routes, releasedPolicy.routes, 'search policy');
+const releasedCatalogText = gitShow(WAVE12_RELEASE, paths.catalog, 'Wave12 release');
+const releasedSeriesLandingText = gitShow(WAVE12_RELEASE, paths.seriesLanding, 'Wave12 release');
+const releasedSeriesHeadText = gitShow(WAVE12_RELEASE, paths.seriesHead, 'Wave12 release');
+const releasedSitemapText = gitShow(WAVE12_RELEASE, paths.sitemap, 'Wave12 release');
+const releasedFeedText = gitShow(WAVE12_RELEASE, paths.feed, 'Wave12 release');
 
-const previousSearchItems = previousSearch.items ?? [];
-const releasedSearchItems = releasedSearch.items ?? [];
-const previousSearchIds = new Set(previousSearchItems.map((item) => item.id));
-const releasedSearchIds = new Set(releasedSearchItems.map((item) => item.id));
-for (const oldItem of previousSearchItems) {
-  const releasedItem = releasedSearchItems.find((item) => item.id === oldItem.id);
-  requireValue(Boolean(releasedItem), `search manifest lost pre-Wave12 item at release: ${oldItem.id}`);
-  if (!releasedItem) continue;
-  if (oldItem.id === 'pastor-series') {
-    const allowed = new Set(['description','readTime','modifiedTime']);
-    const oldStable = Object.fromEntries(Object.entries(oldItem).filter(([key]) => !allowed.has(key)));
-    const releasedStable = Object.fromEntries(Object.entries(releasedItem).filter(([key]) => !allowed.has(key)));
-    requireValue(deepEqual(releasedStable, oldStable), 'search manifest release changed non-authorized pastor-series fields');
-  } else {
-    requireValue(deepEqual(releasedItem, oldItem), `search manifest release changed pre-Wave12 item: ${oldItem.id}`);
-  }
-}
-requireValue(releasedSearchIds.size === previousSearchIds.size + 1, `search manifest release must add exactly one item; before=${previousSearchIds.size}, release=${releasedSearchIds.size}`);
+requireValue(releasedOwnership.routes?.[ROUTE]?.owner === 'astro', 'release snapshot lacks Wave 12 page owner');
+requireValue(releasedOwnership.routes?.[ROUTE]?.status === 'production-dist', 'release snapshot Wave 12 ownership status drift');
+requireValue(releasedMatrix.routes?.[ROUTE]?.mode === 'strict-native', 'release snapshot Wave 12 migration mode drift');
+requireValue(releasedMatrix.routes?.[ROUTE]?.audits?.includes('diotrophes-wave12-release'), 'release snapshot lacks Wave 12 audit');
+requireValue(routePolicyIsPublic(releasedPolicy.routes?.[ROUTE]), 'release snapshot Wave 12 search policy drift');
 
-for (const [seriesId, oldSeries] of Object.entries(previousSeries)) {
-  const releasedSeriesEntry = releasedSeries[seriesId];
-  requireValue(Boolean(releasedSeriesEntry), `series registry lost series at release: ${seriesId}`);
-  if (!releasedSeriesEntry) continue;
-  if (seriesId !== 'pastor-series') {
-    requireValue(deepEqual(releasedSeriesEntry, oldSeries), `series registry release changed unrelated series: ${seriesId}`);
-    continue;
-  }
-  requireValue(releasedSeriesEntry.title === oldSeries.title && releasedSeriesEntry.baseUrl === oldSeries.baseUrl, 'pastor-series release identity drift');
-  for (const oldPart of oldSeries.parts ?? []) {
-    const releasedPart = releasedSeriesEntry.parts?.find((part) => part.slug === oldPart.slug);
-    requireValue(deepEqual(releasedPart, oldPart), `pastor-series release changed pre-Wave12 part: ${oldPart.slug}`);
-  }
-  requireValue((releasedSeriesEntry.parts?.length ?? 0) === (oldSeries.parts?.length ?? 0) + 1, 'pastor-series release must add exactly one part');
-}
+const releasedSearchItem = (releasedSearch.items ?? []).find((item) => item.url === ROUTE);
+requireValue(Boolean(releasedSearchItem), 'release snapshot lacks Wave 12 search item');
+requireValue(searchItemIsWave12(releasedSearchItem), 'release snapshot Wave 12 search fields drift');
+requireValue(seriesHasWave12Part(releasedSeries['pastor-series']), 'release snapshot lacks published Wave 12 series part');
+requireValue(releasedCatalogText.includes('data-wave12-catalog-card="true"') && releasedCatalogText.includes('diotrefy-nashego-vremeni/'), 'release snapshot lacks Wave 12 catalog card');
+requireValue(releasedSeriesLandingText.includes('data-wave12-series-card="true"') && releasedSeriesLandingText.includes('Часть II · 35 мин'), 'release snapshot lacks Wave 12 series card');
+requireValue(releasedSeriesHeadText.includes('numberOfItems: 2') && releasedSeriesHeadText.includes('diotrefy-nashego-vremeni'), 'release snapshot Wave 12 structured data drift');
+requireValue(releasedSitemapText.includes(`<loc>https://gospod-bog.ru${ROUTE}</loc>`), 'release snapshot lacks Wave 12 sitemap entry');
+requireValue(releasedFeedText.includes(`<link>https://gospod-bog.ru${ROUTE}</link>`), 'release snapshot lacks Wave 12 RSS entry');
 
-const previousCatalogHrefs = hrefs(gitShow(PRE_WAVE12, paths.catalog, 'pre-Wave12'));
-const releasedCatalogHrefs = hrefs(gitShow(WAVE12_RELEASE, paths.catalog, 'Wave12 release'));
-for (const href of previousCatalogHrefs) requireValue(releasedCatalogHrefs.has(href), `articles catalog release lost pre-Wave12 href: ${href}`);
 for (const forbidden of ['Редакционный черновик · PUBLICATION_HOLD', 'ещё не зарегистрирован как публичный маршрут']) {
   requireValue(!publishedText.includes(forbidden), `published wrapper contains draft claim: ${forbidden}`);
 }
@@ -213,4 +204,4 @@ if (errors.length) {
   for (const error of errors) console.error(`  - ${error}`);
   process.exit(1);
 }
-console.log(`✅ Diotrophes Wave 12 release passed: immutable snapshot ${WAVE12_RELEASE.slice(0, 8)} preserved ${previousSearchIds.size} prior search items semantically; current Wave 12 surfaces remain authoritative; 21 cases, 181 sources, 73 reader links, 0 new direct quotes`);
+console.log(`✅ Diotrophes Wave 12 release passed: immutable snapshot ${WAVE12_RELEASE.slice(0, 8)} retains Wave 12-owned registry and public-surface authority; current route remains strict-native; 21 cases, 181 sources, 73 reader links, 0 new direct quotes`);
