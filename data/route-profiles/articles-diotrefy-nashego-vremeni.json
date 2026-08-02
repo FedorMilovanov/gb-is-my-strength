@@ -16,9 +16,9 @@
   "renderSource": "src/pages/articles/diotrefy-nashego-vremeni/index.astro",
   "metadataSourceMode": "astro-head-import",
   "hasMDX": false,
-  "mdxStatus": "not-applicable",
+  "mdxStatus": "absent",
   "mdxPath": null,
-  "legacyStatus": "absent-by-design",
+  "legacyStatus": "absent",
   "legacyPath": null,
   "visualParity": {
     "desktop": 0,
