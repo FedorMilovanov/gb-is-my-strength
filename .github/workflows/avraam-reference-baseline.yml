@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "scripts/avraam-reference-baseline.mjs"
+      - "scripts/atlas-reference-source-patch.mjs"
       - ".github/workflows/avraam-reference-baseline.yml"
       - "src/components/karty/avraam/**"
       - "src/pages/karty/avraam/**"
@@ -18,23 +19,43 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   capture:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22.23.1"
           cache: "npm"
+
+      - name: Materialize bounded shared map repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/atlas-reference-source-patch.mjs
+          node --check karty/_engine/map-engine.js
+          node --check scripts/avraam-reference-baseline.mjs
+          if git diff --quiet -- karty/_engine/map-engine.js scripts/avraam-reference-baseline.mjs; then
+            echo "HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add karty/_engine/map-engine.js scripts/avraam-reference-baseline.mjs
+          git commit -m "fix(atlas): quiet shared map chrome and panel lifecycle"
+          git push origin "HEAD:${HEAD_REF}"
+          echo "HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Install repository dependencies
         run: npm ci
