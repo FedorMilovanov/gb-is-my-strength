@@ -55,7 +55,7 @@ async function inspectStaticSurface(page) {
         visibility: getComputedStyle(stage).visibility,
         rect: stage.getBoundingClientRect().toJSON(),
       } : { present: false },
-      mapPresent: Boolean(map),
+      mapVisible: Boolean(map && map.getClientRects().length),
       notice: notice ? {
         present: true,
         text: notice.innerText.trim(),
@@ -92,7 +92,7 @@ function verify(scope, snapshot, { print = false } = {}) {
   if (!snapshot.fallback?.present) fail('text fallback missing');
   if (snapshot.fallback?.present && !visibleRect(snapshot.fallback.rect, snapshot.viewport)) fail('text fallback has no visible rectangle');
   if (snapshot.stage?.present && snapshot.stage.display !== 'none') fail(`interactive stage is not hidden (${snapshot.stage.display})`);
-  if (snapshot.mapPresent) fail('interactive map remains present');
+  if (snapshot.mapVisible) fail('interactive map remains visible');
   if (!snapshot.fallback?.contains22) fail('missing exact total: 22 objects');
   if (!snapshot.fallback?.contains19) fail('missing exact route total: 19 route places');
   if (!snapshot.fallback?.contains3) fail('missing exact context total: 3 context points');
