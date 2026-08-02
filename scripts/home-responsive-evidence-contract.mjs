@@ -355,7 +355,7 @@ async function assertSearchLifecycle(page, browserName) {
   const resultCount = await page.locator('.cp-item').count();
   assert.ok(resultCount > 0, `${browserName}: canonical query returned no results`);
   assert.match((await page.locator('.cp-status').textContent()) || '', /\d+\s+рез\./, `${browserName}: result status is missing`);
-  assert.match((await page.locator('.cp-item-title').first().textContent()) || '', /Нагорная проповедь/i, `${browserName}: exact title query is not ranked first`);
+  assert.match((await page.locator('.cp-item-title').first().textContent()) || '', /Нагорная\s+проповедь/i, `${browserName}: exact title query is not ranked first`);
   assert.equal(await page.locator('.cp-item.is-active').first().getAttribute('aria-selected'), 'true', `${browserName}: active search result is not announced`);
 
   const focusables = page.locator('#gbCommandPalette :is(input, button, a[href], [tabindex]:not([tabindex="-1"])):visible');
