@@ -182,6 +182,41 @@
       width: calc(100% + 2px);
       height: calc(100% + 2px);
     }
+
+    /* Do not stack a card border, a roadmap header rule and item dividers one
+       after another. The roadmap becomes a quiet pair of soft surfaces with one
+       compact label, so the transition from “О проекте” reads as a new section
+       rather than a pile of horizontal rules. */
+    body.home-page .h-home-roadmap {
+      padding-top: 36px;
+    }
+
+    body.home-page .h-planned-header {
+      gap: 9px;
+      margin-bottom: 14px;
+      padding-inline: 2px;
+    }
+
+    body.home-page .h-planned-line {
+      display: none;
+    }
+
+    body.home-page .h-home-roadmap__items {
+      gap: 10px;
+    }
+
+    body.home-page .h-home-roadmap__item {
+      padding: 16px;
+      border-top: 0;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--h-surface) 68%, transparent);
+      box-shadow: inset 0 1px rgba(255, 255, 255, .24), 0 14px 34px -32px rgba(42, 28, 10, .38);
+    }
+
+    html.dark body.home-page .h-home-roadmap__item {
+      background: color-mix(in srgb, var(--h-surface-solid) 82%, transparent);
+      box-shadow: inset 0 1px rgba(255, 255, 255, .035), 0 16px 38px -32px rgba(0, 0, 0, .9);
+    }
   }
 
   @media (max-width: 390px) {
