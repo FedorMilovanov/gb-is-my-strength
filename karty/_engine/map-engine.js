@@ -257,7 +257,7 @@ const MapEngine = (function() {
 
   const MAP_THEME_PALETTES=Object.freeze({
     dark:Object.freeze({id:'dark',bg:'#070a10',panelBg:'rgba(13,17,26,.95)',text:'#e9e4d6',muted:'#9aa2ae',accent:'#e8c879',controlBg:'rgba(0,0,0,.55)',border:'rgba(255,255,255,.12)',labelBg:'rgba(7,10,16,.78)',labelText:'#f4eedd',baseFill:'#0d1d2e',baseOpacity:'0.4',svgFilter:'none'}),
-    light:Object.freeze({id:'light',bg:'#ded2b8',panelBg:'rgba(248,243,231,.97)',text:'#30291f',muted:'#675e52',accent:'#8b5e14',controlBg:'rgba(248,243,231,.92)',border:'rgba(74,57,35,.24)',labelBg:'rgba(249,245,234,.94)',labelText:'#30291f',baseFill:'#d2c3a6',baseOpacity:'0.34',svgFilter:'none'})
+    light:Object.freeze({id:'light',bg:'#e4d8c1',panelBg:'rgba(250,246,236,.98)',text:'#2e2418',muted:'#6b5b47',accent:'#8b5a0b',controlBg:'rgba(255,250,239,.94)',border:'rgba(72,51,27,.25)',labelBg:'rgba(255,249,235,.92)',labelText:'#2d2317',baseFill:'#d7c5a4',baseOpacity:'0.22',svgFilter:'none'})
   });
 
   function getMapThemePalette(theme){return MAP_THEME_PALETTES[theme]||MAP_THEME_PALETTES.dark}
@@ -781,9 +781,10 @@ const MapEngine = (function() {
 @media (max-width:560px){
   .me-header{padding:8px;gap:6px;display:block}
   .me-title,.me-title-he,.me-subtitle{display:none}
-  .me-stories{position:relative;top:auto;right:auto;max-width:none;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;margin-top:52px;padding:0 18px 6px 0;scrollbar-width:none;overscroll-behavior-x:contain;mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}
+  .me-header>div:first-child{height:44px}
+  .me-stories{position:relative;top:auto;right:auto;max-width:none;display:flex;flex-wrap:nowrap;overflow:hidden;gap:4px;margin-top:8px;padding:0;scrollbar-width:none;overscroll-behavior-x:none;mask-image:none}
   .me-stories::-webkit-scrollbar{display:none}
-  .me-story-chip{flex:0 0 auto}
+  .me-story-chip{flex:1 1 0;min-width:0;padding:8px 4px;font-size:9px;letter-spacing:-.015em}
   .me-search{top:8px;right:112px;width:calc(100% - 220px);min-width:104px;max-width:190px;height:44px;padding:0 10px}
   .me-search:focus{right:112px;width:calc(100% - 128px);max-width:none;background:var(--me-control-bg,rgba(0,0,0,.82));z-index:18}
   .me-theme-btn{top:8px;right:60px}
@@ -906,6 +907,23 @@ const MapEngine = (function() {
 .me-map .me-title-he,.me-map .me-panel__stage,.me-map .me-panel__he,.me-map .me-theme-btn:hover{color:var(--me-accent,#e8c879)}
 .me-map .me-panel{background:var(--me-panel-bg,rgba(13,17,26,.95));border-color:var(--me-border,rgba(255,255,255,.12))}
 .me-map .me-story-chip,.me-map .me-back,.me-map .me-search,.me-map .me-theme-btn,.me-map .me-share-btn,.me-map .me-zoom,.me-map .me-layers,.me-map .me-legend{background:var(--me-control-bg,rgba(0,0,0,.55));border-color:var(--me-border,rgba(255,255,255,.12));color:var(--me-muted,#9aa2ae)}
+
+
+/* Premium cartographic light palette: independent land, water, labels and chrome. */
+.me-map[data-map-theme="light"] .me-canvas svg{filter:none}
+.me-map[data-map-theme="light"] #me-base-geo [fill="url(#landG)"]{fill:#d7c29d!important}
+.me-map[data-map-theme="light"] #me-base-geo [fill="url(#richLandG)"]{fill:#bca57d!important;opacity:.16!important;filter:none!important}
+.me-map[data-map-theme="light"] #me-base-geo [fill="url(#seaG)"]{fill:#86a6b6!important;stroke:#5f8092!important;stroke-opacity:.65!important}
+.me-map[data-map-theme="light"] #me-base-geo .region-label{fill:#5b4933!important;opacity:.68}
+.me-map[data-map-theme="light"] #me-base-geo .sea-label{fill:#315c70!important;opacity:.76}
+.me-map[data-map-theme="light"] #me-base-geo .region-he{fill:#715d43!important;opacity:.62}
+.me-map[data-map-theme="light"] .me-route-main{filter:drop-shadow(0 1px .8px rgba(255,255,255,.92))}
+.me-map[data-map-theme="light"] .me-route-underlay{mix-blend-mode:multiply}
+.me-map[data-map-theme="light"] .me-story-chip--active{background:#ead8ad;border-color:#a77a25;color:#684300}
+.me-map[data-map-theme="light"] .me-zoom{background:transparent!important;border-color:transparent!important;color:inherit}
+.me-map[data-map-theme="light"] .me-zoom-btn{background:rgba(255,250,239,.94);border-color:rgba(72,51,27,.25);color:#5e5140}
+.me-map[data-map-theme="light"] .me-zoom-btn:hover{background:#fff8e9;color:#7a4d05;border-color:#a77a25}
+.me-map[data-map-theme="light"] .me-scale{color:#655846}
 
 /* Semantic zoom: the authored base already marks regional/detail objects with
    lbl-z1/lbl-z2. Overview stays calm; regional and close views reveal evidence
@@ -1233,7 +1251,7 @@ container.appendChild(header);
       if(announce)showToast(palette.id==='dark'?'Тёмная тема':'Светлая тема',1200);
       return palette;
     }
-    themeBtn.addEventListener('click',()=>applyMapTheme(activeTheme==='dark'?'light':'dark'));
+    themeBtn.addEventListener('click',()=>applyMapTheme(activeTheme==='dark'?'light':'dark',true,false));
     header.appendChild(themeBtn);
 
 // Share button
@@ -2095,7 +2113,7 @@ container.appendChild(panel);
           leaderLine.setAttribute('y1',String(eyEdge/dLen*r0));
           leaderLine.setAttribute('x2',String(exEdge));
           leaderLine.setAttribute('y2',String(eyEdge));
-          leaderLine.setAttribute('stroke','rgba(244,238,221,.38)');
+          leaderLine.setAttribute('stroke','var(--me-label-text,rgba(244,238,221,.38))');
           leaderLine.setAttribute('stroke-width','1');
           leaderLine.setAttribute('opacity',inStory?'0.9':'0');
           leaderLine.style.transition='opacity .3s';
@@ -2124,7 +2142,7 @@ container.appendChild(panel);
         label.setAttribute('x',String(lx));
         label.setAttribute('y',String(ly));
         label.setAttribute('text-anchor',ap.ta);
-        label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'#666');
+        label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'var(--me-muted,#666)');
         label.setAttribute('font-size',String(fontSize));
         label.setAttribute('opacity','0.9');
         label.style.transition = 'opacity .3s';

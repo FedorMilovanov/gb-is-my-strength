@@ -150,6 +150,8 @@ async function runViewport(browser,viewport){
       await themeButton.evaluate(el=>el.click());await page.waitForTimeout(1350);
       await screenshot(page,dir,'02-theme-alt.png');
       result.surfaces.themeAlternative=await collectGeometry(page,`${viewport.id}:theme-alt`);
+      result.surfaces.themeAlternative.theme=await page.locator('.me-map').first().getAttribute('data-map-theme');
+      if(result.surfaces.themeAlternative.theme!=='light')result.verificationFailures.push(`theme toggle did not reach light palette: ${result.surfaces.themeAlternative.theme}`);
       if(result.surfaces.themeAlternative.counts.offscreenControls>0)result.verificationFailures.push(`theme-alt offscreen controls: ${result.surfaces.themeAlternative.counts.offscreenControls}`);
       if(result.surfaces.themeAlternative.counts.undersizedControls>0)result.verificationFailures.push(`theme-alt controls <44px: ${result.surfaces.themeAlternative.counts.undersizedControls}`);
       await themeButton.evaluate(el=>el.click());await page.waitForTimeout(1350);
