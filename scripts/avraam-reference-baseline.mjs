@@ -109,6 +109,7 @@ async function collectGeometry(page,stateId){
     const map=document.querySelector('.me-map,#mapRoot'),canvas=document.querySelector('.me-canvas'),svg=document.querySelector('.me-canvas svg,.me-map svg,#mapRoot svg');
     const allLabels=[...document.querySelectorAll('svg text')].filter(isVisible).map((el,index)=>({index,...describe(el),box:rect(el)}));
     const labels=allLabels.filter(({box})=>box.right>0&&box.bottom>0&&box.left<width&&box.top<height);
+    const visibleBaseDetailLabels=[...document.querySelectorAll('#me-base-geo .lbl-z2')].filter(isVisible);
     const offscreenLabels=labels.filter(({box})=>box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1);
     const labelOverlaps=[];
     for(let i=0;i<labels.length;i+=1)for(let j=i+1;j<labels.length;j+=1){
@@ -140,7 +141,7 @@ async function collectGeometry(page,stateId){
       viewport:{width,height,devicePixelRatio,scrollX,scrollY},
       document:{clientWidth:html.clientWidth,scrollWidth:html.scrollWidth,horizontalOverflow:html.scrollWidth-html.clientWidth,clientHeight:html.clientHeight,scrollHeight:html.scrollHeight},
       map:{box:map?rect(map):null,canvasBox:canvas?rect(canvas):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null,zoomBucket:svg?.getAttribute('data-zoom-bucket')||null,canvasTransform:canvas?getComputedStyle(canvas).transform:null,svgTransform:svg?getComputedStyle(svg).transform:null},
-      counts:{labels:labels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length,scrollReachableControls:controls.filter(control=>control.scrollReachable).length},
+      counts:{labels:labels.length,baseDetailLabels:visibleBaseDetailLabels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length,scrollReachableControls:controls.filter(control=>control.scrollReachable).length},
       offscreenLabels:offscreenLabels.slice(0,120),labelOverlaps:labelOverlaps.sort((a,b)=>b.area-a.area).slice(0,180),undersizedControls:undersizedControls.slice(0,120),offscreenControls:offscreenControls.slice(0,120),markers,routes,
     };
   },{stateId});
@@ -245,6 +246,7 @@ async function runViewport(browser,viewport){
         if(candidateRoleMismatch.length)result.verificationFailures.push(`story candidate role mismatch ${story.id}: ${candidateRoleMismatch.join(', ')}`);
         const focusVisuals=focusIds.map(id=>markerById.get(id)).filter(Boolean),secondaryVisuals=[...contextIds,...(sourceStory?.places||[]).filter(id=>sourcePlaces.get(id)?.type==='cand')].map(id=>markerById.get(id)).filter(Boolean);
         if(focusVisuals.length&&secondaryVisuals.length&&Math.min(...focusVisuals.map(marker=>marker.labelOpacity??0))<=Math.max(...secondaryVisuals.map(marker=>marker.labelOpacity??0)))result.verificationFailures.push(`story visual hierarchy failed ${story.id}`);
+        if(story.id!=='main'&&geometry.counts.baseDetailLabels>0)result.verificationFailures.push(`story forensic background labels ${story.id}: ${geometry.counts.baseDetailLabels}`);
         const overlapLimit=viewport.width<=560?4:6;
         const clippedLimit=viewport.width<=560?4:6;
         if(geometry.counts.labelOverlaps>overlapLimit)result.verificationFailures.push(`story label overlaps ${story.id}: ${geometry.counts.labelOverlaps}>${overlapLimit}`);

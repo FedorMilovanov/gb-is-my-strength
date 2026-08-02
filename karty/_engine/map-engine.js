@@ -939,6 +939,7 @@ const MapEngine = (function() {
 .me-map[data-map-theme="light"] #me-base-geo{opacity:.86}
 .me-map svg:not([data-zoom-bucket="overview"]) #me-base-geo .lbl-overview{display:none}
 .me-map[data-active-story]:not([data-active-story="main"]) #me-base-geo .lbl-overview{display:none}
+.me-map[data-active-story]:not([data-active-story="main"]) svg #me-base-geo .lbl-z2{display:none!important}
 
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z1,
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z2,
