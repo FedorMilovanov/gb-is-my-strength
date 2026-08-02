@@ -20,6 +20,7 @@ concurrency:
 permissions:
   contents: read
 
+# Exact-head witness for Pass 10 story cameras plus the bounded accessibility repair.
 jobs:
   capture:
     runs-on: ubuntu-latest
