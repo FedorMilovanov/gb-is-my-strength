@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://gospod-bog.ru/pastor-series/</loc>
+    <lastmod>2026-08-02T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc><image:title>Тёмная сторона кафедры</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/20-antisovetov-pastoru/</loc>
+    <lastmod>2026-08-02T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc><image:title>20 антисоветов пастору</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/</loc>
+    <lastmod>2026-08-02T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-20-antisovetov-pastoru.webp</image:loc><image:title>Диотрефы нашего времени</image:title></image:image>
+  </url>
+</urlset>
