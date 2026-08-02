@@ -111,6 +111,17 @@
     }
   }
 
+  /* The source component's historical 1220px breakpoint predates the current
+     1120/1180px reading measure. Between 1220 and 1479px there is no physical
+     side rail, so manuscript phrases visibly sit beneath cards. Keep them off
+     until the curated 1480px rail contract takes ownership. */
+  @media (min-width: 1220px) and (max-width: 1479.98px) {
+    body.home-page .home-v20 .h-ambient-word {
+      display: none;
+      pointer-events: none;
+    }
+  }
+
   /* The shared search engine remains the data owner. Home only supplies a
      route-scoped visual skin and an explicit close affordance. Card planes stay
      stationary: depth comes from border, light and shadow rather than elements
