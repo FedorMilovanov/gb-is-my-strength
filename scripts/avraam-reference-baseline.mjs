@@ -7,43 +7,29 @@ import { chromium } from 'playwright';
 
 const BASE_URL = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
 const OUT_ROOT = path.resolve(process.env.AVRAAM_BASELINE_OUT || 'reports/atlas/avraam-reference-baseline');
-const HEAD_SHA = process.env.GITHUB_SHA || process.env.HEAD_SHA || 'local';
+const HEAD_SHA = process.env.HEAD_SHA || process.env.GITHUB_SHA || 'local';
 const RUN_ID = process.env.GITHUB_RUN_ID || 'local';
 const ROUTE_URL = `${BASE_URL}/karty/avraam/`;
 
 const VIEWPORTS = [
-  { id: 'desktop-1920x1080', width: 1920, height: 1080, deviceScaleFactor: 1 },
-  { id: 'desktop-1440x900', width: 1440, height: 900, deviceScaleFactor: 1 },
-  { id: 'desktop-1366x768', width: 1366, height: 768, deviceScaleFactor: 1 },
-  { id: 'tablet-1024x768', width: 1024, height: 768, deviceScaleFactor: 1 },
-  { id: 'mobile-430x932', width: 430, height: 932, deviceScaleFactor: 1 },
-  { id: 'mobile-390x844', width: 390, height: 844, deviceScaleFactor: 1 },
-  { id: 'mobile-360x800', width: 360, height: 800, deviceScaleFactor: 1 },
+  { id: 'desktop-1920x1080', width: 1920, height: 1080 },
+  { id: 'desktop-1440x900', width: 1440, height: 900 },
+  { id: 'desktop-1366x768', width: 1366, height: 768 },
+  { id: 'tablet-1024x768', width: 1024, height: 768 },
+  { id: 'mobile-430x932', width: 430, height: 932 },
+  { id: 'mobile-390x844', width: 390, height: 844 },
+  { id: 'mobile-360x800', width: 360, height: 800 },
 ];
 
 const KEY_PLACES = [
-  'ur',
-  'harran',
-  'shechem',
-  'bethel',
-  'egypt',
-  'hebron',
-  'sodom',
-  'dan',
-  'beersheba',
-  'salem',
+  'ur', 'harran', 'shechem', 'bethel', 'egypt',
+  'hebron', 'sodom', 'dan', 'beersheba', 'salem',
 ];
 
 const mkdir = (dir) => fs.mkdirSync(dir, { recursive: true });
 const writeJson = (file, value) => fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
-const safeName = (value) => String(value || 'unknown').trim().toLowerCase().replace(/[^a-z0-9а-яё_-]+/giu, '-').replace(/^-+|-+$/g, '');
-const round = (value) => Number.isFinite(value) ? Math.round(value * 100) / 100 : value;
-
-function intersectArea(a, b) {
-  const x = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
-  const y = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
-  return x * y;
-}
+const safeName = (value) => String(value || 'unknown')
+  .trim().toLowerCase().replace(/[^a-z0-9а-яё_-]+/giu, '-').replace(/^-+|-+$/g, '');
 
 async function waitForMap(page) {
   await page.goto(ROUTE_URL, { waitUntil: 'networkidle', timeout: 120_000 });
@@ -58,26 +44,43 @@ async function waitForMap(page) {
     *,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;transition-duration:0s!important;caret-color:transparent!important}
     html{scroll-behavior:auto!important}
   ` });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(350);
 }
 
-async function collectGeometry(page, viewportId) {
-  return page.evaluate(({ viewportId }) => {
-    const rect = (el) => {
-      const r = el.getBoundingClientRect();
-      return {
-        left: r.left,
-        top: r.top,
-        right: r.right,
-        bottom: r.bottom,
-        width: r.width,
-        height: r.height,
-      };
-    };
+async function dismissIntro(page) {
+  const start = page.getByRole('button', { name: /Начать изучение/i });
+  if (await start.isVisible().catch(() => false)) {
+    await start.click({ force: true });
+    await page.waitForTimeout(450);
+  }
+  return !(await start.isVisible().catch(() => false));
+}
+
+async function closePanel(page) {
+  for (let pass = 0; pass < 3; pass += 1) {
+    const close = page.locator('.me-panel__close:visible').first();
+    if (await close.count()) {
+      await close.click({ force: true }).catch(() => {});
+      await page.waitForTimeout(100);
+    }
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(80);
+    const panelVisible = await page.locator('.me-panel:visible,.me-place-panel:visible,[data-map-panel]:visible').count();
+    if (!panelVisible) break;
+  }
+}
+
+async function collectGeometry(page, stateId) {
+  return page.evaluate(({ stateId }) => {
     const visible = (el) => {
       const style = getComputedStyle(el);
       const r = el.getBoundingClientRect();
-      return !el.hidden && style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.02 && r.width > 0.5 && r.height > 0.5;
+      return !el.hidden && style.display !== 'none' && style.visibility !== 'hidden' &&
+        Number(style.opacity || 1) > 0.02 && r.width > 0.5 && r.height > 0.5;
+    };
+    const rect = (el) => {
+      const r = el.getBoundingClientRect();
+      return { left:r.left, top:r.top, right:r.right, bottom:r.bottom, width:r.width, height:r.height };
     };
     const describe = (el) => ({
       tag: el.tagName.toLowerCase(),
@@ -89,201 +92,212 @@ async function collectGeometry(page, viewportId) {
       tab: el.getAttribute('data-tab'),
       ariaLabel: el.getAttribute('aria-label'),
     });
-
     const width = innerWidth;
     const height = innerHeight;
     const html = document.documentElement;
     const map = document.querySelector('.me-map,#mapRoot');
     const svg = document.querySelector('.me-canvas svg,.me-map svg,#mapRoot svg');
-    const allText = [...document.querySelectorAll('svg text')].filter(visible);
-    const labels = allText.map((el, index) => ({ index, ...describe(el), box: rect(el) }));
-    const offscreen = labels.filter(({ box }) => box.left < -1 || box.top < -1 || box.right > width + 1 || box.bottom > height + 1);
-
-    const overlaps = [];
+    const labels = [...document.querySelectorAll('svg text')].filter(visible)
+      .map((el, index) => ({ index, ...describe(el), box:rect(el) }));
+    const offscreenLabels = labels.filter(({box}) =>
+      box.left < -1 || box.top < -1 || box.right > width + 1 || box.bottom > height + 1);
+    const labelOverlaps = [];
     for (let i = 0; i < labels.length; i += 1) {
       for (let j = i + 1; j < labels.length; j += 1) {
         const a = labels[i];
         const b = labels[j];
-        const area = Math.max(0, Math.min(a.box.right, b.box.right) - Math.max(a.box.left, b.box.left)) *
-          Math.max(0, Math.min(a.box.bottom, b.box.bottom) - Math.max(a.box.top, b.box.top));
-        if (area >= 8) overlaps.push({ a: { index: a.index, text: a.text, box: a.box }, b: { index: b.index, text: b.text, box: b.box }, area });
+        const overlapWidth = Math.max(0, Math.min(a.box.right, b.box.right) - Math.max(a.box.left, b.box.left));
+        const overlapHeight = Math.max(0, Math.min(a.box.bottom, b.box.bottom) - Math.max(a.box.top, b.box.top));
+        const area = overlapWidth * overlapHeight;
+        if (area >= 8) labelOverlaps.push({
+          a:{index:a.index,text:a.text,box:a.box},
+          b:{index:b.index,text:b.text,box:b.box},
+          area,
+        });
       }
     }
-
     const controls = [...document.querySelectorAll('button,a,[role="button"],[tabindex]:not([tabindex="-1"])')]
-      .filter(visible)
-      .map((el) => ({ ...describe(el), box: rect(el) }));
-    const undersizedControls = controls.filter(({ box }) => box.width < 44 || box.height < 44);
-    const controlOffscreen = controls.filter(({ box }) => box.left < -1 || box.top < -1 || box.right > width + 1 || box.bottom > height + 1);
-
-    const markers = [...document.querySelectorAll('[data-place-id]')].filter(visible).map((el) => ({ ...describe(el), box: rect(el) }));
-    const routes = [...document.querySelectorAll('.me-route-main,.me-route-underlay,[data-route-segment]')].filter(visible).map((el) => {
-      let bbox = null;
-      try {
-        const b = el.getBBox();
-        bbox = { x: b.x, y: b.y, width: b.width, height: b.height };
-      } catch {}
-      return { ...describe(el), screenBox: rect(el), svgBox: bbox };
-    });
-
-    const mapBox = map ? rect(map) : null;
-    const svgBox = svg ? rect(svg) : null;
-    const viewBox = svg?.getAttribute('viewBox') || null;
-
+      .filter(visible).map((el) => ({ ...describe(el), box:rect(el) }));
+    const undersizedControls = controls.filter(({box}) => box.width < 44 || box.height < 44);
+    const offscreenControls = controls.filter(({box}) =>
+      box.left < -1 || box.top < -1 || box.right > width + 1 || box.bottom > height + 1);
+    const markers = [...document.querySelectorAll('[data-place-id]')].filter(visible)
+      .map((el) => ({ ...describe(el), box:rect(el) }));
+    const routes = [...document.querySelectorAll('.me-route-main,.me-route-underlay,[data-route-segment]')]
+      .filter(visible).map((el) => {
+        let svgBox = null;
+        try {
+          const b = el.getBBox();
+          svgBox = {x:b.x,y:b.y,width:b.width,height:b.height};
+        } catch {}
+        return {...describe(el),screenBox:rect(el),svgBox};
+      });
+    const activeStory = document.querySelector('.me-story-chip--active,[aria-selected="true"].me-story-chip,[aria-pressed="true"].me-story-chip');
     return {
-      viewportId,
-      url: location.href,
-      title: document.title,
-      viewport: { width, height, devicePixelRatio },
-      document: {
-        clientWidth: html.clientWidth,
-        scrollWidth: html.scrollWidth,
-        horizontalOverflow: html.scrollWidth - html.clientWidth,
-        clientHeight: html.clientHeight,
-        scrollHeight: html.scrollHeight,
+      stateId,
+      url:location.href,
+      title:document.title,
+      activeStory:activeStory?.getAttribute('data-story') || activeStory?.textContent?.trim() || null,
+      viewport:{width,height,devicePixelRatio},
+      document:{
+        clientWidth:html.clientWidth,scrollWidth:html.scrollWidth,
+        horizontalOverflow:html.scrollWidth-html.clientWidth,
+        clientHeight:html.clientHeight,scrollHeight:html.scrollHeight,
       },
-      map: { box: mapBox, svgBox, viewBox },
-      counts: {
-        labels: labels.length,
-        markers: markers.length,
-        controls: controls.length,
-        routes: routes.length,
-        offscreenLabels: offscreen.length,
-        labelOverlaps: overlaps.length,
-        undersizedControls: undersizedControls.length,
-        offscreenControls: controlOffscreen.length,
+      map:{box:map?rect(map):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null},
+      counts:{
+        labels:labels.length,markers:markers.length,controls:controls.length,routes:routes.length,
+        offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,
+        undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length,
       },
-      offscreenLabels: offscreen.slice(0, 100),
-      labelOverlaps: overlaps.sort((a, b) => b.area - a.area).slice(0, 150),
-      undersizedControls: undersizedControls.slice(0, 100),
-      offscreenControls: controlOffscreen.slice(0, 100),
-      markers,
-      routes,
+      offscreenLabels:offscreenLabels.slice(0,120),
+      labelOverlaps:labelOverlaps.sort((a,b)=>b.area-a.area).slice(0,180),
+      undersizedControls:undersizedControls.slice(0,120),
+      offscreenControls:offscreenControls.slice(0,120),
+      markers,routes,
     };
-  }, { viewportId });
+  }, { stateId });
 }
 
-async function captureState(page, outDir, fileName, options = {}) {
-  const target = options.targetSelector ? page.locator(options.targetSelector).first() : null;
-  if (target && await target.count()) {
-    await target.screenshot({ path: path.join(outDir, fileName), animations: 'disabled' });
-    return;
+async function screenshot(page, dir, file) {
+  await page.screenshot({ path:path.join(dir,file), animations:'disabled' });
+}
+
+async function storyMetadata(page) {
+  return page.locator('.me-story-chip').evaluateAll((nodes) => nodes.map((node, index) => ({
+    index,
+    id:node.getAttribute('data-story') || `story-${index + 1}`,
+    label:(node.textContent || '').replace(/\s+/g,' ').trim(),
+  })));
+}
+
+async function selectStory(page, story) {
+  await closePanel(page);
+  const before = await page.locator('.me-canvas svg,.me-map svg,#mapRoot svg').first().getAttribute('viewBox');
+  let target = page.locator(`.me-story-chip[data-story="${story.id}"]`).first();
+  if (!(await target.count())) target = page.getByRole('button', {name:story.label, exact:true}).first();
+  if (!(await target.count())) throw new Error(`story chip not found: ${story.id}`);
+  await target.evaluate((el) => el.click());
+  await page.waitForTimeout(900);
+  let active = await target.evaluate((el) =>
+    el.classList.contains('me-story-chip--active') || el.getAttribute('aria-selected') === 'true' || el.getAttribute('aria-pressed') === 'true');
+  if (!active) {
+    await target.evaluate((el) => el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+    await page.waitForTimeout(900);
+    active = await target.evaluate((el) =>
+      el.classList.contains('me-story-chip--active') || el.getAttribute('aria-selected') === 'true' || el.getAttribute('aria-pressed') === 'true');
   }
-  await page.screenshot({ path: path.join(outDir, fileName), fullPage: Boolean(options.fullPage), animations: 'disabled' });
-}
-
-async function clickAndSettle(locator, delay = 500) {
-  await locator.scrollIntoViewIfNeeded().catch(() => {});
-  await locator.click({ timeout: 10_000, force: true });
-  await locator.page().waitForTimeout(delay);
+  const after = await page.locator('.me-canvas svg,.me-map svg,#mapRoot svg').first().getAttribute('viewBox');
+  const panelVisible = Boolean(await page.locator('.me-panel:visible,.me-place-panel:visible,[data-map-panel]:visible').count());
+  return { active, before, after, panelVisible };
 }
 
 async function runViewport(browser, viewport) {
   const dir = path.join(OUT_ROOT, viewport.id);
   mkdir(dir);
   const context = await browser.newContext({
-    viewport: { width: viewport.width, height: viewport.height },
-    deviceScaleFactor: viewport.deviceScaleFactor,
-    reducedMotion: 'reduce',
-    colorScheme: 'light',
+    viewport:{width:viewport.width,height:viewport.height},
+    deviceScaleFactor:1,
+    reducedMotion:'reduce',
+    colorScheme:'light',
   });
   const page = await context.newPage();
   const consoleEvents = [];
   const failedRequests = [];
-  page.on('console', (message) => consoleEvents.push({ type: message.type(), text: message.text().slice(0, 1000) }));
-  page.on('pageerror', (error) => consoleEvents.push({ type: 'pageerror', text: error.message.slice(0, 1000) }));
-  page.on('requestfailed', (request) => failedRequests.push({ url: request.url(), method: request.method(), error: request.failure()?.errorText || 'unknown' }));
+  page.on('console',(message)=>consoleEvents.push({type:message.type(),text:message.text().slice(0,1000)}));
+  page.on('pageerror',(error)=>consoleEvents.push({type:'pageerror',text:error.message.slice(0,1000)}));
+  page.on('requestfailed',(request)=>failedRequests.push({url:request.url(),method:request.method(),error:request.failure()?.errorText||'unknown'}));
 
   const result = {
-    viewport,
-    route: ROUTE_URL,
-    initial: null,
-    stories: [],
-    places: [],
-    tabs: [],
-    keyboard: {},
-    consoleEvents,
-    failedRequests,
-    fatal: null,
+    viewport,route:ROUTE_URL,introDismissed:false,overview:null,
+    stories:[],places:[],tabs:[],keyboard:{},verificationFailures:[],
+    consoleEvents,failedRequests,fatal:null,
   };
 
   try {
     await waitForMap(page);
-    await captureState(page, dir, '00-initial.png');
-    result.initial = await collectGeometry(page, viewport.id);
+    await screenshot(page,dir,'00-intro.png');
+    result.introDismissed = await dismissIntro(page);
+    if (!result.introDismissed) result.verificationFailures.push('intro did not dismiss');
+    await closePanel(page);
+    await screenshot(page,dir,'01-overview.png');
+    result.overview = await collectGeometry(page,`${viewport.id}:overview`);
 
-    const storyChips = page.locator('.me-story-chip');
-    const storyCount = await storyChips.count();
-    for (let i = 0; i < storyCount; i += 1) {
-      const chip = storyChips.nth(i);
-      const label = (await chip.textContent() || `story-${i + 1}`).replace(/\s+/g, ' ').trim();
-      const id = safeName(await chip.getAttribute('data-story') || label || `story-${i + 1}`);
+    const stories = await storyMetadata(page);
+    if (!stories.length) result.verificationFailures.push('no story chips found');
+    for (let i = 0; i < stories.length; i += 1) {
+      const story = stories[i];
+      const id = safeName(story.id || story.label || `story-${i + 1}`);
       try {
-        await clickAndSettle(chip, 900);
-        const active = await chip.getAttribute('aria-pressed') || await chip.getAttribute('aria-selected') || String(await chip.evaluate((el) => el.classList.contains('me-story-chip--active')));
-        const file = `story-${String(i + 1).padStart(2, '0')}-${id}.png`;
-        await captureState(page, dir, file);
-        const geometry = await collectGeometry(page, `${viewport.id}:${id}`);
-        result.stories.push({ id, label, active, file, geometry });
+        const selection = await selectStory(page,story);
+        const file = `story-${String(i + 1).padStart(2,'0')}-${id}.png`;
+        await screenshot(page,dir,file);
+        const geometry = await collectGeometry(page,`${viewport.id}:story:${story.id}`);
+        const row = {...story,...selection,file,geometry};
+        result.stories.push(row);
+        if (!selection.active || geometry.activeStory !== story.id) {
+          result.verificationFailures.push(`story activation failed: ${story.id}; active=${geometry.activeStory}`);
+        }
       } catch (error) {
-        result.stories.push({ id, label, error: error.message });
+        result.stories.push({...story,error:error.message});
+        result.verificationFailures.push(`story error ${story.id}: ${error.message}`);
       }
     }
 
-    const allStory = page.locator('.me-story-chip').first();
-    if (await allStory.count()) await clickAndSettle(allStory, 500).catch(() => {});
+    const main = stories.find((story)=>story.id==='main') || stories[0];
+    if (main) await selectStory(page,main).catch((error)=>result.verificationFailures.push(`main reset failed: ${error.message}`));
+    await closePanel(page);
 
     for (const placeId of KEY_PLACES) {
       const marker = page.locator(`[data-place-id="${placeId}"]`).first();
       if (!(await marker.count())) {
-        result.places.push({ id: placeId, present: false });
+        result.places.push({id:placeId,present:false});
+        result.verificationFailures.push(`missing place marker: ${placeId}`);
         continue;
       }
       try {
-        await marker.evaluate((el) => el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
-        await page.waitForTimeout(350);
+        await marker.evaluate((el)=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+        await page.waitForTimeout(300);
+        const panel = page.locator('.me-panel:visible,.me-place-panel:visible,[data-map-panel]:visible').first();
+        const panelVisible = Boolean(await panel.count());
+        const heading = panelVisible ? (await panel.locator('h1,h2,h3,.me-panel__title').first().textContent().catch(()=>''))?.replace(/\s+/g,' ').trim() : '';
+        const tabs = await page.locator('.me-tab[data-tab]:visible').evaluateAll((nodes)=>nodes.map((node)=>node.getAttribute('data-tab')));
         const file = `place-${placeId}.png`;
-        await captureState(page, dir, file);
-        const panel = page.locator('.me-panel,.me-place-panel,[data-map-panel]').first();
-        const panelVisible = await panel.isVisible().catch(() => false);
-        const tabs = page.locator('.me-tab[data-tab]');
-        const tabNames = [];
-        for (let t = 0; t < await tabs.count(); t += 1) {
-          const tab = tabs.nth(t);
-          if (!(await tab.isVisible().catch(() => false))) continue;
-          tabNames.push(await tab.getAttribute('data-tab'));
-        }
-        result.places.push({ id: placeId, present: true, panelVisible, tabs: tabNames, file });
+        await screenshot(page,dir,file);
+        result.places.push({id:placeId,present:true,panelVisible,heading,tabs,file});
+        if (!panelVisible) result.verificationFailures.push(`place panel did not open: ${placeId}`);
       } catch (error) {
-        result.places.push({ id: placeId, present: true, error: error.message });
+        result.places.push({id:placeId,present:true,error:error.message});
+        result.verificationFailures.push(`place error ${placeId}: ${error.message}`);
       }
     }
 
-    const visibleTabs = page.locator('.me-tab[data-tab]:visible');
-    for (let i = 0; i < await visibleTabs.count(); i += 1) {
-      const tab = visibleTabs.nth(i);
-      const id = await tab.getAttribute('data-tab') || `tab-${i + 1}`;
+    const tabIds = await page.locator('.me-tab[data-tab]:visible').evaluateAll((nodes)=>nodes.map((node)=>node.getAttribute('data-tab')));
+    for (const tabId of tabIds) {
+      const tab = page.locator(`.me-tab[data-tab="${tabId}"]:visible`).first();
       try {
-        await clickAndSettle(tab, 180);
-        result.tabs.push({ id, active: await tab.getAttribute('aria-selected') || String(await tab.evaluate((el) => el.classList.contains('me-tab--active'))) });
+        await tab.evaluate((el)=>el.click());
+        await page.waitForTimeout(150);
+        const active = await tab.evaluate((el)=>el.classList.contains('me-tab--active')||el.getAttribute('aria-selected')==='true');
+        result.tabs.push({id:tabId,active});
+        if (!active) result.verificationFailures.push(`tab activation failed: ${tabId}`);
       } catch (error) {
-        result.tabs.push({ id, error: error.message });
+        result.tabs.push({id:tabId,error:error.message});
+        result.verificationFailures.push(`tab error ${tabId}: ${error.message}`);
       }
     }
 
-    await page.keyboard.press('Escape').catch(() => {});
+    await page.keyboard.press('Escape').catch(()=>{});
     await page.waitForTimeout(120);
-    result.keyboard.escapeRestoresMap = await page.evaluate(() => {
-      const active = document.activeElement;
-      return Boolean(active && (active.closest?.('.me-map,#mapRoot') || active === document.body));
-    });
+    result.keyboard.escapeClosedPanel = !(await page.locator('.me-panel:visible,.me-place-panel:visible,[data-map-panel]:visible').count());
+    if (!result.keyboard.escapeClosedPanel) result.verificationFailures.push('Escape did not close panel');
 
-    writeJson(path.join(dir, 'geometry.json'), result.initial);
-    writeJson(path.join(dir, 'result.json'), result);
+    writeJson(path.join(dir,'geometry.json'),result.overview);
+    writeJson(path.join(dir,'result.json'),result);
   } catch (error) {
-    result.fatal = { message: error.message, stack: error.stack };
-    await page.screenshot({ path: path.join(dir, 'FATAL.png'), fullPage: true }).catch(() => {});
-    writeJson(path.join(dir, 'result.json'), result);
+    result.fatal = {message:error.message,stack:error.stack};
+    await page.screenshot({path:path.join(dir,'FATAL.png'),fullPage:true}).catch(()=>{});
+    writeJson(path.join(dir,'result.json'),result);
   } finally {
     await context.close();
   }
@@ -291,44 +305,42 @@ async function runViewport(browser, viewport) {
 }
 
 function buildSummary(results) {
-  const rows = results.map((r) => {
-    const c = r.initial?.counts || {};
-    return `| ${r.viewport.id} | ${r.fatal ? 'FATAL' : 'captured'} | ${c.offscreenLabels ?? '—'} | ${c.labelOverlaps ?? '—'} | ${c.undersizedControls ?? '—'} | ${r.consoleEvents.filter((e) => e.type === 'error' || e.type === 'pageerror').length} | ${r.failedRequests.length} |`;
+  const rows = results.map((result) => {
+    const counts = result.overview?.counts || {};
+    return `| ${result.viewport.id} | ${result.fatal?'FATAL':'captured'} | ${counts.offscreenLabels??'—'} | ${counts.labelOverlaps??'—'} | ${counts.undersizedControls??'—'} | ${result.verificationFailures.length} | ${result.consoleEvents.filter((event)=>event.type==='error'||event.type==='pageerror').length} | ${result.failedRequests.length} |`;
   });
-  const fatal = results.filter((r) => r.fatal);
-  return `# Avraam reference baseline\n\n- Head SHA: \`${HEAD_SHA}\`\n- Workflow run: \`${RUN_ID}\`\n- Route: \`${ROUTE_URL}\`\n- Captured at: ${new Date().toISOString()}\n- Purpose: current-state evidence only; findings are not silently accepted as golden.\n\n| Viewport | State | Offscreen labels | Label overlaps | Controls <44px | Console errors | Failed requests |\n|---|---:|---:|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Interpretation\n\n- Overlap counts are broad baseline candidates and require screenshot review before repair.\n- A green workflow means the evidence bundle was captured, not that the map is visually approved.\n- Any fatal viewport blocks the baseline lane.\n\n## Fatal viewports\n\n${fatal.length ? fatal.map((r) => `- ${r.viewport.id}: ${r.fatal.message}`).join('\n') : '- none'}\n`;
+  const fatal = results.filter((result)=>result.fatal);
+  const failed = results.filter((result)=>result.verificationFailures.length);
+  return `# Avraam reference baseline\n\n- Branch head SHA: \`${HEAD_SHA}\`\n- Workflow run: \`${RUN_ID}\`\n- Route: \`${ROUTE_URL}\`\n- Captured at: ${new Date().toISOString()}\n- Purpose: current-state evidence only; findings are not silently accepted as golden.\n\n| Viewport | State | Offscreen labels | Label overlaps | Controls <44px | Verification failures | Console errors | Failed requests |\n|---|---:|---:|---:|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Fatal viewports\n\n${fatal.length?fatal.map((result)=>`- ${result.viewport.id}: ${result.fatal.message}`).join('\n'):'- none'}\n\n## Verification failures\n\n${failed.length?failed.map((result)=>`- ${result.viewport.id}: ${result.verificationFailures.join('; ')}`).join('\n'):'- none'}\n`;
 }
 
 mkdir(OUT_ROOT);
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({headless:true});
 const results = [];
 try {
   for (const viewport of VIEWPORTS) {
     console.log(`Capturing ${viewport.id}...`);
-    results.push(await runViewport(browser, viewport));
+    results.push(await runViewport(browser,viewport));
   }
 } finally {
   await browser.close();
 }
 
 const summary = {
-  headSha: HEAD_SHA,
-  runId: RUN_ID,
-  route: ROUTE_URL,
-  capturedAt: new Date().toISOString(),
-  viewports: results.map((r) => ({
-    id: r.viewport.id,
-    fatal: r.fatal,
-    counts: r.initial?.counts || null,
-    stories: r.stories.length,
-    places: r.places,
-    consoleErrors: r.consoleEvents.filter((e) => e.type === 'error' || e.type === 'pageerror'),
-    failedRequests: r.failedRequests,
+  headSha:HEAD_SHA,runId:RUN_ID,route:ROUTE_URL,capturedAt:new Date().toISOString(),
+  viewports:results.map((result)=>({
+    id:result.viewport.id,fatal:result.fatal,counts:result.overview?.counts||null,
+    verificationFailures:result.verificationFailures,
+    stories:result.stories.map((story)=>({id:story.id,label:story.label,active:story.active,activeStory:story.geometry?.activeStory,viewBox:story.geometry?.map?.viewBox,error:story.error})),
+    places:result.places,
+    consoleErrors:result.consoleEvents.filter((event)=>event.type==='error'||event.type==='pageerror'),
+    failedRequests:result.failedRequests,
   })),
 };
-writeJson(path.join(OUT_ROOT, 'summary.json'), summary);
-fs.writeFileSync(path.join(OUT_ROOT, 'SUMMARY.md'), buildSummary(results), 'utf8');
+writeJson(path.join(OUT_ROOT,'summary.json'),summary);
+fs.writeFileSync(path.join(OUT_ROOT,'SUMMARY.md'),buildSummary(results),'utf8');
 
-const fatalCount = results.filter((r) => r.fatal).length;
-console.log(`Avraam baseline captured: ${results.length - fatalCount}/${results.length} viewports; output=${OUT_ROOT}`);
-if (fatalCount) process.exitCode = 1;
+const fatalCount = results.filter((result)=>result.fatal).length;
+const verificationFailureCount = results.reduce((sum,result)=>sum+result.verificationFailures.length,0);
+console.log(`Avraam baseline captured: ${results.length-fatalCount}/${results.length} viewports; verificationFailures=${verificationFailureCount}; output=${OUT_ROOT}`);
+if (fatalCount || verificationFailureCount) process.exitCode = 1;
