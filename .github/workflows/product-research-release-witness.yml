@@ -1,0 +1,158 @@
+name: Product to Research release witness
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/product-research-release-witness.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: product-research-release-witness
+  cancel-in-progress: false
+
+jobs:
+  validate-and-publish-witness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      DIOTROPHES_WAVE12_RELEASE_BOUNDARY: 8f17085dc8411cffbcb5a4dcd2f8fc5db9c30a97
+    steps:
+      - name: Checkout exact complete Product history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies and browser witnesses
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium webkit
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+
+      - name: Validate immutable Wave 12 release transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY" HEAD
+          boundary_dir="${RUNNER_TEMP}/diotrophes-wave12-release-boundary"
+          rm -rf "$boundary_dir"
+          git worktree add --detach "$boundary_dir" "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY"
+          cleanup_boundary() {
+            git worktree remove --force "$boundary_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup_boundary EXIT
+          (
+            cd "$boundary_dir"
+            node scripts/diotrophes-wave12-release-contract.mjs
+          )
+          cleanup_boundary
+          trap - EXIT
+
+      - name: Validate current Wave 10 to 12 and canonical discovery authority
+        run: |
+          set -euo pipefail
+          node scripts/diotrophes-wave10-contract.mjs
+          node scripts/diotrophes-wave11-faithful-witness-contract.mjs
+          node scripts/diotrophes-wave12-canonical-discovery-contract.mjs
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
+          node scripts/links-graph-read-time-normalizer.js --check
+          node scripts/pastor-series-visual-parity-audit.js
+          node scripts/check-data-consistency.js
+          node scripts/public-surface-registry-regression-test.js
+
+      - name: Validate Pihahiroth authority and map projection
+        run: |
+          set -euo pipefail
+          node scripts/pihahiroth-uncertainty-release-contract.mjs
+          npm run maps:validate
+
+      - name: Validate current registries types and publication policy
+        run: |
+          set -euo pipefail
+          npm run migration:metadata:check:strict
+          npm run page-ownership:check
+          node scripts/search-index-policy-contract-test.js
+          npm run astro:check
+
+      - name: Build immutable production-like witness
+        run: |
+          set -euo pipefail
+          npm run strangler:build:production-like
+          npm run page-ownership:dist:production-like
+          npm run pagefind:build:dist
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+
+      - name: Run Pihahiroth desktop mobile and no-JS witness
+        run: node scripts/pihahiroth-uncertainty-browser-contract.mjs
+
+      - name: Run Wave 12 Chromium WebKit no-JS and print witness
+        run: node scripts/diotrophes-wave12-browser-contract.mjs
+
+      - name: Prove source tree remained immutable
+        run: git diff --exit-code
+
+      - name: Upload combined release evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: product-research-release-witness-${{ github.run_id }}
+          path: |
+            reports/pihahiroth-uncertainty/
+            reports/diotrophes-wave12/
+            reports/search-index-policy-inventory.json
+            reports/search-index-policy-inventory.md
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish durable exact success witness
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WITNESS_SHA: ${{ github.sha }}
+          WITNESS_RUN_ID: ${{ github.run_id }}
+          WITNESS_RUN_ATTEMPT: ${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="✅ Product release witness ${WITNESS_SHA:0:12}"
+          body_file="${RUNNER_TEMP}/product-release-witness.md"
+          cat > "$body_file" <<EOF
+          <!-- product-research-release-witness:v1 -->
+          # Product → Research release witness
+
+          - **Conclusion:** success
+          - **Tested SHA:** \`${WITNESS_SHA}\`
+          - **Run:** [${WITNESS_RUN_ID} attempt ${WITNESS_RUN_ATTEMPT}](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${WITNESS_RUN_ID})
+          - **Branch:** \`${GITHUB_REF_NAME}\`
+          - **Workflow:** \`${GITHUB_WORKFLOW}\`
+
+          ## Passed boundaries
+
+          - immutable Diotrophes Wave 12 release transaction at \`${DIOTROPHES_WAVE12_RELEASE_BOUNDARY}\`;
+          - current Wave 10–12 authorities and canonical RSS/sitemap/Pagefind projection;
+          - deterministic links-graph reading times and current pastor-series native publication contract;
+          - Pihahiroth three-corridor authority, map projection, desktop/mobile/no-JS browser witness;
+          - current metadata, ownership, public-surface and Astro contracts;
+          - Wave 12 Chromium/WebKit/no-JS/print witness;
+          - clean tracked source tree after validation.
+
+          This issue is a durable success receipt. It does not grant quotation, rights, or publication authority beyond the validated Product contracts.
+          EOF
+          existing="$(gh issue list --state all --search "${title} in:title" --json number --jq '.[0].number // empty')"
+          if [[ -n "$existing" ]]; then
+            gh issue edit "$existing" --body-file "$body_file"
+          else
+            gh issue create --title "$title" --body-file "$body_file" --label documentation
+          fi
