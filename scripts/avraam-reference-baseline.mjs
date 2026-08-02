@@ -41,7 +41,10 @@ function sourceDataAudit(route){
   if(idSet.size!==ids.length)failures.push(`duplicate place ids: ${ids.length-idSet.size}`);
   routePlaces.forEach(place=>{if(place.stage<0||place.stage>=stages.length)failures.push(`invalid stage ${place.id}: ${place.stage}`)});
   stories.forEach(story=>{
+    const storyIds=new Set(story.places||[]),focusIds=story.focus_places||story.focusPlaceIds||[],contextIds=story.context_places||story.contextPlaceIds||[];
     (story.places||[]).forEach(id=>{if(!idSet.has(id))failures.push(`story ${story.id} missing place: ${id}`)});
+    [...focusIds,...contextIds].forEach(id=>{if(!storyIds.has(id))failures.push(`story ${story.id} role place outside story: ${id}`)});
+    focusIds.forEach(id=>{if(contextIds.includes(id))failures.push(`story ${story.id} focus/context overlap: ${id}`)});
     (story.stages||[]).forEach(stage=>{if(!Number.isInteger(stage)||stage<0||stage>=stages.length)failures.push(`story ${story.id} invalid stage: ${stage}`)});
   });
   return{counts:{places:places.length,routePlaces:routePlaces.length,contextPlaces:contextPlaces.length,stages:stages.length,stories:stories.length,ctx:ctx.length,photos,verifiedWaypoints:(route.verified_waypoints||[]).length,scientificVariants},failures};
@@ -101,7 +104,7 @@ async function collectGeometry(page,stateId){
       return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&Number(style.opacity||1)>.02&&r.width>.5&&r.height>.5;
     };
     const rect=(el)=>{const r=el.getBoundingClientRect();return{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
-    const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),storyActive:el.getAttribute('data-story-active'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});
+    const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),storyActive:el.getAttribute('data-story-active'),storyRole:el.getAttribute('data-story-role'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});
     const width=innerWidth,height=innerHeight,html=document.documentElement;
     const map=document.querySelector('.me-map,#mapRoot'),canvas=document.querySelector('.me-canvas'),svg=document.querySelector('.me-canvas svg,.me-map svg,#mapRoot svg');
     const allLabels=[...document.querySelectorAll('svg text')].filter(isVisible).map((el,index)=>({index,...describe(el),box:rect(el)}));
@@ -122,7 +125,10 @@ async function collectGeometry(page,stateId){
     });
     const undersizedControls=controls.filter(({box})=>box.width<44||box.height<44);
     const offscreenControls=controls.filter(({box,scrollReachable})=>!scrollReachable&&(box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1));
-    const markers=[...document.querySelectorAll('[data-place-id]')].filter(isVisible).map(el=>({...describe(el),box:rect(el)}));
+    const markers=[...document.querySelectorAll('[data-place-id]')].filter(isVisible).map(el=>{
+      const label=el.querySelector('.me-place-label'),bg=el.querySelector('.me-place-label-bg'),dot=el.querySelector('.me-marker-dot');
+      return{...describe(el),box:rect(el),labelOpacity:label?Number(getComputedStyle(label).opacity):null,labelFontSize:label?parseFloat(getComputedStyle(label).fontSize):null,labelBgOpacity:bg?Number(getComputedStyle(bg).opacity):null,dotRadius:dot?Number(dot.getAttribute('r')):null};
+    });
     const routes=[...document.querySelectorAll('.me-route-main,.me-route-underlay,[data-route-segment]')].filter(isVisible).map(el=>{
       let svgBox=null;try{const b=el.getBBox();svgBox={x:b.x,y:b.y,width:b.width,height:b.height}}catch{}
       return{...describe(el),screenBox:rect(el),svgBox};
@@ -228,6 +234,17 @@ async function runViewport(browser,viewport){
         const visibleStoryPlaces=new Set(geometry.markers.map(marker=>marker.placeId).filter(Boolean));
         const missingStoryPlaces=story.id==='main'?[]:requiredStoryPlaces.filter(id=>!visibleStoryPlaces.has(id));
         if(missingStoryPlaces.length)result.verificationFailures.push(`story required markers missing ${story.id}: ${missingStoryPlaces.join(', ')}`);
+        const markerById=new Map(geometry.markers.map(marker=>[marker.placeId,marker]));
+        const focusIds=sourceStory?.focus_places||sourceStory?.focusPlaceIds||requiredStoryPlaces;
+        const contextIds=sourceStory?.context_places||sourceStory?.contextPlaceIds||[];
+        const focusRoleMismatch=story.id==='main'?[]:focusIds.filter(id=>markerById.get(id)?.storyRole!=='focus');
+        if(focusRoleMismatch.length)result.verificationFailures.push(`story focus role mismatch ${story.id}: ${focusRoleMismatch.join(', ')}`);
+        const contextRoleMismatch=story.id==='main'?[]:contextIds.filter(id=>markerById.get(id)?.storyRole!=='context');
+        if(contextRoleMismatch.length)result.verificationFailures.push(`story context role mismatch ${story.id}: ${contextRoleMismatch.join(', ')}`);
+        const candidateRoleMismatch=story.id==='main'?[]:(sourceStory?.places||[]).filter(id=>sourcePlaces.get(id)?.type==='cand'&&markerById.get(id)?.storyRole!=='candidate');
+        if(candidateRoleMismatch.length)result.verificationFailures.push(`story candidate role mismatch ${story.id}: ${candidateRoleMismatch.join(', ')}`);
+        const focusVisuals=focusIds.map(id=>markerById.get(id)).filter(Boolean),secondaryVisuals=[...contextIds,...(sourceStory?.places||[]).filter(id=>sourcePlaces.get(id)?.type==='cand')].map(id=>markerById.get(id)).filter(Boolean);
+        if(focusVisuals.length&&secondaryVisuals.length&&Math.min(...focusVisuals.map(marker=>marker.labelOpacity??0))<=Math.max(...secondaryVisuals.map(marker=>marker.labelOpacity??0)))result.verificationFailures.push(`story visual hierarchy failed ${story.id}`);
         const overlapLimit=viewport.width<=560?4:6;
         const clippedLimit=viewport.width<=560?4:6;
         if(geometry.counts.labelOverlaps>overlapLimit)result.verificationFailures.push(`story label overlaps ${story.id}: ${geometry.counts.labelOverlaps}>${overlapLimit}`);

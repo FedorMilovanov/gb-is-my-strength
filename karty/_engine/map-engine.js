@@ -186,7 +186,13 @@ const MapEngine = (function() {
 
   function getStoryState(route,storyId){
     const story=(route.stories||[]).find(s=>s.id===storyId);
-    return story?{story,placeIds:story.places||story.place_ids||null,stageIds:story.stages||story.stage_ids||null}:null;
+    return story?{
+      story,
+      placeIds:story.places||story.place_ids||null,
+      focusPlaceIds:story.focus_places||story.focusPlaceIds||null,
+      contextPlaceIds:story.context_places||story.contextPlaceIds||null,
+      stageIds:story.stages||story.stage_ids||null
+    }:null;
   }
 
   function _defaultStoryId(route){
@@ -1734,6 +1740,16 @@ container.appendChild(panel);
 
       const activeStoryState=getStoryState(route,activeStoryId);
       const activeStoryStages=new Set(activeStoryState?.stageIds||[]);
+      const activeFocusPlaceIds=new Set(activeStoryState?.focusPlaceIds||[]);
+      const activeContextPlaceIds=new Set(activeStoryState?.contextPlaceIds||[]);
+      function resolveStoryRole(place,inStory){
+        if(!inStory)return 'hidden';
+        if(activeStoryId==='main')return 'overview';
+        if(place.type==='cand')return 'candidate';
+        if(activeContextPlaceIds.has(place.id))return 'context';
+        if(activeFocusPlaceIds.size===0||activeFocusPlaceIds.has(place.id))return 'focus';
+        return 'context';
+      }
       const allStoryStages=activeStoryId==='main'||activeStoryStages.size===0;
       function appendRenderedRoutePath(stageIndex,pathIndex,spec,membership){
         const color=resolveRoutePathColor(spec.colorKey,stageIndex);
@@ -1993,12 +2009,20 @@ container.appendChild(panel);
       // Place markers
       allPlaces.forEach(place=>{
         const inStory=visIds.has(place.id);
+        const storyRole=resolveStoryRole(place,inStory);
+        const isFocusRole=storyRole==='focus'||storyRole==='overview';
+        const isSecondaryRole=storyRole==='context'||storyRole==='candidate';
+        const baseMarkerR=isFocusRole?4.8:(storyRole==='context'?3.5:3.2);
+        const roleLabelOpacity=isFocusRole?.92:(storyRole==='context'?.68:.56);
+        const roleBgOpacity=isFocusRole?.54:(storyRole==='context'?.28:.20);
+        const roleFontSize=isFocusRole?10:8;
         const isActive=place.id===activePlaceId;
         const color=getStageColor(place.stage);
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
         g.setAttribute('transform',`translate(${place.x},${place.y})`);
         g.setAttribute('data-place-id', place.id);
         g.setAttribute('data-story-active',inStory?'1':'0');
+        g.setAttribute('data-story-role',storyRole);
         g.setAttribute('data-screen-anchor','place');g.setAttribute('data-map-x',String(place.x));g.setAttribute('data-map-y',String(place.y));
         g.setAttribute('data-label-priority',overviewLabelIds.has(place.id)?'overview':'detail');
         const membership=getPlaceLayerMembership(route,place);
@@ -2007,8 +2031,8 @@ container.appendChild(panel);
         g.setAttribute('data-layer-any',membership.any.join(' '));
         g.setAttribute('data-layer-main','');
         g.style.cursor=inStory?'pointer':'default';
-        g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r','6');d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
-        g.addEventListener('mouseleave',()=>{const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',(place.id===activePlaceId)?'7':'4.5');d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity',(place.id===activePlaceId)?'0.5':'0');r2.setAttribute('r','12');}});
+        g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',String(Math.max(5.4,baseMarkerR+1.2)));d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
+        g.addEventListener('mouseleave',()=>{const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',(place.id===activePlaceId)?'7':String(baseMarkerR));d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity',(place.id===activePlaceId)?'0.5':'0');r2.setAttribute('r','12');}});
         g.style.opacity=inStory?'1':(activeStoryId==='main'?'.15':'0');
         if(inStory){
               // Long-press detection for quick info tooltip
@@ -2052,7 +2076,7 @@ container.appendChild(panel);
         ring.style.transition = 'opacity .3s ease, r .3s ease';
         g.appendChild(ring);
         // Stage number badge
-        if (typeof place.stage === 'number' && inStory) {
+        if (typeof place.stage === 'number' && inStory && isFocusRole) {
           const badge = document.createElementNS('http://www.w3.org/2000/svg','circle');
           badge.setAttribute('r','8');badge.setAttribute('fill','none');
           badge.setAttribute('stroke',color);badge.setAttribute('stroke-width','1');
@@ -2062,7 +2086,8 @@ container.appendChild(panel);
         }
         const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
         const isCand = place.type === 'cand';
-        dot.setAttribute('r',isActive?'7':'4.5');dot.setAttribute('fill',isActive?'#fff':color);
+        dot.setAttribute('r',isActive?'7':String(baseMarkerR));dot.setAttribute('fill',isActive?'#fff':color);
+        dot.setAttribute('opacity',isFocusRole?'1':(storyRole==='context'?'0.76':'0.66'));
         if (isCand) {
           dot.setAttribute('stroke-dasharray','3 2');
           dot.setAttribute('fill',isActive?'#fff':'none');
@@ -2080,7 +2105,7 @@ container.appendChild(panel);
         const side=place.side||'r';
         const anchor=place.labelAnchor||(side==='l'?'w':'e');
         const labelText = place.name||'';
-        const fontSize=10;
+        const fontSize=roleFontSize;
         const textWidth=labelText.length*fontSize*0.6;
         const ANCHOR_POS={
           e:{x:14,y:4,ta:'start'},   w:{x:-14,y:4,ta:'end'},
@@ -2116,7 +2141,7 @@ container.appendChild(panel);
           leaderLine.setAttribute('y2',String(eyEdge));
           leaderLine.setAttribute('stroke','var(--me-label-text,rgba(244,238,221,.38))');
           leaderLine.setAttribute('stroke-width','1');
-          leaderLine.setAttribute('opacity',inStory?'0.9':'0');
+          leaderLine.setAttribute('opacity',inStory?String(isFocusRole?.9:(storyRole==='context'?.45:.34)):'0');
           leaderLine.style.transition='opacity .3s';
           leaderLine.style.pointerEvents='none';
           leaderLine.classList.add('me-leader','me-place-label-part','me-place-label-leader');
@@ -2134,7 +2159,7 @@ container.appendChild(panel);
         labelBg.setAttribute('fill','var(--me-label-bg,rgba(7,10,16,.52))');
         labelBg.setAttribute('stroke','var(--me-border,rgba(255,255,255,.08))');
         labelBg.setAttribute('stroke-width','0.35');
-        labelBg.setAttribute('opacity',inStory?'0.54':'0');
+        labelBg.setAttribute('opacity',inStory?String(roleBgOpacity):'0');
         labelBg.style.transition = 'opacity .3s';
         labelBg.style.pointerEvents = 'none';
         labelBg.classList.add('me-place-label-part','me-place-label-bg');
@@ -2145,7 +2170,7 @@ container.appendChild(panel);
         label.setAttribute('text-anchor',ap.ta);
         label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'var(--me-muted,#666)');
         label.setAttribute('font-size',String(fontSize));
-        label.setAttribute('opacity','0.9');
+        label.setAttribute('opacity',String(roleLabelOpacity));
         label.style.transition = 'opacity .3s';
         label.classList.add('me-place-label-part','me-place-label');
         label.textContent=labelText;
