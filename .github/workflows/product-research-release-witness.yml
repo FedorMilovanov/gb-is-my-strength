@@ -123,10 +123,20 @@ jobs:
           node scripts/search-index-policy-inventory.js --dist=dist --strict
 
       - name: Run Pihahiroth desktop mobile and no-JS witness
-        run: node scripts/pihahiroth-uncertainty-browser-contract.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports/pihahiroth-uncertainty
+          node scripts/pihahiroth-uncertainty-browser-contract.mjs 2>&1 \
+            | tee reports/pihahiroth-uncertainty/browser-run.log
 
       - name: Run Wave 12 Chromium WebKit no-JS and print witness
-        run: node scripts/diotrophes-wave12-browser-contract.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports/diotrophes-wave12
+          node scripts/diotrophes-wave12-browser-contract.mjs 2>&1 \
+            | tee reports/diotrophes-wave12/browser-run.log
 
       - name: Prove source tree remained immutable
         run: git diff --exit-code
