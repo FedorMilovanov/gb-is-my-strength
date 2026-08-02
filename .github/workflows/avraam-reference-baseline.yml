@@ -69,6 +69,22 @@ jobs:
           AVRAAM_BASELINE_OUT: reports/atlas/avraam-reference-baseline
         run: node scripts/avraam-reference-baseline.mjs
 
+      - name: Preserve exact source snapshot
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          snapshot="reports/atlas/avraam-reference-baseline/source"
+          mkdir -p "$snapshot/karty/_engine" "$snapshot/karty/avraam" "$snapshot/src/components/karty/avraam"
+          cp karty/_engine/map-engine.js "$snapshot/karty/_engine/map-engine.js"
+          cp karty/avraam/route.json "$snapshot/karty/avraam/route.json"
+          cp src/components/karty/avraam/AvraamMap.astro "$snapshot/src/components/karty/avraam/AvraamMap.astro"
+          sha256sum \
+            "$snapshot/karty/_engine/map-engine.js" \
+            "$snapshot/karty/avraam/route.json" \
+            "$snapshot/src/components/karty/avraam/AvraamMap.astro" \
+            > "$snapshot/SHA256SUMS.txt"
+
       - name: Record environment manifest
         if: always()
         shell: bash
