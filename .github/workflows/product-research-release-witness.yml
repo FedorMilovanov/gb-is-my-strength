@@ -1,0 +1,117 @@
+name: Product to Research release witness
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/product-research-release-witness.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-research-release-witness
+  cancel-in-progress: false
+
+jobs:
+  validate-release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      DIOTROPHES_WAVE12_RELEASE_BOUNDARY: 8f17085dc8411cffbcb5a4dcd2f8fc5db9c30a97
+    steps:
+      - name: Checkout exact complete Product history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies and browser witnesses
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium webkit
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+
+      - name: Validate immutable Wave 12 release transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY" HEAD
+          boundary_dir="${RUNNER_TEMP}/diotrophes-wave12-release-boundary"
+          rm -rf "$boundary_dir"
+          git worktree add --detach "$boundary_dir" "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY"
+          cleanup_boundary() {
+            git worktree remove --force "$boundary_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup_boundary EXIT
+          (
+            cd "$boundary_dir"
+            node scripts/diotrophes-wave12-release-contract.mjs
+          )
+          cleanup_boundary
+          trap - EXIT
+
+      - name: Validate current Wave 10 to 12 and canonical discovery authority
+        run: |
+          set -euo pipefail
+          node scripts/diotrophes-wave10-contract.mjs
+          node scripts/diotrophes-wave11-faithful-witness-contract.mjs
+          node scripts/diotrophes-wave12-canonical-discovery-contract.mjs
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
+          node scripts/links-graph-read-time-normalizer.js --check
+          node scripts/pastor-series-visual-parity-audit.js
+          node scripts/check-data-consistency.js
+          node scripts/public-surface-registry-regression-test.js
+
+      - name: Validate Pihahiroth authority and map projection
+        run: |
+          set -euo pipefail
+          node scripts/pihahiroth-uncertainty-release-contract.mjs
+          npm run maps:validate
+
+      - name: Validate current registries types and publication policy
+        run: |
+          set -euo pipefail
+          npm run migration:metadata:check:strict
+          npm run page-ownership:check
+          node scripts/search-index-policy-contract-test.js
+          npm run astro:check
+
+      - name: Build immutable production-like witness
+        run: |
+          set -euo pipefail
+          npm run strangler:build:production-like
+          npm run page-ownership:dist:production-like
+          npm run pagefind:build:dist
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+
+      - name: Run Pihahiroth desktop mobile and no-JS witness
+        run: node scripts/pihahiroth-uncertainty-browser-contract.mjs
+
+      - name: Run Wave 12 Chromium WebKit no-JS and print witness
+        run: node scripts/diotrophes-wave12-browser-contract.mjs
+
+      - name: Prove source tree remained immutable
+        run: git diff --exit-code
+
+      - name: Upload combined release evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: product-research-release-witness-${{ github.run_id }}
+          path: |
+            reports/pihahiroth-uncertainty/
+            reports/diotrophes-wave12/
+            reports/search-index-policy-inventory.json
+            reports/search-index-policy-inventory.md
+          if-no-files-found: warn
+          retention-days: 30
