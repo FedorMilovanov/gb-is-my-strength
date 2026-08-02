@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "authorityId": "PRODUCT-ATLAS-PIHAHIROTH-UNCERTAINTY-2026-08-02",
+  "researchAuthorityId": "ATLAS-PIHAHIROTH-AUTHORITY-2026-08-02",
+  "researchSnapshot": "bd1617782796dc9a56b2791b3d07351dc42a245e",
+  "researchRegistrySnapshot": "a0bc169f735444da661a9a7348c99e467a715991",
+  "route": "/karty/ishod/",
+  "placeId": "pihahiroth",
+  "status": "PUBLIC_UNCERTAINTY_CORRIDORS_NO_AUTHORITATIVE_POINT",
+  "exactCoordinateStatus": "UNRESOLVED",
+  "renderSinglePoint": false,
+  "readerLabel": "Точное место Пи-Гахирофа и перехода не установлено; показаны исследовательские коридоры, а не найденная точка.",
+  "palaeowaterDisclaimer": "Геометрия схематична: современные канал, озёра и береговые линии нельзя автоматически переносить в поздний бронзовый век.",
+  "panel": {
+    "name": "Пи-Гахироф: коридоры неопределённости",
+    "he": "פִּי הַחִירֹת",
+    "kick": "Точное место не установлено · три исследовательских коридора",
+    "id1": "Северное побережье · озёра Баллах · Тимсах/Горькие озёра",
+    "id2": "Восточная Дельта и Суэцкий перешеек",
+    "ep1": "Исх 13:20–14:31; 15:22; Числ 33:6–8",
+    "ep2": "поворот от Ефама · между Мигдолом и морем · напротив Ваал-Цефона",
+    "story": "<p>Писание задаёт последовательность и отношения мест, но не современную координату: после Сокхофа Израиль стоит в Ефаме у края пустыни, затем поворачивает обратно и располагается перед Пи-Гахирофом, между Мигдолом и морем, напротив Ваал-Цефона. Поэтому карта показывает три исследовательских коридора, а не одну найденную точку.</p>",
+    "arch": "<p>Ни один раскопанный объект не отождествляет одновременно Пи-Гахироф, Мигдол и Ваал-Цефон. Северное побережье, озёра Баллах и район Тимсаха/Горьких озёр остаются конкурирующими реконструкциями. Древние водные системы и береговые линии требуют датированной палеогеографической реконструкции.</p>",
+    "dispute": "<div class=\"dispute-block\"><div class=\"dispute-title\">Три коридора, ни одной доказанной точки</div><div class=\"dispute-pos alt\"><b>Северный прибрежный / Сирбонисский</b>: объясняет северо-восточную дельтовую и Ваал-Цефонскую традицию, но требует спорной перестройки маршрута. <span class=\"conf-lo\">Надёжность: низкая</span></div><div class=\"dispute-pos cons\"><b>Озёра Баллах / север перешейка</b>: хорошо связан с восточной границей Египта и возможным поворотом от оси Вади Тумилат. <span class=\"conf-med\">Надёжность: умеренно низкая</span></div><div class=\"dispute-pos cons\"><b>Тимсах / Горькие озёра</b>: сохраняет близость к Вади Тумилат и восточной пустынной окраине, но древняя гидрография не совпадает с современной. <span class=\"conf-med\">Надёжность: умеренно низкая</span></div><div class=\"dispute-note\">Карта не ранжирует коридор как установленное место события и не использует Нувейбу/Рона Уайатта как доказательную основу.</div></div>"
+  },
+  "corridors": [
+    {
+      "featureId": "PH-CAND-NORTH",
+      "label": "Северный прибрежный / Сирбонисский коридор",
+      "shortLabel": "Северный",
+      "status": "ALTERNATIVE",
+      "confidence": "LOW",
+      "evidenceClass": "A1_A3_SYNTHESIS",
+      "sourceIds": ["PH-S01", "PH-S02", "PH-S03", "PH-S04", "PH-S06", "PH-S07"],
+      "geometryType": "SCHEMATIC_UNCERTAINTY_CORRIDOR",
+      "d": "M292,866 C328,842 376,846 425,876 L428,918 C384,904 342,908 300,936 Z",
+      "centroid": [360, 890],
+      "labelPos": [352, 874],
+      "fill": "#6aa7c8",
+      "stroke": "#9ed7ef",
+      "rights": "ORIGINAL_SCHEMATIC_GEOMETRY"
+    },
+    {
+      "featureId": "PH-CAND-BALLAH",
+      "label": "Озёра Баллах / север Суэцкого перешейка",
+      "shortLabel": "Баллах",
+      "status": "CANDIDATE",
+      "confidence": "MODERATE_LOW",
+      "evidenceClass": "A1_A3_SYNTHESIS",
+      "sourceIds": ["PH-S01", "PH-S02", "PH-S03", "PH-S04", "PH-S05", "PH-S06"],
+      "geometryType": "SCHEMATIC_UNCERTAINTY_CORRIDOR",
+      "d": "M318,906 C350,886 397,892 438,924 L440,972 C402,954 362,957 326,988 Z",
+      "centroid": [382, 940],
+      "labelPos": [380, 930],
+      "fill": "#d5ad59",
+      "stroke": "#f2d084",
+      "rights": "ORIGINAL_SCHEMATIC_GEOMETRY"
+    },
+    {
+      "featureId": "PH-CAND-BITTER",
+      "label": "Озеро Тимсах / Горькие озёра",
+      "shortLabel": "Тимсах / Горькие",
+      "status": "CANDIDATE",
+      "confidence": "MODERATE_LOW",
+      "evidenceClass": "A1_A3_SYNTHESIS",
+      "sourceIds": ["PH-S01", "PH-S02", "PH-S03", "PH-S04", "PH-S05", "PH-S06"],
+      "geometryType": "SCHEMATIC_UNCERTAINTY_CORRIDOR",
+      "d": "M350,948 C388,925 438,936 482,978 L468,1030 C430,1007 392,1000 350,1018 Z",
+      "centroid": [410, 982],
+      "labelPos": [416, 986],
+      "fill": "#8aa36b",
+      "stroke": "#c1d49b",
+      "rights": "ORIGINAL_SCHEMATIC_GEOMETRY"
+    }
+  ],
+  "sourceContract": {
+    "textualConstraintIds": ["PH-T01", "PH-T02", "PH-T03", "PH-T04", "PH-T05", "PH-T06", "PH-T07", "PH-T08"],
+    "sourceIds": ["PH-S01", "PH-S02", "PH-S03", "PH-S04", "PH-S05", "PH-S06", "PH-S07", "PH-S08", "PH-S09"],
+    "directQuotesApproved": false,
+    "authoritativePoints": 0
+  },
+  "rightsContract": {
+    "geometry": "ORIGINAL_SCHEMATIC_GEOMETRY",
+    "externalScholarMapReproduced": false,
+    "externalImageRequired": false,
+    "baseMapPolicy": "EXISTING_PRODUCT_BASEMAP_ONLY",
+    "publicationState": "APPROVED_FOR_SCHEMATIC_UNCERTAINTY_RENDERING"
+  },
+  "forbiddenRuntimeClaims": [
+    "Археологи нашли точное место перехода.",
+    "Рон Уайатт",
+    "Ron Wyatt",
+    "Нувейба",
+    "Nuweiba",
+    "точка привязана к маршрутной гипотезе"
+  ],
+  "counts": {
+    "corridors": 3,
+    "textualConstraints": 8,
+    "sources": 9,
+    "authoritativePoints": 0,
+    "directQuotesApproved": 0
+  }
+}
