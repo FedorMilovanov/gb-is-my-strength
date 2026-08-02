@@ -59,9 +59,7 @@ function canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords }
   for (const [route, policy] of policies) {
     if (policy?.sitemapPolicy !== 'include') continue;
     if (!productionRoutes.has(route)) throw new Error(`${route}: sitemap policy includes a non-production route`);
-    const item = manifestRoutes.get(route);
-    if (!item) throw new Error(`${route}: sitemap policy requires a search-manifest item`);
-    entries.push({ route, item });
+    entries.push({ route, item: manifestRoutes.get(route) || null });
   }
   entries.sort((left, right) => left.route.localeCompare(right.route, 'ru'));
   return entries;
@@ -119,6 +117,7 @@ function normalizeSitemap({ current, policyRegistry, manifest, productionRecords
   const missing = required
     .filter((entry) => !existing.has(entry.route))
     .map((entry) => {
+      if (!entry.item) throw new Error(`${entry.route}: sitemap generation requires a search-manifest item`);
       const dateValue = entry.item.modifiedTime || entry.item.publishedTime;
       const date = new Date(dateValue);
       if (!dateValue || Number.isNaN(date.getTime())) {
