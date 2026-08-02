@@ -33,35 +33,46 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Normalize deterministic RSS
-        run: node scripts/rss-feed-normalizer.js --write
-
-      - name: Normalize canonical sitemap membership
-        run: node scripts/sitemap-policy-normalizer.js --write
-
-      - name: Verify generated surfaces
-        run: |
-          node scripts/rss-feed-normalizer.js --check
-          node scripts/sitemap-policy-normalizer.js --check
-          git diff --check
-
-      - name: Commit exact generated surfaces
+      - name: Generate verify and push from latest main
         shell: bash
         run: |
-          git diff --name-only -- . \
-            ':(exclude)feed.xml' \
-            ':(exclude)sitemap.xml' > /tmp/unexpected-normalizer-paths
-          if [[ -s /tmp/unexpected-normalizer-paths ]]; then
-            echo 'Unexpected normalizer paths:' >&2
-            cat /tmp/unexpected-normalizer-paths >&2
-            exit 1
-          fi
-          if git diff --quiet -- feed.xml sitemap.xml; then
-            echo 'Canonical discovery surfaces already normalized.'
-            exit 0
-          fi
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add feed.xml sitemap.xml
-          git commit -m 'fix(search): normalize canonical RSS and sitemap'
-          git push origin HEAD:main
+
+          for attempt in 1 2 3 4; do
+            echo "Normalization attempt ${attempt}"
+            git fetch origin main
+            git reset --hard origin/main
+
+            node scripts/rss-feed-normalizer.js --write
+            node scripts/sitemap-policy-normalizer.js --write
+            node scripts/rss-feed-normalizer.js --check
+            node scripts/sitemap-policy-normalizer.js --check
+            git diff --check
+
+            git diff --name-only -- . \
+              ':(exclude)feed.xml' \
+              ':(exclude)sitemap.xml' > /tmp/unexpected-normalizer-paths
+            if [[ -s /tmp/unexpected-normalizer-paths ]]; then
+              echo 'Unexpected normalizer paths:' >&2
+              cat /tmp/unexpected-normalizer-paths >&2
+              exit 1
+            fi
+
+            if git diff --quiet -- feed.xml sitemap.xml; then
+              echo 'Canonical discovery surfaces already normalized.'
+              exit 0
+            fi
+
+            git add feed.xml sitemap.xml
+            git commit -m 'fix(search): normalize canonical RSS and sitemap'
+            if git push origin HEAD:main; then
+              echo 'Canonical discovery surfaces committed to main.'
+              exit 0
+            fi
+            echo 'Main advanced during normalization; retrying from the new head.' >&2
+          done
+
+          echo 'Could not push normalized discovery surfaces after four fresh-main attempts.' >&2
+          exit 1
