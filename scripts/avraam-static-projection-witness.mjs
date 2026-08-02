@@ -170,9 +170,13 @@ function verifyScrollSlices(scope, slices) {
   const top = slices.find(slice => slice.id === 'top');
   const middle = slices.find(slice => slice.id === 'middle');
   const bottom = slices.find(slice => slice.id === 'bottom');
+  const maxScroll = Math.max(...slices.map(slice => Number(slice.maxScroll || 0)));
+  if (maxScroll < 1) fail('document has no vertical scroll range for long fallback content');
   if (!top?.firstVisibleBlock?.text) fail('top slice lacks first readable block');
   if (!middle?.firstVisibleBlock?.text) fail('middle slice lacks first readable block');
   if (!bottom?.firstVisibleBlock?.text && !bottom?.noticeIntersects) fail('bottom slice lacks final readable block or notice');
+  if (middle && top && middle.scrollY <= top.scrollY) fail(`middle slice did not advance (${middle.scrollY} <= ${top.scrollY})`);
+  if (bottom && middle && bottom.scrollY <= middle.scrollY) fail(`bottom slice did not advance (${bottom.scrollY} <= ${middle.scrollY})`);
   return failures;
 }
 
