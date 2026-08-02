@@ -45,19 +45,26 @@ jobs:
           set -euo pipefail
           python3 scripts/atlas-avraam-pass2-materialize.py
           node --check karty/_engine/map-engine.js
+          node --check scripts/avraam-reference-baseline.mjs
           python3 - <<'PY'
           import json, xml.etree.ElementTree as ET
           json.load(open('karty/avraam/route.json', encoding='utf-8'))
           ET.parse('karty/avraam/base.svg')
           PY
-          if git diff --quiet -- karty/_engine/map-engine.js karty/avraam/route.json karty/avraam/base.svg; then
+          materialized=(
+            karty/_engine/map-engine.js
+            karty/avraam/route.json
+            karty/avraam/base.svg
+            scripts/avraam-reference-baseline.mjs
+          )
+          if git diff --quiet -- "${materialized[@]}"; then
             echo "HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add karty/_engine/map-engine.js karty/avraam/route.json karty/avraam/base.svg
-          git commit -m "fix(atlas): refine Avraam camera routes and SVG depth"
+          git add "${materialized[@]}"
+          git commit -m "fix(atlas): deepen Avraam story and terrain evidence"
           git push origin "HEAD:${HEAD_REF}"
           echo "HEAD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
@@ -100,16 +107,18 @@ jobs:
         run: |
           set -euo pipefail
           snapshot="reports/atlas/avraam-reference-baseline/source"
-          mkdir -p "$snapshot/karty/_engine" "$snapshot/karty/avraam" "$snapshot/src/components/karty/avraam"
+          mkdir -p "$snapshot/karty/_engine" "$snapshot/karty/avraam" "$snapshot/src/components/karty/avraam" "$snapshot/scripts"
           cp karty/_engine/map-engine.js "$snapshot/karty/_engine/map-engine.js"
           cp karty/avraam/route.json "$snapshot/karty/avraam/route.json"
           cp karty/avraam/base.svg "$snapshot/karty/avraam/base.svg"
           cp src/components/karty/avraam/AvraamMap.astro "$snapshot/src/components/karty/avraam/AvraamMap.astro"
+          cp scripts/avraam-reference-baseline.mjs "$snapshot/scripts/avraam-reference-baseline.mjs"
           sha256sum \
             "$snapshot/karty/_engine/map-engine.js" \
             "$snapshot/karty/avraam/route.json" \
             "$snapshot/karty/avraam/base.svg" \
             "$snapshot/src/components/karty/avraam/AvraamMap.astro" \
+            "$snapshot/scripts/avraam-reference-baseline.mjs" \
             > "$snapshot/SHA256SUMS.txt"
 
       - name: Record environment manifest
