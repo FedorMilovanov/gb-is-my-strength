@@ -1,0 +1,121 @@
+name: Diotrophes Wave 12 release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/diotrophes-wave12-release.yml'
+      - 'data/diotrophes-wave10-product-draft.json'
+      - 'data/diotrophes-wave11-faithful-witness-*.json'
+      - 'data/diotrophes-wave12-release-manifest.json'
+      - 'data/route-profiles/articles-diotrefy-nashego-vremeni.json'
+      - 'data/route-search-policy.json'
+      - 'data/search-manifest.json'
+      - 'data/series.json'
+      - 'migration/page-ownership.json'
+      - 'migration/route-migration-matrix.json'
+      - 'src/components/article-pilots/diotrophes/**'
+      - 'src/components/article-pilots/_shared/series/pastorSeriesConfig.ts'
+      - 'src/components/pastor-series/**'
+      - 'src/components/articles/ArticlesPublicationsSection.astro'
+      - 'src/pages/articles/diotrefy-nashego-vremeni/**'
+      - 'scripts/diotrophes-wave10-contract.mjs'
+      - 'scripts/diotrophes-wave11-faithful-witness-contract.mjs'
+      - 'scripts/diotrophes-wave12-*.mjs'
+      - 'sitemap-pastor-series.xml'
+      - 'feed-pastor-series.xml'
+      - 'robots.txt'
+      - 'research/WAVE12_DIOTROPHES_PUBLICATION_2026-08-02.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diotrophes-wave12-release.yml'
+      - 'data/diotrophes-wave10-product-draft.json'
+      - 'data/diotrophes-wave11-faithful-witness-*.json'
+      - 'data/diotrophes-wave12-release-manifest.json'
+      - 'data/route-profiles/articles-diotrefy-nashego-vremeni.json'
+      - 'data/route-search-policy.json'
+      - 'data/search-manifest.json'
+      - 'data/series.json'
+      - 'migration/page-ownership.json'
+      - 'migration/route-migration-matrix.json'
+      - 'src/components/article-pilots/diotrophes/**'
+      - 'src/components/article-pilots/_shared/series/pastorSeriesConfig.ts'
+      - 'src/components/pastor-series/**'
+      - 'src/components/articles/ArticlesPublicationsSection.astro'
+      - 'src/pages/articles/diotrefy-nashego-vremeni/**'
+      - 'scripts/diotrophes-wave10-contract.mjs'
+      - 'scripts/diotrophes-wave11-faithful-witness-contract.mjs'
+      - 'scripts/diotrophes-wave12-*.mjs'
+      - 'sitemap-pastor-series.xml'
+      - 'feed-pastor-series.xml'
+      - 'robots.txt'
+      - 'research/WAVE12_DIOTROPHES_PUBLICATION_2026-08-02.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diotrophes-wave12-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout complete Product history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Install browser and PDF witnesses
+        run: |
+          npx playwright install --with-deps chromium webkit
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+
+      - name: Validate predecessor and release authorities
+        run: |
+          node scripts/diotrophes-wave10-contract.mjs
+          node scripts/diotrophes-wave11-faithful-witness-contract.mjs
+          node scripts/diotrophes-wave12-release-contract.mjs
+
+      - name: Validate route registries and Astro types
+        run: |
+          npm run migration:metadata:check:strict
+          npm run page-ownership:check
+          node scripts/check-route-search-policy.js
+          npm run astro:check
+
+      - name: Build production-like site and Pagefind
+        run: |
+          npm run strangler:build:production-like
+          npm run page-ownership:dist:production-like
+          npm run pagefind:build:dist
+          node scripts/check-route-search-policy.js
+
+      - name: Chromium WebKit no-JS and print contract
+        run: node scripts/diotrophes-wave12-browser-contract.mjs
+
+      - name: Ensure validation did not mutate tracked files
+        run: git diff --exit-code
+
+      - name: Upload Wave 12 evidence
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: diotrophes-wave12-release-evidence
+          path: reports/diotrophes-wave12/
+          if-no-files-found: warn
+          retention-days: 30
