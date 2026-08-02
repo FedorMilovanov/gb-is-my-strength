@@ -680,7 +680,7 @@ const MapEngine = (function() {
 .me-route-main{filter:url(#me-shadow);transition:opacity .4s ease,stroke-width .4s ease,filter .4s ease}
 .me-route-label{display:none}
 .me-signature{pointer-events:none;mix-blend-mode:screen}
-.me-story-focus{fill:none;stroke:rgba(232,200,121,.24);stroke-width:1;stroke-dasharray:3 8;vector-effect:non-scaling-stroke;pointer-events:none;opacity:.42}.me-map svg[data-zoom-bucket="overview"] .me-story-focus{display:none}
+.me-story-focus{display:none}
 @keyframes meStoryFocus{0%{opacity:0;stroke-dashoffset:42}35%{opacity:.78}100%{opacity:.38;stroke-dashoffset:0}}
 .me-sig-pulse{animation:meSigPulse 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes meSigPulse{0%,100%{opacity:.32;transform:scale(.94)}50%{opacity:.72;transform:scale(1.08)}}
@@ -927,6 +927,10 @@ const MapEngine = (function() {
 .me-map svg[data-zoom-bucket="region"] #me-base-geo #coordGrid{display:none}
 .me-map svg[data-zoom-bucket="region"] #me-ctx{opacity:.35}
 .me-map svg[data-zoom-bucket="detail"] #me-ctx{opacity:.55}
+.me-map svg[data-zoom-bucket="region"] #me-base-geo #tradeRoutes{opacity:.18}
+.me-map svg[data-zoom-bucket="detail"] #me-base-geo #tradeRoutes{opacity:.1}
+.me-map svg[data-zoom-bucket="detail"] #me-base-geo #routeWaypoints{opacity:.2}
+
 .me-map .me-story-chip--active{background:color-mix(in srgb,var(--me-accent,#e8c879) 20%,transparent);border-color:color-mix(in srgb,var(--me-accent,#e8c879) 45%,transparent);color:var(--me-accent,#e8c879)}
 .me-map [data-me-layer-hidden="1"]{visibility:hidden;pointer-events:none}
 
@@ -989,17 +993,19 @@ const MapEngine = (function() {
     svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
     svg.setAttribute('preserveAspectRatio','xMidYMid meet');
     function semanticZoomBucket(width=view.w){
+      // Authored map width remains the primary semantic contract. Rendered
+      // density only resolves narrow portrait canvases where raw width lies.
+      if(width>=semanticOverviewMinW)return 'overview';
       const renderedWidth=(canvas.isConnected?canvas:container).getBoundingClientRect().width;
       if(renderedWidth>1){
         const unitsPerPixel=width/renderedWidth;
         const overviewMinDensity=Number(semanticZoomConfig.overview_min_units_per_pixel ?? semanticZoomConfig.overviewMinUnitsPerPixel) || 1.25;
         const detailMaxDensity=Number(semanticZoomConfig.detail_max_units_per_pixel ?? semanticZoomConfig.detailMaxUnitsPerPixel) || 0.72;
         if(unitsPerPixel>=overviewMinDensity)return 'overview';
-        if(unitsPerPixel>detailMaxDensity)return 'region';
-        return 'detail';
+        if(width<=semanticDetailMaxW&&unitsPerPixel<=detailMaxDensity)return 'detail';
+        return 'region';
       }
-      if(width >= semanticOverviewMinW) return 'overview';
-      if(width > semanticDetailMaxW) return 'region';
+      if(width>semanticDetailMaxW)return 'region';
       return 'detail';
     }
     function applySemanticZoom(){
@@ -1705,13 +1711,13 @@ container.appendChild(panel);
 
         const under=document.createElementNS('http://www.w3.org/2000/svg','path');
         common(under,'underlay','me-route-underlay');
-        under.setAttribute('stroke-width','5.5');under.setAttribute('opacity',storyActive?'0.12':'0.018');
+        under.setAttribute('stroke-width','5.5');under.setAttribute('opacity',storyActive?'0.16':'0.004');
         if(spec.dash)under.setAttribute('stroke-dasharray','10 8');
         pathsG.appendChild(under);
 
         const path=document.createElementNS('http://www.w3.org/2000/svg','path');
         common(path,'main','me-route-main');
-        path.setAttribute('stroke-width','2.2');path.setAttribute('opacity',storyActive?'0.72':'0.055');path.setAttribute('marker-end',storyActive?'url(#'+markerId+')':'');
+        path.setAttribute('stroke-width','2.6');path.setAttribute('opacity',storyActive?'0.9':'0.012');path.setAttribute('marker-end',storyActive?'url(#'+markerId+')':'');
         if(spec.dash){
           path.setAttribute('stroke-dasharray','10 8');
         }else{
@@ -2435,8 +2441,8 @@ container.appendChild(panel);
       allPaths.forEach(p => {
         const isUnder = p.dataset.routeKind === 'underlay';
         const storyActive=p.dataset.storyActive!=='0';
-        p.setAttribute('opacity', storyActive ? (isUnder ? '0.12' : '0.72') : (isUnder ? '0.018' : '0.055'));
-        p.setAttribute('stroke-width', isUnder ? '5.5' : '2.2');
+        p.setAttribute('opacity', storyActive ? (isUnder ? '0.16' : '0.9') : (isUnder ? '0.004' : '0.012'));
+        p.setAttribute('stroke-width', isUnder ? '5.5' : '2.6');
         p.style.filter = '';
         p.style.transition = 'opacity .4s ease, stroke-width .4s ease, filter .4s ease';
       });
