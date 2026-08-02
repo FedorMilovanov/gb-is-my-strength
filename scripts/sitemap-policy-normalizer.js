@@ -9,7 +9,7 @@ const { normalizePolicyRoutes } = require('./lib/search-index-policy-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_SITE_URL = 'https://gospod-bog.ru';
-const NORMALIZER_VERSION = 1;
+const NORMALIZER_VERSION = 2;
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = { write: false, check: false };
@@ -47,6 +47,17 @@ function manifestRouteMap(manifest) {
   return routes;
 }
 
+/**
+ * Return only routes that are simultaneously:
+ * - explicitly included by sitemap policy;
+ * - owned by a production-dist route;
+ * - represented by a canonical search-manifest item;
+ * - backed by a valid publication/modification timestamp.
+ *
+ * Historical partial records remain visible through `skipped` diagnostics and
+ * continue to be governed by the dedicated search-policy audit. They must not
+ * prevent deterministic projection of canonically complete routes.
+ */
 function canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords }) {
   const policies = normalizePolicyRoutes(policyRegistry);
   const manifestRoutes = manifestRouteMap(manifest);
@@ -56,19 +67,30 @@ function canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords }
       .map((record) => normalizeRoute(record.route))
   );
   const entries = [];
+  const skipped = [];
 
   for (const [route, policy] of policies) {
     if (policy?.sitemapPolicy !== 'include') continue;
-    if (!productionRoutes.has(route)) throw new Error(`${route}: sitemap policy includes a non-production route`);
+    if (!productionRoutes.has(route)) {
+      skipped.push({ route, reason: 'NON_PRODUCTION_ROUTE' });
+      continue;
+    }
     const item = manifestRoutes.get(route);
-    if (!item) throw new Error(`${route}: sitemap policy requires a search-manifest item`);
+    if (!item) {
+      skipped.push({ route, reason: 'SEARCH_MANIFEST_ITEM_MISSING' });
+      continue;
+    }
     const dateValue = item.modifiedTime || item.publishedTime;
     const date = new Date(dateValue);
-    if (!dateValue || Number.isNaN(date.getTime())) throw new Error(`${route}: invalid sitemap date ${JSON.stringify(dateValue)}`);
+    if (!dateValue || Number.isNaN(date.getTime())) {
+      skipped.push({ route, reason: 'VALID_DATE_MISSING', value: dateValue ?? null });
+      continue;
+    }
     entries.push({ route, item, date });
   }
   entries.sort((left, right) => left.route.localeCompare(right.route, 'ru'));
-  return entries;
+  skipped.sort((left, right) => left.route.localeCompare(right.route, 'ru'));
+  return { entries, skipped };
 }
 
 function parseExistingUrls(xml, siteUrl = DEFAULT_SITE_URL) {
@@ -119,13 +141,18 @@ function normalizeSitemap({ current, policyRegistry, manifest, productionRecords
   if (!String(current).includes('</urlset>')) throw new Error('sitemap.xml missing </urlset>');
   const base = String(siteUrl || manifest?.project?.url || DEFAULT_SITE_URL).replace(/\/+$/, '');
   const existing = parseExistingUrls(current, base);
-  const required = canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords });
+  const { entries: required, skipped } = canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords });
   const missing = required.filter((entry) => !existing.has(entry.route));
-  if (!missing.length) return { xml: current, missing: [] };
+  if (!missing.length) return { xml: current, missing: [], skipped };
 
   const blocks = missing.map((entry) => renderUrlBlock(entry, base)).join('\n');
   const normalized = String(current).replace(/\s*<\/urlset>\s*$/, `\n\n  <!-- Canonical policy-generated additions -->\n${blocks}\n</urlset>\n`);
-  return { xml: normalized, missing: missing.map((entry) => entry.route) };
+  return { xml: normalized, missing: missing.map((entry) => entry.route), skipped };
+}
+
+function skippedSummary(skipped = []) {
+  if (!skipped.length) return 'none';
+  return skipped.map((entry) => `${entry.route}:${entry.reason}`).join(', ');
 }
 
 function main() {
@@ -144,20 +171,24 @@ function main() {
 
   if (options.write) {
     if (result.xml === current) {
-      console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: every policy route is already present.`);
+      console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: every canonically eligible policy route is already present.`);
+      console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
       return;
     }
     fs.writeFileSync(sitemapFile, result.xml, 'utf8');
     console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: wrote policy additions: ${result.missing.join(', ')}`);
+    console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
     return;
   }
 
   if (result.xml !== current) {
-    console.error(`❌ sitemap.xml misses policy routes: ${result.missing.join(', ')}`);
+    console.error(`❌ sitemap.xml misses canonically eligible policy routes: ${result.missing.join(', ')}`);
+    console.error(`Skipped historical diagnostics: ${skippedSummary(result.skipped)}`);
     console.error('Run: node scripts/sitemap-policy-normalizer.js --write');
     process.exit(1);
   }
-  console.log(`✅ Sitemap normalizer v${NORMALIZER_VERSION}: sitemap.xml contains every route required by policy`);
+  console.log(`✅ Sitemap normalizer v${NORMALIZER_VERSION}: sitemap.xml contains every canonically eligible policy route`);
+  console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
 }
 
 if (require.main === module) {
@@ -179,4 +210,5 @@ module.exports = {
   priorityFor,
   renderUrlBlock,
   normalizeSitemap,
+  skippedSummary,
 };
