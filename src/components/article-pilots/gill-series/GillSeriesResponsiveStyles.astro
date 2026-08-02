@@ -10,14 +10,14 @@
    * WebKit with JavaScript disabled can otherwise keep that intrinsic inline
    * size and expand the document to 1584px. Keep the authored ratio while
    * constraining only the released Wave 12 route's wide media to the reader
-   * column. The body publication marker is server-rendered and therefore
+   * column. The publication boundary marker is server-rendered and therefore
    * remains available when JavaScript is disabled. Physical width properties
    * accompany their logical equivalents because no-JS WebKit retained the
    * authored width attribute when only inline-size was declared.
    */
-  body[data-wave12-publication="true"] .article-img.wide,
-  body[data-wave12-publication="true"] .article-img.wide picture,
-  body[data-wave12-publication="true"] .article-img.wide img {
+  [data-wave12-publication="true"] .article-img.wide,
+  [data-wave12-publication="true"] .article-img.wide picture,
+  [data-wave12-publication="true"] .article-img.wide img {
     box-sizing: border-box;
     min-width: 0;
     max-width: 100%;
@@ -25,14 +25,14 @@
     max-inline-size: 100%;
   }
 
-  body[data-wave12-publication="true"] .article-img.wide picture,
-  body[data-wave12-publication="true"] .article-img.wide img {
+  [data-wave12-publication="true"] .article-img.wide picture,
+  [data-wave12-publication="true"] .article-img.wide img {
     display: block;
     width: 100%;
     inline-size: 100%;
   }
 
-  body[data-wave12-publication="true"] .article-img.wide img {
+  [data-wave12-publication="true"] .article-img.wide img {
     height: auto;
     block-size: auto;
   }

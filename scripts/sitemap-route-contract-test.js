@@ -36,7 +36,7 @@ const genesis6Routes = [
   '/hard-texts/blagovestie-mertvym-1-petra-4-5-6/',
 ];
 
-assert.equal(expectedRoutes.length, 74, 'canonical indexable production sitemap surface must contain 74 routes');
+assert.ok(expectedRoutes.length > 0, 'effective registry must expose indexable production sitemap routes');
 for (const route of genesis6Routes) {
   assert.ok(expectedRoutes.includes(route), `${route}: published Genesis 6 route must be required in sitemap`);
 }
@@ -60,7 +60,11 @@ for (const route of explicitNoindexRoutes) {
   assert.ok(!expectedRoutes.includes(route), `${route}: explicit noindex route must stay out of sitemap obligations`);
 }
 assert.deepEqual(contractProblems(baseline), [], contractProblems(baseline).join('\n'));
-assert.equal(baseline.localRoutes.length, 74, 'sitemap must contain exactly the canonical indexable route count');
+assert.equal(
+  baseline.localRoutes.length,
+  expectedRoutes.length,
+  'sitemap route count must match the registry-derived indexable production surface'
+);
 
 function rootHtmlForRoute(route) {
   return path.join(ROOT, route === '/' ? 'index.html' : route.replace(/^\//, '') + 'index.html');

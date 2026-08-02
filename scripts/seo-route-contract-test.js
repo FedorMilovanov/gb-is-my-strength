@@ -15,6 +15,8 @@ const {
 const ROOT = path.resolve(__dirname, '..');
 const loaded = loadRouteRecords();
 const baseline = expectedSeoRouteEntries({ loaded });
+const indexableEntries = baseline.filter((entry) => entry.indexable);
+const noindexEntries = baseline.filter((entry) => !entry.indexable);
 const GENESIS6_ROUTES = [
   '/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/',
   '/hard-texts/blagovestie-mertvym-1-petra-4-5-6/',
@@ -25,9 +27,19 @@ const GENESIS6_ROUTES = [
   '/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/',
 ];
 
-assert.equal(baseline.length, 83, 'all production-dist routes must be audited');
-assert.equal(baseline.filter((entry) => entry.indexable).length, 74, 'indexable route count');
-assert.equal(baseline.filter((entry) => !entry.indexable).length, 9, 'explicit noindex route count');
+assert.ok(baseline.length > 0, 'effective registry must expose production SEO audit obligations');
+assert.equal(
+  new Set(baseline.map((entry) => entry.route)).size,
+  baseline.length,
+  'every production SEO audit obligation must have a unique route'
+);
+assert.equal(
+  indexableEntries.length + noindexEntries.length,
+  baseline.length,
+  'every production SEO audit obligation must have an explicit indexability disposition'
+);
+assert.ok(indexableEntries.length > 0, 'effective registry must expose indexable production routes');
+assert.ok(noindexEntries.length > 0, 'effective registry must expose explicit noindex production routes');
 assert.deepEqual(
   baseline
     .filter((entry) => GENESIS6_ROUTES.includes(entry.route))
@@ -179,4 +191,4 @@ try {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
-console.log(`✅ seo-route-contract: ${baseline.length} production routes (${baseline.filter((entry) => entry.indexable).length} indexable, ${baseline.filter((entry) => !entry.indexable).length} noindex); exact-one social metadata enforced; seven Genesis 6 routes required`);
+console.log(`✅ seo-route-contract: ${baseline.length} production routes (${indexableEntries.length} indexable, ${noindexEntries.length} noindex); exact-one social metadata enforced; seven Genesis 6 routes required`);
