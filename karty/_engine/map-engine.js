@@ -263,7 +263,7 @@ const MapEngine = (function() {
 
   const MAP_THEME_PALETTES=Object.freeze({
     dark:Object.freeze({id:'dark',bg:'#070a10',panelBg:'rgba(13,17,26,.95)',text:'#e9e4d6',muted:'#9aa2ae',accent:'#e8c879',controlBg:'rgba(0,0,0,.55)',border:'rgba(255,255,255,.12)',labelBg:'rgba(7,10,16,.78)',labelText:'#f4eedd',baseFill:'#0d1d2e',baseOpacity:'0.4',svgFilter:'none'}),
-    light:Object.freeze({id:'light',bg:'#e4d8c1',panelBg:'rgba(250,246,236,.98)',text:'#2e2418',muted:'#6b5b47',accent:'#8b5a0b',controlBg:'rgba(255,250,239,.94)',border:'rgba(72,51,27,.25)',labelBg:'rgba(255,249,235,.92)',labelText:'#2d2317',baseFill:'#d7c5a4',baseOpacity:'0.22',svgFilter:'none'})
+    light:Object.freeze({id:'light',bg:'#e4d8c1',panelBg:'rgba(250,246,236,.98)',text:'#2e2418',muted:'#6b5b47',accent:'#8b5a0b',controlBg:'rgba(255,250,239,.94)',border:'rgba(72,51,27,.25)',labelBg:'rgba(255,249,235,.92)',labelText:'#2d2317',baseFill:'#d7c5a4',baseOpacity:'0.22',svgFilter:'brightness(1.015) saturate(1.035) contrast(1.01)'})
   });
 
   function getMapThemePalette(theme){return MAP_THEME_PALETTES[theme]||MAP_THEME_PALETTES.dark}
@@ -916,7 +916,7 @@ const MapEngine = (function() {
 
 
 /* Premium cartographic light palette: independent land, water, labels and chrome. */
-.me-map[data-map-theme="light"] .me-canvas svg{filter:none}
+.me-map[data-map-theme="light"] .me-canvas svg{filter:var(--me-svg-filter)}
 .me-map[data-map-theme="light"] #me-base-geo [fill="url(#landG)"]{fill:#d7c29d!important}
 .me-map[data-map-theme="light"] #me-base-geo [fill="url(#richLandG)"]{fill:#bca57d!important;opacity:.16!important;filter:none!important}
 .me-map[data-map-theme="light"] #me-base-geo [fill="url(#seaG)"]{fill:#86a6b6!important;stroke:#5f8092!important;stroke-opacity:.65!important}
@@ -1019,7 +1019,7 @@ const MapEngine = (function() {
 
 
 /* Premium light cartography: authored colors per layer, never one global wash. */
-.me-map[data-map-theme="light"] .me-canvas svg{filter:none}
+.me-map[data-map-theme="light"] .me-canvas svg{filter:var(--me-svg-filter)}
 .me-map[data-map-theme="light"] #me-base-geo{opacity:1}
 .me-map[data-map-theme="light"] #terrain>rect:first-child{fill:#d8c9aa!important}
 .me-map[data-map-theme="light"] #terrain>rect:nth-child(2){fill:#b7a47c!important;opacity:.16!important;filter:none!important}
