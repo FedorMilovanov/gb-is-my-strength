@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "task": "Agent 03 — Unified NoteRegistry core",
+  "authoredSource": ".fn-marker:not(.map-trigger) > .tooltip",
+  "captureOwner": "scripts/lib/note-registry.mjs",
+  "interactionOwner": "SiteUtils.makeTooltipController",
+  "generatedRegistry": "dist/data/note-registry.json",
+  "generatedStylesheet": "dist/css/note-registry.css",
+  "stableIdentity": {
+    "preferred": "authored data-note-id",
+    "fallback": "route + normalized note content + nearest authored heading identity SHA-256 prefix",
+    "headingIdentity": "nearest preceding h1–h6 using id/data-section-id, otherwise normalized heading text",
+    "ordinalSeparated": true,
+    "renumberingMayChangeStableId": false,
+    "surroundingParagraphEditsMayChangeStableId": false,
+    "ambiguousSameTextUnderSameHeading": "blocking duplicate; add authored data-note-id"
+  },
+  "projections": [
+    "existing popover interaction owner",
+    "aria-describedby and aria-controls relations",
+    "screen-reader endnotes",
+    "TTS data-speakable endnotes",
+    "Pagefind endnotes with inline tooltip ignored",
+    "print endnotes from one external generated stylesheet",
+    "no-JS endnotes"
+  ],
+  "failClosed": [
+    "orphan marker",
+    "non-direct or multiple tooltips per marker",
+    "empty note",
+    "invalid or duplicate stable ID",
+    "authored ordinal drift",
+    "nested interactive control outside tooltip",
+    "malformed generated block",
+    "missing note stylesheet",
+    "zero authored notes in production-like dist"
+  ],
+  "exceptions": [
+    {
+      "selector": ".fn-marker.map-trigger",
+      "owner": "Karty/MapEngine",
+      "reason": "interactive map trigger, not an authored textual footnote"
+    }
+  ],
+  "excludedFromCore": [
+    "mobile touch/click normalization",
+    "tooltip controller rewrites",
+    "global site.css or site.js revisions",
+    "tracked generated HTML",
+    "route-local browser workarounds"
+  ]
+}
