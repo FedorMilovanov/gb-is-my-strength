@@ -78,6 +78,8 @@ jobs:
   validate-release:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    env:
+      DIOTROPHES_WAVE12_RELEASE_BOUNDARY: 8f17085dc8411cffbcb5a4dcd2f8fc5db9c30a97
     steps:
       - name: Checkout complete Product history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -99,11 +101,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends poppler-utils
 
-      - name: Validate predecessor and release authorities
+      - name: Validate predecessor current and historical release authorities
+        shell: bash
         run: |
+          set -euo pipefail
           node scripts/diotrophes-wave10-contract.mjs
           node scripts/diotrophes-wave11-faithful-witness-contract.mjs
-          node scripts/diotrophes-wave12-release-contract.mjs
+
+          git merge-base --is-ancestor "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY" HEAD
+          boundary_dir="${RUNNER_TEMP}/diotrophes-wave12-release-boundary"
+          rm -rf "$boundary_dir"
+          git worktree add --detach "$boundary_dir" "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY"
+          cleanup_boundary() {
+            git worktree remove --force "$boundary_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup_boundary EXIT
+          (
+            cd "$boundary_dir"
+            node scripts/diotrophes-wave12-release-contract.mjs
+          )
+          cleanup_boundary
+          trap - EXIT
+
           node scripts/diotrophes-wave12-canonical-discovery-contract.mjs
 
       - name: Validate route registries search contract and Astro types
