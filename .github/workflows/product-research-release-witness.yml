@@ -46,19 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           git merge-base --is-ancestor "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY" HEAD
-          boundary_dir="${RUNNER_TEMP}/diotrophes-wave12-release-boundary"
-          rm -rf "$boundary_dir"
-          git worktree add --detach "$boundary_dir" "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY"
-          cleanup_boundary() {
-            git worktree remove --force "$boundary_dir" >/dev/null 2>&1 || true
-          }
-          trap cleanup_boundary EXIT
-          (
-            cd "$boundary_dir"
-            node scripts/diotrophes-wave12-release-contract.mjs
-          )
-          cleanup_boundary
-          trap - EXIT
+          node scripts/diotrophes-wave12-release-contract.mjs
 
       - name: Validate current Wave 10 to 12 and canonical discovery authority
         run: |
