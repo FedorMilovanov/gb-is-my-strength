@@ -60,6 +60,8 @@
   }
 
   body.home-page .h-navbar .mobile-controls > button {
+    position: relative;
+    inset: auto;
     width: 44px;
     min-width: 44px;
     height: 44px;
@@ -77,8 +79,20 @@
     width: 18px;
     height: 18px;
     overflow: visible;
-    stroke-width: 1.5;
+    fill: none;
     vector-effect: non-scaling-stroke;
+  }
+
+  body.home-page .h-navbar .mobile-controls > button svg :is(path, circle, line, polyline) {
+    stroke-width: 1.45;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* The crescent has more visual mass than the magnifier at the same numeric
+     stroke. Give it a slightly lighter optical weight instead of making the
+     search icon artificially heavy. */
+  body.home-page .h-navbar #themeToggle svg :is(path, circle, line) {
+    stroke-width: 1.32;
   }
 
   body.home-page .h-navbar .mobile-controls > button:is(:hover, :focus-visible) {
@@ -97,6 +111,69 @@
     }
   }
 
+  /* HomeAmbientPhrases is rendered inside the centred .home-content wrapper.
+     Its absolute containing block therefore used to be that wrapper, so even
+     small left/right offsets placed the manuscript words underneath the cards.
+     Expand only the ambient layer back to the viewport while retaining the
+     document-height coordinate system supplied by .home-content. */
+  body.home-page .home-v20 .h-ambient-native {
+    right: auto;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+  }
+
+  /* The directions block used to break out almost to the viewport edge while
+     the manuscript phrases remained in those same rails. Keep every wide Home
+     section on the native content measure so marginalia never sit under cards.
+     Explicit border-box sizing makes the declared 1120/1180px measures include
+     their generous inner padding instead of silently consuming both rails. */
+  @media (min-width: 1480px) {
+    body.home-page .home-v20 .home-content {
+      box-sizing: border-box;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat {
+      width: 100%;
+      max-width: none;
+      margin-left: 0;
+    }
+  }
+
+  /* Rail sizes are based on the narrowest physical free field, not just the
+     nominal content max-width. They still leave a visible safety gap while
+     giving the frameless translations enough measure to read as typography
+     rather than a stack of single-word fragments. */
+  @media (min-width: 1480px) and (max-width: 1599.98px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
+      width: 120px;
+      max-width: 120px;
+    }
+
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 20px; }
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 20px; }
+  }
+
+  @media (min-width: 1600px) and (max-width: 1699.98px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
+      width: 150px;
+      max-width: 150px;
+    }
+
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 20px; }
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 20px; }
+  }
+
+  @media (min-width: 1700px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
+      width: 200px;
+      max-width: 200px;
+    }
+
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 24px; }
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 24px; }
+  }
+
   @media (max-width: 760px) {
     body.home-page .h-navbar {
       height: calc(62px + env(safe-area-inset-top, 0px));
@@ -106,6 +183,51 @@
       top: calc(62px + env(safe-area-inset-top, 0px));
       max-height: calc(100dvh - 62px - env(safe-area-inset-top, 0px));
       background: color-mix(in srgb, var(--h-surface-solid) 94%, transparent);
+    }
+
+    /* The button border is part of the visible circle, while an absolutely
+       positioned SVG sized to 100% resolves against the inner box. Expand it by
+       that one-pixel border on every side so the progress arc is a true,
+       concentric circle instead of a smaller offset oval. */
+    body.home-page .h-scroll-top svg.h-progress-ring {
+      inset: -1px;
+      width: calc(100% + 2px);
+      height: calc(100% + 2px);
+    }
+
+    /* Do not stack a card border, a roadmap header rule and item dividers one
+       after another. The roadmap becomes a quiet pair of soft surfaces with one
+       compact label, so the transition from “О проекте” reads as a new section
+       rather than a pile of horizontal rules. */
+    body.home-page .h-home-roadmap {
+      padding-top: 36px;
+    }
+
+    body.home-page .h-planned-header {
+      gap: 9px;
+      margin-bottom: 14px;
+      padding-inline: 2px;
+    }
+
+    body.home-page .h-planned-line {
+      display: none;
+    }
+
+    body.home-page .h-home-roadmap__items {
+      gap: 10px;
+    }
+
+    body.home-page .h-home-roadmap__item {
+      padding: 16px;
+      border-top: 0;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--h-surface) 68%, transparent);
+      box-shadow: inset 0 1px rgba(255, 255, 255, .24), 0 14px 34px -32px rgba(42, 28, 10, .38);
+    }
+
+    html.dark body.home-page .h-home-roadmap__item {
+      background: color-mix(in srgb, var(--h-surface-solid) 82%, transparent);
+      box-shadow: inset 0 1px rgba(255, 255, 255, .035), 0 16px 38px -32px rgba(0, 0, 0, .9);
     }
   }
 

@@ -76,6 +76,160 @@ async function assertDirectionObjects(page, label) {
   }
 }
 
+async function assertVisualRegressionContracts(page, width, height) {
+  await page.setViewportSize({ width, height });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(100);
+
+  const state = await page.evaluate(() => {
+    const rect = (element) => {
+      if (!element) return null;
+      const value = element.getBoundingClientRect();
+      return {
+        left: value.left,
+        right: value.right,
+        top: value.top,
+        bottom: value.bottom,
+        width: value.width,
+        height: value.height,
+      };
+    };
+    const overlaps = (first, second) => Boolean(first && second
+      && first.left < second.right
+      && first.right > second.left
+      && first.top < second.bottom
+      && first.bottom > second.top);
+
+    /* Compare manuscript phrases with the actual rendered Home sections, not
+       the outer .home-content allocation. The ambient layer itself is a
+       full-page direct child and must not be treated as content it can collide
+       with. */
+    const contentSurfaces = [...document.querySelectorAll('.home-content > :not(.h-ambient-native)')]
+      .map(rect)
+      .filter((surface) => surface && surface.width > 0 && surface.height > 0);
+    const visiblePhrases = [...document.querySelectorAll('.h-ambient-word')]
+      .filter((node) => getComputedStyle(node).display !== 'none');
+    const phraseState = visiblePhrases.map((node) => {
+      const phraseRect = rect(node);
+      const side = node.classList.contains('h-ambient-word--left') ? 'left' : 'right';
+      return {
+        side,
+        pointerEvents: getComputedStyle(node).pointerEvents,
+        rect: phraseRect,
+        intrudesIntoContent: contentSurfaces.some((surface) => overlaps(phraseRect, surface)),
+      };
+    });
+
+    const searchShape = document.querySelector('#gbSearchBtn svg circle');
+    const moonShape = document.querySelector('#themeToggle .icon-moon path');
+    const firstRoute = document.querySelector('.h-home-route');
+    const routeAccent = firstRoute ? getComputedStyle(firstRoute, '::after') : null;
+
+    const featured = [...document.querySelectorAll('#publikacii .h-featured-shelf--lead .h-featured-series')];
+    const featuredRects = featured.map(rect);
+    const publicationCards = [...document.querySelectorAll('#publikacii .h-articles-group .h-article-card')];
+    const publicationRects = publicationCards.slice(0, 2).map(rect);
+
+    const endBlock = document.querySelector('.article-end-sdg-wrap');
+    const footer = document.querySelector('.h-footer');
+    const endBeforeFooter = Boolean(endBlock && footer
+      && (endBlock.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING));
+
+    const scrollTop = document.querySelector('.h-scroll-top');
+    const progressRing = document.querySelector('.h-scroll-top .h-progress-ring');
+    const quoteMirror = document.querySelector('.h-quote-mirror');
+    const quote = document.querySelector('.h-blockquote--mirror');
+    const quoteLeft = document.querySelector('.h-quote-left');
+    const ornaments = [...document.querySelectorAll('.h-quote-section .h-ornament')];
+
+    return {
+      searchStroke: searchShape ? Number.parseFloat(getComputedStyle(searchShape).strokeWidth) : NaN,
+      moonStroke: moonShape ? Number.parseFloat(getComputedStyle(moonShape).strokeWidth) : NaN,
+      ambientVisible: visiblePhrases.length,
+      phraseState,
+      routeAccent: routeAccent ? { left: routeAccent.left, right: routeAccent.right } : null,
+      featuredTransformStyles: featured.map((node) => getComputedStyle(node).transformStyle),
+      featuredTransforms: featured.map((node) => getComputedStyle(node).transform),
+      featuredOverlap: featuredRects.length >= 2 ? overlaps(featuredRects[0], featuredRects[1]) : false,
+      publicationTransforms: publicationCards.slice(0, 2).map((node) => getComputedStyle(node).transform),
+      publicationGap: publicationRects.length >= 2 && Math.abs(publicationRects[0].top - publicationRects[1].top) < 4
+        ? publicationRects[1].left - publicationRects[0].right
+        : null,
+      publicationOverlap: publicationRects.length >= 2 ? overlaps(publicationRects[0], publicationRects[1]) : false,
+      endBeforeFooter,
+      scrollTop: rect(scrollTop),
+      progressRing: rect(progressRing),
+      scrollTopRightGap: scrollTop ? innerWidth - scrollTop.getBoundingClientRect().right : null,
+      scrollTopBottomGap: scrollTop ? innerHeight - scrollTop.getBoundingClientRect().bottom : null,
+      quoteInset: quoteMirror && quote
+        ? quote.getBoundingClientRect().left - quoteMirror.getBoundingClientRect().left
+        : null,
+      quoteBorderTop: quoteLeft ? getComputedStyle(quoteLeft).borderTopWidth : null,
+      ornamentDisplays: ornaments.map((node) => getComputedStyle(node).display),
+      footer: rect(footer),
+    };
+  });
+
+  assert.ok(Number.isFinite(state.searchStroke) && state.searchStroke <= 1.5, `${width}px: search icon became optically heavy`);
+  assert.ok(Number.isFinite(state.moonStroke) && state.moonStroke <= 1.5, `${width}px: moon icon became optically heavy`);
+  assert.ok(Math.abs(state.searchStroke - state.moonStroke) <= 0.2, `${width}px: search and moon icon weights diverged`);
+  assert.equal(state.endBeforeFooter, true, `${width}px: terminal SDG signature must precede the footer`);
+
+  if (width >= 1480) {
+    const expectedPhrases = width >= 1600 ? 32 : 16;
+    assert.equal(state.ambientVisible, expectedPhrases, `${width}px: marginalia density changed`);
+    assert.equal(state.phraseState.every((phrase) => phrase.pointerEvents === 'auto'), true, `${width}px: visible marginalia are not interactive`);
+    assert.equal(state.phraseState.some((phrase) => phrase.intrudesIntoContent), false, `${width}px: marginalia overlap a rendered Home section`);
+  }
+
+  if (width >= 761) {
+    assert.deepEqual(state.routeAccent, { left: '0px', right: '0px' }, `${width}px: gateway selection accent is inset`);
+    assert.equal(state.featuredTransformStyles.every((value) => value === 'flat'), true, `${width}px: featured cards retained a 3D overlap plane`);
+    assert.equal(state.featuredTransforms.every((value) => value === 'none'), true, `${width}px: featured cards are transformed at rest`);
+    assert.equal(state.featuredOverlap, false, `${width}px: featured cards overlap`);
+    assert.equal(state.publicationTransforms.every((value) => value === 'none'), true, `${width}px: publication cards are transformed at rest`);
+    assert.equal(state.publicationOverlap, false, `${width}px: publication cards overlap`);
+    if (state.publicationGap !== null) assert.ok(state.publicationGap >= 12, `${width}px: publication card gap is too narrow`);
+  }
+
+  if (width <= 760) {
+    assert.ok(state.scrollTop && Math.abs(state.scrollTop.width - state.scrollTop.height) <= 0.5, `${width}px: scroll control is not circular`);
+    assert.ok(state.progressRing && state.scrollTop
+      && Math.abs(state.progressRing.width - state.scrollTop.width) <= 0.5
+      && Math.abs(state.progressRing.height - state.scrollTop.height) <= 0.5,
+    `${width}px: progress ring does not fit the scroll control`);
+    assert.ok(state.scrollTopRightGap >= 17, `${width}px: scroll control is too close to the right edge`);
+    assert.ok(state.scrollTopBottomGap >= 21, `${width}px: scroll control is too close to the bottom edge`);
+    assert.ok(state.quoteInset >= 24, `${width}px: mobile quotation lacks a readable inner inset`);
+    assert.equal(state.quoteBorderTop, '0px', `${width}px: redundant mobile quote divider remains`);
+    assert.equal(state.ornamentDisplays.every((value) => value === 'none'), true, `${width}px: redundant mobile ornaments remain`);
+    assert.ok(state.footer && state.footer.left >= 17 && width - state.footer.right >= 17, `${width}px: footer touches a viewport edge`);
+  }
+
+  if (width >= 1480) {
+    const visibleIndex = await page.locator('.h-ambient-word').evaluateAll((nodes) => nodes.findIndex((node) => getComputedStyle(node).display !== 'none'));
+    assert.ok(visibleIndex >= 0, `${width}px: no marginalia available for hover evidence`);
+    const phrase = page.locator('.h-ambient-word').nth(visibleIndex);
+    await phrase.hover();
+    await page.waitForTimeout(120);
+    const tooltip = await phrase.locator('.h-ambient-word__tooltip').evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        opacity: Number.parseFloat(style.opacity),
+        borderTopWidth: style.borderTopWidth,
+        backgroundColor: style.backgroundColor,
+        boxShadow: style.boxShadow,
+        color: style.color,
+      };
+    });
+    assert.ok(tooltip.opacity >= 0.9, `${width}px: marginalia translation does not reveal on hover`);
+    assert.equal(tooltip.borderTopWidth, '0px', `${width}px: marginalia translation regained a frame`);
+    assert.equal(tooltip.backgroundColor, 'rgba(0, 0, 0, 0)', `${width}px: marginalia translation regained a panel background`);
+    assert.equal(tooltip.boxShadow, 'none', `${width}px: marginalia translation regained a panel shadow`);
+    assert.equal(tooltip.color, 'rgb(23, 20, 17)', `${width}px: light-theme marginalia translation is not ink-black`);
+  }
+}
+
 async function assertResponsiveLayout(page, width, height, expectedColumns) {
   await page.setViewportSize({ width, height });
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -107,12 +261,15 @@ async function assertResponsiveLayout(page, width, height, expectedColumns) {
   assert.equal(state.routeCount, 5, `${width}×${height}: route count changed`);
   if (width <= 760) assert.notEqual(state.menuDisplay, 'none', `${width}px: mobile menu hidden`);
   else assert.equal(state.menuDisplay, 'none', `${width}px: mobile menu visible above boundary`);
-  if (width >= 1500) {
+  if (width >= 1600) {
     assert.ok(state.gatewayWidth <= 1481, `${width}px: gateway exceeded 1480px cap`);
     assert.ok(state.left >= 100 && state.right >= 100, `${width}px: side marginalia safe fields were lost`);
     assert.equal(state.ambientVisible, 32, `${width}px: ambient phrases are not fully visible`);
+  } else if (width >= 1480) {
+    assert.equal(state.ambientVisible, 16, `${width}px: intermediate marginalia set changed`);
   }
   await assertDirectionObjects(page, `${width}×${height}`);
+  await assertVisualRegressionContracts(page, width, height);
 }
 
 async function settleForEvidence(page) {
@@ -187,6 +344,7 @@ export async function runResponsiveEvidence(browserName, browserType, baseUrl) {
       [820, 1180, 6],
       [1024, 450, 6],
       [1280, 900, 5],
+      [1480, 900, 5],
       [1720, 980, 5],
     ]) await assertResponsiveLayout(page, ...spec);
 
@@ -210,7 +368,7 @@ export async function runResponsiveNoJavaScript(browserName, browserType, baseUr
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'load' });
     await assertDirectionObjects(page, `${browserName} no-JS evidence`);
-    for (const [width, height] of [[320, 568], [390, 844], [820, 1180], [1024, 450], [1720, 980]]) {
+    for (const [width, height] of [[320, 568], [390, 844], [820, 1180], [1024, 450], [1480, 900], [1720, 980]]) {
       await page.setViewportSize({ width, height });
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),

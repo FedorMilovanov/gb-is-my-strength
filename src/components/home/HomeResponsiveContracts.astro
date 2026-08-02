@@ -5,44 +5,242 @@
  * Leaf components continue to own their normal presentation. This component owns
  * only cross-section edge states that depend on the complete homepage geometry:
  * safe desktop marginalia rails, mobile title semantics, an odd final gateway
- * card, and reduced motion.
+ * card, terminal spacing, and reduced motion.
  */
 ---
 
 <style is:global>
-  /* The page needs a real outer rail before marginalia can become interactive.
-     Between the old 1220px threshold and 1600px the words could sit beneath the
-     central library surface, leaving part of a phrase impossible to target. */
-  @media (min-width: 1220px) and (max-width: 1599.98px) and (hover: hover) and (pointer: fine) {
-    body.home-page .h-ambient-word {
+  /* Keep a genuine outer rail for the manuscript marginalia. At intermediate
+     desktop widths we show a curated half-set; at wide widths the complete set
+     returns. Both modes are bounded to the free rail and cannot sit beneath the
+     central reading surface. */
+  @media (min-width: 1480px) and (max-width: 1599.98px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .home-content {
+      max-width: 1120px;
+    }
+
+    body.home-page .home-v20 .h-ambient-word {
       display: none;
-      pointer-events: none;
+    }
+
+    body.home-page .home-v20 .h-ambient-word:nth-child(odd) {
+      display: block;
+      pointer-events: auto;
     }
   }
 
   @media (min-width: 1600px) and (hover: hover) and (pointer: fine) {
-    body.home-page .h-ambient-word {
-      --ambient-safe-width: calc((100vw - 1280px) / 2 - var(--ambient-edge) - 16px);
-      width: min(260px, max(72px, var(--ambient-safe-width)));
-      max-width: none;
-      box-sizing: border-box;
-      white-space: normal;
-      overflow-wrap: anywhere;
+    body.home-page .home-v20 .home-content {
+      max-width: 1180px;
     }
 
-    body.home-page .h-ambient-word--left {
+    body.home-page .home-v20 .h-ambient-word {
+      display: block;
+      pointer-events: auto;
+    }
+  }
+
+  @media (min-width: 1480px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-word {
+      --ambient-content-width: 1120px;
+      --ambient-safe-edge: clamp(22px, var(--ambient-edge), 64px);
+      width: max(86px, calc((100vw - var(--ambient-content-width)) / 2 - var(--ambient-safe-edge) - 14px));
+      max-width: 210px;
+      box-sizing: border-box;
+      white-space: normal;
+      overflow-wrap: normal;
+      word-break: normal;
+      cursor: help;
+    }
+
+    body.home-page .home-v20 .h-ambient-word--left {
+      left: var(--ambient-safe-edge);
       text-align: left;
     }
 
-    body.home-page .h-ambient-word--right {
+    body.home-page .home-v20 .h-ambient-word--right {
+      right: var(--ambient-safe-edge);
       text-align: right;
     }
 
-    body.home-page .h-ambient-word__tooltip {
+    body.home-page .home-v20 .h-ambient-word__text {
+      color: rgba(24, 31, 32, .16);
+      filter: blur(.12px);
+      text-shadow: 0 8px 24px rgba(89, 61, 24, .035);
+    }
+
+    html.dark body.home-page .home-v20 .h-ambient-word__text {
+      color: rgba(235, 225, 206, .16);
+    }
+
+    body.home-page .home-v20 .h-ambient-word__tooltip {
+      top: auto;
+      bottom: calc(100% + .22em);
       width: 100%;
       min-width: 0;
       max-width: none;
-      box-sizing: border-box;
+      display: grid;
+      gap: 2px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      color: #171411;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(7px);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    html.dark body.home-page .home-v20 .h-ambient-word__tooltip {
+      background: transparent;
+      box-shadow: none;
+      color: #f1e5cd;
+    }
+
+    body.home-page .home-v20 .h-ambient-word__meaning {
+      color: inherit;
+      font-family: var(--f-body);
+      font-size: clamp(12px, .82vw, 14px);
+      font-style: italic;
+      font-weight: 650;
+      line-height: 1.18;
+      text-shadow: 0 1px 5px rgba(24, 20, 16, .08);
+    }
+
+    body.home-page .home-v20 .h-ambient-word__source {
+      margin-top: 2px;
+      color: color-mix(in srgb, var(--h-muted) 86%, transparent);
+      font-size: 7px;
+      font-weight: 720;
+      letter-spacing: .1em;
+    }
+
+    body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) {
+      z-index: 4;
+    }
+
+    body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__text {
+      color: #171411;
+      filter: none;
+      transform: translateY(-3px);
+      text-shadow: 0 2px 7px rgba(24, 20, 16, .13), 0 10px 28px rgba(84, 58, 20, .08);
+    }
+
+    html.dark body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__text {
+      color: #f1e5cd;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, .45), 0 10px 30px rgba(66, 196, 213, .06);
+    }
+
+    body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition-delay: .04s, 0s, .04s;
+    }
+
+    /* Top-rail phrases reveal downward so their translation is never clipped by
+       the top of the page. */
+    body.home-page .home-v20 .h-ambient-word:nth-child(-n + 2) .h-ambient-word__tooltip,
+    body.home-page .home-v20 .h-ambient-word:nth-child(17) .h-ambient-word__tooltip,
+    body.home-page .home-v20 .h-ambient-word:nth-child(18) .h-ambient-word__tooltip {
+      top: calc(100% + .24em);
+      bottom: auto;
+      transform: translateY(-7px);
+    }
+
+    body.home-page .home-v20 .h-ambient-word:nth-child(-n + 2):is(:hover, :focus-within) .h-ambient-word__tooltip,
+    body.home-page .home-v20 .h-ambient-word:nth-child(17):is(:hover, :focus-within) .h-ambient-word__tooltip,
+    body.home-page .home-v20 .h-ambient-word:nth-child(18):is(:hover, :focus-within) .h-ambient-word__tooltip {
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 1600px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-word {
+      --ambient-content-width: 1180px;
+    }
+  }
+
+  /* The gateway accent belongs to the complete card, not to its text padding.
+     A full-width edge reads as one deliberate selection instead of a narrow
+     underline floating inside cards of unequal optical width. */
+  @media (min-width: 761px) {
+    body.home-page .home-v20 #main-content .h-home-route::after {
+      right: 0;
+      left: 0;
+    }
+
+    body.home-page .home-v20 #main-content .h-home-route:is(:hover, :focus-visible) {
+      z-index: 2;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--h-accent) 34%, transparent);
+    }
+  }
+
+  /* Paired editorial cards used to rotate toward the pointer and physically
+     cross over their neighbour. Keep the depth in the image and shadow, but
+     make the card plane stable and non-overlapping. */
+  body.home-page .home-v20 #main-content .h-featured-series {
+    --home-tilt-x: 0deg;
+    --home-tilt-y: 0deg;
+    --home-tilt-lift: 0px;
+    --home-tilt-gloss: 0;
+    transform: none;
+    transform-style: flat;
+    transition: border-color .32s ease, box-shadow .32s ease;
+  }
+
+  body.home-page .home-v20 #main-content .h-featured-series::before {
+    opacity: 0;
+  }
+
+  body.home-page .home-v20 #main-content .h-featured-series:is(:hover, :focus-visible) {
+    transform: none;
+    border-color: color-mix(in srgb, var(--h-accent) 28%, var(--h-border-strong));
+    box-shadow: 0 30px 78px -54px rgba(3, 35, 48, .72), 0 0 0 1px color-mix(in srgb, var(--h-accent) 10%, transparent);
+  }
+
+  /* Publication cards are independent surfaces. Real grid gaps and a stationary
+     hover state prevent one card from climbing above the adjacent card. */
+  @media (min-width: 761px) {
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list > li {
+      min-width: 0;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list .h-article-card {
+      height: 100%;
+      margin: 0;
+      padding: 16px;
+      border: 1px solid var(--h-border);
+      border-radius: 16px;
+      background: var(--h-surface);
+      transform: none;
+      isolation: isolate;
+      transition: border-color .28s ease, background-color .28s ease, box-shadow .32s ease;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list li:first-child .h-article-card {
+      padding-top: 16px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list li:last-child .h-article-card {
+      border-bottom: 1px solid var(--h-border);
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list .h-article-card:is(:hover, :focus-visible) {
+      z-index: 1;
+      transform: none;
+      border-color: var(--h-border-strong);
+      background: var(--h-surface-solid);
+      box-shadow: 0 20px 48px -38px rgba(40, 28, 14, .34), inset 0 1px rgba(255, 255, 255, .36);
     }
   }
 
@@ -113,6 +311,98 @@
 
     body.home-page #main-content .h-home-route:last-child:nth-child(odd) {
       width: min(212px, calc(100% - 24px));
+    }
+  }
+
+  /* Terminal signature and footer share the same centred measure. The SDG mark
+     now finishes the page content before the footer instead of hanging below it
+     against the viewport edge. */
+  body.home-page .article-end-sdg-wrap {
+    margin: 0;
+    padding: clamp(52px, 6vw, 78px) 20px clamp(42px, 5vw, 62px);
+  }
+
+  body.home-page .article-end-sdg {
+    gap: 12px;
+  }
+
+  body.home-page .article-end-sdg svg {
+    width: 44px;
+    height: 60px;
+  }
+
+  body.home-page .h-footer {
+    width: min(calc(100% - 40px), 1180px);
+    margin: 0 auto;
+    padding: 28px 0 34px;
+  }
+
+  /* The progress ring has a 50×50 viewBox. Explicitly scale it to its button so
+     it cannot render as an offset oval when the mobile control is reduced. */
+  body.home-page .h-scroll-top .h-progress-ring {
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 760px) {
+    body.home-page .h-scroll-top {
+      right: max(18px, env(safe-area-inset-right, 0px));
+      bottom: max(22px, calc(env(safe-area-inset-bottom, 0px) + 14px));
+      width: 46px;
+      height: 46px;
+    }
+
+    body.home-page .h-scroll-top-arrow {
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.home-page .h-quote-section {
+      padding-inline: 0;
+    }
+
+    body.home-page .h-quote-section .h-ornament {
+      display: none;
+    }
+
+    body.home-page .h-quote-mirror {
+      gap: 28px;
+      padding-inline: 18px;
+    }
+
+    body.home-page .h-quote-left {
+      padding-top: 0;
+      padding-inline: 6px;
+      border-top: 0;
+    }
+
+    body.home-page .h-blockquote--mirror {
+      padding-inline: 4px;
+      margin-bottom: 14px;
+    }
+
+    body.home-page .h-cite--mirror {
+      padding-inline: 4px;
+      line-height: 1.5;
+    }
+
+    body.home-page .h-footer {
+      width: calc(100% - 36px);
+      justify-content: center;
+      gap: 10px 20px;
+      padding: 24px 0 max(30px, env(safe-area-inset-bottom, 0px));
+      text-align: center;
+    }
+
+    body.home-page .h-footer-copy,
+    body.home-page .h-footer a {
+      flex: 0 1 auto;
+    }
+
+    body.home-page .article-end-sdg-wrap {
+      padding: 44px 18px 36px;
     }
   }
 
