@@ -535,4 +535,16 @@
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/</loc>
+    <lastmod>2026-08-01T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-20-antisovetov-pastoru.webp</image:loc>
+      <image:title>Диотрефы нашего времени: власть, подотчётность и верность</image:title>
+    </image:image>
+  </url>
 </urlset>
