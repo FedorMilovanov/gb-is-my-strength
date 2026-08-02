@@ -31,34 +31,60 @@ const paths = {
 
 const errors = [];
 const requireValue = (condition, message) => { if (!condition) errors.push(message); };
-const text = (path) => existsSync(path) ? readFileSync(path, 'utf8') : '';
-const json = (path) => {
-  try { return JSON.parse(text(path)); }
-  catch (error) { errors.push(`${path}: invalid JSON: ${error.message}`); return {}; }
+const text = (file) => existsSync(file) ? readFileSync(file, 'utf8') : '';
+const json = (file) => {
+  try { return JSON.parse(text(file)); }
+  catch (error) { errors.push(`${file}: invalid JSON: ${error.message}`); return {}; }
 };
-const gitShow = (path) => {
+const gitShow = (file) => {
   try {
-    return execFileSync('git', ['show', `${PRE_WAVE12}:${path}`], { encoding:'utf8' });
+    return execFileSync('git', ['show', `${PRE_WAVE12}:${file}`], { encoding: 'utf8' });
   } catch (error) {
-    errors.push(`cannot read ${path} at pre-Wave12 ${PRE_WAVE12}: ${error.stderr?.toString().trim() || error.message}`);
+    errors.push(`cannot read ${file} at pre-Wave12 ${PRE_WAVE12}: ${error.stderr?.toString().trim() || error.message}`);
     return '';
   }
 };
-const gitShowJson = (path) => {
-  try { return JSON.parse(gitShow(path)); }
-  catch (error) { errors.push(`${path} at ${PRE_WAVE12}: invalid JSON: ${error.message}`); return {}; }
+const gitShowJson = (file) => {
+  try { return JSON.parse(gitShow(file)); }
+  catch (error) { errors.push(`${file} at ${PRE_WAVE12}: invalid JSON: ${error.message}`); return {}; }
 };
-const stable = (value) => JSON.stringify(value, Object.keys(value ?? {}).sort());
-const deepEqual = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+const canonicalize = (value) => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort((left, right) => left.localeCompare(right, 'en'))
+        .map((key) => [key, canonicalize(value[key])])
+    );
+  }
+  return value;
+};
+const stable = (value) => JSON.stringify(canonicalize(value));
+const deepEqual = (left, right) => stable(left) === stable(right);
 const preserveEntries = (before, after, label) => {
   for (const [key, oldValue] of Object.entries(before ?? {})) {
     requireValue(Object.hasOwn(after ?? {}, key), `${label}: pre-Wave12 key disappeared: ${key}`);
-    if (Object.hasOwn(after ?? {}, key)) requireValue(deepEqual(after[key], oldValue), `${label}: pre-Wave12 entry changed: ${key}`);
+    if (Object.hasOwn(after ?? {}, key)) {
+      requireValue(deepEqual(after[key], oldValue), `${label}: pre-Wave12 entry changed: ${key}`);
+    }
   }
 };
 const hrefs = (value) => new Set([...value.matchAll(/\bhref=["']([^"']+)["']/g)].map((match) => match[1]));
 
-for (const [name, path] of Object.entries(paths)) requireValue(existsSync(path), `${name} missing: ${path}`);
+requireValue(
+  deepEqual({ b: 2, a: { d: 4, c: 3 } }, { a: { c: 3, d: 4 }, b: 2 }),
+  'canonical comparator must ignore object-key order recursively'
+);
+requireValue(
+  !deepEqual({ a: [1, 2] }, { a: [2, 1] }),
+  'canonical comparator must preserve array order'
+);
+requireValue(
+  !deepEqual({ a: 1 }, { a: 2 }),
+  'canonical comparator must detect value drift'
+);
+
+for (const [name, file] of Object.entries(paths)) requireValue(existsSync(file), `${name} missing: ${file}`);
 
 const release = json(paths.manifest);
 const wave10 = json(paths.wave10);
@@ -147,7 +173,7 @@ requireValue(seriesLandingText.includes('data-wave12-series-card="true"') && ser
 requireValue(seriesHeadText.includes('numberOfItems: 2') && seriesHeadText.includes('diotrefy-nashego-vremeni'), 'series structured data drift');
 requireValue(seriesHeadText.includes('feed-pastor-series.xml'), 'series landing does not advertise RSS shard');
 
-// Semantic preservation of every pre-Wave12 registry entry.
+// Preserve every pre-Wave12 registry entry semantically, not byte-order-wise.
 const previousOwnership = gitShowJson(paths.ownership);
 const previousMatrix = gitShowJson(paths.matrix);
 const previousPolicy = gitShowJson(paths.searchPolicy);
