@@ -105,8 +105,8 @@ if engine.count('<h2 class="me-intro__title">') != 1:
     raise SystemExit("intro h2 count drift")
 if engine.count("tabsEl.setAttribute('role','tablist')") != 1:
     raise SystemExit("tablist role count drift")
-if engine.count("role=\"tab\"") != 1:
-    raise SystemExit("tab role template count drift")
+if 'data-tab="${k}" role="tab" aria-selected="${selected?' not in engine:
+    raise SystemExit("panel tab role template missing")
 if engine.count("event.stopPropagation();") < 2:
     raise SystemExit("local tab keyboard isolation missing")
 ENGINE.write_text(engine, encoding="utf-8")
