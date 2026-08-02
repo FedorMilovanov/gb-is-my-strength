@@ -202,7 +202,7 @@ async function assertVisualRegressionContracts(page, width, height) {
     assert.ok(state.quoteInset >= 24, `${width}px: mobile quotation lacks a readable inner inset`);
     assert.equal(state.quoteBorderTop, '0px', `${width}px: redundant mobile quote divider remains`);
     assert.equal(state.ornamentDisplays.every((value) => value === 'none'), true, `${width}px: redundant mobile ornaments remain`);
-    assert.ok(state.footer && state.footer.left >= 17 && innerWidth - state.footer.right >= 17, `${width}px: footer touches a viewport edge`);
+    assert.ok(state.footer && state.footer.left >= 17 && width - state.footer.right >= 17, `${width}px: footer touches a viewport edge`);
   }
 
   if (width >= 1480) {
