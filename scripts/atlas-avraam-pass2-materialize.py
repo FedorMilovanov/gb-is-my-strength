@@ -1,174 +1,155 @@
 from pathlib import Path
-import json
 import re
 import xml.etree.ElementTree as ET
 
 root=Path('.')
-routef=root/'karty/avraam/route.json'
+engine=root/'karty/_engine/map-engine.js'
 svgf=root/'karty/avraam/base.svg'
 harness=root/'scripts/avraam-reference-baseline.mjs'
 
-# ── Route truth: explicit totals, reusable semantic zoom and story cameras ──
-r=json.loads(routef.read_text('utf-8'))
-meta=r.setdefault('meta',{})
-stats=meta.setdefault('stats',{})
-route_places=[place for place in r.get('places',[]) if isinstance(place.get('stage'),int)]
-context_places=[place for place in r.get('places',[]) if not isinstance(place.get('stage'),int)]
-stats.update({
-    'places':len(r.get('places',[])),
-    'route_places':len(route_places),
-    'context_places':len(context_places),
-    'verified_waypoints':len(r.get('verified_waypoints',[])),
-})
-meta['semantic_zoom']={
-    'overview_min_w':1292,
-    'detail_max_w':380,
-    'overview_min_units_per_pixel':1.25,
-    'detail_max_units_per_pixel':0.72,
-}
-story_views={
-    'lot':[640,835,520],
-    'war':[660,700,600],
-    'akeda':[610,850,400],
-}
-for story in r.get('stories',[]):
-    desired=story_views.get(story.get('id'))
-    if desired:
-        story['cam']=desired[:]
-        story['viewport']=desired[:]
-routef.write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\n','utf-8')
+# ── Shared engine: story purity + reduced-motion ──
+s=engine.read_text('utf-8')
 
-# ── SVG depth: calm overview, detail-only symbols, asymmetric relief ──
+story_attr="g.setAttribute('data-story-active',inStory?'1':'0');"
+if story_attr not in s:
+    old="""        g.setAttribute('data-place-id', place.id);
+        g.setAttribute('data-screen-anchor','place');g.setAttribute('data-map-x',String(place.x));g.setAttribute('data-map-y',String(place.y));
+"""
+    new="""        g.setAttribute('data-place-id', place.id);
+        g.setAttribute('data-story-active',inStory?'1':'0');
+        g.setAttribute('data-screen-anchor','place');g.setAttribute('data-map-x',String(place.x));g.setAttribute('data-map-y',String(place.y));
+"""
+    if old not in s: raise SystemExit('MISSING marker story-attribute anchor')
+    s=s.replace(old,new,1)
+
+story_opacity="g.style.opacity=inStory?'1':(activeStoryId==='main'?'.15':'0');"
+if story_opacity not in s:
+    candidates=[
+        "g.style.opacity=inStory?'1':'.15';",
+        "g.style.opacity = inStory ? '1' : '.15';",
+    ]
+    for old in candidates:
+        if old in s:
+            s=s.replace(old,story_opacity,1)
+            break
+    else:
+        raise SystemExit('MISSING marker story opacity anchor')
+
+motion_marker="svg.setAttribute('data-reduced-motion',reduceMotion?'1':'0');"
+if motion_marker not in s:
+    old="""          while (geoRoot.firstChild) baseGeoG.appendChild(geoRoot.firstChild);
+          svg.insertBefore(baseGeoG, svg.firstChild);
+"""
+    new="""          while (geoRoot.firstChild) baseGeoG.appendChild(geoRoot.firstChild);
+          svg.insertBefore(baseGeoG, svg.firstChild);
+          const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+          svg.setAttribute('data-reduced-motion',reduceMotion?'1':'0');
+          if(reduceMotion&&typeof svg.pauseAnimations==='function'){
+            try{svg.pauseAnimations();svg.setAttribute('data-smil-paused','1')}
+            catch{svg.setAttribute('data-smil-paused','0')}
+          }
+"""
+    if old not in s: raise SystemExit('MISSING base SVG reduced-motion anchor')
+    s=s.replace(old,new,1)
+engine.write_text(s,'utf-8')
+
+# ── SVG: open topographic ridges + static trade-road context ──
 v=svgf.read_text('utf-8')
-old_negev='<text class="region-label" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>'
-new_negev='<text class="region-label lbl-overview" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>'
-if new_negev not in v:
-    if old_negev not in v: raise SystemExit('MISSING NEGEV label')
-    v=v.replace(old_negev,new_negev,1)
+new_ridges='''  <!-- Гевал и Геризим: открытые топографические гряды вокруг долины Сихема. -->
+  <g id="shechemRidges" class="lbl-z1" opacity=".7" fill="none" stroke-linecap="round" pointer-events="none">
+    <!-- Северная гряда Гевала -->
+    <path d="M602,731 C611,724 616,714 625,707 C634,711 642,720 653,729"
+      stroke="rgba(145,126,87,.10)" stroke-width="12"/>
+    <path d="M602,731 C611,724 616,714 625,707 C634,711 642,720 653,729"
+      stroke="#9b8d6a" stroke-width="1.05"/>
+    <path d="M608,730 C616,723 620,716 627,712 C635,716 641,722 648,728"
+      stroke="#b19e72" stroke-width=".62" opacity=".68"/>
+    <path d="M614,728 C620,722 624,718 629,716 C635,720 639,724 643,727"
+      stroke="#c0ab7a" stroke-width=".36" opacity=".48"/>
+    <text class="lbl-z2" x="626" y="701" font-size="4.8" fill="#b9a578" text-anchor="middle" letter-spacing=".12em">ГЕВАЛ</text>
+    <text class="lbl-z2" x="626" y="696" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".62">עֵיבָל · 940 м</text>
 
-if '<g id="sinaiPeak" class="lbl-z2"' not in v:
-    if '<g id="sinaiPeak" class="lbl-z1"' not in v: raise SystemExit('MISSING sinaiPeak')
-    v=v.replace('<g id="sinaiPeak" class="lbl-z1"','<g id="sinaiPeak" class="lbl-z2"',1)
+    <!-- Южная гряда Геризима -->
+    <path d="M603,771 C612,765 617,755 626,748 C635,752 643,761 653,770"
+      stroke="rgba(145,126,87,.09)" stroke-width="11"/>
+    <path d="M603,771 C612,765 617,755 626,748 C635,752 643,761 653,770"
+      stroke="#9b8d6a" stroke-width="1"/>
+    <path d="M609,770 C616,763 621,756 628,753 C636,757 641,763 648,769"
+      stroke="#b19e72" stroke-width=".6" opacity=".66"/>
+    <path d="M615,768 C621,762 625,758 630,757 C636,761 640,765 644,768"
+      stroke="#c0ab7a" stroke-width=".34" opacity=".46"/>
+    <text class="lbl-z2" x="628" y="778" font-size="4.8" fill="#b9a578" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+    <text class="lbl-z2" x="628" y="783" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".62">גְּרִזִּים · 881 м</text>
 
-new_hermon='''<!-- Хермон — протяжённый контурный массив у Дана; только detail. -->
-<g id="hermonRelief" class="lbl-z2" transform="translate(668,594)" opacity=".62" fill="none" stroke-linecap="round">
-  <path d="M-22,10 C-17,8 -14,3 -11,-2 C-8,-7 -5,-13 0,-16 C4,-13 7,-7 10,-3 C13,2 17,6 22,9"
-    stroke="#6080a0" stroke-width="1.05"/>
-  <path d="M-17,11 C-13,7 -11,3 -8,-1 C-5,-6 -2,-10 1,-12 C5,-8 7,-4 10,0 C13,4 16,7 19,10"
-    stroke="#7894ae" stroke-width=".62" opacity=".72"/>
-  <path d="M-10,10 C-7,6 -5,2 -2,-2 C0,-5 2,-7 4,-8 C7,-5 9,-1 12,3 C14,6 16,8 18,10"
-    stroke="#9ab0c2" stroke-width=".38" opacity=".5"/>
-  <text x="1" y="17" text-anchor="middle" font-size="4.3" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
-  <text x="1" y="22" font-size="3.1" fill="#6080a8" text-anchor="middle" opacity=".78">2814 м · הַר חֶרְמוֹן</text>
-</g>'''
-if 'id="hermonRelief"' not in v:
-    match=re.search(r'<!-- Хермон — гора у Дана -->\n<g class="lbl-z1" transform="translate\(668,594\)" opacity="\.4">.*?</g>',v,re.S)
-    if not match: raise SystemExit('MISSING Hermon group')
-    v=v[:match.start()]+new_hermon+v[match.end():]
+    <!-- Долина Сихема между грядами -->
+    <path d="M611,739 C620,741 633,741 645,738 M611,744 C621,746 634,746 646,743"
+      stroke="#6f795f" stroke-width=".42" opacity=".32"/>
+  </g>
 
-new_relief='''<g id="highlandRelief" class="lbl-z1" fill="none" stroke-linecap="round" pointer-events="none">
-  <!-- Центральное нагорье Ханаана: несколько несимметричных контуров вместо условной оси. -->
-  <path d="M625,681 C617,709 621,734 612,760 C603,785 614,810 604,837 C597,862 588,891 576,920"
-    stroke="rgba(139,125,90,.10)" stroke-width="22"/>
-  <path d="M625,681 C617,709 621,734 612,760 C603,785 614,810 604,837 C597,862 588,891 576,920"
-    stroke="#8b7d5a" stroke-width="1.2" opacity=".56"/>
-  <path d="M616,687 C610,714 613,738 604,763 C598,786 606,809 596,835 C590,858 581,885 570,910"
-    stroke="#a18f65" stroke-width=".68" opacity=".38"/>
-  <path d="M634,688 C628,715 632,739 622,767 C615,791 624,817 614,846 C607,871 599,898 590,926"
-    stroke="#6f644b" stroke-width=".68" opacity=".4"/>
-  <path d="M628,700 C624,724 626,746 618,771 C612,794 619,816 611,839"
-    stroke="#b19d73" stroke-width=".42" opacity=".32"/>
+  </g>
 
-  <!-- Заиорданское плато: Галаад и Моав, разорванные долинами. -->
-  <path d="M703,646 C710,682 707,720 714,756 C718,781 710,807 714,834 C717,874 721,918 735,968"
-    stroke="rgba(122,108,76,.085)" stroke-width="18"/>
-  <path d="M703,646 C710,682 707,720 714,756 C718,781 710,807 714,834 C717,874 721,918 735,968"
-    stroke="#776b50" stroke-width="1" opacity=".43"/>
-  <path d="M694,653 C701,687 697,724 704,759 C708,784 700,810 704,838 C707,878 711,918 723,958"
-    stroke="#9a875f" stroke-width=".58" opacity=".3"/>
-  <path d="M713,651 C719,687 717,722 724,758 C728,784 722,809 726,835 C730,874 734,912 744,948"
-    stroke="#665c46" stroke-width=".5" opacity=".28"/>
+<!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->'''
+if 'id="shechemRidges"' not in v:
+    pattern=r'  <!-- Горный hatch texture под Гевалом -->.*?\n  </g>\n\n</g>\n\n<!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->'
+    v,n=re.subn(pattern,new_ridges,v,count=1,flags=re.S)
+    if n!=1: raise SystemExit(f'MISSING Shechem mountain section: {n}')
 
-  <!-- Синайские массивы: длинные дуги, а не эмблема одиночной горы. -->
-  <path d="M463,1048 C500,1017 543,1004 584,1019 C629,1035 666,1076 704,1144"
-    stroke="rgba(143,105,61,.09)" stroke-width="27"/>
-  <path d="M463,1048 C500,1017 543,1004 584,1019 C629,1035 666,1076 704,1144"
-    stroke="#8c6d49" stroke-width="1.05" opacity=".44"/>
-  <path d="M480,1057 C516,1030 550,1022 584,1034 C620,1047 653,1082 688,1135"
-    stroke="#a17b4e" stroke-width=".62" opacity=".34"/>
-  <path d="M498,1064 C528,1044 555,1038 581,1048 C611,1059 639,1088 671,1129"
-    stroke="#b1895b" stroke-width=".4" opacity=".25"/>
-</g>
-<!-- Оронт'''
-if 'несколько несимметричных контуров вместо условной оси' not in v:
-    match=re.search(r'<g id="highlandRelief" class="lbl-z1".*?</g>\n<!-- Оронт',v,re.S)
-    if not match: raise SystemExit('MISSING highlandRelief')
-    v=v[:match.start()]+new_relief+v[match.end():]
+trade_match=re.search(r'<g id="tradeRoutes".*?</g>',v,re.S)
+if not trade_match: raise SystemExit('MISSING tradeRoutes group')
+trade=trade_match.group(0)
+trade_static=re.sub(r'\s*<animate attributeName="stroke-dashoffset"[^>]*/>','',trade)
+if trade_static!=trade:
+    v=v[:trade_match.start()]+trade_static+v[trade_match.end():]
 svgf.write_text(v,'utf-8')
 ET.parse(svgf)
 
-# ── Evidence: recompute source statistics and record route visual mass ──
+# ── Browser evidence: story purity + reduced-motion ──
 h=harness.read_text('utf-8')
-source_block=r'''
-const SOURCE_ROUTE_PATH=path.resolve('karty/avraam/route.json');
-const SOURCE_ROUTE=JSON.parse(fs.readFileSync(SOURCE_ROUTE_PATH,'utf8'));
-function sourceDataAudit(route){
-  const places=Array.isArray(route.places)?route.places:[],stages=Array.isArray(route.stages)?route.stages:[],stories=Array.isArray(route.stories)?route.stories:[],ctx=Array.isArray(route.ctx)?route.ctx:[];
-  const routePlaces=places.filter(place=>Number.isInteger(place.stage));
-  const contextPlaces=places.filter(place=>!Number.isInteger(place.stage));
-  const photos=routePlaces.reduce((sum,place)=>sum+(Array.isArray(place.photos)?place.photos.length:0),0);
-  const scientificVariants=Object.values(route.scientific_variants||{}).reduce((sum,value)=>sum+(Array.isArray(value)?value.length:0),0);
-  const stats=route.meta?.stats||{},failures=[];
-  const expect=(label,actual,expected)=>{if(actual!==expected)failures.push(`${label}: ${actual} != ${expected}`)};
-  expect('stats.places',stats.places,places.length);
-  expect('stats.route_places',stats.route_places,routePlaces.length);
-  expect('stats.context_places',stats.context_places,contextPlaces.length);
-  expect('stats.stages',stats.stages,stages.length);
-  expect('stats.stories',stats.stories,stories.length);
-  expect('stats.ctx_points',stats.ctx_points,ctx.length);
-  expect('stats.photos',stats.photos,photos);
-  expect('stats.verified_waypoints',stats.verified_waypoints,(route.verified_waypoints||[]).length);
-  expect('stats.scientific_variants',stats.scientific_variants,scientificVariants);
-  expect('places_index length',(route.places_index||[]).length,routePlaces.length);
-  const ids=places.map(place=>place.id),idSet=new Set(ids);
-  if(idSet.size!==ids.length)failures.push(`duplicate place ids: ${ids.length-idSet.size}`);
-  routePlaces.forEach(place=>{if(place.stage<0||place.stage>=stages.length)failures.push(`invalid stage ${place.id}: ${place.stage}`)});
-  stories.forEach(story=>{
-    (story.places||[]).forEach(id=>{if(!idSet.has(id))failures.push(`story ${story.id} missing place: ${id}`)});
-    (story.stages||[]).forEach(stage=>{if(!Number.isInteger(stage)||stage<0||stage>=stages.length)failures.push(`story ${story.id} invalid stage: ${stage}`)});
-  });
-  return{counts:{places:places.length,routePlaces:routePlaces.length,contextPlaces:contextPlaces.length,stages:stages.length,stories:stories.length,ctx:ctx.length,photos,verifiedWaypoints:(route.verified_waypoints||[]).length,scientificVariants},failures};
-}
-const SOURCE_DATA_AUDIT=sourceDataAudit(SOURCE_ROUTE);
-function routeVisualMass(geometry){
-  const boxes=(geometry.routes||[]).map(route=>route.screenBox).filter(Boolean);
-  if(!boxes.length)return null;
-  const left=Math.min(...boxes.map(box=>box.left)),top=Math.min(...boxes.map(box=>box.top)),right=Math.max(...boxes.map(box=>box.right)),bottom=Math.max(...boxes.map(box=>box.bottom));
-  const width=Math.max(0,right-left),height=Math.max(0,bottom-top),vw=geometry.viewport.width,vh=geometry.viewport.height;
-  return{left,top,right,bottom,width,height,widthRatio:width/vw,heightRatio:height/vh,centerXRatio:(left+right)/(2*vw),centerYRatio:(top+bottom)/(2*vh)};
-}
-'''
-if 'const SOURCE_DATA_AUDIT=sourceDataAudit(SOURCE_ROUTE);' not in h:
-    anchor="const KEY_PLACES = ['ur','harran','shechem','bethel','egypt','hebron','sodom','dan','beersheba','salem'];\n"
-    if anchor not in h: raise SystemExit('MISSING KEY_PLACES anchor')
-    h=h.replace(anchor,anchor+source_block,1)
 
-old_result="const result={viewport,route:ROUTE_URL,introDismissed:false,overview:null,surfaces:{},stories:[],places:[],tabs:[],keyboard:{},verificationFailures:[],consoleEvents,failedRequests,fatal:null};"
-new_result="const result={viewport,route:ROUTE_URL,sourceData:SOURCE_DATA_AUDIT,introDismissed:false,overview:null,surfaces:{},stories:[],places:[],tabs:[],keyboard:{},verificationFailures:[...SOURCE_DATA_AUDIT.failures.map(failure=>`source data: ${failure}`)],consoleEvents,failedRequests,fatal:null};"
-if new_result not in h:
-    if old_result not in h: raise SystemExit('MISSING result object')
-    h=h.replace(old_result,new_result,1)
+old_describe="const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});"
+new_describe="const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),storyActive:el.getAttribute('data-story-active'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});"
+if new_describe not in h:
+    if old_describe not in h: raise SystemExit('MISSING describe() anchor')
+    h=h.replace(old_describe,new_describe,1)
 
-old_story="""        const geometry=await collectGeometry(page,`${viewport.id}:story:${story.id}`);
-        result.stories.push({...story,...selection,file,geometry});
+motion_return="motion:{prefersReducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches,smilAnimations:svg?svg.querySelectorAll('animate,animateTransform,animateMotion,set').length:0,smilPaused:svg?.getAttribute('data-smil-paused')==='1'},"
+if motion_return not in h:
+    old="""      stateId,url:location.href,title:document.title,activeStory:activeStory?.getAttribute('data-story')||null,
+      viewport:{width,height,devicePixelRatio,scrollX,scrollY},
 """
-new_story="""        const geometry=await collectGeometry(page,`${viewport.id}:story:${story.id}`);
-        const visualMass=routeVisualMass(geometry);
-        result.stories.push({...story,...selection,file,geometry,visualMass});
+    new="""      stateId,url:location.href,title:document.title,activeStory:activeStory?.getAttribute('data-story')||null,
+      motion:{prefersReducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches,smilAnimations:svg?svg.querySelectorAll('animate,animateTransform,animateMotion,set').length:0,smilPaused:svg?.getAttribute('data-smil-paused')==='1'},
+      viewport:{width,height,devicePixelRatio,scrollX,scrollY},
 """
-if new_story not in h:
-    if old_story not in h: raise SystemExit('MISSING story geometry block')
-    h=h.replace(old_story,new_story,1)
+    if old not in h: raise SystemExit('MISSING geometry return anchor')
+    h=h.replace(old,new,1)
+
+motion_gate="reduced motion did not pause SVG animations"
+if motion_gate not in h:
+    old="""    if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
+
+    const themeButton=page.locator('.me-theme-btn').first();
+"""
+    new="""    if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
+    if(result.overview.motion.prefersReducedMotion&&result.overview.motion.smilAnimations>0&&!result.overview.motion.smilPaused)result.verificationFailures.push('reduced motion did not pause SVG animations');
+
+    const themeButton=page.locator('.me-theme-btn').first();
+"""
+    if old not in h: raise SystemExit('MISSING overview motion-gate anchor')
+    h=h.replace(old,new,1)
+
+purity_gate="story irrelevant markers"
+if purity_gate not in h:
+    old="""        if(story.id!=='main'&&geometry.counts.routes===0)result.verificationFailures.push(`story route missing: ${story.id}`);
+        const overlapLimit=viewport.width<=560?4:6;
+"""
+    new="""        if(story.id!=='main'&&geometry.counts.routes===0)result.verificationFailures.push(`story route missing: ${story.id}`);
+        const irrelevantMarkers=story.id==='main'?[]:geometry.markers.filter(marker=>marker.storyActive==='0');
+        if(irrelevantMarkers.length)result.verificationFailures.push(`story irrelevant markers ${story.id}: ${irrelevantMarkers.map(marker=>marker.placeId||marker.text||marker.id).join(', ')}`);
+        const overlapLimit=viewport.width<=560?4:6;
+"""
+    if old not in h: raise SystemExit('MISSING story-purity anchor')
+    h=h.replace(old,new,1)
 harness.write_text(h,'utf-8')
 
-print('PASS6 APPLIED')
+print('PASS7 APPLIED')
