@@ -360,7 +360,7 @@ async function assertSearchLifecycle(page, browserName) {
   const menuButton = page.locator('#hMobileMenuBtn');
   await menuButton.click();
   await page.waitForFunction(() => document.getElementById('hMobileNav')?.classList.contains('open'));
-  await page.locator('[data-action="open-search"]').click();
+  await page.locator('#hMobileNav [data-action="open-search"]').click();
   await waitForSearchState(page, true);
   await page.waitForFunction(() => !document.getElementById('hMobileNav')?.classList.contains('open'));
   assert.equal(await page.locator('#hMobileNav').getAttribute('aria-hidden'), 'true', `${browserName}: mobile menu remained exposed behind search`);
