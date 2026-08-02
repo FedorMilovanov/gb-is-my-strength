@@ -352,7 +352,7 @@
   <path d="M100,530 Q150,518 200,530 Q250,542 300,530 Q350,518 400,530" fill="none" stroke="#4a80a0" stroke-width="1.1" stroke-linecap="round"/>
   <path d="M50,580 Q100,568 150,580 Q200,592 250,580" fill="none" stroke="#4a80a0" stroke-width="1" stroke-linecap="round" opacity=".7"/>
 </g>
-<text class="sea-label" x="300" y="555" font-size="26" transform="rotate(-8 300 555)">ВЕЛИКОЕ&#160;&#160;МОРЕ</text>
+<text class="sea-label lbl-overview" x="300" y="555" font-size="26" transform="rotate(-8 300 555)">ВЕЛИКОЕ&#160;&#160;МОРЕ</text>
     <text class="region-he" x="330" y="588" font-size="15" opacity=".4" fill="#7fa7c4">הַיָּם הַגָּדוֹל</text>
     <text class="sea-label lbl-z1" x="676" y="1330" font-size="15" transform="rotate(38 676 1330)">КРАСНОЕ&#160;МОРЕ</text>
     <text class="sea-label lbl-z1" x="650" y="1310" font-size="6.5" transform="rotate(38 650 1310)" fill="#7fa7c4" opacity=".45" letter-spacing=".14em">יַם-סוּף</text>
@@ -370,7 +370,7 @@
     </g>
     <!-- Персидский залив — coastal texture -->
     <path fill="url(#seaPattern)" opacity=".25" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
-    <text class="sea-label" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
+    <text class="sea-label lbl-overview" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
   <text class="sea-label lbl-z1" x="1870" y="1035" font-size="6" transform="rotate(60 1870 1035)" letter-spacing=".12em" opacity=".6">הַיָּם הַמִּזְרָחִי · Вост. море</text>
     <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
     <text class="sea-label lbl-z2" x="650" y="856" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 650 856)" fill="#4a80a0" opacity=".45">−430 м · низшая точка Земли</text>
@@ -405,7 +405,7 @@
   <text class="region-label lbl-z1" x="1180" y="350" font-size="7" fill="#4a80a0" opacity=".5" letter-spacing=".18em" transform="rotate(22 1180 350)">ЕВФРАТ · פְּרָת</text>
   <!-- Тигр -->
   <text class="region-label lbl-z1" x="1440" y="310" font-size="7" fill="#4a80a0" opacity=".5" letter-spacing=".15em" transform="rotate(40 1440 310)">ТИГР · חִדֶּקֶל</text>
-    <text class="region-label" x="1150" y="395" font-size="25" transform="rotate(22 1150 395)">МЕСОПОТАМИЯ</text>
+    <text class="region-label lbl-overview" x="1150" y="395" font-size="25" transform="rotate(22 1150 395)">МЕСОПОТАМИЯ</text>
     <!-- Ассирия (север) и Вавилония (юг) подписи lbl-z1 -->
     <text class="region-label lbl-z1" x="1350" y="290" font-size="9" fill="#cdbd95" opacity=".35" letter-spacing=".2em" transform="rotate(22 1350 290)">АССИРИЯ</text>
     <text class="region-label lbl-z1" x="1400" y="860" font-size="9" fill="#cdbd95" opacity=".3" letter-spacing=".2em">ВАВИЛОНИЯ</text>
@@ -437,20 +437,20 @@
   <text class="region-label lbl-z2" x="900" y="130" font-size="5" fill="#4a80a0" opacity=".4" letter-spacing=".12em">исток Евфрата</text>
   <text class="region-label lbl-z2" x="1450" y="145" font-size="5" fill="#4a80a0" opacity=".4" letter-spacing=".12em">исток Тигра</text>
     <text class="region-he" x="1235" y="430" font-size="15" transform="rotate(22 1235 430)">אֲרַם נַהֲרַיִם</text>
-    <text class="region-label" font-size="13" letter-spacing=".48em"><textPath href="#canaanRidge" startOffset="6%">Х&#160;А&#160;Н&#160;А&#160;А&#160;Н</textPath></text>
+    <text class="region-label lbl-overview" font-size="9" letter-spacing=".38em"><textPath href="#canaanRidge" startOffset="18%">Х&#160;А&#160;Н&#160;А&#160;А&#160;Н</textPath></text>
     <!-- Декоративная рамка-bounding box Ханаана -->
     <rect x="575" y="580" width="115" height="310" rx="8"
       fill="none" stroke="rgba(232,200,121,.06)" stroke-width="1.5"
       stroke-dasharray="4 6" class="lbl-z1" pointer-events="none"/>
     <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
-    <text class="region-label" x="120" y="1040" font-size="20">ЕГИПЕТ</text>
+    <text class="region-label lbl-overview" x="120" y="1040" font-size="20">ЕГИПЕТ</text>
     <!-- Раамсес (Тель эд-Даба/Авар) — будущая карта Исхода -->
     <g class="lbl-z2" transform="translate(210,880)" opacity=".3">
       <circle r="2" fill="rgba(10,13,20,.7)" stroke="#c8a060" stroke-width=".7"/>
       <text x="5" y="4" font-size="4" fill="#c8a060" letter-spacing=".06em">РААМСЕС</text>
     </g>
     <text class="region-he" x="135" y="1066" font-size="13">מִצְרַיִם</text>
-    <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
+    <text class="region-label lbl-overview" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
     <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
     <text class="region-label lbl-z2" x="602" y="815" font-size="4.5" fill="#9aa2ae" opacity=".4" letter-spacing=".12em">ВИФЛЕЕМ · בֵּית לֶחֶם</text>
     <text class="region-label" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>
@@ -462,10 +462,10 @@
     <!-- Галаад (север Заиорданья) -->
     <text class="region-label lbl-z2" x="698" y="740" font-size="6" fill="#8b7d5a" opacity=".35" letter-spacing=".15em" transform="rotate(88 698 740)">ГАЛААД · גִּלְעָד</text>
     <text class="region-he" x="555" y="924" font-size="10">נֶגֶב</text>
-    <text class="region-label" x="938" y="262" font-size="12" letter-spacing=".2em">ПАДАН-АРАМ</text> <!-- era: bronze -->
+    <text class="region-label lbl-overview" x="938" y="262" font-size="12" letter-spacing=".2em">ПАДАН-АРАМ</text> <!-- era: bronze -->
     <!-- Пустыня Аравии — stipple pattern -->
 <ellipse cx="1250" cy="1050" rx="380" ry="280" fill="url(#desertStipple)" opacity=".7"/>
-<text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
+<text class="region-label lbl-overview" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
     <text class="region-label" x="378" y="412" font-size="10" letter-spacing=".25em" opacity=".35">КИПР</text>
   </g>
 

@@ -678,7 +678,7 @@ const MapEngine = (function() {
 .me-legend__sig-body{min-width:0}.me-legend__sig-label{display:block;color:#e8c879;font-weight:700;font-size:10px;line-height:1.25}.me-legend__sig-desc{display:block;margin-top:3px;color:rgba(233,228,214,.72);font-size:9px;line-height:1.35}
 .me-route-underlay{pointer-events:none;mix-blend-mode:screen}
 .me-route-main{filter:url(#me-shadow);transition:opacity .4s ease,stroke-width .4s ease,filter .4s ease}
-.me-route-label{font-size:7px;letter-spacing:.12em;fill:rgba(232,200,121,.62);stroke:#070a10;stroke-width:2;paint-order:stroke;pointer-events:none;text-transform:uppercase}.me-map svg:not([data-zoom-bucket="overview"]) .me-route-label{display:none}
+.me-route-label{display:none}
 .me-signature{pointer-events:none;mix-blend-mode:screen}
 .me-story-focus{fill:none;stroke:rgba(232,200,121,.24);stroke-width:1;stroke-dasharray:3 8;vector-effect:non-scaling-stroke;pointer-events:none;opacity:.42}.me-map svg[data-zoom-bucket="overview"] .me-story-focus{display:none}
 @keyframes meStoryFocus{0%{opacity:0;stroke-dashoffset:42}35%{opacity:.78}100%{opacity:.38;stroke-dashoffset:0}}
@@ -903,6 +903,11 @@ const MapEngine = (function() {
 /* Semantic zoom: the authored base already marks regional/detail objects with
    lbl-z1/lbl-z2. Overview stays calm; regional and close views reveal evidence
    progressively without mutating route truth or using a map-specific branch. */
+
+.me-map #me-base-geo{opacity:.74;transition:opacity .35s ease}
+.me-map[data-map-theme="light"] #me-base-geo{opacity:.86}
+.me-map svg:not([data-zoom-bucket="overview"]) #me-base-geo .lbl-overview{display:none}
+
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z1,
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z2,
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .region-he,
@@ -984,6 +989,15 @@ const MapEngine = (function() {
     svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
     svg.setAttribute('preserveAspectRatio','xMidYMid meet');
     function semanticZoomBucket(width=view.w){
+      const renderedWidth=(canvas.isConnected?canvas:container).getBoundingClientRect().width;
+      if(renderedWidth>1){
+        const unitsPerPixel=width/renderedWidth;
+        const overviewMinDensity=Number(semanticZoomConfig.overview_min_units_per_pixel ?? semanticZoomConfig.overviewMinUnitsPerPixel) || 1.25;
+        const detailMaxDensity=Number(semanticZoomConfig.detail_max_units_per_pixel ?? semanticZoomConfig.detailMaxUnitsPerPixel) || 0.72;
+        if(unitsPerPixel>=overviewMinDensity)return 'overview';
+        if(unitsPerPixel>detailMaxDensity)return 'region';
+        return 'detail';
+      }
       if(width >= semanticOverviewMinW) return 'overview';
       if(width > semanticDetailMaxW) return 'region';
       return 'detail';
@@ -1906,7 +1920,6 @@ container.appendChild(panel);
       }
       renderSignatureOverlay();
       renderStoryFocus();
-      applyViewBox();
 
       // Overview labels: explicit data wins; otherwise one non-candidate
       // representative per stage plus route endpoints. Dots remain visible.
@@ -2067,10 +2080,10 @@ container.appendChild(panel);
         labelBg.setAttribute('width',textWidth+6);
         labelBg.setAttribute('height','14');
         labelBg.setAttribute('rx','3');
-        labelBg.setAttribute('fill','rgba(7,10,16,.75)');
-        labelBg.setAttribute('stroke','rgba(255,255,255,.06)');
+        labelBg.setAttribute('fill','var(--me-label-bg,rgba(7,10,16,.68))');
+        labelBg.setAttribute('stroke','var(--me-border,rgba(255,255,255,.08))');
         labelBg.setAttribute('stroke-width','0.5');
-        labelBg.setAttribute('opacity',inStory?'0.85':'0');
+        labelBg.setAttribute('opacity',inStory?'0.68':'0');
         labelBg.style.transition = 'opacity .3s';
         labelBg.style.pointerEvents = 'none';
         labelBg.classList.add('me-place-label-part','me-place-label-bg');
@@ -2089,6 +2102,7 @@ container.appendChild(panel);
         markersG.appendChild(g);
       });
       applyLayerVisibility();
+      applyViewBox();
     }
 
 
@@ -2614,7 +2628,7 @@ container.appendChild(panel);
     function runTourStep(){
       if(!touring)return;
       const story=(route.stories||[]).find(s=>s.id===activeStoryId);
-      const stageIds=story?.stage_ids||Array.from({length:(route.stages||[]).length},(_,i)=>i);
+      const stageIds=story?.stages||story?.stage_ids||Array.from({length:(route.stages||[]).length},(_,i)=>i);
       if(tourStepIdx>=stageIds.length){stopTour();return;}
       const sid=stageIds[tourStepIdx];
       const place=(route.places||[]).find(p=>p.stage===sid&&visiblePlaces().some(v=>v.id===p.id));
