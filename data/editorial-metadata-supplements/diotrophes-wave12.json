@@ -1,6 +1,5 @@
 {
   "version": 1,
-  "sourceCommit": "8f17085dc8411cffbcb5a4dcd2f8fc5db9c30a97",
   "records": {
     "/articles/diotrefy-nashego-vremeni/": {
       "route": "/articles/diotrefy-nashego-vremeni/",
@@ -12,7 +11,7 @@
       "editorialModifiedAt": "2026-08-01T21:00:00.000Z",
       "originalWorkPublishedAt": null,
       "reviewStatus": "migration-freeze-unverified",
-      "provenance": "wave12-publication-source-decision",
+      "provenance": "wave12-publication-authority",
       "observations": {
         "visiblePublishedAt": null,
         "visibleModifiedAt": null,

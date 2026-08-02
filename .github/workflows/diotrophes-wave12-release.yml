@@ -13,6 +13,7 @@ on:
       - 'data/route-search-policy.json'
       - 'data/search-manifest.json'
       - 'data/series.json'
+      - 'data/editorial-metadata-supplements/diotrophes-wave12.json'
       - 'migration/page-ownership.json'
       - 'migration/route-migration-matrix.json'
       - 'src/components/article-pilots/diotrophes/**'
@@ -23,6 +24,8 @@ on:
       - 'scripts/diotrophes-wave10-contract.mjs'
       - 'scripts/diotrophes-wave11-faithful-witness-contract.mjs'
       - 'scripts/diotrophes-wave12-*.mjs'
+      - 'scripts/search-index-policy-contract-test.js'
+      - 'scripts/search-index-policy-inventory.js'
       - 'sitemap-pastor-series.xml'
       - 'feed-pastor-series.xml'
       - 'robots.txt'
@@ -38,6 +41,7 @@ on:
       - 'data/route-search-policy.json'
       - 'data/search-manifest.json'
       - 'data/series.json'
+      - 'data/editorial-metadata-supplements/diotrophes-wave12.json'
       - 'migration/page-ownership.json'
       - 'migration/route-migration-matrix.json'
       - 'src/components/article-pilots/diotrophes/**'
@@ -48,6 +52,8 @@ on:
       - 'scripts/diotrophes-wave10-contract.mjs'
       - 'scripts/diotrophes-wave11-faithful-witness-contract.mjs'
       - 'scripts/diotrophes-wave12-*.mjs'
+      - 'scripts/search-index-policy-contract-test.js'
+      - 'scripts/search-index-policy-inventory.js'
       - 'sitemap-pastor-series.xml'
       - 'feed-pastor-series.xml'
       - 'robots.txt'
@@ -91,11 +97,11 @@ jobs:
           node scripts/diotrophes-wave11-faithful-witness-contract.mjs
           node scripts/diotrophes-wave12-release-contract.mjs
 
-      - name: Validate route registries and Astro types
+      - name: Validate route registries search contract and Astro types
         run: |
           npm run migration:metadata:check:strict
           npm run page-ownership:check
-          node scripts/search-manifest-policy-normalizer-test.js
+          node scripts/search-index-policy-contract-test.js
           npm run astro:check
 
       - name: Build production-like site and Pagefind
@@ -116,6 +122,9 @@ jobs:
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: diotrophes-wave12-release-evidence
-          path: reports/diotrophes-wave12/
+          path: |
+            reports/diotrophes-wave12/
+            reports/search-index-policy-inventory.json
+            reports/search-index-policy-inventory.md
           if-no-files-found: warn
           retention-days: 30
