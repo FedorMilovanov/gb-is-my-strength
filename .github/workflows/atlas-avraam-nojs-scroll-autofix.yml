@@ -1,0 +1,93 @@
+name: Atlas Avraam No-JS Scroll Autofix
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled]
+    paths:
+      - '.github/workflows/atlas-avraam-nojs-scroll-autofix.yml'
+      - 'scripts/atlas-avraam-nojs-scroll-autofix.py'
+      - 'scripts/avraam-static-projection-witness.mjs'
+      - 'src/components/karty/_shared/MapRuntimeFallback.astro'
+
+concurrency:
+  group: atlas-avraam-nojs-scroll-autofix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  decision:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      approved: ${{ steps.gate.outputs.approved }}
+    steps:
+      - name: Fail-closed approval decision
+        id: gate
+        shell: bash
+        env:
+          APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'autofix-approved') }}
+          SYSTEM_LANE: ${{ contains(github.event.pull_request.labels.*.name, 'system') }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ "$APPROVED" != "true" || "$SYSTEM_LANE" != "true" ]]; then
+            echo '::error::Autofix requires both autofix-approved and system labels.'
+            exit 1
+          fi
+          if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
+            echo '::error::Autofix is restricted to same-repository pull requests.'
+            exit 1
+          fi
+          echo 'approved=true' >> "$GITHUB_OUTPUT"
+
+  write:
+    needs: decision
+    if: needs.decision.outputs.approved == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Materialize root-scroll contract and strict witness
+        run: python3 scripts/atlas-avraam-nojs-scroll-autofix.py
+
+      - name: Validate bounded mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/avraam-static-projection-witness.mjs
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          expected=$'scripts/avraam-static-projection-witness.mjs\nsrc/components/karty/_shared/MapRuntimeFallback.astro'
+          [[ "$changed" == "$expected" ]]
+          [[ "$(grep -Fc 'overflow-y: auto !important;' src/components/karty/_shared/MapRuntimeFallback.astro)" == '1' ]]
+          [[ "$(grep -Fc 'min-height: 100vh !important;' src/components/karty/_shared/MapRuntimeFallback.astro)" == '1' ]]
+          grep -Fq 'long fallback is not scrollable' scripts/avraam-static-projection-witness.mjs
+          grep -Fq 'scroll slices are not textually distinct' scripts/avraam-static-projection-witness.mjs
+          grep -Fq 'middle slice is not near mid-scroll' scripts/avraam-static-projection-witness.mjs
+
+      - name: Commit bounded autofix
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'Exact no-JS root-scroll state already present.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            src/components/karty/_shared/MapRuntimeFallback.astro \
+            scripts/avraam-static-projection-witness.mjs
+          git commit -m 'fix(atlas): make no-JS route text fully scrollable'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
