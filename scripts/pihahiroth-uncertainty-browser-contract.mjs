@@ -12,6 +12,7 @@ const DIST = join(ROOT, 'dist');
 const REPORTS = join(ROOT, 'reports', 'pihahiroth-uncertainty');
 const ROUTE = '/karty/ishod/';
 const EXPECTED_IDS = ['PH-CAND-NORTH', 'PH-CAND-BALLAH', 'PH-CAND-BITTER'];
+const RETIRED_WAYPOINT_LABEL = 'Суэц (сев. переправа)';
 const FORBIDDEN = ['Археологи нашли точное место перехода.', 'Рон Уайатт', 'Ron Wyatt', 'Нувейба', 'Nuweiba', 'точка привязана к маршрутной гипотезе'];
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -72,22 +73,44 @@ async function blockExternal(page, base) {
   });
 }
 
-async function inspectEmptyLegacyContainer(page, selector) {
-  const locator = page.locator(selector);
+async function inspectSignatureProjection(page) {
+  const locator = page.locator('#me-signature');
   const count = await locator.count();
-  if (count === 0) return { count, empty: true, text: '', childElementCount: 0, dataAttributes: [] };
+  if (count === 0) return { count, removed: true, text: '', childElementCount: 0 };
   const state = await locator.first().evaluate((node) => ({
     text: (node.textContent || '').trim(),
     childElementCount: node.childElementCount,
-    dataAttributes: [...node.attributes]
-      .filter((attribute) => attribute.name.startsWith('data-') && attribute.value.trim())
-      .map((attribute) => `${attribute.name}=${attribute.value}`),
   }));
   return {
     count,
     ...state,
-    empty: count === 1 && state.text === '' && state.childElementCount === 0 && state.dataAttributes.length === 0,
+    removed: count === 1 && state.text === '' && state.childElementCount === 0,
   };
+}
+
+async function inspectWaypointProjection(page) {
+  const container = page.locator('#me-waypoints');
+  const count = await container.count();
+  if (count === 0) return { count, removed: true, labels: [], waypointCount: 0 };
+  const labels = (await page.locator('#me-waypoints > g text').allTextContents()).map((value) => value.trim()).filter(Boolean);
+  return {
+    count,
+    labels,
+    waypointCount: await page.locator('#me-waypoints > g').count(),
+    removed: count === 1 && labels.length === 5 && !labels.includes(RETIRED_WAYPOINT_LABEL),
+  };
+}
+
+async function enterInteractiveMap(page, profileId) {
+  const loading = page.locator('.me-loading');
+  if (await loading.count()) await loading.waitFor({ state: 'detached', timeout: 8_000 });
+  const intro = page.locator('.me-intro');
+  const introButton = page.locator('.me-intro__btn');
+  if (await introButton.count()) {
+    await introButton.click({ timeout: 5_000 });
+    await intro.waitFor({ state: 'detached', timeout: 3_000 });
+  }
+  check(profileId, 'interaction:entry-overlays-cleared', await loading.count() === 0 && await intro.count() === 0);
 }
 
 async function inspectInteractive(browser, base, profile) {
@@ -143,14 +166,15 @@ async function inspectInteractive(browser, base, profile) {
     const oldDisplay = oldCount ? await oldMarker.first().evaluate((node) => getComputedStyle(node).display) : 'missing';
     check(profile.id, 'single-point:hidden', oldCount === 1 && oldDisplay === 'none', `count=${oldCount}; display=${oldDisplay}`);
 
-    const signature = await inspectEmptyLegacyContainer(page, '#me-signature');
-    check(profile.id, 'single-point:signature-removed', signature.empty, JSON.stringify(signature));
-    const waypoints = await inspectEmptyLegacyContainer(page, '#me-waypoints');
-    check(profile.id, 'single-point:waypoint-removed', waypoints.empty, JSON.stringify(waypoints));
+    const signature = await inspectSignatureProjection(page);
+    check(profile.id, 'single-point:signature-removed', signature.removed, JSON.stringify(signature));
+    const waypoints = await inspectWaypointProjection(page);
+    check(profile.id, 'single-point:retired-waypoint-removed', waypoints.removed, JSON.stringify(waypoints));
 
     const beforeText = await page.locator('body').innerText();
     for (const forbidden of FORBIDDEN) check(profile.id, `forbidden:before:${forbidden}`, !beforeText.includes(forbidden));
 
+    await enterInteractiveMap(page, profile.id);
     await corridors.nth(1).click({ timeout: 5_000 });
     await page.locator('.me-panel.me-panel--open').waitFor({ state: 'visible', timeout: 5_000 });
     const panelName = await page.locator('.me-panel__name').innerText();
