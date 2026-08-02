@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "scripts/audit-browser-runtime-wave.mjs"
+      - "scripts/audit-gallery-runtime-diag.mjs"
       - ".github/workflows/audit-browser-runtime-wave.yml"
       - "src/components/karty/avraam/**"
       - "src/pages/karty/avraam/**"
@@ -47,8 +48,10 @@ jobs:
         run: |
           set -euo pipefail
           cp scripts/audit-browser-runtime-wave.mjs /tmp/audit-browser-runtime-wave.mjs
+          cp scripts/audit-gallery-runtime-diag.mjs /tmp/audit-gallery-runtime-diag.mjs
           git checkout --detach "${HEAD_SHA}"
           cp /tmp/audit-browser-runtime-wave.mjs scripts/audit-browser-runtime-wave.mjs
+          cp /tmp/audit-gallery-runtime-diag.mjs scripts/audit-gallery-runtime-diag.mjs
           test "$(git rev-parse HEAD)" = "${HEAD_SHA}"
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -63,7 +66,9 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Validate witness syntax
-        run: node --check scripts/audit-browser-runtime-wave.mjs
+        run: |
+          node --check scripts/audit-browser-runtime-wave.mjs
+          node --check scripts/audit-gallery-runtime-diag.mjs
 
       - name: Build production-like site
         run: npm run strangler:build:production-like
@@ -86,7 +91,9 @@ jobs:
         env:
           AUDIT_BASE: http://127.0.0.1:8090
           AUDIT_BROWSER_OUT: reports/audit/browser-runtime-wave
-        run: node scripts/audit-browser-runtime-wave.mjs
+        run: |
+          node scripts/audit-browser-runtime-wave.mjs
+          node scripts/audit-gallery-runtime-diag.mjs
 
       - name: Preserve server log and source identity
         if: always()
@@ -106,6 +113,7 @@ jobs:
           } > reports/audit/browser-runtime-wave/ENVIRONMENT.txt
           sha256sum \
             scripts/audit-browser-runtime-wave.mjs \
+            scripts/audit-gallery-runtime-diag.mjs \
             src/components/karty/avraam/AvraamMap.astro \
             karty/_engine/map-engine.js \
             karty/avraam/route.json \
