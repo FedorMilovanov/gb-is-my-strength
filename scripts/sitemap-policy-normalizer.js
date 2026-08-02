@@ -9,7 +9,8 @@ const { normalizePolicyRoutes } = require('./lib/search-index-policy-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_SITE_URL = 'https://gospod-bog.ru';
-const NORMALIZER_VERSION = 2;
+const NORMALIZER_VERSION = 3;
+const CANONICAL_ELIGIBILITY_RULE = 'POLICY_INCLUDE_AND_PRODUCTION_AND_MANIFEST_AND_VALID_DATE';
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = { write: false, check: false };
@@ -172,22 +173,26 @@ function main() {
   if (options.write) {
     if (result.xml === current) {
       console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: every canonically eligible policy route is already present.`);
+      console.log(`Sitemap normalizer eligibility: ${CANONICAL_ELIGIBILITY_RULE}`);
       console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
       return;
     }
     fs.writeFileSync(sitemapFile, result.xml, 'utf8');
     console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: wrote policy additions: ${result.missing.join(', ')}`);
+    console.log(`Sitemap normalizer eligibility: ${CANONICAL_ELIGIBILITY_RULE}`);
     console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
     return;
   }
 
   if (result.xml !== current) {
     console.error(`❌ sitemap.xml misses canonically eligible policy routes: ${result.missing.join(', ')}`);
+    console.error(`Eligibility rule: ${CANONICAL_ELIGIBILITY_RULE}`);
     console.error(`Skipped historical diagnostics: ${skippedSummary(result.skipped)}`);
     console.error('Run: node scripts/sitemap-policy-normalizer.js --write');
     process.exit(1);
   }
   console.log(`✅ Sitemap normalizer v${NORMALIZER_VERSION}: sitemap.xml contains every canonically eligible policy route`);
+  console.log(`Sitemap normalizer eligibility: ${CANONICAL_ELIGIBILITY_RULE}`);
   console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
 }
 
@@ -202,6 +207,7 @@ if (require.main === module) {
 
 module.exports = {
   NORMALIZER_VERSION,
+  CANONICAL_ELIGIBILITY_RULE,
   parseArgs,
   xmlEscape,
   manifestRouteMap,
