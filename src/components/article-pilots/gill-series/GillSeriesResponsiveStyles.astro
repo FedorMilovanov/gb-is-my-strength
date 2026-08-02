@@ -9,23 +9,25 @@
    * The Wave 12 hero carries authored intrinsic dimensions (1536×1024).
    * WebKit with JavaScript disabled can otherwise keep that intrinsic inline
    * size and expand the document to 1584px. Keep the authored ratio while
-   * constraining only this route's wide media to the reader column.
+   * constraining only the released Wave 12 route's wide media to the reader
+   * column. The body publication marker is server-rendered and therefore
+   * remains available when JavaScript is disabled.
    */
-  [data-gill-v16="diotrophes"] .article-img.wide,
-  [data-gill-v16="diotrophes"] .article-img.wide picture,
-  [data-gill-v16="diotrophes"] .article-img.wide img {
+  body[data-wave12-publication="true"] .article-img.wide,
+  body[data-wave12-publication="true"] .article-img.wide picture,
+  body[data-wave12-publication="true"] .article-img.wide img {
     box-sizing: border-box;
     min-inline-size: 0;
     max-inline-size: 100%;
   }
 
-  [data-gill-v16="diotrophes"] .article-img.wide picture,
-  [data-gill-v16="diotrophes"] .article-img.wide img {
+  body[data-wave12-publication="true"] .article-img.wide picture,
+  body[data-wave12-publication="true"] .article-img.wide img {
     display: block;
     inline-size: 100%;
   }
 
-  [data-gill-v16="diotrophes"] .article-img.wide img {
+  body[data-wave12-publication="true"] .article-img.wide img {
     block-size: auto;
   }
 

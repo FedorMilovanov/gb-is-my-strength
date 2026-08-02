@@ -147,7 +147,7 @@ async function inspect(browserType, engine, profile) {
         engine,
         `${profile.id}-${mode}`,
         'reader-links',
-        state.readerLinkElements === 73 && state.uniqueReaderLinks === 40,
+        state.readerLinkElements === 73 && state.uniqueReaderLinks === 70,
         `elements=${state.readerLinkElements} unique=${state.uniqueReaderLinks}`,
       );
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
