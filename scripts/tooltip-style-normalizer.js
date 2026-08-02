@@ -78,7 +78,6 @@ function projectA03Sources() {
   const suffix = WRITE ? ['--write'] : [];
   execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'site-tooltip-touch-normalizer.js'), ...suffix], { stdio: 'inherit' });
   execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'note-print-normalizer.js'), ...suffix], { stdio: 'inherit' });
-  execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'pastor-series-links-graph-normalizer.js'), ...suffix], { stdio: 'inherit' });
 }
 
 function main() {
