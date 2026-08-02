@@ -7,7 +7,6 @@ harness=root/'scripts/avraam-reference-baseline.mjs'
 s=engine.read_text('utf-8')
 
 MARKER='Premium cartographic light palette'
-MOBILE_MARKER='mobile story strip fits all five controls'
 
 def ensure_regex(text,pattern,replacement,label,flags=0):
     if replacement in text:
@@ -60,7 +59,7 @@ if MARKER not in s:
 theme_target="themeBtn.addEventListener('click',()=>applyMapTheme(activeTheme==='dark'?'light':'dark',true,false));"
 if theme_target not in s:
     s,n=re.subn(
-        r"themeBtn\.addEventListener\('click',\(\)=>applyMapTheme\(activeTheme==='dark'\?'light':'dark'(?:,[^)]]*)?\)\);",
+        r"themeBtn\.addEventListener\('click',\(\)=>applyMapTheme\(activeTheme==='dark'\?'light':'dark'(?:,[^)]*)?\)\);",
         theme_target,
         s,
         count=1,
@@ -91,7 +90,7 @@ s=ensure_exact(
     'leader line palette',
 )
 
-# mobile story strip fits all five controls inside the viewport; no clipped
+# Mobile story strip fits all five controls inside the viewport: no clipped
 # pseudo-carousel button and no wasted 52px offset.
 mobile_target="  .me-header>div:first-child{height:44px}\n  .me-stories{position:relative;top:auto;right:auto;max-width:none;display:flex;flex-wrap:nowrap;overflow:hidden;gap:4px;margin-top:8px;padding:0;scrollbar-width:none;overscroll-behavior-x:none;mask-image:none}"
 if mobile_target not in s:
@@ -109,11 +108,6 @@ if chip_target not in s:
     s,n=re.subn(r"  \.me-story-chip\{flex:0 0 auto\}",chip_target,s,count=1)
     if n!=1:
         raise SystemExit(f'MISSING mobile story chip: {n}')
-
-# Durable source marker for reviewers and idempotence.
-if MOBILE_MARKER not in s:
-    s=s.replace('/* mobile story strip fits all five controls inside the viewport; no clipped',
-                '/* mobile story strip fits all five controls inside the viewport; no clipped',1)
 
 engine.write_text(s,'utf-8')
 
