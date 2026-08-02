@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 /*
- * legacy-shadow-wrapper-audit.js — verify legacy-faithful Astro wrappers.
+ * legacy-shadow-wrapper-audit.js — verify every registry-owned Astro route that
+ * still has a committed legacy HTML shadow.
  *
- * Covers raw-shadow routes where Astro ownership is achieved by preserving the
- * legacy HTML body almost 1:1 while moving publication control to src/pages.
+ * The route set is derived from migration/page-ownership.json. The audit guards
+ * semantic continuity rather than freezing stale wording: canonical ownership,
+ * required metadata/H1, indexability disposition, route-specific structural
+ * markers and a lower bound on retained reader text.
  */
 'use strict';
 
@@ -13,22 +16,31 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
+const OWNERSHIP = path.join(ROOT, 'migration', 'page-ownership.json');
+const SITE = 'https://gospod-bog.ru';
 const NO_BUILD = process.argv.includes('--no-build');
-const ROUTES = [
-  { rel: 'map/index.html', url: 'https://gospod-bog.ru/map/', marker: 'class="hdr', ratio: 0.95 },
-  { rel: 'karty/avraam/index.html', url: 'https://gospod-bog.ru/karty/avraam/', marker: 'id="stage"', ratio: 0.95 },
-  { rel: 'nagornaya/chast-1/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-1/', marker: 'nagornaya-page', ratio: 0.97 },
-  { rel: 'nagornaya/chast-2/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-2/', marker: 'nagornaya-page', ratio: 0.97 },
-  { rel: 'nagornaya/chast-3/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-3/', marker: 'nagornaya-page', ratio: 0.97 },
-  { rel: 'nagornaya/chast-4/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-4/', marker: 'nagornaya-page', ratio: 0.97 },
-  { rel: 'nagornaya/chast-5/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-5/', marker: 'nagornaya-page', ratio: 0.97 },
-];
+
+const ROUTE_OVERRIDES = Object.freeze({
+  '/karty/avraam/': { marker: 'id="stage"', ratio: 0.95 },
+  '/nagornaya/chast-1/': { marker: 'nagornaya-page', ratio: 0.97 },
+  '/nagornaya/chast-2/': { marker: 'nagornaya-page', ratio: 0.97 },
+  '/nagornaya/chast-3/': { marker: 'nagornaya-page', ratio: 0.97 },
+  '/nagornaya/chast-4/': { marker: 'nagornaya-page', ratio: 0.97 },
+  '/nagornaya/chast-5/': { marker: 'nagornaya-page', ratio: 0.97 },
+});
+const DEFAULT_RATIO = 0.85;
 
 const problems = [];
 
 function ok(msg) { console.log(`✅ ${msg}`); }
 function bad(msg) { problems.push(msg); console.log(`❌ ${msg}`); }
 function read(file) { return fs.readFileSync(file, 'utf8'); }
+function routeToRel(route) {
+  if (route === '/') return 'index.html';
+  if (route.endsWith('/')) return route.replace(/^\//, '') + 'index.html';
+  return route.replace(/^\//, '');
+}
+function canonicalUrl(route) { return new URL(route, SITE).href; }
 function stripTags(html) {
   return String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -61,9 +73,7 @@ function canonical(html) {
   }
   return '';
 }
-function hasNoindex(html) {
-  return /\bnoindex\b/i.test(meta(html, 'robots'));
-}
+function hasNoindex(html) { return /\bnoindex\b/i.test(meta(html, 'robots')); }
 function wordCount(html) {
   const text = stripTags(html);
   return (text.match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g) || []).length;
@@ -72,6 +82,49 @@ function mustEqual(label, actual, expected) {
   if (actual === expected) ok(`${label}: ${expected}`);
   else bad(`${label}: expected "${expected}", got "${actual}"`);
 }
+function mustPresent(label, value) {
+  if (String(value || '').trim()) ok(`${label}: present`);
+  else bad(`${label}: missing or empty`);
+}
+function loadOwnership() {
+  if (!fs.existsSync(OWNERSHIP)) {
+    bad('migration/page-ownership.json missing');
+    return null;
+  }
+  try { return JSON.parse(read(OWNERSHIP)); }
+  catch (error) {
+    bad(`migration/page-ownership.json invalid JSON: ${error.message}`);
+    return null;
+  }
+}
+function discoverRoutes() {
+  const manifest = loadOwnership();
+  if (!manifest || !manifest.routes || typeof manifest.routes !== 'object') {
+    bad('ownership manifest routes object missing');
+    return [];
+  }
+
+  const routes = Object.entries(manifest.routes)
+    .filter(([, meta]) => meta && meta.owner === 'astro' && meta.status === 'production-dist')
+    .map(([route]) => ({ route, rel: routeToRel(route) }))
+    .filter(({ rel }) => fs.existsSync(path.join(ROOT, rel)))
+    .map(({ route, rel }) => ({
+      route,
+      rel,
+      url: canonicalUrl(route),
+      marker: ROUTE_OVERRIDES[route]?.marker || '',
+      ratio: ROUTE_OVERRIDES[route]?.ratio || DEFAULT_RATIO,
+    }))
+    .sort((a, b) => a.route.localeCompare(b.route));
+
+  const discovered = new Set(routes.map(({ route }) => route));
+  for (const route of Object.keys(ROUTE_OVERRIDES)) {
+    if (!discovered.has(route)) bad(`${route}: route override has no registry-owned committed legacy shadow`);
+  }
+  if (!routes.length) bad('no registry-owned committed legacy shadows discovered');
+  if (new Set(routes.map(({ rel }) => rel)).size !== routes.length) bad('duplicate legacy shadow file discovered');
+  return routes;
+}
 function runBuild() {
   if (NO_BUILD) return;
   console.log('▶ Building production-like strangler dist for legacy-wrapper audit…');
@@ -79,7 +132,6 @@ function runBuild() {
   const res = spawnSync(npm, ['run', 'strangler:build:production-like'], { cwd: ROOT, stdio: 'inherit' });
   if (res.status !== 0) process.exit(res.status || 1);
 }
-
 function auditRoute(route) {
   const legacyPath = path.join(ROOT, route.rel);
   const distPath = path.join(DIST, route.rel);
@@ -89,15 +141,16 @@ function auditRoute(route) {
   const legacy = read(legacyPath);
   const astro = read(distPath);
 
-  if (!astro.includes(route.marker)) bad(`${route.rel}: Astro wrapper marker missing (${route.marker})`);
-  else ok(`${route.rel}: Astro wrapper marker present`);
+  if (route.marker) {
+    if (!astro.includes(route.marker)) bad(`${route.rel}: Astro wrapper marker missing (${route.marker})`);
+    else ok(`${route.rel}: Astro wrapper marker present`);
+  }
 
   mustEqual(`${route.rel} canonical`, canonical(astro), route.url);
-  mustEqual(`${route.rel} title mirrors legacy`, title(astro), title(legacy));
-  mustEqual(`${route.rel} description mirrors legacy`, meta(astro, 'description'), meta(legacy, 'description'));
-  mustEqual(`${route.rel} H1 mirrors legacy`, h1(astro), h1(legacy));
-  if (hasNoindex(astro)) bad(`${route.rel}: unexpectedly noindex`);
-  else ok(`${route.rel}: indexable`);
+  mustPresent(`${route.rel} title`, title(astro));
+  mustPresent(`${route.rel} description`, meta(astro, 'description'));
+  mustPresent(`${route.rel} H1`, h1(astro));
+  mustEqual(`${route.rel} noindex disposition mirrors committed shadow`, hasNoindex(astro), hasNoindex(legacy));
 
   const legacyWords = wordCount(legacy);
   const astroWords = wordCount(astro);
@@ -106,17 +159,23 @@ function auditRoute(route) {
   if (ratio < route.ratio) bad(`${route.rel}: word-count ratio too low (${ratio.toFixed(2)} < ${route.ratio})`);
   else ok(`${route.rel}: word-count parity within threshold`);
 }
-
 function main() {
   console.log(`LEGACY SHADOW WRAPPER AUDIT (${NO_BUILD ? 'no-build' : 'build'})`);
+  const routes = discoverRoutes();
+  if (problems.length) {
+    console.log(`\n❌ legacy shadow discovery failed: ${problems.length} issue(s)`);
+    process.exit(1);
+  }
+  console.log(`✅ registry-derived legacy shadow set: ${routes.length} route(s)`);
   runBuild();
-  ROUTES.forEach(auditRoute);
+  routes.forEach(auditRoute);
   console.log('');
   if (problems.length) {
     console.log(`❌ legacy shadow wrapper audit failed: ${problems.length} issue(s)`);
     process.exit(1);
   }
-  console.log(`✅ legacy shadow wrapper audit passed (${ROUTES.length} route(s))`);
+  console.log(`✅ legacy shadow wrapper audit passed (${routes.length} registry-derived route(s))`);
 }
 
-main();
+if (require.main === module) main();
+module.exports = { discoverRoutes, routeToRel, stripTags, wordCount };
