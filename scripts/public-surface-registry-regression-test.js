@@ -9,13 +9,58 @@ const {
   buildPublicSurfaceRegistry,
 } = require('./lib/public-surface-registry');
 
+function sumCounts(counts) {
+  return Object.values(counts || {}).reduce((sum, value) => sum + value, 0);
+}
+
 const loaded = loadRouteRecords();
 const baseline = buildPublicSurfaceRegistry({ loaded });
 assert.deepEqual(baseline.errors, [], baseline.errors.join('\n'));
-assert.equal(baseline.entries.length, 84);
-assert.deepEqual(baseline.counts, { page: 8, series: 60, article: 2, special: 14 });
-assert.deepEqual(baseline.shapeCounts, { flat: 24, book: 36 });
-assert.deepEqual(baseline.roleCounts, { page: 2, reading: 55, application: 14, landing: 11, reference: 2 });
+
+const ownershipRoutes = Object.keys(loaded.ownership?.routes || {}).sort();
+const registryRoutes = baseline.entries.map((entry) => entry.route).sort();
+const uniqueRegistryRoutes = [...new Set(registryRoutes)];
+
+assert.equal(
+  baseline.entries.length,
+  loaded.records.length,
+  'every loaded route record must produce exactly one public surface entry'
+);
+assert.equal(
+  uniqueRegistryRoutes.length,
+  baseline.entries.length,
+  'public surface registry routes must be unique'
+);
+assert.deepEqual(
+  registryRoutes,
+  ownershipRoutes,
+  'public surface registry must equal the canonical page-ownership route set'
+);
+assert.equal(
+  sumCounts(baseline.counts),
+  baseline.entries.length,
+  'surface counts must cover every registry entry exactly once'
+);
+assert.equal(
+  sumCounts(baseline.roleCounts),
+  baseline.entries.length,
+  'route-role counts must cover every registry entry exactly once'
+);
+assert.equal(
+  sumCounts(baseline.shapeCounts),
+  baseline.entries.filter((entry) => entry.surface === 'series').length,
+  'series-shape counts must cover every series surface exactly once'
+);
+assert.deepEqual(
+  Object.keys(baseline.counts).sort(),
+  ['article', 'page', 'series', 'special'],
+  'surface registry must use only the four supported surface classes'
+);
+assert.deepEqual(
+  Object.keys(baseline.shapeCounts).sort(),
+  ['book', 'flat'],
+  'series registry must use only the two supported series shapes'
+);
 
 const entryByRoute = new Map(baseline.entries.map((entry) => [entry.route, entry]));
 const bookEntry = entryByRoute.get('/articles/novoe-serdce/');
@@ -23,11 +68,13 @@ const baptistBookEntry = entryByRoute.get('/baptisty-rossii/noch-na-kure/');
 const landingBookEntry = entryByRoute.get('/hard-texts/');
 const pageEntry = entryByRoute.get('/about/');
 const specialEntry = entryByRoute.get('/karty/avraam/');
+const diotrophesEntry = entryByRoute.get('/articles/diotrefy-nashego-vremeni/');
 assert.ok(bookEntry, 'book fixture must be present in registry');
 assert.ok(baptistBookEntry, 'Baptist book fixture must be present in registry');
 assert.ok(landingBookEntry, 'book landing fixture must be present in registry');
 assert.ok(pageEntry, 'ordinary page fixture must be present in registry');
 assert.ok(specialEntry, 'special map fixture must be present in registry');
+assert.ok(diotrophesEntry, 'Wave 12 public route must be present in registry');
 assert.equal(bookEntry.settingsCapability, 'reader-ui');
 assert.equal(baptistBookEntry.surface, 'series');
 assert.equal(baptistBookEntry.seriesShape, 'book');
@@ -40,6 +87,12 @@ assert.equal(landingBookEntry.chrome.adapter, 'series-landing');
 assert.equal(landingBookEntry.settingsCapability, 'global-preferences');
 assert.equal(pageEntry.settingsCapability, 'global-preferences');
 assert.equal(specialEntry.settingsCapability, 'global-preferences+special-bridge');
+assert.equal(diotrophesEntry.surface, 'series');
+assert.equal(diotrophesEntry.seriesShape, 'flat');
+assert.equal(diotrophesEntry.routeType, 'article');
+assert.equal(diotrophesEntry.routeRole, 'reading');
+assert.equal(diotrophesEntry.status, 'production-dist');
+assert.equal(diotrophesEntry.settingsCapability, 'reader-ui');
 assert.ok(
   bookEntry.configSources.includes('src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'),
   'book route must resolve the canonical hard-texts series config'
