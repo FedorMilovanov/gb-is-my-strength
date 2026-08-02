@@ -100,8 +100,13 @@ async function assertVisualRegressionContracts(page, width, height) {
       && first.top < second.bottom
       && first.bottom > second.top);
 
-    const content = document.querySelector('.home-content');
-    const contentRect = rect(content);
+    /* Compare manuscript phrases with the actual rendered Home sections, not
+       the outer .home-content allocation. The wrapper includes intentionally
+       empty padding that belongs to the side rails; collision with a real child
+       surface is the visual regression the owner reported. */
+    const contentSurfaces = [...document.querySelectorAll('.home-content > *')]
+      .map(rect)
+      .filter((surface) => surface && surface.width > 0 && surface.height > 0);
     const visiblePhrases = [...document.querySelectorAll('.h-ambient-word')]
       .filter((node) => getComputedStyle(node).display !== 'none');
     const phraseState = visiblePhrases.map((node) => {
@@ -111,11 +116,7 @@ async function assertVisualRegressionContracts(page, width, height) {
         side,
         pointerEvents: getComputedStyle(node).pointerEvents,
         rect: phraseRect,
-        intrudesIntoContent: Boolean(contentRect && phraseRect && (
-          side === 'left'
-            ? phraseRect.right > contentRect.left - 4
-            : phraseRect.left < contentRect.right + 4
-        )),
+        intrudesIntoContent: contentSurfaces.some((surface) => overlaps(phraseRect, surface)),
       };
     });
 
@@ -178,7 +179,7 @@ async function assertVisualRegressionContracts(page, width, height) {
     const expectedPhrases = width >= 1600 ? 32 : 16;
     assert.equal(state.ambientVisible, expectedPhrases, `${width}px: marginalia density changed`);
     assert.equal(state.phraseState.every((phrase) => phrase.pointerEvents === 'auto'), true, `${width}px: visible marginalia are not interactive`);
-    assert.equal(state.phraseState.some((phrase) => phrase.intrudesIntoContent), false, `${width}px: marginalia intrude into the reading surface`);
+    assert.equal(state.phraseState.some((phrase) => phrase.intrudesIntoContent), false, `${width}px: marginalia overlap a rendered Home section`);
   }
 
   if (width >= 761) {
