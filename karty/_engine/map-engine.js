@@ -2249,6 +2249,12 @@ container.appendChild(panel);
       const tabsEl=panel.querySelector('.me-tabs');
       const content=panel.querySelector('.me-content');
       const nav=panel.querySelector('.me-nav');
+      tabsEl.setAttribute('role','tablist');
+      tabsEl.setAttribute('aria-label','Разделы о месте');
+      tabsEl.setAttribute('aria-orientation','horizontal');
+      content.id=`me-tabpanel-${mapInstanceToken}`;
+      content.setAttribute('role','tabpanel');
+      content.setAttribute('tabindex','0');
       const vis=visiblePlaces();
       const idx=placeIndexInStory();
       const stage=route.stages&&place.stage>=0?route.stages[place.stage]:null;
@@ -2280,18 +2286,48 @@ container.appendChild(panel);
           ${place.photos&&place.photos.length?`<span>📷 ${place.photos.length}</span>`:''}
         </div>`;
 
-      // Tabs
-      tabsEl.innerHTML=availTabs.map(k=>`<button class="me-tab${k===activeTab?' me-tab--active':''}" data-tab="${k}">${TAB_LABELS[k]||k}</button>`).join('');
-      tabsEl.querySelectorAll('.me-tab').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-          tabsEl.querySelectorAll('.me-tab').forEach(b=>b.classList.remove('me-tab--active'));
-          btn.classList.add('me-tab--active');
-          btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-          renderTabContent(btn.dataset.tab||'story',place);
+      // Tabs — one ARIA tab widget with roving focus and local keyboard ownership.
+      tabsEl.innerHTML=availTabs.map(k=>{
+        const selected=k===activeTab;
+        return `<button class="me-tab${selected?' me-tab--active':''}" id="me-tab-${mapInstanceToken}-${k}" data-tab="${k}" role="tab" aria-selected="${selected?'true':'false'}" aria-controls="${content.id}" tabindex="${selected?'0':'-1'}">${TAB_LABELS[k]||k}</button>`;
+      }).join('');
+      const tabButtons=[...tabsEl.querySelectorAll('.me-tab')];
+      const activateTabButton=(btn,{focus=false}={})=>{
+        tabButtons.forEach(candidate=>{
+          const selected=candidate===btn;
+          candidate.classList.toggle('me-tab--active',selected);
+          candidate.setAttribute('aria-selected',selected?'true':'false');
+          candidate.tabIndex=selected?0:-1;
+        });
+        content.setAttribute('aria-labelledby',btn.id);
+        btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+        renderTabContent(btn.dataset.tab||'story',place);
+        if(focus)btn.focus();
+      };
+      tabButtons.forEach((btn,index)=>{
+        btn.addEventListener('click',()=>activateTabButton(btn));
+        btn.addEventListener('keydown',event=>{
+          const key=event.key;
+          if(key===' '||key==='Spacebar'||key==='Enter'){
+            event.preventDefault();event.stopPropagation();
+            activateTabButton(btn,{focus:true});
+            return;
+          }
+          let nextIndex=null;
+          if(key==='ArrowRight'||key==='ArrowDown')nextIndex=(index+1)%tabButtons.length;
+          else if(key==='ArrowLeft'||key==='ArrowUp')nextIndex=(index-1+tabButtons.length)%tabButtons.length;
+          else if(key==='Home')nextIndex=0;
+          else if(key==='End')nextIndex=tabButtons.length-1;
+          if(nextIndex!==null){
+            event.preventDefault();event.stopPropagation();
+            activateTabButton(tabButtons[nextIndex],{focus:true});
+          }
         });
       });
+      const initialTab=tabButtons.find(btn=>btn.classList.contains('me-tab--active'))||tabButtons[0];
+      if(initialTab)content.setAttribute('aria-labelledby',initialTab.id);
 
-      requestAnimationFrame(()=>tabsEl.querySelector('.me-tab--active')?.scrollIntoView({block:'nearest',inline:'start'}));
+      requestAnimationFrame(()=>initialTab?.scrollIntoView({block:'nearest',inline:'start'}));
 
       // Content
       renderTabContent(activeTab,place);
@@ -3095,7 +3131,7 @@ container.appendChild(panel);
       intro.innerHTML = `
         <div class="me-intro__bg"></div>
         <div class="me-intro__content">
-          <h1 class="me-intro__title">${esc(route.meta?.title || '')}</h1>
+          <h2 class="me-intro__title">${esc(route.meta?.title || '')}</h2>
           ${route.meta?.title_he ? `<p class="me-intro__he" dir="rtl">${esc(route.meta.title_he)}</p>` : ''}
           ${route.meta?.subtitle ? `<p class="me-intro__sub">${esc(route.meta.subtitle)}</p>` : ''}
           <div class="me-intro__stats">

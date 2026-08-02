@@ -245,7 +245,10 @@ async function captureTabFinding(route) {
       panelHeadingAfter: await page.locator('.me-panel__name').first().textContent().catch(() => null),
     };
 
-    const nativeButtons = structure.length > 0 && structure.every((tab) => tab.tagName === 'BUTTON' && tab.tabIndexProperty >= 0);
+    const nativeButtons = structure.length > 0 && structure.every((tab) => tab.tagName === 'BUTTON');
+    const rovingTabindex = structure.length > 0
+      && structure.filter((tab) => tab.tabIndexProperty === 0).length === 1
+      && structure.filter((tab) => tab.tabIndexProperty === -1).length === structure.length - 1;
     const ariaTabPattern = container.role === 'tablist'
       && structure.length > 0
       && structure.every((tab) => tab.role === 'tab' && tab.ariaSelected !== null);
@@ -260,6 +263,7 @@ async function captureTabFinding(route) {
       tabs: structure,
       keyboard: { enter, space, numeric, arrowRight },
       nativeButtons,
+      rovingTabindex,
       historicalDivClaimReproduced: structure.some((tab) => tab.tagName === 'DIV'),
       ariaTabPattern,
       enterWorks,
@@ -269,8 +273,8 @@ async function captureTabFinding(route) {
       disposition: nativeButtons && enterWorks && !ariaTabPattern
         ? 'PARTIAL-STALE-NARROW-RESIDUAL'
         : (!ariaTabPattern ? 'CONFIRMED-CURRENT' : 'NOT-REPRODUCED'),
-      residual: !ariaTabPattern || !spaceWorks || !arrowNavigationWorks
-        ? 'Native buttons replaced divs and Enter/numeric activation work, but the ARIA tablist/tab/aria-selected/roving-tabindex contract is absent; Space or arrow handling is not isolated as a tab widget.'
+      residual: !ariaTabPattern || !rovingTabindex || !spaceWorks || !arrowNavigationWorks
+        ? 'The panel tabs still lack one or more required tab-widget contracts: ARIA ownership, roving tabindex, Space activation or isolated arrow navigation.'
         : null,
     };
     await page.screenshot({ path: path.join(OUT_DIR, '02-panel-tabs.png'), animations: 'disabled' });
