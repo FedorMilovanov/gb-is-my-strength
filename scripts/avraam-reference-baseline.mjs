@@ -37,7 +37,7 @@ async function dismissIntro(page){
   const intro=page.locator('.me-intro');
   const start=page.getByRole('button',{name:/Начать изучение/i});
   if(await start.isVisible().catch(()=>false)){
-    await start.click({force:true});
+    await start.evaluate(el=>el.click());
     await intro.waitFor({state:'detached',timeout:1600}).catch(()=>{});
   }
   return (await intro.count())===0;
@@ -89,7 +89,7 @@ async function collectGeometry(page,stateId){
       stateId,url:location.href,title:document.title,activeStory:activeStory?.getAttribute('data-story')||null,
       viewport:{width,height,devicePixelRatio,scrollX,scrollY},
       document:{clientWidth:html.clientWidth,scrollWidth:html.scrollWidth,horizontalOverflow:html.scrollWidth-html.clientWidth,clientHeight:html.clientHeight,scrollHeight:html.scrollHeight},
-      map:{box:map?rect(map):null,canvasBox:canvas?rect(canvas):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null,canvasTransform:canvas?getComputedStyle(canvas).transform:null,svgTransform:svg?getComputedStyle(svg).transform:null},
+      map:{box:map?rect(map):null,canvasBox:canvas?rect(canvas):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null,zoomBucket:svg?.getAttribute('data-zoom-bucket')||null,canvasTransform:canvas?getComputedStyle(canvas).transform:null,svgTransform:svg?getComputedStyle(svg).transform:null},
       counts:{labels:labels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length},
       offscreenLabels:offscreenLabels.slice(0,120),labelOverlaps:labelOverlaps.sort((a,b)=>b.area-a.area).slice(0,180),undersizedControls:undersizedControls.slice(0,120),offscreenControls:offscreenControls.slice(0,120),markers,routes,
     };
@@ -137,6 +137,7 @@ async function runViewport(browser,viewport){
     await closePanel(page);
     await screenshot(page,dir,'01-overview.png');
     result.overview=await collectGeometry(page,`${viewport.id}:overview`);
+    if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
 
     const stories=await storyMetadata(page);
     if(!stories.length)result.verificationFailures.push('no story chips found');

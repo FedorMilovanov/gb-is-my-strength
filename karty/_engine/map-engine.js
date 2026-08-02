@@ -385,6 +385,9 @@ const MapEngine = (function() {
     }
     const route = normalizeRouteData(routeData);
     const cfg = {...DEFAULTS, ...opts};
+    const semanticZoomConfig = route.meta?.semantic_zoom || route.semantic_zoom || {};
+    const semanticOverviewMinW = Number(semanticZoomConfig.overview_min_w ?? semanticZoomConfig.overviewMinW) || cfg.W0 * 0.68;
+    const semanticDetailMaxW = Number(semanticZoomConfig.detail_max_w ?? semanticZoomConfig.detailMaxW) || cfg.W0 * 0.34;
 
     const overlayRuntime = window.OverlayRuntime || window.SiteUtils?.OverlayRuntime || null;
     const mapInstanceToken = ++mapOverlaySequence;
@@ -889,6 +892,29 @@ const MapEngine = (function() {
 .me-map .me-title-he,.me-map .me-panel__stage,.me-map .me-panel__he,.me-map .me-theme-btn:hover{color:var(--me-accent,#e8c879)}
 .me-map .me-panel{background:var(--me-panel-bg,rgba(13,17,26,.95));border-color:var(--me-border,rgba(255,255,255,.12))}
 .me-map .me-story-chip,.me-map .me-back,.me-map .me-search,.me-map .me-theme-btn,.me-map .me-share-btn,.me-map .me-zoom,.me-map .me-layers,.me-map .me-legend{background:var(--me-control-bg,rgba(0,0,0,.55));border-color:var(--me-border,rgba(255,255,255,.12));color:var(--me-muted,#9aa2ae)}
+
+/* Semantic zoom: the authored base already marks regional/detail objects with
+   lbl-z1/lbl-z2. Overview stays calm; regional and close views reveal evidence
+   progressively without mutating route truth or using a map-specific branch. */
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z1,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z2,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo .region-he,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #routeWaypoints,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #tradeRoutes,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #coordGrid,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #starDeep,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #starMid,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #starField,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #starMilky,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #starShoot,
+.me-map svg[data-zoom-bucket="overview"] #me-base-geo #starMoriah,
+.me-map svg[data-zoom-bucket="overview"] #me-ctx,
+.me-map svg[data-zoom-bucket="overview"] #me-markers [data-label-priority="detail"] .me-place-label-part,
+.me-map svg[data-zoom-bucket="region"] #me-base-geo .lbl-z2,
+.me-map svg[data-zoom-bucket="region"] #me-base-geo .region-he,
+.me-map svg[data-zoom-bucket="region"] #me-base-geo #coordGrid{display:none}
+.me-map svg[data-zoom-bucket="region"] #me-ctx{opacity:.35}
+.me-map svg[data-zoom-bucket="detail"] #me-ctx{opacity:.55}
 .me-map .me-story-chip--active{background:color-mix(in srgb,var(--me-accent,#e8c879) 20%,transparent);border-color:color-mix(in srgb,var(--me-accent,#e8c879) 45%,transparent);color:var(--me-accent,#e8c879)}
 .me-map [data-me-layer-hidden="1"]{visibility:hidden;pointer-events:none}
 
@@ -933,6 +959,18 @@ const MapEngine = (function() {
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
     svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    function semanticZoomBucket(width=view.w){
+      if(width >= semanticOverviewMinW) return 'overview';
+      if(width > semanticDetailMaxW) return 'region';
+      return 'detail';
+    }
+    function applySemanticZoom(){
+      const bucket=semanticZoomBucket(view.w);
+      svg.setAttribute('data-zoom-bucket',bucket);
+      container.setAttribute('data-zoom-bucket',bucket);
+      return bucket;
+    }
+    applySemanticZoom();
     
     // SVG layers
     const bgRect=document.createElementNS('http://www.w3.org/2000/svg','rect');
@@ -1494,11 +1532,16 @@ container.appendChild(panel);
     // ── SVG rendering ──
     function applyViewBox(){
       svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
-      // Parallax compass tilt
-      const compass = document.getElementById('me-compass');
+      applySemanticZoom();
+      // Compass is anchored in screen space, not at a fixed map coordinate.
+      const compass = svg.querySelector('#me-compass');
       if (compass) {
-        const tiltX = (view.x / cfg.W0 - 0.5) * 3;
-        compass.style.transform = `rotate(${tiltX.toFixed(1)}deg)`;
+        const canvasRect=canvas.getBoundingClientRect();
+        const unitsPerPixel=view.w/Math.max(1,canvasRect.width);
+        const tiltX=(view.x/cfg.W0-0.5)*3;
+        const compassX=view.x+34*unitsPerPixel;
+        const compassY=view.y+54*unitsPerPixel;
+        compass.setAttribute('transform',`translate(${compassX.toFixed(2)},${compassY.toFixed(2)}) scale(${unitsPerPixel.toFixed(4)}) rotate(${tiltX.toFixed(1)})`);
       }
       // Update scale bar
       if (typeof updateScaleBar === 'function') updateScaleBar();
@@ -1830,6 +1873,25 @@ container.appendChild(panel);
       renderSignatureOverlay();
       renderStoryFocus();
 
+      // Overview labels: explicit data wins; otherwise one non-candidate
+      // representative per stage plus route endpoints. Dots remain visible.
+      const overviewLabelIds=new Set(
+        (route.meta?.overview_places||route.overview_places||[]).map(String)
+      );
+      vis.forEach(place=>{
+        if(place.overviewLabel===true||place.label_level==='overview')overviewLabelIds.add(place.id);
+      });
+      const representedStages=new Set(
+        [...overviewLabelIds].map(id=>allPlaces.find(p=>p.id===id)?.stage).filter(Number.isFinite)
+      );
+      vis.forEach(place=>{
+        if(Number.isFinite(place.stage)&&!representedStages.has(place.stage)&&place.type!=='cand'){
+          overviewLabelIds.add(place.id);representedStages.add(place.stage);
+        }
+      });
+      if(vis[0])overviewLabelIds.add(vis[0].id);
+      if(vis.at(-1))overviewLabelIds.add(vis.at(-1).id);
+
       // Place markers
       allPlaces.forEach(place=>{
         const inStory=visIds.has(place.id);
@@ -1838,6 +1900,7 @@ container.appendChild(panel);
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
         g.setAttribute('transform',`translate(${place.x},${place.y})`);
         g.setAttribute('data-place-id', place.id);
+        g.setAttribute('data-label-priority',overviewLabelIds.has(place.id)?'overview':'detail');
         const membership=getPlaceLayerMembership(route,place);
         g.setAttribute('data-layer',membership.tokens.join(' '));
         g.setAttribute('data-layer-all',membership.all.join(' '));
@@ -1956,7 +2019,7 @@ container.appendChild(panel);
           leaderLine.setAttribute('opacity',inStory?'0.9':'0');
           leaderLine.style.transition='opacity .3s';
           leaderLine.style.pointerEvents='none';
-          leaderLine.classList.add('me-leader');
+          leaderLine.classList.add('me-leader','me-place-label-part','me-place-label-leader');
           g.appendChild(leaderLine);
           }
         }
@@ -1974,6 +2037,7 @@ container.appendChild(panel);
         labelBg.setAttribute('opacity',inStory?'0.85':'0');
         labelBg.style.transition = 'opacity .3s';
         labelBg.style.pointerEvents = 'none';
+        labelBg.classList.add('me-place-label-part','me-place-label-bg');
         g.appendChild(labelBg);
         const label=document.createElementNS('http://www.w3.org/2000/svg','text');
         label.setAttribute('x',String(lx));
@@ -1983,6 +2047,7 @@ container.appendChild(panel);
         label.setAttribute('font-size',String(fontSize));
         label.setAttribute('opacity','0.9');
         label.style.transition = 'opacity .3s';
+        label.classList.add('me-place-label-part','me-place-label');
         label.textContent=labelText;
         g.appendChild(label);
         markersG.appendChild(g);
