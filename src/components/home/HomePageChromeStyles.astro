@@ -128,6 +128,40 @@
     }
   }
 
+  /* Use fixed optical rail widths at the responsive boundaries. The calculation
+     in the component remains a flexible fallback, but these higher-specificity
+     route rules guarantee that no phrase or translation can cross into the
+     central reading surface at 1480, 1600 or the common 1720 desktop width. */
+  @media (min-width: 1480px) and (max-width: 1599.98px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
+      width: 108px;
+      max-width: 108px;
+    }
+
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 28px; }
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 28px; }
+  }
+
+  @media (min-width: 1600px) and (max-width: 1699.98px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
+      width: 150px;
+      max-width: 150px;
+    }
+
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 28px; }
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 28px; }
+  }
+
+  @media (min-width: 1700px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
+      width: 200px;
+      max-width: 200px;
+    }
+
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 36px; }
+    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 36px; }
+  }
+
   @media (max-width: 760px) {
     body.home-page .h-navbar {
       height: calc(62px + env(safe-area-inset-top, 0px));
