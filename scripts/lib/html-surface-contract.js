@@ -27,7 +27,7 @@ function stripNonMarkupBlocks(html) {
 
 function getAttr(tag, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return tag.match(new RegExp(`\\b${escaped}\\s*=\\s*(["'])(.*?)\\1`, 'i'))?.[2] ?? null;
+  return tag.match(new RegExp(`(?:^|\\s)${escaped}\\s*=\\s*(["'])(.*?)\\1`, 'i'))?.[2] ?? null;
 }
 
 function tags(html, tagName) {
@@ -208,7 +208,9 @@ function auditHtmlDocument({ html, route, entry, root, knownRoutes = new Set() }
   }
 
   const noSvg = stripSvg(markup);
-  const ids = [...noSvg.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)].map((match) => match[2]).filter(Boolean);
+  const ids = [...noSvg.matchAll(/<[a-z][\w:-]*\b[^>]*>/gi)]
+    .map((match) => getAttr(match[0], 'id'))
+    .filter(Boolean);
   const seen = new Set();
   for (const id of ids) {
     if (seen.has(id)) issue('error', 'duplicate-id', id);

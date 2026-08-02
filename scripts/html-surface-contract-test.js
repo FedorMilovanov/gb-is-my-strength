@@ -46,6 +46,11 @@ assert(contracts(valid.replace('/target/', '/missing/')).has('link-target'));
 assert(contracts(valid.replace('<h1>Article</h1>', '')).has('document-h1'));
 assert(contracts(valid.replace('<script>window.ok = true;</script>', '<script>const = ;</script>')).has('inline-script-syntax'));
 assert(contracts(valid.replace('<div class="article-byline"></div>', '<div id="dup"></div><div id="dup"></div>')).has('duplicate-id'));
+const repeatedSemanticId = valid.replace(
+  '<div class="article-byline"></div>',
+  '<div class="article-byline" data-note-id="shared-note"></div><span data-note-id="shared-note"></span>'
+);
+assert(!contracts(repeatedSemanticId).has('duplicate-id'), 'data-note-id must not be parsed as the DOM id attribute');
 assert(contracts(valid.replace('{"@context":"https://schema.org","@type":"Article"}', '{bad json')).has('jsonld-parse'));
 
 put('article/index.html', valid);

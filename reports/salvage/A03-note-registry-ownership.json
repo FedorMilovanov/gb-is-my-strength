@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 2,
+  "task": "A03 NoteRegistry ownership",
+  "decision": "KEEP_AUTHORED_SOURCE_UNIFY_DATA_AND_FINAL_PROJECTIONS",
+  "source": {
+    "selector": ".fn-marker:not(.map-trigger)",
+    "payload": ":scope > .tooltip",
+    "status": "authored-static-source"
+  },
+  "owners": {
+    "dataCaptureStableIdsAndProjection": "scripts/lib/note-registry.mjs",
+    "interaction": "SiteUtils.makeTooltipController",
+    "productionHook": "scripts/project-relations-to-dist.mjs via scripts/astro-cache-bust-postbuild.js",
+    "generatedStyles": "src/runtime/note-registry.css -> dist/css/note-registry.css",
+    "validation": "scripts/note-registry-contract-test.mjs"
+  },
+  "forbidden": [
+    "second tooltip controller",
+    "second note registry",
+    "runtime-only note discovery as source of truth",
+    "ordinal-derived stable identity",
+    "surrounding paragraph text as stable identity",
+    "nested authored control inside a footnote marker",
+    "inline per-route copies of the complete print stylesheet",
+    "tracked generated HTML in the conceptual core PR"
+  ],
+  "separateLanes": {
+    "runtimeInteraction": "mobile/desktop interaction fixes require their own focused PR and browser evidence",
+    "readerProjection": "may consume data-speakable endnotes without changing the interaction owner",
+    "printPdf": "may consume generated print endnotes and stylesheet with a physical PDF witness"
+  }
+}

@@ -1,0 +1,118 @@
+name: NoteRegistry Core
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'data/note-registry.schema.json'
+      - 'data/note-registry-migration-inventory.json'
+      - 'reports/salvage/A03-note-registry-ownership.json'
+      - 'research/A03_NOTE_REGISTRY_2026-08-02.md'
+      - 'src/runtime/note-registry.css'
+      - 'src/components/article-pilots/hermenevtika/HermenevtikaBody.astro'
+      - 'src/components/article-pilots/krajne/KrajneBody.astro'
+      - 'scripts/lib/note-registry.mjs'
+      - 'scripts/lib/html-surface-contract.js'
+      - 'scripts/note-registry-projector.mjs'
+      - 'scripts/note-registry-contract-test.mjs'
+      - 'scripts/html-surface-contract-test.js'
+      - 'scripts/project-relations-to-dist.mjs'
+      - '.github/workflows/note-registry-core.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: note-registry-core-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Enforce conceptual-core scope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/note-registry-files.txt
+          pattern='^(data/note-registry\.schema\.json|data/note-registry-migration-inventory\.json|reports/salvage/A03-note-registry-ownership\.json|research/A03_NOTE_REGISTRY_2026-08-02\.md|src/runtime/note-registry\.css|src/components/article-pilots/hermenevtika/HermenevtikaBody\.astro|src/components/article-pilots/krajne/KrajneBody\.astro|scripts/lib/note-registry\.mjs|scripts/lib/html-surface-contract\.js|scripts/note-registry-projector\.mjs|scripts/note-registry-contract-test\.mjs|scripts/html-surface-contract-test\.js|scripts/project-relations-to-dist\.mjs|\.github/workflows/note-registry-core\.yml)$'
+          unexpected="$(grep -Ev "$pattern" /tmp/note-registry-files.txt || true)"
+          if [[ -n "$unexpected" ]]; then
+            echo 'Unexpected files in NoteRegistry core:' >&2
+            printf '%s\n' "$unexpected" >&2
+            exit 1
+          fi
+          test "$(wc -l < /tmp/note-registry-files.txt)" -le 14
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run isolated NoteRegistry contract
+        run: node scripts/note-registry-contract-test.mjs
+
+      - name: Run HTML attribute-boundary regression
+        run: node scripts/html-surface-contract-test.js
+
+      - name: Build exact-head production-like dist
+        env:
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run strangler:build:production-like
+
+      - name: Verify projection idempotence
+        env:
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/note-registry-projector.mjs --dry-run
+
+      - name: Verify generated authority and single stylesheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/data/note-registry.json
+          test -s dist/css/note-registry.css
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const registry = JSON.parse(fs.readFileSync('dist/data/note-registry.json', 'utf8'));
+          if (registry.contract !== 'A03-note-registry') throw new Error('wrong contract');
+          if (registry.identityStrategy !== 'authored-data-note-id-or-route-note-heading-hash') throw new Error('wrong identity strategy');
+          if (registry.interactionOwner !== 'SiteUtils.makeTooltipController') throw new Error('wrong interaction owner');
+          if (!(registry.routeCount > 0 && registry.noteCount > 0)) throw new Error('empty registry');
+          if (!/^\/css\/note-registry\.css\?v=[a-f0-9]{8}$/.test(registry.stylesheet)) throw new Error('wrong stylesheet');
+          NODE
+          if grep -R --include='index.html' -n '<style data-note-registry' dist; then
+            echo 'Per-route inline NoteRegistry stylesheet is forbidden' >&2
+            exit 1
+          fi
+
+      - name: Upload exact-head NoteRegistry evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: note-registry-core-${{ github.run_id }}
+          path: |
+            data/note-registry.schema.json
+            data/note-registry-migration-inventory.json
+            reports/salvage/A03-note-registry-ownership.json
+            reports/a03-note-registry.json
+            reports/a03-note-registry.md
+            dist/data/note-registry.json
+            dist/css/note-registry.css
+          if-no-files-found: error
+          retention-days: 14
