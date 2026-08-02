@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "authorityId": "PRODUCT-OSK-WAVE12-PUBLICATION-2026-08-02",
+  "predecessorAuthorityIds": [
+    "PRODUCT-OSK-WAVE10-DRAFT-2026-08-01",
+    "PRODUCT-OSK-WAVE11-FAITHFUL-WITNESS-2026-08-01"
+  ],
+  "researchAuthorityId": "RESEARCH-OSK-AUTHORITY-2026-08-01-W10-FAITHFUL-WITNESS",
+  "researchSnapshot": "f50b21ad6af5dd7aaa53c5be381929b353b26d58",
+  "productBaseSha": "2273b8c930eebf383d429b917d3636bc28a80bae",
+  "route": "/articles/diotrefy-nashego-vremeni/",
+  "status": "PUBLIC_ROUTE_RELEASED_SOURCE_BOUNDARIES_PRESERVED",
+  "publishedAt": "2026-08-02T00:00:00+03:00",
+  "readingTimeMinutes": 35,
+  "counts": {
+    "coreCases": 21,
+    "faithfulPathways": 15,
+    "faithfulResponses": 20,
+    "authoritySources": 181,
+    "readerLinks": 73,
+    "newDirectQuotesApproved": 0
+  },
+  "publication": {
+    "routeRegistered": true,
+    "routeOwnershipRegistered": true,
+    "migrationMatrixRegistered": true,
+    "seriesRegistered": true,
+    "seriesLandingRegistered": true,
+    "articlesCatalogRegistered": true,
+    "metadataRegistered": true,
+    "pagefindIncluded": true,
+    "searchManifestIncluded": true,
+    "sitemapIncluded": true,
+    "sitemapShardAdvertised": true,
+    "rssIncluded": true,
+    "seriesFeedAdvertised": true,
+    "indexingApproved": true,
+    "registryPreservationRequired": true,
+    "printRequired": true,
+    "noJsRequired": true,
+    "chromiumRequired": true,
+    "webkitRequired": true,
+    "productionLikeBuildRequired": true
+  },
+  "safety": {
+    "directQuotesApproved": false,
+    "allegationIsNotFinding": true,
+    "churchProcessDoesNotReplaceCivilReporting": true,
+    "forgivenessDoesNotRestoreOfficeAutomatically": true,
+    "b1CannotSolelySupportDisputedClaim": true,
+    "cAndDExcludedFromEvidenceCore": true,
+    "existingWave10AndWave11EvidenceBytesRemainAuthoritative": true
+  },
+  "sourceComponents": [
+    "src/components/article-pilots/diotrophes/DiotrophesDraft.astro",
+    "src/components/article-pilots/diotrophes/FaithfulWitnessSupplement.astro",
+    "src/components/article-pilots/diotrophes/DiotrophesWave11Draft.astro"
+  ],
+  "releaseFiles": [
+    "src/components/article-pilots/diotrophes/DiotrophesPublishedPage.astro",
+    "src/components/article-pilots/diotrophes/DiotrophesPageHead.astro",
+    "src/pages/articles/diotrefy-nashego-vremeni/index.astro",
+    "src/components/article-pilots/_shared/series/pastorSeriesConfig.ts",
+    "src/components/pastor-series/PastorSeriesCardsSection.astro",
+    "src/components/pastor-series/PastorSeriesStatsSection.astro",
+    "src/components/pastor-series/PastorSeriesPageHead.astro",
+    "src/components/articles/ArticlesPublicationsSection.astro",
+    "data/route-profiles/articles-diotrefy-nashego-vremeni.json",
+    "migration/page-ownership.json",
+    "migration/route-migration-matrix.json",
+    "data/route-search-policy.json",
+    "data/search-manifest.json",
+    "data/series.json",
+    "sitemap-pastor-series.xml",
+    "feed-pastor-series.xml",
+    "robots.txt",
+    "data/diotrophes-wave12-release-manifest.json",
+    "scripts/diotrophes-wave12-release-contract.mjs",
+    ".github/workflows/diotrophes-wave12-release.yml",
+    "research/WAVE12_DIOTROPHES_PUBLICATION_2026-08-02.md"
+  ]
+}

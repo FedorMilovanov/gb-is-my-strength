@@ -1,7 +1,13 @@
 ---
 import DiotrophesDraft from './DiotrophesDraft.astro';
 import FaithfulWitnessSupplement from './FaithfulWitnessSupplement.astro';
+
+interface Props {
+  publicationMode?: boolean;
+}
+
+const { publicationMode = false } = Astro.props;
 ---
 
-<DiotrophesDraft />
+<DiotrophesDraft publicationMode={publicationMode} />
 <FaithfulWitnessSupplement />

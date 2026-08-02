@@ -20,6 +20,12 @@ type CaseCard = {
 type SourceLink = [label: string, href: string];
 type QuizItem = [question: string, options: string[], correct: number, explanation: string];
 
+interface Props {
+  publicationMode?: boolean;
+}
+
+const { publicationMode = false } = Astro.props;
+
 const caseCards: CaseCard[] = [
   {
     id: 'mark-driscoll', section: 'authority-capture', name: 'Mark Driscoll / Mars Hill',
@@ -230,24 +236,34 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
 ---
 
 <main id="main-content">
-  <article class="article-body" data-wave10-draft="true" data-source-authority="148" data-curated-sources="54" data-reader-links="40">
+  <article
+    class="article-body"
+    data-wave10-draft={publicationMode ? undefined : 'true'}
+    data-wave12-published={publicationMode ? 'true' : undefined}
+    data-source-authority="148"
+    data-curated-sources="54"
+    data-reader-links="40"
+  >
     <span data-pagefind-meta="author" hidden>Автор-редактор: Фёдор Милованов</span>
     <span data-pagefind-meta="category" hidden>Служение</span>
+    <span data-pagefind-meta="readTime" hidden>35</span>
     <header class="article-header">
-      <p class="anti-kicker">Редакционный черновик · PUBLICATION_HOLD</p>
+      <p class="anti-kicker">{publicationMode ? 'Исследовательская статья · Wave 12' : 'Редакционный черновик · PUBLICATION_HOLD'}</p>
       <h1>Диотрефы нашего времени</h1>
       <p class="article-byline">
         <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
         <span aria-hidden="true" class="article-byline__sep">·</span>
-        <time datetime="2026-08-01">1 августа 2026</time>
+        <time datetime={publicationMode ? '2026-08-02' : '2026-08-01'}>{publicationMode ? '2 августа 2026' : '1 августа 2026'}</time>
         <span aria-hidden="true" class="article-byline__sep">·</span>
-        <span>Исследовательский черновик</span>
+        <span>{publicationMode ? '35 мин' : 'Исследовательский черновик'}</span>
       </p>
     </header>
 
-    <div class="warn-box" data-pagefind-ignore>
-      <strong>Граница Wave 10.</strong> Этот компонент ещё не зарегистрирован как публичный маршрут, не входит в sitemap, Pagefind или RSS и не является публикацией. Он переносит в читательскую форму закрытую Research-authority: 148 источников, 21 основной кейс и ноль новых прямых цитат.
-    </div>
+    {!publicationMode && (
+      <div class="warn-box" data-pagefind-ignore>
+        <strong>Граница Wave 10.</strong> Этот компонент ещё не зарегистрирован как публичный маршрут, не входит в sitemap, Pagefind или RSS и не является публикацией. Он переносит в читательскую форму закрытую Research-authority: 148 источников, 21 основной кейс и ноль новых прямых цитат.
+      </div>
+    )}
 
     <figure class="article-img wide">
       <picture>
@@ -382,7 +398,7 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
 
     <section class="reading-list-section" id="sources" data-reader-source-links="40">
       <h2>Источники и границы проверки</h2>
-      <p>Полная Research-authority содержит 148 записей. В этот черновик вынесена отобранная рамка из 54 источников: 42 записи по конкретным делам и 12 библейских, академических и контролирующих источников по защите уязвимых. Ниже — 40 прямых читательских ссылок. Источники без восстановленного стабильного URL остаются внутренними точными указателями и используются только для ограниченного пересказа, без прямой цитаты.</p>
+      <p>Полная Research-authority содержит 148 записей. В читательский корпус вынесена отобранная рамка из 54 источников: 42 записи по конкретным делам и 12 библейских, академических и контролирующих источников по защите уязвимых. Ниже — 40 прямых читательских ссылок. Источники без восстановленного стабильного URL остаются внутренними точными указателями и используются только для ограниченного пересказа, без прямой цитаты.</p>
       <ol>
         {sourceLinks.map(([label, href]) => (
           <li><a href={href} rel="noopener noreferrer">{label}</a></li>

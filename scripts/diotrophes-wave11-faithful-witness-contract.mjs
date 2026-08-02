@@ -9,6 +9,7 @@ const supplementPath = 'src/components/article-pilots/diotrophes/FaithfulWitness
 const wrapperPath = 'src/components/article-pilots/diotrophes/DiotrophesWave11Draft.astro';
 const baseDraftPath = 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro';
 const publicRoutePath = 'src/pages/articles/diotrefy-nashego-vremeni/index.astro';
+const releasePath = 'data/diotrophes-wave12-release-manifest.json';
 const reportPath = 'research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01.md';
 
 const data = JSON.parse(readFileSync(manifestPath, 'utf8'));
@@ -25,11 +26,24 @@ requireValue(data.authorityId === 'PRODUCT-OSK-WAVE11-FAITHFUL-WITNESS-2026-08-0
 requireValue(data.researchAuthorityId === 'RESEARCH-OSK-AUTHORITY-2026-08-01-W10-FAITHFUL-WITNESS', 'wrong Research authority');
 requireValue(data.researchMergeSha === 'f50b21ad6af5dd7aaa53c5be381929b353b26d58', 'wrong Research merge SHA');
 requireValue(data.productBaseSha === '6645112103e00112a569e8738dda2e2791364662', 'wrong Product base SHA');
-requireValue(data.status === 'EDITORIAL_DRAFT_PUBLICATION_HOLD', 'publication hold must remain');
-requireValue(data.publicRouteRegistered === false && data.indexingApproved === false, 'route/indexing must remain blocked');
+requireValue(data.status === 'EDITORIAL_DRAFT_PUBLICATION_HOLD', 'Wave 11 snapshot status must remain historical draft hold');
+requireValue(data.publicRouteRegistered === false && data.indexingApproved === false, 'Wave 11 snapshot route/indexing fields must remain false');
 requireValue(data.directQuotesApproved === false, 'new direct quotations must remain blocked');
-requireValue(!existsSync(publicRoutePath), 'Wave 11 must not create a public route');
 requireValue(existsSync(baseDraftPath), 'Wave 10 base draft is missing');
+
+let successorRelease = null;
+if (existsSync(releasePath)) {
+  successorRelease = JSON.parse(readFileSync(releasePath, 'utf8'));
+  requireValue(successorRelease.authorityId === 'PRODUCT-OSK-WAVE12-PUBLICATION-2026-08-02', 'unapproved successor authority');
+  requireValue(successorRelease.route === '/articles/diotrefy-nashego-vremeni/', 'successor route drift');
+  requireValue(successorRelease.predecessorAuthorityIds?.includes(data.authorityId), 'Wave 12 does not declare Wave 11 predecessor');
+  requireValue(successorRelease.safety?.directQuotesApproved === false, 'Wave 12 weakened quote boundary');
+  requireValue(successorRelease.counts?.authoritySources === 181, 'Wave 12 source count drift');
+  requireValue(successorRelease.counts?.readerLinks === 73, 'Wave 12 reader-link count drift');
+  requireValue(existsSync(publicRoutePath), 'approved Wave 12 route missing');
+} else {
+  requireValue(!existsSync(publicRoutePath), 'public route exists without approved Wave 12 successor');
+}
 
 const counts = data.counts ?? {};
 const expected = {
@@ -43,9 +57,7 @@ const expected = {
   faithfulResponses: 20,
   publicRoutesAdded: 0,
 };
-for (const [key, value] of Object.entries(expected)) {
-  requireValue(counts[key] === value, `count drift: ${key}=${counts[key]} expected ${value}`);
-}
+for (const [key, value] of Object.entries(expected)) requireValue(counts[key] === value, `count drift: ${key}=${counts[key]} expected ${value}`);
 
 const pathways = caseData.casePathways ?? [];
 const responses = responseData.faithfulResponses ?? [];
@@ -85,9 +97,7 @@ for (const item of responses) {
 }
 requireValue(responses.map((item) => item.id).join(',') === Array.from({length:20}, (_,i) => `FW-${String(i+1).padStart(2,'0')}`).join(','), 'response ids/order drift');
 
-for (const [key, value] of Object.entries(data.safety ?? {})) {
-  requireValue(value === true, `safety control disabled: ${key}`);
-}
+for (const [key, value] of Object.entries(data.safety ?? {})) requireValue(value === true, `safety control disabled: ${key}`);
 for (const marker of [
   'data-wave11-faithful-witness="true"',
   'Пятнадцать реальных путей',
@@ -95,22 +105,18 @@ for (const marker of [
   'Практическая лестница различения',
   'Новые источники Wave 11',
   'Контрпример: когда совет действительно действует',
-]) {
-  requireValue(supplement.includes(marker), `supplement marker missing: ${marker}`);
-}
+]) requireValue(supplement.includes(marker), `supplement marker missing: ${marker}`);
 requireValue(!supplement.includes('<blockquote') && !supplement.includes('<q'), 'new direct quotations are forbidden');
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
 requireValue(wrapper.includes("import DiotrophesDraft from './DiotrophesDraft.astro'"), 'wrapper lost Wave 10 draft');
 requireValue(wrapper.includes("import FaithfulWitnessSupplement from './FaithfulWitnessSupplement.astro'"), 'wrapper lost supplement');
-requireValue((wrapper.match(/<DiotrophesDraft\s*\/>/g) ?? []).length === 1, 'base draft must render exactly once');
+requireValue(wrapper.includes('<DiotrophesDraft publicationMode={publicationMode} />'), 'base draft must render once with publication state');
 requireValue((wrapper.match(/<FaithfulWitnessSupplement\s*\/>/g) ?? []).length === 1, 'supplement must render exactly once');
 
 const russianWords = [caseData, responseData, sourceData].map(JSON.stringify).join(' ').match(/[А-Яа-яЁё]{2,}/g)?.length ?? 0;
 requireValue(russianWords >= 1300, `reader data below depth floor: ${russianWords}`);
-for (const marker of ['15 actor pathways', '20 faithful responses', '181-source authority', '0 public routes']) {
-  requireValue(report.includes(marker), `report marker missing: ${marker}`);
-}
-requireValue(!report.includes('production deployment complete'), 'report makes a deployment claim');
+for (const marker of ['15 actor pathways', '20 faithful responses', '181-source authority', '0 public routes']) requireValue(report.includes(marker), `report marker missing: ${marker}`);
+requireValue(!report.includes('production deployment complete'), 'Wave 11 report must not make a retroactive deployment claim');
 
 if (errors.length) {
   console.error(`❌ Diotrophes Wave 11 faithful-witness contract failed (${errors.length})`);
@@ -118,7 +124,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(
-  `✅ Diotrophes Wave 11 passed: 15 pathways, 20 faithful responses, ` +
-  `33 new links, 181-source authority, ${russianWords} Russian data words, 0 public routes`
-);
+console.log(`✅ Diotrophes Wave 11 evidence snapshot passed: 15 pathways, 20 responses, 33 links, 181-source authority, ${russianWords} Russian data words, successor=${successorRelease?.authorityId ?? 'none'}`);

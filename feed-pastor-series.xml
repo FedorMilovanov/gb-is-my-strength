@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Тёмная сторона кафедры — Господь Бог</title>
+    <link>https://gospod-bog.ru/pastor-series/</link>
+    <description><![CDATA[Материалы о пастырской власти, подотчётности, защите уязвимых и верном свидетельстве.]]></description>
+    <language>ru</language>
+    <lastBuildDate>Sat, 01 Aug 2026 21:00:00 GMT</lastBuildDate>
+    <ttl>1440</ttl>
+    <atom:link href="https://gospod-bog.ru/feed-pastor-series.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Диотрефы нашего времени: власть, подотчётность и верность</title>
+      <link>https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/</guid>
+      <pubDate>Sat, 01 Aug 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Документированное исследование 21 церковного кейса и 15 путей верного ответа: власть, сокрытие, подотчётность, защита уязвимых и точные границы доказательств.]]></description>
+    </item>
+    <item>
+      <title>20 антисоветов, как пастору разрушить своё служение</title>
+      <link>https://gospod-bog.ru/articles/20-antisovetov-pastoru/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/20-antisovetov-pastoru/</guid>
+      <pubDate>Tue, 12 May 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Системный библейский разбор искажений пастырской власти: власть, подотчётность, страх, манипуляция Писанием и путь к здоровой церковной культуре.]]></description>
+    </item>
+  </channel>
+</rss>

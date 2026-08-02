@@ -1,0 +1,21 @@
+---
+import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import { PASTOR_SERIES } from '@/components/article-pilots/_shared/series/pastorSeriesConfig';
+import DiotrophesWave11Draft from './DiotrophesWave11Draft.astro';
+---
+
+<SeriesReaderChrome pageId="diotrophes" config={PASTOR_SERIES}>
+  <div class="wave12-publication-boundary" data-wave12-publication="true">
+    <aside class="note-box" aria-labelledby="wave12-publication-heading">
+      <h2 id="wave12-publication-heading">Как читать этот материал</h2>
+      <p>
+        Это документированное исследование механизмов власти и способов верного ответа.
+        Упоминание человека или организации не означает одинакового статуса дел: уголовный
+        приговор, гражданское решение, независимое расследование, церковный вывод и публичное
+        заявление различаются и подписаны своими границами. Материал не ставит диагнозов,
+        не заменяет суд или safeguarding-процесс и не разрешает новых прямых цитат.
+      </p>
+    </aside>
+    <DiotrophesWave11Draft publicationMode={true} />
+  </div>
+</SeriesReaderChrome>
