@@ -9,15 +9,17 @@
     "era": "bronze",
     "yec_date": "Авраам ~2166 до н.э. (Ашшер); Исход ~1447 до н.э.",
     "stats": {
-      "places": 19,
+      "places": 22,
       "stages": 8,
       "stories": 5,
       "ctx_points": 7,
       "photos": 40,
       "verses": 59,
       "arch_sources": "230+ verified research links in docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md",
-      "verified_waypoints": 5,
-      "scientific_variants": 46
+      "verified_waypoints": 3,
+      "scientific_variants": 46,
+      "route_places": 19,
+      "context_places": 3
     },
     "viewport_init": {
       "cx": 1000,
@@ -63,6 +65,12 @@
         850,
         420
       ]
+    },
+    "semantic_zoom": {
+      "overview_min_w": 1292,
+      "detail_max_w": 380,
+      "overview_min_units_per_pixel": 1.25,
+      "detail_max_units_per_pixel": 0.72
     }
   },
   "stories": [
@@ -125,14 +133,14 @@
       ],
       "cam": [
         640,
-        820,
-        360
+        835,
+        520
       ],
       "desc": "Выбор Лота · катастрофа Содома · Быт 13; 18–19",
       "viewport": [
-        648,
-        838,
-        720
+        640,
+        835,
+        520
       ]
     },
     {
@@ -150,13 +158,13 @@
       "cam": [
         660,
         700,
-        500
+        600
       ],
       "desc": "318 воинов · ночной рейд · Мелхиседек · Быт 14",
       "viewport": [
-        678,
-        692,
-        760
+        660,
+        700,
+        600
       ]
     },
     {
@@ -172,15 +180,15 @@
         7
       ],
       "cam": [
-        590,
-        835,
-        310
+        610,
+        850,
+        400
       ],
       "desc": "Три дня пути к горе Мория · Быт 22",
       "viewport": [
-        600,
+        610,
         850,
-        700
+        400
       ]
     }
   ],

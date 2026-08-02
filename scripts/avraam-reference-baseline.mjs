@@ -17,6 +17,44 @@ const VIEWPORTS = [
 ].map(([id,width,height])=>({id,width,height}));
 const KEY_PLACES = ['ur','harran','shechem','bethel','egypt','hebron','sodom','dan','beersheba','salem'];
 
+const SOURCE_ROUTE_PATH=path.resolve('karty/avraam/route.json');
+const SOURCE_ROUTE=JSON.parse(fs.readFileSync(SOURCE_ROUTE_PATH,'utf8'));
+function sourceDataAudit(route){
+  const places=Array.isArray(route.places)?route.places:[],stages=Array.isArray(route.stages)?route.stages:[],stories=Array.isArray(route.stories)?route.stories:[],ctx=Array.isArray(route.ctx)?route.ctx:[];
+  const routePlaces=places.filter(place=>Number.isInteger(place.stage));
+  const contextPlaces=places.filter(place=>!Number.isInteger(place.stage));
+  const photos=routePlaces.reduce((sum,place)=>sum+(Array.isArray(place.photos)?place.photos.length:0),0);
+  const scientificVariants=Object.values(route.scientific_variants||{}).reduce((sum,value)=>sum+(Array.isArray(value)?value.length:0),0);
+  const stats=route.meta?.stats||{},failures=[];
+  const expect=(label,actual,expected)=>{if(actual!==expected)failures.push(`${label}: ${actual} != ${expected}`)};
+  expect('stats.places',stats.places,places.length);
+  expect('stats.route_places',stats.route_places,routePlaces.length);
+  expect('stats.context_places',stats.context_places,contextPlaces.length);
+  expect('stats.stages',stats.stages,stages.length);
+  expect('stats.stories',stats.stories,stories.length);
+  expect('stats.ctx_points',stats.ctx_points,ctx.length);
+  expect('stats.photos',stats.photos,photos);
+  expect('stats.verified_waypoints',stats.verified_waypoints,(route.verified_waypoints||[]).length);
+  expect('stats.scientific_variants',stats.scientific_variants,scientificVariants);
+  expect('places_index length',(route.places_index||[]).length,routePlaces.length);
+  const ids=places.map(place=>place.id),idSet=new Set(ids);
+  if(idSet.size!==ids.length)failures.push(`duplicate place ids: ${ids.length-idSet.size}`);
+  routePlaces.forEach(place=>{if(place.stage<0||place.stage>=stages.length)failures.push(`invalid stage ${place.id}: ${place.stage}`)});
+  stories.forEach(story=>{
+    (story.places||[]).forEach(id=>{if(!idSet.has(id))failures.push(`story ${story.id} missing place: ${id}`)});
+    (story.stages||[]).forEach(stage=>{if(!Number.isInteger(stage)||stage<0||stage>=stages.length)failures.push(`story ${story.id} invalid stage: ${stage}`)});
+  });
+  return{counts:{places:places.length,routePlaces:routePlaces.length,contextPlaces:contextPlaces.length,stages:stages.length,stories:stories.length,ctx:ctx.length,photos,verifiedWaypoints:(route.verified_waypoints||[]).length,scientificVariants},failures};
+}
+const SOURCE_DATA_AUDIT=sourceDataAudit(SOURCE_ROUTE);
+function routeVisualMass(geometry){
+  const boxes=(geometry.routes||[]).map(route=>route.screenBox).filter(Boolean);
+  if(!boxes.length)return null;
+  const left=Math.min(...boxes.map(box=>box.left)),top=Math.min(...boxes.map(box=>box.top)),right=Math.max(...boxes.map(box=>box.right)),bottom=Math.max(...boxes.map(box=>box.bottom));
+  const width=Math.max(0,right-left),height=Math.max(0,bottom-top),vw=geometry.viewport.width,vh=geometry.viewport.height;
+  return{left,top,right,bottom,width,height,widthRatio:width/vw,heightRatio:height/vh,centerXRatio:(left+right)/(2*vw),centerYRatio:(top+bottom)/(2*vh)};
+}
+
 const mkdir=(dir)=>fs.mkdirSync(dir,{recursive:true});
 const writeJson=(file,value)=>fs.writeFileSync(file,`${JSON.stringify(value,null,2)}\n`,'utf8');
 const safeName=(value)=>String(value||'unknown').trim().toLowerCase().replace(/[^a-z0-9а-яё_-]+/giu,'-').replace(/^-+|-+$/g,'');
@@ -134,7 +172,7 @@ async function runViewport(browser,viewport){
   page.on('console',msg=>consoleEvents.push({type:msg.type(),text:msg.text().slice(0,1000)}));
   page.on('pageerror',err=>consoleEvents.push({type:'pageerror',text:err.message.slice(0,1000)}));
   page.on('requestfailed',req=>failedRequests.push({url:req.url(),method:req.method(),error:req.failure()?.errorText||'unknown'}));
-  const result={viewport,route:ROUTE_URL,introDismissed:false,overview:null,surfaces:{},stories:[],places:[],tabs:[],keyboard:{},verificationFailures:[],consoleEvents,failedRequests,fatal:null};
+  const result={viewport,route:ROUTE_URL,sourceData:SOURCE_DATA_AUDIT,introDismissed:false,overview:null,surfaces:{},stories:[],places:[],tabs:[],keyboard:{},verificationFailures:[...SOURCE_DATA_AUDIT.failures.map(failure=>`source data: ${failure}`)],consoleEvents,failedRequests,fatal:null};
   try{
     await waitForMap(page);
     await screenshot(page,dir,'00-intro.png');
@@ -175,7 +213,8 @@ async function runViewport(browser,viewport){
         const selection=await selectStory(page,story),file=`story-${String(i+1).padStart(2,'0')}-${id}.png`;
         await screenshot(page,dir,file);
         const geometry=await collectGeometry(page,`${viewport.id}:story:${story.id}`);
-        result.stories.push({...story,...selection,file,geometry});
+        const visualMass=routeVisualMass(geometry);
+        result.stories.push({...story,...selection,file,geometry,visualMass});
         if(!selection.active||geometry.activeStory!==story.id)result.verificationFailures.push(`story activation failed: ${story.id}; active=${geometry.activeStory}`);
         if(selection.rail?.present&&!selection.rail.fullyVisible)result.verificationFailures.push(`active story clipped in rail: ${story.id}`);
         if(story.id!=='main'&&geometry.counts.routes===0)result.verificationFailures.push(`story route missing: ${story.id}`);

@@ -453,7 +453,7 @@
     <text class="region-label lbl-overview" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
     <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
     <text class="region-label lbl-z2" x="602" y="815" font-size="4.5" fill="#9aa2ae" opacity=".4" letter-spacing=".12em">ВИФЛЕЕМ · בֵּית לֶחֶם</text>
-    <text class="region-label" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>
+    <text class="region-label lbl-overview" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>
     <!-- Горы Едома (Сеир) — к юго-востоку -->
     <text class="region-label lbl-z2" x="736" y="950" font-size="6" fill="#8b7d5a" opacity=".38" letter-spacing=".18em" transform="rotate(90 736 950)">ЕДОМ · שֵׂעִיר</text>
     <!-- Горы Моава (восток Мёртвого моря) -->
@@ -537,31 +537,37 @@
 <!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
 <!-- Непрерывные хребты: схематическая гипсометрия, не точные изолинии. -->
 <g id="highlandRelief" class="lbl-z1" fill="none" stroke-linecap="round" pointer-events="none">
-  <!-- Центральное нагорье Ханаана: Самария → Иудея → Негев. -->
-  <path d="M625,686 C617,726 615,770 612,812 C608,848 600,884 586,918"
-    stroke="rgba(139,125,90,.11)" stroke-width="24"/>
-  <path d="M625,686 C617,726 615,770 612,812 C608,848 600,884 586,918"
-    stroke="#8b7d5a" stroke-width="1.25" opacity=".58"/>
-  <path d="M617,690 C610,732 607,774 604,814 C601,850 593,882 580,912"
-    stroke="#a18f65" stroke-width=".72" opacity=".38"/>
-  <path d="M634,690 C627,731 625,773 621,814 C618,849 610,886 594,922"
-    stroke="#6f644b" stroke-width=".72" opacity=".42"/>
+  <!-- Центральное нагорье Ханаана: несколько несимметричных контуров вместо условной оси. -->
+  <path d="M625,681 C617,709 621,734 612,760 C603,785 614,810 604,837 C597,862 588,891 576,920"
+    stroke="rgba(139,125,90,.10)" stroke-width="22"/>
+  <path d="M625,681 C617,709 621,734 612,760 C603,785 614,810 604,837 C597,862 588,891 576,920"
+    stroke="#8b7d5a" stroke-width="1.2" opacity=".56"/>
+  <path d="M616,687 C610,714 613,738 604,763 C598,786 606,809 596,835 C590,858 581,885 570,910"
+    stroke="#a18f65" stroke-width=".68" opacity=".38"/>
+  <path d="M634,688 C628,715 632,739 622,767 C615,791 624,817 614,846 C607,871 599,898 590,926"
+    stroke="#6f644b" stroke-width=".68" opacity=".4"/>
+  <path d="M628,700 C624,724 626,746 618,771 C612,794 619,816 611,839"
+    stroke="#b19d73" stroke-width=".42" opacity=".32"/>
 
-  <!-- Заиорданское плато: Галаад и Моав. -->
-  <path d="M704,646 C712,704 715,763 713,824 C712,874 718,923 732,972"
-    stroke="rgba(122,108,76,.09)" stroke-width="20"/>
-  <path d="M704,646 C712,704 715,763 713,824 C712,874 718,923 732,972"
-    stroke="#776b50" stroke-width="1.05" opacity=".44"/>
-  <path d="M694,652 C702,710 704,770 703,828 C702,878 708,925 719,965"
-    stroke="#9a875f" stroke-width=".6" opacity=".3"/>
+  <!-- Заиорданское плато: Галаад и Моав, разорванные долинами. -->
+  <path d="M703,646 C710,682 707,720 714,756 C718,781 710,807 714,834 C717,874 721,918 735,968"
+    stroke="rgba(122,108,76,.085)" stroke-width="18"/>
+  <path d="M703,646 C710,682 707,720 714,756 C718,781 710,807 714,834 C717,874 721,918 735,968"
+    stroke="#776b50" stroke-width="1" opacity=".43"/>
+  <path d="M694,653 C701,687 697,724 704,759 C708,784 700,810 704,838 C707,878 711,918 723,958"
+    stroke="#9a875f" stroke-width=".58" opacity=".3"/>
+  <path d="M713,651 C719,687 717,722 724,758 C728,784 722,809 726,835 C730,874 734,912 744,948"
+    stroke="#665c46" stroke-width=".5" opacity=".28"/>
 
-  <!-- Синайские массивы: мягкие слои без одиночной эмблемы-горы. -->
-  <path d="M470,1040 C510,1010 557,1008 603,1030 C646,1052 680,1092 704,1142"
-    stroke="rgba(143,105,61,.10)" stroke-width="30"/>
-  <path d="M470,1040 C510,1010 557,1008 603,1030 C646,1052 680,1092 704,1142"
-    stroke="#8c6d49" stroke-width="1.1" opacity=".45"/>
-  <path d="M488,1052 C527,1028 563,1027 600,1046 C636,1064 664,1098 686,1134"
-    stroke="#a17b4e" stroke-width=".65" opacity=".34"/>
+  <!-- Синайские массивы: длинные дуги, а не эмблема одиночной горы. -->
+  <path d="M463,1048 C500,1017 543,1004 584,1019 C629,1035 666,1076 704,1144"
+    stroke="rgba(143,105,61,.09)" stroke-width="27"/>
+  <path d="M463,1048 C500,1017 543,1004 584,1019 C629,1035 666,1076 704,1144"
+    stroke="#8c6d49" stroke-width="1.05" opacity=".44"/>
+  <path d="M480,1057 C516,1030 550,1022 584,1034 C620,1047 653,1082 688,1135"
+    stroke="#a17b4e" stroke-width=".62" opacity=".34"/>
+  <path d="M498,1064 C528,1044 555,1038 581,1048 C611,1059 639,1088 671,1129"
+    stroke="#b1895b" stroke-width=".4" opacity=".25"/>
 </g>
 <!-- Оронт (Сирия) — река севернее Дамаска -->
 <path fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"
@@ -589,18 +595,23 @@
 </g>
 
 <!-- ============ SINAI MOUNTAIN SYMBOL ============ -->
-<g id="sinaiPeak" class="lbl-z1" transform="translate(588,1120)" opacity=".66" fill="none" stroke-linecap="round">
+<g id="sinaiPeak" class="lbl-z2" transform="translate(588,1120)" opacity=".66" fill="none" stroke-linecap="round">
   <path d="M-24,15 C-16,4 -11,-8 0,-21 C11,-8 16,4 24,15" stroke="#9c7840" stroke-width="1.15"/>
   <path d="M-16,13 C-10,4 -6,-4 0,-12 C7,-4 11,5 16,13" stroke="#bc9460" stroke-width=".65" opacity=".65"/>
   <path d="M-8,10 C-4,4 -2,0 0,-4 C3,1 5,5 8,10" stroke="#d0aa73" stroke-width=".4" opacity=".5"/>
   <text x="0" y="26" text-anchor="middle" font-size="4.8" fill="#aa824d" letter-spacing=".14em">СИНАЙ</text>
   <text x="0" y="32" font-size="3.5" fill="#9a7648" text-anchor="middle" opacity=".72">הַר סִינַי · традиционный массив</text>
 </g>
-<!-- Хермон — гора у Дана -->
-<g class="lbl-z1" transform="translate(668,594)" opacity=".4">
-  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.12)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
-  <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
-  <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
+<!-- Хермон — протяжённый контурный массив у Дана; только detail. -->
+<g id="hermonRelief" class="lbl-z2" transform="translate(668,594)" opacity=".62" fill="none" stroke-linecap="round">
+  <path d="M-22,10 C-17,8 -14,3 -11,-2 C-8,-7 -5,-13 0,-16 C4,-13 7,-7 10,-3 C13,2 17,6 22,9"
+    stroke="#6080a0" stroke-width="1.05"/>
+  <path d="M-17,11 C-13,7 -11,3 -8,-1 C-5,-6 -2,-10 1,-12 C5,-8 7,-4 10,0 C13,4 16,7 19,10"
+    stroke="#7894ae" stroke-width=".62" opacity=".72"/>
+  <path d="M-10,10 C-7,6 -5,2 -2,-2 C0,-5 2,-7 4,-8 C7,-5 9,-1 12,3 C14,6 16,8 18,10"
+    stroke="#9ab0c2" stroke-width=".38" opacity=".5"/>
+  <text x="1" y="17" text-anchor="middle" font-size="4.3" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
+  <text x="1" y="22" font-size="3.1" fill="#6080a8" text-anchor="middle" opacity=".78">2814 м · הַר חֶרְמוֹן</text>
 </g>
 <!-- ============ DEBATE: spor o Sodome ============ -->
 <g id="debate" style="display:none">
