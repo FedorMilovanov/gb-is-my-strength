@@ -1,0 +1,83 @@
+name: Pihahiroth uncertainty release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/pihahiroth-uncertainty-release.yml'
+      - 'karty/ishod/route.json'
+      - 'karty/ishod/pihahiroth-authority.json'
+      - 'src/components/karty/ishod/IshodMap.astro'
+      - 'src/components/karty/ishod/IshodPageHead.astro'
+      - 'scripts/pihahiroth-uncertainty-*.mjs'
+      - 'research/PIHAHIROTH_UNCERTAINTY_RELEASE_2026-08-02.md'
+      - 'karty/_engine/map-engine.js'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pihahiroth-uncertainty-release.yml'
+      - 'karty/ishod/route.json'
+      - 'karty/ishod/pihahiroth-authority.json'
+      - 'src/components/karty/ishod/IshodMap.astro'
+      - 'src/components/karty/ishod/IshodPageHead.astro'
+      - 'scripts/pihahiroth-uncertainty-*.mjs'
+      - 'research/PIHAHIROTH_UNCERTAINTY_RELEASE_2026-08-02.md'
+      - 'karty/_engine/map-engine.js'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pihahiroth-uncertainty-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout complete Product history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Validate authority and static projection
+        run: node scripts/pihahiroth-uncertainty-release-contract.mjs
+
+      - name: Validate Astro and map contracts
+        run: |
+          npm run astro:check
+          npm run maps:validate
+
+      - name: Build production-like site
+        run: |
+          npm run strangler:build:production-like
+          npm run page-ownership:dist:production-like
+
+      - name: Install Chromium witness
+        run: npx playwright install --with-deps chromium
+
+      - name: Run desktop mobile and no-JS witness
+        run: node scripts/pihahiroth-uncertainty-browser-contract.mjs
+
+      - name: Ensure validation did not mutate tracked files
+        run: git diff --exit-code
+
+      - name: Upload Pihahiroth evidence
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: pihahiroth-uncertainty-evidence
+          path: reports/pihahiroth-uncertainty/
+          if-no-files-found: warn
+          retention-days: 30
