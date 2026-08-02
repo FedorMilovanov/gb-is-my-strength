@@ -38,7 +38,7 @@ const json = (path) => {
 };
 const gitShow = (path) => {
   try {
-    return execFileSync('git', ['show', `${PRE_WAVE12}:${path}`], { encoding: 'utf8' });
+    return execFileSync('git', ['show', `${PRE_WAVE12}:${path}`], { encoding:'utf8' });
   } catch (error) {
     errors.push(`cannot read ${path} at pre-Wave12 ${PRE_WAVE12}: ${error.stderr?.toString().trim() || error.message}`);
     return '';
@@ -48,8 +48,13 @@ const gitShowJson = (path) => {
   try { return JSON.parse(gitShow(path)); }
   catch (error) { errors.push(`${path} at ${PRE_WAVE12}: invalid JSON: ${error.message}`); return {}; }
 };
-const preserveKeys = (before, after, label) => {
-  for (const key of Object.keys(before ?? {})) requireValue(Object.hasOwn(after ?? {}, key), `${label}: pre-Wave12 key disappeared: ${key}`);
+const stable = (value) => JSON.stringify(value, Object.keys(value ?? {}).sort());
+const deepEqual = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+const preserveEntries = (before, after, label) => {
+  for (const [key, oldValue] of Object.entries(before ?? {})) {
+    requireValue(Object.hasOwn(after ?? {}, key), `${label}: pre-Wave12 key disappeared: ${key}`);
+    if (Object.hasOwn(after ?? {}, key)) requireValue(deepEqual(after[key], oldValue), `${label}: pre-Wave12 entry changed: ${key}`);
+  }
 };
 const hrefs = (value) => new Set([...value.matchAll(/\bhref=["']([^"']+)["']/g)].map((match) => match[1]));
 
@@ -78,7 +83,6 @@ for (const [key, expected] of Object.entries({ coreCases:21, faithfulPathways:15
 requireValue(Object.values(release.publication ?? {}).every(Boolean), 'all declared publication gates must be true');
 requireValue(release.safety?.directQuotesApproved === false, 'direct quotation boundary drift');
 requireValue(release.safety?.existingWave10AndWave11EvidenceBytesRemainAuthoritative === true, 'predecessor evidence authority drift');
-
 requireValue(wave10.counts?.researchAuthoritySources === 148, 'Wave 10 authority source count drift');
 requireValue(wave10.counts?.approvedDirectQuotes === 0, 'Wave 10 quote boundary drift');
 requireValue(wave11.counts?.totalAuthoritySources === 181, 'Wave 11 source count drift');
@@ -143,37 +147,53 @@ requireValue(seriesLandingText.includes('data-wave12-series-card="true"') && ser
 requireValue(seriesHeadText.includes('numberOfItems: 2') && seriesHeadText.includes('diotrefy-nashego-vremeni'), 'series structured data drift');
 requireValue(seriesHeadText.includes('feed-pastor-series.xml'), 'series landing does not advertise RSS shard');
 
-// Fail closed if manual registry edits removed any pre-existing route, item or series part.
+// Semantic preservation of every pre-Wave12 registry entry.
 const previousOwnership = gitShowJson(paths.ownership);
 const previousMatrix = gitShowJson(paths.matrix);
 const previousPolicy = gitShowJson(paths.searchPolicy);
 const previousSearch = gitShowJson(paths.searchManifest);
 const previousSeries = gitShowJson(paths.seriesData);
-preserveKeys(previousOwnership.routes, ownership.routes, 'page ownership');
-preserveKeys(previousMatrix.routes, matrix.routes, 'migration matrix');
-preserveKeys(previousPolicy.routes, searchPolicy.routes, 'search policy');
+preserveEntries(previousOwnership.routes, ownership.routes, 'page ownership');
+preserveEntries(previousMatrix.routes, matrix.routes, 'migration matrix');
+preserveEntries(previousPolicy.routes, searchPolicy.routes, 'search policy');
 
-const previousSearchIds = new Set((previousSearch.items ?? []).map((item) => item.id));
+const previousSearchItems = previousSearch.items ?? [];
+const previousSearchIds = new Set(previousSearchItems.map((item) => item.id));
 const currentSearchIds = new Set(searchItems.map((item) => item.id));
-for (const id of previousSearchIds) requireValue(currentSearchIds.has(id), `search manifest lost pre-Wave12 item: ${id}`);
-for (const oldItem of previousSearch.items ?? []) {
+for (const oldItem of previousSearchItems) {
   const current = searchItems.find((item) => item.id === oldItem.id);
-  requireValue(current?.url === oldItem.url, `search manifest URL drift for ${oldItem.id}: ${current?.url} != ${oldItem.url}`);
+  requireValue(Boolean(current), `search manifest lost pre-Wave12 item: ${oldItem.id}`);
+  if (!current) continue;
+  if (oldItem.id === 'pastor-series') {
+    const allowed = new Set(['description','readTime','modifiedTime']);
+    const oldStable = Object.fromEntries(Object.entries(oldItem).filter(([key]) => !allowed.has(key)));
+    const currentStable = Object.fromEntries(Object.entries(current).filter(([key]) => !allowed.has(key)));
+    requireValue(deepEqual(currentStable, oldStable), 'search manifest changed non-authorized pastor-series fields');
+  } else {
+    requireValue(deepEqual(current, oldItem), `search manifest changed pre-Wave12 item: ${oldItem.id}`);
+  }
 }
 requireValue(currentSearchIds.size === previousSearchIds.size + 1, `search manifest must add exactly one item; before=${previousSearchIds.size}, now=${currentSearchIds.size}`);
 
-preserveKeys(previousSeries, seriesData, 'series registry');
 for (const [seriesId, oldSeries] of Object.entries(previousSeries)) {
-  const currentParts = seriesData[seriesId]?.parts ?? [];
-  for (const oldPart of oldSeries.parts ?? []) {
-    requireValue(currentParts.some((part) => part.slug === oldPart.slug), `series registry lost ${seriesId}/${oldPart.slug}`);
+  const currentSeries = seriesData[seriesId];
+  requireValue(Boolean(currentSeries), `series registry lost series: ${seriesId}`);
+  if (!currentSeries) continue;
+  if (seriesId !== 'pastor-series') {
+    requireValue(deepEqual(currentSeries, oldSeries), `series registry changed unrelated series: ${seriesId}`);
+    continue;
   }
+  requireValue(currentSeries.title === oldSeries.title && currentSeries.baseUrl === oldSeries.baseUrl, 'pastor-series identity drift');
+  for (const oldPart of oldSeries.parts ?? []) {
+    const currentPart = currentSeries.parts?.find((part) => part.slug === oldPart.slug);
+    requireValue(deepEqual(currentPart, oldPart), `pastor-series changed pre-Wave12 part: ${oldPart.slug}`);
+  }
+  requireValue((currentSeries.parts?.length ?? 0) === (oldSeries.parts?.length ?? 0) + 1, 'pastor-series must add exactly one part');
 }
 
 const previousCatalogHrefs = hrefs(gitShow(paths.catalog));
 const currentCatalogHrefs = hrefs(catalogText);
 for (const href of previousCatalogHrefs) requireValue(currentCatalogHrefs.has(href), `articles catalog lost pre-Wave12 href: ${href}`);
-
 for (const forbidden of ['Редакционный черновик · PUBLICATION_HOLD', 'ещё не зарегистрирован как публичный маршрут']) {
   requireValue(!publishedText.includes(forbidden), `published wrapper contains draft claim: ${forbidden}`);
 }
@@ -186,5 +206,4 @@ if (errors.length) {
   for (const error of errors) console.error(`  - ${error}`);
   process.exit(1);
 }
-
-console.log(`✅ Diotrophes Wave 12 release passed: ${previousSearchIds.size} prior search items preserved, 21 cases, 181 sources, 73 reader links, 0 new direct quotes`);
+console.log(`✅ Diotrophes Wave 12 release passed: ${previousSearchIds.size} prior search items preserved semantically, 21 cases, 181 sources, 73 reader links, 0 new direct quotes`);
