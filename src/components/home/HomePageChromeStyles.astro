@@ -111,6 +111,18 @@
     }
   }
 
+  /* HomeAmbientPhrases is rendered inside the centred .home-content wrapper.
+     Its absolute containing block therefore used to be that wrapper, so even
+     small left/right offsets placed the manuscript words underneath the cards.
+     Expand only the ambient layer back to the viewport while retaining the
+     document-height coordinate system supplied by .home-content. */
+  body.home-page .home-v20 .h-ambient-native {
+    right: auto;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+  }
+
   /* The directions block used to break out almost to the viewport edge while
      the manuscript phrases remained in those same rails. Keep every wide Home
      section on the native content measure so marginalia never sit under cards.
