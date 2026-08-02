@@ -247,6 +247,11 @@ async function runViewport(browser,viewport){
         const focusVisuals=focusIds.map(id=>markerById.get(id)).filter(Boolean),secondaryVisuals=[...contextIds,...(sourceStory?.places||[]).filter(id=>sourcePlaces.get(id)?.type==='cand')].map(id=>markerById.get(id)).filter(Boolean);
         if(focusVisuals.length&&secondaryVisuals.length&&Math.min(...focusVisuals.map(marker=>marker.labelOpacity??0))<=Math.max(...secondaryVisuals.map(marker=>marker.labelOpacity??0)))result.verificationFailures.push(`story visual hierarchy failed ${story.id}`);
         if(story.id!=='main'&&geometry.counts.baseDetailLabels>0)result.verificationFailures.push(`story forensic background labels ${story.id}: ${geometry.counts.baseDetailLabels}`);
+        if(story.id!=='main'&&visualMass){
+          const dominant=Math.max(visualMass.widthRatio,visualMass.heightRatio);
+          if(dominant<.16)result.verificationFailures.push(`story route visual mass too small ${story.id}: ${dominant.toFixed(3)}`);
+          if(visualMass.centerXRatio<.25||visualMass.centerXRatio>.75||visualMass.centerYRatio<.18||visualMass.centerYRatio>.82)result.verificationFailures.push(`story route visual mass off-center ${story.id}: ${visualMass.centerXRatio.toFixed(3)},${visualMass.centerYRatio.toFixed(3)}`);
+        }
         const overlapLimit=viewport.width<=560?4:6;
         const clippedLimit=viewport.width<=560?4:6;
         if(geometry.counts.labelOverlaps>overlapLimit)result.verificationFailures.push(`story label overlaps ${story.id}: ${geometry.counts.labelOverlaps}>${overlapLimit}`);

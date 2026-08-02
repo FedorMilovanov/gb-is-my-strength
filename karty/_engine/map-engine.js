@@ -941,6 +941,56 @@ const MapEngine = (function() {
 .me-map[data-active-story]:not([data-active-story="main"]) #me-base-geo .lbl-overview{display:none}
 .me-map[data-active-story]:not([data-active-story="main"]) svg #me-base-geo .lbl-z2{display:none!important}
 
+/* Premium narrative composition: geography remains legible without restoring
+   forensic labels; focus/context/candidate read as editorial cartography. */
+.me-map[data-map-theme="dark"][data-active-story]:not([data-active-story="main"]) #me-base-geo{
+  opacity:.92;
+  filter:brightness(1.18) contrast(1.06) saturate(.92);
+}
+.me-map[data-active-story]:not([data-active-story="main"]) .me-route-main[data-story-active="1"]{
+  stroke-width:3.05!important;
+  opacity:.96!important;
+}
+.me-map[data-active-story]:not([data-active-story="main"]) .me-route-underlay[data-story-active="1"]{
+  stroke-width:7!important;
+  opacity:.16!important;
+}
+.me-map [data-story-role="focus"] .me-place-label-bg{
+  fill:rgba(5,9,14,.82);
+  stroke:color-mix(in srgb,var(--me-accent,#e8c879) 38%,transparent);
+  stroke-width:.7;
+}
+.me-map [data-story-role="focus"] .me-place-label{
+  fill:#f7efd9;
+  font-weight:650;
+}
+.me-map [data-story-role="context"] .me-place-label-bg{
+  fill:rgba(7,11,16,.58);
+  stroke:color-mix(in srgb,var(--me-accent,#e8c879) 16%,transparent);
+  stroke-width:.45;
+}
+.me-map [data-story-role="context"] .me-place-label{
+  fill:color-mix(in srgb,var(--me-label-text,#f4eedd) 76%,var(--me-muted,#9aa2ae));
+  font-weight:520;
+}
+.me-map [data-story-role="candidate"] .me-place-label-bg{
+  fill:rgba(7,11,16,.42);
+  stroke:rgba(155,140,240,.28);
+  stroke-width:.45;
+  stroke-dasharray:2 2;
+}
+.me-map [data-story-role="candidate"] .me-place-label{
+  fill:color-mix(in srgb,#b6a9ff 64%,var(--me-muted,#9aa2ae));
+  font-style:italic;
+}
+.me-map[data-map-theme="light"] [data-story-role="focus"] .me-place-label-bg{
+  fill:rgba(255,249,235,.94);
+  stroke:rgba(126,82,12,.42);
+}
+.me-map[data-map-theme="light"] [data-story-role="focus"] .me-place-label{fill:#2d2317}
+.me-map[data-map-theme="light"] [data-story-role="context"] .me-place-label-bg{fill:rgba(255,249,235,.72)}
+.me-map[data-map-theme="light"] [data-story-role="candidate"] .me-place-label-bg{fill:rgba(249,244,255,.72)}
+
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z1,
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z2,
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .region-he,
