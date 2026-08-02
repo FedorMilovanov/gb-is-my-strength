@@ -59,77 +59,114 @@ async function serveDist() {
   return { server, base: `http://127.0.0.1:${server.address().port}` };
 }
 
-function footnoteNumberScript() {
-  return (expected) => {
-    function numberOf(marker) {
-      return Array.from(marker.childNodes)
-        .filter((node) => node.nodeType === Node.TEXT_NODE)
-        .map((node) => node.textContent || '')
-        .join('')
-        .replace(/\s+/g, '')
-        .trim();
-    }
-    const found = {};
-    for (const marker of document.querySelectorAll('.fn-marker')) {
-      const number = numberOf(marker);
-      if (!expected.includes(number)) continue;
-      marker.dataset.firefoxFootnote = number;
-      const tip = marker.querySelector('.tooltip');
-      found[number] = {
-        tooltip: Boolean(tip),
-        nestedInteractive: tip
-          ? tip.querySelectorAll('button, a, [tabindex], [role="button"], .bref, [data-ref]').length
-          : -1,
-      };
-    }
-    return {
-      found,
-      nestedInteractive: document.querySelectorAll(
-        '.fn-marker .tooltip button, .fn-marker .tooltip a, .fn-marker .tooltip [tabindex], ' +
-        '.fn-marker .tooltip [role="button"], .fn-marker .tooltip .bref, .fn-marker .tooltip [data-ref]'
-      ).length,
-      ordinaryScripture: document.querySelectorAll('article .bref[data-ref]').length,
-      markerCount: document.querySelectorAll('.fn-marker').length,
+function annotateFootnotes(expected) {
+  function numberOf(marker) {
+    return Array.from(marker.childNodes)
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent || '')
+      .join('')
+      .replace(/\s+/g, '')
+      .trim();
+  }
+  const found = {};
+  for (const marker of document.querySelectorAll('.fn-marker')) {
+    const number = numberOf(marker);
+    if (!expected.includes(number)) continue;
+    marker.dataset.firefoxFootnote = number;
+    const tip = marker.querySelector('.tooltip');
+    found[number] = {
+      tooltip: Boolean(tip),
+      nestedInteractive: tip
+        ? tip.querySelectorAll('button, a, [tabindex], [role="button"], .bref, [data-ref]').length
+        : -1,
     };
+  }
+  return {
+    found,
+    nestedInteractive: document.querySelectorAll(
+      '.fn-marker .tooltip button, .fn-marker .tooltip a, .fn-marker .tooltip [tabindex], ' +
+      '.fn-marker .tooltip [role="button"], .fn-marker .tooltip .bref, .fn-marker .tooltip [data-ref]'
+    ).length,
+    ordinaryScripture: document.querySelectorAll('article .bref[data-ref]').length,
+    markerCount: document.querySelectorAll('.fn-marker').length,
   };
 }
 
-function readOpenTipScript() {
-  return ({ markerSelector }) => {
-    const marker = document.querySelector(markerSelector);
-    const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
-    const rect = tip?.getBoundingClientRect();
-    const style = tip ? getComputedStyle(tip) : null;
-    const controlledId = marker?.getAttribute('aria-controls') || '';
-    return {
-      markerExpanded: marker?.getAttribute('aria-expanded') === 'true',
-      controlledId,
-      controlsTargetExists: Boolean(controlledId && document.getElementById(controlledId)),
-      tipOpen: Boolean(tip),
-      activeElement: document.activeElement?.matches(markerSelector) || false,
-      nestedFocusable: tip
-        ? tip.querySelectorAll('button, a, [tabindex], [role="button"], .bref, [data-ref]').length
-        : -1,
-      tip: tip && rect && style ? {
-        position: style.position,
-        display: style.display,
-        visibility: style.visibility,
-        opacity: Number(style.opacity),
-        textLength: (tip.textContent || '').trim().length,
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        left: Math.round(rect.left),
-        top: Math.round(rect.top),
-        right: Math.round(rect.right),
-        bottom: Math.round(rect.bottom),
-        centerX: rect.left + rect.width / 2,
-        centerY: rect.top + rect.height / 2,
-        inViewport:
-          rect.left >= -1 && rect.top >= -1 &&
-          rect.right <= window.innerWidth + 1 && rect.bottom <= window.innerHeight + 1,
-      } : null,
-    };
+function readOpenTip({ markerSelector }) {
+  const marker = document.querySelector(markerSelector);
+  const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
+  const rect = tip?.getBoundingClientRect();
+  const style = tip ? getComputedStyle(tip) : null;
+  const controlledId = marker?.getAttribute('aria-controls') || '';
+  return {
+    markerExpanded: marker?.getAttribute('aria-expanded') === 'true',
+    controlledId,
+    controlsTargetExists: Boolean(controlledId && document.getElementById(controlledId)),
+    tipOpen: Boolean(tip),
+    activeElement: document.activeElement?.matches(markerSelector) || false,
+    nestedFocusable: tip
+      ? tip.querySelectorAll('button, a, [tabindex], [role="button"], .bref, [data-ref]').length
+      : -1,
+    tip: tip && rect && style ? {
+      position: style.position,
+      display: style.display,
+      visibility: style.visibility,
+      opacity: Number(style.opacity),
+      textLength: (tip.textContent || '').trim().length,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      left: Math.round(rect.left),
+      top: Math.round(rect.top),
+      right: Math.round(rect.right),
+      bottom: Math.round(rect.bottom),
+      centerX: rect.left + rect.width / 2,
+      centerY: rect.top + rect.height / 2,
+      inViewport:
+        rect.left >= -1 && rect.top >= -1 &&
+        rect.right <= window.innerWidth + 1 && rect.bottom <= window.innerHeight + 1,
+    } : null,
   };
+}
+
+async function findPhysicalHitPoint(locator) {
+  await locator.scrollIntoViewIfNeeded();
+  await locator.page().waitForTimeout(120);
+  return locator.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const attempts = [];
+    const xFractions = [0.08, 0.2, 0.35, 0.5, 0.65, 0.8, 0.92];
+    const yFractions = [0.15, 0.35, 0.5, 0.65, 0.85];
+    for (const yFraction of yFractions) {
+      for (const xFraction of xFractions) {
+        const x = rect.left + rect.width * xFraction;
+        const y = rect.top + rect.height * yFraction;
+        const top = document.elementFromPoint(x, y);
+        const hit = Boolean(top && (top === node || node.contains(top)));
+        attempts.push({
+          x: Math.round(x * 100) / 100,
+          y: Math.round(y * 100) / 100,
+          hit,
+          top: top
+            ? `${top.tagName.toLowerCase()}#${top.id || ''}.${String(top.className || '').slice(0, 120)}`
+            : null,
+        });
+        if (hit) {
+          return {
+            ok: true,
+            x,
+            y,
+            rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+            attempts,
+          };
+        }
+      }
+    }
+    return {
+      ok: false,
+      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+      attempts,
+    };
+  });
 }
 
 const checks = [];
@@ -152,7 +189,7 @@ try {
   await page.waitForTimeout(900);
   record('document:status', response?.status() === 200, response?.status() ?? null);
 
-  const staticState = await page.evaluate(footnoteNumberScript(), STATIC_FOOTNOTES);
+  const staticState = await page.evaluate(annotateFootnotes, STATIC_FOOTNOTES);
   record('source:all-required-footnotes-found',
     STATIC_FOOTNOTES.every((number) => staticState.found[number]?.tooltip), staticState);
   record('source:no-nested-interactive-footnotes', staticState.nestedInteractive === 0, staticState);
@@ -160,20 +197,24 @@ try {
 
   const hoverSelector = '[data-firefox-footnote="40"]';
   const hoverMarker = page.locator(hoverSelector);
-  await hoverMarker.scrollIntoViewIfNeeded();
-  await hoverMarker.hover();
-  await page.waitForTimeout(250);
-  let hoverState = await page.evaluate(readOpenTipScript(), { markerSelector: hoverSelector });
-  const hoverOpened = hoverState.markerExpanded && hoverState.tipOpen && hoverState.controlsTargetExists &&
-    hoverState.tip?.position === 'fixed' && hoverState.tip?.display !== 'none' &&
-    hoverState.tip?.visibility !== 'hidden' && hoverState.tip?.opacity >= 0.9 &&
-    hoverState.tip?.textLength >= 20 && hoverState.tip?.width >= 80 &&
-    hoverState.tip?.height >= 20 && hoverState.tip?.inViewport;
+  const hoverPoint = await findPhysicalHitPoint(hoverMarker);
+  record('desktop:hover-trigger-hit-test', hoverPoint.ok, hoverPoint);
+  let hoverState = await page.evaluate(readOpenTip, { markerSelector: hoverSelector });
+  if (hoverPoint.ok) {
+    await page.mouse.move(hoverPoint.x, hoverPoint.y);
+    await page.waitForTimeout(250);
+    hoverState = await page.evaluate(readOpenTip, { markerSelector: hoverSelector });
+  }
+  const hoverOpened = hoverPoint.ok && hoverState.markerExpanded && hoverState.tipOpen &&
+    hoverState.controlsTargetExists && hoverState.tip?.position === 'fixed' &&
+    hoverState.tip?.display !== 'none' && hoverState.tip?.visibility !== 'hidden' &&
+    hoverState.tip?.opacity >= 0.9 && hoverState.tip?.textLength >= 20 &&
+    hoverState.tip?.width >= 80 && hoverState.tip?.height >= 20 && hoverState.tip?.inViewport;
   record('desktop:hover-opens-governed-tip', hoverOpened, hoverState);
   if (hoverState.tipOpen && hoverState.tip) {
     await page.mouse.move(hoverState.tip.centerX, hoverState.tip.centerY, { steps: 12 });
     await page.waitForTimeout(300);
-    hoverState = await page.evaluate(readOpenTipScript(), { markerSelector: hoverSelector });
+    hoverState = await page.evaluate(readOpenTip, { markerSelector: hoverSelector });
   }
   record('desktop:hover-content-keeps-parent-open', hoverState.tipOpen && hoverState.tip?.inViewport, hoverState);
   await page.keyboard.press('Escape');
@@ -186,7 +227,7 @@ try {
   const keyboardMarker = page.locator(keyboardSelector);
   await keyboardMarker.focus();
   await page.waitForTimeout(250);
-  const keyboardState = await page.evaluate(readOpenTipScript(), { markerSelector: keyboardSelector });
+  const keyboardState = await page.evaluate(readOpenTip, { markerSelector: keyboardSelector });
   record('keyboard:focus-opens-and-links-aria',
     keyboardState.activeElement && keyboardState.markerExpanded && keyboardState.tipOpen &&
     keyboardState.controlsTargetExists && keyboardState.nestedFocusable === 0, keyboardState);
@@ -198,7 +239,8 @@ try {
 
   const scripture = page.locator('article .bref[data-ref]').first();
   await scripture.scrollIntoViewIfNeeded();
-  await scripture.click();
+  await scripture.focus();
+  await page.keyboard.press('Enter');
   await page.waitForTimeout(250);
   const scriptureState = await page.evaluate(() => ({
     tipOpen: Boolean(document.querySelector('.gb-floating-tip.is-open')),
