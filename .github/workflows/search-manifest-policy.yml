@@ -164,30 +164,49 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout exact pull request head
+      - name: Resolve live pull request branch
+        id: pr-branch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}.git" "refs/heads/${HEAD_REF}" >/dev/null; then
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "PR branch ${HEAD_REF} no longer exists; autofix is obsolete."
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout exact pull request branch
+        if: steps.pr-branch.outputs.exists == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Set up Node 22.23.1
+        if: steps.pr-branch.outputs.exists == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
           cache: npm
 
       - name: Install dependencies
+        if: steps.pr-branch.outputs.exists == 'true'
         run: npm ci
 
       - name: Build production-like dist
+        if: steps.pr-branch.outputs.exists == 'true'
         run: npm run strangler:build:production-like
 
       - name: Test normalizer contracts
+        if: steps.pr-branch.outputs.exists == 'true'
         run: |
           node scripts/search-manifest-policy-normalizer-test.js
           node scripts/rss-feed-normalizer-test.js
 
       - name: Normalize explicit RSS article membership
+        if: steps.pr-branch.outputs.exists == 'true'
         run: >-
           node scripts/search-manifest-policy-normalizer.js
           --dist=dist
@@ -195,17 +214,20 @@ jobs:
           --write
 
       - name: Normalize deterministic canonical discovery surfaces
+        if: steps.pr-branch.outputs.exists == 'true'
         run: |
           node scripts/rss-feed-normalizer.js --write
           node scripts/sitemap-policy-normalizer.js --write
 
       - name: Validate normalized production policy
+        if: steps.pr-branch.outputs.exists == 'true'
         run: |
           node scripts/rss-feed-normalizer.js --check
           node scripts/sitemap-policy-normalizer.js --check
           node scripts/search-index-policy-inventory.js --dist=dist --strict
 
       - name: Validate focused diff
+        if: steps.pr-branch.outputs.exists == 'true'
         shell: bash
         run: |
           git diff --check
@@ -221,6 +243,7 @@ jobs:
           fi
 
       - name: Commit search policy and canonical discovery normalization
+        if: steps.pr-branch.outputs.exists == 'true'
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -230,7 +253,7 @@ jobs:
             exit 0
           fi
           if ! git ls-remote --exit-code --heads origin "refs/heads/${HEAD_REF}" >/dev/null; then
-            echo "PR branch ${HEAD_REF} no longer exists; autofix result is obsolete."
+            echo "PR branch ${HEAD_REF} disappeared after validation; autofix result is obsolete."
             exit 0
           fi
           git config user.name "github-actions[bot]"
