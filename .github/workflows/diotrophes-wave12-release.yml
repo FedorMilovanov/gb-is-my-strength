@@ -95,7 +95,7 @@ jobs:
         run: |
           npm run migration:metadata:check:strict
           npm run page-ownership:check
-          node scripts/check-route-search-policy.js
+          node scripts/search-manifest-policy-normalizer-test.js
           npm run astro:check
 
       - name: Build production-like site and Pagefind
@@ -103,7 +103,7 @@ jobs:
           npm run strangler:build:production-like
           npm run page-ownership:dist:production-like
           npm run pagefind:build:dist
-          node scripts/check-route-search-policy.js
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
 
       - name: Chromium WebKit no-JS and print contract
         run: node scripts/diotrophes-wave12-browser-contract.mjs
