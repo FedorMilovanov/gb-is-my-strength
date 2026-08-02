@@ -111,6 +111,17 @@
     }
   }
 
+  /* The directions block used to break out almost to the viewport edge while
+     the manuscript phrases remained in those same rails. Keep every wide Home
+     section on the native content measure so marginalia never sit under cards. */
+  @media (min-width: 1480px) {
+    body.home-page #main-content #issledovat {
+      width: 100%;
+      max-width: none;
+      margin-left: 0;
+    }
+  }
+
   @media (max-width: 760px) {
     body.home-page .h-navbar {
       height: calc(62px + env(safe-area-inset-top, 0px));
