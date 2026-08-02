@@ -34,12 +34,13 @@ async function waitForMap(page){
 }
 
 async function dismissIntro(page){
+  const intro=page.locator('.me-intro');
   const start=page.getByRole('button',{name:/Начать изучение/i});
   if(await start.isVisible().catch(()=>false)){
     await start.click({force:true});
-    await page.waitForTimeout(400);
+    await intro.waitFor({state:'detached',timeout:1600}).catch(()=>{});
   }
-  return !(await start.isVisible().catch(()=>false));
+  return (await intro.count())===0;
 }
 
 async function closePanel(page){
@@ -64,7 +65,7 @@ async function collectGeometry(page,stateId){
     const rect=(el)=>{const r=el.getBoundingClientRect();return{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
     const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});
     const width=innerWidth,height=innerHeight,html=document.documentElement;
-    const map=document.querySelector('.me-map,#mapRoot'),svg=document.querySelector('.me-canvas svg,.me-map svg,#mapRoot svg');
+    const map=document.querySelector('.me-map,#mapRoot'),canvas=document.querySelector('.me-canvas'),svg=document.querySelector('.me-canvas svg,.me-map svg,#mapRoot svg');
     const labels=[...document.querySelectorAll('svg text')].filter(isVisible).map((el,index)=>({index,...describe(el),box:rect(el)}));
     const offscreenLabels=labels.filter(({box})=>box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1);
     const labelOverlaps=[];
@@ -86,9 +87,9 @@ async function collectGeometry(page,stateId){
     const activeStory=document.querySelector('.me-story-chip--active,[aria-selected="true"].me-story-chip,[aria-pressed="true"].me-story-chip');
     return{
       stateId,url:location.href,title:document.title,activeStory:activeStory?.getAttribute('data-story')||null,
-      viewport:{width,height,devicePixelRatio},
+      viewport:{width,height,devicePixelRatio,scrollX,scrollY},
       document:{clientWidth:html.clientWidth,scrollWidth:html.scrollWidth,horizontalOverflow:html.scrollWidth-html.clientWidth,clientHeight:html.clientHeight,scrollHeight:html.scrollHeight},
-      map:{box:map?rect(map):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null},
+      map:{box:map?rect(map):null,canvasBox:canvas?rect(canvas):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null,canvasTransform:canvas?getComputedStyle(canvas).transform:null,svgTransform:svg?getComputedStyle(svg).transform:null},
       counts:{labels:labels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length},
       offscreenLabels:offscreenLabels.slice(0,120),labelOverlaps:labelOverlaps.sort((a,b)=>b.area-a.area).slice(0,180),undersizedControls:undersizedControls.slice(0,120),offscreenControls:offscreenControls.slice(0,120),markers,routes,
     };
@@ -183,7 +184,7 @@ async function runViewport(browser,viewport){
       }catch(error){result.tabs.push({id:tabId,error:error.message});result.verificationFailures.push(`tab error ${tabId}: ${error.message}`)}
     }
     await page.keyboard.press('Escape').catch(()=>{});await page.waitForTimeout(100);
-    result.keyboard.escapeClosedPanel=!(await page.locator(panelSelector).count());
+    result.keyboard.escapeClosedPanel=!(await page.locator('.me-panel--open').count());
     if(!result.keyboard.escapeClosedPanel)result.verificationFailures.push('Escape did not close panel');
     writeJson(path.join(dir,'geometry.json'),result.overview);writeJson(path.join(dir,'result.json'),result);
   }catch(error){result.fatal={message:error.message,stack:error.stack};await page.screenshot({path:path.join(dir,'FATAL.png'),fullPage:true}).catch(()=>{});writeJson(path.join(dir,'result.json'),result)}

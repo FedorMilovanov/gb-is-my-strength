@@ -550,7 +550,7 @@ const MapEngine = (function() {
 /* Header */
 .me-header{position:absolute;top:0;left:0;right:0;padding:12px 16px;z-index:10;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
 .me-header>*{pointer-events:auto}
-.me-back{display:inline-flex;align-items:center;gap:6px;color:#9aa2ae;font-size:10px;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;padding:11px 16px;min-height:36px;border-radius:999px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);transition:color .2s}
+.me-back{display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#9aa2ae;font-size:10px;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;padding:11px 16px;min-height:44px;border-radius:999px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);transition:color .2s}
 .me-back:hover{color:#e8c879}
 .me-title{color:#fff;font-size:22px;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.6)}
 .me-title-he{color:#e8c879;font-size:15px;letter-spacing:.2em;margin-top:2px;direction:rtl;text-shadow:0 2px 6px rgba(0,0,0,.5)}
@@ -558,7 +558,7 @@ const MapEngine = (function() {
 
 /* Story chips */
 .me-stories{display:flex;gap:6px;flex-wrap:wrap}
-.me-story-chip{padding:10px 14px;min-height:36px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:11px;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center}
+.me-story-chip{padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:11px;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
 .me-story-chip:hover{border-color:rgba(255,255,255,.3);color:#e9e4d6}
 .me-story-chip--active{background:rgba(232,200,121,.2);color:#e8c879;border-color:rgba(232,200,121,.4)}
 
@@ -568,8 +568,8 @@ const MapEngine = (function() {
 .me-stage-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
 
 /* Panel */
-.me-panel{position:absolute;bottom:0;left:0;right:0;box-sizing:border-box;max-height:calc(100% - 8px);max-height:calc(100% - max(8px,env(safe-area-inset-top)));overflow:hidden;background:rgba(13,17,26,.95);backdrop-filter:blur(16px);border-top:1px solid rgba(232,200,121,.2);z-index:20;transition:transform .35s cubic-bezier(.4,0,.2,1);transform:translateY(105%);display:flex;flex-direction:column;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.4)}
-.me-panel--open{transform:translateY(0)}
+.me-panel{position:absolute;bottom:0;left:0;right:0;box-sizing:border-box;max-height:calc(100% - 8px);max-height:calc(100% - max(8px,env(safe-area-inset-top)));overflow:hidden;background:rgba(13,17,26,.95);backdrop-filter:blur(16px);border-top:1px solid rgba(232,200,121,.2);z-index:20;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .2s ease,visibility 0s linear .35s;transform:translateY(calc(100% + 32px));opacity:0;visibility:hidden;pointer-events:none;display:flex;flex-direction:column;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.4)}
+.me-panel--open{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
 .me-panel__close{position:absolute;top:8px;right:10px;z-index:5;background:none;border:none;font-size:20px;color:#9aa2ae;cursor:pointer;padding:10px;min-width:44px;min-height:44px;border-radius:10px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .me-panel__close:hover{color:#fff;background:rgba(255,255,255,.05)}
 .me-panel__head{padding:16px 16px 10px;border-bottom:1px solid rgba(255,255,255,.06);background:linear-gradient(to bottom,rgba(232,200,121,.06),rgba(232,200,121,.01) 60%,transparent);position:relative;transition:background .3s ease}
@@ -590,7 +590,7 @@ const MapEngine = (function() {
 
 /* Tabs */
 .me-tabs{display:flex;gap:0;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);overflow-x:auto}
-.me-tab{padding:8px 14px;font-size:11px;border:none;background:none;color:#9aa2ae;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:inherit;white-space:nowrap;position:relative;top:1px}
+.me-tab{padding:8px 14px;min-height:44px;font-size:11px;border:none;background:none;color:#9aa2ae;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:inherit;white-space:nowrap;position:relative;top:1px;display:inline-flex;align-items:center;justify-content:center}
 .me-tab:hover{color:#e9e4d6}
 .me-tabs::after{content:'';position:sticky;right:0;width:20px;flex-shrink:0;background:linear-gradient(to right,transparent,rgba(13,17,26,.9));pointer-events:none}
 .me-tab--active{color:#e8c879;border-bottom-color:#e8c879;background:linear-gradient(to top,rgba(232,200,121,.08),transparent)}
@@ -634,7 +634,7 @@ const MapEngine = (function() {
 
 /* Nav */
 .me-nav{display:flex;align-items:center;padding:10px 16px;border-top:1px solid rgba(255,255,255,.08);gap:8px}
-.me-nav button{flex:0;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#9aa2ae;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.me-nav button{flex:0;padding:6px 14px;min-height:44px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#9aa2ae;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
 .me-nav button:hover:not(:disabled){border-color:#e8c879;color:#e8c879}
 .me-nav button:disabled{opacity:.3;cursor:default}
 .me-nav__dots{flex:1;display:flex;justify-content:center;gap:4px}
@@ -730,7 +730,7 @@ const MapEngine = (function() {
 .me-intro__sub{font-size:13px;color:#9aa2ae;margin-bottom:1rem}
 .me-intro__stats{display:flex;gap:12px;justify-content:center;margin-bottom:1.5rem}
 .me-intro__stats span{font-size:11px;color:rgba(154,162,174,.6);padding:4px 12px;border:1px solid rgba(255,255,255,.08);border-radius:999px}
-.me-intro__btn{padding:10px 28px;border-radius:999px;border:1px solid #e8c879;background:rgba(232,200,121,.1);color:#e8c879;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s}
+.me-intro__btn{padding:10px 28px;min-height:44px;border-radius:999px;border:1px solid #e8c879;background:rgba(232,200,121,.1);color:#e8c879;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;justify-content:center}
 .me-intro__btn:hover{background:rgba(232,200,121,.25)}
 
 /* Timeline */
@@ -745,8 +745,12 @@ const MapEngine = (function() {
 .me-timeline__label{font-size:8px;color:#9aa2ae;text-align:center;line-height:1.2;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Layers */
-.me-layers{position:absolute;bottom:40px;right:8px;z-index:10;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px}
-.me-layers__title{color:#e8c879;font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.me-layers{position:absolute;bottom:40px;right:8px;z-index:10;padding:0;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px;overflow:hidden;max-width:min(220px,calc(100% - 16px))}
+.me-layers__summary{width:100%;min-width:88px;min-height:44px;padding:8px 12px;border:0;background:transparent;color:#e8c879;font:700 9px/1.2 Georgia,'Times New Roman',serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.me-layers__summary::after{content:'▴';font-size:9px;transition:transform .2s ease}
+.me-layers:not(.me-layers--expanded) .me-layers__summary::after{transform:rotate(180deg)}
+.me-layers__body{padding:0 10px 8px}
+.me-layers:not(.me-layers--expanded) .me-layers__body{display:none}
 .me-layers__row{display:flex;align-items:center;gap:6px;margin:3px 0}
 .me-layers__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .me-layers__name{flex:1;color:#9aa2ae;white-space:nowrap}
@@ -772,9 +776,21 @@ const MapEngine = (function() {
 /* v0.53 (D-3) — мобильный контракт: панель слоёв не перекрывает этап-бар,
    строка хоткеев (десктоп-сущность) скрыта на тач-экранах */
 @media (max-width:560px){
-  .me-layers{bottom:132px;right:6px;max-width:150px;padding:5px 8px;opacity:.94}
+  .me-header{padding:8px;gap:6px;display:block}
+  .me-title,.me-title-he,.me-subtitle{display:none}
+  .me-stories{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;margin-top:52px;padding:0 0 4px;scrollbar-width:none;overscroll-behavior-x:contain}
+  .me-stories::-webkit-scrollbar{display:none}
+  .me-story-chip{flex:0 0 auto}
+  .me-search{top:8px;right:112px;width:calc(100% - 232px);min-width:120px;max-width:180px;height:44px;padding:0 10px}
+  .me-search:focus{right:112px;width:calc(100% - 128px);max-width:none;background:var(--me-control-bg,rgba(0,0,0,.82));z-index:18}
+  .me-theme-btn{top:8px;right:60px}
+  .me-share-btn{top:8px;right:8px}
+  .me-layers{bottom:64px;right:8px;max-width:min(210px,calc(100% - 16px));opacity:.96}
   .me-layers__name{white-space:normal;line-height:1.15}
+  .me-layers--expanded{max-height:calc(100% - 136px);overflow:auto}
   .me-shortcuts{display:none}
+  .me-stages{left:8px;right:8px;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
+  .me-stages::-webkit-scrollbar{display:none}
 }
 
 /* Minimap */
@@ -879,7 +895,7 @@ const MapEngine = (function() {
 /* Media queries */
 @media(min-width:640px){
   .me-title{font-size:28px}
-  .me-panel{left:12px;right:auto;bottom:12px;width:420px;max-height:calc(100% - 24px);border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
+  .me-panel{left:12px;right:auto;bottom:12px;width:420px;max-height:calc(100% - 24px);border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(calc(-100% - 32px))}
   .me-panel--open{transform:translateX(0)}
   .me-header{padding:16px 20px}
   .me-life{display:block}
@@ -1424,7 +1440,21 @@ container.appendChild(panel);
     if(layerDefinitions.length){
       const layerPanel=document.createElement('div');
       layerPanel.className='me-layers';
-      layerPanel.innerHTML='<div class="me-layers__title">Слои</div>';
+      const layerSummary=document.createElement('button');
+      layerSummary.type='button';
+      layerSummary.className='me-layers__summary';
+      layerSummary.textContent='Слои';
+      layerSummary.setAttribute('aria-expanded','false');
+      const layerBody=document.createElement('div');
+      layerBody.className='me-layers__body';
+      layerBody.id=`me-layers-body-${mapInstanceToken}`;
+      layerSummary.setAttribute('aria-controls',layerBody.id);
+      layerPanel.appendChild(layerSummary);
+      layerPanel.appendChild(layerBody);
+      _on(layerSummary,'click',()=>{
+        const expanded=layerPanel.classList.toggle('me-layers--expanded');
+        layerSummary.setAttribute('aria-expanded',expanded?'true':'false');
+      });
       layerDefinitions.forEach((layer,i)=>{
         const id=String(layer.id||'');
         const row=document.createElement('div');row.className='me-layers__row';row.setAttribute('data-layer-id',id);
@@ -1436,7 +1466,7 @@ container.appendChild(panel);
         toggle.setAttribute('aria-label',`Переключить слой ${layer.label||id}`);
         toggle.setAttribute('aria-pressed',enabled?'true':'false');
         toggle.addEventListener('click',()=>setLayerEnabled(id,layerState.get(id)===false));
-        row.appendChild(toggle);layerPanel.appendChild(row);
+        row.appendChild(toggle);layerBody.appendChild(row);
       });
       container.appendChild(layerPanel);
     }
@@ -2330,11 +2360,8 @@ container.appendChild(panel);
       _tm(animateMarkersIn, 150);
       const storyViewport = getStoryViewport(route, storyId);
       if(Array.isArray(storyViewport)) flyTo(storyViewport[0], storyViewport[1], storyViewport[2]);
-      // Auto-open first place in story after animation
-      _tm(() => {
-        const firstPlace = (route.places||[]).find(p => visiblePlaces().some(v => v.id === p.id));
-        if (firstPlace && !activePlaceId) open(firstPlace.id);
-      }, 600);
+      // Story selection focuses the narrative region without forcing a place panel.
+      // The reader chooses a place explicitly, preserving a clean map-first state.
     }
 
     function renderStories(){
@@ -2745,7 +2772,12 @@ container.appendChild(panel);
 
     _on(document,'keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
-      if(e.key==='Escape'){if(!overlayRuntime)close('escape');return}
+      if(e.key==='Escape'){
+        if(photoModal.classList.contains('me-photo-modal--open')){closePhoto('escape');return}
+        if(activePlaceId||panel.classList.contains('me-panel--open')){close('escape');return}
+        if(!overlayRuntime)close('escape');
+        return
+      }
       const editableTarget=isEditableShortcutTarget(e.target)||isEditableShortcutTarget(document.activeElement);
       if(e.isComposing||editableTarget||e.altKey||e.ctrlKey||e.metaKey)return;
       if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
