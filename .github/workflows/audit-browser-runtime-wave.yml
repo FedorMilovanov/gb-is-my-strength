@@ -1,0 +1,101 @@
+name: Audit Browser Runtime Wave
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/audit-browser-runtime-wave.mjs"
+      - ".github/workflows/audit-browser-runtime-wave.yml"
+      - "src/components/karty/avraam/**"
+      - "src/pages/karty/avraam/**"
+      - "karty/avraam/**"
+      - "karty/_engine/**"
+      - "css/**"
+      - "js/**"
+
+concurrency:
+  group: audit-browser-runtime-wave-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  witness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: "npm"
+
+      - name: Install repository dependencies
+        run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate witness syntax
+        run: node --check scripts/audit-browser-runtime-wave.mjs
+
+      - name: Build production-like site
+        run: npm run strangler:build:production-like
+
+      - name: Start static server
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8090 --directory dist > /tmp/audit-browser-http.log 2>&1 &
+          for _ in $(seq 1 60); do
+            if curl --fail --silent --show-error http://127.0.0.1:8090/karty/avraam/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/audit-browser-http.log
+          exit 1
+
+      - name: Capture exact-head browser/runtime evidence
+        env:
+          AUDIT_BASE: http://127.0.0.1:8090
+          AUDIT_BROWSER_OUT: reports/audit/browser-runtime-wave
+        run: node scripts/audit-browser-runtime-wave.mjs
+
+      - name: Preserve server log and source identity
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/audit/browser-runtime-wave
+          cp /tmp/audit-browser-http.log reports/audit/browser-runtime-wave/http-server.log || true
+          {
+            echo "checked_out_sha=$(git rev-parse HEAD)"
+            echo "expected_head_sha=${HEAD_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "node=$(node --version 2>/dev/null || true)"
+            echo "npm=$(npm --version 2>/dev/null || true)"
+            echo "playwright=$(npx playwright --version 2>/dev/null || true)"
+          } > reports/audit/browser-runtime-wave/ENVIRONMENT.txt
+          sha256sum \
+            scripts/audit-browser-runtime-wave.mjs \
+            src/components/karty/avraam/AvraamMap.astro \
+            karty/_engine/map-engine.js \
+            karty/avraam/route.json \
+            > reports/audit/browser-runtime-wave/SHA256SUMS.txt
+
+      - name: Upload browser/runtime evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: audit-browser-runtime-wave-${{ github.run_id }}
+          path: reports/audit/browser-runtime-wave
+          if-no-files-found: error
+          retention-days: 30
