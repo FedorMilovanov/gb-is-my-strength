@@ -41,27 +41,55 @@ function record(engine, profile, contract, ok, detail = '') {
   if (!ok) failures.push(`${engine}/${profile}/${contract}: ${detail}`);
 }
 
-async function captureEvidenceScreenshot(page, engine, profileId) {
-  const dimensions = await page.evaluate(() => ({
+async function pageDimensions(page) {
+  return page.evaluate(() => ({
     width: Math.max(document.documentElement.scrollWidth, document.documentElement.clientWidth),
     height: Math.max(document.documentElement.scrollHeight, document.documentElement.clientHeight),
-    viewportHeight: window.innerHeight,
+    viewportWidth: Math.max(1, window.innerWidth),
+    viewportHeight: Math.max(1, window.innerHeight),
+    scrollY: Math.max(0, window.scrollY),
   }));
+}
+
+function boundedClip(dimensions, edge = 'top') {
+  const width = Math.max(1, Math.min(dimensions.width, dimensions.viewportWidth, 30_000));
+  const height = Math.max(1, Math.min(dimensions.height, dimensions.viewportHeight, 30_000));
+  const maxY = Math.max(0, dimensions.height - height);
+  const requestedY = edge === 'tail' ? maxY : 0;
+  return {
+    x: 0,
+    y: Math.max(0, Math.min(requestedY, maxY)),
+    width,
+    height,
+  };
+}
+
+async function captureEvidenceScreenshot(page, engine, profileId) {
+  const dimensions = await pageDimensions(page);
   const primaryPath = join(OUT, `${engine}-${profileId}.png`);
   if (dimensions.width <= 30_000 && dimensions.height <= 30_000) {
-    await page.screenshot({ path: primaryPath, fullPage: true });
+    await page.screenshot({ path: primaryPath, fullPage: true, animations:'disabled', caret:'hide' });
     return;
   }
 
-  // WebKit and Chromium reject screenshots above 32,767 px on either axis.
-  // Preserve deterministic visual evidence without weakening any page contract:
-  // capture the initial viewport and a second viewport at the document tail.
-  await page.screenshot({ path: primaryPath });
+  // WebKit and Chromium reject any screenshot surface above 32,767 px.
+  // An explicit page-coordinate clip prevents WebKit from expanding a plain
+  // viewport screenshot to the oversized document backing surface.
+  const topClip = boundedClip(dimensions, 'top');
+  await page.screenshot({ path: primaryPath, clip: topClip, animations:'disabled', caret:'hide' });
+
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(100);
-  await page.screenshot({ path: join(OUT, `${engine}-${profileId}-tail.png`) });
+  const tailDimensions = await pageDimensions(page);
+  const tailClip = boundedClip(tailDimensions, 'tail');
+  await page.screenshot({
+    path: join(OUT, `${engine}-${profileId}-tail.png`),
+    clip: tailClip,
+    animations:'disabled',
+    caret:'hide',
+  });
   await page.evaluate(() => window.scrollTo(0, 0));
-  record(engine, `${profileId}-js`, 'segmented-screenshot', true, JSON.stringify(dimensions));
+  record(engine, `${profileId}-js`, 'segmented-screenshot', true, JSON.stringify({ dimensions, topClip, tailClip }));
 }
 
 async function inspect(browserType, engine, profile) {
