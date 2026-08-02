@@ -86,6 +86,55 @@ async function inspectStaticSurface(page) {
   });
 }
 
+async function captureScrollSlices(page, baseId) {
+  const scroll = await page.evaluate(() => ({
+    height: document.documentElement.scrollHeight,
+    viewportHeight: innerHeight,
+    max: Math.max(0, document.documentElement.scrollHeight - innerHeight),
+  }));
+  const targets = [
+    { id: 'top', y: 0 },
+    { id: 'middle', y: Math.round(scroll.max / 2) },
+    { id: 'bottom', y: scroll.max },
+  ];
+  const slices = [];
+  for (const target of targets) {
+    await page.evaluate(y => window.scrollTo(0, y), target.y);
+    await page.waitForTimeout(120);
+    const evidence = await page.evaluate(() => {
+      const fallback = document.querySelector('.map-text-fallback');
+      const notice = document.querySelector('.map-runtime-noscript');
+      const visible = node => {
+        if (!node) return false;
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0 && rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < innerHeight;
+      };
+      const blocks = fallback
+        ? Array.from(fallback.querySelectorAll('h2,h3,p,li')).filter(visible).map(node => ({
+            tag: node.tagName.toLowerCase(),
+            text: (node.textContent || '').trim().slice(0, 180),
+            rect: node.getBoundingClientRect().toJSON(),
+          }))
+        : [];
+      return {
+        scrollY,
+        maxScroll: Math.max(0, document.documentElement.scrollHeight - innerHeight),
+        fallbackIntersects: visible(fallback),
+        noticeIntersects: visible(notice),
+        visibleBlockCount: blocks.length,
+        firstVisibleBlock: blocks[0] || null,
+        lastVisibleBlock: blocks.at(-1) || null,
+      };
+    });
+    const file = `${baseId}-${target.id}.png`;
+    await page.screenshot({ path: path.join(OUT_ROOT, file), fullPage: false });
+    slices.push({ ...target, file, ...evidence });
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  return slices;
+}
+
 function verify(scope, snapshot, { print = false } = {}) {
   const failures = [];
   const fail = message => failures.push(addFailure(scope, message));
@@ -108,6 +157,25 @@ function verify(scope, snapshot, { print = false } = {}) {
   return failures;
 }
 
+function verifyScrollSlices(scope, slices) {
+  const failures = [];
+  const fail = message => failures.push(addFailure(scope, message));
+  if (slices.length !== 3) fail(`scroll slice count ${slices.length} != 3`);
+  for (const slice of slices) {
+    const hasReadableContent = slice.visibleBlockCount > 0 || (slice.id === 'bottom' && slice.noticeIntersects);
+    if (!hasReadableContent) fail(`${slice.id} slice has no visible static text blocks`);
+    if (slice.id !== 'bottom' && !slice.fallbackIntersects) fail(`${slice.id} slice does not intersect fallback`);
+    if (slice.scrollY < 0 || slice.scrollY > slice.maxScroll + 1) fail(`${slice.id} slice invalid scrollY ${slice.scrollY}/${slice.maxScroll}`);
+  }
+  const top = slices.find(slice => slice.id === 'top');
+  const middle = slices.find(slice => slice.id === 'middle');
+  const bottom = slices.find(slice => slice.id === 'bottom');
+  if (!top?.firstVisibleBlock?.text) fail('top slice lacks first readable block');
+  if (!middle?.firstVisibleBlock?.text) fail('middle slice lacks first readable block');
+  if (!bottom?.firstVisibleBlock?.text && !bottom?.noticeIntersects) fail('bottom slice lacks final readable block or notice');
+  return failures;
+}
+
 const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of [
@@ -124,10 +192,11 @@ try {
     page.on('requestfailed', request => failedRequests.push(`${request.method()} ${request.url()} :: ${request.failure()?.errorText || 'failed'}`));
     await page.goto(ROUTE_URL, { waitUntil: 'networkidle', timeout: 120000 });
     const snapshot = await inspectStaticSurface(page);
-    const failures = verify(viewport.id, snapshot);
+    const scrollSlices = await captureScrollSlices(page, viewport.id);
+    const failures = [...verify(viewport.id, snapshot), ...verifyScrollSlices(viewport.id, scrollSlices)];
     if (failedRequests.length) failures.push(addFailure(viewport.id, `failed requests: ${failedRequests.join(' | ')}`));
     await page.screenshot({ path: path.join(OUT_ROOT, `${viewport.id}.png`), fullPage: true });
-    records.push({ id: viewport.id, type: 'no-js', snapshot, failures, failedRequests });
+    records.push({ id: viewport.id, type: 'no-js', snapshot, scrollSlices, failures, failedRequests });
     await context.close();
   }
 
@@ -195,11 +264,11 @@ const lines = [
   `- Route: \`${ROUTE_URL}\``,
   `- Captured at: ${result.capturedAt}`,
   '',
-  '| State | Fallback | Text length | H3 | Sources | Horizontal overflow | Failures |',
-  '|---|---:|---:|---:|---:|---:|---:|',
+  '| State | Fallback | Text length | H3 | Sources | Scroll slices | Horizontal overflow | Failures |',
+  '|---|---:|---:|---:|---:|---:|---:|---:|',
 ];
 for (const record of records.filter(item => item.snapshot)) {
-  lines.push(`| ${record.id} | ${record.snapshot.fallback?.present ? 'yes' : 'no'} | ${record.snapshot.fallback?.textLength || 0} | ${record.snapshot.fallback?.stageHeadings || 0} | ${record.snapshot.fallback?.sources || 0} | ${record.snapshot.document?.horizontalOverflow || 0}px | ${record.failures.length} |`);
+  lines.push(`| ${record.id} | ${record.snapshot.fallback?.present ? 'yes' : 'no'} | ${record.snapshot.fallback?.textLength || 0} | ${record.snapshot.fallback?.stageHeadings || 0} | ${record.snapshot.fallback?.sources || 0} | ${record.scrollSlices?.length || 0} | ${record.snapshot.document?.horizontalOverflow || 0}px | ${record.failures.length} |`);
 }
 const pdf = records.find(item => item.type === 'pdf');
 lines.push('', `- PDF: ${pdf?.bytes || 0} bytes; header \`${pdf?.header || 'missing'}\`.`);
