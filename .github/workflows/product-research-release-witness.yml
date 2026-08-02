@@ -154,5 +154,5 @@ jobs:
           if [[ -n "$existing" ]]; then
             gh issue edit "$existing" --body-file "$body_file"
           else
-            gh issue create --title "$title" --body-file "$body_file" --label documentation
+            gh issue create --title "$title" --body-file "$body_file"
           fi
