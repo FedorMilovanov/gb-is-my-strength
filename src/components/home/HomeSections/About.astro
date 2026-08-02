@@ -37,6 +37,13 @@ const principles = [
 </section>
 
 <style is:global>
+  /* The project statement is separated from the terminal quotation by rhythm,
+     not by a stack of full-width rules and list dividers. */
+  body.home-page #main-content .h-about {
+    border-top: 0;
+    border-bottom: 0;
+  }
+
   body.home-page #main-content .h-about__copy h2 {
     max-width: 720px;
     text-wrap: balance;
@@ -52,8 +59,16 @@ const principles = [
     color: var(--h-gold);
   }
 
+  body.home-page #main-content .h-about-principles {
+    display: grid;
+    gap: clamp(20px, 2.2vw, 28px);
+    border-top: 0;
+  }
+
   body.home-page #main-content .h-about-principles li {
     position: relative;
+    padding-block: 0;
+    border-bottom: 0;
   }
 
   body.home-page #main-content .h-about-principles li::before {
@@ -94,7 +109,9 @@ const principles = [
     body.home-page #main-content .h-about {
       gap: 34px;
       margin-top: 34px;
-      padding: 50px 0 40px;
+      padding: 50px 0 42px;
+      border-top: 0;
+      border-bottom: 0;
     }
 
     body.home-page #main-content .h-about__copy h2 {
@@ -124,11 +141,22 @@ const principles = [
       line-height: 1.65;
     }
 
+    body.home-page #main-content .h-about-principles {
+      gap: 24px;
+      padding-inline: 2px;
+      border-top: 0;
+    }
+
     body.home-page #main-content .h-about-principles li {
       min-height: 0;
       grid-template-columns: 34px 1fr;
       gap: 15px;
-      padding: 19px 0;
+      padding: 0;
+      border-bottom: 0;
+    }
+
+    body.home-page #main-content .h-about-principles li::before {
+      display: none;
     }
 
     body.home-page #main-content .h-about-principles strong {

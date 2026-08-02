@@ -409,26 +409,6 @@
     return buf;
   }
 
-  /* ============ sentence chunking ============ */
-  function splitSentences(text, maxLen) {
-    maxLen = maxLen || 400;
-    var parts = text.split(/([.!?]+\s+)/);
-    var chunks = [];
-    var buf = '';
-    for (var i = 0; i < parts.length; i++) {
-      buf += parts[i];
-      if (buf.length >= maxLen && i % 2 === 1) {
-        var tr = buf.trim();
-        if (tr) chunks.push(tr);
-        buf = '';
-      }
-    }
-    var last = buf.trim();
-    if (last) chunks.push(last);
-    if (!chunks.length && text.trim()) chunks.push(text.trim());
-    return chunks;
-  }
-
   return {
     g2pConvert: g2pConvert,
     parseDictionary: parseDictionary,
@@ -443,6 +423,5 @@
     selectBertRows: selectBertRows,
     floatToInt16: floatToInt16,
     int16ToWav: int16ToWav,
-    splitSentences: splitSentences,
   };
 }));

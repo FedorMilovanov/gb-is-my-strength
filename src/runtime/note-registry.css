@@ -1,0 +1,45 @@
+.gb-note-endnotes {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: normal !important;
+  border: 0 !important;
+}
+
+.gb-note-endnotes:focus-within {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 2rem 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+}
+
+@media print {
+  .fn-marker > .tooltip { display: none !important; }
+  .gb-note-endnotes,
+  main > .gb-note-endnotes,
+  article + .gb-note-endnotes {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 2rem 0 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #111 !important;
+    font-size: 10pt !important;
+    line-height: 1.45 !important;
+  }
+  .gb-note-endnotes h2 { font-size: 18pt !important; break-after: avoid-page !important; }
+  .gb-note-endnotes ol { margin: .75rem 0 0 !important; padding-left: 1.5rem !important; }
+  .gb-note-endnotes li { margin: 0 0 .55rem !important; break-inside: auto !important; }
+  .gb-note-endnotes__back { display: none !important; }
+}
