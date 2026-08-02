@@ -392,7 +392,7 @@
   <!-- Нил — стрелка течения (С→Ю зеркально = С) -->
   <path class="lbl-z2" d="M222,950 L218,960 L226,960 Z" fill="#4a80a0" opacity=".35"/>
   <!-- Иордан -->
-  <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
+  <text class="sea-label lbl-z2" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
   <!-- Иавок (Wadi Zarqa) — приток Иордана, место борьбы Иакова -->
   <path fill="none" stroke="#2d4a66" stroke-width="1.3" opacity=".5" stroke-linecap="round" class="lbl-z2"
     d="M688,720 C672,730 660,740 650,748"/>
@@ -490,7 +490,7 @@
       d="M730,1060 C720,990 712,940 705,890 C700,860 696,830 694,800 C692,760 694,720 700,680 C710,650 720,620 731,594">
   <animate attributeName="stroke-dashoffset" values="0;28" dur="4s" repeatCount="indefinite"/>
 </path>
-    <text class="region-label lbl-z1" x="710" y="870" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
+    <text class="region-label lbl-z2" x="710" y="870" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
 
     <!-- Way of Shur / Дорога Сура — Египет (Дельта) → Беэр-Шева → Ханаан -->
     <path fill="none" stroke="#a0c47f" stroke-width="2.2" stroke-dasharray="6 5" stroke-linecap="round" opacity=".65"
@@ -499,7 +499,7 @@
     <!-- Way of the Patriarchs / Дорога патриархов — хребтовая дорога Сихем → Беэр-Шева -->
     <path fill="none" stroke="#cdbd95" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" opacity=".55"
       d="M628,748 C626,758 625,768 624,782 C624,788 623,794 623,800 C620,810 616,820 610,829 C602,840 594,852 584,864"/>
-    <text class="region-label lbl-z1" x="604" y="808" font-size="5.5" fill="#cdbd95" opacity=".6" letter-spacing=".12em" transform="rotate(-78 604 808)">ДОРОГА ПАТРИАРХОВ</text>
+    <text class="region-label lbl-z2" x="604" y="808" font-size="5.5" fill="#cdbd95" opacity=".6" letter-spacing=".12em" transform="rotate(-78 604 808)">ДОРОГА ПАТРИАРХОВ</text>
     <text class="region-label lbl-z1" x="370" y="878" font-size="6.5" fill="#a0c47f" opacity=".7" letter-spacing=".2em" transform="rotate(-7 370 878)">ДОРОГА СУРА · דֶּרֶךְ שׁוּר</text>
   </g>
 
@@ -510,7 +510,7 @@
     <ellipse cx="628" cy="762" rx="18" ry="10" fill="url(#mountainHatch)"/>
   </g>
   <g id="mountains" opacity=".72" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Гевал и Геризим: парные контурные хребты, без фантазийных снежных пиктограмм. -->
+    <!-- Гевал и Геризим: парные контурные хребты; detail-only cartographic labels. -->
     <g class="lbl-z1" data-relief="ebal-gerizim">
       <path d="M607,734 C613,725 617,711 628,700 C639,710 644,724 649,734 Z"
         fill="rgba(145,126,87,.10)" stroke="#9b8d6a" stroke-width="1.15"/>
@@ -518,8 +518,8 @@
         stroke="#b19e72" stroke-width=".7" opacity=".72"/>
       <path d="M619,726 C623,719 625,714 628,711 C632,716 635,721 638,726"
         stroke="#c0ab7a" stroke-width=".45" opacity=".52"/>
-      <text x="628" y="697" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".12em">ГЕВАЛ</text>
-      <text x="628" y="692" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">עֵיבָל · 940 м</text>
+      <text class="lbl-z2" x="628" y="697" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".12em">ГЕВАЛ</text>
+      <text class="lbl-z2" x="628" y="692" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">עֵיבָל · 940 м</text>
 
       <path d="M607,774 C613,765 617,751 628,741 C639,751 644,764 649,774 Z"
         fill="rgba(145,126,87,.09)" stroke="#9b8d6a" stroke-width="1.1"/>
@@ -527,8 +527,8 @@
         stroke="#b19e72" stroke-width=".68" opacity=".7"/>
       <path d="M619,766 C623,759 625,755 628,752 C632,757 635,761 638,766"
         stroke="#c0ab7a" stroke-width=".42" opacity=".5"/>
-      <text x="628" y="781" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
-      <text x="628" y="786" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">גְּרִזִּים · 881 м</text>
+      <text class="lbl-z2" x="628" y="781" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+      <text class="lbl-z2" x="628" y="786" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">גְּרִזִּים · 881 м</text>
     </g>
   </g>
 

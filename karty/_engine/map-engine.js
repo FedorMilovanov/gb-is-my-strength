@@ -474,6 +474,7 @@ const MapEngine = (function() {
     const initialPlaceId = initialState.place;
     let activePlaceId = null;
     let activeStoryId = initialState.story;
+    container.setAttribute('data-active-story',activeStoryId);
     let touring = false;
     let tourStepIdx = 0;
     let rafId = null;
@@ -907,6 +908,7 @@ const MapEngine = (function() {
 .me-map #me-base-geo{opacity:.74;transition:opacity .35s ease}
 .me-map[data-map-theme="light"] #me-base-geo{opacity:.86}
 .me-map svg:not([data-zoom-bucket="overview"]) #me-base-geo .lbl-overview{display:none}
+.me-map[data-active-story]:not([data-active-story="main"]) #me-base-geo .lbl-overview{display:none}
 
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z1,
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z2,
@@ -2475,6 +2477,7 @@ container.appendChild(panel);
       const allMarkers = markersG.querySelectorAll('g[transform]');
       allMarkers.forEach(g => { g.style.opacity = '0'; g.style.transition = 'opacity .2s ease'; });
       activeStoryId=storyId;
+      container.setAttribute('data-active-story',activeStoryId);
       close();
       updateUrl();
       renderStories();
