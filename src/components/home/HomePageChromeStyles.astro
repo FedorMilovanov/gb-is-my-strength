@@ -60,6 +60,8 @@
   }
 
   body.home-page .h-navbar .mobile-controls > button {
+    position: relative;
+    inset: auto;
     width: 44px;
     min-width: 44px;
     height: 44px;
@@ -77,8 +79,20 @@
     width: 18px;
     height: 18px;
     overflow: visible;
-    stroke-width: 1.5;
+    fill: none;
     vector-effect: non-scaling-stroke;
+  }
+
+  body.home-page .h-navbar .mobile-controls > button svg :is(path, circle, line, polyline) {
+    stroke-width: 1.45;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* The crescent has more visual mass than the magnifier at the same numeric
+     stroke. Give it a slightly lighter optical weight instead of making the
+     search icon artificially heavy. */
+  body.home-page .h-navbar #themeToggle svg :is(path, circle, line) {
+    stroke-width: 1.32;
   }
 
   body.home-page .h-navbar .mobile-controls > button:is(:hover, :focus-visible) {
