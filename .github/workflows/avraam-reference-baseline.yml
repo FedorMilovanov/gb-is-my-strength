@@ -1,17 +1,6 @@
 name: Avraam Reference Baseline
 
 on:
-  push:
-    branches: ["agent/atlas-avraam-reference-contract-20260802"]
-    paths:
-      - "scripts/avraam-reference-baseline.mjs"
-      - ".github/workflows/avraam-reference-baseline.yml"
-      - "src/components/karty/avraam/**"
-      - "src/pages/karty/avraam/**"
-      - "karty/avraam/**"
-      - "karty/_engine/**"
-      - "css/**"
-      - "js/**"
   pull_request:
     branches: [main]
     paths:
