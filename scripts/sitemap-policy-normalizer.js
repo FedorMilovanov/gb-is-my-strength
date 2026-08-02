@@ -61,10 +61,7 @@ function canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords }
     if (!productionRoutes.has(route)) throw new Error(`${route}: sitemap policy includes a non-production route`);
     const item = manifestRoutes.get(route);
     if (!item) throw new Error(`${route}: sitemap policy requires a search-manifest item`);
-    const dateValue = item.modifiedTime || item.publishedTime;
-    const date = new Date(dateValue);
-    if (!dateValue || Number.isNaN(date.getTime())) throw new Error(`${route}: invalid sitemap date ${JSON.stringify(dateValue)}`);
-    entries.push({ route, item, date });
+    entries.push({ route, item });
   }
   entries.sort((left, right) => left.route.localeCompare(right.route, 'ru'));
   return entries;
@@ -119,7 +116,16 @@ function normalizeSitemap({ current, policyRegistry, manifest, productionRecords
   const base = String(siteUrl || manifest?.project?.url || DEFAULT_SITE_URL).replace(/\/+$/, '');
   const existing = parseExistingUrls(current, base);
   const required = canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords });
-  const missing = required.filter((entry) => !existing.has(entry.route));
+  const missing = required
+    .filter((entry) => !existing.has(entry.route))
+    .map((entry) => {
+      const dateValue = entry.item.modifiedTime || entry.item.publishedTime;
+      const date = new Date(dateValue);
+      if (!dateValue || Number.isNaN(date.getTime())) {
+        throw new Error(`${entry.route}: invalid sitemap date ${JSON.stringify(dateValue)}`);
+      }
+      return { ...entry, date };
+    });
   if (!missing.length) return { xml: current, missing: [] };
 
   const blocks = missing.map((entry) => renderUrlBlock(entry, base)).join('\n');
