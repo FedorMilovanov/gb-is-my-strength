@@ -1,0 +1,54 @@
+name: Atlas Avraam No-JS Scroll Materialize
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/atlas-avraam-nojs-scroll-materialize.py'
+      - '.github/workflows/atlas-avraam-nojs-scroll-materialize.yml'
+
+concurrency:
+  group: atlas-avraam-nojs-scroll-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Materialize no-JS scroll repair
+        run: python3 scripts/atlas-avraam-nojs-scroll-materialize.py
+
+      - name: Validate bounded product and witness scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/avraam-static-projection-witness.mjs
+          grep -Fq 'overflow-y: auto !important;' src/components/karty/_shared/MapRuntimeFallback.astro
+          grep -Fq 'document has no vertical scroll range for long fallback content' scripts/avraam-static-projection-witness.mjs
+          grep -Fq 'middle slice did not advance' scripts/avraam-static-projection-witness.mjs
+          git diff --check
+          expected=$'.github/workflows/atlas-avraam-nojs-scroll-materialize.yml\nscripts/atlas-avraam-nojs-scroll-materialize.py\nscripts/avraam-static-projection-witness.mjs\nsrc/components/karty/_shared/MapRuntimeFallback.astro'
+          actual="$(git status --short | sed -E 's/^.. //' | sort)"
+          [[ "$actual" == "$expected" ]]
+
+      - name: Commit permanent product and witness repair only
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/components/karty/_shared/MapRuntimeFallback.astro scripts/avraam-static-projection-witness.mjs
+          git add -u scripts/atlas-avraam-nojs-scroll-materialize.py .github/workflows/atlas-avraam-nojs-scroll-materialize.yml
+          git commit -m 'fix(atlas): keep no-JS projection vertically scrollable'
+          git push origin "HEAD:${HEAD_REF}"
