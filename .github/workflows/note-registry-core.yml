@@ -12,8 +12,10 @@ on:
       - 'src/components/article-pilots/hermenevtika/HermenevtikaBody.astro'
       - 'src/components/article-pilots/krajne/KrajneBody.astro'
       - 'scripts/lib/note-registry.mjs'
+      - 'scripts/lib/html-surface-contract.js'
       - 'scripts/note-registry-projector.mjs'
       - 'scripts/note-registry-contract-test.mjs'
+      - 'scripts/html-surface-contract-test.js'
       - 'scripts/project-relations-to-dist.mjs'
       - '.github/workflows/note-registry-core.yml'
   workflow_dispatch:
@@ -51,20 +53,23 @@ jobs:
           set -euo pipefail
           git fetch origin "${{ github.base_ref }}" --depth=1
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/note-registry-files.txt
-          pattern='^(data/note-registry\.schema\.json|data/note-registry-migration-inventory\.json|reports/salvage/A03-note-registry-ownership\.json|research/A03_NOTE_REGISTRY_2026-08-02\.md|src/runtime/note-registry\.css|src/components/article-pilots/hermenevtika/HermenevtikaBody\.astro|src/components/article-pilots/krajne/KrajneBody\.astro|scripts/lib/note-registry\.mjs|scripts/note-registry-projector\.mjs|scripts/note-registry-contract-test\.mjs|scripts/project-relations-to-dist\.mjs|\.github/workflows/note-registry-core\.yml)$'
+          pattern='^(data/note-registry\.schema\.json|data/note-registry-migration-inventory\.json|reports/salvage/A03-note-registry-ownership\.json|research/A03_NOTE_REGISTRY_2026-08-02\.md|src/runtime/note-registry\.css|src/components/article-pilots/hermenevtika/HermenevtikaBody\.astro|src/components/article-pilots/krajne/KrajneBody\.astro|scripts/lib/note-registry\.mjs|scripts/lib/html-surface-contract\.js|scripts/note-registry-projector\.mjs|scripts/note-registry-contract-test\.mjs|scripts/html-surface-contract-test\.js|scripts/project-relations-to-dist\.mjs|\.github/workflows/note-registry-core\.yml)$'
           unexpected="$(grep -Ev "$pattern" /tmp/note-registry-files.txt || true)"
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected files in NoteRegistry core:' >&2
             printf '%s\n' "$unexpected" >&2
             exit 1
           fi
-          test "$(wc -l < /tmp/note-registry-files.txt)" -le 12
+          test "$(wc -l < /tmp/note-registry-files.txt)" -le 14
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run isolated NoteRegistry contract
         run: node scripts/note-registry-contract-test.mjs
+
+      - name: Run HTML attribute-boundary regression
+        run: node scripts/html-surface-contract-test.js
 
       - name: Build exact-head production-like dist
         env:
