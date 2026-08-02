@@ -1,4 +1,4 @@
-const VERSION = 8;
+const VERSION = 9;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
@@ -60,6 +60,7 @@ function scheduleClose(delay = 220) {
   closeTimer = window.setTimeout(() => {
     closeTimer = 0;
     if (active !== record) return;
+    if (record.anchorHovered || record.tipHovered) return;
     const focused = document.activeElement;
     if (focused === record.anchor || record.tip.contains(focused)) return;
     if (containsInteractive(record, currentPointerTarget())) return;
@@ -209,6 +210,7 @@ function openTooltip(anchor, reason = 'open') {
     active.reason = reason;
     active.pointerBaseline = pointerEpoch;
     if (reason === 'hover') {
+      active.anchorHovered = true;
       active.hoverSettled = false;
       settleHover(active);
     }
@@ -233,6 +235,8 @@ function openTooltip(anchor, reason = 'open') {
     reason,
     hoverSettled: reason !== 'hover',
     pointerBaseline: pointerEpoch,
+    anchorHovered: reason === 'hover' || anchor.matches(':hover'),
+    tipHovered: false,
   };
   position(tip, anchor);
   window.requestAnimationFrame(() => {
@@ -242,10 +246,18 @@ function openTooltip(anchor, reason = 'open') {
 
   if (tip.dataset.gbInteractionBound !== '1') {
     tip.dataset.gbInteractionBound = '1';
-    tip.addEventListener('pointerenter', cancelClose);
-    tip.addEventListener('mouseenter', cancelClose);
-    tip.addEventListener('pointerleave', () => scheduleClose());
-    tip.addEventListener('mouseleave', () => scheduleClose());
+    const enterTip = () => {
+      if (active?.tip === tip) active.tipHovered = true;
+      cancelClose();
+    };
+    const leaveTip = () => {
+      if (active?.tip === tip) active.tipHovered = false;
+      scheduleClose();
+    };
+    tip.addEventListener('pointerenter', enterTip);
+    tip.addEventListener('mouseenter', enterTip);
+    tip.addEventListener('pointerleave', leaveTip);
+    tip.addEventListener('mouseleave', leaveTip);
     tip.addEventListener('click', (event) => event.stopPropagation());
   }
 
@@ -281,9 +293,11 @@ function initializeAnchor(anchor) {
   const openHover = (event) => {
     if (event.pointerType === 'touch' || mobileMode()) return;
     openTooltip(anchor, 'hover');
+    if (active?.anchor === anchor) active.anchorHovered = true;
   };
   const leaveHover = (event) => {
     if (event.pointerType === 'touch' || mobileMode()) return;
+    if (active?.anchor === anchor) active.anchorHovered = false;
     if (containsInteractive(active, event.relatedTarget)) {
       cancelClose();
       return;
@@ -339,7 +353,11 @@ export function installArticleTooltips() {
   document.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch' || !recordPointerMovement(event)) return;
     if (!active || active.mobile || active.reason !== 'hover') return;
-    if (containsInteractive(active, event.target)) cancelClose();
+    const overAnchor = active.anchor.contains(event.target);
+    const overTip = active.tip.contains(event.target);
+    active.anchorHovered = overAnchor;
+    active.tipHovered = overTip;
+    if (overAnchor || overTip) cancelClose();
     else scheduleClose();
   }, true);
   document.addEventListener('pointerdown', (event) => {
