@@ -37,6 +37,11 @@ const principles = [
 </section>
 
 <style is:global>
+  body.home-page #main-content .h-about {
+    border-top: 0;
+    border-bottom: 0;
+  }
+
   body.home-page #main-content .h-about__copy h2 {
     max-width: 720px;
     text-wrap: balance;
@@ -52,8 +57,16 @@ const principles = [
     color: var(--h-gold);
   }
 
+  body.home-page #main-content .h-about-principles {
+    display: grid;
+    gap: clamp(20px, 2.2vw, 28px);
+    border-top: 0;
+  }
+
   body.home-page #main-content .h-about-principles li {
     position: relative;
+    padding-block: 0;
+    border-bottom: 0;
   }
 
   body.home-page #main-content .h-about-principles li::before {
@@ -127,7 +140,6 @@ const principles = [
     }
 
     body.home-page #main-content .h-about-principles {
-      display: grid;
       gap: 24px;
       padding-inline: 2px;
       border-top: 0;
