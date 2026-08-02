@@ -41,6 +41,29 @@ function record(engine, profile, contract, ok, detail = '') {
   if (!ok) failures.push(`${engine}/${profile}/${contract}: ${detail}`);
 }
 
+async function captureEvidenceScreenshot(page, engine, profileId) {
+  const dimensions = await page.evaluate(() => ({
+    width: Math.max(document.documentElement.scrollWidth, document.documentElement.clientWidth),
+    height: Math.max(document.documentElement.scrollHeight, document.documentElement.clientHeight),
+    viewportHeight: window.innerHeight,
+  }));
+  const primaryPath = join(OUT, `${engine}-${profileId}.png`);
+  if (dimensions.width <= 30_000 && dimensions.height <= 30_000) {
+    await page.screenshot({ path: primaryPath, fullPage: true });
+    return;
+  }
+
+  // WebKit and Chromium reject screenshots above 32,767 px on either axis.
+  // Preserve deterministic visual evidence without weakening any page contract:
+  // capture the initial viewport and a second viewport at the document tail.
+  await page.screenshot({ path: primaryPath });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(100);
+  await page.screenshot({ path: join(OUT, `${engine}-${profileId}-tail.png`) });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  record(engine, `${profileId}-js`, 'segmented-screenshot', true, JSON.stringify(dimensions));
+}
+
 async function inspect(browserType, engine, profile) {
   const browser = await browserType.launch();
   try {
@@ -95,7 +118,7 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'console-clean', consoleErrors.length === 0, consoleErrors.join(' | '));
       record(engine, `${profile.id}-${mode}`, 'page-clean', pageErrors.length === 0, pageErrors.join(' | '));
       if (javaScriptEnabled) {
-        await page.screenshot({ path: join(OUT, `${engine}-${profile.id}.png`), fullPage: true });
+        await captureEvidenceScreenshot(page, engine, profile.id);
       }
       await context.close();
     }
