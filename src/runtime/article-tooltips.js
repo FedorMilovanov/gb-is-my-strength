@@ -1,4 +1,4 @@
-const VERSION = 8;
+const VERSION = 9;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 
