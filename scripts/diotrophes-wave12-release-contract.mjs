@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
 const PRE_WAVE12 = '2273b8c930eebf383d429b917d3636bc28a80bae';
+const WAVE12_RELEASE = '8f17085dc8411cffbcb5a4dcd2f8fc5db9c30a97';
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
 const paths = {
   manifest: 'data/diotrophes-wave12-release-manifest.json',
@@ -36,19 +37,18 @@ const json = (path) => {
   try { return JSON.parse(text(path)); }
   catch (error) { errors.push(`${path}: invalid JSON: ${error.message}`); return {}; }
 };
-const gitShow = (path) => {
+const gitShow = (ref, path, label) => {
   try {
-    return execFileSync('git', ['show', `${PRE_WAVE12}:${path}`], { encoding:'utf8' });
+    return execFileSync('git', ['show', `${ref}:${path}`], { encoding: 'utf8' });
   } catch (error) {
-    errors.push(`cannot read ${path} at pre-Wave12 ${PRE_WAVE12}: ${error.stderr?.toString().trim() || error.message}`);
+    errors.push(`cannot read ${path} at ${label} ${ref}: ${error.stderr?.toString().trim() || error.message}`);
     return '';
   }
 };
-const gitShowJson = (path) => {
-  try { return JSON.parse(gitShow(path)); }
-  catch (error) { errors.push(`${path} at ${PRE_WAVE12}: invalid JSON: ${error.message}`); return {}; }
+const gitShowJson = (ref, path, label) => {
+  try { return JSON.parse(gitShow(ref, path, label)); }
+  catch (error) { errors.push(`${path} at ${label} ${ref}: invalid JSON: ${error.message}`); return {}; }
 };
-const stable = (value) => JSON.stringify(value, Object.keys(value ?? {}).sort());
 const deepEqual = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const preserveEntries = (before, after, label) => {
   for (const [key, oldValue] of Object.entries(before ?? {})) {
@@ -147,53 +147,60 @@ requireValue(seriesLandingText.includes('data-wave12-series-card="true"') && ser
 requireValue(seriesHeadText.includes('numberOfItems: 2') && seriesHeadText.includes('diotrefy-nashego-vremeni'), 'series structured data drift');
 requireValue(seriesHeadText.includes('feed-pastor-series.xml'), 'series landing does not advertise RSS shard');
 
-// Semantic preservation of every pre-Wave12 registry entry.
-const previousOwnership = gitShowJson(paths.ownership);
-const previousMatrix = gitShowJson(paths.matrix);
-const previousPolicy = gitShowJson(paths.searchPolicy);
-const previousSearch = gitShowJson(paths.searchManifest);
-const previousSeries = gitShowJson(paths.seriesData);
-preserveEntries(previousOwnership.routes, ownership.routes, 'page ownership');
-preserveEntries(previousMatrix.routes, matrix.routes, 'migration matrix');
-preserveEntries(previousPolicy.routes, searchPolicy.routes, 'search policy');
+// Prove Wave 12 itself preserved every prior registry entry at its immutable release snapshot.
+// Later lanes are validated by their own owners and must not be retroactively attributed to Wave 12.
+const previousOwnership = gitShowJson(PRE_WAVE12, paths.ownership, 'pre-Wave12');
+const previousMatrix = gitShowJson(PRE_WAVE12, paths.matrix, 'pre-Wave12');
+const previousPolicy = gitShowJson(PRE_WAVE12, paths.searchPolicy, 'pre-Wave12');
+const previousSearch = gitShowJson(PRE_WAVE12, paths.searchManifest, 'pre-Wave12');
+const previousSeries = gitShowJson(PRE_WAVE12, paths.seriesData, 'pre-Wave12');
+const releasedOwnership = gitShowJson(WAVE12_RELEASE, paths.ownership, 'Wave12 release');
+const releasedMatrix = gitShowJson(WAVE12_RELEASE, paths.matrix, 'Wave12 release');
+const releasedPolicy = gitShowJson(WAVE12_RELEASE, paths.searchPolicy, 'Wave12 release');
+const releasedSearch = gitShowJson(WAVE12_RELEASE, paths.searchManifest, 'Wave12 release');
+const releasedSeries = gitShowJson(WAVE12_RELEASE, paths.seriesData, 'Wave12 release');
+preserveEntries(previousOwnership.routes, releasedOwnership.routes, 'page ownership');
+preserveEntries(previousMatrix.routes, releasedMatrix.routes, 'migration matrix');
+preserveEntries(previousPolicy.routes, releasedPolicy.routes, 'search policy');
 
 const previousSearchItems = previousSearch.items ?? [];
+const releasedSearchItems = releasedSearch.items ?? [];
 const previousSearchIds = new Set(previousSearchItems.map((item) => item.id));
-const currentSearchIds = new Set(searchItems.map((item) => item.id));
+const releasedSearchIds = new Set(releasedSearchItems.map((item) => item.id));
 for (const oldItem of previousSearchItems) {
-  const current = searchItems.find((item) => item.id === oldItem.id);
-  requireValue(Boolean(current), `search manifest lost pre-Wave12 item: ${oldItem.id}`);
-  if (!current) continue;
+  const releasedItem = releasedSearchItems.find((item) => item.id === oldItem.id);
+  requireValue(Boolean(releasedItem), `search manifest lost pre-Wave12 item at release: ${oldItem.id}`);
+  if (!releasedItem) continue;
   if (oldItem.id === 'pastor-series') {
     const allowed = new Set(['description','readTime','modifiedTime']);
     const oldStable = Object.fromEntries(Object.entries(oldItem).filter(([key]) => !allowed.has(key)));
-    const currentStable = Object.fromEntries(Object.entries(current).filter(([key]) => !allowed.has(key)));
-    requireValue(deepEqual(currentStable, oldStable), 'search manifest changed non-authorized pastor-series fields');
+    const releasedStable = Object.fromEntries(Object.entries(releasedItem).filter(([key]) => !allowed.has(key)));
+    requireValue(deepEqual(releasedStable, oldStable), 'search manifest release changed non-authorized pastor-series fields');
   } else {
-    requireValue(deepEqual(current, oldItem), `search manifest changed pre-Wave12 item: ${oldItem.id}`);
+    requireValue(deepEqual(releasedItem, oldItem), `search manifest release changed pre-Wave12 item: ${oldItem.id}`);
   }
 }
-requireValue(currentSearchIds.size === previousSearchIds.size + 1, `search manifest must add exactly one item; before=${previousSearchIds.size}, now=${currentSearchIds.size}`);
+requireValue(releasedSearchIds.size === previousSearchIds.size + 1, `search manifest release must add exactly one item; before=${previousSearchIds.size}, release=${releasedSearchIds.size}`);
 
 for (const [seriesId, oldSeries] of Object.entries(previousSeries)) {
-  const currentSeries = seriesData[seriesId];
-  requireValue(Boolean(currentSeries), `series registry lost series: ${seriesId}`);
-  if (!currentSeries) continue;
+  const releasedSeriesEntry = releasedSeries[seriesId];
+  requireValue(Boolean(releasedSeriesEntry), `series registry lost series at release: ${seriesId}`);
+  if (!releasedSeriesEntry) continue;
   if (seriesId !== 'pastor-series') {
-    requireValue(deepEqual(currentSeries, oldSeries), `series registry changed unrelated series: ${seriesId}`);
+    requireValue(deepEqual(releasedSeriesEntry, oldSeries), `series registry release changed unrelated series: ${seriesId}`);
     continue;
   }
-  requireValue(currentSeries.title === oldSeries.title && currentSeries.baseUrl === oldSeries.baseUrl, 'pastor-series identity drift');
+  requireValue(releasedSeriesEntry.title === oldSeries.title && releasedSeriesEntry.baseUrl === oldSeries.baseUrl, 'pastor-series release identity drift');
   for (const oldPart of oldSeries.parts ?? []) {
-    const currentPart = currentSeries.parts?.find((part) => part.slug === oldPart.slug);
-    requireValue(deepEqual(currentPart, oldPart), `pastor-series changed pre-Wave12 part: ${oldPart.slug}`);
+    const releasedPart = releasedSeriesEntry.parts?.find((part) => part.slug === oldPart.slug);
+    requireValue(deepEqual(releasedPart, oldPart), `pastor-series release changed pre-Wave12 part: ${oldPart.slug}`);
   }
-  requireValue((currentSeries.parts?.length ?? 0) === (oldSeries.parts?.length ?? 0) + 1, 'pastor-series must add exactly one part');
+  requireValue((releasedSeriesEntry.parts?.length ?? 0) === (oldSeries.parts?.length ?? 0) + 1, 'pastor-series release must add exactly one part');
 }
 
-const previousCatalogHrefs = hrefs(gitShow(paths.catalog));
-const currentCatalogHrefs = hrefs(catalogText);
-for (const href of previousCatalogHrefs) requireValue(currentCatalogHrefs.has(href), `articles catalog lost pre-Wave12 href: ${href}`);
+const previousCatalogHrefs = hrefs(gitShow(PRE_WAVE12, paths.catalog, 'pre-Wave12'));
+const releasedCatalogHrefs = hrefs(gitShow(WAVE12_RELEASE, paths.catalog, 'Wave12 release'));
+for (const href of previousCatalogHrefs) requireValue(releasedCatalogHrefs.has(href), `articles catalog release lost pre-Wave12 href: ${href}`);
 for (const forbidden of ['Редакционный черновик · PUBLICATION_HOLD', 'ещё не зарегистрирован как публичный маршрут']) {
   requireValue(!publishedText.includes(forbidden), `published wrapper contains draft claim: ${forbidden}`);
 }
@@ -206,4 +213,4 @@ if (errors.length) {
   for (const error of errors) console.error(`  - ${error}`);
   process.exit(1);
 }
-console.log(`✅ Diotrophes Wave 12 release passed: ${previousSearchIds.size} prior search items preserved semantically, 21 cases, 181 sources, 73 reader links, 0 new direct quotes`);
+console.log(`✅ Diotrophes Wave 12 release passed: immutable snapshot ${WAVE12_RELEASE.slice(0, 8)} preserved ${previousSearchIds.size} prior search items semantically; current Wave 12 surfaces remain authoritative; 21 cases, 181 sources, 73 reader links, 0 new direct quotes`);
