@@ -15,6 +15,7 @@ on:
       - 'scripts/lib/html-surface-contract.js'
       - 'scripts/note-registry-projector.mjs'
       - 'scripts/note-registry-contract-test.mjs'
+      - 'scripts/note-registry-firefox-contract.mjs'
       - 'scripts/html-surface-contract-test.js'
       - 'scripts/project-relations-to-dist.mjs'
       - '.github/workflows/note-registry-core.yml'
@@ -30,7 +31,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
 
     steps:
       - name: Checkout exact head
@@ -53,14 +54,14 @@ jobs:
           set -euo pipefail
           git fetch origin "${{ github.base_ref }}" --depth=1
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/note-registry-files.txt
-          pattern='^(data/note-registry\.schema\.json|data/note-registry-migration-inventory\.json|reports/salvage/A03-note-registry-ownership\.json|research/A03_NOTE_REGISTRY_2026-08-02\.md|src/runtime/note-registry\.css|src/components/article-pilots/hermenevtika/HermenevtikaBody\.astro|src/components/article-pilots/krajne/KrajneBody\.astro|scripts/lib/note-registry\.mjs|scripts/lib/html-surface-contract\.js|scripts/note-registry-projector\.mjs|scripts/note-registry-contract-test\.mjs|scripts/html-surface-contract-test\.js|scripts/project-relations-to-dist\.mjs|\.github/workflows/note-registry-core\.yml)$'
+          pattern='^(data/note-registry\.schema\.json|data/note-registry-migration-inventory\.json|reports/salvage/A03-note-registry-ownership\.json|research/A03_NOTE_REGISTRY_2026-08-02\.md|src/runtime/note-registry\.css|src/components/article-pilots/hermenevtika/HermenevtikaBody\.astro|src/components/article-pilots/krajne/KrajneBody\.astro|scripts/lib/note-registry\.mjs|scripts/lib/html-surface-contract\.js|scripts/note-registry-projector\.mjs|scripts/note-registry-contract-test\.mjs|scripts/note-registry-firefox-contract\.mjs|scripts/html-surface-contract-test\.js|scripts/project-relations-to-dist\.mjs|\.github/workflows/note-registry-core\.yml)$'
           unexpected="$(grep -Ev "$pattern" /tmp/note-registry-files.txt || true)"
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected files in NoteRegistry core:' >&2
             printf '%s\n' "$unexpected" >&2
             exit 1
           fi
-          test "$(wc -l < /tmp/note-registry-files.txt)" -le 14
+          test "$(wc -l < /tmp/note-registry-files.txt)" -le 15
 
       - name: Install dependencies
         run: npm ci
@@ -101,6 +102,12 @@ jobs:
             exit 1
           fi
 
+      - name: Install Playwright Firefox
+        run: npx playwright install --with-deps firefox
+
+      - name: Verify Hermenevtika NoteRegistry in Firefox
+        run: node scripts/note-registry-firefox-contract.mjs
+
       - name: Upload exact-head NoteRegistry evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -112,6 +119,7 @@ jobs:
             reports/salvage/A03-note-registry-ownership.json
             reports/a03-note-registry.json
             reports/a03-note-registry.md
+            reports/note-registry-firefox-contract.json
             dist/data/note-registry.json
             dist/css/note-registry.css
           if-no-files-found: error
