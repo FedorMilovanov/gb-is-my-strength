@@ -24,6 +24,8 @@ jobs:
   capture:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -65,7 +67,6 @@ jobs:
         env:
           AUDIT_BASE: http://127.0.0.1:8090
           AVRAAM_BASELINE_OUT: reports/atlas/avraam-reference-baseline
-          HEAD_SHA: ${{ github.sha }}
         run: node scripts/avraam-reference-baseline.mjs
 
       - name: Record environment manifest
@@ -74,7 +75,7 @@ jobs:
         run: |
           mkdir -p reports/atlas/avraam-reference-baseline
           {
-            echo "head_sha=${GITHUB_SHA}"
+            echo "head_sha=${HEAD_SHA}"
             echo "run_id=${GITHUB_RUN_ID}"
             echo "runner_os=${RUNNER_OS}"
             echo "runner_arch=${RUNNER_ARCH}"
