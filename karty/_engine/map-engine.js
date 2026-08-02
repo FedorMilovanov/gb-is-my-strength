@@ -2975,7 +2975,10 @@ container.appendChild(panel);
     function animateMarkersIn() {
       const allMarkers = markersG.querySelectorAll('g[transform]');
       allMarkers.forEach((g, i) => {
-        if(g.getAttribute('data-me-layer-hidden')==='1')return;
+        if(g.getAttribute('data-me-layer-hidden')==='1'||g.getAttribute('data-story-active')==='0'){
+          g.style.opacity='0';
+          return;
+        }
         g.style.opacity = '0';
         g.style.transform = g.getAttribute('transform') + ' scale(0.3)';
         g.style.transition = `opacity .4s ${i * 50}ms ease-out, transform .5s ${i * 60}ms cubic-bezier(.34,1.56,.64,1)`;
