@@ -62,7 +62,7 @@ requireValue(!rootSitemap.includes('PUBLICATION_HOLD'), 'root sitemap leaked pub
 
 const rssOutput = runCheck(paths.rssNormalizer);
 const sitemapOutput = runCheck(paths.sitemapNormalizer);
-requireValue(rssOutput.includes('RSS feed matches deterministic projection'), 'RSS normalizer success marker missing');
+requireValue(rssOutput.includes('feed.xml exactly matches route policy and search manifest'), 'RSS normalizer success marker missing');
 requireValue(sitemapOutput.includes('sitemap.xml contains every route required by policy'), 'sitemap normalizer success marker missing');
 
 if (errors.length) {
