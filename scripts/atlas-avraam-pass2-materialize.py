@@ -5,22 +5,33 @@ root=Path('.')
 engine=root/'karty/_engine/map-engine.js'
 harness=root/'scripts/avraam-reference-baseline.mjs'
 s=engine.read_text('utf-8')
-if 'Premium cartographic light palette' in s and 'mobile story strip fits' in s:
-    print('PASS51 ALREADY MATERIALIZED')
-    raise SystemExit(0)
 
-def rep(text,old,new,label,count=1):
-    n=text.count(old)
-    if n<count:
+MARKER='Premium cartographic light palette'
+MOBILE_MARKER='mobile story strip fits all five controls'
+
+def ensure_regex(text,pattern,replacement,label,flags=0):
+    if replacement in text:
+        return text
+    text,n=re.subn(pattern,replacement,text,count=1,flags=flags)
+    if n!=1:
         raise SystemExit(f'MISSING {label}: {n}')
-    return text.replace(old,new,count)
+    return text
 
-# The light theme is a real cartographic palette, not a global sepia wash.
-light_pattern=r"light:Object\.freeze\(\{id:'light'.*?\}\)"
+def ensure_exact(text,old,new,label):
+    if new in text:
+        return text
+    if old not in text:
+        raise SystemExit(f'MISSING {label}: 0')
+    return text.replace(old,new,1)
+
+# The light theme is an independent cartographic palette, not a global wash.
 light_replacement="light:Object.freeze({id:'light',bg:'#e4d8c1',panelBg:'rgba(250,246,236,.98)',text:'#2e2418',muted:'#6b5b47',accent:'#8b5a0b',controlBg:'rgba(255,250,239,.94)',border:'rgba(72,51,27,.25)',labelBg:'rgba(255,249,235,.92)',labelText:'#2d2317',baseFill:'#d7c5a4',baseOpacity:'0.22',svgFilter:'none'})"
-s,n=re.subn(light_pattern,light_replacement,s,count=1)
-if n!=1:
-    raise SystemExit(f'MISSING light palette object: {n}')
+s=ensure_regex(
+    s,
+    r"light:Object\.freeze\(\{id:'light'.*?\}\)",
+    light_replacement,
+    'light palette object',
+)
 
 light_css='''
 /* Premium cartographic light palette: independent land, water, labels and chrome. */
@@ -39,47 +50,88 @@ light_css='''
 .me-map[data-map-theme="light"] .me-zoom-btn:hover{background:#fff8e9;color:#7a4d05;border-color:#a77a25}
 .me-map[data-map-theme="light"] .me-scale{color:#655846}
 '''
-s=rep(s,'/* Semantic zoom: the authored base already marks regional/detail objects with',light_css+'\n/* Semantic zoom: the authored base already marks regional/detail objects with','light cartographic css')
+if MARKER not in s:
+    anchor='/* Semantic zoom: the authored base already marks regional/detail objects with'
+    if anchor not in s:
+        raise SystemExit('MISSING semantic zoom anchor')
+    s=s.replace(anchor,light_css+'\n'+anchor,1)
 
-# Stable screenshot and quieter UX: the icon/aria state is enough feedback.
-s=rep(s,
-"themeBtn.addEventListener('click',()=>applyMapTheme(activeTheme==='dark'?'light':'dark'));",
-"themeBtn.addEventListener('click',()=>applyMapTheme(activeTheme==='dark'?'light':'dark',true,false));",
-'theme toggle quiet')
+# Theme changes are quiet; aria/icon state supplies feedback.
+theme_target="themeBtn.addEventListener('click',()=>applyMapTheme(activeTheme==='dark'?'light':'dark',true,false));"
+if theme_target not in s:
+    s,n=re.subn(
+        r"themeBtn\.addEventListener\('click',\(\)=>applyMapTheme\(activeTheme==='dark'\?'light':'dark'(?:,[^)]]*)?\)\);",
+        theme_target,
+        s,
+        count=1,
+    )
+    if n!=1:
+        raise SystemExit(f'MISSING theme toggle listener: {n}')
 
-# SVG place labels must follow the palette instead of staying cream on cream.
-s=rep(s,
-"label.setAttribute('fill',inStory?'#f4eedd':'#555');",
-"label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'var(--me-muted,#555)');",
-'label text palette')
-s=rep(s,
-"leaderLine.setAttribute('stroke','rgba(244,238,221,.38)');",
-"leaderLine.setAttribute('stroke','var(--me-label-text,rgba(244,238,221,.38))');",
-'leader line palette')
+# Place-label geometry follows the active palette.
+label_target="label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'var(--me-muted,#666)');"
+if label_target not in s:
+    label_patterns=[
+        "label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'#666');",
+        "label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'#555');",
+        "label.setAttribute('fill',inStory?'#f4eedd':'#555');",
+    ]
+    for candidate in label_patterns:
+        if candidate in s:
+            s=s.replace(candidate,label_target,1)
+            break
+    else:
+        raise SystemExit('MISSING place label fill')
+
+leader_target="leaderLine.setAttribute('stroke','var(--me-label-text,rgba(244,238,221,.38))');"
+s=ensure_exact(
+    s,
+    "leaderLine.setAttribute('stroke','rgba(244,238,221,.38)');",
+    leader_target,
+    'leader line palette',
+)
 
 # mobile story strip fits all five controls inside the viewport; no clipped
-# pseudo-carousel button and no wasted 52px second offset.
-s=rep(s,
-"  .me-stories{position:relative;top:auto;right:auto;max-width:none;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;margin-top:52px;padding:0 18px 6px 0;scrollbar-width:none;overscroll-behavior-x:contain;mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}",
-"  .me-header>div:first-child{height:44px}\n  .me-stories{position:relative;top:auto;right:auto;max-width:none;display:flex;flex-wrap:nowrap;overflow:hidden;gap:4px;margin-top:8px;padding:0;scrollbar-width:none;overscroll-behavior-x:none;mask-image:none}",
-'mobile story strip')
-s=rep(s,
-"  .me-story-chip{flex:0 0 auto}",
-"  .me-story-chip{flex:1 1 0;min-width:0;padding:8px 4px;font-size:9px;letter-spacing:-.015em}",
-'mobile story chip fit')
+# pseudo-carousel button and no wasted 52px offset.
+mobile_target="  .me-header>div:first-child{height:44px}\n  .me-stories{position:relative;top:auto;right:auto;max-width:none;display:flex;flex-wrap:nowrap;overflow:hidden;gap:4px;margin-top:8px;padding:0;scrollbar-width:none;overscroll-behavior-x:none;mask-image:none}"
+if mobile_target not in s:
+    s,n=re.subn(
+        r"  \.me-stories\{position:relative;top:auto;right:auto;max-width:none;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;margin-top:52px;padding:0 18px 6px 0;scrollbar-width:none;overscroll-behavior-x:contain;mask-image:linear-gradient\(to right,#000 calc\(100% - 28px\),transparent\)\}",
+        mobile_target,
+        s,
+        count=1,
+    )
+    if n!=1:
+        raise SystemExit(f'MISSING mobile story strip: {n}')
+
+chip_target="  .me-story-chip{flex:1 1 0;min-width:0;padding:8px 4px;font-size:9px;letter-spacing:-.015em}"
+if chip_target not in s:
+    s,n=re.subn(r"  \.me-story-chip\{flex:0 0 auto\}",chip_target,s,count=1)
+    if n!=1:
+        raise SystemExit(f'MISSING mobile story chip: {n}')
+
+# Durable source marker for reviewers and idempotence.
+if MOBILE_MARKER not in s:
+    s=s.replace('/* mobile story strip fits all five controls inside the viewport; no clipped',
+                '/* mobile story strip fits all five controls inside the viewport; no clipped',1)
+
 engine.write_text(s,'utf-8')
 
-# The surface evidence must assert the active theme rather than only geometry.
+# Surface evidence must prove the theme state, not only clickability.
 h=harness.read_text('utf-8')
-h=rep(h,
-"""      result.surfaces.themeAlternative=await collectGeometry(page,`${viewport.id}:theme-alt`);
+theme_gate="result.surfaces.themeAlternative.theme=await page.locator('.me-map').first().getAttribute('data-map-theme');"
+if theme_gate not in h:
+    old="""      result.surfaces.themeAlternative=await collectGeometry(page,`${viewport.id}:theme-alt`);
       if(result.surfaces.themeAlternative.counts.offscreenControls>0)result.verificationFailures.push(`theme-alt offscreen controls: ${result.surfaces.themeAlternative.counts.offscreenControls}`);
-""",
-"""      result.surfaces.themeAlternative=await collectGeometry(page,`${viewport.id}:theme-alt`);
+"""
+    new="""      result.surfaces.themeAlternative=await collectGeometry(page,`${viewport.id}:theme-alt`);
       result.surfaces.themeAlternative.theme=await page.locator('.me-map').first().getAttribute('data-map-theme');
       if(result.surfaces.themeAlternative.theme!=='light')result.verificationFailures.push(`theme toggle did not reach light palette: ${result.surfaces.themeAlternative.theme}`);
       if(result.surfaces.themeAlternative.counts.offscreenControls>0)result.verificationFailures.push(`theme-alt offscreen controls: ${result.surfaces.themeAlternative.counts.offscreenControls}`);
-""",
-'theme state gate')
+"""
+    if old not in h:
+        raise SystemExit('MISSING theme state gate anchor')
+    h=h.replace(old,new,1)
 harness.write_text(h,'utf-8')
+
 print('PASS51 APPLIED')
