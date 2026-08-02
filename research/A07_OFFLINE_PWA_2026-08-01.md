@@ -1,23 +1,42 @@
 # Agent 07 — честный Offline/PWA
 
-**Дата:** 2026-08-01  
+**Первичная дата:** 2026-08-01  
+**Current-main recovery:** 2026-08-03  
 **Решение:** `REBUILD_CURRENT_MAIN`  
-**Статус:** `IMPLEMENTATION_IN_PROGRESS`  
+**Статус:** `CURRENT_MAIN_IMPLEMENTED_PENDING_EXACT_HEAD_CI`  
+**Current source anchor / rollback:** `29a781d97b7915cf0993ede379d96ea6fd5e261f`  
+**Recovery source:** `archive/offline-pwa-working-20260801` — selective recovery only  
 **Production claim:** `no`
+
+## Current-main reverify
+
+Перед восстановлением реализации семь прежних дефектов повторно проверены на exact source anchor `29a781d97b7915cf0993ede379d96ea6fd5e261f` и классифицированы как `CONFIRMED-CURRENT`:
+
+- install всё ещё использовал `Promise.allSettled`, поэтому новый SW мог активироваться с частичным precache;
+- HTML navigation всё ещё использовал stale-while-revalidate, поэтому старый cache выигрывал у свежего online response;
+- versioned `?v=` request не мог использовать current unversioned precache offline;
+- `/data/*.json` попадал в cache-first static strategy и мог сохранять устаревшие данные до cache bump;
+- runtime eviction опирался на in-memory `Map`, теряя порядок после worker restart;
+- `CACHE_ARTICLE` и background sync оставались orphan API без source producer/state owner;
+- offline toast обещал доступность «кэшированных статей», не проверяя текущий route.
+
+Archive-ветка отставала от current `main` более чем на сто коммитов и не сливалась. На новую canonical branch перенесены только девять semantic-файлов A07:
+
+1. `.github/workflows/deploy-candidate-contract.yml`;
+2. `data/offline-route-matrix.json`;
+3. `js/sw-register.js`;
+4. `migration/sw-cache-version-baseline.json`;
+5. этот research-документ;
+6. `scripts/reader-state-regression-test.js`;
+7. `scripts/sw-dist-readiness-audit.js`;
+8. `scripts/sw-offline-browser-test.mjs`;
+9. `sw.js`.
+
+Generated HTML, Astro components, asset-revision projections и другие архивные файлы не восстанавливались.
 
 ## Почему runtime не удалён
 
 Root Service Worker и offline toast реально подключены к публичным страницам. Полное удаление убрало бы полезную возможность повторно открыть посещённую страницу без сети. Поэтому Agent 07 сохраняет один существующий runtime owner и устраняет ложные обещания и fail-open поведение.
-
-## Подтверждённые дефекты прежнего owner
-
-- install использовал `Promise.allSettled`, поэтому новый SW мог активироваться с частичным precache;
-- HTML navigation использовал stale-while-revalidate, поэтому старый cache выигрывал у свежего online response;
-- versioned `?v=` request не мог использовать current unversioned precache offline;
-- `/data/*.json` был cache-first и мог бессрочно сохранять исправленные данные до ручного cache bump;
-- runtime eviction опирался на in-memory `Map`, теряя порядок после restart;
-- `CACHE_ARTICLE` и background sync существовали как orphan API без source producer/state owner;
-- offline toast сообщал, что кэшированные статьи доступны, не проверяя текущий route.
 
 ## Один current owner
 
@@ -74,9 +93,9 @@ Chromium fixture обязан доказать:
 8. Pagefind bootstrap/data boundary;
 9. TTS/audio bypass and absence from CacheStorage.
 
-## A03 Offline Series boundary
+## Series/Reader boundary
 
-Все routes, включая `/baptisty-rossii/`, используют один автоматический route-level contract. Отдельный `CACHE_ARTICLE` marker/state/controller отсутствует; dead manual message/sync API удаляется и запрещается static gate.
+Все routes, включая `/baptisty-rossii/`, используют один автоматический route-level contract. Отдельный `CACHE_ARTICLE` marker/state/controller отсутствует; dead manual message/sync API удаляется и запрещается static gate. ReaderState regression дополнительно фиксирует, что service-worker cache version и baseline остаются согласованными.
 
 ## Definition of done
 
@@ -91,5 +110,4 @@ Chromium fixture обязан доказать:
 - review threads = 0;
 - guarded squash merge;
 - merged-main verification;
-- branch cleanup;
 - production deployment не заявляется без отдельного live witness.
