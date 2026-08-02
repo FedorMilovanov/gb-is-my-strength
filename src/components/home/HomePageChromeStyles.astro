@@ -113,8 +113,14 @@
 
   /* The directions block used to break out almost to the viewport edge while
      the manuscript phrases remained in those same rails. Keep every wide Home
-     section on the native content measure so marginalia never sit under cards. */
+     section on the native content measure so marginalia never sit under cards.
+     Explicit border-box sizing makes the declared 1120/1180px measures include
+     their generous inner padding instead of silently consuming both rails. */
   @media (min-width: 1480px) {
+    body.home-page .home-v20 .home-content {
+      box-sizing: border-box;
+    }
+
     body.home-page .home-v20 #main-content #issledovat {
       width: 100%;
       max-width: none;
