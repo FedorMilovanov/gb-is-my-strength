@@ -3,7 +3,8 @@
  * IshodMap — native body for /karty/ishod/.
  *
  * Self-contained full-screen interactive Exodus map. Loads the shared
- * map-engine.js, fetches route.json, and initializes MapEngine.createMap().
+ * map-engine.js, fetches route.json, applies the Pihahiroth uncertainty
+ * authority, and initializes MapEngine.createMap().
  *
  * The interactive canvas is progressive enhancement: no-JS and initialization
  * failures receive a visible recovery surface rather than an opaque stage.
@@ -16,6 +17,17 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
   description="Для интерактивного маршрута нужен JavaScript. Основные сведения о карте доступны в заголовке страницы; можно вернуться к разделу карт и выбрать другой материал."
   archaeologyMapId="ishod"
 />
+<noscript>
+  <section class="pihahiroth-noscript" data-pihahiroth-noscript aria-labelledby="pihahiroth-noscript-title">
+    <h2 id="pihahiroth-noscript-title">Пи-Гахироф: точное место не установлено</h2>
+    <p>Показаны исследовательские коридоры, а не найденная точка. Современные канал, озёра и береговые линии нельзя автоматически переносить во время Исхода.</p>
+    <ol>
+      <li>Северный прибрежный / Сирбонисский коридор — низкая уверенность.</li>
+      <li>Озёра Баллах / север Суэцкого перешейка — умеренно низкая уверенность.</li>
+      <li>Озеро Тимсах / Горькие озёра — умеренно низкая уверенность.</li>
+    </ol>
+  </section>
+</noscript>
 <div
   id="stage"
   data-map-stage
@@ -24,9 +36,54 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
   aria-label="Интерактивная карта Исхода"
   style="position:fixed;inset:0;background:#070a10"
 ></div>
+<style is:global>
+  /* The historical route source retains its old point for forensic comparison.
+     Product runtime must never render it as an authoritative coordinate. */
+  #stage [data-place-id="pihahiroth"]{display:none!important}
+  #stage [data-pihahiroth-corridors]{pointer-events:none}
+  #stage [data-pihahiroth-corridor]{
+    pointer-events:auto;
+    cursor:pointer;
+    fill-opacity:.16;
+    stroke-width:2.2;
+    stroke-dasharray:9 6;
+    vector-effect:non-scaling-stroke;
+    transition:fill-opacity .2s ease,stroke-width .2s ease,filter .2s ease;
+  }
+  #stage [data-pihahiroth-corridor]:hover,
+  #stage [data-pihahiroth-corridor]:focus{
+    fill-opacity:.32;
+    stroke-width:3.4;
+    filter:url(#me-gold-glow);
+    outline:none;
+  }
+  #stage .pihahiroth-corridor-label{
+    pointer-events:none;
+    fill:#f4eedd;
+    font:700 8px/1 Georgia,'Times New Roman',serif;
+    paint-order:stroke;
+    stroke:#07101a;
+    stroke-width:3px;
+    stroke-linejoin:round;
+  }
+  #stage .pihahiroth-corridor-caption{
+    pointer-events:none;
+    fill:#e8c879;
+    font:700 9px/1 Georgia,'Times New Roman',serif;
+    paint-order:stroke;
+    stroke:#07101a;
+    stroke-width:3px;
+  }
+  .pihahiroth-noscript{margin:1rem;padding:1rem;border:1px solid #8f7a45;border-radius:12px;background:#101722;color:#f4eedd}
+  .pihahiroth-noscript h2{margin:0 0 .6rem;color:#e8c879}
+</style>
 <script is:inline src="../_engine/map-engine.js"></script>
 <script is:inline>
 (function(){
+  var EXPECTED_AUTHORITY = 'PRODUCT-ATLAS-PIHAHIROTH-UNCERTAINTY-2026-08-02';
+  var EXPECTED_RESEARCH = 'ATLAS-PIHAHIROTH-AUTHORITY-2026-08-02';
+  var EXPECTED_CORRIDORS = ['PH-CAND-NORTH','PH-CAND-BALLAH','PH-CAND-BITTER'];
+
   function fail(container, error) {
     var message = error && error.message
       ? 'Не удалось запустить карту: ' + error.message
@@ -47,21 +104,174 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
     catch (error) { console.error('[map-archaeology] invalid projection payload:', error); return null; }
   }
 
+  function requireValue(condition, message) {
+    if (!condition) throw new Error('Pihahiroth authority: ' + message);
+  }
+
+  function validateAuthority(authority) {
+    requireValue(authority && authority.schemaVersion === 1, 'schemaVersion drift');
+    requireValue(authority.authorityId === EXPECTED_AUTHORITY, 'authorityId drift');
+    requireValue(authority.researchAuthorityId === EXPECTED_RESEARCH, 'Research authority drift');
+    requireValue(authority.status === 'PUBLIC_UNCERTAINTY_CORRIDORS_NO_AUTHORITATIVE_POINT', 'status drift');
+    requireValue(authority.exactCoordinateStatus === 'UNRESOLVED', 'exact coordinate must remain unresolved');
+    requireValue(authority.renderSinglePoint === false, 'single-point rendering must remain forbidden');
+    requireValue(Array.isArray(authority.corridors) && authority.corridors.length === 3, 'exactly three corridors required');
+    requireValue(JSON.stringify(authority.corridors.map(function(item){ return item.featureId; })) === JSON.stringify(EXPECTED_CORRIDORS), 'corridor order or IDs drift');
+    requireValue(authority.counts && authority.counts.authoritativePoints === 0, 'authoritative point count must be zero');
+    requireValue(authority.counts && authority.counts.directQuotesApproved === 0, 'direct quote count must be zero');
+    authority.corridors.forEach(function(corridor){
+      requireValue(corridor.geometryType === 'SCHEMATIC_UNCERTAINTY_CORRIDOR', corridor.featureId + ' geometry type drift');
+      requireValue(corridor.rights === 'ORIGINAL_SCHEMATIC_GEOMETRY', corridor.featureId + ' rights drift');
+      requireValue(typeof corridor.d === 'string' && /^M/.test(corridor.d), corridor.featureId + ' SVG geometry missing');
+      requireValue(Array.isArray(corridor.sourceIds) && corridor.sourceIds.length >= 5, corridor.featureId + ' source bindings missing');
+    });
+    return authority;
+  }
+
+  function adaptRoute(route, authority) {
+    requireValue(route && Array.isArray(route.places), 'route places missing');
+    var place = route.places.find(function(item){ return item && item.id === 'pihahiroth'; });
+    requireValue(place, 'historical Pihahiroth record missing');
+
+    var panel = authority.panel || {};
+    place.name = panel.name;
+    place.he = panel.he;
+    place.kick = panel.kick;
+    place.id1 = panel.id1;
+    place.id2 = panel.id2;
+    place.ep1 = panel.ep1;
+    place.ep2 = panel.ep2;
+    place.story = panel.story;
+    place.arch = panel.arch;
+    place.dispute = panel.dispute;
+    place.stage = null;
+    place.photos = [];
+    place.he_deep = '<div class="he-block"><div class="he-word"><span class="hw" lang="he">פִּי הַחִירֹת · יַם סוּף</span><span class="he-tr">Пи ха-Хирот · Ям Суф</span></div><div class="he-etym">Названия задают текстовые отношения, но не выбирают одну современную координату без независимого доказательства.</div><div class="he-refs">Исх 13:20–14:31 · 15:22 · Числ 33:6–8</div></div>';
+    place.bible_extra = '<p class="bib-note"><b>Граница карты:</b> событие перехода исповедуется как реальное Божье избавление; точная современная координата в этой публикации не утверждается.</p>';
+    place.uncertaintyAuthorityId = authority.authorityId;
+    place.exactCoordinateStatus = authority.exactCoordinateStatus;
+
+    route.verified_waypoints = (route.verified_waypoints || []).filter(function(item){ return item && item.id !== 'wp-suez'; });
+    if (route.scientific_variants) {
+      route.scientific_variants.pihahiroth = authority.corridors.map(function(corridor){
+        return {
+          title: corridor.label,
+          detail: authority.readerLabel + ' ' + authority.palaeowaterDisclaimer,
+          status: corridor.status === 'ALTERNATIVE' ? 'alternative' : 'candidate',
+          confidence: corridor.confidence,
+          sourceIds: corridor.sourceIds
+        };
+      });
+    }
+    delete route.signature;
+    route.layers = (route.layers || []).filter(function(layer){ return layer && layer.id !== 'pihahiroth-uncertainty'; });
+    route.layers.push({
+      id: 'pihahiroth-uncertainty',
+      label: 'Пи-Гахироф: коридоры',
+      color: '#e8c879',
+      on: true,
+      selector: '[data-pihahiroth-corridor]'
+    });
+    route.pihahirothAuthority = {
+      authorityId: authority.authorityId,
+      researchAuthorityId: authority.researchAuthorityId,
+      exactCoordinateStatus: authority.exactCoordinateStatus,
+      readerLabel: authority.readerLabel,
+      palaeowaterDisclaimer: authority.palaeowaterDisclaimer,
+      corridors: authority.corridors.map(function(item){ return item.featureId; })
+    };
+    return route;
+  }
+
+  function renderCorridors(container, authority, mapInstance) {
+    var svg = container.querySelector('.me-canvas svg');
+    requireValue(svg, 'map SVG missing');
+    var prior = svg.querySelector('[data-pihahiroth-corridors]');
+    if (prior) prior.remove();
+
+    var ns = 'http://www.w3.org/2000/svg';
+    var group = document.createElementNS(ns, 'g');
+    group.setAttribute('data-pihahiroth-corridors', '');
+    group.setAttribute('data-layer', 'pihahiroth-uncertainty');
+    group.setAttribute('data-layer-all', 'pihahiroth-uncertainty');
+    group.setAttribute('aria-label', authority.readerLabel);
+
+    authority.corridors.forEach(function(corridor){
+      var path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', corridor.d);
+      path.setAttribute('fill', corridor.fill);
+      path.setAttribute('stroke', corridor.stroke);
+      path.setAttribute('class', 'pihahiroth-corridor');
+      path.setAttribute('data-pihahiroth-corridor', corridor.featureId);
+      path.setAttribute('data-feature-id', corridor.featureId);
+      path.setAttribute('data-confidence', corridor.confidence);
+      path.setAttribute('data-status', corridor.status);
+      path.setAttribute('data-evidence-class', corridor.evidenceClass);
+      path.setAttribute('data-rights', corridor.rights);
+      path.setAttribute('data-source-ids', corridor.sourceIds.join(' '));
+      path.setAttribute('data-layer', 'pihahiroth-uncertainty');
+      path.setAttribute('data-layer-all', 'pihahiroth-uncertainty');
+      path.setAttribute('tabindex', '0');
+      path.setAttribute('role', 'button');
+      path.setAttribute('aria-label', corridor.label + '. ' + authority.readerLabel);
+      var title = document.createElementNS(ns, 'title');
+      title.textContent = corridor.label + ' · ' + corridor.confidence;
+      path.appendChild(title);
+      function openPanel(event) {
+        if (event && event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+        if (event) event.preventDefault();
+        mapInstance.openPlace('pihahiroth');
+      }
+      path.addEventListener('click', openPanel);
+      path.addEventListener('keydown', openPanel);
+      group.appendChild(path);
+
+      var label = document.createElementNS(ns, 'text');
+      label.setAttribute('x', String(corridor.labelPos[0]));
+      label.setAttribute('y', String(corridor.labelPos[1]));
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('class', 'pihahiroth-corridor-label');
+      label.textContent = corridor.shortLabel;
+      group.appendChild(label);
+    });
+
+    var caption = document.createElementNS(ns, 'text');
+    caption.setAttribute('x', '384');
+    caption.setAttribute('y', '846');
+    caption.setAttribute('text-anchor', 'middle');
+    caption.setAttribute('class', 'pihahiroth-corridor-caption');
+    caption.textContent = 'Пи-Гахироф — точное место не установлено';
+    group.appendChild(caption);
+
+    var markers = svg.querySelector('#me-markers');
+    if (markers) svg.insertBefore(group, markers);
+    else svg.appendChild(group);
+    container.setAttribute('data-pihahiroth-authority', authority.authorityId);
+    container.setAttribute('data-pihahiroth-coordinate-status', authority.exactCoordinateStatus);
+    container.setAttribute('data-pihahiroth-corridor-count', String(authority.corridors.length));
+  }
+
   function init() {
     var container = document.getElementById('stage');
     if (!container) return;
-    fetch('route.json')
-      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(function(route){
+    Promise.all([
+      fetch('route.json').then(function(response){ if(!response.ok) throw new Error('route HTTP '+response.status); return response.json(); }),
+      fetch('pihahiroth-authority.json').then(function(response){ if(!response.ok) throw new Error('authority HTTP '+response.status); return response.json(); })
+    ])
+      .then(function(payload){
         if (!window.MapEngine || typeof window.MapEngine.createMap !== 'function') {
           throw new Error('движок карты не загрузился');
         }
-        var inst = window.MapEngine.createMap(container, route, { archaeologyProjection: readArchaeologyProjection() });
-        if (!inst) throw new Error('движок не создал карту');
+        var route = payload[0];
+        var authority = validateAuthority(payload[1]);
+        var adapted = adaptRoute(route, authority);
+        var instance = window.MapEngine.createMap(container, adapted, { archaeologyProjection: readArchaeologyProjection() });
+        if (!instance) throw new Error('движок не создал карту');
+        renderCorridors(container, authority, instance);
         container.setAttribute('data-map-state', 'ready');
         container.setAttribute('aria-busy', 'false');
       })
-      .catch(function(e){ fail(container, e); });
+      .catch(function(error){ fail(container, error); });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
