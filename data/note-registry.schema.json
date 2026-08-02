@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gospod-bog.ru/schemas/note-registry.schema.json",
+  "title": "A03 NoteRegistry final distribution contract",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "contract",
+    "sourceCommit",
+    "sourceModel",
+    "identityStrategy",
+    "interactionOwner",
+    "stylesheet",
+    "routeCount",
+    "noteCount",
+    "routes"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "contract": { "const": "A03-note-registry" },
+    "sourceCommit": { "type": "string", "minLength": 1 },
+    "sourceModel": { "const": "authored-inline-tooltip-captured-once-then-unified-projection" },
+    "identityStrategy": { "const": "authored-data-note-id-or-route-note-heading-hash" },
+    "interactionOwner": { "const": "SiteUtils.makeTooltipController" },
+    "stylesheet": { "type": "string", "pattern": "^/css/note-registry\\.css\\?v=[a-f0-9]{8}$" },
+    "routeCount": { "type": "integer", "minimum": 1 },
+    "noteCount": { "type": "integer", "minimum": 1 },
+    "routes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/route" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "route": {
+      "type": "object",
+      "required": ["count", "notes"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 1 },
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/note" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "note": {
+      "type": "object",
+      "required": [
+        "id", "route", "ordinal", "visibleOrdinal", "markerText", "text", "html",
+        "headingIdentity", "refId", "tipId", "endnoteId", "authoredSource",
+        "interactionOwner", "projections"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,127}$" },
+        "route": { "type": "string", "pattern": "^/(?:.*?/)?$" },
+        "ordinal": { "type": "integer", "minimum": 1 },
+        "visibleOrdinal": { "type": ["integer", "null"], "minimum": 0 },
+        "markerText": { "type": "string" },
+        "text": { "type": "string", "minLength": 1 },
+        "html": { "type": "string", "minLength": 1 },
+        "headingIdentity": { "type": "string", "minLength": 1 },
+        "refId": { "type": "string", "minLength": 1 },
+        "tipId": { "type": "string", "minLength": 1 },
+        "endnoteId": { "type": "string", "minLength": 1 },
+        "authoredSource": { "const": ".fn-marker > .tooltip" },
+        "interactionOwner": { "const": "SiteUtils.makeTooltipController" },
+        "projections": {
+          "type": "array",
+          "uniqueItems": true,
+          "allOf": [
+            { "contains": { "const": "popover" } },
+            { "contains": { "const": "aria-describedby" } },
+            { "contains": { "const": "screen-reader-endnote" } },
+            { "contains": { "const": "tts-endnote" } },
+            { "contains": { "const": "pagefind-endnote" } },
+            { "contains": { "const": "print-endnote" } },
+            { "contains": { "const": "no-js-endnote" } }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
