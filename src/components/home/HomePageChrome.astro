@@ -315,6 +315,16 @@ window.SITE_CONFIG = {
       );
     };
 
+    const stableOpener = (candidate) => {
+      if (candidate?.matches?.('[data-action="open-search"]')) {
+        return document.getElementById('hMobileMenuBtn');
+      }
+      if (candidate instanceof HTMLElement && candidate !== document.body && candidate.isConnected) {
+        return candidate;
+      }
+      return document.getElementById('gbSearchBtn');
+    };
+
     const load = (open) => {
       if (window.GBSearch?.__ready) {
         if (open) window.GBSearch.open();
@@ -343,8 +353,10 @@ window.SITE_CONFIG = {
       document.head.appendChild(script);
     };
 
-    const openSearch = () => {
+    const openSearch = (candidate) => {
+      const opener = stableOpener(candidate);
       if (!isMobileNavOpen()) {
+        window.__gbHomeSearchOpener = opener;
         load(true);
         return;
       }
@@ -353,7 +365,10 @@ window.SITE_CONFIG = {
          while the menu still owns the scroll lock can leave the palette with a
          hidden opener and an unlocked page behind it. */
       window.closeMobileNav?.();
-      requestAnimationFrame(() => requestAnimationFrame(() => load(true)));
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        window.__gbHomeSearchOpener = document.getElementById('hMobileMenuBtn');
+        load(true);
+      }));
     };
 
     const onShortcut = (event) => {
@@ -365,7 +380,7 @@ window.SITE_CONFIG = {
       if (window.GBSearch?.__ready && !isMobileNavOpen()) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      openSearch();
+      openSearch(document.activeElement);
     };
 
     const onSearchClick = (event) => {
@@ -381,7 +396,7 @@ window.SITE_CONFIG = {
       if (!target) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      openSearch();
+      openSearch(target);
     };
 
     const onCloseNavClick = (event) => {
@@ -392,7 +407,7 @@ window.SITE_CONFIG = {
     document.addEventListener('keydown', onShortcut, true);
     document.addEventListener('click', onSearchClick, true);
     document.addEventListener('click', onCloseNavClick, true);
-    window.addEventListener('gb:openSearch', openSearch);
+    window.addEventListener('gb:openSearch', () => openSearch(document.activeElement));
   })();
 </script>
 <script is:inline>
@@ -404,7 +419,7 @@ window.SITE_CONFIG = {
     let overlayOpen = false;
 
     const searchTriggers = () => Array.from(document.querySelectorAll(
-      '#gbSearchBtn, [data-action="open-search"], #heroSearchBar'
+      '#gbSearchBtn, [data-action="open-search"]'
     ));
 
     const syncTriggerState = (open) => {
@@ -435,7 +450,7 @@ window.SITE_CONFIG = {
         onRequestClose: () => window.GBSearch?.close?.(),
         closeOnEscape: false,
         trapFocus: true,
-        restoreFocus: false,
+        restoreFocus: true,
         lockScroll: false,
       });
     };
@@ -448,7 +463,12 @@ window.SITE_CONFIG = {
       syncTriggerState(open);
       registerOverlay();
 
-      if (open && !overlayOpen) overlayController?.open();
+      if (open && !overlayOpen) {
+        overlayController?.open({
+          opener: window.__gbHomeSearchOpener || document.getElementById('gbSearchBtn'),
+          restoreFocus: true,
+        });
+      }
       if (!open && overlayOpen) overlayController?.close('search-closed');
       overlayOpen = open;
     };
