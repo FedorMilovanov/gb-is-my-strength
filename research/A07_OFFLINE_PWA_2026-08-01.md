@@ -32,7 +32,17 @@ Archive-ветка отставала от current `main` более чем на
 8. `scripts/sw-offline-browser-test.mjs`;
 9. `sw.js`.
 
-Generated HTML, Astro components, asset-revision projections и другие архивные файлы не восстанавливались.
+Generated HTML, Astro components, asset-revision projections и другие архивные файлы не восстанавливались из archive.
+
+## Canonical asset-revision transaction
+
+Source-only Metadata gate на первом current-main head правильно обнаружил 57 stale references после изменения `js/sw-register.js`. Старые архивные однострочные проекции не копировались. Канонический `node scripts/cache-bust.js --write` материализовал текущий hash `?v=3fbabcf1` из фактических bytes ветки и обновил только:
+
+- `src/lib/asset-version.js`;
+- существующие HTML references;
+- существующие Astro references.
+
+Transaction commit: `a46257cf7482949bc63d4db3b5d2e5f86472b7ae`. Одноразовый workflow удалил себя в том же коммите и отсутствует в финальном дереве. Никакой второй runtime, ручной массовой подстановки или архивной HTML/Astro-реставрации не осталось.
 
 ## Почему runtime не удалён
 
