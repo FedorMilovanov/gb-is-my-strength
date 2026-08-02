@@ -1,0 +1,52 @@
+name: Atlas Avraam Baseline Stats Materialize
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/atlas-avraam-baseline-stats-materialize.py'
+      - '.github/workflows/atlas-avraam-baseline-stats-materialize.yml'
+
+concurrency:
+  group: atlas-avraam-baseline-stats-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Materialize baseline stats repair
+        run: python3 scripts/atlas-avraam-baseline-stats-materialize.py
+
+      - name: Validate bounded witness contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/avraam-reference-baseline.mjs
+          grep -Fq "expect('stats.places',stats.places,routePlaces.length);" scripts/avraam-reference-baseline.mjs
+          git diff --check
+          expected=$'.github/workflows/atlas-avraam-baseline-stats-materialize.yml\nscripts/atlas-avraam-baseline-stats-materialize.py\nscripts/avraam-reference-baseline.mjs'
+          actual="$(git status --short | sed -E 's/^.. //' | sort)"
+          [[ "$actual" == "$expected" ]]
+
+      - name: Commit permanent witness repair only
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/avraam-reference-baseline.mjs
+          git add -u scripts/atlas-avraam-baseline-stats-materialize.py .github/workflows/atlas-avraam-baseline-stats-materialize.yml
+          git commit -m 'test(atlas): align baseline route count semantics'
+          git push origin "HEAD:${HEAD_REF}"
