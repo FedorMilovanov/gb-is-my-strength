@@ -26,6 +26,10 @@ on:
       - 'scripts/diotrophes-wave12-*.mjs'
       - 'scripts/search-index-policy-contract-test.js'
       - 'scripts/search-index-policy-inventory.js'
+      - 'scripts/rss-feed-normalizer.js'
+      - 'scripts/sitemap-policy-normalizer.js'
+      - 'sitemap.xml'
+      - 'feed.xml'
       - 'sitemap-pastor-series.xml'
       - 'feed-pastor-series.xml'
       - 'robots.txt'
@@ -54,6 +58,10 @@ on:
       - 'scripts/diotrophes-wave12-*.mjs'
       - 'scripts/search-index-policy-contract-test.js'
       - 'scripts/search-index-policy-inventory.js'
+      - 'scripts/rss-feed-normalizer.js'
+      - 'scripts/sitemap-policy-normalizer.js'
+      - 'sitemap.xml'
+      - 'feed.xml'
       - 'sitemap-pastor-series.xml'
       - 'feed-pastor-series.xml'
       - 'robots.txt'
@@ -96,12 +104,15 @@ jobs:
           node scripts/diotrophes-wave10-contract.mjs
           node scripts/diotrophes-wave11-faithful-witness-contract.mjs
           node scripts/diotrophes-wave12-release-contract.mjs
+          node scripts/diotrophes-wave12-canonical-discovery-contract.mjs
 
       - name: Validate route registries search contract and Astro types
         run: |
           npm run migration:metadata:check:strict
           npm run page-ownership:check
           node scripts/search-index-policy-contract-test.js
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
           npm run astro:check
 
       - name: Build production-like site and Pagefind
