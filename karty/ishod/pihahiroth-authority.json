@@ -4,6 +4,8 @@
   "researchAuthorityId": "ATLAS-PIHAHIROTH-AUTHORITY-2026-08-02",
   "researchSnapshot": "bd1617782796dc9a56b2791b3d07351dc42a245e",
   "researchRegistrySnapshot": "a0bc169f735444da661a9a7348c99e467a715991",
+  "historicalRouteBlobSha": "f1cb58be907efb0fb9cfa8bc344b07b5cf84edb2",
+  "historicalRoutePath": "karty/ishod/route.json",
   "route": "/karty/ishod/",
   "placeId": "pihahiroth",
   "status": "PUBLIC_UNCERTAINTY_CORRIDORS_NO_AUTHORITATIVE_POINT",
