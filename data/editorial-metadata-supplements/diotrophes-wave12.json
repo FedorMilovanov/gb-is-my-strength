@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "records": {
+    "/articles/diotrefy-nashego-vremeni/": {
+      "route": "/articles/diotrefy-nashego-vremeni/",
+      "canonical": "https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/",
+      "title": "Диотрефы нашего времени: власть, подотчётность и верность | Господь Бог",
+      "metadataSource": "src/components/article-pilots/diotrophes/DiotrophesPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-08-01T21:00:00.000Z",
+      "editorialModifiedAt": "2026-08-01T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "wave12-publication-authority",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-08-01T21:00:00.000Z",
+        "metaModifiedAt": "2026-08-01T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-08-01T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-08-01T21:00:00.000Z",
+        "searchPublishedAt": "2026-08-01T21:00:00.000Z",
+        "searchModifiedAt": "2026-08-01T21:00:00.000Z",
+        "sitemapLastmod": null,
+        "rssPublishedAt": null
+      }
+    }
+  }
+}
