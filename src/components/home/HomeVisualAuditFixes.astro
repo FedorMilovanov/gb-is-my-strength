@@ -1,0 +1,178 @@
+---
+/**
+ * HomeVisualAuditFixes.astro — final visual-pass corrections for the native Home.
+ *
+ * This component is intentionally rendered after HomeMain so the reviewed
+ * optical contracts win over historical shared CSS without changing other
+ * routes. It owns only screenshot-confirmed Home defects.
+ */
+---
+
+<style is:global>
+  /* Header controls are one icon family. Equal boxes, one muted ink and a thin
+     non-scaling line are more important than equal source SVG attributes. The
+     crescent needs a slightly lighter line because its closed silhouette carries
+     more visual mass than the open magnifier. */
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn) {
+    color: color-mix(in srgb, var(--h-muted) 88%, transparent);
+  }
+
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn) > svg {
+    width: 18px;
+    height: 18px;
+    color: inherit;
+    stroke: currentColor;
+    fill: none;
+    overflow: visible;
+  }
+
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn) > svg :is(path, circle, line, polyline) {
+    stroke: currentColor;
+    stroke-width: 1.18;
+    vector-effect: non-scaling-stroke;
+  }
+
+  body.home-page .h-navbar #themeToggle .icon-moon path {
+    stroke-width: 1.02;
+  }
+
+  body.home-page .h-navbar #themeToggle .icon-sun :is(circle, line) {
+    stroke-width: 1.12;
+  }
+
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn):is(:hover, :focus-visible) {
+    color: var(--h-accent);
+  }
+
+  /* Keep the rest of the compact interface in the same light line language. */
+  body.home-page .h-scroll-top-arrow svg polyline,
+  body.home-page .cp-search-icon svg :is(path, circle, line, polyline),
+  body.home-page .cp-home-close svg :is(path, circle, line, polyline) {
+    stroke-width: 1.3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Search previously showed two identical X marks side by side. Preserve the
+     dedicated 44px close button, but make query clearing an unmistakable
+     backspace action. */
+  body.home-page .cp-clear svg {
+    display: none;
+  }
+
+  body.home-page .cp-clear::before {
+    content: "⌫";
+    display: block;
+    color: currentColor;
+    font-family: system-ui, sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+
+  /* The compact palette already has an explicit close control. Desktop keyboard
+     hints do not belong at the bottom of a touch-only 390px layout. */
+  @media (max-width: 760px) {
+    body.home-page .cp-footer {
+      display: none;
+    }
+
+    /* Give words the width instead of spending half of every small card on the
+       decorative object. This removes the screenshot-confirmed Биогра/фии and
+       ПРОСТРАН/СТВО breaks while preserving the two-column gateway. */
+    body.home-page .home-v20 #main-content #issledovat .h-home-route {
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 4px 7px;
+      padding: 13px 11px 12px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__glyph,
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
+      width: 56px;
+      height: 64px;
+      min-height: 64px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-route-object {
+      max-height: 68px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy {
+      padding-right: 2px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__eyebrow {
+      margin-bottom: 5px;
+      font-size: 6.7px;
+      letter-spacing: .075em;
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy strong {
+      font-size: clamp(13px, 3.7vw, 15px);
+      line-height: 1.08;
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child,
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child:nth-child(odd) {
+      grid-template-columns: 64px minmax(0, 1fr);
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
+      width: 64px;
+      height: 70px;
+      min-height: 70px;
+    }
+  }
+
+  @media (max-width: 340px) {
+    body.home-page .home-v20 #main-content #issledovat .h-home-route {
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 3px 5px;
+      padding: 11px 9px 10px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__glyph {
+      width: 44px;
+      height: 52px;
+      min-height: 52px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-route-object {
+      max-height: 56px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__eyebrow {
+      font-size: 5.7px;
+      letter-spacing: .04em;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy strong {
+      font-size: 11.5px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child,
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child:nth-child(odd) {
+      grid-template-columns: 52px minmax(0, 1fr);
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
+      width: 52px;
+      height: 58px;
+      min-height: 58px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page .cp-clear::before {
+      transform: none;
+    }
+  }
+</style>
