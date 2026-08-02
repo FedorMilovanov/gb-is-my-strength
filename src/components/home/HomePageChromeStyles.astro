@@ -132,6 +132,16 @@
       max-height: calc(100dvh - 62px - env(safe-area-inset-top, 0px));
       background: color-mix(in srgb, var(--h-surface-solid) 94%, transparent);
     }
+
+    /* The button border is part of the visible circle, while an absolutely
+       positioned SVG sized to 100% resolves against the inner box. Expand it by
+       that one-pixel border on every side so the progress arc is a true,
+       concentric circle instead of a smaller offset oval. */
+    body.home-page .h-scroll-top svg.h-progress-ring {
+      inset: -1px;
+      width: calc(100% + 2px);
+      height: calc(100% + 2px);
+    }
   }
 
   @media (max-width: 390px) {
