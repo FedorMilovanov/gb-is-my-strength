@@ -101,7 +101,7 @@ async function collectGeometry(page,stateId){
       return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&Number(style.opacity||1)>.02&&r.width>.5&&r.height>.5;
     };
     const rect=(el)=>{const r=el.getBoundingClientRect();return{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
-    const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});
+    const describe=(el)=>({tag:el.tagName.toLowerCase(),id:el.id||null,className:typeof el.className==='string'?el.className:el.className?.baseVal||null,text:(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,160),placeId:el.getAttribute('data-place-id'),storyActive:el.getAttribute('data-story-active'),story:el.getAttribute('data-story'),tab:el.getAttribute('data-tab'),ariaLabel:el.getAttribute('aria-label')});
     const width=innerWidth,height=innerHeight,html=document.documentElement;
     const map=document.querySelector('.me-map,#mapRoot'),canvas=document.querySelector('.me-canvas'),svg=document.querySelector('.me-canvas svg,.me-map svg,#mapRoot svg');
     const allLabels=[...document.querySelectorAll('svg text')].filter(isVisible).map((el,index)=>({index,...describe(el),box:rect(el)}));
@@ -130,6 +130,7 @@ async function collectGeometry(page,stateId){
     const activeStory=document.querySelector('.me-story-chip--active,[aria-selected="true"].me-story-chip,[aria-pressed="true"].me-story-chip');
     return{
       stateId,url:location.href,title:document.title,activeStory:activeStory?.getAttribute('data-story')||null,
+      motion:{prefersReducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches,smilAnimations:svg?svg.querySelectorAll('animate,animateTransform,animateMotion,set').length:0,smilPaused:svg?.getAttribute('data-smil-paused')==='1'},
       viewport:{width,height,devicePixelRatio,scrollX,scrollY},
       document:{clientWidth:html.clientWidth,scrollWidth:html.scrollWidth,horizontalOverflow:html.scrollWidth-html.clientWidth,clientHeight:html.clientHeight,scrollHeight:html.scrollHeight},
       map:{box:map?rect(map):null,canvasBox:canvas?rect(canvas):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null,zoomBucket:svg?.getAttribute('data-zoom-bucket')||null,canvasTransform:canvas?getComputedStyle(canvas).transform:null,svgTransform:svg?getComputedStyle(svg).transform:null},
@@ -182,6 +183,7 @@ async function runViewport(browser,viewport){
     await screenshot(page,dir,'01-overview.png');
     result.overview=await collectGeometry(page,`${viewport.id}:overview`);
     if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
+    if(result.overview.motion.prefersReducedMotion&&result.overview.motion.smilAnimations>0&&!result.overview.motion.smilPaused)result.verificationFailures.push('reduced motion did not pause SVG animations');
 
     const themeButton=page.locator('.me-theme-btn').first();
     if(await themeButton.isVisible().catch(()=>false)){
@@ -218,6 +220,8 @@ async function runViewport(browser,viewport){
         if(!selection.active||geometry.activeStory!==story.id)result.verificationFailures.push(`story activation failed: ${story.id}; active=${geometry.activeStory}`);
         if(selection.rail?.present&&!selection.rail.fullyVisible)result.verificationFailures.push(`active story clipped in rail: ${story.id}`);
         if(story.id!=='main'&&geometry.counts.routes===0)result.verificationFailures.push(`story route missing: ${story.id}`);
+        const irrelevantMarkers=story.id==='main'?[]:geometry.markers.filter(marker=>marker.storyActive==='0');
+        if(irrelevantMarkers.length)result.verificationFailures.push(`story irrelevant markers ${story.id}: ${irrelevantMarkers.map(marker=>marker.placeId||marker.text||marker.id).join(', ')}`);
         const overlapLimit=viewport.width<=560?4:6;
         const clippedLimit=viewport.width<=560?4:6;
         if(geometry.counts.labelOverlaps>overlapLimit)result.verificationFailures.push(`story label overlaps ${story.id}: ${geometry.counts.labelOverlaps}>${overlapLimit}`);

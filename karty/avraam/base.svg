@@ -479,7 +479,6 @@
     <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
     <path id="viaMarisPath" fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
       d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C630,690 645,668 658,648 C680,630 710,610 731,594">
-  <animate attributeName="stroke-dashoffset" values="0;-28" dur="3s" repeatCount="indefinite"/>
 </path>
     <text class="region-label lbl-z1" x="440" y="785" font-size="7" fill="#7fa7c4" opacity=".7" letter-spacing=".22em" transform="rotate(-26 420 790)">VIA MARIS · דֶּרֶךְ הַיָּם</text>
     <!-- Стрелка Via Maris (направление движения) -->
@@ -488,7 +487,6 @@
     <!-- King's Highway / Царская дорога — Эцион-Гевер → Мёртвое море (вост.) → Дамаск -->
     <path fill="none" stroke="#c4a07f" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
       d="M730,1060 C720,990 712,940 705,890 C700,860 696,830 694,800 C692,760 694,720 700,680 C710,650 720,620 731,594">
-  <animate attributeName="stroke-dashoffset" values="0;28" dur="4s" repeatCount="indefinite"/>
 </path>
     <text class="region-label lbl-z2" x="710" y="870" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
 
@@ -504,35 +502,38 @@
   </g>
 
   <!-- ============ MOUNTAINS NEAR SHECHEM ============ -->
-  <!-- Горный hatch texture под Гевалом -->
-  <g class="lbl-z1" opacity=".3">
-    <ellipse cx="628" cy="740" rx="18" ry="10" fill="url(#mountainHatch)"/>
-    <ellipse cx="628" cy="762" rx="18" ry="10" fill="url(#mountainHatch)"/>
-  </g>
-  <g id="mountains" opacity=".72" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Гевал и Геризим: парные контурные хребты; detail-only cartographic labels. -->
-    <g class="lbl-z1" data-relief="ebal-gerizim">
-      <path d="M607,734 C613,725 617,711 628,700 C639,710 644,724 649,734 Z"
-        fill="rgba(145,126,87,.10)" stroke="#9b8d6a" stroke-width="1.15"/>
-      <path d="M614,730 C620,720 622,711 628,706 C634,712 638,722 642,730"
-        stroke="#b19e72" stroke-width=".7" opacity=".72"/>
-      <path d="M619,726 C623,719 625,714 628,711 C632,716 635,721 638,726"
-        stroke="#c0ab7a" stroke-width=".45" opacity=".52"/>
-      <text class="lbl-z2" x="628" y="697" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".12em">ГЕВАЛ</text>
-      <text class="lbl-z2" x="628" y="692" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">עֵיבָל · 940 м</text>
+  <!-- Гевал и Геризим: открытые топографические гряды вокруг долины Сихема. -->
+  <g id="shechemRidges" class="lbl-z1" opacity=".7" fill="none" stroke-linecap="round" pointer-events="none">
+    <!-- Северная гряда Гевала -->
+    <path d="M602,731 C611,724 616,714 625,707 C634,711 642,720 653,729"
+      stroke="rgba(145,126,87,.10)" stroke-width="12"/>
+    <path d="M602,731 C611,724 616,714 625,707 C634,711 642,720 653,729"
+      stroke="#9b8d6a" stroke-width="1.05"/>
+    <path d="M608,730 C616,723 620,716 627,712 C635,716 641,722 648,728"
+      stroke="#b19e72" stroke-width=".62" opacity=".68"/>
+    <path d="M614,728 C620,722 624,718 629,716 C635,720 639,724 643,727"
+      stroke="#c0ab7a" stroke-width=".36" opacity=".48"/>
+    <text class="lbl-z2" x="626" y="701" font-size="4.8" fill="#b9a578" text-anchor="middle" letter-spacing=".12em">ГЕВАЛ</text>
+    <text class="lbl-z2" x="626" y="696" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".62">עֵיבָל · 940 м</text>
 
-      <path d="M607,774 C613,765 617,751 628,741 C639,751 644,764 649,774 Z"
-        fill="rgba(145,126,87,.09)" stroke="#9b8d6a" stroke-width="1.1"/>
-      <path d="M614,770 C620,760 622,752 628,747 C634,753 638,762 642,770"
-        stroke="#b19e72" stroke-width=".68" opacity=".7"/>
-      <path d="M619,766 C623,759 625,755 628,752 C632,757 635,761 638,766"
-        stroke="#c0ab7a" stroke-width=".42" opacity=".5"/>
-      <text class="lbl-z2" x="628" y="781" font-size="5" fill="#b9a578" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
-      <text class="lbl-z2" x="628" y="786" font-size="3.7" fill="#cdbd95" text-anchor="middle" opacity=".65">גְּרִזִּים · 881 м</text>
-    </g>
+    <!-- Южная гряда Геризима -->
+    <path d="M603,771 C612,765 617,755 626,748 C635,752 643,761 653,770"
+      stroke="rgba(145,126,87,.09)" stroke-width="11"/>
+    <path d="M603,771 C612,765 617,755 626,748 C635,752 643,761 653,770"
+      stroke="#9b8d6a" stroke-width="1"/>
+    <path d="M609,770 C616,763 621,756 628,753 C636,757 641,763 648,769"
+      stroke="#b19e72" stroke-width=".6" opacity=".66"/>
+    <path d="M615,768 C621,762 625,758 630,757 C636,761 640,765 644,768"
+      stroke="#c0ab7a" stroke-width=".34" opacity=".46"/>
+    <text class="lbl-z2" x="628" y="778" font-size="4.8" fill="#b9a578" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+    <text class="lbl-z2" x="628" y="783" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".62">גְּרִזִּים · 881 м</text>
+
+    <!-- Долина Сихема между грядами -->
+    <path d="M611,739 C620,741 633,741 645,738 M611,744 C621,746 634,746 646,743"
+      stroke="#6f795f" stroke-width=".42" opacity=".32"/>
   </g>
 
-</g>
+  </g>
 
 <!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
 <!-- Непрерывные хребты: схематическая гипсометрия, не точные изолинии. -->

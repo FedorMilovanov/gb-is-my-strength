@@ -1998,6 +1998,7 @@ container.appendChild(panel);
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
         g.setAttribute('transform',`translate(${place.x},${place.y})`);
         g.setAttribute('data-place-id', place.id);
+        g.setAttribute('data-story-active',inStory?'1':'0');
         g.setAttribute('data-screen-anchor','place');g.setAttribute('data-map-x',String(place.x));g.setAttribute('data-map-y',String(place.y));
         g.setAttribute('data-label-priority',overviewLabelIds.has(place.id)?'overview':'detail');
         const membership=getPlaceLayerMembership(route,place);
@@ -2008,7 +2009,7 @@ container.appendChild(panel);
         g.style.cursor=inStory?'pointer':'default';
         g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r','6');d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
         g.addEventListener('mouseleave',()=>{const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',(place.id===activePlaceId)?'7':'4.5');d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity',(place.id===activePlaceId)?'0.5':'0');r2.setAttribute('r','12');}});
-        g.style.opacity=inStory?'1':'.15';
+        g.style.opacity=inStory?'1':(activeStoryId==='main'?'.15':'0');
         if(inStory){
               // Long-press detection for quick info tooltip
       let longPressTimer = null;
@@ -3087,6 +3088,12 @@ container.appendChild(panel);
           baseGeoG.setAttribute('opacity','0.5');
           while (geoRoot.firstChild) baseGeoG.appendChild(geoRoot.firstChild);
           svg.insertBefore(baseGeoG, svg.firstChild);
+          const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+          svg.setAttribute('data-reduced-motion',reduceMotion?'1':'0');
+          if(reduceMotion&&typeof svg.pauseAnimations==='function'){
+            try{svg.pauseAnimations();svg.setAttribute('data-smil-paused','1')}
+            catch{svg.setAttribute('data-smil-paused','0')}
+          }
         }
       }).catch(e => console.warn('Base geo load failed:', e));
     }
