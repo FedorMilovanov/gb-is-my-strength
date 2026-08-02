@@ -5,38 +5,6 @@
     min-inline-size: 0;
   }
 
-  /*
-   * The Wave 12 hero carries authored intrinsic dimensions (1536×1024).
-   * WebKit with JavaScript disabled can otherwise keep that intrinsic inline
-   * size and expand the document to 1584px. Keep the authored ratio while
-   * constraining only the released Wave 12 route's wide media to the reader
-   * column. The publication boundary marker is server-rendered and therefore
-   * remains available when JavaScript is disabled. Physical width properties
-   * accompany their logical equivalents because no-JS WebKit retained the
-   * authored width attribute when only inline-size was declared.
-   */
-  [data-wave12-publication="true"] .article-img.wide,
-  [data-wave12-publication="true"] .article-img.wide picture,
-  [data-wave12-publication="true"] .article-img.wide img {
-    box-sizing: border-box;
-    min-width: 0;
-    max-width: 100%;
-    min-inline-size: 0;
-    max-inline-size: 100%;
-  }
-
-  [data-wave12-publication="true"] .article-img.wide picture,
-  [data-wave12-publication="true"] .article-img.wide img {
-    display: block;
-    width: 100%;
-    inline-size: 100%;
-  }
-
-  [data-wave12-publication="true"] .article-img.wide img {
-    height: auto;
-    block-size: auto;
-  }
-
   @media (max-width: 63.999rem) {
     /*
      * The fixed mobile bar is the interaction owner. WebKit can otherwise
