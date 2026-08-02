@@ -77,9 +77,13 @@ async function collectGeometry(page,stateId){
       const area=ow*oh;
       if(area>=8)labelOverlaps.push({a:{index:a.index,text:a.text,box:a.box},b:{index:b.index,text:b.text,box:b.box},area});
     }
-    const controls=[...document.querySelectorAll('button,a,[role="button"],[tabindex]:not([tabindex="-1"])')].filter(isVisible).map(el=>({...describe(el),box:rect(el)}));
+    const controls=[...document.querySelectorAll('button,a,[role="button"],[tabindex]:not([tabindex="-1"])')].filter(isVisible).map(el=>{
+      const box=rect(el),scroller=el.closest('[data-horizontal-scroll]'),scrollBox=scroller?rect(scroller):null;
+      const scrollReachable=Boolean(scroller&&scroller.scrollWidth>scroller.clientWidth+1&&scrollBox&&box.bottom>scrollBox.top&&box.top<scrollBox.bottom);
+      return{...describe(el),box,scrollReachable};
+    });
     const undersizedControls=controls.filter(({box})=>box.width<44||box.height<44);
-    const offscreenControls=controls.filter(({box})=>box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1);
+    const offscreenControls=controls.filter(({box,scrollReachable})=>!scrollReachable&&(box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1));
     const markers=[...document.querySelectorAll('[data-place-id]')].filter(isVisible).map(el=>({...describe(el),box:rect(el)}));
     const routes=[...document.querySelectorAll('.me-route-main,.me-route-underlay,[data-route-segment]')].filter(isVisible).map(el=>{
       let svgBox=null;try{const b=el.getBBox();svgBox={x:b.x,y:b.y,width:b.width,height:b.height}}catch{}
@@ -91,7 +95,7 @@ async function collectGeometry(page,stateId){
       viewport:{width,height,devicePixelRatio,scrollX,scrollY},
       document:{clientWidth:html.clientWidth,scrollWidth:html.scrollWidth,horizontalOverflow:html.scrollWidth-html.clientWidth,clientHeight:html.clientHeight,scrollHeight:html.scrollHeight},
       map:{box:map?rect(map):null,canvasBox:canvas?rect(canvas):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null,zoomBucket:svg?.getAttribute('data-zoom-bucket')||null,canvasTransform:canvas?getComputedStyle(canvas).transform:null,svgTransform:svg?getComputedStyle(svg).transform:null},
-      counts:{labels:labels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length},
+      counts:{labels:labels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length,scrollReachableControls:controls.filter(control=>control.scrollReachable).length},
       offscreenLabels:offscreenLabels.slice(0,120),labelOverlaps:labelOverlaps.sort((a,b)=>b.area-a.area).slice(0,180),undersizedControls:undersizedControls.slice(0,120),offscreenControls:offscreenControls.slice(0,120),markers,routes,
     };
   },{stateId});
@@ -118,7 +122,8 @@ async function selectStory(page,story){
     await page.waitForTimeout(850);
     active=await target.evaluate(el=>el.classList.contains('me-story-chip--active')||el.getAttribute('aria-selected')==='true'||el.getAttribute('aria-pressed')==='true');
   }
-  return{active,before,after:await svg.getAttribute('viewBox'),panelVisible:Boolean(await page.locator(panelSelector).count())};
+  const rail=await target.evaluate(el=>{const scroller=el.closest('[data-horizontal-scroll]');if(!scroller)return{present:false,fullyVisible:true};const a=el.getBoundingClientRect(),b=scroller.getBoundingClientRect();return{present:true,fullyVisible:a.left>=b.left-1&&a.right<=b.right+1,scrollLeft:scroller.scrollLeft,scrollWidth:scroller.scrollWidth,clientWidth:scroller.clientWidth}});
+  return{active,before,after:await svg.getAttribute('viewBox'),panelVisible:Boolean(await page.locator(panelSelector).count()),rail};
 }
 
 async function runViewport(browser,viewport){
@@ -142,12 +147,12 @@ async function runViewport(browser,viewport){
 
     const themeButton=page.locator('.me-theme-btn').first();
     if(await themeButton.isVisible().catch(()=>false)){
-      await themeButton.evaluate(el=>el.click());await page.waitForTimeout(180);
+      await themeButton.evaluate(el=>el.click());await page.waitForTimeout(1350);
       await screenshot(page,dir,'02-theme-alt.png');
       result.surfaces.themeAlternative=await collectGeometry(page,`${viewport.id}:theme-alt`);
       if(result.surfaces.themeAlternative.counts.offscreenControls>0)result.verificationFailures.push(`theme-alt offscreen controls: ${result.surfaces.themeAlternative.counts.offscreenControls}`);
       if(result.surfaces.themeAlternative.counts.undersizedControls>0)result.verificationFailures.push(`theme-alt controls <44px: ${result.surfaces.themeAlternative.counts.undersizedControls}`);
-      await themeButton.evaluate(el=>el.click());await page.waitForTimeout(150);
+      await themeButton.evaluate(el=>el.click());await page.waitForTimeout(1350);
     }else result.verificationFailures.push('theme toggle missing');
 
     const layerSummary=page.locator('.me-layers__summary').first();
@@ -170,6 +175,7 @@ async function runViewport(browser,viewport){
         const geometry=await collectGeometry(page,`${viewport.id}:story:${story.id}`);
         result.stories.push({...story,...selection,file,geometry});
         if(!selection.active||geometry.activeStory!==story.id)result.verificationFailures.push(`story activation failed: ${story.id}; active=${geometry.activeStory}`);
+        if(selection.rail?.present&&!selection.rail.fullyVisible)result.verificationFailures.push(`active story clipped in rail: ${story.id}`);
         if(story.id!=='main'&&geometry.counts.routes===0)result.verificationFailures.push(`story route missing: ${story.id}`);
         const overlapLimit=viewport.width<=560?4:6;
         const clippedLimit=viewport.width<=560?4:6;

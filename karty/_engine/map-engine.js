@@ -257,7 +257,7 @@ const MapEngine = (function() {
 
   const MAP_THEME_PALETTES=Object.freeze({
     dark:Object.freeze({id:'dark',bg:'#070a10',panelBg:'rgba(13,17,26,.95)',text:'#e9e4d6',muted:'#9aa2ae',accent:'#e8c879',controlBg:'rgba(0,0,0,.55)',border:'rgba(255,255,255,.12)',labelBg:'rgba(7,10,16,.78)',labelText:'#f4eedd',baseFill:'#0d1d2e',baseOpacity:'0.4',svgFilter:'none'}),
-    light:Object.freeze({id:'light',bg:'#eee4d1',panelBg:'rgba(250,246,236,.97)',text:'#332b20',muted:'#6c6255',accent:'#986a16',controlBg:'rgba(250,246,236,.88)',border:'rgba(72,55,31,.22)',labelBg:'rgba(250,246,236,.9)',labelText:'#332b20',baseFill:'#d7c7a8',baseOpacity:'0.58',svgFilter:'sepia(.16) saturate(.72) brightness(1.28) contrast(.84)'})
+    light:Object.freeze({id:'light',bg:'#ded2b8',panelBg:'rgba(248,243,231,.97)',text:'#30291f',muted:'#675e52',accent:'#8b5e14',controlBg:'rgba(248,243,231,.92)',border:'rgba(74,57,35,.24)',labelBg:'rgba(249,245,234,.94)',labelText:'#30291f',baseFill:'#d2c3a6',baseOpacity:'0.34',svgFilter:'none'})
   });
 
   function getMapThemePalette(theme){return MAP_THEME_PALETTES[theme]||MAP_THEME_PALETTES.dark}
@@ -942,6 +942,23 @@ const MapEngine = (function() {
 .me-map .me-story-chip--active{background:color-mix(in srgb,var(--me-accent,#e8c879) 20%,transparent);border-color:color-mix(in srgb,var(--me-accent,#e8c879) 45%,transparent);color:var(--me-accent,#e8c879)}
 .me-map [data-me-layer-hidden="1"]{visibility:hidden;pointer-events:none}
 
+
+/* Premium light cartography: authored colors per layer, never one global wash. */
+.me-map[data-map-theme="light"] .me-canvas svg{filter:none}
+.me-map[data-map-theme="light"] #me-base-geo{opacity:1}
+.me-map[data-map-theme="light"] #terrain>rect:first-child{fill:#d8c9aa!important}
+.me-map[data-map-theme="light"] #terrain>rect:nth-child(2){fill:#b7a47c!important;opacity:.16!important;filter:none!important}
+.me-map[data-map-theme="light"] #terrain .water-body{fill:#9db9b8!important;stroke:#68898d!important;stroke-opacity:.72!important}
+.me-map[data-map-theme="light"] #terrain .water-pattern{fill:#6f939a!important;opacity:.12!important}
+.me-map[data-map-theme="light"] #terrain path[stroke="#2d4a66"],.me-map[data-map-theme="light"] #terrain path[stroke="#4a80a8"]{stroke:#5f8790!important}
+.me-map[data-map-theme="light"] #terrain .sea-label{fill:#416772!important;opacity:.58}
+.me-map[data-map-theme="light"] #terrain .region-label{fill:#665a43!important;opacity:.58}
+.me-map[data-map-theme="light"] #terrain #tradeRoutes{opacity:.34}
+.me-map[data-map-theme="light"] #me-paths .me-route-main{filter:brightness(.68) saturate(1.28)}
+.me-map[data-map-theme="light"] #me-paths .me-route-underlay{mix-blend-mode:multiply;opacity:.09}
+.me-map[data-map-theme="light"] .me-place-label{fill:var(--me-label-text,#30291f)!important}
+.me-map[data-map-theme="light"] .me-stage-dot,.me-map[data-map-theme="light"] .me-subtitle{color:#655b4e}
+
 /* Media queries */
 @media(min-width:640px){
   .me-title{font-size:28px}
@@ -1114,7 +1131,7 @@ const MapEngine = (function() {
     if(route.meta?.subtitle){const sub=document.createElement('div');sub.className='me-subtitle';sub.textContent=route.meta.subtitle;headerLeft.appendChild(sub)}
     header.appendChild(headerLeft);
     
-    const storiesBar=document.createElement('div');storiesBar.className='me-stories';
+    const storiesBar=document.createElement('div');storiesBar.className='me-stories';storiesBar.setAttribute('data-horizontal-scroll','stories');storiesBar.setAttribute('role','tablist');storiesBar.setAttribute('aria-label','Сюжеты карты');
     header.appendChild(storiesBar);
     // Search input
 const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';searchInput.setAttribute('aria-label','Поиск места на карте');searchInput.setAttribute('role','searchbox');
@@ -2107,7 +2124,7 @@ container.appendChild(panel);
         label.setAttribute('x',String(lx));
         label.setAttribute('y',String(ly));
         label.setAttribute('text-anchor',ap.ta);
-        label.setAttribute('fill',inStory?'#f4eedd':'#555');
+        label.setAttribute('fill',inStory?'var(--me-label-text,#f4eedd)':'#666');
         label.setAttribute('font-size',String(fontSize));
         label.setAttribute('opacity','0.9');
         label.style.transition = 'opacity .3s';
@@ -2498,11 +2515,12 @@ container.appendChild(panel);
 
     function renderStories(){
       storiesBar.innerHTML=(route.stories||[]).map(s=>`
-        <button class="me-story-chip${s.id===activeStoryId?' me-story-chip--active':''}" data-story="${s.id}">${esc(s.label)}</button>
+        <button class="me-story-chip${s.id===activeStoryId?' me-story-chip--active':''}" data-story="${s.id}" role="tab" aria-selected="${s.id===activeStoryId?'true':'false'}">${esc(s.label)}</button>
       `).join('');
       storiesBar.querySelectorAll('.me-story-chip').forEach(chip=>{
         chip.addEventListener('click',()=>setStory(chip.dataset.story||'main'));
       });
+      requestAnimationFrame(()=>storiesBar.querySelector('.me-story-chip--active')?.scrollIntoView({block:'nearest',inline:'nearest'}));
     }
 
     function renderStages(){
