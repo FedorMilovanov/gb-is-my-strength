@@ -138,34 +138,6 @@
         }
       }
     },
-    ".github/workflows/product-research-release-witness.yml": {
-      "jobs": {
-        "validate-and-publish-witness": {
-          "permissions": {
-            "contents": "read",
-            "issues": "write"
-          },
-          "purpose": "Publish an idempotent durable issue receipt only after the exact Product release witness succeeds",
-          "allowedEvents": [
-            "push",
-            "workflow_dispatch"
-          ],
-          "repositoryBoundary": "same repository; checked-in validators execute against trusted Product history and only a machine-marked issue receipt is mutated",
-          "branchBoundary": "main push or explicit manual execution of the trusted default-branch workflow",
-          "mutationTargets": [
-            "machine-marked Product to Research release witness issue"
-          ],
-          "requiresConcurrency": true,
-          "requiredMarkers": [
-            "branches: [main]",
-            "git merge-base --is-ancestor \"$DIOTROPHES_WAVE12_RELEASE_BOUNDARY\" HEAD",
-            "<!-- product-research-release-witness:v1 -->",
-            "gh issue create --title \"$title\" --body-file \"$body_file\"",
-            "cancel-in-progress: false"
-          ]
-        }
-      }
-    },
     ".github/workflows/search-manifest-policy.yml": {
       "jobs": {
         "search-manifest-autofix": {
