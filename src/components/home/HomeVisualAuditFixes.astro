@@ -180,11 +180,16 @@
 <script is:inline>
   (() => {
     /* The browser contract serves dist from localhost. Keep these assertions out
-       of the public runtime while making the screenshot-confirmed optical rules
-       fail CI when a later global stylesheet overrides them again. */
+       of the public runtime while making screenshot-confirmed optical rules fail
+       CI when a later global stylesheet overrides them again. */
     if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
 
-    const report = (message) => console.error(`[home-visual-contract] ${message}`);
+    const reported = new Set();
+    const report = (message) => {
+      if (reported.has(message)) return;
+      reported.add(message);
+      console.error(`[home-visual-contract] ${message}`);
+    };
     const numericStroke = (element) => Number.parseFloat(getComputedStyle(element).strokeWidth);
     const renderedLines = (element) => {
       const range = document.createRange();
@@ -192,14 +197,37 @@
       return [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
     };
 
+    /* Browsers may serialize the same computed color as rgb(), color(srgb) or
+       oklab(). Resolve each value through a one-pixel canvas before comparing it. */
+    const colorCanvas = document.createElement('canvas');
+    colorCanvas.width = 1;
+    colorCanvas.height = 1;
+    const colorContext = colorCanvas.getContext('2d', { willReadFrequently: true });
+    const rgba = (value) => {
+      if (!colorContext) return null;
+      colorContext.clearRect(0, 0, 1, 1);
+      colorContext.fillStyle = '#000';
+      colorContext.fillStyle = value;
+      colorContext.fillRect(0, 0, 1, 1);
+      return [...colorContext.getImageData(0, 0, 1, 1).data];
+    };
+    const colorDistance = (first, second) => {
+      if (!first || !second) return Number.POSITIVE_INFINITY;
+      return Math.max(...first.map((value, index) => Math.abs(value - second[index])));
+    };
+    const isTransient = (element) => Boolean(element?.matches(':hover, :focus, :focus-visible, :active'));
+
     const assertHeaderIcons = () => {
-      const search = document.querySelector('#gbSearchBtn svg circle');
-      const theme = document.querySelector(
+      const searchButton = document.getElementById('gbSearchBtn');
+      const themeButton = document.getElementById('themeToggle');
+      const menuButton = document.getElementById('hMobileMenuBtn');
+      const search = searchButton?.querySelector('svg circle');
+      const theme = themeButton?.querySelector(
         document.documentElement.classList.contains('dark')
-          ? '#themeToggle .icon-sun circle'
-          : '#themeToggle .icon-moon path'
+          ? '.icon-sun circle'
+          : '.icon-moon path'
       );
-      const menu = document.querySelector('#hMobileMenuBtn svg line');
+      const menu = menuButton?.querySelector('svg line');
       if (!search || !theme) return;
 
       const searchStyle = getComputedStyle(search);
@@ -212,8 +240,14 @@
       if (!Number.isFinite(themeWidth) || themeWidth > 1.14) {
         report(`theme icon stroke is heavy (${themeStyle.strokeWidth})`);
       }
-      if (searchStyle.stroke !== themeStyle.stroke) {
-        report(`magnifier/theme ink diverged (${searchStyle.stroke} vs ${themeStyle.stroke})`);
+
+      /* Compare ink only at rest. Hover/focus intentionally changes one control
+         to the accent color, and CSS transitions can expose intermediate values. */
+      if (!isTransient(searchButton) && !isTransient(themeButton)) {
+        const difference = colorDistance(rgba(searchStyle.stroke), rgba(themeStyle.stroke));
+        if (difference > 4) {
+          report(`magnifier/theme ink diverged by ${difference} RGBA levels`);
+        }
       }
 
       if (menu && innerWidth <= 760) {
@@ -222,8 +256,11 @@
         if (!Number.isFinite(menuWidth) || menuWidth > 1.2) {
           report(`mobile menu stroke is heavy (${menuStyle.strokeWidth})`);
         }
-        if (menuStyle.stroke !== searchStyle.stroke) {
-          report(`mobile header icon ink diverged (${menuStyle.stroke} vs ${searchStyle.stroke})`);
+        if (!isTransient(menuButton) && !isTransient(searchButton)) {
+          const difference = colorDistance(rgba(menuStyle.stroke), rgba(searchStyle.stroke));
+          if (difference > 4) {
+            report(`mobile header icon ink diverged by ${difference} RGBA levels`);
+          }
         }
       }
     };
@@ -267,25 +304,35 @@
       }
     };
 
-    let pending = false;
+    let timer = 0;
     const audit = () => {
-      pending = false;
-      assertHeaderIcons();
-      assertMobileRoutes();
-      assertCompactControls();
+      timer = 0;
+      requestAnimationFrame(() => {
+        assertHeaderIcons();
+        assertMobileRoutes();
+        assertCompactControls();
+      });
     };
     const schedule = () => {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(audit);
+      window.clearTimeout(timer);
+      /* Header controls use 200ms transitions. Audit only after their rendered
+         colors have settled, not during the interpolation itself. */
+      timer = window.setTimeout(audit, 280);
     };
 
     addEventListener('resize', schedule, { passive: true });
     addEventListener('load', schedule, { once: true });
+    addEventListener('focusin', schedule, true);
+    addEventListener('focusout', schedule, true);
+    addEventListener('pointerover', schedule, true);
+    addEventListener('pointerout', schedule, true);
     document.fonts?.ready.then(schedule);
+
     new MutationObserver(schedule).observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class'],
+    });
+    new MutationObserver(schedule).observe(document.body, {
       childList: true,
       subtree: true,
     });
