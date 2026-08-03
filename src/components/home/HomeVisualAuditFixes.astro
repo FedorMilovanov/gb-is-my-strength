@@ -176,3 +176,119 @@
     }
   }
 </style>
+
+<script is:inline>
+  (() => {
+    /* The browser contract serves dist from localhost. Keep these assertions out
+       of the public runtime while making the screenshot-confirmed optical rules
+       fail CI when a later global stylesheet overrides them again. */
+    if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
+
+    const report = (message) => console.error(`[home-visual-contract] ${message}`);
+    const numericStroke = (element) => Number.parseFloat(getComputedStyle(element).strokeWidth);
+    const renderedLines = (element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
+    };
+
+    const assertHeaderIcons = () => {
+      const search = document.querySelector('#gbSearchBtn svg circle');
+      const theme = document.querySelector(
+        document.documentElement.classList.contains('dark')
+          ? '#themeToggle .icon-sun circle'
+          : '#themeToggle .icon-moon path'
+      );
+      const menu = document.querySelector('#hMobileMenuBtn svg line');
+      if (!search || !theme) return;
+
+      const searchStyle = getComputedStyle(search);
+      const themeStyle = getComputedStyle(theme);
+      const searchWidth = numericStroke(search);
+      const themeWidth = numericStroke(theme);
+      if (!Number.isFinite(searchWidth) || searchWidth > 1.2) {
+        report(`magnifier stroke is heavy (${searchStyle.strokeWidth})`);
+      }
+      if (!Number.isFinite(themeWidth) || themeWidth > 1.14) {
+        report(`theme icon stroke is heavy (${themeStyle.strokeWidth})`);
+      }
+      if (searchStyle.stroke !== themeStyle.stroke) {
+        report(`magnifier/theme ink diverged (${searchStyle.stroke} vs ${themeStyle.stroke})`);
+      }
+
+      if (menu && innerWidth <= 760) {
+        const menuStyle = getComputedStyle(menu);
+        const menuWidth = numericStroke(menu);
+        if (!Number.isFinite(menuWidth) || menuWidth > 1.2) {
+          report(`mobile menu stroke is heavy (${menuStyle.strokeWidth})`);
+        }
+        if (menuStyle.stroke !== searchStyle.stroke) {
+          report(`mobile header icon ink diverged (${menuStyle.stroke} vs ${searchStyle.stroke})`);
+        }
+      }
+    };
+
+    const assertMobileRoutes = () => {
+      if (innerWidth > 760) return;
+      document.querySelectorAll('#issledovat .h-home-route__eyebrow, #issledovat .h-home-route__copy strong')
+        .forEach((label) => {
+          const lines = renderedLines(label);
+          if (lines.length > 1) report(`direction label wrapped: “${label.textContent?.trim()}”`);
+          const copy = label.closest('.h-home-route__copy');
+          const labelRect = label.getBoundingClientRect();
+          const copyRect = copy?.getBoundingClientRect();
+          if (copyRect && labelRect.right > copyRect.right + 1) {
+            report(`direction label overflowed: “${label.textContent?.trim()}”`);
+          }
+        });
+    };
+
+    const assertCompactControls = () => {
+      const arrow = document.querySelector('.h-scroll-top-arrow svg polyline');
+      if (arrow && numericStroke(arrow) > 1.35) report('scroll-to-top arrow became heavy');
+
+      const palette = document.querySelector('.cp-backdrop');
+      if (!palette) return;
+      const clear = palette.querySelector('.cp-clear');
+      const clearSvg = clear?.querySelector('svg');
+      const closeSvg = palette.querySelector('.cp-home-close svg');
+      if (clearSvg && getComputedStyle(clearSvg).display !== 'none') {
+        report('search clear control reverted to a second close X');
+      }
+      if (clear && ['none', 'normal', '""'].includes(getComputedStyle(clear, '::before').content)) {
+        report('search clear control lost its distinct backspace mark');
+      }
+      if (closeSvg && getComputedStyle(closeSvg).display === 'none') {
+        report('search close control is hidden');
+      }
+      const footer = palette.querySelector('.cp-footer');
+      if (footer && innerWidth <= 760 && getComputedStyle(footer).display !== 'none') {
+        report('desktop keyboard footer is visible on mobile search');
+      }
+    };
+
+    let pending = false;
+    const audit = () => {
+      pending = false;
+      assertHeaderIcons();
+      assertMobileRoutes();
+      assertCompactControls();
+    };
+    const schedule = () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(audit);
+    };
+
+    addEventListener('resize', schedule, { passive: true });
+    addEventListener('load', schedule, { once: true });
+    document.fonts?.ready.then(schedule);
+    new MutationObserver(schedule).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+      childList: true,
+      subtree: true,
+    });
+    schedule();
+  })();
+</script>
