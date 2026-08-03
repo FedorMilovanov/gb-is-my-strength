@@ -5,9 +5,14 @@
  *
  * Historical authority: commit 32e8c63290d111ddc91078ac66658e24419a0237
  * restored black translations and a complete Hebrew-to-translation swap.
- * A later route rule forced every .hb-front back to opacity .94, so the two
- * faces became visible together. Exact-head Runtime CI reproduced the clash
- * for all nine words; state declarations below therefore win explicitly.
+ *
+ * The regression had two independent cascade sources:
+ * 1. a late Home rule restored opacity on the Hebrew face while open;
+ * 2. the shared reduced-motion fallback exposed both faces at once.
+ *
+ * This component owns only the reviewed Home-route repair. It deliberately
+ * contains no self-clicking runtime audit: canonical browser workflows remain
+ * the sole interaction driver, so evidence collection cannot mutate the page.
  */
 ---
 
@@ -35,19 +40,21 @@
     text-shadow: 0 2px 6px rgba(0, 0, 0, .34), 0 4px 28px rgba(245, 237, 224, .08);
   }
 
-  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) .hb-front,
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) > .hb-front,
   body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
     backface-visibility: hidden;
   }
 
-  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra)[data-toggled] .hb-front {
+  body.home-page #main-content .h-sacred-block--hero
+    :is(.hb-w, .h-tetra)[data-toggled] > .hb-front {
     visibility: hidden !important;
     opacity: 0 !important;
     transform: rotate(-8deg) scale(.85) !important;
+    pointer-events: none;
   }
 
-  body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] .hb-back,
-  body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] .h-tetra-back {
+  body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] > .hb-back,
+  body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] > .h-tetra-back {
     visibility: visible !important;
     opacity: 1 !important;
     transform: rotate(0) scale(1) !important;
@@ -57,180 +64,127 @@
     transform: translate(-50%, -100%) translateY(6px);
   }
 
-  body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] .h-tetra-label {
+  body.home-page #main-content .h-sacred-block--hero
+    .h-tetra[data-toggled] > .h-tetra-label {
     opacity: 1 !important;
+    visibility: visible !important;
     filter: blur(0) !important;
     transform: translate(-50%, -100%) translateY(6px) !important;
     letter-spacing: .28em !important;
   }
 
-  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra):focus-visible .hb-front {
+  body.home-page #main-content .h-sacred-block--hero
+    :is(.hb-w, .h-tetra):focus-visible > .hb-front {
     visibility: hidden !important;
     opacity: 0 !important;
     transform: rotate(-8deg) scale(.85) !important;
+    pointer-events: none;
   }
 
-  body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible .hb-back,
-  body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible .h-tetra-back {
+  body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible > .hb-back,
+  body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible > .h-tetra-back {
     visibility: visible !important;
     opacity: 1 !important;
     transform: rotate(0) scale(1) !important;
   }
 
-  body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible .h-tetra-label {
+  body.home-page #main-content .h-sacred-block--hero
+    .h-tetra:focus-visible > .h-tetra-label {
     opacity: 1 !important;
+    visibility: visible !important;
     filter: blur(0) !important;
     transform: translate(-50%, -100%) translateY(6px) !important;
     letter-spacing: .28em !important;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra):hover .hb-front {
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra):hover > .hb-front {
       visibility: hidden !important;
       opacity: 0 !important;
       transform: rotate(-8deg) scale(.85) !important;
+      pointer-events: none;
     }
 
-    body.home-page #main-content .h-sacred-block--hero .hb-w:hover .hb-back,
-    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover .h-tetra-back {
+    body.home-page #main-content .h-sacred-block--hero .hb-w:hover > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover > .h-tetra-back {
       visibility: visible !important;
       opacity: 1 !important;
       transform: rotate(0) scale(1) !important;
     }
 
-    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover .h-tetra-label {
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra:hover > .h-tetra-label {
       opacity: 1 !important;
+      visibility: visible !important;
       filter: blur(0) !important;
       transform: translate(-50%, -100%) translateY(6px) !important;
       letter-spacing: .28em !important;
     }
   }
 
-  body.home-page #main-content .h-sacred-block--hero[data-sacred-contract-audit] :is(.hb-front, .hb-back, .h-tetra-back, .h-tetra-label) {
-    transition: none !important;
-  }
-
+  /* The shared reduced-motion stylesheet intentionally removes transforms,
+     but its legacy fallback also exposed both faces. On Home we preserve the
+     same interaction semantically, only without animation. */
   @media (prefers-reduced-motion: reduce) {
-    body.home-page #main-content .h-sacred-block--hero :is(.hb-front, .hb-back, .h-tetra-back, .h-tetra-label) {
-      transition: none;
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra) > .hb-front {
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-back, .h-tetra-back) {
+      visibility: hidden !important;
+      opacity: 0 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
+      visibility: hidden !important;
+      opacity: 0 !important;
+      filter: none !important;
+      transform: translate(-50%, -100%) translateY(6px) !important;
+      transition: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra)[data-toggled] > .hb-front,
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra):focus-visible > .hb-front,
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra):hover > .hb-front {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] > .h-tetra-back,
+    body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible > .h-tetra-back,
+    body.home-page #main-content .h-sacred-block--hero .hb-w:hover > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover > .h-tetra-back {
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra[data-toggled] > .h-tetra-label,
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra:focus-visible > .h-tetra-label,
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra:hover > .h-tetra-label {
+      visibility: visible !important;
+      opacity: 1 !important;
+      filter: none !important;
+      transform: translate(-50%, -100%) translateY(6px) !important;
+      letter-spacing: .28em !important;
     }
   }
 </style>
-
-<script is:inline>
-  (() => {
-    if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
-
-    const block = document.querySelector('.h-sacred-block--hero');
-    if (!(block instanceof HTMLElement)) return;
-
-    const report = (message) => console.error(`[home-sacred-flip-contract] ${message}`);
-    const nextPaint = () => new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    });
-    const parseRgb = (value) => value.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number) ?? [];
-    const sameRgb = (left, right) => {
-      const a = parseRgb(left);
-      const b = parseRgb(right);
-      return a.length === 3 && b.length === 3 && a.every((value, index) => Math.abs(value - b[index]) < 1);
-    };
-
-    let audited = false;
-    const audit = async () => {
-      if (audited) return;
-      audited = true;
-
-      const colorProbe = document.createElement('span');
-      colorProbe.style.cssText = 'position:fixed;inset:auto auto -9999px -9999px;color:var(--h-ink);pointer-events:none;';
-      block.append(colorProbe);
-      const expectedInk = getComputedStyle(colorProbe).color;
-      colorProbe.remove();
-
-      const buttons = [...block.querySelectorAll('button.hb-w, button.h-tetra')]
-        .filter((button) => button instanceof HTMLButtonElement);
-      buttons.forEach((button) => button.removeAttribute('data-toggled'));
-
-      block.setAttribute('data-sacred-contract-audit', '');
-      await nextPaint();
-
-      for (const [index, button] of buttons.entries()) {
-        const front = button.querySelector(':scope > .hb-front');
-        const back = button.querySelector(':scope > .hb-back, :scope > .h-tetra-back');
-        if (!(front instanceof HTMLElement) || !(back instanceof HTMLElement)) {
-          report(`word ${index + 1} lost one flip face`);
-          continue;
-        }
-
-        button.click();
-        await nextPaint();
-
-        const frontStyle = getComputedStyle(front);
-        const backStyle = getComputedStyle(back);
-        const translation = button.matches('.h-tetra')
-          ? button.querySelector('.h-tetra-name')
-          : back;
-        const translationColor = translation instanceof HTMLElement ? getComputedStyle(translation).color : '';
-        const open = button.hasAttribute('data-toggled');
-        const pressed = button.getAttribute('aria-pressed');
-
-        if (!open || pressed !== 'true') {
-          report(`word ${index + 1} did not open through its real click contract (open=${open}, aria-pressed=${pressed})`);
-        }
-        if (Number.parseFloat(frontStyle.opacity) > .05 || frontStyle.visibility !== 'hidden') {
-          report(
-            `word ${index + 1} leaves Hebrew visible while open `
-            + `(opacity=${frontStyle.opacity}, visibility=${frontStyle.visibility}, transition=${frontStyle.transitionDuration}/${frontStyle.transitionDelay})`
-          );
-        }
-        if (Number.parseFloat(backStyle.opacity) < .95 || backStyle.visibility !== 'visible') {
-          report(
-            `word ${index + 1} does not reveal its translation cleanly `
-            + `(opacity=${backStyle.opacity}, visibility=${backStyle.visibility})`
-          );
-        }
-        if (!sameRgb(translationColor, expectedInk)) {
-          report(`word ${index + 1} translation is not --h-ink (${translationColor} vs ${expectedInk})`);
-        }
-
-        button.click();
-        await nextPaint();
-        if (button.hasAttribute('data-toggled') || button.getAttribute('aria-pressed') !== 'false') {
-          report(`word ${index + 1} did not close through its second real click`);
-          button.removeAttribute('data-toggled');
-        }
-      }
-
-      const tetra = block.querySelector('button.h-tetra');
-      const label = tetra?.querySelector(':scope > .h-tetra-label');
-      if (tetra instanceof HTMLButtonElement && label instanceof HTMLElement) {
-        tetra.click();
-        await nextPaint();
-        const blockRect = block.getBoundingClientRect();
-        const labelRect = label.getBoundingClientRect();
-        if (labelRect.top < blockRect.top + 14) {
-          report(`sacred-name label rose into the instruction (${Math.round(labelRect.top - blockRect.top)}px inset)`);
-        }
-        tetra.click();
-        await nextPaint();
-      }
-
-      block.removeAttribute('data-sacred-contract-audit');
-      block.dataset.sacredFlipContract = 'ready';
-    };
-
-    const loaded = document.readyState === 'complete'
-      ? Promise.resolve()
-      : new Promise((resolve) => addEventListener('load', resolve, { once: true }));
-
-    Promise.all([loaded, document.fonts?.ready ?? Promise.resolve()]).then(() => {
-      window.setTimeout(() => {
-        const run = () => void audit();
-        if ('requestIdleCallback' in window) {
-          window.requestIdleCallback(run, { timeout: 1600 });
-        } else {
-          run();
-        }
-      }, 1800);
-    });
-  })();
-</script>
