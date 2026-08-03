@@ -323,7 +323,18 @@ async function runViewport(browser, viewport) {
           return tabRect.left >= stripRect.left - 1 && tabRect.right <= stripRect.right + 1;
         }, await tab.elementHandle());
         await tab.click();
-        await page.waitForTimeout(70);
+        // renderTabContent enters at translateX(4px) and settles on the next
+        // animation frame. Geometry must describe the steady panel, not a
+        // transient four-pixel entrance transform on a busy CI runner.
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await page.waitForFunction(() => {
+          const content = document.querySelector('.me-content[role="tabpanel"]');
+          if (!content) return false;
+          const transform = getComputedStyle(content).transform;
+          if (transform === 'none') return true;
+          try { return Math.abs(new DOMMatrixReadOnly(transform).m41) < 0.25; }
+          catch { return false; }
+        });
         const state = await inspectPanel(page);
         validatePanel(scope, state, place, tabId, expected, viewport);
         const contentMaxScroll = await verifyContentScroll(page, scope);
