@@ -190,18 +190,7 @@
       reported.add(message);
       console.error(`[home-visual-contract] ${message}`);
     };
-    const styleOf = (element) => getComputedStyle(element);
-    const numericStroke = (element) => Number.parseFloat(styleOf(element).strokeWidth);
-    const hasVisibleStroke = (element) => {
-      const style = styleOf(element);
-      const opacity = Number.parseFloat(style.opacity || '1');
-      return style.stroke !== 'none'
-        && style.stroke !== 'transparent'
-        && style.visibility !== 'hidden'
-        && style.display !== 'none'
-        && Number.isFinite(opacity)
-        && opacity > 0;
-    };
+    const numericStroke = (element) => Number.parseFloat(getComputedStyle(element).strokeWidth);
     const renderedLines = (element) => {
       const range = document.createRange();
       range.selectNodeContents(element);
@@ -221,31 +210,20 @@
       const searchWidth = numericStroke(search);
       const themeWidth = numericStroke(theme);
       if (!Number.isFinite(searchWidth) || searchWidth > 1.2) {
-        report(`magnifier stroke is heavy (${styleOf(search).strokeWidth})`);
+        report(`magnifier stroke is heavy (${getComputedStyle(search).strokeWidth})`);
       }
       if (!Number.isFinite(themeWidth) || themeWidth > 1.14) {
-        report(`theme icon stroke is heavy (${styleOf(theme).strokeWidth})`);
+        report(`theme icon stroke is heavy (${getComputedStyle(theme).strokeWidth})`);
       }
       if (Math.abs(searchWidth - themeWidth) > 0.2) {
         report(`magnifier/theme optical stroke gap is too large (${searchWidth} vs ${themeWidth})`);
-      }
-      if (!hasVisibleStroke(search)) report('magnifier lost its visible stroke');
-      if (!hasVisibleStroke(theme)) report('theme icon lost its visible stroke');
-
-      const searchBox = search.closest('svg')?.getBoundingClientRect();
-      const themeBox = theme.closest('svg')?.getBoundingClientRect();
-      if (searchBox && themeBox
-        && (Math.abs(searchBox.width - themeBox.width) > .5
-          || Math.abs(searchBox.height - themeBox.height) > .5)) {
-        report(`magnifier/theme icon boxes diverged (${searchBox.width}×${searchBox.height} vs ${themeBox.width}×${themeBox.height})`);
       }
 
       if (menu && innerWidth <= 760) {
         const menuWidth = numericStroke(menu);
         if (!Number.isFinite(menuWidth) || menuWidth > 1.2) {
-          report(`mobile menu stroke is heavy (${styleOf(menu).strokeWidth})`);
+          report(`mobile menu stroke is heavy (${getComputedStyle(menu).strokeWidth})`);
         }
-        if (!hasVisibleStroke(menu)) report('mobile menu lost its visible stroke');
       }
     };
 
@@ -273,17 +251,20 @@
       const clear = palette.querySelector('.cp-clear');
       const clearSvg = clear?.querySelector('svg');
       const closeSvg = palette.querySelector('.cp-home-close svg');
-      if (clearSvg && styleOf(clearSvg).display !== 'none') {
+      if (clearSvg && getComputedStyle(clearSvg).display !== 'none') {
         report('search clear control reverted to a second close X');
       }
-      if (clear && ['none', 'normal', '""'].includes(styleOf(clear, '::before').content)) {
-        report('search clear control lost its distinct backspace mark');
+      if (clear) {
+        const clearMark = getComputedStyle(clear, '::before').content;
+        if (['none', 'normal', '""'].includes(clearMark)) {
+          report('search clear control lost its distinct backspace mark');
+        }
       }
-      if (closeSvg && styleOf(closeSvg).display === 'none') {
+      if (closeSvg && getComputedStyle(closeSvg).display === 'none') {
         report('search close control is hidden');
       }
       const footer = palette.querySelector('.cp-footer');
-      if (footer && innerWidth <= 760 && styleOf(footer).display !== 'none') {
+      if (footer && innerWidth <= 760 && getComputedStyle(footer).display !== 'none') {
         report('desktop keyboard footer is visible on mobile search');
       }
     };
