@@ -1,0 +1,48 @@
+name: Pihahiroth Release API Contract Materialize
+
+on:
+  push:
+    branches:
+      - fix/pihahiroth-exposed-pointer-witness-20260803
+    paths:
+      - '.github/workflows/.tmp-pihahiroth-release-api-contract-20260803.yml'
+      - 'scripts/.tmp-pihahiroth-release-api-contract-20260803.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pihahiroth-release-api-contract-materialize
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: fix/pihahiroth-exposed-pointer-witness-20260803
+
+      - name: Materialize release-contract repair
+        run: python3 scripts/.tmp-pihahiroth-release-api-contract-20260803.py
+
+      - name: Commit permanent contract repair and cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          mapfile -t paths < <(git status --porcelain | sed 's/^...//' | sort)
+          expected=(
+            '.github/workflows/.tmp-pihahiroth-release-api-contract-20260803.yml'
+            'scripts/.tmp-pihahiroth-release-api-contract-20260803.py'
+            'scripts/pihahiroth-uncertainty-release-contract.mjs'
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          [[ "${paths[*]}" == "${expected_sorted[*]}" ]]
+          git add -A
+          git diff --cached --check
+          git commit -m 'test(pihahiroth): bind release gate to exported map API'
+          git push origin HEAD:fix/pihahiroth-exposed-pointer-witness-20260803
