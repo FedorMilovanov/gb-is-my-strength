@@ -6,17 +6,17 @@
  * Historical authority: commit 32e8c63290d111ddc91078ac66658e24419a0237
  * restored black translations and a complete Hebrew-to-translation swap.
  * A later route rule forced every .hb-front back to opacity .94, so the two
- * faces became visible together. This late route contract restores only that
- * reviewed behavior and keeps the label clear of the instruction above it.
+ * faces became visible together. Exact-head Runtime CI reproduced the clash
+ * for all nine words; state declarations below therefore win explicitly.
  */
 ---
 
 <style is:global>
   body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
-    color: var(--h-ink);
-    background: none;
-    -webkit-text-fill-color: currentColor;
-    filter: none;
+    color: var(--h-ink) !important;
+    background: none !important;
+    -webkit-text-fill-color: currentColor !important;
+    filter: none !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero .hb-back {
@@ -28,7 +28,7 @@
   }
 
   html.dark body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
-    color: var(--h-ink);
+    color: var(--h-ink) !important;
   }
 
   html.dark body.home-page #main-content .h-sacred-block--hero .h-tetra-name {
@@ -41,16 +41,16 @@
   }
 
   body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra)[data-toggled] .hb-front {
-    visibility: hidden;
-    opacity: 0;
-    transform: rotate(-8deg) scale(.85);
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transform: rotate(-8deg) scale(.85) !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] .hb-back,
   body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] .h-tetra-back {
-    visibility: visible;
-    opacity: 1;
-    transform: rotate(0) scale(1);
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: rotate(0) scale(1) !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
@@ -58,51 +58,51 @@
   }
 
   body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] .h-tetra-label {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate(-50%, -100%) translateY(6px);
-    letter-spacing: .28em;
+    opacity: 1 !important;
+    filter: blur(0) !important;
+    transform: translate(-50%, -100%) translateY(6px) !important;
+    letter-spacing: .28em !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra):focus-visible .hb-front {
-    visibility: hidden;
-    opacity: 0;
-    transform: rotate(-8deg) scale(.85);
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transform: rotate(-8deg) scale(.85) !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible .hb-back,
   body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible .h-tetra-back {
-    visibility: visible;
-    opacity: 1;
-    transform: rotate(0) scale(1);
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: rotate(0) scale(1) !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible .h-tetra-label {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate(-50%, -100%) translateY(6px);
-    letter-spacing: .28em;
+    opacity: 1 !important;
+    filter: blur(0) !important;
+    transform: translate(-50%, -100%) translateY(6px) !important;
+    letter-spacing: .28em !important;
   }
 
   @media (hover: hover) and (pointer: fine) {
     body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra):hover .hb-front {
-      visibility: hidden;
-      opacity: 0;
-      transform: rotate(-8deg) scale(.85);
+      visibility: hidden !important;
+      opacity: 0 !important;
+      transform: rotate(-8deg) scale(.85) !important;
     }
 
     body.home-page #main-content .h-sacred-block--hero .hb-w:hover .hb-back,
     body.home-page #main-content .h-sacred-block--hero .h-tetra:hover .h-tetra-back {
-      visibility: visible;
-      opacity: 1;
-      transform: rotate(0) scale(1);
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: rotate(0) scale(1) !important;
     }
 
     body.home-page #main-content .h-sacred-block--hero .h-tetra:hover .h-tetra-label {
-      opacity: 1;
-      filter: blur(0);
-      transform: translate(-50%, -100%) translateY(6px);
-      letter-spacing: .28em;
+      opacity: 1 !important;
+      filter: blur(0) !important;
+      transform: translate(-50%, -100%) translateY(6px) !important;
+      letter-spacing: .28em !important;
     }
   }
 
