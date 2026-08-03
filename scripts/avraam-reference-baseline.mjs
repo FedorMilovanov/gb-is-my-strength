@@ -190,6 +190,8 @@ async function runViewport(browser,viewport){
     await screenshot(page,dir,'01-overview.png');
     result.overview=await collectGeometry(page,`${viewport.id}:overview`);
     if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
+    const clippedOverviewLabels=result.overview.offscreenLabels.filter(label=>String(label.className||'').split(/\s+/).includes('lbl-overview'));
+    if(clippedOverviewLabels.length)result.verificationFailures.push(`overview labels outside safe area: ${clippedOverviewLabels.map(label=>label.text||label.id||label.index).join(', ')}`);
     if(result.overview.motion.prefersReducedMotion&&result.overview.motion.smilAnimations>0&&!result.overview.motion.smilPaused)result.verificationFailures.push('reduced motion did not pause SVG animations');
 
     const themeButton=page.locator('.me-theme-btn').first();
