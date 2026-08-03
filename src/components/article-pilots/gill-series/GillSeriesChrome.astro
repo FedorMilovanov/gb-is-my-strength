@@ -2,6 +2,7 @@
 import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
 import GillSeriesRail from './GillSeriesRail.astro';
 import GillSeriesMobileBar from './GillSeriesMobileBar.astro';
+import GillMobileOverlayActivationBoundary from './GillMobileOverlayActivationBoundary.astro';
 import GillSeriesOverlay from './GillSeriesOverlay.astro';
 import GillPartTocOverlay from './GillPartTocOverlay.astro';
 import GillLearningSheet from './GillLearningSheet.astro';
@@ -57,6 +58,7 @@ const page = config.pages[pageId];
   <GillPartTocOverlay pageId={pageId} config={config} />
   <GillLearningSheet pageId={pageId} config={config} />
   <GillReaderSettingsSheet config={config} />
+  <GillMobileOverlayActivationBoundary />
 </div><!-- /gbs2-world: overlays+bottom-bar nested so [data-gill-v16] descendant CSS applies -->
 
 <script is:inline defer src="../../js/bookmark-engine.js?v=fba4e559"></script>
