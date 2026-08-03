@@ -2311,7 +2311,7 @@ container.appendChild(panel);
           candidate.tabIndex=selected?0:-1;
         });
         content.setAttribute('aria-labelledby',btn.id);
-        btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+        btn.scrollIntoView({behavior:'auto',block:'nearest',inline:'nearest'});
         renderTabContent(btn.dataset.tab||'story',place);
         if(focus)btn.focus();
       };
@@ -2338,7 +2338,7 @@ container.appendChild(panel);
       const initialTab=tabButtons.find(btn=>btn.classList.contains('me-tab--active'))||tabButtons[0];
       if(initialTab)content.setAttribute('aria-labelledby',initialTab.id);
 
-      requestAnimationFrame(()=>initialTab?.scrollIntoView({block:'nearest',inline:'start'}));
+      requestAnimationFrame(()=>initialTab?.scrollIntoView({behavior:'auto',block:'nearest',inline:'start'}));
 
       // Content
       renderTabContent(activeTab,place);

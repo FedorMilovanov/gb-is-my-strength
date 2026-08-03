@@ -82,6 +82,19 @@ async function waitForMap(page) {
     await mainStory.first().click({ force: true }).catch(() => mainStory.first().evaluate(node => node.click()));
     await page.waitForTimeout(120);
   }
+
+  // The dossier inventory covers every route place, including places on
+  // default-off candidate/war layers. Enable those layers through their real
+  // controls before exercising markers; do not synthesize clicks on hidden DOM.
+  const layerSummary = page.locator('.me-layers__summary');
+  const disabledLayers = page.locator('.me-layers__toggle[aria-pressed="false"]');
+  if (await disabledLayers.count()) {
+    if (await layerSummary.count()) await layerSummary.click();
+    while (await disabledLayers.count()) {
+      await disabledLayers.first().click();
+      await page.waitForTimeout(40);
+    }
+  }
 }
 
 async function closePanel(page) {
@@ -277,8 +290,19 @@ async function runViewport(browser, viewport) {
       await closePanel(page);
       const marker = page.locator(`[data-place-id="${place.id}"]`).first();
       if (!(await marker.count())) { fail(placeScope, 'marker missing'); continue; }
-      await marker.focus().catch(() => {});
-      await marker.evaluate(node => node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+      await marker.focus();
+      const markerEntry = await marker.evaluate(node => ({
+        focused: document.activeElement === node,
+        role: node.getAttribute('role'),
+        tabIndex: node.tabIndex,
+        ariaHidden: node.getAttribute('aria-hidden'),
+        layerHidden: node.getAttribute('data-me-layer-hidden'),
+      }));
+      if (!markerEntry.focused || markerEntry.role !== 'button' || markerEntry.tabIndex !== 0 || markerEntry.ariaHidden === 'true' || markerEntry.layerHidden === '1') {
+        fail(placeScope, `marker is not keyboard-reachable ${JSON.stringify(markerEntry)}`);
+        continue;
+      }
+      await page.keyboard.press('Enter');
       await page.locator('.me-panel--open').waitFor({ state: 'visible', timeout: 5000 });
       await page.waitForTimeout(70);
       const expected = expectedTabs(place);
@@ -290,7 +314,15 @@ async function runViewport(browser, viewport) {
         const scope = `${placeScope}/${tabId}`;
         const tab = page.locator(`.me-tab[data-tab="${tabId}"]`);
         if (!(await tab.count())) { fail(scope, 'tab missing'); continue; }
-        await tab.click({ force: true });
+        await tab.evaluate(node => node.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' }));
+        await page.waitForFunction(node => {
+          const strip = node.closest('.me-tabs');
+          if (!strip) return false;
+          const tabRect = node.getBoundingClientRect();
+          const stripRect = strip.getBoundingClientRect();
+          return tabRect.left >= stripRect.left - 1 && tabRect.right <= stripRect.right + 1;
+        }, await tab.elementHandle());
+        await tab.click();
         await page.waitForTimeout(70);
         const state = await inspectPanel(page);
         validatePanel(scope, state, place, tabId, expected, viewport);
@@ -315,13 +347,22 @@ async function runViewport(browser, viewport) {
       const marker = page.locator(`[data-place-id="${place.id}"]`).first();
       const present = Boolean(await marker.count());
       let panelOpened = false;
+      let markerState = null;
       if (present) {
+        markerState = await marker.evaluate(node => ({
+          role: node.getAttribute('role'),
+          tabIndex: node.getAttribute('tabindex'),
+          ariaHidden: node.getAttribute('aria-hidden'),
+        }));
+        if (markerState.role || markerState.tabIndex !== null || markerState.ariaHidden !== 'true') {
+          fail(scope, `context point is unexpectedly interactive ${JSON.stringify(markerState)}`);
+        }
         await marker.evaluate(node => node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
         await page.waitForTimeout(100);
         panelOpened = Boolean(await page.locator('.me-panel--open').count());
       }
       if (panelOpened) fail(scope, 'context point opened a route dossier');
-      result.contextPoints.push({ id: place.id, present, panelOpened });
+      result.contextPoints.push({ id: place.id, present, panelOpened, markerState });
     }
   } catch (error) {
     fail(viewport.id, `fatal: ${error.message}`);
