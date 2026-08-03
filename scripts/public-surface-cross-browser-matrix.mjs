@@ -450,6 +450,7 @@ async function runCase(browser, base, entry, profile) {
         .map((node) => node.id || String(node.className || '').slice(0, 100) || node.tagName).slice(0, 8);
       const fixedOutside = [...document.querySelectorAll('a,button,input,select,textarea,[role="button"],[role="dialog"],[tabindex]')]
         .filter((node) => {
+          if (node.matches('[data-map-skip-link]:not(:focus)')) return false;
           if (!visible(node)) return false;
           const style = getComputedStyle(node);
           if (!['fixed', 'sticky'].includes(style.position)) return false;

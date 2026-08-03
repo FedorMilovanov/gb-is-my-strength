@@ -122,10 +122,11 @@ async function collectGeometry(page,stateId){
     const controls=[...document.querySelectorAll('button,a,[role="button"],[tabindex]:not([tabindex="-1"])')].filter(isVisible).map(el=>{
       const box=rect(el),scroller=el.closest('[data-horizontal-scroll]'),scrollBox=scroller?rect(scroller):null;
       const scrollReachable=Boolean(scroller&&scroller.scrollWidth>scroller.clientWidth+1&&scrollBox&&box.bottom>scrollBox.top&&box.top<scrollBox.bottom);
-      return{...describe(el),box,scrollReachable};
+      const focusOnlySkip=el.matches('[data-map-skip-link]')&&!el.matches(':focus');
+      return{...describe(el),box,scrollReachable,focusOnlySkip};
     });
     const undersizedControls=controls.filter(({box})=>box.width<43.5||box.height<43.5);
-    const offscreenControls=controls.filter(({box,scrollReachable,placeId})=>!placeId&&!scrollReachable&&(box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1));
+    const offscreenControls=controls.filter(({box,scrollReachable,placeId,focusOnlySkip})=>!placeId&&!scrollReachable&&!focusOnlySkip&&(box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1));
     const markers=[...document.querySelectorAll('[data-place-id]')].filter(isVisible).map(el=>{
       const label=el.querySelector('.me-place-label'),bg=el.querySelector('.me-place-label-bg'),dot=el.querySelector('.me-marker-dot');
       return{...describe(el),box:rect(el),labelOpacity:label?Number(getComputedStyle(label).opacity):null,labelFontSize:label?parseFloat(getComputedStyle(label).fontSize):null,labelBgOpacity:bg?Number(getComputedStyle(bg).opacity):null,dotRadius:dot?Number(dot.getAttribute('r')):null};
@@ -141,7 +142,7 @@ async function collectGeometry(page,stateId){
       viewport:{width,height,devicePixelRatio,scrollX,scrollY},
       document:{clientWidth:html.clientWidth,scrollWidth:html.scrollWidth,horizontalOverflow:html.scrollWidth-html.clientWidth,clientHeight:html.clientHeight,scrollHeight:html.scrollHeight},
       map:{box:map?rect(map):null,canvasBox:canvas?rect(canvas):null,svgBox:svg?rect(svg):null,viewBox:svg?.getAttribute('viewBox')||null,zoomBucket:svg?.getAttribute('data-zoom-bucket')||null,canvasTransform:canvas?getComputedStyle(canvas).transform:null,svgTransform:svg?getComputedStyle(svg).transform:null},
-      counts:{labels:labels.length,baseDetailLabels:visibleBaseDetailLabels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length,scrollReachableControls:controls.filter(control=>control.scrollReachable).length},
+      counts:{labels:labels.length,baseDetailLabels:visibleBaseDetailLabels.length,markers:markers.length,controls:controls.length,routes:routes.length,offscreenLabels:offscreenLabels.length,labelOverlaps:labelOverlaps.length,undersizedControls:undersizedControls.length,offscreenControls:offscreenControls.length,scrollReachableControls:controls.filter(control=>control.scrollReachable).length,focusOnlySkipControls:controls.filter(control=>control.focusOnlySkip).length},
       offscreenLabels:offscreenLabels.slice(0,120),labelOverlaps:labelOverlaps.sort((a,b)=>b.area-a.area).slice(0,180),undersizedControls:undersizedControls.slice(0,120),offscreenControls:offscreenControls.slice(0,120),markers,routes,
     };
   },{stateId});
