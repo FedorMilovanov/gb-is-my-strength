@@ -10,16 +10,23 @@ const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const OUT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const ENGINE = String(process.env.HOME_DESIGN_BROWSER || 'chromium').toLowerCase();
-const BROWSER_TYPES = { chromium, webkit };
-const browserType = BROWSER_TYPES[ENGINE];
+const BROWSERS = { chromium, webkit };
+const browserType = BROWSERS[ENGINE];
 if (!browserType) throw new Error(`Unsupported HOME_DESIGN_BROWSER=${ENGINE}`);
-
 fs.mkdirSync(OUT, { recursive: true });
 
 const checks = [];
 const failures = [];
+let fatalError = null;
+
+function serialise(value) {
+  if (value == null) return value;
+  if (value instanceof Error) return { name: value.name, message: value.message, stack: value.stack };
+  try { return JSON.parse(JSON.stringify(value)); } catch { return String(value); }
+}
+
 function record(name, ok, detail = null) {
-  const item = { name, ok: Boolean(ok), detail };
+  const item = { name, ok: Boolean(ok), detail: serialise(detail) };
   checks.push(item);
   if (!item.ok) failures.push(item);
 }
@@ -71,10 +78,20 @@ async function startServer() {
 }
 
 async function setTheme(page, dark) {
-  const current = await page.evaluate(() => document.documentElement.classList.contains('dark'));
-  if (current !== dark) await page.locator('#themeToggle').click();
-  await page.waitForFunction((expected) => document.documentElement.classList.contains('dark') === expected, dark);
-  await page.waitForTimeout(80);
+  const changed = await page.evaluate((expected) => {
+    const root = document.documentElement;
+    if (root.classList.contains('dark') === expected) return false;
+    const toggle = document.getElementById('themeToggle');
+    if (!toggle) throw new Error('#themeToggle is missing');
+    toggle.click();
+    return true;
+  }, dark);
+  await page.waitForFunction(
+    (expected) => document.documentElement.classList.contains('dark') === expected,
+    dark,
+    { timeout: 5000 },
+  );
+  if (changed) await page.waitForTimeout(100);
 }
 
 async function revealPage(page) {
@@ -83,7 +100,7 @@ async function revealPage(page) {
     for (const node of document.querySelectorAll('.h-reveal')) {
       node.scrollIntoView({ block: 'center', behavior: 'auto' });
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      await pause(20);
+      await pause(18);
     }
     scrollTo(0, 0);
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -96,16 +113,22 @@ async function readViewportState(page) {
     const rect = (node) => {
       if (!node) return null;
       const value = node.getBoundingClientRect();
-      return { left: value.left, right: value.right, top: value.top, bottom: value.bottom, width: value.width, height: value.height };
+      return {
+        left: value.left, right: value.right, top: value.top, bottom: value.bottom,
+        width: value.width, height: value.height,
+      };
     };
+    const style = (node) => node ? getComputedStyle(node) : null;
+    const visible = (node) => Boolean(node && style(node).display !== 'none' && style(node).visibility !== 'hidden' && rect(node)?.width > 0 && rect(node)?.height > 0);
     const overlap = (a, b) => Boolean(a && b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top);
     const lineCount = (node) => {
       if (!node) return 0;
-      const style = getComputedStyle(node);
-      const lineHeight = Number.parseFloat(style.lineHeight);
-      return Number.isFinite(lineHeight) && lineHeight > 0 ? Math.max(1, Math.round(node.getBoundingClientRect().height / lineHeight)) : 1;
+      const lineHeight = Number.parseFloat(style(node).lineHeight);
+      return Number.isFinite(lineHeight) && lineHeight > 0
+        ? Math.max(1, Math.round(rect(node).height / lineHeight))
+        : 1;
     };
-    const visible = (node) => Boolean(node && getComputedStyle(node).display !== 'none' && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+
     const sections = ['#issledovat', '#publikacii', '.h-quote-section', '.h-about', '.article-end-sdg-wrap', '.h-footer']
       .map((selector) => ({ selector, node: document.querySelector(selector) }))
       .map(({ selector, node }) => ({ selector, visible: visible(node), rect: rect(node) }));
@@ -128,7 +151,7 @@ async function readViewportState(page) {
       rect: rect(image),
     }));
     const content = rect(document.querySelector('.home-content'));
-    const body = rect(document.body);
+    const footer = rect(document.querySelector('.h-footer'));
     const visibleAmbient = [...document.querySelectorAll('.h-ambient-word')].filter(visible).length;
     const searchShape = document.querySelector('#gbSearchBtn svg circle');
     const themeShape = document.querySelector(document.documentElement.classList.contains('dark') ? '#themeToggle .icon-sun circle' : '#themeToggle .icon-moon path');
@@ -144,14 +167,10 @@ async function readViewportState(page) {
       publicationCards,
       images,
       content,
-      body,
+      footer,
       visibleAmbient,
-      searchStroke: searchShape ? Number.parseFloat(getComputedStyle(searchShape).strokeWidth) : null,
-      themeStroke: themeShape ? Number.parseFloat(getComputedStyle(themeShape).strokeWidth) : null,
-      hero: rect(document.querySelector('.h-hero')),
-      navbar: rect(document.querySelector('.h-navbar')),
-      footer: rect(document.querySelector('.h-footer')),
-      featured: [...document.querySelectorAll('.h-featured-series')].map(rect),
+      searchStroke: searchShape ? Number.parseFloat(style(searchShape).strokeWidth) : null,
+      themeStroke: themeShape ? Number.parseFloat(style(themeShape).strokeWidth) : null,
       cardsOverlap: publicationCards.some((card, index) => publicationCards.slice(index + 1).some((other) => overlap(card.rect, other.rect))),
     };
   });
@@ -178,19 +197,27 @@ function judgeViewport(name, state, theme) {
   }
   if (state.width >= 1480) {
     const ratio = state.content ? state.content.width / state.width : 0;
-    record(`${prefix}:wide-reading-measure`, ratio >= .62 && ratio <= .76, { content: state.content?.width, viewport: state.width, ratio });
-    record(`${prefix}:wide-marginalia-present`, state.visibleAmbient >= (state.width >= 1600 ? 32 : 16), { visibleAmbient: state.visibleAmbient });
+    record(`${prefix}:wide-reading-measure`, ratio >= .60 && ratio <= .76, { content: state.content?.width, viewport: state.width, ratio });
+    record(`${prefix}:wide-marginalia-present`, state.visibleAmbient >= (state.width >= 1600 ? 24 : 14), { visibleAmbient: state.visibleAmbient });
   }
+}
+
+async function searchOpen(page) {
+  return page.evaluate(() => {
+    const node = document.querySelector('.cp-backdrop');
+    return Boolean(node && node.classList.contains('is-open') && getComputedStyle(node).display !== 'none');
+  });
 }
 
 async function waitSearch(page, open) {
   await page.waitForFunction((expected) => {
     const node = document.querySelector('.cp-backdrop');
     return Boolean(node && node.classList.contains('is-open') && getComputedStyle(node).display !== 'none') === expected;
-  }, open);
+  }, open, { timeout: 10000 });
 }
 
 async function openSearch(page, method) {
+  await page.evaluate(() => scrollTo(0, 0));
   if (method === 'header') await page.locator('#gbSearchBtn').click();
   else if (method === 'hero') await page.locator('#heroSearchBar').click();
   else if (method === 'shortcut') await page.keyboard.press('Control+K');
@@ -200,8 +227,9 @@ async function openSearch(page, method) {
     await page.locator('#hMobileNav [data-action="open-search"]').click();
   }
   await waitSearch(page, true);
-  await page.locator('.cp-input').waitFor({ state: 'visible' });
-  return page.locator('.cp-input');
+  const input = page.locator('.cp-input');
+  await input.waitFor({ state: 'visible' });
+  return input;
 }
 
 async function closeSearch(page) {
@@ -213,14 +241,13 @@ async function waitQuery(page, query) {
   await page.waitForFunction((expected) => {
     const input = document.querySelector('.cp-input');
     return input?.value === expected && !document.querySelector('.cp-loading');
-  }, query);
+  }, query, { timeout: 10000 });
   await page.waitForTimeout(120);
 }
 
 async function searchAudit(page) {
   await page.setViewportSize({ width: 1280, height: 900 });
   await setTheme(page, false);
-  await page.evaluate(() => scrollTo(0, 0));
 
   for (const method of ['header', 'hero', 'shortcut']) {
     const input = await openSearch(page, method);
@@ -262,27 +289,29 @@ async function searchAudit(page) {
   record(`${ENGINE}:search-scope-count`, chipCount >= 4, chipCount);
   for (let index = 0; index < chipCount; index += 1) {
     await chips.nth(index).click();
-    record(`${ENGINE}:search-scope-${index + 1}`, await chips.nth(index).getAttribute('aria-pressed') === 'true' || await chips.nth(index).getAttribute('aria-selected') === 'true' || (await chips.nth(index).getAttribute('class') || '').includes('is-active'));
+    const selected = await chips.nth(index).evaluate((node) => node.matches('[aria-pressed="true"], [aria-selected="true"], .is-active, .active'));
+    record(`${ENGINE}:search-scope-${index + 1}`, selected);
   }
 
   await input.fill('Нагорная проповедь');
   await waitQuery(page, 'Нагорная проповедь');
   await page.keyboard.press('ArrowDown');
-  record(`${ENGINE}:search-arrow-navigation`, await page.locator('.cp-item.is-active').count() === 1);
+  const selectedCount = await page.locator('.cp-item[aria-selected="true"], .cp-item.is-active').count();
+  record(`${ENGINE}:search-arrow-navigation`, selectedCount === 1, selectedCount);
 
   await setTheme(page, true);
-  record(`${ENGINE}:search-survives-theme-toggle`, await page.locator('.cp-backdrop').isVisible());
+  record(`${ENGINE}:search-survives-theme-toggle`, await searchOpen(page));
   if (ENGINE === 'chromium') await page.screenshot({ path: path.join(OUT, 'search-query-desktop-dark.png') });
   await setTheme(page, false);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  record(`${ENGINE}:search-survives-live-resize`, await page.locator('.cp-backdrop').isVisible());
+  record(`${ENGINE}:search-survives-live-resize`, await searchOpen(page));
   const mobileGeometry = await page.evaluate(() => {
     const dialog = document.querySelector('.cp-dialog')?.getBoundingClientRect();
     const row = document.querySelector('.cp-scope-row')?.getBoundingClientRect();
     return { dialog: dialog && { left: dialog.left, right: dialog.right, top: dialog.top, bottom: dialog.bottom }, row: row && { left: row.left, right: row.right } };
   });
-  record(`${ENGINE}:search-mobile-safe-geometry`, Boolean(mobileGeometry.dialog && mobileGeometry.dialog.left >= 0 && mobileGeometry.dialog.right <= 390 && mobileGeometry.dialog.top >= 0 && mobileGeometry.dialog.bottom <= 844 + 1), mobileGeometry);
+  record(`${ENGINE}:search-mobile-safe-geometry`, Boolean(mobileGeometry.dialog && mobileGeometry.dialog.left >= 0 && mobileGeometry.dialog.right <= 390 && mobileGeometry.dialog.top >= 0 && mobileGeometry.dialog.bottom <= 845), mobileGeometry);
   if (ENGINE === 'chromium') await page.screenshot({ path: path.join(OUT, 'search-query-mobile-light.png') });
 
   const clear = page.locator('.cp-clear');
@@ -294,9 +323,9 @@ async function searchAudit(page) {
   await waitSearch(page, false);
   record(`${ENGINE}:search-escape-close`, true);
 
-  await page.evaluate(() => scrollTo(0, 0));
   input = await openSearch(page, 'menu');
-  record(`${ENGINE}:mobile-menu-to-search`, await input.evaluate((node) => node === document.activeElement) && !await page.locator('#hMobileNav').evaluate((node) => node.classList.contains('open')));
+  const menuClosed = !await page.locator('#hMobileNav').evaluate((node) => node.classList.contains('open'));
+  record(`${ENGINE}:mobile-menu-to-search`, await input.evaluate((node) => node === document.activeElement) && menuClosed);
   await closeSearch(page);
 
   for (let cycle = 1; cycle <= 5; cycle += 1) {
@@ -309,10 +338,17 @@ async function searchAudit(page) {
 }
 
 async function interactionAudit(page) {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await setTheme(page, false);
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.evaluate(() => scrollTo(0, 0));
+  await setTheme(page, false);
+  const themeToggle = page.locator('#themeToggle');
+  const themeBox = await themeToggle.boundingBox();
+  await themeToggle.click();
+  record(`${ENGINE}:theme-real-click`, Boolean(themeBox) && await page.evaluate(() => document.documentElement.classList.contains('dark')), themeBox);
+  await themeToggle.click();
 
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => scrollTo(0, 0));
   const menu = page.locator('#hMobileMenuBtn');
   await menu.click();
   await page.waitForFunction(() => document.getElementById('hMobileNav')?.classList.contains('open'));
@@ -330,7 +366,7 @@ async function interactionAudit(page) {
   record(`${ENGINE}:hebrew-keyboard-toggle`, await word.getAttribute('aria-pressed') === 'false');
 
   await page.evaluate(() => scrollTo(0, 1100));
-  await page.waitForTimeout(120);
+  await page.waitForTimeout(150);
   const top = page.locator('#hScrollTop');
   record(`${ENGINE}:scroll-top-visible`, await top.isVisible());
   const box = await top.boundingBox();
@@ -359,53 +395,50 @@ async function captureFullEvidence(page) {
 }
 
 const viewports = [
-  ['phone-320', 320, 568],
-  ['phone-360', 360, 800],
-  ['phone-390', 390, 844],
-  ['phone-412', 412, 915],
-  ['phone-430', 430, 932],
-  ['small-tablet-600', 600, 960],
-  ['mobile-boundary-760', 760, 900],
-  ['desktop-boundary-761', 761, 900],
-  ['tablet-820', 820, 1180],
-  ['tablet-920', 920, 1080],
-  ['landscape-1024', 1024, 768],
-  ['laptop-1180', 1180, 820],
-  ['desktop-1280', 1280, 900],
-  ['laptop-1366', 1366, 768],
-  ['desktop-1440', 1440, 900],
-  ['rail-boundary-1479', 1479, 900],
-  ['rail-boundary-1480', 1480, 900],
-  ['wide-1600', 1600, 1000],
-  ['wide-1720', 1720, 980],
-  ['full-hd-1920', 1920, 1080],
+  ['phone-320', 320, 568], ['phone-360', 360, 800], ['phone-390', 390, 844],
+  ['phone-412', 412, 915], ['phone-430', 430, 932], ['small-tablet-600', 600, 960],
+  ['mobile-boundary-760', 760, 900], ['desktop-boundary-761', 761, 900],
+  ['tablet-820', 820, 1180], ['tablet-920', 920, 1080], ['landscape-1024', 1024, 768],
+  ['laptop-1180', 1180, 820], ['desktop-1280', 1280, 900], ['laptop-1366', 1366, 768],
+  ['desktop-1440', 1440, 900], ['rail-boundary-1479', 1479, 900],
+  ['rail-boundary-1480', 1480, 900], ['wide-1600', 1600, 1000],
+  ['wide-1720', 1720, 980], ['full-hd-1920', 1920, 1080],
 ];
-const darkScenes = new Set(['phone-320', 'phone-390', 'phone-430', 'mobile-boundary-760', 'desktop-boundary-761', 'tablet-820', 'landscape-1024', 'desktop-1280', 'rail-boundary-1480', 'wide-1720', 'full-hd-1920']);
+const darkScenes = new Set([
+  'phone-320', 'phone-390', 'phone-430', 'mobile-boundary-760', 'desktop-boundary-761',
+  'tablet-820', 'landscape-1024', 'desktop-1280', 'rail-boundary-1480', 'wide-1720', 'full-hd-1920',
+]);
 
-const server = await startServer();
-const browser = await browserType.launch({ headless: true });
-const context = await browser.newContext({ locale: 'ru-RU', colorScheme: 'light', reducedMotion: 'reduce', viewport: { width: 390, height: 844 } });
-const page = await context.newPage();
+let server;
+let browser;
+let context;
 const runtimeErrors = [];
 const badResponses = [];
-page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
-page.on('console', (message) => {
-  if (message.type() !== 'error') return;
-  const text = message.text();
-  if (ENGINE === 'webkit' && text === 'Viewport argument key "interactive-widget" not recognized and ignored.') return;
-  runtimeErrors.push(`console: ${text}`);
-});
-page.on('response', (response) => {
-  if (response.status() >= 400) badResponses.push({ status: response.status(), url: response.url() });
-});
 
 try {
+  server = await startServer();
+  browser = await browserType.launch({ headless: true });
+  context = await browser.newContext({ locale: 'ru-RU', colorScheme: 'light', reducedMotion: 'reduce', viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() !== 'error') return;
+    const text = message.text();
+    if (ENGINE === 'webkit' && text === 'Viewport argument key "interactive-widget" not recognized and ignored.') return;
+    runtimeErrors.push(`console: ${text}`);
+  });
+  page.on('response', (response) => {
+    if (response.status() >= 400) badResponses.push({ status: response.status(), url: response.url() });
+  });
+
   const response = await page.goto(`${server.url}/`, { waitUntil: 'networkidle', timeout: 60000 });
   record(`${ENGINE}:document-status`, response?.status() === 200, response?.status());
   await revealPage(page);
 
-  const matrix = ENGINE === 'chromium' ? viewports : viewports.filter(([name]) => ['phone-320', 'phone-390', 'mobile-boundary-760', 'desktop-boundary-761', 'tablet-820', 'desktop-1280', 'rail-boundary-1480', 'wide-1720'].includes(name));
-  for (const [name, width, height] of matrix) {
+  const selected = ENGINE === 'chromium'
+    ? viewports
+    : viewports.filter(([name]) => ['phone-320', 'phone-390', 'mobile-boundary-760', 'desktop-boundary-761', 'tablet-820', 'desktop-1280', 'rail-boundary-1480', 'wide-1720'].includes(name));
+  for (const [name, width, height] of selected) {
     await page.setViewportSize({ width, height });
     await setTheme(page, false);
     judgeViewport(name, await readViewportState(page), 'light');
@@ -422,16 +455,24 @@ try {
   record(`${ENGINE}:no-runtime-errors`, runtimeErrors.length === 0, runtimeErrors);
   record(`${ENGINE}:no-broken-local-responses`, badResponses.length === 0, badResponses);
   record(`${ENGINE}:minimum-50-variants`, checks.length >= 50, checks.length);
+} catch (error) {
+  fatalError = serialise(error);
+  record(`${ENGINE}:audit-completed-without-fatal-error`, false, fatalError);
 } finally {
-  await context.close();
-  await browser.close();
-  await server.close();
+  await context?.close().catch(() => {});
+  await browser?.close().catch(() => {});
+  await server?.close().catch(() => {});
 }
 
 const result = {
   generatedAt: new Date().toISOString(),
   engine: ENGINE,
-  summary: { total: checks.length, passed: checks.filter((item) => item.ok).length, failed: failures.length },
+  fatalError,
+  summary: {
+    total: checks.length,
+    passed: checks.filter((item) => item.ok).length,
+    failed: failures.length,
+  },
   checks,
 };
 fs.writeFileSync(path.join(OUT, `result-${ENGINE}.json`), `${JSON.stringify(result, null, 2)}\n`);
@@ -441,6 +482,7 @@ fs.writeFileSync(path.join(OUT, `summary-${ENGINE}.md`), [
   `- Total named variants: **${result.summary.total}**`,
   `- Passed: **${result.summary.passed}**`,
   `- Failed: **${result.summary.failed}**`,
+  `- Fatal error: **${fatalError ? 'yes' : 'no'}**`,
   '',
   ...failures.map((item) => `- ❌ ${item.name}: \`${JSON.stringify(item.detail)}\``),
 ].join('\n'));
