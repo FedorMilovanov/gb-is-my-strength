@@ -8,6 +8,9 @@
  * not open, close or style the overlay itself. It defers exactly one native
  * button click to the next rendering opportunity; the canonical
  * floating-cluster-controller and OverlayRuntime remain the only modal owners.
+ * It also owns the durable ARIA trigger→overlay relationship that the original
+ * mobile bar markup omitted, so open and Escape-close can be verified against
+ * the exact controlled sheet rather than inferred from a visual class alone.
  */
 ---
 
@@ -19,6 +22,8 @@
     if (trigger.dataset.gbActivationBoundary === '1') return;
 
     trigger.dataset.gbActivationBoundary = '1';
+    if (!overlay.id) overlay.id = 'partTocOverlay';
+    trigger.setAttribute('aria-controls', overlay.id);
     let pending = false;
     let replaying = false;
 
