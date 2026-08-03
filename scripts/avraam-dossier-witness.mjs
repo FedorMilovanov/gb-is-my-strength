@@ -118,11 +118,15 @@ async function inspectPanel(page) {
       visible: isVisible(node),
     })) : [];
     const selected = tabs.filter(tab => tab.selected === 'true');
-    const controls = panel ? Array.from(panel.querySelectorAll('button,a,[role="button"],[role="tab"],[tabindex]:not([tabindex="-1"])')).filter(isVisible).map(node => ({
+    const controls = panel ? Array.from(panel.querySelectorAll('button,[role="button"],[role="tab"]')).filter(isVisible).map(node => ({
       tag: node.tagName.toLowerCase(),
       text: (node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80),
       tab: node.getAttribute('data-tab'),
       rect: rect(node),
+    })) : [];
+    const links = content ? Array.from(content.querySelectorAll('a[href]')).filter(isVisible).map(node => ({
+      text: (node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+      href: node.getAttribute('href') || '',
     })) : [];
     const panelRect = rect(panel);
     const contentRect = rect(content);
@@ -169,6 +173,7 @@ async function inspectPanel(page) {
       } : null,
       activeTabFullyVisible: Boolean(activeTabRect && tablistRect && activeTabRect.left >= tablistRect.left - 1 && activeTabRect.right <= tablistRect.right + 1),
       controls,
+      links,
       images,
       variantRows: content?.querySelectorAll('.me-sci-item').length || 0,
       photoLabels: content?.querySelectorAll('.me-photo-label').length || 0,
@@ -215,6 +220,7 @@ function validatePanel(scope, state, place, tabId, expected, viewport) {
   for (const control of state.controls) {
     if (control.rect.width < 44 - .5 || control.rect.height < 44 - .5) fail(scope, `undersized control ${control.tab || control.text || control.tag}: ${control.rect.width.toFixed(1)}x${control.rect.height.toFixed(1)}`);
   }
+  for (const link of state.links || []) if (!link.href.trim()) fail(scope, `content link without href: ${link.text}`);
 }
 
 async function verifyKeyboard(page, placeScope, expectedTabs) {

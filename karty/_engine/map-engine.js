@@ -651,9 +651,10 @@ const MapEngine = (function() {
 
 /* Nav */
 .me-nav{display:flex;align-items:center;padding:10px 16px;border-top:1px solid rgba(255,255,255,.08);gap:8px}
-.me-nav button{flex:0;padding:6px 14px;min-height:44px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#9aa2ae;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.me-nav button{flex:0;padding:6px 14px;min-width:44px;min-height:44px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#9aa2ae;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
 .me-nav button:hover:not(:disabled){border-color:#e8c879;color:#e8c879}
 .me-nav button:disabled{opacity:.3;cursor:default}
+.me-content .act-btn{min-height:44px;padding:10px 12px;border-radius:6px;cursor:pointer}
 .me-nav__info{display:flex;flex-direction:column;align-items:center;gap:7px;flex:1;min-width:0}
 .me-nav__counter{font-size:10px;color:var(--me-accent,#e8c879);font-weight:700;letter-spacing:.08em}
 .me-nav__progress{width:min(160px,100%);height:3px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}
@@ -2067,6 +2068,8 @@ container.appendChild(panel);
       // Place markers
       allPlaces.forEach(place=>{
         const inStory=visIds.has(place.id);
+        const isRoutePlace=Number.isInteger(place.stage);
+        const markerInteractive=inStory&&isRoutePlace;
         const storyRole=resolveStoryRole(place,inStory);
         const isFocusRole=storyRole==='focus'||storyRole==='overview';
         const isSecondaryRole=storyRole==='context'||storyRole==='candidate';
@@ -2088,11 +2091,18 @@ container.appendChild(panel);
         g.setAttribute('data-layer-all',membership.all.join(' '));
         g.setAttribute('data-layer-any',membership.any.join(' '));
         g.setAttribute('data-layer-main','');
-        g.style.cursor=inStory?'pointer':'default';
-        g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',String(Math.max(5.4,baseMarkerR+1.2)));d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
+        g.style.cursor=markerInteractive?'pointer':'default';
+        if(markerInteractive){
+          g.setAttribute('role','button');
+          g.setAttribute('tabindex','0');
+          g.setAttribute('aria-label',`Открыть досье: ${place.name||place.id}`);
+        }else{
+          g.setAttribute('aria-hidden','true');
+        }
+        g.addEventListener('mouseenter',()=>{if(markerInteractive){const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',String(Math.max(5.4,baseMarkerR+1.2)));d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
         g.addEventListener('mouseleave',()=>{const d=g.querySelector('.me-marker-dot');if(d){d.setAttribute('r',(place.id===activePlaceId)?'7':String(baseMarkerR));d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity',(place.id===activePlaceId)?'0.5':'0');r2.setAttribute('r','12');}});
         g.style.opacity=inStory?'1':(activeStoryId==='main'?'.15':'0');
-        if(inStory){
+        if(markerInteractive){
               // Long-press detection for quick info tooltip
       let longPressTimer = null;
       let longPressFired = false;
@@ -2120,6 +2130,7 @@ container.appendChild(panel);
       g.addEventListener('pointerup', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
       g.addEventListener('pointerleave', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
       g.addEventListener('click',()=>{if(longPressFired){longPressFired=false;return;}haptic();addRipple(svg,place.x,place.y,getStageColor(place.stage));const d2=g.querySelector('.me-marker-dot');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
+        g.addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();event.stopPropagation();open(place.id);}});
         g.addEventListener('dblclick',(e)=>{e.preventDefault();e.stopPropagation();flyTo(place.x,place.y,Math.min(view.w,450),600);});
       }
         
@@ -2596,6 +2607,7 @@ container.appendChild(panel);
     }
 
     function close(reason = 'close', closeOptions = {}){
+      const closingPlaceId=activePlaceId;
       closePhoto('panel-close', {restoreFocus:false});
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
@@ -2616,6 +2628,9 @@ container.appendChild(panel);
       updateUrl();
       saveState();
       renderMarkers();
+      if(closeOptions.restoreFocus!==false&&closingPlaceId){
+        setTimeout(()=>focusSpecialTarget(markersG.querySelector(`[data-place-id="${CSS.escape(closingPlaceId)}"]`)),0);
+      }
     }
 
     _on(panel.querySelector('.me-panel__close'),'click',close);
