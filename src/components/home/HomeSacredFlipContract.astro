@@ -221,6 +221,16 @@
     const loaded = document.readyState === 'complete'
       ? Promise.resolve()
       : new Promise((resolve) => addEventListener('load', resolve, { once: true }));
-    Promise.all([loaded, document.fonts?.ready ?? Promise.resolve()]).then(audit);
+
+    Promise.all([loaded, document.fonts?.ready ?? Promise.resolve()]).then(() => {
+      window.setTimeout(() => {
+        const run = () => void audit();
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(run, { timeout: 1600 });
+        } else {
+          run();
+        }
+      }, 1800);
+    });
   })();
 </script>
