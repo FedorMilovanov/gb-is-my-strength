@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
+import argparse
 from pathlib import Path
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--write', action='store_true')
+args = parser.parse_args()
+if not args.write:
+    raise SystemExit('guard failed: explicit --write is required')
 
 path = Path('scripts/avraam-dossier-witness.mjs')
 text = path.read_text(encoding='utf-8')
