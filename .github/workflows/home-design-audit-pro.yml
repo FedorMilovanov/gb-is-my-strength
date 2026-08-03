@@ -1,0 +1,77 @@
+name: Home Design Audit Pro
+
+on:
+  pull_request:
+    paths:
+      - 'src/components/home/**'
+      - 'src/pages/index.astro'
+      - 'scripts/home-design-audit-pro.mjs'
+      - '.github/workflows/home-design-audit-pro.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: home-design-audit-pro-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: ${{ matrix.browser }} design audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Capture dependency diagnostics
+        if: matrix.browser == 'chromium'
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p reports/home-design-audit-pro
+          npm audit --json > reports/home-design-audit-pro/npm-audit.json || true
+          npm outdated --json > reports/home-design-audit-pro/npm-outdated.json || true
+
+      - name: Install Playwright browser engines
+        run: timeout 12m npx playwright install --with-deps chromium webkit
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index into dist
+        run: npm run pagefind:build:dist
+
+      - name: Run ${{ matrix.browser }} distrustful Home audit
+        env:
+          HOME_DESIGN_BROWSER: ${{ matrix.browser }}
+        run: node scripts/home-design-audit-pro.mjs
+
+      - name: Upload exact-head Home design evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: home-design-audit-pro-${{ matrix.browser }}-${{ github.run_id }}
+          path: reports/home-design-audit-pro
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
