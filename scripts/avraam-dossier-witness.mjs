@@ -67,7 +67,7 @@ function sourceAudit() {
 async function verifyStaticNavigation(page, scope) {
   const contract = await page.evaluate(() => {
     const skip = document.querySelector('[data-map-skip-link]');
-    const heading = document.querySelector('h1.sr-only');
+    const lifecycleHeading = document.querySelector('h1.sr-only[data-pagefind-body]');
     const fallback = document.querySelector('[data-map-static-projection]');
     const stage = document.querySelector('[data-map-stage]');
     const precedes = (a, b) => Boolean(a && b && (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING));
@@ -75,11 +75,11 @@ async function verifyStaticNavigation(page, scope) {
       skipCount: document.querySelectorAll('[data-map-skip-link]').length,
       href: skip?.getAttribute('href') || null,
       text: (skip?.textContent || '').replace(/\s+/g, ' ').trim(),
+      lifecycleHeadingPresent: Boolean(lifecycleHeading),
       stageTabIndex: stage?.tabIndex ?? null,
       stageTabIndexAttribute: stage?.getAttribute('tabindex') || null,
       order: {
-        skipBeforeHeading: precedes(skip, heading),
-        headingBeforeFallback: precedes(heading, fallback),
+        skipBeforeFallback: precedes(skip, fallback),
         fallbackBeforeStage: precedes(fallback, stage),
       },
     };
