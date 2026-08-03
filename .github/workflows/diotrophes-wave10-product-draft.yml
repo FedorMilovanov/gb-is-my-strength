@@ -43,7 +43,20 @@ jobs:
           git cat-file -e "${base_sha}^{commit}" 2>/dev/null || git fetch --no-tags origin "$base_sha"
           git diff --name-only "${base_sha}...HEAD" > /tmp/wave10-files.txt
 
-          owned="$(grep -E '^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$' /tmp/wave10-files.txt || true)"
+          wave10_owned_pattern='^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$'
+          wave10_exclusive_pattern='^(data/diotrophes-wave10-product-draft\.json|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$'
+          wave12_owner_pattern='^scripts/diotrophes-wave12-browser-contract\.mjs$'
+
+          owned="$(grep -E "$wave10_owned_pattern" /tmp/wave10-files.txt || true)"
+          wave10_exclusive="$(grep -E "$wave10_exclusive_pattern" /tmp/wave10-files.txt || true)"
+          wave12_owner="$(grep -E "$wave12_owner_pattern" /tmp/wave10-files.txt || true)"
+
+          if [[ -n "$wave12_owner" && -z "$wave10_exclusive" ]]; then
+            echo 'The shared DiotrophesDraft is owned by the Wave 12 publication lane in this PR; Wave 10 validation is a no-op.'
+            echo 'active=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [[ -z "$owned" ]]; then
             echo 'No Wave 10-owned files differ from the event base SHA; treating this path-filter synchronization event as a no-op.'
             echo 'active=false' >> "$GITHUB_OUTPUT"
@@ -51,7 +64,7 @@ jobs:
           fi
 
           echo 'active=true' >> "$GITHUB_OUTPUT"
-          unexpected="$(grep -Ev '^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$' /tmp/wave10-files.txt || true)"
+          unexpected="$(grep -Ev "$wave10_owned_pattern" /tmp/wave10-files.txt || true)"
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected Wave 10 files:' >&2
             printf '%s\n' "$unexpected" >&2
