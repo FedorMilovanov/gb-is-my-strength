@@ -125,6 +125,9 @@
     if (!(block instanceof HTMLElement)) return;
 
     const report = (message) => console.error(`[home-sacred-flip-contract] ${message}`);
+    const nextPaint = () => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
     const parseRgb = (value) => value.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number) ?? [];
     const sameRgb = (left, right) => {
       const a = parseRgb(left);
@@ -132,63 +135,92 @@
       return a.length === 3 && b.length === 3 && a.every((value, index) => Math.abs(value - b[index]) < 1);
     };
 
-    const audit = () => {
+    let audited = false;
+    const audit = async () => {
+      if (audited) return;
+      audited = true;
+
       const colorProbe = document.createElement('span');
       colorProbe.style.cssText = 'position:fixed;inset:auto auto -9999px -9999px;color:var(--h-ink);pointer-events:none;';
       block.append(colorProbe);
       const expectedInk = getComputedStyle(colorProbe).color;
       colorProbe.remove();
 
-      const buttons = [...block.querySelectorAll('button.hb-w, button.h-tetra')];
-      block.setAttribute('data-sacred-contract-audit', '');
+      const buttons = [...block.querySelectorAll('button.hb-w, button.h-tetra')]
+        .filter((button) => button instanceof HTMLButtonElement);
+      buttons.forEach((button) => button.removeAttribute('data-toggled'));
 
-      buttons.forEach((button, index) => {
-        if (!(button instanceof HTMLElement)) return;
-        const front = button.querySelector('.hb-front');
-        const back = button.querySelector('.hb-back, .h-tetra-back');
+      block.setAttribute('data-sacred-contract-audit', '');
+      await nextPaint();
+
+      for (const [index, button] of buttons.entries()) {
+        const front = button.querySelector(':scope > .hb-front');
+        const back = button.querySelector(':scope > .hb-back, :scope > .h-tetra-back');
         if (!(front instanceof HTMLElement) || !(back instanceof HTMLElement)) {
           report(`word ${index + 1} lost one flip face`);
-          return;
+          continue;
         }
 
-        const wasOpen = button.hasAttribute('data-toggled');
-        button.setAttribute('data-toggled', '');
+        button.click();
+        await nextPaint();
+
         const frontStyle = getComputedStyle(front);
         const backStyle = getComputedStyle(back);
-        const translation = button.querySelector('.hb-back, .h-tetra-name');
+        const translation = button.matches('.h-tetra')
+          ? button.querySelector('.h-tetra-name')
+          : back;
         const translationColor = translation instanceof HTMLElement ? getComputedStyle(translation).color : '';
+        const open = button.hasAttribute('data-toggled');
+        const pressed = button.getAttribute('aria-pressed');
 
+        if (!open || pressed !== 'true') {
+          report(`word ${index + 1} did not open through its real click contract (open=${open}, aria-pressed=${pressed})`);
+        }
         if (Number.parseFloat(frontStyle.opacity) > .05 || frontStyle.visibility !== 'hidden') {
-          report(`word ${index + 1} leaves Hebrew visible while open`);
+          report(
+            `word ${index + 1} leaves Hebrew visible while open `
+            + `(opacity=${frontStyle.opacity}, visibility=${frontStyle.visibility}, transition=${frontStyle.transitionDuration}/${frontStyle.transitionDelay})`
+          );
         }
         if (Number.parseFloat(backStyle.opacity) < .95 || backStyle.visibility !== 'visible') {
-          report(`word ${index + 1} does not reveal its translation cleanly`);
+          report(
+            `word ${index + 1} does not reveal its translation cleanly `
+            + `(opacity=${backStyle.opacity}, visibility=${backStyle.visibility})`
+          );
         }
         if (!sameRgb(translationColor, expectedInk)) {
           report(`word ${index + 1} translation is not --h-ink (${translationColor} vs ${expectedInk})`);
         }
 
-        if (!wasOpen) button.removeAttribute('data-toggled');
-      });
+        button.click();
+        await nextPaint();
+        if (button.hasAttribute('data-toggled') || button.getAttribute('aria-pressed') !== 'false') {
+          report(`word ${index + 1} did not close through its second real click`);
+          button.removeAttribute('data-toggled');
+        }
+      }
 
-      const tetra = block.querySelector('.h-tetra');
-      const label = tetra?.querySelector('.h-tetra-label');
-      if (tetra instanceof HTMLElement && label instanceof HTMLElement) {
-        const wasOpen = tetra.hasAttribute('data-toggled');
-        tetra.setAttribute('data-toggled', '');
+      const tetra = block.querySelector('button.h-tetra');
+      const label = tetra?.querySelector(':scope > .h-tetra-label');
+      if (tetra instanceof HTMLButtonElement && label instanceof HTMLElement) {
+        tetra.click();
+        await nextPaint();
         const blockRect = block.getBoundingClientRect();
         const labelRect = label.getBoundingClientRect();
         if (labelRect.top < blockRect.top + 14) {
           report(`sacred-name label rose into the instruction (${Math.round(labelRect.top - blockRect.top)}px inset)`);
         }
-        if (!wasOpen) tetra.removeAttribute('data-toggled');
+        tetra.click();
+        await nextPaint();
       }
 
       block.removeAttribute('data-sacred-contract-audit');
       block.dataset.sacredFlipContract = 'ready';
     };
 
-    addEventListener('load', () => requestAnimationFrame(() => requestAnimationFrame(audit)), { once: true });
-    document.fonts?.ready.then(() => requestAnimationFrame(audit));
+    const loaded = document.readyState === 'complete'
+      ? Promise.resolve()
+      : new Promise((resolve) => addEventListener('load', resolve, { once: true }));
+    Promise.all([loaded, document.fonts?.ready ?? Promise.resolve()]).then(audit);
   })();
 </script>
