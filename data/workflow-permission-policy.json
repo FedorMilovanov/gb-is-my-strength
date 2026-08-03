@@ -63,6 +63,35 @@
         }
       }
     },
+    ".github/workflows/diotrophes-live-release-extension.yml": {
+      "jobs": {
+        "witness": {
+          "permissions": {
+            "actions": "read",
+            "contents": "read",
+            "issues": "write",
+            "pull-requests": "write"
+          },
+          "purpose": "Record one idempotent Diotrophes live-route capability witness after an exact successful canonical Pages deployment",
+          "allowedEvents": [
+            "workflow_dispatch",
+            "workflow_run"
+          ],
+          "repositoryBoundary": "same repository successful Deploy to GitHub Pages run plus its exact generic live PASS artifact",
+          "branchBoundary": "main deployment control-plane SHA; route evidence must remain bound to the generic report release SHA and candidate digest",
+          "mutationTargets": [
+            "exact release pull-request thread carrying the machine-marked Diotrophes capability witness"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "github.event.workflow_run.head_repository.full_name == github.repository",
+            "deployRun.head_branch, 'main'",
+            "diotrophes-live-release-${{ needs.resolve.outputs.deploy_run_id }}",
+            "persist-credentials: false"
+          ]
+        }
+      }
+    },
     ".github/workflows/notify-on-failure.yml": {
       "jobs": {
         "lifecycle": {
