@@ -219,9 +219,16 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
       path.appendChild(title);
       function openPanel(event) {
         if (event && event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
-        if (event) event.preventDefault();
-        mapInstance.openPlace('pihahiroth');
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        mapInstance.open('pihahiroth');
       }
+      // The shared canvas captures pointerdown for panning. Keep the pointer
+      // sequence owned by the interactive corridor so its physical click is not
+      // retargeted to the canvas before openPanel can run.
+      path.addEventListener('pointerdown', function(event){ event.stopPropagation(); });
       path.addEventListener('click', openPanel);
       path.addEventListener('keydown', openPanel);
       group.appendChild(path);

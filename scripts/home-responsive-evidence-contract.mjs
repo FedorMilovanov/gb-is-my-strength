@@ -100,10 +100,6 @@ async function assertVisualRegressionContracts(page, width, height) {
       && first.top < second.bottom
       && first.bottom > second.top);
 
-    /* Compare manuscript phrases with the actual rendered Home sections, not
-       the outer .home-content allocation. The ambient layer itself is a
-       full-page direct child and must not be treated as content it can collide
-       with. */
     const contentSurfaces = [...document.querySelectorAll('.home-content > :not(.h-ambient-native)')]
       .map(rect)
       .filter((surface) => surface && surface.width > 0 && surface.height > 0);
@@ -272,6 +268,154 @@ async function assertResponsiveLayout(page, width, height, expectedColumns) {
   await assertVisualRegressionContracts(page, width, height);
 }
 
+async function waitForSearchState(page, open) {
+  await page.waitForFunction((expected) => {
+    const overlay = document.querySelector('.cp-backdrop');
+    const actual = Boolean(overlay?.classList.contains('is-open') && getComputedStyle(overlay).display !== 'none');
+    return actual === expected;
+  }, open);
+}
+
+async function waitForProcessedSearch(page, query, expectedTitle) {
+  await page.waitForFunction(({ query: expectedQuery, expectedTitle: titleNeedle }) => {
+    const input = document.querySelector('.cp-input');
+    if (input?.value.trim() !== expectedQuery || document.querySelector('.cp-loading')) return false;
+    const headings = [...document.querySelectorAll('.cp-group-hd > span:first-child')]
+      .map((node) => node.textContent?.trim() || '');
+    const staleHeadings = new Set(['Рекомендуемое', 'Новое', 'Недавние запросы', 'Популярные исследования']);
+    const processed = headings.some((heading) => heading && !staleHeadings.has(heading));
+    const empty = Boolean(document.querySelector('.cp-empty'));
+    const titles = [...document.querySelectorAll('.cp-item-title')]
+      .map((node) => (node.textContent || '').toLocaleLowerCase('ru-RU'));
+    const titleMatched = !titleNeedle || titles.some((title) => title.includes(titleNeedle.toLocaleLowerCase('ru-RU')));
+    return (processed || empty) && titleMatched;
+  }, { query, expectedTitle });
+}
+
+async function assertSearchUnlocked(page, label) {
+  const state = await page.evaluate(() => ({
+    lockCount: Number(window.SiteUtils?._scrollLockCount || 0),
+    bodyPosition: getComputedStyle(document.body).position,
+    bodyOverflow: getComputedStyle(document.body).overflow,
+    homeInert: document.querySelector('.home-v20')?.hasAttribute('inert') || false,
+    navbarInert: document.querySelector('.h-navbar')?.hasAttribute('inert') || false,
+  }));
+  assert.equal(state.lockCount, 0, `${label}: search lock count remained non-zero`);
+  assert.notEqual(state.bodyPosition, 'fixed', `${label}: body position remained fixed`);
+  assert.notEqual(state.bodyOverflow, 'hidden', `${label}: body overflow remained hidden`);
+  assert.equal(state.homeInert, false, `${label}: Home content remained inert`);
+  assert.equal(state.navbarInert, false, `${label}: navbar remained inert`);
+}
+
+async function openSearch(page, selector) {
+  await page.locator(selector).click();
+  await waitForSearchState(page, true);
+  const input = page.locator('.cp-input');
+  await input.waitFor({ state: 'visible' });
+  await page.waitForFunction(() => document.querySelector('.cp-input') === document.activeElement);
+  return input;
+}
+
+async function assertSearchLifecycle(page, browserName) {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await setThemeForEvidence(page, false);
+  await page.evaluate(() => window.scrollTo(0, 0));
+
+  const input = await openSearch(page, '#gbSearchBtn');
+  const dialogState = await page.locator('.cp-backdrop').evaluate((overlay) => ({
+    id: overlay.id,
+    role: overlay.getAttribute('role'),
+    modal: overlay.getAttribute('aria-modal'),
+    hidden: overlay.getAttribute('aria-hidden'),
+    count: document.querySelectorAll('.cp-backdrop').length,
+    homeInert: document.querySelector('.home-v20')?.hasAttribute('inert') || false,
+    navbarInert: document.querySelector('.h-navbar')?.hasAttribute('inert') || false,
+    triggerExpanded: document.getElementById('gbSearchBtn')?.getAttribute('aria-expanded'),
+    triggerControls: document.getElementById('gbSearchBtn')?.getAttribute('aria-controls'),
+    lockCount: Number(window.SiteUtils?._scrollLockCount || 0),
+  }));
+  assert.equal(dialogState.id, 'gbCommandPalette', `${browserName}: search dialog id is unstable`);
+  assert.equal(dialogState.role, 'dialog', `${browserName}: search is not exposed as a dialog`);
+  assert.equal(dialogState.modal, 'true', `${browserName}: search is not modal`);
+  assert.equal(dialogState.hidden, 'false', `${browserName}: open search is hidden from accessibility tree`);
+  assert.equal(dialogState.count, 1, `${browserName}: search initialized more than once`);
+  assert.equal(dialogState.homeInert, true, `${browserName}: Home content is not isolated behind search`);
+  assert.equal(dialogState.navbarInert, true, `${browserName}: navbar is not isolated behind search`);
+  assert.equal(dialogState.triggerExpanded, 'true', `${browserName}: search trigger state is stale`);
+  assert.equal(dialogState.triggerControls, 'gbCommandPalette', `${browserName}: search trigger is not connected to dialog`);
+  assert.ok(dialogState.lockCount >= 1, `${browserName}: search did not lock page scroll`);
+
+  const closeControl = page.locator('.cp-home-close');
+  await closeControl.waitFor({ state: 'visible' });
+  const closeBox = await closeControl.boundingBox();
+  assert.ok(closeBox && closeBox.width >= 43 && closeBox.height >= 43, `${browserName}: search close target is smaller than 44px`);
+
+  await input.fill('Нагорная проповедь');
+  await waitForProcessedSearch(page, 'Нагорная проповедь', 'Нагорная проповедь');
+  const resultCount = await page.locator('.cp-item').count();
+  assert.ok(resultCount > 0, `${browserName}: canonical query returned no results`);
+  assert.match((await page.locator('.cp-status').textContent()) || '', /\d+\s+рез\./, `${browserName}: result status is missing`);
+  assert.match((await page.locator('.cp-item-title').first().textContent()) || '', /Нагорная\s+проповедь/i, `${browserName}: exact title query is not ranked first`);
+  assert.equal(await page.locator('.cp-item.is-active').first().getAttribute('aria-selected'), 'true', `${browserName}: active search result is not announced`);
+
+  const focusables = page.locator('#gbCommandPalette :is(input, button, a[href], [tabindex]:not([tabindex="-1"])):visible');
+  const focusableCount = await focusables.count();
+  assert.ok(focusableCount >= 5, `${browserName}: search exposes too few focusable controls`);
+  await focusables.last().focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await focusables.first().evaluate((element) => element === document.activeElement), true, `${browserName}: Tab escaped search dialog`);
+  await focusables.first().focus();
+  await page.keyboard.press('Shift+Tab');
+  assert.equal(await focusables.last().evaluate((element) => element === document.activeElement), true, `${browserName}: Shift+Tab escaped search dialog`);
+
+  await closeControl.click();
+  await waitForSearchState(page, false);
+  await assertSearchUnlocked(page, `${browserName} desktop close`);
+  assert.equal(await page.locator('#gbSearchBtn').getAttribute('aria-expanded'), 'false', `${browserName}: closed search trigger remained expanded`);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const menuButton = page.locator('#hMobileMenuBtn');
+  await menuButton.click();
+  await page.waitForFunction(() => document.getElementById('hMobileNav')?.classList.contains('open'));
+  await page.locator('#hMobileNav [data-action="open-search"]').click();
+  await waitForSearchState(page, true);
+  await page.waitForFunction(() => !document.getElementById('hMobileNav')?.classList.contains('open'));
+  assert.equal(await page.locator('#hMobileNav').getAttribute('aria-hidden'), 'true', `${browserName}: mobile menu remained exposed behind search`);
+  assert.equal(await page.locator('.cp-input').evaluate((element) => element === document.activeElement), true, `${browserName}: menu-to-search transition lost input focus`);
+  assert.equal(await page.locator('.cp-backdrop').count(), 1, `${browserName}: menu transition duplicated search`);
+
+  const scopeGeometry = await page.evaluate(() => {
+    const row = document.querySelector('.cp-scope-row')?.getBoundingClientRect();
+    const first = document.querySelector('.cp-scope-chip:first-child')?.getBoundingClientRect();
+    const last = document.querySelector('.cp-scope-chip:last-child')?.getBoundingClientRect();
+    return row && first && last ? {
+      rowLeft: row.left,
+      rowRight: row.right,
+      firstLeft: first.left,
+      lastRight: last.right,
+    } : null;
+  });
+  assert.ok(scopeGeometry
+    && scopeGeometry.firstLeft >= scopeGeometry.rowLeft - 1
+    && scopeGeometry.lastRight <= scopeGeometry.rowRight + 1,
+  `${browserName}: mobile search scopes are clipped at rest`);
+
+  await page.locator('.cp-input').fill('Иер 17:9');
+  await waitForProcessedSearch(page, 'Иер 17:9', 'сердц');
+  assert.ok(await page.locator('.cp-item').count() > 0, `${browserName}: scripture query returned no material`);
+  await page.locator('.cp-home-close').click();
+  await waitForSearchState(page, false);
+  await assertSearchUnlocked(page, `${browserName} mobile close`);
+
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    await openSearch(page, '#gbSearchBtn');
+    assert.equal(await page.locator('.cp-backdrop').count(), 1, `${browserName}: search duplicated during reopen cycle ${cycle + 1}`);
+    await page.locator('.cp-home-close').click();
+    await waitForSearchState(page, false);
+    await assertSearchUnlocked(page, `${browserName} reopen cycle ${cycle + 1}`);
+  }
+}
+
 async function settleForEvidence(page) {
   await page.evaluate(async () => {
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -284,6 +428,68 @@ async function settleForEvidence(page) {
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     await pause(300);
   });
+}
+
+async function captureCompactEvidence(page, browserName) {
+  if (browserName !== 'chromium') return [];
+  const captures = [];
+  const shot = async (file) => {
+    await page.screenshot({ path: path.join(REPORT_DIR, file), fullPage: false });
+    captures.push(file);
+  };
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await setThemeForEvidence(page, false);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(180);
+  await shot('chromium-home-hero-light.png');
+
+  await page.locator('#issledovat').scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, -84));
+  await page.waitForTimeout(160);
+  await shot('chromium-home-directions-light.png');
+
+  await page.locator('#publikacii').scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, -84));
+  await page.waitForTimeout(160);
+  await shot('chromium-home-publications-light.png');
+
+  await page.locator('.h-about').scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, -70));
+  await page.waitForTimeout(160);
+  await shot('chromium-home-terminal-light.png');
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  let input = await openSearch(page, '#gbSearchBtn');
+  await input.fill('Нагорная проповедь');
+  await waitForProcessedSearch(page, 'Нагорная проповедь', 'Нагорная проповедь');
+  await shot('chromium-search-desktop-light.png');
+  await page.locator('.cp-home-close').click();
+  await waitForSearchState(page, false);
+
+  await setThemeForEvidence(page, true);
+  input = await openSearch(page, '#gbSearchBtn');
+  await input.fill('Нагорная проповедь');
+  await waitForProcessedSearch(page, 'Нагорная проповедь', 'Нагорная проповедь');
+  await shot('chromium-search-desktop-dark.png');
+  await page.locator('.cp-home-close').click();
+  await waitForSearchState(page, false);
+
+  await setThemeForEvidence(page, false);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(160);
+  await shot('chromium-home-mobile-light.png');
+
+  input = await openSearch(page, '#gbSearchBtn');
+  await input.fill('Иер 17:9');
+  await waitForProcessedSearch(page, 'Иер 17:9', 'сердц');
+  await shot('chromium-search-mobile-light.png');
+  await page.locator('.cp-home-close').click();
+  await waitForSearchState(page, false);
+  await assertSearchUnlocked(page, 'compact evidence cleanup');
+
+  return captures;
 }
 
 async function captureEvidence(page, browserName) {
@@ -348,7 +554,9 @@ export async function runResponsiveEvidence(browserName, browserType, baseUrl) {
       [1720, 980, 5],
     ]) await assertResponsiveLayout(page, ...spec);
 
-    const evidence = await captureEvidence(page, browserName);
+    await assertSearchLifecycle(page, browserName);
+    const compactEvidence = await captureCompactEvidence(page, browserName);
+    const evidence = [...await captureEvidence(page, browserName), ...compactEvidence];
     assert.deepEqual(runtimeErrors, [], `responsive evidence runtime errors: ${runtimeErrors.join(' | ')}`);
     return { browser: `${browserName}-responsive-evidence`, result: 'PASS', evidence };
   } finally {

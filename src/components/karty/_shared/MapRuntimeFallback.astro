@@ -22,6 +22,14 @@ const { title, description, archaeologyMapId } = Astro.props;
 
 <noscript>
   <style is:global>
+    html,
+    body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+    }
+
     [data-map-stage] {
       display: none !important;
     }
@@ -52,6 +60,14 @@ const { title, description, archaeologyMapId } = Astro.props;
 
     .map-text-fallback a {
       color: #9fd7ff !important;
+    }
+
+    .map-text-fallback .map-static-facts {
+      margin: 0 0 24px !important;
+      padding: 14px 16px !important;
+      border-left: 3px solid #e8c879 !important;
+      background: rgba(232, 200, 121, 0.08) !important;
+      color: #f2ead5 !important;
     }
   </style>
   <section class="map-runtime-noscript" role="status" aria-label="Текстовая замена интерактивной карты">
@@ -145,6 +161,89 @@ const { title, description, archaeologyMapId } = Astro.props;
     overflow: auto;
     padding: 16px 0;
     background: #070a10;
+  }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 14mm 13mm 16mm;
+    }
+
+    html,
+    body {
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+      background: #fff !important;
+      color: #111 !important;
+    }
+
+    [data-map-stage],
+    .me-map,
+    .map-runtime-noscript {
+      display: none !important;
+    }
+
+    .map-text-fallback.sr-only[data-map-static-projection] {
+      display: block !important;
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      clip: auto !important;
+      clip-path: none !important;
+      white-space: normal !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      color: #111 !important;
+      box-shadow: none !important;
+      font: 11pt/1.48 Georgia, "Times New Roman", serif !important;
+    }
+
+    .map-text-fallback[data-map-static-projection] h2 {
+      margin: 0 0 8mm !important;
+      color: #111 !important;
+      font: 700 22pt/1.14 Georgia, "Times New Roman", serif !important;
+      break-after: avoid-page;
+    }
+
+    .map-text-fallback[data-map-static-projection] h3 {
+      margin: 7mm 0 2.5mm !important;
+      color: #111 !important;
+      font: 700 14pt/1.22 Georgia, "Times New Roman", serif !important;
+      break-after: avoid-page;
+    }
+
+    .map-text-fallback[data-map-static-projection] p,
+    .map-text-fallback[data-map-static-projection] li {
+      color: #111 !important;
+      orphans: 3;
+      widows: 3;
+    }
+
+    .map-text-fallback[data-map-static-projection] ol,
+    .map-text-fallback[data-map-static-projection] ul {
+      padding-left: 1.5em !important;
+    }
+
+    .map-text-fallback[data-map-static-projection] a {
+      color: #111 !important;
+      text-decoration: underline !important;
+    }
+
+    .map-text-fallback[data-map-static-projection] .map-static-facts {
+      margin: 0 0 7mm !important;
+      padding: 4mm 5mm !important;
+      border: 0.35mm solid #8b6a22 !important;
+      border-left-width: 1.2mm !important;
+      background: #f6f0df !important;
+      color: #111 !important;
+      break-inside: avoid-page;
+    }
   }
 
   @media (max-width: 420px) {

@@ -1,0 +1,116 @@
+name: Avraam Dossier Witness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/avraam-dossier-witness.yml'
+      - 'scripts/avraam-dossier-witness.mjs'
+      - 'karty/_engine/**'
+      - 'karty/avraam/**'
+      - 'src/components/karty/avraam/**'
+
+concurrency:
+  group: avraam-dossier-witness-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Exact-head witness after the bounded overview-label composition repair.
+jobs:
+  witness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      AVRAAM_DOSSIER_OUT: reports/atlas/avraam-dossier-witness
+    steps:
+      - name: Checkout exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Validate exact source inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/avraam-dossier-witness.mjs
+          node --check karty/_engine/map-engine.js
+          python3 - <<'PY'
+          import json
+          route=json.load(open('karty/avraam/route.json', encoding='utf-8'))
+          assert len([p for p in route['places'] if isinstance(p.get('stage'), int)]) == 19
+          assert len([p for p in route['places'] if not isinstance(p.get('stage'), int)]) == 3
+          assert len(route.get('scientific_variants', {})) == 19
+          PY
+          test -z "$(git status --porcelain)"
+
+      - name: Install repository dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production-like site
+        run: npm run strangler:build:production-like
+
+      - name: Start static server
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8090 --directory dist > /tmp/avraam-dossier-http.log 2>&1 &
+          echo $! > /tmp/avraam-dossier-http.pid
+          for _ in $(seq 1 60); do
+            if curl --fail --silent --show-error http://127.0.0.1:8090/karty/avraam/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/avraam-dossier-http.log
+          exit 1
+
+      - name: Capture all dossier tabs on desktop and mobile
+        env:
+          AUDIT_BASE: http://127.0.0.1:8090
+        run: node scripts/avraam-dossier-witness.mjs
+
+      - name: Preserve exact source and environment
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$AVRAAM_DOSSIER_OUT"
+          mkdir -p "$out/source/karty/_engine" "$out/source/karty/avraam" "$out/source/scripts"
+          cp karty/_engine/map-engine.js "$out/source/karty/_engine/map-engine.js"
+          cp karty/avraam/route.json "$out/source/karty/avraam/route.json"
+          cp scripts/avraam-dossier-witness.mjs "$out/source/scripts/avraam-dossier-witness.mjs"
+          {
+            echo "head_sha=$HEAD_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "node=$(node --version)"
+            echo "npm=$(npm --version)"
+            echo "playwright=$(npx playwright --version)"
+          } > "$out/ENVIRONMENT.txt"
+          sha256sum \
+            "$out/source/karty/_engine/map-engine.js" \
+            "$out/source/karty/avraam/route.json" \
+            "$out/source/scripts/avraam-dossier-witness.mjs" \
+            > "$out/source/SHA256SUMS.txt"
+          if [[ -f /tmp/avraam-dossier-http.log ]]; then cp /tmp/avraam-dossier-http.log "$out/http-server.log"; fi
+
+      - name: Upload exact dossier evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: avraam-dossier-witness-${{ github.run_id }}
+          path: reports/atlas/avraam-dossier-witness
+          if-no-files-found: error
+          retention-days: 30
