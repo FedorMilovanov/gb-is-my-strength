@@ -1,6 +1,8 @@
-const VERSION = 10;
+const VERSION = 11;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
+const HOVER_TRANSIT_MS = 520;
+const HOVER_TRANSIT_PADDING = 12;
 
 let active = null;
 let closeTimer = 0;
@@ -36,6 +38,20 @@ function containsPoint(element, x, y) {
 
 function pointerInside(record, x = pointerX, y = pointerY) {
   return Boolean(record && (containsPoint(record.anchor, x, y) || containsPoint(record.tip, x, y)));
+}
+
+function pointerInHoverTransit(record, x = pointerX, y = pointerY) {
+  if (!record || record.reason !== 'hover' || !Number.isFinite(x) || !Number.isFinite(y)) return false;
+  const remaining = Number(record.hoverTransitUntil || 0) - window.performance.now();
+  if (remaining <= 0) return false;
+  const anchorRect = record.anchor.getBoundingClientRect();
+  const tipRect = record.tip.getBoundingClientRect();
+  if (anchorRect.width <= 0 || anchorRect.height <= 0 || tipRect.width <= 0 || tipRect.height <= 0) return false;
+  const left = Math.min(anchorRect.left, tipRect.left) - HOVER_TRANSIT_PADDING;
+  const top = Math.min(anchorRect.top, tipRect.top) - HOVER_TRANSIT_PADDING;
+  const right = Math.max(anchorRect.right, tipRect.right) + HOVER_TRANSIT_PADDING;
+  const bottom = Math.max(anchorRect.bottom, tipRect.bottom) + HOVER_TRANSIT_PADDING;
+  return x >= left && x <= right && y >= top && y <= bottom;
 }
 
 function currentPointerTarget() {
@@ -77,6 +93,11 @@ function scheduleClose(delay = 220) {
     if (focused === record.anchor || record.tip.contains(focused)) return;
     if (containsInteractive(record, currentPointerTarget()) || pointerInside(record)) return;
     if (record.anchor.matches(':hover') || record.tip.matches(':hover')) return;
+    if (pointerInHoverTransit(record)) {
+      const remaining = Math.max(1, Math.ceil(record.hoverTransitUntil - window.performance.now()));
+      scheduleClose(Math.min(90, remaining));
+      return;
+    }
     if (record.reason === 'hover' && (!record.hoverSettled || pointerEpoch === record.pointerBaseline)) return;
     closeTooltip('leave');
   }, delay);
@@ -221,6 +242,7 @@ function openTooltip(anchor, reason = 'open') {
   if (active?.anchor === anchor) {
     active.reason = reason;
     active.pointerBaseline = pointerEpoch;
+    active.hoverTransitUntil = reason === 'hover' ? window.performance.now() + HOVER_TRANSIT_MS : 0;
     if (reason === 'hover') {
       active.hoverSettled = false;
       settleHover(active);
@@ -246,6 +268,7 @@ function openTooltip(anchor, reason = 'open') {
     reason,
     hoverSettled: reason !== 'hover',
     pointerBaseline: pointerEpoch,
+    hoverTransitUntil: reason === 'hover' ? window.performance.now() + HOVER_TRANSIT_MS : 0,
   };
   position(tip, anchor);
   window.requestAnimationFrame(() => {
@@ -255,8 +278,14 @@ function openTooltip(anchor, reason = 'open') {
 
   if (tip.dataset.gbInteractionBound !== '1') {
     tip.dataset.gbInteractionBound = '1';
-    tip.addEventListener('pointerenter', cancelClose);
-    tip.addEventListener('mouseenter', cancelClose);
+    tip.addEventListener('pointerenter', () => {
+      if (active?.tip === tip) active.hoverTransitUntil = 0;
+      cancelClose();
+    });
+    tip.addEventListener('mouseenter', () => {
+      if (active?.tip === tip) active.hoverTransitUntil = 0;
+      cancelClose();
+    });
     tip.addEventListener('pointerleave', () => scheduleClose());
     tip.addEventListener('mouseleave', () => scheduleClose());
     tip.addEventListener('click', (event) => event.stopPropagation());
@@ -322,6 +351,7 @@ function initializeAnchor(anchor) {
     else {
       active.reason = 'click';
       active.pointerBaseline = pointerEpoch;
+      active.hoverTransitUntil = 0;
     }
   });
   anchor.addEventListener('keydown', (event) => {
