@@ -37,7 +37,7 @@ jobs:
           persist-credentials: true
 
       - name: Materialize lifecycle-aware order contract
-        run: python scripts/.tmp-avraam-static-order-materialize-20260803.py
+        run: python scripts/.tmp-avraam-static-order-materialize-20260803.py --write
 
       - name: Validate generated witness
         shell: bash
