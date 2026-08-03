@@ -41,6 +41,85 @@ function record(engine, profile, contract, ok, detail = '') {
   if (!ok) failures.push(`${engine}/${profile}/${contract}: ${detail}`);
 }
 
+async function stabilizeVisualState(page) {
+  await page.evaluate(async () => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    if (document.fonts?.ready) await document.fonts.ready;
+    for (const image of document.images) {
+      image.loading = 'eager';
+      image.fetchPriority = 'high';
+    }
+    await Promise.all([...document.images].map((image) => image.decode?.().catch(() => {})));
+  });
+  await page.waitForTimeout(100);
+}
+
+async function captureSegmentedScreenshot(page, engine, profile) {
+  await stabilizeVisualState(page);
+  const metrics = await page.evaluate(() => ({
+    pageHeight: Math.max(
+      document.documentElement.scrollHeight,
+      document.body?.scrollHeight || 0,
+      document.documentElement.offsetHeight,
+      document.body?.offsetHeight || 0,
+    ),
+    viewportHeight: window.innerHeight,
+    viewportWidth: window.innerWidth,
+  }));
+
+  const maxScroll = Math.max(0, metrics.pageHeight - metrics.viewportHeight);
+  const positions = [];
+  for (let requested = 0; requested < metrics.pageHeight; requested += metrics.viewportHeight) {
+    const top = Math.min(requested, maxScroll);
+    if (positions.at(-1) !== top) positions.push(top);
+    if (top === maxScroll) break;
+  }
+  if (!positions.length) positions.push(0);
+  if (positions.at(-1) !== maxScroll) positions.push(maxScroll);
+
+  const ranges = [];
+  const tiles = [];
+  for (let index = 0; index < positions.length; index += 1) {
+    const requestedTop = positions[index];
+    await page.evaluate((top) => window.scrollTo(0, top), requestedTop);
+    await page.waitForTimeout(80);
+    const actualTop = await page.evaluate(() => Math.round(window.scrollY));
+    const tilePath = join(OUT, `${engine}-${profile.id}-tile-${String(index + 1).padStart(3, '0')}.png`);
+    await page.screenshot({ path: tilePath, fullPage: false });
+    const bytes = statSync(tilePath).size;
+    const start = Math.max(0, Math.min(actualTop, metrics.pageHeight));
+    const end = Math.max(start, Math.min(start + metrics.viewportHeight, metrics.pageHeight));
+    ranges.push({ start, end });
+    tiles.push({ index: index + 1, requestedTop, actualTop, start, end, bytes });
+  }
+
+  ranges.sort((left, right) => left.start - right.start || left.end - right.end);
+  const gaps = [];
+  let cursor = 0;
+  for (const range of ranges) {
+    if (range.start > cursor) gaps.push({ start: cursor, end: range.start });
+    cursor = Math.max(cursor, range.end);
+  }
+  if (cursor < metrics.pageHeight) gaps.push({ start: cursor, end: metrics.pageHeight });
+  const gapPixels = gaps.reduce((sum, gap) => sum + Math.max(0, gap.end - gap.start), 0);
+  const coveredPixels = Math.max(0, metrics.pageHeight - gapPixels);
+  const emptyTiles = tiles.filter((tile) => tile.bytes < 1000);
+  const complete = metrics.pageHeight > 0 && gaps.length === 0 && emptyTiles.length === 0 && coveredPixels === metrics.pageHeight;
+
+  return {
+    complete,
+    pageHeight: metrics.pageHeight,
+    viewportHeight: metrics.viewportHeight,
+    viewportWidth: metrics.viewportWidth,
+    coveredPixels,
+    gaps,
+    emptyTiles: emptyTiles.map((tile) => tile.index),
+    tileCount: tiles.length,
+    totalPngBytes: tiles.reduce((sum, tile) => sum + tile.bytes, 0),
+    tiles,
+  };
+}
+
 async function inspect(browserType, engine, profile) {
   const browser = await browserType.launch();
   try {
@@ -95,7 +174,8 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'console-clean', consoleErrors.length === 0, consoleErrors.join(' | '));
       record(engine, `${profile.id}-${mode}`, 'page-clean', pageErrors.length === 0, pageErrors.join(' | '));
       if (javaScriptEnabled) {
-        await page.screenshot({ path: join(OUT, `${engine}-${profile.id}.png`), fullPage: true });
+        const screenshotCoverage = await captureSegmentedScreenshot(page, engine, profile);
+        record(engine, `${profile.id}-${mode}`, 'screenshot-coverage', screenshotCoverage.complete, JSON.stringify(screenshotCoverage));
       }
       await context.close();
     }
