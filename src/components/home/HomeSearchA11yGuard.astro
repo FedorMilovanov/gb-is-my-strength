@@ -1,0 +1,98 @@
+---
+/**
+ * HomeSearchA11yGuard.astro — keeps lazy search trigger and result state truthful.
+ *
+ * The command palette is created only after the first search request. Until
+ * that happens, aria-controls must not point at a missing element. Once the
+ * palette exists, every Home search trigger owns the same stable dialog id.
+ *
+ * Search results are debounced. During that transition, stale result buttons
+ * must not remain keyboard-active: the listbox becomes busy immediately and
+ * navigation resumes only after the search runtime publishes the next state.
+ */
+---
+
+<script is:inline>
+  (() => {
+    const SEARCH_ID = 'gbCommandPalette';
+    const LISTBOX_ID = 'cp-listbox';
+    const TRIGGER_SELECTOR = '#gbSearchBtn, [data-action="open-search"]';
+    const SEARCH_INPUT_SELECTOR = '.cp-input';
+    const PENDING_KEYS = new Set([
+      'ArrowDown',
+      'ArrowUp',
+      'PageDown',
+      'PageUp',
+      'Home',
+      'End',
+      'Enter',
+    ]);
+    let scheduled = false;
+
+    const getListbox = () => document.getElementById(LISTBOX_ID);
+
+    const markPending = (listbox) => {
+      listbox.setAttribute('aria-busy', 'true');
+      const marker = document.createElement('div');
+      marker.className = 'cp-loading';
+      marker.setAttribute('role', 'status');
+      marker.textContent = 'Ищу…';
+      listbox.replaceChildren(marker);
+    };
+
+    const syncListbox = () => {
+      const listbox = getListbox();
+      if (!listbox) return;
+      if (listbox.querySelector('.cp-loading')) {
+        listbox.setAttribute('aria-busy', 'true');
+      } else {
+        listbox.removeAttribute('aria-busy');
+      }
+    };
+
+    const sync = () => {
+      scheduled = false;
+      const targetExists = Boolean(document.getElementById(SEARCH_ID));
+      document.querySelectorAll(TRIGGER_SELECTOR).forEach((trigger) => {
+        const controls = trigger.getAttribute('aria-controls');
+        if (!targetExists && controls === SEARCH_ID) {
+          trigger.removeAttribute('aria-controls');
+        } else if (targetExists && controls !== SEARCH_ID) {
+          trigger.setAttribute('aria-controls', SEARCH_ID);
+        }
+      });
+      syncListbox();
+    };
+
+    const schedule = () => {
+      if (scheduled) return;
+      scheduled = true;
+      queueMicrotask(sync);
+    };
+
+    document.addEventListener('input', (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || !input.matches(SEARCH_INPUT_SELECTOR)) return;
+      const listbox = getListbox();
+      if (listbox) markPending(listbox);
+    }, true);
+
+    document.addEventListener('keydown', (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || !input.matches(SEARCH_INPUT_SELECTOR)) return;
+      if (!PENDING_KEYS.has(event.key) || !getListbox()?.querySelector('.cp-loading')) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
+
+    new MutationObserver(schedule).observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-controls'],
+    });
+
+    window.addEventListener('pageshow', schedule);
+    schedule();
+  })();
+</script>
