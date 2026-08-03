@@ -96,9 +96,29 @@ function localTargetExistsFromUrl(url) {
   return exists(pagePathToFile(new URL(url).pathname));
 }
 function parseSwPrecache(sw) {
-  const match = sw.match(/PRECACHE_ASSETS=\[([^\]]+)\]/);
+  const match = sw.match(/\bPRECACHE_ASSETS\s*=\s*\[([\s\S]*?)\];/);
   if (!match) return [];
-  return [...match[1].matchAll(/"([^"]+)"/g)].map((entry) => entry[1]);
+
+  const constants = new Map(
+    [...sw.matchAll(/\bconst\s+([A-Z][A-Z0-9_]*)\s*=\s*(["'])(.*?)\2\s*;/g)]
+      .map((entry) => [entry[1], entry[3]])
+  );
+  const assets = [];
+  for (const rawToken of match[1].split(',')) {
+    const token = rawToken.trim();
+    if (!token) continue;
+    const quoted = token.match(/^(["'])(.*?)\1$/);
+    if (quoted) {
+      assets.push(quoted[2]);
+      continue;
+    }
+    if (constants.has(token)) {
+      assets.push(constants.get(token));
+      continue;
+    }
+    return [];
+  }
+  return assets;
 }
 function walk(dir, acc = []) {
   if (!fs.existsSync(dir)) return acc;

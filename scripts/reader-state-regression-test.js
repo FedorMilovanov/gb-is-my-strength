@@ -312,6 +312,8 @@ const headSource = fs.readFileSync(path.join(ROOT, 'src/components/reader-platfo
 const cacheAssetsSource = fs.readFileSync(path.join(ROOT, 'scripts/cache-bust-assets.js'), 'utf8');
 const auditSource = fs.readFileSync(path.join(ROOT, 'scripts/audit-pro.js'), 'utf8');
 const swSource = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+const swBaseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'migration/sw-cache-version-baseline.json'), 'utf8'));
+const swVersion = swSource.match(/\bCACHE_VERSION\s*=\s*['"]([^'"]+)['"]/)?.[1];
 
 for (const [name, consumer] of [
   ['BookmarkEngine', bookmarkSource],
@@ -332,7 +334,9 @@ assert(!seriesControllerSource.includes("style.setProperty('--gb-read-pct'"), 's
 assert(headSource.includes("assetUrl('js/reader-state.js')"), 'shared reader head must load ReaderState');
 assert(cacheAssetsSource.includes("'js/reader-state.js'"), 'ReaderState must be cache-bust managed');
 assert(auditSource.includes("'js/reader-state.js'"), 'ReaderState must be in the central JS allowlist');
-assert(swSource.includes('"/js/reader-state.js"'), 'ReaderState must be precached');
-assert(swSource.includes('gb-v192-reader-state-20260724'), 'ReaderState rollout must bump the SW cache namespace');
+assert(/['"]\/js\/reader-state\.js['"]/.test(swSource), 'ReaderState must be precached regardless of quote style');
+assert(swVersion, 'service worker must expose CACHE_VERSION');
+assert.strictEqual(swVersion, swBaseline.currentExpectedCacheVersion, 'service worker cache version must match the governed baseline');
+assert.notStrictEqual(swVersion, swBaseline.lastReviewedDistProductionCacheVersion, 'offline contract rollout must advance beyond the prior reviewed cache version');
 
 console.log('ReaderState regression: core geometry, phases, migration and single-owner contracts passed.');
