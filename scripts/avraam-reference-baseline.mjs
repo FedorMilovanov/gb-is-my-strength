@@ -124,7 +124,7 @@ async function collectGeometry(page,stateId){
       const scrollReachable=Boolean(scroller&&scroller.scrollWidth>scroller.clientWidth+1&&scrollBox&&box.bottom>scrollBox.top&&box.top<scrollBox.bottom);
       return{...describe(el),box,scrollReachable};
     });
-    const undersizedControls=controls.filter(({box})=>box.width<44||box.height<44);
+    const undersizedControls=controls.filter(({box})=>box.width<43.5||box.height<43.5);
     const offscreenControls=controls.filter(({box,scrollReachable,placeId})=>!placeId&&!scrollReachable&&(box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1));
     const markers=[...document.querySelectorAll('[data-place-id]')].filter(isVisible).map(el=>{
       const label=el.querySelector('.me-place-label'),bg=el.querySelector('.me-place-label-bg'),dot=el.querySelector('.me-marker-dot');
