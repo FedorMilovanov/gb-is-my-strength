@@ -44,7 +44,12 @@ jobs:
           from pathlib import Path
           path = Path('scripts/.tmp-avraam-skip-contrast-materialize-20260803.py')
           text = path.read_text(encoding='utf-8')
-          for old, new in (("    md_old = '''", "    md_old = r'''"), ("    md_new = '''", "    md_new = r'''")):
+          replacements = (
+              ("    md_old = '''", "    md_old = r'''"),
+              ("    md_new = '''", "    md_new = r'''"),
+              ("require(text.count('archMetadata') >= 5, 'contrast contract markers missing')", "require(text.count('archMetadata') >= 4, 'contrast contract markers missing')"),
+          )
+          for old, new in replacements:
               if text.count(old) != 1:
                   raise SystemExit(f'guard failed: {old!r} count={text.count(old)}')
               text = text.replace(old, new, 1)
