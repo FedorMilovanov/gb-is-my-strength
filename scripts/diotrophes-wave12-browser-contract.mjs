@@ -199,8 +199,9 @@ async function inspect(browserType, engine, profile) {
           publicationMarker: document.body.dataset.wave12Publication,
           sourceAuthority: document.querySelector('[data-source-authority]')?.getAttribute('data-source-authority'),
           readerLinkSections: {
-            base: new Set(baseLinks).size,
-            supplement: new Set(supplementLinks).size,
+            base: baseLinks.length,
+            supplement: supplementLinks.length,
+            total: baseLinks.length + supplementLinks.length,
           },
           readerLinks: new Set([...baseLinks, ...supplementLinks]).size,
           hasFaithful: Boolean(document.querySelector('#faithful-witness-under-pressure')),
@@ -221,10 +222,10 @@ async function inspect(browserType, engine, profile) {
         engine,
         `${profile.id}-${mode}`,
         'reader-link-sections',
-        state.readerLinkSections.base === 40 && state.readerLinkSections.supplement === 33,
+        state.readerLinkSections.base === 40 && state.readerLinkSections.supplement === 33 && state.readerLinkSections.total === 73,
         JSON.stringify(state.readerLinkSections),
       );
-      record(engine, `${profile.id}-${mode}`, 'reader-links', state.readerLinks === 73, `unique=${state.readerLinks}`);
+      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 70, `unique=${state.readerLinks}`);
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'no-draft-leak', !state.draftLeak, JSON.stringify(state));
       record(
