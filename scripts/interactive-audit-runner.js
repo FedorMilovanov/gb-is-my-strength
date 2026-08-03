@@ -9,6 +9,9 @@ const { spawn } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const AUDIT = path.join(__dirname, 'interactive-audit.js');
+const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
+const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
+const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
 
 function contentType(filePath) {
   return {
@@ -71,23 +74,46 @@ function startServer() {
   });
 }
 
-function runAudit(baseUrl) {
+function runNodeScript(script, args = [], extraEnv = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [AUDIT, ...process.argv.slice(2)], {
+    const child = spawn(process.execPath, [script, ...args], {
       cwd: ROOT,
-      env: { ...process.env, AUDIT_BASE: baseUrl },
+      env: { ...process.env, ...extraEnv },
       stdio: 'inherit',
     });
     child.once('error', reject);
     child.once('exit', (code, signal) => {
       if (signal) {
-        console.error(`Interactive audit terminated by signal ${signal}`);
+        console.error(`${path.basename(script)} terminated by signal ${signal}`);
         resolve(1);
         return;
       }
       resolve(code == null ? 1 : code);
     });
   });
+}
+
+function runAudit(baseUrl) {
+  return runNodeScript(AUDIT, process.argv.slice(2), { AUDIT_BASE: baseUrl });
+}
+
+async function runHomeDesignAudits() {
+  if (!fs.existsSync(HOME_DESIGN_AUDIT)) {
+    throw new Error(`Home Design Audit Pro is missing at ${HOME_DESIGN_AUDIT}`);
+  }
+
+  fs.rmSync(HOME_DESIGN_REPORT, { recursive: true, force: true });
+  for (const browser of ['chromium', 'webkit']) {
+    console.log(`Home Design Audit Pro: ${browser}`);
+    const code = await runNodeScript(HOME_DESIGN_AUDIT, [], { HOME_DESIGN_BROWSER: browser });
+    if (code !== 0) return code;
+  }
+
+  const artifactTarget = path.join(INTERACTIVE_REPORT, 'home-design-audit-pro');
+  fs.rmSync(artifactTarget, { recursive: true, force: true });
+  fs.mkdirSync(INTERACTIVE_REPORT, { recursive: true });
+  fs.cpSync(HOME_DESIGN_REPORT, artifactTarget, { recursive: true });
+  return 0;
 }
 
 async function closeServer(server) {
@@ -98,7 +124,8 @@ async function closeServer(server) {
 (async () => {
   const explicitBase = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
   if (explicitBase) {
-    process.exitCode = await runAudit(explicitBase);
+    const auditCode = await runAudit(explicitBase);
+    process.exitCode = auditCode === 0 ? await runHomeDesignAudits() : auditCode;
     return;
   }
   if (!fs.existsSync(DIST) || !fs.statSync(DIST).isDirectory()) {
@@ -109,11 +136,13 @@ async function closeServer(server) {
   const address = server.address();
   const baseUrl = `http://127.0.0.1:${address.port}`;
   console.log(`Interactive audit local dist server: ${baseUrl}`);
+  let auditCode = 1;
   try {
-    process.exitCode = await runAudit(baseUrl);
+    auditCode = await runAudit(baseUrl);
   } finally {
     await closeServer(server);
   }
+  process.exitCode = auditCode === 0 ? await runHomeDesignAudits() : auditCode;
 })().catch((error) => {
   console.error('FATAL', error);
   process.exitCode = 1;

@@ -1,0 +1,372 @@
+---
+/**
+ * HomeVisualAuditFixes.astro — final visual-pass corrections for the native Home.
+ *
+ * This component is intentionally rendered after HomeMain so the reviewed
+ * optical contracts win over historical shared CSS without changing other
+ * routes. It owns only screenshot-confirmed Home defects.
+ */
+---
+
+<style is:global>
+  /* Header controls are one icon family. Equal boxes, one muted ink and a thin
+     non-scaling line are more important than equal source SVG attributes. The
+     crescent needs a slightly lighter line because its closed silhouette carries
+     more visual mass than the open magnifier. */
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn) {
+    color: color-mix(in srgb, var(--h-muted) 88%, transparent);
+  }
+
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn) > svg {
+    width: 18px;
+    height: 18px;
+    color: inherit;
+    stroke: currentColor;
+    fill: none;
+    overflow: visible;
+  }
+
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn) > svg :is(path, circle, line, polyline) {
+    stroke: currentColor;
+    stroke-width: 1.18;
+    vector-effect: non-scaling-stroke;
+  }
+
+  body.home-page .h-navbar #themeToggle .icon-moon path {
+    stroke-width: 1.02;
+  }
+
+  body.home-page .h-navbar #themeToggle .icon-sun :is(circle, line) {
+    stroke-width: 1.12;
+  }
+
+  body.home-page .h-navbar :is(#gbSearchBtn, #themeToggle, #hMobileMenuBtn):is(:hover, :focus-visible) {
+    color: var(--h-accent);
+  }
+
+  /* Keep the rest of the compact interface in the same light line language. */
+  body.home-page .h-scroll-top-arrow svg polyline,
+  body.home-page .cp-search-icon svg :is(path, circle, line, polyline),
+  body.home-page .cp-home-close svg :is(path, circle, line, polyline) {
+    stroke-width: 1.3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Search previously showed two identical X marks side by side. Preserve the
+     dedicated 44px close button, but make query clearing an unmistakable
+     backspace action. */
+  body.home-page .cp-clear svg {
+    display: none;
+  }
+
+  body.home-page .cp-clear::before {
+    content: "⌫";
+    display: block;
+    color: currentColor;
+    font-family: system-ui, sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+
+  /* At small-tablet widths two publication columns are still appropriate, but
+     the legacy horizontal card spends almost half of each card on a thumbnail.
+     That turns long Russian headlines into seven-line vertical towers. Stack the
+     art above the copy only in this narrow desktop interval: the section keeps
+     its compact two-column rhythm while titles regain a readable measure. */
+  @media (min-width: 761px) and (max-width: 920px) {
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list .h-article-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      gap: 0;
+      padding: 14px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-thumb {
+      width: 100%;
+      height: 126px;
+      min-width: 0;
+      margin: 0 0 14px;
+      overflow: hidden;
+      border-radius: 11px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-thumb picture {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      object-fit: cover;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-body {
+      min-width: 0;
+      padding: 0 2px 2px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-title {
+      font-size: clamp(18px, 2.3vw, 20px);
+      line-height: 1.17;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-meta {
+      margin-top: 12px;
+      row-gap: 6px;
+    }
+  }
+
+  /* The compact palette already has an explicit close control. Desktop keyboard
+     hints do not belong at the bottom of a touch-only 390px layout. */
+  @media (max-width: 760px) {
+    body.home-page .cp-footer {
+      display: none;
+    }
+
+    /* Give words the width instead of spending half of every small card on the
+       decorative object. This removes the screenshot-confirmed Биогра/фии and
+       ПРОСТРАН/СТВО breaks while preserving the two-column gateway. */
+    body.home-page .home-v20 #main-content #issledovat .h-home-route {
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 4px 7px;
+      padding: 13px 11px 12px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__glyph,
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
+      width: 56px;
+      height: 64px;
+      min-height: 64px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-route-object {
+      max-height: 68px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy {
+      padding-right: 2px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__eyebrow {
+      margin-bottom: 5px;
+      font-size: 6.7px;
+      letter-spacing: .075em;
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy strong {
+      font-size: clamp(13px, 3.7vw, 15px);
+      line-height: 1.08;
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child,
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child:nth-child(odd) {
+      grid-template-columns: 64px minmax(0, 1fr);
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
+      width: 64px;
+      height: 70px;
+      min-height: 70px;
+    }
+  }
+
+  @media (max-width: 340px) {
+    body.home-page .home-v20 #main-content #issledovat .h-home-route {
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 3px 5px;
+      padding: 11px 9px 10px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__glyph {
+      width: 44px;
+      height: 52px;
+      min-height: 52px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-route-object {
+      max-height: 56px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__eyebrow {
+      font-size: 5.7px;
+      letter-spacing: .04em;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy strong {
+      font-size: 11.5px;
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child,
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child:nth-child(odd) {
+      grid-template-columns: 52px minmax(0, 1fr);
+    }
+
+    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
+      width: 52px;
+      height: 58px;
+      min-height: 58px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page .cp-clear::before {
+      transform: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    /* The browser contract serves dist from localhost. Keep these assertions out
+       of the public runtime while making screenshot-confirmed optical rules fail
+       CI when a later global stylesheet overrides them again. */
+    if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
+
+    const reported = new Set();
+    const report = (message) => {
+      if (reported.has(message)) return;
+      reported.add(message);
+      console.error(`[home-visual-contract] ${message}`);
+    };
+    const numericStroke = (element) => Number.parseFloat(getComputedStyle(element).strokeWidth);
+    const renderedLines = (element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
+    };
+
+    const assertHeaderIcons = () => {
+      const search = document.querySelector('#gbSearchBtn svg circle');
+      const theme = document.querySelector(
+        document.documentElement.classList.contains('dark')
+          ? '#themeToggle .icon-sun circle'
+          : '#themeToggle .icon-moon path'
+      );
+      const menu = document.querySelector('#hMobileMenuBtn svg line');
+      if (!search || !theme) return;
+
+      const searchWidth = numericStroke(search);
+      const themeWidth = numericStroke(theme);
+      if (!Number.isFinite(searchWidth) || searchWidth > 1.2) {
+        report(`magnifier stroke is heavy (${getComputedStyle(search).strokeWidth})`);
+      }
+      if (!Number.isFinite(themeWidth) || themeWidth > 1.14) {
+        report(`theme icon stroke is heavy (${getComputedStyle(theme).strokeWidth})`);
+      }
+      if (Math.abs(searchWidth - themeWidth) > 0.2) {
+        report(`magnifier/theme optical stroke gap is too large (${searchWidth} vs ${themeWidth})`);
+      }
+
+      if (menu && innerWidth <= 760) {
+        const menuWidth = numericStroke(menu);
+        if (!Number.isFinite(menuWidth) || menuWidth > 1.2) {
+          report(`mobile menu stroke is heavy (${getComputedStyle(menu).strokeWidth})`);
+        }
+      }
+    };
+
+    const assertMobileRoutes = () => {
+      if (innerWidth > 760) return;
+      document.querySelectorAll('#issledovat .h-home-route__eyebrow, #issledovat .h-home-route__copy strong')
+        .forEach((label) => {
+          const lines = renderedLines(label);
+          if (lines.length > 1) report(`direction label wrapped: “${label.textContent?.trim()}”`);
+          const copy = label.closest('.h-home-route__copy');
+          const labelRect = label.getBoundingClientRect();
+          const copyRect = copy?.getBoundingClientRect();
+          if (copyRect && labelRect.right > copyRect.right + 1) {
+            report(`direction label overflowed: “${label.textContent?.trim()}”`);
+          }
+        });
+    };
+
+    const assertTabletPublications = () => {
+      if (innerWidth < 761 || innerWidth > 920) return;
+      document.querySelectorAll('#publikacii .h-article-card').forEach((card) => {
+        const title = card.querySelector('.h-article-title');
+        const thumb = card.querySelector('.h-article-thumb');
+        if (title && renderedLines(title).length > 5) {
+          report(`tablet publication title is too vertical: “${title.textContent?.trim()}”`);
+        }
+        const cardRect = card.getBoundingClientRect();
+        const thumbRect = thumb?.getBoundingClientRect();
+        if (thumbRect && thumbRect.width < cardRect.width - 34) {
+          report('tablet publication thumbnail did not switch to stacked geometry');
+        }
+      });
+    };
+
+    const assertCompactControls = () => {
+      const arrow = document.querySelector('.h-scroll-top-arrow svg polyline');
+      if (arrow && numericStroke(arrow) > 1.35) report('scroll-to-top arrow became heavy');
+
+      const palette = document.querySelector('.cp-backdrop');
+      if (!palette) return;
+      const clear = palette.querySelector('.cp-clear');
+      const clearSvg = clear?.querySelector('svg');
+      const closeSvg = palette.querySelector('.cp-home-close svg');
+      if (clearSvg && getComputedStyle(clearSvg).display !== 'none') {
+        report('search clear control reverted to a second close X');
+      }
+      if (clear) {
+        const clearMark = getComputedStyle(clear, '::before').content;
+        if (['none', 'normal', '""'].includes(clearMark)) {
+          report('search clear control lost its distinct backspace mark');
+        }
+      }
+      if (closeSvg && getComputedStyle(closeSvg).display === 'none') {
+        report('search close control is hidden');
+      }
+      const footer = palette.querySelector('.cp-footer');
+      if (footer && innerWidth <= 760 && getComputedStyle(footer).display !== 'none') {
+        report('desktop keyboard footer is visible on mobile search');
+      }
+    };
+
+    let timer = 0;
+    const audit = () => {
+      timer = 0;
+      requestAnimationFrame(() => {
+        assertHeaderIcons();
+        assertMobileRoutes();
+        assertTabletPublications();
+        assertCompactControls();
+      });
+    };
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(audit, 80);
+    };
+
+    addEventListener('resize', schedule, { passive: true });
+    addEventListener('load', schedule, { once: true });
+    document.fonts?.ready.then(schedule);
+    new MutationObserver(schedule).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+    new MutationObserver(schedule).observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+    schedule();
+  })();
+</script>
