@@ -1,0 +1,404 @@
+name: Home Live Sacred Witness V2
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/home-live-sacred-witness-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live-sacred-witness-v2:
+    name: Published Home physical input witness V2
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout witness branch
+        uses: actions/checkout@v4
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install repository dependencies
+        run: npm ci
+
+      - name: Prove local Playwright package
+        run: node -e "console.log(require.resolve('playwright'))"
+
+      - name: Install Chromium and WebKit
+        run: npx --no-install playwright install --with-deps chromium webkit
+
+      - name: Run physical input against published Home
+        env:
+          LIVE_BASE_URL: https://gospod-bog.ru/
+          REQUIRED_FIX_SHA: 220a41318c762a828c608e41cadc156053702509
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/home-live-sacred-v2
+          printf '{"status":"started","requiredFixSha":"%s"}\n' "$REQUIRED_FIX_SHA" > reports/home-live-sacred-v2/bootstrap.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const { chromium, webkit } = require('playwright');
+
+          const outDir = 'reports/home-live-sacred-v2';
+          const baseUrl = process.env.LIVE_BASE_URL;
+          const report = {
+            liveBaseUrl: baseUrl,
+            requiredFixSha: process.env.REQUIRED_FIX_SHA,
+            startedAt: new Date().toISOString(),
+            deploymentAttempts: [],
+            browsers: {},
+            touch: null,
+            reducedMotion: null,
+            pass: false,
+          };
+
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+          const twoFrames = (page) => page.evaluate(() => new Promise((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+          }));
+          const assert = (condition, message, details) => {
+            if (!condition) throw new Error(`${message}\n${JSON.stringify(details ?? {}, null, 2)}`);
+          };
+          const liveUrl = (label) => {
+            const url = new URL(baseUrl);
+            url.searchParams.set('sacred-witness-v2', `${label}-${Date.now()}-${Math.random()}`);
+            return url.toString();
+          };
+          const persist = () => fs.writeFileSync(`${outDir}/report.json`, JSON.stringify(report, null, 2));
+
+          async function state(locator) {
+            return locator.evaluate((el) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              const name = el.querySelector('.h-tetra-name') || back;
+              const label = el.querySelector(':scope > .h-tetra-label');
+              const block = el.closest('.h-sacred-block--hero');
+              const line = el.closest('.h-sacred-line');
+              const probe = document.createElement('span');
+              probe.style.cssText = 'position:fixed;visibility:hidden;color:var(--h-ink)';
+              document.body.append(probe);
+              const inkColor = getComputedStyle(probe).color;
+              probe.remove();
+              const frontStyle = getComputedStyle(front);
+              const backStyle = getComputedStyle(back);
+              const labelStyle = label ? getComputedStyle(label) : null;
+              const labelRect = label?.getBoundingClientRect() || null;
+              const blockRect = block?.getBoundingClientRect() || null;
+              const lineRect = line?.getBoundingClientRect() || null;
+              return {
+                ownerInstalled: el.dataset.sacredPointerPreview === '1',
+                pointerPreview: el.hasAttribute('data-pointer-preview'),
+                toggled: el.hasAttribute('data-toggled'),
+                pressed: el.getAttribute('aria-pressed'),
+                front: {
+                  visibility: frontStyle.visibility,
+                  opacity: Number(frontStyle.opacity),
+                  display: frontStyle.display,
+                },
+                back: {
+                  visibility: backStyle.visibility,
+                  opacity: Number(backStyle.opacity),
+                  display: backStyle.display,
+                },
+                nameColor: getComputedStyle(name).color,
+                inkColor,
+                label: labelStyle && labelRect ? {
+                  visibility: labelStyle.visibility,
+                  opacity: Number(labelStyle.opacity),
+                  top: labelRect.top,
+                  bottom: labelRect.bottom,
+                  transform: labelStyle.transform,
+                } : null,
+                geometry: {
+                  blockTop: blockRect?.top ?? null,
+                  lineTop: lineRect?.top ?? null,
+                  lineBottom: lineRect?.bottom ?? null,
+                  labelOffsetFromBlock: labelRect && blockRect ? labelRect.top - blockRect.top : null,
+                },
+              };
+            });
+          }
+
+          const opened = (value) => value.front.visibility === 'hidden'
+            && value.back.visibility === 'visible'
+            && value.back.opacity >= 0.95;
+          const closed = (value) => value.front.visibility === 'visible'
+            && value.back.visibility === 'hidden';
+
+          async function waitOpen(page, locator) {
+            const handle = await locator.elementHandle();
+            await page.waitForFunction((el) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              return getComputedStyle(front).visibility === 'hidden'
+                && getComputedStyle(back).visibility === 'visible'
+                && Number(getComputedStyle(back).opacity) >= 0.95;
+            }, handle, { timeout: 8_000 });
+          }
+
+          async function waitClosed(page, locator) {
+            const handle = await locator.elementHandle();
+            await page.waitForFunction((el) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              return getComputedStyle(front).visibility === 'visible'
+                && getComputedStyle(back).visibility === 'hidden';
+            }, handle, { timeout: 8_000 });
+          }
+
+          async function waitForDeployment() {
+            const browser = await chromium.launch();
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 900 },
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            try {
+              for (let attempt = 1; attempt <= 80; attempt += 1) {
+                const started = Date.now();
+                try {
+                  const response = await page.goto(liveUrl(`poll-${attempt}`), {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 60_000,
+                  });
+                  await page.waitForSelector('.h-sacred-block--hero button.h-tetra:not([disabled])', { timeout: 20_000 });
+                  const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+                  const marker = await tetra.evaluate((el) => el.dataset.sacredPointerPreview || null);
+                  const html = await page.content();
+                  report.deploymentAttempts.push({
+                    attempt,
+                    status: response?.status() ?? null,
+                    marker,
+                    elapsedMs: Date.now() - started,
+                    date: response?.headers()?.date ?? null,
+                    etag: response?.headers()?.etag ?? null,
+                    htmlSha256: crypto.createHash('sha256').update(html).digest('hex'),
+                  });
+                  persist();
+                  if (marker === '1') return;
+                } catch (error) {
+                  report.deploymentAttempts.push({ attempt, elapsedMs: Date.now() - started, error: String(error) });
+                  persist();
+                }
+                await sleep(20_000);
+              }
+              throw new Error('Published Home did not expose the new physical-pointer owner within the polling window.');
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function desktop(engineName, engine) {
+            const browser = await engine.launch();
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 900 },
+              reducedMotion: 'no-preference',
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            const evidence = {};
+            try {
+              const response = await page.goto(liveUrl(`${engineName}-desktop`), {
+                waitUntil: 'domcontentloaded',
+                timeout: 90_000,
+              });
+              assert(response?.ok(), `${engineName}: live response failed`, { status: response?.status() });
+              const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+              const ordinary = page.locator('.h-sacred-block--hero button.hb-w').first();
+              await tetra.waitFor({ state: 'visible', timeout: 30_000 });
+              await page.waitForFunction(() => {
+                const el = document.querySelector('.h-sacred-block--hero button.h-tetra');
+                return el && !el.disabled && el.dataset.sacredPointerPreview === '1';
+              }, { timeout: 30_000 });
+              await tetra.scrollIntoViewIfNeeded();
+
+              evidence.initial = await state(tetra);
+              assert(evidence.initial.ownerInstalled, `${engineName}: new owner absent`, evidence.initial);
+              assert(closed(evidence.initial), `${engineName}: initial face is not Hebrew-only`, evidence.initial);
+              assert(evidence.initial.label?.visibility === 'hidden', `${engineName}: label leaks before interaction`, evidence.initial);
+              await page.screenshot({ path: `${outDir}/${engineName}-initial.png` });
+
+              await tetra.hover();
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              evidence.hover = await state(tetra);
+              assert(opened(evidence.hover), `${engineName}: physical hover did not reveal Яхве`, evidence.hover);
+              assert(evidence.hover.pointerPreview, `${engineName}: pointerenter owner did not run`, evidence.hover);
+              assert(evidence.hover.nameColor === evidence.hover.inkColor, `${engineName}: Яхве is not theme ink`, evidence.hover);
+              assert(evidence.hover.label?.visibility === 'visible', `${engineName}: label is hidden on hover`, evidence.hover);
+              assert((evidence.hover.geometry.labelOffsetFromBlock ?? 0) >= 24,
+                `${engineName}: sacred label remains too close to the instruction`, evidence.hover);
+              await page.screenshot({ path: `${outDir}/${engineName}-hover.png` });
+
+              await page.mouse.move(2, 2);
+              await twoFrames(page);
+              await waitClosed(page, tetra);
+              evidence.leave = await state(tetra);
+              assert(closed(evidence.leave), `${engineName}: pointer leave did not restore Hebrew`, evidence.leave);
+
+              await ordinary.hover();
+              await twoFrames(page);
+              await waitOpen(page, ordinary);
+              evidence.ordinaryHover = await state(ordinary);
+              assert(opened(evidence.ordinaryHover), `${engineName}: ordinary word hover failed`, evidence.ordinaryHover);
+              await page.mouse.move(2, 2);
+              await waitClosed(page, ordinary);
+
+              await tetra.click();
+              await page.mouse.move(2, 2);
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              evidence.clickOpen = await state(tetra);
+              assert(evidence.clickOpen.toggled && evidence.clickOpen.pressed === 'true',
+                `${engineName}: first click did not persist open state`, evidence.clickOpen);
+              await page.screenshot({ path: `${outDir}/${engineName}-click-open.png` });
+
+              await tetra.click();
+              await page.mouse.move(2, 2);
+              await twoFrames(page);
+              await waitClosed(page, tetra);
+              evidence.clickClose = await state(tetra);
+              assert(!evidence.clickClose.toggled && evidence.clickClose.pressed === 'false',
+                `${engineName}: second click did not close`, evidence.clickClose);
+
+              await tetra.focus();
+              await page.keyboard.press('Enter');
+              await twoFrames(page);
+              evidence.enter = await state(tetra);
+              assert(evidence.enter.toggled && evidence.enter.pressed === 'true',
+                `${engineName}: Enter did not toggle open`, evidence.enter);
+              await page.locator('body').click({ position: { x: 4, y: 4 } });
+              await page.mouse.move(2, 2);
+              await waitOpen(page, tetra);
+
+              await tetra.focus();
+              await page.keyboard.press('Space');
+              await twoFrames(page);
+              evidence.space = await state(tetra);
+              assert(!evidence.space.toggled && evidence.space.pressed === 'false',
+                `${engineName}: Space did not toggle closed`, evidence.space);
+              await page.locator('body').click({ position: { x: 4, y: 4 } });
+              await page.mouse.move(2, 2);
+              await waitClosed(page, tetra);
+
+              return { status: response.status(), finalUrl: page.url(), evidence };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function touch() {
+            const browser = await chromium.launch();
+            const context = await browser.newContext({
+              viewport: { width: 390, height: 844 },
+              isMobile: true,
+              hasTouch: true,
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            try {
+              await page.goto(liveUrl('touch'), { waitUntil: 'domcontentloaded', timeout: 90_000 });
+              const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+              await tetra.waitFor({ state: 'visible', timeout: 30_000 });
+              await page.waitForFunction(() => {
+                const el = document.querySelector('.h-sacred-block--hero button.h-tetra');
+                return el && !el.disabled && el.dataset.sacredPointerPreview === '1';
+              });
+              const initial = await state(tetra);
+              assert(closed(initial), 'touch: initial face is not Hebrew-only', initial);
+              await tetra.tap();
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              const open = await state(tetra);
+              assert(open.toggled && opened(open), 'touch: tap did not reveal Яхве', open);
+              await page.screenshot({ path: `${outDir}/chromium-touch-open.png` });
+              await tetra.tap();
+              await twoFrames(page);
+              await waitClosed(page, tetra);
+              const close = await state(tetra);
+              assert(!close.toggled && closed(close), 'touch: repeated tap did not close', close);
+              return { initial, open, close };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function reducedMotion() {
+            const browser = await chromium.launch();
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 900 },
+              reducedMotion: 'reduce',
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            try {
+              await page.goto(liveUrl('reduced-motion'), { waitUntil: 'domcontentloaded', timeout: 90_000 });
+              const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+              await tetra.waitFor({ state: 'visible', timeout: 30_000 });
+              await page.waitForFunction(() => {
+                const el = document.querySelector('.h-sacred-block--hero button.h-tetra');
+                return el && !el.disabled && el.dataset.sacredPointerPreview === '1';
+              });
+              const initial = await state(tetra);
+              assert(closed(initial), 'reduced-motion: initial face is not Hebrew-only', initial);
+              await tetra.hover();
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              const hover = await state(tetra);
+              assert(opened(hover), 'reduced-motion: physical hover failed', hover);
+              await page.screenshot({ path: `${outDir}/chromium-reduced-hover.png` });
+              return { initial, hover };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          (async () => {
+            try {
+              await waitForDeployment();
+              report.browsers.chromium = await desktop('chromium', chromium);
+              persist();
+              report.browsers.webkit = await desktop('webkit', webkit);
+              persist();
+              report.touch = await touch();
+              persist();
+              report.reducedMotion = await reducedMotion();
+              report.pass = true;
+              report.completedAt = new Date().toISOString();
+              persist();
+              console.log('LIVE HOME SACRED WITNESS V2: PASS');
+            } catch (error) {
+              report.pass = false;
+              report.completedAt = new Date().toISOString();
+              report.error = String(error?.stack || error);
+              persist();
+              console.error(report.error);
+              process.exitCode = 1;
+            }
+          })();
+          NODE
+
+      - name: Upload live screenshots and computed-state report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-live-sacred-witness-v2-${{ github.run_id }}
+          path: reports/home-live-sacred-v2
+          if-no-files-found: error
+          retention-days: 30
