@@ -1,0 +1,52 @@
+name: Pihahiroth Pointer Product Materialize
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/pihahiroth-pointer-product-materialize.py'
+      - '.github/workflows/pihahiroth-pointer-product-materialize.yml'
+
+concurrency:
+  group: pihahiroth-pointer-product-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Materialize corridor event ownership repair
+        run: python3 scripts/pihahiroth-pointer-product-materialize.py
+
+      - name: Validate bounded product scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'event.stopPropagation();' src/components/karty/ishod/IshodMap.astro
+          node --check scripts/pihahiroth-uncertainty-browser-contract.mjs
+          git diff --check
+          expected=$'.github/workflows/pihahiroth-pointer-product-materialize.yml\nscripts/pihahiroth-pointer-product-materialize.py\nsrc/components/karty/ishod/IshodMap.astro'
+          actual="$(git status --short | sed -E 's/^.. //' | sort)"
+          [[ "$actual" == "$expected" ]]
+
+      - name: Commit permanent product repair only
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/components/karty/ishod/IshodMap.astro
+          git add -u scripts/pihahiroth-pointer-product-materialize.py .github/workflows/pihahiroth-pointer-product-materialize.yml
+          git commit -m 'fix(pihahiroth): keep corridor clicks with their panel owner'
+          git push origin "HEAD:${HEAD_REF}"
