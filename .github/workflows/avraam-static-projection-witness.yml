@@ -1,0 +1,109 @@
+name: Avraam Static Projection Witness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/avraam-static-projection-witness.yml'
+      - 'scripts/avraam-static-projection-witness.mjs'
+      - 'src/components/karty/avraam/AvraamMap.astro'
+      - 'src/components/karty/_shared/MapRuntimeFallback.astro'
+      - 'karty/avraam/**'
+      - 'karty/_engine/**'
+
+concurrency:
+  group: avraam-static-projection-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  witness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      AVRAAM_STATIC_OUT: reports/atlas/avraam-static-projection
+    steps:
+      - name: Checkout exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Validate exact source inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/avraam-static-projection-witness.mjs
+          node --check karty/_engine/map-engine.js
+          test -z "$(git status --porcelain)"
+
+      - name: Install repository dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production-like site
+        run: npm run strangler:build:production-like
+
+      - name: Start static server
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8090 --directory dist > /tmp/avraam-static-http.log 2>&1 &
+          echo $! > /tmp/avraam-static-http.pid
+          for _ in $(seq 1 60); do
+            if curl --fail --silent --show-error http://127.0.0.1:8090/karty/avraam/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/avraam-static-http.log
+          exit 1
+
+      - name: Capture no-JS, print preview and PDF evidence
+        env:
+          AUDIT_BASE: http://127.0.0.1:8090
+        run: node scripts/avraam-static-projection-witness.mjs
+
+      - name: Preserve exact source and environment
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$AVRAAM_STATIC_OUT"
+          mkdir -p "$out/source/src/components/karty/avraam" "$out/source/src/components/karty/_shared" "$out/source/scripts"
+          cp src/components/karty/avraam/AvraamMap.astro "$out/source/src/components/karty/avraam/AvraamMap.astro"
+          cp src/components/karty/_shared/MapRuntimeFallback.astro "$out/source/src/components/karty/_shared/MapRuntimeFallback.astro"
+          cp scripts/avraam-static-projection-witness.mjs "$out/source/scripts/avraam-static-projection-witness.mjs"
+          {
+            echo "head_sha=$HEAD_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "node=$(node --version)"
+            echo "npm=$(npm --version)"
+            echo "playwright=$(npx playwright --version)"
+          } > "$out/ENVIRONMENT.txt"
+          sha256sum \
+            "$out/source/src/components/karty/avraam/AvraamMap.astro" \
+            "$out/source/src/components/karty/_shared/MapRuntimeFallback.astro" \
+            "$out/source/scripts/avraam-static-projection-witness.mjs" \
+            > "$out/source/SHA256SUMS.txt"
+          if [[ -f /tmp/avraam-static-http.log ]]; then cp /tmp/avraam-static-http.log "$out/http-server.log"; fi
+
+      - name: Upload exact static projection evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: avraam-static-projection-${{ github.run_id }}
+          path: reports/atlas/avraam-static-projection
+          if-no-files-found: error
+          retention-days: 30

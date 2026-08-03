@@ -41,6 +41,85 @@ function record(engine, profile, contract, ok, detail = '') {
   if (!ok) failures.push(`${engine}/${profile}/${contract}: ${detail}`);
 }
 
+async function stabilizeVisualState(page) {
+  await page.evaluate(async () => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    if (document.fonts?.ready) await document.fonts.ready;
+    for (const image of document.images) {
+      image.loading = 'eager';
+      image.fetchPriority = 'high';
+    }
+    await Promise.all([...document.images].map((image) => image.decode?.().catch(() => {})));
+  });
+  await page.waitForTimeout(100);
+}
+
+async function captureSegmentedScreenshot(page, engine, profile) {
+  await stabilizeVisualState(page);
+  const metrics = await page.evaluate(() => ({
+    pageHeight: Math.max(
+      document.documentElement.scrollHeight,
+      document.body?.scrollHeight || 0,
+      document.documentElement.offsetHeight,
+      document.body?.offsetHeight || 0,
+    ),
+    viewportHeight: window.innerHeight,
+    viewportWidth: window.innerWidth,
+  }));
+
+  const maxScroll = Math.max(0, metrics.pageHeight - metrics.viewportHeight);
+  const positions = [];
+  for (let requested = 0; requested < metrics.pageHeight; requested += metrics.viewportHeight) {
+    const top = Math.min(requested, maxScroll);
+    if (positions.at(-1) !== top) positions.push(top);
+    if (top === maxScroll) break;
+  }
+  if (!positions.length) positions.push(0);
+  if (positions.at(-1) !== maxScroll) positions.push(maxScroll);
+
+  const ranges = [];
+  const tiles = [];
+  for (let index = 0; index < positions.length; index += 1) {
+    const requestedTop = positions[index];
+    await page.evaluate((top) => window.scrollTo(0, top), requestedTop);
+    await page.waitForTimeout(80);
+    const actualTop = await page.evaluate(() => Math.round(window.scrollY));
+    const tilePath = join(OUT, `${engine}-${profile.id}-tile-${String(index + 1).padStart(3, '0')}.png`);
+    await page.screenshot({ path: tilePath, fullPage: false });
+    const bytes = statSync(tilePath).size;
+    const start = Math.max(0, Math.min(actualTop, metrics.pageHeight));
+    const end = Math.max(start, Math.min(start + metrics.viewportHeight, metrics.pageHeight));
+    ranges.push({ start, end });
+    tiles.push({ index: index + 1, requestedTop, actualTop, start, end, bytes });
+  }
+
+  ranges.sort((left, right) => left.start - right.start || left.end - right.end);
+  const gaps = [];
+  let cursor = 0;
+  for (const range of ranges) {
+    if (range.start > cursor) gaps.push({ start: cursor, end: range.start });
+    cursor = Math.max(cursor, range.end);
+  }
+  if (cursor < metrics.pageHeight) gaps.push({ start: cursor, end: metrics.pageHeight });
+  const gapPixels = gaps.reduce((sum, gap) => sum + Math.max(0, gap.end - gap.start), 0);
+  const coveredPixels = Math.max(0, metrics.pageHeight - gapPixels);
+  const emptyTiles = tiles.filter((tile) => tile.bytes < 1000);
+  const complete = metrics.pageHeight > 0 && gaps.length === 0 && emptyTiles.length === 0 && coveredPixels === metrics.pageHeight;
+
+  return {
+    complete,
+    pageHeight: metrics.pageHeight,
+    viewportHeight: metrics.viewportHeight,
+    viewportWidth: metrics.viewportWidth,
+    coveredPixels,
+    gaps,
+    emptyTiles: emptyTiles.map((tile) => tile.index),
+    tileCount: tiles.length,
+    totalPngBytes: tiles.reduce((sum, tile) => sum + tile.bytes, 0),
+    tiles,
+  };
+}
+
 async function inspect(browserType, engine, profile) {
   const browser = await browserType.launch();
   try {
@@ -57,7 +136,13 @@ async function inspect(browserType, engine, profile) {
       const consoleErrors = [];
       const pageErrors = [];
       page.on('console', (message) => {
-        if (message.type() === 'error' && !/mc\.yandex|ERR_BLOCKED_BY_CLIENT|Failed to load resource|Load failed/i.test(message.text())) consoleErrors.push(message.text());
+        const text = message.text();
+        const knownWebKitViewportWarning = engine === 'webkit' && text === 'Viewport argument key "interactive-widget" not recognized and ignored.';
+        if (
+          message.type() === 'error' &&
+          !knownWebKitViewportWarning &&
+          !/mc\.yandex|ERR_BLOCKED_BY_CLIENT|Failed to load resource|Load failed/i.test(text)
+        ) consoleErrors.push(text);
       });
       page.on('pageerror', (error) => pageErrors.push(error.message));
       await page.route(/mc\.yandex|gospod-bog\.ru/, (request) => request.abort());
@@ -65,7 +150,47 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'http-200', response?.status() === 200, `status=${response?.status()}`);
       const state = await page.evaluate(() => {
         const bodyText = document.body.innerText;
-        const external = [...document.querySelectorAll('main a[href^="https://"]')].map((node) => node.href);
+        const baseLinks = [...document.querySelectorAll('#sources a[href^="https://"]')].map((node) => node.href);
+        const supplementLinks = [...document.querySelectorAll('#faithful-witness-sources a[href^="https://"]')].map((node) => node.href);
+        const viewportWidth = document.documentElement.clientWidth;
+        const overflowOwners = [...document.querySelectorAll('body *')]
+          .map((node) => {
+            const rect = node.getBoundingClientRect();
+            const style = getComputedStyle(node);
+            const rightOverflow = Math.max(0, rect.right - viewportWidth);
+            const leftOverflow = Math.max(0, -rect.left);
+            const internalOverflow = Math.max(0, node.scrollWidth - node.clientWidth);
+            return {
+              tag: node.tagName.toLowerCase(),
+              id: node.id || '',
+              classes: String(node.className || '').slice(0, 180),
+              text: (node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+              rect: {
+                left: Math.round(rect.left * 10) / 10,
+                right: Math.round(rect.right * 10) / 10,
+                width: Math.round(rect.width * 10) / 10,
+              },
+              clientWidth: node.clientWidth,
+              scrollWidth: node.scrollWidth,
+              rightOverflow: Math.round(rightOverflow * 10) / 10,
+              leftOverflow: Math.round(leftOverflow * 10) / 10,
+              internalOverflow,
+              position: style.position,
+              display: style.display,
+              transform: style.transform,
+              width: style.width,
+              minWidth: style.minWidth,
+              maxWidth: style.maxWidth,
+              overflowX: style.overflowX,
+            };
+          })
+          .filter((row) => row.rightOverflow > 1 || row.leftOverflow > 1 || row.internalOverflow > 1)
+          .sort((left, right) => {
+            const leftScore = Math.max(left.rightOverflow, left.leftOverflow, left.internalOverflow);
+            const rightScore = Math.max(right.rightOverflow, right.leftOverflow, right.internalOverflow);
+            return rightScore - leftScore;
+          })
+          .slice(0, 12);
         return {
           title: document.title,
           h1: document.querySelector('h1')?.textContent?.trim() || '',
@@ -73,11 +198,17 @@ async function inspect(browserType, engine, profile) {
           articleCount: document.querySelectorAll('article.article-body').length,
           publicationMarker: document.body.dataset.wave12Publication,
           sourceAuthority: document.querySelector('[data-source-authority]')?.getAttribute('data-source-authority'),
-          readerLinks: new Set(external).size,
+          readerLinkSections: {
+            base: baseLinks.length,
+            supplement: supplementLinks.length,
+            total: baseLinks.length + supplementLinks.length,
+          },
+          readerLinks: new Set([...baseLinks, ...supplementLinks]).size,
           hasFaithful: Boolean(document.querySelector('#faithful-witness-under-pressure')),
           hasResponses: Boolean(document.querySelector('#twenty-faithful-responses')),
           draftLeak: /PUBLICATION_HOLD|ещё не зарегистрирован как публичный маршрут/.test(bodyText),
-          horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          horizontalOverflow: document.documentElement.scrollWidth - viewportWidth,
+          overflowOwners,
           canonical: document.querySelector('link[rel="canonical"]')?.href || '',
           robots: document.querySelector('meta[name="robots"]')?.content || '',
         };
@@ -87,15 +218,29 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'title-h1', state.h1 === 'Диотрефы нашего времени' && state.title.includes('Диотрефы нашего времени'), JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'publication-marker', state.publicationMarker === 'true', JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'authority-marker', state.sourceAuthority === '148', JSON.stringify(state));
-      record(engine, `${profile.id}-${mode}`, 'reader-links', state.readerLinks === 73, `unique=${state.readerLinks}`);
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'reader-link-sections',
+        state.readerLinkSections.base === 40 && state.readerLinkSections.supplement === 33 && state.readerLinkSections.total === 73,
+        JSON.stringify(state.readerLinkSections),
+      );
+      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 70, `unique=${state.readerLinks}`);
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'no-draft-leak', !state.draftLeak, JSON.stringify(state));
-      record(engine, `${profile.id}-${mode}`, 'no-horizontal-overflow', state.horizontalOverflow <= 1, `overflow=${state.horizontalOverflow}`);
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'no-horizontal-overflow',
+        state.horizontalOverflow <= 1,
+        JSON.stringify({ overflow: state.horizontalOverflow, owners: state.overflowOwners }),
+      );
       record(engine, `${profile.id}-${mode}`, 'canonical-index', state.canonical.endsWith(ROUTE) && /index/.test(state.robots), JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'console-clean', consoleErrors.length === 0, consoleErrors.join(' | '));
       record(engine, `${profile.id}-${mode}`, 'page-clean', pageErrors.length === 0, pageErrors.join(' | '));
       if (javaScriptEnabled) {
-        await page.screenshot({ path: join(OUT, `${engine}-${profile.id}.png`), fullPage: true });
+        const screenshotCoverage = await captureSegmentedScreenshot(page, engine, profile);
+        record(engine, `${profile.id}-${mode}`, 'screenshot-coverage', screenshotCoverage.complete, JSON.stringify(screenshotCoverage));
       }
       await context.close();
     }

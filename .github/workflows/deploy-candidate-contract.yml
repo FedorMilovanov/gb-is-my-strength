@@ -17,6 +17,7 @@ on:
       - "*.txt"
       - "CNAME"
       - "manifest.json"
+      - "sw.js"
       - "package.json"
       - "package-lock.json"
       - "astro.config.mjs"
@@ -29,6 +30,8 @@ on:
       - "scripts/series-reader-fragment-audit.js"
       - "scripts/extract-url-contract.js"
       - "scripts/compare-url-contract.js"
+      - "scripts/sw-dist-readiness-audit.js"
+      - "scripts/sw-offline-browser-test.mjs"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/deploy-candidate-contract.yml"
   workflow_dispatch:
@@ -44,7 +47,7 @@ jobs:
   production-like-candidate:
     name: Build and audit production-like candidate
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout exact head
@@ -69,6 +72,15 @@ jobs:
 
       - name: Build Pagefind index into dist
         run: npm run pagefind:build:dist
+
+      - name: Audit honest Offline/PWA static contract
+        run: node scripts/sw-dist-readiness-audit.js --require-pagefind
+
+      - name: Install Chromium for Offline/PWA witness
+        run: npx playwright install --with-deps chromium
+
+      - name: Run deterministic Offline/PWA browser witness
+        run: node scripts/sw-offline-browser-test.mjs
 
       - name: Series reader fragment contract
         run: node scripts/series-reader-fragment-audit.js
@@ -108,5 +120,9 @@ jobs:
             reports/url-contract-dist.json
             reports/url-contract-dist.md
             reports/url-contract-compare.log
+            reports/a07-sw-static-audit.json
+            reports/a07-sw-static-audit.md
+            reports/a07-offline-pwa-browser.json
+            reports/a07-offline-pwa-browser.md
           if-no-files-found: error
           retention-days: 14

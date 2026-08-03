@@ -16,8 +16,10 @@
       "photos": 40,
       "verses": 59,
       "arch_sources": "230+ verified research links in docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md",
-      "verified_waypoints": 5,
-      "scientific_variants": 46
+      "verified_waypoints": 3,
+      "scientific_variants": 46,
+      "route_places": 19,
+      "context_places": 3
     },
     "viewport_init": {
       "cx": 1000,
@@ -31,6 +33,48 @@
       "cx": 970,
       "cy": 620,
       "w": 1800
+    },
+    "mobile_viewport_init": {
+      "cx": 650,
+      "cy": 710,
+      "w": 640
+    },
+    "mobile_story_viewports": {
+      "main": [
+        650,
+        710,
+        640
+      ],
+      "lekh-lekha": [
+        1167,
+        520,
+        1140
+      ],
+      "lot": [
+        648,
+        838,
+        300
+      ],
+      "war": [
+        690,
+        693,
+        360
+      ],
+      "akeda": [
+        590,
+        850,
+        170
+      ]
+    },
+    "semantic_zoom": {
+      "overview_min_w": 1292,
+      "detail_max_w": 380,
+      "overview_min_units_per_pixel": 1.25,
+      "detail_max_units_per_pixel": 0.72
+    },
+    "mobile_story_min_widths": {
+      "lot": 300,
+      "akeda": 170
     }
   },
   "stories": [
@@ -38,13 +82,18 @@
       "id": "main",
       "label": "Весь путь",
       "places": null,
-      "stages": null,
+      "stages": [],
       "cam": [
         1040,
         660,
         1900
       ],
-      "desc": "От Ура Халдейского до горы Мория · весь путь"
+      "desc": "От Ура Халдейского до горы Мория · весь путь",
+      "viewport": [
+        1000,
+        620,
+        1950
+      ]
     },
     {
       "id": "lekh-lekha",
@@ -66,7 +115,20 @@
         380,
         820
       ],
-      "desc": "Призвание и первый путь в Ханаан · Быт 11–12"
+      "desc": "Призвание и первый путь в Ханаан · Быт 11–12",
+      "viewport": [
+        900,
+        500,
+        1480
+      ],
+      "focus_places": [
+        "ur",
+        "harran",
+        "damascus",
+        "shechem",
+        "bethel"
+      ],
+      "context_places": []
     },
     {
       "id": "lot",
@@ -79,15 +141,25 @@
       ],
       "stages": [
         3,
-        5,
-        6
+        5
       ],
       "cam": [
         640,
-        820,
-        360
+        835,
+        520
       ],
-      "desc": "Выбор Лота · катастрофа Содома · Быт 13; 18–19"
+      "desc": "Выбор Лота · катастрофа Содома · Быт 13; 18–19",
+      "viewport": [
+        640,
+        835,
+        520
+      ],
+      "focus_places": [
+        "bethel",
+        "sodom",
+        "zoar"
+      ],
+      "context_places": []
     },
     {
       "id": "war",
@@ -102,11 +174,23 @@
         4
       ],
       "cam": [
-        660,
-        700,
-        500
+        690,
+        693,
+        620
       ],
-      "desc": "318 воинов · ночной рейд · Мелхиседек · Быт 14"
+      "desc": "318 воинов · ночной рейд · Мелхиседек · Быт 14",
+      "viewport": [
+        690,
+        693,
+        620
+      ],
+      "focus_places": [
+        "hebron",
+        "dan",
+        "hovah",
+        "salem"
+      ],
+      "context_places": []
     },
     {
       "id": "akeda",
@@ -122,10 +206,22 @@
       ],
       "cam": [
         590,
-        835,
-        310
+        860,
+        260
       ],
-      "desc": "Три дня пути к горе Мория · Быт 22"
+      "desc": "Три дня пути к горе Мория · Быт 22",
+      "viewport": [
+        590,
+        860,
+        260
+      ],
+      "focus_places": [
+        "beersheba",
+        "salem"
+      ],
+      "context_places": [
+        "kadesh"
+      ]
     }
   ],
   "places": [
@@ -1320,7 +1416,7 @@
           "c": "war"
         },
         {
-          "d": "M752,556 C710,650 652,748 624,795 C619,806 614,818 610,829",
+          "d": "M752,556 C770,628 748,702 704,748 C672,780 644,794 623,800",
           "c": "war",
           "dash": 1
         }
