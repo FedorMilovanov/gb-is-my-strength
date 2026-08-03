@@ -50,6 +50,37 @@ jobs:
       - name: Build Pagefind index
         run: npm run pagefind:build:dist
 
+      - name: Capture exact Diotrophes editorial state
+        shell: bash
+        run: |
+          mkdir -p reports
+          node <<'NODE' > reports/diotrophes-editorial-state.json
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const {
+            ROOT,
+            eligibleRecords,
+            observeRoute,
+            readRegistry,
+          } = require('./scripts/lib/editorial-metadata');
+          const route = '/articles/diotrefy-nashego-vremeni/';
+          const dist = path.join(ROOT, 'dist');
+          const sitemapFiles = fs.readdirSync(dist)
+            .filter((name) => /^sitemap(?:-\d+)?\.xml$/i.test(name))
+            .sort();
+          const shared = {
+            searchItems: JSON.parse(fs.readFileSync(path.join(dist, 'data', 'search-manifest.json'), 'utf8')).items || [],
+            sitemapXml: sitemapFiles.map((name) => fs.readFileSync(path.join(dist, name), 'utf8')).join('\n'),
+            feedXml: fs.readFileSync(path.join(dist, 'feed.xml'), 'utf8'),
+          };
+          const routeRecord = eligibleRecords().find((item) => item.route === route);
+          if (!routeRecord) throw new Error(`eligible route missing: ${route}`);
+          const registryRecord = readRegistry().records[route];
+          if (!registryRecord) throw new Error(`registry route missing: ${route}`);
+          const current = observeRoute(routeRecord, dist, shared);
+          process.stdout.write(JSON.stringify({ route, registryRecord, current }, null, 2));
+          NODE
+
       - name: Capture frozen editorial projection audit
         id: audit
         shell: bash
@@ -68,7 +99,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: editorial-freeze-diagnostic-${{ github.run_id }}
-          path: reports/editorial-metadata-freeze.log
+          path: |
+            reports/editorial-metadata-freeze.log
+            reports/diotrophes-editorial-state.json
           if-no-files-found: error
           retention-days: 7
 
