@@ -219,7 +219,10 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
       path.appendChild(title);
       function openPanel(event) {
         if (event && event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
-        if (event) event.preventDefault();
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
         mapInstance.openPlace('pihahiroth');
       }
       path.addEventListener('click', openPanel);
