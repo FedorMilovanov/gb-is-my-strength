@@ -163,6 +163,23 @@ async function cacheFirst(request, cacheName, limit) {
   return response;
 }
 
+async function pagefindStaticCacheFirst(request) {
+  const runtimeCache = await caches.open(CACHE_PAGEFIND);
+  const runtimeCached = await runtimeCache.match(request) || await runtimeCache.match(request, { ignoreSearch: true });
+  if (runtimeCached) {
+    await touchCache(CACHE_PAGEFIND, request.url);
+    return runtimeCached;
+  }
+
+  const installCache = await caches.open(CACHE_STATIC);
+  const installCached = await installCache.match(request) || await installCache.match(request, { ignoreSearch: true });
+  if (installCached) return installCached;
+
+  const response = await fetch(request);
+  await putRuntime(CACHE_PAGEFIND, request, response, PAGEFIND_CACHE_LIMIT);
+  return response;
+}
+
 async function revisionedStaticNetworkFirst(request) {
   const cache = await caches.open(CACHE_STATIC);
   try {
@@ -302,7 +319,7 @@ self.addEventListener('fetch', (event) => {
   } else if (isPagefindData(url)) {
     event.respondWith(networkFirstPagefindData(request));
   } else if (isPagefindStatic(url)) {
-    event.respondWith(cacheFirst(request, CACHE_PAGEFIND, PAGEFIND_CACHE_LIMIT));
+    event.respondWith(pagefindStaticCacheFirst(request));
   } else if (isMutableData(url)) {
     event.respondWith(networkFirstWithCache(
       request,
