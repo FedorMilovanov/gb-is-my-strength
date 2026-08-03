@@ -1,0 +1,10 @@
+.wave12-publication-boundary .article-img.wide > picture,
+.wave12-publication-boundary .article-img.wide > picture > img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: auto;
+}
