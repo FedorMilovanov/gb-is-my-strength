@@ -1,9 +1,7 @@
 name: Home Audit One-shot Patch
 
 on:
-  push:
-    branches:
-      - lane/home-search-audit-pro-2026-08-03
+  pull_request:
     paths:
       - '.github/workflows/home-audit-one-shot-patch.yml'
 
@@ -160,7 +158,6 @@ jobs:
               'wait for canonical search focus',
           )
 
-          # PageSpeed may answer 429. Retrying into the same file concatenates JSON.
           external = Path('.github/workflows/home-live-external-audit.yml')
           text = external.read_text(encoding='utf-8')
           old = "curl -sS --max-time 240 --retry 2 --get \\\n"
