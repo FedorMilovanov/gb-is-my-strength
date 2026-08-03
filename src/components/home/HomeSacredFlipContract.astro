@@ -1,0 +1,190 @@
+---
+/**
+ * HomeSacredFlipContract.astro — bounded regression restore for the Habakkuk
+ * word flip on the native Home route.
+ *
+ * Historical authority: commit 32e8c63290d111ddc91078ac66658e24419a0237
+ * restored black translations and a complete Hebrew-to-translation swap.
+ *
+ * The regression had two independent cascade sources:
+ * 1. a late Home rule restored opacity on the Hebrew face while open;
+ * 2. the shared reduced-motion fallback exposed both faces at once.
+ *
+ * This component owns only the reviewed Home-route repair. It deliberately
+ * contains no self-clicking runtime audit: canonical browser workflows remain
+ * the sole interaction driver, so evidence collection cannot mutate the page.
+ */
+---
+
+<style is:global>
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
+    color: var(--h-ink) !important;
+    background: none !important;
+    -webkit-text-fill-color: currentColor !important;
+    filter: none !important;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-back {
+    text-shadow: 0 1px 8px rgba(28, 25, 23, .1);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .h-tetra-name {
+    text-shadow: 0 2px 8px rgba(28, 25, 23, .15), 0 4px 30px rgba(28, 25, 23, .08);
+  }
+
+  html.dark body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
+    color: var(--h-ink) !important;
+  }
+
+  html.dark body.home-page #main-content .h-sacred-block--hero .h-tetra-name {
+    text-shadow: 0 2px 6px rgba(0, 0, 0, .34), 0 4px 28px rgba(245, 237, 224, .08);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) > .hb-front,
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
+    backface-visibility: hidden;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero
+    :is(.hb-w, .h-tetra)[data-toggled] > .hb-front {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transform: rotate(-8deg) scale(.85) !important;
+    pointer-events: none;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] > .hb-back,
+  body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] > .h-tetra-back {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: rotate(0) scale(1) !important;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
+    transform: translate(-50%, -100%) translateY(6px);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero
+    .h-tetra[data-toggled] > .h-tetra-label {
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: blur(0) !important;
+    transform: translate(-50%, -100%) translateY(6px) !important;
+    letter-spacing: .28em !important;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero
+    :is(.hb-w, .h-tetra):focus-visible > .hb-front {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transform: rotate(-8deg) scale(.85) !important;
+    pointer-events: none;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible > .hb-back,
+  body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible > .h-tetra-back {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: rotate(0) scale(1) !important;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero
+    .h-tetra:focus-visible > .h-tetra-label {
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: blur(0) !important;
+    transform: translate(-50%, -100%) translateY(6px) !important;
+    letter-spacing: .28em !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra):hover > .hb-front {
+      visibility: hidden !important;
+      opacity: 0 !important;
+      transform: rotate(-8deg) scale(.85) !important;
+      pointer-events: none;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .hb-w:hover > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover > .h-tetra-back {
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: rotate(0) scale(1) !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra:hover > .h-tetra-label {
+      opacity: 1 !important;
+      visibility: visible !important;
+      filter: blur(0) !important;
+      transform: translate(-50%, -100%) translateY(6px) !important;
+      letter-spacing: .28em !important;
+    }
+  }
+
+  /* The shared reduced-motion stylesheet intentionally removes transforms,
+     but its legacy fallback also exposed both faces. On Home we preserve the
+     same interaction semantically, only without animation. */
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra) > .hb-front {
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-back, .h-tetra-back) {
+      visibility: hidden !important;
+      opacity: 0 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
+      visibility: hidden !important;
+      opacity: 0 !important;
+      filter: none !important;
+      transform: translate(-50%, -100%) translateY(6px) !important;
+      transition: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra)[data-toggled] > .hb-front,
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra):focus-visible > .hb-front,
+    body.home-page #main-content .h-sacred-block--hero
+      :is(.hb-w, .h-tetra):hover > .hb-front {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] > .h-tetra-back,
+    body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible > .h-tetra-back,
+    body.home-page #main-content .h-sacred-block--hero .hb-w:hover > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover > .h-tetra-back {
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra[data-toggled] > .h-tetra-label,
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra:focus-visible > .h-tetra-label,
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra:hover > .h-tetra-label {
+      visibility: visible !important;
+      opacity: 1 !important;
+      filter: none !important;
+      transform: translate(-50%, -100%) translateY(6px) !important;
+      letter-spacing: .28em !important;
+    }
+  }
+</style>
