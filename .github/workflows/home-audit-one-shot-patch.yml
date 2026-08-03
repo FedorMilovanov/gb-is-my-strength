@@ -1,0 +1,197 @@
+name: Home Audit One-shot Patch
+
+on:
+  push:
+    branches:
+      - lane/home-search-audit-pro-2026-08-03
+    paths:
+      - '.github/workflows/home-audit-one-shot-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout lane
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: lane/home-search-audit-pro-2026-08-03
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply exact verified replacements
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, label):
+              file = Path(path)
+              text = file.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly one match in {path}, got {count}')
+              file.write_text(text.replace(old, new, 1), encoding='utf-8')
+              print(f'patched {label}: {path}')
+
+          replace_once(
+              'src/components/home/HomePageHead.astro',
+              '<meta http-equiv="X-Content-Type-Options" content="nosniff">\n',
+              '',
+              'remove invalid http-equiv meta',
+          )
+
+          replace_once(
+              'src/components/home/HomeHero.astro',
+              '<div class="h-hero-brand" aria-label="Богословская библиотека «Господь Бог — Сила Моя»">',
+              '<div class="h-hero-brand">',
+              'remove invalid generic aria-label',
+          )
+
+          audit = 'scripts/home-design-audit-pro.mjs'
+          replace_once(
+              audit,
+              "const sections = ['#issledovat', '#publikacii', '.h-quote-section', '.h-about', '.article-end-sdg-wrap', '.h-footer']",
+              "const sections = ['#issledovat', '#publikacii', '.h-about', '.h-quote-section', '.article-end-sdg-wrap', '.h-footer']",
+              'correct actual INDEX section order',
+          )
+
+          replace_once(
+              audit,
+              '''async function waitQuery(page, query) {
+            await page.waitForFunction((expected) => {
+              const input = document.querySelector('.cp-input');
+              return input?.value === expected && !document.querySelector('.cp-loading');
+            }, query, { timeout: 10000 });
+            await page.waitForTimeout(120);
+          }''',
+              '''async function waitQuery(page, query, expectedTitle = '') {
+            await page.waitForFunction(({ query: expectedQuery, expectedTitle: titleNeedle }) => {
+              const input = document.querySelector('.cp-input');
+              if (input?.value !== expectedQuery || document.querySelector('.cp-loading')) return false;
+              const headings = [...document.querySelectorAll('.cp-group-hd > span:first-child')]
+                .map((node) => node.textContent?.trim() || '');
+              const staleHeadings = new Set(['Рекомендуемое', 'Новое', 'Недавние запросы', 'Популярные исследования']);
+              const processed = headings.some((heading) => heading && !staleHeadings.has(heading));
+              const empty = Boolean(document.querySelector('.cp-empty'));
+              const titles = [...document.querySelectorAll('.cp-item-title')]
+                .map((node) => (node.textContent || '').toLocaleLowerCase('ru-RU'));
+              const matched = !titleNeedle || titles.some((title) => title.includes(titleNeedle.toLocaleLowerCase('ru-RU')));
+              return (processed || empty) && matched;
+            }, { query, expectedTitle }, { timeout: 15000 });
+            await page.waitForTimeout(80);
+          }''',
+              'wait for processed Pagefind results',
+          )
+
+          replace_once(
+              audit,
+              '''  const queries = [
+                { name: 'canonical-title', value: 'Нагорная проповедь', expect: /Нагорная\\s+проповедь/i },
+                { name: 'scripture-reference', value: 'Иер 17:9', expect: /сердц/i },
+                { name: 'partial-cyrillic', value: 'герменевтик', expect: /герменевтик/i },
+                { name: 'trimmed-query', value: '  Джон Гилл  ', expect: /Джон\\s+Гилл/i },
+              ];
+              for (const query of queries) {
+                await input.fill(query.value);
+                await waitQuery(page, query.value);''',
+              '''  const allScope = page.locator('.cp-scope-chip[data-scope="all"]');
+              await allScope.click();
+              const queries = [
+                { name: 'canonical-title', value: 'Нагорная проповедь', needle: 'Нагорная проповедь', expect: /Нагорная\\s+проповедь/i },
+                { name: 'scripture-reference', value: 'Иер 17:9', needle: 'сердц', expect: /сердц/i },
+                { name: 'partial-cyrillic', value: 'герменевтик', needle: 'герменевтик', expect: /герменевтик/i },
+                { name: 'trimmed-query', value: '  Джон Гилл  ', needle: 'Джон Гилл', expect: /Джон\\s+Гилл/i },
+              ];
+              for (const query of queries) {
+                await input.fill(query.value);
+                await waitQuery(page, query.value, query.needle);''',
+              'reset scope and wait for expected query result',
+          )
+
+          replace_once(
+              audit,
+              "  await waitQuery(page, 'Нагорная проповедь');\n  record(`${ENGINE}:search-rapid-input`",
+              "  await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');\n  record(`${ENGINE}:search-rapid-input`",
+              'wait for rapid input result',
+          )
+
+          replace_once(
+              audit,
+              '''  for (let index = 0; index < chipCount; index += 1) {
+                await chips.nth(index).click();
+                const selected = await chips.nth(index).evaluate((node) => node.matches('[aria-pressed="true"], [aria-selected="true"], .is-active, .active'));
+                record(`${ENGINE}:search-scope-${index + 1}`, selected);
+              }
+
+              await input.fill('Нагорная проповедь');
+              await waitQuery(page, 'Нагорная проповедь');''',
+              '''  for (let index = 0; index < chipCount; index += 1) {
+                await chips.nth(index).click();
+                const selected = await chips.nth(index).evaluate((node) => node.matches('[aria-pressed="true"], [aria-selected="true"], .is-active, .active'));
+                record(`${ENGINE}:search-scope-${index + 1}`, selected);
+              }
+              await allScope.click();
+
+              await input.fill('Нагорная проповедь');
+              await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');''',
+              'restore all scope before ranking checks',
+          )
+
+          replace_once(
+              audit,
+              "const dialog = document.querySelector('.cp-dialog')?.getBoundingClientRect();",
+              "const dialog = document.querySelector('.cp-box')?.getBoundingClientRect();",
+              'measure actual search dialog',
+          )
+
+          replace_once(
+              audit,
+              '''  const input = page.locator('.cp-input');
+              await input.waitFor({ state: 'visible' });
+              return input;''',
+              '''  const input = page.locator('.cp-input');
+              await input.waitFor({ state: 'visible' });
+              await page.waitForFunction(() => document.querySelector('.cp-input') === document.activeElement, undefined, { timeout: 5000 });
+              return input;''',
+              'wait for canonical search focus',
+          )
+
+          # PageSpeed may answer 429. Retrying into the same file concatenates JSON.
+          external = Path('.github/workflows/home-live-external-audit.yml')
+          text = external.read_text(encoding='utf-8')
+          old = "curl -sS --max-time 240 --retry 2 --get \\\n"
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'PageSpeed retry cleanup: expected one match, got {count}')
+          external.write_text(text.replace(old, "curl -sS --max-time 240 --get \\\n", 1), encoding='utf-8')
+
+          Path('.github/workflows/home-audit-one-shot-patch.yml').unlink()
+          PY
+
+      - name: Verify edits before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R 'http-equiv="X-Content-Type-Options"' src/components/home/HomePageHead.astro
+          ! grep -F 'h-hero-brand" aria-label=' src/components/home/HomeHero.astro
+          node --check scripts/home-design-audit-pro.mjs
+          git diff --check
+          git diff --name-only
+
+      - name: Commit verified corrections to lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/components/home/HomePageHead.astro \
+                  src/components/home/HomeHero.astro \
+                  scripts/home-design-audit-pro.mjs \
+                  .github/workflows/home-live-external-audit.yml \
+                  .github/workflows/home-audit-one-shot-patch.yml
+          git commit -m 'fix(home): close validated semantic audit findings'
+          git push origin HEAD:lane/home-search-audit-pro-2026-08-03
