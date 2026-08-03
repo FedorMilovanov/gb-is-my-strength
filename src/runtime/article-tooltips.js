@@ -1,4 +1,4 @@
-const VERSION = 11;
+const VERSION = 12;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const HOVER_TRANSIT_MS = 520;
@@ -212,6 +212,7 @@ function restore(record) {
   tip.classList.remove('gb-floating-tip', 'is-open');
   clearAuthoritativeGeometry(tip);
   tip.style.removeProperty('position');
+  tip.style.removeProperty('pointer-events');
   tip.style.removeProperty('--gb-tip-arrow-x');
   if (placeholder?.parentNode) {
     placeholder.parentNode.insertBefore(tip, placeholder);
@@ -247,6 +248,7 @@ function openTooltip(anchor, reason = 'open') {
       active.hoverSettled = false;
       settleHover(active);
     }
+    setImportant(tip.style, 'pointer-events', 'auto');
     position(tip, anchor);
     return;
   }
@@ -257,6 +259,7 @@ function openTooltip(anchor, reason = 'open') {
   tip.parentNode?.insertBefore(placeholder, tip);
   document.body.appendChild(tip);
   tip.classList.add('gb-floating-tip', 'is-open');
+  setImportant(tip.style, 'pointer-events', 'auto');
   anchor.classList.add('is-open');
   anchor.setAttribute('aria-expanded', 'true');
 
