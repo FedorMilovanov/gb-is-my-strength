@@ -1,15 +1,29 @@
 ---
 import DiotrophesPageHead from '@/components/article-pilots/diotrophes/DiotrophesPageHead.astro';
 import DiotrophesPublishedPage from '@/components/article-pilots/diotrophes/DiotrophesPublishedPage.astro';
+
+const noJsImageBoundary = `
+html:not(.js) body[data-page="diotrophes"] .wave12-publication-boundary figure.article-img.wide > picture,
+html:not(.js) body[data-page="diotrophes"] .wave12-publication-boundary figure.article-img.wide > picture > img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  inline-size: auto;
+  max-inline-size: 100%;
+  block-size: auto;
+}
+`;
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <DiotrophesPageHead />
-    <link rel="stylesheet" href="/css/diotrophes-wave12.css?v=09001b65">
+    <style is:inline set:html={noJsImageBoundary} />
   </head>
   <body
     class="gbs-world"
+    data-page="diotrophes"
     data-pagefind-body
     data-wave12-publication="true"
     data-gbs2-series="pastor-series"
