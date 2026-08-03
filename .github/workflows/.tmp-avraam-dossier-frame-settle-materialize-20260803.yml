@@ -1,0 +1,48 @@
+name: Atlas Dossier Frame Settle Materialize
+
+on:
+  push:
+    branches:
+      - agent/atlas-avraam-reference-contract-20260802
+    paths:
+      - '.github/workflows/.tmp-avraam-dossier-frame-settle-materialize-20260803.yml'
+      - 'scripts/.tmp-avraam-dossier-frame-settle-materialize-20260803.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-dossier-frame-settle-materialize
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: agent/atlas-avraam-reference-contract-20260802
+
+      - name: Materialize steady-frame witness repair
+        run: python3 scripts/.tmp-avraam-dossier-frame-settle-materialize-20260803.py
+
+      - name: Commit permanent witness repair and cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          mapfile -t paths < <(git status --porcelain | sed 's/^...//' | sort)
+          expected=(
+            '.github/workflows/.tmp-avraam-dossier-frame-settle-materialize-20260803.yml'
+            'scripts/.tmp-avraam-dossier-frame-settle-materialize-20260803.py'
+            'scripts/avraam-dossier-witness.mjs'
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          [[ "${paths[*]}" == "${expected_sorted[*]}" ]]
+          git add -A
+          git diff --cached --check
+          git commit -m 'test(atlas): sample dossier geometry after the entry frame'
+          git push origin HEAD:agent/atlas-avraam-reference-contract-20260802
