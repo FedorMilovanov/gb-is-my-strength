@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/editorial-freeze-diagnostic.yml'
       - 'scripts/editorial-metadata-freeze-audit.js'
+      - 'scripts/editorial-metadata-registry.js'
       - 'scripts/lib/editorial-metadata.js'
       - 'scripts/lib/editorial-metadata-v3.js'
       - 'data/**'
@@ -50,62 +51,66 @@ jobs:
       - name: Build Pagefind index
         run: npm run pagefind:build:dist
 
-      - name: Capture exact Diotrophes editorial state
-        shell: bash
-        run: |
-          mkdir -p reports
-          node <<'NODE' > reports/diotrophes-editorial-state.json
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const {
-            ROOT,
-            eligibleRecords,
-            observeRoute,
-            readRegistry,
-          } = require('./scripts/lib/editorial-metadata');
-          const route = '/articles/diotrefy-nashego-vremeni/';
-          const dist = path.join(ROOT, 'dist');
-          const sitemapFiles = fs.readdirSync(dist)
-            .filter((name) => /^sitemap(?:-\d+)?\.xml$/i.test(name))
-            .sort();
-          const shared = {
-            searchItems: JSON.parse(fs.readFileSync(path.join(dist, 'data', 'search-manifest.json'), 'utf8')).items || [],
-            sitemapXml: sitemapFiles.map((name) => fs.readFileSync(path.join(dist, name), 'utf8')).join('\n'),
-            feedXml: fs.readFileSync(path.join(dist, 'feed.xml'), 'utf8'),
-          };
-          const routeRecord = eligibleRecords().find((item) => item.route === route);
-          if (!routeRecord) throw new Error(`eligible route missing: ${route}`);
-          const registryRecord = readRegistry().records[route];
-          if (!registryRecord) throw new Error(`registry route missing: ${route}`);
-          const current = observeRoute(routeRecord, dist, shared);
-          process.stdout.write(JSON.stringify({ route, registryRecord, current }, null, 2));
-          NODE
-
-      - name: Capture frozen editorial projection audit
-        id: audit
+      - name: Capture failing frozen projection audit
+        id: before
         shell: bash
         run: |
           mkdir -p reports
           set +e
           set -o pipefail
           node scripts/editorial-metadata-freeze-audit.js 2>&1 \
-            | tee reports/editorial-metadata-freeze.log
+            | tee reports/editorial-metadata-freeze.before.log
           status=${PIPESTATUS[0]}
           printf 'status=%s\n' "$status" >> "$GITHUB_OUTPUT"
           exit 0
 
-      - name: Upload exact diagnostic evidence
+      - name: Generate registry observation repair
+        shell: bash
+        run: |
+          cp data/editorial-metadata.json reports/editorial-metadata.before.json
+          node scripts/editorial-metadata-registry.js --write
+          cp data/editorial-metadata.json reports/editorial-metadata.generated.json
+          git diff -- data/editorial-metadata.json > reports/editorial-metadata.generated.diff
+          test -s reports/editorial-metadata.generated.diff
+
+      - name: Verify generated registry repair
+        id: after
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          node scripts/editorial-metadata-registry.js --check 2>&1 \
+            | tee reports/editorial-metadata-registry.after.log
+          registry_status=${PIPESTATUS[0]}
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-metadata-freeze.after.log
+          audit_status=${PIPESTATUS[0]}
+          if [ "$registry_status" -ne 0 ] || [ "$audit_status" -ne 0 ]; then
+            status=1
+          else
+            status=0
+          fi
+          printf 'status=%s\n' "$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload exact diagnostic and generated repair
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: editorial-freeze-diagnostic-${{ github.run_id }}
+          name: editorial-freeze-repair-${{ github.run_id }}
           path: |
-            reports/editorial-metadata-freeze.log
-            reports/diotrophes-editorial-state.json
+            reports/editorial-metadata-freeze.before.log
+            reports/editorial-metadata.before.json
+            reports/editorial-metadata.generated.json
+            reports/editorial-metadata.generated.diff
+            reports/editorial-metadata-registry.after.log
+            reports/editorial-metadata-freeze.after.log
           if-no-files-found: error
           retention-days: 7
 
-      - name: Preserve audit conclusion
+      - name: Prove expected failure became a passing repair
         if: always()
         shell: bash
-        run: exit '${{ steps.audit.outputs.status }}'
+        run: |
+          test '${{ steps.before.outputs.status }}' -ne 0
+          test '${{ steps.after.outputs.status }}' -eq 0
