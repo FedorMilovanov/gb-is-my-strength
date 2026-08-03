@@ -1,0 +1,103 @@
+name: Temporary Avraam skip and contrast transaction
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches: [main]
+    paths:
+      - 'scripts/.tmp-avraam-skip-contrast-materialize-20260803.py'
+      - '.github/workflows/.tmp-avraam-skip-contrast-materialize-20260803.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-avraam-skip-contrast-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'fix/avraam-skip-contrast-a11y-20260803' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix')
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Materialize bounded source repair
+        run: python scripts/.tmp-avraam-skip-contrast-materialize-20260803.py --write
+
+      - name: Validate generated source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/avraam-dossier-witness.mjs
+          node scripts/check-workflows.js
+          git diff --check
+          python - <<'PY'
+          import subprocess
+          expected = {
+              'scripts/avraam-dossier-witness.mjs',
+              'src/components/karty/avraam/AvraamMap.astro',
+          }
+          rows = subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines()
+          changed = {
+              row[3:] for row in rows
+              if row
+              and not row.endswith('.tmp-avraam-skip-contrast-materialize-20260803.py')
+              and not row.endswith('.tmp-avraam-skip-contrast-materialize-20260803.yml')
+          }
+          if changed != expected:
+              raise SystemExit(f'unexpected generated paths: {sorted(changed)}')
+          component = open('src/components/karty/avraam/AvraamMap.astro', encoding='utf-8').read()
+          witness = open('scripts/avraam-dossier-witness.mjs', encoding='utf-8').read()
+          for token in ('data-map-skip-link', 'href="#stage"', 'tabindex="-1"'):
+              if token not in component: raise SystemExit(f'component marker missing: {token}')
+          for token in ('verifyStaticNavigation', 'contrastSummary', 'archaeology metadata contrast'):
+              if token not in witness: raise SystemExit(f'witness marker missing: {token}')
+          PY
+
+      - name: Remove transaction transport and validate final diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm \
+            scripts/.tmp-avraam-skip-contrast-materialize-20260803.py \
+            .github/workflows/.tmp-avraam-skip-contrast-materialize-20260803.yml
+          git add \
+            scripts/avraam-dossier-witness.mjs \
+            src/components/karty/avraam/AvraamMap.astro
+          git diff --cached --check
+          python - <<'PY'
+          import subprocess
+          expected = {
+              '.github/workflows/.tmp-avraam-skip-contrast-materialize-20260803.yml',
+              'scripts/.tmp-avraam-skip-contrast-materialize-20260803.py',
+              'scripts/avraam-dossier-witness.mjs',
+              'src/components/karty/avraam/AvraamMap.astro',
+          }
+          changed = set(subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True).splitlines())
+          if changed != expected:
+              raise SystemExit(f'unexpected staged paths: {sorted(changed)}')
+          PY
+
+      - name: Commit and push exact PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'avraam-a11y-materializer'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(avraam): add skip navigation and contrast witness'
+          git push origin "HEAD:${HEAD_REF}"
