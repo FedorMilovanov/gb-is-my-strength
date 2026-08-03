@@ -2135,7 +2135,7 @@ container.appendChild(panel);
         g.addEventListener('dblclick',(e)=>{e.preventDefault();e.stopPropagation();flyTo(place.x,place.y,Math.min(view.w,450),600);});
       }
         
-        const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');hit.setAttribute('r','20');hit.setAttribute('fill','transparent');hit.setAttribute('stroke','transparent');hit.setAttribute('stroke-width','8');
+        const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');hit.setAttribute('r','22');hit.setAttribute('fill','transparent');hit.setAttribute('stroke','transparent');hit.setAttribute('stroke-width','8');
         g.appendChild(hit);
         // Outer ring for active state
         const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
