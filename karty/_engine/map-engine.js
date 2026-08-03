@@ -403,6 +403,7 @@ const MapEngine = (function() {
     const fallbackOverlayOpeners = new Map();
     const fallbackOverlayOwners = new Set();
     const fallbackOverlayStates = new Map();
+    let panelRestoreMarkerOnClose = false;
 
     function specialInertTargets(exclusions = []) {
       const excluded = new Set(exclusions.filter(Boolean));
@@ -2534,6 +2535,10 @@ container.appendChild(panel);
       const panelOpener = document.activeElement;
       const place=(route.places||[]).find(p=>p.id===id);
       if(!place)return;
+      if(!panel.classList.contains('me-panel--open')){
+        const openerPlaceId=panelOpener?.closest?.('[data-place-id]')?.getAttribute('data-place-id')||null;
+        panelRestoreMarkerOnClose=openerPlaceId===id;
+      }
       activePlaceId=id;
       panel.classList.add('me-panel--open');
       panelBackdrop.classList.add('me-panel__backdrop--active');
@@ -2608,6 +2613,8 @@ container.appendChild(panel);
 
     function close(reason = 'close', closeOptions = {}){
       const closingPlaceId=activePlaceId;
+      const restoreMarkerOnClose=panelRestoreMarkerOnClose;
+      panelRestoreMarkerOnClose=false;
       closePhoto('panel-close', {restoreFocus:false});
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
@@ -2628,7 +2635,7 @@ container.appendChild(panel);
       updateUrl();
       saveState();
       renderMarkers();
-      if(closeOptions.restoreFocus!==false&&closingPlaceId){
+      if(closeOptions.restoreFocus!==false&&restoreMarkerOnClose&&closingPlaceId){
         setTimeout(()=>focusSpecialTarget(markersG.querySelector(`[data-place-id="${CSS.escape(closingPlaceId)}"]`)),0);
       }
     }
