@@ -1,18 +1,12 @@
 ---
 /**
- * HomeSacredFlipContract.astro — bounded regression restore for the Habakkuk
- * word flip on the native Home route.
+ * HomeSacredFlipContract.astro — final late owner for the interactive
+ * Habakkuk word swap on the native Home route.
  *
- * Historical authority: commit 32e8c63290d111ddc91078ac66658e24419a0237
- * restored black translations and a complete Hebrew-to-translation swap.
- *
- * The regression had two independent cascade sources:
- * 1. a late Home rule restored opacity on the Hebrew face while open;
- * 2. the shared reduced-motion fallback exposed both faces at once.
- *
- * This component owns only the reviewed Home-route repair. It deliberately
- * contains no self-clicking runtime audit: canonical browser workflows remain
- * the sole interaction driver, so evidence collection cannot mutate the page.
+ * The component deliberately overrides the legacy route cascade after
+ * HomeHero/HomeVisualAuditFixes. It owns only front/back visibility, revealed
+ * translation colour and the sacred-name label position. Click/tap toggling
+ * remains owned by the existing enhancements runtime.
  */
 ---
 
@@ -32,10 +26,6 @@
     text-shadow: 0 2px 8px rgba(28, 25, 23, .15), 0 4px 30px rgba(28, 25, 23, .08);
   }
 
-  html.dark body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
-    color: var(--h-ink) !important;
-  }
-
   html.dark body.home-page #main-content .h-sacred-block--hero .h-tetra-name {
     text-shadow: 0 2px 6px rgba(0, 0, 0, .34), 0 4px 28px rgba(245, 237, 224, .08);
   }
@@ -45,146 +35,128 @@
     backface-visibility: hidden;
   }
 
-  body.home-page #main-content .h-sacred-block--hero
-    :is(.hb-w, .h-tetra)[data-toggled] > .hb-front {
-    visibility: hidden !important;
-    opacity: 0 !important;
-    transform: rotate(-8deg) scale(.85) !important;
-    pointer-events: none;
+  /* Fail closed before interaction: the Hebrew face is the only visible face. */
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) > .hb-front {
+    visibility: visible !important;
   }
 
-  body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] > .hb-back,
-  body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] > .h-tetra-back {
-    visibility: visible !important;
-    opacity: 1 !important;
-    transform: rotate(0) scale(1) !important;
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
-    transform: translate(-50%, -100%) translateY(6px);
+    opacity: 0 !important;
+    visibility: hidden !important;
+    filter: blur(5px) !important;
+    transform: translate(-50%, -100%) translateY(22px) !important;
   }
 
+  /*
+   * The active state is intentionally not wrapped in a hover/pointer media
+   * query. Desktop browsers and hybrid Windows devices have reported an
+   * incorrect primary-pointer capability while still dispatching a physical
+   * mouse hover. :hover plus the pointer-preview attribute keeps the visual
+   * contract deterministic without changing touch click ownership.
+   */
   body.home-page #main-content .h-sacred-block--hero
-    .h-tetra[data-toggled] > .h-tetra-label {
-    opacity: 1 !important;
-    visibility: visible !important;
-    filter: blur(0) !important;
-    transform: translate(-50%, -100%) translateY(6px) !important;
-    letter-spacing: .28em !important;
-  }
-
-  body.home-page #main-content .h-sacred-block--hero
-    :is(.hb-w, .h-tetra):focus-visible > .hb-front {
+    :is(.hb-w, .h-tetra):is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-front {
     visibility: hidden !important;
     opacity: 0 !important;
     transform: rotate(-8deg) scale(.85) !important;
     pointer-events: none;
   }
 
-  body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible > .hb-back,
-  body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible > .h-tetra-back {
+  body.home-page #main-content .h-sacred-block--hero
+    .hb-w:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-back,
+  body.home-page #main-content .h-sacred-block--hero
+    .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-back {
     visibility: visible !important;
     opacity: 1 !important;
     transform: rotate(0) scale(1) !important;
   }
 
   body.home-page #main-content .h-sacred-block--hero
-    .h-tetra:focus-visible > .h-tetra-label {
+    .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-label {
     opacity: 1 !important;
     visibility: visible !important;
     filter: blur(0) !important;
-    transform: translate(-50%, -100%) translateY(6px) !important;
+    transform: translate(-50%, -100%) translateY(22px) !important;
     letter-spacing: .28em !important;
   }
 
-  @media (hover: hover) and (pointer: fine) {
-    body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-w, .h-tetra):hover > .hb-front {
-      visibility: hidden !important;
-      opacity: 0 !important;
-      transform: rotate(-8deg) scale(.85) !important;
-      pointer-events: none;
-    }
-
-    body.home-page #main-content .h-sacred-block--hero .hb-w:hover > .hb-back,
-    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover > .h-tetra-back {
-      visibility: visible !important;
-      opacity: 1 !important;
-      transform: rotate(0) scale(1) !important;
-    }
-
-    body.home-page #main-content .h-sacred-block--hero
-      .h-tetra:hover > .h-tetra-label {
-      opacity: 1 !important;
-      visibility: visible !important;
-      filter: blur(0) !important;
-      transform: translate(-50%, -100%) translateY(6px) !important;
-      letter-spacing: .28em !important;
-    }
-  }
-
-  /* The shared reduced-motion stylesheet intentionally removes transforms,
-     but its legacy fallback also exposed both faces. On Home we preserve the
-     same interaction semantically, only without animation. */
   @media (prefers-reduced-motion: reduce) {
     body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-w, .h-tetra) > .hb-front {
+      :is(.hb-w, .h-tetra, .hb-front, .hb-back, .h-tetra-back, .h-tetra-label) {
+      transition: none !important;
+      animation: none !important;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) > .hb-front {
       display: inline-block !important;
       visibility: visible !important;
       opacity: 1 !important;
       transform: none !important;
-      transition: none !important;
     }
 
-    body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-back, .h-tetra-back) {
+    body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
       visibility: hidden !important;
       opacity: 0 !important;
       transform: none !important;
-      transition: none !important;
-    }
-
-    body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
-      visibility: hidden !important;
-      opacity: 0 !important;
-      filter: none !important;
-      transform: translate(-50%, -100%) translateY(6px) !important;
-      transition: none !important;
     }
 
     body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-w, .h-tetra)[data-toggled] > .hb-front,
-    body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-w, .h-tetra):focus-visible > .hb-front,
-    body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-w, .h-tetra):hover > .hb-front {
+      :is(.hb-w, .h-tetra):is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-front {
       display: none !important;
       visibility: hidden !important;
       opacity: 0 !important;
     }
 
-    body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] > .hb-back,
-    body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] > .h-tetra-back,
-    body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible > .hb-back,
-    body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible > .h-tetra-back,
-    body.home-page #main-content .h-sacred-block--hero .hb-w:hover > .hb-back,
-    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover > .h-tetra-back {
+    body.home-page #main-content .h-sacred-block--hero
+      .hb-w:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-back,
+    body.home-page #main-content .h-sacred-block--hero
+      .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-back {
       visibility: visible !important;
       opacity: 1 !important;
       transform: none !important;
     }
 
+    body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
+      transform: translate(-50%, -100%) translateY(22px) !important;
+    }
+
     body.home-page #main-content .h-sacred-block--hero
-      .h-tetra[data-toggled] > .h-tetra-label,
-    body.home-page #main-content .h-sacred-block--hero
-      .h-tetra:focus-visible > .h-tetra-label,
-    body.home-page #main-content .h-sacred-block--hero
-      .h-tetra:hover > .h-tetra-label {
+      .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-label {
       visibility: visible !important;
       opacity: 1 !important;
       filter: none !important;
-      transform: translate(-50%, -100%) translateY(6px) !important;
-      letter-spacing: .28em !important;
     }
   }
 </style>
+
+<script is:inline>
+  (() => {
+    const selector = '.h-sacred-block--hero button.hb-w, .h-sacred-block--hero button.h-tetra';
+    const words = document.querySelectorAll(selector);
+
+    words.forEach((word) => {
+      if (word.dataset.sacredPointerPreview === '1') return;
+      word.dataset.sacredPointerPreview = '1';
+
+      const closePreview = () => word.removeAttribute('data-pointer-preview');
+      word.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'mouse' || event.pointerType === 'pen') {
+          word.setAttribute('data-pointer-preview', '');
+        }
+      });
+      word.addEventListener('pointerleave', closePreview);
+      word.addEventListener('pointercancel', closePreview);
+    });
+
+    window.addEventListener('pagehide', () => {
+      document.querySelectorAll(`${selector}[data-pointer-preview]`).forEach((word) => {
+        word.removeAttribute('data-pointer-preview');
+      });
+    });
+  })();
+</script>
