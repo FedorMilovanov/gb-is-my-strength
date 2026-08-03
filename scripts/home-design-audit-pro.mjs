@@ -129,7 +129,7 @@ async function readViewportState(page) {
         : 1;
     };
 
-    const sections = ['#issledovat', '#publikacii', '.h-quote-section', '.h-about', '.article-end-sdg-wrap', '.h-footer']
+    const sections = ['#issledovat', '#publikacii', '.h-about', '.h-quote-section', '.article-end-sdg-wrap', '.h-footer']
       .map((selector) => ({ selector, node: document.querySelector(selector) }))
       .map(({ selector, node }) => ({ selector, visible: visible(node), rect: rect(node) }));
     const ordered = sections.every((item, index) => index === 0 || !item.rect || !sections[index - 1].rect || item.rect.top >= sections[index - 1].rect.top);
@@ -229,6 +229,7 @@ async function openSearch(page, method) {
   await waitSearch(page, true);
   const input = page.locator('.cp-input');
   await input.waitFor({ state: 'visible' });
+  await page.waitForFunction(() => document.querySelector('.cp-input') === document.activeElement, undefined, { timeout: 5000 });
   return input;
 }
 
@@ -237,12 +238,21 @@ async function closeSearch(page) {
   await waitSearch(page, false);
 }
 
-async function waitQuery(page, query) {
-  await page.waitForFunction((expected) => {
+async function waitQuery(page, query, expectedTitle = '') {
+  await page.waitForFunction(({ query: expectedQuery, expectedTitle: titleNeedle }) => {
     const input = document.querySelector('.cp-input');
-    return input?.value === expected && !document.querySelector('.cp-loading');
-  }, query, { timeout: 10000 });
-  await page.waitForTimeout(120);
+    if (input?.value !== expectedQuery || document.querySelector('.cp-loading')) return false;
+    const headings = [...document.querySelectorAll('.cp-group-hd > span:first-child')]
+      .map((node) => node.textContent?.trim() || '');
+    const staleHeadings = new Set(['Рекомендуемое', 'Новое', 'Недавние запросы', 'Популярные исследования']);
+    const processed = headings.some((heading) => heading && !staleHeadings.has(heading));
+    const empty = Boolean(document.querySelector('.cp-empty'));
+    const titles = [...document.querySelectorAll('.cp-item-title')]
+      .map((node) => (node.textContent || '').toLocaleLowerCase('ru-RU'));
+    const matched = !titleNeedle || titles.some((title) => title.includes(titleNeedle.toLocaleLowerCase('ru-RU')));
+    return (processed || empty) && matched;
+  }, { query, expectedTitle }, { timeout: 15000 });
+  await page.waitForTimeout(80);
 }
 
 async function searchAudit(page) {
@@ -260,15 +270,17 @@ async function searchAudit(page) {
   record(`${ENGINE}:search-empty-state`, (await input.inputValue()) === '');
   if (ENGINE === 'chromium') await page.screenshot({ path: path.join(OUT, 'search-empty-desktop.png') });
 
+  const allScope = page.locator('.cp-scope-chip[data-scope="all"]');
+  await allScope.click();
   const queries = [
-    { name: 'canonical-title', value: 'Нагорная проповедь', expect: /Нагорная\s+проповедь/i },
-    { name: 'scripture-reference', value: 'Иер 17:9', expect: /сердц/i },
-    { name: 'partial-cyrillic', value: 'герменевтик', expect: /герменевтик/i },
-    { name: 'trimmed-query', value: '  Джон Гилл  ', expect: /Джон\s+Гилл/i },
+    { name: 'canonical-title', value: 'Нагорная проповедь', needle: 'Нагорная проповедь', expect: /Нагорная\s+проповедь/i },
+    { name: 'scripture-reference', value: 'Иер 17:9', needle: 'сердц', expect: /сердц/i },
+    { name: 'partial-cyrillic', value: 'герменевтик', needle: 'герменевтик', expect: /герменевтик/i },
+    { name: 'trimmed-query', value: '  Джон Гилл  ', needle: 'Джон Гилл', expect: /Джон\s+Гилл/i },
   ];
   for (const query of queries) {
     await input.fill(query.value);
-    await waitQuery(page, query.value);
+    await waitQuery(page, query.value, query.needle);
     const count = await page.locator('.cp-item').count();
     const first = (await page.locator('.cp-item-title').first().textContent().catch(() => '')) || '';
     record(`${ENGINE}:search-query-${query.name}`, count > 0 && query.expect.test(first), { count, first });
@@ -281,7 +293,7 @@ async function searchAudit(page) {
 
   await input.fill('Н');
   await input.type('агорная проповедь', { delay: 5 });
-  await waitQuery(page, 'Нагорная проповедь');
+  await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');
   record(`${ENGINE}:search-rapid-input`, await page.locator('.cp-item').count() > 0);
 
   const chips = page.locator('.cp-scope-chip');
@@ -292,9 +304,10 @@ async function searchAudit(page) {
     const selected = await chips.nth(index).evaluate((node) => node.matches('[aria-pressed="true"], [aria-selected="true"], .is-active, .active'));
     record(`${ENGINE}:search-scope-${index + 1}`, selected);
   }
+  await allScope.click();
 
   await input.fill('Нагорная проповедь');
-  await waitQuery(page, 'Нагорная проповедь');
+  await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');
   await page.keyboard.press('ArrowDown');
   const selectedCount = await page.locator('.cp-item[aria-selected="true"], .cp-item.is-active').count();
   record(`${ENGINE}:search-arrow-navigation`, selectedCount === 1, selectedCount);
@@ -307,7 +320,7 @@ async function searchAudit(page) {
   await page.setViewportSize({ width: 390, height: 844 });
   record(`${ENGINE}:search-survives-live-resize`, await searchOpen(page));
   const mobileGeometry = await page.evaluate(() => {
-    const dialog = document.querySelector('.cp-dialog')?.getBoundingClientRect();
+    const dialog = document.querySelector('.cp-box')?.getBoundingClientRect();
     const row = document.querySelector('.cp-scope-row')?.getBoundingClientRect();
     return { dialog: dialog && { left: dialog.left, right: dialog.right, top: dialog.top, bottom: dialog.bottom }, row: row && { left: row.left, right: row.right } };
   });

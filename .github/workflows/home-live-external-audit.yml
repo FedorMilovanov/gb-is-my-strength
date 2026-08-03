@@ -57,7 +57,7 @@ jobs:
         run: |
           set -u
           for strategy in mobile desktop; do
-            curl -sS --max-time 240 --retry 2 --get \
+            curl -sS --max-time 240 --get \
               'https://www.googleapis.com/pagespeedonline/v5/runPagespeed' \
               --data-urlencode 'url=https://gospod-bog.ru/' \
               --data-urlencode "strategy=${strategy}" \
