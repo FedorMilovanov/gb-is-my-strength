@@ -1,0 +1,51 @@
+name: Atlas Avraam Dossier Residual Materialize
+
+on:
+  push:
+    branches:
+      - agent/atlas-avraam-reference-contract-20260802
+    paths:
+      - '.github/workflows/.tmp-avraam-dossier-residual-materialize-20260803.yml'
+      - 'scripts/.tmp-avraam-dossier-residual-materialize-20260803.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-avraam-dossier-residual-materialize
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: agent/atlas-avraam-reference-contract-20260802
+
+      - name: Materialize bounded residual repair
+        run: python3 scripts/.tmp-avraam-dossier-residual-materialize-20260803.py
+
+      - name: Commit permanent changes and transport cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          mapfile -t paths < <(git status --porcelain | sed 's/^...//' | sort)
+          printf '%s\n' "${paths[@]}"
+          expected=(
+            '.github/workflows/.tmp-avraam-dossier-residual-materialize-20260803.yml'
+            'karty/_engine/map-engine.js'
+            'scripts/.tmp-avraam-dossier-residual-materialize-20260803.py'
+            'scripts/avraam-dossier-witness.mjs'
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          [[ "${paths[*]}" == "${expected_sorted[*]}" ]]
+          git add -A
+          git diff --cached --check
+          git commit -m 'fix(atlas): make dossier interaction witness physical'
+          git push origin HEAD:agent/atlas-avraam-reference-contract-20260802
