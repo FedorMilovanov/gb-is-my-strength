@@ -5,6 +5,18 @@ import DiotrophesWave11Draft from './DiotrophesWave11Draft.astro';
 ---
 
 <SeriesReaderChrome pageId="diotrophes" config={PASTOR_SERIES}>
+  <style is:inline>
+    .wave12-publication-boundary .article-img.wide > picture,
+    .wave12-publication-boundary .article-img.wide > picture > img {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      block-size: auto;
+    }
+  </style>
   <div class="wave12-publication-boundary" data-wave12-publication="true">
     <aside class="note-box" aria-labelledby="wave12-publication-heading">
       <h2 id="wave12-publication-heading">Как читать этот материал</h2>
