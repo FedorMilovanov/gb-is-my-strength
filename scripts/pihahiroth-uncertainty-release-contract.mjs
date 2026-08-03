@@ -113,9 +113,11 @@ for (const marker of [
   "path.setAttribute('data-pihahiroth-corridor', corridor.featureId)",
   "path.setAttribute('data-confidence', corridor.confidence)",
   "path.setAttribute('data-rights', corridor.rights)",
-  "mapInstance.openPlace('pihahiroth')",
+  "path.addEventListener('pointerdown'",
+  "mapInstance.open('pihahiroth')",
   "container.setAttribute('data-pihahiroth-corridor-count', String(authority.corridors.length))",
 ]) requireValue(adapter.includes(marker), `adapter contract marker missing: ${marker}`);
+requireValue(!adapter.includes("mapInstance.openPlace('pihahiroth')"), 'stale map instance API returned to adapter');
 
 for (const corridor of corridors) {
   requireValue(adapter.includes(corridor.label), `no-JS/adapter surface missing corridor label: ${corridor.featureId}`);
