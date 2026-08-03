@@ -13,7 +13,7 @@
       "reviewStatus": "migration-freeze-unverified",
       "provenance": "wave12-publication-authority",
       "observations": {
-        "visiblePublishedAt": null,
+        "visiblePublishedAt": "2026-08-02T00:00:00.000Z",
         "visibleModifiedAt": null,
         "metaPublishedAt": "2026-08-01T21:00:00.000Z",
         "metaModifiedAt": "2026-08-01T21:00:00.000Z",
@@ -21,8 +21,8 @@
         "jsonLdModifiedAt": "2026-08-01T21:00:00.000Z",
         "searchPublishedAt": "2026-08-01T21:00:00.000Z",
         "searchModifiedAt": "2026-08-01T21:00:00.000Z",
-        "sitemapLastmod": null,
-        "rssPublishedAt": null
+        "sitemapLastmod": "2026-08-01T21:00:00.000Z",
+        "rssPublishedAt": "2026-08-01T21:00:00.000Z"
       }
     }
   }
