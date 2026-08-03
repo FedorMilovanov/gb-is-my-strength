@@ -1,0 +1,57 @@
+name: Atlas Avraam Dossier A11y Materialize
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/atlas-avraam-dossier-a11y-materialize.py'
+      - '.github/workflows/atlas-avraam-dossier-a11y-materialize.yml'
+
+concurrency:
+  group: atlas-avraam-dossier-a11y-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Materialize bounded dossier repair
+        run: python3 scripts/atlas-avraam-dossier-a11y-materialize.py
+
+      - name: Validate product and witness contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check karty/_engine/map-engine.js
+          node --check scripts/avraam-dossier-witness.mjs
+          grep -Fq 'min-width:44px;min-height:44px' karty/_engine/map-engine.js
+          grep -Fq '.me-content .act-btn{min-height:44px' karty/_engine/map-engine.js
+          grep -Fq "g.setAttribute('role','button')" karty/_engine/map-engine.js
+          grep -Fq 'const closingPlaceId=activePlaceId' karty/_engine/map-engine.js
+          grep -Fq "querySelectorAll('button,[role=\"button\"],[role=\"tab\"]')" scripts/avraam-dossier-witness.mjs
+          git diff --check
+          expected=$'.github/workflows/atlas-avraam-dossier-a11y-materialize.yml\nkarty/_engine/map-engine.js\nscripts/atlas-avraam-dossier-a11y-materialize.py\nscripts/avraam-dossier-witness.mjs'
+          actual="$(git status --short | sed -E 's/^.. //' | sort)"
+          [[ "$actual" == "$expected" ]]
+
+      - name: Commit permanent product and witness changes only
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add karty/_engine/map-engine.js scripts/avraam-dossier-witness.mjs
+          git add -u scripts/atlas-avraam-dossier-a11y-materialize.py .github/workflows/atlas-avraam-dossier-a11y-materialize.yml
+          git commit -m 'fix(atlas): make dossiers keyboard-safe and target-sized'
+          git push origin "HEAD:${HEAD_REF}"
