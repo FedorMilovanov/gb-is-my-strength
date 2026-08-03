@@ -37,7 +37,20 @@ jobs:
           persist-credentials: true
 
       - name: Materialize bounded source repair
-        run: python scripts/.tmp-avraam-skip-contrast-materialize-20260803.py --write
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/.tmp-avraam-skip-contrast-materialize-20260803.py')
+          text = path.read_text(encoding='utf-8')
+          for old, new in (("    md_old = '''", "    md_old = r'''"), ("    md_new = '''", "    md_new = r'''")):
+              if text.count(old) != 1:
+                  raise SystemExit(f'guard failed: {old!r} count={text.count(old)}')
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          python scripts/.tmp-avraam-skip-contrast-materialize-20260803.py --write
 
       - name: Validate generated source
         shell: bash
