@@ -72,7 +72,7 @@ async function install() {
         `Expand-Archive -LiteralPath '${escapedArchive}' -DestinationPath '${escapedTarget}' -Force`,
       ]);
     } else {
-      run('tar', ['-xzf', archivePath, '-C', cacheDir, 'actionlint']);
+      run('tar', ['--no-same-owner', '-xzf', archivePath, '-C', cacheDir, 'actionlint']);
       fs.chmodSync(binary, 0o755);
     }
   } finally {

@@ -175,7 +175,30 @@ async function inspectInteractive(browser, base, profile) {
     for (const forbidden of FORBIDDEN) check(profile.id, `forbidden:before:${forbidden}`, !beforeText.includes(forbidden));
 
     await enterInteractiveMap(page, profile.id);
-    await corridors.nth(1).click({ timeout: 5_000 });
+    const targetCorridor = corridors.nth(1);
+    const exposedPoint = await targetCorridor.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const matrix = node.getScreenCTM?.();
+      if (!matrix || rect.width <= 0 || rect.height <= 0) return null;
+      const inverse = matrix.inverse();
+      const steps = 24;
+      for (let row = 0; row < steps; row += 1) {
+        for (let column = 0; column < steps; column += 1) {
+          const x = rect.left + ((column + 0.5) / steps) * rect.width;
+          const y = rect.top + ((row + 0.5) / steps) * rect.height;
+          const local = new DOMPoint(x, y).matrixTransform(inverse);
+          const inFill = typeof node.isPointInFill === 'function' && node.isPointInFill(local);
+          const inStroke = typeof node.isPointInStroke === 'function' && node.isPointInStroke(local);
+          if (!inFill && !inStroke) continue;
+          const top = document.elementFromPoint(x, y);
+          if (top === node) return { x, y, row, column, topTag: top.tagName };
+        }
+      }
+      return null;
+    });
+    check(profile.id, 'corridors:pointer-exposed-point', Boolean(exposedPoint), JSON.stringify(exposedPoint));
+    if (!exposedPoint) throw new Error('target corridor has no physically exposed pointer point');
+    await page.mouse.click(exposedPoint.x, exposedPoint.y);
     await page.locator('.me-panel.me-panel--open').waitFor({ state: 'visible', timeout: 5_000 });
     const panelName = await page.locator('.me-panel__name').innerText();
     check(profile.id, 'panel:name', panelName.includes('Пи-Гахироф: коридоры неопределённости'), panelName);

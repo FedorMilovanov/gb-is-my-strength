@@ -112,10 +112,10 @@ for (const forbidden of ['loadLegacyFullDocument', 'set:html', '?raw', '_legacy/
 }
 const chromeStylesPos = page.indexOf('<HomePageChromeStyles />');
 const mainPos = page.indexOf('<HomeMain />');
-const footerPos = page.indexOf('<HomePageFooter />');
 const endPos = page.indexOf('<HomeArticleEndBlock />');
-chromeStylesPos !== -1 && mainPos > chromeStylesPos && footerPos > mainPos && endPos > footerPos
-  ? ok('Astro / preserves chrome styles → main → footer → Soli Deo Gloria order')
+const footerPos = page.indexOf('<HomePageFooter />');
+chromeStylesPos !== -1 && mainPos > chromeStylesPos && endPos > mainPos && footerPos > endPos
+  ? ok('Astro / preserves chrome styles → main → Soli Deo Gloria → footer order')
   : bad('Astro / homepage landmark/style owner order is invalid');
 
 const head = read('src/components/home/HomePageHead.astro');
@@ -283,7 +283,7 @@ must(favorites, "node.textContent = String(value == null ? '' : value)", 'Favori
 mustNot(favorites, 'card.innerHTML', 'Favorites stored HTML injection');
 
 const resume = read('src/components/home/HomeSections/ResumeMobile.astro');
-must(resume, '<h2 id="resumeListTitle">Недочитанные статьи</h2>', 'resume list uses an h2 heading');
+must(resume, '<h2 id="resumeListTitle">Недочитанные статьи</h2>', 'resume list uses an h2 section heading');
 
 const refutations = read('src/components/home/HomeSections/Refutations.astro');
 must(refutations, '<h2 class="h-section-label" id="hRefutationsLabel">', 'Refutations uses an h2 heading');
@@ -328,10 +328,10 @@ if (dist) {
     '<span class="sr-only">Это</span>',
   ]) mustNot(dist, retired, `dist / retired duplicated About drop-cap markup: ${retired}`);
   const distMainClose = dist.indexOf('</main>');
-  const distFooter = dist.indexOf('<footer');
-  const distSoli = dist.indexOf('class="article-end-sdg"', distFooter);
-  distMainClose !== -1 && distFooter > distMainClose && distSoli > distFooter
-    ? ok('dist / preserves main → footer → Soli Deo Gloria order')
+  const distSoli = dist.indexOf('class="article-end-sdg"', distMainClose);
+  const distFooter = dist.indexOf('<footer', distSoli);
+  distMainClose !== -1 && distSoli > distMainClose && distFooter > distSoli
+    ? ok('dist / preserves main → Soli Deo Gloria → footer order')
     : bad('dist / landmark order is invalid');
   for (const forbidden of ['h-brand-lion', 'AudioContext', 'class="astro-shell"', '_legacy/']) {
     mustNot(dist, forbidden, `dist / ${forbidden}`);
