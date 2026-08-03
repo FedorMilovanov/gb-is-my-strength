@@ -1,0 +1,216 @@
+---
+/**
+ * HomeAmbientInteraction.astro — progressive interaction owner for the
+ * manuscript marginalia rendered by HomeAmbientPhrases.
+ *
+ * The phrase corpus remains static Astro markup. This owner upgrades every
+ * visible phrase into one real keyboard/click control without duplicating the
+ * phrase data or changing the safe-rail layout.
+ */
+---
+
+<style is:global>
+  @media (min-width: 1480px) {
+    body.home-page .h-ambient-word[data-ambient-interactive="true"] {
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    body.home-page .h-ambient-word[data-ambient-interactive="true"]:focus-visible {
+      outline: none;
+    }
+
+    body.home-page .h-ambient-word[data-ambient-interactive="true"]:focus-visible .h-ambient-word__text {
+      color: #171411;
+      filter: none;
+      text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--h-accent) 62%, transparent);
+      text-decoration-thickness: 1px;
+      text-underline-offset: .2em;
+      transform: translateY(-3px);
+    }
+
+    html.dark body.home-page .h-ambient-word[data-ambient-interactive="true"]:focus-visible .h-ambient-word__text {
+      color: #f1e5cd;
+    }
+
+    body.home-page .h-ambient-word[data-ambient-open] {
+      z-index: 5;
+    }
+
+    body.home-page .h-ambient-word[data-ambient-open] .h-ambient-word__text {
+      color: #171411;
+      filter: none;
+      transform: translateY(-3px);
+      text-shadow: 0 2px 7px rgba(24, 20, 16, .13), 0 10px 28px rgba(84, 58, 20, .08);
+    }
+
+    html.dark body.home-page .h-ambient-word[data-ambient-open] .h-ambient-word__text {
+      color: #f1e5cd;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, .45), 0 10px 30px rgba(66, 196, 213, .06);
+    }
+
+    body.home-page .h-ambient-word[data-ambient-open] .h-ambient-word__tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition-delay: .04s, 0s, .04s;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page .h-ambient-word[data-ambient-interactive="true"] {
+      scroll-behavior: auto;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const root = document.querySelector('.h-ambient-native');
+    if (!(root instanceof HTMLElement)) return;
+
+    const words = [...root.querySelectorAll('.h-ambient-word')]
+      .filter((word) => word instanceof HTMLElement);
+    if (!words.length) return;
+
+    root.removeAttribute('aria-hidden');
+
+    const isPinned = (word) => word.hasAttribute('data-ambient-open');
+    const setPinned = (word, open) => {
+      const tooltip = word.querySelector('.h-ambient-word__tooltip');
+      word.toggleAttribute('data-ambient-open', open);
+      word.setAttribute('aria-expanded', open ? 'true' : 'false');
+      tooltip?.setAttribute('aria-hidden', open ? 'false' : 'true');
+    };
+    const closeAll = (except = null) => {
+      words.forEach((word) => {
+        if (word !== except) setPinned(word, false);
+      });
+    };
+
+    words.forEach((word, index) => {
+      const text = word.querySelector('.h-ambient-word__text')?.textContent?.trim() || '';
+      const meaning = word.querySelector('.h-ambient-word__meaning')?.textContent?.trim() || '';
+      const source = word.querySelector('.h-ambient-word__source')?.textContent?.trim() || '';
+      const tooltip = word.querySelector('.h-ambient-word__tooltip');
+      const tooltipId = `home-ambient-meaning-${index + 1}`;
+
+      word.dataset.ambientInteractive = 'true';
+      word.setAttribute('role', 'button');
+      word.setAttribute('tabindex', '-1');
+      word.setAttribute('aria-expanded', 'false');
+      word.setAttribute('aria-controls', tooltipId);
+      word.setAttribute(
+        'aria-label',
+        `${text}. Перевод: ${meaning}. Источник: ${source}. Нажмите, чтобы закрепить перевод.`
+      );
+
+      if (tooltip instanceof HTMLElement) {
+        tooltip.id = tooltipId;
+        tooltip.setAttribute('role', 'tooltip');
+        tooltip.setAttribute('aria-hidden', 'true');
+      }
+
+      word.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const next = !isPinned(word);
+        closeAll(word);
+        setPinned(word, next);
+      });
+
+      word.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          const next = !isPinned(word);
+          closeAll(word);
+          setPinned(word, next);
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          setPinned(word, false);
+        }
+      });
+
+      word.addEventListener('blur', () => {
+        if (!isPinned(word)) tooltip?.setAttribute('aria-hidden', 'true');
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('.h-ambient-word')) return;
+      closeAll();
+    });
+
+    let resizeTimer = 0;
+    const syncVisibility = () => {
+      resizeTimer = 0;
+      words.forEach((word) => {
+        const visible = getComputedStyle(word).display !== 'none';
+        word.tabIndex = visible ? 0 : -1;
+        word.toggleAttribute('aria-hidden', !visible);
+        if (!visible) setPinned(word, false);
+      });
+    };
+    const scheduleVisibility = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(syncVisibility, 80);
+    };
+
+    addEventListener('resize', scheduleVisibility, { passive: true });
+    addEventListener('pageshow', scheduleVisibility);
+    document.fonts?.ready.then(scheduleVisibility);
+    syncVisibility();
+
+    if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
+
+    const report = (message) => console.error(`[home-ambient-contract] ${message}`);
+    const runContract = () => {
+      syncVisibility();
+      const visible = words.filter((word) => getComputedStyle(word).display !== 'none');
+      const expected = innerWidth >= 1600 ? 32 : innerWidth >= 1480 ? 16 : 0;
+      if (visible.length !== expected) {
+        report(`expected ${expected} visible phrases at ${innerWidth}px, got ${visible.length}`);
+      }
+
+      words.forEach((word, index) => {
+        const shouldBeVisible = getComputedStyle(word).display !== 'none';
+        const tooltip = word.querySelector('.h-ambient-word__tooltip');
+        const prefix = `phrase ${index + 1}`;
+
+        if (word.getAttribute('role') !== 'button') report(`${prefix} lost button role`);
+        if (!word.getAttribute('aria-label')?.includes('Перевод:')) report(`${prefix} lost accessible translation`);
+        if (!word.getAttribute('aria-controls')) report(`${prefix} lost aria-controls`);
+        if (!(tooltip instanceof HTMLElement) || tooltip.getAttribute('role') !== 'tooltip') {
+          report(`${prefix} lost tooltip semantics`);
+        }
+        if (word.tabIndex !== (shouldBeVisible ? 0 : -1)) {
+          report(`${prefix} has wrong tabIndex ${word.tabIndex}`);
+        }
+      });
+
+      visible.forEach((word, index) => {
+        const prefix = `visible phrase ${index + 1}`;
+        word.click();
+        if (!isPinned(word) || word.getAttribute('aria-expanded') !== 'true') {
+          report(`${prefix} did not open by click`);
+        }
+        word.click();
+        if (isPinned(word) || word.getAttribute('aria-expanded') !== 'false') {
+          report(`${prefix} did not close by second click`);
+        }
+
+        word.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        if (!isPinned(word)) report(`${prefix} did not open by Enter`);
+        word.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        if (isPinned(word)) report(`${prefix} did not close by Escape`);
+
+        word.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+        if (!isPinned(word)) report(`${prefix} did not open by Space`);
+        setPinned(word, false);
+      });
+    };
+
+    addEventListener('load', () => window.setTimeout(runContract, 140), { once: true });
+  })();
+</script>
