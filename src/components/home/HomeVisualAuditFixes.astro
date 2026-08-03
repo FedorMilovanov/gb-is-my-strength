@@ -70,6 +70,62 @@
     transform: translateY(-1px);
   }
 
+  /* At small-tablet widths two publication columns are still appropriate, but
+     the legacy horizontal card spends almost half of each card on a thumbnail.
+     That turns long Russian headlines into seven-line vertical towers. Stack the
+     art above the copy only in this narrow desktop interval: the section keeps
+     its compact two-column rhythm while titles regain a readable measure. */
+  @media (min-width: 761px) and (max-width: 920px) {
+    body.home-page .home-v20 #main-content #publikacii .h-articles-group > .h-article-list .h-article-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      gap: 0;
+      padding: 14px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-thumb {
+      width: 100%;
+      height: 126px;
+      min-width: 0;
+      margin: 0 0 14px;
+      overflow: hidden;
+      border-radius: 11px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-thumb picture {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      object-fit: cover;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-body {
+      min-width: 0;
+      padding: 0 2px 2px;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-title {
+      font-size: clamp(18px, 2.3vw, 20px);
+      line-height: 1.17;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page .home-v20 #main-content #publikacii .h-article-card .h-article-meta {
+      margin-top: 12px;
+      row-gap: 6px;
+    }
+  }
+
   /* The compact palette already has an explicit close control. Desktop keyboard
      hints do not belong at the bottom of a touch-only 390px layout. */
   @media (max-width: 760px) {
@@ -242,6 +298,22 @@
         });
     };
 
+    const assertTabletPublications = () => {
+      if (innerWidth < 761 || innerWidth > 920) return;
+      document.querySelectorAll('#publikacii .h-article-card').forEach((card) => {
+        const title = card.querySelector('.h-article-title');
+        const thumb = card.querySelector('.h-article-thumb');
+        if (title && renderedLines(title).length > 5) {
+          report(`tablet publication title is too vertical: “${title.textContent?.trim()}”`);
+        }
+        const cardRect = card.getBoundingClientRect();
+        const thumbRect = thumb?.getBoundingClientRect();
+        if (thumbRect && thumbRect.width < cardRect.width - 34) {
+          report('tablet publication thumbnail did not switch to stacked geometry');
+        }
+      });
+    };
+
     const assertCompactControls = () => {
       const arrow = document.querySelector('.h-scroll-top-arrow svg polyline');
       if (arrow && numericStroke(arrow) > 1.35) report('scroll-to-top arrow became heavy');
@@ -275,6 +347,7 @@
       requestAnimationFrame(() => {
         assertHeaderIcons();
         assertMobileRoutes();
+        assertTabletPublications();
         assertCompactControls();
       });
     };
