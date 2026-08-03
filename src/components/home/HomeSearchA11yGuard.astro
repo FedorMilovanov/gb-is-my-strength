@@ -1,0 +1,46 @@
+---
+/**
+ * HomeSearchA11yGuard.astro — keeps lazy search trigger references truthful.
+ *
+ * The command palette is created only after the first search request. Until
+ * that happens, aria-controls must not point at a missing element. Once the
+ * palette exists, every Home search trigger owns the same stable dialog id.
+ */
+---
+
+<script is:inline>
+  (() => {
+    const SEARCH_ID = 'gbCommandPalette';
+    const TRIGGER_SELECTOR = '#gbSearchBtn, [data-action="open-search"]';
+    let scheduled = false;
+
+    const sync = () => {
+      scheduled = false;
+      const targetExists = Boolean(document.getElementById(SEARCH_ID));
+      document.querySelectorAll(TRIGGER_SELECTOR).forEach((trigger) => {
+        const controls = trigger.getAttribute('aria-controls');
+        if (!targetExists && controls === SEARCH_ID) {
+          trigger.removeAttribute('aria-controls');
+        } else if (targetExists && controls !== SEARCH_ID) {
+          trigger.setAttribute('aria-controls', SEARCH_ID);
+        }
+      });
+    };
+
+    const schedule = () => {
+      if (scheduled) return;
+      scheduled = true;
+      queueMicrotask(sync);
+    };
+
+    new MutationObserver(schedule).observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-controls'],
+    });
+
+    window.addEventListener('pageshow', schedule);
+    schedule();
+  })();
+</script>
