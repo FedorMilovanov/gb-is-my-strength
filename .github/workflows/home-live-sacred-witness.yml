@@ -1,0 +1,400 @@
+name: Home Live Sacred Witness
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/home-live-sacred-witness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live-sacred-witness:
+    name: Physical hover and click on published Home
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+
+    steps:
+      - name: Checkout exact witness source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Exercise the published Home with physical input
+        env:
+          LIVE_BASE_URL: https://gospod-bog.ru/
+          REQUIRED_FIX_SHA: 220a41318c762a828c608e41cadc156053702509
+        shell: bash
+        run: |
+          mkdir -p reports/home-live-sacred
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          import { chromium, webkit } from '@playwright/test';
+
+          const outDir = 'reports/home-live-sacred';
+          const baseUrl = process.env.LIVE_BASE_URL;
+          const requiredFixSha = process.env.REQUIRED_FIX_SHA;
+          const report = {
+            liveBaseUrl: baseUrl,
+            requiredFixSha,
+            startedAt: new Date().toISOString(),
+            deploymentWait: null,
+            browsers: {},
+            touch: null,
+            reducedMotion: null,
+            pass: false,
+          };
+
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+          const assert = (condition, message, details = undefined) => {
+            if (!condition) {
+              const suffix = details === undefined ? '' : `\n${JSON.stringify(details, null, 2)}`;
+              throw new Error(`${message}${suffix}`);
+            }
+          };
+          const twoFrames = (page) => page.evaluate(() => new Promise((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+          }));
+          const cacheBustUrl = (label) => {
+            const url = new URL(baseUrl);
+            url.searchParams.set('home-live-sacred-witness', `${label}-${Date.now()}-${Math.random()}`);
+            return url.toString();
+          };
+
+          async function waitForPublishedFix() {
+            const browser = await chromium.launch();
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 900 },
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            const attempts = [];
+            try {
+              for (let attempt = 1; attempt <= 100; attempt += 1) {
+                const url = cacheBustUrl(`poll-${attempt}`);
+                const started = Date.now();
+                try {
+                  const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+                  await page.waitForSelector('.h-sacred-block--hero button.h-tetra:not([disabled])', { timeout: 20_000 });
+                  const marker = await page.locator('.h-sacred-block--hero button.h-tetra').evaluate((el) => ({
+                    installed: el.dataset.sacredPointerPreview === '1',
+                    scriptOwner: el.dataset.sacredPointerPreview ?? null,
+                  }));
+                  const html = await page.content();
+                  const entry = {
+                    attempt,
+                    status: response?.status() ?? null,
+                    elapsedMs: Date.now() - started,
+                    marker,
+                    htmlSha256: crypto.createHash('sha256').update(html).digest('hex'),
+                    dateHeader: response?.headers()?.date ?? null,
+                    etag: response?.headers()?.etag ?? null,
+                  };
+                  attempts.push(entry);
+                  if (marker.installed) {
+                    report.deploymentWait = { attempts, publishedAt: new Date().toISOString() };
+                    return;
+                  }
+                } catch (error) {
+                  attempts.push({ attempt, elapsedMs: Date.now() - started, error: String(error) });
+                }
+                await sleep(30_000);
+              }
+              throw new Error('The published Home never exposed the new physical-pointer owner within 50 minutes.');
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function readState(page, locator) {
+            return locator.evaluate((el) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              const name = el.querySelector('.h-tetra-name') ?? back;
+              const label = el.querySelector(':scope > .h-tetra-label');
+              const block = el.closest('.h-sacred-block--hero');
+              const line = el.closest('.h-sacred-line');
+              const inkProbe = document.createElement('span');
+              inkProbe.style.color = 'var(--h-ink)';
+              inkProbe.style.position = 'fixed';
+              inkProbe.style.visibility = 'hidden';
+              document.body.append(inkProbe);
+              const inkColor = getComputedStyle(inkProbe).color;
+              inkProbe.remove();
+              const frontStyle = getComputedStyle(front);
+              const backStyle = getComputedStyle(back);
+              const labelStyle = label ? getComputedStyle(label) : null;
+              const labelRect = label?.getBoundingClientRect() ?? null;
+              const lineRect = line?.getBoundingClientRect() ?? null;
+              const blockRect = block?.getBoundingClientRect() ?? null;
+              const before = block ? getComputedStyle(block, '::before') : null;
+              return {
+                pressed: el.getAttribute('aria-pressed'),
+                toggled: el.hasAttribute('data-toggled'),
+                pointerPreview: el.hasAttribute('data-pointer-preview'),
+                ownerInstalled: el.dataset.sacredPointerPreview === '1',
+                front: {
+                  visibility: frontStyle.visibility,
+                  opacity: Number(frontStyle.opacity),
+                  display: frontStyle.display,
+                },
+                back: {
+                  visibility: backStyle.visibility,
+                  opacity: Number(backStyle.opacity),
+                  display: backStyle.display,
+                },
+                label: labelStyle && labelRect ? {
+                  visibility: labelStyle.visibility,
+                  opacity: Number(labelStyle.opacity),
+                  transform: labelStyle.transform,
+                  top: labelRect.top,
+                  bottom: labelRect.bottom,
+                } : null,
+                nameColor: getComputedStyle(name).color,
+                inkColor,
+                geometry: {
+                  blockTop: blockRect?.top ?? null,
+                  lineTop: lineRect?.top ?? null,
+                  lineBottom: lineRect?.bottom ?? null,
+                  pseudoContent: before?.content ?? null,
+                  pseudoFontSize: before?.fontSize ?? null,
+                  pseudoLineHeight: before?.lineHeight ?? null,
+                  pseudoMarginBottom: before?.marginBottom ?? null,
+                },
+              };
+            });
+          }
+
+          const isOpen = (state) => (
+            state.front.visibility === 'hidden' &&
+            state.back.visibility === 'visible' &&
+            state.back.opacity >= 0.95
+          );
+          const isClosed = (state) => (
+            state.front.visibility === 'visible' &&
+            state.back.visibility === 'hidden'
+          );
+
+          async function waitOpen(page, locator) {
+            await page.waitForFunction((el) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              const fs = getComputedStyle(front);
+              const bs = getComputedStyle(back);
+              return fs.visibility === 'hidden' && bs.visibility === 'visible' && Number(bs.opacity) >= 0.95;
+            }, await locator.elementHandle(), { timeout: 5_000 });
+          }
+
+          async function waitClosed(page, locator) {
+            await page.waitForFunction((el) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              return getComputedStyle(front).visibility === 'visible' && getComputedStyle(back).visibility === 'hidden';
+            }, await locator.elementHandle(), { timeout: 5_000 });
+          }
+
+          async function testDesktop(engineName, engine) {
+            const browser = await engine.launch();
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 900 },
+              reducedMotion: 'no-preference',
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            const evidence = {};
+            try {
+              const response = await page.goto(cacheBustUrl(`${engineName}-desktop`), { waitUntil: 'networkidle', timeout: 90_000 });
+              assert(response?.ok(), `${engineName}: live Home response was not successful`, { status: response?.status() });
+              const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+              const ordinary = page.locator('.h-sacred-block--hero button.hb-w').first();
+              await tetra.waitFor({ state: 'visible', timeout: 30_000 });
+              await page.waitForFunction(() => {
+                const el = document.querySelector('.h-sacred-block--hero button.h-tetra');
+                return el && !el.disabled && el.dataset.sacredPointerPreview === '1';
+              }, { timeout: 30_000 });
+              await tetra.scrollIntoViewIfNeeded();
+              await page.screenshot({ path: `${outDir}/${engineName}-live-initial.png`, fullPage: false });
+
+              evidence.initial = await readState(page, tetra);
+              assert(evidence.initial.ownerInstalled, `${engineName}: new pointer owner is absent`, evidence.initial);
+              assert(isClosed(evidence.initial), `${engineName}: Tetragrammaton was not Hebrew-only before interaction`, evidence.initial);
+              assert(evidence.initial.label?.visibility === 'hidden', `${engineName}: sacred label leaked before interaction`, evidence.initial);
+
+              await tetra.hover();
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              evidence.hover = await readState(page, tetra);
+              assert(isOpen(evidence.hover), `${engineName}: physical hover did not reveal Яхве`, evidence.hover);
+              assert(evidence.hover.pointerPreview, `${engineName}: physical hover did not install pointer preview`, evidence.hover);
+              assert(evidence.hover.label?.visibility === 'visible' && evidence.hover.label.opacity >= 0.95, `${engineName}: sacred label is not visible on hover`, evidence.hover);
+              assert(evidence.hover.nameColor === evidence.hover.inkColor, `${engineName}: Яхве does not use theme ink`, evidence.hover);
+              await page.screenshot({ path: `${outDir}/${engineName}-live-hover.png`, fullPage: false });
+
+              await page.mouse.move(2, 2);
+              await twoFrames(page);
+              await waitClosed(page, tetra);
+              evidence.afterHoverLeave = await readState(page, tetra);
+              assert(isClosed(evidence.afterHoverLeave), `${engineName}: leaving hover did not restore Hebrew`, evidence.afterHoverLeave);
+
+              await ordinary.hover();
+              await twoFrames(page);
+              await waitOpen(page, ordinary);
+              evidence.ordinaryHover = await readState(page, ordinary);
+              assert(isOpen(evidence.ordinaryHover), `${engineName}: ordinary Hebrew word did not translate on hover`, evidence.ordinaryHover);
+              await page.mouse.move(2, 2);
+              await waitClosed(page, ordinary);
+
+              await tetra.click();
+              await page.mouse.move(2, 2);
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              evidence.clickOpen = await readState(page, tetra);
+              assert(evidence.clickOpen.toggled && evidence.clickOpen.pressed === 'true', `${engineName}: first click did not persist the open state`, evidence.clickOpen);
+              assert(isOpen(evidence.clickOpen), `${engineName}: first click did not reveal Яхве`, evidence.clickOpen);
+              await page.screenshot({ path: `${outDir}/${engineName}-live-click-open.png`, fullPage: false });
+
+              await tetra.click();
+              await page.mouse.move(2, 2);
+              await twoFrames(page);
+              await waitClosed(page, tetra);
+              evidence.clickClose = await readState(page, tetra);
+              assert(!evidence.clickClose.toggled && evidence.clickClose.pressed === 'false', `${engineName}: second click did not close the word`, evidence.clickClose);
+              assert(isClosed(evidence.clickClose), `${engineName}: second click did not restore Hebrew`, evidence.clickClose);
+
+              await tetra.focus();
+              await page.keyboard.press('Enter');
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              evidence.enterOpen = await readState(page, tetra);
+              assert(evidence.enterOpen.toggled, `${engineName}: Enter did not open the word`, evidence.enterOpen);
+
+              await page.keyboard.press('Space');
+              await twoFrames(page);
+              await waitClosed(page, tetra);
+              evidence.spaceClose = await readState(page, tetra);
+              assert(!evidence.spaceClose.toggled, `${engineName}: Space did not close the word`, evidence.spaceClose);
+
+              return {
+                responseStatus: response.status(),
+                finalUrl: page.url(),
+                evidence,
+              };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function testTouch() {
+            const browser = await chromium.launch();
+            const context = await browser.newContext({
+              viewport: { width: 390, height: 844 },
+              isMobile: true,
+              hasTouch: true,
+              reducedMotion: 'no-preference',
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            try {
+              await page.goto(cacheBustUrl('chromium-touch'), { waitUntil: 'networkidle', timeout: 90_000 });
+              const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+              await tetra.waitFor({ state: 'visible', timeout: 30_000 });
+              await page.waitForFunction(() => {
+                const el = document.querySelector('.h-sacred-block--hero button.h-tetra');
+                return el && !el.disabled && el.dataset.sacredPointerPreview === '1';
+              });
+              const initial = await readState(page, tetra);
+              assert(isClosed(initial), 'touch: initial state is not Hebrew-only', initial);
+              await tetra.tap();
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              const tapOpen = await readState(page, tetra);
+              assert(tapOpen.toggled && isOpen(tapOpen), 'touch: tap did not reveal Яхве', tapOpen);
+              await page.screenshot({ path: `${outDir}/chromium-live-touch-open.png`, fullPage: false });
+              await tetra.tap();
+              await twoFrames(page);
+              await waitClosed(page, tetra);
+              const tapClose = await readState(page, tetra);
+              assert(!tapClose.toggled && isClosed(tapClose), 'touch: repeated tap did not restore Hebrew', tapClose);
+              return { initial, tapOpen, tapClose };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function testReducedMotion() {
+            const browser = await chromium.launch();
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 900 },
+              reducedMotion: 'reduce',
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            try {
+              await page.goto(cacheBustUrl('chromium-reduced-motion'), { waitUntil: 'networkidle', timeout: 90_000 });
+              const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+              await tetra.waitFor({ state: 'visible', timeout: 30_000 });
+              await page.waitForFunction(() => {
+                const el = document.querySelector('.h-sacred-block--hero button.h-tetra');
+                return el && !el.disabled && el.dataset.sacredPointerPreview === '1';
+              });
+              const initial = await readState(page, tetra);
+              assert(isClosed(initial), 'reduced-motion: initial state is not Hebrew-only', initial);
+              await tetra.hover();
+              await twoFrames(page);
+              await waitOpen(page, tetra);
+              const hover = await readState(page, tetra);
+              assert(isOpen(hover), 'reduced-motion: hover did not reveal Яхве', hover);
+              await page.screenshot({ path: `${outDir}/chromium-live-reduced-hover.png`, fullPage: false });
+              return { initial, hover };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          try {
+            await waitForPublishedFix();
+            report.browsers.chromium = await testDesktop('chromium', chromium);
+            report.browsers.webkit = await testDesktop('webkit', webkit);
+            report.touch = await testTouch();
+            report.reducedMotion = await testReducedMotion();
+            report.pass = true;
+            report.completedAt = new Date().toISOString();
+            fs.writeFileSync(`${outDir}/report.json`, JSON.stringify(report, null, 2));
+            console.log('LIVE HOME SACRED PLAYWRIGHT WITNESS: PASS');
+          } catch (error) {
+            report.pass = false;
+            report.completedAt = new Date().toISOString();
+            report.error = String(error?.stack ?? error);
+            fs.writeFileSync(`${outDir}/report.json`, JSON.stringify(report, null, 2));
+            console.error(report.error);
+            process.exitCode = 1;
+          }
+          NODE
+
+      - name: Upload live interaction evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-live-sacred-witness-${{ github.run_id }}
+          path: reports/home-live-sacred
+          if-no-files-found: error
+          retention-days: 30
