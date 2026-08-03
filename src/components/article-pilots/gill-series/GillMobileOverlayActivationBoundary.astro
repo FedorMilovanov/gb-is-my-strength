@@ -1,0 +1,63 @@
+---
+/**
+ * GillMobileOverlayActivationBoundary — preserves the native input-dispatch
+ * boundary before the full-screen Part TOC takes over hit testing.
+ *
+ * WebKit can keep a locator click pending when the synchronous click listener
+ * immediately opens a fixed sheet over the activating control. This owner does
+ * not open, close or style the overlay itself. It defers exactly one native
+ * button click to the next rendering opportunity; the canonical
+ * floating-cluster-controller and OverlayRuntime remain the only modal owners.
+ */
+---
+
+<script>
+  function installGillMobileOverlayActivationBoundary() {
+    const trigger = document.getElementById('mobPartTocBtn');
+    const overlay = document.getElementById('partTocOverlay');
+    if (!(trigger instanceof HTMLButtonElement) || !(overlay instanceof HTMLElement)) return;
+    if (trigger.dataset.gbActivationBoundary === '1') return;
+
+    trigger.dataset.gbActivationBoundary = '1';
+    let pending = false;
+    let replaying = false;
+
+    const syncExpanded = () => {
+      const open = overlay.classList.contains('is-open') && overlay.getAttribute('aria-hidden') !== 'true';
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+
+    const replayNativeActivation = () => {
+      pending = false;
+      if (!trigger.isConnected || trigger.disabled) return;
+      replaying = true;
+      try {
+        trigger.click();
+      } finally {
+        replaying = false;
+      }
+    };
+
+    trigger.addEventListener('click', (event) => {
+      if (replaying) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (pending) return;
+      pending = true;
+      if (document.hidden) window.setTimeout(replayNativeActivation, 0);
+      else window.requestAnimationFrame(replayNativeActivation);
+    }, true);
+
+    new MutationObserver(syncExpanded).observe(overlay, {
+      attributes: true,
+      attributeFilter: ['class', 'aria-hidden'],
+    });
+    syncExpanded();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', installGillMobileOverlayActivationBoundary, { once: true });
+  } else {
+    installGillMobileOverlayActivationBoundary();
+  }
+</script>
