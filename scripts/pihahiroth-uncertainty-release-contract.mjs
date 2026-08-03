@@ -113,6 +113,7 @@ for (const marker of [
   "path.setAttribute('data-pihahiroth-corridor', corridor.featureId)",
   "path.setAttribute('data-confidence', corridor.confidence)",
   "path.setAttribute('data-rights', corridor.rights)",
+  "path.addEventListener('pointerdown'",
   "mapInstance.open('pihahiroth')",
   "container.setAttribute('data-pihahiroth-corridor-count', String(authority.corridors.length))",
 ]) requireValue(adapter.includes(marker), `adapter contract marker missing: ${marker}`);
