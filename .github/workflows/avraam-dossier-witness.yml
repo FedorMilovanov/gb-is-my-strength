@@ -17,6 +17,7 @@ concurrency:
 permissions:
   contents: read
 
+# Exact-head witness after the bounded overview-label composition repair.
 jobs:
   witness:
     runs-on: ubuntu-24.04
