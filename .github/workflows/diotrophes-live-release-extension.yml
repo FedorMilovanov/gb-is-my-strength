@@ -1,0 +1,265 @@
+name: Diotrophes Live Release Extension
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diotrophes-live-release-extension.yml'
+      - 'scripts/diotrophes-live-release-contract.mjs'
+      - 'scripts/diotrophes-live-release-contract-test.mjs'
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_run_id:
+        description: Exact completed Deploy to GitHub Pages run ID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    name: Diotrophes live extension source contract
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Set up pinned Node toolchain
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+      - name: Validate permanent live extension source
+        run: |
+          node --check scripts/diotrophes-live-release-contract.mjs
+          node --check scripts/diotrophes-live-release-contract-test.mjs
+          node scripts/diotrophes-live-release-contract-test.mjs
+          git diff --exit-code
+
+  resolve:
+    name: Resolve exact successful Pages deployment
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      deploy_run_id: ${{ steps.resolve.outputs.deploy_run_id }}
+      deploy_run_attempt: ${{ steps.resolve.outputs.deploy_run_attempt }}
+      control_plane_sha: ${{ steps.resolve.outputs.control_plane_sha }}
+      recorder_ref: ${{ steps.resolve.outputs.recorder_ref }}
+    steps:
+      - name: Resolve and validate exact deploy run
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const assert = require('node:assert/strict');
+            const requested = context.eventName === 'workflow_dispatch'
+              ? String(context.payload.inputs && context.payload.inputs.deploy_run_id || '').trim()
+              : String(context.payload.workflow_run && context.payload.workflow_run.id || '').trim();
+            assert.match(requested, /^\d+$/, 'deploy_run_id must be numeric');
+            const runId = Number(requested);
+            assert.ok(Number.isSafeInteger(runId) && runId > 0, 'deploy_run_id must be a positive safe integer');
+
+            let workflowRun = context.payload.workflow_run;
+            if (context.eventName === 'workflow_dispatch') {
+              workflowRun = (await github.rest.actions.getWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: runId,
+              })).data;
+            }
+
+            assert.equal(Number(workflowRun.id), runId, 'resolved deploy run ID mismatch');
+            assert.equal(workflowRun.name, 'Deploy to GitHub Pages', 'target is not the canonical Pages workflow');
+            assert.equal(workflowRun.status, 'completed', 'target deploy run is not completed');
+            assert.equal(workflowRun.conclusion, 'success', 'target deploy run did not succeed');
+            assert.equal(workflowRun.head_branch, 'main', 'target deploy run is not from main');
+            assert.equal(
+              workflowRun.head_repository && workflowRun.head_repository.full_name,
+              `${context.repo.owner}/${context.repo.repo}`,
+              'target deploy run belongs to a foreign repository',
+            );
+            assert.match(String(workflowRun.head_sha || ''), /^[a-f0-9]{40}$/, 'target deploy run lacks an exact control-plane SHA');
+            assert.ok(Number.isSafeInteger(Number(workflowRun.run_attempt)) && Number(workflowRun.run_attempt) > 0, 'target deploy run attempt is invalid');
+
+            core.setOutput('deploy_run_id', String(workflowRun.id));
+            core.setOutput('deploy_run_attempt', String(workflowRun.run_attempt));
+            core.setOutput('control_plane_sha', workflowRun.head_sha);
+            core.setOutput('recorder_ref', context.eventName === 'workflow_dispatch' ? context.sha : workflowRun.head_sha);
+
+  witness:
+    name: Verify Diotrophes on the exact live release
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+      pull-requests: write
+    concurrency:
+      group: diotrophes-live-release-${{ needs.resolve.outputs.deploy_run_id }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout trusted capability verifier
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.recorder_ref }}
+          persist-credentials: false
+
+      - name: Download exact-run generic live PASS evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-live-deployment-${{ needs.resolve.outputs.deploy_run_id }}
+          path: ${{ runner.temp }}/diotrophes-live-witness/release
+          run-id: ${{ needs.resolve.outputs.deploy_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Set up pinned Node verifier
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Re-run verifier source contract
+        run: |
+          node --check scripts/diotrophes-live-release-contract.mjs
+          node --check scripts/diotrophes-live-release-contract-test.mjs
+          node scripts/diotrophes-live-release-contract-test.mjs
+          git diff --exit-code
+
+      - name: Verify exact live Diotrophes release
+        env:
+          LIVE_BASE_URL: https://gospod-bog.ru
+          WITNESS_DIRECTORY: ${{ runner.temp }}/diotrophes-live-witness
+          EXPECTED_DEPLOY_RUN_ID: ${{ needs.resolve.outputs.deploy_run_id }}
+          EXPECTED_CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
+          DIOTROPHES_LIVE_REPORT_PATH: ${{ github.workspace }}/reports/diotrophes-live-release-contract.json
+        run: node scripts/diotrophes-live-release-contract.mjs
+
+      - name: Upload exact live route evidence
+        id: evidence_upload
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: diotrophes-live-deployment-${{ needs.resolve.outputs.deploy_run_id }}
+          path: reports/diotrophes-live-release-contract.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record idempotent capability witness on exact release PR
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          REPORT_PATH: ${{ github.workspace }}/reports/diotrophes-live-release-contract.json
+          EXPECTED_DEPLOY_RUN_ID: ${{ needs.resolve.outputs.deploy_run_id }}
+          EXPECTED_DEPLOY_RUN_ATTEMPT: ${{ needs.resolve.outputs.deploy_run_attempt }}
+          EXPECTED_CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
+          EVIDENCE_ARTIFACT_ID: ${{ steps.evidence_upload.outputs.artifact-id }}
+          EVIDENCE_ARTIFACT_DIGEST: ${{ steps.evidence_upload.outputs.artifact-digest }}
+          EVIDENCE_ARTIFACT_URL: ${{ steps.evidence_upload.outputs.artifact-url }}
+        with:
+          script: |
+            const assert = require('node:assert/strict');
+            const fs = require('node:fs');
+            const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, 'utf8'));
+            const deployRunId = Number(process.env.EXPECTED_DEPLOY_RUN_ID);
+            const deployRunAttempt = Number(process.env.EXPECTED_DEPLOY_RUN_ATTEMPT);
+            const controlPlaneSha = String(process.env.EXPECTED_CONTROL_PLANE_SHA || '').toLowerCase();
+            const artifactId = Number(process.env.EVIDENCE_ARTIFACT_ID);
+            const artifactDigest = String(process.env.EVIDENCE_ARTIFACT_DIGEST || '');
+            const artifactUrl = String(process.env.EVIDENCE_ARTIFACT_URL || '');
+
+            assert.equal(report.schemaVersion, 1, 'Diotrophes witness schema drifted');
+            assert.equal(report.kind, 'diotrophes-live-release-extension', 'unexpected witness kind');
+            assert.equal(report.result, 'PASS', 'Diotrophes live witness did not pass');
+            assert.equal(report.repository, `${context.repo.owner}/${context.repo.repo}`, 'witness repository mismatch');
+            assert.match(report.releaseSha, /^[a-f0-9]{40}$/, 'witness release SHA is invalid');
+            assert.equal(report.controlPlaneSha, controlPlaneSha, 'witness control-plane SHA mismatch');
+            assert.equal(report.workflowRunId, deployRunId, 'witness deploy run ID mismatch');
+            assert.equal(report.workflowRunAttempt, deployRunAttempt, 'witness deploy run attempt mismatch');
+            assert.match(report.candidateDigest, /^sha256:[a-f0-9]{64}$/, 'witness candidate digest is invalid');
+            assert.equal(report.route, '/articles/diotrefy-nashego-vremeni/', 'witness route mismatch');
+            assert.equal(report.evidence?.pointer?.stableAcrossRouteRead, true, 'deployment pointer was not stable');
+            assert.equal(report.evidence?.route?.status, 200, 'live route was not HTTP 200');
+            assert.equal(report.evidence?.route?.publicationMarker, 'true', 'live publication marker mismatch');
+            assert.equal(report.evidence?.route?.sourceAuthority, '148', 'live source authority mismatch');
+            assert.deepEqual(report.evidence?.route?.sourceLinks, { base: 40, supplement: 33, total: 73, unique: 70 }, 'live source-link contract mismatch');
+            assert.ok(Number.isSafeInteger(artifactId) && artifactId > 0, 'evidence artifact ID is invalid');
+            assert.match(artifactDigest, /^sha256:[a-f0-9]{64}$/, 'evidence artifact digest is invalid');
+
+            const deployRun = (await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: deployRunId,
+            })).data;
+            assert.equal(deployRun.name, 'Deploy to GitHub Pages', 'record target is not the Pages workflow');
+            assert.equal(deployRun.status, 'completed', 'record target deploy is not completed');
+            assert.equal(deployRun.conclusion, 'success', 'record target deploy did not succeed');
+            assert.equal(deployRun.head_branch, 'main', 'record target deploy is not from main');
+            assert.equal(deployRun.head_sha, controlPlaneSha, 'record target deploy SHA mismatch');
+            assert.equal(Number(deployRun.run_attempt), deployRunAttempt, 'record target deploy attempt mismatch');
+
+            const associated = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: report.releaseSha,
+              per_page: 100,
+            });
+            const exactMerged = associated.filter((pull) => pull.merged_at && String(pull.merge_commit_sha || '').toLowerCase() === report.releaseSha);
+            assert.equal(exactMerged.length, 1, `expected one exact merged PR for ${report.releaseSha}, found ${exactMerged.length}`);
+
+            const marker = `<!-- diotrophes-live-release-witness:${report.releaseSha}:${report.controlPlaneSha}:${deployRunId}:${deployRunAttempt}:${artifactId} -->`;
+            const pull = exactMerged[0];
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pull.number,
+              per_page: 100,
+            });
+            if (!comments.some((comment) => String(comment.body || '').includes(marker))) {
+              const body = [
+                marker,
+                '## Diotrophes live release witness accepted',
+                '',
+                `- **Release SHA:** \`${report.releaseSha}\``,
+                `- **Control-plane SHA:** \`${report.controlPlaneSha}\``,
+                `- **Deploy run:** [${deployRunId} · attempt ${deployRunAttempt}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${deployRunId})`,
+                `- **Candidate tree digest:** \`${report.candidateDigest}\``,
+                `- **Route:** \`${report.route}\``,
+                `- **HTTP/status:** \`${report.evidence.route.status}\``,
+                `- **Route bytes/SHA-256:** \`${report.evidence.route.bytes}\` / \`${report.evidence.route.sha256}\``,
+                `- **Publication/source authority:** \`${report.evidence.route.publicationMarker}\` / \`${report.evidence.route.sourceAuthority}\``,
+                `- **Source links:** \`${JSON.stringify(report.evidence.route.sourceLinks)}\``,
+                `- **Evidence artifact:** [ID ${artifactId}](${artifactUrl})`,
+                `- **Evidence artifact digest:** \`${artifactDigest}\``,
+                '',
+                'The capability verifier consumed the exact-run generic live PASS report, observed the same immutable pointer before and after the route read, and verified the public Diotrophes HTML without rebuilding or publishing any bytes.',
+                '',
+                '<details><summary>Machine envelope</summary>',
+                '',
+                '```json',
+                JSON.stringify(report, null, 2),
+                '```',
+                '</details>',
+              ].join('\n');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pull.number,
+                body,
+              });
+            }
