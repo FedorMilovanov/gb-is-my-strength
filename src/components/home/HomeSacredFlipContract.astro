@@ -1,0 +1,183 @@
+---
+/**
+ * HomeSacredFlipContract.astro — bounded regression restore for the Habakkuk
+ * word flip on the native Home route.
+ *
+ * Historical authority: commit 32e8c63290d111ddc91078ac66658e24419a0237
+ * restored black translations and a complete Hebrew-to-translation swap.
+ * A later route rule forced every .hb-front back to opacity .94, so the two
+ * faces became visible together. This late route contract restores only that
+ * reviewed behavior and keeps the label clear of the instruction above it.
+ */
+---
+
+<style is:global>
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
+    color: var(--h-ink);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    filter: none;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-back {
+    text-shadow: 0 1px 8px rgba(28, 25, 23, .1);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .h-tetra-name {
+    text-shadow: 0 2px 8px rgba(28, 25, 23, .15), 0 4px 30px rgba(28, 25, 23, .08);
+  }
+
+  html.dark body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
+    color: var(--h-ink);
+  }
+
+  html.dark body.home-page #main-content .h-sacred-block--hero .h-tetra-name {
+    text-shadow: 0 2px 6px rgba(0, 0, 0, .34), 0 4px 28px rgba(245, 237, 224, .08);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) .hb-front,
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
+    backface-visibility: hidden;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra)[data-toggled] .hb-front {
+    visibility: hidden;
+    opacity: 0;
+    transform: rotate(-8deg) scale(.85);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-w[data-toggled] .hb-back,
+  body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] .h-tetra-back {
+    visibility: visible;
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
+    transform: translate(-50%, -100%) translateY(6px);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .h-tetra[data-toggled] .h-tetra-label {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate(-50%, -100%) translateY(6px);
+    letter-spacing: .28em;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra):focus-visible .hb-front {
+    visibility: hidden;
+    opacity: 0;
+    transform: rotate(-8deg) scale(.85);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-w:focus-visible .hb-back,
+  body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible .h-tetra-back {
+    visibility: visible;
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .h-tetra:focus-visible .h-tetra-label {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate(-50%, -100%) translateY(6px);
+    letter-spacing: .28em;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra):hover .hb-front {
+      visibility: hidden;
+      opacity: 0;
+      transform: rotate(-8deg) scale(.85);
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .hb-w:hover .hb-back,
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover .h-tetra-back {
+      visibility: visible;
+      opacity: 1;
+      transform: rotate(0) scale(1);
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .h-tetra:hover .h-tetra-label {
+      opacity: 1;
+      filter: blur(0);
+      transform: translate(-50%, -100%) translateY(6px);
+      letter-spacing: .28em;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page #main-content .h-sacred-block--hero :is(.hb-front, .hb-back, .h-tetra-back, .h-tetra-label) {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
+
+    const block = document.querySelector('.h-sacred-block--hero');
+    if (!(block instanceof HTMLElement)) return;
+
+    const report = (message) => console.error(`[home-sacred-flip-contract] ${message}`);
+    const parseRgb = (value) => value.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number) ?? [];
+    const sameRgb = (left, right) => {
+      const a = parseRgb(left);
+      const b = parseRgb(right);
+      return a.length === 3 && b.length === 3 && a.every((value, index) => Math.abs(value - b[index]) < 1);
+    };
+
+    const audit = () => {
+      const expectedInk = getComputedStyle(document.documentElement).getPropertyValue('--h-ink').trim();
+      const buttons = [...block.querySelectorAll('button.hb-w, button.h-tetra')];
+
+      buttons.forEach((button, index) => {
+        if (!(button instanceof HTMLElement)) return;
+        const front = button.querySelector('.hb-front');
+        const back = button.querySelector('.hb-back, .h-tetra-back');
+        if (!(front instanceof HTMLElement) || !(back instanceof HTMLElement)) {
+          report(`word ${index + 1} lost one flip face`);
+          return;
+        }
+
+        const wasOpen = button.hasAttribute('data-toggled');
+        button.setAttribute('data-toggled', '');
+        const frontStyle = getComputedStyle(front);
+        const backStyle = getComputedStyle(back);
+        const translation = button.querySelector('.hb-back, .h-tetra-name');
+        const translationColor = translation instanceof HTMLElement ? getComputedStyle(translation).color : '';
+
+        if (Number.parseFloat(frontStyle.opacity) > .05 || frontStyle.visibility !== 'hidden') {
+          report(`word ${index + 1} leaves Hebrew visible while open`);
+        }
+        if (Number.parseFloat(backStyle.opacity) < .95 || backStyle.visibility !== 'visible') {
+          report(`word ${index + 1} does not reveal its translation cleanly`);
+        }
+        if (!sameRgb(translationColor, expectedInk)) {
+          report(`word ${index + 1} translation is not --h-ink (${translationColor} vs ${expectedInk})`);
+        }
+
+        if (!wasOpen) button.removeAttribute('data-toggled');
+      });
+
+      const tetra = block.querySelector('.h-tetra');
+      const label = tetra?.querySelector('.h-tetra-label');
+      if (tetra instanceof HTMLElement && label instanceof HTMLElement) {
+        const wasOpen = tetra.hasAttribute('data-toggled');
+        tetra.setAttribute('data-toggled', '');
+        const blockRect = block.getBoundingClientRect();
+        const labelRect = label.getBoundingClientRect();
+        if (labelRect.top < blockRect.top + 14) {
+          report(`sacred-name label rose into the instruction (${Math.round(labelRect.top - blockRect.top)}px inset)`);
+        }
+        if (!wasOpen) tetra.removeAttribute('data-toggled');
+      }
+
+      block.dataset.sacredFlipContract = 'ready';
+    };
+
+    addEventListener('load', () => requestAnimationFrame(() => requestAnimationFrame(audit)), { once: true });
+    document.fonts?.ready.then(() => requestAnimationFrame(audit));
+  })();
+</script>
