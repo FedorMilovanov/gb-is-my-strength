@@ -190,78 +190,62 @@
       reported.add(message);
       console.error(`[home-visual-contract] ${message}`);
     };
-    const numericStroke = (element) => Number.parseFloat(getComputedStyle(element).strokeWidth);
+    const styleOf = (element) => getComputedStyle(element);
+    const numericStroke = (element) => Number.parseFloat(styleOf(element).strokeWidth);
+    const hasVisibleStroke = (element) => {
+      const style = styleOf(element);
+      const opacity = Number.parseFloat(style.opacity || '1');
+      return style.stroke !== 'none'
+        && style.stroke !== 'transparent'
+        && style.visibility !== 'hidden'
+        && style.display !== 'none'
+        && Number.isFinite(opacity)
+        && opacity > 0;
+    };
     const renderedLines = (element) => {
       const range = document.createRange();
       range.selectNodeContents(element);
       return [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
     };
 
-    /* Browsers may serialize the same computed color as rgb(), color(srgb) or
-       oklab(). Resolve each value through a one-pixel canvas before comparing it. */
-    const colorCanvas = document.createElement('canvas');
-    colorCanvas.width = 1;
-    colorCanvas.height = 1;
-    const colorContext = colorCanvas.getContext('2d', { willReadFrequently: true });
-    const rgba = (value) => {
-      if (!colorContext) return null;
-      colorContext.clearRect(0, 0, 1, 1);
-      colorContext.fillStyle = '#000';
-      colorContext.fillStyle = value;
-      colorContext.fillRect(0, 0, 1, 1);
-      return [...colorContext.getImageData(0, 0, 1, 1).data];
-    };
-    const colorDistance = (first, second) => {
-      if (!first || !second) return Number.POSITIVE_INFINITY;
-      return Math.max(...first.map((value, index) => Math.abs(value - second[index])));
-    };
-    const isTransient = (element) => Boolean(element?.matches(':hover, :focus, :focus-visible, :active'));
-
     const assertHeaderIcons = () => {
-      const searchButton = document.getElementById('gbSearchBtn');
-      const themeButton = document.getElementById('themeToggle');
-      const menuButton = document.getElementById('hMobileMenuBtn');
-      const search = searchButton?.querySelector('svg circle');
-      const theme = themeButton?.querySelector(
+      const search = document.querySelector('#gbSearchBtn svg circle');
+      const theme = document.querySelector(
         document.documentElement.classList.contains('dark')
-          ? '.icon-sun circle'
-          : '.icon-moon path'
+          ? '#themeToggle .icon-sun circle'
+          : '#themeToggle .icon-moon path'
       );
-      const menu = menuButton?.querySelector('svg line');
+      const menu = document.querySelector('#hMobileMenuBtn svg line');
       if (!search || !theme) return;
 
-      const searchStyle = getComputedStyle(search);
-      const themeStyle = getComputedStyle(theme);
       const searchWidth = numericStroke(search);
       const themeWidth = numericStroke(theme);
       if (!Number.isFinite(searchWidth) || searchWidth > 1.2) {
-        report(`magnifier stroke is heavy (${searchStyle.strokeWidth})`);
+        report(`magnifier stroke is heavy (${styleOf(search).strokeWidth})`);
       }
       if (!Number.isFinite(themeWidth) || themeWidth > 1.14) {
-        report(`theme icon stroke is heavy (${themeStyle.strokeWidth})`);
+        report(`theme icon stroke is heavy (${styleOf(theme).strokeWidth})`);
       }
+      if (Math.abs(searchWidth - themeWidth) > 0.2) {
+        report(`magnifier/theme optical stroke gap is too large (${searchWidth} vs ${themeWidth})`);
+      }
+      if (!hasVisibleStroke(search)) report('magnifier lost its visible stroke');
+      if (!hasVisibleStroke(theme)) report('theme icon lost its visible stroke');
 
-      /* Compare ink only at rest. Hover/focus intentionally changes one control
-         to the accent color, and CSS transitions can expose intermediate values. */
-      if (!isTransient(searchButton) && !isTransient(themeButton)) {
-        const difference = colorDistance(rgba(searchStyle.stroke), rgba(themeStyle.stroke));
-        if (difference > 4) {
-          report(`magnifier/theme ink diverged by ${difference} RGBA levels`);
-        }
+      const searchBox = search.closest('svg')?.getBoundingClientRect();
+      const themeBox = theme.closest('svg')?.getBoundingClientRect();
+      if (searchBox && themeBox
+        && (Math.abs(searchBox.width - themeBox.width) > .5
+          || Math.abs(searchBox.height - themeBox.height) > .5)) {
+        report(`magnifier/theme icon boxes diverged (${searchBox.width}×${searchBox.height} vs ${themeBox.width}×${themeBox.height})`);
       }
 
       if (menu && innerWidth <= 760) {
-        const menuStyle = getComputedStyle(menu);
         const menuWidth = numericStroke(menu);
         if (!Number.isFinite(menuWidth) || menuWidth > 1.2) {
-          report(`mobile menu stroke is heavy (${menuStyle.strokeWidth})`);
+          report(`mobile menu stroke is heavy (${styleOf(menu).strokeWidth})`);
         }
-        if (!isTransient(menuButton) && !isTransient(searchButton)) {
-          const difference = colorDistance(rgba(menuStyle.stroke), rgba(searchStyle.stroke));
-          if (difference > 4) {
-            report(`mobile header icon ink diverged by ${difference} RGBA levels`);
-          }
-        }
+        if (!hasVisibleStroke(menu)) report('mobile menu lost its visible stroke');
       }
     };
 
@@ -289,17 +273,17 @@
       const clear = palette.querySelector('.cp-clear');
       const clearSvg = clear?.querySelector('svg');
       const closeSvg = palette.querySelector('.cp-home-close svg');
-      if (clearSvg && getComputedStyle(clearSvg).display !== 'none') {
+      if (clearSvg && styleOf(clearSvg).display !== 'none') {
         report('search clear control reverted to a second close X');
       }
-      if (clear && ['none', 'normal', '""'].includes(getComputedStyle(clear, '::before').content)) {
+      if (clear && ['none', 'normal', '""'].includes(styleOf(clear, '::before').content)) {
         report('search clear control lost its distinct backspace mark');
       }
-      if (closeSvg && getComputedStyle(closeSvg).display === 'none') {
+      if (closeSvg && styleOf(closeSvg).display === 'none') {
         report('search close control is hidden');
       }
       const footer = palette.querySelector('.cp-footer');
-      if (footer && innerWidth <= 760 && getComputedStyle(footer).display !== 'none') {
+      if (footer && innerWidth <= 760 && styleOf(footer).display !== 'none') {
         report('desktop keyboard footer is visible on mobile search');
       }
     };
@@ -315,19 +299,12 @@
     };
     const schedule = () => {
       window.clearTimeout(timer);
-      /* Header controls use 200ms transitions. Audit only after their rendered
-         colors have settled, not during the interpolation itself. */
-      timer = window.setTimeout(audit, 280);
+      timer = window.setTimeout(audit, 80);
     };
 
     addEventListener('resize', schedule, { passive: true });
     addEventListener('load', schedule, { once: true });
-    addEventListener('focusin', schedule, true);
-    addEventListener('focusout', schedule, true);
-    addEventListener('pointerover', schedule, true);
-    addEventListener('pointerout', schedule, true);
     document.fonts?.ready.then(schedule);
-
     new MutationObserver(schedule).observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class'],
