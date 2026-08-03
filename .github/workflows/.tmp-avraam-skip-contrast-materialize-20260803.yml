@@ -91,7 +91,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git rm \
+          git rm -f \
             scripts/.tmp-avraam-skip-contrast-materialize-20260803.py \
             .github/workflows/.tmp-avraam-skip-contrast-materialize-20260803.yml
           git add \
