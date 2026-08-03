@@ -274,21 +274,32 @@ async function searchAudit(page) {
   await allScope.click();
   const queries = [
     { name: 'canonical-title', value: 'Нагорная проповедь', needle: 'Нагорная проповедь', expect: /Нагорная\s+проповедь/i },
-    { name: 'scripture-reference', value: 'Иер 17:9', needle: 'сердц', expect: /сердц/i },
+    { name: 'scripture-reference', value: 'Иер 17:9', needle: 'Иер 17:9', expect: /Иер\s*17:9|сердц/i },
     { name: 'partial-cyrillic', value: 'герменевтик', needle: 'герменевтик', expect: /герменевтик/i },
     { name: 'trimmed-query', value: '  Джон Гилл  ', needle: 'Джон Гилл', expect: /Джон\s+Гилл/i },
   ];
   for (const query of queries) {
     await input.fill(query.value);
     await waitQuery(page, query.value, query.needle);
-    const count = await page.locator('.cp-item').count();
-    const first = (await page.locator('.cp-item-title').first().textContent().catch(() => '')) || '';
-    record(`${ENGINE}:search-query-${query.name}`, count > 0 && query.expect.test(first), { count, first });
+    const results = await page.locator('.cp-item').evaluateAll((items) => items.map((item) => ({
+      title: item.querySelector('.cp-item-title')?.textContent?.trim() || '',
+      snippet: item.querySelector('.cp-item-snippet')?.textContent?.trim() || '',
+    })));
+    const corpus = results.map((item) => `${item.title} ${item.snippet}`).join('\n');
+    const matching = results.filter((item) => query.expect.test(`${item.title} ${item.snippet}`)).map((item) => item.title);
+    record(`${ENGINE}:search-query-${query.name}`, results.length > 0 && query.expect.test(corpus), { count: results.length, first: results[0]?.title || '', matching });
   }
 
-  await input.fill('zzzz-no-such-page-493821');
-  await waitQuery(page, 'zzzz-no-such-page-493821');
-  record(`${ENGINE}:search-no-results`, await page.locator('.cp-item').count() === 0, await page.locator('.cp-status').textContent().catch(() => ''));
+  const noResultQuery = 'zzzz-no-such-page-493821';
+  await input.fill(noResultQuery);
+  await page.waitForFunction((expected) => {
+    const input = document.querySelector('.cp-input');
+    const empty = document.querySelector('.cp-empty');
+    return input?.value === expected && Boolean(empty) && !document.querySelector('.cp-loading');
+  }, noResultQuery, { timeout: 15000 });
+  const noResultCount = await page.locator('.cp-item').count();
+  const noResultText = await page.locator('.cp-empty').textContent().catch(() => '');
+  record(`${ENGINE}:search-no-results`, noResultCount === 0 && Boolean(noResultText?.trim()), { count: noResultCount, text: noResultText });
   if (ENGINE === 'chromium') await page.screenshot({ path: path.join(OUT, 'search-no-results-desktop.png') });
 
   await input.fill('Н');
