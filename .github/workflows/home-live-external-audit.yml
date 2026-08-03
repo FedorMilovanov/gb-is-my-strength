@@ -1,0 +1,156 @@
+name: Home Live External Diagnostics
+
+on:
+  pull_request:
+    paths:
+      - 'src/components/home/**'
+      - 'src/pages/index.astro'
+      - '.github/workflows/home-live-external-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: home-live-external-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-public-site:
+    name: Public-domain external services
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Capture live HTTP and discovery surfaces
+        shell: bash
+        run: |
+          set -u
+          mkdir -p reports/home-live-external
+          curl -sSIL --max-time 45 --retry 2 http://gospod-bog.ru/ > reports/home-live-external/http-redirect-chain.txt || true
+          curl -sSIL --max-time 45 --retry 2 https://gospod-bog.ru/ > reports/home-live-external/https-headers.txt || true
+          curl -sS --max-time 45 --retry 2 https://gospod-bog.ru/robots.txt > reports/home-live-external/robots.txt || true
+          curl -sS --max-time 45 --retry 2 https://gospod-bog.ru/sitemap.xml > reports/home-live-external/sitemap.xml || true
+
+      - name: Run W3C HTML Checker against live Home
+        shell: bash
+        run: |
+          set -u
+          curl -sS --max-time 120 --retry 2 \
+            --get 'https://validator.w3.org/nu/' \
+            --data-urlencode 'doc=https://gospod-bog.ru/' \
+            --data-urlencode 'out=json' \
+            -H 'User-Agent: gb-is-my-strength-ci/1.0 (external diagnostic)' \
+            > reports/home-live-external/w3c-home.json || true
+
+      - name: Run MDN HTTP Observatory against live Home
+        shell: bash
+        run: |
+          set -u
+          curl -sS --max-time 120 --retry 2 -X POST \
+            'https://observatory-api.mdn.mozilla.net/api/v2/scan?host=gospod-bog.ru' \
+            -H 'Accept: application/json' \
+            > reports/home-live-external/mdn-observatory.json || true
+
+      - name: Run Google PageSpeed mobile and desktop
+        shell: bash
+        run: |
+          set -u
+          for strategy in mobile desktop; do
+            curl -sS --max-time 240 --retry 2 --get \
+              'https://www.googleapis.com/pagespeedonline/v5/runPagespeed' \
+              --data-urlencode 'url=https://gospod-bog.ru/' \
+              --data-urlencode "strategy=${strategy}" \
+              --data-urlencode 'category=performance' \
+              --data-urlencode 'category=accessibility' \
+              --data-urlencode 'category=best-practices' \
+              --data-urlencode 'category=seo' \
+              > "reports/home-live-external/pagespeed-${strategy}.json" || true
+          done
+
+      - name: Summarize external results without hiding service failures
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('reports/home-live-external')
+          def load(name):
+              path = root / name
+              try:
+                  return json.loads(path.read_text(encoding='utf-8'))
+              except Exception as exc:
+                  return {'_parse_error': str(exc), '_bytes': path.stat().st_size if path.exists() else 0}
+
+          w3c = load('w3c-home.json')
+          messages = w3c.get('messages', []) if isinstance(w3c, dict) else []
+          w3c_errors = [m for m in messages if m.get('type') == 'error']
+          w3c_warnings = [m for m in messages if m.get('type') != 'error']
+          observatory = load('mdn-observatory.json')
+
+          pagespeed = {}
+          for strategy in ('mobile', 'desktop'):
+              data = load(f'pagespeed-{strategy}.json')
+              categories = data.get('lighthouseResult', {}).get('categories', {}) if isinstance(data, dict) else {}
+              pagespeed[strategy] = {
+                  'error': data.get('error') if isinstance(data, dict) else None,
+                  'fetchTime': data.get('lighthouseResult', {}).get('fetchTime') if isinstance(data, dict) else None,
+                  'scores': {
+                      key: round((value.get('score') or 0) * 100)
+                      for key, value in categories.items()
+                  },
+              }
+
+          headers = (root / 'https-headers.txt').read_text(encoding='utf-8', errors='replace') if (root / 'https-headers.txt').exists() else ''
+          lower = headers.lower()
+          expected_headers = {
+              'content-security-policy': 'content-security-policy:' in lower,
+              'strict-transport-security': 'strict-transport-security:' in lower,
+              'x-content-type-options': 'x-content-type-options:' in lower,
+              'referrer-policy': 'referrer-policy:' in lower,
+              'permissions-policy': 'permissions-policy:' in lower,
+              'cross-origin-resource-policy': 'cross-origin-resource-policy:' in lower,
+          }
+
+          summary = {
+              'scope': 'LIVE public https://gospod-bog.ru/ — not the unmerged PR preview',
+              'w3c': {
+                  'errors': len(w3c_errors),
+                  'warnings': len(w3c_warnings),
+                  'first_errors': [m.get('message') for m in w3c_errors[:10]],
+                  'service_error': w3c.get('_parse_error') if isinstance(w3c, dict) else None,
+              },
+              'observatory': observatory,
+              'pagespeed': pagespeed,
+              'security_headers_present': expected_headers,
+              'robots_bytes': (root / 'robots.txt').stat().st_size if (root / 'robots.txt').exists() else 0,
+              'sitemap_bytes': (root / 'sitemap.xml').stat().st_size if (root / 'sitemap.xml').exists() else 0,
+          }
+          (root / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          md = [
+              '# Home live external diagnostics',
+              '',
+              '> Scope: public `https://gospod-bog.ru/`; this is not the unmerged PR preview.',
+              '',
+              f"- W3C: **{summary['w3c']['errors']} errors**, **{summary['w3c']['warnings']} other messages**",
+              f"- MDN Observatory: **{observatory.get('grade', 'service error')}**, score **{observatory.get('score', '—')}**" if isinstance(observatory, dict) else '- MDN Observatory: unavailable',
+              f"- PageSpeed mobile: `{pagespeed['mobile']['scores'] or pagespeed['mobile']['error'] or 'unavailable'}`",
+              f"- PageSpeed desktop: `{pagespeed['desktop']['scores'] or pagespeed['desktop']['error'] or 'unavailable'}`",
+              f"- Security headers present: `{expected_headers}`",
+              f"- robots.txt bytes: **{summary['robots_bytes']}**",
+              f"- sitemap.xml bytes: **{summary['sitemap_bytes']}**",
+          ]
+          (root / 'summary.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
+          print('\n'.join(md))
+          PY
+
+      - name: Upload live external diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: home-live-external-${{ github.run_id }}
+          path: reports/home-live-external
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
