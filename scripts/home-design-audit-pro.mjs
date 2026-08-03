@@ -250,9 +250,9 @@ async function waitQuery(page, query, expectedTitle = '') {
     const titles = [...document.querySelectorAll('.cp-item-title')]
       .map((node) => (node.textContent || '').toLocaleLowerCase('ru-RU'));
     const matched = !titleNeedle || titles.some((title) => title.includes(titleNeedle.toLocaleLowerCase('ru-RU')));
-    return (processed || empty) && matched;
+    const selected = document.querySelectorAll('.cp-item[aria-selected="true"], .cp-item.is-active').length;
+    return (processed || empty) && matched && (empty || selected === 1);
   }, { query, expectedTitle }, { timeout: 15000 });
-  await page.waitForTimeout(80);
 }
 
 async function searchAudit(page) {
@@ -317,11 +317,18 @@ async function searchAudit(page) {
   }
   await allScope.click();
 
+  // Force a genuinely different completed result set before re-running the
+  // canonical-title query. Reusing the already-rendered query let WebKit
+  // observe stale DOM during the 180 ms debounce window and made the audit
+  // race the real search lifecycle instead of testing arrow navigation.
+  await input.fill('Джон Гилл');
+  await waitQuery(page, 'Джон Гилл', 'Джон Гилл');
   await input.fill('Нагорная проповедь');
   await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');
+  const beforeArrow = await page.locator('.cp-item[aria-selected="true"], .cp-item.is-active').count();
   await page.keyboard.press('ArrowDown');
   const selectedCount = await page.locator('.cp-item[aria-selected="true"], .cp-item.is-active').count();
-  record(`${ENGINE}:search-arrow-navigation`, selectedCount === 1, selectedCount);
+  record(`${ENGINE}:search-arrow-navigation`, beforeArrow === 1 && selectedCount === 1, { beforeArrow, selectedCount });
 
   await setTheme(page, true);
   record(`${ENGINE}:search-survives-theme-toggle`, await searchOpen(page));
