@@ -9,6 +9,7 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const REPORTS = path.join(ROOT, 'reports');
+const DOWNLOAD_WORKER = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-vosk-download-worker.js'), 'utf8');
 const DEFAULTS = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts-defaults.js'), 'utf8');
 const READER = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts.js'), 'utf8');
 const CSS = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts.css'), 'utf8');
@@ -17,6 +18,7 @@ const SAMPLE = 'Джон Гилл жил в Лондоне в восемнадц
 fs.mkdirSync(REPORTS, { recursive: true });
 
 const ASSETS = new Map([
+  ['/src/runtime/reader-vosk-download-worker.js', { data: DOWNLOAD_WORKER, type: 'text/javascript; charset=utf-8' }],
   ['/src/runtime/reader-tts-defaults.js', { data: DEFAULTS, type: 'text/javascript; charset=utf-8' }],
   ['/src/runtime/reader-tts.js', { data: READER, type: 'text/javascript; charset=utf-8' }],
   ['/src/runtime/reader-tts.css', { data: CSS, type: 'text/css; charset=utf-8' }],
@@ -29,7 +31,7 @@ const ASSETS = new Map([
 ]);
 
 function html() {
-  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/src/runtime/reader-tts.css"></head><body><article class="article-body" data-pagefind-body><h1>Реальная модель</h1><p>${SAMPLE}</p></article><button data-fc-action="play" data-state="idle">PLAY</button><script type="module" src="/src/runtime/reader-tts-defaults.js"></script><script type="module" src="/src/runtime/reader-tts.js"></script></body></html>`;
+  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/src/runtime/reader-tts.css"></head><body><article class="article-body" data-pagefind-body><h1>Реальная модель</h1><p>${SAMPLE}</p></article><button data-fc-action="play" data-state="idle">PLAY</button><script type="module" src="/src/runtime/reader-vosk-download-worker.js"></script><script type="module" src="/src/runtime/reader-tts-defaults.js"></script><script type="module" src="/src/runtime/reader-tts.js"></script></body></html>`;
 }
 
 function startServer() {
@@ -118,10 +120,16 @@ async function runOne(context, origin, mode) {
   if (mode === 'cold') await deleteDatabase(page);
   await page.goto(origin + '/reader', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.GBReaderTTS?.version === 1);
-  const defaults = await page.evaluate(() => ({ rate: localStorage.getItem('gb:audio:rate'), speaker: localStorage.getItem('gb:audio:speaker'), state: window.GBReaderTTS.getState() }));
+  const defaults = await page.evaluate(() => ({
+    rate: localStorage.getItem('gb:audio:rate'),
+    speaker: localStorage.getItem('gb:audio:speaker'),
+    state: window.GBReaderTTS.getState(),
+    workerVersion: window.__gbVoskDownloadWorkerVersion,
+  }));
   assert.equal(defaults.rate, '1', `${mode}: production default rate was not initialized`);
   assert.equal(defaults.speaker, '3', `${mode}: production default speaker was not initialized`);
   assert.equal(defaults.state.rate, 1, `${mode}: reader did not consume the default rate`);
+  assert.equal(defaults.workerVersion, 1, `${mode}: cold model worker was not installed`);
 
   await page.evaluate(() => { window.__resetReaderHeartbeat(); window.__loadStarted = performance.now(); });
   await page.evaluate(() => window.GBReaderTTS.warmVosk({ retry: true }));
@@ -160,6 +168,7 @@ async function runOne(context, origin, mode) {
       assert.equal(result.synth.mediaPlayCalled, true, `${result.mode}: playback was not requested`);
       assert.equal(result.synth.state.rate, 1, `${result.mode}: synthesis did not run at the canonical default rate`);
     }
+    assert.ok(cold.load.maxGapMs < 5000, `cold model preparation still blocked UI for ${cold.load.maxGapMs.toFixed(1)} ms`);
     assert.ok(cached.load.maxGapMs < 5000, `cached model preparation still blocked UI for ${cached.load.maxGapMs.toFixed(1)} ms`);
     assert.ok(cached.synth.maxGapMs < 5000, `cached synthesis still blocked UI for ${cached.synth.maxGapMs.toFixed(1)} ms`);
     assert.ok(cold.synth.maxGapMs < 5000, `cold synthesis still blocked UI for ${cold.synth.maxGapMs.toFixed(1)} ms`);
