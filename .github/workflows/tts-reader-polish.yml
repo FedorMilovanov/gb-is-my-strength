@@ -18,6 +18,7 @@ on:
       - "js/vosk-tts-worker.js"
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
+      - "scripts/tts-reader-multitab-lock-browser-test.js"
       - "scripts/tts-reader-real-model-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
       - ".github/workflows/tts-reader-polish.yml"
@@ -39,6 +40,7 @@ on:
       - "js/vosk-tts-worker.js"
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
+      - "scripts/tts-reader-multitab-lock-browser-test.js"
       - "scripts/tts-reader-real-model-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
       - ".github/workflows/tts-reader-polish.yml"
@@ -81,6 +83,7 @@ jobs:
           node --check js/vosk-tts-worker.js
           node --check scripts/tts-stress-dictionary-contract.js
           node --check scripts/tts-reader-runtime-browser-test.js
+          node --check scripts/tts-reader-multitab-lock-browser-test.js
           node --check scripts/tts-reader-real-model-browser-test.js
           node --check scripts/tts-route-crawl-browser-test.js
           ! grep -R "reader-vosk-download-worker\|readerVoskFetch\|installOneShotUnzip" src js scripts .github/workflows/tts-reader-polish.yml
@@ -89,10 +92,11 @@ jobs:
           grep -q "unzipSync" js/vosk-tts-worker.js
           node scripts/tts-stress-dictionary-contract.js | tee reports/tts-stress-dictionary.log
 
-      - name: Run deterministic playback contract
+      - name: Run deterministic playback contracts
         run: |
           set -o pipefail
           node scripts/tts-reader-runtime-browser-test.js 2>&1 | tee reports/tts-reader-runtime.log
+          node scripts/tts-reader-multitab-lock-browser-test.js 2>&1 | tee reports/tts-reader-multitab-lock.log
 
       - name: Build production-like routes
         run: |
@@ -120,6 +124,7 @@ jobs:
           path: |
             reports/tts-stress-dictionary.log
             reports/tts-reader-runtime.log
+            reports/tts-reader-multitab-lock.log
             reports/tts-reader-production-build.log
             reports/tts-reader-route-crawl.log
             reports/tts-route-crawl.json
