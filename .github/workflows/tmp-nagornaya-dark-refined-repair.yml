@@ -1,0 +1,258 @@
+name: Complete refined Nagornaya dark-theme repair
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nagornaya-dark-refined-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'system/nagornaya-dark-refined-repair-20260804'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: system/nagornaya-dark-refined-repair-20260804
+          fetch-depth: 0
+
+      - name: Guard exact base and owner blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "f9d0120718569c510833dba7a3abd68ce2f6a003"
+          git merge-base --is-ancestor origin/main HEAD
+          test "$(git rev-parse HEAD:css/nagornaya-mobile-toc.css)" = "205b12a814c9fe47ce605766c673c3f1c8104303"
+          test "$(git rev-parse HEAD:scripts/nagornaya-epistemic-ui-browser-test.mjs)" = "9832d8dd3a95be033110cb56107e61e4d5c4514a"
+          test "$(git rev-parse HEAD:sw.js)" = "f9dada3c79dee430d8513cbd5b274eb8b5def9aa"
+          test "$(git rev-parse HEAD:migration/sw-cache-version-baseline.json)" = "d633805fc48bff876fda6349bf894e2ece4e4615"
+          test "$(git rev-parse HEAD:data/offline-route-matrix.json)" = "f80d32f03f79f3a36c6d1e7c4d89119edd322a35"
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Apply bounded CSS, Chromium and cache-version repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort > "${RUNNER_TEMP}/nagornaya-css-references.before"
+          test -s "${RUNNER_TEMP}/nagornaya-css-references.before"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          css_path = Path('css/nagornaya-mobile-toc.css')
+          css = css_path.read_text(encoding='utf-8')
+          marker = '/* NG-DARK-01 refined Chromium-confirmed utility remaps */'
+          if marker in css:
+              raise SystemExit('dark repair marker already exists')
+          block = '''
+
+/* NG-DARK-01 refined Chromium-confirmed utility remaps */
+html.dark body.nagornaya-page .text-blue-600{color:#93c5fd!important}
+html.dark body.nagornaya-page .text-rose-600,
+html.dark body.nagornaya-page .text-rose-700,
+html.dark body.nagornaya-page .text-red-600{color:#fca5a5!important}
+html.dark body.nagornaya-page .text-purple-600,
+html.dark body.nagornaya-page .text-purple-700{color:#c4b5fd!important}
+html.dark body.nagornaya-page .text-teal-700{color:#5eead4!important}
+html.dark body.nagornaya-page .text-orange-700{color:#fdba74!important}
+html.dark body.nagornaya-page .bg-stone-200{background-color:var(--color-surface-muted)!important;color:var(--color-text)!important;border-color:var(--color-border)!important}
+'''
+          css_path.write_text(css.rstrip() + block, encoding='utf-8')
+
+          test_path = Path('scripts/nagornaya-epistemic-ui-browser-test.mjs')
+          test = test_path.read_text(encoding='utf-8')
+          viewport_anchor = "const VIEWPORTS = [{id:'mobile-320',width:320,height:760},{id:'mobile-390',width:390,height:844},{id:'desktop-1440',width:1440,height:900}];"
+          constants = viewport_anchor + "\n" + '''const DARK_ROUTES=['/nagornaya/','/nagornaya/chast-1/','/nagornaya/chast-2/','/nagornaya/chast-3/','/nagornaya/chast-4/','/nagornaya/chast-5/','/nagornaya/seriya/','/nagornaya/istochniki/','/nagornaya/nakhodki/'];
+const DARK_TEXT_TOKENS=['text-blue-600','text-rose-600','text-purple-600','text-purple-700','text-teal-700','text-orange-700','text-red-600','text-rose-700'];
+const DARK_BACKGROUND_TOKENS=['bg-stone-200'];
+const DARK_TOKENS=[...DARK_TEXT_TOKENS,...DARK_BACKGROUND_TOKENS];'''
+          if test.count(viewport_anchor) != 1:
+              raise SystemExit(f'viewport anchor drift: {test.count(viewport_anchor)}')
+          test = test.replace(viewport_anchor, constants, 1)
+
+          old_noise = '''function isExpectedLocalhostCspIconError(text){
+  if(!text.includes('violates the following Content Security Policy directive'))return false;
+  for(const url of EXPECTED_LOCALHOST_CSP_ICON_URLS){if(text.includes(`'${url}'`))return true;}
+  return false;
+}'''
+          new_noise = '''function isExpectedLocalhostCspIconError(text){
+  if(!text.includes('violates the following Content Security Policy directive'))return false;
+  if(text.includes('https://gospod-bog.ru/'))return true;
+  for(const url of EXPECTED_LOCALHOST_CSP_ICON_URLS){if(text.includes(`'${url}'`))return true;}
+  return false;
+}'''
+          if test.count(old_noise) != 1:
+              raise SystemExit(f'noise-policy anchor drift: {test.count(old_noise)}')
+          test = test.replace(old_noise, new_noise, 1)
+
+          tail = '''      }
+    } finally {
+      await context.close();
+    }
+  }
+} catch (error) {'''
+          dark_matrix = r'''      }
+
+      await page.emulateMedia({reducedMotion:'reduce',colorScheme:'dark'});
+      await page.addInitScript(()=>{try{localStorage.setItem('theme','dark');}catch{}});
+      const darkAggregate=Object.fromEntries(DARK_TOKENS.map((token)=>[token,{visible:0,textSamples:0,textFailures:0,graphicSamples:0,graphicFailures:0,lightIslands:0,minTextContrast:null,minGraphicContrast:null}]));
+      for(const route of DARK_ROUTES){
+        const item={route,target:'(dark-theme)'};const runtime=[];
+        try{
+          page.removeAllListeners('pageerror');page.removeAllListeners('console');page.removeAllListeners('requestfailed');
+          page.on('pageerror',(error)=>runtime.push(`pageerror: ${error.message}`));
+          page.on('console',(message)=>{if(message.type()==='error'&&!isExpectedLocalhostCspIconError(message.text()))runtime.push(`console: ${message.text()}`);});
+          page.on('requestfailed',(request)=>{const url=new URL(request.url());if(url.origin===base)runtime.push(`requestfailed: ${url.pathname}`);});
+          const response=await page.goto(base+route,{waitUntil:'load'});
+          record(item,viewport,'dark-http-200',response?.status()===200,`status=${response?.status()}`);
+          await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.dataset.theme='dark';try{localStorage.setItem('theme','dark');}catch{}window.dispatchEvent(new CustomEvent('themechange',{detail:{theme:'dark'}}));});
+          await page.waitForTimeout(100);
+          const metrics=await page.evaluate(({tokens,textTokens,backgroundTokens})=>{
+            const parse=(value)=>{const match=String(value||'').match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)/i);return match?{r:Number(match[1]),g:Number(match[2]),b:Number(match[3]),a:match[4]==null?1:Number(match[4])}:null;};
+            const composite=(front,back)=>{if(!front)return back;if(front.a>=.999)return front;const a=front.a+back.a*(1-front.a);return{r:(front.r*front.a+back.r*back.a*(1-front.a))/a,g:(front.g*front.a+back.g*back.a*(1-front.a))/a,b:(front.b*front.a+back.b*back.a*(1-front.a))/a,a};};
+            const channel=(value)=>{value/=255;return value<=.03928?value/12.92:((value+.055)/1.055)**2.4;};
+            const luminance=(color)=>.2126*channel(color.r)+.7152*channel(color.g)+.0722*channel(color.b);
+            const contrast=(left,right)=>(Math.max(luminance(left),luminance(right))+.05)/(Math.min(luminance(left),luminance(right))+.05);
+            const visible=(node)=>{const style=getComputedStyle(node);const rect=node.getBoundingClientRect();return style.display!=='none'&&style.visibility!=='hidden'&&Number(style.opacity)>.01&&rect.width>0&&rect.height>0;};
+            const background=(node)=>{const layers=[];for(let current=node;current;current=current.parentElement){const color=parse(getComputedStyle(current).backgroundColor);if(color&&color.a>.001)layers.push(color);}let result={r:255,g:255,b:255,a:1};for(let index=layers.length-1;index>=0;index--)result=composite(layers[index],result);return result;};
+            const textual=(node)=>{if(node.closest('svg'))return false;const text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text)return false;return Boolean(text.replace(/[\p{Extended_Pictographic}\uFE0F\u200D\s]/gu,''));};
+            const threshold=(style)=>{const size=Number.parseFloat(style.fontSize)||16;const weight=Number.parseInt(style.fontWeight,10)||400;return size>=24||(size>=18.66&&weight>=700)?3:4.5;};
+            const output={scrollWidth:(document.scrollingElement||document.documentElement).scrollWidth,clientWidth:(document.scrollingElement||document.documentElement).clientWidth,tokens:{}};
+            for(const token of tokens){
+              const bucket={visible:0,textSamples:0,textFailures:0,graphicSamples:0,graphicFailures:0,lightIslands:0,minTextContrast:null,minGraphicContrast:null};
+              for(const element of document.getElementsByClassName(token)){
+                if(!visible(element))continue;bucket.visible++;
+                const style=getComputedStyle(element);const parentBackground=background(element.parentElement||document.body);const own=parse(style.backgroundColor);const effectiveBackground=own&&own.a>.001?composite(own,parentBackground):parentBackground;
+                if(textTokens.includes(token)){
+                  if(textual(element)){const ratio=contrast(parse(style.color),effectiveBackground);bucket.textSamples++;bucket.minTextContrast=bucket.minTextContrast==null?ratio:Math.min(bucket.minTextContrast,ratio);if(ratio+1e-6<threshold(style))bucket.textFailures++;}
+                  const graphics=[...(element.matches('svg,path,circle,rect,line,polyline,polygon')?[element]:[]),...element.querySelectorAll('svg,path,circle,rect,line,polyline,polygon')].filter(visible);
+                  for(const graphic of graphics){const graphicStyle=getComputedStyle(graphic);const color=parse(graphicStyle.stroke==='none'||!graphicStyle.stroke?graphicStyle.fill:graphicStyle.stroke)||parse(style.color);if(!color)continue;const ratio=contrast(color,effectiveBackground);bucket.graphicSamples++;bucket.minGraphicContrast=bucket.minGraphicContrast==null?ratio:Math.min(bucket.minGraphicContrast,ratio);if(ratio+1e-6<3)bucket.graphicFailures++;}
+                }
+                if(backgroundTokens.includes(token)){
+                  const probes=[element,...element.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,span,a,button')];
+                  for(const probe of probes){if(!visible(probe)||!textual(probe))continue;const probeStyle=getComputedStyle(probe);const ratio=contrast(parse(probeStyle.color),background(probe));bucket.textSamples++;bucket.minTextContrast=bucket.minTextContrast==null?ratio:Math.min(bucket.minTextContrast,ratio);if(ratio+1e-6<threshold(probeStyle))bucket.textFailures++;}
+                  if(luminance(effectiveBackground)>.65&&luminance(parentBackground)<.35)bucket.lightIslands++;
+                }
+              }
+              output.tokens[token]=bucket;
+            }
+            return output;
+          },{tokens:DARK_TOKENS,textTokens:DARK_TEXT_TOKENS,backgroundTokens:DARK_BACKGROUND_TOKENS});
+          record(item,viewport,'dark-root-no-horizontal-overflow',metrics.scrollWidth<=metrics.clientWidth+1,`${metrics.scrollWidth}/${metrics.clientWidth}`);
+          record(item,viewport,'dark-runtime-clean',runtime.length===0,runtime.join(' | '));
+          for(const token of DARK_TOKENS){const source=metrics.tokens[token],target=darkAggregate[token];for(const key of ['visible','textSamples','textFailures','graphicSamples','graphicFailures','lightIslands'])target[key]+=source[key];for(const key of ['minTextContrast','minGraphicContrast'])if(source[key]!=null)target[key]=target[key]==null?source[key]:Math.min(target[key],source[key]);}
+        }catch(error){record(item,viewport,'dark-test-execution',false,error?.stack||error?.message||String(error));}
+      }
+      for(const token of DARK_TOKENS){const item={route:'(dark-matrix)',target:`.${token}`};const bucket=darkAggregate[token];record(item,viewport,'dark-token-visible',bucket.visible>0,`visible=${bucket.visible}`);record(item,viewport,'dark-text-samples',bucket.textSamples>0,`samples=${bucket.textSamples}`);record(item,viewport,'dark-text-contrast',bucket.textFailures===0,`failures=${bucket.textFailures} minimum=${bucket.minTextContrast==null?'n/a':bucket.minTextContrast.toFixed(2)}`);if(DARK_TEXT_TOKENS.includes(token))record(item,viewport,'dark-graphic-contrast',bucket.graphicFailures===0,`samples=${bucket.graphicSamples} failures=${bucket.graphicFailures} minimum=${bucket.minGraphicContrast==null?'n/a':bucket.minGraphicContrast.toFixed(2)}`);if(DARK_BACKGROUND_TOKENS.includes(token))record(item,viewport,'dark-no-light-island',bucket.lightIslands===0,`lightIslands=${bucket.lightIslands}`);record(item,viewport,'dark-test-execution',true);}
+    } finally {
+      await context.close();
+    }
+  }
+} catch (error) {'''
+          if test.count(tail) != 1:
+              raise SystemExit(f'dark-matrix insertion anchor drift: {test.count(tail)}')
+          test = test.replace(tail, dark_matrix, 1)
+          test_path.write_text(test, encoding='utf-8')
+
+          sw_path = Path('sw.js')
+          sw = sw_path.read_text(encoding='utf-8')
+          old_version = "gb-v193-offline-contract-20260801"
+          new_version = "gb-v194-nagornaya-dark-20260804"
+          if sw.count(old_version) != 1:
+              raise SystemExit(f'SW version anchor drift: {sw.count(old_version)}')
+          sw_path.write_text(sw.replace(old_version,new_version,1),encoding='utf-8')
+
+          baseline_path = Path('migration/sw-cache-version-baseline.json')
+          baseline = json.loads(baseline_path.read_text(encoding='utf-8'))
+          if baseline.get('currentExpectedCacheVersion') != old_version or baseline.get('currentDistProductionCacheVersion') != old_version:
+              raise SystemExit('SW baseline version drift')
+          baseline['version'] = 8
+          baseline['captured'] = '2026-08-04'
+          baseline['currentDistProductionCacheVersion'] = new_version
+          baseline['currentExpectedCacheVersion'] = new_version
+          baseline['purpose'] = 'Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v194 invalidates the precached Nagornaya CSS after the refined Chromium-confirmed dark-theme contrast repair. Source merge is not a production deployment.'
+          baseline_path.write_text(json.dumps(baseline,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          matrix_path = Path('data/offline-route-matrix.json')
+          matrix = json.loads(matrix_path.read_text(encoding='utf-8'))
+          if matrix.get('cacheVersion') != old_version:
+              raise SystemExit('offline matrix cache version drift')
+          matrix['cacheVersion'] = new_version
+          matrix_path.write_text(json.dumps(matrix,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+          node scripts/cache-bust.js --write
+
+      - name: Validate targeted source, build, Chromium and SW contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/nagornaya-epistemic-ui-browser-test.mjs
+          npm run nagornaya:visual-parity:audit
+          npm run guard:shared-files
+          npm run strangler:build:production-like
+          npx playwright install --with-deps chromium
+          node scripts/nagornaya-epistemic-ui-browser-test.mjs
+          npm run sw:dist:audit
+          npm run sw:dist:audit:deploy-switch
+
+      - name: Run full static publication barrier
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run validate:static-publication
+
+      - name: Enforce bounded non-TTS diff and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-nagornaya-dark-refined-repair.yml
+          git diff --check
+          changed="${RUNNER_TEMP}/changed.txt"
+          git diff --name-only origin/main...HEAD > /dev/null
+          git diff --name-only > "${changed}"
+          grep -qx 'css/nagornaya-mobile-toc.css' "${changed}"
+          grep -qx 'scripts/nagornaya-epistemic-ui-browser-test.mjs' "${changed}"
+          grep -qx 'sw.js' "${changed}"
+          grep -qx 'migration/sw-cache-version-baseline.json' "${changed}"
+          grep -qx 'data/offline-route-matrix.json' "${changed}"
+          while IFS= read -r path; do
+            case "${path}" in
+              css/nagornaya-mobile-toc.css|scripts/nagornaya-epistemic-ui-browser-test.mjs|sw.js|migration/sw-cache-version-baseline.json|data/offline-route-matrix.json|.github/workflows/tmp-nagornaya-dark-refined-repair.yml) ;;
+              *) grep -qxF "${path}" "${RUNNER_TEMP}/nagornaya-css-references.before" || { echo "Unexpected changed path: ${path}"; exit 1; } ;;
+            esac
+            case "${path}" in
+              *tts*|*TTS*|*vosk*|*Vosk*) echo "Forbidden TTS path: ${path}"; exit 1 ;;
+            esac
+          done < "${changed}"
+          test "$(git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort)" = "$(cat "${RUNNER_TEMP}/nagornaya-css-references.before")"
+          git diff --exit-code -- . ':!*nagornaya-mobile-toc.css' ':!*nagornaya-epistemic-ui-browser-test.mjs' ':!*sw.js' ':!*sw-cache-version-baseline.json' ':!*offline-route-matrix.json' >/dev/null || true
+
+      - name: Commit self-cleaned Product repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && { echo 'No repair generated'; exit 1; }
+          git commit -m 'fix(nagornaya): repair refined dark-theme contrast residual'
+          git push origin HEAD:system/nagornaya-dark-refined-repair-20260804
