@@ -144,6 +144,22 @@ assert('shared recovery controls are at least 44px', /min-height:\s*44px/.test(f
 
 // ── MapEngine lifecycle checks (РЕФАКТОРИНГ 5.0 closing hole #2) ──
 const engineSrc = fs.readFileSync(enginePath, 'utf8');
+assert(
+  'MapEngine Hebrew tokens use a Hebrew-capable isolated RTL font stack',
+  engineSrc.includes('.me-content .hw{color:#e8c879;font-size:20px;font-family:"Noto Sans Hebrew","Arial Hebrew",Arial,sans-serif;direction:rtl;unicode-bidi:isolate}')
+);
+assert(
+  'MapEngine normalizes rendered Hebrew token language and direction',
+  engineSrc.includes("content.querySelectorAll('.hw').forEach(token=>{")
+    && engineSrc.includes("if(!token.hasAttribute('lang'))token.setAttribute('lang','he');")
+    && engineSrc.includes("token.setAttribute('dir','rtl');")
+);
+assert(
+  'MapEngine Hebrew title boundaries declare lang and dir',
+  engineSrc.includes("he.setAttribute('lang','he');he.setAttribute('dir','rtl');")
+    && engineSrc.includes('class="me-panel__he" lang="he" dir="rtl"')
+    && engineSrc.includes('class="me-intro__he" lang="he" dir="rtl"')
+);
 assert('MapEngine exposes destroy() method', /\bdestroy\s*:\s*\{[^}]*_cleanupAll/.test(engineSrc) || /destroy\(\)\{[\s\S]*?_cleanupAll/.test(engineSrc));
 assert('MapEngine tracks listeners via _on() helper', /function _on\s*\([^)]*\)\s*\{[^}]*_listeners\.push/.test(engineSrc));
 assert('MapEngine has _cleanupAll() that removes listeners', /function _cleanupAll\s*\(\s*\)\s*\{[\s\S]*?_listeners\.forEach\s*\(\s*l\s*=>\s*\{[^}]*removeEventListener/.test(engineSrc));

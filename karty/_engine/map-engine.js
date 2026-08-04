@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.57 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.58 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -624,7 +624,7 @@ const MapEngine = (function() {
 .me-content .note{background:rgba(255,255,255,.03);padding:10px 14px;border-radius:8px;font-size:11px;margin:8px 0;border-left:3px solid rgba(232,200,121,.3);line-height:1.5}
 .me-content .he-block{background:rgba(255,255,255,.03);padding:12px 14px;border-radius:10px;margin:10px 0;border:1px solid rgba(255,255,255,.05);position:relative;overflow:hidden}
 .me-content .he-block::after{content:"א";position:absolute;top:-12px;right:8px;font-size:72px;color:rgba(232,200,121,.03);font-family:Georgia,serif;pointer-events:none}
-.me-content .hw{color:#e8c879;font-size:20px;font-family:Georgia,"Times New Roman",serif}
+.me-content .hw{color:#e8c879;font-size:20px;font-family:"Noto Sans Hebrew","Arial Hebrew",Arial,sans-serif;direction:rtl;unicode-bidi:isolate}
 .me-content .he-tr{color:#9aa2ae;font-size:11px;margin-left:8px}
 .me-content .he-etym{font-size:11px;margin-top:4px;color:#e9e4d6}
 .me-content .he-refs{font-size:9px;color:rgba(154,162,174,.6);margin-top:4px}
@@ -1211,7 +1211,7 @@ const MapEngine = (function() {
     const backLink=document.createElement('a');backLink.className='me-back';backLink.href=opts.backUrl||'/karty/';backLink.textContent='← Карты';
     const titleEl=document.createElement('div');titleEl.className='me-title';titleEl.textContent=route.meta?.title||'';
     headerLeft.appendChild(backLink);headerLeft.appendChild(titleEl);
-    if(route.meta?.title_he){const he=document.createElement('div');he.className='me-title-he';he.textContent=route.meta.title_he;headerLeft.appendChild(he)}
+    if(route.meta?.title_he){const he=document.createElement('div');he.className='me-title-he';he.setAttribute('lang','he');he.setAttribute('dir','rtl');he.textContent=route.meta.title_he;headerLeft.appendChild(he)}
     if(route.meta?.subtitle){const sub=document.createElement('div');sub.className='me-subtitle';sub.textContent=route.meta.subtitle;headerLeft.appendChild(sub)}
     header.appendChild(headerLeft);
     
@@ -2288,7 +2288,7 @@ container.appendChild(panel);
       head.innerHTML=`
         <div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${getStageColor(place.stage)}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
         <div class="me-panel__name">${esc(place.name)}</div>
-        ${place.he?`<div class="me-panel__he">${esc(place.he)}</div>`:''}
+        ${place.he?`<div class="me-panel__he" lang="he" dir="rtl">${esc(place.he)}</div>`:''}
         ${place.kick?`<div class="me-panel__kick">${esc(place.kick)}</div>`:''}
         <div class="me-panel__meta">
           ${place.id1?`<span>${esc(place.id1)}</span>`:''}
@@ -2455,6 +2455,11 @@ container.appendChild(panel);
       }else{
         content.innerHTML='';
       }
+      content.querySelectorAll('.hw').forEach(token=>{
+        if(!/[\u0590-\u05FF]/.test(token.textContent||''))return;
+        if(!token.hasAttribute('lang'))token.setAttribute('lang','he');
+        token.setAttribute('dir','rtl');
+      });
       _renderArchaeologyProjection(tab, place);
     }
 
@@ -3154,7 +3159,7 @@ container.appendChild(panel);
         <div class="me-intro__bg"></div>
         <div class="me-intro__content">
           <h2 class="me-intro__title">${esc(route.meta?.title || '')}</h2>
-          ${route.meta?.title_he ? `<p class="me-intro__he" dir="rtl">${esc(route.meta.title_he)}</p>` : ''}
+          ${route.meta?.title_he ? `<p class="me-intro__he" lang="he" dir="rtl">${esc(route.meta.title_he)}</p>` : ''}
           ${route.meta?.subtitle ? `<p class="me-intro__sub">${esc(route.meta.subtitle)}</p>` : ''}
           <div class="me-intro__stats">
             ${(route.places||[]).length ? `<span>${route.places.length} мест</span>` : ''}
@@ -3290,7 +3295,7 @@ container.appendChild(panel);
     getStageColor,clientPointToView,distanceKm,
     // v0.3 rendering
     createMap,
-    version:'0.57.0',buildDate:'2026-08-01'
+    version:'0.58.0',buildDate:'2026-08-04'
   };
 })();
 
