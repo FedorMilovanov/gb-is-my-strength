@@ -106,7 +106,10 @@ const mutations = [
   },
   {
     name: 'cancel stops being terminal',
-    engine: engine.replace('terminateWorker(error)', 'void 0'),
+    engine: engine.replace(
+      /function cancelLoading\(options\)([\s\S]{0,700}?)terminateWorker\(error\);/,
+      'function cancelLoading(options)$1void 0;',
+    ),
     worker,
     css,
   },
