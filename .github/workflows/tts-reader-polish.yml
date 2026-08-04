@@ -4,15 +4,18 @@ on:
   pull_request:
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/pages/baptisty-rossii/index.astro"
       - "src/runtime/reader-tts.js"
       - "src/runtime/reader-tts.css"
       - "src/runtime/reader-tts-defaults.js"
-      - "src/runtime/reader-vosk-download-worker.js"
+      - "src/runtime/reader-tts-media-session.js"
+      - "css/tts-download-notice.css"
       - "js/vosk-tts-core.js"
       - "js/vosk-stress-lookup.js"
       - "js/vosk-custom-terms.json"
       - "js/vosk-stress-marker.bin"
       - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-real-model-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
@@ -21,15 +24,18 @@ on:
     branches: [main]
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/pages/baptisty-rossii/index.astro"
       - "src/runtime/reader-tts.js"
       - "src/runtime/reader-tts.css"
       - "src/runtime/reader-tts-defaults.js"
-      - "src/runtime/reader-vosk-download-worker.js"
+      - "src/runtime/reader-tts-media-session.js"
+      - "css/tts-download-notice.css"
       - "js/vosk-tts-core.js"
       - "js/vosk-stress-lookup.js"
       - "js/vosk-custom-terms.json"
       - "js/vosk-stress-marker.bin"
       - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-real-model-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
@@ -63,15 +69,21 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
-      - name: Check syntax
+      - name: Check syntax and architecture
         run: |
           mkdir -p reports
-          node --check src/runtime/reader-vosk-download-worker.js
           node --check src/runtime/reader-tts-defaults.js
           node --check src/runtime/reader-tts.js
+          node --check src/runtime/reader-tts-media-session.js
+          node --check js/vosk-tts-engine.js
+          node --check js/vosk-tts-worker.js
           node --check scripts/tts-reader-runtime-browser-test.js
           node --check scripts/tts-reader-real-model-browser-test.js
           node --check scripts/tts-route-crawl-browser-test.js
+          ! grep -R "reader-vosk-download-worker\|readerVoskFetch\|installOneShotUnzip" src js scripts .github/workflows/tts-reader-polish.yml
+          ! grep -q "InferenceSession\|unzipSync\|model-quant.zip" js/vosk-tts-engine.js
+          grep -q "InferenceSession" js/vosk-tts-worker.js
+          grep -q "unzipSync" js/vosk-tts-worker.js
 
       - name: Run deterministic playback contract
         run: |
