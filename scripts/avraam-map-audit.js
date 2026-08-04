@@ -160,6 +160,12 @@ assert(
     && engineSrc.includes('class="me-panel__he" lang="he" dir="rtl"')
     && engineSrc.includes('class="me-intro__he" lang="he" dir="rtl"')
 );
+assert(
+  'MapEngine keeps Russian Hebrew-tab explanations LTR',
+  engineSrc.includes('.me-content .he-tr{')
+    && engineSrc.includes('.me-content .he-etym{')
+    && !/\.me-content \.(?:he-tr|he-etym)\{[^}]*direction:rtl/.test(engineSrc)
+);
 assert('MapEngine exposes destroy() method', /\bdestroy\s*:\s*\{[^}]*_cleanupAll/.test(engineSrc) || /destroy\(\)\{[\s\S]*?_cleanupAll/.test(engineSrc));
 assert('MapEngine tracks listeners via _on() helper', /function _on\s*\([^)]*\)\s*\{[^}]*_listeners\.push/.test(engineSrc));
 assert('MapEngine has _cleanupAll() that removes listeners', /function _cleanupAll\s*\(\s*\)\s*\{[\s\S]*?_listeners\.forEach\s*\(\s*l\s*=>\s*\{[^}]*removeEventListener/.test(engineSrc));
