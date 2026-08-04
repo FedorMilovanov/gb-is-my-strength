@@ -118,8 +118,7 @@ async function assertVisualRegressionContracts(page, width, height) {
 
     const searchShape = document.querySelector('#gbSearchBtn svg circle');
     const moonShape = document.querySelector('#themeToggle .icon-moon path');
-    const firstRoute = document.querySelector('.h-home-route');
-    const routeAccent = firstRoute ? getComputedStyle(firstRoute, '::after') : null;
+    const routeDividers = [...document.querySelectorAll('.h-home-route__divider')];
 
     const featured = [...document.querySelectorAll('#publikacii .h-featured-shelf--lead .h-featured-series')];
     const featuredRects = featured.map(rect);
@@ -143,7 +142,8 @@ async function assertVisualRegressionContracts(page, width, height) {
       moonStroke: moonShape ? Number.parseFloat(getComputedStyle(moonShape).strokeWidth) : NaN,
       ambientVisible: visiblePhrases.length,
       phraseState,
-      routeAccent: routeAccent ? { left: routeAccent.left, right: routeAccent.right } : null,
+      routeDividerWidths: routeDividers.map((node) => Number.parseFloat(getComputedStyle(node).width)),
+      routeDividerDisplays: routeDividers.map((node) => getComputedStyle(node).display),
       featuredTransformStyles: featured.map((node) => getComputedStyle(node).transformStyle),
       featuredTransforms: featured.map((node) => getComputedStyle(node).transform),
       featuredOverlap: featuredRects.length >= 2 ? overlaps(featuredRects[0], featuredRects[1]) : false,
@@ -178,8 +178,19 @@ async function assertVisualRegressionContracts(page, width, height) {
     assert.equal(state.phraseState.some((phrase) => phrase.intrudesIntoContent), false, `${width}px: marginalia overlap a rendered Home section`);
   }
 
+  assert.equal(state.routeDividerWidths.length, 4, `${width}px: gateway must render exactly four internal dividers`);
+  assert.equal(
+    state.routeDividerWidths.every((value) => Number.isFinite(value) && Math.abs(value - 1) <= 0.01),
+    true,
+    `${width}px: gateway dividers are not uniformly 1px`,
+  );
+  assert.equal(
+    state.routeDividerDisplays.every((value) => value !== 'none'),
+    true,
+    `${width}px: a gateway divider is hidden`,
+  );
+
   if (width >= 761) {
-    assert.deepEqual(state.routeAccent, { left: '0px', right: '0px' }, `${width}px: gateway selection accent is inset`);
     assert.equal(state.featuredTransformStyles.every((value) => value === 'flat'), true, `${width}px: featured cards retained a 3D overlap plane`);
     assert.equal(state.featuredTransforms.every((value) => value === 'none'), true, `${width}px: featured cards are transformed at rest`);
     assert.equal(state.featuredOverlap, false, `${width}px: featured cards overlap`);
@@ -226,7 +237,7 @@ async function assertVisualRegressionContracts(page, width, height) {
   }
 }
 
-async function assertResponsiveLayout(page, width, height, expectedColumns) {
+async function assertResponsiveLayout(page, width, height) {
   await page.setViewportSize({ width, height });
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(100);
@@ -237,11 +248,20 @@ async function assertResponsiveLayout(page, width, height, expectedColumns) {
     const menu = document.getElementById('hMobileMenuBtn');
     const style = routes ? getComputedStyle(routes) : null;
     const rect = gateway?.getBoundingClientRect();
+    const cards = routes ? [...routes.querySelectorAll('.h-home-route')] : [];
+    const dividers = routes ? [...routes.querySelectorAll('.h-home-route__divider')] : [];
     return {
       overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       display: style?.display || '',
       columns: style?.gridTemplateColumns?.split(' ').filter(Boolean).length || 0,
-      routeCount: routes?.querySelectorAll('.h-home-route').length || 0,
+      overflowX: style?.overflowX || '',
+      scrollSnapType: style?.scrollSnapType || '',
+      scrollWidth: routes?.scrollWidth || 0,
+      clientWidth: routes?.clientWidth || 0,
+      routeCount: cards.length,
+      dividerCount: dividers.length,
+      dividerWidths: dividers.map((node) => Number.parseFloat(getComputedStyle(node).width)),
+      cardWidths: cards.map((node) => node.getBoundingClientRect().width),
       menuDisplay: menu ? getComputedStyle(menu).display : '',
       gatewayWidth: rect?.width || 0,
       left: rect?.left || 0,
@@ -251,10 +271,32 @@ async function assertResponsiveLayout(page, width, height, expectedColumns) {
     };
   });
 
-  assert.equal(state.overflow, false, `${width}×${height}: horizontal overflow`);
-  assert.equal(state.display, 'grid', `${width}×${height}: gateway is not a grid`);
-  assert.equal(state.columns, expectedColumns, `${width}×${height}: expected ${expectedColumns} tracks, got ${state.columns}`);
+  const compactCatalogue = width <= 900;
+  assert.equal(state.overflow, false, `${width}×${height}: page-level horizontal overflow`);
   assert.equal(state.routeCount, 5, `${width}×${height}: route count changed`);
+  assert.equal(state.dividerCount, 4, `${width}×${height}: divider count changed`);
+  assert.equal(
+    state.dividerWidths.every((value) => Number.isFinite(value) && Math.abs(value - 1) <= 0.01),
+    true,
+    `${width}×${height}: divider widths are not uniformly 1px`,
+  );
+
+  if (compactCatalogue) {
+    assert.equal(state.display, 'flex', `${width}×${height}: compact gateway is not a horizontal catalogue`);
+    assert.ok(['auto', 'scroll'].includes(state.overflowX), `${width}×${height}: compact gateway is not horizontally scrollable`);
+    assert.match(state.scrollSnapType, /^x\s+mandatory$/, `${width}×${height}: compact gateway lost mandatory x scroll-snap`);
+    assert.ok(state.scrollWidth > state.clientWidth + 1, `${width}×${height}: compact gateway has no scrollable overflow`);
+    assert.equal(
+      state.cardWidths.every((value) => value > 0 && value < state.clientWidth),
+      true,
+      `${width}×${height}: compact gateway card width is invalid`,
+    );
+  } else {
+    assert.equal(state.display, 'grid', `${width}×${height}: desktop gateway is not a grid`);
+    assert.equal(state.columns, 9, `${width}×${height}: desktop gateway must expose five cards and four 1px tracks`);
+    assert.ok(state.scrollWidth <= state.clientWidth + 1, `${width}×${height}: desktop gateway unexpectedly scrolls`);
+  }
+
   if (width <= 760) assert.notEqual(state.menuDisplay, 'none', `${width}px: mobile menu hidden`);
   else assert.equal(state.menuDisplay, 'none', `${width}px: mobile menu visible above boundary`);
   if (width >= 1600) {
@@ -543,15 +585,17 @@ export async function runResponsiveEvidence(browserName, browserType, baseUrl) {
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
     for (const spec of [
-      [320, 568, 2],
-      [390, 844, 2],
-      [760, 900, 2],
-      [761, 900, 6],
-      [820, 1180, 6],
-      [1024, 450, 6],
-      [1280, 900, 5],
-      [1480, 900, 5],
-      [1720, 980, 5],
+      [320, 568],
+      [390, 844],
+      [760, 900],
+      [761, 900],
+      [820, 1180],
+      [900, 900],
+      [901, 900],
+      [1024, 450],
+      [1280, 900],
+      [1480, 900],
+      [1720, 980],
     ]) await assertResponsiveLayout(page, ...spec);
 
     await assertSearchLifecycle(page, browserName);
