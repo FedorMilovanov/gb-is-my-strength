@@ -26,6 +26,7 @@ function validate(engine, worker, css) {
 
   for (const [label, value] of [
     ['engine: persistent opt-out key', "MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup'"],
+    ['engine: persistent refusal recorded', 'setModelDownloadOptOut(true);'],
     ['engine: per-document client id', 'var CLIENT_ID ='],
     ['engine: SharedWorker preferred', "new SharedWorker(WORKER_SRC, 'gb-vosk-tts')"],
     ['engine: Dedicated Worker fallback', "new Worker(WORKER_SRC, { name: 'gb-vosk-tts' })"],
