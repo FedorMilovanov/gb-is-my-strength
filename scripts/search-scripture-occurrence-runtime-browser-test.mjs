@@ -89,6 +89,10 @@ function normalizeLocation(value) {
   return `${url.pathname}${url.hash}`;
 }
 
+function isExpectedLocalOriginIconCsp(message) {
+  return /^Loading the image 'https:\/\/gospod-bog\.ru\/(?:favicon\.ico|apple-touch-icon\.png|favicon-(?:48|120)\.png|icons\/icon-192\.png)' violates the following Content Security Policy directive:/u.test(String(message || ''));
+}
+
 async function openSearch(page) {
   await page.goto('/articles/krajne-li-isporcheno-serdce/', { waitUntil: 'domcontentloaded' });
   await page.keyboard.press('Control+K');
@@ -109,7 +113,8 @@ async function exactBeforePagefind(origin, browser, fixture, report) {
   const indexRequests = [];
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+    const text = message.text();
+    if (message.type() === 'error' && !isExpectedLocalOriginIconCsp(text)) errors.push(`console: ${text}`);
   });
   page.on('request', (request) => {
     const pathname = new URL(request.url()).pathname;
@@ -165,7 +170,8 @@ async function indexFailureFallsBack(origin, browser, fixture, report) {
   const errors = [];
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+    const text = message.text();
+    if (message.type() === 'error' && !isExpectedLocalOriginIconCsp(text)) errors.push(`console: ${text}`);
   });
   await page.route('**/data/scripture-search-index.json', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"fixture"}' }));
 
