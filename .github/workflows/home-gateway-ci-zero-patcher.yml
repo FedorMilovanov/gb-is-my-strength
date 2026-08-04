@@ -1,0 +1,218 @@
+name: Home Gateway CI Zero Patcher
+
+on:
+  push:
+    branches:
+      - system/home-gateway-ci-zero-20260804
+
+permissions:
+  contents: write
+
+concurrency:
+  group: home-gateway-ci-zero-patcher
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    name: Align responsive gateway contract and self-clean
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact lane
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 2
+
+      - name: Verify lane base
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "38fdfc7a4712bdc3ef69e8f9c1d777a39f3ec3f6"
+
+      - name: Replace stale responsive expectations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/home-responsive-evidence-contract.mjs')
+          text = path.read_text(encoding='utf-8')
+
+          old_declaration = """    const searchShape = document.querySelector('#gbSearchBtn svg circle');
+              const moonShape = document.querySelector('#themeToggle .icon-moon path');
+              const firstRoute = document.querySelector('.h-home-route');
+              const routeAccent = firstRoute ? getComputedStyle(firstRoute, '::after') : null;
+          """
+          new_declaration = """    const searchShape = document.querySelector('#gbSearchBtn svg circle');
+              const moonShape = document.querySelector('#themeToggle .icon-moon path');
+              const routeDividers = [...document.querySelectorAll('.h-home-route__divider')];
+          """
+
+          old_return = """      ambientVisible: visiblePhrases.length,
+                phraseState,
+                routeAccent: routeAccent ? { left: routeAccent.left, right: routeAccent.right } : null,
+          """
+          new_return = """      ambientVisible: visiblePhrases.length,
+                phraseState,
+                routeDividerWidths: routeDividers.map((node) => Number.parseFloat(getComputedStyle(node).width)),
+                routeDividerDisplays: routeDividers.map((node) => getComputedStyle(node).display),
+          """
+
+          old_desktop_assertion = """  if (width >= 761) {
+              assert.deepEqual(state.routeAccent, { left: '0px', right: '0px' }, `${width}px: gateway selection accent is inset`);
+          """
+          new_desktop_assertion = """  assert.equal(state.routeDividerWidths.length, 4, `${width}px: gateway must render exactly four internal dividers`);
+            assert.equal(
+              state.routeDividerWidths.every((value) => Number.isFinite(value) && Math.abs(value - 1) <= 0.01),
+              true,
+              `${width}px: gateway dividers are not uniformly 1px`,
+            );
+            assert.equal(
+              state.routeDividerDisplays.every((value) => value !== 'none'),
+              true,
+              `${width}px: a gateway divider is hidden`,
+            );
+
+            if (width >= 761) {
+          """
+
+          old_function_start = text.index('async function assertResponsiveLayout')
+          old_function_end = text.index('\nasync function waitForSearchState')
+          new_function = r'''async function assertResponsiveLayout(page, width, height) {
+            await page.setViewportSize({ width, height });
+            await page.evaluate(() => window.scrollTo(0, 0));
+            await page.waitForTimeout(100);
+
+            const state = await page.evaluate(() => {
+              const routes = document.querySelector('.h-home-routes');
+              const gateway = document.getElementById('issledovat');
+              const menu = document.getElementById('hMobileMenuBtn');
+              const style = routes ? getComputedStyle(routes) : null;
+              const rect = gateway?.getBoundingClientRect();
+              const cards = routes ? [...routes.querySelectorAll('.h-home-route')] : [];
+              const dividers = routes ? [...routes.querySelectorAll('.h-home-route__divider')] : [];
+              return {
+                overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+                display: style?.display || '',
+                columns: style?.gridTemplateColumns?.split(' ').filter(Boolean).length || 0,
+                overflowX: style?.overflowX || '',
+                scrollSnapType: style?.scrollSnapType || '',
+                scrollWidth: routes?.scrollWidth || 0,
+                clientWidth: routes?.clientWidth || 0,
+                routeCount: cards.length,
+                dividerCount: dividers.length,
+                dividerWidths: dividers.map((node) => Number.parseFloat(getComputedStyle(node).width)),
+                cardWidths: cards.map((node) => node.getBoundingClientRect().width),
+                menuDisplay: menu ? getComputedStyle(menu).display : '',
+                gatewayWidth: rect?.width || 0,
+                left: rect?.left || 0,
+                right: rect ? innerWidth - rect.right : 0,
+                ambientVisible: [...document.querySelectorAll('.h-ambient-word')]
+                  .filter((node) => getComputedStyle(node).display !== 'none').length,
+              };
+            });
+
+            const compactCatalogue = width <= 900;
+            assert.equal(state.overflow, false, `${width}×${height}: page-level horizontal overflow`);
+            assert.equal(state.routeCount, 5, `${width}×${height}: route count changed`);
+            assert.equal(state.dividerCount, 4, `${width}×${height}: divider count changed`);
+            assert.equal(
+              state.dividerWidths.every((value) => Number.isFinite(value) && Math.abs(value - 1) <= 0.01),
+              true,
+              `${width}×${height}: divider widths are not uniformly 1px`,
+            );
+
+            if (compactCatalogue) {
+              assert.equal(state.display, 'flex', `${width}×${height}: compact gateway is not a horizontal catalogue`);
+              assert.ok(['auto', 'scroll'].includes(state.overflowX), `${width}×${height}: compact gateway is not horizontally scrollable`);
+              assert.match(state.scrollSnapType, /^x\s+mandatory$/, `${width}×${height}: compact gateway lost mandatory x scroll-snap`);
+              assert.ok(state.scrollWidth > state.clientWidth + 1, `${width}×${height}: compact gateway has no scrollable overflow`);
+              assert.equal(
+                state.cardWidths.every((value) => value > 0 && value < state.clientWidth),
+                true,
+                `${width}×${height}: compact gateway card width is invalid`,
+              );
+            } else {
+              assert.equal(state.display, 'grid', `${width}×${height}: desktop gateway is not a grid`);
+              assert.equal(state.columns, 9, `${width}×${height}: desktop gateway must expose five cards and four 1px tracks`);
+              assert.ok(state.scrollWidth <= state.clientWidth + 1, `${width}×${height}: desktop gateway unexpectedly scrolls`);
+            }
+
+            if (width <= 760) assert.notEqual(state.menuDisplay, 'none', `${width}px: mobile menu hidden`);
+            else assert.equal(state.menuDisplay, 'none', `${width}px: mobile menu visible above boundary`);
+            if (width >= 1600) {
+              assert.ok(state.gatewayWidth <= 1481, `${width}px: gateway exceeded 1480px cap`);
+              assert.ok(state.left >= 100 && state.right >= 100, `${width}px: side marginalia safe fields were lost`);
+              assert.equal(state.ambientVisible, 32, `${width}px: ambient phrases are not fully visible`);
+            } else if (width >= 1480) {
+              assert.equal(state.ambientVisible, 16, `${width}px: intermediate marginalia set changed`);
+            }
+            await assertDirectionObjects(page, `${width}×${height}`);
+            await assertVisualRegressionContracts(page, width, height);
+          }
+          '''
+
+          old_specs = """    for (const spec of [
+                [320, 568, 2],
+                [390, 844, 2],
+                [760, 900, 2],
+                [761, 900, 6],
+                [820, 1180, 6],
+                [1024, 450, 6],
+                [1280, 900, 5],
+                [1480, 900, 5],
+                [1720, 980, 5],
+              ]) await assertResponsiveLayout(page, ...spec);"""
+          new_specs = """    for (const spec of [
+                [320, 568],
+                [390, 844],
+                [760, 900],
+                [761, 900],
+                [820, 1180],
+                [900, 900],
+                [901, 900],
+                [1024, 450],
+                [1280, 900],
+                [1480, 900],
+                [1720, 980],
+              ]) await assertResponsiveLayout(page, ...spec);"""
+
+          replacements = [
+              (old_declaration, new_declaration, 'route divider declaration'),
+              (old_return, new_return, 'route divider state'),
+              (old_desktop_assertion, new_desktop_assertion, 'route divider assertions'),
+              (old_specs, new_specs, 'responsive viewport matrix'),
+          ]
+          for old, new, label in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit(f'{label}: expected one exact source match, found {text.count(old)}')
+              text = text.replace(old, new, 1)
+
+          text = text[:old_function_start] + new_function + text[old_function_end:]
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Verify exact bounded result
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/home-responsive-evidence-contract.mjs
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = "scripts/home-responsive-evidence-contract.mjs"
+          grep -F "const compactCatalogue = width <= 900;" scripts/home-responsive-evidence-contract.mjs
+          grep -F "desktop gateway must expose five cards and four 1px tracks" scripts/home-responsive-evidence-contract.mjs
+          grep -F "gateway must render exactly four internal dividers" scripts/home-responsive-evidence-contract.mjs
+          ! grep -F "gateway is not a grid" scripts/home-responsive-evidence-contract.mjs
+
+      - name: Commit repair and remove temporary executor
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/home-responsive-evidence-contract.mjs
+          git rm .github/workflows/home-gateway-ci-zero-patcher.yml
+          git commit -m "fix(ci): align responsive gateway browser contract"
+          git push origin HEAD:system/home-gateway-ci-zero-20260804
