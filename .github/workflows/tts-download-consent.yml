@@ -6,8 +6,15 @@ on:
       - "data/release-toolchain.json"
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
-      - "js/floating-cluster-controller.js"
+      - "js/vosk-tts-core.js"
+      - "js/vosk-stress-lookup.js"
+      - "js/vosk-custom-terms.json"
+      - "js/vosk-stress-marker.bin"
       - "css/tts-download-notice.css"
+      - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/runtime/reader-tts.js"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts-media-session.js"
       - "scripts/cache-bust-assets.js"
       - "scripts/cache-bust.js"
       - "scripts/lib/cache-bust-workflow-policy.js"
@@ -25,11 +32,9 @@ on:
       - "scripts/record-deployment-witness-contract-test.cjs"
       - "scripts/deployment-witness-ledger-source-contract-test.cjs"
       - "scripts/tts-download-consent-contract-test.js"
-      - "scripts/tts-download-notice-browser-test.js"
-      - "scripts/tts-engine-status-contract-test.js"
-      - "scripts/tts-engine-lifecycle-browser-test.js"
-      - "scripts/tts-real-model-phase-browser-test.js"
-      - "scripts/tts-status-route-browser-test.js"
+      - "scripts/tts-stress-dictionary-contract.js"
+      - "scripts/tts-reader-runtime-browser-test.js"
+      - "scripts/tts-reader-multitab-lock-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - "scripts/workflow-linkage-regression-test.js"
@@ -37,14 +42,22 @@ on:
       - ".github/workflows/indexnow.yml"
       - ".github/workflows/deployment-witness-ledger.yml"
       - ".github/workflows/tts-download-consent.yml"
+      - ".github/workflows/tts-reader-polish.yml"
   push:
     branches: [main]
     paths:
       - "data/release-toolchain.json"
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
-      - "js/floating-cluster-controller.js"
+      - "js/vosk-tts-core.js"
+      - "js/vosk-stress-lookup.js"
+      - "js/vosk-custom-terms.json"
+      - "js/vosk-stress-marker.bin"
       - "css/tts-download-notice.css"
+      - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/runtime/reader-tts.js"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts-media-session.js"
       - "scripts/cache-bust-assets.js"
       - "scripts/cache-bust.js"
       - "scripts/lib/cache-bust-workflow-policy.js"
@@ -62,11 +75,9 @@ on:
       - "scripts/record-deployment-witness-contract-test.cjs"
       - "scripts/deployment-witness-ledger-source-contract-test.cjs"
       - "scripts/tts-download-consent-contract-test.js"
-      - "scripts/tts-download-notice-browser-test.js"
-      - "scripts/tts-engine-status-contract-test.js"
-      - "scripts/tts-engine-lifecycle-browser-test.js"
-      - "scripts/tts-real-model-phase-browser-test.js"
-      - "scripts/tts-status-route-browser-test.js"
+      - "scripts/tts-stress-dictionary-contract.js"
+      - "scripts/tts-reader-runtime-browser-test.js"
+      - "scripts/tts-reader-multitab-lock-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - "scripts/workflow-linkage-regression-test.js"
@@ -74,6 +85,7 @@ on:
       - ".github/workflows/indexnow.yml"
       - ".github/workflows/deployment-witness-ledger.yml"
       - ".github/workflows/tts-download-consent.yml"
+      - ".github/workflows/tts-reader-polish.yml"
 
 permissions:
   contents: read
@@ -84,7 +96,7 @@ concurrency:
 
 jobs:
   source-contract:
-    name: Source and mutation contract
+    name: Consent, assets and release source contract
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -111,7 +123,11 @@ jobs:
             for file in \
               js/vosk-tts-engine.js \
               js/vosk-tts-worker.js \
-              js/floating-cluster-controller.js \
+              js/vosk-tts-core.js \
+              js/vosk-stress-lookup.js \
+              src/runtime/reader-tts.js \
+              src/runtime/reader-tts-defaults.js \
+              src/runtime/reader-tts-media-session.js \
               scripts/release-candidate-lib.mjs \
               scripts/release-pipeline-contract-test.mjs \
               scripts/deployment-provenance-contract-test.mjs \
@@ -123,11 +139,9 @@ jobs:
               scripts/record-deployment-witness-contract-test.cjs \
               scripts/deployment-witness-ledger-source-contract-test.cjs \
               scripts/tts-download-consent-contract-test.js \
-              scripts/tts-download-notice-browser-test.js \
-              scripts/tts-engine-status-contract-test.js \
-              scripts/tts-engine-lifecycle-browser-test.js \
-              scripts/tts-real-model-phase-browser-test.js \
-              scripts/tts-status-route-browser-test.js \
+              scripts/tts-stress-dictionary-contract.js \
+              scripts/tts-reader-runtime-browser-test.js \
+              scripts/tts-reader-multitab-lock-browser-test.js \
               scripts/tts-route-crawl-browser-test.js \
               scripts/tts-mobile-notice-geometry-browser-test.js \
               scripts/workflow-linkage-regression-test.js
@@ -137,17 +151,12 @@ jobs:
             done
           } 2>&1 | tee reports/release-source-syntax.log
 
-      - name: Download consent source contract
+      - name: Persistent-worker consent and pronunciation contracts
         run: |
           set -o pipefail
           mkdir -p reports
           node scripts/tts-download-consent-contract-test.js 2>&1 | tee reports/tts-source-download-consent.log
-
-      - name: Engine status source contract
-        run: |
-          set -o pipefail
-          mkdir -p reports
-          node scripts/tts-engine-status-contract-test.js 2>&1 | tee reports/tts-source-engine-status.log
+          node scripts/tts-stress-dictionary-contract.js 2>&1 | tee reports/tts-source-pronunciation.log
 
       - name: Deployment provenance schema contract
         run: |
@@ -161,19 +170,14 @@ jobs:
           mkdir -p reports
           node scripts/release-pipeline-contract-test.mjs 2>&1 | tee reports/release-pipeline-source.log
 
-      - name: Deployment witness ledger unit contract
+      - name: Deployment witness ledger contracts
         run: |
           set -o pipefail
           mkdir -p reports
           node scripts/record-deployment-witness-contract-test.cjs 2>&1 | tee reports/deployment-witness-ledger-unit.log
-
-      - name: Deployment witness ledger source contract
-        run: |
-          set -o pipefail
-          mkdir -p reports
           node scripts/deployment-witness-ledger-source-contract-test.cjs 2>&1 | tee reports/deployment-witness-ledger-source.log
 
-      - name: Verify existing asset revisions remain read-only clean
+      - name: Verify asset revisions remain read-only clean
         run: node scripts/cache-bust.js
 
       - name: Verify workflow policy migration
@@ -182,6 +186,7 @@ jobs:
       - name: Lint workflows
         run: |
           node scripts/run-actionlint.mjs -no-color .github/workflows/tts-download-consent.yml
+          node scripts/run-actionlint.mjs -no-color .github/workflows/tts-reader-polish.yml
           node scripts/run-actionlint.mjs -no-color .github/workflows/deploy.yml
           node scripts/run-actionlint.mjs -no-color .github/workflows/indexnow.yml
           node scripts/run-actionlint.mjs -no-color .github/workflows/deployment-witness-ledger.yml
@@ -194,7 +199,7 @@ jobs:
           path: |
             reports/release-source-syntax.log
             reports/tts-source-download-consent.log
-            reports/tts-source-engine-status.log
+            reports/tts-source-pronunciation.log
             reports/deployment-provenance-source.log
             reports/release-pipeline-source.log
             reports/deployment-witness-ledger-unit.log
@@ -203,7 +208,7 @@ jobs:
           retention-days: 14
 
   browser-contract:
-    name: Engine and real-route browser contract
+    name: Consent UI and reader-route browser contract
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -222,29 +227,30 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium webkit
 
-      - name: Run engine lifecycle fixtures
+      - name: Run deterministic reader and lock fixtures
         run: |
+          mkdir -p reports
           set -o pipefail
-          {
-            node scripts/tts-download-notice-browser-test.js
-            node scripts/tts-engine-lifecycle-browser-test.js
-            node scripts/tts-real-model-phase-browser-test.js
-          } 2>&1 | tee reports/tts-engine-lifecycle.log
+          node scripts/tts-reader-runtime-browser-test.js 2>&1 | tee reports/tts-reader-runtime.log
+          node scripts/tts-reader-multitab-lock-browser-test.js 2>&1 | tee reports/tts-reader-multitab-lock.log
 
       - name: Build production-like routes
         run: |
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/tts-production-build.log
 
-      - name: Run real-route status matrix
-        run: |
-          set -o pipefail
-          node scripts/tts-status-route-browser-test.js 2>&1 | tee reports/tts-route-status.log
-
       - name: Crawl every production-like TTS route
         run: |
           set -o pipefail
           node scripts/tts-route-crawl-browser-test.js 2>&1 | tee reports/tts-route-crawl.log
+          node - <<'NODE'
+          const assert = require('node:assert/strict');
+          const report = require('./reports/tts-route-crawl.json');
+          const checks = report.desktop.concat(report.mobile);
+          const failures = checks.filter((item) => item.status !== 'pass');
+          assert.equal(failures.length, 0, JSON.stringify(failures, null, 2));
+          console.log(`All ${checks.length} production-like TTS route checks passed.`);
+          NODE
 
       - name: Run mobile notice viewport geometry
         run: |
@@ -255,20 +261,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: tts-engine-status-browser-${{ github.run_id }}
+          name: tts-consent-reader-browser-${{ github.run_id }}
           path: |
-            reports/tts-download-notice-desktop.png
-            reports/tts-download-notice-mobile-dark.png
-            reports/tts-lifecycle-*.png
-            reports/tts-real-model-phase-*.png
-            reports/tts-real-model-phase.json
-            reports/tts-route-*.png
-            reports/tts-crawl-*.png
-            reports/tts-route-crawl.json
-            reports/tts-engine-lifecycle.log
+            reports/tts-reader-runtime.log
+            reports/tts-reader-multitab-lock.log
+            reports/tts-reader-mobile-notice-click.png
             reports/tts-production-build.log
-            reports/tts-route-status.log
             reports/tts-route-crawl.log
+            reports/tts-route-crawl.json
+            reports/tts-crawl-*.png
             reports/tts-mobile-notice-geometry.log
           if-no-files-found: warn
           retention-days: 14
