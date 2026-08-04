@@ -377,37 +377,6 @@ else if(done&&y<50){el.classList.remove("gbx-hero--scrolled");done=false}
 }
 }();
 ;!function(){"use strict";
-/* §1.9 Bible verse popovers (.gbx-verse[data-verse]) */
-var vD=null,vTip=null;
-function vInit(){
-var els=document.querySelectorAll(".gbx-verse[data-verse]");
-if(!els.length)return;
-fetch("/data/verses.json").then(function(r){return r.ok?r.json():null}).then(function(d){
-if(!d)return;vD=d;
-vTip=document.createElement("div");vTip.className="gbx-verse-tip";document.body.appendChild(vTip);
-els.forEach(function(el){
-el.setAttribute("tabindex","0");el.setAttribute("role","button");
-el.addEventListener("click",function(e){e.preventDefault();vShow(el)});
-el.addEventListener("pointerover",function(){if(window.matchMedia("(hover:hover)").matches)vShow(el)});
-el.addEventListener("pointerout",function(){vHide()});
-el.addEventListener("focusin",function(){vShow(el)});
-el.addEventListener("focusout",function(){vHide()});
-});
-document.addEventListener("keydown",function(e){if(e.key==="Escape")vHide()});
-document.addEventListener("click",function(e){if(vTip&&!e.target.closest(".gbx-verse")&&!e.target.closest(".gbx-verse-tip"))vHide()});
-});
-}
-function vShow(el){
-if(!vD||!vTip)return;
-var ref=el.getAttribute("data-verse");
-var text=vD[ref];if(!text)return;
-vTip.innerHTML='<span class="gbx-verse-tip__ref">'+tt(ref)+'</span><span class="gbx-verse-tip__text">'+tt(text)+'</span>';
-vTip.classList.add("gbx-verse-tip--open");
-if(window.SiteUtils)SiteUtils.positionTip(vTip,el);
-}
-function vHide(){if(vTip){vTip.classList.remove("gbx-verse-tip--open");vTip.style.top="-9999px"}}
-vInit();
-
 /* §1.10 Original word cards (.gbx-ow[data-ow]) */
 var owD=null,owCard=null;
 function owInit(){

@@ -47,7 +47,7 @@ export const SURFACES = Object.freeze([
   }),
 ]);
 export const LEGACY = Object.freeze([
-  Object.freeze({ id: 'legacy-verse', trigger: '.gbx-verse', tip: '.gbx-verse-tip', decision: 'DELETE_DEAD_RUNTIME' }),
+  Object.freeze({ id: 'legacy-verse', trigger: '.gbx-verse', tip: '.gbx-verse-tip', decision: 'REMOVED_PERMANENTLY' }),
   Object.freeze({ id: 'legacy-original-word', trigger: '.gbx-ow', tip: '.gbx-ow-card', decision: 'DELETE_DEAD_RUNTIME_KEEP_DATA' }),
 ]);
 export const INTERACTIVE = 'a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[tabindex]:not([tabindex="-1"])';
@@ -157,8 +157,8 @@ export async function loadSourceContract() {
       entriesWithAllFirstClassFields,
     },
     legacyVerses: {
-      path: 'data/verses.json', exists: existsSync(join(ROOT, 'data', 'verses.json')),
-      status: 'superseded-flat-dataset',
+      path: null, exists: false, status: 'removed-permanently',
+      runtime: 'removed', publicTriggerAllowed: false,
     },
   };
 }
