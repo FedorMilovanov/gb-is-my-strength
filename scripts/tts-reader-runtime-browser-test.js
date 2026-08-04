@@ -10,12 +10,11 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const RUNTIME = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts.js'), 'utf8');
 const CSS = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts.css'), 'utf8');
-const CUSTOM = fs.readFileSync(path.join(ROOT, 'js/vosk-custom-terms.json'), 'utf8');
 const REPORTS = path.join(ROOT, 'reports');
 fs.mkdirSync(REPORTS, { recursive: true });
 
 function fixture() {
-  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/src/runtime/reader-tts.css"><style>body{min-height:1200px}.cluster{position:fixed;right:12px;bottom:12px;z-index:20}.gb-ember{width:52px;height:52px}.gb-tts-download-notice{position:fixed;right:0;bottom:0;z-index:30;width:100%;height:90px;background:#ddd}.gb-tts-download-notice__meta{position:absolute;inset:0}</style></head><body data-fc-shortcuts="true"><article class="article-body" data-pagefind-body><h1 aria-hidden="true">Тест озвучки</h1><p>Первый длинный абзац нужен для проверки точной паузы и продолжения. Он содержит достаточно слов, чтобы граница речи находилась далеко от начала и изменение скорости не повторяло весь уже произнесённый фрагмент. Дополнительное предложение делает тест устойчивым.</p><ul><li><p>Вложенный пункт должен прозвучать только один раз.</p></li></ul><p>Финальный абзац завершает проверку перехода между частями.</p></article><div class="cluster" data-fc-root data-fc-shortcuts="true"><button class="gb-ember" data-fc-action="play" data-state="idle">PLAY</button></div><script type="module" src="/src/runtime/reader-tts.js"></script></body></html>`;
+  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/src/runtime/reader-tts.css"><style>body{min-height:1200px}.cluster{position:fixed;right:12px;bottom:12px;z-index:20}.gb-ember{width:52px;height:52px}.gb-tts-download-notice{position:fixed;right:0;bottom:92px;z-index:30;width:100%;height:90px;background:#ddd;pointer-events:none}.gb-tts-download-notice__action{pointer-events:auto}.gb-tts-download-notice__meta{position:absolute;inset:0}</style></head><body data-fc-shortcuts="true"><article class="article-body" data-pagefind-body><h1 aria-hidden="true">Тест озвучки</h1><p>Первый длинный абзац нужен для проверки точной паузы и продолжения. Он содержит достаточно слов, чтобы граница речи находилась далеко от начала и изменение скорости не повторяло весь уже произнесённый фрагмент. Дополнительное предложение делает тест устойчивым.</p><ul><li><p>Вложенный пункт должен прозвучать только один раз.</p></li></ul><p>Финальный абзац завершает проверку перехода между частями.</p></article><div class="cluster" data-fc-root data-fc-shortcuts="true"><button class="gb-ember" data-fc-action="play" data-state="idle">PLAY</button></div><script type="module" src="/src/runtime/reader-tts.js"></script></body></html>`;
 }
 
 function startServer() {
@@ -30,11 +29,6 @@ function startServer() {
       if (pathname === '/src/runtime/reader-tts.css') {
         res.writeHead(200, { 'content-type': 'text/css; charset=utf-8', 'cache-control': 'no-store' });
         res.end(CSS);
-        return;
-      }
-      if (pathname === '/js/vosk-custom-terms.json') {
-        res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
-        res.end(CUSTOM);
         return;
       }
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
@@ -69,7 +63,7 @@ async function newWebPage(browser, origin, viewport = { width: 1280, height: 760
   await installWebSpeech(context);
   const page = await context.newPage();
   await page.goto(origin, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.GBReaderTTS?.version === 1);
+  await page.waitForFunction(() => window.GBReaderTTS?.version === 2);
   return { context, page };
 }
 
@@ -162,32 +156,32 @@ async function newWebPage(browser, origin, viewport = { width: 1280, height: 760
     {
       const context = await browser.newContext({ viewport: { width: 1280, height: 760 } });
       await context.addInitScript(() => {
-        window.__voskProbe = { speaks: 0 };
-        window.ort = { env: { wasm: { proxy: false } } };
-        window.VoskTTSCore = { parseDictionary: () => new Map([['оуэн', ['fixture']], ['обычное', ['fixture']]]) };
+        window.__voskProbe = { speaks: 0, cancels: 0 };
         window.VoskTTSEngine = {
-          isSupported: () => true, isReady: () => true,
-          ensureLoaded: () => Promise.resolve(), retryLoading: () => Promise.resolve(),
-          speak: () => { window.__voskProbe.speaks += 1; return { engine: 'vosk', cancelled: false }; }, cancel: () => {},
+          version: 2,
+          isSupported: () => true,
+          isReady: () => true,
+          ensureLoaded: () => Promise.resolve(),
+          retryLoading: () => Promise.resolve(),
+          speak: () => {
+            const handle = { engine: 'vosk', id: 77, cancelled: false };
+            window.__voskProbe.speaks += 1;
+            setTimeout(() => dispatchEvent(new CustomEvent('gb:vosk-synthesis-progress', { detail: { id: 77, value: 0.6 } })), 20);
+            return handle;
+          },
+          cancel: () => { window.__voskProbe.cancels += 1; },
         };
       });
       const page = await context.newPage();
       try {
         await page.goto(origin, { waitUntil: 'domcontentloaded' });
-        await page.waitForFunction(() => window.GBReaderTTS?.version === 1);
-        await page.waitForTimeout(150);
-        const contract = await page.evaluate(() => {
-          const dictionary = window.VoskTTSCore.parseDictionary('fixture');
-          return { proxy: window.ort.env.wasm.proxy, hasManual: dictionary.has('оуэн'), hasNormal: dictionary.has('обычное') };
-        });
-        assert.equal(contract.proxy, true);
-        assert.equal(contract.hasManual, false);
-        assert.equal(contract.hasNormal, true);
+        await page.waitForFunction(() => window.GBReaderTTS?.version === 2);
         await page.locator('[data-fc-action="play"]').click();
-        await page.waitForFunction(() => window.__voskProbe.speaks === 1);
-        await page.waitForTimeout(350);
+        await page.waitForFunction(() => window.__voskProbe.speaks === 1 && window.GBReaderTTS.getState().synthesisProgress > 0);
         const progress = await page.locator('[data-fc-action="play"]').evaluate((element) => parseFloat(getComputedStyle(element).getPropertyValue('--p')) || 0);
-        assert.ok(progress > 0, 'Vosk generation progress remained frozen');
+        assert.ok(progress > 0, 'worker synthesis progress did not reach the PLAY ring');
+        await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
+        assert.equal(await page.evaluate(() => window.__voskProbe.cancels), 1, 'pagehide did not cancel the active worker job');
       } finally { await context.close(); }
     }
 
