@@ -45,7 +45,7 @@ def search_reference_files() -> list[Path]:
 
 
 def update_search_revisions(new_hash: str) -> list[str]:
-    pattern = re.compile(r'(js/search\.js\?v=)[^\s"\'&}>]+')
+    pattern = re.compile(r"(js/search\.js\?v=)[^\s\"'&}>]+")
     changed: list[str] = []
     for file in search_reference_files():
         source = file.read_text(encoding='utf-8')
