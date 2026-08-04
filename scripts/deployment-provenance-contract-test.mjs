@@ -36,6 +36,7 @@ function fixture() {
   write(path.join(dist, 'sw.js'), 'const CACHE = "fixture";');
   write(path.join(dist, 'js/floating-cluster-controller.js'), 'const engine="/js/vosk-tts-engine.js?v=11111111";');
   write(path.join(dist, 'js/vosk-tts-engine.js'), 'const css="/css/tts-download-notice.css?v=22222222";');
+  write(path.join(dist, 'js/vosk-tts-worker.js'), 'importScripts("/js/vosk-tts-core.js");');
   write(path.join(dist, 'css/tts-download-notice.css'), '.notice{display:block}');
   return { root, dist };
 }
@@ -91,6 +92,12 @@ try {
   assert.equal(Object.hasOwn(manifest, 'commitSha'), false, 'ambiguous commitSha must not remain');
   assert.equal(Object.hasOwn(manifest, 'tts'), false, 'TTS must not remain top-level');
   assert.ok(manifest.extensions?.tts?.assets, 'TTS extension is missing');
+  assert.equal(manifest.extensions.tts.assets.worker.path, '/js/vosk-tts-worker.js');
+  assert.deepEqual(manifest.extensions.tts.lazyNoPrecache, [
+    'css/tts-download-notice.css',
+    'js/vosk-tts-engine.js',
+    'js/vosk-tts-worker.js',
+  ]);
   assert.equal(stats.digest, manifest.artifact.digest);
 
   const exact = verifyReleaseCandidate({
