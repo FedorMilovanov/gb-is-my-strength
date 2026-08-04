@@ -15,9 +15,13 @@
  * testable without coupling them to either speech engine. Heavy Vosk work is
  * owned by the same-origin persistent worker loaded by vosk-tts-engine.js.
  */
+import { assetUrl } from '../../lib/asset-version';
 import '../../runtime/article-interactions.css';
 import '../../runtime/reader-tts.css';
+
+const voskEngineSrc = assetUrl('js/vosk-tts-engine.js');
 ---
+<script is:inline defer src={voskEngineSrc}></script>
 <script>
   import '../../runtime/print-pagination-geometry.js';
   import '../../runtime/reader-actions.js';
