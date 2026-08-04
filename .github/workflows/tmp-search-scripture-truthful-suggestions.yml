@@ -76,9 +76,9 @@ jobs:
           set -euo pipefail
           rm -f .github/tmp/search_scripture_truthful_suggestions.py
           rm -f .github/workflows/tmp-search-scripture-truthful-suggestions.yml
-          git diff --check
+          git diff --check origin/main
           changed="${RUNNER_TEMP}/changed.txt"
-          git diff --name-only > "${changed}"
+          git diff --name-only origin/main > "${changed}"
           for required in \
             js/search.js \
             scripts/search-scripture-suggestion-contract.mjs \
@@ -91,7 +91,7 @@ jobs:
           done
           while IFS= read -r path; do
             case "${path}" in
-              js/search.js|scripts/search-scripture-suggestion-contract.mjs|.github/workflows/search-scripture-suggestion-contract.yml|sw.js|migration/sw-cache-version-baseline.json|data/offline-route-matrix.json|src/lib/asset-version.js|.github/tmp/search_scripture_truthful_suggestions.py|.github/workflows/tmp-search-scripture-truthful-suggestions.yml) ;;
+              js/search.js|scripts/search-scripture-suggestion-contract.mjs|.github/workflows/search-scripture-suggestion-contract.yml|sw.js|migration/sw-cache-version-baseline.json|data/offline-route-matrix.json|src/lib/asset-version.js) ;;
               *) grep -qxF "${path}" "${RUNNER_TEMP}/search-js-references.before" || { echo "Unexpected changed path: ${path}"; exit 1; } ;;
             esac
             case "${path}" in
