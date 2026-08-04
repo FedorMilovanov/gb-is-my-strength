@@ -1,27 +1,36 @@
 name: Complete refined Nagornaya dark-theme repair
 
 on:
-  push:
-    branches:
-      - system/nagornaya-dark-refined-repair-20260804
+  pull_request:
+    branches: [main]
+    types: [labeled, synchronize, reopened]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: nagornaya-dark-refined-push
+  group: nagornaya-dark-refined-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   repair:
-    if: github.ref_name == 'system/nagornaya-dark-refined-repair-20260804'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.number == 883 &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'system/nagornaya-dark-refined-repair-20260804'
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
     steps:
-      - name: Checkout exact repair branch
+      - name: Checkout exact PR branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: system/nagornaya-dark-refined-repair-20260804
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Guard exact base and owner blobs
@@ -36,9 +45,10 @@ jobs:
           test "$(git rev-parse HEAD:sw.js)" = "f9dada3c79dee430d8513cbd5b274eb8b5def9aa"
           test "$(git rev-parse HEAD:migration/sw-cache-version-baseline.json)" = "d633805fc48bff876fda6349bf894e2ece4e4615"
           test "$(git rev-parse HEAD:data/offline-route-matrix.json)" = "f80d32f03f79f3a36c6d1e7c4d89119edd322a35"
+          test "$(git rev-parse HEAD:src/lib/asset-version.js)" = "d6987463b9d699377a201888fc3e28799408dcac"
           test -f .github/tmp/nagornaya_dark_refined_repair.py
 
-      - name: Set up Node 22.23.1
+      - name: Set up canonical Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
@@ -47,20 +57,20 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Apply bounded repair and synchronize revisions
+      - name: Write bounded Product repair
         shell: bash
         run: |
           set -euo pipefail
           git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort > "${RUNNER_TEMP}/nagornaya-css-references.before"
           test -s "${RUNNER_TEMP}/nagornaya-css-references.before"
-          python3 .github/tmp/nagornaya_dark_refined_repair.py
-          node scripts/cache-bust.js --write
+          python3 .github/tmp/nagornaya_dark_refined_repair.py --write
 
       - name: Validate targeted source, build, Chromium and SW contracts
         shell: bash
         run: |
           set -euo pipefail
           node --check scripts/nagornaya-epistemic-ui-browser-test.mjs
+          node scripts/cache-bust.js
           npm run nagornaya:visual-parity:audit
           npm run guard:shared-files
           npm run strangler:build:production-like
@@ -69,7 +79,7 @@ jobs:
           npm run sw:dist:audit
           npm run sw:dist:audit:deploy-switch
 
-      - name: Run full static publication barrier
+      - name: Validate full static publication barrier
         shell: bash
         run: |
           set -euo pipefail
@@ -89,9 +99,10 @@ jobs:
           grep -qx 'sw.js' "${changed}"
           grep -qx 'migration/sw-cache-version-baseline.json' "${changed}"
           grep -qx 'data/offline-route-matrix.json' "${changed}"
+          grep -qx 'src/lib/asset-version.js' "${changed}"
           while IFS= read -r path; do
             case "${path}" in
-              css/nagornaya-mobile-toc.css|scripts/nagornaya-epistemic-ui-browser-test.mjs|sw.js|migration/sw-cache-version-baseline.json|data/offline-route-matrix.json|.github/tmp/nagornaya_dark_refined_repair.py|.github/workflows/tmp-nagornaya-dark-refined-repair.yml) ;;
+              css/nagornaya-mobile-toc.css|scripts/nagornaya-epistemic-ui-browser-test.mjs|sw.js|migration/sw-cache-version-baseline.json|data/offline-route-matrix.json|src/lib/asset-version.js|.github/tmp/nagornaya_dark_refined_repair.py|.github/workflows/tmp-nagornaya-dark-refined-repair.yml) ;;
               *) grep -qxF "${path}" "${RUNNER_TEMP}/nagornaya-css-references.before" || { echo "Unexpected changed path: ${path}"; exit 1; } ;;
             esac
             case "${path}" in
@@ -104,9 +115,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mapfile -t revision_refs < "${RUNNER_TEMP}/nagornaya-css-references.before"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add -- \
+            css/nagornaya-mobile-toc.css \
+            scripts/nagornaya-epistemic-ui-browser-test.mjs \
+            sw.js \
+            migration/sw-cache-version-baseline.json \
+            data/offline-route-matrix.json \
+            src/lib/asset-version.js \
+            .github/tmp/nagornaya_dark_refined_repair.py \
+            .github/workflows/tmp-nagornaya-dark-refined-repair.yml \
+            "${revision_refs[@]}"
           git diff --cached --quiet && { echo 'No repair generated'; exit 1; }
           git commit -m 'fix(nagornaya): repair refined dark-theme contrast residual'
-          git push origin HEAD:system/nagornaya-dark-refined-repair-20260804
+          git push origin "HEAD:${HEAD_REF}"
