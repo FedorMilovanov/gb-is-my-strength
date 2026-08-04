@@ -44,7 +44,7 @@ jobs:
           test "$(git rev-parse HEAD:migration/sw-cache-version-baseline.json)" = "a6c548feaa9ace1beac88381c559ed41588dd678"
           test "$(git rev-parse HEAD:data/offline-route-matrix.json)" = "e74aad4a01dde2097f6155f8d6bd3c8059d3e818"
           test "$(git rev-parse HEAD:src/lib/asset-version.js)" = "13ac0f0911ac61f1d9ab10af2e61ea0608dfbe87"
-          test "$(git rev-parse HEAD:scripts/search-scripture-suggestion-contract.mjs)" = "0bd27717b5dde989a6610beb590e6a1bfea51c7d"
+          test "$(git rev-parse HEAD:scripts/search-scripture-suggestion-contract.mjs)" = "80ef215b9870c50d5acc52a293df6dbe607b94fd"
           test -f .github/tmp/search_scripture_truthful_suggestions.py
           test -f .github/workflows/search-scripture-suggestion-contract.yml
 
