@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   DEFAULT_REPOSITORY_ROOT,
   createBibleResolver,
@@ -9,13 +10,15 @@ import {
 
 const ROOT = DEFAULT_REPOSITORY_ROOT;
 const STRICT = process.argv.includes('--strict');
+const CONTRACT_FILE = fileURLToPath(import.meta.url);
+const LEGACY_VERSES_RELATIVE = ['data', 'verses.json'].join('/');
+const LEGACY_VERSES_FILE = path.join(ROOT, ...LEGACY_VERSES_RELATIVE.split('/'));
 const errors = [];
 const warnings = [];
 
 function fail(message) { errors.push(message); }
 function warn(message) { warnings.push(message); }
 function rel(file) { return path.relative(ROOT, file).split(path.sep).join('/'); }
-function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 function walk(directory, output = []) {
   if (!fs.existsSync(directory)) return output;
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
@@ -105,21 +108,18 @@ function compareInlinePayloads(resolver, payloads) {
   }
 }
 
-function inspectLegacyVerses(resolver) {
-  const file = path.join(ROOT, 'data/verses.json');
-  if (!fs.existsSync(file)) return;
-  const legacy = readJson(file);
-  for (const [reference, text] of Object.entries(legacy || {})) {
-    const { parsed, record } = resolver.resolve(reference);
-    if (!parsed.ok) {
-      warn(`data/verses.json: unparsed legacy reference ${reference}`);
-      continue;
+function inspectLegacyAuthority(files) {
+  if (fs.existsSync(LEGACY_VERSES_FILE)) {
+    fail(`${LEGACY_VERSES_RELATIVE}: legacy verse authority must remain absent; only governed data/bible records may own canonical text`);
+  }
+
+  const forbiddenTokens = [LEGACY_VERSES_RELATIVE, `/${LEGACY_VERSES_RELATIVE}`];
+  for (const file of files) {
+    if (path.resolve(file) === path.resolve(CONTRACT_FILE)) continue;
+    const source = fs.readFileSync(file, 'utf8');
+    if (forbiddenTokens.some((token) => source.includes(token))) {
+      fail(`${rel(file)}: forbidden consumer of removed legacy verse authority ${LEGACY_VERSES_RELATIVE}`);
     }
-    if (!record) {
-      warn(`data/verses.json: no canonical record for ${reference}`);
-      continue;
-    }
-    if (String(text || '').trim() !== record.text) warn(`data/verses.json: deprecated value differs from canonical ${reference}`);
   }
 }
 
@@ -159,7 +159,7 @@ if (resolver) {
   ].flatMap((directory) => walk(directory));
   const payloads = inspectInlinePayloads(sourceFiles);
   compareInlinePayloads(resolver, payloads);
-  inspectLegacyVerses(resolver);
+  inspectLegacyAuthority(walk(ROOT));
   runFixtures(resolver);
 
   console.log(`Bible reference registry: ${Object.keys(resolver.registry.books || {}).length} books`);
