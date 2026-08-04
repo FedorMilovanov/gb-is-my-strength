@@ -2,6 +2,11 @@ name: Overlay Runtime Browser
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - lane/system-tts-polish-2026-08-04
+    paths:
+      - ".github/workflows/overlay-runtime-browser.yml"
   pull_request:
     branches: [main]
     paths:
@@ -25,10 +30,95 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  reconcile-main:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout TTS branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: lane/system-tts-polish-2026-08-04
+          fetch-depth: 0
+      - name: Merge current main and preserve both asset registries
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main lane/system-tts-polish-2026-08-04
+          git merge --no-ff --no-commit origin/main || true
+          mapfile -t unresolved < <(git diff --name-only --diff-filter=U)
+          for path in "${unresolved[@]}"; do
+            if [[ "$path" != "src/lib/asset-version.js" ]]; then
+              echo "Unexpected merge conflict: $path" >&2
+              exit 1
+            fi
+          done
+          cat > src/lib/asset-version.js <<'EOF'
+          // Asset version helper — central source of truth for cache-busted assets
+          // Replaces hardcoded ?v=xxx in 36+ Astro PageHead components (PC-003)
+          // Run `node scripts/cache-bust.js` to update VERSIONS below after CSS/JS changes
+
+          export const ASSET_VERSIONS = {
+            'css/command-palette.css': 'afe33045',
+            'css/enhancements-runtime.css': '97a3e924',
+            'css/floating-cluster.css': 'd26d83c2',
+            'css/highlights-runtime.css': '9f42844a',
+            'css/home.css': 'a4c21e0e',
+            'css/mobile-hotfix.css': 'a6a3187a',
+            'css/nagornaya-mobile-toc.css': '30051b58',
+            'css/reader-preferences.css': '2b0b76ce',
+            'css/series-manuscript.css': '11475bd7',
+            'css/series-samizdat.css': '2c4a9f29',
+            'css/site.css': '6c30f93f',
+            'css/sw-toast.css': 'efbe868b',
+            'css/tts-download-notice.css': 'b9ef192f',
+            'fonts/fonts.css': '864cc57a',
+            'js/bookmark-engine.js': 'fba4e559',
+            'js/enhancements.js': 'cbbdb283',
+            'js/floating-cluster-controller.js': '2b92a1a5',
+            'js/glossary.js': '535493ed',
+            'js/highlights.js': '25484760',
+            'js/nagornaya-bar-extras.js': '3c7e0bdd',
+            'js/nagornaya-mobile-toc.js': '649d9217',
+            'js/reader-preferences-head.js': '2db7a79e',
+            'js/reader-preferences.js': '63b588b5',
+            'js/reader-state.js': 'b3deb501',
+            'js/scroll-perf.js': '454d6f7b',
+            'js/search.js': 'f48e4610',
+            'js/site-utils.js': '30ed46cf',
+            'js/site.js': '38b94307',
+            'js/sw-register.js': '3fbabcf1',
+            'js/vosk-tts-engine.js': 'f9b4905f',
+            'js/vosk-tts-worker.js': '2ea9ada3',
+            'nagornaya/tw.min.css': '2670414e',
+          };
+
+          export function assetUrl(path) {
+            const clean = String(path).replace(/^\//, '');
+            const v = ASSET_VERSIONS[clean];
+            return v ? `/${clean}?v=${v}` : `/${clean}`;
+          }
+          EOF
+          sed -i 's/^          //' src/lib/asset-version.js
+          git checkout origin/main -- .github/workflows/overlay-runtime-browser.yml
+          git add -A
+          if git diff --name-only --diff-filter=U | grep -q .; then
+            echo "Unresolved conflicts remain" >&2
+            git diff --name-only --diff-filter=U >&2
+            exit 1
+          fi
+          node --check src/lib/asset-version.js
+          git diff --check --cached
+          git commit -m "merge: reconcile current main into TTS reader lane"
+          git push origin "HEAD:lane/system-tts-polish-2026-08-04"
+
   browser:
+    if: github.event_name != 'push'
     name: ${{ matrix.browser }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
