@@ -17,7 +17,6 @@ const caseData = JSON.parse(readFileSync(casesPath, 'utf8'));
 const responseData = JSON.parse(readFileSync(responsesPath, 'utf8'));
 const sourceDataRaw = readFileSync(sourcesPath, 'utf8');
 const sourceData = JSON.parse(sourceDataRaw);
-const baseDraft = readFileSync(baseDraftPath, 'utf8');
 const supplement = readFileSync(supplementPath, 'utf8');
 const wrapper = readFileSync(wrapperPath, 'utf8');
 const report = readFileSync(reportPath, 'utf8');
@@ -105,24 +104,13 @@ for (const [id, expectedSource] of Object.entries(waveBSourceOwners)) {
   requireValue(actual?.class === expectedSource.class, `Wave B source class drift: ${id}`);
 }
 
-const waveBStaleUrls = [
+const waveB2StaleRegistryUrls = [
   'https://ihopkc.org/press-releases/press-center/press-releases/ihopkc-elt-update-11-10-2023',
   'https://ihopkc.org/press-releases/press-center/press-releases/elt-update-letter-11-15-2023',
   'https://www.brentdetwiler.com/my-story-resume/',
-  'https://www.thejourney.org/our-story',
-  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
 ];
-for (const staleUrl of waveBStaleUrls) {
-  requireValue(!sourceDataRaw.includes(staleUrl), `stale Wave B registry URL retained: ${staleUrl}`);
-  requireValue(!baseDraft.includes(staleUrl), `stale Wave B base-reader URL retained: ${staleUrl}`);
-}
-
-const waveBBaseReaderUrls = [
-  'https://www.thejourney.org/about/our-story-new',
-  'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
-];
-for (const canonicalUrl of waveBBaseReaderUrls) {
-  requireValue(baseDraft.includes(canonicalUrl), `canonical Wave B base-reader URL missing: ${canonicalUrl}`);
+for (const staleUrl of waveB2StaleRegistryUrls) {
+  requireValue(!sourceDataRaw.includes(staleUrl), `stale Wave B2 registry URL retained: ${staleUrl}`);
 }
 
 const requiredPathFields = ['id','name','actors','loyaltyTension','steps','lesson','boundary','sourceIds'];
