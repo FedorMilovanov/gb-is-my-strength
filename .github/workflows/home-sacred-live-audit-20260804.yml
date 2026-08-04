@@ -79,6 +79,10 @@ jobs:
           }
           const openState = (s) => s.front.visibility === 'hidden' && s.front.opacity <= .05 && s.back.visibility === 'visible' && s.back.opacity >= .95;
           const closedState = (s) => s.front.visibility === 'visible' && s.front.opacity >= .9 && s.back.visibility === 'hidden' && s.back.opacity <= .05;
+          const settledFilter = (value) => {
+            const normalized = String(value || '').trim();
+            return normalized === 'none' || /^blur\(\s*0(?:\.0+)?(?:px)?\s*\)$/.test(normalized);
+          };
 
           async function openPage(engine, label, options = {}) {
             const browser = await engine.launch();
@@ -111,7 +115,7 @@ jobs:
               assert(r.hover.matchesHover && r.hover.pointerPreview, `${name}: physical hover owner inactive`, r.hover);
               assert(openState(r.hover) && r.hover.back.text.includes('Яхве'), `${name}: hover translation failed`, r.hover);
               assert(r.hover.nameColor === r.hover.inkColor, `${name}: Яхве is not theme ink`, r.hover);
-              assert(r.hover.label?.visibility === 'visible' && r.hover.label.opacity >= .95 && r.hover.label.filter === 'none',
+              assert(r.hover.label?.visibility === 'visible' && r.hover.label.opacity >= .95 && settledFilter(r.hover.label.filter),
                 `${name}: label did not settle visibly`, r.hover);
               assert(r.hover.label.gapToTranslation >= 4 && r.hover.label.gapToTranslation <= 55,
                 `${name}: label is overlapping or too high above Яхве`, r.hover);
