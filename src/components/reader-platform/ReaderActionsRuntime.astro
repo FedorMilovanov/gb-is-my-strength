@@ -10,7 +10,9 @@
  *
  * Reader TTS is also claimed here after the legacy floating controller loads.
  * Its capture-phase owner prevents double handling while keeping the existing
- * non-TTS cluster actions intact.
+ * non-TTS cluster actions intact. Media Session is composed as a separate
+ * lifecycle owner so lock-screen controls and background playback remain
+ * testable without coupling them to either speech engine.
  */
 import '../../runtime/article-interactions.css';
 import '../../runtime/reader-tts.css';
@@ -21,5 +23,6 @@ import '../../runtime/reader-tts.css';
   import '../../runtime/reader-vosk-download-worker.js';
   import '../../runtime/reader-tts-defaults.js';
   import '../../runtime/reader-tts.js';
+  import '../../runtime/reader-tts-media-session.js';
   import '../../runtime/article-interactions.js';
 </script>
