@@ -44,7 +44,7 @@ jobs:
           test "$(git rev-parse HEAD:migration/sw-cache-version-baseline.json)" = "99d93fd59b8e9db3149f2dcea6f59017c2b38549"
           test "$(git rev-parse HEAD:data/offline-route-matrix.json)" = "5c5b9e1fd16bb590f02e77649a7279c7bdc751c0"
           test "$(git rev-parse HEAD:src/lib/asset-version.js)" = "4154a4016f0fc2bfb11d99c5f2b8fe63ad70e758"
-          test "$(git rev-parse HEAD:scripts/search-scripture-occurrence-runtime-browser-test.mjs)" = "f59fc25ce1c74f9d1909af7848c532822c765faa"
+          test "$(git rev-parse HEAD:scripts/search-scripture-occurrence-runtime-browser-test.mjs)" = "6e999f54e2ec99a8bcb3f3313b39dddc70a21c1e"
           test "$(git rev-parse HEAD:.github/workflows/search-scripture-occurrence-runtime.yml)" = "a8f369ecd4ce4a3a05f0b58ee70d5815cb2af8c5"
           test "$(git rev-parse HEAD:.github/tmp/apply_scripture_occurrence_runtime_s2.py)" = "c1ca933bf1f74b0081fad0c9848fa3c47b1c31df"
           test -f .github/workflows/tmp-scripture-occurrence-runtime-s2.yml
