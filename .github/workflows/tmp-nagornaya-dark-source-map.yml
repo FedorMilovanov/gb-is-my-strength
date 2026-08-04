@@ -3,7 +3,7 @@ name: Map Nagornaya confirmed dark residual owners
 on:
   pull_request:
     branches: [main]
-    types: [opened, reopened, synchronize]
+    types: [synchronize]
 
 permissions:
   contents: read
@@ -26,18 +26,31 @@ jobs:
           test "$(git rev-parse origin/main)" = "f9d0120718569c510833dba7a3abd68ce2f6a003"
           git merge-base --is-ancestor origin/main HEAD
 
-      - name: Inventory confirmed token owners and dark contracts
+      - name: Materialize confirmed token owner map
         shell: bash
         run: |
           set -euo pipefail
+          report="${RUNNER_TEMP}/nagornaya-dark-source-map.txt"
           tokens='text-blue-600|text-rose-600|text-purple-600|text-purple-700|text-teal-700|bg-stone-200|text-orange-700|text-red-600|text-rose-700'
-          echo '=== CONFIRMED TOKEN OWNERS ==='
-          grep -RInE --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude='*.map' "${tokens}" src scripts package.json || true
-          echo '=== NAGORNAYA SOURCE TREE ==='
-          find src -maxdepth 6 -type f | grep -E 'nagornaya|Nagornaya' | sort
-          echo '=== DARK / LIGHT OVERRIDE REFERENCES ==='
-          grep -RInE --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist 'dark:|\.dark|data-theme|nagornaya-light|nagornaya-dark|bg-stone-100|border-stone-100' src scripts | grep -E 'nagornaya|Nagornaya|text-blue-600|text-rose-600|text-purple-600|text-purple-700|text-teal-700|bg-stone-200|text-orange-700|text-red-600|text-rose-700' || true
-          echo '=== EXISTING NAGORNAYA TESTS / SCRIPTS ==='
-          find scripts .github/workflows -maxdepth 3 -type f | grep -i nagornaya | sort
-          echo '=== PACKAGE SCRIPTS ==='
-          node -e "const p=require('./package.json'); for (const [k,v] of Object.entries(p.scripts||{})) if (/nagornaya|strangler|visual|browser/.test(k)) console.log(k+'='+v)"
+          {
+            echo '=== EXACT HEAD ==='
+            git rev-parse HEAD
+            echo '=== CONFIRMED TOKEN OWNERS ==='
+            grep -RInE --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude='*.map' "${tokens}" src scripts package.json || true
+            echo '=== NAGORNAYA SOURCE TREE ==='
+            find src -maxdepth 6 -type f | grep -E 'nagornaya|Nagornaya' | sort
+            echo '=== DARK / LIGHT OVERRIDE REFERENCES ==='
+            grep -RInE --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist 'dark:|\.dark|data-theme|nagornaya-light|nagornaya-dark|bg-stone-100|border-stone-100' src scripts | grep -E 'nagornaya|Nagornaya|text-blue-600|text-rose-600|text-purple-600|text-purple-700|text-teal-700|bg-stone-200|text-orange-700|text-red-600|text-rose-700' || true
+            echo '=== EXISTING NAGORNAYA TESTS / SCRIPTS ==='
+            find scripts .github/workflows -maxdepth 3 -type f | grep -i nagornaya | sort
+            echo '=== PACKAGE SCRIPTS ==='
+            node -e "const p=require('./package.json'); for (const [k,v] of Object.entries(p.scripts||{})) if (/nagornaya|strangler|visual|browser/.test(k)) console.log(k+'='+v)"
+          } | tee "${report}"
+
+      - name: Upload owner map
+        uses: actions/upload-artifact@v4
+        with:
+          name: nagornaya-dark-source-map
+          path: ${{ runner.temp }}/nagornaya-dark-source-map.txt
+          if-no-files-found: error
+          retention-days: 7
