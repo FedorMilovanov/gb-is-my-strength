@@ -15,9 +15,8 @@ function read(file) {
   return fs.readFileSync(file, 'utf8');
 }
 
-function gitBlobRevision(content) {
-  const prefix = Buffer.from(`blob ${Buffer.byteLength(content)}\0`);
-  return crypto.createHash('sha1').update(prefix).update(content).digest('hex').slice(0, 8);
+function assetRevision(content) {
+  return crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
 }
 
 function validate(engine, worker, css) {
@@ -79,7 +78,7 @@ function validate(engine, worker, css) {
   if (!match) {
     problems.push('engine: versioned notice stylesheet URL missing');
   } else {
-    const actual = gitBlobRevision(css);
+    const actual = assetRevision(css);
     if (match[1] !== actual) problems.push(`engine: stylesheet revision ${match[1]} != ${actual}`);
   }
 
