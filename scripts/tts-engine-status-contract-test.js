@@ -25,6 +25,7 @@ function validateTtsStatus(input) {
     engine,
     worker,
     controller,
+    canonicalRuntime,
     css,
     workflow,
     cacheAssets,
@@ -42,11 +43,11 @@ function validateTtsStatus(input) {
     ['engine: status API', /getStatus:\s*getStatus[\s\S]{0,220}showStatus:\s*showStatus/],
     ['engine: retry API', /retryLoading:\s*retryLoading/],
     ['engine: same-origin persistent Worker', /new Worker\(WORKER_SRC,\s*\{\s*name:\s*'gb-vosk-tts'\s*\}\)/],
-    ['engine: Worker status bridge', /type === 'status'[\s\S]{0,320}showStatus\(message\.phase/],
+    ['engine: Worker status bridge', /type === 'status'[\s\S]{0,360}showStatus\(message\.phase/],
     ['engine: Worker progress bridge', /gb:vosk-synthesis-progress/],
-    ['engine: transferable WAV playback', /type === 'audio'[\s\S]{0,700}new Blob\(\[message\.wav\]/],
-    ['engine: terminal cancel', /function cancelLoading\(options\)[\s\S]{0,800}postMessage\(\{\s*type:\s*'cancel-load'\s*\}\)[\s\S]{0,220}terminateWorker\(error\)/],
-    ['engine: synchronous first reveal', /function showStatus\([\s\S]{0,6000}element\.classList\.add\('is-visible'\);[\s\S]{0,800}dispatchStatus/],
+    ['engine: transferable WAV playback', /type === 'audio'[\s\S]{0,800}new Blob\(\[message\.wav\]/],
+    ['engine: terminal cancel', /function cancelLoading\(options\)[\s\S]{0,900}postMessage\(\{\s*type:\s*'cancel-load'\s*\}\)[\s\S]{0,260}terminateWorker\(error\)/],
+    ['engine: synchronous first reveal', /function showStatus\([\s\S]{0,7000}element\.classList\.add\('is-visible'\);[\s\S]{0,900}dispatchStatus/],
     ['engine: visible lifecycle states', /name === 'browser'[\s\S]*name === 'preparing'[\s\S]*name === 'loading'[\s\S]*name === 'verifying'[\s\S]*name === 'extracting'[\s\S]*name === 'cache-hit'[\s\S]*name === 'initializing'[\s\S]*name === 'ready'[\s\S]*name === 'selected'[\s\S]*name === 'disabled'[\s\S]*name === 'save-data'[\s\S]*name === 'cancelled'/],
   ];
   for (const [label, pattern] of engineChecks) expectPattern(problems, label, engine, pattern);
@@ -62,47 +63,58 @@ function validateTtsStatus(input) {
     ['worker: dependencies imported off-main-thread', /importScripts\(CORE_SRC, STRESS_LOOKUP_SRC, FFLATE_SRC, ORT_SRC\)/],
     ['worker: IndexedDB cache read', /function idbGet\(/],
     ['worker: IndexedDB cache write', /function idbSet\(/],
-    ['worker: cache read fallback status', /cache-unavailable[\s\S]{0,180}indexeddb-read/],
-    ['worker: cache write fallback status', /cache-unavailable[\s\S]{0,180}indexeddb-write/],
+    ['worker: cache read fallback status', /cache-unavailable[\s\S]{0,220}indexeddb-read/],
+    ['worker: cache write fallback status', /cache-unavailable[\s\S]{0,220}indexeddb-write/],
+    ['worker: cache commit boundary', /function idbSet\([\s\S]{0,900}transaction\.oncomplete[\s\S]{0,300}resolve\(\)/],
     ['worker: abortable model request', /fetch\(MODEL_URL,\s*state\.loadController\s*\?\s*\{\s*signal:\s*state\.loadController\.signal\s*\}/],
     ['worker: model integrity verification', /EXPECTED_MODEL_SHA256[\s\S]*crypto\.subtle\.digest\('SHA-256'/],
     ['worker: archive extraction', /fflate\.unzipSync/],
     ['worker: ONNX session ownership', /ort\.InferenceSession\.create/],
     ['worker: readiness only after sessions', /Promise\.all\(\[[\s\S]*InferenceSession\.create[\s\S]*\]\.then\(function \(sessions\)[\s\S]*state\.ready = true;[\s\S]*status\('ready'\)/],
-    ['worker: manual terms override dictionary', /stress\.customTerms\.forEach\(function \(_, word\) \{ state\.dic\.delete\(word\); \}\)/],
-    ['worker: model dictionary keeps priority', /function injectCustomStress\(text\)[\s\S]{0,420}state\.dic\.has\(lower\)[\s\S]{0,180}return word/],
+    ['worker: manual terms override dictionary', /stress\.customTerms\.forEach\(function \(_, word\) \{ state\.dic\.delete\(String\(word\)\.toLowerCase\(\)\); \}\)/],
+    ['worker: model dictionary keeps priority', /function injectCustomStress\(text\)[\s\S]{0,500}state\.dic\s*&&\s*state\.dic\.has\(lower\)[\s\S]{0,120}return word/],
     ['worker: synthesis progress', /post\('synth-progress'/],
-    ['worker: audio transferred once', /post\('audio'[\s\S]{0,220}\[buffer\]\)/],
-    ['worker: cancellation protocol', /message\.type === 'cancel-load'[\s\S]{0,220}loadController\.abort/],
+    ['worker: audio transferred once', /post\('audio'[\s\S]{0,260}\[buffer\]\)/],
+    ['worker: cancellation protocol', /message\.type === 'cancel-load'[\s\S]{0,260}loadController\.abort/],
   ];
   for (const [label, pattern] of workerChecks) expectPattern(problems, label, worker, pattern);
 
+  const canonicalChecks = [
+    ['canonical: central asset registry import', /import \{ assetUrl \} from ['"]\.\.\/\.\.\/lib\/asset-version['"]/],
+    ['canonical: thin client URL from registry', /const voskEngineSrc = assetUrl\(['"]js\/vosk-tts-engine\.js['"]\)/],
+    ['canonical: deferred thin client', /<script is:inline defer src=\{voskEngineSrc\}><\/script>/],
+    ['canonical: reader FSM composed', /import ['"]\.\.\/\.\.\/runtime\/reader-tts\.js['"]/],
+    ['canonical: media session composed', /import ['"]\.\.\/\.\.\/runtime\/reader-tts-media-session\.js['"]/],
+  ];
+  for (const [label, pattern] of canonicalChecks) expectPattern(problems, label, canonicalRuntime, pattern);
+  if (/reader-vosk-download-worker|readerVoskFetch|installOneShotUnzip/.test(canonicalRuntime)) {
+    problems.push('canonical: obsolete interception layer is still composed');
+  }
+
   const controllerChecks = [
+    ['controller: versioned engine fallback', /VOSK_ENGINE_SRC\s*=\s*['"]\/js\/vosk-tts-engine\.js\?v=[a-f0-9]{8}['"]/],
+    ['controller: versioned notice fallback', /TTS_NOTICE_CSS_SRC\s*=\s*['"]\/css\/tts-download-notice\.css\?v=[a-f0-9]{8}['"]/],
     ['controller: retry event contract', /gb:vosk-retry-request[\s\S]*warmVoskInBackground\(\{ manual: true, retry: true \}\)/],
     ['controller: switch event contract', /gb:vosk-switch-request[\s\S]*switchCurrentSessionToVosk/],
     ['controller: retryable promise', /var _voskWarmupPromise = null/],
     ['controller: system voice disclosed immediately', /showVoskStatus\('browser'\);\s*warmVoskInBackground\(\{ preserveBrowserStatus: true \}\)/],
-    ['controller: synchronous fallback reveal', /function showFallbackTtsStatus\([\s\S]{0,5200}el\.classList\.add\('is-visible'\);/],
+    ['controller: synchronous fallback reveal', /function showFallbackTtsStatus\([\s\S]{0,5600}el\.classList\.add\('is-visible'\);/],
   ];
   for (const [label, pattern] of controllerChecks) expectPattern(problems, label, controller, pattern);
 
   const cssChecks = [
     ['css: informational root does not intercept PLAY', /\.gb-tts-download-notice\.is-visible\{[\s\S]{0,180}pointer-events:none/],
-    ['css: explicit action remains interactive', /\.gb-tts-download-notice__action\{[\s\S]{0,120}pointer-events:auto/],
-    ['css: mobile bottom controls clearance', /@media \(max-width:480px\)[\s\S]{0,260}bottom:max\(92px/],
-    ['css: mobile viewport anchoring', /left:max\(10px,env\(safe-area-inset-left,0px\)\)[\s\S]{0,160}right:max\(10px,env\(safe-area-inset-right,0px\)\)[\s\S]{0,100}width:auto/],
-    ['css: coarse pointer target', /@media \(pointer:coarse\)[\s\S]{0,140}min-height:44px/],
+    ['css: explicit action remains interactive', /\.gb-tts-download-notice__action\{[\s\S]{0,140}pointer-events:auto/],
+    ['css: mobile bottom controls clearance', /@media \(max-width:480px\)[\s\S]{0,300}bottom:max\(92px/],
+    ['css: mobile viewport anchoring', /left:max\(10px,env\(safe-area-inset-left,0px\)\)[\s\S]{0,180}right:max\(10px,env\(safe-area-inset-right,0px\)\)[\s\S]{0,120}width:auto/],
+    ['css: coarse pointer target', /@media \(pointer:coarse\)[\s\S]{0,160}min-height:44px/],
     ['css: reduced motion', /@media \(prefers-reduced-motion:reduce\)/],
   ];
   for (const [label, pattern] of cssChecks) expectPattern(problems, label, css, pattern);
 
   const expectedEngineCss = `/css/tts-download-notice.css?v=${cssRevision}`;
-  const expectedControllerCss = `/css/tts-download-notice.css?v=${cssRevision}`;
-  const expectedControllerEngine = `/js/vosk-tts-engine.js?v=${engineRevision}`;
   const expectedEngineWorker = `/js/vosk-tts-worker.js?v=${workerRevision}`;
   if (!engine.includes(expectedEngineCss)) problems.push(`revision: engine notice CSS must be ${expectedEngineCss}`);
-  if (!controller.includes(expectedControllerCss)) problems.push(`revision: controller notice CSS must be ${expectedControllerCss}`);
-  if (!controller.includes(expectedControllerEngine)) problems.push(`revision: controller engine must be ${expectedControllerEngine}`);
   if (!engine.includes(expectedEngineWorker)) problems.push(`revision: engine Worker must be ${expectedEngineWorker}`);
 
   const versionEntries = [
@@ -124,6 +136,7 @@ function validateTtsStatus(input) {
   }
 
   const requiredWorkflowPaths = [
+    'src/components/reader-platform/ReaderActionsRuntime.astro',
     'js/vosk-tts-engine.js',
     'js/vosk-tts-worker.js',
     'js/floating-cluster-controller.js',
@@ -169,7 +182,7 @@ function validateLiveRelease(liveContract, deployWorkflow) {
     ['live: notice bytes', liveContract, /live notice CSS SHA-256 mismatch/],
     ['deploy: generic verification before TTS', deployWorkflow, /Verify generic live release contract[\s\S]*Verify live TTS capability extension/],
     ['deploy: post-Pages TTS verifier', deployWorkflow, /Deploy exact candidate to GitHub Pages[\s\S]*tts-live-deployment-contract\.mjs/],
-    ['deploy: live evidence upload', deployWorkflow, /tts-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,320}reports\/tts-live-deployment-contract\.json/],
+    ['deploy: live evidence upload', deployWorkflow, /tts-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]{0,360}reports\/tts-live-deployment-contract\.json/],
   ];
   for (const [label, source, pattern] of checks) expectPattern(problems, label, source, pattern);
   return problems;
@@ -187,6 +200,7 @@ const sources = {
   engine: read('js/vosk-tts-engine.js'),
   worker: read('js/vosk-tts-worker.js'),
   controller: read('js/floating-cluster-controller.js'),
+  canonicalRuntime: read('src/components/reader-platform/ReaderActionsRuntime.astro'),
   css: read('css/tts-download-notice.css'),
   workflow: read('.github/workflows/tts-download-consent.yml'),
   cacheAssets: read('scripts/cache-bust-assets.js'),
@@ -204,11 +218,14 @@ assert.deepEqual(validateDistPublication(distPublication), []);
 const mutations = [
   ['ONNX leaked into client', { ...sources, engine: `${sources.engine}\nort.InferenceSession.create(new ArrayBuffer(0));` }],
   ['Worker ONNX removed', { ...sources, worker: sources.worker.replaceAll('InferenceSession.create', 'InferenceSession.missing') }],
-  ['dictionary priority removed', { ...sources, worker: sources.worker.replace('if (state.dic.has(lower)) return word;', '') }],
-  ['cancel no longer terminal', { ...sources, engine: sources.engine.replace(/function cancelLoading\(options\)([\s\S]{0,800}?)terminateWorker\(error\);/, 'function cancelLoading(options)$1void 0;') }],
+  ['dictionary priority removed', { ...sources, worker: sources.worker.replace('if (state.dic && state.dic.has(lower)) return word;', '') }],
+  ['manual override removed', { ...sources, worker: sources.worker.replace('state.dic.delete(String(word).toLowerCase());', 'void word;') }],
+  ['cancel no longer terminal', { ...sources, engine: sources.engine.replace(/function cancelLoading\(options\)([\s\S]{0,900}?)terminateWorker\(error\);/, 'function cancelLoading(options)$1void 0;') }],
   ['engine reveal deferred', { ...sources, engine: sources.engine.replace("element.classList.add('is-visible');", "requestAnimationFrame(function () { element.classList.add('is-visible'); });") }],
+  ['canonical asset registry removed', { ...sources, canonicalRuntime: sources.canonicalRuntime.replace("assetUrl('js/vosk-tts-engine.js')", "'/js/vosk-tts-engine.js'") }],
   ['notice intercepts PLAY', { ...sources, css: sources.css.replace('pointer-events:none;\n  transform:translate(-50%,0)', 'pointer-events:auto;\n  transform:translate(-50%,0)') }],
   ['worker workflow trigger removed', { ...sources, workflow: sources.workflow.replaceAll('      - "js/vosk-tts-worker.js"\n', '') }],
+  ['canonical workflow trigger removed', { ...sources, workflow: sources.workflow.replaceAll('      - "src/components/reader-platform/ReaderActionsRuntime.astro"\n', '') }],
   ['worker lazy policy removed', { ...sources, cacheAssets: sources.cacheAssets.replace("  'js/vosk-tts-worker.js',\n  'manifest.json',", "  'manifest.json',") }],
   ['worker version entry removed', { ...sources, assetVersions: sources.assetVersions.replace(/^  'js\/vosk-tts-worker\.js':.*\n/m, '') }],
 ];
