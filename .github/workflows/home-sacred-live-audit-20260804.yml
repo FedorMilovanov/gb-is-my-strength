@@ -1,0 +1,384 @@
+name: Home Sacred Live Audit 20260804
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/home-sacred-live-audit-20260804.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live-audit:
+    name: Physical Home sacred interaction audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout audit lane
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Install Chromium and WebKit
+        run: npx --no-install playwright install --with-deps chromium webkit
+
+      - name: Audit current published Home with physical input
+        env:
+          LIVE_BASE_URL: https://gospod-bog.ru/
+          REQUIRED_HOME_FIX_SHA: 220a41318c762a828c608e41cadc156053702509
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/home-sacred-live-audit
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const { chromium, webkit } = require('playwright');
+
+          const outDir = 'reports/home-sacred-live-audit';
+          const baseUrl = process.env.LIVE_BASE_URL;
+          const report = {
+            schemaVersion: 1,
+            kind: 'home-sacred-live-audit',
+            liveBaseUrl: baseUrl,
+            requiredHomeFixSha: process.env.REQUIRED_HOME_FIX_SHA,
+            startedAt: new Date().toISOString(),
+            deploymentPointer: null,
+            browsers: {},
+            touch: null,
+            reducedMotion: null,
+            result: 'FAIL',
+          };
+
+          const persist = () => fs.writeFileSync(
+            `${outDir}/report.json`,
+            `${JSON.stringify(report, null, 2)}\n`,
+          );
+          const assert = (condition, message, details = {}) => {
+            if (!condition) throw new Error(`${message}\n${JSON.stringify(details, null, 2)}`);
+          };
+          const cacheBusted = (label) => {
+            const url = new URL(baseUrl);
+            url.searchParams.set('home-sacred-live-audit', `${label}-${Date.now()}-${Math.random()}`);
+            return url.toString();
+          };
+          const settle = (page) => page.evaluate(() => new Promise((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+          }));
+          const opened = (value) => value.front.visibility === 'hidden'
+            && value.front.opacity <= 0.05
+            && value.back.visibility === 'visible'
+            && value.back.opacity >= 0.95;
+          const closed = (value) => value.front.visibility === 'visible'
+            && value.front.opacity >= 0.9
+            && value.back.visibility === 'hidden'
+            && value.back.opacity <= 0.05;
+
+          async function readState(locator) {
+            return locator.evaluate((el) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              const name = el.querySelector('.h-tetra-name') || back;
+              const label = el.querySelector(':scope > .h-tetra-label');
+              const block = el.closest('.h-sacred-block--hero');
+              const line = el.closest('.h-sacred-line');
+              const probe = document.createElement('span');
+              probe.style.cssText = 'position:fixed;visibility:hidden;color:var(--h-ink)';
+              document.body.append(probe);
+              const inkColor = getComputedStyle(probe).color;
+              probe.remove();
+              const frontStyle = getComputedStyle(front);
+              const backStyle = getComputedStyle(back);
+              const labelStyle = label ? getComputedStyle(label) : null;
+              const frontRect = front.getBoundingClientRect();
+              const backRect = back.getBoundingClientRect();
+              const labelRect = label?.getBoundingClientRect() || null;
+              const blockRect = block?.getBoundingClientRect() || null;
+              const lineRect = line?.getBoundingClientRect() || null;
+              return {
+                ownerInstalled: el.dataset.sacredPointerPreview === '1',
+                pointerPreview: el.hasAttribute('data-pointer-preview'),
+                toggled: el.hasAttribute('data-toggled'),
+                pressed: el.getAttribute('aria-pressed'),
+                front: {
+                  text: front.textContent.trim(),
+                  visibility: frontStyle.visibility,
+                  opacity: Number(frontStyle.opacity),
+                  display: frontStyle.display,
+                  rect: { top: frontRect.top, bottom: frontRect.bottom },
+                },
+                back: {
+                  text: back.textContent.trim(),
+                  visibility: backStyle.visibility,
+                  opacity: Number(backStyle.opacity),
+                  display: backStyle.display,
+                  rect: { top: backRect.top, bottom: backRect.bottom },
+                },
+                nameColor: getComputedStyle(name).color,
+                inkColor,
+                label: labelStyle && labelRect ? {
+                  text: label.textContent.trim(),
+                  visibility: labelStyle.visibility,
+                  opacity: Number(labelStyle.opacity),
+                  top: labelRect.top,
+                  bottom: labelRect.bottom,
+                  transform: labelStyle.transform,
+                } : null,
+                geometry: {
+                  blockTop: blockRect?.top ?? null,
+                  lineTop: lineRect?.top ?? null,
+                  lineBottom: lineRect?.bottom ?? null,
+                  labelOffsetFromBlock: labelRect && blockRect ? labelRect.top - blockRect.top : null,
+                  labelGapToLine: labelRect && lineRect ? lineRect.top - labelRect.bottom : null,
+                },
+              };
+            });
+          }
+
+          async function waitForState(page, locator, expectedOpen) {
+            const handle = await locator.elementHandle();
+            await page.waitForFunction(({ el, expectedOpen }) => {
+              const front = el.querySelector(':scope > .hb-front');
+              const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
+              const frontStyle = getComputedStyle(front);
+              const backStyle = getComputedStyle(back);
+              return expectedOpen
+                ? frontStyle.visibility === 'hidden'
+                  && Number(frontStyle.opacity) <= 0.05
+                  && backStyle.visibility === 'visible'
+                  && Number(backStyle.opacity) >= 0.95
+                : frontStyle.visibility === 'visible'
+                  && Number(frontStyle.opacity) >= 0.9
+                  && backStyle.visibility === 'hidden'
+                  && Number(backStyle.opacity) <= 0.05;
+            }, { el: handle, expectedOpen }, { timeout: 10_000 });
+          }
+
+          async function openPage(engine, label, options = {}) {
+            const browser = await engine.launch();
+            const context = await browser.newContext({
+              viewport: options.viewport || { width: 1440, height: 900 },
+              hasTouch: Boolean(options.hasTouch),
+              isMobile: Boolean(options.isMobile),
+              reducedMotion: options.reducedMotion || 'no-preference',
+              serviceWorkers: 'block',
+              extraHTTPHeaders: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+            });
+            const page = await context.newPage();
+            const response = await page.goto(cacheBusted(label), {
+              waitUntil: 'domcontentloaded',
+              timeout: 90_000,
+            });
+            assert(response?.ok(), `${label}: public Home did not return success`, {
+              status: response?.status(),
+              url: page.url(),
+            });
+            const tetra = page.locator('.h-sacred-block--hero button.h-tetra');
+            await tetra.waitFor({ state: 'visible', timeout: 30_000 });
+            await page.waitForFunction(() => {
+              const el = document.querySelector('.h-sacred-block--hero button.h-tetra');
+              return el && !el.disabled && el.dataset.sacredPointerPreview === '1';
+            }, { timeout: 30_000 });
+            await tetra.scrollIntoViewIfNeeded();
+            await settle(page);
+            return { browser, context, page, tetra, response };
+          }
+
+          async function auditDesktop(engineName, engine) {
+            const { browser, context, page, tetra, response } = await openPage(engine, `${engineName}-desktop`);
+            const ordinary = page.locator('.h-sacred-block--hero button.hb-w').first();
+            const evidence = {
+              status: response.status(),
+              etag: response.headers().etag || null,
+              htmlSha256: crypto.createHash('sha256').update(await page.content()).digest('hex'),
+            };
+            try {
+              evidence.initial = await readState(tetra);
+              assert(evidence.initial.ownerInstalled, `${engineName}: physical pointer owner absent`, evidence.initial);
+              assert(closed(evidence.initial), `${engineName}: initial state is not Hebrew-only`, evidence.initial);
+              assert(evidence.initial.label?.visibility === 'hidden', `${engineName}: label leaks initially`, evidence.initial);
+              await page.screenshot({ path: `${outDir}/${engineName}-initial.png` });
+
+              await tetra.hover();
+              await settle(page);
+              await waitForState(page, tetra, true);
+              evidence.hover = await readState(tetra);
+              assert(opened(evidence.hover), `${engineName}: physical hover did not reveal translation`, evidence.hover);
+              assert(evidence.hover.pointerPreview, `${engineName}: pointerenter handler did not own hover`, evidence.hover);
+              assert(evidence.hover.back.text.includes('Яхве'), `${engineName}: sacred translation is not Яхве`, evidence.hover);
+              assert(evidence.hover.nameColor === evidence.hover.inkColor, `${engineName}: Яхве is not theme ink`, evidence.hover);
+              assert(evidence.hover.label?.visibility === 'visible' && evidence.hover.label.opacity >= 0.95,
+                `${engineName}: sacred label is not visible on hover`, evidence.hover);
+              assert((evidence.hover.geometry.labelOffsetFromBlock ?? 0) >= 24,
+                `${engineName}: sacred label remains too high`, evidence.hover);
+              assert((evidence.hover.geometry.labelGapToLine ?? -100) >= -4,
+                `${engineName}: sacred label overlaps the Hebrew line`, evidence.hover);
+              await page.screenshot({ path: `${outDir}/${engineName}-hover.png` });
+
+              await page.mouse.move(2, 2);
+              await settle(page);
+              await waitForState(page, tetra, false);
+              evidence.leave = await readState(tetra);
+              assert(closed(evidence.leave), `${engineName}: mouse leave did not restore Hebrew`, evidence.leave);
+
+              await ordinary.hover();
+              await settle(page);
+              await waitForState(page, ordinary, true);
+              evidence.ordinaryHover = await readState(ordinary);
+              assert(opened(evidence.ordinaryHover), `${engineName}: ordinary word hover failed`, evidence.ordinaryHover);
+              await page.mouse.move(2, 2);
+              await waitForState(page, ordinary, false);
+
+              await tetra.click();
+              await page.mouse.move(2, 2);
+              await settle(page);
+              await waitForState(page, tetra, true);
+              evidence.clickOpen = await readState(tetra);
+              assert(evidence.clickOpen.toggled && evidence.clickOpen.pressed === 'true',
+                `${engineName}: first click did not persist open`, evidence.clickOpen);
+              await page.screenshot({ path: `${outDir}/${engineName}-click-open.png` });
+
+              await tetra.click();
+              await page.mouse.move(2, 2);
+              await settle(page);
+              await waitForState(page, tetra, false);
+              evidence.clickClose = await readState(tetra);
+              assert(!evidence.clickClose.toggled && evidence.clickClose.pressed === 'false',
+                `${engineName}: second click did not close`, evidence.clickClose);
+
+              await tetra.focus();
+              await page.keyboard.press('Enter');
+              await settle(page);
+              evidence.enterFocused = await readState(tetra);
+              assert(evidence.enterFocused.toggled && evidence.enterFocused.pressed === 'true',
+                `${engineName}: Enter did not toggle open`, evidence.enterFocused);
+              await tetra.evaluate((el) => el.blur());
+              await page.mouse.move(2, 2);
+              await waitForState(page, tetra, true);
+              evidence.enterPersistent = await readState(tetra);
+              assert(opened(evidence.enterPersistent), `${engineName}: Enter state was not persistent`, evidence.enterPersistent);
+
+              await tetra.focus();
+              await page.keyboard.press('Space');
+              await settle(page);
+              evidence.spaceFocused = await readState(tetra);
+              assert(!evidence.spaceFocused.toggled && evidence.spaceFocused.pressed === 'false',
+                `${engineName}: Space did not toggle closed`, evidence.spaceFocused);
+              await tetra.evaluate((el) => el.blur());
+              await page.mouse.move(2, 2);
+              await waitForState(page, tetra, false);
+              evidence.spacePersistent = await readState(tetra);
+              assert(closed(evidence.spacePersistent), `${engineName}: Space state did not close`, evidence.spacePersistent);
+
+              return evidence;
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function auditTouch() {
+            const { browser, context, page, tetra } = await openPage(chromium, 'chromium-touch', {
+              viewport: { width: 390, height: 844 },
+              hasTouch: true,
+              isMobile: true,
+            });
+            try {
+              const initial = await readState(tetra);
+              assert(closed(initial), 'touch: initial state is not Hebrew-only', initial);
+              await tetra.tap();
+              await settle(page);
+              await waitForState(page, tetra, true);
+              const open = await readState(tetra);
+              assert(open.toggled && opened(open), 'touch: first tap did not reveal Яхве', open);
+              await page.screenshot({ path: `${outDir}/chromium-touch-open.png` });
+              await tetra.tap();
+              await settle(page);
+              await waitForState(page, tetra, false);
+              const close = await readState(tetra);
+              assert(!close.toggled && closed(close), 'touch: second tap did not close', close);
+              return { initial, open, close };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          async function auditReducedMotion() {
+            const { browser, context, page, tetra } = await openPage(chromium, 'chromium-reduced-motion', {
+              reducedMotion: 'reduce',
+            });
+            try {
+              const initial = await readState(tetra);
+              assert(closed(initial), 'reduced motion: initial state is not Hebrew-only', initial);
+              await tetra.hover();
+              await settle(page);
+              await waitForState(page, tetra, true);
+              const hover = await readState(tetra);
+              assert(opened(hover), 'reduced motion: hover did not reveal Яхве', hover);
+              const transitions = await tetra.evaluate((el) => {
+                const front = el.querySelector(':scope > .hb-front');
+                const back = el.querySelector(':scope > .h-tetra-back');
+                return {
+                  front: getComputedStyle(front).transitionDuration,
+                  back: getComputedStyle(back).transitionDuration,
+                };
+              });
+              assert(transitions.front === '0s' && transitions.back === '0s',
+                'reduced motion: transitions remain active', transitions);
+              return { initial, hover, transitions };
+            } finally {
+              await context.close();
+              await browser.close();
+            }
+          }
+
+          (async () => {
+            try {
+              const pointerResponse = await fetch(new URL('/deployments/current.json', baseUrl), {
+                headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+              });
+              assert(pointerResponse.ok, 'deployment pointer is unavailable', { status: pointerResponse.status });
+              report.deploymentPointer = await pointerResponse.json();
+              persist();
+
+              report.browsers.chromium = await auditDesktop('chromium', chromium);
+              persist();
+              report.browsers.webkit = await auditDesktop('webkit', webkit);
+              persist();
+              report.touch = await auditTouch();
+              persist();
+              report.reducedMotion = await auditReducedMotion();
+              report.result = 'PASS';
+              report.completedAt = new Date().toISOString();
+              persist();
+              console.log(JSON.stringify({ result: report.result, deploymentPointer: report.deploymentPointer }, null, 2));
+            } catch (error) {
+              report.error = String(error?.stack || error);
+              report.completedAt = new Date().toISOString();
+              persist();
+              console.error(report.error);
+              process.exitCode = 1;
+            }
+          })();
+          NODE
+
+      - name: Upload live audit evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: home-sacred-live-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/home-sacred-live-audit
+          if-no-files-found: error
+          retention-days: 30
