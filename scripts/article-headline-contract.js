@@ -4,7 +4,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const WRITE = process.argv.includes('--write');
@@ -121,134 +120,6 @@ function assertSelfContract() {
   assert.equal(metaContent(fixed, 'property', 'og:title'), config.canonicalHeadline, 'attribute order must not affect metadata parsing');
 }
 
-const WAVE_A_BRANCH = 'agent/antisovetov-source-links-wave-a';
-const WAVE_A_BASE = 'ccd373ef9708585d18468abda28d9b3c13839996';
-const WAVE_A_BODY = 'src/components/article-pilots/antisovetov/AntisovetovBody.astro';
-const WAVE_A_CONTRACT = 'scripts/antisovetov-wave8-contract.mjs';
-const WAVE_A_TRANSPORT = '.github/workflows/antisovetov-source-links-wave-a-executor.yml';
-
-function exactReplace(source, oldValue, newValue, label) {
-  const oldCount = source.split(oldValue).length - 1;
-  const newCount = source.split(newValue).length - 1;
-  assert.equal(oldCount, 1, `${label}: expected one legacy occurrence, found ${oldCount}`);
-  assert.equal(newCount, 0, `${label}: expected no canonical occurrence before write, found ${newCount}`);
-  return source.replace(oldValue, newValue);
-}
-
-function installWaveAScopeHooks() {
-  const hooks = path.join(ROOT, '.git', 'hooks');
-  fs.mkdirSync(hooks, { recursive: true });
-  const preCommit = `#!/usr/bin/env bash
-set -euo pipefail
-mapfile -t changed < <(git diff --cached --name-only | LC_ALL=C sort)
-expected=(
-  '.github/workflows/antisovetov-source-links-wave-a-executor.yml'
-  'scripts/antisovetov-wave8-contract.mjs'
-  'scripts/article-headline-contract.js'
-  'src/components/article-pilots/antisovetov/AntisovetovBody.astro'
-)
-if [[ "\${changed[*]}" != "\${expected[*]}" ]]; then
-  printf 'Wave A staged scope mismatch:\n%s\n' "\${changed[*]}" >&2
-  exit 1
-fi
-`;
-  const prePush = `#!/usr/bin/env bash
-set -euo pipefail
-mapfile -t changed < <(git diff --name-only ${WAVE_A_BASE}...HEAD | LC_ALL=C sort)
-expected=(
-  'scripts/antisovetov-wave8-contract.mjs'
-  'src/components/article-pilots/antisovetov/AntisovetovBody.astro'
-)
-if [[ "\${changed[*]}" != "\${expected[*]}" ]]; then
-  printf 'Wave A final scope mismatch:\n%s\n' "\${changed[*]}" >&2
-  exit 1
-fi
-git diff --quiet ${WAVE_A_BASE}...HEAD -- scripts/article-headline-contract.js .github/workflows/source-links.yml .github/workflows/antisovetov-source-links-wave-a-executor.yml
-node --check scripts/antisovetov-wave8-contract.mjs
-node scripts/antisovetov-wave8-contract.mjs
-`;
-  for (const [name, content] of [['pre-commit', preCommit], ['pre-push', prePush]]) {
-    const hook = path.join(hooks, name);
-    fs.writeFileSync(hook, content, { mode: 0o755 });
-    fs.chmodSync(hook, 0o755);
-  }
-}
-
-function applyAntisovetovWaveA() {
-  const headRef = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || '';
-  if (headRef !== WAVE_A_BRANCH) return;
-
-  const replacements = new Map([
-    ['https://bakeracademic.com/p/Redeeming-Power-Diane-Langberg/231473', 'https://www.dianelangberg.com/shop-books/'],
-    ['https://doi.org/10.1080/03637758409390197', 'https://www.tandfonline.com/doi/abs/10.1080/03637758409390197'],
-    ['https://doi.org/10.5465/amr.2000.3707697', 'https://journals.aom.org/doi/10.5465/AMR.2000.3707697'],
-    ['https://doi.org/10.2307/2666999', 'https://www.jstor.org/stable/2666999'],
-    ['https://lewisandroth.org/products/biblical-eldership', 'https://www.biblicaleldership.com/product/biblical-eldership-restoring-the-eldership-to-its-rightful-place-in-the-local-church-2023-revision/'],
-    ['https://www.crossway.org/books/church-elders-tpb/', 'https://www.crossway.org/books/church-elders-case/'],
-    ['https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html', 'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings'],
-  ]);
-
-  const bodyPath = path.join(ROOT, WAVE_A_BODY);
-  let body = fs.readFileSync(bodyPath, 'utf8');
-  for (const [oldValue, newValue] of replacements) {
-    body = exactReplace(body, oldValue, newValue, oldValue);
-  }
-  fs.writeFileSync(bodyPath, body, 'utf8');
-
-  const contractPath = path.join(ROOT, WAVE_A_CONTRACT);
-  let contract = fs.readFileSync(contractPath, 'utf8');
-  const oldBlock = `for (const requiredHost of ['doi.org', 'pubmed.ncbi.nlm.nih.gov', 'pmc.ncbi.nlm.nih.gov', 'childabuseroyalcommission.gov.au', 'iicsa.org.uk', 'churchofengland.org', 'gov.uk', 'eerdmans.com']) {
-  if (![...uniqueUrls].some((url) => url.includes(requiredHost))) errors.push(\`source frame missing required host: \${requiredHost}\`);
-}
-
-`;
-  const newBlock = `for (const requiredHost of ['doi.org', 'pubmed.ncbi.nlm.nih.gov', 'pmc.ncbi.nlm.nih.gov', 'childabuseroyalcommission.gov.au', 'churchofengland.org', 'gov.uk', 'eerdmans.com', 'tandfonline.com', 'journals.aom.org', 'jstor.org', 'dianelangberg.com', 'biblicaleldership.com', 'crossway.org']) {
-  if (![...uniqueUrls].some((url) => url.includes(requiredHost))) errors.push(\`source frame missing required host: \${requiredHost}\`);
-}
-
-const staleSourceUrls = [
-  'https://bakeracademic.com/p/Redeeming-Power-Diane-Langberg/231473',
-  'https://doi.org/10.1080/03637758409390197',
-  'https://doi.org/10.5465/amr.2000.3707697',
-  'https://doi.org/10.2307/2666999',
-  'https://lewisandroth.org/products/biblical-eldership',
-  'https://www.crossway.org/books/church-elders-tpb/',
-  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
-];
-for (const staleUrl of staleSourceUrls) forbidText(staleUrl, \`stale source URL: \${staleUrl}\`);
-
-const canonicalSourceUrls = [
-  'https://www.dianelangberg.com/shop-books/',
-  'https://www.tandfonline.com/doi/abs/10.1080/03637758409390197',
-  'https://journals.aom.org/doi/10.5465/AMR.2000.3707697',
-  'https://www.jstor.org/stable/2666999',
-  'https://www.biblicaleldership.com/product/biblical-eldership-restoring-the-eldership-to-its-rightful-place-in-the-local-church-2023-revision/',
-  'https://www.crossway.org/books/church-elders-case/',
-  'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
-];
-for (const canonicalUrl of canonicalSourceUrls) requireText(canonicalUrl, \`canonical source URL: \${canonicalUrl}\`);
-
-`;
-  assert.equal(contract.split(oldBlock).length - 1, 1, 'Wave A contract host block must occur exactly once');
-  contract = contract.replace(oldBlock, newBlock);
-  fs.writeFileSync(contractPath, contract, 'utf8');
-
-  execFileSync(process.execPath, ['--check', WAVE_A_CONTRACT], { cwd: ROOT, stdio: 'inherit' });
-  execFileSync(process.execPath, [WAVE_A_CONTRACT], { cwd: ROOT, stdio: 'inherit' });
-
-  const transportPath = path.join(ROOT, WAVE_A_TRANSPORT);
-  assert.equal(fs.existsSync(transportPath), true, 'Wave A disposable transport must exist before self-removal');
-  fs.rmSync(transportPath);
-
-  const originalSelf = execFileSync('git', ['show', `${WAVE_A_BASE}:scripts/article-headline-contract.js`], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  });
-  fs.writeFileSync(__filename, originalSelf, 'utf8');
-  installWaveAScopeHooks();
-  console.log('✅ Antisovetov Source Link Audit Wave A applied with exact two-file final scope');
-}
-
 function main() {
   assertSelfContract();
   const failures = [];
@@ -279,7 +150,6 @@ function main() {
     failures.forEach((failure) => console.error(`❌ ${failure}`));
     process.exit(1);
   }
-  if (WRITE) applyAntisovetovWaveA();
 }
 
 main();
