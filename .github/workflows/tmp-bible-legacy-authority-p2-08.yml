@@ -72,7 +72,13 @@ jobs:
           """
           if shell.count(old_scan) != 1:
               raise SystemExit(f'temporary runner trigger-scan anchor drifted: {shell.count(old_scan)}')
-          runner.write_text(shell.replace(old_scan, new_scan, 1), encoding='utf-8')
+          shell = shell.replace(old_scan, new_scan, 1)
+
+          staging_line = "  data/verses.json \\\n"
+          if shell.count(staging_line) != 2:
+              raise SystemExit(f'temporary runner legacy staging anchor drifted: {shell.count(staging_line)}')
+          shell = shell.replace(staging_line, '')
+          runner.write_text(shell, encoding='utf-8')
           PY
       - name: Execute self-clean atomic removal
         shell: bash
