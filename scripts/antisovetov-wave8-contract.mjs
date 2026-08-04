@@ -55,9 +55,31 @@ const sourceSection = source.match(/<section class="sources-block" id="istochnik
 const urls = [...sourceSection.matchAll(/href="(https:\/\/[^\"]+)"/g)].map((match) => match[1]);
 const uniqueUrls = new Set(urls);
 if (uniqueUrls.size < 24) errors.push(`source frame: expected at least 24 unique external URLs, found ${uniqueUrls.size}`);
-for (const requiredHost of ['doi.org', 'pubmed.ncbi.nlm.nih.gov', 'pmc.ncbi.nlm.nih.gov', 'childabuseroyalcommission.gov.au', 'iicsa.org.uk', 'churchofengland.org', 'gov.uk', 'eerdmans.com']) {
+for (const requiredHost of ['doi.org', 'pubmed.ncbi.nlm.nih.gov', 'pmc.ncbi.nlm.nih.gov', 'childabuseroyalcommission.gov.au', 'churchofengland.org', 'gov.uk', 'eerdmans.com', 'tandfonline.com', 'journals.aom.org', 'jstor.org', 'dianelangberg.com', 'biblicaleldership.com', 'crossway.org']) {
   if (![...uniqueUrls].some((url) => url.includes(requiredHost))) errors.push(`source frame missing required host: ${requiredHost}`);
 }
+
+const staleSourceUrls = [
+  'https://bakeracademic.com/p/Redeeming-Power-Diane-Langberg/231473',
+  'https://doi.org/10.1080/03637758409390197',
+  'https://doi.org/10.5465/amr.2000.3707697',
+  'https://doi.org/10.2307/2666999',
+  'https://lewisandroth.org/products/biblical-eldership',
+  'https://www.crossway.org/books/church-elders-tpb/',
+  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
+];
+for (const staleUrl of staleSourceUrls) forbidText(staleUrl, `stale source URL: ${staleUrl}`);
+
+const canonicalSourceUrls = [
+  'https://www.dianelangberg.com/shop-books/',
+  'https://www.tandfonline.com/doi/abs/10.1080/03637758409390197',
+  'https://journals.aom.org/doi/10.5465/AMR.2000.3707697',
+  'https://www.jstor.org/stable/2666999',
+  'https://www.biblicaleldership.com/product/biblical-eldership-restoring-the-eldership-to-its-rightful-place-in-the-local-church-2023-revision/',
+  'https://www.crossway.org/books/church-elders-case/',
+  'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
+];
+for (const canonicalUrl of canonicalSourceUrls) requireText(canonicalUrl, `canonical source URL: ${canonicalUrl}`);
 
 for (const blockedName of ['Robert Morris', 'Mark Driscoll', 'Ravi Zacharias', 'Sunday Adelaja', 'David Platt']) {
   if (source.includes(blockedName)) errors.push(`modern case roster remains forbidden in core article: ${blockedName}`);
