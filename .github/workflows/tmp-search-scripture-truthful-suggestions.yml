@@ -1,0 +1,145 @@
+name: Complete truthful Scripture suggestion repair
+
+on:
+  pull_request:
+    branches: [main]
+    types: [labeled, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: search-scripture-truthful-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'fix/search-scripture-truthful-suggestions-20260804'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Guard exact base and source-owner blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "7118ad80c3474112f203c2c3b8df7cdc44de0a84"
+          git merge-base --is-ancestor origin/main HEAD
+          test "$(git rev-parse HEAD:js/search.js)" = "14d34424386aada1bd6bed16088c853d6d5153d9"
+          test "$(git rev-parse HEAD:sw.js)" = "40a82111adcc3b6f8d77d9d92ad1bfcfe1e632a1"
+          test "$(git rev-parse HEAD:migration/sw-cache-version-baseline.json)" = "a6c548feaa9ace1beac88381c559ed41588dd678"
+          test "$(git rev-parse HEAD:data/offline-route-matrix.json)" = "e74aad4a01dde2097f6155f8d6bd3c8059d3e818"
+          test "$(git rev-parse HEAD:src/lib/asset-version.js)" = "13ac0f0911ac61f1d9ab10af2e61ea0608dfbe87"
+          test "$(git rev-parse HEAD:scripts/search-scripture-suggestion-contract.mjs)" = "0bd27717b5dde989a6610beb590e6a1bfea51c7d"
+          test -f .github/tmp/search_scripture_truthful_suggestions.py
+          test -f .github/workflows/search-scripture-suggestion-contract.yml
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Apply exact search copy and cache transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git grep -l 'js/search.js?v=' -- '*.html' '*.astro' | sort > "${RUNNER_TEMP}/search-js-references.before"
+          test -s "${RUNNER_TEMP}/search-js-references.before"
+          python3 .github/tmp/search_scripture_truthful_suggestions.py
+          node scripts/cache-bust.js --write
+          node --check js/search.js
+          node --check scripts/search-scripture-suggestion-contract.mjs
+          node scripts/search-scripture-suggestion-contract.mjs
+          grep -q "gb-v195-search-truthful-scripture-20260804" sw.js
+
+      - name: Prepare bounded self-cleaned diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/tmp/search_scripture_truthful_suggestions.py
+          rm -f .github/workflows/tmp-search-scripture-truthful-suggestions.yml
+          git diff --check
+          changed="${RUNNER_TEMP}/changed.txt"
+          git diff --name-only > "${changed}"
+          for required in \
+            js/search.js \
+            scripts/search-scripture-suggestion-contract.mjs \
+            .github/workflows/search-scripture-suggestion-contract.yml \
+            sw.js \
+            migration/sw-cache-version-baseline.json \
+            data/offline-route-matrix.json \
+            src/lib/asset-version.js; do
+            grep -qx "${required}" "${changed}"
+          done
+          while IFS= read -r path; do
+            case "${path}" in
+              js/search.js|scripts/search-scripture-suggestion-contract.mjs|.github/workflows/search-scripture-suggestion-contract.yml|sw.js|migration/sw-cache-version-baseline.json|data/offline-route-matrix.json|src/lib/asset-version.js|.github/tmp/search_scripture_truthful_suggestions.py|.github/workflows/tmp-search-scripture-truthful-suggestions.yml) ;;
+              *) grep -qxF "${path}" "${RUNNER_TEMP}/search-js-references.before" || { echo "Unexpected changed path: ${path}"; exit 1; } ;;
+            esac
+            case "${path}" in
+              *tts*|*TTS*|*vosk*|*Vosk*) echo "Forbidden TTS/Vosk path: ${path}"; exit 1 ;;
+            esac
+          done < "${changed}"
+          test "$(git grep -l 'js/search.js?v=' -- '*.html' '*.astro' | sort)" = "$(cat "${RUNNER_TEMP}/search-js-references.before")"
+
+      - name: Validate governed search and Pagefind behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe_head="$(git stash create 'truthful scripture suggestion shared-files probe')"
+          test -n "${probe_head}"
+          node scripts/guard-shared-files.js --base origin/main --head "${probe_head}" --branch "${HEAD_REF}"
+          npm run guard:agents-rev
+          node scripts/search-scripture-suggestion-contract.mjs
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+          npx playwright install --with-deps chromium
+          node scripts/discovery-followups-browser-test.mjs --dist=dist --report=reports/search-scripture-truthful
+          npm run sw:dist:audit
+          npm run sw:dist:audit:deploy-switch
+
+      - name: Validate full static publication barrier
+        run: npm run validate:static-publication
+
+      - name: Commit clean permanent transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t revision_refs < "${RUNNER_TEMP}/search-js-references.before"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- \
+            js/search.js \
+            scripts/search-scripture-suggestion-contract.mjs \
+            .github/workflows/search-scripture-suggestion-contract.yml \
+            sw.js \
+            migration/sw-cache-version-baseline.json \
+            data/offline-route-matrix.json \
+            src/lib/asset-version.js \
+            .github/tmp/search_scripture_truthful_suggestions.py \
+            .github/workflows/tmp-search-scripture-truthful-suggestions.yml \
+            "${revision_refs[@]}"
+          git diff --cached --quiet && { echo 'No truthful-suggestion repair generated'; exit 1; }
+          git commit -m 'fix(search): make Scripture suggestions truthful'
+          git push origin "HEAD:${HEAD_REF}"
