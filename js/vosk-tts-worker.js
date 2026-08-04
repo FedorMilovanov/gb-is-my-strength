@@ -102,11 +102,16 @@ function idbSet(key, value) {
   return idbOpen().then(function (db) {
     return new Promise(function (resolve, reject) {
       var transaction = db.transaction('files', 'readwrite');
-      var request = transaction.objectStore('files').put(value, key);
-      request.onsuccess = function () { resolve(); };
-      request.onerror = function () { reject(request.error); };
-      transaction.oncomplete = function () { db.close(); };
-      transaction.onabort = transaction.onerror = function () { try { db.close(); } catch (_) {} };
+      transaction.objectStore('files').put(value, key);
+      transaction.oncomplete = function () {
+        try { db.close(); } catch (_) {}
+        resolve();
+      };
+      transaction.onabort = transaction.onerror = function () {
+        var error = transaction.error || new Error('IndexedDB model cache write failed');
+        try { db.close(); } catch (_) {}
+        reject(error);
+      };
     });
   });
 }
@@ -216,7 +221,7 @@ function ensureLoaded() {
     var decoder = new TextDecoder('utf-8');
     state.config = JSON.parse(decoder.decode(files['config.json']));
     state.dic = self.VoskTTSCore.parseDictionary(decoder.decode(files.dictionary));
-    stress.customTerms.forEach(function (_, word) { state.dic.delete(word); });
+    stress.customTerms.forEach(function (_, word) { state.dic.delete(String(word).toLowerCase()); });
     state.stressLookup = stress.lookup;
     var hasBert = !!(files['bert/model.onnx'] && files['bert/vocab.txt']);
     status('initializing');
@@ -360,7 +365,9 @@ function expandSiteAbbreviations(text) {
 function injectCustomStress(text) {
   if (!state.stressLookup) return text;
   return text.replace(/[а-яё]+/gi, function (word) {
-    var marked = state.stressLookup.getPlusForm(word.toLowerCase());
+    var lower = word.toLowerCase();
+    if (state.dic && state.dic.has(lower)) return word;
+    var marked = state.stressLookup.getPlusForm(lower);
     return marked || word;
   });
 }
