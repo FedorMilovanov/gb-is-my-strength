@@ -1,25 +1,119 @@
 ---
 /**
- * HomeSacredFlipContract.astro — final late owner for the interactive
- * Habakkuk word swap on the native Home route.
+ * HomeSacredFlipContract.astro — final late owner for the reviewed Home hero
+ * interaction motion.
  *
- * The component deliberately overrides the legacy route cascade after
- * HomeHero/HomeVisualAuditFixes. It owns only front/back visibility, revealed
- * translation colour and the sacred-name label position. Click/tap toggling
- * remains owned by the existing enhancements runtime.
+ * The component deliberately loads after HomeHero/HomeVisualAuditFixes. It
+ * owns the Habakkuk word preview/pinning contract, measured word geometry,
+ * sacred-name label reveal and the non-layout-shifting title hover. Shared
+ * enhancements may still serve other routes, but Home events are intercepted
+ * here so two click owners cannot fight over the same state.
  */
 ---
 
 <style is:global>
+  body.home-page #main-content .h-sacred-block--hero {
+    overflow: visible;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .h-sacred-line {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: .14em;
+    min-height: 1.72em;
+    overflow: visible;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero :is(button.hb-w, button.h-tetra) {
+    --sacred-closed-w: auto;
+    --sacred-open-w: auto;
+    --sacred-word-h: 1.34em;
+    position: relative;
+    display: inline-block;
+    flex: 0 0 auto;
+    width: var(--sacred-closed-w) !important;
+    min-width: 0;
+    height: var(--sacred-word-h);
+    min-height: var(--sacred-word-h);
+    margin: 0 .035em !important;
+    overflow: visible !important;
+    direction: ltr;
+    vertical-align: middle;
+    isolation: isolate;
+    perspective: 620px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      width 660ms cubic-bezier(.22, 1, .36, 1) 125ms,
+      filter 380ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero button.h-tetra {
+    margin-inline: .075em !important;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero
+    :is(button.hb-w, button.h-tetra)[data-sacred-active] {
+    width: var(--sacred-open-w) !important;
+    z-index: 6;
+    transition-delay: 0ms, 0ms;
+    will-change: width;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero
+    :is(.hb-front, .hb-back, .h-tetra-back) {
+    position: absolute !important;
+    top: 50%;
+    left: 50%;
+    grid-area: auto !important;
+    align-self: auto !important;
+    justify-self: auto !important;
+    white-space: nowrap;
+    transform-origin: 50% 56%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    visibility: visible !important;
+    pointer-events: none;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-front {
+    color: var(--h-heading) !important;
+    background: none !important;
+    -webkit-text-fill-color: currentColor !important;
+    opacity: .96 !important;
+    transform: translate3d(-50%, -50%, 0) rotateX(0deg) rotateZ(0deg) scale(1) !important;
+    filter: blur(0) !important;
+    transition:
+      transform 560ms cubic-bezier(.22, 1, .36, 1),
+      opacity 390ms ease 30ms,
+      filter 450ms cubic-bezier(.22, 1, .36, 1);
+  }
+
   body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-name) {
     color: var(--h-ink) !important;
     background: none !important;
     -webkit-text-fill-color: currentColor !important;
-    filter: none !important;
+    filter: none;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero .hb-back,
+  body.home-page #main-content .h-sacred-block--hero .h-tetra-back {
+    opacity: 0 !important;
+    transform: translate3d(-50%, calc(-50% + .075em), 0) rotateX(13deg) rotateZ(5.5deg) scale(.89) !important;
+    filter: blur(1.55px) !important;
+    transition:
+      transform 660ms cubic-bezier(.22, 1, .36, 1),
+      opacity 440ms ease,
+      filter 500ms cubic-bezier(.22, 1, .36, 1);
   }
 
   body.home-page #main-content .h-sacred-block--hero .hb-back {
-    text-shadow: 0 1px 8px rgba(28, 25, 23, .1);
+    text-shadow: 0 2px 12px rgba(23, 28, 29, .08);
   }
 
   body.home-page #main-content .h-sacred-block--hero .h-tetra-name {
@@ -30,133 +124,334 @@
     text-shadow: 0 2px 6px rgba(0, 0, 0, .34), 0 4px 28px rgba(245, 237, 224, .08);
   }
 
-  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) > .hb-front,
-  body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
-    backface-visibility: hidden;
-  }
-
-  /* Fail closed before interaction: the Hebrew face is the only visible face. */
-  body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) > .hb-front {
-    visibility: visible !important;
-  }
-
-  body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
-    visibility: hidden !important;
+  body.home-page #main-content .h-sacred-block--hero
+    :is(button.hb-w, button.h-tetra)[data-sacred-active] > .hb-front {
     opacity: 0 !important;
+    transform: translate3d(-50%, calc(-50% - .055em), 0) rotateX(-13deg) rotateZ(-5.5deg) scale(.89) !important;
+    filter: blur(1.25px) !important;
+    transition-delay: 0ms, 0ms, 0ms;
+  }
+
+  body.home-page #main-content .h-sacred-block--hero
+    button.hb-w[data-sacred-active] > .hb-back,
+  body.home-page #main-content .h-sacred-block--hero
+    button.h-tetra[data-sacred-active] > .h-tetra-back {
+    opacity: 1 !important;
+    transform: translate3d(-50%, -50%, 0) rotateX(0deg) rotateZ(0deg) scale(1) !important;
+    filter: blur(0) !important;
+    transition-delay: 100ms, 115ms, 90ms;
+    will-change: transform, opacity, filter;
   }
 
   body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
+    position: absolute;
+    z-index: 7;
+    top: auto !important;
+    bottom: calc(100% - .08em);
+    left: 50%;
+    direction: ltr;
+    white-space: nowrap;
+    color: var(--h-muted);
+    font-family: var(--f-ui);
+    font-size: clamp(7px, .72vw, 10px);
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: .22em !important;
+    line-height: 1;
+    text-transform: uppercase;
     opacity: 0 !important;
-    visibility: hidden !important;
-    filter: blur(5px) !important;
-    transform: translate(-50%, -100%) translateY(22px) !important;
-  }
-
-  /*
-   * The active state is intentionally not wrapped in a hover/pointer media
-   * query. Desktop browsers and hybrid Windows devices have reported an
-   * incorrect primary-pointer capability while still dispatching a physical
-   * mouse hover. :hover plus the pointer-preview attribute keeps the visual
-   * contract deterministic without changing touch click ownership.
-   */
-  body.home-page #main-content .h-sacred-block--hero
-    :is(.hb-w, .h-tetra):is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-front {
-    visibility: hidden !important;
-    opacity: 0 !important;
-    transform: rotate(-8deg) scale(.85) !important;
+    visibility: visible !important;
+    transform: translate3d(-50%, 5px, 0) !important;
+    filter: blur(3.6px) !important;
     pointer-events: none;
+    transition:
+      opacity 440ms ease,
+      transform 540ms cubic-bezier(.22, 1, .36, 1),
+      filter 420ms cubic-bezier(.22, 1, .36, 1),
+      letter-spacing 540ms cubic-bezier(.22, 1, .36, 1);
   }
 
   body.home-page #main-content .h-sacred-block--hero
-    .hb-w:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-back,
-  body.home-page #main-content .h-sacred-block--hero
-    .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-back {
-    visibility: visible !important;
-    opacity: 1 !important;
-    transform: rotate(0) scale(1) !important;
-  }
-
-  body.home-page #main-content .h-sacred-block--hero
-    .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-label {
-    opacity: 1 !important;
-    visibility: visible !important;
+    button.h-tetra[data-sacred-active] > .h-tetra-label {
+    opacity: .88 !important;
+    transform: translate3d(-50%, -13px, 0) !important;
     filter: blur(0) !important;
-    transform: translate(-50%, -100%) translateY(22px) !important;
-    letter-spacing: .28em !important;
+    letter-spacing: .275em !important;
+    transition-delay: 285ms, 245ms, 260ms, 245ms;
+  }
+
+  html.sacred-is-measuring body.home-page #main-content .h-sacred-block--hero
+    :is(button.hb-w, button.h-tetra, .hb-front, .hb-back, .h-tetra-back, .h-tetra-label) {
+    transition: none !important;
+  }
+
+  body.home-page #main-content .h-hero-title {
+    overflow: visible;
+    transform: translateZ(0) !important;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body.home-page #main-content .h-hero-title
+    :is(.h-title-static, .h-title-dash, .h-title-accent) {
+    display: inline-block;
+    transform-origin: 50% 70%;
+    transform: translate3d(0, 0, 0) scale(1, 1) !important;
+    letter-spacing: inherit !important;
+    transition:
+      transform 1250ms cubic-bezier(.18, .86, .25, 1.04),
+      text-shadow 1050ms cubic-bezier(.22, 1, .36, 1),
+      opacity 900ms ease !important;
+  }
+
+  body.home-page #main-content .h-hero-title .h-title-dash,
+  body.home-page #main-content .h-hero-title:hover .h-title-dash {
+    margin-inline: .23em !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    body.home-page #main-content .h-hero-title:hover .h-title-static {
+      opacity: .995 !important;
+      transform: translate3d(-.004em, -.002em, 0) scale(1.0015, 1.004) !important;
+    }
+
+    body.home-page #main-content .h-hero-title:hover .h-title-dash {
+      opacity: .87 !important;
+      transform: translate3d(0, -.004em, 0) scale(1.045, .998) !important;
+    }
+
+    body.home-page #main-content .h-hero-title:hover .h-title-accent {
+      transform: translate3d(.006em, -.007em, 0) scale(1.009, 1.004) !important;
+      text-shadow: 0 9px 31px rgba(167, 117, 47, .095) !important;
+    }
+  }
+
+  @media (max-width: 760px) {
+    body.home-page #main-content .h-hero-title .h-title-static,
+    body.home-page #main-content .h-hero-title .h-title-accent {
+      display: block;
+    }
+
+    body.home-page #main-content .h-hero-title .h-title-dash {
+      display: none;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .h-sacred-line {
+      flex-wrap: wrap;
+      column-gap: .1em;
+      row-gap: .24em;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .h-sacred-line--2 {
+      max-width: 390px;
+      margin-inline: auto;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
+      font-size: 7px;
+    }
+
+    body.home-page #main-content .h-sacred-block--hero
+      button.h-tetra[data-sacred-active] > .h-tetra-label {
+      transform: translate3d(-50%, -10px, 0) !important;
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    body.home-page #main-content .h-hero-title:hover
+      :is(.h-title-static, .h-title-dash, .h-title-accent) {
+      transform: none !important;
+      text-shadow: none !important;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-w, .h-tetra, .hb-front, .hb-back, .h-tetra-back, .h-tetra-label) {
+      :is(button.hb-w, button.h-tetra, .hb-front, .hb-back, .h-tetra-back, .h-tetra-label),
+    body.home-page #main-content .h-hero-title
+      :is(.h-title-static, .h-title-dash, .h-title-accent) {
       transition: none !important;
       animation: none !important;
     }
 
-    body.home-page #main-content .h-sacred-block--hero :is(.hb-w, .h-tetra) > .hb-front {
-      display: inline-block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      transform: none !important;
-    }
-
+    body.home-page #main-content .h-sacred-block--hero .hb-front,
     body.home-page #main-content .h-sacred-block--hero :is(.hb-back, .h-tetra-back) {
-      visibility: hidden !important;
-      opacity: 0 !important;
-      transform: none !important;
-    }
-
-    body.home-page #main-content .h-sacred-block--hero
-      :is(.hb-w, .h-tetra):is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-front {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-    }
-
-    body.home-page #main-content .h-sacred-block--hero
-      .hb-w:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .hb-back,
-    body.home-page #main-content .h-sacred-block--hero
-      .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-back {
-      visibility: visible !important;
-      opacity: 1 !important;
-      transform: none !important;
-    }
-
-    body.home-page #main-content .h-sacred-block--hero .h-tetra-label {
-      transform: translate(-50%, -100%) translateY(22px) !important;
-    }
-
-    body.home-page #main-content .h-sacred-block--hero
-      .h-tetra:is(:hover, :focus-visible, [data-pointer-preview], [data-toggled]) > .h-tetra-label {
-      visibility: visible !important;
-      opacity: 1 !important;
+      transform: translate3d(-50%, -50%, 0) !important;
       filter: none !important;
+    }
+
+    body.home-page #main-content .h-hero-title:hover
+      :is(.h-title-static, .h-title-dash, .h-title-accent) {
+      transform: none !important;
+      text-shadow: none !important;
     }
   }
 </style>
 
 <script is:inline>
   (() => {
-    const selector = '.h-sacred-block--hero button.hb-w, .h-sacred-block--hero button.h-tetra';
-    const words = document.querySelectorAll(selector);
+    const block = document.querySelector('.h-sacred-block--hero');
+    if (!block || block.dataset.sacredMotionReady === '1') return;
+    block.dataset.sacredMotionReady = '1';
+
+    const wordSelector = 'button.hb-w, button.h-tetra';
+    const words = Array.from(block.querySelectorAll(wordSelector));
+    if (!words.length) return;
+
+    let pinnedWord = null;
+    let previewWord = null;
+    let enterTimer = 0;
+    let leaveTimer = 0;
+    let measureFrame = 0;
+    let lastPointerType = '';
+
+    const clearTimers = () => {
+      window.clearTimeout(enterTimer);
+      window.clearTimeout(leaveTimer);
+    };
+
+    const setActive = (word) => {
+      words.forEach((item) => item.toggleAttribute('data-sacred-active', item === word));
+    };
+
+    const syncPinned = () => {
+      words.forEach((item) => {
+        const isPinned = item === pinnedWord;
+        item.toggleAttribute('data-toggled', isPinned);
+        item.setAttribute('aria-pressed', isPinned ? 'true' : 'false');
+      });
+    };
+
+    const restorePinned = () => {
+      previewWord = null;
+      setActive(pinnedWord);
+    };
+
+    const clearPinned = () => {
+      clearTimers();
+      pinnedWord = null;
+      previewWord = null;
+      syncPinned();
+      setActive(null);
+    };
+
+    const preview = (word) => {
+      window.clearTimeout(leaveTimer);
+      previewWord = word;
+      setActive(word);
+    };
 
     words.forEach((word) => {
-      if (word.dataset.sacredPointerPreview === '1') return;
-      word.dataset.sacredPointerPreview = '1';
+      word.disabled = false;
 
-      const closePreview = () => word.removeAttribute('data-pointer-preview');
       word.addEventListener('pointerenter', (event) => {
-        if (event.pointerType === 'mouse' || event.pointerType === 'pen') {
-          word.setAttribute('data-pointer-preview', '');
-        }
+        if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+        clearTimers();
+        enterTimer = window.setTimeout(() => preview(word), 38);
       });
-      word.addEventListener('pointerleave', closePreview);
-      word.addEventListener('pointercancel', closePreview);
+
+      word.addEventListener('pointerleave', () => {
+        window.clearTimeout(enterTimer);
+        window.clearTimeout(leaveTimer);
+        leaveTimer = window.setTimeout(() => {
+          if (previewWord === word) restorePinned();
+        }, 135);
+      });
+
+      word.addEventListener('pointercancel', () => {
+        window.clearTimeout(enterTimer);
+        restorePinned();
+      });
+
+      word.addEventListener('focus', () => preview(word));
+      word.addEventListener('blur', () => window.setTimeout(restorePinned, 0));
     });
 
-    window.addEventListener('pagehide', () => {
-      document.querySelectorAll(`${selector}[data-pointer-preview]`).forEach((word) => {
-        word.removeAttribute('data-pointer-preview');
-      });
+    block.addEventListener('pointerdown', (event) => {
+      lastPointerType = event.pointerType || '';
+    }, true);
+
+    block.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const word = target?.closest(wordSelector);
+
+      if (!word || !block.contains(word)) {
+        clearPinned();
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      const willPin = pinnedWord !== word;
+      const keyboardActivation = event.detail === 0;
+      const keepPreview = keyboardActivation
+        ? word.matches(':focus-visible')
+        : (lastPointerType === 'mouse' || lastPointerType === 'pen') && word.matches(':hover');
+
+      pinnedWord = willPin ? word : null;
+      previewWord = keepPreview ? word : null;
+      syncPinned();
+      setActive(previewWord || pinnedWord);
+    }, true);
+
+    document.addEventListener('click', (event) => {
+      const target = event.target instanceof Node ? event.target : null;
+      if (target && !block.contains(target)) clearPinned();
     });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') clearPinned();
+    });
+
+    const measure = () => {
+      document.documentElement.classList.add('sacred-is-measuring');
+
+      words.forEach((word) => {
+        const front = word.querySelector('.hb-front');
+        const back = word.querySelector('.hb-back, .h-tetra-back');
+        if (!front || !back) return;
+
+        const intrinsicWidth = (element) => Math.max(
+          element.scrollWidth,
+          element.offsetWidth,
+          Number.parseFloat(getComputedStyle(element).width) || 0,
+        );
+        const intrinsicHeight = (element) => Math.max(
+          element.scrollHeight,
+          element.offsetHeight,
+          Number.parseFloat(getComputedStyle(element).height) || 0,
+        );
+        const extra = word.classList.contains('h-tetra') ? 24 : 20;
+        const closedWidth = Math.ceil(intrinsicWidth(front) + 3);
+        const openWidth = Math.ceil(Math.max(closedWidth, intrinsicWidth(back) + extra));
+        const wordHeight = Math.ceil(Math.max(intrinsicHeight(front), intrinsicHeight(back)) + 6);
+
+        word.style.setProperty('--sacred-closed-w', `${closedWidth}px`);
+        word.style.setProperty('--sacred-open-w', `${openWidth}px`);
+        word.style.setProperty('--sacred-word-h', `${wordHeight}px`);
+      });
+
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('sacred-is-measuring');
+      });
+    };
+
+    const scheduleMeasure = () => {
+      cancelAnimationFrame(measureFrame);
+      measureFrame = requestAnimationFrame(measure);
+    };
+
+    window.addEventListener('resize', scheduleMeasure, { passive: true });
+    window.addEventListener('pagehide', clearPinned);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') restorePinned();
+    });
+
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(scheduleMeasure).catch(scheduleMeasure);
+    }
+    syncPinned();
+    measure();
   })();
 </script>
