@@ -1,4 +1,4 @@
-name: Complete Home WebKit box model
+name: Complete Home and tooltip runtime owners
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: home-webkit-box-model-${{ github.event.pull_request.number }}
+  group: home-tooltip-owners-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -44,7 +44,69 @@ jobs:
       - name: Install Chromium and WebKit
         run: timeout 12m npx playwright install --with-deps chromium webkit
 
-      - name: Apply bounded canonical fix
+      - name: Adapt bounded helper for stacked tooltip owner
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path(".github/tmp/home_webkit_box_model.py")
+          source = path.read_text(encoding="utf-8")
+          replacements = [
+              (
+                  'ASSET_REGISTRY_PATH = Path("src/lib/asset-version.js")\n',
+                  'ASSET_REGISTRY_PATH = Path("src/lib/asset-version.js")\n'
+                  'TOOLTIP_PATH = Path("src/runtime/article-tooltips.js")\n'
+                  'TOOLTIP_BLOB = "625d72d49f11272d8a436bb7afe9de7ac84dfd16"\n',
+              ),
+              (
+                  '    expected = {HELPER_PATH.as_posix(), WORKFLOW_PATH.as_posix()}\n'
+                  '    if initial != expected:\n',
+                  '    expected = {HELPER_PATH.as_posix(), WORKFLOW_PATH.as_posix(), TOOLTIP_PATH.as_posix()}\n'
+                  '    tooltip_blob = output("git", "rev-parse", f"HEAD:{TOOLTIP_PATH.as_posix()}")\n'
+                  '    if tooltip_blob != TOOLTIP_BLOB:\n'
+                  '        raise SystemExit(f"tooltip owner drifted: expected {TOOLTIP_BLOB}, got {tooltip_blob}")\n'
+                  '    base_tooltip_blob = output("git", "rev-parse", f"{BASE_SHA}:{TOOLTIP_PATH.as_posix()}")\n'
+                  '    if base_tooltip_blob == TOOLTIP_BLOB:\n'
+                  '        raise SystemExit("stacked tooltip owner is not a real base delta")\n'
+                  '    if initial != expected:\n',
+              ),
+              (
+                  '    if CSS_PATH.as_posix() not in permanent:\n'
+                  '        raise SystemExit("canonical CSS owner missing from candidate diff")\n',
+                  '    if TOOLTIP_PATH.as_posix() not in permanent:\n'
+                  '        raise SystemExit("canonical tooltip owner missing from candidate diff")\n'
+                  '    tooltip_blob = output("git", "hash-object", TOOLTIP_PATH.as_posix())\n'
+                  '    if tooltip_blob != TOOLTIP_BLOB:\n'
+                  '        raise SystemExit(f"tooltip owner content drifted: expected {TOOLTIP_BLOB}, got {tooltip_blob}")\n'
+                  '    if CSS_PATH.as_posix() not in permanent:\n'
+                  '        raise SystemExit("canonical CSS owner missing from candidate diff")\n',
+              ),
+              (
+                  '        if path == CSS_PATH.as_posix():\n'
+                  '            continue\n',
+                  '        if path in {CSS_PATH.as_posix(), TOOLTIP_PATH.as_posix()}:\n'
+                  '            continue\n',
+              ),
+              (
+                  '        "rootFix": "box-sizing:border-box on body.home-page .home-content",\n',
+                  '        "rootFixes": [\n'
+                  '            "box-sizing:border-box on body.home-page .home-content",\n'
+                  '            "article tooltip hover transit begins on marker leave",\n'
+                  '        ],\n',
+              ),
+              (
+                  '    run("git", "commit", "-m", "fix(home): correct mobile content box geometry")\n',
+                  '    run("git", "commit", "-m", "fix(runtime): correct Home box model and tooltip transit")\n',
+              ),
+          ]
+          for old, new in replacements:
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f"helper adaptation match count {count} for {old!r}")
+              source = source.replace(old, new, 1)
+          path.write_text(source, encoding="utf-8")
+
+      - name: Apply bounded canonical fixes
         run: python3 .github/tmp/home_webkit_box_model.py apply
 
       - name: Build production-like dist
@@ -56,102 +118,8 @@ jobs:
       - name: Run Home Chromium and WebKit contracts
         run: node scripts/home-browser-contract.mjs
 
-      - name: Trace source-to-dist WebKit cascade
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p reports/home-webkit-runtime
-          sha256sum css/home.css dist/css/home.css > reports/home-webkit-runtime/home-css-sha256.txt
-          grep -n -B2 -A6 'body.home-page .home-content{' css/home.css \
-            > reports/home-webkit-runtime/source-home-content.txt
-          grep -n -B2 -A6 'body.home-page .home-content{' dist/css/home.css \
-            > reports/home-webkit-runtime/dist-home-content.txt
-          python3 -m http.server 8079 --bind 127.0.0.1 -d dist \
-            > reports/home-webkit-runtime/cascade-http.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          sleep 2
-          node --input-type=module <<'NODE'
-          import fs from 'node:fs';
-          import { webkit } from 'playwright';
-
-          const browser = await webkit.launch({ headless: true });
-          const page = await browser.newPage({ viewport: { width: 320, height: 568 } });
-          await page.goto('http://127.0.0.1:8079/', { waitUntil: 'networkidle' });
-          const report = await page.evaluate(() => {
-            const node = document.querySelector('.home-content');
-            if (!node) return { missing: true };
-            const computed = getComputedStyle(node);
-            const rect = node.getBoundingClientRect();
-            const matched = [];
-            const visit = (rules, owner) => {
-              for (const rule of Array.from(rules || [])) {
-                if ('cssRules' in rule && rule.cssRules) {
-                  visit(rule.cssRules, owner);
-                  continue;
-                }
-                if (!rule.selectorText || !rule.style) continue;
-                let applies = false;
-                try { applies = node.matches(rule.selectorText); } catch {}
-                if (!applies) continue;
-                const picked = {};
-                for (const property of ['box-sizing', 'width', 'max-width', 'padding-left', 'padding-right', 'margin-left', 'margin-right']) {
-                  const value = rule.style.getPropertyValue(property);
-                  if (value) picked[property] = {
-                    value,
-                    priority: rule.style.getPropertyPriority(property),
-                  };
-                }
-                if (Object.keys(picked).length) matched.push({ owner, selector: rule.selectorText, declarations: picked });
-              }
-            };
-            for (const sheet of Array.from(document.styleSheets)) {
-              let rules;
-              try { rules = sheet.cssRules; } catch { continue; }
-              visit(rules, sheet.href || 'inline');
-            }
-            return {
-              rect: { left: rect.left, right: rect.right, width: rect.width },
-              computed: {
-                boxSizing: computed.boxSizing,
-                width: computed.width,
-                maxWidth: computed.maxWidth,
-                paddingLeft: computed.paddingLeft,
-                paddingRight: computed.paddingRight,
-                marginLeft: computed.marginLeft,
-                marginRight: computed.marginRight,
-              },
-              matched,
-            };
-          });
-          fs.writeFileSync('reports/home-webkit-runtime/cascade.json', JSON.stringify(report, null, 2) + '\n');
-          await browser.close();
-          NODE
-
       - name: Run full interactive runtime audit
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p reports/home-webkit-runtime
-          python3 -m http.server 8080 --bind 127.0.0.1 -d dist > reports/home-webkit-runtime/http.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          sleep 2
-          status=0
-          AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit 2>&1 \
-            | tee reports/home-webkit-runtime/interactive-audit.log || status=$?
-          printf '{"exitCode":%s,"sha":"%s"}\n' "$status" "$GITHUB_SHA" \
-            > reports/home-webkit-runtime/result.json
-          exit "$status"
-
-      - name: Upload downstream runtime diagnostics
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: home-webkit-runtime-${{ github.run_id }}
-          path: reports/home-webkit-runtime/
-          if-no-files-found: warn
-          retention-days: 14
+        run: npm run interactive-audit
 
       - name: Run full static publication barrier
         run: npm run validate:static-publication
