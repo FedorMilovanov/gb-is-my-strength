@@ -64,6 +64,41 @@ jobs:
           git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort > "${RUNNER_TEMP}/nagornaya-css-references.before"
           test -s "${RUNNER_TEMP}/nagornaya-css-references.before"
           python3 .github/tmp/nagornaya_dark_refined_repair.py --write
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+
+          asset = 'css/nagornaya-mobile-toc.css'
+          css_path = Path(asset)
+          version = hashlib.md5(css_path.read_bytes()).hexdigest()[:8]
+          versioned = re.compile(r'((?:\.\./)*|/?)css/nagornaya-mobile-toc\.css\?v=[^\s"\'&}>]+')
+          skipped = {'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'audit', '_build-tools', 'src', 'scripts', 'docs', 'migration'}
+          changed = []
+
+          def rewrite(path):
+              source = path.read_text(encoding='utf-8')
+              updated = versioned.sub(lambda match: f'{match.group(1)}{asset}?v={version}', source)
+              if updated != source:
+                  path.write_text(updated, encoding='utf-8')
+                  changed.append(path.as_posix())
+
+          for path in Path('.').rglob('*.html'):
+              if any(part.startswith('.') or part in skipped for part in path.parts):
+                  continue
+              rewrite(path)
+          for path in Path('src').rglob('*.astro'):
+              rewrite(path)
+
+          helper = Path('src/lib/asset-version.js')
+          source = helper.read_text(encoding='utf-8')
+          pattern = re.compile(r"('css/nagornaya-mobile-toc\.css':\s*')[0-9a-f]{8}(')")
+          if len(pattern.findall(source)) != 1:
+              raise SystemExit('asset-version helper anchor drift')
+          updated = pattern.sub(rf"\g<1>{version}\g<2>", source, count=1)
+          helper.write_text(updated, encoding='utf-8')
+          print(f'Bounded Nagornaya CSS revision: {version}; rewritten references: {len(changed)}')
+          PY
 
       - name: Validate targeted source, build, Chromium and SW contracts
         shell: bash
