@@ -8,6 +8,7 @@ on:
       - 'scripts/interactive-audit-runner.js'
       - 'scripts/home-design-audit-pro.mjs'
       - 'scripts/home-browser-contract.mjs'
+      - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'scripts/a13-mobile-webkit-a11y-browser-test.mjs'
       - 'data/a13-mobile-webkit-a11y-scene-matrix.json'
@@ -31,6 +32,7 @@ on:
       - 'scripts/interactive-audit-runner.js'
       - 'scripts/home-design-audit-pro.mjs'
       - 'scripts/home-browser-contract.mjs'
+      - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'scripts/a13-mobile-webkit-a11y-browser-test.mjs'
       - 'data/a13-mobile-webkit-a11y-scene-matrix.json'
@@ -137,7 +139,7 @@ jobs:
 
           run=false
           reason=unrelated-change
-          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/components/home/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/components/home/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
