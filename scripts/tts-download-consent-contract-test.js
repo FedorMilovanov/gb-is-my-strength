@@ -121,7 +121,7 @@ const mutations = [
   ['synthesis queue removed', { worker: sources.worker.replace('synthQueue: Promise.resolve()', 'synthQueue: null') }],
   ['worker network request loses AbortSignal', { worker: sources.worker.replace('{ signal: state.loadController.signal }', '{}') }],
   ['persistent refusal removed', { engine: sources.engine.replace('setModelDownloadOptOut(true)', 'void 0') }],
-  ['cancel stops being terminal', { engine: sources.engine.replace('terminateWorker(error);', 'void error;') }],
+  ['cancel stops being terminal', { engine: sources.engine.replace(/(function cancelLoading\(options\)[\s\S]{0,800}?)terminateWorker\(error\);/, '$1void error;') }],
   ['ONNX returns to document client', { engine: `${sources.engine}\nort.InferenceSession.create(new ArrayBuffer(0));` }],
   ['notice intercepts PLAY', { css: sources.css.replace('pointer-events:none;\n  transform:translate(-50%,0)', 'pointer-events:auto;\n  transform:translate(-50%,0)') }],
   ['stylesheet revision drifts', { engine: sources.engine.replace(/(NOTICE_CSS_URL\s*=\s*['"][^'"]+\?v=)[a-f0-9]{8}/, '$100000000') }],
