@@ -7,7 +7,7 @@
   const NEEDED = ['model.onnx', 'dictionary', 'config.json', 'bert/model.onnx', 'bert/vocab.txt'];
 
   if (window.__gbVoskDownloadWorkerVersion === VERSION) return;
-  if (typeof Worker !== 'function' || typeof Blob !== 'function' || !URL?.createObjectURL) return;
+  if (typeof Worker !== 'function' || typeof Blob !== 'function' || typeof URL?.createObjectURL !== 'function') return;
 
   const nativeFetch = window.fetch.bind(window);
   let jobSequence = 0;
@@ -66,13 +66,17 @@
 
           const files = {};
           const transfers = [raw];
+          const transferred = new Set([raw]);
           Object.keys(unzipped).forEach((name) => {
             const bytes = unzipped[name];
             const exact = bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
               ? bytes
               : bytes.slice();
             files[name] = exact;
-            transfers.push(exact.buffer);
+            if (!transferred.has(exact.buffer)) {
+              transferred.add(exact.buffer);
+              transfers.push(exact.buffer);
+            }
           });
 
           self.postMessage({
