@@ -97,15 +97,40 @@ async function setTheme(page, dark) {
 async function revealPage(page) {
   await page.evaluate(async () => {
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const settle = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const resetHorizontalPosition = () => {
+      const root = document.scrollingElement;
+      if (root) root.scrollLeft = 0;
+      document.documentElement.scrollLeft = 0;
+      document.body.scrollLeft = 0;
+      for (const scroller of document.querySelectorAll('[data-home-routes], .h-home-routes')) {
+        scroller.scrollLeft = 0;
+      }
+      scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    };
+
     for (const node of document.querySelectorAll('.h-reveal')) {
-      node.scrollIntoView({ block: 'center', behavior: 'auto' });
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      node.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+      await settle();
       await pause(18);
     }
-    scrollTo(0, 0);
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    // WebKit may preserve the horizontal position chosen while revealing cards
+    // inside the governed scroll-snap catalogue. Reset both the root viewport
+    // and owned horizontal scrollers before any geometry is sampled.
+    resetHorizontalPosition();
+    await settle();
+    resetHorizontalPosition();
   });
   await page.waitForTimeout(120);
+  await page.evaluate(() => {
+    const root = document.scrollingElement;
+    if (root) root.scrollLeft = 0;
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+    scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  });
+  await page.waitForTimeout(40);
 }
 
 async function readViewportState(page) {
