@@ -10,6 +10,7 @@ on:
       - "js/vosk-stress-lookup.js"
       - "js/vosk-custom-terms.json"
       - "js/vosk-stress-marker.bin"
+      - "js/floating-cluster-controller.js"
       - "css/tts-download-notice.css"
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-tts.js"
@@ -54,6 +55,7 @@ on:
       - "js/vosk-stress-lookup.js"
       - "js/vosk-custom-terms.json"
       - "js/vosk-stress-marker.bin"
+      - "js/floating-cluster-controller.js"
       - "css/tts-download-notice.css"
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-tts.js"
@@ -127,6 +129,7 @@ jobs:
               js/vosk-tts-worker.js \
               js/vosk-tts-core.js \
               js/vosk-stress-lookup.js \
+              js/floating-cluster-controller.js \
               src/runtime/reader-tts.js \
               src/runtime/reader-tts-defaults.js \
               src/runtime/reader-tts-media-session.js \
