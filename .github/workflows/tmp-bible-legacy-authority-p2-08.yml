@@ -75,9 +75,14 @@ jobs:
           shell = shell.replace(old_scan, new_scan, 1)
 
           staging_line = "  data/verses.json \\\n"
-          if shell.count(staging_line) != 2:
-              raise SystemExit(f'temporary runner legacy staging anchor drifted: {shell.count(staging_line)}')
-          shell = shell.replace(staging_line, '')
+          staging_parts = shell.split("git add -- \\\n")
+          if len(staging_parts) != 3:
+              raise SystemExit(f'temporary runner staging blocks drifted: {len(staging_parts) - 1}')
+          for index in (1, 2):
+              if staging_parts[index].count(staging_line) < 1:
+                  raise SystemExit(f'temporary runner deletion staging missing in block {index}')
+              staging_parts[index] = staging_parts[index].replace(staging_line, '', 1)
+          shell = "git add -- \\\n".join(staging_parts)
           runner.write_text(shell, encoding='utf-8')
           PY
       - name: Execute self-clean atomic removal
