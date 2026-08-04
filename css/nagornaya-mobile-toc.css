@@ -51,3 +51,14 @@ html.dark body:not(.nagornaya-page):not(.gbs-world) .btoc-link-num {
 .btoc-link { transition: background .25s cubic-bezier(.2,.7,.2,1), color .25s cubic-bezier(.2,.7,.2,1); transform: none !important; }
 .btoc-link:hover { transform: none !important; background: var(--ng-toc-surface-2, rgba(0,0,0,.04)); }
 html.dark .btoc-link:hover { background: rgba(255,255,255,.05); }
+
+/* NG-DARK-01 cascade-safe Chromium-confirmed utility remaps */
+html.dark body.nagornaya-page .text-blue-600{color:#93c5fd}
+html.dark body.nagornaya-page .text-rose-600,
+html.dark body.nagornaya-page .text-rose-700,
+html.dark body.nagornaya-page .text-red-600{color:#fca5a5}
+html.dark body.nagornaya-page .text-purple-600,
+html.dark body.nagornaya-page .text-purple-700{color:#c4b5fd}
+html.dark body.nagornaya-page .text-teal-700{color:#5eead4}
+html.dark body.nagornaya-page .text-orange-700{color:#fdba74}
+html.dark body.nagornaya-page .bg-stone-200{background-color:var(--color-surface-muted);color:var(--color-text);border-color:var(--color-border)}
