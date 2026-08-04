@@ -56,6 +56,78 @@ jobs:
       - name: Run Home Chromium and WebKit contracts
         run: node scripts/home-browser-contract.mjs
 
+      - name: Trace source-to-dist WebKit cascade
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/home-webkit-runtime
+          sha256sum css/home.css dist/css/home.css > reports/home-webkit-runtime/home-css-sha256.txt
+          grep -n -B2 -A6 'body.home-page .home-content{' css/home.css \
+            > reports/home-webkit-runtime/source-home-content.txt
+          grep -n -B2 -A6 'body.home-page .home-content{' dist/css/home.css \
+            > reports/home-webkit-runtime/dist-home-content.txt
+          python3 -m http.server 8079 --bind 127.0.0.1 -d dist \
+            > reports/home-webkit-runtime/cascade-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { webkit } from 'playwright';
+
+          const browser = await webkit.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 320, height: 568 } });
+          await page.goto('http://127.0.0.1:8079/', { waitUntil: 'networkidle' });
+          const report = await page.evaluate(() => {
+            const node = document.querySelector('.home-content');
+            if (!node) return { missing: true };
+            const computed = getComputedStyle(node);
+            const rect = node.getBoundingClientRect();
+            const matched = [];
+            const visit = (rules, owner) => {
+              for (const rule of Array.from(rules || [])) {
+                if ('cssRules' in rule && rule.cssRules) {
+                  visit(rule.cssRules, owner);
+                  continue;
+                }
+                if (!rule.selectorText || !rule.style) continue;
+                let applies = false;
+                try { applies = node.matches(rule.selectorText); } catch {}
+                if (!applies) continue;
+                const picked = {};
+                for (const property of ['box-sizing', 'width', 'max-width', 'padding-left', 'padding-right', 'margin-left', 'margin-right']) {
+                  const value = rule.style.getPropertyValue(property);
+                  if (value) picked[property] = {
+                    value,
+                    priority: rule.style.getPropertyPriority(property),
+                  };
+                }
+                if (Object.keys(picked).length) matched.push({ owner, selector: rule.selectorText, declarations: picked });
+              }
+            };
+            for (const sheet of Array.from(document.styleSheets)) {
+              let rules;
+              try { rules = sheet.cssRules; } catch { continue; }
+              visit(rules, sheet.href || 'inline');
+            }
+            return {
+              rect: { left: rect.left, right: rect.right, width: rect.width },
+              computed: {
+                boxSizing: computed.boxSizing,
+                width: computed.width,
+                maxWidth: computed.maxWidth,
+                paddingLeft: computed.paddingLeft,
+                paddingRight: computed.paddingRight,
+                marginLeft: computed.marginLeft,
+                marginRight: computed.marginRight,
+              },
+              matched,
+            };
+          });
+          fs.writeFileSync('reports/home-webkit-runtime/cascade.json', JSON.stringify(report, null, 2) + '\n');
+          await browser.close();
+          NODE
+
       - name: Run full interactive runtime audit
         shell: bash
         run: |
