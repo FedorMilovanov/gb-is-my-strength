@@ -15,7 +15,7 @@ export const ASSET_VERSIONS = {
   'css/series-samizdat.css': '2c4a9f29',
   'css/site.css': '6c30f93f',
   'css/sw-toast.css': 'efbe868b',
-  'css/tts-download-notice.css': '475abd4b',
+  'css/tts-download-notice.css': 'b9ef192f',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'fba4e559',
   'js/enhancements.js': 'cbbdb283',
@@ -32,7 +32,7 @@ export const ASSET_VERSIONS = {
   'js/site-utils.js': '30ed46cf',
   'js/site.js': '38b94307',
   'js/sw-register.js': '3fbabcf1',
-  'js/vosk-tts-engine.js': '216b15fb',
+  'js/vosk-tts-engine.js': 'e94fc055',
   'nagornaya/tw.min.css': '2670414e',
 };
 
