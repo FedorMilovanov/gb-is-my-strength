@@ -73,9 +73,9 @@ jobs:
           if source.count(anchor) != 1:
               raise SystemExit(f'localhost CSP asset anchor drift: {source.count(anchor)}')
           source = source.replace(anchor, replacement, 1)
-          if source.count('EXPECTED_LOCALHOST_CSP_ICON_URLS') != 2:
+          if source.count('EXPECTED_LOCALHOST_CSP_ICON_URLS') != 3:
               raise SystemExit('unexpected CSP URL-set reference count')
-          if source.count('isExpectedLocalhostCspIconError') != 3:
+          if source.count('isExpectedLocalhostCspIconError') != 4:
               raise SystemExit('unexpected CSP predicate reference count')
           source = source.replace('EXPECTED_LOCALHOST_CSP_ICON_URLS', 'EXPECTED_LOCALHOST_CSP_ASSET_URLS')
           source = source.replace('expectedLocalhostCspIconUrls', 'expectedLocalhostCspAssetUrls')
