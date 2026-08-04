@@ -6,8 +6,10 @@
  * WebKit can keep a locator click pending when the synchronous click listener
  * immediately opens a fixed sheet over the activating control. This owner does
  * not open, close or style the overlay itself. It defers exactly one native
- * button click to the next rendering opportunity; the canonical
+ * button click beyond the current input dispatch; the canonical
  * floating-cluster-controller and OverlayRuntime remain the only modal owners.
+ * A bounded timer backs up requestAnimationFrame because WebKit may throttle a
+ * background page's frame callbacks while parallel route witnesses are active.
  * It also owns the durable ARIA trigger→overlay relationship that the original
  * mobile bar markup omitted, so open and Escape-close can be verified against
  * the exact controlled sheet rather than inferred from a visual class alone.
@@ -26,14 +28,25 @@
     trigger.setAttribute('aria-controls', overlay.id);
     let pending = false;
     let replaying = false;
+    let frameId = 0;
+    let fallbackTimer = 0;
 
     const syncExpanded = () => {
       const open = overlay.classList.contains('is-open') && overlay.getAttribute('aria-hidden') !== 'true';
       trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
     };
 
+    const clearReplayHandles = () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
+      frameId = 0;
+      fallbackTimer = 0;
+    };
+
     const replayNativeActivation = () => {
+      if (!pending) return;
       pending = false;
+      clearReplayHandles();
       if (!trigger.isConnected || trigger.disabled) return;
       replaying = true;
       try {
@@ -49,9 +62,18 @@
       event.stopImmediatePropagation();
       if (pending) return;
       pending = true;
-      if (document.hidden) window.setTimeout(replayNativeActivation, 0);
-      else window.requestAnimationFrame(replayNativeActivation);
+      if (document.hidden) {
+        fallbackTimer = window.setTimeout(replayNativeActivation, 0);
+      } else {
+        frameId = window.requestAnimationFrame(replayNativeActivation);
+        fallbackTimer = window.setTimeout(replayNativeActivation, 120);
+      }
     }, true);
+
+    window.addEventListener('pagehide', () => {
+      pending = false;
+      clearReplayHandles();
+    }, { once: true });
 
     new MutationObserver(syncExpanded).observe(overlay, {
       attributes: true,

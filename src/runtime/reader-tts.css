@@ -1,0 +1,21 @@
+/* Reader TTS ownership polish.
+   The notice surface remains interactive only through its explicit controls;
+   informational copy must never become a transparent hit target over PLAY. */
+.gb-tts-download-notice {
+  pointer-events: none;
+}
+
+.gb-tts-download-notice button,
+.gb-tts-download-notice a,
+.gb-tts-download-notice [role="button"],
+.gb-tts-download-notice__action,
+.gb-tts-download-notice__cancel {
+  pointer-events: auto;
+}
+
+@media (max-width: 640px) {
+  .gb-tts-download-notice.is-visible {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 88px) !important;
+    max-width: min(420px, calc(100vw - 20px));
+  }
+}

@@ -1,859 +1,531 @@
-/**
- * vosk-tts-engine.js
- * Браузерный движок озвучки на базе vosk-tts (github.com/alphacep/vosk-tts, Apache 2.0):
- * настоящая нейросеть (VITS + BERT-эмбеддинги для ударений), инференс через onnxruntime-web,
- * целиком в браузере, без сервера. Модель качается с Hugging Face один раз и кэшируется
- * в IndexedDB — при повторных визитах готова мгновенно.
- * (alphacephei.com — официальный хост той же модели — не отдаёт Access-Control-Allow-Origin,
- * поэтому cross-origin fetch() с этого сайта до него не доходит; huggingface.co подтверждённо
- * отдаёт "access-control-allow-origin: *" на этот файл, см. AuditRepo REPORT.md Round 3.)
- * (Round 5, 2026-07-08: huggingface.co/.../resolve/main/... сам по себе — только редирект;
- * реальные байты отдаёт их CDN "Xet" — us.aws.cdn.hf.co (или другой региональный поддомен
- * *.aws.cdn.hf.co). Наш CSP connect-src разрешал только huggingface.co, поэтому браузер
- * блокировал именно редирект-цель — детерминированный дефект, ломавший ХОЛОДНУЮ загрузку
- * модели (тихо падало на Web Speech). Точную долю затронутых сессий не измерить — нет
- * success/selected-engine телеметрии, только vosk_tts_failed; поэтому «ни разу не работал»
- * — правдоподобно, но строго не доказано. CSP теперь включает https://*.aws.cdn.hf.co во всех
- * *PageHead.astro/*PageChrome.astro + DEFAULT_DIST_CSP fallback.)
- *
- * Ничего не подключается, пока страница явно не вызовет ensureLoaded()/speak() — используется
- * только floating-cluster-controller.js по клику «Слушать».
- *
- * API: window.VoskTTSEngine.{ isSupported, isReady, ensureLoaded, cancelLoading, speak, cancel }
- */
 (function () {
-  'use strict';
-
-  var CORE_SRC = '/js/vosk-tts-core.js';
-  var STRESS_LOOKUP_SRC = '/js/vosk-stress-lookup.js';
-  var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json';
-  var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin';
-  var ORT_SRC = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js';
-  var FFLATE_SRC = 'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
-  // Quantized variant (782MB -> 280MB): BERT sub-model INT8 dynamic-quantized
-  // (654MB -> 156.5MB, ONNX Runtime quantize_dynamic, verified byte-identical
-  // *behavior* via real audio A/B before shipping — same site vocabulary,
-  // same speaker); the main VITS sub-model's quantized output had a broken
-  // MatMulInteger shape and was left at its original size. See AuditRepo
-  // tts-quality-audit-2026-07-07/-08 for the generation + verification steps.
-  var MODEL_URL = 'https://huggingface.co/CurtMil/gb-vosk-tts-model/resolve/main/model-quant.zip';
-  // SHA-256 computed locally from the exact bytes uploaded, then
-  // independently re-verified against the file the user actually has on
-  // disk (Get-FileHash) before this URL went live — both matched exactly.
-  // Update this whenever MODEL_URL points at different bytes, or every
-  // fresh download will fail the check below.
-  var EXPECTED_MODEL_SHA256 = '34e742ce9bb3c1ae86679d5974d2496b9fae50f0629f51bb4f5edfadc5ff3d71';
-  var NEEDED = ['model.onnx', 'dictionary', 'config.json', 'bert/model.onnx', 'bert/vocab.txt'];
-  var DB_NAME = 'gb-vosk-tts';
-  var SAMPLE_RATE = 22050;
-
-  var state = { loading: null, ready: false, config: null, dic: null, tok: null, sess: null, bertSess: null, stressLookup: null };
-  var audioEl = null;
-
-  var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
-  var DOWNLOAD_NOTICE_CSS_URL = '/css/tts-download-notice.css?v=475abd4b';
-  var modelDownloadController = null;
-  var modelDownloadNotice = null;
-  var modelDownloadNoticeTimer = null;
-  var modelDownloadCancelled = false;
-  var modelDownloadNoticeAction = null;
-  var engineStatus = { phase: 'idle', ready: false, loading: false, optedOut: false };
-
-  function modelDownloadOptedOut() {
-    try { return localStorage.getItem(MODEL_DOWNLOAD_OPTOUT_KEY) === 'off'; }
-    catch (_) { return false; }
-  }
-
-  function createDownloadCancelledError(message) {
-    var err;
-    try { err = new DOMException(message || 'model download cancelled', 'AbortError'); }
-    catch (_) { err = new Error(message || 'model download cancelled'); err.name = 'AbortError'; }
-    err.userCancelled = true;
-    return err;
-  }
-
-  function ensureDownloadNoticeStyles() {
-    if (document.querySelector('link[data-gb-tts-download-notice]')) return;
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = DOWNLOAD_NOTICE_CSS_URL;
-    link.setAttribute('data-gb-tts-download-notice', 'true');
-    document.head.appendChild(link);
-  }
-
-  function suppressLegacyDownloadToast() {
-    var toast = document.querySelector('.gb-fc-toast.is-open');
-    if (!toast) return;
-    var text = toast.textContent || '';
-    if (/280\s*МБ|улучшенн(?:ый|ого)\s+голос/i.test(text)) {
-      toast.classList.remove('is-open');
-    }
-  }
-
-  function dispatchEngineStatus(phase, detail) {
-    var next = {
-      phase: phase,
-      ready: !!state.ready,
-      loading: !!state.loading,
-      optedOut: modelDownloadOptedOut()
-    };
-    if (detail) {
-      Object.keys(detail).forEach(function (key) { next[key] = detail[key]; });
-    }
-    engineStatus = next;
-    try { window.dispatchEvent(new CustomEvent('gb:vosk-status', { detail: next })); } catch (_) {}
-    return next;
-  }
-
-  function getStatus() {
-    var copy = {};
-    Object.keys(engineStatus).forEach(function (key) { copy[key] = engineStatus[key]; });
-    copy.ready = !!state.ready;
-    copy.loading = !!state.loading;
-    copy.optedOut = modelDownloadOptedOut();
-    return copy;
-  }
-
-  function bindDownloadNoticeAction(el) {
-    var action = el && el.querySelector('.gb-tts-download-notice__action');
-    if (!action || action.getAttribute('data-gb-tts-action-bound') === 'true') return;
-    action.setAttribute('data-gb-tts-action-bound', 'true');
-    action.addEventListener('click', function () {
-      var mode = action.getAttribute('data-action') || '';
-      if (mode === 'cancel') {
-        cancelLoading({ persist: true });
-        return;
-      }
-      if (mode === 'switch') {
-        var switchDetail = { handled: false };
-        try { window.dispatchEvent(new CustomEvent('gb:vosk-switch-request', { detail: switchDetail })); } catch (_) {}
-        return;
-      }
-      if (mode === 'retry' || mode === 'enable' || mode === 'manual') {
-        var retryDetail = { mode: mode, handled: false };
-        try { window.dispatchEvent(new CustomEvent('gb:vosk-retry-request', { detail: retryDetail })); } catch (_) {}
-        if (!retryDetail.handled) retryLoading({ clearOptOut: true });
-      }
-    });
-  }
-
-  function getModelDownloadNotice() {
-    if (modelDownloadNotice && document.documentElement.contains(modelDownloadNotice)) {
-      bindDownloadNoticeAction(modelDownloadNotice);
-      return modelDownloadNotice;
-    }
-    var existing = document.querySelector('.gb-tts-download-notice');
-    if (existing) {
-      modelDownloadNotice = existing;
-      bindDownloadNoticeAction(existing);
-      return existing;
-    }
-    var el = document.createElement('div');
-    el.className = 'gb-tts-download-notice';
-    el.setAttribute('role', 'status');
-    el.setAttribute('aria-live', 'polite');
-    el.setAttribute('aria-atomic', 'true');
-    el.setAttribute('data-state', 'preparing');
-    el.innerHTML =
-      '<span class="gb-tts-download-notice__icon" aria-hidden="true"></span>' +
-      '<span class="gb-tts-download-notice__copy">' +
-        '<strong class="gb-tts-download-notice__title">Проверяем улучшенный голос</strong>' +
-        '<span class="gb-tts-download-notice__meta">Системный голос уже работает</span>' +
-      '</span>' +
-      '<button class="gb-tts-download-notice__action" type="button" hidden></button>';
-    document.body.appendChild(el);
-    modelDownloadNotice = el;
-    bindDownloadNoticeAction(el);
-    return el;
-  }
-
-  function setNoticeAction(el, mode, label, ariaLabel) {
-    var action = el.querySelector('.gb-tts-download-notice__action');
-    modelDownloadNoticeAction = mode || null;
-    if (!action) return;
-    action.hidden = !mode;
-    action.setAttribute('data-action', mode || '');
-    action.textContent = label || '';
-    action.setAttribute('aria-label', ariaLabel || label || '');
-  }
-
-  function showStatus(stateName, options) {
-    options = options || {};
-    ensureDownloadNoticeStyles();
-    clearTimeout(modelDownloadNoticeTimer);
-    var el = getModelDownloadNotice();
-    var title = el.querySelector('.gb-tts-download-notice__title');
-    var meta = el.querySelector('.gb-tts-download-notice__meta');
-    var titleText = '';
-    var metaText = '';
-    var actionMode = null;
-    var actionLabel = '';
-    var actionAria = '';
-
-    if (stateName === 'browser') {
-      titleText = 'Сейчас системный голос';
-      metaText = 'Улучшенный голос проверяется в фоне';
-    } else if (stateName === 'preparing') {
-      titleText = 'Проверяем улучшенный голос';
-      metaText = 'Системный голос уже работает';
-    } else if (stateName === 'loading') {
-      titleText = 'Улучшенный голос загружается';
-      metaText = 'Системный голос уже работает · около 280 МБ';
-      actionMode = 'cancel';
-      actionLabel = 'Не загружать';
-      actionAria = 'Остановить загрузку улучшенного голоса';
-    } else if (stateName === 'initializing') {
-      titleText = 'Запускаем улучшенный голос';
-      metaText = 'Модель получена · подготавливаем в браузере';
-    } else if (stateName === 'ready' || stateName === 'success') {
-      stateName = 'ready';
-      titleText = 'Улучшенный голос готов';
-      metaText = 'Можно включить без перезагрузки страницы';
-      actionMode = 'switch';
-      actionLabel = 'Включить сейчас';
-      actionAria = 'Перейти на улучшенный голос с текущего места';
-    } else if (stateName === 'selected') {
-      titleText = 'Работает улучшенный голос';
-      metaText = 'Локальная модель · текст никуда не отправляется';
-    } else if (stateName === 'disabled') {
-      titleText = 'Улучшенный голос отключён';
-      metaText = 'Сейчас используется системный голос';
-      actionMode = 'enable';
-      actionLabel = 'Включить';
-      actionAria = 'Снова разрешить загрузку улучшенного голоса';
-    } else if (stateName === 'save-data') {
-      titleText = 'Включена экономия трафика';
-      metaText = 'Системный голос работает · модель около 280 МБ';
-      actionMode = 'manual';
-      actionLabel = 'Загрузить';
-      actionAria = 'Загрузить улучшенный голос несмотря на экономию трафика';
-    } else if (stateName === 'cancelled') {
-      titleText = 'Загрузка остановлена';
-      metaText = 'Системный голос продолжает работать';
-    } else {
-      stateName = 'error';
-      titleText = 'Улучшенный голос не запустился';
-      metaText = 'Системный голос продолжает работать';
-      actionMode = 'retry';
-      actionLabel = 'Повторить';
-      actionAria = 'Повторить запуск улучшенного голоса';
-    }
-
-    if (options.title) titleText = options.title;
-    if (options.meta) metaText = options.meta;
-    if (options.actionMode !== undefined) actionMode = options.actionMode;
-    if (options.actionLabel !== undefined) actionLabel = options.actionLabel;
-    if (options.actionAria !== undefined) actionAria = options.actionAria;
-
-    el.setAttribute('data-state', stateName);
-    if (title) title.textContent = titleText;
-    if (meta) meta.textContent = metaText;
-    setNoticeAction(el, actionMode, actionLabel, actionAria);
-    // Do not gate status visibility on requestAnimationFrame. WebKit can defer
-    // that callback long enough for browser/preparing to be replaced by loading.
-    el.classList.add('is-visible');
-    dispatchEngineStatus(stateName, {
-      title: titleText,
-      message: metaText,
-      action: actionMode,
-      reason: options.reason || null
-    });
-    if (options.autoHide) hideModelDownloadNotice(options.autoHide);
-    return el;
-  }
-
-  function hideModelDownloadNotice(delay) {
-    clearTimeout(modelDownloadNoticeTimer);
-    modelDownloadNoticeTimer = setTimeout(function () {
-      if (!modelDownloadNotice) return;
-      modelDownloadNotice.classList.remove('is-visible');
-      var doomed = modelDownloadNotice;
-      setTimeout(function () {
-        if (doomed.parentNode) doomed.parentNode.removeChild(doomed);
-        if (modelDownloadNotice === doomed) modelDownloadNotice = null;
-      }, 360);
-    }, delay || 0);
-  }
-
-  function showModelDownloadNotice() {
-    return showStatus('loading');
-  }
-
-  function finishModelDownloadNotice(stateName) {
-    var autoHide = stateName === 'cancelled' ? 1900 : stateName === 'selected' ? 1800 : 0;
-    return showStatus(stateName, { autoHide: autoHide });
-  }
-
-  function clearModelDownloadOptOut() {
-    try { localStorage.removeItem(MODEL_DOWNLOAD_OPTOUT_KEY); } catch (_) {}
-    modelDownloadCancelled = false;
-    dispatchEngineStatus('enabled');
-  }
-
-  function cancelLoading(options) {
-    var persist = !options || options.persist !== false;
-    if (persist) {
-      try { localStorage.setItem(MODEL_DOWNLOAD_OPTOUT_KEY, 'off'); } catch (_) {}
-    }
-    modelDownloadCancelled = true;
-    var aborted = false;
-    if (modelDownloadController && !modelDownloadController.signal.aborted) {
-      try { modelDownloadController.abort(); aborted = true; } catch (_) {}
-    }
-    finishModelDownloadNotice('cancelled');
-    dispatchEngineStatus('cancelled', { reason: 'user' });
-    try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-cancelled')); } catch (_) {}
-    return aborted;
-  }
-
-  function retryLoading(options) {
-    options = options || {};
-    if (options.clearOptOut !== false) clearModelDownloadOptOut();
-    modelDownloadCancelled = false;
-    state.loading = null;
-    showStatus('preparing');
-    return ensureLoaded();
-  }
-
-  function fetchStressLookup() {
-    // Small same-origin assets (~700KB total) — no reason to gate the whole
-    // engine on them; a failure here just means no extra stress coverage,
-    // never breaks synthesis (vosk-tts's own dictionary/G2P still runs).
-    return Promise.all([
-      fetch(CUSTOM_TERMS_URL).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-      fetch(STRESS_MARKER_URL).then(function (r) { return r.ok ? r.arrayBuffer() : null; }).catch(function () { return null; })
-    ]).then(function (results) {
-      var customJson = results[0] || {};
-      var markerBuf = results[1];
-      delete customJson._comment;
-      var customTerms = new Map(Object.entries(customJson));
-      return new window.VoskStressLookup.StressLookup({ customTerms: customTerms, markerDictBuffer: markerBuf || undefined });
-    }).catch(function (err) {
-      console.warn('[vosk-tts] stress-lookup dictionaries unavailable, continuing without them:', err);
-      return null;
-    });
-  }
-
-  function loadScript(src) {
-    return new Promise(function (resolve, reject) {
-      var s = document.createElement('script');
-      s.src = src;
-      s.onload = function () { resolve(); };
-      s.onerror = function () { reject(new Error('script load failed: ' + src)); };
-      document.head.appendChild(s);
-    });
-  }
-
-  function idbOpen() {
-    return new Promise(function (resolve, reject) {
-      var r = indexedDB.open(DB_NAME, 1);
-      r.onupgradeneeded = function () { r.result.createObjectStore('files'); };
-      r.onsuccess = function () { resolve(r.result); };
-      r.onerror = function () { reject(r.error); };
-    });
-  }
-  function idbGet(key) {
-    return idbOpen().then(function (db) {
-      return new Promise(function (resolve, reject) {
-        var t = db.transaction('files').objectStore('files').get(key);
-        t.onsuccess = function () { resolve(t.result || null); };
-        t.onerror = function () { reject(t.error); };
-      });
-    });
-  }
-  function idbSet(key, val) {
-    return idbOpen().then(function (db) {
-      return new Promise(function (resolve, reject) {
-        var t = db.transaction('files', 'readwrite').objectStore('files').put(val, key);
-        t.onsuccess = function () { resolve(); };
-        t.onerror = function () { reject(t.error); };
-      });
-    });
-  }
-
-  function extractZip(u8) {
-    var unzipped = fflate.unzipSync(u8, {
-      filter: function (f) {
-        return NEEDED.some(function (n) { return f.name.endsWith('/' + n) || f.name === n; });
-      }
-    });
-    // longest suffix wins first so "bert/model.onnx" can't be shadowed by "model.onnx"
-    var byLen = NEEDED.slice().sort(function (a, b) { return b.length - a.length; });
-    var files = {};
-    Object.keys(unzipped).forEach(function (name) {
-      for (var i = 0; i < byLen.length; i++) {
-        var n = byLen[i];
-        if (name.endsWith('/' + n) || name === n) { files[n] = unzipped[name]; break; }
-      }
-    });
-    if (!files['model.onnx'] || !files['dictionary'] || !files['config.json']) {
-      throw new Error('vosk model archive: model.onnx/dictionary/config.json not found');
-    }
-    return files;
-  }
-
-  function bufToHex(buf) {
-    var bytes = new Uint8Array(buf), hex = '';
-    for (var i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
-    return hex;
-  }
-
-  // Verifies the raw downloaded zip against EXPECTED_MODEL_SHA256 before it's
-  // trusted/unzipped/cached — the model is a 700+MB arbitrary binary fetched
-  // from a third-party host (Hugging Face) with no other integrity signal in
-  // this pipeline otherwise. Only runs on a fresh network download, not on
-  // cache hits (already-cached bytes were verified the first time they were
-  // stored). Skips (doesn't block playback) if SubtleCrypto is unavailable —
-  // e.g. very old browsers or a non-HTTPS context — rather than breaking TTS
-  // entirely over a missing nice-to-have safety check.
-  function verifyModelIntegrity(buf) {
-    if (!(window.crypto && window.crypto.subtle && window.crypto.subtle.digest)) return Promise.resolve();
-    return window.crypto.subtle.digest('SHA-256', buf).then(function (hash) {
-      var hex = bufToHex(hash);
-      if (hex !== EXPECTED_MODEL_SHA256) {
-        throw new Error('model integrity check failed: sha256 ' + hex.slice(0, 12) + '... != expected ' + EXPECTED_MODEL_SHA256.slice(0, 12) + '...');
-      }
-    });
-  }
-
-  // Cache key is MODEL_URL itself, not a fixed string — if the model file
-  // this constant points to ever changes (e.g. a future quantized upload),
-  // returning visitors automatically re-fetch instead of playing back a
-  // stale/mismatched cached model from IndexedDB under the old URL's entry.
-  function fetchModelFiles() {
-    return idbGet(MODEL_URL).catch(function (err) {
-      console.warn('[vosk-tts] IndexedDB read unavailable, continuing without warm cache:', err);
-      dispatchEngineStatus('cache-unavailable', { reason: 'indexeddb-read' });
-      return null;
-    }).then(function (cached) {
-      if (cached) {
-        dispatchEngineStatus('cache-hit');
-        showStatus('initializing', { meta: 'Модель найдена в браузере · запускаем' });
-        return cached;
-      }
-      if (modelDownloadOptedOut()) {
-        showStatus('disabled', { reason: 'optout' });
-        throw createDownloadCancelledError('enhanced voice download disabled by user');
-      }
-
-      modelDownloadCancelled = false;
-      modelDownloadController = typeof AbortController !== 'undefined'
-        ? new AbortController()
-        : null;
-      try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-start')); } catch (_) {}
-      suppressLegacyDownloadToast();
-      showModelDownloadNotice();
-
-      var fetchOptions = modelDownloadController
-        ? { signal: modelDownloadController.signal }
-        : undefined;
-
-      return fetch(MODEL_URL, fetchOptions).then(function (resp) {
-        if (!resp.ok) throw new Error('model download HTTP ' + resp.status);
-        return resp.arrayBuffer();
-      }).then(function (buf) {
-        return verifyModelIntegrity(buf).then(function () {
-          var files = extractZip(new Uint8Array(buf));
-          return idbSet(MODEL_URL, files).catch(function (err) {
-            console.warn('[vosk-tts] model cache write unavailable; current session can still use the model:', err);
-            dispatchEngineStatus('cache-unavailable', { reason: 'indexeddb-write' });
-          }).then(function () { return files; });
-        });
-      }).then(function (files) {
-        modelDownloadController = null;
-        showStatus('initializing');
-        try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-complete')); } catch (_) {}
-        return files;
-      }).catch(function (err) {
-        modelDownloadController = null;
-        if (modelDownloadCancelled || (err && err.name === 'AbortError')) {
-          finishModelDownloadNotice('cancelled');
-          throw createDownloadCancelledError('model download cancelled by user');
-        }
-        throw err;
-      });
-    });
-  }
-
-  function sliceBuf(u8) { return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength); }
-
-  function ensureLoaded() {
-    if (state.ready) {
-      finishModelDownloadNotice('ready');
-      return Promise.resolve(true);
-    }
-    if (state.loading) return state.loading;
-    modelDownloadCancelled = false;
-    showStatus('preparing');
-    state.loading = Promise.all([
-      window.VoskTTSCore ? Promise.resolve() : loadScript(CORE_SRC),
-      window.VoskStressLookup ? Promise.resolve() : loadScript(STRESS_LOOKUP_SRC),
-      window.fflate ? Promise.resolve() : loadScript(FFLATE_SRC),
-      window.ort ? Promise.resolve() : loadScript(ORT_SRC)
-    ]).then(function () {
-      ort.env.wasm.numThreads = 1;
-      dispatchEngineStatus('dependencies-ready');
-      return Promise.all([fetchModelFiles(), fetchStressLookup()]);
-    }).then(function (results) {
-      var files = results[0];
-      state.stressLookup = results[1];
-      var td = new TextDecoder('utf-8');
-      state.config = JSON.parse(td.decode(files['config.json']));
-      state.dic = VoskTTSCore.parseDictionary(td.decode(files['dictionary']));
-      var hasBert = files['bert/model.onnx'] && files['bert/vocab.txt'];
-      showStatus('initializing');
-      return Promise.all([
-        ort.InferenceSession.create(sliceBuf(files['model.onnx']), { executionProviders: ['wasm'] }),
-        hasBert
-          ? ort.InferenceSession.create(sliceBuf(files['bert/model.onnx']), { executionProviders: ['wasm'] })
-          : Promise.resolve(null)
-      ]).then(function (sessions) {
-        state.sess = sessions[0];
-        state.bertSess = sessions[1];
-        if (state.bertSess) state.tok = new VoskTTSCore.WordPieceTokenizer(td.decode(files['bert/vocab.txt']));
-        state.ready = true;
-        state.loading = null;
-        finishModelDownloadNotice('ready');
-        dispatchEngineStatus('ready');
-        try { window.dispatchEvent(new CustomEvent('gb:vosk-model-ready')); } catch (_) {}
-        return true;
-      });
-    }).catch(function (err) {
-      state.loading = null;
-      if (err && err.userCancelled) {
-        if (modelDownloadOptedOut() && !modelDownloadCancelled) {
-          showStatus('disabled', { reason: 'optout' });
-        } else if (modelDownloadCancelled) {
-          finishModelDownloadNotice('cancelled');
-        }
-      } else {
-        showStatus('error', { reason: (err && err.message) || String(err) });
-        try {
-          window.dispatchEvent(new CustomEvent('gb:vosk-model-download-error', {
-            detail: { message: (err && err.message) || String(err) }
-          }));
-        } catch (_) {}
-      }
-      throw err;
-    });
-    return state.loading;
-  }
-
-  function i64(arr, dims) { return new ort.Tensor('int64', BigInt64Array.from(arr, function (x) { return BigInt(x); }), dims); }
-  function f32(arr, dims) { return new ort.Tensor('float32', Float32Array.from(arr), dims); }
-
-  function bertRows(text, nopunc) {
-    var enc = state.tok.encode(text);
-    var n = enc.ids.length;
-    var feeds = {
-      input_ids: i64(enc.ids, [1, n]),
-      attention_mask: i64(enc.attention_mask, [1, n]),
-      token_type_ids: i64(enc.type_ids, [1, n])
-    };
-    var avail = state.bertSess.inputNames;
-    Object.keys(feeds).forEach(function (k) { if (avail.indexOf(k) === -1) delete feeds[k]; });
-    return state.bertSess.run(feeds).then(function (out) {
-      var t = out[state.bertSess.outputNames[0]];
-      var dims = t.dims.slice();
-      if (dims.length === 3 && dims[0] === 1) dims = dims.slice(1);
-      var hid = dims[1];
-      var sel = VoskTTSCore.selectBertRows(enc.tokens, nopunc);
-      var rows = [];
-      for (var i = 0; i < sel.length; i++) {
-        var start = sel[i] * hid;
-        rows.push(t.data.subarray(start, start + hid));
-      }
-      return { rows: rows, hidden: hid };
-    });
-  }
-
-  // Site-specific pre-normalization, run BEFORE VoskTTSCore.normalizeText()
-  // (which strips all non-Cyrillic characters — Roman numerals and Latin
-  // abbreviation letters must be converted to Cyrillic/digits here first,
-  // or normalizeText silently deletes them). See AuditRepo
-  // tts-quality-audit-2026-07-07 for the source of this list.
-
-  // Bible-book abbreviations actually attested in this site's own content
-  // (see e.g. the decorative Scripture background in js/enhancements.js) —
-  // not a general-purpose Bible-abbreviation dictionary. Each spoken form
-  // follows standard Russian citation convention (OT law/history books
-  // nominative matching their title; prophets/Gospels genitive per "Книга
-  // пророка .../Евангелие от ..."; epistles per their own preposition).
-  // Extend this list as new abbreviations turn up in real articles.
-  var SITE_ABBREVIATIONS = [
-    ['1 Цар.', 'первая книга Царств'],   // multi-word / numbered forms first,
-    ['1 Пет.', 'первое послание Петра'], // no shorter "Цар."/"Пет." entry to conflict with
-    ['Быт.', 'Бытие'],
-    ['Исх.', 'Исход'],
-    ['Лев.', 'Левит'],
-    ['Втор.', 'Второзаконие'],
-    ['Суд.', 'Судей'],
-    ['Пс.', 'Псалом'],
-    ['Ис.', 'Исаии'],
-    ['Иер.', 'Иеремии'],
-    ['Иез.', 'Иезекииля'],
-    ['Мал.', 'Малахии'],
-    ['Лк.', 'Луки'],
-    ['Ин.', 'Иоанна'],
-    ['Рим.', 'Римлянам'],
-    ['Откр.', 'Откровение'],
-    // Safe, invariant (no grammatical-case dependency) abbreviations.
-    // Both cases listed explicitly — plain split/join below is case-sensitive
-    // (no regex flags needed), and these can legally start a sentence.
-    ['т.е.', 'то есть'], ['Т.е.', 'То есть'],
-    ['т.д.', 'так далее'], ['Т.д.', 'Так далее'],
-    ['т.п.', 'тому подобное'], ['Т.п.', 'Тому подобное'],
-    ['см.', 'смотри'], ['См.', 'Смотри']
-  ];
-
-  // Roman numerals ("XIX век") were previously silently deleted by
-  // normalizeText's non-Cyrillic strip — the number vanished entirely,
-  // leaving just "век". Converts to a plain Arabic-numeral CARDINAL
-  // reading via the existing numberToWords pipeline: "XIX" -> "19" ->
-  // "девятнадцать". This is *not* grammatically correct for a century
-  // ("девятнадцатый век" — ordinal — would be correct); building a real
-  // Russian ordinal generator with gender/case agreement was out of scope
-  // for this pass. Still strictly better than the number disappearing.
-  var ROMAN_ORDER = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
-  var ROMAN_VALUES = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 };
-  function romanToArabic(s) {
-    var i = 0, num = 0;
-    while (i < s.length) {
-      var matched = false;
-      for (var j = 0; j < ROMAN_ORDER.length; j++) {
-        var sym = ROMAN_ORDER[j];
-        if (s.slice(i, i + sym.length) === sym) { num += ROMAN_VALUES[sym]; i += sym.length; matched = true; break; }
-      }
-      if (!matched) return null;
-    }
-    return num;
-  }
-  function arabicToRoman(n) {
-    var out = '', rest = n;
-    for (var j = 0; j < ROMAN_ORDER.length; j++) {
-      var sym = ROMAN_ORDER[j];
-      while (rest >= ROMAN_VALUES[sym]) { out += sym; rest -= ROMAN_VALUES[sym]; }
-    }
-    return out;
-  }
-  function expandRomanNumerals(text) {
-    // Round-trip validation (arabicToRoman(n) === m) rejects malformed
-    // sequences (e.g. "IIII", "VV") and most incidental all-caps Latin
-    // words that happen to use only I/V/X/L/C/D/M — real prose essentially
-    // never contains standalone valid-roman-numeral Latin tokens.
-    return text.replace(/\b[IVXLCDM]{1,15}\b/g, function (m) {
-      var n = romanToArabic(m);
-      if (n === null || n <= 0 || n > 3999 || arabicToRoman(n) !== m) return m;
-      return String(n);
-    });
-  }
-
-  // Century references ("XIX век") are grammatically ORDINAL ("девятнадцатый
-  // век"/nineteenth century), not cardinal — expandRomanNumerals() above
-  // only produces a cardinal reading ("19 век"/"nineteen century"), audibly
-  // wrong. This covers the one bounded, common pattern: a Roman numeral
-  // immediately followed by "век" in one of its 5 singular case forms
-  // (masculine adjective agreement — "века" is treated as singular
-  // genitive, the far more common reading vs. a plural-range "XIX-XX века",
-  // which this doesn't special-case and falls through to the cardinal
-  // reading above instead — still an improvement over the number vanishing
-  // entirely, just not grammatically perfect for that narrower case).
-  var ORDINAL_UNITS = ['', 'первый', 'второй', 'третий', 'четвёртый', 'пятый', 'шестой', 'седьмой', 'восьмой', 'девятый'];
-  var ORDINAL_TEENS = ['десятый', 'одиннадцатый', 'двенадцатый', 'тринадцатый', 'четырнадцатый', 'пятнадцатый', 'шестнадцатый', 'семнадцатый', 'восемнадцатый', 'девятнадцатый'];
-  var ORDINAL_TENS = { 2: 'двадцатый', 3: 'тридцатый', 4: 'сороковой', 5: 'пятидесятый', 6: 'шестидесятый', 7: 'семидесятый', 8: 'восьмидесятый', 9: 'девяностый' };
-  var CARDINAL_TENS = { 2: 'двадцать', 3: 'тридцать', 4: 'сорок', 5: 'пятьдесят', 6: 'шестьдесят', 7: 'семьдесят', 8: 'восемьдесят', 9: 'девяносто' };
-  var VEK_CASE = { 'век': 'nom', 'века': 'gen', 'веку': 'dat', 'веком': 'instr', 'веке': 'prep' };
-  function ordinalNominative(n) {
-    if (n <= 0 || n > 99) return null;
-    if (n < 10) return ORDINAL_UNITS[n];
-    if (n < 20) return ORDINAL_TEENS[n - 10];
-    var tens = Math.floor(n / 10), units = n % 10;
-    if (units === 0) return ORDINAL_TENS[tens];
-    return CARDINAL_TENS[tens] + ' ' + ORDINAL_UNITS[units];
-  }
-  // "третий" (3rd) is the one irregular masculine ordinal (soft possessive-
-  // type declension); every other ordinal is a regular hard adjective —
-  // strip its nominative -ый/-ой ending and append the target case's suffix.
-  function declineOrdinal(phrase, caseCode) {
-    if (caseCode === 'nom' || !caseCode) return phrase;
-    var parts = phrase.split(' ');
-    var last = parts[parts.length - 1];
-    var declined;
-    if (last === 'третий') {
-      declined = { gen: 'третьего', dat: 'третьему', instr: 'третьим', prep: 'третьем' }[caseCode] || last;
-    } else {
-      declined = last.slice(0, -2) + ({ gen: 'ого', dat: 'ому', instr: 'ым', prep: 'ом' }[caseCode] || '');
-    }
-    parts[parts.length - 1] = declined;
-    return parts.join(' ');
-  }
-  function expandCenturyOrdinals(text) {
-    // [а-яё]* (not \w*) after "век" — JS regex \b/\w don't recognize
-    // Cyrillic as "word" characters, so \b never fires at a Cyrillic
-    // boundary and \w* never matches Cyrillic suffix letters at all.
-    return text.replace(/\b([IVXLCDM]{1,7})(\s+)(век[а-яё]*)/g, function (whole, roman, sp, vekForm) {
-      var n = romanToArabic(roman);
-      if (n === null || n <= 0 || n > 99 || arabicToRoman(n) !== roman) return whole;
-      var nomOrdinal = ordinalNominative(n);
-      if (!nomOrdinal) return whole;
-      var caseCode = VEK_CASE[vekForm.toLowerCase()] || 'nom';
-      return declineOrdinal(nomOrdinal, caseCode) + sp + vekForm;
-    });
-  }
-
-  function expandSiteAbbreviations(text) {
-    var out = text;
-    for (var i = 0; i < SITE_ABBREVIATIONS.length; i++) {
-      out = out.split(SITE_ABBREVIATIONS[i][0]).join(SITE_ABBREVIATIONS[i][1]);
-    }
-    return expandRomanNumerals(expandCenturyOrdinals(out));
-  }
-
-  // Words vosk-tts's own dictionary doesn't know get NO stress at all
-  // (its g2p fallback has no accent info to work with). Where our extra
-  // dictionaries (site terminology + russian-stress-marker) DO know a word,
-  // splice in vosk-tts's own "+letter" marker before the stressed vowel —
-  // g2pConvert() already understands this convention for accented input.
-  // Words vosk-tts's dictionary already covers are left untouched even if
-  // our lookup also has an answer, since its own pronunciation should win.
-  function injectCustomStress(text) {
-    if (!state.stressLookup) return text;
-    return text.replace(/[а-яё]+/gi, function (word) {
-      var lower = word.toLowerCase();
-      if (state.dic.has(lower)) return word;
-      var plus = state.stressLookup.getPlusForm(lower);
-      return plus || word;
-    });
-  }
-
-  function synthChunk(chunk, rate, speakerId) {
-    var cfg = state.config;
-    var inf = cfg.inference || {};
-    var noise = inf.noise_level !== undefined ? inf.noise_level : 0.8;
-    var durNoise = inf.duration_noise_level !== undefined ? inf.duration_noise_level : 0.8;
-    var scale = inf.scale !== undefined ? inf.scale : 1.0;
-    var speechRate = rate * (inf.speech_rate !== undefined ? inf.speech_rate : 1.0);
-    chunk = chunk.trim().replace(/—/g, '-');
-    chunk = injectCustomStress(chunk);
-    var mt = cfg.model_type || '';
-    var knownMt = mt === 'multistream_v3' || mt === 'multistream_v2' || mt === 'multistream_v1';
-    if (state.tok && !knownMt && !state._warnedUnknownModelType) {
-      state._warnedUnknownModelType = true;
-      console.warn('[vosk-tts] unrecognized config.model_type "' + mt + '" — BERT stress ' +
-        'disambiguation is loaded but will be skipped for this model (falls back to plain g2p).');
-    }
-
-    function runSession(feeds) {
-      var avail = state.sess.inputNames;
-      Object.keys(feeds).forEach(function (k) { if (avail.indexOf(k) === -1) delete feeds[k]; });
-      return state.sess.run(feeds).then(function (out) {
-        return VoskTTSCore.floatToInt16(out[state.sess.outputNames[0]].data, scale);
-      });
-    }
-
-    if (state.tok && (mt === 'multistream_v3' || mt === 'multistream_v2' || mt === 'multistream_v1')) {
-      var v3 = mt === 'multistream_v3';
-      var wordPos = mt !== 'multistream_v1';
-      return bertRows(v3 ? chunk.toLowerCase().replace(/[+_]/g, '') : chunk.replace(/[+_]/g, ''), v3)
-        .then(function (b) {
-          var g = VoskTTSCore.g2pMultistream(chunk, cfg, state.dic, { wordPos: wordPos, scales: v3 });
-          var T = g.streams.length;
-          var flat = new Array(5 * T);
-          for (var s = 0; s < 5; s++) for (var t2 = 0; t2 < T; t2++) flat[s * T + t2] = g.streams[t2][s];
-          var hid = b.hidden;
-          var bertFlat = new Float32Array(hid * T);
-          for (var p = 0; p < T; p++) {
-            var idx = Math.min(g.bertIndex[p], b.rows.length - 1);
-            var row = b.rows[idx < 0 ? b.rows.length - 1 : idx];
-            for (var h = 0; h < hid; h++) bertFlat[h * T + p] = row[h];
-          }
-          var feeds = {
-            input: i64(flat, [1, 5, T]),
-            input_lengths: i64([T], [1]),
-            scales: f32([noise, 1.0 / speechRate, durNoise], [3]),
-            sid: i64([speakerId], [1]),
-            bert: new ort.Tensor('float32', bertFlat, [1, hid, T])
-          };
-          if (v3) feeds.phone_duration_extra = f32(g.durationExtra, [1, T]);
-          return runSession(feeds);
-        });
-    }
-
-    var ids = VoskTTSCore.g2pNoembed(chunk, cfg, state.dic);
-    var T2 = ids.length;
-    return runSession({
-      input: i64(ids, [1, T2]),
-      input_lengths: i64([T2], [1]),
-      scales: f32([noise, 1.0 / speechRate, durNoise], [3]),
-      sid: i64([speakerId], [1])
-    });
-  }
-
-  var currentObjectUrl = null;
-
-  function getAudioEl() {
-    if (!audioEl) {
-      audioEl = document.createElement('audio');
-      audioEl.style.display = 'none';
-      document.body.appendChild(audioEl);
-    }
-    return audioEl;
-  }
-
-  function setAudioSrc(a, blob) {
-    // Each chunk creates a fresh Blob URL — without revoking the previous one,
-    // a long article (many chunks) leaks a Blob for the rest of the page's life.
-    if (currentObjectUrl) { try { URL.revokeObjectURL(currentObjectUrl); } catch (_) {} }
-    currentObjectUrl = URL.createObjectURL(blob);
-    a.src = currentObjectUrl;
-  }
-
-  function isSupported() {
-    return !!(window.indexedDB && window.WebAssembly && window.fetch && window.TextDecoder);
-  }
-  function isReady() { return state.ready; }
-
-  // rate: множитель скорости диктора (та же localStorage-скорость, что и у Web Speech);
-  // задаётся нативно через scales модели — это звучит естественнее, чем ускорение готовой
-  // записи через audio.playbackRate (не «съедает» фонемы на 2x).
-  function speak(text, rate, speakerId, onend, onerror) {
-    var handle = { engine: 'vosk', cancelled: false };
-    var norm = VoskTTSCore.normalizeText(expandSiteAbbreviations(text));
-    if (!norm) { setTimeout(function () { if (!handle.cancelled) onend(); }, 0); return handle; }
-    synthChunk(norm, rate || 1, speakerId || 0).then(function (pcm) {
-      if (handle.cancelled) return;
-      var a = getAudioEl();
-      var wav = VoskTTSCore.int16ToWav(pcm, SAMPLE_RATE);
-      a.onended = function () { if (!handle.cancelled) onend(); };
-      a.onerror = function (e) { if (!handle.cancelled) onerror(e); };
-      setAudioSrc(a, new Blob([wav], { type: 'audio/wav' }));
-      a.playbackRate = 1;
-      var p = a.play();
-      if (p && p.catch) p.catch(function (e) { if (!handle.cancelled) onerror(e); });
-    }).catch(function (err) {
-      if (!handle.cancelled) onerror(err);
-    });
-    return handle;
-  }
-
-  function cancel(handle) {
-    if (handle) handle.cancelled = true;
-    if (audioEl) {
-      try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (_) {}
-    }
-    if (currentObjectUrl) { try { URL.revokeObjectURL(currentObjectUrl); } catch (_) {} currentObjectUrl = null; }
-  }
-
-  window.VoskTTSEngine = {
-    isSupported: isSupported,
-    isReady: isReady,
-    getStatus: getStatus,
-    showStatus: showStatus,
-    ensureLoaded: ensureLoaded,
-    retryLoading: retryLoading,
-    clearModelDownloadOptOut: clearModelDownloadOptOut,
-    cancelLoading: cancelLoading,
-    speak: speak,
-    cancel: cancel
-  };
+'use strict';
+var VERSION = 2;
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=2ea9ada3';
+var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
+var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
+var CLIENT_ID = (window.crypto && typeof window.crypto.randomUUID === 'function')
+? window.crypto.randomUUID()
+: 'gb-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+if (window.VoskTTSEngine && window.VoskTTSEngine.version === VERSION) return;
+var state = {
+worker: null,
+workerMode: null,
+heartbeatTimer: 0,
+ready: false,
+loading: null,
+loadSequence: 0,
+speakSequence: 0,
+loadRequests: new Map(),
+speakRequests: new Map(),
+audio: null,
+audioHandleId: null,
+objectUrl: null,
+notice: null,
+noticeTimer: 0,
+status: { phase: 'idle', ready: false, loading: false, optedOut: false, workerMode: null }
+};
+function modelDownloadOptedOut() {
+try { return localStorage.getItem(MODEL_DOWNLOAD_OPTOUT_KEY) === 'off'; }
+catch (_) { return false; }
+}
+function setModelDownloadOptOut(disabled) {
+try {
+if (disabled) localStorage.setItem(MODEL_DOWNLOAD_OPTOUT_KEY, 'off');
+else localStorage.removeItem(MODEL_DOWNLOAD_OPTOUT_KEY);
+} catch (_) {}
+}
+function createError(payload, fallback) {
+var error;
+var message = payload && payload.message ? payload.message : fallback || 'Vosk worker failed';
+try {
+error = payload && payload.name === 'AbortError'
+? new DOMException(message, 'AbortError')
+: new Error(message);
+} catch (_) {
+error = new Error(message);
+if (payload && payload.name) error.name = payload.name;
+}
+if (payload && payload.name) error.name = payload.name;
+if (payload && payload.userCancelled) error.userCancelled = true;
+return error;
+}
+function createCancelledError(message) {
+return createError({ name: 'AbortError', message: message || 'enhanced voice cancelled', userCancelled: true });
+}
+function normalizeContextText(value) {
+return String(value || '').replace(/(^|[^А-Яа-яЁё])Господа(?=$|[^А-Яа-яЁё])/g, '$1Г+оспода');
+}
+function dispatchStatus(phase, detail) {
+var next = Object.assign({
+phase: phase,
+ready: !!state.ready,
+loading: !!state.loading,
+optedOut: modelDownloadOptedOut(),
+workerMode: state.workerMode
+}, detail || {});
+state.status = next;
+try { window.dispatchEvent(new CustomEvent('gb:vosk-status', { detail: next })); } catch (_) {}
+return next;
+}
+function getStatus() {
+return Object.assign({}, state.status, {
+ready: !!state.ready,
+loading: !!state.loading,
+optedOut: modelDownloadOptedOut(),
+workerMode: state.workerMode
+});
+}
+function ensureNoticeStyles() {
+if (document.querySelector('link[data-gb-tts-download-notice]')) return;
+var link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href = NOTICE_CSS_URL;
+link.setAttribute('data-gb-tts-download-notice', 'true');
+document.head.appendChild(link);
+}
+function setNoticeAction(element, mode, label, ariaLabel) {
+var action = element.querySelector('.gb-tts-download-notice__action');
+if (!action) return;
+action.hidden = !mode;
+action.dataset.action = mode || '';
+action.textContent = label || '';
+action.setAttribute('aria-label', ariaLabel || label || '');
+}
+function bindNoticeAction(element) {
+var action = element && element.querySelector('.gb-tts-download-notice__action');
+if (!action || action.dataset.gbTtsActionBound === 'true') return;
+action.dataset.gbTtsActionBound = 'true';
+action.addEventListener('click', function () {
+var mode = action.dataset.action || '';
+if (mode === 'cancel') {
+cancelLoading({ persist: true });
+return;
+}
+if (mode === 'switch') {
+var switchDetail = { handled: false };
+try { window.dispatchEvent(new CustomEvent('gb:vosk-switch-request', { detail: switchDetail })); } catch (_) {}
+return;
+}
+if (mode === 'retry' || mode === 'enable' || mode === 'manual') {
+var retryDetail = { mode: mode, handled: false };
+try { window.dispatchEvent(new CustomEvent('gb:vosk-retry-request', { detail: retryDetail })); } catch (_) {}
+if (!retryDetail.handled) void retryLoading({ clearOptOut: true });
+}
+});
+}
+function getNotice() {
+if (state.notice && document.documentElement.contains(state.notice)) return state.notice;
+var existing = document.querySelector('.gb-tts-download-notice');
+if (existing) {
+state.notice = existing;
+bindNoticeAction(existing);
+return existing;
+}
+var element = document.createElement('div');
+element.className = 'gb-tts-download-notice';
+element.setAttribute('role', 'status');
+element.setAttribute('aria-live', 'polite');
+element.setAttribute('aria-atomic', 'true');
+element.innerHTML =
+'<span class="gb-tts-download-notice__icon" aria-hidden="true"></span>' +
+'<span class="gb-tts-download-notice__copy">' +
+'<strong class="gb-tts-download-notice__title"></strong>' +
+'<span class="gb-tts-download-notice__meta"></span>' +
+'</span>' +
+'<button class="gb-tts-download-notice__action" type="button" hidden></button>';
+document.body.appendChild(element);
+state.notice = element;
+bindNoticeAction(element);
+return element;
+}
+function hideNotice(delay) {
+clearTimeout(state.noticeTimer);
+state.noticeTimer = setTimeout(function () {
+if (!state.notice) return;
+state.notice.classList.remove('is-visible');
+var doomed = state.notice;
+setTimeout(function () {
+if (doomed.parentNode) doomed.parentNode.removeChild(doomed);
+if (state.notice === doomed) state.notice = null;
+}, 360);
+}, Math.max(0, Number(delay) || 0));
+}
+function showStatus(name, options) {
+options = options || {};
+ensureNoticeStyles();
+clearTimeout(state.noticeTimer);
+var element = getNotice();
+var title = '';
+var meta = '';
+var action = null;
+var actionLabel = '';
+var actionAria = '';
+var stateName = name;
+if (name === 'browser') {
+title = 'Сейчас системный голос';
+meta = 'Улучшенный голос проверяется в фоне';
+} else if (name === 'preparing' || name === 'dependencies-ready' || name === 'connected') {
+stateName = 'preparing';
+title = 'Проверяем улучшенный голос';
+meta = 'Системный голос уже работает';
+} else if (name === 'loading') {
+title = 'Улучшенный голос загружается';
+meta = 'Системный голос уже работает · около 280 МБ';
+action = 'cancel';
+actionLabel = 'Не загружать';
+actionAria = 'Остановить загрузку улучшенного голоса';
+} else if (name === 'verifying') {
+stateName = 'initializing';
+title = 'Проверяем модель';
+meta = 'Контроль целостности выполняется локально';
+} else if (name === 'extracting') {
+stateName = 'initializing';
+title = 'Распаковываем улучшенный голос';
+meta = 'Работа выполняется вне основного потока';
+} else if (name === 'cache-hit') {
+stateName = 'initializing';
+title = 'Улучшенный голос найден';
+meta = 'Запускаем сохранённую модель';
+} else if (name === 'initializing') {
+title = 'Запускаем улучшенный голос';
+meta = 'Создаём голосовые сессии в фоновом потоке';
+} else if (name === 'ready' || name === 'success') {
+stateName = 'ready';
+title = 'Улучшенный голос готов';
+meta = state.workerMode === 'shared'
+? 'Готов между страницами · можно включить сейчас'
+: 'Можно включить без перезагрузки страницы';
+action = 'switch';
+actionLabel = 'Включить сейчас';
+actionAria = 'Перейти на улучшенный голос с текущего места';
+} else if (name === 'selected') {
+title = 'Работает улучшенный голос';
+meta = 'Локальная модель · текст никуда не отправляется';
+} else if (name === 'disabled') {
+title = 'Улучшенный голос отключён';
+meta = 'Сейчас используется системный голос';
+action = 'enable';
+actionLabel = 'Включить';
+actionAria = 'Снова разрешить загрузку улучшенного голоса';
+} else if (name === 'save-data') {
+title = 'Включена экономия трафика';
+meta = 'Системный голос работает · модель около 280 МБ';
+action = 'manual';
+actionLabel = 'Загрузить';
+actionAria = 'Загрузить улучшенный голос несмотря на экономию трафика';
+} else if (name === 'cancelled') {
+title = 'Загрузка остановлена';
+meta = 'Системный голос продолжает работать';
+} else if (name === 'cache-unavailable') {
+stateName = 'initializing';
+title = 'Хранилище браузера недоступно';
+meta = 'Голос работает в текущей вкладке без постоянного кэша';
+} else {
+stateName = 'error';
+title = 'Улучшенный голос не запустился';
+meta = 'Системный голос продолжает работать';
+action = 'retry';
+actionLabel = 'Повторить';
+actionAria = 'Повторить запуск улучшенного голоса';
+}
+if (options.title) title = options.title;
+if (options.meta) meta = options.meta;
+if (options.actionMode !== undefined) action = options.actionMode;
+if (options.actionLabel !== undefined) actionLabel = options.actionLabel;
+if (options.actionAria !== undefined) actionAria = options.actionAria;
+element.dataset.state = stateName;
+var titleNode = element.querySelector('.gb-tts-download-notice__title');
+var metaNode = element.querySelector('.gb-tts-download-notice__meta');
+if (titleNode) titleNode.textContent = title;
+if (metaNode) metaNode.textContent = meta;
+setNoticeAction(element, action, actionLabel, actionAria);
+element.classList.add('is-visible');
+dispatchStatus(stateName, {
+title: title,
+message: meta,
+action: action,
+reason: options.reason || null
+});
+if (options.autoHide) hideNotice(options.autoHide);
+return element;
+}
+function finishStatus(name) {
+var autoHide = name === 'selected' ? 1800 : name === 'cancelled' ? 1900 : 0;
+return showStatus(name, { autoHide: autoHide });
+}
+function getAudio() {
+if (state.audio && state.audio.isConnected) return state.audio;
+var audio = document.createElement('audio');
+audio.hidden = true;
+audio.preload = 'auto';
+audio.setAttribute('data-gb-vosk-audio', 'true');
+document.body.appendChild(audio);
+state.audio = audio;
+return audio;
+}
+function revokeObjectUrl() {
+if (!state.objectUrl) return;
+try { URL.revokeObjectURL(state.objectUrl); } catch (_) {}
+state.objectUrl = null;
+}
+function stopAudio() {
+var audio = state.audio;
+if (audio) {
+try {
+audio.pause();
+audio.removeAttribute('src');
+audio.load();
+} catch (_) {}
+}
+state.audioHandleId = null;
+revokeObjectUrl();
+}
+function settleLoad(id, error) {
+var pending = state.loadRequests.get(id);
+if (!pending) return;
+state.loadRequests.delete(id);
+if (error) pending.reject(error);
+else pending.resolve(true);
+}
+function settleAllLoads(error) {
+Array.from(state.loadRequests.keys()).forEach(function (id) { settleLoad(id, error); });
+}
+function failSpeak(id, error) {
+var entry = state.speakRequests.get(id);
+if (!entry) return;
+state.speakRequests.delete(id);
+if (!entry.handle.cancelled && typeof entry.onerror === 'function') entry.onerror(error);
+}
+function failAllSpeaks(error) {
+Array.from(state.speakRequests.keys()).forEach(function (id) { failSpeak(id, error); });
+}
+function terminateWorker(error) {
+if (state.heartbeatTimer) clearInterval(state.heartbeatTimer);
+state.heartbeatTimer = 0;
+if (state.worker) {
+try { state.worker.terminate(); } catch (_) {}
+}
+state.worker = null;
+state.workerMode = null;
+state.ready = false;
+state.loading = null;
+if (error) {
+settleAllLoads(error);
+failAllSpeaks(error);
+}
+}
+function handleWorkerMessage(message) {
+var type = message.type;
+if (type === 'status') {
+if (message.phase === 'ready') state.ready = true;
+showStatus(message.phase || 'preparing', {
+reason: message.reason || null,
+meta: message.message || undefined
+});
+return;
+}
+if (type === 'ready') {
+state.ready = true;
+settleLoad(message.id);
+finishStatus('ready');
+return;
+}
+if (type === 'load-error') {
+var loadError = createError(message, 'Vosk model failed to load');
+settleLoad(message.id, loadError);
+if (loadError.name === 'AbortError') finishStatus('cancelled');
+else showStatus('error', { reason: loadError.message });
+return;
+}
+if (type === 'synth-progress') {
+try {
+window.dispatchEvent(new CustomEvent('gb:vosk-synthesis-progress', {
+detail: { id: message.id, value: Math.max(0, Math.min(1, Number(message.value) || 0)) }
+}));
+} catch (_) {}
+return;
+}
+if (type === 'audio') {
+var entry = state.speakRequests.get(message.id);
+if (!entry || entry.handle.cancelled) return;
+stopAudio();
+var audio = getAudio();
+state.audioHandleId = message.id;
+state.objectUrl = URL.createObjectURL(new Blob([message.wav], { type: 'audio/wav' }));
+audio.src = state.objectUrl;
+audio.playbackRate = 1;
+audio.onended = function () {
+var current = state.speakRequests.get(message.id);
+state.speakRequests.delete(message.id);
+state.audioHandleId = null;
+revokeObjectUrl();
+if (current && !current.handle.cancelled && typeof current.onend === 'function') current.onend();
+};
+audio.onerror = function (event) {
+failSpeak(message.id, event instanceof Error ? event : new Error('Vosk audio playback failed'));
+};
+try {
+var playback = audio.play();
+if (playback && playback.catch) playback.catch(function (error) { failSpeak(message.id, error); });
+} catch (error) {
+failSpeak(message.id, error);
+}
+return;
+}
+if (type === 'synth-error') {
+failSpeak(message.id, createError(message, 'Vosk synthesis failed'));
+return;
+}
+if (type === 'warning') {
+console.warn('[vosk-tts-worker]', message.message || message);
+}
+}
+function bindWorker(raw, port, mode) {
+var channel = {
+raw: raw,
+port: port,
+mode: mode,
+postMessage: function (message) { port.postMessage(message); },
+terminate: function () {
+if (mode === 'shared') {
+try { port.close(); } catch (_) {}
+} else {
+try { raw.terminate(); } catch (_) {}
+}
+}
+};
+port.onmessage = function (event) { handleWorkerMessage(event.data || {}); };
+port.onmessageerror = function () {
+var error = new Error('Persistent Vosk worker returned an unreadable message');
+showStatus('error', { reason: error.message });
+terminateWorker(error);
+};
+if (mode === 'shared' && typeof port.start === 'function') port.start();
+raw.onerror = function (event) {
+var error = new Error(event.message || 'Persistent Vosk worker crashed');
+console.error('[VoskTTSEngine]', error);
+showStatus('error', { reason: error.message });
+terminateWorker(error);
+};
+state.workerMode = mode;
+state.worker = channel;
+channel.postMessage({ type: 'hello', clientId: CLIENT_ID });
+if (state.heartbeatTimer) clearInterval(state.heartbeatTimer);
+state.heartbeatTimer = setInterval(function () {
+if (!state.worker) return;
+try { state.worker.postMessage({ type: 'ping', clientId: CLIENT_ID }); } catch (_) {}
+}, 30000);
+return channel;
+}
+function ensureWorker() {
+if (state.worker) return state.worker;
+if (!isSupported()) throw new Error('Persistent Vosk worker is not supported by this browser');
+if (typeof SharedWorker === 'function') {
+try {
+var shared = new SharedWorker(WORKER_SRC, 'gb-vosk-tts');
+return bindWorker(shared, shared.port, 'shared');
+} catch (error) {
+console.warn('[VoskTTSEngine] SharedWorker unavailable; using dedicated worker', error);
+}
+}
+var dedicated = new Worker(WORKER_SRC, { name: 'gb-vosk-tts' });
+return bindWorker(dedicated, dedicated, 'dedicated');
+}
+function isSupported() {
+return (typeof SharedWorker === 'function' || typeof Worker === 'function')
+&& !!window.indexedDB
+&& !!window.WebAssembly
+&& typeof window.fetch === 'function'
+&& typeof window.TextDecoder === 'function';
+}
+function isReady() {
+return !!state.ready;
+}
+function send(message) {
+message.clientId = CLIENT_ID;
+ensureWorker().postMessage(message);
+}
+function ensureLoaded() {
+if (state.ready) return Promise.resolve(true);
+if (modelDownloadOptedOut()) {
+showStatus('disabled', { reason: 'optout' });
+return Promise.reject(createCancelledError('enhanced voice download disabled by user'));
+}
+if (state.loading) return state.loading;
+var id = ++state.loadSequence;
+showStatus('preparing');
+state.loading = new Promise(function (resolve, reject) {
+state.loadRequests.set(id, { resolve: resolve, reject: reject });
+try { send({ type: 'ensure', id: id }); }
+catch (error) {
+state.loadRequests.delete(id);
+reject(error);
+}
+}).finally(function () {
+state.loading = null;
+});
+return state.loading;
+}
+function clearModelDownloadOptOut() {
+setModelDownloadOptOut(false);
+dispatchStatus('enabled');
+}
+function retryLoading(options) {
+options = options || {};
+if (options.clearOptOut !== false) clearModelDownloadOptOut();
+if (!state.worker && state.loading) state.loading = null;
+return ensureLoaded();
+}
+function cancelLoading(options) {
+var persist = !options || options.persist !== false;
+if (persist) setModelDownloadOptOut(true);
+var error = createCancelledError('enhanced voice download cancelled by user');
+if (state.worker) {
+try { send({ type: 'cancel-load' }); } catch (_) {}
+}
+terminateWorker(error);
+finishStatus('cancelled');
+try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-cancelled')); } catch (_) {}
+return true;
+}
+function speak(text, rate, speakerId, onend, onerror) {
+var id = ++state.speakSequence;
+var handle = { engine: 'vosk', id: id, cancelled: false };
+state.speakRequests.set(id, { handle: handle, onend: onend, onerror: onerror });
+try {
+send({
+type: 'speak',
+id: id,
+text: normalizeContextText(String(text || '')),
+rate: Number(rate) || 1,
+speakerId: Number(speakerId) || 0
+});
+} catch (error) {
+failSpeak(id, error);
+}
+return handle;
+}
+function cancel(handle) {
+if (handle) handle.cancelled = true;
+var id = handle && handle.id;
+if (id && state.worker) {
+try { send({ type: 'cancel', id: id }); } catch (_) {}
+}
+if (id) state.speakRequests.delete(id);
+if (!id || state.audioHandleId === id) stopAudio();
+}
+window.VoskTTSEngine = Object.freeze({
+version: VERSION,
+isSupported: isSupported,
+isReady: isReady,
+getStatus: getStatus,
+showStatus: showStatus,
+ensureLoaded: ensureLoaded,
+retryLoading: retryLoading,
+clearModelDownloadOptOut: clearModelDownloadOptOut,
+cancelLoading: cancelLoading,
+speak: speak,
+cancel: cancel
+});
 })();

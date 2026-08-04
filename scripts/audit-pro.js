@@ -74,6 +74,7 @@ const ALLOWED_JS = new Set([
   'js/reader-state.js',
   'js/vosk-tts-core.js',
   'js/vosk-tts-engine.js',
+  'js/vosk-tts-worker.js',
   'js/vosk-stress-lookup.js',
 ]);
 
