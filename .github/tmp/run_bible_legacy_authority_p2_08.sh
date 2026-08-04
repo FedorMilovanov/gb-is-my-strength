@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_SHA="a00cdb5b121e1adb2cee8bbe347647ec54d3f0ee"
+BASE_SHA="38fdfc7a4712bdc3ef69e8f9c1d777a39f3ec3f6"
 BRANCH="${HEAD_REF:-lane/scripture-legacy-authority-p2-08-20260804}"
 HELPER=".github/tmp/apply_bible_legacy_authority_p2_08.py"
 RUNNER=".github/tmp/run_bible_legacy_authority_p2_08.sh"
