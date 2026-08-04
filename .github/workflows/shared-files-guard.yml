@@ -59,6 +59,14 @@ jobs:
       - name: Repository control-plane integrity
         run: npm run control-plane:audit
 
+      - name: Bible legacy authority regressions
+        shell: bash
+        run: |
+          set -o pipefail
+          node --check scripts/bible-reference-contract.mjs
+          node --check scripts/bible-legacy-authority-regression-test.mjs
+          node scripts/bible-legacy-authority-regression-test.mjs 2>&1 | tee reports/bible-legacy-authority-regression.log
+
       - name: Readiness-to-deploy workflow linkage
         run: node scripts/workflow-linkage-regression-test.js
 
@@ -154,6 +162,7 @@ jobs:
             reports/font-assets-alias-contract.log
             reports/font-assets-verification.log
             reports/font-assets-verification.json
+            reports/bible-legacy-authority-regression.log
           if-no-files-found: warn
           retention-days: 14
 
