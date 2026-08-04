@@ -1,4 +1,5 @@
 name: Search Scripture Occurrence Runtime
+# Self-clean S2 transaction passed in run 30942911632; this workflow revalidates the permanent exact head.
 
 on:
   pull_request:
