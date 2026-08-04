@@ -64,9 +64,28 @@ jobs:
           git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort > "${RUNNER_TEMP}/nagornaya-css-references.before"
           test -s "${RUNNER_TEMP}/nagornaya-css-references.before"
           python3 .github/tmp/nagornaya_dark_cascade_repair.py
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/nagornaya-epistemic-ui-browser-test.mjs')
+          source = path.read_text(encoding='utf-8')
+          anchor = "  'https://gospod-bog.ru/icons/icon-192.png',\n]);"
+          replacement = "  'https://gospod-bog.ru/icons/icon-192.png',\n  'https://gospod-bog.ru/images/og-nagornaya-propoved.webp',\n]);"
+          if source.count(anchor) != 1:
+              raise SystemExit(f'localhost CSP asset anchor drift: {source.count(anchor)}')
+          source = source.replace(anchor, replacement, 1)
+          if source.count('EXPECTED_LOCALHOST_CSP_ICON_URLS') != 2:
+              raise SystemExit('unexpected CSP URL-set reference count')
+          if source.count('isExpectedLocalhostCspIconError') != 3:
+              raise SystemExit('unexpected CSP predicate reference count')
+          source = source.replace('EXPECTED_LOCALHOST_CSP_ICON_URLS', 'EXPECTED_LOCALHOST_CSP_ASSET_URLS')
+          source = source.replace('expectedLocalhostCspIconUrls', 'expectedLocalhostCspAssetUrls')
+          source = source.replace('isExpectedLocalhostCspIconError', 'isExpectedLocalhostCspAssetError')
+          path.write_text(source, encoding='utf-8')
+          PY
           node scripts/cache-bust.js --write
           test "$(grep -o '!important' css/nagornaya-mobile-toc.css | wc -l)" = 134
           grep -q 'NG-DARK-01 cascade-safe Chromium-confirmed utility remaps' css/nagornaya-mobile-toc.css
+          grep -q "'https://gospod-bog.ru/images/og-nagornaya-propoved.webp'" scripts/nagornaya-epistemic-ui-browser-test.mjs
 
       - name: Prepare bounded self-cleaned diff
         shell: bash
