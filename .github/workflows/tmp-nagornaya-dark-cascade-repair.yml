@@ -64,7 +64,7 @@ jobs:
           git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort > "${RUNNER_TEMP}/nagornaya-css-references.before"
           test -s "${RUNNER_TEMP}/nagornaya-css-references.before"
           python3 .github/tmp/nagornaya_dark_cascade_repair.py
-          node scripts/cache-bust.js
+          node scripts/cache-bust.js --write
           test "$(grep -o '!important' css/nagornaya-mobile-toc.css | wc -l)" = 134
           grep -q 'NG-DARK-01 cascade-safe Chromium-confirmed utility remaps' css/nagornaya-mobile-toc.css
 
