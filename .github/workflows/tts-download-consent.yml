@@ -5,6 +5,7 @@ on:
     paths:
       - "data/release-toolchain.json"
       - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
       - "js/floating-cluster-controller.js"
       - "css/tts-download-notice.css"
       - "scripts/cache-bust-assets.js"
@@ -41,6 +42,7 @@ on:
     paths:
       - "data/release-toolchain.json"
       - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
       - "js/floating-cluster-controller.js"
       - "css/tts-download-notice.css"
       - "scripts/cache-bust-assets.js"
@@ -108,6 +110,7 @@ jobs:
           {
             for file in \
               js/vosk-tts-engine.js \
+              js/vosk-tts-worker.js \
               js/floating-cluster-controller.js \
               scripts/release-candidate-lib.mjs \
               scripts/release-pipeline-contract-test.mjs \
