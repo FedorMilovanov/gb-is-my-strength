@@ -86,8 +86,8 @@ jobs:
           node --check scripts/tts-reader-multitab-lock-browser-test.js
           node --check scripts/tts-reader-real-model-browser-test.js
           node --check scripts/tts-route-crawl-browser-test.js
-          if grep -R "reader-vosk-download-worker\|readerVoskFetch\|installOneShotUnzip" src js scripts .github/workflows/tts-reader-polish.yml; then
-            echo "Obsolete Vosk interception layer is still referenced" >&2
+          if grep -R "reader-vosk-download-worker\|readerVoskFetch\|installOneShotUnzip" src js; then
+            echo "Obsolete Vosk interception layer is still referenced by product runtime" >&2
             exit 1
           fi
           if grep -q "InferenceSession\|unzipSync\|model-quant.zip" js/vosk-tts-engine.js; then
