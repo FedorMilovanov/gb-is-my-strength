@@ -1,0 +1,162 @@
+name: Complete Scripture occurrence runtime S2
+
+on:
+  pull_request:
+    branches: [main]
+    types: [labeled, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scripture-occurrence-runtime-s2-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'lane/scripture-occurrence-runtime-s2-20260804'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Checkout exact S2 branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 20
+      - name: Guard exact base and owner blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin main
+          test "$(git rev-parse origin/main)" = "5fc06fc0c4a9a7c60f849619129890df70089b57"
+          git rev-list HEAD | grep -qx "5fc06fc0c4a9a7c60f849619129890df70089b57"
+          test "$(git rev-parse HEAD:js/search.js)" = "734ca9f74b61fb5a3960c6422bd9b1b6acb83a0b"
+          test "$(git rev-parse HEAD:data/scripture-search-index.json)" = "952443d2580ce50308362625da3c17f7fe76a50d"
+          test "$(git rev-parse HEAD:sw.js)" = "12c88772c3998c5a10218f2ec34013580439cb6a"
+          test "$(git rev-parse HEAD:migration/sw-cache-version-baseline.json)" = "99d93fd59b8e9db3149f2dcea6f59017c2b38549"
+          test "$(git rev-parse HEAD:data/offline-route-matrix.json)" = "5c5b9e1fd16bb590f02e77649a7279c7bdc751c0"
+          test "$(git rev-parse HEAD:src/lib/asset-version.js)" = "4154a4016f0fc2bfb11d99c5f2b8fe63ad70e758"
+          test "$(git rev-parse HEAD:scripts/search-scripture-occurrence-runtime-browser-test.mjs)" = "f59fc25ce1c74f9d1909af7848c532822c765faa"
+          test "$(git rev-parse HEAD:.github/workflows/search-scripture-occurrence-runtime.yml)" = "a8f369ecd4ce4a3a05f0b58ee70d5815cb2af8c5"
+          test "$(git rev-parse HEAD:.github/tmp/apply_scripture_occurrence_runtime_s2.py)" = "c1ca933bf1f74b0081fad0c9848fa3c47b1c31df"
+          test -f .github/workflows/tmp-scripture-occurrence-runtime-s2.yml
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - name: Install immutable dependencies
+        run: npm ci
+      - name: Apply exact runtime and cache transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git grep -l 'js/search.js?v=' -- '*.html' '*.astro' | sort > "${RUNNER_TEMP}/search-js-references.before"
+          test -s "${RUNNER_TEMP}/search-js-references.before"
+          python3 -m py_compile .github/tmp/apply_scripture_occurrence_runtime_s2.py
+          python3 .github/tmp/apply_scripture_occurrence_runtime_s2.py --write
+          node --check js/search.js
+          node --check scripts/search-scripture-occurrence-runtime-browser-test.mjs
+          node scripts/build-scripture-occurrence-index.mjs --check
+          node scripts/scripture-occurrence-index-contract.mjs
+          node scripts/cache-bust.js
+          grep -q "gb-v196-scripture-occurrence-runtime-20260804" sw.js
+      - name: Prepare self-cleaned bounded candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/tmp/apply_scripture_occurrence_runtime_s2.py
+          rm -f .github/workflows/tmp-scripture-occurrence-runtime-s2.yml
+          git diff --check origin/main
+          { git diff --name-only origin/main; git ls-files --others --exclude-standard; } | sort -u > "${RUNNER_TEMP}/changed.txt"
+          for required in \
+            .github/workflows/search-scripture-occurrence-runtime.yml \
+            data/offline-route-matrix.json \
+            js/search.js \
+            migration/sw-cache-version-baseline.json \
+            scripts/search-scripture-occurrence-runtime-browser-test.mjs \
+            src/lib/asset-version.js \
+            sw.js; do
+            grep -qx "${required}" "${RUNNER_TEMP}/changed.txt"
+          done
+          while IFS= read -r changed; do
+            case "${changed}" in
+              .github/workflows/search-scripture-occurrence-runtime.yml|data/offline-route-matrix.json|js/search.js|migration/sw-cache-version-baseline.json|scripts/search-scripture-occurrence-runtime-browser-test.mjs|src/lib/asset-version.js|sw.js) ;;
+              *) grep -qxF "${changed}" "${RUNNER_TEMP}/search-js-references.before" || { echo "Unexpected changed path: ${changed}"; exit 1; } ;;
+            esac
+            case "${changed}" in
+              *tts*|*TTS*|*vosk*|*Vosk*) echo "Forbidden TTS/Vosk path: ${changed}"; exit 1 ;;
+            esac
+          done < "${RUNNER_TEMP}/changed.txt"
+          test "$(git grep -l 'js/search.js?v=' -- '*.html' '*.astro' | sort)" = "$(cat "${RUNNER_TEMP}/search-js-references.before")"
+      - name: Validate exact candidate tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t revision_refs < "${RUNNER_TEMP}/search-js-references.before"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- \
+            .github/tmp/apply_scripture_occurrence_runtime_s2.py \
+            .github/workflows/search-scripture-occurrence-runtime.yml \
+            .github/workflows/tmp-scripture-occurrence-runtime-s2.yml \
+            data/offline-route-matrix.json \
+            js/search.js \
+            migration/sw-cache-version-baseline.json \
+            scripts/search-scripture-occurrence-runtime-browser-test.mjs \
+            src/lib/asset-version.js \
+            sw.js \
+            "${revision_refs[@]}"
+          probe_tree="$(git write-tree)"
+          probe_head="$(printf '%s\n' 'Scripture occurrence S2 shared-files probe' | git commit-tree "${probe_tree}" -p HEAD)"
+          node scripts/guard-shared-files.js --base origin/main --head "${probe_head}" --branch "${HEAD_REF}"
+          git reset
+          npm run guard:agents-rev
+          node scripts/cache-bust.js
+          node scripts/build-scripture-occurrence-index.mjs --check
+          node scripts/scripture-occurrence-index-contract.mjs
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+          npx playwright install --with-deps chromium
+          node scripts/search-scripture-occurrence-runtime-browser-test.mjs --dist=dist --report=reports/scripture-occurrence-runtime-s2
+          npm run sw:dist:audit
+          npm run sw:dist:audit:deploy-switch
+      - name: Validate full static publication barrier
+        run: npm run validate:static-publication
+      - name: Verify final candidate remains bounded
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check origin/main
+          { git diff --name-only origin/main; git ls-files --others --exclude-standard; } | sort -u > "${RUNNER_TEMP}/changed-after.txt"
+          diff -u "${RUNNER_TEMP}/changed.txt" "${RUNNER_TEMP}/changed-after.txt"
+      - name: Commit clean permanent S2 runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t revision_refs < "${RUNNER_TEMP}/search-js-references.before"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- \
+            .github/tmp/apply_scripture_occurrence_runtime_s2.py \
+            .github/workflows/search-scripture-occurrence-runtime.yml \
+            .github/workflows/tmp-scripture-occurrence-runtime-s2.yml \
+            data/offline-route-matrix.json \
+            js/search.js \
+            migration/sw-cache-version-baseline.json \
+            scripts/search-scripture-occurrence-runtime-browser-test.mjs \
+            src/lib/asset-version.js \
+            sw.js \
+            "${revision_refs[@]}"
+          git diff --cached --quiet && { echo 'No Scripture occurrence S2 candidate generated'; exit 1; }
+          git commit -m 'feat(search): render exact Scripture occurrences first'
+          git push origin "HEAD:${HEAD_REF}"
