@@ -15,11 +15,11 @@
   </div>
 
   <div class="h-articles-group">
-    <ul class="h-article-list h-article-list--grid">
+    <ul class="h-article-list h-article-list--grid h-refutations-deck" data-refutations-active="" aria-label="Апологетические разборы">
 
       <!-- Код да Винчи -->
-      <li>
-        <a href="articles/kod-da-vinchi/" class="h-article-card h-article-card--debunk">
+      <li class="h-refutation-slot h-refutation-slot--left" data-refutation-side="left">
+        <a href="articles/kod-da-vinchi/" class="h-article-card h-article-card--debunk h-refutation-card">
           <div class="h-article-thumb">
             <picture>
               <source srcset="images/hero-kod-da-vinchi.webp" type="image/webp">
@@ -45,8 +45,8 @@
         </a>
       </li>
       <!-- 20 антисоветов пастору -->
-      <li>
-        <a href="articles/20-antisovetov-pastoru/" class="h-article-card h-article-card--debunk">
+      <li class="h-refutation-slot h-refutation-slot--right" data-refutation-side="right">
+        <a href="articles/20-antisovetov-pastoru/" class="h-article-card h-article-card--debunk h-refutation-card">
           <div class="h-article-thumb">
             <picture>
               <source srcset="images/pastor-series/mirror-600w.webp" type="image/webp">
@@ -75,3 +75,497 @@
     </ul>
   </div>
 </section>
+
+
+<style is:global>
+  body.home-page #main-content #razbor .h-refutations-deck {
+    --refutations-gap: clamp(10px, 1vw, 14px);
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--refutations-gap);
+    overflow: visible;
+    isolation: isolate;
+    perspective: 1400px;
+  }
+
+  body.home-page #main-content #razbor .h-refutation-slot {
+    position: relative;
+    min-width: 0;
+    z-index: 2;
+  }
+
+  body.home-page #main-content #razbor .h-refutation-card {
+    --refutation-image-x: 0px;
+    --refutation-image-y: 0px;
+    --refutation-light-x: 50%;
+    position: relative;
+    z-index: 2;
+    overflow: visible;
+    isolation: isolate;
+    transform: translate3d(0, 0, 0);
+    transform-origin: 50% 58%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, .72), rgba(255, 255, 255, .14) 48%, transparent 78%),
+      var(--h-surface);
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .82),
+      0 10px 30px -28px rgba(48, 33, 15, .32);
+    transition:
+      transform 780ms cubic-bezier(.16, .84, .24, 1.035),
+      border-color 430ms ease,
+      background-color 430ms ease,
+      box-shadow 680ms cubic-bezier(.22, 1, .36, 1),
+      filter 430ms ease;
+  }
+
+  body.home-page #main-content #razbor .h-refutation-card::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 5%;
+    bottom: 5%;
+    width: 86px;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    filter: blur(14px);
+    transform: translate3d(0, 5px, 0) scale(.72, .9);
+    transition:
+      opacity 220ms ease-out,
+      transform 780ms cubic-bezier(.16, 1, .3, 1),
+      filter 520ms ease;
+  }
+
+  body.home-page #main-content #razbor .h-refutation-slot--left .h-refutation-card::before {
+    right: -58px;
+    background: radial-gradient(
+      ellipse at 0 50%,
+      rgba(43, 31, 17, .26) 0%,
+      rgba(43, 31, 17, .11) 34%,
+      rgba(43, 31, 17, .035) 54%,
+      transparent 74%
+    );
+  }
+
+  body.home-page #main-content #razbor .h-refutation-slot--right .h-refutation-card::before {
+    left: -58px;
+    background: radial-gradient(
+      ellipse at 100% 50%,
+      rgba(43, 31, 17, .26) 0%,
+      rgba(43, 31, 17, .11) 34%,
+      rgba(43, 31, 17, .035) 54%,
+      transparent 74%
+    );
+  }
+
+  body.home-page #main-content #razbor .h-refutation-card::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 1px;
+    border-radius: inherit;
+    opacity: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(280px 150px at var(--refutation-light-x) -5%, rgba(66, 196, 213, .12), transparent 70%),
+      radial-gradient(260px 160px at 50% 112%, rgba(154, 109, 46, .07), transparent 69%);
+    transition: opacity 480ms ease;
+  }
+
+  body.home-page #main-content #razbor .h-refutation-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  body.home-page #main-content #razbor .h-refutation-card .h-article-thumb img {
+    transform: translate3d(var(--refutation-image-x), var(--refutation-image-y), 0) scale(1.015);
+    transition:
+      transform 980ms cubic-bezier(.22, 1, .36, 1),
+      filter 620ms ease;
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right {
+    z-index: 8;
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--right,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--left {
+    z-index: 1;
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card {
+    transform: translate3d(31px, -9px, 0);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--right .h-refutation-card {
+    transform: translate3d(6px, 7px, 0);
+    filter: saturate(.94) brightness(.988);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card {
+    transform: translate3d(-31px, -9px, 0);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--left .h-refutation-card {
+    transform: translate3d(-6px, 7px, 0);
+    filter: saturate(.94) brightness(.988);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card {
+    border-color: color-mix(in srgb, var(--h-accent) 42%, var(--h-border));
+    background-color: var(--h-surface-solid);
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .9),
+      0 25px 54px -36px rgba(48, 33, 15, .42),
+      0 8px 20px -15px rgba(48, 33, 15, .2),
+      0 0 0 1px rgba(66, 196, 213, .025);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--right .h-refutation-card,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--left .h-refutation-card {
+    border-color: color-mix(in srgb, var(--h-border) 82%, transparent);
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .62),
+      0 10px 28px -25px rgba(48, 33, 15, .24);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card::before,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card::before {
+    opacity: .7;
+    filter: blur(14px);
+    transform: translate3d(0, 5px, 0) scale(1, .96);
+    transition-delay: 90ms, 0ms, 0ms;
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card::after,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card::after {
+    opacity: 1;
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-article-thumb img,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-article-thumb img {
+    transform: translate3d(var(--refutation-image-x), var(--refutation-image-y), 0) scale(1.065);
+    filter: saturate(1.035) contrast(1.015);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-article-title,
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-article-title {
+    color: var(--h-heading);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-switching="1"] .h-refutation-card::before {
+    opacity: 0;
+    transition-duration: 70ms;
+    transition-delay: 0ms;
+  }
+
+  html.dark body.home-page #main-content #razbor .h-refutation-card {
+    border-color: rgba(199, 154, 88, .17);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, .045), transparent 48%),
+      linear-gradient(150deg, rgba(18, 31, 33, .93), rgba(7, 14, 16, .94));
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .035),
+      0 14px 34px -28px rgba(0, 0, 0, .94);
+  }
+
+  html.dark body.home-page #main-content #razbor .h-refutation-slot--left .h-refutation-card::before {
+    background: radial-gradient(
+      ellipse at 0 50%,
+      rgba(0, 0, 0, .7) 0%,
+      rgba(0, 0, 0, .34) 35%,
+      rgba(0, 0, 0, .1) 55%,
+      transparent 75%
+    );
+  }
+
+  html.dark body.home-page #main-content #razbor .h-refutation-slot--right .h-refutation-card::before {
+    background: radial-gradient(
+      ellipse at 100% 50%,
+      rgba(0, 0, 0, .7) 0%,
+      rgba(0, 0, 0, .34) 35%,
+      rgba(0, 0, 0, .1) 55%,
+      transparent 75%
+    );
+  }
+
+  html.dark body.home-page #main-content #razbor .h-refutation-card::after {
+    background:
+      radial-gradient(300px 170px at var(--refutation-light-x) -8%, rgba(66, 196, 213, .12), transparent 72%),
+      radial-gradient(280px 170px at 50% 112%, rgba(199, 154, 88, .065), transparent 70%);
+  }
+
+  html.dark body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card,
+  html.dark body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card {
+    border-color: color-mix(in srgb, var(--h-accent) 38%, var(--h-border-strong));
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, .055), transparent 48%),
+      linear-gradient(150deg, rgba(18, 35, 37, .99), rgba(7, 17, 19, .99));
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .05),
+      0 29px 62px -34px rgba(0, 0, 0, .98),
+      0 9px 22px -15px rgba(0, 0, 0, .88),
+      0 0 0 1px rgba(66, 196, 213, .04);
+  }
+
+  html.dark body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--right .h-refutation-card,
+  html.dark body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--left .h-refutation-card {
+    border-color: rgba(199, 154, 88, .11);
+    filter: saturate(.9) brightness(.93);
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .025),
+      0 12px 30px -26px rgba(0, 0, 0, .92);
+  }
+
+  @media (max-width: 760px) {
+    body.home-page #main-content #razbor .h-refutations-deck {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      perspective: none;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-slot,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot {
+      z-index: 1;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-card,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot .h-refutation-card,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot .h-refutation-card {
+      transform: translate3d(0, 0, 0);
+      filter: none;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-card::before,
+    body.home-page #main-content #razbor .h-refutation-card::after {
+      display: none;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-card .h-article-thumb img,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot .h-refutation-card .h-article-thumb img,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot .h-refutation-card .h-article-thumb img {
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.home-page #main-content #razbor .h-refutation-card,
+    body.home-page #main-content #razbor .h-refutation-card::before,
+    body.home-page #main-content #razbor .h-refutation-card::after,
+    body.home-page #main-content #razbor .h-refutation-card .h-article-thumb img {
+      transition: none;
+      animation: none;
+    }
+
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot .h-refutation-card,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot .h-refutation-card {
+      transform: none;
+      filter: none;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-card::before,
+    body.home-page #main-content #razbor .h-refutation-card::after {
+      display: none;
+    }
+
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot .h-refutation-card .h-article-thumb img,
+    body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot .h-refutation-card .h-article-thumb img {
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    body.home-page #main-content #razbor .h-refutation-card {
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+      box-shadow: none;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-card::before,
+    body.home-page #main-content #razbor .h-refutation-card::after {
+      display: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const deck = document.querySelector('#razbor .h-refutations-deck');
+    if (!deck || deck.dataset.refutationsMotionReady === '1') return;
+    deck.dataset.refutationsMotionReady = '1';
+
+    const slots = Array.from(deck.querySelectorAll('.h-refutation-slot'));
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let activeSide = '';
+    let enterTimer = 0;
+    let leaveTimer = 0;
+    let switchTimer = 0;
+    let layerTimer = 0;
+    let frame = 0;
+    const removers = [];
+
+    const on = (target, type, handler, options) => {
+      target.addEventListener(type, handler, options);
+      removers.push(() => target.removeEventListener(type, handler, options));
+    };
+
+    const clearTimers = () => {
+      window.clearTimeout(enterTimer);
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(switchTimer);
+      window.clearTimeout(layerTimer);
+      window.cancelAnimationFrame(frame);
+    };
+
+    const setLayerHints = (enabled) => {
+      slots.forEach((slot) => {
+        const card = slot.querySelector('.h-refutation-card');
+        const image = slot.querySelector('.h-article-thumb img');
+        if (card) card.style.willChange = enabled ? 'transform, box-shadow' : '';
+        if (image) image.style.willChange = enabled ? 'transform' : '';
+      });
+    };
+
+    const clearLayerHintsLater = () => {
+      window.clearTimeout(layerTimer);
+      layerTimer = window.setTimeout(() => setLayerHints(false), 980);
+    };
+
+    const resetImage = (slot) => {
+      const card = slot.querySelector('.h-refutation-card');
+      if (!card) return;
+      card.style.setProperty('--refutation-image-x', '0px');
+      card.style.setProperty('--refutation-image-y', '0px');
+      card.style.setProperty('--refutation-light-x', '50%');
+    };
+
+    const setActive = (side) => {
+      window.clearTimeout(enterTimer);
+      window.clearTimeout(leaveTimer);
+      const nextSide = side || '';
+      const switching = Boolean(activeSide && nextSide && activeSide !== nextSide);
+
+      if (switching && !reducedMotion.matches) {
+        deck.dataset.refutationsSwitching = '1';
+        window.clearTimeout(switchTimer);
+        switchTimer = window.setTimeout(() => {
+          delete deck.dataset.refutationsSwitching;
+        }, 118);
+      } else {
+        delete deck.dataset.refutationsSwitching;
+      }
+
+      activeSide = nextSide;
+      deck.dataset.refutationsActive = activeSide;
+      setLayerHints(Boolean(activeSide));
+      clearLayerHintsLater();
+    };
+
+    const clearActive = () => {
+      activeSide = '';
+      deck.dataset.refutationsActive = '';
+      delete deck.dataset.refutationsSwitching;
+      slots.forEach(resetImage);
+      clearLayerHintsLater();
+    };
+
+    slots.forEach((slot) => {
+      const side = slot.dataset.refutationSide || '';
+      const card = slot.querySelector('.h-refutation-card');
+      if (!card || !side) return;
+
+      const handlePointerEnter = (event) => {
+        if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+        window.clearTimeout(leaveTimer);
+        window.clearTimeout(enterTimer);
+        enterTimer = window.setTimeout(() => setActive(side), activeSide ? 18 : 32);
+      };
+
+      const handlePointerLeave = (event) => {
+        if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+        window.clearTimeout(enterTimer);
+        window.clearTimeout(leaveTimer);
+        leaveTimer = window.setTimeout(() => {
+          if (!deck.matches(':focus-within')) clearActive();
+        }, 132);
+      };
+
+      const handlePointerMove = (event) => {
+        if ((event.pointerType !== 'mouse' && event.pointerType !== 'pen')
+          || activeSide !== side
+          || reducedMotion.matches) return;
+
+        const rect = slot.getBoundingClientRect();
+        const nx = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - .5) * 2));
+        const ny = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - .5) * 2));
+
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(() => {
+          card.style.setProperty('--refutation-image-x', `${(nx * 1.25).toFixed(2)}px`);
+          card.style.setProperty('--refutation-image-y', `${(ny * .9).toFixed(2)}px`);
+          card.style.setProperty('--refutation-light-x', `${((nx + 1) * 50).toFixed(1)}%`);
+        });
+      };
+
+      const handlePointerOut = (event) => {
+        const related = event.relatedTarget;
+        if (related instanceof Node && slot.contains(related)) return;
+        resetImage(slot);
+      };
+
+      const handleFocus = () => {
+        window.requestAnimationFrame(() => {
+          if (card.matches(':focus-visible')) setActive(side);
+        });
+      };
+
+      const handleBlur = () => {
+        window.setTimeout(() => {
+          if (!deck.matches(':focus-within')) clearActive();
+        }, 0);
+      };
+
+      on(slot, 'pointerenter', handlePointerEnter);
+      on(slot, 'pointerleave', handlePointerLeave);
+      on(slot, 'pointermove', handlePointerMove);
+      on(slot, 'pointerout', handlePointerOut);
+      on(card, 'focus', handleFocus);
+      on(card, 'blur', handleBlur);
+    });
+
+    const handleEscape = (event) => {
+      if (event.key !== 'Escape') return;
+      clearActive();
+      const focused = deck.querySelector(':focus');
+      if (focused instanceof HTMLElement) focused.blur();
+    };
+
+    const handleWindowBlur = () => clearActive();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') clearActive();
+    };
+    const cleanup = () => {
+      clearTimers();
+      activeSide = '';
+      deck.dataset.refutationsActive = '';
+      delete deck.dataset.refutationsSwitching;
+      slots.forEach(resetImage);
+      setLayerHints(false);
+      removers.splice(0).forEach((remove) => remove());
+    };
+
+    on(document, 'keydown', handleEscape);
+    on(window, 'blur', handleWindowBlur);
+    on(document, 'visibilitychange', handleVisibility);
+    on(window, 'pagehide', cleanup, { once: true });
+  })();
+</script>
