@@ -18,76 +18,20 @@
     "deadMessageApiAllowed": false
   },
   "strategies": [
-    {
-      "surface": "navigation-html",
-      "strategy": "network-first",
-      "cache": "content",
-      "offlineFallback": "exact route, canonical route, then /404.html"
-    },
-    {
-      "surface": "revisioned-static",
-      "strategy": "network-first",
-      "cache": "static",
-      "offlineFallback": "exact revision then current canonical precache"
-    },
-    {
-      "surface": "unrevisioned-static",
-      "strategy": "cache-first",
-      "cache": "static",
-      "offlineFallback": "cache miss fails"
-    },
-    {
-      "surface": "mutable-data-json",
-      "strategy": "network-first",
-      "cache": "data",
-      "offlineFallback": "exact cached response or 503"
-    },
-    {
-      "surface": "pagefind-index-fragment",
-      "strategy": "network-first",
-      "cache": "pagefind",
-      "offlineFallback": "exact cached response or 503"
-    },
-    {
-      "surface": "pagefind-static",
-      "strategy": "cache-first",
-      "cache": "pagefind",
-      "offlineFallback": "cached bootstrap/runtime"
-    },
-    {
-      "surface": "images",
-      "strategy": "cache-first-persistent-lru",
-      "cache": "images",
-      "offlineFallback": "exact cached response"
-    },
-    {
-      "surface": "audio-video-tts-range",
-      "strategy": "network-only-bypass",
-      "cache": null,
-      "offlineFallback": null
-    }
+    {"surface": "navigation-html", "strategy": "network-first", "cache": "content", "offlineFallback": "exact route, canonical route, then /404.html"},
+    {"surface": "revisioned-static", "strategy": "network-first", "cache": "static", "offlineFallback": "exact revision then current canonical precache"},
+    {"surface": "unrevisioned-static", "strategy": "cache-first", "cache": "static", "offlineFallback": "cache miss fails"},
+    {"surface": "mutable-data-json", "strategy": "network-first", "cache": "data", "offlineFallback": "exact cached response or 503"},
+    {"surface": "pagefind-index-fragment", "strategy": "network-first", "cache": "pagefind", "offlineFallback": "exact cached response or 503"},
+    {"surface": "pagefind-static", "strategy": "cache-first", "cache": "pagefind", "offlineFallback": "cached bootstrap/runtime"},
+    {"surface": "images", "strategy": "cache-first-persistent-lru", "cache": "images", "offlineFallback": "exact cached response"},
+    {"surface": "audio-video-tts-range", "strategy": "network-only-bypass", "cache": null, "offlineFallback": null}
   ],
   "representativeRoutes": [
-    {
-      "route": "/",
-      "role": "landing",
-      "expectation": "available offline only after a successful controlled navigation"
-    },
-    {
-      "route": "/articles/chto-bibliya-nazyvaet-serdcem/",
-      "role": "article",
-      "expectation": "online first response replaces cached HTML; offline reload returns latest successful response"
-    },
-    {
-      "route": "/baptisty-rossii/",
-      "role": "series",
-      "expectation": "same route-level contract; no separate CACHE_ARTICLE state owner"
-    },
-    {
-      "route": "/__a07_missing__/",
-      "role": "missing",
-      "expectation": "offline navigation returns the explicit 404 fallback, never a different cached article"
-    }
+    {"route": "/", "role": "landing", "expectation": "available offline only after a successful controlled navigation"},
+    {"route": "/articles/chto-bibliya-nazyvaet-serdcem/", "role": "article", "expectation": "online first response replaces cached HTML; offline reload returns latest successful response"},
+    {"route": "/baptisty-rossii/", "role": "series", "expectation": "same route-level contract; no separate CACHE_ARTICLE state owner"},
+    {"route": "/__a07_missing__/", "role": "missing", "expectation": "offline navigation returns the explicit 404 fallback, never a different cached article"}
   ],
   "browserScenarios": [
     "cold atomic install",
