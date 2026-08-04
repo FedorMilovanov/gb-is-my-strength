@@ -142,7 +142,7 @@ function validate(input) {
     'scripts/cache-bust-assets.js', 'src/lib/asset-version.js',
     'scripts/tts-download-consent-contract-test.js', 'scripts/tts-engine-status-contract-test.js',
     'scripts/tts-stress-dictionary-contract.js', 'scripts/tts-reader-runtime-browser-test.js',
-    'scripts/tts-reader-multitab-lock-browser-test.js', 'scripts/tts-reader-real-model-browser-test.js',
+    'scripts/tts-reader-multitab-lock-browser-test.js',
     'scripts/tts-route-crawl-browser-test.js',
     'scripts/tts-mobile-notice-geometry-browser-test.js', 'scripts/release-candidate-lib.mjs',
     'scripts/tts-live-deployment-contract.mjs', '.github/workflows/deploy.yml',
@@ -152,6 +152,8 @@ function validate(input) {
     const count = countWorkflowPath(workflow, value);
     if (count !== 2) problems.push(`consent workflow path: ${value} (${count}/2)`);
   }
+  const realModelPathCount = countWorkflowPath(readerWorkflow, 'scripts/tts-reader-real-model-browser-test.js');
+  if (realModelPathCount !== 2) problems.push(`reader workflow path: scripts/tts-reader-real-model-browser-test.js (${realModelPathCount}/2)`);
   for (const [label, value] of [
     ['workflow: source contract', 'node scripts/tts-engine-status-contract-test.js'],
     ['workflow: SharedWorker fixture', 'node scripts/tts-reader-multitab-lock-browser-test.js'],
