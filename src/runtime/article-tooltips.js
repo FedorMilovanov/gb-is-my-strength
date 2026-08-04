@@ -1,4 +1,4 @@
-const VERSION = 12;
+const VERSION = 13;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const HOVER_TRANSIT_MS = 520;
@@ -80,6 +80,11 @@ function settleHover(record) {
     record.hoverSettled = true;
     record.pointerBaseline = pointerEpoch;
   });
+}
+
+function beginHoverTransit(record) {
+  if (!record || record.reason !== 'hover') return;
+  record.hoverTransitUntil = window.performance.now() + HOVER_TRANSIT_MS;
 }
 
 function scheduleClose(delay = 220) {
@@ -243,7 +248,7 @@ function openTooltip(anchor, reason = 'open') {
   if (active?.anchor === anchor) {
     active.reason = reason;
     active.pointerBaseline = pointerEpoch;
-    active.hoverTransitUntil = reason === 'hover' ? window.performance.now() + HOVER_TRANSIT_MS : 0;
+    active.hoverTransitUntil = 0;
     if (reason === 'hover') {
       active.hoverSettled = false;
       settleHover(active);
@@ -271,7 +276,7 @@ function openTooltip(anchor, reason = 'open') {
     reason,
     hoverSettled: reason !== 'hover',
     pointerBaseline: pointerEpoch,
-    hoverTransitUntil: reason === 'hover' ? window.performance.now() + HOVER_TRANSIT_MS : 0,
+    hoverTransitUntil: 0,
   };
   position(tip, anchor);
   window.requestAnimationFrame(() => {
@@ -333,6 +338,7 @@ function initializeAnchor(anchor) {
       cancelClose();
       return;
     }
+    if (active?.anchor === anchor) beginHoverTransit(active);
     scheduleClose();
   };
 

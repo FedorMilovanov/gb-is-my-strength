@@ -4,10 +4,12 @@ on:
   pull_request:
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/components/ui/floating-cluster/PlayEmber.astro"
       - "src/pages/baptisty-rossii/index.astro"
       - "src/runtime/reader-tts.js"
       - "src/runtime/reader-tts.css"
       - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts-click-guard.js"
       - "src/runtime/reader-tts-media-session.js"
       - "css/tts-download-notice.css"
       - "js/vosk-tts-core.js"
@@ -16,6 +18,7 @@ on:
       - "js/vosk-stress-marker.bin"
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
+      - "scripts/gill-v16-mobile-play-smoke.js"
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-ort-worker-path-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
@@ -27,10 +30,12 @@ on:
     branches: [main]
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/components/ui/floating-cluster/PlayEmber.astro"
       - "src/pages/baptisty-rossii/index.astro"
       - "src/runtime/reader-tts.js"
       - "src/runtime/reader-tts.css"
       - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts-click-guard.js"
       - "src/runtime/reader-tts-media-session.js"
       - "css/tts-download-notice.css"
       - "js/vosk-tts-core.js"
@@ -39,6 +44,7 @@ on:
       - "js/vosk-stress-marker.bin"
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
+      - "scripts/gill-v16-mobile-play-smoke.js"
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-ort-worker-path-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
@@ -79,10 +85,12 @@ jobs:
         run: |
           mkdir -p reports
           node --check src/runtime/reader-tts-defaults.js
+          node --check src/runtime/reader-tts-click-guard.js
           node --check src/runtime/reader-tts.js
           node --check src/runtime/reader-tts-media-session.js
           node --check js/vosk-tts-engine.js
           node --check js/vosk-tts-worker.js
+          node --check scripts/gill-v16-mobile-play-smoke.js
           node --check scripts/tts-stress-dictionary-contract.js
           node --check scripts/tts-ort-worker-path-contract.js
           node --check scripts/tts-reader-runtime-browser-test.js
@@ -113,6 +121,11 @@ jobs:
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/tts-reader-production-build.log
 
+      - name: Run canonical Gill mobile PlayEmber smoke
+        run: |
+          set -o pipefail
+          npm run gill:mobile-play:smoke 2>&1 | tee reports/gill-mobile-play-smoke.log
+
       - name: Crawl every TTS route on desktop and mobile
         run: |
           set -o pipefail
@@ -137,6 +150,7 @@ jobs:
             reports/tts-reader-runtime.log
             reports/tts-reader-multitab-lock.log
             reports/tts-reader-production-build.log
+            reports/gill-mobile-play-smoke.log
             reports/tts-reader-route-crawl.log
             reports/tts-route-crawl.json
             reports/tts-reader-mobile-notice-click.png
