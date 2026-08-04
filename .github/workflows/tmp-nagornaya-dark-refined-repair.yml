@@ -72,7 +72,7 @@ jobs:
           asset = 'css/nagornaya-mobile-toc.css'
           css_path = Path(asset)
           version = hashlib.md5(css_path.read_bytes()).hexdigest()[:8]
-          versioned = re.compile(r'((?:\.\./)*|/?)css/nagornaya-mobile-toc\.css\?v=[^\s"\'&}>]+')
+          versioned = re.compile(r"((?:\.\./)*|/?)css/nagornaya-mobile-toc\.css\?v=[^\s\"'&}>]+")
           skipped = {'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'audit', '_build-tools', 'src', 'scripts', 'docs', 'migration'}
           changed = []
 
