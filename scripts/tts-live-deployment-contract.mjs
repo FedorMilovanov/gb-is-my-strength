@@ -45,12 +45,13 @@ const ROUTES = Object.freeze([
 const PUBLIC_ASSETS = Object.freeze({
   controller: 'js/floating-cluster-controller.js',
   engine: 'js/vosk-tts-engine.js',
+  worker: 'js/vosk-tts-worker.js',
   noticeCss: 'css/tts-download-notice.css',
   serviceWorker: 'sw.js',
 });
 const ttsManifest = local.manifest.extensions?.tts;
 assert.ok(ttsManifest?.assets, 'release candidate lacks extensions.tts assets');
-assert.deepEqual(ttsManifest.lazyNoPrecache, [PUBLIC_ASSETS.noticeCss, PUBLIC_ASSETS.engine]);
+assert.deepEqual(ttsManifest.lazyNoPrecache, [PUBLIC_ASSETS.noticeCss, PUBLIC_ASSETS.engine, PUBLIC_ASSETS.worker]);
 
 function readDist(relativePath) {
   const absolute = path.join(DIST, relativePath);
@@ -68,6 +69,7 @@ const expected = Object.freeze({
   candidateDigest: EXPECTED_CANDIDATE_DIGEST,
   controllerPath: `/js/floating-cluster-controller.js?v=${md5(deployed.controller)}`,
   enginePath: `/js/vosk-tts-engine.js?v=${md5(deployed.engine)}`,
+  workerPath: `/js/vosk-tts-worker.js?v=${md5(deployed.worker)}`,
   noticeCssPath: `/css/tts-download-notice.css?v=${md5(deployed.noticeCss)}`,
 });
 
@@ -105,10 +107,12 @@ function extractDirective(csp, name) {
   const match = String(csp).match(new RegExp(`(?:^|;)\\s*${escaped}\\s+([^;]+)`, 'i'));
   return match ? match[1].trim() : '';
 }
-function extractControllerSrc(html) {
+function extractVersionedScript(html, filename) {
+  const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`${escaped}\\?v=[a-f0-9]{8}(?:&|$)`, 'i');
   for (const tag of String(html).match(/<script\b[^>]*>/gi) || []) {
     const src = getAttribute(tag, 'src');
-    if (/floating-cluster-controller\.js\?v=[a-f0-9]{8}(?:&|$)/i.test(src)) return src;
+    if (pattern.test(src)) return src;
   }
   return '';
 }
@@ -123,7 +127,6 @@ function assertCsp(csp, route) {
   assert.match(mediaSrc, /(?:^|\s)'self'(?:\s|$)/, `${route}: media-src lacks self`);
   assert.match(mediaSrc, /(?:^|\s)blob:(?:\s|$)/, `${route}: media-src lacks blob`);
   assert.match(workerSrc, /(?:^|\s)'self'(?:\s|$)/, `${route}: worker-src lacks self`);
-  assert.match(workerSrc, /(?:^|\s)blob:(?:\s|$)/, `${route}: worker-src lacks blob`);
   return { connectSrc, mediaSrc, workerSrc };
 }
 function probeUrl(relative, attempt, label) {
@@ -135,7 +138,7 @@ async function fetchBuffer(relative, attempt, label) {
   const target = probeUrl(relative, attempt, label);
   const response = await fetch(target, {
     cache: 'no-store', redirect: 'follow',
-    headers: { 'cache-control': 'no-cache, no-store, max-age=0', pragma: 'no-cache', 'user-agent': 'gb-tts-live-deployment-contract/5.0' },
+    headers: { 'cache-control': 'no-cache, no-store, max-age=0', pragma: 'no-cache', 'user-agent': 'gb-tts-live-deployment-contract/6.0' },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   assert.equal(response.ok, true, `${label}: HTTP ${response.status} for ${target}`);
@@ -165,8 +168,8 @@ function assertProvenance(manifest) {
   assert.equal(manifest.controlPlaneSha, CONTROL_PLANE_SHA, 'deployment provenance control-plane SHA mismatch');
   assert.equal(manifest.immutablePath, expected.provenancePath, 'deployment provenance path mismatch');
   assert.equal(manifest.workflow?.controlPlaneSha, CONTROL_PLANE_SHA, 'deployment provenance workflow control-plane SHA mismatch');
-  assert.equal(manifest.workflow?.runId, WORKFLOW_RUN_ID, 'deployment provenance run ID mismatch');
-  assert.equal(manifest.workflow?.runAttempt, WORKFLOW_RUN_ATTEMPT, 'deployment provenance run attempt mismatch');
+  assert.equal(manifest.workflow?.runId, WORKFLOW_RUN_ID, 'deployment provenance workflow run ID mismatch');
+  assert.equal(manifest.workflow?.runAttempt, WORKFLOW_RUN_ATTEMPT, 'deployment provenance workflow run attempt mismatch');
   assert.equal(manifest.artifact?.digest, EXPECTED_CANDIDATE_DIGEST, 'deployment provenance candidate digest mismatch');
   assert.deepEqual(manifest.extensions?.tts, ttsManifest, 'deployment provenance TTS extension mismatch');
 }
@@ -182,26 +185,44 @@ async function verifyAttempt(attempt) {
     assert.match(page.contentType, /text\/html/i, `${route}: unexpected content-type ${page.contentType}`);
     const html = page.buffer.toString('utf8');
     const directives = assertCsp(extractCsp(html), route);
-    const controllerSrc = extractControllerSrc(html);
+    const controllerSrc = extractVersionedScript(html, 'floating-cluster-controller.js');
+    const engineSrc = extractVersionedScript(html, 'vosk-tts-engine.js');
     assert.ok(controllerSrc, `${route}: floating-cluster-controller.js is missing`);
-    const resolved = new URL(controllerSrc, `${LIVE_BASE_URL}${route}`);
-    assert.equal(resolved.pathname + resolved.search, expected.controllerPath, `${route}: stale controller projection`);
-    routeEvidence.push({ route, controllerSrc: resolved.pathname + resolved.search, directives });
+    assert.ok(engineSrc, `${route}: canonical vosk-tts-engine.js is missing`);
+    const resolvedController = new URL(controllerSrc, `${LIVE_BASE_URL}${route}`);
+    const resolvedEngine = new URL(engineSrc, `${LIVE_BASE_URL}${route}`);
+    assert.equal(resolvedController.pathname + resolvedController.search, expected.controllerPath, `${route}: stale controller projection`);
+    assert.equal(resolvedEngine.pathname + resolvedEngine.search, expected.enginePath, `${route}: stale canonical engine projection`);
+    routeEvidence.push({
+      route,
+      controllerSrc: resolvedController.pathname + resolvedController.search,
+      engineSrc: resolvedEngine.pathname + resolvedEngine.search,
+      directives,
+    });
   }
 
   const controller = await fetchBuffer(expected.controllerPath, attempt, 'controller');
   assert.equal(sha256(controller.buffer), ttsManifest.assets.controller.sha256, 'live controller SHA-256 mismatch');
   const controllerText = controller.buffer.toString('utf8');
-  assert.ok(controllerText.includes(expected.enginePath), 'live controller references stale Vosk engine');
-  assert.ok(controllerText.includes(expected.noticeCssPath), 'live controller references stale notice CSS');
+  assert.ok(controllerText.includes('gb:vosk-retry-request'), 'live controller lacks Vosk retry protocol');
+  assert.ok(controllerText.includes('gb:vosk-switch-request'), 'live controller lacks Vosk switch protocol');
   assert.ok(controllerText.includes('Сейчас системный голос'), 'live controller lacks browser-voice status');
 
   const engine = await fetchBuffer(expected.enginePath, attempt, 'engine');
   assert.equal(sha256(engine.buffer), ttsManifest.assets.engine.sha256, 'live Vosk engine SHA-256 mismatch');
   const engineText = engine.buffer.toString('utf8');
   assert.ok(engineText.includes(expected.noticeCssPath), 'live Vosk engine references stale notice CSS');
-  assert.match(engineText, /MODEL_URL\s*=\s*'https:\/\/huggingface\.co\//, 'live Vosk engine model host drifted');
+  assert.ok(engineText.includes(expected.workerPath), 'live Vosk engine references stale Worker');
+  assert.equal(/InferenceSession|unzipSync|model-quant\.zip/.test(engineText), false, 'live thin client contains heavyweight model ownership');
   assert.ok(engineText.includes('Улучшенный голос загружается'), 'live Vosk engine lacks loading status copy');
+
+  const worker = await fetchBuffer(expected.workerPath, attempt, 'worker');
+  assert.equal(sha256(worker.buffer), ttsManifest.assets.worker.sha256, 'live Vosk Worker SHA-256 mismatch');
+  const workerText = worker.buffer.toString('utf8');
+  assert.match(workerText, /MODEL_URL\s*=\s*'https:\/\/huggingface\.co\//, 'live Vosk Worker model host drifted');
+  assert.match(workerText, /fflate\.unzipSync/, 'live Vosk Worker lacks archive extraction');
+  assert.match(workerText, /ort\.InferenceSession\.create/, 'live Vosk Worker lacks ONNX ownership');
+  assert.match(workerText, /crypto\.subtle\.digest\('SHA-256'/, 'live Vosk Worker lacks integrity verification');
 
   const noticeCss = await fetchBuffer(expected.noticeCssPath, attempt, 'notice-css');
   assert.equal(sha256(noticeCss.buffer), ttsManifest.assets.noticeCss.sha256, 'live notice CSS SHA-256 mismatch');
@@ -212,6 +233,7 @@ async function verifyAttempt(attempt) {
   const swText = sw.buffer.toString('utf8');
   assert.equal(swText.includes('/css/tts-download-notice.css'), false, 'live Service Worker precaches lazy TTS notice CSS');
   assert.equal(swText.includes('/js/vosk-tts-engine.js'), false, 'live Service Worker precaches lazy Vosk engine');
+  assert.equal(swText.includes('/js/vosk-tts-worker.js'), false, 'live Service Worker precaches lazy Vosk Worker');
 
   return {
     discovery: {
@@ -235,6 +257,7 @@ async function verifyAttempt(attempt) {
     assets: {
       controller: { path: expected.controllerPath, revision: md5(controller.buffer), sha256: sha256(controller.buffer).slice('sha256:'.length) },
       engine: { path: expected.enginePath, revision: md5(engine.buffer), sha256: sha256(engine.buffer).slice('sha256:'.length) },
+      worker: { path: expected.workerPath, revision: md5(worker.buffer), sha256: sha256(worker.buffer).slice('sha256:'.length) },
       noticeCss: { path: expected.noticeCssPath, revision: md5(noticeCss.buffer), sha256: sha256(noticeCss.buffer).slice('sha256:'.length) },
       serviceWorker: { url: sw.url, revision: md5(sw.buffer), sha256: sha256(sw.buffer).slice('sha256:'.length), lazyTtsPrecache: false },
     },
