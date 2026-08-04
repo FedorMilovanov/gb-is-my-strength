@@ -12,7 +12,8 @@
  * Its capture-phase owner prevents double handling while keeping the existing
  * non-TTS cluster actions intact. Media Session is composed as a separate
  * lifecycle owner so lock-screen controls and background playback remain
- * testable without coupling them to either speech engine.
+ * testable without coupling them to either speech engine. Heavy Vosk work is
+ * owned by the same-origin persistent worker loaded by vosk-tts-engine.js.
  */
 import '../../runtime/article-interactions.css';
 import '../../runtime/reader-tts.css';
@@ -20,7 +21,6 @@ import '../../runtime/reader-tts.css';
 <script>
   import '../../runtime/print-pagination-geometry.js';
   import '../../runtime/reader-actions.js';
-  import '../../runtime/reader-vosk-download-worker.js';
   import '../../runtime/reader-tts-defaults.js';
   import '../../runtime/reader-tts.js';
   import '../../runtime/reader-tts-media-session.js';
