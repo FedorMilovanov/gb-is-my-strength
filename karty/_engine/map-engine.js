@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.58 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.57 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -3295,7 +3295,7 @@ container.appendChild(panel);
     getStageColor,clientPointToView,distanceKm,
     // v0.3 rendering
     createMap,
-    version:'0.58.0',buildDate:'2026-08-04'
+    version:'0.57.0',buildDate:'2026-08-01'
   };
 })();
 
