@@ -27,7 +27,9 @@ on:
       - "scripts/tts-download-notice-browser-test.js"
       - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-engine-lifecycle-browser-test.js"
+      - "scripts/tts-real-model-phase-browser-test.js"
       - "scripts/tts-status-route-browser-test.js"
+      - "scripts/tts-route-crawl-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - "scripts/workflow-linkage-regression-test.js"
       - ".github/workflows/deploy.yml"
@@ -61,7 +63,9 @@ on:
       - "scripts/tts-download-notice-browser-test.js"
       - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-engine-lifecycle-browser-test.js"
+      - "scripts/tts-real-model-phase-browser-test.js"
       - "scripts/tts-status-route-browser-test.js"
+      - "scripts/tts-route-crawl-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - "scripts/workflow-linkage-regression-test.js"
       - ".github/workflows/deploy.yml"
@@ -119,7 +123,9 @@ jobs:
               scripts/tts-download-notice-browser-test.js \
               scripts/tts-engine-status-contract-test.js \
               scripts/tts-engine-lifecycle-browser-test.js \
+              scripts/tts-real-model-phase-browser-test.js \
               scripts/tts-status-route-browser-test.js \
+              scripts/tts-route-crawl-browser-test.js \
               scripts/tts-mobile-notice-geometry-browser-test.js \
               scripts/workflow-linkage-regression-test.js
             do
@@ -219,6 +225,7 @@ jobs:
           {
             node scripts/tts-download-notice-browser-test.js
             node scripts/tts-engine-lifecycle-browser-test.js
+            node scripts/tts-real-model-phase-browser-test.js
           } 2>&1 | tee reports/tts-engine-lifecycle.log
 
       - name: Build production-like routes
@@ -230,6 +237,11 @@ jobs:
         run: |
           set -o pipefail
           node scripts/tts-status-route-browser-test.js 2>&1 | tee reports/tts-route-status.log
+
+      - name: Crawl every production-like TTS route
+        run: |
+          set -o pipefail
+          node scripts/tts-route-crawl-browser-test.js 2>&1 | tee reports/tts-route-crawl.log
 
       - name: Run mobile notice viewport geometry
         run: |
@@ -245,10 +257,15 @@ jobs:
             reports/tts-download-notice-desktop.png
             reports/tts-download-notice-mobile-dark.png
             reports/tts-lifecycle-*.png
+            reports/tts-real-model-phase-*.png
+            reports/tts-real-model-phase.json
             reports/tts-route-*.png
+            reports/tts-crawl-*.png
+            reports/tts-route-crawl.json
             reports/tts-engine-lifecycle.log
             reports/tts-production-build.log
             reports/tts-route-status.log
+            reports/tts-route-crawl.log
             reports/tts-mobile-notice-geometry.log
           if-no-files-found: warn
           retention-days: 14
