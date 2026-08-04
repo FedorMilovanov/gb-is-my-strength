@@ -226,6 +226,15 @@
   }
 
   @media (max-width: 760px) {
+    body.home-page #main-content .h-hero-title .h-title-static,
+    body.home-page #main-content .h-hero-title .h-title-accent {
+      display: block;
+    }
+
+    body.home-page #main-content .h-hero-title .h-title-dash {
+      display: none;
+    }
+
     body.home-page #main-content .h-sacred-block--hero .h-sacred-line {
       flex-wrap: wrap;
       column-gap: .1em;
@@ -439,8 +448,10 @@
       if (document.visibilityState === 'hidden') restorePinned();
     });
 
-    document.fonts?.ready.then(scheduleMeasure).catch(scheduleMeasure);
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(scheduleMeasure).catch(scheduleMeasure);
+    }
     syncPinned();
-    scheduleMeasure();
+    measure();
   })();
 </script>
