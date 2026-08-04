@@ -147,7 +147,7 @@ const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
               && item.direction === 'rtl'
               && item.unicodeBidi === 'isolate'
               && item.fontFamily.includes('Noto Sans Hebrew'))
-            && explanationDirection !== 'rtl';
+            && explanationDirection === 'ltr';
           return {tested:true, ok, place:place.id, tokenState, explanationDirection};
         } catch (e) {
           return {tested:true, ok:false, reason:String(e && e.message || e)};
@@ -237,7 +237,7 @@ const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
       if(!sciOk) console.log(`     sci tab problem: ${JSON.stringify(sci)}`);
       if(!keyboardOk) console.log(`     keyboard problem: ${JSON.stringify(keyboard)}`);
       if(!hebrewOk) console.log(`     Hebrew semantics problem: ${JSON.stringify(hebrew)}`);
-      if(errors.length||mapW==0||!routeVizOk||!sciOk||!storyOk||!signatureOk||!keyboardOk||!hebrewOk) problems.push(m);
+      if(errors.length||mapW===0||!routeVizOk||!sciOk||!storyOk||!signatureOk||!keyboardOk||!hebrewOk) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,100)}`); problems.push(m); }
     await ctx.close();
   }
