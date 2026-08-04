@@ -76,3 +76,53 @@ const classes = ['gb-ember', isLoading ? 'is-loading' : '', className].filter(Bo
     <path d="M5 12.5l4.2 4.1L19 7" />
   </svg>
 </button>
+
+<script>
+  // Native touch long-press produces a trailing synthetic click in mobile
+  // browsers. The shared controller owns the actual stop action; the control
+  // itself owns suppression of that follow-up activation so no same-element or
+  // delegated listener can restart playback after a successful stop.
+  function bindLongPressClickGuard() {
+    document.querySelectorAll<HTMLButtonElement>('.gb-ember').forEach((ember) => {
+      if (ember.dataset.gbLongPressGuardBound === 'true') return;
+      ember.dataset.gbLongPressGuardBound = 'true';
+
+      let startedAt = 0;
+      let activeAtDown = false;
+      let suppressUntil = 0;
+
+      ember.addEventListener('pointerdown', (event) => {
+        if (event.pointerType && event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+        startedAt = performance.now();
+        activeAtDown = ember.dataset.state === 'playing' || ember.dataset.state === 'paused';
+      }, { passive: true });
+
+      ember.addEventListener('pointerup', (event) => {
+        const heldLongEnough = activeAtDown && performance.now() - startedAt >= 580;
+        // The controller's 600ms timer has already completed the stop when the
+        // ember is idle. Arm a bounded guard for the synthetic click only in
+        // that successful-stop state; an idle long hold still behaves normally.
+        if (heldLongEnough && ember.dataset.state === 'idle') {
+          suppressUntil = performance.now() + 1000;
+          event.preventDefault();
+        }
+        startedAt = 0;
+        activeAtDown = false;
+      }, { passive: false });
+
+      ember.addEventListener('pointercancel', () => {
+        startedAt = 0;
+        activeAtDown = false;
+      }, { passive: true });
+
+      ember.addEventListener('click', (event) => {
+        if (performance.now() >= suppressUntil) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }, true);
+    });
+  }
+
+  bindLongPressClickGuard();
+  document.addEventListener('astro:page-load', bindLongPressClickGuard);
+</script>
