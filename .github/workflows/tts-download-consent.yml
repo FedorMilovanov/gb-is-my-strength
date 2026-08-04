@@ -32,6 +32,7 @@ on:
       - "scripts/record-deployment-witness-contract-test.cjs"
       - "scripts/deployment-witness-ledger-source-contract-test.cjs"
       - "scripts/tts-download-consent-contract-test.js"
+      - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-multitab-lock-browser-test.js"
@@ -75,6 +76,7 @@ on:
       - "scripts/record-deployment-witness-contract-test.cjs"
       - "scripts/deployment-witness-ledger-source-contract-test.cjs"
       - "scripts/tts-download-consent-contract-test.js"
+      - "scripts/tts-engine-status-contract-test.js"
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-multitab-lock-browser-test.js"
@@ -139,6 +141,7 @@ jobs:
               scripts/record-deployment-witness-contract-test.cjs \
               scripts/deployment-witness-ledger-source-contract-test.cjs \
               scripts/tts-download-consent-contract-test.js \
+              scripts/tts-engine-status-contract-test.js \
               scripts/tts-stress-dictionary-contract.js \
               scripts/tts-reader-runtime-browser-test.js \
               scripts/tts-reader-multitab-lock-browser-test.js \
@@ -151,11 +154,12 @@ jobs:
             done
           } 2>&1 | tee reports/release-source-syntax.log
 
-      - name: Persistent-worker consent and pronunciation contracts
+      - name: Persistent-worker consent, status and pronunciation contracts
         run: |
           set -o pipefail
           mkdir -p reports
           node scripts/tts-download-consent-contract-test.js 2>&1 | tee reports/tts-source-download-consent.log
+          node scripts/tts-engine-status-contract-test.js 2>&1 | tee reports/tts-source-engine-status.log
           node scripts/tts-stress-dictionary-contract.js 2>&1 | tee reports/tts-source-pronunciation.log
 
       - name: Deployment provenance schema contract
@@ -199,6 +203,7 @@ jobs:
           path: |
             reports/release-source-syntax.log
             reports/tts-source-download-consent.log
+            reports/tts-source-engine-status.log
             reports/tts-source-pronunciation.log
             reports/deployment-provenance-source.log
             reports/release-pipeline-source.log
