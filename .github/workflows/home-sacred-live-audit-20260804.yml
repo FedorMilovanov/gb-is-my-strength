@@ -49,7 +49,7 @@ jobs:
           const outDir = 'reports/home-sacred-live-audit';
           const baseUrl = process.env.LIVE_BASE_URL;
           const report = {
-            schemaVersion: 1,
+            schemaVersion: 2,
             kind: 'home-sacred-live-audit',
             liveBaseUrl: baseUrl,
             requiredHomeFixSha: process.env.REQUIRED_HOME_FIX_SHA,
@@ -76,14 +76,14 @@ jobs:
           const settle = (page) => page.evaluate(() => new Promise((resolve) => {
             requestAnimationFrame(() => requestAnimationFrame(resolve));
           }));
-          const opened = (value) => value.front.visibility === 'hidden'
-            && value.front.opacity <= 0.05
-            && value.back.visibility === 'visible'
-            && value.back.opacity >= 0.95;
-          const closed = (value) => value.front.visibility === 'visible'
-            && value.front.opacity >= 0.9
-            && value.back.visibility === 'hidden'
-            && value.back.opacity <= 0.05;
+          const opened = (state) => state.front.visibility === 'hidden'
+            && state.front.opacity <= 0.05
+            && state.back.visibility === 'visible'
+            && state.back.opacity >= 0.95;
+          const closed = (state) => state.front.visibility === 'visible'
+            && state.front.opacity >= 0.9
+            && state.back.visibility === 'hidden'
+            && state.back.opacity <= 0.05;
 
           async function readState(locator) {
             return locator.evaluate((el) => {
@@ -92,7 +92,6 @@ jobs:
               const name = el.querySelector('.h-tetra-name') || back;
               const label = el.querySelector(':scope > .h-tetra-label');
               const block = el.closest('.h-sacred-block--hero');
-              const line = el.closest('.h-sacred-line');
               const probe = document.createElement('span');
               probe.style.cssText = 'position:fixed;visibility:hidden;color:var(--h-ink)';
               document.body.append(probe);
@@ -101,11 +100,11 @@ jobs:
               const frontStyle = getComputedStyle(front);
               const backStyle = getComputedStyle(back);
               const labelStyle = label ? getComputedStyle(label) : null;
-              const frontRect = front.getBoundingClientRect();
-              const backRect = back.getBoundingClientRect();
               const labelRect = label?.getBoundingClientRect() || null;
               const blockRect = block?.getBoundingClientRect() || null;
-              const lineRect = line?.getBoundingClientRect() || null;
+              const transformY = labelStyle && labelStyle.transform !== 'none'
+                ? new DOMMatrixReadOnly(labelStyle.transform).m42
+                : 0;
               return {
                 ownerInstalled: el.dataset.sacredPointerPreview === '1',
                 pointerPreview: el.hasAttribute('data-pointer-preview'),
@@ -115,15 +114,11 @@ jobs:
                   text: front.textContent.trim(),
                   visibility: frontStyle.visibility,
                   opacity: Number(frontStyle.opacity),
-                  display: frontStyle.display,
-                  rect: { top: frontRect.top, bottom: frontRect.bottom },
                 },
                 back: {
                   text: back.textContent.trim(),
                   visibility: backStyle.visibility,
                   opacity: Number(backStyle.opacity),
-                  display: backStyle.display,
-                  rect: { top: backRect.top, bottom: backRect.bottom },
                 },
                 nameColor: getComputedStyle(name).color,
                 inkColor,
@@ -134,35 +129,41 @@ jobs:
                   top: labelRect.top,
                   bottom: labelRect.bottom,
                   transform: labelStyle.transform,
+                  transformY,
+                  offsetFromBlock: blockRect ? labelRect.top - blockRect.top : null,
                 } : null,
-                geometry: {
-                  blockTop: blockRect?.top ?? null,
-                  lineTop: lineRect?.top ?? null,
-                  lineBottom: lineRect?.bottom ?? null,
-                  labelOffsetFromBlock: labelRect && blockRect ? labelRect.top - blockRect.top : null,
-                  labelGapToLine: labelRect && lineRect ? lineRect.top - labelRect.bottom : null,
-                },
               };
             });
           }
 
-          async function waitForState(page, locator, expectedOpen) {
+          async function waitForSwap(page, locator, expectedOpen) {
             const handle = await locator.elementHandle();
             await page.waitForFunction(({ el, expectedOpen }) => {
               const front = el.querySelector(':scope > .hb-front');
               const back = el.querySelector(':scope > .h-tetra-back, :scope > .hb-back');
-              const frontStyle = getComputedStyle(front);
-              const backStyle = getComputedStyle(back);
+              const fs = getComputedStyle(front);
+              const bs = getComputedStyle(back);
               return expectedOpen
-                ? frontStyle.visibility === 'hidden'
-                  && Number(frontStyle.opacity) <= 0.05
-                  && backStyle.visibility === 'visible'
-                  && Number(backStyle.opacity) >= 0.95
-                : frontStyle.visibility === 'visible'
-                  && Number(frontStyle.opacity) >= 0.9
-                  && backStyle.visibility === 'hidden'
-                  && Number(backStyle.opacity) <= 0.05;
+                ? fs.visibility === 'hidden' && Number(fs.opacity) <= 0.05
+                  && bs.visibility === 'visible' && Number(bs.opacity) >= 0.95
+                : fs.visibility === 'visible' && Number(fs.opacity) >= 0.9
+                  && bs.visibility === 'hidden' && Number(bs.opacity) <= 0.05;
             }, { el: handle, expectedOpen }, { timeout: 10_000 });
+          }
+
+          async function waitForFinalLabel(page, locator) {
+            const handle = await locator.elementHandle();
+            await page.waitForFunction((el) => {
+              const label = el.querySelector(':scope > .h-tetra-label');
+              if (!label) return false;
+              const style = getComputedStyle(label);
+              const y = style.transform === 'none'
+                ? 0
+                : new DOMMatrixReadOnly(style.transform).m42;
+              return style.visibility === 'visible'
+                && Number(style.opacity) >= 0.95
+                && y >= 20;
+            }, handle, { timeout: 10_000 });
           }
 
           async function openPage(engine, label, options = {}) {
@@ -211,39 +212,36 @@ jobs:
               await page.screenshot({ path: `${outDir}/${engineName}-initial.png` });
 
               await tetra.hover();
-              await settle(page);
-              await waitForState(page, tetra, true);
+              await waitForSwap(page, tetra, true);
+              await waitForFinalLabel(page, tetra);
               evidence.hover = await readState(tetra);
               assert(opened(evidence.hover), `${engineName}: physical hover did not reveal translation`, evidence.hover);
               assert(evidence.hover.pointerPreview, `${engineName}: pointerenter handler did not own hover`, evidence.hover);
               assert(evidence.hover.back.text.includes('Яхве'), `${engineName}: sacred translation is not Яхве`, evidence.hover);
               assert(evidence.hover.nameColor === evidence.hover.inkColor, `${engineName}: Яхве is not theme ink`, evidence.hover);
               assert(evidence.hover.label?.visibility === 'visible' && evidence.hover.label.opacity >= 0.95,
-                `${engineName}: sacred label is not visible on hover`, evidence.hover);
-              assert((evidence.hover.geometry.labelOffsetFromBlock ?? 0) >= 24,
-                `${engineName}: sacred label remains too high`, evidence.hover);
-              assert((evidence.hover.geometry.labelGapToLine ?? -100) >= -4,
-                `${engineName}: sacred label overlaps the Hebrew line`, evidence.hover);
+                `${engineName}: sacred label is not visible after transition`, evidence.hover);
+              assert((evidence.hover.label?.transformY ?? 0) >= 20,
+                `${engineName}: sacred label did not reach its lowered final position`, evidence.hover);
+              assert((evidence.hover.label?.offsetFromBlock ?? 0) >= 50,
+                `${engineName}: sacred label remains too high in the live hero`, evidence.hover);
               await page.screenshot({ path: `${outDir}/${engineName}-hover.png` });
 
               await page.mouse.move(2, 2);
-              await settle(page);
-              await waitForState(page, tetra, false);
+              await waitForSwap(page, tetra, false);
               evidence.leave = await readState(tetra);
               assert(closed(evidence.leave), `${engineName}: mouse leave did not restore Hebrew`, evidence.leave);
 
               await ordinary.hover();
-              await settle(page);
-              await waitForState(page, ordinary, true);
+              await waitForSwap(page, ordinary, true);
               evidence.ordinaryHover = await readState(ordinary);
               assert(opened(evidence.ordinaryHover), `${engineName}: ordinary word hover failed`, evidence.ordinaryHover);
               await page.mouse.move(2, 2);
-              await waitForState(page, ordinary, false);
+              await waitForSwap(page, ordinary, false);
 
               await tetra.click();
               await page.mouse.move(2, 2);
-              await settle(page);
-              await waitForState(page, tetra, true);
+              await waitForSwap(page, tetra, true);
               evidence.clickOpen = await readState(tetra);
               assert(evidence.clickOpen.toggled && evidence.clickOpen.pressed === 'true',
                 `${engineName}: first click did not persist open`, evidence.clickOpen);
@@ -251,36 +249,32 @@ jobs:
 
               await tetra.click();
               await page.mouse.move(2, 2);
-              await settle(page);
-              await waitForState(page, tetra, false);
+              await waitForSwap(page, tetra, false);
               evidence.clickClose = await readState(tetra);
               assert(!evidence.clickClose.toggled && evidence.clickClose.pressed === 'false',
                 `${engineName}: second click did not close`, evidence.clickClose);
 
               await tetra.focus();
               await page.keyboard.press('Enter');
-              await settle(page);
               evidence.enterFocused = await readState(tetra);
               assert(evidence.enterFocused.toggled && evidence.enterFocused.pressed === 'true',
                 `${engineName}: Enter did not toggle open`, evidence.enterFocused);
               await tetra.evaluate((el) => el.blur());
               await page.mouse.move(2, 2);
-              await waitForState(page, tetra, true);
+              await waitForSwap(page, tetra, true);
               evidence.enterPersistent = await readState(tetra);
               assert(opened(evidence.enterPersistent), `${engineName}: Enter state was not persistent`, evidence.enterPersistent);
 
               await tetra.focus();
               await page.keyboard.press('Space');
-              await settle(page);
               evidence.spaceFocused = await readState(tetra);
               assert(!evidence.spaceFocused.toggled && evidence.spaceFocused.pressed === 'false',
                 `${engineName}: Space did not toggle closed`, evidence.spaceFocused);
               await tetra.evaluate((el) => el.blur());
               await page.mouse.move(2, 2);
-              await waitForState(page, tetra, false);
+              await waitForSwap(page, tetra, false);
               evidence.spacePersistent = await readState(tetra);
               assert(closed(evidence.spacePersistent), `${engineName}: Space state did not close`, evidence.spacePersistent);
-
               return evidence;
             } finally {
               await context.close();
@@ -298,14 +292,12 @@ jobs:
               const initial = await readState(tetra);
               assert(closed(initial), 'touch: initial state is not Hebrew-only', initial);
               await tetra.tap();
-              await settle(page);
-              await waitForState(page, tetra, true);
+              await waitForSwap(page, tetra, true);
               const open = await readState(tetra);
               assert(open.toggled && opened(open), 'touch: first tap did not reveal Яхве', open);
               await page.screenshot({ path: `${outDir}/chromium-touch-open.png` });
               await tetra.tap();
-              await settle(page);
-              await waitForState(page, tetra, false);
+              await waitForSwap(page, tetra, false);
               const close = await readState(tetra);
               assert(!close.toggled && closed(close), 'touch: second tap did not close', close);
               return { initial, open, close };
@@ -323,20 +315,16 @@ jobs:
               const initial = await readState(tetra);
               assert(closed(initial), 'reduced motion: initial state is not Hebrew-only', initial);
               await tetra.hover();
-              await settle(page);
-              await waitForState(page, tetra, true);
+              await waitForSwap(page, tetra, true);
               const hover = await readState(tetra);
               assert(opened(hover), 'reduced motion: hover did not reveal Яхве', hover);
               const transitions = await tetra.evaluate((el) => {
                 const front = el.querySelector(':scope > .hb-front');
                 const back = el.querySelector(':scope > .h-tetra-back');
-                return {
-                  front: getComputedStyle(front).transitionDuration,
-                  back: getComputedStyle(back).transitionDuration,
-                };
+                return [getComputedStyle(front).transitionDuration, getComputedStyle(back).transitionDuration];
               });
-              assert(transitions.front === '0s' && transitions.back === '0s',
-                'reduced motion: transitions remain active', transitions);
+              const allZero = transitions.every((value) => value.split(',').every((part) => Number.parseFloat(part) === 0));
+              assert(allZero, 'reduced motion: transitions remain active', transitions);
               return { initial, hover, transitions };
             } finally {
               await context.close();
@@ -352,7 +340,6 @@ jobs:
               assert(pointerResponse.ok, 'deployment pointer is unavailable', { status: pointerResponse.status });
               report.deploymentPointer = await pointerResponse.json();
               persist();
-
               report.browsers.chromium = await auditDesktop('chromium', chromium);
               persist();
               report.browsers.webkit = await auditDesktop('webkit', webkit);
