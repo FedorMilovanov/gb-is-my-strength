@@ -7,154 +7,129 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const ENGINE_PATH = path.join(ROOT, 'js/vosk-tts-engine.js');
-const WORKER_PATH = path.join(ROOT, 'js/vosk-tts-worker.js');
-const CSS_PATH = path.join(ROOT, 'css/tts-download-notice.css');
+const read = (relative) => fs.readFileSync(path.join(ROOT, relative), 'utf8');
+const revision = (source) => crypto.createHash('md5').update(source).digest('hex').slice(0, 8);
 
-function read(file) {
-  return fs.readFileSync(file, 'utf8');
-}
-
-function assetRevision(content) {
-  return crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
+function ordered(source, values) {
+  let cursor = -1;
+  for (const value of values) {
+    cursor = source.indexOf(value, cursor + 1);
+    if (cursor < 0) return false;
+  }
+  return true;
 }
 
 function validate(engine, worker, css) {
   const problems = [];
-  const requireEngine = [
-    ['persistent opt-out key', /MODEL_DOWNLOAD_OPTOUT_KEY\s*=\s*['"]gbx-vosk-warmup['"]/],
-    ['opt-out checked before worker start', /if\s*\(modelDownloadOptedOut\(\)\)[\s\S]{0,300}Promise\.reject\(createCancelledError/],
-    ['same-origin persistent worker', /new Worker\(WORKER_SRC,\s*\{\s*name:\s*['"]gb-vosk-tts['"]\s*\}\)/],
-    ['worker cancellation message', /postMessage\(\{\s*type:\s*['"]cancel-load['"]\s*\}\)/],
-    ['cancel terminates worker', /function cancelLoading\(options\)[\s\S]{0,700}terminateWorker\(error\)/],
-    ['cancel persisted', /setModelDownloadOptOut\(true\)/],
-    ['cancel exported', /cancelLoading:\s*cancelLoading/],
-    ['compact action label', /actionLabel = ['"]Не загружать['"]/],
-    ['ordinary voice reassurance', /Системный голос уже работает/],
-    ['user cancellation distinguished', /userCancelled:\s*true/],
-    ['status lifecycle event', /gb:vosk-status/],
-  ];
-  for (const [label, pattern] of requireEngine) {
-    if (!pattern.test(engine)) problems.push(`engine: ${label}`);
-  }
+  const requireText = (label, source, value) => { if (!source.includes(value)) problems.push(label); };
+  const requireRegex = (label, source, pattern) => { if (!pattern.test(source)) problems.push(label); };
 
-  const requireWorker = [
-    ['abort controller lives in worker', /new AbortController\(\)/],
-    ['network signal lives in worker', /fetch\(MODEL_URL,\s*state\.loadController\s*\?\s*\{\s*signal:\s*state\.loadController\.signal\s*\}/],
-    ['integrity verification', /EXPECTED_MODEL_SHA256[\s\S]*crypto\.subtle\.digest\(['"]SHA-256['"]/],
-    ['archive extraction', /fflate\.unzipSync/],
-    ['indexeddb cache read', /function idbGet\(/],
-    ['indexeddb cache write', /function idbSet\(/],
-    ['onnx sessions', /InferenceSession\.create/],
-    ['transferable audio result', /post\(['"]audio['"][\s\S]{0,180}\[buffer\]\)/],
-  ];
-  for (const [label, pattern] of requireWorker) {
-    if (!pattern.test(worker)) problems.push(`worker: ${label}`);
-  }
+  for (const [label, value] of [
+    ['engine: persistent opt-out key', "MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup'"],
+    ['engine: per-document client id', 'var CLIENT_ID ='],
+    ['engine: SharedWorker preferred', "new SharedWorker(WORKER_SRC, 'gb-vosk-tts')"],
+    ['engine: Dedicated Worker fallback', "new Worker(WORKER_SRC, { name: 'gb-vosk-tts' })"],
+    ['engine: worker mode exposed', 'workerMode: state.workerMode'],
+    ['engine: SharedWorker heartbeat', "type: 'ping', clientId: CLIENT_ID"],
+    ['engine: addressed protocol', 'message.clientId = CLIENT_ID;'],
+    ['engine: terminal load cancellation', "send({ type: 'cancel-load' });"],
+    ['engine: terminal local teardown', 'terminateWorker(error);'],
+    ['engine: compact refusal action', "actionLabel = 'Не загружать'"],
+    ['engine: ordinary voice reassurance', 'Системный голос уже работает'],
+    ['engine: user cancellation distinguished', 'userCancelled: true'],
+    ['engine: status lifecycle event', 'gb:vosk-status'],
+  ]) requireText(label, engine, value);
 
-  if (/InferenceSession|unzipSync|model-quant\.zip|readerVoskFetch|installOneShotUnzip/.test(engine)) {
-    problems.push('engine: heavyweight model work or interception leaked into document client');
-  }
-  if (/\b(?:alert|confirm|prompt)\s*\(/.test(engine)) {
-    problems.push('engine: blocking browser dialog is forbidden');
-  }
+  if (!ordered(engine, [
+    "new SharedWorker(WORKER_SRC, 'gb-vosk-tts')",
+    "new Worker(WORKER_SRC, { name: 'gb-vosk-tts' })",
+  ])) problems.push('engine: SharedWorker is not attempted before Dedicated Worker');
+  if (!ordered(engine, [
+    'function cancelLoading(options)',
+    "send({ type: 'cancel-load' });",
+    'terminateWorker(error);',
+    "finishStatus('cancelled');",
+  ])) problems.push('engine: cancellation order drifted');
+  requireRegex('engine: opt-out checked before worker start', engine, /if\s*\(modelDownloadOptedOut\(\)\)[\s\S]{0,300}Promise\.reject\(createCancelledError/);
 
-  const requireCss = [
-    ['fixed compact card', /\.gb-tts-download-notice\{[\s\S]{0,500}position:fixed/],
-    ['bounded mobile width', /width:min\(430px,calc\(100vw - 24px\)\)/],
-    ['informational root is non-blocking', /\.gb-tts-download-notice\.is-visible\{[\s\S]{0,160}pointer-events:none/],
-    ['action remains clickable', /\.gb-tts-download-notice__action\{[\s\S]{0,100}pointer-events:auto/],
-    ['dark theme', /html\.dark \.gb-tts-download-notice/],
-    ['coarse pointer target', /@media \(pointer:coarse\)[\s\S]{0,120}min-height:44px/],
-    ['mobile controls clearance', /@media \(max-width:480px\)[\s\S]{0,220}bottom:max\(92px/],
-    ['reduced motion', /@media \(prefers-reduced-motion:reduce\)/],
-    ['keyboard focus', /\.gb-tts-download-notice__action:focus-visible/],
-  ];
-  for (const [label, pattern] of requireCss) {
-    if (!pattern.test(css)) problems.push(`css: ${label}`);
+  for (const [label, value] of [
+    ['worker: shared scope support', "var IS_SHARED_SCOPE = 'onconnect' in self;"],
+    ['worker: MessagePort registry', 'var clients = new Map();'],
+    ['worker: stale-client TTL', 'var CLIENT_TTL_MS = 120000;'],
+    ['worker: stale-client pruning', 'function pruneClients()'],
+    ['worker: MessagePort attach', 'function attachPort(port)'],
+    ['worker: addressed send', 'function send(port, type, detail, transfer)'],
+    ['worker: unique cross-client job key', 'function messageJobKey(port, message)'],
+    ['worker: load-client ownership', 'loadClients: new Set()'],
+    ['worker: serialized ONNX synthesis', 'synthQueue: Promise.resolve()'],
+    ['worker: SharedWorker connect listener', 'self.onconnect = function (event)'],
+    ['worker: Dedicated Worker adapter', 'var dedicatedPort ='],
+    ['worker: abort controller', 'new AbortController()'],
+    ['worker: abortable model request', "fetch(MODEL_URL, state.loadController ? { signal: state.loadController.signal } : undefined)"],
+    ['worker: integrity verification', "self.crypto.subtle.digest('SHA-256', buffer)"],
+    ['worker: archive extraction', 'self.fflate.unzipSync'],
+    ['worker: IndexedDB cache read', 'function idbGet(key)'],
+    ['worker: IndexedDB cache write', 'function idbSet(key, value)'],
+    ['worker: ONNX sessions', 'self.ort.InferenceSession.create'],
+    ['worker: addressed transferable WAV', "send(port, 'audio', { id: id, wav: buffer }, [buffer]);"],
+  ]) requireText(label, worker, value);
+  if (!ordered(worker, [
+    'state.synthQueue = state.synthQueue.catch(function () {})',
+    'return synthesize(message, port);',
+  ])) problems.push('worker: synthesis is not serialized through the queue');
+
+  if (/InferenceSession|unzipSync|model-quant\.zip|indexedDB\.open|readerVoskFetch|installOneShotUnzip/.test(engine)) {
+    problems.push('engine: heavyweight model ownership leaked into document client');
   }
+  if (/\b(?:alert|confirm|prompt)\s*\(/.test(engine)) problems.push('engine: blocking browser dialog is forbidden');
+
+  for (const [label, pattern] of [
+    ['css: fixed compact card', /\.gb-tts-download-notice\{[\s\S]{0,500}position:fixed/],
+    ['css: bounded mobile width', /width:min\(430px,calc\(100vw - 24px\)\)/],
+    ['css: informational root non-blocking', /\.gb-tts-download-notice\.is-visible\{[\s\S]{0,180}pointer-events:none/],
+    ['css: action clickable', /\.gb-tts-download-notice__action\{[\s\S]{0,140}pointer-events:auto/],
+    ['css: dark theme', /html\.dark \.gb-tts-download-notice/],
+    ['css: coarse target', /@media \(pointer:coarse\)[\s\S]{0,160}min-height:44px/],
+    ['css: mobile controls clearance', /@media \(max-width:480px\)[\s\S]{0,300}bottom:max\(92px/],
+    ['css: reduced motion', /@media \(prefers-reduced-motion:reduce\)/],
+    ['css: keyboard focus', /\.gb-tts-download-notice__action:focus-visible/],
+  ]) requireRegex(label, css, pattern);
 
   const cssMatch = engine.match(/NOTICE_CSS_URL\s*=\s*['"][^'"]+\?v=([a-f0-9]{8})['"]/);
-  if (!cssMatch) {
-    problems.push('engine: versioned notice stylesheet URL missing');
-  } else {
-    const actualCss = assetRevision(css);
-    if (cssMatch[1] !== actualCss) problems.push(`engine: stylesheet revision ${cssMatch[1]} != ${actualCss}`);
-  }
-
+  if (!cssMatch || cssMatch[1] !== revision(css)) problems.push(`engine: stylesheet revision drift (${cssMatch?.[1] || 'missing'} != ${revision(css)})`);
   const workerMatch = engine.match(/WORKER_SRC\s*=\s*['"][^'"]+\?v=([a-f0-9]{8})['"]/);
-  if (!workerMatch) {
-    problems.push('engine: versioned persistent Worker URL missing');
-  } else {
-    const actualWorker = assetRevision(worker);
-    if (workerMatch[1] !== actualWorker) problems.push(`engine: Worker revision ${workerMatch[1]} != ${actualWorker}`);
-  }
+  if (!workerMatch || workerMatch[1] !== revision(worker)) problems.push(`engine: Worker revision drift (${workerMatch?.[1] || 'missing'} != ${revision(worker)})`);
 
   return problems;
 }
 
-const engine = read(ENGINE_PATH);
-const worker = read(WORKER_PATH);
-const css = read(CSS_PATH);
-assert.deepEqual(validate(engine, worker, css), [], 'baseline persistent-worker consent contract must pass');
+const sources = {
+  engine: read('js/vosk-tts-engine.js'),
+  worker: read('js/vosk-tts-worker.js'),
+  css: read('css/tts-download-notice.css'),
+};
+assert.deepEqual(validate(sources.engine, sources.worker, sources.css), [], 'baseline SharedWorker consent contract must pass');
 
 const mutations = [
-  {
-    name: 'worker network request loses AbortSignal',
-    engine,
-    worker: worker.replace('{ signal: state.loadController.signal }', '{}'),
-    css,
-  },
-  {
-    name: 'persistent refusal is removed',
-    engine: engine.replace('setModelDownloadOptOut(true)', 'void 0'),
-    worker,
-    css,
-  },
-  {
-    name: 'cancel stops being terminal',
-    engine: engine.replace(
-      /function cancelLoading\(options\)([\s\S]{0,700}?)terminateWorker\(error\);/,
-      'function cancelLoading(options)$1void 0;',
-    ),
-    worker,
-    css,
-  },
-  {
-    name: 'onnx returns to document client',
-    engine: `${engine}\nort.InferenceSession.create(new ArrayBuffer(0));`,
-    worker,
-    css,
-  },
-  {
-    name: 'mobile notice intercepts PLAY',
-    engine,
-    worker,
-    css: css.replace('pointer-events:none;\n  transform:translate(-50%,0)', 'pointer-events:auto;\n  transform:translate(-50%,0)'),
-  },
-  {
-    name: 'mobile controls clearance is removed',
-    engine,
-    worker,
-    css: css.replace('bottom:max(92px,calc(env(safe-area-inset-bottom,0px) + 84px));', 'bottom:0;'),
-  },
-  {
-    name: 'stylesheet revision drifts',
-    engine: engine.replace(/(NOTICE_CSS_URL\s*=\s*['"][^'"]+\?v=)[a-f0-9]{8}/, '$100000000'),
-    worker,
-    css,
-  },
-  {
-    name: 'Worker revision drifts',
-    engine: engine.replace(/(WORKER_SRC\s*=\s*['"][^'"]+\?v=)[a-f0-9]{8}/, '$100000000'),
-    worker,
-    css,
-  },
+  ['SharedWorker preference removed', { engine: sources.engine.replace("new SharedWorker(WORKER_SRC, 'gb-vosk-tts')", 'null') }],
+  ['Dedicated fallback removed', { engine: sources.engine.replace("new Worker(WORKER_SRC, { name: 'gb-vosk-tts' })", 'null') }],
+  ['client id removed', { engine: sources.engine.replace('message.clientId = CLIENT_ID;', '') }],
+  ['heartbeat removed', { engine: sources.engine.replace("type: 'ping', clientId: CLIENT_ID", "type: 'noop'") }],
+  ['stale-client pruning removed', { worker: sources.worker.replace('function pruneClients()', 'function missingPruneClients()') }],
+  ['worker job isolation removed', { worker: sources.worker.replace('function messageJobKey(port, message)', 'function missingJobKey(port, message)') }],
+  ['synthesis queue removed', { worker: sources.worker.replace('synthQueue: Promise.resolve()', 'synthQueue: null') }],
+  ['worker network request loses AbortSignal', { worker: sources.worker.replace('{ signal: state.loadController.signal }', '{}') }],
+  ['persistent refusal removed', { engine: sources.engine.replace('setModelDownloadOptOut(true)', 'void 0') }],
+  ['cancel stops being terminal', { engine: sources.engine.replace('terminateWorker(error);', 'void error;') }],
+  ['ONNX returns to document client', { engine: `${sources.engine}\nort.InferenceSession.create(new ArrayBuffer(0));` }],
+  ['notice intercepts PLAY', { css: sources.css.replace('pointer-events:none;\n  transform:translate(-50%,0)', 'pointer-events:auto;\n  transform:translate(-50%,0)') }],
+  ['stylesheet revision drifts', { engine: sources.engine.replace(/(NOTICE_CSS_URL\s*=\s*['"][^'"]+\?v=)[a-f0-9]{8}/, '$100000000') }],
+  ['Worker revision drifts', { engine: sources.engine.replace(/(WORKER_SRC\s*=\s*['"][^'"]+\?v=)[a-f0-9]{8}/, '$100000000') }],
 ];
 
-for (const mutation of mutations) {
-  const problems = validate(mutation.engine, mutation.worker, mutation.css);
-  assert.ok(problems.length > 0, `${mutation.name}: mutation must be rejected`);
+for (const [name, changes] of mutations) {
+  const problems = validate(changes.engine || sources.engine, changes.worker || sources.worker, changes.css || sources.css);
+  assert.ok(problems.length > 0, `${name}: mutation must be rejected`);
 }
 
-console.log(`TTS persistent-worker consent contract: PASS (${mutations.length} adversarial mutations rejected).`);
+console.log(`TTS SharedWorker-first consent contract: PASS (${mutations.length} adversarial mutations rejected).`);
