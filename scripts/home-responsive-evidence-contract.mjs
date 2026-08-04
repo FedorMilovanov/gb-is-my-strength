@@ -239,6 +239,7 @@ async function assertResponsiveLayout(page, width, height) {
     const menu = document.getElementById('hMobileMenuBtn');
     const style = routes ? getComputedStyle(routes) : null;
     const rect = gateway?.getBoundingClientRect();
+    const pixels = (value) => Number.parseFloat(value) || 0;
     return {
       overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       display: style?.display || '',
@@ -249,9 +250,18 @@ async function assertResponsiveLayout(page, width, height) {
       internallyScrollable: routes ? routes.scrollWidth > routes.clientWidth + 1 : false,
       routeCount: cards.length,
       dividerCount: dividers.length,
-      cardWidths: cards.map((card) => card.getBoundingClientRect().width),
-      cardSnapAlign: cards.map((card) => getComputedStyle(card).scrollSnapAlign),
-      cardSnapStop: cards.map((card) => getComputedStyle(card).scrollSnapStop),
+      cardMetrics: cards.map((card) => {
+        const cardStyle = getComputedStyle(card);
+        return {
+          outerWidth: card.getBoundingClientRect().width,
+          flexBasis: pixels(cardStyle.flexBasis),
+          boxSizing: cardStyle.boxSizing,
+          paddingInline: pixels(cardStyle.paddingLeft) + pixels(cardStyle.paddingRight),
+          borderInline: pixels(cardStyle.borderLeftWidth) + pixels(cardStyle.borderRightWidth),
+          snapAlign: cardStyle.scrollSnapAlign,
+          snapStop: cardStyle.scrollSnapStop,
+        };
+      }),
       dividerWidths: dividers.map((divider) => divider.getBoundingClientRect().width),
       menuDisplay: menu ? getComputedStyle(menu).display : '',
       gatewayWidth: rect?.width || 0,
@@ -268,15 +278,23 @@ async function assertResponsiveLayout(page, width, height) {
   assert.equal(state.dividerWidths.every((value) => value >= 0.5 && value <= 1.5), true, `${width}×${height}: divider width drifted`);
 
   if (width <= 900) {
-    const expectedCardWidth = Math.min(width * 0.82, 284);
+    const expectedBasis = Math.min(width * (width <= 760 ? 0.84 : 0.82), 284);
     assert.equal(state.display, 'flex', `${width}×${height}: gateway is not the governed carousel`);
     assert.equal(state.internallyScrollable, true, `${width}×${height}: carousel has no internal scroll range`);
     assert.match(state.overflowX, /auto|scroll/, `${width}×${height}: carousel overflow-x is not scrollable`);
     assert.match(state.scrollSnapType, /x\s+mandatory/, `${width}×${height}: carousel scroll-snap contract is missing`);
     assert.equal(state.touchAction, 'pan-x', `${width}×${height}: carousel touch ownership drifted`);
-    assert.equal(state.cardWidths.every((value) => Math.abs(value - expectedCardWidth) <= 2), true, `${width}×${height}: carousel card basis drifted`);
-    assert.equal(state.cardSnapAlign.every((value) => value === 'start'), true, `${width}×${height}: carousel cards lost snap alignment`);
-    assert.equal(state.cardSnapStop.every((value) => value === 'always'), true, `${width}×${height}: carousel cards lost mandatory snap stops`);
+    for (const [index, metric] of state.cardMetrics.entries()) {
+      assert.ok(Math.abs(metric.flexBasis - expectedBasis) <= 1,
+        `${width}×${height}: card ${index + 1} flex-basis ${metric.flexBasis}px != ${expectedBasis}px`);
+      const expectedOuterWidth = metric.boxSizing === 'border-box'
+        ? expectedBasis
+        : expectedBasis + metric.paddingInline + metric.borderInline;
+      assert.ok(Math.abs(metric.outerWidth - expectedOuterWidth) <= 1.5,
+        `${width}×${height}: card ${index + 1} outer width ${metric.outerWidth}px != ${expectedOuterWidth}px (${metric.boxSizing})`);
+      assert.equal(metric.snapAlign, 'start', `${width}×${height}: card ${index + 1} lost snap alignment`);
+      assert.equal(metric.snapStop, 'always', `${width}×${height}: card ${index + 1} lost mandatory snap stop`);
+    }
 
     const scrollState = await page.evaluate(async () => {
       const routes = document.querySelector('.h-home-routes');
