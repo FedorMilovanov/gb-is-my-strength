@@ -204,7 +204,7 @@ const mutations = [
   ['ready early', { worker: sources.worker.replace('state.ready = true;', "status('ready');\n      state.ready = true;") }],
   ['dictionary priority removed', { worker: sources.worker.replace('if (state.dic && state.dic.has(lower)) return word;', '') }],
   ['manual override removed', { worker: sources.worker.replace('state.dic.delete(String(word).toLowerCase());', 'void word;') }],
-  ['cancel teardown removed', { engine: sources.engine.replace('terminateWorker(error);', 'void error;') }],
+  ['cancel teardown removed', { engine: sources.engine.replace(/(function cancelLoading\(options\)[\s\S]{0,800}?)terminateWorker\(error\);/, '$1void error;') }],
   ['multitab test trigger removed', { workflow: sources.workflow.replaceAll('      - "scripts/tts-reader-multitab-lock-browser-test.js"\n', '') }],
   ['real model execution removed', { readerWorkflow: sources.readerWorkflow.replace('node scripts/tts-reader-real-model-browser-test.js', 'echo skipped') }],
   ['Worker manifest removed', { releaseLibrary: sources.releaseLibrary.replace("    worker: fileRecord(dist, 'js/vosk-tts-worker.js'),\n", '') }],
