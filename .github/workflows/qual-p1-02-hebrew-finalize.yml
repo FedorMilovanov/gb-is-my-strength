@@ -1,0 +1,96 @@
+name: Finalize QUAL-P1-02 Hebrew semantics
+
+on:
+  pull_request:
+    types: [synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/system-karty-hebrew-semantics-20260804'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout canonical branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/system-karty-hebrew-semantics-20260804
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply bounded patch and correct witness typo
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import re
+          from pathlib import Path
+
+          source = Path('.github/workflows/qual-p1-02-hebrew-repair.yml').read_text(encoding='utf-8')
+          match = re.search(r"echo '([^']+)' \| base64 --decode > /tmp/qual-p1-02-patch.py", source)
+          if not match:
+              raise SystemExit('canonical patch payload not found')
+          script = base64.b64decode(match.group(1)).decode('utf-8')
+          old = '||!_keyboardOk||!hebrewOk'
+          if script.count(old) != 1:
+              raise SystemExit(f'expected one witness typo marker, found {script.count(old)}')
+          script = script.replace(old, '||!keyboardOk||!hebrewOk', 1)
+          Path('/tmp/qual-p1-02-patch.py').write_text(script, encoding='utf-8')
+          PY
+          python3 /tmp/qual-p1-02-patch.py
+
+      - name: Diff and shared runtime contracts
+        shell: bash
+        run: |
+          git diff --check
+          GITHUB_ACTIONS=false node scripts/guard-shared-files.js \
+            --branch agent/system-karty-hebrew-semantics-20260804
+          npm run engine:contracts
+          npm run maps:validate
+          npm run avraam:audit
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Production-like Hebrew browser witness
+        shell: bash
+        run: |
+          python3 -m http.server 8090 > /tmp/qual-p1-02-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8090/karty/ishod/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:8090/karty/ishod/ >/dev/null
+          AUDIT_BASE=http://127.0.0.1:8090 MAP_SMOKE_ROUTES=ishod node scripts/map-browser-smoke.js
+
+      - name: Commit canonical repair and remove temporary automation
+        shell: bash
+        run: |
+          rm .github/workflows/qual-p1-02-hebrew-repair.yml
+          rm .github/workflows/qual-p1-02-hebrew-recovery.yml
+          rm .github/workflows/qual-p1-02-hebrew-finalize.yml
+          git diff --check
+          git status --short
+          git add karty/_engine/map-engine.js scripts/avraam-map-audit.js scripts/map-browser-smoke.js \
+            .github/workflows/qual-p1-02-hebrew-repair.yml \
+            .github/workflows/qual-p1-02-hebrew-recovery.yml \
+            .github/workflows/qual-p1-02-hebrew-finalize.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(karty): restore Hebrew font and RTL semantics"
+          git push origin HEAD:agent/system-karty-hebrew-semantics-20260804
