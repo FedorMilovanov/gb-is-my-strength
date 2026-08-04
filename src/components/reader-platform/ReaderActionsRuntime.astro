@@ -10,10 +10,12 @@
  *
  * Reader TTS is also claimed here after the legacy floating controller loads.
  * Its capture-phase owner prevents double handling while keeping the existing
- * non-TTS cluster actions intact. Media Session is composed as a separate
- * lifecycle owner so lock-screen controls and background playback remain
- * testable without coupling them to either speech engine. Heavy Vosk work is
- * owned by the same-origin persistent worker loaded by vosk-tts-engine.js.
+ * non-TTS cluster actions intact. The narrow click guard is evaluated first so
+ * a browser-generated click after a confirmed long-press stop cannot re-enter
+ * the canonical TTS owner. Media Session is composed as a separate lifecycle
+ * owner so lock-screen controls and background playback remain testable without
+ * coupling them to either speech engine. Heavy Vosk work is owned by the
+ * same-origin persistent worker loaded by vosk-tts-engine.js.
  */
 import { assetUrl } from '../../lib/asset-version';
 import '../../runtime/article-interactions.css';
@@ -26,6 +28,7 @@ const voskEngineSrc = assetUrl('js/vosk-tts-engine.js');
   import '../../runtime/print-pagination-geometry.js';
   import '../../runtime/reader-actions.js';
   import '../../runtime/reader-tts-defaults.js';
+  import '../../runtime/reader-tts-click-guard.js';
   import '../../runtime/reader-tts.js';
   import '../../runtime/reader-tts-media-session.js';
   import '../../runtime/article-interactions.js';
