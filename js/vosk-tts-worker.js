@@ -11,7 +11,8 @@ var CORE_SRC = '/js/vosk-tts-core.js';
 var STRESS_LOOKUP_SRC = '/js/vosk-stress-lookup.js';
 var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json';
 var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin';
-var ORT_SRC = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js';
+var ORT_DIST = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/';
+var ORT_SRC = ORT_DIST + 'ort.min.js';
 var FFLATE_SRC = 'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
 var MODEL_URL = 'https://huggingface.co/CurtMil/gb-vosk-tts-model/resolve/main/model-quant.zip';
 var EXPECTED_MODEL_SHA256 = '34e742ce9bb3c1ae86679d5974d2496b9fae50f0629f51bb4f5edfadc5ff3d71';
@@ -66,6 +67,7 @@ function ensureDependencies() {
     if (!self.VoskTTSCore || !self.VoskStressLookup || !self.fflate || !self.ort) {
       throw new Error('Vosk worker dependencies did not initialize');
     }
+    self.ort.env.wasm.wasmPaths = ORT_DIST;
     self.ort.env.wasm.numThreads = 1;
     self.ort.env.wasm.proxy = false;
     status('dependencies-ready');
