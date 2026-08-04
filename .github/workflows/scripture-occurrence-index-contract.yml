@@ -1,0 +1,71 @@
+name: Scripture Occurrence Index Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "data/scripture-search-index.json"
+      - "data/search-manifest.json"
+      - "data/bible/**"
+      - "migration/page-ownership.json"
+      - "migration/route-migration-matrix.json"
+      - "data/route-profiles/**"
+      - "src/pages/**"
+      - "src/components/**"
+      - "src/content/**"
+      - "src/lib/bible-reference-core.mjs"
+      - "scripts/lib/route-source-contract.js"
+      - "scripts/build-scripture-occurrence-index.mjs"
+      - "scripts/scripture-occurrence-index-contract.mjs"
+      - ".github/workflows/scripture-occurrence-index-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/scripture-search-index.json"
+      - "data/search-manifest.json"
+      - "data/bible/**"
+      - "migration/page-ownership.json"
+      - "migration/route-migration-matrix.json"
+      - "data/route-profiles/**"
+      - "src/pages/**"
+      - "src/components/**"
+      - "src/content/**"
+      - "src/lib/bible-reference-core.mjs"
+      - "scripts/lib/route-source-contract.js"
+      - "scripts/build-scripture-occurrence-index.mjs"
+      - "scripts/scripture-occurrence-index-contract.mjs"
+      - ".github/workflows/scripture-occurrence-index-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scripture-occurrence-index:
+    name: Deterministic source index and dist witness
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - name: Install immutable dependencies
+        run: npm ci
+      - name: Validate source-owned deterministic index
+        run: |
+          node --check scripts/build-scripture-occurrence-index.mjs
+          node --check scripts/scripture-occurrence-index-contract.mjs
+          node scripts/build-scripture-occurrence-index.mjs --check
+          node scripts/scripture-occurrence-index-contract.mjs
+      - name: Build production-like publication witness
+        run: npm run strangler:build:production-like
+      - name: Validate route text and anchors in dist
+        run: node scripts/scripture-occurrence-index-contract.mjs --dist=dist
+      - name: Verify validation is read-only
+        run: git diff --exit-code
