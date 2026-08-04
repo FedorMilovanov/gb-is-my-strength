@@ -11,7 +11,7 @@
 
   var VERSION = 2;
   var WORKER_SRC = '/js/vosk-tts-worker.js';
-  var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=182e9cdf';
+  var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
   var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 
   if (window.VoskTTSEngine && window.VoskTTSEngine.version === VERSION) return;
