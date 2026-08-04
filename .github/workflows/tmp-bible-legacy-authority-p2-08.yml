@@ -83,6 +83,18 @@ jobs:
                   raise SystemExit(f'temporary runner deletion staging missing in block {index}')
               staging_parts[index] = staging_parts[index].replace(staging_line, '', 1)
           shell = "git add -- \\\n".join(staging_parts)
+
+          old_build = """npm run strangler:build:production-like
+          node scripts/bible-reference-contract.mjs --strict
+          """
+          new_build = """npm run strangler:build:production-like
+          npm run pagefind:build:dist
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+          node scripts/bible-reference-contract.mjs --strict
+          """
+          if shell.count(old_build) != 1:
+              raise SystemExit(f'temporary runner build-order anchor drifted: {shell.count(old_build)}')
+          shell = shell.replace(old_build, new_build, 1)
           runner.write_text(shell, encoding='utf-8')
           PY
       - name: Execute self-clean atomic removal
