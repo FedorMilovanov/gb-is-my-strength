@@ -15,7 +15,9 @@ const reportPath = 'research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01.md';
 const data = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const caseData = JSON.parse(readFileSync(casesPath, 'utf8'));
 const responseData = JSON.parse(readFileSync(responsesPath, 'utf8'));
-const sourceData = JSON.parse(readFileSync(sourcesPath, 'utf8'));
+const sourceDataRaw = readFileSync(sourcesPath, 'utf8');
+const sourceData = JSON.parse(sourceDataRaw);
+const baseDraft = readFileSync(baseDraftPath, 'utf8');
 const supplement = readFileSync(supplementPath, 'utf8');
 const wrapper = readFileSync(wrapperPath, 'utf8');
 const report = readFileSync(reportPath, 'utf8');
@@ -77,6 +79,51 @@ for (const item of sources) {
   requireValue(['A1','A2','A3','B1'].includes(item.class), `invalid source class: ${item.id}`);
 }
 requireValue(sources.filter((item) => ['A1','A2','A3'].includes(item.class)).length >= 17, 'new A-class count below 17');
+
+const waveBSourceOwners = {
+  'FW10-BIC-01': {
+    label: 'IHOPKC: обновление процесса 10 ноября 2023',
+    href: 'https://www.ihopkc.org/press-releases/blog-post-title-three-y3peb-cy296',
+    class: 'A3',
+  },
+  'FW10-BIC-02': {
+    label: 'IHOPKC: официальный архив пресс-релизов, включая письмо 15 ноября 2023',
+    href: 'https://www.ihopkc.org/press-releases',
+    class: 'A3',
+  },
+  'FW10-MAH-02': {
+    label: 'Brent Detwiler: рассказ о многолетней внутренней попытке реформы',
+    href: 'https://brentdetwiler.com/my-story-resume/',
+    class: 'B1',
+  },
+};
+for (const [id, expectedSource] of Object.entries(waveBSourceOwners)) {
+  const actual = sources.find((item) => item.id === id);
+  requireValue(Boolean(actual), `Wave B source owner missing: ${id}`);
+  requireValue(actual?.label === expectedSource.label, `Wave B source label drift: ${id}`);
+  requireValue(actual?.href === expectedSource.href, `Wave B source URL drift: ${id}`);
+  requireValue(actual?.class === expectedSource.class, `Wave B source class drift: ${id}`);
+}
+
+const waveBStaleUrls = [
+  'https://ihopkc.org/press-releases/press-center/press-releases/ihopkc-elt-update-11-10-2023',
+  'https://ihopkc.org/press-releases/press-center/press-releases/elt-update-letter-11-15-2023',
+  'https://www.brentdetwiler.com/my-story-resume/',
+  'https://www.thejourney.org/our-story',
+  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
+];
+for (const staleUrl of waveBStaleUrls) {
+  requireValue(!sourceDataRaw.includes(staleUrl), `stale Wave B registry URL retained: ${staleUrl}`);
+  requireValue(!baseDraft.includes(staleUrl), `stale Wave B base-reader URL retained: ${staleUrl}`);
+}
+
+const waveBBaseReaderUrls = [
+  'https://www.thejourney.org/about/our-story-new',
+  'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
+];
+for (const canonicalUrl of waveBBaseReaderUrls) {
+  requireValue(baseDraft.includes(canonicalUrl), `canonical Wave B base-reader URL missing: ${canonicalUrl}`);
+}
 
 const requiredPathFields = ['id','name','actors','loyaltyTension','steps','lesson','boundary','sourceIds'];
 for (const item of pathways) {
