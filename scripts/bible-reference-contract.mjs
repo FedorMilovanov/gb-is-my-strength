@@ -114,11 +114,17 @@ function inspectLegacyAuthority(files) {
   }
 
   const forbiddenTokens = [LEGACY_VERSES_RELATIVE, `/${LEGACY_VERSES_RELATIVE}`];
+  const sourceExtensions = new Set(['.astro', '.html', '.js', '.mjs', '.ts', '.tsx']);
+  const markupExtensions = new Set(['.astro', '.html']);
   for (const file of files) {
-    if (path.resolve(file) === path.resolve(CONTRACT_FILE)) continue;
+    const extension = path.extname(file).toLowerCase();
+    if (!sourceExtensions.has(extension) || path.resolve(file) === path.resolve(CONTRACT_FILE)) continue;
     const source = fs.readFileSync(file, 'utf8');
     if (forbiddenTokens.some((token) => source.includes(token))) {
       fail(`${rel(file)}: forbidden consumer of removed legacy verse authority ${LEGACY_VERSES_RELATIVE}`);
+    }
+    if (markupExtensions.has(extension) && /(?:class\s*=\s*["'][^"']*\bgbx-verse\b|\bdata-verse\s*=)/iu.test(source)) {
+      fail(`${rel(file)}: forbidden public legacy verse trigger; use canonical .bref/.btip projection`);
     }
   }
 }
