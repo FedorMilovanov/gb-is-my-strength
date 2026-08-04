@@ -10,7 +10,7 @@
   'use strict';
 
   var VERSION = 2;
-  var WORKER_SRC = '/js/vosk-tts-worker.js';
+  var WORKER_SRC = '/js/vosk-tts-worker.js?v=0db0992f';
   var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
   var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 
