@@ -114,6 +114,45 @@ const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
           };
         } catch (e) { return {tested:true, ok:false, reason:String(e && e.message || e)}; }
       }).catch(e=>({tested:true,ok:false,reason:String(e)}));
+      const hebrew = await page.evaluate(async () => {
+        try {
+          const route = await fetch('./route.json').then(r => r.json());
+          const place = (route.places || []).find(p => p.he_deep && document.querySelector(`[data-place-id="${p.id}"]`));
+          if (!place) return {tested:false, reason:'no-place-with-hebrew'};
+          const marker = document.querySelector(`[data-place-id="${place.id}"]`);
+          marker.dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true}));
+          await new Promise(r => setTimeout(r, 180));
+          const tab = document.querySelector('.me-tab[data-tab="he"]');
+          if (!tab) return {tested:true, ok:false, reason:'no-hebrew-tab', place:place.id};
+          tab.click();
+          await new Promise(r => setTimeout(r, 120));
+          const tokens = [...document.querySelectorAll('.me-content .hw')]
+            .filter(el => /[\u0590-\u05FF]/.test(el.textContent || ''));
+          const tokenState = tokens.map(el => {
+            const style = getComputedStyle(el);
+            return {
+              text: (el.textContent || '').trim().slice(0, 24),
+              lang: el.getAttribute('lang'),
+              dir: el.getAttribute('dir'),
+              direction: style.direction,
+              unicodeBidi: style.unicodeBidi,
+              fontFamily: style.fontFamily,
+            };
+          });
+          const explanation = document.querySelector('.me-content .he-tr,.me-content .he-etym');
+          const explanationDirection = explanation ? getComputedStyle(explanation).direction : '';
+          const ok = tokenState.length > 0
+            && tokenState.every(item => item.lang === 'he'
+              && item.dir === 'rtl'
+              && item.direction === 'rtl'
+              && item.unicodeBidi === 'isolate'
+              && item.fontFamily.includes('Noto Sans Hebrew'))
+            && explanationDirection === 'ltr';
+          return {tested:true, ok, place:place.id, tokenState, explanationDirection};
+        } catch (e) {
+          return {tested:true, ok:false, reason:String(e && e.message || e)};
+        }
+      }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const keyboard = await page.evaluate(async () => {
         try {
           const route = await fetch('./route.json').then(r => r.json());
@@ -188,15 +227,17 @@ const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
       const storyOk = !storyFocus.tested || storyFocus.ok;
       const signatureOk = signature.ok !== false;
       const keyboardOk = !keyboard.tested || keyboard.ok;
-      const status = errors.length===0 && mapW>0 && routeVizOk && sciOk && storyOk && signatureOk && keyboardOk ? '✅' : '❌';
-      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, viewW=${Math.round(routeViz.viewW)}, signature=${signature.expected?(signature.ok?'ok':'BAD'):'none'}, sigToggle=${signature.expected?(signature.toggleOk?'ok':'BAD'):'skip'}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, keyboard=${keyboard.tested?(keyboard.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
+      const hebrewOk = !hebrew.tested || hebrew.ok;
+      const status = errors.length===0 && mapW>0 && routeVizOk && sciOk && storyOk && signatureOk && keyboardOk && hebrewOk ? '✅' : '❌';
+      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, viewW=${Math.round(routeViz.viewW)}, signature=${signature.expected?(signature.ok?'ok':'BAD'):'none'}, sigToggle=${signature.expected?(signature.toggleOk?'ok':'BAD'):'skip'}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, keyboard=${keyboard.tested?(keyboard.ok?'ok':'BAD'):'skip'}, hebrew=${hebrew.tested?(hebrew.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
       if(errors.length) errors.slice(0,3).forEach(e=>console.log(`     ${e.slice(0,150)}`));
       if(!routeVizOk) console.log(`     route visual missing: ${JSON.stringify(routeViz)}`);
       if(!signatureOk) console.log(`     signature problem: ${JSON.stringify(signature)}`);
       if(!storyOk) console.log(`     story flyTo problem: ${JSON.stringify(storyFocus)}`);
       if(!sciOk) console.log(`     sci tab problem: ${JSON.stringify(sci)}`);
       if(!keyboardOk) console.log(`     keyboard problem: ${JSON.stringify(keyboard)}`);
-      if(errors.length||mapW===0||!routeVizOk||!sciOk||!storyOk||!signatureOk||!keyboardOk) problems.push(m);
+      if(!hebrewOk) console.log(`     Hebrew semantics problem: ${JSON.stringify(hebrew)}`);
+      if(errors.length||mapW===0||!routeVizOk||!sciOk||!storyOk||!signatureOk||!keyboardOk||!hebrewOk) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,100)}`); problems.push(m); }
     await ctx.close();
   }
