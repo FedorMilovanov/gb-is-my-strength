@@ -1,6 +1,10 @@
 from pathlib import Path
 import hashlib
 import re
+import sys
+
+if sys.argv[1:] != ['--write']:
+    raise SystemExit('explicit --write is required for the bounded search writer')
 
 SEARCH_PATH = Path('js/search.js')
 ASSET_VERSION_PATH = Path('src/lib/asset-version.js')
