@@ -29,26 +29,48 @@ The production architecture is:
 9. PASS-to-artifact teardown is immediate; a retained browser or Worker handle must not leave a long green tail.
 10. Source, consent, pronunciation, provenance, build-once release and workflow-policy contracts pass.
 11. The repository-wide professional audit recognizes the attested Worker while continuing to reject unknown JavaScript files.
+12. Chromium, Firefox and WebKit overlay contracts pass, including the bounded Gill mobile ToC activation replay.
+13. The branch contains the current `main` tip and remains directly mergeable.
 
-## Verified evidence before the final repository-wide rerun
+## Verified final evidence before main reconciliation
 
-TTS Reader Polish run `30923060492`, real-model job `92038310375`:
+TTS Reader Polish run `30933443923`, real-model job `92073549402`:
 
-- cold SharedWorker ready: 49,346.8 ms;
-- SharedWorker follower ready: 8.2 ms;
-- navigation reuse ready: 6.8 ms;
-- SharedWorker synthesis: 2,727.8 ms;
-- cached DedicatedWorker ready: 40,041.3 ms;
-- cached synthesis: 2,847.4 ms;
-- maximum measured UI heartbeat gap: 34.8 ms;
+- cold SharedWorker ready: 62,690.6 ms;
+- SharedWorker follower ready: 10.4 ms;
+- navigation reuse ready: 6.7 ms;
+- SharedWorker synthesis: 3,054.6 ms;
+- cached DedicatedWorker ready: 50,001.2 ms;
+- cached synthesis: 3,098.1 ms;
+- maximum measured UI heartbeat gap: 34.5 ms;
 - WAV bytes: 45,612 in both synthesis paths;
 - model requests: exactly 1;
 - model bytes: 280,394,098;
 - PASS-to-artifact start: approximately 26 ms;
-- real-model artifact: `8898001209`.
+- playback artifact: `8902297655`;
+- real-model artifact: `8902171749`.
 
-The same run completed the TTS playback route lane successfully. The final HEAD must reproduce all blocking gates after the repository audit allowlist correction.
+The same final-head cycle also completed:
+
+- 56 routes / 112 desktop-mobile TTS checks with zero failures;
+- TTS consent browser artifact `8902358261` and source-contract artifact `8902095596`;
+- Route Registry Chromium and WebKit public-surface matrices;
+- Overlay Runtime Chromium, Firefox and WebKit matrices;
+- Runtime Interactive Audit, Visual Parity, Deploy Candidate, Print, Native Source, Source Authority, Search, Glossary and repository-wide audit gates.
+
+## Current-main reconciliation
+
+The TTS lane was reconciled with `main` commit `83875378a31436e235f1296f13d22c816b2945df` by merge commit `eb6893e337082e2f244388035294ce8de7523d60`.
+
+The only shared-file conflict was `src/lib/asset-version.js`. Its resolved registry retains:
+
+- the current `main` search revision `f48e4610` and Nagornaya mobile ToC revision `30051b58`;
+- the TTS notice revision `b9ef192f`;
+- the TTS engine revision `f9b4905f`;
+- the TTS Worker revision `2ea9ada3`.
+
+The post-reconciliation owner-authored HEAD must reproduce all blocking workflows before PR #876 moves from draft to ready.
 
 ## Merge boundary
 
-This record does not authorize merging or production deployment. PR #876 may move from draft to ready only after every workflow associated with its final HEAD is complete and green.
+This record does not authorize merging or production deployment. PR #876 may move from draft to ready only after every workflow associated with its final owner-authored HEAD is complete and green.
