@@ -1,5 +1,9 @@
 /* Compact, cancellable Vosk model-download notice.
-   Loaded lazily by js/vosk-tts-engine.js only on a real model cache miss. */
+   Loaded lazily by js/vosk-tts-engine.js only on a real model cache miss.
+
+   The card is informational chrome, not a modal surface. Its root never owns
+   pointer input; only the explicit action button may receive a click. This
+   keeps PLAY/pause usable while the model is downloading or initializing. */
 .gb-tts-download-notice{
   box-sizing:border-box;
   position:fixed;
@@ -45,7 +49,7 @@
 .gb-tts-download-notice.is-visible{
   opacity:1;
   visibility:visible;
-  pointer-events:auto;
+  pointer-events:none;
   transform:translate(-50%,0) scale(1);
   transition-delay:0s;
 }
@@ -100,6 +104,7 @@ body.has-bottom-bar .gb-tts-download-notice{
   color:var(--color-text-muted,#6a6a6a);
 }
 .gb-tts-download-notice__action{
+  pointer-events:auto;
   min-height:38px;
   padding:0 13px;
   border:1px solid color-mix(in srgb,var(--color-accent,#7a2e2e) 24%,var(--color-border,#e5e2dc));
@@ -113,6 +118,7 @@ body.has-bottom-bar .gb-tts-download-notice{
   -webkit-tap-highlight-color:transparent;
   transition:background .18s ease,color .18s ease,border-color .18s ease,transform .16s ease;
 }
+.gb-tts-download-notice__action[hidden]{pointer-events:none}
 .gb-tts-download-notice__action:hover{
   background:var(--color-accent,#7a2e2e);
   color:#fff;
@@ -181,6 +187,7 @@ html.dark .gb-tts-download-notice__action:hover{
   .gb-tts-download-notice{
     left:max(10px,env(safe-area-inset-left,0px));
     right:max(10px,env(safe-area-inset-right,0px));
+    bottom:max(92px,calc(env(safe-area-inset-bottom,0px) + 84px));
     width:auto;
     grid-template-columns:30px minmax(0,1fr);
     gap:8px 10px;
