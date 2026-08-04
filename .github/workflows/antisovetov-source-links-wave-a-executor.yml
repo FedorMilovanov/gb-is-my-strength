@@ -1,15 +1,17 @@
 name: Antisovetov source-links Wave A executor
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/antisovetov-source-links-wave-a
+      - main
+    paths:
+      - '.github/workflows/antisovetov-source-links-wave-a-executor.yml'
 
 permissions:
   contents: write
 
 concurrency:
-  group: antisovetov-source-links-wave-a-${{ github.ref }}
+  group: antisovetov-source-links-wave-a-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
