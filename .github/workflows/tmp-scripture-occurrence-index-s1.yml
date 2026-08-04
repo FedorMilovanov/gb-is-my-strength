@@ -89,7 +89,12 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add -- \
+            .github/workflows/scripture-occurrence-index-contract.yml \
+            .github/workflows/tmp-scripture-occurrence-index-s1.yml \
+            data/scripture-search-index.json \
+            scripts/build-scripture-occurrence-index.mjs \
+            scripts/scripture-occurrence-index-contract.mjs
           probe_tree="$(git write-tree)"
           probe_head="$(printf '%s\n' 'Scripture occurrence S1 shared-files probe' | git commit-tree "${probe_tree}" -p HEAD)"
           node scripts/guard-shared-files.js --base origin/main --head "${probe_head}" --branch "${HEAD_REF}"
@@ -115,7 +120,12 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add -- \
+            .github/workflows/scripture-occurrence-index-contract.yml \
+            .github/workflows/tmp-scripture-occurrence-index-s1.yml \
+            data/scripture-search-index.json \
+            scripts/build-scripture-occurrence-index.mjs \
+            scripts/scripture-occurrence-index-contract.mjs
           git diff --cached --quiet && { echo 'No Scripture occurrence S1 candidate generated'; exit 1; }
           git commit -m 'feat(search): generate Scripture occurrence index S1'
           git push origin "HEAD:${HEAD_REF}"
