@@ -91,8 +91,7 @@ function normalizeLocation(value) {
 
 async function openSearch(page) {
   await page.goto('/articles/krajne-li-isporcheno-serdce/', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => typeof window.GBSearch?.open === 'function');
-  await page.evaluate(() => window.GBSearch.open());
+  await page.keyboard.press('Control+K');
   await page.waitForFunction(() => (
     window.GBSearch?.__ready === true
     && document.querySelector('.cp-backdrop')?.classList.contains('is-open')
