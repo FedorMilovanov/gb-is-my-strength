@@ -9,6 +9,7 @@ import subprocess
 
 ROOT = Path.cwd()
 SEARCH = ROOT / 'js/search.js'
+BROWSER_TEST = ROOT / 'scripts/search-scripture-occurrence-runtime-browser-test.mjs'
 ASSET_VERSIONS = ROOT / 'src/lib/asset-version.js'
 SW = ROOT / 'sw.js'
 BASELINE = ROOT / 'migration/sw-cache-version-baseline.json'
@@ -18,8 +19,23 @@ OLD_CACHE = 'gb-v195-search-truthful-scripture-20260804'
 NEW_CACHE = 'gb-v196-scripture-occurrence-runtime-20260804'
 OLD_SEARCH_HASH = 'f48e4610'
 INSERT_ANCHOR = 'function Le(e){'
+BROWSER_IGNORE_ANCHOR = 'async function openSearch(page) {'
 
 RUNTIME_BLOCK = r'''var __gbLegacySearch=xe,__gbScriptureIndexState={loaded:!1,loading:!1,data:null,waiters:[]};function __gbFlushScriptureIndex(e){var t=__gbScriptureIndexState.waiters.slice();__gbScriptureIndexState.waiters.length=0,__gbScriptureIndexState.loading=!1,__gbScriptureIndexState.loaded=!0,__gbScriptureIndexState.data=e,t.forEach(function(t){t(e)})}function __gbLoadScriptureIndex(e){if(__gbScriptureIndexState.loaded)return void e(__gbScriptureIndexState.data);if(__gbScriptureIndexState.waiters.push(e),!__gbScriptureIndexState.loading){__gbScriptureIndexState.loading=!0;fetch("/data/scripture-search-index.json",{cache:"no-cache"}).then(function(e){return e.ok?e.json():null}).then(function(e){__gbFlushScriptureIndex(e&&1===e.schemaVersion&&Array.isArray(e.references)?e:null)}).catch(function(){__gbFlushScriptureIndex(null)})}}function __gbExactScriptureReference(e,t){for(var i=$(t),n=e&&Array.isArray(e.references)?e.references:[],r=0;r<n.length;r++)if($(n[r].label)===i)return n[r];return null}function __gbScriptureOccurrenceItem(e,t,i,n){var r=t.url+(t.anchor?"#"+encodeURIComponent(t.anchor):""),a=t.context||t.title||e.label,o=["Точное вхождение"],s=(t.topics||[]).filter(Boolean);return s.length&&o.push(s[0]),{id:"xref-"+e.id+"-"+i,title:e.label,titleHtml:R(e.label,n),sub:a,subHtml:R(a,n),icon:c,meta:(t.anchor?"Якорь · ":"")+(t.title||"Материал"),tags:o,article:{url:r,title:t.title||e.label,author:null,readTime:null,category:"",scripture:e.label,excerpt:a,image:null},isScripture:!0,isExactScripture:!0}}function __gbRenderExactScripture(e,t){var i={},n=[];return(t.occurrences||[]).forEach(function(r,a){var o=r.url+"#"+(r.anchor||"");i[o]||(i[o]=!0,n.push(__gbScriptureOccurrenceItem(t,r,a,e)))}),n=n.slice(0,12),!!n.length&&(ae([{name:"Точные вхождения",items:n}]),T.textContent=(t.occurrences||[]).length+" вх.",!0)}function __gbSearchExactScripture(e){var t=++M;S.innerHTML='<div class="cp-loading">Ищу точные вхождения…</div>',__gbLoadScriptureIndex(function(i){if(t===M){var n=i&&__gbExactScriptureReference(i,e);n&&__gbRenderExactScripture(e,n)||__gbLegacySearch(e)}})}xe=function(e){return"scripture"===C&&e&&e.length>=2?void __gbSearchExactScripture(e):__gbLegacySearch(e)};'''
+
+BROWSER_IGNORE_BLOCK = r'''function isExpectedLocalOriginIconCsp(message) {
+  return /^Loading the image 'https:\/\/gospod-bog\.ru\/(?:favicon\.ico|apple-touch-icon\.png|favicon-(?:48|120)\.png|icons\/icon-192\.png)' violates the following Content Security Policy directive:/u.test(String(message || ''));
+}
+
+'''
+
+OLD_CONSOLE_HANDLER = '''  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  });'''
+NEW_CONSOLE_HANDLER = '''  page.on('console', (message) => {
+    const text = message.text();
+    if (message.type() === 'error' && !isExpectedLocalOriginIconCsp(text)) errors.push(`console: ${text}`);
+  });'''
 
 
 def replace_once(source: str, old: str, new: str, label: str) -> str:
@@ -29,6 +45,15 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
     if new in source:
         raise SystemExit(f'{label}: replacement already present before mutation')
     return source.replace(old, new, 1)
+
+
+def replace_exact_count(source: str, old: str, new: str, count: int, label: str) -> str:
+    actual = source.count(old)
+    if actual != count:
+        raise SystemExit(f'{label}: expected {count} exact anchors, got {actual}')
+    if new in source:
+        raise SystemExit(f'{label}: replacement already present before mutation')
+    return source.replace(old, new)
 
 
 def search_reference_files() -> list[Path]:
@@ -64,6 +89,22 @@ def main() -> None:
     args = parser.parse_args()
     if not args.write:
         raise SystemExit('explicit --write is required')
+
+    browser = BROWSER_TEST.read_text(encoding='utf-8')
+    browser = replace_once(
+        browser,
+        BROWSER_IGNORE_ANCHOR,
+        BROWSER_IGNORE_BLOCK + BROWSER_IGNORE_ANCHOR,
+        'browser local-origin CSP filter insertion',
+    )
+    browser = replace_exact_count(
+        browser,
+        OLD_CONSOLE_HANDLER,
+        NEW_CONSOLE_HANDLER,
+        2,
+        'browser console handlers',
+    )
+    BROWSER_TEST.write_text(browser, encoding='utf-8')
 
     search = SEARCH.read_text(encoding='utf-8')
     if RUNTIME_BLOCK in search:
