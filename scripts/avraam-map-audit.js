@@ -144,6 +144,7 @@ assert('shared recovery controls are at least 44px', /min-height:\s*44px/.test(f
 
 // ── MapEngine lifecycle checks (РЕФАКТОРИНГ 5.0 closing hole #2) ──
 const engineSrc = fs.readFileSync(enginePath, 'utf8');
+assert('MapEngine Hebrew repair preserves canonical version contract', MapEngine.version === '0.57.0', MapEngine.version);
 assert(
   'MapEngine Hebrew tokens use a Hebrew-capable isolated RTL font stack',
   engineSrc.includes('.me-content .hw{color:#e8c879;font-size:20px;font-family:"Noto Sans Hebrew","Arial Hebrew",Arial,sans-serif;direction:rtl;unicode-bidi:isolate}')
