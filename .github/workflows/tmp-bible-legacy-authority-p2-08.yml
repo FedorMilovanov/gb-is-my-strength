@@ -38,13 +38,14 @@ jobs:
           cache: npm
       - name: Install immutable dependencies
         run: npm ci
-      - name: Refine minified CSS boundary in temporary writer
+      - name: Refine temporary executor boundaries
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('.github/tmp/apply_bible_legacy_authority_p2_08.py')
-          source = path.read_text(encoding='utf-8')
+
+          helper = Path('.github/tmp/apply_bible_legacy_authority_p2_08.py')
+          source = helper.read_text(encoding='utf-8')
           old = """    if css.count(start_marker) != 1 or css.count(end_marker) != 1:
                   raise SystemExit('site.css legacy style markers drifted')
               start = css.index(start_marker)
@@ -60,7 +61,18 @@ jobs:
           """
           if source.count(old) != 1:
               raise SystemExit(f'temporary writer CSS anchor drifted: {source.count(old)}')
-          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          helper.write_text(source.replace(old, new, 1), encoding='utf-8')
+
+          runner = Path('.github/tmp/run_bible_legacy_authority_p2_08.sh')
+          shell = runner.read_text(encoding='utf-8')
+          old_scan = """! git grep -n -E 'class=[\"'\"'][^\"'\"']*gbx-verse|data-verse=' -- '*.html' '*.astro' '*.mdx'
+          """
+          new_scan = """! git grep -n -F 'gbx-verse' -- '*.html' '*.astro' '*.mdx'
+          ! git grep -n -F 'data-verse=' -- '*.html' '*.astro' '*.mdx'
+          """
+          if shell.count(old_scan) != 1:
+              raise SystemExit(f'temporary runner trigger-scan anchor drifted: {shell.count(old_scan)}')
+          runner.write_text(shell.replace(old_scan, new_scan, 1), encoding='utf-8')
           PY
       - name: Execute self-clean atomic removal
         shell: bash
