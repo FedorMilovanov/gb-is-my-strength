@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v193-offline-contract-20260801';
+const CACHE_VERSION = 'gb-v194-nagornaya-dark-20260804';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
