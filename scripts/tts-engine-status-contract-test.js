@@ -188,8 +188,12 @@ function validate(input) {
     ['live: Worker SHA', 'live Vosk Worker SHA-256 mismatch'],
     ['live: Worker model host', 'live Vosk Worker model host drifted'],
     ['live: Worker ONNX', 'live Vosk Worker lacks ONNX ownership'],
-    ['live: Worker not precached', 'live Service Worker precaches lazy Vosk Worker'],
   ]) requireText(label, liveContract, value);
+  requireText(
+    'live: Worker not precached',
+    liveContract,
+    "assert.equal(swText.includes('/js/vosk-tts-worker.js'), false",
+  );
 
   requireRegex('deploy: generic verification precedes TTS', deployWorkflow, /Verify generic live release contract[\s\S]*Verify live TTS capability extension/);
   requireText('deploy: post-Pages TTS verifier', deployWorkflow, 'release-tools/tts-live-deployment-contract.mjs');
@@ -236,7 +240,7 @@ const mutations = [
   ['Worker manifest removed', { releaseLibrary: sources.releaseLibrary.replace("    worker: fileRecord(dist, 'js/vosk-tts-worker.js'),\n", '') }],
   ['Worker lazy policy removed', { releaseLibrary: sources.releaseLibrary.replace(", 'js/vosk-tts-worker.js'", '') }],
   ['Worker live SHA removed', { liveContract: sources.liveContract.replace('live Vosk Worker SHA-256 mismatch', 'Worker unchecked') }],
-  ['Worker SW policy removed', { liveContract: sources.liveContract.replace("assert.equal(swText.includes('/js/vosk-tts-worker.js'), false", 'assert.equal(true, true') }],
+  ['Worker SW policy removed', { liveContract: sources.liveContract.replace("assert.equal(swText.includes('/js/vosk-tts-worker.js'), false", 'assert.equal(true, false') }],
 ];
 
 for (const [name, changes] of mutations) {
