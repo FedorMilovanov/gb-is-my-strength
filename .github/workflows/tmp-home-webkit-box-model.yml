@@ -1,0 +1,76 @@
+name: Complete Home WebKit box model
+
+on:
+  pull_request:
+    branches: [main]
+    types: [labeled, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: home-webkit-box-model-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'fix/home-webkit-content-box-20260804'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 40
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Install Chromium and WebKit
+        run: timeout 12m npx playwright install --with-deps chromium webkit
+
+      - name: Apply bounded canonical fix
+        run: python3 .github/tmp/home_webkit_box_model.py apply
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index
+        run: npm run pagefind:build:dist
+
+      - name: Run Home Chromium and WebKit contracts
+        run: node scripts/home-browser-contract.mjs
+
+      - name: Run full interactive runtime audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 -d dist > /tmp/home-webkit-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit
+
+      - name: Run full static publication barrier
+        run: npm run validate:static-publication
+
+      - name: Recheck read-only revision contract
+        run: node scripts/cache-bust.js
+
+      - name: Self-clean and publish permanent tree
+        run: python3 .github/tmp/home_webkit_box_model.py finalize
