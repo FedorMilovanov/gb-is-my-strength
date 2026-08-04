@@ -32,60 +32,63 @@ function startServer() {
 
 async function installFixture(page, dark) {
   await page.goto(page.__origin, { waitUntil: 'domcontentloaded' });
-  await page.evaluate(async (darkMode) => {
+  await page.evaluate((darkMode) => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.removeItem('gbx-vosk-warmup');
-    await new Promise((resolve) => {
-      const request = indexedDB.deleteDatabase('gb-vosk-tts');
-      request.onsuccess = request.onerror = request.onblocked = () => resolve();
-    });
 
-    window.VoskTTSCore = {};
-    window.VoskStressLookup = { StressLookup: function StressLookup() {} };
-    window.fflate = { unzipSync: function unzipSync() { throw new Error('not reached'); } };
-    window.ort = {
-      env: { wasm: {} },
-      InferenceSession: { create: function create() { throw new Error('not reached'); } },
-    };
-
-    window.__modelFetchCount = 0;
-    window.__modelFetchAborted = false;
+    window.__workerCreated = 0;
+    window.__workerEnsureCount = 0;
+    window.__workerCancelPosted = false;
+    window.__workerTerminated = false;
     window.__engineError = null;
-    window.fetch = function mockedFetch(url, options) {
-      const target = String(url);
-      if (target.indexOf('model-quant.zip') !== -1) {
-        window.__modelFetchCount += 1;
-        return new Promise((resolve, reject) => {
-          const signal = options && options.signal;
-          if (!signal) {
-            reject(new Error('missing AbortSignal'));
-            return;
-          }
-          const abort = () => {
-            window.__modelFetchAborted = true;
-            reject(new DOMException('Aborted', 'AbortError'));
-          };
-          if (signal.aborted) abort();
-          else signal.addEventListener('abort', abort, { once: true });
-        });
+    window.__workerSrc = '';
+    window.__workerName = '';
+
+    class FakeWorker {
+      constructor(src, options) {
+        window.__workerCreated += 1;
+        window.__workerSrc = String(src || '');
+        window.__workerName = options && options.name ? String(options.name) : '';
+        this.onmessage = null;
+        this.onerror = null;
+        this.onmessageerror = null;
       }
-      if (target.indexOf('vosk-custom-terms.json') !== -1) {
-        return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+
+      postMessage(message) {
+        if (message && message.type === 'ensure') {
+          window.__workerEnsureCount += 1;
+          const id = message.id;
+          queueMicrotask(() => {
+            if (this.onmessage) this.onmessage({ data: { type: 'status', phase: 'loading', id } });
+          });
+          return;
+        }
+        if (message && message.type === 'cancel-load') {
+          window.__workerCancelPosted = true;
+        }
       }
-      if (target.indexOf('vosk-stress-marker.bin') !== -1) {
-        return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)) });
+
+      terminate() {
+        window.__workerTerminated = true;
       }
-      return Promise.reject(new Error(`unexpected fetch: ${target}`));
-    };
+    }
+
+    Object.defineProperty(window, 'Worker', { value: FakeWorker, configurable: true });
   }, dark);
 
   await page.addScriptTag({ content: ENGINE });
   await page.evaluate(() => {
     window.__loadPromise = window.VoskTTSEngine.ensureLoaded().catch((error) => {
-      window.__engineError = { name: error && error.name, userCancelled: !!(error && error.userCancelled) };
+      window.__engineError = {
+        name: error && error.name,
+        userCancelled: !!(error && error.userCancelled),
+      };
     });
   });
-  await page.waitForSelector('.gb-tts-download-notice.is-visible', { state: 'visible' });
+  await page.waitForFunction(() => {
+    const notice = document.querySelector('.gb-tts-download-notice.is-visible');
+    return notice && notice.dataset.state === 'loading';
+  });
 }
 
 async function verifyCard(page, expectedWidth) {
@@ -93,6 +96,7 @@ async function verifyCard(page, expectedWidth) {
     const rect = el.getBoundingClientRect();
     const action = el.querySelector('.gb-tts-download-notice__action');
     return {
+      state: el.dataset.state,
       title: el.querySelector('.gb-tts-download-notice__title').textContent.trim(),
       meta: el.querySelector('.gb-tts-download-notice__meta').textContent.trim(),
       action: action.textContent.trim(),
@@ -104,6 +108,7 @@ async function verifyCard(page, expectedWidth) {
       actionHeight: action.getBoundingClientRect().height,
     };
   });
+  assert.equal(snapshot.state, 'loading');
   assert.equal(snapshot.title, 'Улучшенный голос загружается');
   assert.match(snapshot.meta, /Системный голос уже работает/);
   assert.match(snapshot.meta, /280 МБ/);
@@ -115,6 +120,19 @@ async function verifyCard(page, expectedWidth) {
   return snapshot;
 }
 
+async function cancellationSnapshot(page) {
+  return page.evaluate(() => ({
+    created: window.__workerCreated,
+    ensureCount: window.__workerEnsureCount,
+    cancelPosted: window.__workerCancelPosted,
+    terminated: window.__workerTerminated,
+    workerSrc: window.__workerSrc,
+    workerName: window.__workerName,
+    error: window.__engineError,
+    optout: localStorage.getItem('gbx-vosk-warmup'),
+  }));
+}
+
 async function runDesktop(browser, origin) {
   const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
   page.__origin = origin;
@@ -124,37 +142,40 @@ async function runDesktop(browser, origin) {
   await page.screenshot({ path: path.join(REPORTS, 'tts-download-notice-desktop.png') });
 
   await page.locator('.gb-tts-download-notice__action').click();
-  await page.waitForFunction(() => window.__modelFetchAborted === true);
+  await page.waitForFunction(() => window.__workerCancelPosted && window.__workerTerminated);
   await page.waitForFunction(() => localStorage.getItem('gbx-vosk-warmup') === 'off');
   await page.waitForFunction(() => {
-    const title = document.querySelector('.gb-tts-download-notice__title');
-    return title && title.textContent.indexOf('Загрузка остановлена') !== -1;
+    const notice = document.querySelector('.gb-tts-download-notice');
+    return notice && notice.dataset.state === 'cancelled';
   });
   await page.evaluate(() => window.__loadPromise);
-  const state = await page.evaluate(() => ({
-    count: window.__modelFetchCount,
-    aborted: window.__modelFetchAborted,
-    error: window.__engineError,
-    optout: localStorage.getItem('gbx-vosk-warmup'),
-  }));
-  assert.deepEqual(state, {
-    count: 1,
-    aborted: true,
-    error: { name: 'AbortError', userCancelled: true },
-    optout: 'off',
-  });
+
+  const state = await cancellationSnapshot(page);
+  assert.equal(state.created, 1);
+  assert.equal(state.ensureCount, 1);
+  assert.equal(state.cancelPosted, true);
+  assert.equal(state.terminated, true);
+  assert.match(state.workerSrc, /^\/js\/vosk-tts-worker\.js(?:\?v=[a-f0-9]{8})?$/);
+  assert.equal(state.workerName, 'gb-vosk-tts');
+  assert.deepEqual(state.error, { name: 'AbortError', userCancelled: true });
+  assert.equal(state.optout, 'off');
 
   await page.evaluate(async () => {
     window.__secondError = null;
     await window.VoskTTSEngine.ensureLoaded().catch((error) => {
-      window.__secondError = { name: error && error.name, userCancelled: !!(error && error.userCancelled) };
+      window.__secondError = {
+        name: error && error.name,
+        userCancelled: !!(error && error.userCancelled),
+      };
     });
   });
   const retry = await page.evaluate(() => ({
-    count: window.__modelFetchCount,
+    created: window.__workerCreated,
+    ensureCount: window.__workerEnsureCount,
     error: window.__secondError,
   }));
-  assert.equal(retry.count, 1, 'opted-out retry must not start another model fetch');
+  assert.equal(retry.created, 1, 'opted-out retry must not create another worker');
+  assert.equal(retry.ensureCount, 1, 'opted-out retry must not post another ensure');
   assert.deepEqual(retry.error, { name: 'AbortError', userCancelled: true });
   await page.close();
 }
@@ -172,10 +193,9 @@ async function runMobileDark(browser, origin) {
   await page.screenshot({ path: path.join(REPORTS, 'tts-download-notice-mobile-dark.png') });
 
   await page.locator('.gb-tts-download-notice__action').focus();
-  const focusedBefore = await page.evaluate(() => document.activeElement && document.activeElement.className);
-  assert.match(String(focusedBefore), /gb-tts-download-notice__action/);
+  assert.match(String(await page.evaluate(() => document.activeElement && document.activeElement.className)), /gb-tts-download-notice__action/);
   await page.keyboard.press('Enter');
-  await page.waitForFunction(() => window.__modelFetchAborted === true);
+  await page.waitForFunction(() => window.__workerCancelPosted && window.__workerTerminated);
   const hiddenFocusAfter = await page.evaluate(() => !!(document.activeElement && document.activeElement.hidden));
   assert.equal(hiddenFocusAfter, false, 'keyboard cancellation must not trap focus on a hidden control');
   await page.close();
@@ -187,7 +207,7 @@ async function runMobileDark(browser, origin) {
   try {
     await runDesktop(browser, origin);
     await runMobileDark(browser, origin);
-    console.log('TTS download notice browser contract: PASS (desktop + mobile dark, pointer + keyboard cancellation).');
+    console.log('TTS download notice browser contract: PASS (persistent Worker, desktop + mobile dark, pointer + keyboard cancellation).');
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
