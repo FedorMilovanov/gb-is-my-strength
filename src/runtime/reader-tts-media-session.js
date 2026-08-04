@@ -1,11 +1,13 @@
 (() => {
   'use strict';
 
-  const VERSION = 1;
-  if (window.GBReaderTTSMediaSession?.version === VERSION) return;
-
-  const SILENCE_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+  const VERSION = 2;
+  const SAMPLE_RATE = 8000;
+  const SILENCE_SECONDS = 2;
   let anchor = null;
+  let anchorUrl = '';
+
+  if (window.GBReaderTTSMediaSession?.version === VERSION) return;
 
   function pageTitle() {
     return String(
@@ -26,12 +28,41 @@
     }
   }
 
+  function writeAscii(view, offset, value) {
+    for (let index = 0; index < value.length; index += 1) {
+      view.setUint8(offset + index, value.charCodeAt(index));
+    }
+  }
+
+  function createSilentWavUrl() {
+    const frameCount = SAMPLE_RATE * SILENCE_SECONDS;
+    const buffer = new ArrayBuffer(44 + frameCount);
+    const view = new DataView(buffer);
+    writeAscii(view, 0, 'RIFF');
+    view.setUint32(4, 36 + frameCount, true);
+    writeAscii(view, 8, 'WAVE');
+    writeAscii(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, SAMPLE_RATE, true);
+    view.setUint32(28, SAMPLE_RATE, true);
+    view.setUint16(32, 1, true);
+    view.setUint16(34, 8, true);
+    writeAscii(view, 36, 'data');
+    view.setUint32(40, frameCount, true);
+    new Uint8Array(buffer, 44).fill(128);
+    return URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
+  }
+
   function ensureAnchor() {
     if (anchor?.isConnected) return anchor;
     anchor = document.createElement('audio');
-    anchor.src = SILENCE_WAV;
+    anchorUrl ||= createSilentWavUrl();
+    anchor.src = anchorUrl;
     anchor.loop = true;
-    anchor.volume = 0;
+    anchor.volume = 0.01;
+    anchor.muted = false;
     anchor.preload = 'auto';
     anchor.playsInline = true;
     anchor.setAttribute('aria-hidden', 'true');
