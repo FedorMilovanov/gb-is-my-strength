@@ -1,0 +1,78 @@
+name: Search Scripture Occurrence Runtime
+# Self-clean S2 transaction passed in run 30942911632; this workflow revalidates the permanent exact head.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "js/search.js"
+      - "data/scripture-search-index.json"
+      - "scripts/search-scripture-occurrence-runtime-browser-test.mjs"
+      - ".github/workflows/search-scripture-occurrence-runtime.yml"
+      - "sw.js"
+      - "migration/sw-cache-version-baseline.json"
+      - "data/offline-route-matrix.json"
+      - "src/lib/asset-version.js"
+  push:
+    branches: [main]
+    paths:
+      - "js/search.js"
+      - "data/scripture-search-index.json"
+      - "scripts/search-scripture-occurrence-runtime-browser-test.mjs"
+      - ".github/workflows/search-scripture-occurrence-runtime.yml"
+      - "sw.js"
+      - "migration/sw-cache-version-baseline.json"
+      - "data/offline-route-matrix.json"
+      - "src/lib/asset-version.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-reference-first:
+    name: Exact Scripture occurrences before Pagefind
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - name: Install immutable dependencies
+        run: npm ci
+      - name: Validate source contracts
+        run: |
+          node --check js/search.js
+          node --check scripts/search-scripture-occurrence-runtime-browser-test.mjs
+          node scripts/build-scripture-occurrence-index.mjs --check
+          node scripts/scripture-occurrence-index-contract.mjs
+          node scripts/cache-bust.js
+      - name: Build production-like publication
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Validate exact-reference-first runtime
+        run: node scripts/search-scripture-occurrence-runtime-browser-test.mjs --dist=dist --report=reports/scripture-occurrence-runtime
+      - name: Validate Service Worker publication
+        run: |
+          npm run sw:dist:audit
+          npm run sw:dist:audit:deploy-switch
+      - name: Verify validation is read-only
+        run: git diff --exit-code
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scripture-occurrence-runtime-${{ github.run_id }}
+          path: reports/scripture-occurrence-runtime/**
+          if-no-files-found: warn
+          retention-days: 14
