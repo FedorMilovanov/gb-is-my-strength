@@ -86,8 +86,14 @@ jobs:
           node --check scripts/tts-reader-multitab-lock-browser-test.js
           node --check scripts/tts-reader-real-model-browser-test.js
           node --check scripts/tts-route-crawl-browser-test.js
-          ! grep -R "reader-vosk-download-worker\|readerVoskFetch\|installOneShotUnzip" src js scripts .github/workflows/tts-reader-polish.yml
-          ! grep -q "InferenceSession\|unzipSync\|model-quant.zip" js/vosk-tts-engine.js
+          if grep -R "reader-vosk-download-worker\|readerVoskFetch\|installOneShotUnzip" src js scripts .github/workflows/tts-reader-polish.yml; then
+            echo "Obsolete Vosk interception layer is still referenced" >&2
+            exit 1
+          fi
+          if grep -q "InferenceSession\|unzipSync\|model-quant.zip" js/vosk-tts-engine.js; then
+            echo "Heavyweight Vosk ownership leaked into the document client" >&2
+            exit 1
+          fi
           grep -q "InferenceSession" js/vosk-tts-worker.js
           grep -q "unzipSync" js/vosk-tts-worker.js
           node scripts/tts-stress-dictionary-contract.js | tee reports/tts-stress-dictionary.log
