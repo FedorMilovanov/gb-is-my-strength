@@ -78,18 +78,19 @@ const classes = ['gb-ember', isLoading ? 'is-loading' : '', className].filter(Bo
 </button>
 
 <script>
-  // Native touch long-press produces a trailing synthetic click in mobile
-  // browsers. The shared controller owns the actual stop action; the control
-  // itself owns suppression of that follow-up activation so no same-element or
-  // delegated listener can restart playback after a successful stop.
-  function bindLongPressClickGuard() {
+  /**
+   * The floating-cluster controller owns the actual 600 ms stop gesture.
+   * Once that owner has moved an active ember to idle, mark the browser's
+   * immediate post-long-press click for one-shot suppression by the reader
+   * runtime guard. This component never toggles or stops TTS itself.
+   */
+  function bindLongPressClickMarker() {
     document.querySelectorAll<HTMLButtonElement>('.gb-ember').forEach((ember) => {
-      if (ember.dataset.gbLongPressGuardBound === 'true') return;
-      ember.dataset.gbLongPressGuardBound = 'true';
+      if (ember.dataset.gbLongPressMarkerBound === 'true') return;
+      ember.dataset.gbLongPressMarkerBound = 'true';
 
       let startedAt = 0;
       let activeAtDown = false;
-      let suppressUntil = 0;
 
       ember.addEventListener('pointerdown', (event) => {
         if (event.pointerType && event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
@@ -98,31 +99,26 @@ const classes = ['gb-ember', isLoading ? 'is-loading' : '', className].filter(Bo
       }, { passive: true });
 
       ember.addEventListener('pointerup', (event) => {
-        const heldLongEnough = activeAtDown && performance.now() - startedAt >= 580;
-        // The controller's 600ms timer has already completed the stop when the
-        // ember is idle. Arm a bounded guard for the synthetic click only in
-        // that successful-stop state; an idle long hold still behaves normally.
-        if (heldLongEnough && ember.dataset.state === 'idle') {
-          suppressUntil = performance.now() + 1000;
+        const stoppedByLongPress = activeAtDown
+          && performance.now() - startedAt >= 580
+          && ember.dataset.state === 'idle';
+        if (stoppedByLongPress) {
+          ember.dataset.gbSuppressTtsClickUntil = String(Date.now() + 1000);
           event.preventDefault();
         }
         startedAt = 0;
         activeAtDown = false;
       }, { passive: false });
 
-      ember.addEventListener('pointercancel', () => {
+      const reset = () => {
         startedAt = 0;
         activeAtDown = false;
-      }, { passive: true });
-
-      ember.addEventListener('click', (event) => {
-        if (performance.now() >= suppressUntil) return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      }, true);
+      };
+      ember.addEventListener('pointercancel', reset, { passive: true });
+      ember.addEventListener('pointerleave', reset, { passive: true });
     });
   }
 
-  bindLongPressClickGuard();
-  document.addEventListener('astro:page-load', bindLongPressClickGuard);
+  bindLongPressClickMarker();
+  document.addEventListener('astro:page-load', bindLongPressClickMarker);
 </script>
