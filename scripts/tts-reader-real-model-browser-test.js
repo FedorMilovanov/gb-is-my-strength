@@ -9,20 +9,20 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const REPORTS = path.join(ROOT, 'reports');
-const DOWNLOAD_WORKER = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-vosk-download-worker.js'), 'utf8');
 const DEFAULTS = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts-defaults.js'), 'utf8');
 const READER = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts.js'), 'utf8');
 const CSS = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts.css'), 'utf8');
 const ENGINE = fs.readFileSync(path.join(ROOT, 'js/vosk-tts-engine.js'), 'utf8');
+const WORKER = fs.readFileSync(path.join(ROOT, 'js/vosk-tts-worker.js'), 'utf8');
 const SAMPLE = 'Джон Гилл жил в Лондоне в восемнадцатом веке. Иисус Христос — центр христианской проповеди. Ковенантное богословие требует внимательной экзегезы Писания.';
 fs.mkdirSync(REPORTS, { recursive: true });
 
 const ASSETS = new Map([
-  ['/src/runtime/reader-vosk-download-worker.js', { data: DOWNLOAD_WORKER, type: 'text/javascript; charset=utf-8' }],
   ['/src/runtime/reader-tts-defaults.js', { data: DEFAULTS, type: 'text/javascript; charset=utf-8' }],
   ['/src/runtime/reader-tts.js', { data: READER, type: 'text/javascript; charset=utf-8' }],
   ['/src/runtime/reader-tts.css', { data: CSS, type: 'text/css; charset=utf-8' }],
   ['/js/vosk-tts-engine.js', { data: ENGINE, type: 'text/javascript; charset=utf-8' }],
+  ['/js/vosk-tts-worker.js', { data: WORKER, type: 'text/javascript; charset=utf-8' }],
   ['/js/vosk-tts-core.js', { file: path.join(ROOT, 'js/vosk-tts-core.js'), type: 'text/javascript; charset=utf-8' }],
   ['/js/vosk-stress-lookup.js', { file: path.join(ROOT, 'js/vosk-stress-lookup.js'), type: 'text/javascript; charset=utf-8' }],
   ['/js/vosk-custom-terms.json', { file: path.join(ROOT, 'js/vosk-custom-terms.json'), type: 'application/json; charset=utf-8' }],
@@ -31,7 +31,7 @@ const ASSETS = new Map([
 ]);
 
 function html() {
-  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/src/runtime/reader-tts.css"></head><body><article class="article-body" data-pagefind-body><h1>Реальная модель</h1><p>${SAMPLE}</p></article><button data-fc-action="play" data-state="idle">PLAY</button><script type="module" src="/src/runtime/reader-vosk-download-worker.js"></script><script type="module" src="/src/runtime/reader-tts-defaults.js"></script><script type="module" src="/src/runtime/reader-tts.js"></script></body></html>`;
+  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/src/runtime/reader-tts.css"></head><body><article class="article-body" data-pagefind-body><h1>Реальная модель</h1><p>${SAMPLE}</p></article><button data-fc-action="play" data-state="idle">PLAY</button><script type="module" src="/src/runtime/reader-tts-defaults.js"></script><script type="module" src="/src/runtime/reader-tts.js"></script></body></html>`;
 }
 
 function startServer() {
@@ -85,8 +85,8 @@ async function installHeartbeat(page) {
 
 async function wavSnapshot(page) {
   return page.evaluate(async () => {
-    const audio = Array.from(document.querySelectorAll('audio')).find((item) => /^blob:/.test(item.currentSrc || item.src || ''));
-    if (!audio) throw new Error('reader did not create a Vosk audio blob');
+    const audio = document.querySelector('audio[data-gb-vosk-audio]');
+    if (!audio || !/^blob:/.test(audio.currentSrc || audio.src || '')) throw new Error('reader did not create a Vosk audio blob');
     const buffer = await fetch(audio.src).then((response) => response.arrayBuffer());
     const view = new DataView(buffer);
     const sampleRate = view.getUint32(24, true);
@@ -111,25 +111,29 @@ async function wavSnapshot(page) {
 async function runOne(context, origin, mode) {
   const page = await context.newPage();
   const modelRequests = [];
+  const workerRequests = [];
   page.on('request', (request) => {
     const url = request.url();
     if (url.includes('model-quant.zip') || url.includes('aws.cdn.hf.co')) modelRequests.push(url);
+    if (url.includes('/js/vosk-tts-worker.js')) workerRequests.push(url);
   });
   await installHeartbeat(page);
   await page.goto(origin + '/blank', { waitUntil: 'domcontentloaded' });
   if (mode === 'cold') await deleteDatabase(page);
   await page.goto(origin + '/reader', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.GBReaderTTS?.version === 1);
+  await page.waitForFunction(() => window.GBReaderTTS?.version === 2);
   const defaults = await page.evaluate(() => ({
     rate: localStorage.getItem('gb:audio:rate'),
     speaker: localStorage.getItem('gb:audio:speaker'),
     state: window.GBReaderTTS.getState(),
-    workerVersion: window.__gbVoskDownloadWorkerVersion,
+    mainThreadOrt: typeof window.ort,
+    nativeFetch: !/readerVoskFetch/.test(String(window.fetch)),
   }));
   assert.equal(defaults.rate, '1', `${mode}: production default rate was not initialized`);
   assert.equal(defaults.speaker, '3', `${mode}: production default speaker was not initialized`);
   assert.equal(defaults.state.rate, 1, `${mode}: reader did not consume the default rate`);
-  assert.equal(defaults.workerVersion, 1, `${mode}: cold model worker was not installed`);
+  assert.equal(defaults.mainThreadOrt, 'undefined', `${mode}: ONNX leaked into the document thread`);
+  assert.equal(defaults.nativeFetch, true, `${mode}: global fetch was intercepted`);
 
   await page.evaluate(() => { window.__resetReaderHeartbeat(); window.__loadStarted = performance.now(); });
   await page.evaluate(() => window.GBReaderTTS.warmVosk({ retry: true }));
@@ -137,18 +141,29 @@ async function runOne(context, origin, mode) {
     elapsedMs: performance.now() - window.__loadStarted,
     maxGapMs: window.__readerPhase.maxGap,
     ticks: window.__readerPhase.ticks,
-    proxy: window.ort?.env?.wasm?.proxy,
     status: window.VoskTTSEngine?.getStatus?.(),
+    engineVersion: window.VoskTTSEngine?.version,
   }));
 
   await page.evaluate(() => { window.__readerPhase.mediaPlayCalled = false; window.__resetReaderHeartbeat(); window.__synthStarted = performance.now(); });
   await page.locator('[data-fc-action="play"]').click();
-  await page.waitForFunction(() => Array.from(document.querySelectorAll('audio')).some((item) => /^blob:/.test(item.currentSrc || item.src || '')), null, { timeout: 15 * 60 * 1000 });
-  const synthTiming = await page.evaluate(() => ({ elapsedMs: performance.now() - window.__synthStarted, maxGapMs: window.__readerPhase.maxGap, ticks: window.__readerPhase.ticks, state: window.GBReaderTTS.getState() }));
+  await page.waitForFunction(() => /^blob:/.test(document.querySelector('audio[data-gb-vosk-audio]')?.currentSrc || document.querySelector('audio[data-gb-vosk-audio]')?.src || ''), null, { timeout: 15 * 60 * 1000 });
+  const synthTiming = await page.evaluate(() => ({
+    elapsedMs: performance.now() - window.__synthStarted,
+    maxGapMs: window.__readerPhase.maxGap,
+    ticks: window.__readerPhase.ticks,
+    state: window.GBReaderTTS.getState(),
+  }));
   const wav = await wavSnapshot(page);
   await page.screenshot({ path: path.join(REPORTS, `tts-reader-real-model-${mode}.png`) });
   await page.close();
-  return { mode, modelRequests: modelRequests.length, load, synth: { ...synthTiming, ...wav } };
+  return {
+    mode,
+    modelRequests: modelRequests.length,
+    workerRequests: workerRequests.length,
+    load,
+    synth: { ...synthTiming, ...wav },
+  };
 }
 
 (async () => {
@@ -161,21 +176,23 @@ async function runOne(context, origin, mode) {
     assert.ok(cold.modelRequests > 0, 'cold reader run did not download the model');
     assert.equal(cached.modelRequests, 0, 'cached reader run downloaded the model again');
     for (const result of [cold, cached]) {
-      assert.equal(result.load.proxy, true, `${result.mode}: ORT proxy is not active`);
+      assert.ok(result.workerRequests > 0, `${result.mode}: persistent worker was not requested`);
+      assert.equal(result.load.engineVersion, 2, `${result.mode}: thin Vosk client v2 was not active`);
       assert.equal(result.load.status?.ready, true, `${result.mode}: Vosk did not become ready`);
       assert.ok(result.synth.bytes > 10000 && result.synth.duration > 0.5, `${result.mode}: invalid WAV`);
       assert.ok(result.synth.rms > 50 && result.synth.peak > 200, `${result.mode}: silent WAV`);
       assert.equal(result.synth.mediaPlayCalled, true, `${result.mode}: playback was not requested`);
       assert.equal(result.synth.state.rate, 1, `${result.mode}: synthesis did not run at the canonical default rate`);
+      assert.ok(result.synth.state.synthesisProgress > 0, `${result.mode}: worker synthesis progress was not observed`);
     }
-    assert.ok(cold.load.maxGapMs < 5000, `cold model preparation still blocked UI for ${cold.load.maxGapMs.toFixed(1)} ms`);
-    assert.ok(cached.load.maxGapMs < 5000, `cached model preparation still blocked UI for ${cached.load.maxGapMs.toFixed(1)} ms`);
-    assert.ok(cached.synth.maxGapMs < 5000, `cached synthesis still blocked UI for ${cached.synth.maxGapMs.toFixed(1)} ms`);
-    assert.ok(cold.synth.maxGapMs < 5000, `cold synthesis still blocked UI for ${cold.synth.maxGapMs.toFixed(1)} ms`);
+    assert.ok(cold.load.maxGapMs < 1000, `cold worker preparation blocked UI for ${cold.load.maxGapMs.toFixed(1)} ms`);
+    assert.ok(cached.load.maxGapMs < 1000, `cached worker preparation blocked UI for ${cached.load.maxGapMs.toFixed(1)} ms`);
+    assert.ok(cached.synth.maxGapMs < 500, `cached worker synthesis blocked UI for ${cached.synth.maxGapMs.toFixed(1)} ms`);
+    assert.ok(cold.synth.maxGapMs < 500, `cold worker synthesis blocked UI for ${cold.synth.maxGapMs.toFixed(1)} ms`);
     const report = { cold, cached };
     fs.writeFileSync(path.join(REPORTS, 'tts-reader-real-model.json'), JSON.stringify(report, null, 2));
     console.log('[TTS-READER-REAL-MODEL]', JSON.stringify(report));
-    console.log('Reader TTS real model contract: PASS');
+    console.log('Reader TTS persistent-worker real model contract: PASS');
   } finally {
     await context.close();
     await browser.close();
