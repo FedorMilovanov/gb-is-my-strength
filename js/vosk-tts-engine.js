@@ -64,6 +64,10 @@
     return createError({ name: 'AbortError', message: message || 'enhanced voice cancelled', userCancelled: true });
   }
 
+  function normalizeContextText(value) {
+    return String(value || '').replace(/(^|[^А-Яа-яЁё])Господа(?=$|[^А-Яа-яЁё])/g, '$1Г+оспода');
+  }
+
   function dispatchStatus(phase, detail) {
     var next = Object.assign({
       phase: phase,
@@ -491,7 +495,7 @@
       ensureWorker().postMessage({
         type: 'speak',
         id: id,
-        text: String(text || ''),
+        text: normalizeContextText(String(text || '')),
         rate: Number(rate) || 1,
         speakerId: Number(speakerId) || 0
       });
