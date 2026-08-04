@@ -17,6 +17,7 @@ on:
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
       - "scripts/tts-stress-dictionary-contract.js"
+      - "scripts/tts-ort-worker-path-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-multitab-lock-browser-test.js"
       - "scripts/tts-reader-real-model-browser-test.js"
@@ -39,6 +40,7 @@ on:
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
       - "scripts/tts-stress-dictionary-contract.js"
+      - "scripts/tts-ort-worker-path-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-multitab-lock-browser-test.js"
       - "scripts/tts-reader-real-model-browser-test.js"
@@ -82,6 +84,7 @@ jobs:
           node --check js/vosk-tts-engine.js
           node --check js/vosk-tts-worker.js
           node --check scripts/tts-stress-dictionary-contract.js
+          node --check scripts/tts-ort-worker-path-contract.js
           node --check scripts/tts-reader-runtime-browser-test.js
           node --check scripts/tts-reader-multitab-lock-browser-test.js
           node --check scripts/tts-reader-real-model-browser-test.js
@@ -97,6 +100,7 @@ jobs:
           grep -q "InferenceSession" js/vosk-tts-worker.js
           grep -q "unzipSync" js/vosk-tts-worker.js
           node scripts/tts-stress-dictionary-contract.js | tee reports/tts-stress-dictionary.log
+          node scripts/tts-ort-worker-path-contract.js | tee reports/tts-ort-worker-path.log
 
       - name: Run deterministic playback contracts
         run: |
@@ -129,6 +133,7 @@ jobs:
           name: tts-reader-playback-${{ github.run_id }}
           path: |
             reports/tts-stress-dictionary.log
+            reports/tts-ort-worker-path.log
             reports/tts-reader-runtime.log
             reports/tts-reader-multitab-lock.log
             reports/tts-reader-production-build.log
