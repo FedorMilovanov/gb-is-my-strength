@@ -42,6 +42,7 @@ const ASSETS = [
   'js/nagornaya-bar-extras.js',
   'js/glossary.js',
   'js/vosk-tts-engine.js',
+  'js/vosk-tts-worker.js',
   'js/floating-cluster-controller.js',
 ];
 
@@ -55,6 +56,7 @@ const LAZY_NO_PRECACHE = Object.freeze([
   'css/tts-download-notice.css',
   'css/series-manuscript.css',
   'js/vosk-tts-engine.js',
+  'js/vosk-tts-worker.js',
   'manifest.json',
   'data/search-manifest.json',
 ]);

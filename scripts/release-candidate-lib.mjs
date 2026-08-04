@@ -183,6 +183,7 @@ export function prepareReleaseCandidate({
   const ttsAssets = {
     controller: fileRecord(dist, 'js/floating-cluster-controller.js'),
     engine: fileRecord(dist, 'js/vosk-tts-engine.js'),
+    worker: fileRecord(dist, 'js/vosk-tts-worker.js'),
     noticeCss: fileRecord(dist, 'css/tts-download-notice.css'),
     serviceWorker: criticalAssets.serviceWorker,
   };
@@ -221,7 +222,7 @@ export function prepareReleaseCandidate({
     extensions: {
       tts: {
         assets: ttsAssets,
-        lazyNoPrecache: ['css/tts-download-notice.css', 'js/vosk-tts-engine.js'],
+        lazyNoPrecache: ['css/tts-download-notice.css', 'js/vosk-tts-engine.js', 'js/vosk-tts-worker.js'],
       },
     },
   };
@@ -322,7 +323,7 @@ export function verifyReleaseCandidate({
   }
   const tts = manifest.extensions?.tts;
   assert.ok(tts?.assets, 'release TTS extension is missing');
-  assert.deepEqual(tts.lazyNoPrecache, ['css/tts-download-notice.css', 'js/vosk-tts-engine.js']);
+  assert.deepEqual(tts.lazyNoPrecache, ['css/tts-download-notice.css', 'js/vosk-tts-engine.js', 'js/vosk-tts-worker.js']);
   for (const record of Object.values(tts.assets)) {
     const relative = String(record.path).replace(/^\//, '');
     assert.deepEqual(fileRecord(dist, relative, record.path), record, `TTS asset mismatch: ${record.path}`);

@@ -1,0 +1,184 @@
+name: TTS Reader Polish
+
+on:
+  pull_request:
+    paths:
+      - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/pages/baptisty-rossii/index.astro"
+      - "src/runtime/reader-tts.js"
+      - "src/runtime/reader-tts.css"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts-media-session.js"
+      - "css/tts-download-notice.css"
+      - "js/vosk-tts-core.js"
+      - "js/vosk-stress-lookup.js"
+      - "js/vosk-custom-terms.json"
+      - "js/vosk-stress-marker.bin"
+      - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
+      - "scripts/tts-stress-dictionary-contract.js"
+      - "scripts/tts-ort-worker-path-contract.js"
+      - "scripts/tts-reader-runtime-browser-test.js"
+      - "scripts/tts-reader-multitab-lock-browser-test.js"
+      - "scripts/tts-reader-real-model-browser-test.js"
+      - "scripts/tts-route-crawl-browser-test.js"
+      - ".github/workflows/tts-reader-polish.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/pages/baptisty-rossii/index.astro"
+      - "src/runtime/reader-tts.js"
+      - "src/runtime/reader-tts.css"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts-media-session.js"
+      - "css/tts-download-notice.css"
+      - "js/vosk-tts-core.js"
+      - "js/vosk-stress-lookup.js"
+      - "js/vosk-custom-terms.json"
+      - "js/vosk-stress-marker.bin"
+      - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
+      - "scripts/tts-stress-dictionary-contract.js"
+      - "scripts/tts-ort-worker-path-contract.js"
+      - "scripts/tts-reader-runtime-browser-test.js"
+      - "scripts/tts-reader-multitab-lock-browser-test.js"
+      - "scripts/tts-reader-real-model-browser-test.js"
+      - "scripts/tts-route-crawl-browser-test.js"
+      - ".github/workflows/tts-reader-polish.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tts-reader-polish-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playback-and-routes:
+    name: Playback FSM and every production route
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Check syntax and architecture
+        run: |
+          mkdir -p reports
+          node --check src/runtime/reader-tts-defaults.js
+          node --check src/runtime/reader-tts.js
+          node --check src/runtime/reader-tts-media-session.js
+          node --check js/vosk-tts-engine.js
+          node --check js/vosk-tts-worker.js
+          node --check scripts/tts-stress-dictionary-contract.js
+          node --check scripts/tts-ort-worker-path-contract.js
+          node --check scripts/tts-reader-runtime-browser-test.js
+          node --check scripts/tts-reader-multitab-lock-browser-test.js
+          node --check scripts/tts-reader-real-model-browser-test.js
+          node --check scripts/tts-route-crawl-browser-test.js
+          if grep -R "reader-vosk-download-worker\|readerVoskFetch\|installOneShotUnzip" src js; then
+            echo "Obsolete Vosk interception layer is still referenced by product runtime" >&2
+            exit 1
+          fi
+          if grep -q "InferenceSession\|unzipSync\|model-quant.zip" js/vosk-tts-engine.js; then
+            echo "Heavyweight Vosk ownership leaked into the document client" >&2
+            exit 1
+          fi
+          grep -q "InferenceSession" js/vosk-tts-worker.js
+          grep -q "unzipSync" js/vosk-tts-worker.js
+          node scripts/tts-stress-dictionary-contract.js | tee reports/tts-stress-dictionary.log
+          node scripts/tts-ort-worker-path-contract.js | tee reports/tts-ort-worker-path.log
+
+      - name: Run deterministic playback contracts
+        run: |
+          set -o pipefail
+          node scripts/tts-reader-runtime-browser-test.js 2>&1 | tee reports/tts-reader-runtime.log
+          node scripts/tts-reader-multitab-lock-browser-test.js 2>&1 | tee reports/tts-reader-multitab-lock.log
+
+      - name: Build production-like routes
+        run: |
+          set -o pipefail
+          npm run strangler:build:production-like 2>&1 | tee reports/tts-reader-production-build.log
+
+      - name: Crawl every TTS route on desktop and mobile
+        run: |
+          set -o pipefail
+          node scripts/tts-route-crawl-browser-test.js 2>&1 | tee reports/tts-reader-route-crawl.log
+          node - <<'NODE'
+          const assert = require('node:assert/strict');
+          const report = require('./reports/tts-route-crawl.json');
+          const checks = report.desktop.concat(report.mobile);
+          const failures = checks.filter((item) => item.status !== 'pass');
+          assert.equal(failures.length, 0, JSON.stringify(failures.map((item) => ({ viewport: item.viewport, route: item.route, status: item.status, problems: item.problems, error: item.error })), null, 2));
+          console.log(`All ${checks.length} production-like TTS route checks passed.`);
+          NODE
+
+      - name: Upload playback evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tts-reader-playback-${{ github.run_id }}
+          path: |
+            reports/tts-stress-dictionary.log
+            reports/tts-ort-worker-path.log
+            reports/tts-reader-runtime.log
+            reports/tts-reader-multitab-lock.log
+            reports/tts-reader-production-build.log
+            reports/tts-reader-route-crawl.log
+            reports/tts-route-crawl.json
+            reports/tts-reader-mobile-notice-click.png
+            reports/tts-crawl-*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+  real-model:
+    name: Real Vosk cache, audio and UI responsiveness
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run real reader-model contract
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/tts-reader-real-model-browser-test.js 2>&1 | tee reports/tts-reader-real-model.log
+
+      - name: Upload real-model evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tts-reader-real-model-${{ github.run_id }}
+          path: |
+            reports/tts-reader-real-model.log
+            reports/tts-reader-real-model.json
+            reports/tts-reader-real-model-*.png
+          if-no-files-found: warn
+          retention-days: 14

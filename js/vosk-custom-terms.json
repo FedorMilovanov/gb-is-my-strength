@@ -1,5 +1,5 @@
 {
-  "_comment": "Custom stress dictionary for gospod-bog.ru site vocabulary — proper names and theological terms not covered by general Russian dictionaries. Format: lowercase word -> vosk-tts \"+\" convention (marker placed BEFORE the stressed vowel). Built from a site-content scan + web-verified stress (see /docs in this repo). Entries below are HIGH/MEDIUM confidence only; see REVIEW-LOW-CONFIDENCE.md for items still needing owner confirmation before being added here.",
+  "_comment": "Custom stress dictionary for gospod-bog.ru site vocabulary — proper names and theological terms not covered by general Russian dictionaries. Format: lowercase word -> vosk-tts \"+\" convention (marker placed BEFORE the stressed vowel). Built from a site-content scan + web-verified stress (see /docs in this repo). Entries below are HIGH/MEDIUM confidence only; see REVIEW-LOW-CONFIDENCE.md for items still needing owner confirmation before being added here. Context-dependent homographs such as Господа/господа are forbidden here and belong in the case-sensitive normalization layer.",
 
   "гилла": "г+илла",
   "гилле": "г+илле",
@@ -43,7 +43,6 @@
 
   "редсток": "редст+ок",
   "петербург": "петерб+ург",
-  "господа": "господ+а",
   "воронин": "вор+онин",
   "воронина": "вор+онина",
   "винчи": "в+инчи",
@@ -61,7 +60,7 @@
   "кальвин": "к+альвин",
   "кальвина": "к+альвина",
   "томас": "т+омас",
-  "мария": "мари+я",
+  "мария": "мар+ия",
   "марии": "мар+ии",
   "иоанн": "ио+анн",
   "иоанна": "ио+анна",
@@ -144,7 +143,7 @@
   "дэвис": "д+эвис",
   "диспенсационализм": "диспенсационал+изм",
   "бенджамина": "б+енджамина",
-  "бенджамин": "бенджам+ин",
+  "бенджамин": "б+енджамин",
 
   "антиномианство": "антиноми+анство",
   "аввакум": "аввак+ум",
