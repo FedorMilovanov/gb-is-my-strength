@@ -243,9 +243,17 @@ async function synthesize(page, label) {
     console.log('[TTS-READER-REAL-MODEL]', JSON.stringify(report));
     console.log('Reader TTS real model, SharedWorker reuse and cache fallback contract: PASS');
   } finally {
-    await context.close();
-    await browser.close();
-    await new Promise((resolve) => server.close(resolve));
+    await context.close().catch(() => {});
+    await browser.close().catch(() => {});
+    if (typeof server.closeAllConnections === 'function') server.closeAllConnections();
+    if (typeof server.closeIdleConnections === 'function') server.closeIdleConnections();
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, 2000);
+      server.close(() => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
   }
 })().catch((error) => {
   console.error(error);
