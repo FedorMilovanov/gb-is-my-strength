@@ -74,6 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -f .github/tmp/apply_scripture_occurrence_runtime_s2.py
+          rm -rf .github/tmp/__pycache__
           rm -f .github/workflows/tmp-scripture-occurrence-runtime-s2.yml
           git diff --check origin/main
           { git diff --name-only origin/main; git ls-files --others --exclude-standard; } | sort -u > "${RUNNER_TEMP}/changed.txt"
