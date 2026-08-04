@@ -140,6 +140,7 @@ jobs:
           npx playwright install --with-deps chromium
           node scripts/nagornaya-epistemic-ui-browser-test.mjs
           npm run sw:dist:audit
+          npm run pagefind:build:dist
           npm run sw:dist:audit:deploy-switch
 
       - name: Validate full static publication barrier
