@@ -38,6 +38,30 @@ jobs:
           cache: npm
       - name: Install immutable dependencies
         run: npm ci
+      - name: Refine minified CSS boundary in temporary writer
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/tmp/apply_bible_legacy_authority_p2_08.py')
+          source = path.read_text(encoding='utf-8')
+          old = """    if css.count(start_marker) != 1 or css.count(end_marker) != 1:
+                  raise SystemExit('site.css legacy style markers drifted')
+              start = css.index(start_marker)
+              end = css.index(end_marker, start)
+          """
+          new = """    start = css.find(start_marker)
+              if start < 0:
+                  raise SystemExit('site.css legacy start marker drifted')
+              end = css.find('\\n' + end_marker, start)
+              if end < 0:
+                  raise SystemExit('site.css legacy end marker drifted')
+              end += 1
+          """
+          if source.count(old) != 1:
+              raise SystemExit(f'temporary writer CSS anchor drifted: {source.count(old)}')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
       - name: Execute self-clean atomic removal
         shell: bash
         run: bash .github/tmp/run_bible_legacy_authority_p2_08.sh
