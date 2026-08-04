@@ -137,30 +137,39 @@ function validateTtsStatus(input) {
 
   const requiredWorkflowPaths = [
     'src/components/reader-platform/ReaderActionsRuntime.astro',
+    'src/runtime/reader-tts.js',
+    'src/runtime/reader-tts-defaults.js',
+    'src/runtime/reader-tts-media-session.js',
     'js/vosk-tts-engine.js',
     'js/vosk-tts-worker.js',
+    'js/vosk-tts-core.js',
+    'js/vosk-stress-lookup.js',
+    'js/vosk-custom-terms.json',
+    'js/vosk-stress-marker.bin',
     'js/floating-cluster-controller.js',
     'css/tts-download-notice.css',
     'scripts/cache-bust-assets.js',
     'src/lib/asset-version.js',
     'scripts/tts-download-consent-contract-test.js',
-    'scripts/tts-download-notice-browser-test.js',
     'scripts/tts-engine-status-contract-test.js',
-    'scripts/tts-engine-lifecycle-browser-test.js',
-    'scripts/tts-real-model-phase-browser-test.js',
-    'scripts/tts-status-route-browser-test.js',
+    'scripts/tts-stress-dictionary-contract.js',
+    'scripts/tts-reader-runtime-browser-test.js',
+    'scripts/tts-reader-multitab-lock-browser-test.js',
     'scripts/tts-route-crawl-browser-test.js',
     'scripts/tts-mobile-notice-geometry-browser-test.js',
     '.github/workflows/deploy.yml',
     '.github/workflows/tts-download-consent.yml',
+    '.github/workflows/tts-reader-polish.yml',
   ];
   for (const ownedPath of requiredWorkflowPaths) {
     const count = ownedPathCount(workflow, ownedPath);
     if (count !== 2) problems.push(`workflow path ownership: ${ownedPath} (${count}/2)`);
   }
-  expectPattern(problems, 'workflow: checks Worker syntax', workflow, /CHECK \$file[\s\S]*js\/vosk-tts-worker\.js/);
+  expectPattern(problems, 'workflow: checks Worker syntax', workflow, /for file in[\s\S]*js\/vosk-tts-worker\.js/);
+  expectPattern(problems, 'workflow: checks status contract syntax', workflow, /for file in[\s\S]*scripts\/tts-engine-status-contract-test\.js/);
+  expectPattern(problems, 'workflow: runs status source contract', workflow, /node scripts\/tts-engine-status-contract-test\.js[\s\S]{0,160}tts-source-engine-status\.log/);
   expectPattern(problems, 'workflow: installs Chromium and WebKit', workflow, /playwright install --with-deps chromium webkit/);
-  expectPattern(problems, 'workflow: runs lifecycle fixtures', workflow, /tts-download-notice-browser-test\.js[\s\S]*tts-engine-lifecycle-browser-test\.js[\s\S]*tts-real-model-phase-browser-test\.js/);
+  expectPattern(problems, 'workflow: runs deterministic reader and lock fixtures', workflow, /node scripts\/tts-reader-runtime-browser-test\.js[\s\S]{0,260}node scripts\/tts-reader-multitab-lock-browser-test\.js/);
   expectPattern(problems, 'workflow: runs all-route crawl', workflow, /node scripts\/tts-route-crawl-browser-test\.js/);
   expectPattern(problems, 'workflow: runs mobile geometry', workflow, /node scripts\/tts-mobile-notice-geometry-browser-test\.js/);
 
@@ -174,7 +183,8 @@ function validateLiveRelease(liveContract, deployWorkflow) {
     ['live: standalone route', liveContract, /\/articles\/20-antisovetov-pastoru\//],
     ['live: Hugging Face CSP', liveContract, /connect-src lacks huggingface\.co/],
     ['live: CDN CSP', liveContract, /connect-src lacks \*\.aws\.cdn\.hf\.co/],
-    ['live: media and Worker policy', liveContract, /media-src lacks blob[\s\S]*worker-src lacks blob/],
+    ['live: blob audio policy', liveContract, /media-src lacks blob/],
+    ['live: same-origin Worker policy', liveContract, /worker-src lacks self/],
     ['live: immutable pointer', liveContract, /assertPointer\(pointer\);/],
     ['live: immutable provenance', liveContract, /assertProvenance\(provenance\);/],
     ['live: TTS extension', liveContract, /manifest\.extensions\?\.tts/],
@@ -225,7 +235,9 @@ const mutations = [
   ['canonical asset registry removed', { ...sources, canonicalRuntime: sources.canonicalRuntime.replace("assetUrl('js/vosk-tts-engine.js')", "'/js/vosk-tts-engine.js'") }],
   ['notice intercepts PLAY', { ...sources, css: sources.css.replace('pointer-events:none;\n  transform:translate(-50%,0)', 'pointer-events:auto;\n  transform:translate(-50%,0)') }],
   ['worker workflow trigger removed', { ...sources, workflow: sources.workflow.replaceAll('      - "js/vosk-tts-worker.js"\n', '') }],
+  ['controller workflow trigger removed', { ...sources, workflow: sources.workflow.replaceAll('      - "js/floating-cluster-controller.js"\n', '') }],
   ['canonical workflow trigger removed', { ...sources, workflow: sources.workflow.replaceAll('      - "src/components/reader-platform/ReaderActionsRuntime.astro"\n', '') }],
+  ['status gate execution removed', { ...sources, workflow: sources.workflow.replace('node scripts/tts-engine-status-contract-test.js', 'echo skipped-status-contract') }],
   ['worker lazy policy removed', { ...sources, cacheAssets: sources.cacheAssets.replace("  'js/vosk-tts-worker.js',\n  'manifest.json',", "  'manifest.json',") }],
   ['worker version entry removed', { ...sources, assetVersions: sources.assetVersions.replace(/^  'js\/vosk-tts-worker\.js':.*\n/m, '') }],
 ];
