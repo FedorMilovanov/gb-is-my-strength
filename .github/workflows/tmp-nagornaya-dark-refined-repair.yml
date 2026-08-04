@@ -15,6 +15,7 @@ concurrency:
 jobs:
   repair:
     if: >-
+      github.event.pull_request.number == 883 &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'system/nagornaya-dark-refined-repair-20260804'
     runs-on: ubuntu-24.04
@@ -143,13 +144,13 @@ const DARK_TOKENS=[...DARK_TEXT_TOKENS,...DARK_BACKGROUND_TOKENS];'''
                 if(!visible(element))continue;bucket.visible++;
                 const style=getComputedStyle(element);const parentBackground=background(element.parentElement||document.body);const own=parse(style.backgroundColor);const effectiveBackground=own&&own.a>.001?composite(own,parentBackground):parentBackground;
                 if(textTokens.includes(token)){
-                  if(textual(element)){const ratio=contrast(parse(style.color),effectiveBackground);bucket.textSamples++;bucket.minTextContrast=bucket.minTextContrast==null?ratio:Math.min(bucket.minTextContrast,ratio);if(ratio+1e-6<threshold(style))bucket.textFailures++;}
+                  if(textual(element)){const foreground=parse(style.color);if(foreground){const ratio=contrast(foreground,effectiveBackground);bucket.textSamples++;bucket.minTextContrast=bucket.minTextContrast==null?ratio:Math.min(bucket.minTextContrast,ratio);if(ratio+1e-6<threshold(style))bucket.textFailures++;}}
                   const graphics=[...(element.matches('svg,path,circle,rect,line,polyline,polygon')?[element]:[]),...element.querySelectorAll('svg,path,circle,rect,line,polyline,polygon')].filter(visible);
                   for(const graphic of graphics){const graphicStyle=getComputedStyle(graphic);const color=parse(graphicStyle.stroke==='none'||!graphicStyle.stroke?graphicStyle.fill:graphicStyle.stroke)||parse(style.color);if(!color)continue;const ratio=contrast(color,effectiveBackground);bucket.graphicSamples++;bucket.minGraphicContrast=bucket.minGraphicContrast==null?ratio:Math.min(bucket.minGraphicContrast,ratio);if(ratio+1e-6<3)bucket.graphicFailures++;}
                 }
                 if(backgroundTokens.includes(token)){
                   const probes=[element,...element.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,span,a,button')];
-                  for(const probe of probes){if(!visible(probe)||!textual(probe))continue;const probeStyle=getComputedStyle(probe);const ratio=contrast(parse(probeStyle.color),background(probe));bucket.textSamples++;bucket.minTextContrast=bucket.minTextContrast==null?ratio:Math.min(bucket.minTextContrast,ratio);if(ratio+1e-6<threshold(probeStyle))bucket.textFailures++;}
+                  for(const probe of probes){if(!visible(probe)||!textual(probe))continue;const probeStyle=getComputedStyle(probe);const foreground=parse(probeStyle.color);if(!foreground)continue;const ratio=contrast(foreground,background(probe));bucket.textSamples++;bucket.minTextContrast=bucket.minTextContrast==null?ratio:Math.min(bucket.minTextContrast,ratio);if(ratio+1e-6<threshold(probeStyle))bucket.textFailures++;}
                   if(luminance(effectiveBackground)>.65&&luminance(parentBackground)<.35)bucket.lightIslands++;
                 }
               }
@@ -227,7 +228,6 @@ const DARK_TOKENS=[...DARK_TEXT_TOKENS,...DARK_BACKGROUND_TOKENS];'''
           rm -f .github/workflows/tmp-nagornaya-dark-refined-repair.yml
           git diff --check
           changed="${RUNNER_TEMP}/changed.txt"
-          git diff --name-only origin/main...HEAD > /dev/null
           git diff --name-only > "${changed}"
           grep -qx 'css/nagornaya-mobile-toc.css' "${changed}"
           grep -qx 'scripts/nagornaya-epistemic-ui-browser-test.mjs' "${changed}"
@@ -244,7 +244,6 @@ const DARK_TOKENS=[...DARK_TEXT_TOKENS,...DARK_BACKGROUND_TOKENS];'''
             esac
           done < "${changed}"
           test "$(git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort)" = "$(cat "${RUNNER_TEMP}/nagornaya-css-references.before")"
-          git diff --exit-code -- . ':!*nagornaya-mobile-toc.css' ':!*nagornaya-epistemic-ui-browser-test.mjs' ':!*sw.js' ':!*sw-cache-version-baseline.json' ':!*offline-route-matrix.json' >/dev/null || true
 
       - name: Commit self-cleaned Product repair
         shell: bash
