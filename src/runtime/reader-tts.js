@@ -1,14 +1,14 @@
 (() => {
   'use strict';
 
-  const VERSION = 1;
+  const VERSION = 2;
   if (window.GBReaderTTS?.version === VERSION) return;
 
   const PLAY_SELECTOR = '[data-fc-action="play"]';
   const RATE_KEY = 'gb:audio:rate';
   const SPEAKER_KEY = 'gb:audio:speaker';
   const ENGINE_SRC = '/js/vosk-tts-engine.js';
-  const LOCK_NAME = 'gb-vosk-model-init-v1';
+  const LOCK_NAME = 'gb-vosk-model-init-v2';
   const MAX_CHUNK = 520;
   const EXCLUDED_BLOCK = [
     'nav', 'aside', 'footer', '[hidden]', '[aria-hidden="true"]',
@@ -34,27 +34,18 @@
     utterance: null,
     voskHandle: null,
     voskAudio: null,
+    voskSynthesisProgress: 0,
     generatedRate: 1,
     rate: readRate(),
     speaker: readSpeaker(),
     voice: null,
     pausedDuringStart: false,
     progressFrame: 0,
-    progressTimer: 0,
     followElement: null,
     engineScriptPromise: null,
     warmPromise: null,
     lastError: null,
   };
-
-  let customWords = new Set();
-  const customTermsReady = fetch('/js/vosk-custom-terms.json', { cache: 'force-cache' })
-    .then((response) => response.ok ? response.json() : {})
-    .then((json) => {
-      customWords = new Set(Object.keys(json || {}).filter((key) => key && key !== '_comment').map((key) => key.toLowerCase()));
-      return customWords;
-    })
-    .catch(() => customWords);
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -82,6 +73,10 @@
     return Array.from(document.querySelectorAll(PLAY_SELECTOR));
   }
 
+  function currentPart() {
+    return state.parts[state.index] || null;
+  }
+
   function publicButtonState(phase) {
     if (phase === 'paused') return 'paused';
     if (phase === 'playing' || phase === 'starting') return 'playing';
@@ -98,6 +93,30 @@
     return 'Озвучить статью';
   }
 
+  function snapshot() {
+    return {
+      version: VERSION,
+      phase: state.phase,
+      engine: state.engine,
+      index: state.index,
+      partCount: state.parts.length,
+      offset: state.offset,
+      rate: state.rate,
+      progress: progressFor(),
+      synthesisProgress: state.voskSynthesisProgress,
+      error: state.lastError,
+    };
+  }
+
+  function updateMediaSession(phase) {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = phase === 'playing' || phase === 'starting'
+        ? 'playing'
+        : phase === 'paused' ? 'paused' : 'none';
+    } catch {}
+  }
+
   function setPhase(phase) {
     state.phase = phase;
     const buttonState = publicButtonState(phase);
@@ -106,13 +125,11 @@
       button.dataset.state = buttonState;
       button.dataset.ttsPhase = phase;
       button.setAttribute('aria-label', label);
-      button.setAttribute('aria-pressed', phase === 'playing' || phase === 'paused' || phase === 'starting' ? 'true' : 'false');
+      button.setAttribute('aria-pressed', ['playing', 'paused', 'starting'].includes(phase) ? 'true' : 'false');
       if (phase === 'starting') button.setAttribute('aria-busy', 'true');
       else button.removeAttribute('aria-busy');
     });
-    try {
-      window.dispatchEvent(new CustomEvent('gb:reader-tts-state', { detail: snapshot() }));
-    } catch {}
+    try { window.dispatchEvent(new CustomEvent('gb:reader-tts-state', { detail: snapshot() })); } catch {}
     updateMediaSession(phase);
   }
 
@@ -123,11 +140,8 @@
 
   function progressFor(offset = state.offset) {
     if (!state.totalChars) return 0;
-    return clamp((state.completedChars + clamp(offset, 0, currentPart()?.text.length || 0)) / state.totalChars, 0, 1);
-  }
-
-  function currentPart() {
-    return state.parts[state.index] || null;
+    const partLength = currentPart()?.text.length || 0;
+    return clamp((state.completedChars + clamp(offset, 0, partLength)) / state.totalChars, 0, 1);
   }
 
   function normalizeText(value) {
@@ -149,19 +163,19 @@
     const sentences = text.match(/[^.!?…]+[.!?…]+(?:[»”"])?|[^.!?…]+$/g) || [text];
     const chunks = [];
     let current = '';
-    const pushCurrent = () => {
+    const flush = () => {
       const value = normalizeText(current);
       if (value) chunks.push(value);
       current = '';
     };
-    for (const sentenceValue of sentences) {
-      const sentence = normalizeText(sentenceValue);
+    for (const rawSentence of sentences) {
+      const sentence = normalizeText(rawSentence);
       if (!sentence) continue;
-      if ((current + ' ' + sentence).trim().length <= MAX_CHUNK) {
-        current = (current + ' ' + sentence).trim();
+      if (`${current} ${sentence}`.trim().length <= MAX_CHUNK) {
+        current = `${current} ${sentence}`.trim();
         continue;
       }
-      pushCurrent();
+      flush();
       if (sentence.length <= MAX_CHUNK) {
         current = sentence;
         continue;
@@ -175,22 +189,22 @@
       }
       current = rest;
     }
-    pushCurrent();
+    flush();
     return chunks;
   }
 
   function collectParts() {
     const root = document.querySelector('article.article-body, article[data-pagefind-body], main[data-pagefind-body], article, main#main-content, main');
     if (!root) return [];
-    const candidates = Array.from(root.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,figcaption,dt,dd'));
+    const elements = Array.from(root.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,figcaption,dt,dd'));
     const parts = [];
-    for (const element of candidates) {
+    for (const element of elements) {
       if (element.closest(EXCLUDED_BLOCK)) continue;
       if (element.matches('li') && element.querySelector(':scope > p, :scope > ul, :scope > ol')) continue;
       if (element.matches('blockquote') && element.querySelector(':scope > p')) continue;
       const text = readableText(element);
       if (!text) continue;
-      for (const chunk of splitText(text)) parts.push({ text: chunk, element });
+      splitText(text).forEach((chunk) => parts.push({ text: chunk, element }));
     }
     return parts;
   }
@@ -211,86 +225,18 @@
       || null;
   }
 
-  function patchCoreDictionary() {
-    const core = window.VoskTTSCore;
-    if (!core || core.__gbManualOverridePatched || typeof core.parseDictionary !== 'function') return;
-    const original = core.parseDictionary;
-    core.parseDictionary = function patchedParseDictionary(...args) {
-      const dictionary = original.apply(this, args);
-      if (dictionary && typeof dictionary.delete === 'function') {
-        customWords.forEach((word) => dictionary.delete(word));
-      }
-      return dictionary;
-    };
-    core.__gbManualOverridePatched = true;
-  }
-
-  function enableOrtProxy() {
-    try {
-      if (window.ort?.env?.wasm) window.ort.env.wasm.proxy = true;
-    } catch (error) {
-      console.warn('[GBReaderTTS] ORT proxy activation failed', error);
-    }
-  }
-
-  function patchVoskEngine() {
-    const engine = window.VoskTTSEngine;
-    if (!engine || engine.__gbReaderPatched) return;
-    const wrapWithLock = (methodName) => {
-      const original = engine[methodName];
-      if (typeof original !== 'function') return;
-      engine[methodName] = function lockedVoskLoad(...args) {
-        const invoke = async () => {
-          await customTermsReady;
-          patchCoreDictionary();
-          enableOrtProxy();
-          return original.apply(engine, args);
-        };
-        if (navigator.locks?.request) {
-          return navigator.locks.request(LOCK_NAME, { mode: 'exclusive' }, invoke);
-        }
-        return invoke();
-      };
-    };
-    wrapWithLock('ensureLoaded');
-    wrapWithLock('retryLoading');
-    Object.defineProperty(engine, '__gbReaderPatched', { value: true });
-  }
-
-  function inspectLoadedScript(script) {
-    const src = String(script?.src || '');
-    if (/onnxruntime/i.test(src)) enableOrtProxy();
-    if (/vosk-tts-core/i.test(src)) patchCoreDictionary();
-    if (/vosk-tts-engine/i.test(src)) patchVoskEngine();
-  }
-
-  document.addEventListener('load', (event) => {
-    if (event.target instanceof HTMLScriptElement) inspectLoadedScript(event.target);
-  }, true);
-  enableOrtProxy();
-  patchCoreDictionary();
-  patchVoskEngine();
-
   function ensureVoskScript() {
-    if (window.VoskTTSEngine) {
-      patchVoskEngine();
-      return Promise.resolve(window.VoskTTSEngine);
-    }
+    if (window.VoskTTSEngine) return Promise.resolve(window.VoskTTSEngine);
     if (state.engineScriptPromise) return state.engineScriptPromise;
     state.engineScriptPromise = new Promise((resolve, reject) => {
       const existing = Array.from(document.scripts).find((script) => /vosk-tts-engine\.js/i.test(script.src || ''));
       const script = existing || document.createElement('script');
-      const done = () => {
-        patchVoskEngine();
-        if (window.VoskTTSEngine) resolve(window.VoskTTSEngine);
-        else reject(new Error('Vosk engine did not initialize'));
-      };
+      const done = () => window.VoskTTSEngine
+        ? resolve(window.VoskTTSEngine)
+        : reject(new Error('Vosk engine did not initialize'));
       if (existing) {
-        if (window.VoskTTSEngine) done();
-        else {
-          existing.addEventListener('load', done, { once: true });
-          existing.addEventListener('error', () => reject(new Error('Vosk engine script failed')), { once: true });
-        }
+        existing.addEventListener('load', done, { once: true });
+        existing.addEventListener('error', () => reject(new Error('Vosk engine script failed')), { once: true });
       } else {
         script.src = ENGINE_SRC;
         script.defer = true;
@@ -298,10 +244,13 @@
         script.addEventListener('error', () => reject(new Error('Vosk engine script failed')), { once: true });
         document.head.appendChild(script);
       }
-    }).finally(() => {
-      state.engineScriptPromise = null;
-    });
+    }).finally(() => { state.engineScriptPromise = null; });
     return state.engineScriptPromise;
+  }
+
+  function withModelLock(callback) {
+    if (!navigator.locks?.request) return callback();
+    return navigator.locks.request(LOCK_NAME, { mode: 'exclusive' }, callback);
   }
 
   function warmVosk({ retry = false } = {}) {
@@ -310,16 +259,18 @@
       .then((engine) => {
         if (!engine.isSupported?.()) return null;
         if (engine.isReady?.()) return engine;
-        if (retry && engine.retryLoading) return engine.retryLoading({ clearOptOut: true }).then(() => engine);
-        return engine.ensureLoaded().then(() => engine);
+        return withModelLock(async () => {
+          if (engine.isReady?.()) return engine;
+          if (retry && engine.retryLoading) await engine.retryLoading({ clearOptOut: true });
+          else await engine.ensureLoaded();
+          return engine;
+        });
       })
       .catch((error) => {
         if (!error?.userCancelled) console.warn('[GBReaderTTS] Vosk warm-up failed; system voice remains available', error);
         return null;
       })
-      .finally(() => {
-        state.warmPromise = null;
-      });
+      .finally(() => { state.warmPromise = null; });
     return state.warmPromise;
   }
 
@@ -334,22 +285,21 @@
 
   function clearProgressLoop() {
     if (state.progressFrame) cancelAnimationFrame(state.progressFrame);
-    if (state.progressTimer) clearTimeout(state.progressTimer);
     state.progressFrame = 0;
-    state.progressTimer = 0;
   }
 
   function findVoskAudio() {
-    const audio = Array.from(document.querySelectorAll('audio')).reverse().find((candidate) => /^blob:/.test(candidate.currentSrc || candidate.src || ''));
-    return audio || null;
+    return document.querySelector('audio[data-gb-vosk-audio]')
+      || Array.from(document.querySelectorAll('audio')).reverse().find((audio) => /^blob:/.test(audio.currentSrc || audio.src || ''))
+      || null;
   }
 
-  function watchVoskProgress(operation, startedAt) {
+  function watchVoskProgress(operation) {
     clearProgressLoop();
     const tick = () => {
-      if (operation !== state.token || state.engine !== 'vosk' || state.phase === 'idle' || state.phase === 'complete' || state.phase === 'error') return;
+      if (operation !== state.token || state.engine !== 'vosk' || ['idle', 'complete', 'error'].includes(state.phase)) return;
       const audio = findVoskAudio();
-      if (audio) {
+      if (audio && /^blob:/.test(audio.currentSrc || audio.src || '')) {
         state.voskAudio = audio;
         if (state.pausedDuringStart || state.phase === 'paused') {
           try { audio.pause(); } catch {}
@@ -357,12 +307,13 @@
         } else if (state.phase === 'starting') {
           setPhase('playing');
         }
-        const ratio = Number.isFinite(audio.duration) && audio.duration > 0 ? clamp(audio.currentTime / audio.duration, 0, 1) : 0;
+        const ratio = Number.isFinite(audio.duration) && audio.duration > 0
+          ? clamp(audio.currentTime / audio.duration, 0, 1)
+          : 0;
         setProgress(progressFor(Math.round((currentPart()?.text.length || 0) * ratio)));
       } else {
-        const elapsed = performance.now() - startedAt;
-        const synthetic = Math.min(0.18, 0.015 + elapsed / 120000);
-        setProgress(progressFor(Math.round((currentPart()?.text.length || 0) * synthetic)));
+        const preparationShare = 0.08 * clamp(state.voskSynthesisProgress, 0, 1);
+        setProgress(progressFor(Math.round((currentPart()?.text.length || 0) * preparationShare)));
       }
       state.progressFrame = requestAnimationFrame(tick);
     };
@@ -392,6 +343,7 @@
     state.utterance = null;
     state.voskHandle = null;
     state.voskAudio = null;
+    state.voskSynthesisProgress = 0;
     state.pausedDuringStart = false;
     if (state.index >= state.parts.length) {
       setProgress(1);
@@ -410,6 +362,7 @@
       state.engine = 'webspeech';
       state.voskHandle = null;
       state.voskAudio = null;
+      state.voskSynthesisProgress = 0;
       speakCurrent();
       return;
     }
@@ -447,7 +400,7 @@
     const engine = window.VoskTTSEngine;
     if (!engine?.isReady?.()) {
       setPhase('starting');
-      warmVosk({ retry: false }).then((readyEngine) => {
+      warmVosk().then((readyEngine) => {
         if (operation !== state.token) return;
         if (!readyEngine?.isReady?.()) {
           if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
@@ -465,9 +418,9 @@
     state.engine = 'vosk';
     state.generatedRate = state.rate;
     state.voskAudio = null;
+    state.voskSynthesisProgress = 0;
     setPhase(state.pausedDuringStart ? 'paused' : 'starting');
     followCurrentElement();
-    const startedAt = performance.now();
     state.voskHandle = engine.speak(
       text,
       state.rate,
@@ -475,7 +428,7 @@
       () => advance(operation),
       (error) => fail(operation, error),
     );
-    watchVoskProgress(operation, startedAt);
+    watchVoskProgress(operation);
   }
 
   function speakCurrent() {
@@ -488,8 +441,7 @@
     state.offset = clamp(state.offset, 0, part.text.length);
     const text = part.text.slice(state.offset).replace(/^\s+/, '');
     if (!text) {
-      const operation = state.token;
-      advance(operation);
+      advance(state.token);
       return;
     }
     const operation = ++state.token;
@@ -509,6 +461,7 @@
     state.totalChars = 0;
     state.lastError = null;
     state.pausedDuringStart = false;
+    state.voskSynthesisProgress = 0;
     setProgress(0);
     setPhase('starting');
     const operation = state.token;
@@ -520,8 +473,7 @@
         fail(operation, new Error('На странице не найден текст для озвучки'));
         return;
       }
-      if (state.phase === 'paused') return;
-      speakCurrent();
+      if (state.phase !== 'paused') speakCurrent();
     });
   }
 
@@ -540,6 +492,7 @@
     state.utterance = null;
     state.voskHandle = null;
     state.voskAudio = null;
+    state.voskSynthesisProgress = 0;
   }
 
   function pause() {
@@ -567,7 +520,6 @@
     if (state.phase !== 'paused') return;
     state.pausedDuringStart = false;
     if (!state.parts.length) {
-      setPhase('starting');
       beginSession();
       return;
     }
@@ -578,7 +530,7 @@
     }
     if (state.engine === 'vosk') {
       const audio = state.voskAudio || findVoskAudio();
-      if (audio?.src) {
+      if (audio?.src && /^blob:/.test(audio.currentSrc || audio.src || '')) {
         state.voskAudio = audio;
         const promise = audio.play();
         if (promise?.catch) promise.catch((error) => fail(state.token, error));
@@ -612,20 +564,14 @@
       window.GBAudio.toggle();
       return;
     }
-    if (state.phase === 'playing' || state.phase === 'starting') {
-      pause();
-      return;
-    }
-    if (state.phase === 'paused') {
-      resume();
-      return;
-    }
+    if (state.phase === 'playing' || state.phase === 'starting') return pause();
+    if (state.phase === 'paused') return resume();
     beginSession();
   }
 
   function applyRateChange() {
     state.rate = readRate();
-    if (state.phase !== 'playing' && state.phase !== 'paused' && state.phase !== 'starting') return;
+    if (!['playing', 'paused', 'starting'].includes(state.phase)) return;
     if (state.engine === 'vosk') {
       const audio = state.voskAudio || findVoskAudio();
       if (audio) {
@@ -650,8 +596,7 @@
   function switchToVosk(event) {
     if (event?.detail) event.detail.handled = true;
     warmVosk({ retry: true }).then((engine) => {
-      if (!engine?.isReady?.()) return;
-      if (state.engine !== 'webspeech' || !currentPart()) return;
+      if (!engine?.isReady?.() || state.engine !== 'webspeech' || !currentPart()) return;
       const wasPaused = state.phase === 'paused';
       state.token += 1;
       try { window.speechSynthesis.cancel(); } catch {}
@@ -672,24 +617,18 @@
 
   function skip(delta) {
     if (!state.parts.length) return;
+    const wasPaused = state.phase === 'paused';
     cancelActive({ invalidate: true });
     state.index = clamp(state.index + delta, 0, state.parts.length - 1);
     state.offset = 0;
     rebuildTotals();
-    if (state.phase === 'paused') setProgress(progressFor());
-    else {
+    if (wasPaused) {
+      setPhase('paused');
+      setProgress(progressFor());
+    } else {
       setPhase('starting');
       speakCurrent();
     }
-  }
-
-  function updateMediaSession(phase) {
-    if (!('mediaSession' in navigator)) return;
-    try {
-      navigator.mediaSession.playbackState = phase === 'playing' || phase === 'starting'
-        ? 'playing'
-        : phase === 'paused' ? 'paused' : 'none';
-    } catch {}
   }
 
   function installMediaSession() {
@@ -730,18 +669,10 @@
     }
   }
 
-  function snapshot() {
-    return {
-      version: VERSION,
-      phase: state.phase,
-      engine: state.engine,
-      index: state.index,
-      partCount: state.parts.length,
-      offset: state.offset,
-      rate: state.rate,
-      progress: progressFor(),
-      error: state.lastError,
-    };
+  function onVoskSynthesisProgress(event) {
+    const id = event?.detail?.id;
+    if (!state.voskHandle || id !== state.voskHandle.id) return;
+    state.voskSynthesisProgress = clamp(Number(event.detail.value) || 0, 0, 1);
   }
 
   state.voice = pickRussianVoice();
@@ -756,6 +687,7 @@
   window.addEventListener('gb:tts-rate-change', applyRateChange);
   window.addEventListener('gb:vosk-switch-request', switchToVosk);
   window.addEventListener('gb:vosk-retry-request', retryVosk);
+  window.addEventListener('gb:vosk-synthesis-progress', onVoskSynthesisProgress);
   window.addEventListener('pagehide', () => stop({ silent: true }));
   window.addEventListener('beforeunload', () => stop({ silent: true }));
   installMediaSession();
@@ -771,8 +703,6 @@
     warmVosk,
     getState: snapshot,
   });
-  document.documentElement.dataset.gbReaderTtsReady = '1';
-  try {
-    window.dispatchEvent(new CustomEvent('gb:reader-tts-ready', { detail: { version: VERSION } }));
-  } catch {}
+  document.documentElement.dataset.gbReaderTtsReady = String(VERSION);
+  try { window.dispatchEvent(new CustomEvent('gb:reader-tts-ready', { detail: { version: VERSION } })); } catch {}
 })();
