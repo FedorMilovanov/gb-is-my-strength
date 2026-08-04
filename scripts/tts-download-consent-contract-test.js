@@ -74,12 +74,20 @@ function validate(engine, worker, css) {
     if (!pattern.test(css)) problems.push(`css: ${label}`);
   }
 
-  const match = engine.match(/NOTICE_CSS_URL\s*=\s*['"][^'"]+\?v=([a-f0-9]{8})['"]/);
-  if (!match) {
+  const cssMatch = engine.match(/NOTICE_CSS_URL\s*=\s*['"][^'"]+\?v=([a-f0-9]{8})['"]/);
+  if (!cssMatch) {
     problems.push('engine: versioned notice stylesheet URL missing');
   } else {
-    const actual = assetRevision(css);
-    if (match[1] !== actual) problems.push(`engine: stylesheet revision ${match[1]} != ${actual}`);
+    const actualCss = assetRevision(css);
+    if (cssMatch[1] !== actualCss) problems.push(`engine: stylesheet revision ${cssMatch[1]} != ${actualCss}`);
+  }
+
+  const workerMatch = engine.match(/WORKER_SRC\s*=\s*['"][^'"]+\?v=([a-f0-9]{8})['"]/);
+  if (!workerMatch) {
+    problems.push('engine: versioned persistent Worker URL missing');
+  } else {
+    const actualWorker = assetRevision(worker);
+    if (workerMatch[1] !== actualWorker) problems.push(`engine: Worker revision ${workerMatch[1]} != ${actualWorker}`);
   }
 
   return problems;
@@ -132,7 +140,13 @@ const mutations = [
   },
   {
     name: 'stylesheet revision drifts',
-    engine: engine.replace(/\?v=[a-f0-9]{8}/, '?v=00000000'),
+    engine: engine.replace(/(NOTICE_CSS_URL\s*=\s*['"][^'"]+\?v=)[a-f0-9]{8}/, '$100000000'),
+    worker,
+    css,
+  },
+  {
+    name: 'Worker revision drifts',
+    engine: engine.replace(/(WORKER_SRC\s*=\s*['"][^'"]+\?v=)[a-f0-9]{8}/, '$100000000'),
     worker,
     css,
   },
