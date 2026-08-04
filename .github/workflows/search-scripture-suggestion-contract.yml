@@ -1,0 +1,42 @@
+name: Search Scripture Suggestion Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "js/search.js"
+      - "data/search-manifest.json"
+      - "data/bible/**"
+      - "src/lib/bible-reference-core.mjs"
+      - "scripts/search-scripture-suggestion-contract.mjs"
+      - ".github/workflows/search-scripture-suggestion-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "js/search.js"
+      - "data/search-manifest.json"
+      - "data/bible/**"
+      - "src/lib/bible-reference-core.mjs"
+      - "scripts/search-scripture-suggestion-contract.mjs"
+      - ".github/workflows/search-scripture-suggestion-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  truthful-scripture-suggestions:
+    name: Truthful manifest-backed Scripture suggestions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+      - name: Validate contract syntax
+        run: node --check scripts/search-scripture-suggestion-contract.mjs
+      - name: Enforce truthful public suggestions
+        run: node scripts/search-scripture-suggestion-contract.mjs
