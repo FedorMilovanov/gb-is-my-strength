@@ -21,6 +21,7 @@ const FORBIDDEN_COPY = [
   'Поиск по Писанию',
   'Введите ссылку или слово из текста:'
 ];
+const EXPECTED_GOVERNED_ARRAY = `[\"${EXPECTED_SUGGESTIONS.join('\",\"')}\"]`;
 
 function fail(message) {
   console.error(`SEARCH SCRIPTURE SUGGESTION CONTRACT FAILED: ${message}`);
@@ -65,6 +66,10 @@ for (const text of FORBIDDEN_COPY) {
   if (source.includes(text)) fail(`misleading legacy copy remains: ${text}`);
 }
 
+if (!source.includes(EXPECTED_GOVERNED_ARRAY)) {
+  fail(`governed Scripture-scope suggestion array is absent: ${EXPECTED_GOVERNED_ARRAY}`);
+}
+
 for (const suggestion of EXPECTED_SUGGESTIONS) {
   const id = referenceId(suggestion, registry);
   if (!id) {
@@ -74,10 +79,6 @@ for (const suggestion of EXPECTED_SUGGESTIONS) {
   if (!manifestReferences.has(id)) {
     fail(`public suggestion has no exact manifest owner: ${suggestion} (${id})`);
   }
-  const occurrences = source.split(`\"${suggestion}\"`).length - 1;
-  if (occurrences !== 1) {
-    fail(`public suggestion must occur exactly once in the governed list: ${suggestion}; found ${occurrences}`);
-  }
 }
 
 for (const suggestion of FORBIDDEN_SUGGESTIONS) {
@@ -86,8 +87,8 @@ for (const suggestion of FORBIDDEN_SUGGESTIONS) {
   }
 }
 
-const expectedArray = `var se=[\"Нагорная проповедь\",\"Иер 17:9\",\"Код да Винчи\",\"благодать\",\"Павел\"]`;
-if (!source.includes(expectedArray)) {
+const expectedGeneralArray = `var se=[\"Нагорная проповедь\",\"Иер 17:9\",\"Код да Винчи\",\"благодать\",\"Павел\"]`;
+if (!source.includes(expectedGeneralArray)) {
   fail('general popular-query list drifted; this contract governs only the Scripture-scope suggestion list');
 }
 
