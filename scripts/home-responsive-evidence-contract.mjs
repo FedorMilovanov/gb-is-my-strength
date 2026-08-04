@@ -226,13 +226,15 @@ async function assertVisualRegressionContracts(page, width, height) {
   }
 }
 
-async function assertResponsiveLayout(page, width, height, expectedColumns) {
+async function assertResponsiveLayout(page, width, height) {
   await page.setViewportSize({ width, height });
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(100);
 
   const state = await page.evaluate(() => {
     const routes = document.querySelector('.h-home-routes');
+    const cards = routes ? [...routes.querySelectorAll('.h-home-route')] : [];
+    const dividers = routes ? [...routes.querySelectorAll('.h-home-route__divider')] : [];
     const gateway = document.getElementById('issledovat');
     const menu = document.getElementById('hMobileMenuBtn');
     const style = routes ? getComputedStyle(routes) : null;
@@ -241,7 +243,16 @@ async function assertResponsiveLayout(page, width, height, expectedColumns) {
       overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       display: style?.display || '',
       columns: style?.gridTemplateColumns?.split(' ').filter(Boolean).length || 0,
-      routeCount: routes?.querySelectorAll('.h-home-route').length || 0,
+      overflowX: style?.overflowX || '',
+      scrollSnapType: style?.scrollSnapType || '',
+      touchAction: style?.touchAction || '',
+      internallyScrollable: routes ? routes.scrollWidth > routes.clientWidth + 1 : false,
+      routeCount: cards.length,
+      dividerCount: dividers.length,
+      cardWidths: cards.map((card) => card.getBoundingClientRect().width),
+      cardSnapAlign: cards.map((card) => getComputedStyle(card).scrollSnapAlign),
+      cardSnapStop: cards.map((card) => getComputedStyle(card).scrollSnapStop),
+      dividerWidths: dividers.map((divider) => divider.getBoundingClientRect().width),
       menuDisplay: menu ? getComputedStyle(menu).display : '',
       gatewayWidth: rect?.width || 0,
       left: rect?.left || 0,
@@ -251,10 +262,39 @@ async function assertResponsiveLayout(page, width, height, expectedColumns) {
     };
   });
 
-  assert.equal(state.overflow, false, `${width}×${height}: horizontal overflow`);
-  assert.equal(state.display, 'grid', `${width}×${height}: gateway is not a grid`);
-  assert.equal(state.columns, expectedColumns, `${width}×${height}: expected ${expectedColumns} tracks, got ${state.columns}`);
+  assert.equal(state.overflow, false, `${width}×${height}: horizontal document overflow`);
   assert.equal(state.routeCount, 5, `${width}×${height}: route count changed`);
+  assert.equal(state.dividerCount, 4, `${width}×${height}: divider count changed`);
+  assert.equal(state.dividerWidths.every((value) => value >= 0.5 && value <= 1.5), true, `${width}×${height}: divider width drifted`);
+
+  if (width <= 900) {
+    const expectedCardWidth = Math.min(width * 0.82, 284);
+    assert.equal(state.display, 'flex', `${width}×${height}: gateway is not the governed carousel`);
+    assert.equal(state.internallyScrollable, true, `${width}×${height}: carousel has no internal scroll range`);
+    assert.match(state.overflowX, /auto|scroll/, `${width}×${height}: carousel overflow-x is not scrollable`);
+    assert.match(state.scrollSnapType, /x\s+mandatory/, `${width}×${height}: carousel scroll-snap contract is missing`);
+    assert.equal(state.touchAction, 'pan-x', `${width}×${height}: carousel touch ownership drifted`);
+    assert.equal(state.cardWidths.every((value) => Math.abs(value - expectedCardWidth) <= 2), true, `${width}×${height}: carousel card basis drifted`);
+    assert.equal(state.cardSnapAlign.every((value) => value === 'start'), true, `${width}×${height}: carousel cards lost snap alignment`);
+    assert.equal(state.cardSnapStop.every((value) => value === 'always'), true, `${width}×${height}: carousel cards lost mandatory snap stops`);
+
+    const scrollState = await page.evaluate(async () => {
+      const routes = document.querySelector('.h-home-routes');
+      if (!(routes instanceof HTMLElement)) return null;
+      routes.scrollTo({ left: routes.scrollWidth, behavior: 'auto' });
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const result = { left: routes.scrollLeft, max: routes.scrollWidth - routes.clientWidth };
+      routes.scrollTo({ left: 0, behavior: 'auto' });
+      return result;
+    });
+    assert.ok(scrollState && scrollState.max > 0 && scrollState.left > 0, `${width}×${height}: carousel cannot reach later cards`);
+    assert.ok(scrollState.left <= scrollState.max + 2, `${width}×${height}: carousel scrolled beyond its internal range`);
+  } else {
+    assert.equal(state.display, 'grid', `${width}×${height}: desktop gateway is not a grid`);
+    assert.equal(state.columns, 9, `${width}×${height}: expected five card tracks and four divider tracks, got ${state.columns}`);
+    assert.equal(state.internallyScrollable, false, `${width}×${height}: desktop grid unexpectedly scrolls horizontally`);
+  }
+
   if (width <= 760) assert.notEqual(state.menuDisplay, 'none', `${width}px: mobile menu hidden`);
   else assert.equal(state.menuDisplay, 'none', `${width}px: mobile menu visible above boundary`);
   if (width >= 1600) {
@@ -542,17 +582,19 @@ export async function runResponsiveEvidence(browserName, browserType, baseUrl) {
 
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
-    for (const spec of [
-      [320, 568, 2],
-      [390, 844, 2],
-      [760, 900, 2],
-      [761, 900, 6],
-      [820, 1180, 6],
-      [1024, 450, 6],
-      [1280, 900, 5],
-      [1480, 900, 5],
-      [1720, 980, 5],
-    ]) await assertResponsiveLayout(page, ...spec);
+    for (const [width, height] of [
+      [320, 568],
+      [390, 844],
+      [760, 900],
+      [761, 900],
+      [820, 1180],
+      [900, 900],
+      [901, 900],
+      [1024, 450],
+      [1280, 900],
+      [1480, 900],
+      [1720, 980],
+    ]) await assertResponsiveLayout(page, width, height);
 
     await assertSearchLifecycle(page, browserName);
     const compactEvidence = await captureCompactEvidence(page, browserName);
@@ -576,13 +618,29 @@ export async function runResponsiveNoJavaScript(browserName, browserType, baseUr
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'load' });
     await assertDirectionObjects(page, `${browserName} no-JS evidence`);
-    for (const [width, height] of [[320, 568], [390, 844], [820, 1180], [1024, 450], [1480, 900], [1720, 980]]) {
+    for (const [width, height] of [[320, 568], [390, 844], [820, 1180], [900, 900], [901, 900], [1024, 450], [1480, 900], [1720, 980]]) {
       await page.setViewportSize({ width, height });
-      assert.equal(
-        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
-        true,
-        `no-JS overflow at ${width}×${height}`,
-      );
+      const state = await page.evaluate(() => {
+        const routes = document.querySelector('.h-home-routes');
+        const style = routes ? getComputedStyle(routes) : null;
+        return {
+          documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+          display: style?.display || '',
+          internallyScrollable: routes ? routes.scrollWidth > routes.clientWidth + 1 : false,
+          routeCount: routes?.querySelectorAll('.h-home-route').length || 0,
+          dividerCount: routes?.querySelectorAll('.h-home-route__divider').length || 0,
+        };
+      });
+      assert.equal(state.documentFits, true, `no-JS overflow at ${width}×${height}`);
+      assert.equal(state.routeCount, 5, `no-JS route count changed at ${width}×${height}`);
+      assert.equal(state.dividerCount, 4, `no-JS divider count changed at ${width}×${height}`);
+      if (width <= 900) {
+        assert.equal(state.display, 'flex', `no-JS carousel missing at ${width}×${height}`);
+        assert.equal(state.internallyScrollable, true, `no-JS carousel cannot reach later cards at ${width}×${height}`);
+      } else {
+        assert.equal(state.display, 'grid', `no-JS desktop grid missing at ${width}×${height}`);
+        assert.equal(state.internallyScrollable, false, `no-JS desktop grid scrolls at ${width}×${height}`);
+      }
     }
     return { browser: `${browserName}-responsive-no-js`, result: 'PASS' };
   } finally {
