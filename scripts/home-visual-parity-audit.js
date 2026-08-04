@@ -226,15 +226,18 @@ mustNot(reducedStart === -1 ? '' : ambient.slice(reducedStart), 'display: none',
 
 const directions = read('src/components/home/HomeSections/Directions.astro');
 for (const marker of [
-  'hDirectionsLabel', 'h-home-gateway', 'h-home-routes', 'h-home-route__glyph',
-  '<img', 'alt=""', 'loading="eager"', 'decoding="async"', 'fetchpriority="low"',
-  'h-route-object', 'h-route-object--articles', 'h-route-object--series',
-  'h-route-object--biographies', 'h-route-object--maps', 'h-route-object--confessions',
-  'grid-template-columns: repeat(5, minmax(0, 1fr))',
-  'grid-template-columns: repeat(6, minmax(0, 1fr))',
-  'grid-template-columns: repeat(2, minmax(0, 1fr))',
+  'hDirectionsLabel', 'h-home-gateway', 'h-home-routes', 'data-home-routes',
+  'h-home-route__glyph', '<img', 'alt=""', 'loading="eager"',
+  'decoding="async"', 'fetchpriority="low"', 'h-route-object',
+  'data-home-route-index={index}', 'h-home-route__divider',
+  'data-home-route-divider={index - 1}',
+  'grid-template-columns: repeat(4, minmax(0, 1fr) 1px) minmax(0, 1fr)',
   'width: min(calc(100vw - 260px), 1480px)',
-  'grid-column: 1 / -1',
+  'display: flex', 'flex: 0 0 min(82vw, 284px)',
+  'scroll-snap-type: x mandatory',
+  "const dividers = Array.from(deck.querySelectorAll('.h-home-route__divider'))",
+  'dividers.length !== cards.length - 1',
+  'dividerIndex === activeIndex - 1 || dividerIndex === activeIndex',
 ]) must(directions, marker, `Directions marker: ${marker}`);
 
 for (const asset of directionAssets) {
@@ -248,6 +251,18 @@ count(directions, /href: '\//g) === 5
 count(directions, /class=\{`h-route-object h-route-object--\$\{route\.key\}`\}/g) === 1
   ? ok('gateway renders one semantic image-object template')
   : bad('gateway image-object template changed');
+count(directions, /class="h-home-route__divider"/g) === 1
+  ? ok('gateway owns one divider template for four runtime seams')
+  : bad('gateway divider template count changed');
+count(directions, /data-home-route-divider=\{index - 1\}/g) === 1
+  ? ok('gateway derives each divider from the adjacent route index')
+  : bad('gateway divider indexing contract changed');
+mustNot(directions, 'border-left: 1px solid var(--h-border)', 'legacy card-owned divider');
+for (const retiredLayout of [
+  'grid-template-columns: repeat(6, minmax(0, 1fr))',
+  'grid-template-columns: repeat(2, minmax(0, 1fr))',
+  'grid-column: 1 / -1',
+]) mustNot(directions, retiredLayout, `retired Directions layout: ${retiredLayout}`);
 
 for (const href of ['/articles/', '/nagornaya/', '/biografii/', '/karty/', '/konfessii/']) {
   must(directions, `href: '${href}'`, `gateway route: ${href}`);
