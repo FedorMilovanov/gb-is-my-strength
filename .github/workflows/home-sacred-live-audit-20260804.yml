@@ -79,6 +79,8 @@ jobs:
           }
           const openState = (s) => s.front.visibility === 'hidden' && s.front.opacity <= .05 && s.back.visibility === 'visible' && s.back.opacity >= .95;
           const closedState = (s) => s.front.visibility === 'visible' && s.front.opacity >= .9 && s.back.visibility === 'hidden' && s.back.opacity <= .05;
+          const reducedOpenState = (s) => s.front.visibility === 'hidden' && s.back.visibility === 'visible';
+          const reducedClosedState = (s) => s.front.visibility === 'visible' && s.back.visibility === 'hidden';
           const settledFilter = (value) => {
             const normalized = String(value || '').trim();
             return normalized === 'none' || /^blur\(\s*0(?:\.0+)?(?:px)?\s*\)$/.test(normalized);
@@ -161,7 +163,9 @@ jobs:
               const transitions = await tetra.evaluate((el) => [getComputedStyle(el.querySelector(':scope > .hb-front')).transitionDuration,
                 getComputedStyle(el.querySelector(':scope > .h-tetra-back')).transitionDuration,
                 getComputedStyle(el.querySelector(':scope > .h-tetra-label')).transitionDuration]);
-              assert(closedState(initial) && openState(hover), 'reduced-motion swap failed', { initial, hover });
+              assert(reducedClosedState(initial) && reducedOpenState(hover), 'reduced-motion visibility swap failed', { initial, hover });
+              assert(hover.back.text.includes('Яхве') && hover.label?.visibility === 'visible' && hover.nameColor === hover.inkColor,
+                'reduced-motion translated face is incomplete', { initial, hover });
               assert(transitions.every((v) => v.split(',').every((x) => Number.parseFloat(x) === 0)), 'reduced-motion transitions active', transitions);
               return { initial, hover, transitions };
             } finally { await context.close(); await browser.close(); }
