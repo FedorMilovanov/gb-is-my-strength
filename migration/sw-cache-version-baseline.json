@@ -1,9 +1,9 @@
 {
-  "version": 10,
+  "version": 11,
   "captured": "2026-08-04",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
   "lastReviewedDistProductionCacheVersion": "gb-v192-reader-state-20260724",
-  "currentDistProductionCacheVersion": "gb-v196-scripture-occurrence-runtime-20260804",
-  "currentExpectedCacheVersion": "gb-v196-scripture-occurrence-runtime-20260804",
-  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v196 invalidates the cached search UI after exact Scripture occurrences are rendered from the canonical source-owned index before metadata/Pagefind fallback. Source merge is not a production deployment."
+  "currentDistProductionCacheVersion": "gb-v197-bible-legacy-authority-20260804",
+  "currentExpectedCacheVersion": "gb-v197-bible-legacy-authority-20260804",
+  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v197 invalidates cached site runtime and CSS after the deprecated flat verse dataset, dead .gbx-verse fetch runtime and matching selectors are removed atomically. Source merge is not a production deployment."
 }

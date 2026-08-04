@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v196-scripture-occurrence-runtime-20260804';
+const CACHE_VERSION = 'gb-v197-bible-legacy-authority-20260804';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
