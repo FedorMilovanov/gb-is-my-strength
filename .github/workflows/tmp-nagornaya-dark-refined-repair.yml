@@ -16,10 +16,10 @@ jobs:
   repair:
     if: >-
       github.event_name == 'pull_request' &&
-      github.event.pull_request.number == 883 &&
+      github.event.pull_request.number == 885 &&
       contains(github.event.pull_request.labels.*.name, 'autofix') &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'system/nagornaya-dark-refined-repair-20260804'
+      github.event.pull_request.head.ref == 'fix/nagornaya-dark-refined-repair-20260804'
     permissions:
       contents: write
     runs-on: ubuntu-24.04
@@ -95,32 +95,11 @@ jobs:
           pattern = re.compile(r"('css/nagornaya-mobile-toc\.css':\s*')[0-9a-f]{8}(')")
           if len(pattern.findall(source)) != 1:
               raise SystemExit('asset-version helper anchor drift')
-          updated = pattern.sub(rf"\g<1>{version}\g<2>", source, count=1)
-          helper.write_text(updated, encoding='utf-8')
+          helper.write_text(pattern.sub(rf"\g<1>{version}\g<2>", source, count=1), encoding='utf-8')
           print(f'Bounded Nagornaya CSS revision: {version}; rewritten references: {len(changed)}')
           PY
 
-      - name: Validate targeted source, build, Chromium and SW contracts
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check scripts/nagornaya-epistemic-ui-browser-test.mjs
-          node scripts/cache-bust.js
-          npm run nagornaya:visual-parity:audit
-          npm run guard:shared-files
-          npm run strangler:build:production-like
-          npx playwright install --with-deps chromium
-          node scripts/nagornaya-epistemic-ui-browser-test.mjs
-          npm run sw:dist:audit
-          npm run sw:dist:audit:deploy-switch
-
-      - name: Validate full static publication barrier
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run validate:static-publication
-
-      - name: Enforce bounded non-TTS diff and self-clean
+      - name: Prepare bounded self-cleaned diff
         shell: bash
         run: |
           set -euo pipefail
@@ -145,6 +124,29 @@ jobs:
             esac
           done < "${changed}"
           test "$(git grep -l 'nagornaya-mobile-toc.css?v=' -- '*.html' '*.astro' | sort)" = "$(cat "${RUNNER_TEMP}/nagornaya-css-references.before")"
+
+      - name: Validate targeted source, native build, Chromium and SW contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe_head="$(git stash create 'nagornaya shared-files probe')"
+          test -n "${probe_head}"
+          node scripts/guard-shared-files.js --base origin/main --head "${probe_head}" --branch "${HEAD_REF}"
+          npm run guard:agents-rev
+          node --check scripts/nagornaya-epistemic-ui-browser-test.mjs
+          node scripts/cache-bust.js
+          npm run nagornaya:visual-parity:audit
+          npm run strangler:build:production-like
+          npx playwright install --with-deps chromium
+          node scripts/nagornaya-epistemic-ui-browser-test.mjs
+          npm run sw:dist:audit
+          npm run sw:dist:audit:deploy-switch
+
+      - name: Validate full static publication barrier
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run validate:static-publication
 
       - name: Commit self-cleaned Product repair
         shell: bash
