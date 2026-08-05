@@ -109,6 +109,8 @@ jobs:
         run: |
           node --check scripts/reconcile-search-modal-wave.mjs
           node scripts/reconcile-search-modal-wave.mjs
+          node --check scripts/reconcile-search-modal-webkit-warning.mjs
+          node scripts/reconcile-search-modal-webkit-warning.mjs
           node --check js/search.js
           node --check scripts/search-modal-browser-contract.mjs
           npm run astro:check
