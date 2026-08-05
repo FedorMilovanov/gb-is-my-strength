@@ -4,11 +4,13 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { resolveReferenceForRoute } = require('../migration/legacy-reference-path');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const NO_BUILD = process.argv.includes('--no-build');
-const ROUTE = 'karty/ishod/index.html';
+const PUBLIC_ROUTE = '/karty/ishod/';
+const DIST_ROUTE = 'karty/ishod/index.html';
 const URL = 'https://gospod-bog.ru/karty/ishod/';
 const COMPONENT = 'src/components/karty/ishod/IshodMap.astro';
 const FALLBACK = 'src/components/karty/_shared/MapRuntimeFallback.astro';
@@ -73,16 +75,22 @@ function main() {
   console.log(`ASTRO ISHOD SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'})`);
   runBuild();
 
-  const legacyPath = path.join(ROOT, ROUTE);
-  const distPath = path.join(DIST, ROUTE);
+  let reference;
+  try {
+    reference = resolveReferenceForRoute(PUBLIC_ROUTE);
+  } catch (error) {
+    return bad(`Ishod reference unavailable: ${error.message}`);
+  }
+
+  const referencePath = reference.absolutePath;
+  const distPath = path.join(DIST, DIST_ROUTE);
   const componentPath = path.join(ROOT, COMPONENT);
   const fallbackPath = path.join(ROOT, FALLBACK);
-  if (!fs.existsSync(legacyPath)) return bad(`legacy route missing: ${ROUTE}`);
-  if (!fs.existsSync(distPath)) return bad(`dist route missing: ${ROUTE}`);
+  if (!fs.existsSync(distPath)) return bad(`dist route missing: ${DIST_ROUTE}`);
   if (!fs.existsSync(componentPath)) return bad(`Ishod component missing: ${COMPONENT}`);
   if (!fs.existsSync(fallbackPath)) return bad(`shared map fallback missing: ${FALLBACK}`);
 
-  const legacy = read(legacyPath);
+  const legacy = read(referencePath);
   const astro = read(distPath);
   const component = read(componentPath);
   const fallback = read(fallbackPath);
