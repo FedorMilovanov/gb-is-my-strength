@@ -10,6 +10,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, 'reports', 'diotrophes-wave12');
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
+const EXPECTED_READER_LINK_OVERLAP = [
+  'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
+  'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
+  'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
+  'https://www.thejourney.org/about/our-story-new',
+];
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.woff2':'font/woff2' };
 const failures = [];
 const results = [];
@@ -152,6 +158,7 @@ async function inspect(browserType, engine, profile) {
         const bodyText = document.body.innerText;
         const baseLinks = [...document.querySelectorAll('#sources a[href^="https://"]')].map((node) => node.href);
         const supplementLinks = [...document.querySelectorAll('#faithful-witness-sources a[href^="https://"]')].map((node) => node.href);
+        const overlapLinks = [...new Set(baseLinks.filter((href) => supplementLinks.includes(href)))].sort();
         const viewportWidth = document.documentElement.clientWidth;
         const overflowOwners = [...document.querySelectorAll('body *')]
           .map((node) => {
@@ -204,6 +211,7 @@ async function inspect(browserType, engine, profile) {
             total: baseLinks.length + supplementLinks.length,
           },
           readerLinks: new Set([...baseLinks, ...supplementLinks]).size,
+          readerLinkOverlap: overlapLinks,
           hasFaithful: Boolean(document.querySelector('#faithful-witness-under-pressure')),
           hasResponses: Boolean(document.querySelector('#twenty-faithful-responses')),
           draftLeak: /PUBLICATION_HOLD|ещё не зарегистрирован как публичный маршрут/.test(bodyText),
@@ -225,7 +233,14 @@ async function inspect(browserType, engine, profile) {
         state.readerLinkSections.base === 40 && state.readerLinkSections.supplement === 33 && state.readerLinkSections.total === 73,
         JSON.stringify(state.readerLinkSections),
       );
-      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 70, `unique=${state.readerLinks}`);
+      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 69, `unique=${state.readerLinks}`);
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'reader-link-overlap',
+        JSON.stringify(state.readerLinkOverlap) === JSON.stringify(EXPECTED_READER_LINK_OVERLAP),
+        JSON.stringify(state.readerLinkOverlap),
+      );
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'no-draft-leak', !state.draftLeak, JSON.stringify(state));
       record(
