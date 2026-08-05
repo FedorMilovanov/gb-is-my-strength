@@ -1,6 +1,10 @@
 ---
 /**
  * Quote.astro — scripture mirror section for /.
+ *
+ * The Hebrew mirror is deliberately static and decorative. The interactive
+ * sacred-word contract belongs only to HomeHero; this section must not carry
+ * retired flip classes, hidden translation faces or a second state owner.
  */
 ---
 <section class="h-quote-section h-reveal" aria-label="Эпиграф">
@@ -19,45 +23,18 @@
     <div class="h-quote-right">
       <div class="h-sacred-block h-sacred-block--mirror" aria-hidden="true" role="presentation">
         <span class="h-sacred-line h-sacred-line--1">
-          <span class="hb-w">
-            <span class="hb-front" lang="he">יְהוִה</span>
-            <span class="hb-back" aria-hidden="true">Яхве</span>
-          </span>
-          <span class="hb-w">
-            <span class="hb-front" lang="he">אֲדֹנָי</span>
-            <span class="hb-back" aria-hidden="true">Господь</span>
-          </span>
-          <span class="hb-w">
-            <span class="hb-front" lang="he">חֵילִי</span>
-            <span class="hb-back" aria-hidden="true">сила моя</span>
-          </span>
+          <span class="h-sacred-mirror-word" lang="he">יְהוִה</span>
+          <span class="h-sacred-mirror-word" lang="he">אֲדֹנָי</span>
+          <span class="h-sacred-mirror-word" lang="he">חֵילִי</span>
         </span>
 
         <span class="h-sacred-line h-sacred-line--2">
-          <span class="hb-w">
-            <span class="hb-front" lang="he">וַיָּשֶׂם</span>
-            <span class="hb-back" aria-hidden="true">и сделает</span>
-          </span>
-          <span class="hb-w">
-            <span class="hb-front" lang="he">רַגְלַי</span>
-            <span class="hb-back" aria-hidden="true">ноги мои</span>
-          </span>
-          <span class="hb-w">
-            <span class="hb-front" lang="he">כָּאַיָּלוֹת</span>
-            <span class="hb-back" aria-hidden="true">как у ланей</span>
-          </span>
-          <span class="hb-w">
-            <span class="hb-front" lang="he">וְעַל</span>
-            <span class="hb-back" aria-hidden="true">и на</span>
-          </span>
-          <span class="hb-w">
-            <span class="hb-front" lang="he">בָּמוֹתַי</span>
-            <span class="hb-back" aria-hidden="true">высоты мои</span>
-          </span>
-          <span class="hb-w">
-            <span class="hb-front" lang="he">יַדְרִכֵנִי</span>
-            <span class="hb-back" aria-hidden="true">даст мне ступать</span>
-          </span>
+          <span class="h-sacred-mirror-word" lang="he">וַיָּשֶׂם</span>
+          <span class="h-sacred-mirror-word" lang="he">רַגְלַי</span>
+          <span class="h-sacred-mirror-word" lang="he">כָּאַיָּלוֹת</span>
+          <span class="h-sacred-mirror-word" lang="he">וְעַל</span>
+          <span class="h-sacred-mirror-word" lang="he">בָּמוֹתַי</span>
+          <span class="h-sacred-mirror-word" lang="he">יַדְרִכֵנִי</span>
         </span>
 
         <span class="h-sacred-ref h-sacred-ref--mirror">
@@ -71,16 +48,14 @@
 </section>
 
 <style is:global>
-  /* This lower mirror is decorative: the full Russian quotation already sits
-     beside it, so reduced-motion must never superimpose translation backs over
-     the Hebrew letterforms. */
-  body.home-page #main-content .h-sacred-block--mirror .hb-front {
+  /* The full Russian quotation already sits beside this decorative mirror.
+     Keep only one static Hebrew face; HomeHero remains the sole interactive
+     sacred-word owner. */
+  body.home-page #main-content .h-sacred-block--mirror .h-sacred-mirror-word {
+    display: inline-block;
+    margin: 0 .15em;
+    white-space: nowrap;
     visibility: visible;
-    opacity: .82 !important;
-  }
-
-  body.home-page #main-content .h-sacred-block--mirror .hb-back {
-    visibility: hidden;
-    opacity: 0 !important;
+    opacity: .82;
   }
 </style>

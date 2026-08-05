@@ -103,6 +103,28 @@ async function assertSearchClosed(page, label) {
   assert.equal(visible, false, `${label}: search overlay opened unexpectedly`);
 }
 
+async function assertCanonicalHomeOwners(page, label) {
+  const legacySelectors = ['.hb-w', '.h-tetra', '[data-sacred-active]'];
+  const legacyCounts = {};
+  for (const selector of legacySelectors) {
+    legacyCounts[selector] = await page.locator(selector).count();
+  }
+  assert.deepEqual(
+    legacyCounts,
+    { '.hb-w': 0, '.h-tetra': 0, '[data-sacred-active]': 0 },
+    `${label}: legacy Home owners remain: ${JSON.stringify(legacyCounts)}`,
+  );
+
+  const mirror = page.locator('.h-quote-section .h-sacred-block--mirror');
+  assert.equal(await mirror.count(), 1, `${label}: decorative scripture mirror is missing or duplicated`);
+  assert.equal(await mirror.locator('.h-sacred-mirror-word').count(), 9, `${label}: static mirror word count changed`);
+  assert.equal(
+    await mirror.locator('button, [role="button"], [tabindex]').count(),
+    0,
+    `${label}: decorative scripture mirror became interactive`,
+  );
+}
+
 async function clickExposedBackdrop(page) {
   const point = await page.evaluate(() => {
     const backdrop = document.getElementById('hMobileBackdrop');
@@ -147,6 +169,7 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), true, 'home has horizontal overflow');
     assert.equal(await page.locator('#hScriptureBg').count(), 0, 'legacy ambient hook remains');
+    await assertCanonicalHomeOwners(page, `${browserName} interactive`);
     assert.equal(await page.locator('#heroSearchBar').getAttribute('href'), '/articles/', 'hero search fallback missing');
     assert.equal(await page.locator('a[href="/articles/krajne-li-isporcheno-serdce/"]').count(), 1, 'Jeremiah card route is wrong');
     assert.equal(await page.locator('#publikacii[data-pagefind-ignore]').count(), 1, 'publication catalogue is not ignored by Pagefind');
@@ -295,6 +318,7 @@ async function runNoJavaScript(browserName, browserType, baseUrl) {
     await page.goto(`${baseUrl}/`, { waitUntil: 'load' });
     await page.locator('#main-content').waitFor({ state: 'visible' });
     await page.locator('h1').waitFor({ state: 'visible' });
+    await assertCanonicalHomeOwners(page, `${browserName} no-JS`);
     const noJsNavigation = page.locator('.h-nojs-nav');
     await noJsNavigation.waitFor({ state: 'visible' });
     assert.ok(await noJsNavigation.locator('a[href]').count() >= 6, 'no-JS navigation is incomplete');
