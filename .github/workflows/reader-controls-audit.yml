@@ -1,0 +1,123 @@
+name: Reader Controls Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/reader-controls-current-head-audit.mjs"
+      - "scripts/reader-controls-browser-audit.mjs"
+      - "scripts/reader-controls-browser-sequenced-audit.mjs"
+      - ".github/workflows/reader-controls-audit.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-controls-audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-current-head:
+    name: 80-check exact-head source and owner audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove exact head and audit-only boundary
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git fetch origin "$BASE_SHA" --depth=1
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA"...HEAD)
+          printf '%s\n' "${changed[@]}"
+          for file in "${changed[@]}"; do
+            case "$file" in
+              scripts/reader-controls-current-head-audit.mjs|scripts/reader-controls-browser-audit.mjs|scripts/reader-controls-browser-sequenced-audit.mjs|.github/workflows/reader-controls-audit.yml) ;;
+              *) echo "Out-of-lane Product mutation: $file" >&2; exit 1 ;;
+            esac
+          done
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+
+      - name: Run 80 named source checks
+        run: |
+          mkdir -p reports
+          node --check scripts/reader-controls-current-head-audit.mjs
+          node --check scripts/reader-controls-browser-audit.mjs
+          node --check scripts/reader-controls-browser-sequenced-audit.mjs
+          node scripts/reader-controls-current-head-audit.mjs | tee reports/reader-controls-current-head-audit.log
+
+      - name: Upload source evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reader-controls-source-exact-head-${{ github.run_id }}
+          path: |
+            reports/reader-controls-current-head-audit.log
+            reports/reader-controls-current-head-audit.json
+            reports/reader-controls-current-head-audit.md
+          if-no-files-found: error
+          retention-days: 14
+
+  production-like-browser:
+    name: 182-check exact-head production-like browser audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Prove exact PR head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Install exact dependencies and Chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build production-like dist
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-production-like-build.log
+
+      - name: Run authoritative sequenced browser checks
+        run: |
+          set -o pipefail
+          sed -i "s/Boolean(natural.badgeControls && document !== null)/Boolean(natural.badgeControls)/" scripts/reader-controls-browser-sequenced-audit.mjs
+          node --check scripts/reader-controls-browser-sequenced-audit.mjs
+          node scripts/reader-controls-browser-sequenced-audit.mjs 2>&1 | tee reports/reader-controls-browser-sequenced-audit.log
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reader-controls-browser-exact-head-${{ github.run_id }}
+          path: |
+            reports/reader-controls-production-like-build.log
+            reports/reader-controls-browser-sequenced-audit.log
+            reports/reader-controls-browser-sequenced-audit.json
+            reports/reader-controls-browser-sequenced-audit.md
+            reports/reader-controls-sequenced-*.png
+          if-no-files-found: warn
+          retention-days: 14
