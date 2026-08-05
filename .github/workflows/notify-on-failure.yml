@@ -2,8 +2,9 @@ name: Notify on Workflow Failure
 
 # Stateful lifecycle for owner-visible CI alerts.
 # The workflow opens/updates one issue per workflow + same-repository branch/PR
-# identity, records exact job/step/artifact evidence, and closes only after a
-# newer successful run. Cancelled/superseded runs never create false failures.
+# identity, records exact job/step/artifact evidence, closes after a newer
+# successful run, and retires only identities proven closed or fully integrated.
+# Cancelled/superseded runs never create false failures or false recoveries.
 
 on:
   workflow_run:
@@ -28,6 +29,7 @@ permissions:
   actions: read
   contents: read
   issues: write
+  pull-requests: read
 
 concurrency:
   group: ci-failure-lifecycle-${{ github.event.workflow_run.name }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
@@ -68,6 +70,25 @@ jobs:
             }
 
             await loaded.exports({ github, context, core, workflowRun });
+
+            // One bounded default-branch success owns orphan reconciliation.
+            // Closed PRs, deleted branches and fully integrated inactive
+            // branches are retired as not_planned, never described as recovered.
+            if (
+              workflowRun.name === 'Shared Files Guard' &&
+              workflowRun.conclusion === 'success' &&
+              workflowRun.head_branch === defaultBranch
+            ) {
+              if (typeof loaded.exports.reconcileRetiredIdentities !== 'function') {
+                throw new Error(`${path} must export reconcileRetiredIdentities`);
+              }
+              await loaded.exports.reconcileRetiredIdentities({
+                github,
+                context,
+                core,
+                defaultBranch,
+              });
+            }
 
       - name: Publish durable Product to Research success receipt
         if: >-
