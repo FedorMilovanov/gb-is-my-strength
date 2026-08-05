@@ -174,6 +174,7 @@ jobs:
         with:
           name: search-modal-final-${{ github.run_id }}
           path: reports/search-modal-final/**
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
 
