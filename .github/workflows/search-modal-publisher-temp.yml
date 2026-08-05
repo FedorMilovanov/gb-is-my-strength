@@ -1,0 +1,158 @@
+name: TEMP Search Modal Publisher
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: search-modal-publisher-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  search-modal-autofix:
+    name: Publish exact clean Search modal tree
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'ci/search-modal-contract-compute4-20260805'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+
+    steps:
+      - name: Resolve live pull request branch
+        id: pr-branch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          remote_head="$(git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}.git" "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          test "${remote_head}" = "${EXPECTED_HEAD}"
+          echo 'exists=true' >> "$GITHUB_OUTPUT"
+
+      - name: Checkout exact pull request branch
+        if: steps.pr-branch.outputs.exists == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        if: steps.pr-branch.outputs.exists == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        if: steps.pr-branch.outputs.exists == 'true'
+        run: npm ci
+
+      - name: Assert exact publication boundary
+        if: steps.pr-branch.outputs.exists == 'true'
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
+        run: |
+          git fetch origin main --no-tags
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
+          test "$(git rev-parse origin/main)" = "${EXPECTED_BASE}"
+          test "$(git merge-base HEAD origin/main)" = "${EXPECTED_BASE}"
+
+      - name: Apply explicit Search modal writers
+        if: steps.pr-branch.outputs.exists == 'true'
+        env:
+          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
+        run: |
+          node scripts/reconcile-search-modal-wave.mjs
+          node scripts/reconcile-search-modal-webkit-warning.mjs
+          node scripts/cache-bust.js --write
+          git checkout "${EXPECTED_BASE}" -- .github/workflows/home-search-action-contract.yml
+          git rm -- \
+            scripts/reconcile-search-modal-wave.mjs \
+            scripts/reconcile-search-modal-webkit-warning.mjs \
+            .github/workflows/search-modal-publisher-temp.yml
+
+      - name: Validate generated Search modal source and exact diff
+        if: steps.pr-branch.outputs.exists == 'true'
+        env:
+          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
+        shell: bash
+        run: |
+          test ! -e scripts/reconcile-search-modal-wave.mjs
+          test ! -e scripts/reconcile-search-modal-webkit-warning.mjs
+          test ! -e .github/workflows/search-modal-publisher-temp.yml
+          node --check js/search.js
+          node --check scripts/search-modal-browser-contract.mjs
+          node scripts/cache-bust.js
+          npm run astro:check
+          git diff --check
+          actual="$(git diff "${EXPECTED_BASE}" --name-only --diff-filter=ACMR | sort -u)"
+          for required in \
+            .github/workflows/search-modal-contract.yml \
+            css/command-palette.css \
+            js/search.js \
+            scripts/search-modal-browser-contract.mjs
+          do
+            printf '%s\n' "${actual}" | grep -Fx -- "${required}"
+          done
+          while IFS= read -r file
+          do
+            case "${file}" in
+              .github/workflows/search-modal-contract.yml|css/command-palette.css|js/search.js|scripts/search-modal-browser-contract.mjs|src/lib/asset-version.js|*.html|src/*.astro) ;;
+              *) echo "Unexpected final path: ${file}" >&2; exit 1 ;;
+            esac
+          done <<< "${actual}"
+
+      - name: Validate production-like Search publication
+        if: steps.pr-branch.outputs.exists == 'true'
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+
+      - name: Validate Chromium and WebKit Search contracts
+        if: steps.pr-branch.outputs.exists == 'true'
+        run: |
+          npx playwright install --with-deps chromium webkit
+          node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-publisher
+          node scripts/home-search-action-browser-contract.mjs --dist=dist --report=reports/home-search-action-publisher
+
+      - name: Commit exact clean Search modal tree
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
+        run: |
+          mapfile -d '' changed < <(git diff --name-only -z --diff-filter=ACMR)
+          if (( ${#changed[@]} )); then
+            git add -- "${changed[@]}"
+          fi
+          git diff --cached --check
+          final_paths="$(git diff --cached "${EXPECTED_BASE}" --name-only --diff-filter=ACMR | sort -u)"
+          for required in \
+            .github/workflows/search-modal-contract.yml \
+            css/command-palette.css \
+            js/search.js \
+            scripts/search-modal-browser-contract.mjs
+          do
+            printf '%s\n' "${final_paths}" | grep -Fx -- "${required}"
+          done
+          if printf '%s\n' "${final_paths}" | grep -E 'reconcile-search-modal|publisher-temp|home-search-action-contract.yml'; then
+            echo 'Temporary control-plane survived final tree.' >&2
+            exit 1
+          fi
+          remote_head="$(git ls-remote --exit-code --heads origin "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          test "${remote_head}" = "${EXPECTED_HEAD}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(search): complete accessible top-layer command palette"
+          git push origin "HEAD:${HEAD_REF}"
