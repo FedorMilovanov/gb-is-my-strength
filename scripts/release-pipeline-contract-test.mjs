@@ -93,6 +93,26 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   ];
   for (const [label, source, pattern] of checks) if (!pattern.test(source)) problems.push(label);
 
+  const liveHomeTokens = [
+    ["local candidate path", "const localHomePath = path.join(DIST, 'index.html');"],
+    ["local candidate bytes", "const localHomeBuffer = fs.readFileSync(localHomePath);"],
+    ["local candidate digest", "const localHomeDigest = sha256(localHomeBuffer);"],
+    ["local candidate semantic contract", "assertHomeContract(localHomeBuffer, 'local candidate home');"],
+    ["live Home fetch", "const homeResponse = await fetchBuffer('/', attempt, 'home-index');"],
+    ["live Home byte equality", "assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');"],
+    ["live Home digest equality", "assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');"],
+    ["live Home semantic contract", "assertHomeContract(homeResponse.buffer, 'live home');"],
+    ["approved sacred-word marker", "'class=\"h-sacred-word h-sacred-word--name\"'"],
+    ["approved sacred-name label", "'class=\"h-sacred-name-label\"'"],
+    ["approved Refutations marker", "'id=\"hRefutationsLabel\"'"],
+    ["approved library routes", "for (const route of ['articles', 'series', 'biographies', 'maps', 'confessions']) {"],
+    ["approved library dividers", "for (let divider = 0; divider < 4; divider += 1) {"],
+    ["approved Refutations geometry", "assert.match(html, /h-refutation-card[^}]{0,500}box-sizing:border-box/"],
+    ["legacy Home owner rejection", "for (const legacy of ['class=\"hb-w\"', 'class=\"h-tetra\"', 'data-sacred-active']) {"],
+  ];
+  for (const [label, token] of liveHomeTokens) if (!live.includes(token)) problems.push(`generic live Home ${label}`);
+
+
   if (count(workflow, /\bnpm ci\b/g) !== 1) problems.push('release npm ci count drift');
   if (count(workflow, /npm run strangler:build:production-like/g) !== 1) problems.push('release production build count drift');
   if (count(workflow, /release-tools\/write-deployment-provenance\.mjs/g) !== 2) problems.push('trusted provenance tool reference count drift');
@@ -172,6 +192,15 @@ const mutations = [
   ['writer output aliased', { ...sources, writer: sources.writer.replace('control_plane_sha=${report.controlPlaneSha}', 'control_plane_sha=${report.releaseSha}') }],
   ['verifier ignores control', { ...sources, verifier: sources.verifier.replace(/\n\s*expectedControlPlaneSha,\n/, '\n') }],
   ['generic live ignores release', { ...sources, live: sources.live.replace('expectedReleaseSha: releaseSha,', '') }],
+  ["generic live local Home binding removed", { ...sources, live: sources.live.replace("assertHomeContract(localHomeBuffer, 'local candidate home');", "") }],
+  ["generic live Home byte equality removed", { ...sources, live: sources.live.replace("assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');", "") }],
+  ["generic live Home digest equality removed", { ...sources, live: sources.live.replace("assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');", "") }],
+  ["generic live Home semantic contract removed", { ...sources, live: sources.live.replace("assertHomeContract(homeResponse.buffer, 'live home');", "") }],
+  ["generic live approved marker removed", { ...sources, live: sources.live.replace("'class=\"h-sacred-name-label\"',", "") }],
+  ["generic live route set narrowed", { ...sources, live: sources.live.replace("for (const route of ['articles', 'series', 'biographies', 'maps', 'confessions']) {", "for (const route of ['articles']) {") }],
+  ["generic live divider count reduced", { ...sources, live: sources.live.replace("for (let divider = 0; divider < 4; divider += 1) {", "for (let divider = 0; divider < 3; divider += 1) {") }],
+  ["generic live Refutations geometry removed", { ...sources, live: sources.live.replace("assert.match(html, /h-refutation-card[^}]{0,500}box-sizing:border-box/", "assert.match(html, /.*/") }],
+  ["generic live legacy rejection removed", { ...sources, live: sources.live.replace("for (const legacy of ['class=\"hb-w\"', 'class=\"h-tetra\"', 'data-sacred-active']) {", "for (const legacy of []) {") }],
   ['TTS ignores control', { ...sources, tts: sources.tts.replace('expectedControlPlaneSha: CONTROL_PLANE_SHA,', '') }],
   ['diagnostics rebuilds', { ...sources, diagnostics: `${sources.diagnostics}\n# npm ci\n# npm run strangler:build:production-like\n` }],
 ];

@@ -25,6 +25,7 @@ const transportArtifactDigest = rawTransportArtifactDigest
 const maxAttempts = Number.parseInt(process.env.RELEASE_LIVE_MAX_ATTEMPTS || '36', 10);
 const retryDelayMs = Number.parseInt(process.env.RELEASE_LIVE_RETRY_DELAY_MS || '10000', 10);
 const timeoutMs = Number.parseInt(process.env.RELEASE_LIVE_REQUEST_TIMEOUT_MS || '30000', 10);
+const localHomePath = path.join(DIST, 'index.html');
 
 assert.match(repository, /^[^/\s]+\/[^/\s]+$/, 'GITHUB_REPOSITORY must be owner/name');
 assert.match(releaseSha, /^[a-f0-9]{40}$/, 'RELEASE_SHA must be exact');
@@ -43,6 +44,10 @@ const local = verifyReleaseCandidate({
   expectedRunAttempt: runAttempt,
 });
 assert.equal(local.manifest.artifact.digest, expectedDigest, 'local candidate digest differs from resolver output');
+assert.equal(fs.existsSync(localHomePath), true, 'local candidate home index is missing');
+const localHomeBuffer = fs.readFileSync(localHomePath);
+const localHomeDigest = sha256(localHomeBuffer);
+assertHomeContract(localHomeBuffer, 'local candidate home');
 
 fs.mkdirSync(REPORTS, { recursive: true });
 const report = {
@@ -58,6 +63,11 @@ const report = {
     bytes: local.manifest.artifact.bytes,
     files: local.manifest.artifact.files,
     immutablePath: local.manifest.immutablePath,
+    home: {
+      path: '/index.html',
+      bytes: localHomeBuffer.length,
+      sha256: localHomeDigest,
+    },
   },
   transportArtifact: {
     id: transportArtifactId,
@@ -72,6 +82,26 @@ function writeReport() {
 }
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 function sha256(buffer) { return `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`; }
+function assertHomeContract(buffer, label) {
+  const html = buffer.toString('utf8');
+  for (const marker of [
+    'class="h-sacred-word h-sacred-word--name"',
+    'class="h-sacred-name-label"',
+    'class="h-home-title-part',
+    'id="hRefutationsLabel"',
+    'class="h-article-card h-article-card--debunk h-refutation-card"',
+  ]) assert.equal(html.includes(marker), true, `${label}: missing ${marker}`);
+  for (const legacy of ['class="hb-w"', 'class="h-tetra"', 'data-sacred-active']) {
+    assert.equal(html.includes(legacy), false, `${label}: legacy Home owner remains (${legacy})`);
+  }
+  for (const route of ['articles', 'series', 'biographies', 'maps', 'confessions']) {
+    assert.equal(html.includes(`data-home-route="${route}"`), true, `${label}: missing library route ${route}`);
+  }
+  for (let divider = 0; divider < 4; divider += 1) {
+    assert.equal(html.includes(`data-home-route-divider="${divider}"`), true, `${label}: missing library divider ${divider}`);
+  }
+  assert.match(html, /h-refutation-card[^}]{0,500}box-sizing:border-box/, `${label}: Refutations does not own border-box geometry`);
+}
 function probeUrl(relative, attempt, label) {
   const target = new URL(relative, LIVE_BASE_URL);
   target.searchParams.set('release_contract', `${releaseSha.slice(0, 12)}-${controlPlaneSha.slice(0, 12)}-${attempt}-${label}-${Date.now()}`);
@@ -132,6 +162,12 @@ async function verifyAttempt(attempt) {
   const manifest = parseJson(await fetchBuffer(pointer.immutablePath, attempt, 'release-manifest'), 'release manifest');
   assertManifest(manifest);
 
+  const homeResponse = await fetchBuffer('/', attempt, 'home-index');
+  const homeDigest = sha256(homeResponse.buffer);
+  assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');
+  assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');
+  assertHomeContract(homeResponse.buffer, 'live home');
+
   const assets = {};
   for (const [name, record] of Object.entries(manifest.criticalAssets)) {
     const response = await fetchBuffer(record.path, attempt, `critical-${name}`);
@@ -148,6 +184,12 @@ async function verifyAttempt(attempt) {
     candidateId: manifest.artifact.candidateId,
     candidateDigest: manifest.artifact.digest,
     build: manifest.build,
+    home: {
+      path: '/',
+      url: homeResponse.url,
+      bytes: homeResponse.buffer.length,
+      sha256: homeDigest,
+    },
     criticalAssets: assets,
   };
 }
