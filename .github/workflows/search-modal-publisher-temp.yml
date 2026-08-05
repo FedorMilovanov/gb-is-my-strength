@@ -71,9 +71,8 @@ jobs:
         env:
           EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
         run: |
-          node scripts/reconcile-search-modal-wave.mjs
+          node scripts/reconcile-search-modal-wave.mjs --write
           node scripts/reconcile-search-modal-webkit-warning.mjs
-          node scripts/cache-bust.js --write
           git checkout "${EXPECTED_BASE}" -- .github/workflows/home-search-action-contract.yml
           git rm -- \
             scripts/reconcile-search-modal-wave.mjs \
