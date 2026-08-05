@@ -16,6 +16,11 @@
  * owner so lock-screen controls and background playback remain testable without
  * coupling them to either speech engine. Heavy Vosk work is owned by the
  * same-origin persistent worker loaded by vosk-tts-engine.js.
+ *
+ * Reader control accessibility is a separate additive owner: it does not open
+ * or close visual surfaces and never owns speech. It synchronizes truthful
+ * exposure, roving keyboard state, focus return and popup semantics across the
+ * existing Hermenevtika and Gill mobile controls.
  */
 import { assetUrl } from '../../lib/asset-version';
 import '../../runtime/article-interactions.css';
@@ -27,6 +32,7 @@ const voskEngineSrc = assetUrl('js/vosk-tts-engine.js');
 <script>
   import '../../runtime/print-pagination-geometry.js';
   import '../../runtime/reader-actions.js';
+  import '../../runtime/reader-controls-a11y.js';
   import '../../runtime/reader-tts-defaults.js';
   import '../../runtime/reader-tts-click-guard.js';
   import '../../runtime/reader-tts.js';
