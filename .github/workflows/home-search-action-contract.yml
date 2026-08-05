@@ -75,3 +75,193 @@ jobs:
           path: reports/home-search-action/**
           if-no-files-found: warn
           retention-days: 14
+
+  search-modal-compute:
+    if: github.event_name == 'pull_request' && github.head_ref == 'ci/search-modal-contract-compute-20260805'
+    name: Compute exact SEARCH-P2-10/11/12 tree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact compute branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ci/search-modal-contract-compute-20260805
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Assert exact compute head
+        run: test "$(git rev-parse HEAD)" = "$(git rev-parse origin/ci/search-modal-contract-compute-20260805)"
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Apply exact assert-based reconciliation
+        run: |
+          node --check scripts/reconcile-search-modal-wave.mjs
+          node scripts/reconcile-search-modal-wave.mjs
+          node --check js/search.js
+          node --check scripts/search-modal-browser-contract.mjs
+          npm run astro:check
+
+      - name: Verify helper changed only canonical runtime and CSS
+        run: |
+          expected="$(printf '%s\n' 'css/command-palette.css' 'js/search.js')"
+          actual="$(git diff --name-only --diff-filter=ACMR | sort)"
+          test "${actual}" = "${expected}"
+          git diff --check
+
+      - name: Build production-like publication
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Validate computed Search modal
+        run: node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract
+
+      - name: Prepare exact final artifact
+        run: |
+          mkdir -p reports/search-modal-final
+          sha256sum \
+            js/search.js \
+            css/command-palette.css \
+            scripts/search-modal-browser-contract.mjs \
+            .github/workflows/search-modal-contract.yml \
+            > reports/search-modal-final/sha256.txt
+
+      - name: Upload exact four-file final tree
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: search-modal-final-${{ github.run_id }}
+          path: |
+            js/search.js
+            css/command-palette.css
+            scripts/search-modal-browser-contract.mjs
+            .github/workflows/search-modal-contract.yml
+            reports/search-modal-final/sha256.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload compute browser evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: search-modal-compute-evidence-${{ github.run_id }}
+          path: reports/search-modal-contract/**
+          if-no-files-found: warn
+          retention-days: 14
+
+  search-modal-publish-clean:
+    if: github.event_name == 'pull_request' && github.head_ref == 'ci/search-modal-contract-compute-20260805'
+    needs: search-modal-compute
+    name: Publish clean Search modal successor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout live Product main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Assert non-overlap live main and absent final ref
+        env:
+          BASE_SHA: c8bb5d9c696e6f511ae5b9e4272b2b43b63f06cf
+          FINAL_REF: agent/search-modal-a11y-premium-wave
+        run: |
+          git fetch origin main
+          live_sha="$(git rev-parse origin/main)"
+          git diff --quiet "${BASE_SHA}" "${live_sha}" -- js/search.js css/command-palette.css
+          if git cat-file -e "${live_sha}:scripts/search-modal-browser-contract.mjs" 2>/dev/null; then
+            echo 'permanent browser contract already exists on live main' >&2
+            exit 1
+          fi
+          if git cat-file -e "${live_sha}:.github/workflows/search-modal-contract.yml" 2>/dev/null; then
+            echo 'permanent workflow already exists on live main' >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code origin "refs/heads/${FINAL_REF}" >/dev/null 2>&1; then
+            echo 'clean final ref already exists' >&2
+            exit 1
+          fi
+          echo "LIVE_MAIN_SHA=${live_sha}" >> "${GITHUB_ENV}"
+          git reset --hard "${live_sha}"
+
+      - name: Download verified four-file artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: search-modal-final-${{ github.run_id }}
+          path: ${{ runner.temp }}/search-modal-final
+
+      - name: Verify exact artifact digests
+        run: |
+          cd "${RUNNER_TEMP}/search-modal-final"
+          sha256sum -c reports/search-modal-final/sha256.txt
+
+      - name: Apply artifact to live main tree
+        run: |
+          artifact="${RUNNER_TEMP}/search-modal-final"
+          install -D "${artifact}/js/search.js" js/search.js
+          install -D "${artifact}/css/command-palette.css" css/command-palette.css
+          install -D "${artifact}/scripts/search-modal-browser-contract.mjs" scripts/search-modal-browser-contract.mjs
+          install -D "${artifact}/.github/workflows/search-modal-contract.yml" .github/workflows/search-modal-contract.yml
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Validate clean live-main composition
+        run: |
+          node --check js/search.js
+          node --check scripts/search-modal-browser-contract.mjs
+          npm run astro:check
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+          npx playwright install --with-deps chromium webkit
+          node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-publisher
+
+      - name: Verify exact permanent diff and unchanged live main
+        run: |
+          rm -rf reports/search-modal-publisher
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${LIVE_MAIN_SHA}"
+          git add \
+            js/search.js \
+            css/command-palette.css \
+            scripts/search-modal-browser-contract.mjs \
+            .github/workflows/search-modal-contract.yml
+          expected="$(printf '%s\n' \
+            '.github/workflows/search-modal-contract.yml' \
+            'css/command-palette.css' \
+            'js/search.js' \
+            'scripts/search-modal-browser-contract.mjs')"
+          actual="$(git diff --cached --name-only --diff-filter=ACMR | sort)"
+          test "${actual}" = "${expected}"
+          git diff --cached --check
+
+      - name: Commit and publish clean final ref
+        env:
+          FINAL_REF: agent/search-modal-a11y-premium-wave
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git switch -c "${FINAL_REF}"
+          git commit -m "fix(search): complete modal accessibility contract"
+          git push origin "HEAD:refs/heads/${FINAL_REF}"
