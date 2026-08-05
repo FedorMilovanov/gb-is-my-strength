@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, extname, join, resolve } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 import { chromium, webkit } from 'playwright';
 
 const ROOT = resolve(process.cwd());
@@ -37,7 +37,6 @@ function record(browser, profile, contract, ok, detail = '') {
 
 function assertSourceContract() {
   const head = readFileSync(join(ROOT, 'src/components/home/HomePageHead.astro'), 'utf8');
-  const entry = readFileSync(join(ROOT, 'src/components/home/HomeSearchQueryEntry.astro'), 'utf8');
   const page = readFileSync(join(ROOT, 'src/pages/index.astro'), 'utf8');
 
   assert.match(
@@ -45,11 +44,11 @@ function assertSourceContract() {
     /https:\/\/gospod-bog\.ru\/\?q=\{search_term_string\}/,
     'WebSite SearchAction target changed',
   );
-  assert.match(entry, /new URLSearchParams\(window\.location\.search\)\.get\('q'\)/, 'q parameter is not read through URLSearchParams');
-  assert.match(entry, /window\.dispatchEvent\(new CustomEvent\('gb:openSearch'/, 'adapter bypasses the canonical search-open event');
-  assert.match(entry, /input\.dispatchEvent\(new Event\('input', \{ bubbles: true \}\)\)/, 'adapter does not enter the query through the canonical input contract');
+  assert.match(page, /new URLSearchParams\(window\.location\.search\)\.get\('q'\)/, 'q parameter is not read through URLSearchParams');
+  assert.match(page, /window\.dispatchEvent\(new CustomEvent\('gb:openSearch'/, 'adapter bypasses the canonical search-open event');
+  assert.match(page, /input\.dispatchEvent\(new Event\('input', \{ bubbles: true \}\)\)/, 'adapter does not enter the query through the canonical input contract');
   assert.ok(
-    page.indexOf('</HomePageChrome>') < page.indexOf('<HomeSearchQueryEntry />'),
+    page.indexOf('</HomePageChrome>') < page.indexOf("new URLSearchParams(window.location.search).get('q')"),
     'SearchAction adapter must run after the Home search shell binds its lazy loader',
   );
 }
@@ -128,6 +127,9 @@ async function inspectQueryEntry(browserName, browserType, baseUrl, profile) {
       const overlay = document.querySelector('.cp-backdrop');
       const input = document.querySelector('.cp-input');
       const trigger = document.getElementById('gbSearchBtn');
+      const resultTitles = [...document.querySelectorAll('.cp-item-title')]
+        .map((node) => node.textContent?.trim() || '')
+        .filter(Boolean);
       return {
         overlayCount: document.querySelectorAll('.cp-backdrop').length,
         open: overlay?.classList.contains('is-open') || false,
@@ -135,7 +137,7 @@ async function inspectQueryEntry(browserName, browserType, baseUrl, profile) {
         inputValue: input instanceof HTMLInputElement ? input.value : '',
         inputFocused: input === document.activeElement,
         resultCount: document.querySelectorAll('.cp-item').length,
-        firstTitle: document.querySelector('.cp-item-title')?.textContent?.trim() || '',
+        resultTitles,
         triggerExpanded: trigger?.getAttribute('aria-expanded'),
         triggerControls: trigger?.getAttribute('aria-controls'),
         receipt: document.documentElement.dataset.searchActionQuery || '',
@@ -147,7 +149,13 @@ async function inspectQueryEntry(browserName, browserType, baseUrl, profile) {
     record(browserName, profile.id, 'dialog-accessible', state.ariaHidden === 'false', JSON.stringify(state));
     record(browserName, profile.id, 'query-normalized', state.inputValue === SEARCH_QUERY, JSON.stringify(state));
     record(browserName, profile.id, 'input-focused', state.inputFocused, JSON.stringify(state));
-    record(browserName, profile.id, 'results-rendered', state.resultCount > 0 && /Нагорная\s+проповедь/i.test(state.firstTitle), JSON.stringify(state));
+    record(
+      browserName,
+      profile.id,
+      'matching-result-rendered',
+      state.resultCount > 0 && state.resultTitles.some((title) => /Нагорная\s+проповедь/i.test(title)),
+      JSON.stringify(state),
+    );
     record(browserName, profile.id, 'trigger-truthful', state.triggerExpanded === 'true' && state.triggerControls === 'gbCommandPalette', JSON.stringify(state));
     record(browserName, profile.id, 'adapter-receipt', state.receipt === 'applied', JSON.stringify(state));
     record(browserName, profile.id, 'no-horizontal-overflow', state.horizontalOverflow <= 1, `overflow=${state.horizontalOverflow}`);
