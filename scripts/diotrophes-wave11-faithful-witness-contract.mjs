@@ -92,7 +92,7 @@ const waveBSourceOwners = {
   },
   'FW10-MAH-02': {
     label: 'Brent Detwiler: рассказ о многолетней внутренней попытке реформы',
-    href: 'https://brentdetwiler.com/my-story-resume/',
+    href: 'https://abrentdetwiler.squarespace.com/my-story-resume/',
     class: 'B1',
   },
 };
@@ -104,13 +104,14 @@ for (const [id, expectedSource] of Object.entries(waveBSourceOwners)) {
   requireValue(actual?.class === expectedSource.class, `Wave B source class drift: ${id}`);
 }
 
-const waveB2StaleRegistryUrls = [
+const staleRegistryUrls = [
   'https://ihopkc.org/press-releases/press-center/press-releases/ihopkc-elt-update-11-10-2023',
   'https://ihopkc.org/press-releases/press-center/press-releases/elt-update-letter-11-15-2023',
   'https://www.brentdetwiler.com/my-story-resume/',
+  'https://brentdetwiler.com/my-story-resume/',
 ];
-for (const staleUrl of waveB2StaleRegistryUrls) {
-  requireValue(!sourceDataRaw.includes(staleUrl), `stale Wave B2 registry URL retained: ${staleUrl}`);
+for (const staleUrl of staleRegistryUrls) {
+  requireValue(!sourceDataRaw.includes(staleUrl), `stale registry URL retained: ${staleUrl}`);
 }
 
 const requiredPathFields = ['id','name','actors','loyaltyTension','steps','lesson','boundary','sourceIds'];
