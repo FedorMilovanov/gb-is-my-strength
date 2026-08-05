@@ -55,6 +55,7 @@
 
     root.setAttribute(BOUND_ATTR, config.kind);
     const railId = ensureId(rail, `${config.kind}-speedrail`);
+    const initialRailInlineDisplay = rail.style.display;
     const alternateState = alternate instanceof HTMLElement ? {
       ariaHidden: alternate.getAttribute('aria-hidden'),
       inert: alternate.hasAttribute('inert') || Boolean(alternate.inert),
@@ -62,6 +63,7 @@
     } : null;
     let scheduled = false;
     let keyboardHideRequested = false;
+    let keyboardCollapsed = false;
 
     function isOpen() {
       if (config.kind === 'hermenevtika') return root.classList.contains('speed-open');
@@ -84,9 +86,15 @@
         try { badge.focus({ preventScroll: true }); } catch (_) { try { badge.focus(); } catch (_) {} }
       }
 
-      if (open && rail.hidden) rail.hidden = false;
+      if (open && keyboardCollapsed) {
+        rail.hidden = false;
+        if (config.kind === 'hermenevtika') rail.style.display = initialRailInlineDisplay;
+        keyboardCollapsed = false;
+      }
       if (!open && keyboardHideRequested) {
         rail.hidden = true;
+        if (config.kind === 'hermenevtika') rail.style.display = 'none';
+        keyboardCollapsed = true;
         keyboardHideRequested = false;
       }
 
