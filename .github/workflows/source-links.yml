@@ -3,14 +3,23 @@ name: Source Link Audit
 on:
   workflow_dispatch:
   schedule:
-    # Weekly Monday 03:00 UTC. Network checks are intentionally not run on every push.
+    # Weekly + governed owners.
     - cron: '0 3 * * 1'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/source-links.yml'
+      - 'src/components/article-pilots/antisovetov/AntisovetovBody.astro'
+      - 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro'
+      - 'data/diotrophes-wave11-faithful-witness-sources.json'
   pull_request:
     paths:
       - '.github/workflows/source-links.yml'
       - 'scripts/source-link-audit.js'
       - 'scripts/source-link-audit-contract-test.cjs'
       - 'scripts/source-link-audit-source-contract-test.cjs'
+      - 'scripts/source-link-audit-main-trigger-contract.cjs'
 
 permissions:
   contents: read
@@ -38,10 +47,12 @@ jobs:
           node --check scripts/source-link-audit.js
           node --check scripts/source-link-audit-contract-test.cjs
           node --check scripts/source-link-audit-source-contract-test.cjs
+          node --check scripts/source-link-audit-main-trigger-contract.cjs
       - name: Prove redirect-chain, evidence redaction and workflow policy
         run: |
           node scripts/source-link-audit-contract-test.cjs
           node scripts/source-link-audit-source-contract-test.cjs
+          node scripts/source-link-audit-main-trigger-contract.cjs
 
   source-links:
     if: github.event_name != 'pull_request'
