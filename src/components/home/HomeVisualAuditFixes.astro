@@ -9,6 +9,14 @@
 ---
 
 <style is:global>
+  /* The approved Refutations V3 standalone is authored under border-box. Keep
+     that exact box model in the integrated Home route so padding and borders do
+     not enlarge each card beyond its static hit area and create a false 56px
+     overlap instead of the reviewed 24px crossing. */
+  body.home-page #main-content #razbor .h-refutation-card {
+    box-sizing: border-box;
+  }
+
   /* Header controls are one icon family. Equal boxes, one muted ink and a thin
      non-scaling line are more important than equal source SVG attributes. The
      crescent needs a slightly lighter line because its closed silhouette carries
@@ -253,6 +261,28 @@
       return [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
     };
 
+    const assertRefutationsBoxModel = () => {
+      document.querySelectorAll('#razbor .h-refutation-slot').forEach((slot) => {
+        const card = slot.querySelector('.h-refutation-card');
+        const shell = slot.querySelector('.h-refutation-shell');
+        if (!card || !shell) return;
+
+        const boxSizing = getComputedStyle(card).boxSizing;
+        if (boxSizing !== 'border-box') {
+          report(`refutations card lost border-box geometry (${boxSizing})`);
+        }
+
+        const cardRect = card.getBoundingClientRect();
+        const shellRect = shell.getBoundingClientRect();
+        if (Math.abs(cardRect.width - shellRect.width) > 1) {
+          report(`refutations card exceeds its shell width (${cardRect.width.toFixed(1)} vs ${shellRect.width.toFixed(1)})`);
+        }
+        if (Math.abs(cardRect.height - shellRect.height) > 1) {
+          report(`refutations card exceeds its shell height (${cardRect.height.toFixed(1)} vs ${shellRect.height.toFixed(1)})`);
+        }
+      });
+    };
+
     const assertHeaderIcons = () => {
       const search = document.querySelector('#gbSearchBtn svg circle');
       const theme = document.querySelector(
@@ -345,6 +375,7 @@
     const audit = () => {
       timer = 0;
       requestAnimationFrame(() => {
+        assertRefutationsBoxModel();
         assertHeaderIcons();
         assertMobileRoutes();
         assertTabletPublications();
