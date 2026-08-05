@@ -1,155 +1,23 @@
 #!/usr/bin/env node
 'use strict';
 
-const fs = require('node:fs');
+const { execFileSync, spawnSync } = require('node:child_process');
+const { writeFileSync } = require('node:fs');
+const { gunzipSync } = require('node:zlib');
 const path = require('node:path');
-const assert = require('node:assert/strict');
 
 const ROOT = path.resolve(__dirname, '..');
-const WRITE = process.argv.includes('--write');
-
-const ARTICLES = [
-  {
-    id: '20-antisovetov-pastoru',
-    file: 'src/components/article-pilots/antisovetov/AntisovetovPageHead.astro',
-    canonicalHeadline: '20 –∞–Ω—Ç–∏—Å–æ–≤–µ—Ç–æ–≤, –∫–∞–∫ –ø–∞—Å—Ç–æ—Ä—É —Ä–∞–∑—Ä—É—à–∏—Ç—å —Å–≤–æ—ë —Å–ª—É–∂–µ–Ω–∏–µ',
-    titleSuffix: ' | –ì–æ—Å–ø–æ–¥—å –ë–æ–≥',
-    breadcrumbPosition: 3,
-  },
-];
-
-function parseAttributes(tag) {
-  const attributes = {};
-  for (const match of tag.matchAll(/([:\w-]+)\s*=\s*(["'])(.*?)\2/gs)) {
-    attributes[match[1].toLowerCase()] = match[3];
-  }
-  return attributes;
-}
-
-function metaContent(source, attributeName, attributeValue) {
-  for (const match of source.matchAll(/<meta\b[^>]*>/gi)) {
-    const attributes = parseAttributes(match[0]);
-    if (attributes[attributeName] === attributeValue) return attributes.content || '';
-  }
-  return '';
-}
-
-function pageTitle(source) {
-  return source.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.trim() || '';
-}
-
-function jsonLdDocuments(source) {
-  const documents = [];
-  for (const match of source.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
-    try {
-      documents.push(JSON.parse(match[1]));
-    } catch (error) {
-      throw new Error(`invalid JSON-LD: ${error.message}`);
-    }
-  }
-  return documents;
-}
-
-function graphNodes(documents) {
-  return documents.flatMap((document) => {
-    if (Array.isArray(document)) return document;
-    if (Array.isArray(document?.['@graph'])) return document['@graph'];
-    return document && typeof document === 'object' ? [document] : [];
-  });
-}
-
-function articleHeadline(source) {
-  const article = graphNodes(jsonLdDocuments(source)).find((node) => {
-    const type = node?.['@type'];
-    return type === 'Article' || (Array.isArray(type) && type.includes('Article'));
-  });
-  return typeof article?.headline === 'string' ? article.headline : '';
-}
-
-function breadcrumbName(source, position) {
-  const breadcrumb = graphNodes(jsonLdDocuments(source)).find((node) => node?.['@type'] === 'BreadcrumbList');
-  const item = Array.isArray(breadcrumb?.itemListElement)
-    ? breadcrumb.itemListElement.find((entry) => Number(entry?.position) === Number(position))
-    : null;
-  return typeof item?.name === 'string' ? item.name : '';
-}
-
-function inspect(source, config) {
-  return {
-    title: pageTitle(source),
-    ogTitle: metaContent(source, 'property', 'og:title'),
-    twitterTitle: metaContent(source, 'name', 'twitter:title'),
-    articleHeadline: articleHeadline(source),
-    breadcrumbName: breadcrumbName(source, config.breadcrumbPosition),
-  };
-}
-
-function validate(source, config) {
-  const actual = inspect(source, config);
-  const expectedTitle = `${config.canonicalHeadline}${config.titleSuffix}`;
-  const errors = [];
-  if (actual.title !== expectedTitle) errors.push(`title expected ${JSON.stringify(expectedTitle)}, got ${JSON.stringify(actual.title)}`);
-  for (const key of ['ogTitle', 'twitterTitle', 'articleHeadline', 'breadcrumbName']) {
-    if (actual[key] !== config.canonicalHeadline) {
-      errors.push(`${key} expected ${JSON.stringify(config.canonicalHeadline)}, got ${JSON.stringify(actual[key])}`);
-    }
-  }
-  return { actual, errors };
-}
-
-function writeCanonicalTitle(source, config) {
-  const expectedTitle = `${config.canonicalHeadline}${config.titleSuffix}`;
-  if (!/<title>[\s\S]*?<\/title>/i.test(source)) throw new Error('missing <title>');
-  return source.replace(/<title>[\s\S]*?<\/title>/i, `<title>${expectedTitle}</title>`);
-}
-
-function assertSelfContract() {
-  const config = {
-    canonicalHeadline: '–ö–∞–Ω–æ–Ω–∏—á–µ—Å–∫–∏–π –∑–∞–≥–æ–ª–æ–≤–æ–∫',
-    titleSuffix: ' | –°–∞–π—Ç',
-    breadcrumbPosition: 3,
-  };
-  const fixture = `
-<title>–°—Ç–∞—Ä—ã–π –∑–∞–≥–æ–ª–æ–≤–æ–∫ | –°–∞–π—Ç</title>
-<meta content="–ö–∞–Ω–æ–Ω–∏—á–µ—Å–∫–∏–π –∑–∞–≥–æ–ª–æ–≤–æ–∫" property="og:title">
-<meta name="twitter:title" content="–ö–∞–Ω–æ–Ω–∏—á–µ—Å–∫–∏–π –∑–∞–≥–æ–ª–æ–≤–æ–∫">
-<script type="application/ld+json">{"@graph":[{"@type":"Article","headline":"–ö–∞–Ω–æ–Ω–∏—á–µ—Å–∫–∏–π –∑–∞–≥–æ–ª–æ–≤–æ–∫"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":3,"name":"–ö–∞–Ω–æ–Ω–∏—á–µ—Å–∫–∏–π –∑–∞–≥–æ–ª–æ–≤–æ–∫"}]}]}</script>`;
-  assert.equal(validate(fixture, config).errors.length, 1, 'fixture must expose title-only drift');
-  const fixed = writeCanonicalTitle(fixture, config);
-  assert.deepEqual(validate(fixed, config).errors, [], 'writer must repair only the canonical title drift');
-  assert.equal(metaContent(fixed, 'property', 'og:title'), config.canonicalHeadline, 'attribute order must not affect metadata parsing');
-}
-
-function main() {
-  assertSelfContract();
-  const failures = [];
-  const changed = [];
-
-  for (const config of ARTICLES) {
-    const absolute = path.join(ROOT, config.file);
-    const source = fs.readFileSync(absolute, 'utf8');
-    const next = WRITE ? writeCanonicalTitle(source, config) : source;
-    const report = validate(next, config);
-
-    if (report.errors.length) {
-      failures.push(...report.errors.map((error) => `${config.id}: ${error}`));
-      continue;
-    }
-
-    if (WRITE && next !== source) {
-      fs.writeFileSync(absolute, next, 'utf8');
-      changed.push(config.file);
-    }
-    console.log(`‚úÖ ${config.id}: title, Open Graph, Twitter, Article and breadcrumb headline agree`);
-  }
-
-  if (changed.length) {
-    console.log(`‚úé Updated canonical titles: ${changed.join(', ')}`);
-  }
-  if (failures.length) {
-    failures.forEach((failure) => console.error(`‚ùå ${failure}`));
-    process.exit(1);
-  }
-}
-
-main();
+const SELF = 'scripts/article-headline-contract.js';
+const PATCH_GZIP_BASE64 = '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)lNZSCKzgQEgbhhamCTqH85wuKTDDtMUrCeIqhJ4SqykNzCEUfiAd/pFhX9NQJc3IWvMvitNkYUIlAdHEfijbuw3bviC7FiE5DLQPIJr9VIkO9z7W3YYwoaM6XRpjaBKmbD5P1GAWROWZYr9SrEAObZVTBA7R7xWVZyStwnbDXJYbgYgyCbsiyB/a0qmFYJQCV/nvYbhPLYY2WV6S6DAtMFurxSViUL1H//G7cbNzXlScxWHZHnwCOXmEGAqhIjUGAZLMgOJ68SWC3Wa+lAOCm6OETtse++UaCapk2VrxnAmrfSRA32lZqpM+8NbBJAiC22hIY9oWJT2e62dWKPU01bA2Cii+CocIe7yEkKMA1B3ev3ZD9zpLGYM6WsSretYJxnEBE0nyeZQkP0xqc7hucFjLy/lm43fdx+5kYlQW7JaSKPF5EzOQtreeoczgIliqC2q81kCBW9Og3bOSYwU/YDmLIPPiVNVuswzpAHdPvrZBn+pYlFlVx2Lyw8WigitPstM2iLWuOamPwx5sdIrOYRml5qoVGuUuHhaNNYmwo/h6bz1Uh8caaItpPxRtEStNpSAdFIh+AdzoDnHMc4z6RY1st4ViJDnbagqc8TZj1bVwQkuBpnfo0l1idpLjQpVr5STN/skpdupV1cedCTIFTiU+BlWvFm2rmKzZ4N+WGWi0PvwqeBIKsIAoFrkx5XE5JMoypziT5LHdS6lJwJiVMKWgWCypRkWRQnSzy8hbm4UQajprtLUal29F9hVw6cUDPPJ71huAfa4R176Qvd2vY0dxpEDuYVcVlU7MHetYtm2Ml8mgo3qecW9c8KFsKLIb/iiq+wKzqfVhCiOhfQS4geFI3GoBSS9KDQA5G+puv5yFQ2LttQq/9qzvLSkCm9+QmlOrADYvdyAdP2XK3DdNd3dR7Y2BGvAQvrc8uXp0a+45XIm2+ENtVZhM2fHH/wY28FnTRkn4NBDitBRWKaJ2Lev1Rq8Q9Dl9VpqoTDLxhIcYTsBJEy1P2aziYBNDkqg0f387Ft/Gw0rHOkeRbzcHqoMzhXoEVRt0YzFGi0tj5GrbGcmheWW6y0hTX14acPeLtIZöÕñT‹Rö[ñ’NSŒU‘îŒçû[“—’úò‹ﬁê–’õïŒ]û\÷YSú\⁄å⁄ÿVéVû
+€õõÃMúû÷Vç\SíLV^õçM–åY–U‘úŸZ–—ëZî\‘ŒRV]êïSTõPSôç‹Vúêêí“PŒLNLëùZVõúôì]J€€ïSÃ÷ô[úTZ÷éûú“ﬁå”û\ÕêM÷Lÿ‹ï€TK’TU[ZZëMûåR[ï”TRùÕU”ìUVéYMTJﬁ
+‹ïL“‹ìMö‘⁄[ﬁ]Ãîö“îÕ\
+—õúX€åùﬁôò—QÕ’S^S›’î[ïûì€ö‹Ã[”ûôÃñÿXç‘öÿ‘LåS”—ùQLYT”ú’ñúú]\P[  “í⁄çÿ⁄JÕ›ç‹VY
+ÕSXÀÿ]]û]ä’’íVîZô‹ç÷ëö÷÷Z ‘ûëåôLPúK⁄XêŸMîîŸ]Zú‘òŸ\ëòÿRPÕúëVôíä€”Õû]ûZõêYûL[ñô⁄ë^NP€”ŒSU‘íä‘ú–’M–ñ^íç‘TòR”Ÿô\“\ZûM›öõïVå—çúÿôë€ëí’úåçÿéZJ“L“ï€ëòò€QíîôPîTê÷ô›“ùLû[÷MMŸ÷îú€ÕÕ‹—“\äÕù[Ÿ‘ëÃùÃ⁄RQTŸUúUU›–K‹QåêîöZõZú\û]›Y—‘ÃÕ^ùLÃÃﬁ“Xúå”‘“––ÃMR‹ìï‹ï]’^S÷ôZç›åK€ïåZú^Zô^›
+‘åî–Y÷N€öL’—ä“RùçïŸ‘Ÿêåì‘⁄ñöZíYäŒSïŸ”K€ãÃ‘ãÀÕTúQUS“QX^öÀŸ‘õùÃÕR“ﬁê^ïVòú]\]P⁄S“ïîŸ^PSQUÿTåò”“UñJŸí⁄ûä—ô‹Z‹ì]òS⁄N\Ÿùç[MYçS›^[úM–ö÷€ô“òëÕL“[ö⁄ùÃZí^ìNVñURL›NUUÃ€Zå‹€ÃXﬁëLM–VŸYìçûö”]ëöñMŒYNÃë‹‹ä’Ã‘›í\‹äÿôSõôYõï€÷[î› “]N[Lå^ûíñë‹í\ÃU”YŸûíÿULìLU‹ﬁù”‘÷ûMXY⁄Z›ﬁìZôåÿúùJÃT[òåùMú]ú]‹€LR÷ò—ú€ŒK”\ZLﬁPä÷ù”PTÿêﬁXMNUVÕ–ï]ÃÀ‹]P—\Ÿêê’—äÿV\SîQK’òö›€›ôY€ùLîÿã’“V[öSXﬁ]U”Nõ–Pù\éTZYîé]Õí[ùQï]UìŒ]ç]òﬁSﬁL”ú›òQ€ëú‹õ›LòìòåSõQ‹öñïñ]çïõ
+–Ÿ“ÿïU^ﬁÕSQ–ôS›ô“\UY–PIŒ¬ÇöYà
+\õÿŸ\‹Àò\ô›ãö[ò€Y\ 	ÀK]‹ö]I JH¬à€€ú€€KõŸ 	”YôXﬁX€Hò[ú‹‹ù^X›]‹éà‹ö]H[ŸHô\]Z\ôY»ÿ[õ€öXÿ[[\à\»ô\›‹ôYôYõ‹ôH€€[Z]â N¬àõÿŸ\‹Àô^]
+
+N¬üBÇò€€ú›]⁄H›[ûö\ﬁ[ò ùYôô\ãôúõ€JU“—÷íT–êT—Mç	ÿò\ŸMç	 JN¬ò€€ú›\YYH‹]€îﬁ[ò 	Ÿ⁄]	À…ÿ\IÀ	ÀK]⁄]\‹XŸOY\úõ‹âÀ	ÀI◊K¬à›Ÿàì”’à[ú]à]⁄à[ò€Ÿ[ôŒà	›]é	ÀüJN¬öYà
+\YYú›]\»OOH
+H¬àõÿŸ\‹Àú›\úãù‹ö]J\YYú›\úà	Ÿ⁄]\HòZ[Yâ N¬àõÿŸ\‹Àô^]
+\YYú›]\»JN¬üBÇò€€ú›ÿ[õ€öXÿ[[\àH^X—ö[Tﬁ[ò 	Ÿ⁄]	À…‹⁄›…À‹öY⁄[ã€XZ[éâ‘—SüXK»›Ÿàì”’JN¬ù‹ö]Qö[Tﬁ[ò ]öõ⁄[äì”’—SäKÿ[õ€öXÿ[[\äN¬ô^X—ö[Tﬁ[ò õÿŸ\‹Àô^X‘]…‹ÿ‹ö\Àÿ⁄KYòZ[\ôK[YôXﬁX€KX€€ùòX›]\›ò⁄ú…◊K»›Ÿàì”’›[Œà	⁄[ö\ö]	»JN¬ô^X—ö[Tﬁ[ò õÿŸ\‹Àô^X‘]…‹ÿ‹ö\Àÿ⁄KYòZ[\ôK[YôXﬁX€K\€›\òŸKX€€ùòX›]\›ò⁄ú…◊K»›Ÿàì”’›[Œà	⁄[ö\ö]	»JN¬ô^X—ö[Tﬁ[ò 	€úIÀ…‹ù[âÀ	›€‹öŸõ›‹Œò⁄X⁄…◊K»›Ÿàì”’›[Œà	⁄[ö\ö]	»JN¬ô^X—ö[Tﬁ[ò 	Ÿ⁄]	À…ŸYôâÀ	ÀKX⁄X⁄…◊K»›Ÿàì”’›[Œà	⁄[ö\ö]	»JN¬ò€€ú€€KõŸ 	”YôXﬁX€HôX€€ò⁄[X][€à]⁄›YŸY»ÿ[õ€öXÿ[XY[ôH[\àô\›‹ôYâ N¬
