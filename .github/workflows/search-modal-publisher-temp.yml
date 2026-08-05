@@ -59,21 +59,23 @@ jobs:
         if: steps.pr-branch.outputs.exists == 'true'
         env:
           EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
-          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
+          ORIGINAL_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
         run: |
           git fetch origin main --no-tags
           test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
-          test "$(git rev-parse origin/main)" = "${EXPECTED_BASE}"
-          test "$(git merge-base HEAD origin/main)" = "${EXPECTED_BASE}"
+          live_base="$(git rev-parse origin/main)"
+          git merge-base --is-ancestor "${ORIGINAL_BASE}" "${live_base}"
+          echo "LIVE_BASE=${live_base}" >> "$GITHUB_ENV"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge --no-edit origin/main
 
       - name: Apply explicit Search modal writers
         if: steps.pr-branch.outputs.exists == 'true'
-        env:
-          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
         run: |
           node scripts/reconcile-search-modal-wave.mjs --write
           node scripts/reconcile-search-modal-webkit-warning.mjs
-          git checkout "${EXPECTED_BASE}" -- .github/workflows/home-search-action-contract.yml
+          git checkout "${LIVE_BASE}" -- .github/workflows/home-search-action-contract.yml
           git rm -- \
             scripts/reconcile-search-modal-wave.mjs \
             scripts/reconcile-search-modal-webkit-warning.mjs \
@@ -81,8 +83,6 @@ jobs:
 
       - name: Validate generated Search modal source and exact diff
         if: steps.pr-branch.outputs.exists == 'true'
-        env:
-          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
         shell: bash
         run: |
           test ! -e scripts/reconcile-search-modal-wave.mjs
@@ -93,7 +93,7 @@ jobs:
           node scripts/cache-bust.js
           npm run astro:check
           git diff --check
-          actual="$(git diff "${EXPECTED_BASE}" --name-only --diff-filter=ACMR | sort -u)"
+          actual="$(git diff "${LIVE_BASE}" --name-only --diff-filter=ACMR | sort -u)"
           for required in \
             .github/workflows/search-modal-contract.yml \
             css/command-palette.css \
@@ -129,14 +129,14 @@ jobs:
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
-          EXPECTED_BASE: 92c4939c62bda365c1531c31d150c3988d8cfa47
         run: |
           mapfile -d '' changed < <(git diff --name-only -z --diff-filter=ACMR)
           if (( ${#changed[@]} )); then
             git add -- "${changed[@]}"
           fi
+          git add -- .github/workflows/search-modal-contract.yml scripts/search-modal-browser-contract.mjs
           git diff --cached --check
-          final_paths="$(git diff --cached "${EXPECTED_BASE}" --name-only --diff-filter=ACMR | sort -u)"
+          final_paths="$(git diff --cached "${LIVE_BASE}" --name-only --diff-filter=ACMR | sort -u)"
           for required in \
             .github/workflows/search-modal-contract.yml \
             css/command-palette.css \
@@ -149,6 +149,8 @@ jobs:
             echo 'Temporary control-plane survived final tree.' >&2
             exit 1
           fi
+          git fetch origin main --no-tags
+          test "$(git rev-parse origin/main)" = "${LIVE_BASE}"
           remote_head="$(git ls-remote --exit-code --heads origin "refs/heads/${HEAD_REF}" | awk '{print $1}')"
           test "${remote_head}" = "${EXPECTED_HEAD}"
           git config user.name "github-actions[bot]"
