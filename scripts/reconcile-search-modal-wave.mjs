@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const JS_PATH = path.join(ROOT, 'js/search.js');
 const CSS_PATH = path.join(ROOT, 'css/command-palette.css');
+const CONTRACT_PATH = path.join(ROOT, 'scripts/search-modal-browser-contract.mjs');
 
 function replaceOnce(text, before, after, label) {
   const first = text.indexOf(before);
@@ -147,4 +149,66 @@ assert.match(css, /\.cp-scope-chip:focus-visible/, 'scope-chip focus-visible mis
 assert.match(css, /\.cp-preview-btn:focus-visible/, 'preview focus-visible missing');
 
 fs.writeFileSync(CSS_PATH, css);
-console.log('SEARCH-P2-10/11/12 exact reconciliation applied to js/search.js and css/command-palette.css');
+
+let contract = fs.readFileSync(CONTRACT_PATH, 'utf8');
+contract = replaceOnce(
+  contract,
+  `    await page.goto(\`http://127.0.0.1:\${port}/\`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.waitForFunction(
+      () => window.GBSearch && typeof window.GBSearch.open === 'function',
+      null,
+      { timeout: 30_000 },
+    );
+
+    await page.evaluate(() => {
+      document.getElementById('search-modal-contract-trigger')?.remove();
+      const trigger = document.createElement('button');
+      trigger.id = 'search-modal-contract-trigger';
+      trigger.className = 'gb-nav-search-icon';
+      trigger.type = 'button';
+      trigger.setAttribute('aria-label', 'Открыть поиск');
+      trigger.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-5-5"></path></svg>';
+      trigger.addEventListener('click', () => window.GBSearch.open());
+      document.body.appendChild(trigger);
+      trigger.focus();
+      trigger.click();
+    });
+
+    const modal = page.locator('.cp-backdrop.is-open');`,
+  `    await page.goto(\`http://127.0.0.1:\${port}/\`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.evaluate(() => {
+      document.getElementById('search-modal-contract-trigger')?.remove();
+      const trigger = document.createElement('button');
+      trigger.id = 'search-modal-contract-trigger';
+      trigger.className = 'gb-nav-search-icon';
+      trigger.type = 'button';
+      trigger.setAttribute('aria-label', 'Открыть поиск');
+      trigger.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-5-5"></path></svg>';
+      trigger.addEventListener('click', () => window.dispatchEvent(new CustomEvent('gb:openSearch')));
+      document.body.appendChild(trigger);
+      trigger.focus();
+      trigger.click();
+    });
+    await page.waitForFunction(
+      () => window.GBSearch?.__ready === true && document.querySelector('.cp-backdrop')?.classList.contains('is-open'),
+      null,
+      { timeout: 30_000 },
+    );
+
+    const modal = page.locator('.cp-backdrop.is-open');`,
+  'lazy canonical search startup ordering',
+);
+assert.match(contract, /window\.dispatchEvent\(new CustomEvent\('gb:openSearch'\)\)/, 'canonical lazy-open event missing');
+assert.match(contract, /window\.GBSearch\?\.__ready === true/, 'ready-state wait missing');
+fs.writeFileSync(CONTRACT_PATH, contract);
+
+execFileSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.js'), '--write'], {
+  cwd: ROOT,
+  stdio: 'inherit',
+});
+execFileSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.js')], {
+  cwd: ROOT,
+  stdio: 'inherit',
+});
+
+console.log('SEARCH-P2-10/11/12 reconciliation, browser startup and asset revisions applied');
