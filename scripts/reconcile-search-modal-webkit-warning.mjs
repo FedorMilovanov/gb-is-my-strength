@@ -67,6 +67,63 @@ text = replaceOnce(
 
 text = replaceOnce(
   text,
+  `      const chip = document.querySelector('.cp-scope-chip');
+      chip?.focus();
+      const chipStyle = chip ? getComputedStyle(chip) : null;
+      return {
+        trigger: rect('#search-modal-contract-trigger'),
+        chips,
+        outline: chipStyle?.outlineStyle,
+        shadow: chipStyle?.boxShadow,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };`,
+  `      const chip = document.querySelector('.cp-scope-chip');
+      chip?.focus();
+      const chipStyle = chip ? getComputedStyle(chip) : null;
+      const chipCascade = [];
+      const visitRules = (rules, href, context = []) => {
+        for (const rule of rules) {
+          if (rule.type === CSSRule.STYLE_RULE) {
+            let matches = false;
+            try { matches = Boolean(chip?.matches(rule.selectorText)); } catch {}
+            if (matches && (rule.style.height || rule.style.minHeight || rule.style.minBlockSize)) {
+              chipCascade.push({
+                href,
+                context,
+                selector: rule.selectorText,
+                height: rule.style.height || null,
+                minHeight: rule.style.minHeight || null,
+                minBlockSize: rule.style.minBlockSize || null,
+                heightPriority: rule.style.getPropertyPriority('height') || null,
+                minHeightPriority: rule.style.getPropertyPriority('min-height') || null,
+                minBlockSizePriority: rule.style.getPropertyPriority('min-block-size') || null,
+                cssText: rule.cssText,
+              });
+            }
+            continue;
+          }
+          if (!('cssRules' in rule)) continue;
+          if (rule.type === CSSRule.MEDIA_RULE && !matchMedia(rule.conditionText).matches) continue;
+          const label = rule.conditionText || rule.name || rule.cssText.split('{', 1)[0].trim();
+          visitRules(rule.cssRules, href, [...context, label]);
+        }
+      };
+      for (const sheet of document.styleSheets) {
+        try { visitRules(sheet.cssRules, sheet.href || 'inline'); } catch {}
+      }
+      return {
+        trigger: rect('#search-modal-contract-trigger'),
+        chips,
+        chipCascade,
+        outline: chipStyle?.outlineStyle,
+        shadow: chipStyle?.boxShadow,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };`,
+  'exact matching cascade evidence',
+);
+
+text = replaceOnce(
+  text,
   `    assert.ok(geometry.chips.length >= 4 && geometry.chips.every((chip) => chip.height >= 44), 'scope chips must be 44px tall');`,
   `    assert.ok(
       geometry.chips.length >= 4 && geometry.chips.every((chip) =>
@@ -75,7 +132,7 @@ text = replaceOnce(
         chip.boxSizing === 'border-box' &&
         chip.height >= 43.5
       ),
-      \`scope chips must author exact 44px geometry with <=0.5px engine quantization: \${JSON.stringify(geometry.chips)}\`,
+      \`scope chips must author exact 44px geometry with <=0.5px engine quantization: \${JSON.stringify({ chips: geometry.chips, chipCascade: geometry.chipCascade })}\`,
     );`,
   'strict authored height with bounded WebKit quantization',
 );
@@ -117,10 +174,12 @@ assert.match(text, /consoleErrors\.push\(text\)/, 'unexpected console error barr
 assert.match(text, /computedHeight === 44/, 'exact authored 44px height assertion missing');
 assert.match(text, /computedMinHeight === 44/, 'exact authored 44px min-height assertion missing');
 assert.match(text, /chip\.height >= 43\.5/, 'bounded WebKit quantization tolerance missing');
+assert.match(text, /chipCascade/, 'matching cascade evidence missing');
+assert.match(text, /minHeightPriority/, 'cascade priority evidence missing');
 assert.match(text, /assert\.deepEqual\(consoleErrors, \[\], `\$\{browserName\} console errors`\)/, 'strict unexpected console error assertion missing');
 assert.match(text, /layer, engineWarnings \}/, 'engine warning evidence missing from report');
 assert.match(text, /failure-\$\{ordinal\}-\$\{browserName\}/, 'per-case failure artifact missing');
 assert.match(text, /throw error;/, 'failure must remain blocking');
 
 fs.writeFileSync(target, text);
-console.log('Exact WebKit warning and subpixel quantization classified without weakening authored 44px geometry');
+console.log('Exact WebKit warning, chip cascade and subpixel quantization classified without weakening authored 44px geometry');
