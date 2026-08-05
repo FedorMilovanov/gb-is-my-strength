@@ -29,8 +29,9 @@ const NON_BLOCKING_FIXTURE_DEPENDENCIES = new Map([
   ['scripts/editorial-metadata-registry-preservation-test.js', 'articles/old-entry/index.html'],
 ]);
 const NON_BLOCKING_DIST_DEPENDENCIES = new Map([
-  ['scripts/gill-pre-v16-submenu-regression-audit.js', 'articles/dzhon-gill-istoricheskiy-kontekst/index.html'],
-  ['scripts/nagornaya-bar-asset-browser-test.js', 'nagornaya/chast-1/index.html'],
+  ['scripts/dist-publication-audit.js', { evidenceToken: 'nagornaya/chast-1/index.html', access: 'reader' }],
+  ['scripts/gill-pre-v16-submenu-regression-audit.js', { evidenceToken: 'articles/dzhon-gill-istoricheskiy-kontekst/index.html', access: 'fixture-or-contract' }],
+  ['scripts/nagornaya-bar-asset-browser-test.js', { evidenceToken: 'nagornaya/chast-1/index.html', access: 'fixture-or-contract' }],
 ]);
 
 function read(relativePath) {
@@ -161,8 +162,8 @@ function discoverDependencies() {
   return found.sort((a, b) => a.path.localeCompare(b.path));
 }
 
-function validateNonBlockingDependency(dependency, evidenceToken, label, problem) {
-  if (dependency.access !== 'fixture-or-contract') problem(`${dependency.path}: reviewed ${label} must remain fixture-or-contract`);
+function validateNonBlockingDependency(dependency, evidenceToken, expectedAccess, label, problem) {
+  if (dependency.access !== expectedAccess) problem(`${dependency.path}: reviewed ${label} must remain ${expectedAccess}`);
   if (dependency.classification !== 'production-required') problem(`${dependency.path}: reviewed ${label} must remain non-blocking`);
   if (dependency.quarantineImpact !== 'none-fixture-policy-or-comment-only') problem(`${dependency.path}: reviewed ${label} must have no quarantine impact`);
   if (dependency.evidenceToken !== evidenceToken) problem(`${dependency.path}: reviewed ${label} evidence token drifted`);
@@ -255,9 +256,9 @@ function validateLedger(ledger) {
       problem(`${dependency.path}: unknown blocker must require owner decision`);
     }
     const fixtureEvidenceToken = NON_BLOCKING_FIXTURE_DEPENDENCIES.get(dependency.path);
-    if (fixtureEvidenceToken) validateNonBlockingDependency(dependency, fixtureEvidenceToken, 'fixture', problem);
-    const distEvidenceToken = NON_BLOCKING_DIST_DEPENDENCIES.get(dependency.path);
-    if (distEvidenceToken) validateNonBlockingDependency(dependency, distEvidenceToken, 'dist contract', problem);
+    if (fixtureEvidenceToken) validateNonBlockingDependency(dependency, fixtureEvidenceToken, 'fixture-or-contract', 'fixture', problem);
+    const distPolicy = NON_BLOCKING_DIST_DEPENDENCIES.get(dependency.path);
+    if (distPolicy) validateNonBlockingDependency(dependency, distPolicy.evidenceToken, distPolicy.access, 'dist contract', problem);
     if (dependency.access === 'writer' && dependency.classification !== 'obsolete' && dependency.classification !== 'unknown-blocker') {
       problem(`${dependency.path}: mutable legacy writer cannot be silently classified as safe`);
     }
@@ -319,7 +320,7 @@ const mutations = [
     copy.summary.dependencyUnknownBlockers++;
   }],
   ['reviewed dist contract relaundered as blocker', (copy) => {
-    const target = copy.dependencies.find((item) => item.path === 'scripts/gill-pre-v16-submenu-regression-audit.js');
+    const target = copy.dependencies.find((item) => item.path === 'scripts/dist-publication-audit.js');
     target.classification = 'unknown-blocker';
     target.quarantineImpact = 'owner-decision-required';
     copy.summary.dependencyUnknownBlockers++;
