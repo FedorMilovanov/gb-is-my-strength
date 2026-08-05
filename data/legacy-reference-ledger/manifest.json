@@ -21,7 +21,11 @@
     "normalValidation": "read-only",
     "moveAllowedWhenUnknownBlockers": false,
     "homeDecision": "Root index.html is migration-reference-only per issue #62 comment 5148492562; no live-production P0 claim.",
-    "obsoleteWritersAllowed": false
+    "obsoleteWritersAllowed": false,
+    "nonBlockingFixtureDependencies": [
+      "scripts/audit-pro-source-corpus-test.js",
+      "scripts/editorial-metadata-registry-preservation-test.js"
+    ]
   },
   "summary": {
     "references": 52,
@@ -29,7 +33,7 @@
     "productionRequired": 0,
     "unknownBlockers": 30,
     "dependencies": 32,
-    "dependencyUnknownBlockers": 13,
+    "dependencyUnknownBlockers": 11,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -58,8 +62,8 @@
     {
       "path": "scripts/audit-pro-source-corpus-test.js",
       "access": "fixture-or-contract",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
+      "classification": "production-required",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "articles/one/index.html",
       "owner": "legacy-reference-quarantine"
     },
@@ -106,8 +110,8 @@
     {
       "path": "scripts/editorial-metadata-registry-preservation-test.js",
       "access": "fixture-or-contract",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
+      "classification": "production-required",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "articles/old-entry/index.html",
       "owner": "legacy-reference-quarantine"
     },

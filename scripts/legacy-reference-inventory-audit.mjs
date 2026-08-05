@@ -24,6 +24,10 @@ const ALLOWED_ACCESS = new Set([
 ]);
 const DISCOVERY_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.astro', '.json', '.yml', '.yaml']);
 const DISCOVERY_RE = /legacyPath|legacyStatus|(?:articles|baptisty-rossii|nagornaya)\/[^\n"'` ]+\/index\.html/;
+const NON_BLOCKING_FIXTURE_DEPENDENCIES = new Map([
+  ['scripts/audit-pro-source-corpus-test.js', 'articles/one/index.html'],
+  ['scripts/editorial-metadata-registry-preservation-test.js', 'articles/old-entry/index.html'],
+]);
 
 function read(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
@@ -164,6 +168,10 @@ function validateLedger(ledger) {
   if (ledger.policy?.normalValidation !== 'read-only') problem('normal validation must remain read-only');
   if (ledger.policy?.moveAllowedWhenUnknownBlockers !== false) problem('moves must remain blocked while unknown blockers exist');
   if (ledger.policy?.obsoleteWritersAllowed !== false) problem('obsolete writers must remain forbidden');
+  const expectedFixtureDependencies = [...NON_BLOCKING_FIXTURE_DEPENDENCIES.keys()];
+  if (JSON.stringify(ledger.policy?.nonBlockingFixtureDependencies) !== JSON.stringify(expectedFixtureDependencies)) {
+    problem('non-blocking fixture dependency policy drifted');
+  }
 
   const profiles = collectProfiles();
   const refs = Array.isArray(ledger.references) ? ledger.references : [];
@@ -231,6 +239,13 @@ function validateLedger(ledger) {
     if (dependency.classification === 'unknown-blocker' && dependency.quarantineImpact !== 'owner-decision-required') {
       problem(`${dependency.path}: unknown blocker must require owner decision`);
     }
+    const fixtureEvidenceToken = NON_BLOCKING_FIXTURE_DEPENDENCIES.get(dependency.path);
+    if (fixtureEvidenceToken) {
+      if (dependency.access !== 'fixture-or-contract') problem(`${dependency.path}: reviewed fixture must remain fixture-or-contract`);
+      if (dependency.classification !== 'production-required') problem(`${dependency.path}: reviewed fixture must remain non-blocking`);
+      if (dependency.quarantineImpact !== 'none-fixture-policy-or-comment-only') problem(`${dependency.path}: reviewed fixture must have no quarantine impact`);
+      if (dependency.evidenceToken !== fixtureEvidenceToken) problem(`${dependency.path}: reviewed fixture evidence token drifted`);
+    }
     if (dependency.access === 'writer' && dependency.classification !== 'obsolete' && dependency.classification !== 'unknown-blocker') {
       problem(`${dependency.path}: mutable legacy writer cannot be silently classified as safe`);
     }
@@ -285,6 +300,12 @@ const mutations = [
   }],
   ['unregistered dependency', (copy) => { copy.dependencies.pop(); copy.summary.dependencies--; }],
   ['move enabled with blockers', (copy) => { copy.policy.moveAllowedWhenUnknownBlockers = true; }],
+  ['reviewed fixture relaundered as blocker', (copy) => {
+    const target = copy.dependencies.find((item) => item.path === 'scripts/audit-pro-source-corpus-test.js');
+    target.classification = 'unknown-blocker';
+    target.quarantineImpact = 'owner-decision-required';
+    copy.summary.dependencyUnknownBlockers++;
+  }],
   ['obsolete writer reintroduction', (copy) => {
     copy.dependencies.push({
       path: 'scripts/legacy-generators/update-meta-git-history-v2.js',
