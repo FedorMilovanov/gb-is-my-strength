@@ -55,6 +55,16 @@ jobs:
           node --check scripts/home-search-action-browser-contract.mjs
           npm run astro:check
 
+      - name: Materialize derived Scripture index diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/home-search-action
+          node scripts/build-scripture-occurrence-index.mjs --write
+          cp data/scripture-search-index.json reports/home-search-action/scripture-search-index.generated.json
+          git diff --stat -- data/scripture-search-index.json | tee reports/home-search-action/scripture-search-index.diffstat.txt
+          git checkout -- data/scripture-search-index.json
+
       - name: Build production-like publication
         run: |
           npm run strangler:build:production-like
