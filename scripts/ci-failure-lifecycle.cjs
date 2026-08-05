@@ -279,7 +279,7 @@ function buildFailureBody({ workflowRun, descriptor, evidence, state }) {
     '',
     '> Route impact is not inferred from the commit message. It is included only when a real, parsed report is available; this notifier currently lists the actual artifacts instead.',
     '',
-    'This issue is managed by `notify-on-failure.yml`. A newer successful run for the same workflow and identity closes it automatically.',
+    'This issue is managed by `notify-on-failure.yml`. A newer successful run for the same workflow and identity closes it automatically. A closed PR, deleted branch, or fully integrated inactive branch is retired separately as `not_planned` without claiming CI recovery.',
     '',
     stateMarker(state),
   ].join('\n');
@@ -314,6 +314,175 @@ async function listLifecycleIssues({ github, context, descriptor }) {
     throw new Error(`Ambiguous CI lifecycle state: ${matches.length} issues share ${descriptor.marker}`);
   }
   return matches[0] || null;
+}
+
+
+function parseLifecycleIdentity(value) {
+  const identity = String(value || '');
+  if (identity.startsWith('pr:')) {
+    const hash = identity.lastIndexOf('#');
+    const number = asPositiveInteger(identity.slice(hash + 1));
+    if (hash > 3 && number) return { type: 'pull-requests', repository: identity.slice(3, hash), numbers: [number] };
+    return null;
+  }
+  if (identity.startsWith('prs:')) {
+    const hash = identity.lastIndexOf('#');
+    const numbers = identity.slice(hash + 1).split(',').map((value) => asPositiveInteger(value)).filter(Boolean);
+    if (hash > 4 && numbers.length) return { type: 'pull-requests', repository: identity.slice(4, hash), numbers };
+    return null;
+  }
+  if (identity.startsWith('branch:')) {
+    const remainder = identity.slice('branch:'.length);
+    const separator = remainder.indexOf(':');
+    if (separator > 0 && separator < remainder.length - 1) {
+      return {
+        type: 'branch',
+        repository: remainder.slice(0, separator),
+        branch: remainder.slice(separator + 1),
+      };
+    }
+  }
+  return null;
+}
+
+function isNotFound(error) {
+  return Number(error && (error.status || (error.response && error.response.status))) === 404;
+}
+
+async function retirementDisposition({ github, context, identity, defaultBranch }) {
+  const parsed = parseLifecycleIdentity(identity);
+  if (!parsed || parsed.repository !== repositoryName(context)) return null;
+
+  if (parsed.type === 'pull-requests') {
+    const pulls = [];
+    for (const number of parsed.numbers) {
+      const response = await github.rest.pulls.get({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        pull_number: number,
+      });
+      pulls.push(response.data);
+    }
+    if (pulls.every((pull) => pull && pull.state === 'closed')) {
+      const merged = pulls.filter((pull) => Boolean(pull.merged || pull.merged_at)).map((pull) => pull.number);
+      return {
+        reason: merged.length === pulls.length ? 'closed-merged-pr' : 'closed-pr',
+        detail: `PR identity ${parsed.numbers.map((number) => `#${number}`).join(', ')} is closed`,
+      };
+    }
+    return null;
+  }
+
+  if (parsed.branch === defaultBranch) return null;
+
+  let branch;
+  try {
+    const response = await github.rest.repos.getBranch({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      branch: parsed.branch,
+    });
+    branch = response.data;
+  } catch (error) {
+    if (isNotFound(error)) {
+      return { reason: 'deleted-branch', detail: `branch ${parsed.branch} no longer exists` };
+    }
+    throw error;
+  }
+
+  if (!branch) return null;
+  const openPulls = await paginate(github, github.rest.pulls.list, {
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    state: 'open',
+    head: `${context.repo.owner}:${parsed.branch}`,
+    per_page: 100,
+  });
+  if (openPulls.length) return null;
+
+  const comparison = await github.rest.repos.compareCommits({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    base: defaultBranch,
+    head: parsed.branch,
+  });
+  if (asPositiveInteger(comparison && comparison.data && comparison.data.ahead_by) === 0) {
+    return {
+      reason: 'fully-integrated-branch',
+      detail: `branch ${parsed.branch} has no open PR and no commits ahead of ${defaultBranch}`,
+    };
+  }
+  return null;
+}
+
+async function reconcileRetiredIdentities({ github, context, core, defaultBranch }) {
+  if (!github || !context || !core || !defaultBranch) {
+    throw new Error('github, context, core and defaultBranch are required');
+  }
+  const issues = await paginate(github, github.rest.issues.listForRepo, {
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    state: 'open',
+    labels: 'ci-failure',
+    per_page: 100,
+  });
+  const lifecycleIssues = issues.filter((issue) => issue && !issue.pull_request && /<!-- ci-failure-lifecycle:v1:/.test(String(issue.body || '')));
+  const retired = [];
+  const skipped = [];
+
+  for (const issue of lifecycleIssues) {
+    const state = decodeState(issue.body);
+    if (!state || !state.identity) {
+      core.warning(`Issue #${issue.number} has no parseable lifecycle identity; refusing retirement`);
+      skipped.push({ issueNumber: issue.number, reason: 'invalid-state' });
+      continue;
+    }
+
+    let disposition = null;
+    try {
+      disposition = await retirementDisposition({ github, context, identity: state.identity, defaultBranch });
+    } catch (error) {
+      core.warning(`Issue #${issue.number} retirement check failed: ${safeText(error && error.message, 'request failed')}`);
+      skipped.push({ issueNumber: issue.number, reason: 'api-error' });
+      continue;
+    }
+    if (!disposition) continue;
+
+    const nextState = {
+      ...state,
+      retiredBy: {
+        reason: disposition.reason,
+        defaultBranch,
+      },
+    };
+    await github.rest.issues.createComment({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: issue.number,
+      body: [
+        '### 🧹 lifecycle identity retired',
+        '',
+        'This alert is closed because its source identity is no longer actionable. This is **not** evidence that the failed workflow recovered.',
+        '',
+        `- Identity: \`${safeText(state.identity)}\``,
+        `- Reason: \`${disposition.reason}\``,
+        `- Evidence: ${disposition.detail}`,
+        `- Default branch: \`${defaultBranch}\``,
+      ].join('\n'),
+    });
+    await github.rest.issues.update({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: issue.number,
+      body: replaceStateMarker(issue.body, nextState),
+      state: 'closed',
+      state_reason: 'not_planned',
+    });
+    retired.push({ issueNumber: issue.number, reason: disposition.reason });
+    core.info(`Retired orphan CI lifecycle issue #${issue.number}: ${disposition.reason}`);
+  }
+
+  return { action: 'reconciled-retired-identities', retired, skipped };
 }
 
 async function handleFailure({ github, context, core, workflowRun, descriptor }) {
@@ -478,11 +647,14 @@ async function runNotifier({ github, context, core, workflowRun }) {
 }
 
 module.exports = runNotifier;
+module.exports.reconcileRetiredIdentities = reconcileRetiredIdentities;
 module.exports._test = {
   buildFailureBody,
   compareRunVersion,
   decodeState,
   lifecycleDescriptor,
+  parseLifecycleIdentity,
+  retirementDisposition,
   runVersion,
   workflowIdentity,
 };
