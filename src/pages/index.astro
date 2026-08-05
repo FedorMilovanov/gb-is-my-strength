@@ -31,5 +31,55 @@ import HomeArticleEndBlock from '@/components/home/HomeArticleEndBlock.astro';
       <HomeArticleEndBlock />
       <HomePageFooter />
     </HomePageChrome>
+
+    <script is:inline>
+      (() => {
+        if (window.__gbSearchActionQueryBound) return;
+        window.__gbSearchActionQueryBound = true;
+
+        const rawQuery = new URLSearchParams(window.location.search).get('q');
+        const query = String(rawQuery ?? '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 160);
+
+        if (!query) return;
+
+        let applied = false;
+        let expiry = 0;
+
+        const applyQuery = () => {
+          if (applied) return true;
+          const overlay = document.querySelector('.cp-backdrop');
+          const input = document.querySelector('.cp-input');
+          if (!(input instanceof HTMLInputElement) || !overlay?.classList.contains('is-open')) return false;
+
+          applied = true;
+          window.clearTimeout(expiry);
+          input.value = query;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.focus({ preventScroll: true });
+          document.documentElement.dataset.searchActionQuery = 'applied';
+          return true;
+        };
+
+        const observer = new MutationObserver(() => {
+          if (applyQuery()) observer.disconnect();
+        });
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class'],
+        });
+        expiry = window.setTimeout(() => observer.disconnect(), 10_000);
+
+        window.__gbHomeSearchOpener = document.getElementById('gbSearchBtn');
+        window.dispatchEvent(new CustomEvent('gb:openSearch', {
+          detail: { source: 'website-search-action' },
+        }));
+        requestAnimationFrame(applyQuery);
+      })();
+    </script>
   </body>
 </html>
