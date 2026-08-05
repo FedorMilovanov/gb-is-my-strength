@@ -44,96 +44,152 @@ const jsonLd = {
     </div>
   </section>
 
-  <script is:inline define:vars={{ FAV_KEY: 'gb-favorites' }}>
-    (function () {
-      var grid = document.getElementById('izbrannoeGrid');
-      var empty = document.getElementById('izbrannoeEmpty');
-      var count = document.getElementById('izbrannoeCount');
-      var actions = document.getElementById('izbrannoeActions');
-      var clearBtn = document.getElementById('izbrannoeClear');
-      if (!grid || !empty) return;
+  <script>
+    import '../../runtime/favorite-store.js';
 
-      function esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-      }
-      function read() {
-        try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
-        catch (_) { return []; }
-      }
-      function write(list) {
-        try { localStorage.setItem(FAV_KEY, JSON.stringify(list)); }
-        catch (_) {}
-      }
-      function ruPlural(n, one, few, many) {
-        var m = Math.abs(n) % 100, d = m % 10;
-        if (m > 10 && m < 20) return many;
-        if (d > 1 && d < 5) return few;
-        if (d === 1) return one;
-        return many;
+    type FavoriteRecord = {
+      path?: unknown;
+      schemaVersion?: unknown;
+      image?: unknown;
+      category?: unknown;
+      section?: unknown;
+      title?: unknown;
+      description?: unknown;
+    };
+
+    type FavoriteStore = {
+      schemaVersion: number;
+      list(): FavoriteRecord[];
+      normalizePath(value: unknown): string | null;
+      remove(path: string, options?: { source?: string }): unknown;
+      clear(options?: { source?: string }): unknown;
+      subscribe(listener: () => void): unknown;
+    };
+
+    const favoriteWindow = window as typeof window & { GBFavoriteStore?: FavoriteStore };
+    const grid = document.getElementById('izbrannoeGrid');
+    const empty = document.getElementById('izbrannoeEmpty');
+    const count = document.getElementById('izbrannoeCount');
+    const actions = document.getElementById('izbrannoeActions');
+    const clearBtn = document.getElementById('izbrannoeClear');
+
+    function ruPlural(value: number, one: string, few: string, many: string): string {
+      const modulo = Math.abs(value) % 100;
+      const digit = modulo % 10;
+      if (modulo > 10 && modulo < 20) return many;
+      if (digit > 1 && digit < 5) return few;
+      if (digit === 1) return one;
+      return many;
+    }
+
+    function render() {
+      const store = favoriteWindow.GBFavoriteStore;
+      if (!store || !grid || !empty || !count || !actions) return;
+      const favorites = store.list();
+      grid.replaceChildren();
+
+      if (!favorites.length) {
+        empty.hidden = false;
+        actions.hidden = true;
+        count.textContent = '';
+        return;
       }
 
-      function render() {
-        var favs = read();
-        grid.innerHTML = '';
-        if (!favs.length) {
-          empty.hidden = false;
-          actions.hidden = true;
-          count.textContent = '';
-          return;
+      empty.hidden = true;
+      actions.hidden = false;
+      count.textContent = `${favorites.length} ${ruPlural(favorites.length, 'статья', 'статьи', 'статей')}`;
+
+      favorites.forEach((favorite) => {
+        const normalized = store.normalizePath(favorite.path);
+        if (!normalized) return;
+        const href = normalized === '/' ? '/' : `${normalized}/`;
+        const card = document.createElement('article');
+        card.className = 'izbrannoe-card';
+        card.dataset.favoriteSchema = String(favorite.schemaVersion || store.schemaVersion);
+
+        const imageLink = document.createElement('a');
+        imageLink.className = 'izbrannoe-card__link';
+        imageLink.href = href;
+        const image = document.createElement('div');
+        image.className = 'izbrannoe-card__img';
+        if (favorite.image) {
+          try {
+            const imageUrl = new URL(String(favorite.image), window.location.origin);
+            if (imageUrl.protocol === 'http:' || imageUrl.protocol === 'https:') {
+              image.style.backgroundImage = `url("${imageUrl.href.replace(/"/g, '%22')}")`;
+            } else {
+              image.classList.add('izbrannoe-card__img--empty');
+            }
+          } catch {
+            image.classList.add('izbrannoe-card__img--empty');
+          }
+        } else {
+          image.classList.add('izbrannoe-card__img--empty');
         }
-        empty.hidden = true;
-        actions.hidden = false;
-        count.textContent = favs.length + ' ' + ruPlural(favs.length, 'статья', 'статьи', 'статей');
+        imageLink.appendChild(image);
+        card.appendChild(imageLink);
 
-        favs.forEach(function (f) {
-          var rawPath = f.path || '/';
-          var path = /^\/(?!\/)/.test(rawPath) ? rawPath : '/';
-          if (path !== '/' && !/\/$/.test(path)) path = path + '/';
-          var card = document.createElement('article');
-          card.className = 'izbrannoe-card';
-          var safeImg = f.image && /^(https?:)?\//i.test(f.image) ? esc(f.image) : '';
-          var img = safeImg
-            ? '<div class="izbrannoe-card__img" style="background-image:url(\'' + safeImg + '\')"></div>'
-            : '<div class="izbrannoe-card__img izbrannoe-card__img--empty"></div>';
-          var section = f.section ? '<span class="izbrannoe-card__section">' + esc(f.section) + '</span>' : '';
-          card.innerHTML =
-            '<a class="izbrannoe-card__link" href="' + esc(path) + '">' + img + '</a>' +
-            '<div class="izbrannoe-card__body">' +
-              section +
-              '<a class="izbrannoe-card__title" href="' + esc(path) + '">' + esc(f.title || 'Статья') + '</a>' +
-              (f.description ? '<p class="izbrannoe-card__desc">' + esc(f.description) + '</p>' : '') +
-              '<div class="izbrannoe-card__foot">' +
-                '<a class="izbrannoe-card__open" href="' + esc(path) + '">Читать →</a>' +
-                '<button type="button" class="izbrannoe-card__remove" data-path="' + esc(f.path) + '" aria-label="Убрать из избранного">Убрать</button>' +
-              '</div>' +
-            '</div>';
-          grid.appendChild(card);
-        });
-      }
+        const body = document.createElement('div');
+        body.className = 'izbrannoe-card__body';
+        const sectionValue = favorite.category || favorite.section;
+        if (sectionValue) {
+          const section = document.createElement('span');
+          section.className = 'izbrannoe-card__section';
+          section.textContent = String(sectionValue);
+          body.appendChild(section);
+        }
 
-      grid.addEventListener('click', function (e) {
-        var rm = e.target.closest('.izbrannoe-card__remove');
-        if (!rm) return;
-        var p = rm.getAttribute('data-path');
-        var favs = read().filter(function (f) { return f.path !== p; });
-        write(favs);
-        render();
+        const titleLink = document.createElement('a');
+        titleLink.className = 'izbrannoe-card__title';
+        titleLink.href = href;
+        titleLink.textContent = String(favorite.title || 'Материал');
+        body.appendChild(titleLink);
+
+        if (favorite.description) {
+          const description = document.createElement('p');
+          description.className = 'izbrannoe-card__desc';
+          description.textContent = String(favorite.description);
+          body.appendChild(description);
+        }
+
+        const footer = document.createElement('div');
+        footer.className = 'izbrannoe-card__foot';
+        const openLink = document.createElement('a');
+        openLink.className = 'izbrannoe-card__open';
+        openLink.href = href;
+        openLink.textContent = 'Читать →';
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'izbrannoe-card__remove';
+        removeButton.dataset.path = normalized;
+        removeButton.setAttribute('aria-label', 'Убрать из избранного');
+        removeButton.textContent = 'Убрать';
+        footer.append(openLink, removeButton);
+        body.appendChild(footer);
+        card.appendChild(body);
+        grid.appendChild(card);
       });
+    }
 
-      clearBtn.addEventListener('click', function () {
+    function bind() {
+      const store = favoriteWindow.GBFavoriteStore;
+      if (!store || !grid || !clearBtn) return;
+      store.subscribe(render);
+      grid.addEventListener('click', (event) => {
+        const target = event.target;
+        const removeButton = target instanceof Element ? target.closest('.izbrannoe-card__remove') : null;
+        if (!removeButton) return;
+        store.remove(removeButton.getAttribute('data-path') || '', { source: 'favorites-page' });
+      });
+      clearBtn.addEventListener('click', () => {
         if (!confirm('Удалить все статьи из избранного?')) return;
-        write([]);
-        render();
-      });
-
-      // re-render when returning from another tab (saved there)
-      window.addEventListener('storage', function (e) {
-        if (e.key === FAV_KEY) render();
+        store.clear({ source: 'favorites-page' });
       });
       render();
-    })();
+    }
+
+    if (favoriteWindow.GBFavoriteStore) bind();
+    else window.addEventListener('gb:favorite-store-ready', bind, { once: true });
   </script>
 
   <style is:global>
