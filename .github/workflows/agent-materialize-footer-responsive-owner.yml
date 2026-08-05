@@ -1,0 +1,91 @@
+name: Agent materialize footer responsive owner
+
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+    paths:
+      - src/components/home/HomePageFooter.astro
+      - scripts/home-responsive-evidence-contract.mjs
+      - .github/agent/materialize-footer-responsive-owner.mjs
+      - .github/workflows/agent-materialize-footer-responsive-owner.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-materialize-footer-responsive-owner-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/home-quote-static-mirror-fix'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Verify exact source boundary
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+          test "${HEAD_REF}" = "agent/home-quote-static-mirror-fix"
+          test "$(git hash-object src/components/home/HomePageFooter.astro)" = "37e6dab86368a724b66de8ac24ff12444f5c55b5"
+          test "$(git hash-object scripts/home-responsive-evidence-contract.mjs)" = "1917635d6cf2b8f3b3b3491e032d24f8422234fb"
+          node --check .github/agent/materialize-footer-responsive-owner.mjs
+
+      - name: Materialize canonical footer geometry owner
+        run: node .github/agent/materialize-footer-responsive-owner.mjs --write
+
+      - name: Validate generated contract and bounded diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/home-responsive-evidence-contract.mjs
+          git diff --check
+          mapfile -t changed < <(git diff --name-only)
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "scripts/home-responsive-evidence-contract.mjs"
+
+      - name: Commit bounded materialization
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -- .github/agent/materialize-footer-responsive-owner.mjs
+          git rm -- .github/workflows/agent-materialize-footer-responsive-owner.yml
+          git add -- scripts/home-responsive-evidence-contract.mjs
+          git diff --cached --check
+          mapfile -t staged < <(git diff --cached --name-only | sort)
+          expected=(
+            .github/agent/materialize-footer-responsive-owner.mjs
+            .github/workflows/agent-materialize-footer-responsive-owner.yml
+            scripts/home-responsive-evidence-contract.mjs
+          )
+          test "${#staged[@]}" -eq "${#expected[@]}"
+          for index in "${!expected[@]}"; do test "${staged[$index]}" = "${expected[$index]}"; done
+          tree_sha="$(git write-tree)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test(home): make responsive audit sole footer geometry owner" -m "materialized-tree: ${tree_sha}"
+          git push origin "HEAD:${HEAD_REF}"
