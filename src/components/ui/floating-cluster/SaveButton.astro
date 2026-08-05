@@ -26,7 +26,7 @@ const classes = ['gb-save', saved ? 'is-saved' : '', className].filter(Boolean).
   type="button"
   class={classes}
   data-fc-action="save"
-  aria-label="Добавить в Избранное"
+  aria-label={saved ? 'Убрать из Избранного' : 'Добавить в Избранное'}
   aria-pressed={saved ? 'true' : 'false'}
   data-tip={tip}
 >

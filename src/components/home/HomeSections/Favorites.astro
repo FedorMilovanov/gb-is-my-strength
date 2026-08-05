@@ -1,7 +1,7 @@
 ---
 /**
  * Favorites.astro — «Ваше избранное» на главной.
- * Рендерится из localStorage gb-favorites клиентским скриптом.
+ * Рендерится через canonical GBFavoriteStore v1.
  * Без JS — секция скрыта (hidden).
  */
 ---
@@ -12,56 +12,87 @@
   <div class="favorites-list" id="favoritesList"></div>
 </section>
 
-<script is:inline>
-(function() {
-  var FAV_KEY = 'gb-favorites';
-  var block = document.getElementById('favoritesBlock');
-  var list = document.getElementById('favoritesList');
-  if (!block || !list) return;
-  var favs = [];
-  try { favs = JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) {}
-  if (!Array.isArray(favs) || !favs.length) return;
+<script>
+  import '../../../runtime/favorite-store.js';
 
-  function textNode(className, value) {
-    var node = document.createElement('span');
+  type FavoriteRecord = {
+    path?: unknown;
+    schemaVersion?: unknown;
+    image?: unknown;
+    category?: unknown;
+    section?: unknown;
+    title?: unknown;
+    description?: unknown;
+  };
+
+  type FavoriteStore = {
+    schemaVersion: number;
+    list(): FavoriteRecord[];
+    normalizePath(value: unknown): string | null;
+    subscribe(listener: () => void): unknown;
+  };
+
+  const favoriteWindow = window as typeof window & { GBFavoriteStore?: FavoriteStore };
+  const block = document.getElementById('favoritesBlock');
+  const list = document.getElementById('favoritesList');
+
+  function textNode(className: string, value: unknown) {
+    const node = document.createElement('span');
     node.className = className;
     node.textContent = String(value == null ? '' : value);
     return node;
   }
 
-  favs.slice(0, 8).forEach(function(f) {
-    if (!f || typeof f !== 'object' || Array.isArray(f)) return;
+  function renderFavorites() {
+    const store = favoriteWindow.GBFavoriteStore;
+    if (!block || !list || !store) return;
+    list.replaceChildren();
 
-    var rawPath = f.path ? String(f.path) : '/';
-    var safePath = /^\/(?!\/)/.test(rawPath) ? rawPath : '/';
-    var card = document.createElement('a');
-    card.className = 'favorites-card';
-    card.href = safePath.endsWith('/') ? safePath : safePath + '/';
-    card.setAttribute('data-fav-path', safePath);
+    store.list().slice(0, 8).forEach((favorite) => {
+      if (!favorite || typeof favorite !== 'object' || Array.isArray(favorite)) return;
+      const safePath = store.normalizePath(favorite.path);
+      if (!safePath) return;
 
-    if (f.image) {
-      try {
-        var imageUrl = new URL(String(f.image), window.location.origin);
-        if (imageUrl.protocol === 'http:' || imageUrl.protocol === 'https:') {
-          var image = document.createElement('div');
-          image.className = 'favorites-card__img';
-          image.style.backgroundImage = 'url("' + imageUrl.href.replace(/"/g, '%22') + '")';
-          card.appendChild(image);
-        }
-      } catch(e) {}
-    }
+      const card = document.createElement('a');
+      card.className = 'favorites-card';
+      card.href = safePath === '/' ? '/' : `${safePath}/`;
+      card.dataset.favPath = safePath;
+      card.dataset.favoriteSchema = String(favorite.schemaVersion || store.schemaVersion);
 
-    var body = document.createElement('div');
-    body.className = 'favorites-card__body';
-    if (f.section) body.appendChild(textNode('favorites-card__section', f.section));
-    body.appendChild(textNode('favorites-card__title', f.title || 'Статья'));
-    if (f.description) body.appendChild(textNode('favorites-card__desc', f.description));
-    card.appendChild(body);
+      if (favorite.image) {
+        try {
+          const imageUrl = new URL(String(favorite.image), window.location.origin);
+          if (imageUrl.protocol === 'http:' || imageUrl.protocol === 'https:') {
+            const image = document.createElement('div');
+            image.className = 'favorites-card__img';
+            image.style.backgroundImage = `url("${imageUrl.href.replace(/"/g, '%22')}")`;
+            card.appendChild(image);
+          }
+        } catch {}
+      }
 
-    list.appendChild(card);
-  });
+      const body = document.createElement('div');
+      body.className = 'favorites-card__body';
+      const section = favorite.category || favorite.section;
+      if (section) body.appendChild(textNode('favorites-card__section', section));
+      body.appendChild(textNode('favorites-card__title', favorite.title || 'Материал'));
+      if (favorite.description) body.appendChild(textNode('favorites-card__desc', favorite.description));
+      card.appendChild(body);
+      list.appendChild(card);
+    });
 
-  if (list.children.length) block.hidden = false;
+    block.hidden = list.children.length === 0;
+  }
 
-})();
+  if (favoriteWindow.GBFavoriteStore) {
+    favoriteWindow.GBFavoriteStore.subscribe(renderFavorites);
+    renderFavorites();
+  } else {
+    window.addEventListener('gb:favorite-store-ready', () => {
+      const store = favoriteWindow.GBFavoriteStore;
+      if (!store) return;
+      store.subscribe(renderFavorites);
+      renderFavorites();
+    }, { once: true });
+  }
 </script>
