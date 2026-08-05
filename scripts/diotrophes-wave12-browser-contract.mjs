@@ -10,6 +10,20 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, 'reports', 'diotrophes-wave12');
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
+const EXPECTED_SHARED_READER_LINKS = [
+  'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
+  'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
+  'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
+  'https://www.thejourney.org/about/our-story-new',
+].sort();
+const STALE_READER_LINKS = [
+  'https://www.thejourney.org/our-story',
+  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
+];
+const CANONICAL_BASE_READER_LINKS = [
+  'https://www.thejourney.org/about/our-story-new',
+  'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
+];
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.woff2':'font/woff2' };
 const failures = [];
 const results = [];
@@ -148,10 +162,17 @@ async function inspect(browserType, engine, profile) {
       await page.route(/mc\.yandex|gospod-bog\.ru/, (request) => request.abort());
       const response = await page.goto(base + ROUTE, { waitUntil: javaScriptEnabled ? 'networkidle' : 'domcontentloaded' });
       record(engine, `${profile.id}-${mode}`, 'http-200', response?.status() === 200, `status=${response?.status()}`);
-      const state = await page.evaluate(() => {
+      const state = await page.evaluate(({ staleReaderLinks, canonicalBaseReaderLinks }) => {
         const bodyText = document.body.innerText;
         const baseLinks = [...document.querySelectorAll('#sources a[href^="https://"]')].map((node) => node.href);
         const supplementLinks = [...document.querySelectorAll('#faithful-witness-sources a[href^="https://"]')].map((node) => node.href);
+        const allReaderLinks = [...baseLinks, ...supplementLinks];
+        const linkCounts = new Map();
+        for (const href of allReaderLinks) linkCounts.set(href, (linkCounts.get(href) || 0) + 1);
+        const duplicateReaderLinks = [...linkCounts.entries()]
+          .filter(([, count]) => count > 1)
+          .map(([href]) => href)
+          .sort();
         const viewportWidth = document.documentElement.clientWidth;
         const overflowOwners = [...document.querySelectorAll('body *')]
           .map((node) => {
@@ -201,9 +222,14 @@ async function inspect(browserType, engine, profile) {
           readerLinkSections: {
             base: baseLinks.length,
             supplement: supplementLinks.length,
-            total: baseLinks.length + supplementLinks.length,
+            total: allReaderLinks.length,
           },
-          readerLinks: new Set([...baseLinks, ...supplementLinks]).size,
+          readerLinks: new Set(allReaderLinks).size,
+          duplicateReaderLinks,
+          staleReaderLinksPresent: staleReaderLinks.filter((href) => allReaderLinks.includes(href)),
+          canonicalBaseReaderLinkCounts: Object.fromEntries(
+            canonicalBaseReaderLinks.map((href) => [href, baseLinks.filter((candidate) => candidate === href).length]),
+          ),
           hasFaithful: Boolean(document.querySelector('#faithful-witness-under-pressure')),
           hasResponses: Boolean(document.querySelector('#twenty-faithful-responses')),
           draftLeak: /PUBLICATION_HOLD|ещё не зарегистрирован как публичный маршрут/.test(bodyText),
@@ -212,7 +238,7 @@ async function inspect(browserType, engine, profile) {
           canonical: document.querySelector('link[rel="canonical"]')?.href || '',
           robots: document.querySelector('meta[name="robots"]')?.content || '',
         };
-      });
+      }, { staleReaderLinks: STALE_READER_LINKS, canonicalBaseReaderLinks: CANONICAL_BASE_READER_LINKS });
       record(engine, `${profile.id}-${mode}`, 'single-main', state.mainCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'single-article', state.articleCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'title-h1', state.h1 === 'Диотрефы нашего времени' && state.title.includes('Диотрефы нашего времени'), JSON.stringify(state));
@@ -225,7 +251,25 @@ async function inspect(browserType, engine, profile) {
         state.readerLinkSections.base === 40 && state.readerLinkSections.supplement === 33 && state.readerLinkSections.total === 73,
         JSON.stringify(state.readerLinkSections),
       );
-      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 70, `unique=${state.readerLinks}`);
+      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 69, `unique=${state.readerLinks}`);
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'reader-link-overlap-receipt',
+        JSON.stringify(state.duplicateReaderLinks) === JSON.stringify(EXPECTED_SHARED_READER_LINKS),
+        JSON.stringify(state.duplicateReaderLinks),
+      );
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'reader-link-migration-receipt',
+        state.staleReaderLinksPresent.length === 0 &&
+          CANONICAL_BASE_READER_LINKS.every((href) => state.canonicalBaseReaderLinkCounts[href] === 1),
+        JSON.stringify({
+          stale: state.staleReaderLinksPresent,
+          canonicalBaseCounts: state.canonicalBaseReaderLinkCounts,
+        }),
+      );
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'no-draft-leak', !state.draftLeak, JSON.stringify(state));
       record(
