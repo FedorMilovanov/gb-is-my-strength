@@ -5,7 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const target = path.join(ROOT, 'scripts/search-modal-browser-contract.mjs');
+const browserTarget = path.join(ROOT, 'scripts/search-modal-browser-contract.mjs');
+const homeTarget = path.join(ROOT, 'src/components/home/HomePageChromeStyles.astro');
 
 function replaceOnce(text, before, after, label) {
   const first = text.indexOf(before);
@@ -14,7 +15,27 @@ function replaceOnce(text, before, after, label) {
   return text.slice(0, first) + after + text.slice(first + before.length);
 }
 
-let text = fs.readFileSync(target, 'utf8');
+let homeText = fs.readFileSync(homeTarget, 'utf8');
+homeText = replaceOnce(
+  homeText,
+  `  body.home-page .cp-scope-chip {
+    min-height: 36px;
+    padding-inline: 13px;
+  }`,
+  `  body.home-page .cp-scope-chip {
+    min-height: 44px;
+    padding-inline: 13px;
+  }`,
+  'Home scope chip authored touch target',
+);
+assert.match(
+  homeText,
+  /body\.home-page \.cp-scope-chip \{\s*min-height: 44px;\s*padding-inline: 13px;/,
+  'Home scope chip must retain an explicit 44px minimum',
+);
+fs.writeFileSync(homeTarget, homeText);
+
+let text = fs.readFileSync(browserTarget, 'utf8');
 
 text = replaceOnce(
   text,
@@ -181,5 +202,5 @@ assert.match(text, /layer, engineWarnings \}/, 'engine warning evidence missing 
 assert.match(text, /failure-\$\{ordinal\}-\$\{browserName\}/, 'per-case failure artifact missing');
 assert.match(text, /throw error;/, 'failure must remain blocking');
 
-fs.writeFileSync(target, text);
-console.log('Exact WebKit warning, chip cascade and subpixel quantization classified without weakening authored 44px geometry');
+fs.writeFileSync(browserTarget, text);
+console.log('Home Search chips reconciled to authored 44px geometry; exact WebKit warning and cascade evidence retained');
