@@ -75,3 +75,114 @@ jobs:
           path: reports/home-search-action/**
           if-no-files-found: warn
           retention-days: 14
+
+  search-modal-compute:
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/search-modal-contract-compute')
+    name: Compute exact SEARCH-P2-10/11/12 tree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact compute head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Assert exact compute head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Apply exact assert-based reconciliation
+        run: |
+          node --check scripts/reconcile-search-modal-wave.mjs
+          node scripts/reconcile-search-modal-wave.mjs
+          node --check scripts/reconcile-search-modal-webkit-warning.mjs
+          node scripts/reconcile-search-modal-webkit-warning.mjs
+          node --check js/search.js
+          node --check scripts/search-modal-browser-contract.mjs
+          npm run astro:check
+
+      - name: Verify exact governed computed tree
+        run: |
+          actual="$(git diff --name-only --diff-filter=ACMR | sort -u)"
+          for required in \
+            css/command-palette.css \
+            js/search.js \
+            scripts/search-modal-browser-contract.mjs
+          do
+            printf '%s\n' "${actual}" | grep -Fx -- "${required}"
+          done
+          while IFS= read -r file
+          do
+            case "${file}" in
+              css/command-palette.css|js/search.js|scripts/search-modal-browser-contract.mjs|src/lib/asset-version.js|*.html|src/*.astro) ;;
+              *) echo "Unexpected computed path: ${file}" >&2; exit 1 ;;
+            esac
+          done <<< "${actual}"
+          node scripts/cache-bust.js
+          git diff --check
+          printf '%s\n' "${actual}"
+
+      - name: Build production-like publication
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Validate computed Search modal
+        run: node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract
+
+      - name: Prepare exact final artifact tree
+        run: |
+          root=reports/search-modal-final
+          tree="${root}/tree"
+          mkdir -p "${tree}"
+          {
+            git diff --name-only --diff-filter=ACMR
+            printf '%s\n' '.github/workflows/search-modal-contract.yml'
+          } | sort -u > "${root}/paths.txt"
+          while IFS= read -r file
+          do
+            test -f "${file}"
+            mkdir -p "${tree}/$(dirname "${file}")"
+            cp "${file}" "${tree}/${file}"
+          done < "${root}/paths.txt"
+          (
+            cd "${tree}"
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > "${root}/sha256.txt"
+          printf '%s\n' "$(git rev-parse HEAD)" > "${root}/compute-head.txt"
+          git diff --check
+
+      - name: Upload exact final tree
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: search-modal-final-${{ github.run_id }}
+          path: reports/search-modal-final/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload compute browser evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: search-modal-compute-evidence-${{ github.run_id }}
+          path: reports/search-modal-contract/**
+          if-no-files-found: warn
+          retention-days: 14
