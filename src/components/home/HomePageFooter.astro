@@ -1,6 +1,10 @@
 ---
 /**
  * HomePageFooter.astro — footer block for /.
+ *
+ * This component owns footer markup and presentation only. Responsive geometry
+ * is verified after settled layout by the canonical Home browser contract;
+ * production HTML must not emit test diagnostics during raw resize events.
  */
 ---
 <footer class="h-footer" role="contentinfo">
@@ -29,41 +33,3 @@
     }
   }
 </style>
-
-<script is:inline>
-  (() => {
-    if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
-
-    const check = () => {
-      const footer = document.querySelector('.h-footer');
-      const copy = footer?.querySelector('.h-footer-copy');
-      const link = footer?.querySelector('a');
-      if (!(footer instanceof HTMLElement) || !(copy instanceof HTMLElement) || !(link instanceof HTMLElement)) {
-        console.error('[home-footer-contract] footer structure is incomplete');
-        return;
-      }
-
-      const footerRect = footer.getBoundingClientRect();
-      const copyRect = copy.getBoundingClientRect();
-      const linkRect = link.getBoundingClientRect();
-      if (innerWidth > 760) {
-        const groupCenter = (Math.min(copyRect.left, linkRect.left) + Math.max(copyRect.right, linkRect.right)) / 2;
-        const footerCenter = (footerRect.left + footerRect.right) / 2;
-        if (Math.abs(groupCenter - footerCenter) > 2) {
-          console.error(`[home-footer-contract] desktop footer group is off-centre by ${Math.abs(groupCenter - footerCenter).toFixed(2)}px`);
-        }
-        if (getComputedStyle(footer).justifyContent !== 'center') {
-          console.error('[home-footer-contract] desktop footer reverted to edge distribution');
-        }
-      }
-
-      if (footerRect.left < 17 || innerWidth - footerRect.right < 17) {
-        console.error('[home-footer-contract] footer touches a viewport edge');
-      }
-    };
-
-    addEventListener('resize', check, { passive: true });
-    addEventListener('load', check, { once: true });
-    document.fonts?.ready.then(check);
-  })();
-</script>
