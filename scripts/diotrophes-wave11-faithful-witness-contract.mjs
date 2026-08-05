@@ -91,8 +91,8 @@ const waveBSourceOwners = {
     class: 'A3',
   },
   'FW10-MAH-02': {
-    label: 'Brent Detwiler: рассказ о многолетней внутренней попытке реформы',
-    href: 'https://abrentdetwiler.squarespace.com/my-story-resume/',
+    label: 'Christianity Today: обвинения Detwiler и независимое рассмотрение SGM',
+    href: 'https://www.christianitytoday.com/2012/01/sovereign-grace-ministries-reinstates-cj-mahaney-as/',
     class: 'B1',
   },
 };
@@ -109,6 +109,7 @@ const staleRegistryUrls = [
   'https://ihopkc.org/press-releases/press-center/press-releases/elt-update-letter-11-15-2023',
   'https://www.brentdetwiler.com/my-story-resume/',
   'https://brentdetwiler.com/my-story-resume/',
+  'https://abrentdetwiler.squarespace.com/my-story-resume/',
 ];
 for (const staleUrl of staleRegistryUrls) {
   requireValue(!sourceDataRaw.includes(staleUrl), `stale registry URL retained: ${staleUrl}`);
