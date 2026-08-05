@@ -61,6 +61,7 @@
       tabIndex: alternate.getAttribute('tabindex'),
     } : null;
     let scheduled = false;
+    let keyboardHideRequested = false;
 
     function isOpen() {
       if (config.kind === 'hermenevtika') return root.classList.contains('speed-open');
@@ -81,6 +82,12 @@
       const focused = document.activeElement;
       if (!open && rail.contains(focused)) {
         try { badge.focus({ preventScroll: true }); } catch (_) { try { badge.focus(); } catch (_) {} }
+      }
+
+      if (open && rail.hidden) rail.hidden = false;
+      if (!open && keyboardHideRequested) {
+        rail.hidden = true;
+        keyboardHideRequested = false;
       }
 
       setAttr(rail, 'aria-hidden', open ? 'false' : 'true');
@@ -124,6 +131,15 @@
       try { chip.focus({ preventScroll: true }); } catch (_) { chip.focus(); }
     }
 
+    function closeFromKeyboard() {
+      keyboardHideRequested = true;
+      try { badge.focus({ preventScroll: true }); } catch (_) { try { badge.focus(); } catch (_) {} }
+      if (config.kind === 'gill' && typeof window.__gillCloseSpeedRail === 'function') {
+        window.__gillCloseSpeedRail();
+      }
+      scheduleSync();
+    }
+
     chips.forEach((chip, index) => {
       chip.addEventListener('focus', () => {
         if (isOpen()) setRoving(chip);
@@ -138,8 +154,14 @@
         else if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           event.stopPropagation();
-          chip.click();
-          scheduleSync();
+          if (config.kind === 'gill') {
+            selectForKeyboard(chip);
+            closeFromKeyboard();
+          } else {
+            keyboardHideRequested = true;
+            chip.click();
+            scheduleSync();
+          }
           return;
         } else return;
         event.preventDefault();
