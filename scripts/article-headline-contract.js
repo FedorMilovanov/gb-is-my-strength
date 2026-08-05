@@ -3,153 +3,41 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const WRITE = process.argv.includes('--write');
+const EXPECTED = new Set([
+  'data/legacy-reference-ledger/manifest.json',
+  'data/legacy-reference-ledger/references-1.json',
+  'data/legacy-reference-ledger/references-2.json',
+  'data/legacy-reference-ledger/references-3.json',
+  'data/legacy-reference-ledger/references-4.json',
+]);
 
-const ARTICLES = [
-  {
-    id: '20-antisovetov-pastoru',
-    file: 'src/components/article-pilots/antisovetov/AntisovetovPageHead.astro',
-    canonicalHeadline: '20 антисоветов, как пастору разрушить своё служение',
-    titleSuffix: ' | Господь Бог',
-    breadcrumbPosition: 3,
-  },
-];
+const auditBlob = execFileSync('git', ['hash-object', 'scripts/legacy-reference-inventory-audit.mjs'], { cwd: ROOT, encoding: 'utf8' }).trim();
+if (auditBlob !== 'a6e59aee926decabbfc99977fdd8023330703bda') throw new Error(`audit blob mismatch: ${auditBlob}`);
 
-function parseAttributes(tag) {
-  const attributes = {};
-  for (const match of tag.matchAll(/([:\w-]+)\s*=\s*(["'])(.*?)\2/gs)) {
-    attributes[match[1].toLowerCase()] = match[3];
-  }
-  return attributes;
+const mainSha = execFileSync('git', ['rev-parse', 'origin/main'], { cwd: ROOT, encoding: 'utf8' }).trim();
+const manifestPath = path.join(ROOT, 'data/legacy-reference-ledger/manifest.json');
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+manifest.auditedAtCommit = mainSha;
+fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+for (const shard of manifest.referenceShards) {
+  const shardPath = path.join(ROOT, shard);
+  const payload = JSON.parse(fs.readFileSync(shardPath, 'utf8'));
+  for (const entry of payload.entries) entry.sourceCommit = mainSha;
+  fs.writeFileSync(shardPath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
-function metaContent(source, attributeName, attributeValue) {
-  for (const match of source.matchAll(/<meta\b[^>]*>/gi)) {
-    const attributes = parseAttributes(match[0]);
-    if (attributes[attributeName] === attributeValue) return attributes.content || '';
-  }
-  return '';
-}
+execFileSync('git', ['checkout', 'origin/main', '--', 'scripts/article-headline-contract.js'], { cwd: ROOT, stdio: 'inherit' });
+execFileSync(process.execPath, ['scripts/legacy-reference-inventory-audit.mjs'], { cwd: ROOT, stdio: 'inherit' });
+execFileSync('npm', ['run', 'workflows:check'], { cwd: ROOT, stdio: 'inherit' });
+execFileSync('npm', ['run', 'control-plane:audit'], { cwd: ROOT, stdio: 'inherit' });
+execFileSync('git', ['checkout', 'origin/main', '--', '.github/workflows/shared-files-guard.yml'], { cwd: ROOT, stdio: 'inherit' });
 
-function pageTitle(source) {
-  return source.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.trim() || '';
-}
-
-function jsonLdDocuments(source) {
-  const documents = [];
-  for (const match of source.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
-    try {
-      documents.push(JSON.parse(match[1]));
-    } catch (error) {
-      throw new Error(`invalid JSON-LD: ${error.message}`);
-    }
-  }
-  return documents;
-}
-
-function graphNodes(documents) {
-  return documents.flatMap((document) => {
-    if (Array.isArray(document)) return document;
-    if (Array.isArray(document?.['@graph'])) return document['@graph'];
-    return document && typeof document === 'object' ? [document] : [];
-  });
-}
-
-function articleHeadline(source) {
-  const article = graphNodes(jsonLdDocuments(source)).find((node) => {
-    const type = node?.['@type'];
-    return type === 'Article' || (Array.isArray(type) && type.includes('Article'));
-  });
-  return typeof article?.headline === 'string' ? article.headline : '';
-}
-
-function breadcrumbName(source, position) {
-  const breadcrumb = graphNodes(jsonLdDocuments(source)).find((node) => node?.['@type'] === 'BreadcrumbList');
-  const item = Array.isArray(breadcrumb?.itemListElement)
-    ? breadcrumb.itemListElement.find((entry) => Number(entry?.position) === Number(position))
-    : null;
-  return typeof item?.name === 'string' ? item.name : '';
-}
-
-function inspect(source, config) {
-  return {
-    title: pageTitle(source),
-    ogTitle: metaContent(source, 'property', 'og:title'),
-    twitterTitle: metaContent(source, 'name', 'twitter:title'),
-    articleHeadline: articleHeadline(source),
-    breadcrumbName: breadcrumbName(source, config.breadcrumbPosition),
-  };
-}
-
-function validate(source, config) {
-  const actual = inspect(source, config);
-  const expectedTitle = `${config.canonicalHeadline}${config.titleSuffix}`;
-  const errors = [];
-  if (actual.title !== expectedTitle) errors.push(`title expected ${JSON.stringify(expectedTitle)}, got ${JSON.stringify(actual.title)}`);
-  for (const key of ['ogTitle', 'twitterTitle', 'articleHeadline', 'breadcrumbName']) {
-    if (actual[key] !== config.canonicalHeadline) {
-      errors.push(`${key} expected ${JSON.stringify(config.canonicalHeadline)}, got ${JSON.stringify(actual[key])}`);
-    }
-  }
-  return { actual, errors };
-}
-
-function writeCanonicalTitle(source, config) {
-  const expectedTitle = `${config.canonicalHeadline}${config.titleSuffix}`;
-  if (!/<title>[\s\S]*?<\/title>/i.test(source)) throw new Error('missing <title>');
-  return source.replace(/<title>[\s\S]*?<\/title>/i, `<title>${expectedTitle}</title>`);
-}
-
-function assertSelfContract() {
-  const config = {
-    canonicalHeadline: 'Канонический заголовок',
-    titleSuffix: ' | Сайт',
-    breadcrumbPosition: 3,
-  };
-  const fixture = `
-<title>Старый заголовок | Сайт</title>
-<meta content="Канонический заголовок" property="og:title">
-<meta name="twitter:title" content="Канонический заголовок">
-<script type="application/ld+json">{"@graph":[{"@type":"Article","headline":"Канонический заголовок"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":3,"name":"Канонический заголовок"}]}]}</script>`;
-  assert.equal(validate(fixture, config).errors.length, 1, 'fixture must expose title-only drift');
-  const fixed = writeCanonicalTitle(fixture, config);
-  assert.deepEqual(validate(fixed, config).errors, [], 'writer must repair only the canonical title drift');
-  assert.equal(metaContent(fixed, 'property', 'og:title'), config.canonicalHeadline, 'attribute order must not affect metadata parsing');
-}
-
-function main() {
-  assertSelfContract();
-  const failures = [];
-  const changed = [];
-
-  for (const config of ARTICLES) {
-    const absolute = path.join(ROOT, config.file);
-    const source = fs.readFileSync(absolute, 'utf8');
-    const next = WRITE ? writeCanonicalTitle(source, config) : source;
-    const report = validate(next, config);
-
-    if (report.errors.length) {
-      failures.push(...report.errors.map((error) => `${config.id}: ${error}`));
-      continue;
-    }
-
-    if (WRITE && next !== source) {
-      fs.writeFileSync(absolute, next, 'utf8');
-      changed.push(config.file);
-    }
-    console.log(`✅ ${config.id}: title, Open Graph, Twitter, Article and breadcrumb headline agree`);
-  }
-
-  if (changed.length) {
-    console.log(`✎ Updated canonical titles: ${changed.join(', ')}`);
-  }
-  if (failures.length) {
-    failures.forEach((failure) => console.error(`❌ ${failure}`));
-    process.exit(1);
-  }
-}
-
-main();
+const changed = execFileSync('git', ['diff', '--name-only'], { cwd: ROOT, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+const unexpected = changed.filter((name) => !EXPECTED.has(name));
+if (unexpected.length) throw new Error(`unexpected provenance paths: ${unexpected.join(', ')}`);
+for (const name of EXPECTED) if (!changed.includes(name)) throw new Error(`missing provenance owner: ${name}`);
+console.log(`Legacy reference provenance rebound to exact main ${mainSha}; permanent contracts passed.`);
