@@ -65,7 +65,7 @@ const MEDIA_URLS = [
   '/articles/krajne-li-isporcheno-serdce/',
 ];
 const HERMENEUTIKA_URL = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
-const HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '72', '75', '77', '82', '83', '107'];
+const HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '41', '42', '43', '72', '75', '77', '82', '83', '107'];
 
 const issues = [];
 const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0 };
@@ -363,8 +363,33 @@ async function checkHermenevtikaFootnotes(browser) {
 
   const hoverMarker = desktop.locator('[data-audit-footnote="40"]');
   await hoverMarker.scrollIntoViewIfNeeded();
-  await hoverMarker.hover({ force: true });
-  await desktop.waitForTimeout(250);
+  await waitForScrollSettled(desktop);
+  const markerHitState = await desktop.evaluate(() => ['40', '41', '42', '43'].map((number) => {
+    const marker = document.querySelector(`[data-audit-footnote="${number}"]`);
+    const rect = marker?.getBoundingClientRect();
+    if (!marker || !rect) return { number, present: false, ownsCenter: false };
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const hit = document.elementFromPoint(centerX, centerY);
+    const owner = hit?.closest?.('.fn-marker') || null;
+    return {
+      number,
+      present: true,
+      ownsCenter: owner === marker,
+      centerX: Math.round(centerX * 100) / 100,
+      centerY: Math.round(centerY * 100) / 100,
+      width: Math.round(rect.width * 100) / 100,
+      height: Math.round(rect.height * 100) / 100,
+      blockingOrdinal: owner?.getAttribute('data-audit-footnote') || null,
+      blockingClass: hit?.className || null,
+    };
+  }));
+  const missingMarkers = markerHitState.filter((state) => !state.present);
+  if (missingMarkers.length) push('hermenevtika-footnote-marker-missing', HERMENEUTIKA_URL, missingMarkers);
+  const blockedMarkers = markerHitState.filter((state) => state.present && !state.ownsCenter);
+  if (blockedMarkers.length) push('hermenevtika-footnote-marker-hitbox-overlap', HERMENEUTIKA_URL, blockedMarkers);
+  const hoverMarkerUnavailable = missingMarkers.some((state) => state.number === '40')
+    || blockedMarkers.some((state) => state.number === '40');
 
   const readStaticFootnoteHoverState = () => desktop.evaluate(() => {
     const marker = document.querySelector('[data-audit-footnote="40"]');
@@ -398,8 +423,21 @@ async function checkHermenevtikaFootnotes(browser) {
     };
   });
 
-  let openState = await readStaticFootnoteHoverState();
-  if (!openState.tipOpen) {
+  if (!hoverMarkerUnavailable) {
+    await hoverMarker.hover();
+    await desktop.waitForFunction(() => {
+      const marker = document.querySelector('[data-audit-footnote="40"]');
+      return marker?.getAttribute('aria-expanded') === 'true'
+        && Boolean(document.querySelector('.tooltip.gb-floating-tip.is-open'));
+    }, undefined, { timeout: 2000 });
+  }
+
+  let openState = hoverMarkerUnavailable
+    ? { markerOpen: false, tipOpen: false, tip: null }
+    : await readStaticFootnoteHoverState();
+  if (hoverMarkerUnavailable) {
+    // The explicit missing/overlap finding above owns this failure; never mask it with forced hover.
+  } else if (!openState.tipOpen) {
     push('hermenevtika-footnote-hover-open-failed', HERMENEUTIKA_URL, openState);
   } else if (
     openState.tip.position !== 'fixed' ||
@@ -413,18 +451,33 @@ async function checkHermenevtikaFootnotes(browser) {
   ) {
     push('hermenevtika-footnote-hover-layout-broken', HERMENEUTIKA_URL, openState);
   } else {
-    await desktop.mouse.move(openState.tip.centerX, openState.tip.centerY, { steps: 12 });
-    try {
-      await desktop.waitForFunction(() => {
-        const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
-        return Boolean(tip && tip.matches(':hover'));
-      }, undefined, { timeout: 2000 });
-    } catch (_) {
-      // Read the actual state below so the failure keeps useful evidence.
-    }
-    const heldState = await readStaticFootnoteHoverState();
-    if (!heldState.tipOpen || !heldState.tip?.inViewport) {
-      push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, heldState);
+    for (let crossing = 0; crossing < 3; crossing += 1) {
+      const currentState = await readStaticFootnoteHoverState();
+      if (!currentState.tipOpen || !currentState.tip?.inViewport) {
+        push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, { crossing, ...currentState });
+        break;
+      }
+      await desktop.mouse.move(currentState.tip.centerX, currentState.tip.centerY, { steps: 12 });
+      try {
+        await desktop.waitForFunction(() => {
+          const marker = document.querySelector('[data-audit-footnote="40"]');
+          const tip = document.querySelector('.tooltip.gb-floating-tip.is-open');
+          return marker?.getAttribute('aria-expanded') === 'true'
+            && Boolean(tip && tip.matches(':hover'));
+        }, undefined, { timeout: 2000 });
+      } catch (_) {
+        // Read the actual state below so the failure keeps useful evidence.
+      }
+      await desktop.waitForTimeout(800);
+      const heldState = await readStaticFootnoteHoverState();
+      if (!heldState.markerOpen || !heldState.tipOpen || !heldState.tip?.inViewport) {
+        push('hermenevtika-footnote-hover-content-closed-parent', HERMENEUTIKA_URL, { crossing, ...heldState });
+        break;
+      }
+      if (crossing < 2) {
+        await hoverMarker.hover();
+        await desktop.waitForTimeout(80);
+      }
     }
   }
   await desktop.keyboard.press('Escape');
@@ -440,6 +493,7 @@ async function checkHermenevtikaFootnotes(browser) {
 
   const ordinary = desktop.locator('article .bref[data-ref]').first();
   await ordinary.scrollIntoViewIfNeeded();
+  await waitForScrollSettled(desktop);
   await ordinary.click({ force: true });
   await desktop.waitForTimeout(220);
   const ordinaryState = await desktop.evaluate(() => ({
@@ -463,6 +517,7 @@ async function checkHermenevtikaFootnotes(browser) {
   }, HERMENEUTIKA_STATIC_FOOTNOTES);
   const mobileMarker = mobile.locator('[data-audit-footnote="75"]');
   await mobileMarker.scrollIntoViewIfNeeded();
+  await waitForScrollSettled(mobile);
   await mobileMarker.tap();
   await mobile.waitForTimeout(300);
   const mobileState = await mobile.evaluate(() => ({

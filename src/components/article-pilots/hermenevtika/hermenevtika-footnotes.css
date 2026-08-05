@@ -1,0 +1,17 @@
+/* Hermenevtika owns dense inline footnote markers that can sit side by side.
+   Neutralize the shared 44×44 pseudo hitbox only on this route so adjacent
+   markers never intercept one another. */
+main[data-hm-reader] .fn-marker::after {
+  content: none;
+  display: none;
+}
+
+@media (pointer: coarse) {
+  main[data-hm-reader] .fn-marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
