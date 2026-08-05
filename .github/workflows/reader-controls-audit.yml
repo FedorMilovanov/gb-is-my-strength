@@ -54,7 +54,7 @@ jobs:
           node --check scripts/reader-controls-current-head-audit.mjs
           node --check scripts/reader-controls-browser-audit.mjs
           node --check scripts/reader-controls-browser-sequenced-audit.mjs
-          node scripts/reader-controls-current-head-audit.mjs | tee reports/reader-controls-current-head-audit.log
+          GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-current-head-audit.mjs | tee reports/reader-controls-current-head-audit.log
 
       - name: Upload source evidence
         if: always()
@@ -106,7 +106,7 @@ jobs:
           set -o pipefail
           sed -i "s/Boolean(natural.badgeControls && document !== null)/Boolean(natural.badgeControls)/" scripts/reader-controls-browser-sequenced-audit.mjs
           node --check scripts/reader-controls-browser-sequenced-audit.mjs
-          node scripts/reader-controls-browser-sequenced-audit.mjs 2>&1 | tee reports/reader-controls-browser-sequenced-audit.log
+          GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-browser-sequenced-audit.mjs 2>&1 | tee reports/reader-controls-browser-sequenced-audit.log
 
       - name: Upload browser evidence
         if: always()
