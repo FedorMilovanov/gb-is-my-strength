@@ -127,6 +127,11 @@ async function assertVisualRegressionContracts(page, width, height) {
 
     const endBlock = document.querySelector('.article-end-sdg-wrap');
     const footer = document.querySelector('.h-footer');
+    const footerCopy = footer?.querySelector('.h-footer-copy');
+    const footerLink = footer?.querySelector('a');
+    const footerRect = rect(footer);
+    const footerCopyRect = rect(footerCopy);
+    const footerLinkRect = rect(footerLink);
     const endBeforeFooter = Boolean(endBlock && footer
       && (endBlock.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING));
 
@@ -162,7 +167,17 @@ async function assertVisualRegressionContracts(page, width, height) {
         : null,
       quoteBorderTop: quoteLeft ? getComputedStyle(quoteLeft).borderTopWidth : null,
       ornamentDisplays: ornaments.map((node) => getComputedStyle(node).display),
-      footer: rect(footer),
+      footer: footerRect,
+      footerStructureComplete: Boolean(footer && footerCopy && footerLink),
+      footerJustify: footer ? getComputedStyle(footer).justifyContent : null,
+      footerLeftGap: footerRect ? footerRect.left : null,
+      footerRightGap: footerRect ? innerWidth - footerRect.right : null,
+      footerGroupCenterOffset: footerRect && footerCopyRect && footerLinkRect
+        ? Math.abs(
+          ((Math.min(footerCopyRect.left, footerLinkRect.left) + Math.max(footerCopyRect.right, footerLinkRect.right)) / 2)
+          - ((footerRect.left + footerRect.right) / 2)
+        )
+        : null,
     };
   });
 
@@ -170,6 +185,22 @@ async function assertVisualRegressionContracts(page, width, height) {
   assert.ok(Number.isFinite(state.moonStroke) && state.moonStroke <= 1.5, `${width}px: moon icon became optically heavy`);
   assert.ok(Math.abs(state.searchStroke - state.moonStroke) <= 0.2, `${width}px: search and moon icon weights diverged`);
   assert.equal(state.endBeforeFooter, true, `${width}px: terminal SDG signature must precede the footer`);
+  assert.equal(state.footerStructureComplete, true, `${width}px: footer structure is incomplete`);
+  assert.ok(
+    state.footer
+      && Number.isFinite(state.footerLeftGap)
+      && Number.isFinite(state.footerRightGap)
+      && state.footerLeftGap >= 17
+      && state.footerRightGap >= 17,
+    `${width}px: footer safe inset failed (left=${state.footerLeftGap}, right=${state.footerRightGap})`,
+  );
+  if (width > 760) {
+    assert.equal(state.footerJustify, 'center', `${width}px: desktop footer reverted to edge distribution`);
+    assert.ok(
+      Number.isFinite(state.footerGroupCenterOffset) && state.footerGroupCenterOffset <= 2,
+      `${width}px: desktop footer group is off-centre by ${state.footerGroupCenterOffset}px`,
+    );
+  }
 
   if (width >= 1480) {
     const expectedPhrases = width >= 1600 ? 32 : 16;
@@ -210,7 +241,6 @@ async function assertVisualRegressionContracts(page, width, height) {
     assert.ok(state.quoteInset >= 24, `${width}px: mobile quotation lacks a readable inner inset`);
     assert.equal(state.quoteBorderTop, '0px', `${width}px: redundant mobile quote divider remains`);
     assert.equal(state.ornamentDisplays.every((value) => value === 'none'), true, `${width}px: redundant mobile ornaments remain`);
-    assert.ok(state.footer && state.footer.left >= 17 && width - state.footer.right >= 17, `${width}px: footer touches a viewport edge`);
   }
 
   if (width >= 1480) {
