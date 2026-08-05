@@ -52,11 +52,37 @@ text = replaceOnce(
   'engine warning evidence return',
 );
 
+text = replaceOnce(
+  text,
+  `    return { browser: browserName, viewport, aria, focusableCount, geometry, layer, engineWarnings };
+  } finally {`,
+  `    return { browser: browserName, viewport, aria, focusableCount, geometry, layer, engineWarnings };
+  } catch (error) {
+    fs.mkdirSync(reportDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(reportDir, \`failure-\${ordinal}-\${browserName}-\${viewport.width}x\${viewport.height}.json\`),
+      \`\${JSON.stringify({
+        browser: browserName,
+        viewport,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+        consoleErrors,
+        engineWarnings,
+        pageErrors,
+      }, null, 2)}\\n\`,
+    );
+    throw error;
+  } finally {`,
+  'fail-closed per-case diagnostic evidence',
+);
+
 assert.match(text, /expectedWebKitViewportWarning/, 'exact WebKit warning classifier missing');
 assert.match(text, /engineWarnings\.push\(text\)/, 'engine warning ledger mutation missing');
 assert.match(text, /consoleErrors\.push\(text\)/, 'unexpected console error barrier missing');
 assert.match(text, /assert\.deepEqual\(consoleErrors, \[\], `\$\{browserName\} console errors`\)/, 'strict unexpected console error assertion missing');
 assert.match(text, /layer, engineWarnings \}/, 'engine warning evidence missing from report');
+assert.match(text, /failure-\$\{ordinal\}-\$\{browserName\}/, 'per-case failure artifact missing');
+assert.match(text, /throw error;/, 'failure must remain blocking');
 
 fs.writeFileSync(target, text);
-console.log('Exact WebKit viewport warning classified without weakening application-error barriers');
+console.log('Exact WebKit viewport warning classified and failures remain diagnosable/blocking');
