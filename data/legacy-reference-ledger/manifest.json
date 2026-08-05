@@ -22,6 +22,11 @@
     "moveAllowedWhenUnknownBlockers": false,
     "homeDecision": "Root index.html is migration-reference-only per issue #62 comment 5148492562; no live-production P0 claim.",
     "obsoleteWritersAllowed": false,
+    "explicitReferenceApi": "migration/legacy-reference-path.js",
+    "explicitReferenceApiContract": "scripts/legacy-reference-path-contract-test.js",
+    "explicitReferenceApiUsers": [
+      "scripts/astro-ishod-pilot-audit.js"
+    ],
     "nonBlockingFixtureDependencies": [
       "scripts/audit-pro-source-corpus-test.js",
       "scripts/editorial-metadata-registry-preservation-test.js"
@@ -37,8 +42,8 @@
     "migrationReferenceOnly": 22,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 32,
-    "dependencyUnknownBlockers": 8,
+    "dependencies": 31,
+    "dependencyUnknownBlockers": 7,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -53,14 +58,6 @@
       "access": "policy-reader",
       "classification": "migration-reference-only",
       "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "legacyPath",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/astro-ishod-pilot-audit.js",
-      "access": "policy-reader",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
       "evidenceToken": "legacyPath",
       "owner": "legacy-reference-quarantine"
     },

@@ -67,10 +67,13 @@ jobs:
           node --check scripts/bible-legacy-authority-regression-test.mjs
           node scripts/bible-legacy-authority-regression-test.mjs 2>&1 | tee reports/bible-legacy-authority-regression.log
 
-      - name: Legacy reference inventory and immutability
+      - name: Legacy reference inventory and explicit path API
         run: |
           node --check scripts/legacy-reference-inventory-audit.mjs
+          node --check migration/legacy-reference-path.js
+          node --check scripts/legacy-reference-path-contract-test.js
           node scripts/legacy-reference-inventory-audit.mjs
+          node scripts/legacy-reference-path-contract-test.js
 
       - name: Readiness-to-deploy workflow linkage
         run: node scripts/workflow-linkage-regression-test.js
