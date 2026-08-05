@@ -150,6 +150,11 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     assert.equal(await page.locator('#heroSearchBar').getAttribute('href'), '/articles/', 'hero search fallback missing');
     assert.equal(await page.locator('a[href="/articles/krajne-li-isporcheno-serdce/"]').count(), 1, 'Jeremiah card route is wrong');
     assert.equal(await page.locator('#publikacii[data-pagefind-ignore]').count(), 1, 'publication catalogue is not ignored by Pagefind');
+    const sacredMirror = page.locator('.h-sacred-block--mirror');
+    assert.equal(await sacredMirror.count(), 1, 'decorative Hebrew mirror is missing');
+    assert.equal(await sacredMirror.locator('.h-sacred-mirror-word').count(), 9, 'decorative Hebrew mirror word count changed');
+    assert.equal(await page.locator('.hb-w, .hb-front, .hb-back, .h-tetra').count(), 0, 'legacy sacred owner remains in Home DOM');
+    assert.equal(await sacredMirror.evaluate((element) => getComputedStyle(element).pointerEvents), 'none', 'decorative Hebrew mirror accepts pointer events');
 
     const themeToggle = page.locator('#themeToggle');
     await themeToggle.click();
