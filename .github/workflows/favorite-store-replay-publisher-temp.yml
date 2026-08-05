@@ -1,0 +1,209 @@
+name: TEMP Favorite Store Replay Publisher
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: favorite-store-replay-publisher-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  favorite-store-replay-autofix:
+    name: Publish Favorite Store replay on current main
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'autofix' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      contains(github.event.pull_request.body, '<!-- favorite-store-replay-authorized-20260805-v1 -->') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'lane/system-favorites-store-20260805'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    permissions:
+      contents: write
+
+    steps:
+      - name: Resolve exact live pull request branch
+        id: pr-branch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          remote_head="$(git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}.git" "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          test "${remote_head}" = "${EXPECTED_HEAD}"
+          echo 'exists=true' >> "$GITHUB_OUTPUT"
+
+      - name: Checkout exact pull request branch
+        if: steps.pr-branch.outputs.exists == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        if: steps.pr-branch.outputs.exists == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        if: steps.pr-branch.outputs.exists == 'true'
+        run: npm ci
+
+      - name: Assert exact replay boundary
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch origin main --no-tags
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
+          test "$(git rev-parse origin/main)" = "${EXPECTED_BASE}"
+          test "$(git merge-base HEAD origin/main)" = "${EXPECTED_BASE}"
+          cat > /tmp/expected-initial-paths <<'EOF'
+          .github/workflows/favorite-store-replay-publisher-temp.yml
+          .github/workflows/favorite-store.yml
+          js/floating-cluster-controller.js
+          scripts/favorite-store-browser-contract.mjs
+          scripts/favorite-store-source-contract.mjs
+          scripts/replay-favorite-store-current.mjs
+          src/components/home/HomeSections/Favorites.astro
+          src/components/reader-platform/ReaderActionsRuntime.astro
+          src/components/ui/floating-cluster/SaveButton.astro
+          src/pages/izbrannoe/index.astro
+          src/runtime/favorite-store.js
+          EOF
+          sed -i 's/^          //' /tmp/expected-initial-paths
+          git diff "${EXPECTED_BASE}" --name-only --diff-filter=ACMR | sort -u > /tmp/actual-initial-paths
+          diff -u /tmp/expected-initial-paths /tmp/actual-initial-paths
+
+      - name: Apply explicit bounded Favorite Store writer
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
+        run: |
+          node scripts/replay-favorite-store-current.mjs --write
+          git diff --name-only --diff-filter=ACMR | sort -u > /tmp/product-write-paths
+          test -s /tmp/product-write-paths
+
+      - name: Materialize exact Product tree identity without commit
+        if: steps.pr-branch.outputs.exists == 'true'
+        id: snapshot
+        shell: bash
+        run: |
+          while IFS= read -r changed_path; do
+            test -n "${changed_path}"
+            git add -- "${changed_path}"
+          done < /tmp/product-write-paths
+          git diff --cached --check
+          echo "sha=$(git write-tree)" >> "$GITHUB_OUTPUT"
+
+      - name: Synchronize immutable ledger and remove temporary control plane
+        if: steps.pr-branch.outputs.exists == 'true'
+        env:
+          SNAPSHOT_SHA: ${{ steps.snapshot.outputs.sha }}
+        run: |
+          node scripts/replay-favorite-store-current.mjs ledger "${SNAPSHOT_SHA}"
+          git rm -- \
+            scripts/replay-favorite-store-current.mjs \
+            .github/workflows/favorite-store-replay-publisher-temp.yml
+
+      - name: Validate source, ledger and workflow contracts
+        if: steps.pr-branch.outputs.exists == 'true'
+        run: |
+          node --check src/runtime/favorite-store.js
+          node --check js/floating-cluster-controller.js
+          node --check scripts/favorite-store-source-contract.mjs
+          node --check scripts/favorite-store-browser-contract.mjs
+          node scripts/legacy-reference-inventory-audit.mjs
+          node scripts/legacy-reference-path-contract-test.js
+          node scripts/favorite-store-source-contract.mjs
+          npm run workflows:check
+          npm run astro:check
+          node scripts/cache-bust.js
+          git diff --cached --check
+          git diff --check
+
+      - name: Validate production-like Favorite Store publication
+        if: steps.pr-branch.outputs.exists == 'true'
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+
+      - name: Validate permanent Chromium Favorite Store contract
+        if: steps.pr-branch.outputs.exists == 'true'
+        run: |
+          npx playwright install --with-deps chromium
+          GITHUB_SHA="${{ steps.snapshot.outputs.sha }}" node scripts/favorite-store-browser-contract.mjs
+
+      - name: Prove exact clean final tree boundary
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
+        env:
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          cat > /tmp/static-final-paths <<'EOF'
+          .github/workflows/favorite-store.yml
+          data/legacy-reference-ledger/manifest.json
+          data/legacy-reference-ledger/references-1.json
+          data/legacy-reference-ledger/references-2.json
+          data/legacy-reference-ledger/references-3.json
+          data/legacy-reference-ledger/references-4.json
+          js/floating-cluster-controller.js
+          scripts/favorite-store-browser-contract.mjs
+          scripts/favorite-store-source-contract.mjs
+          src/components/home/HomeSections/Favorites.astro
+          src/components/reader-platform/ReaderActionsRuntime.astro
+          src/components/ui/floating-cluster/SaveButton.astro
+          src/pages/izbrannoe/index.astro
+          src/runtime/favorite-store.js
+          EOF
+          sed -i 's/^          //' /tmp/static-final-paths
+          cat /tmp/static-final-paths /tmp/product-write-paths | sort -u > /tmp/allowed-final-paths
+          git diff "${EXPECTED_BASE}" --name-only --diff-filter=ACMR | sort -u > /tmp/actual-final-paths
+          diff -u /tmp/allowed-final-paths /tmp/actual-final-paths
+          test ! -e scripts/replay-favorite-store-current.mjs
+          test ! -e .github/workflows/favorite-store-replay-publisher-temp.yml
+          if grep -E 'replay-favorite-store-current|favorite-store-replay-publisher-temp' /tmp/actual-final-paths; then
+            echo 'Temporary control plane survived final tree.' >&2
+            exit 1
+          fi
+
+      - name: Commit clean Favorite Store replay
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
+        run: |
+          git add -- \
+            data/legacy-reference-ledger/manifest.json \
+            data/legacy-reference-ledger/references-1.json \
+            data/legacy-reference-ledger/references-2.json \
+            data/legacy-reference-ledger/references-3.json \
+            data/legacy-reference-ledger/references-4.json
+          git diff --cached --check
+          test -z "$(git diff --name-only)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(reader): repair canonical Favorite Store replay"
+
+      - name: Recheck remote race barriers and push branch only
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          remote_head="$(git ls-remote --exit-code --heads origin "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          remote_main="$(git ls-remote --exit-code --heads origin refs/heads/main | awk '{print $1}')"
+          test "${remote_head}" = "${EXPECTED_HEAD}"
+          test "${remote_main}" = "${EXPECTED_BASE}"
+          test "$(git merge-base HEAD "${EXPECTED_BASE}")" = "${EXPECTED_BASE}"
+          git push origin "HEAD:${HEAD_REF}"

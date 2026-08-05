@@ -7,7 +7,7 @@
  *
  * Принципы:
  * - Использует window.SiteUtils если доступен
- * - Использует window.BookmarkEngine для save
+ * - Делегирует save в canonical window.GBFavoriteStore
  * - НЕ создаёт второй search/theme/bookmark
  * - НЕ генерирует UI строками
  * - НЕ инжектирует CSS
@@ -155,85 +155,26 @@
   }
 
   /* =====================================================
-     SAVE / BOOKMARK
-     Фасад над BookmarkEngine. Если нет engine — localStorage fallback.
+     FAVORITES
+     GBFavoriteStore is the sole metadata/persistence/event owner. This
+     controller keeps only the existing control click and toast surface.
      ===================================================== */
-  /* =====================================================
-     FAVORITES ENGINE — личная коллекция статей
-     Отдельно от BookmarkEngine (автосохранение позиции).
-     localStorage key: gb-favorites (JSON array)
-     ===================================================== */
-  var FAV_KEY = 'gb-favorites';
-
-  function getFavorites() {
-    try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
-    catch (_) { return []; }
-  }
-
-  function setFavorites(list) {
-    try { localStorage.setItem(FAV_KEY, JSON.stringify(list)); } catch (_) {}
-  }
-
-  function isFavorite(path) {
-    return getFavorites().some(function(f) { return f.path === path; });
-  }
-
-  function getPageMeta() {
-    // Extract article metadata from OG tags or document
-    var meta = { path: normalizePath(location.pathname), addedAt: Date.now() };
-    var ogTitle = qs('meta[property="og:title"]');
-    meta.title = ogTitle ? ogTitle.getAttribute('content') : document.title;
-    var ogDesc = qs('meta[property="og:description"]');
-    meta.description = ogDesc ? (ogDesc.getAttribute('content') || '').substring(0, 120) : '';
-    var ogImg = qs('meta[property="og:image"]');
-    meta.image = ogImg ? ogImg.getAttribute('content') : '';
-    // Section from SITE_CONFIG or breadcrumb
-    var crumb = qs('.breadcrumb__link:last-of-type');
-    meta.section = crumb ? crumb.textContent.trim() : '';
-    return meta;
-  }
-
-  function toggleFavorite() {
-    var path = normalizePath(location.pathname);
-    var favs = getFavorites();
-    var idx = -1;
-    favs.forEach(function(f, i) { if (f.path === path) idx = i; });
-
-    if (idx >= 0) {
-      // Remove from favorites
-      favs.splice(idx, 1);
-      setFavorites(favs);
-      setSaved(false);
-      showToast('Убрано из Избранного', false);
-    } else {
-      // Add to favorites
-      var meta = getPageMeta();
-      favs.unshift(meta); // newest first
-      if (favs.length > 50) favs = favs.slice(0, 50); // cap at 50
-      setFavorites(favs);
-      setSaved(true);
-      showToast('Добавлено в Избранное', true);
-    }
+  function favoriteStore() {
+    return window.GBFavoriteStore || null;
   }
 
   function saveCurrent(btn) {
-    toggleFavorite();
+    var store = favoriteStore();
+    if (!store || typeof store.toggle !== 'function') {
+      showToast('Избранное пока недоступно', false);
+      return;
+    }
+    var result = store.toggle({ path: location.pathname }, { source: 'floating-cluster' });
+    if (typeof store.syncButtons === 'function') store.syncButtons();
+    showToast(result && result.saved ? 'Добавлено в Избранное' : 'Убрано из Избранного', !!(result && result.saved));
   }
 
-  function setSaved(saved) {
-    qsa('.gb-save').forEach(function (btn) {
-      btn.classList.toggle('is-saved', !!saved);
-      btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
-    });
-  }
 
-  function normalizePath(path) {
-    // Strip query, hash, trailing slash, and index.html — mirrors bookmark-engine normalize.
-    // Ensures Favorites key matches BookmarkEngine key for the same page.
-    var p = String(path || '/').split('?')[0].split('#')[0]
-              .replace(/index\.html$/, '').replace(/\/$/, '');
-    return p || '/';
-  }
 
   /* =====================================================
      PLAY EMBER
@@ -1287,16 +1228,18 @@
 
   /* =====================================================
      SYNC SAVE STATE
-     Читает BookmarkEngine при старте.
+     The canonical store owns migration, persistence and all-surface labels.
      ===================================================== */
   function syncSaveState() {
-    var path = normalizePath(location.pathname);
-    var saved = isFavorite(path);
-    // Backward compatibility: older floating-cluster builds used fc:saved:<path>.
-    // Do not depend on BookmarkEngine here: PremiumControls Favorites are stored
-    // in gb-favorites, while BookmarkEngine is reading-position infrastructure.
-    try { saved = saved || !!localStorage.getItem('fc:saved:' + path); } catch (_) {}
-    setSaved(saved);
+    var store = favoriteStore();
+    if (store && typeof store.syncButtons === 'function') {
+      store.syncButtons();
+      return;
+    }
+    window.addEventListener('gb:favorite-store-ready', function () {
+      var readyStore = favoriteStore();
+      if (readyStore && typeof readyStore.syncButtons === 'function') readyStore.syncButtons();
+    }, { once: true });
   }
 
 
