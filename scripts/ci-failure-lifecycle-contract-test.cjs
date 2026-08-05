@@ -31,6 +31,10 @@ function createHarness() {
     comments: [],
     jobsByRun: new Map(),
     artifactsByRun: new Map(),
+    pullsByNumber: new Map(),
+    openPullsByHead: new Map(),
+    branches: new Map(),
+    comparisons: new Map(),
     nextIssueNumber: 1,
     infos: [],
     warnings: [],
@@ -48,6 +52,31 @@ function createHarness() {
         }),
         listWorkflowRunArtifacts: async ({ run_id }) => ({
           data: state.artifactsByRun.get(run_id) || [],
+        }),
+      },
+      pulls: {
+        get: async ({ pull_number }) => {
+          const pull = state.pullsByNumber.get(pull_number);
+          if (!pull) {
+            const error = new Error(`pull #${pull_number} not found`);
+            error.status = 404;
+            throw error;
+          }
+          return { data: { ...pull } };
+        },
+        list: async ({ head }) => ({ data: (state.openPullsByHead.get(head) || []).map((pull) => ({ ...pull })) }),
+      },
+      repos: {
+        getBranch: async ({ branch }) => {
+          if (!state.branches.has(branch)) {
+            const error = new Error(`branch ${branch} not found`);
+            error.status = 404;
+            throw error;
+          }
+          return { data: { ...state.branches.get(branch) } };
+        },
+        compareCommits: async ({ head }) => ({
+          data: { ahead_by: state.comparisons.get(head) ?? 1 },
         }),
       },
       issues: {
@@ -273,6 +302,92 @@ function failedJob(stepName) {
   // 8. Route-impact is explicitly omitted rather than faked.
   assert.match(state.issues[0].body, /Route impact is not inferred/);
   assert.doesNotMatch(state.issues[0].body, /route_impact_data=/);
+
+  // 9. Retired identities close only when their source is provably inactive.
+  const retirementHarness = createHarness();
+  const retirement = retirementHarness.state;
+  const retirementArgs = {
+    github: retirementHarness.github,
+    context: retirementHarness.context,
+    core: retirementHarness.core,
+    defaultBranch: 'main',
+  };
+
+  retirement.jobsByRun.set(200, failedJob('Closed PR failure'));
+  retirement.pullsByNumber.set(17, { number: 17, state: 'closed', merged: true, merged_at: '2026-07-25T19:00:00Z' });
+  await runNotifier({
+    github: retirementHarness.github,
+    context: retirementHarness.context,
+    core: retirementHarness.core,
+    workflowRun: makeRun({ id: 200, head_branch: 'feature/closed-pr', pull_requests: [{ number: 17 }] }),
+  });
+
+  retirement.jobsByRun.set(201, failedJob('Deleted branch failure'));
+  await runNotifier({
+    github: retirementHarness.github,
+    context: retirementHarness.context,
+    core: retirementHarness.core,
+    workflowRun: makeRun({ id: 201, head_branch: 'agent/deleted-branch' }),
+  });
+
+  retirement.jobsByRun.set(202, failedJob('Integrated branch failure'));
+  retirement.branches.set('agent/integrated-branch', { name: 'agent/integrated-branch' });
+  retirement.comparisons.set('agent/integrated-branch', 0);
+  await runNotifier({
+    github: retirementHarness.github,
+    context: retirementHarness.context,
+    core: retirementHarness.core,
+    workflowRun: makeRun({ id: 202, head_branch: 'agent/integrated-branch' }),
+  });
+
+  retirement.jobsByRun.set(203, failedJob('Active PR branch failure'));
+  retirement.branches.set('agent/active-pr', { name: 'agent/active-pr' });
+  retirement.openPullsByHead.set('example:agent/active-pr', [{ number: 33, state: 'open' }]);
+  retirement.comparisons.set('agent/active-pr', 0);
+  await runNotifier({
+    github: retirementHarness.github,
+    context: retirementHarness.context,
+    core: retirementHarness.core,
+    workflowRun: makeRun({ id: 203, head_branch: 'agent/active-pr' }),
+  });
+
+  retirement.jobsByRun.set(204, failedJob('Ahead branch failure'));
+  retirement.branches.set('agent/ahead', { name: 'agent/ahead' });
+  retirement.comparisons.set('agent/ahead', 2);
+  await runNotifier({
+    github: retirementHarness.github,
+    context: retirementHarness.context,
+    core: retirementHarness.core,
+    workflowRun: makeRun({ id: 204, head_branch: 'agent/ahead' }),
+  });
+
+  retirement.jobsByRun.set(205, failedJob('Default branch failure'));
+  retirement.branches.set('main', { name: 'main' });
+  retirement.comparisons.set('main', 0);
+  await runNotifier({
+    github: retirementHarness.github,
+    context: retirementHarness.context,
+    core: retirementHarness.core,
+    workflowRun: makeRun({ id: 205, head_branch: 'main' }),
+  });
+
+  const reconciled = await runNotifier.reconcileRetiredIdentities(retirementArgs);
+  assert.equal(reconciled.action, 'reconciled-retired-identities');
+  assert.equal(reconciled.retired.length, 3);
+  assert.deepEqual(
+    reconciled.retired.map((item) => item.reason).sort(),
+    ['closed-merged-pr', 'deleted-branch', 'fully-integrated-branch'],
+  );
+  const issueByIdentity = (identity) => retirement.issues.find((issue) => runNotifier._test.decodeState(issue.body)?.identity === identity);
+  for (const identity of ['pr:example/repo#17', 'branch:example/repo:agent/deleted-branch', 'branch:example/repo:agent/integrated-branch']) {
+    const issue = issueByIdentity(identity);
+    assert.equal(issue.state, 'closed');
+    assert.equal(issue.state_reason, 'not_planned');
+  }
+  assert.equal(issueByIdentity('branch:example/repo:agent/active-pr').state, 'open');
+  assert.equal(issueByIdentity('branch:example/repo:agent/ahead').state, 'open');
+  assert.equal(issueByIdentity('branch:example/repo:main').state, 'open');
+  assert.ok(retirement.comments.some((comment) => /not.*evidence.*recovered/i.test(comment.body)));
 
   console.log('✅ CI failure lifecycle deterministic contract passed');
 })().catch((error) => {
