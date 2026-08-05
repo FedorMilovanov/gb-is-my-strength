@@ -86,20 +86,23 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
   const browser = await browserType.launch({ headless: true });
   const page = await browser.newPage({ viewportSize: viewport });
   const consoleErrors = [];
+  const engineWarnings = [];
   const pageErrors = [];
   page.on('console', (message) => {
-    if (message.type() === 'error') consoleErrors.push(message.text());
+    if (message.type() !== 'error') return;
+    const text = message.text();
+    const expectedWebKitViewportWarning =
+      text === 'Viewport argument key "interactive-widget" not recognized and ignored.';
+    if (browserName === 'webkit' && expectedWebKitViewportWarning) {
+      engineWarnings.push(text);
+      return;
+    }
+    consoleErrors.push(text);
   });
   page.on('pageerror', (error) => pageErrors.push(String(error)));
 
   try {
     await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-    await page.waitForFunction(
-      () => window.GBSearch && typeof window.GBSearch.open === 'function',
-      null,
-      { timeout: 30_000 },
-    );
-
     await page.evaluate(() => {
       document.getElementById('search-modal-contract-trigger')?.remove();
       const trigger = document.createElement('button');
@@ -108,11 +111,16 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
       trigger.type = 'button';
       trigger.setAttribute('aria-label', 'Открыть поиск');
       trigger.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-5-5"></path></svg>';
-      trigger.addEventListener('click', () => window.GBSearch.open());
+      trigger.addEventListener('click', () => window.dispatchEvent(new CustomEvent('gb:openSearch')));
       document.body.appendChild(trigger);
       trigger.focus();
       trigger.click();
     });
+    await page.waitForFunction(
+      () => window.GBSearch?.__ready === true && document.querySelector('.cp-backdrop')?.classList.contains('is-open'),
+      null,
+      { timeout: 30_000 },
+    );
 
     const modal = page.locator('.cp-backdrop.is-open');
     const input = page.locator('.cp-input');
@@ -200,21 +208,68 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
       };
       const chips = [...document.querySelectorAll('.cp-scope-chip')].map((node) => {
         const box = node.getBoundingClientRect();
-        return { width: box.width, height: box.height };
+        const style = getComputedStyle(node);
+        return {
+          width: box.width,
+          height: box.height,
+          computedHeight: Number.parseFloat(style.height),
+          computedMinHeight: Number.parseFloat(style.minHeight),
+          boxSizing: style.boxSizing,
+        };
       });
       const chip = document.querySelector('.cp-scope-chip');
       chip?.focus();
       const chipStyle = chip ? getComputedStyle(chip) : null;
+      const chipCascade = [];
+      const visitRules = (rules, href, context = []) => {
+        for (const rule of rules) {
+          if (rule.type === CSSRule.STYLE_RULE) {
+            let matches = false;
+            try { matches = Boolean(chip?.matches(rule.selectorText)); } catch {}
+            if (matches && (rule.style.height || rule.style.minHeight || rule.style.minBlockSize)) {
+              chipCascade.push({
+                href,
+                context,
+                selector: rule.selectorText,
+                height: rule.style.height || null,
+                minHeight: rule.style.minHeight || null,
+                minBlockSize: rule.style.minBlockSize || null,
+                heightPriority: rule.style.getPropertyPriority('height') || null,
+                minHeightPriority: rule.style.getPropertyPriority('min-height') || null,
+                minBlockSizePriority: rule.style.getPropertyPriority('min-block-size') || null,
+                cssText: rule.cssText,
+              });
+            }
+            continue;
+          }
+          if (!('cssRules' in rule)) continue;
+          if (rule.type === CSSRule.MEDIA_RULE && !matchMedia(rule.conditionText).matches) continue;
+          const label = rule.conditionText || rule.name || rule.cssText.split('{', 1)[0].trim();
+          visitRules(rule.cssRules, href, [...context, label]);
+        }
+      };
+      for (const sheet of document.styleSheets) {
+        try { visitRules(sheet.cssRules, sheet.href || 'inline'); } catch {}
+      }
       return {
         trigger: rect('#search-modal-contract-trigger'),
         chips,
+        chipCascade,
         outline: chipStyle?.outlineStyle,
         shadow: chipStyle?.boxShadow,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
     });
     assert.ok(geometry.trigger?.width >= 44 && geometry.trigger?.height >= 44, 'search trigger must be 44x44');
-    assert.ok(geometry.chips.length >= 4 && geometry.chips.every((chip) => chip.height >= 44), 'scope chips must be 44px tall');
+    assert.ok(
+      geometry.chips.length >= 4 && geometry.chips.every((chip) =>
+        chip.computedHeight === 44 &&
+        chip.computedMinHeight === 44 &&
+        chip.boxSizing === 'border-box' &&
+        chip.height >= 43.5
+      ),
+      `scope chips must author exact 44px geometry with <=0.5px engine quantization: ${JSON.stringify({ chips: geometry.chips, chipCascade: geometry.chipCascade })}`,
+    );
     assert.ok(geometry.outline !== 'none' || geometry.shadow !== 'none', 'scope chip focus style missing');
     assert.ok(geometry.overflow <= 1, `horizontal overflow: ${geometry.overflow}`);
 
@@ -266,7 +321,22 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
     fs.mkdirSync(reportDir, { recursive: true });
     await page.screenshot({ path: path.join(reportDir, `${ordinal}-${browserName}-${viewport.width}x${viewport.height}.png`), fullPage: true });
 
-    return { browser: browserName, viewport, aria, focusableCount, geometry, layer };
+    return { browser: browserName, viewport, aria, focusableCount, geometry, layer, engineWarnings };
+  } catch (error) {
+    fs.mkdirSync(reportDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(reportDir, `failure-${ordinal}-${browserName}-${viewport.width}x${viewport.height}.json`),
+      `${JSON.stringify({
+        browser: browserName,
+        viewport,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+        consoleErrors,
+        engineWarnings,
+        pageErrors,
+      }, null, 2)}\n`,
+    );
+    throw error;
   } finally {
     await browser.close();
   }
