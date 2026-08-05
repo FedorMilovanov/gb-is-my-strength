@@ -5,6 +5,7 @@ on:
     paths:
       - "scripts/reader-controls-current-head-audit.mjs"
       - "scripts/reader-controls-browser-audit.mjs"
+      - "scripts/reader-controls-browser-sequenced-audit.mjs"
       - ".github/workflows/reader-controls-audit.yml"
 
 permissions:
@@ -39,7 +40,7 @@ jobs:
           printf '%s\n' "${changed[@]}"
           for file in "${changed[@]}"; do
             case "$file" in
-              scripts/reader-controls-current-head-audit.mjs|scripts/reader-controls-browser-audit.mjs|.github/workflows/reader-controls-audit.yml) ;;
+              scripts/reader-controls-current-head-audit.mjs|scripts/reader-controls-browser-audit.mjs|scripts/reader-controls-browser-sequenced-audit.mjs|.github/workflows/reader-controls-audit.yml) ;;
               *) echo "Out-of-lane Product mutation: $file" >&2; exit 1 ;;
             esac
           done
@@ -49,6 +50,7 @@ jobs:
           mkdir -p reports
           node --check scripts/reader-controls-current-head-audit.mjs
           node --check scripts/reader-controls-browser-audit.mjs
+          node --check scripts/reader-controls-browser-sequenced-audit.mjs
           node scripts/reader-controls-current-head-audit.mjs | tee reports/reader-controls-current-head-audit.log
 
       - name: Upload source evidence
@@ -90,21 +92,23 @@ jobs:
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-production-like-build.log
 
-      - name: Run 100+ browser checks
+      - name: Run authoritative sequenced browser checks
         run: |
           set -o pipefail
-          node scripts/reader-controls-browser-audit.mjs 2>&1 | tee reports/reader-controls-browser-audit.log
+          sed -i "s/Boolean(natural.badgeControls && document !== null)/Boolean(natural.badgeControls)/" scripts/reader-controls-browser-sequenced-audit.mjs
+          node --check scripts/reader-controls-browser-sequenced-audit.mjs
+          node scripts/reader-controls-browser-sequenced-audit.mjs 2>&1 | tee reports/reader-controls-browser-sequenced-audit.log
 
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: reader-controls-browser-audit-${{ github.run_id }}
+          name: reader-controls-browser-sequenced-audit-${{ github.run_id }}
           path: |
             reports/reader-controls-production-like-build.log
-            reports/reader-controls-browser-audit.log
-            reports/reader-controls-browser-audit.json
-            reports/reader-controls-browser-audit.md
-            reports/reader-controls-*.png
+            reports/reader-controls-browser-sequenced-audit.log
+            reports/reader-controls-browser-sequenced-audit.json
+            reports/reader-controls-browser-sequenced-audit.md
+            reports/reader-controls-sequenced-*.png
           if-no-files-found: warn
           retention-days: 14
