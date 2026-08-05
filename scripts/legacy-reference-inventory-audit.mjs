@@ -163,6 +163,7 @@ function validateLedger(ledger) {
   if (ledger.scope !== 'inventory-and-immutability-only') problem('scope must remain inventory-and-immutability-only');
   if (ledger.policy?.normalValidation !== 'read-only') problem('normal validation must remain read-only');
   if (ledger.policy?.moveAllowedWhenUnknownBlockers !== false) problem('moves must remain blocked while unknown blockers exist');
+  if (ledger.policy?.obsoleteWritersAllowed !== false) problem('obsolete writers must remain forbidden');
 
   const profiles = collectProfiles();
   const refs = Array.isArray(ledger.references) ? ledger.references : [];
@@ -235,6 +236,9 @@ function validateLedger(ledger) {
     }
   }
 
+  const obsoleteWriters = dependencies.filter((item) => item.classification === 'obsolete' && item.access === 'writer');
+  if (obsoleteWriters.length > 0) problem(`obsolete writers must be removed: ${obsoleteWriters.map((item) => item.path).join(', ')}`);
+
   const expectedSummary = {
     references: refs.length,
     migrationReferenceOnly: refs.filter((item) => item.classification === 'migration-reference-only').length,
@@ -281,9 +285,18 @@ const mutations = [
   }],
   ['unregistered dependency', (copy) => { copy.dependencies.pop(); copy.summary.dependencies--; }],
   ['move enabled with blockers', (copy) => { copy.policy.moveAllowedWhenUnknownBlockers = true; }],
-  ['writer laundering', (copy) => {
-    const target = copy.dependencies.find((item) => item.access === 'writer');
-    target.classification = 'migration-reference-only';
+  ['obsolete writer reintroduction', (copy) => {
+    copy.dependencies.push({
+      path: 'scripts/legacy-generators/update-meta-git-history-v2.js',
+      access: 'writer',
+      classification: 'obsolete',
+      quarantineImpact: 'remove-or-repoint-before-move',
+      evidenceToken: 'articles/${slug}/index.html',
+      owner: 'legacy-reference-quarantine',
+    });
+    copy.dependencies.sort((a, b) => a.path.localeCompare(b.path));
+    copy.summary.dependencies++;
+    copy.summary.obsoleteWriters++;
   }],
 ];
 for (const [label, mutate] of mutations) {
