@@ -118,11 +118,11 @@ css = replaceOnce(css, `z-index:var(--z-modal,10000)`, `z-index:2147483000`, 'mo
 css = replaceOnce(css, `.cp-clear{`, `.cp-clear,.cp-close{`, 'clear/close shared geometry');
 css = replaceOnce(css, `.cp-clear:hover{`, `.cp-clear:hover,.cp-close:hover{`, 'clear/close hover');
 css = replaceOnce(css, `.cp-clear:active{`, `.cp-clear:active,.cp-close:active{`, 'clear/close active');
-css = replaceOnce(css, `min-height:32px`, `min-height:44px`, 'scope chip touch target');
+css = replaceOnce(css, `min-height:32px`, `height:44px;min-height:44px;box-sizing:border-box`, 'scope chip exact touch target');
 css = replaceOnce(
   css,
   `.gb-nav-search-icon{background:0 0;border:none;box-shadow:none;cursor:pointer;padding:2px;border-radius:0;`,
-  `.gb-nav-search-icon{background:0 0;border:none;box-shadow:none;cursor:pointer;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:12px;`,
+  `.gb-nav-search-icon{background:0 0;border:none;box-shadow:none;cursor:pointer;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:12px;box-sizing:border-box;`,
   'navigation search hitbox',
 );
 
@@ -144,6 +144,7 @@ css += `
 
 assert.ok(!css.includes('z-index:var(--z-modal,10000)'), 'weak modal z-index survived');
 assert.ok(!css.includes('min-height:32px'), '32px scope chip survived');
+assert.match(css, /\.cp-scope-chip\{[^}]*height:44px;min-height:44px;box-sizing:border-box/, 'exact 44px scope chip contract missing');
 assert.match(css, /\.gb-nav-search-icon\{[^}]*width:44px;[^}]*height:44px;/, '44px navigation icon contract missing');
 assert.match(css, /\.cp-scope-chip:focus-visible/, 'scope-chip focus-visible missing');
 assert.match(css, /\.cp-preview-btn:focus-visible/, 'preview focus-visible missing');
