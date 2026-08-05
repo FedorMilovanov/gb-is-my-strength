@@ -71,6 +71,7 @@ files.forEach(mustExist);
 obsoletePictograms.forEach(mustNotExist);
 mustNotExist('public/images/home/directions/README.tmp');
 mustNotExist('public/images/home/directions/.keep');
+mustNotExist('src/components/home/HomeSacredFlipContract.astro');
 
 for (const rel of directionAssets) {
   mustExist(rel);
@@ -107,7 +108,7 @@ for (const marker of ['HomePageHead', 'HomePageChrome', 'HomePageChromeStyles', 
   must(page, marker, `Astro / uses ${marker}`);
 }
 must(page, '<body class="home-page">', 'Astro / preserves home body class');
-for (const forbidden of ['loadLegacyFullDocument', 'set:html', '?raw', '_legacy/', 'import BaseLayout', '<BaseLayout']) {
+for (const forbidden of ['loadLegacyFullDocument', 'set:html', '?raw', '_legacy/', 'import BaseLayout', '<BaseLayout', 'HomeSacredFlipContract']) {
   mustNot(page, forbidden, `Astro / ${forbidden}`);
 }
 const chromeStylesPos = page.indexOf('<HomePageChromeStyles />');
@@ -165,6 +166,11 @@ for (const rejected of ['.h-home-route', '.h-sacred-block', '.h-about']) {
   mustNot(chromeStyles, rejected, `chrome style cross-owner rule: ${rejected}`);
 }
 
+const responsiveContracts = read('src/components/home/HomeResponsiveContracts.astro');
+for (const legacyTitleSelector of ['.h-title-static', '.h-title-dash', '.h-title-accent']) {
+  mustNot(responsiveContracts, legacyTitleSelector, `responsive cross-owner title selector: ${legacyTitleSelector}`);
+}
+
 const main = read('src/components/home/HomeMain.astro');
 must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain semantic wrapper');
 must(main, '<div class="home-content">', 'HomeMain home-content wrapper');
@@ -182,6 +188,8 @@ for (const forbidden of [
   'body.home-page .h-home-routes',
   'body.home-page .h-home-route',
   'body.home-page .h-navbar',
+  '.h-sacred-block--hero .hb-w',
+  '.h-sacred-block--hero .h-tetra',
   'scroll-snap-type: inline mandatory',
 ]) mustNot(main, forbidden, `HomeMain cross-owner rule: ${forbidden}`);
 
@@ -189,19 +197,22 @@ const hero = read('src/components/home/HomeHero.astro');
 for (const marker of [
   'HomeAmbientPhrases', 'h-hero-brand', 'h-sacred-block--hero', 'h-hero-title',
   'heroSearchBar', 'Что вы хотите изучить?', 'Аввакум 3:19', 'h-hero-cues',
-  '<button class="h-tetra" type="button" disabled',
-  '<button class="hb-w" type="button" disabled',
-  'word.disabled = false',
+  '<button class="h-sacred-word h-sacred-word--name" type="button" disabled',
+  '<button class="h-sacred-word" type="button" disabled',
+  'h-sacred-name-label', 'data-sacred-pinned', 'word.disabled = false',
   '<a class="h-hero-search" id="heroSearchBar" href="/articles/"',
-  'button:is(.hb-w, .h-tetra):focus-visible',
+  '.h-sacred-word:focus-visible', '.h-home-title-part',
 ]) must(hero, marker, `HomeHero marker: ${marker}`);
-const sacredButtonCount = count(hero, /<button class="(?:hb-w|h-tetra)" type="button" disabled/g);
+const sacredButtonCount = count(hero, /<button class="h-sacred-word(?: h-sacred-word--name)?" type="button" disabled/g);
 sacredButtonCount === 9
   ? ok('Habakkuk exposes exactly nine native controls')
   : bad(`Habakkuk native control count: ${sacredButtonCount} (expected 9)`);
 mustNot(hero, 'role="button"', 'Habakkuk pseudo-buttons');
 mustNot(hero, 'tabindex="0"', 'manual Habakkuk tabindex');
 mustNot(hero, "event.key === 'Enter'", 'manual native-button keyboard emulation');
+for (const legacy of ['class="hb-w"', 'class="h-tetra"', 'data-sacred-active', '!important']) {
+  mustNot(hero, legacy, `legacy sacred owner: ${legacy}`);
+}
 for (const forbidden of [
   'h-brand-lion', 'Разбудить льва', 'AudioContext', 'webkitAudioContext',
   '.h-navbar', '.h-nav-links', '.h-home-gateway', '.h-featured-', '.h-about', '--h-muted:',
@@ -302,6 +313,10 @@ must(resume, '<h2 id="resumeListTitle">Недочитанные статьи</h2
 
 const refutations = read('src/components/home/HomeSections/Refutations.astro');
 must(refutations, '<h2 class="h-section-label" id="hRefutationsLabel">', 'Refutations uses an h2 heading');
+must(refutations, '.h-refutation-card {\n    box-sizing: border-box;', 'Refutations owns its V3 border-box geometry');
+const visualFixes = read('src/components/home/HomeVisualAuditFixes.astro');
+mustNot(visualFixes, '#razbor .h-refutation-card', 'late Refutations geometry patch');
+mustNot(visualFixes, 'assertRefutationsBoxModel', 'late Refutations geometry assertion');
 
 const planned = read('src/components/home/HomeSections/Planned.astro');
 must(planned, '<h2 class="h-planned-label" id="hPlannedLabel">', 'Roadmap uses an h2 heading');

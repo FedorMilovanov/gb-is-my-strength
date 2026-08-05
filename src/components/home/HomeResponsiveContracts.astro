@@ -244,33 +244,6 @@
     }
   }
 
-  /* Keep the authored dash in the rendered H1 on mobile. The previous visual
-     replacement used generated content, which looked correct but disappeared
-     from innerText and blocked the immutable production release smoke. The
-     100%-wide inline first span creates the visual line break without inserting
-     a semantic newline into the heading text. */
-  @media (max-width: 760px) {
-    body.home-page #main-content .h-hero .h-hero-title .h-title-static {
-      display: inline-block;
-      width: 100%;
-    }
-
-    body.home-page #main-content .h-hero .h-hero-title .h-title-dash,
-    body.home-page #main-content .h-hero .h-hero-title .h-title-accent {
-      display: inline-block;
-      margin-top: .08em;
-    }
-
-    body.home-page #main-content .h-hero .h-hero-title .h-title-dash {
-      margin-right: .2em;
-      opacity: .76;
-      transform: translateY(-.04em);
-    }
-
-    body.home-page #main-content .h-hero .h-hero-title .h-title-accent::before {
-      content: none;
-    }
-  }
 
   /* Five routes end with one centred card. Give the intentional singleton enough
      measure for its longest label and description. A future sixth route removes

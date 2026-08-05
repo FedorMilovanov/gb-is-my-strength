@@ -82,16 +82,22 @@ function startServer() {
 }
 
 async function waitForSearchResult(page, query) {
-  await page.waitForFunction((expected) => {
+  const finalPagefindResultReady = (expected) => {
     const overlay = document.querySelector('.cp-backdrop');
     const input = document.querySelector('.cp-input');
+    const pagefind = window.__pagefind__;
     if (!overlay?.classList.contains('is-open')) return false;
     if (!(input instanceof HTMLInputElement) || input.value !== expected) return false;
+    if (!window.__pagefindReady__ || !pagefind || typeof pagefind.search !== 'function') return false;
     if (document.querySelector('.cp-loading')) return false;
     const titles = [...document.querySelectorAll('.cp-item-title')]
       .map((node) => (node.textContent || '').toLocaleLowerCase('ru-RU'));
     return titles.some((title) => title.includes('нагорная проповедь'));
-  }, query, { timeout: 20_000 });
+  };
+
+  await page.waitForFunction(finalPagefindResultReady, query, { timeout: 20_000 });
+  await page.waitForTimeout(250);
+  await page.waitForFunction(finalPagefindResultReady, query, { timeout: 2_000 });
 }
 
 async function inspectQueryEntry(browserName, browserType, baseUrl, profile) {
