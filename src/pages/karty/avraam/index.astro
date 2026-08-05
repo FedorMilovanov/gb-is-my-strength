@@ -16,8 +16,8 @@ import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
     <AvraamPageHead />
   </head>
   <body class="has-app-search-map">
-    <AppSearchSurface mode="map-engine" />
     <AvraamMap />
+    <AppSearchSurface mode="map-engine" />
     <script>
       const stage = document.querySelector('[data-map-stage]');
       const fallbackHeading = document.querySelector('h1.sr-only[data-pagefind-body]');
