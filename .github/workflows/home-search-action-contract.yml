@@ -111,12 +111,26 @@ jobs:
           node --check scripts/search-modal-browser-contract.mjs
           npm run astro:check
 
-      - name: Verify helper changed only canonical runtime and CSS
+      - name: Verify exact governed computed tree
         run: |
-          expected="$(printf '%s\n' 'css/command-palette.css' 'js/search.js')"
-          actual="$(git diff --name-only --diff-filter=ACMR | sort)"
-          test "${actual}" = "${expected}"
+          actual="$(git diff --name-only --diff-filter=ACMR | sort -u)"
+          for required in \
+            css/command-palette.css \
+            js/search.js \
+            scripts/search-modal-browser-contract.mjs
+          do
+            printf '%s\n' "${actual}" | grep -Fx -- "${required}"
+          done
+          while IFS= read -r file
+          do
+            case "${file}" in
+              css/command-palette.css|js/search.js|scripts/search-modal-browser-contract.mjs|src/lib/asset-version.js|*.html|src/*.astro) ;;
+              *) echo "Unexpected computed path: ${file}" >&2; exit 1 ;;
+            esac
+          done <<< "${actual}"
+          node scripts/cache-bust.js
           git diff --check
+          printf '%s\n' "${actual}"
 
       - name: Build production-like publication
         run: |
@@ -129,26 +143,33 @@ jobs:
       - name: Validate computed Search modal
         run: node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract
 
-      - name: Prepare exact final artifact
+      - name: Prepare exact final artifact tree
         run: |
-          mkdir -p reports/search-modal-final
-          sha256sum \
-            js/search.js \
-            css/command-palette.css \
-            scripts/search-modal-browser-contract.mjs \
-            .github/workflows/search-modal-contract.yml \
-            > reports/search-modal-final/sha256.txt
+          root=reports/search-modal-final
+          tree="${root}/tree"
+          mkdir -p "${tree}"
+          {
+            git diff --name-only --diff-filter=ACMR
+            printf '%s\n' '.github/workflows/search-modal-contract.yml'
+          } | sort -u > "${root}/paths.txt"
+          while IFS= read -r file
+          do
+            test -f "${file}"
+            mkdir -p "${tree}/$(dirname "${file}")"
+            cp "${file}" "${tree}/${file}"
+          done < "${root}/paths.txt"
+          (
+            cd "${tree}"
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > "${root}/sha256.txt"
+          printf '%s\n' "$(git rev-parse HEAD)" > "${root}/compute-head.txt"
+          git diff --check
 
-      - name: Upload exact four-file final tree
+      - name: Upload exact final tree
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: search-modal-final-${{ github.run_id }}
-          path: |
-            js/search.js
-            css/command-palette.css
-            scripts/search-modal-browser-contract.mjs
-            .github/workflows/search-modal-contract.yml
-            reports/search-modal-final/sha256.txt
+          path: reports/search-modal-final/**
           if-no-files-found: error
           retention-days: 7
 
