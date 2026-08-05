@@ -27,6 +27,7 @@
       "scripts/editorial-metadata-registry-preservation-test.js"
     ],
     "nonBlockingDistDependencies": [
+      "scripts/dist-publication-audit.js",
       "scripts/gill-pre-v16-submenu-regression-audit.js",
       "scripts/nagornaya-bar-asset-browser-test.js"
     ]
@@ -37,7 +38,7 @@
     "productionRequired": 0,
     "unknownBlockers": 30,
     "dependencies": 32,
-    "dependencyUnknownBlockers": 9,
+    "dependencyUnknownBlockers": 8,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -106,8 +107,8 @@
     {
       "path": "scripts/dist-publication-audit.js",
       "access": "reader",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
+      "classification": "production-required",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "nagornaya/chast-1/index.html",
       "owner": "legacy-reference-quarantine"
     },
