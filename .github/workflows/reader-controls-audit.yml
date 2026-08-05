@@ -1,0 +1,110 @@
+name: Reader Controls Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/reader-controls-current-head-audit.mjs"
+      - "scripts/reader-controls-browser-audit.mjs"
+      - ".github/workflows/reader-controls-audit.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-controls-audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-current-head:
+    name: 80-check source and owner audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+
+      - name: Enforce audit-only lane boundary
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch origin "$BASE_REF" --depth=1
+          mapfile -t changed < <(git diff --name-only "origin/$BASE_REF"...HEAD)
+          printf '%s\n' "${changed[@]}"
+          for file in "${changed[@]}"; do
+            case "$file" in
+              scripts/reader-controls-current-head-audit.mjs|scripts/reader-controls-browser-audit.mjs|.github/workflows/reader-controls-audit.yml) ;;
+              *) echo "Out-of-lane Product mutation: $file" >&2; exit 1 ;;
+            esac
+          done
+
+      - name: Run current-head audit
+        run: |
+          mkdir -p reports
+          node --check scripts/reader-controls-current-head-audit.mjs
+          node --check scripts/reader-controls-browser-audit.mjs
+          node scripts/reader-controls-current-head-audit.mjs | tee reports/reader-controls-current-head-audit.log
+
+      - name: Upload source evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reader-controls-source-audit-${{ github.run_id }}
+          path: |
+            reports/reader-controls-current-head-audit.log
+            reports/reader-controls-current-head-audit.json
+            reports/reader-controls-current-head-audit.md
+          if-no-files-found: error
+          retention-days: 14
+
+  production-like-browser:
+    name: Production-like reader controls browser audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Install exact dependencies and Chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build production-like dist
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-production-like-build.log
+
+      - name: Run 100+ browser checks
+        run: |
+          set -o pipefail
+          node scripts/reader-controls-browser-audit.mjs 2>&1 | tee reports/reader-controls-browser-audit.log
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reader-controls-browser-audit-${{ github.run_id }}
+          path: |
+            reports/reader-controls-production-like-build.log
+            reports/reader-controls-browser-audit.log
+            reports/reader-controls-browser-audit.json
+            reports/reader-controls-browser-audit.md
+            reports/reader-controls-*.png
+          if-no-files-found: warn
+          retention-days: 14
