@@ -83,6 +83,22 @@ const uniqueReaderUrls = new Set(readerUrls);
 requireValue(readerUrls.length === 40, `expected exactly 40 reader URLs, found ${readerUrls.length}`);
 requireValue(uniqueReaderUrls.size === 40, `reader URLs must be unique; found ${uniqueReaderUrls.size}`);
 
+const waveB1StaleReaderUrls = [
+  'https://www.thejourney.org/our-story',
+  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
+];
+for (const staleUrl of waveB1StaleReaderUrls) {
+  requireValue(!draft.includes(staleUrl), `stale Wave B1 base-reader URL retained: ${staleUrl}`);
+}
+
+const waveB1CanonicalReaderUrls = [
+  'https://www.thejourney.org/about/our-story-new',
+  'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
+];
+for (const canonicalUrl of waveB1CanonicalReaderUrls) {
+  requireValue(readerUrls.filter((url) => url === canonicalUrl).length === 1, `canonical Wave B1 reader URL must occur exactly once: ${canonicalUrl}`);
+}
+
 const allowedHosts = [
   'guidepostsolutions.com', 'sbc.net', 'willowcreek.org', 'childabuseroyalcommission.gov.au',
   'crechurches.org', 'thirtyoneeight.org', 'swbts.edu', 'liberty.edu', 'churchofengland.org',
