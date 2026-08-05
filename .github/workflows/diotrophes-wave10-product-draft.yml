@@ -45,16 +45,26 @@ jobs:
 
           wave10_owned_pattern='^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$'
           wave10_exclusive_pattern='^(data/diotrophes-wave10-product-draft\.json|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$'
+          shared_draft_pattern='^src/components/article-pilots/diotrophes/DiotrophesDraft\.astro$'
           wave12_owner_pattern='^scripts/diotrophes-wave12-browser-contract\.mjs$'
 
           owned="$(grep -E "$wave10_owned_pattern" /tmp/wave10-files.txt || true)"
           wave10_exclusive="$(grep -E "$wave10_exclusive_pattern" /tmp/wave10-files.txt || true)"
+          shared_draft="$(grep -E "$shared_draft_pattern" /tmp/wave10-files.txt || true)"
           wave12_owner="$(grep -E "$wave12_owner_pattern" /tmp/wave10-files.txt || true)"
 
           if [[ -n "$wave12_owner" && -z "$wave10_exclusive" ]]; then
             echo 'The shared DiotrophesDraft is owned by the Wave 12 publication lane in this PR; Wave 10 validation is a no-op.'
             echo 'active=false' >> "$GITHUB_OUTPUT"
             exit 0
+          fi
+
+          if [[ -n "$wave12_owner" && -n "$wave10_exclusive" ]]; then
+            if [[ -z "$shared_draft" ]]; then
+              echo 'A mixed Wave 10/Wave 12 contract transaction must also change the shared DiotrophesDraft source.' >&2
+              exit 1
+            fi
+            echo 'Bounded cross-wave reconciliation detected: Wave 10 source/contract plus the Wave 12 browser owner.'
           fi
 
           if [[ -z "$owned" ]]; then
@@ -64,7 +74,7 @@ jobs:
           fi
 
           echo 'active=true' >> "$GITHUB_OUTPUT"
-          unexpected="$(grep -Ev "$wave10_owned_pattern" /tmp/wave10-files.txt || true)"
+          unexpected="$(grep -Ev "$wave10_owned_pattern|$wave12_owner_pattern" /tmp/wave10-files.txt || true)"
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected Wave 10 files:' >&2
             printf '%s\n' "$unexpected" >&2
