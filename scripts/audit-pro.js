@@ -4462,7 +4462,7 @@ const JS_SIZE_FLOORS = {
   } else {
     R.ok('Home page includes one responsive library gateway');
   }
-  if (!/Аввакум 3:19/.test(html) || !/class=["'][^"']*hb-w[^"']*["']/i.test(html)) {
+  if (!/Аввакум 3:19/.test(html) || !/class=["'][^"']*h-sacred-word[^"']*["']/i.test(html) || !/class=["'][^"']*h-sacred-face--back[^"']*["']/i.test(html)) {
     R.err('Home page missing the interactive Habakkuk 3:19 identity');
   } else {
     R.ok('Home page preserves the interactive Habakkuk 3:19 identity');

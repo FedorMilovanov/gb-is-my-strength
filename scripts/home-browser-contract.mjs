@@ -244,11 +244,11 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
       return !overlay || getComputedStyle(overlay).display === 'none' || !overlay.classList.contains('open');
     });
 
-    const hebrew = page.locator('.h-sacred-block--hero .hb-w').first();
-    const hebrewCountBefore = await page.locator('.h-sacred-block--hero .hb-w, .h-sacred-block--hero .h-tetra').count();
+    const hebrew = page.locator('.h-sacred-block--hero button.h-sacred-word').first();
+    const hebrewCountBefore = await page.locator('.h-sacred-block--hero button.h-sacred-word').count();
     await hebrew.click();
-    await page.waitForFunction(() => document.querySelector('.h-sacred-block--hero .hb-w')?.getAttribute('aria-pressed') === 'true');
-    assert.ok((await hebrew.locator('.hb-back').textContent())?.trim(), 'Hebrew translation is empty');
+    await page.waitForFunction(() => document.querySelector('.h-sacred-block--hero button.h-sacred-word')?.getAttribute('aria-pressed') === 'true');
+    assert.ok((await hebrew.locator('.h-sacred-face--back').textContent())?.trim(), 'Hebrew translation is empty');
     const rect = await hebrew.boundingBox();
     assert.ok(rect && rect.x >= 0 && rect.y >= 0 && rect.x + rect.width <= 390 && rect.y + rect.height <= 844, 'Hebrew interaction escaped visual viewport');
     await hebrew.focus();
@@ -256,7 +256,7 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     assert.equal(await hebrew.getAttribute('aria-pressed'), 'false', 'Enter did not toggle Hebrew word');
     await page.keyboard.press('Space');
     assert.equal(await hebrew.getAttribute('aria-pressed'), 'true', 'Space did not toggle Hebrew word');
-    assert.equal(await page.locator('.h-sacred-block--hero .hb-w, .h-sacred-block--hero .h-tetra').count(), hebrewCountBefore, 'Hebrew interaction cloned controls');
+    assert.equal(await page.locator('.h-sacred-block--hero button.h-sacred-word').count(), hebrewCountBefore, 'Hebrew interaction cloned controls');
 
     await page.evaluate(() => window.scrollTo(0, Math.min(900, document.documentElement.scrollHeight - innerHeight)));
     await page.waitForTimeout(100);
@@ -299,7 +299,7 @@ async function runNoJavaScript(browserName, browserType, baseUrl) {
     await noJsNavigation.waitFor({ state: 'visible' });
     assert.ok(await noJsNavigation.locator('a[href]').count() >= 6, 'no-JS navigation is incomplete');
     assert.equal(await page.locator('#heroSearchBar').getAttribute('href'), '/articles/', 'no-JS search fallback missing');
-    const sacred = page.locator('.h-sacred-block--hero button.hb-w, .h-sacred-block--hero button.h-tetra');
+    const sacred = page.locator('.h-sacred-block--hero button.h-sacred-word');
     assert.equal(await sacred.count(), 9, 'no-JS Habakkuk control count changed');
     for (let index = 0; index < await sacred.count(); index += 1) {
       assert.equal(await sacred.nth(index).isDisabled(), true, `no-JS Habakkuk control ${index + 1} is enabled`);

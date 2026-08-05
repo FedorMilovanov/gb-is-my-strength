@@ -414,7 +414,7 @@ async function interactionAudit(page) {
   await page.keyboard.press('Escape');
   record(`${ENGINE}:mobile-menu-escape`, await menu.getAttribute('aria-expanded') === 'false');
 
-  const word = page.locator('.h-sacred-block--hero .hb-w').first();
+  const word = page.locator('.h-sacred-block--hero button.h-sacred-word').first();
   await word.click();
   record(`${ENGINE}:hebrew-click-toggle`, await word.getAttribute('aria-pressed') === 'true');
   await word.focus();
