@@ -20,16 +20,17 @@
     ],
     "normalValidation": "read-only",
     "moveAllowedWhenUnknownBlockers": false,
-    "homeDecision": "Root index.html is migration-reference-only per issue #62 comment 5148492562; no live-production P0 claim."
+    "homeDecision": "Root index.html is migration-reference-only per issue #62 comment 5148492562; no live-production P0 claim.",
+    "obsoleteWritersAllowed": false
   },
   "summary": {
     "references": 52,
     "migrationReferenceOnly": 22,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 33,
+    "dependencies": 32,
     "dependencyUnknownBlockers": 13,
-    "obsoleteWriters": 1
+    "obsoleteWriters": 0
   },
   "referenceShards": [
     "data/legacy-reference-ledger/references-1.json",
@@ -172,14 +173,6 @@
       "classification": "obsolete",
       "quarantineImpact": "remove-or-repoint-before-move",
       "evidenceToken": "articles/20-antisovetov-pastoru/index.html",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/legacy-generators/update-meta-git-history-v2.js",
-      "access": "writer",
-      "classification": "obsolete",
-      "quarantineImpact": "remove-or-repoint-before-move",
-      "evidenceToken": "articles/${slug}/index.html",
       "owner": "legacy-reference-quarantine"
     },
     {
