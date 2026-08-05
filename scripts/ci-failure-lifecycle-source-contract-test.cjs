@@ -26,10 +26,14 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
   must('actions read permission is explicit', workflow, /^  actions: read$/m);
   must('contents read permission is explicit', workflow, /^  contents: read$/m);
   must('issues write permission is explicit', workflow, /^  issues: write$/m);
+  must('pull request read permission is explicit', workflow, /^  pull-requests: read$/m);
   must('lifecycle concurrency is non-cancelling', workflow, /cancel-in-progress:\s*false/);
   must('trusted default branch is selected', workflow, /repository\.default_branch/);
   must('notifier is fetched through Contents API', workflow, /github\.rest\.repos\.getContent/);
   must('trusted notifier path is fixed', workflow, /path = 'scripts\/ci-failure-lifecycle\.cjs'/);
+  must('workflow invokes retired identity reconciler', workflow, /await loaded\.exports\.reconcileRetiredIdentities/);
+  must('reconciliation is owned by successful Shared Files Guard', workflow, /workflowRun\.name === 'Shared Files Guard'[\s\S]*workflowRun\.conclusion === 'success'/);
+  must('reconciliation is default-branch only', workflow, /workflowRun\.head_branch === defaultBranch/);
   mustNot('triggering branch is checked out or executed', workflow, /actions\/checkout|workflow_run\.head_sha[^\n]*ref:/);
   mustNot('fake route-impact downloader remains', workflow, /route-impact|route_impact_data|actions\/artifacts\/.*\/zip/);
   mustNot('commit-message route guessing remains', workflow, /affectedHint|commitMsg\.toLowerCase|Подозреваемые route/);
@@ -44,6 +48,13 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
   must('notifier rejects external repository heads', notifier, /ignored-external-repository/);
   must('notifier refuses ambiguous duplicate markers', notifier, /Ambiguous CI lifecycle state/);
   must('failure ordering uses latest lifecycle transition', notifier, /latestTransition[\s\S]*previousState\.latestSeen/);
+  must('notifier exports retired identity reconciler', notifier, /module\.exports\.reconcileRetiredIdentities = reconcileRetiredIdentities/);
+  must('reconciler verifies closed pull requests', notifier, /github\.rest\.pulls\.get/);
+  must('reconciler verifies branch existence', notifier, /github\.rest\.repos\.getBranch/);
+  must('reconciler preserves branches with open PRs', notifier, /github\.rest\.pulls\.list[\s\S]*if \(openPulls\.length\) return null/);
+  must('reconciler requires zero ahead commits', notifier, /ahead_by\) === 0/);
+  must('retirement is not recovery', notifier, /not.*evidence.*recovered/i);
+  must('retired issues close as not planned', notifier, /state_reason:\s*'not_planned'/);
   mustNot('notifier infers routes from commit message', notifier, /affectedHint|msg\.includes\(|Подозреваемые route/);
 
   must('shared guard syntax-checks notifier', sharedGuard, /node --check scripts\/ci-failure-lifecycle\.cjs/);
@@ -60,6 +71,11 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
   must('contract covers genuine post-recovery failure', contract, /genuinely newer failure after recovery reopens/);
   must('contract covers factual failed steps', contract, /Evidence comes from job data/);
   must('contract covers route-impact omission', contract, /Route-impact is explicitly omitted rather than faked/);
+  must('contract covers retired identities', contract, /Retired identities close only when their source is provably inactive/);
+  must('contract covers closed PR retirement', contract, /Closed PR failure/);
+  must('contract covers deleted branch retirement', contract, /Deleted branch failure/);
+  must('contract preserves active PR branches', contract, /Active PR branch failure/);
+  must('contract preserves ahead branches', contract, /Ahead branch failure/);
 
   return problems;
 }
@@ -112,6 +128,21 @@ const mutations = [
     label: 'deterministic contract removal',
     key: 'sharedGuard',
     mutate: (source) => source.replace('          node scripts/ci-failure-lifecycle-contract-test.cjs\n', ''),
+  },
+  {
+    label: 'retired identity workflow call removal',
+    key: 'workflow',
+    mutate: (source) => source.replace('              await loaded.exports.reconcileRetiredIdentities({\n', '              await Promise.resolve({\n'),
+  },
+  {
+    label: 'retired identity export removal',
+    key: 'notifier',
+    mutate: (source) => source.replace('module.exports.reconcileRetiredIdentities = reconcileRetiredIdentities;\n', ''),
+  },
+  {
+    label: 'ahead branch safety weakening',
+    key: 'notifier',
+    mutate: (source) => source.replace('comparison.data.ahead_by) === 0', 'comparison.data.ahead_by) >= 0'),
   },
 ];
 
