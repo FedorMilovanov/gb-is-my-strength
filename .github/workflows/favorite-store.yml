@@ -1,0 +1,97 @@
+name: Favorite Store Contract
+
+on:
+  pull_request:
+    paths:
+      - "src/runtime/favorite-store.js"
+      - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/components/ui/floating-cluster/SaveButton.astro"
+      - "src/components/home/HomeSections/Favorites.astro"
+      - "src/pages/izbrannoe/index.astro"
+      - "js/floating-cluster-controller.js"
+      - "scripts/favorite-store-source-contract.mjs"
+      - "scripts/favorite-store-browser-contract.mjs"
+      - ".github/workflows/favorite-store.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/runtime/favorite-store.js"
+      - "src/components/reader-platform/ReaderActionsRuntime.astro"
+      - "src/components/ui/floating-cluster/SaveButton.astro"
+      - "src/components/home/HomeSections/Favorites.astro"
+      - "src/pages/izbrannoe/index.astro"
+      - "js/floating-cluster-controller.js"
+      - "scripts/favorite-store-source-contract.mjs"
+      - "scripts/favorite-store-browser-contract.mjs"
+      - ".github/workflows/favorite-store.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: favorite-store-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  favorite-store-contract:
+    name: Source and Chromium favorite-store contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Prove commit identity
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Install exact dependencies and Chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Syntax and source contract
+        run: |
+          mkdir -p reports
+          node --check src/runtime/favorite-store.js
+          node --check scripts/favorite-store-source-contract.mjs
+          node --check scripts/favorite-store-browser-contract.mjs
+          set -o pipefail
+          GITHUB_SHA="$(git rev-parse HEAD)" node scripts/favorite-store-source-contract.mjs 2>&1 | tee reports/favorite-store-source-contract.log
+
+      - name: Build production-like dist
+        run: |
+          set -o pipefail
+          npm run strangler:build:production-like 2>&1 | tee reports/favorite-store-build.log
+
+      - name: Run permanent Chromium contract
+        run: |
+          set -o pipefail
+          GITHUB_SHA="$(git rev-parse HEAD)" node scripts/favorite-store-browser-contract.mjs 2>&1 | tee reports/favorite-store-browser-contract.log
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: favorite-store-${{ github.run_id }}
+          path: |
+            reports/favorite-store-build.log
+            reports/favorite-store-source-contract.log
+            reports/favorite-store-source-contract.json
+            reports/favorite-store-source-contract.md
+            reports/favorite-store-browser-contract.log
+            reports/favorite-store-browser-contract.json
+            reports/favorite-store-browser-contract.md
+            reports/favorite-store-*.png
+          if-no-files-found: warn
+          retention-days: 14
