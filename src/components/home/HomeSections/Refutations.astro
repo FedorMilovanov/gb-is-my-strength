@@ -235,10 +235,10 @@
     border-radius: 13px 15px 15px 13px;
   }
 
-  /* Soft warm-cyan sheen travelling across the active card — replaces the old
-     harsh white diagonal flash. A gentle gold-cyan iridescence (no
-     mix-blend-mode, no near-opaque white stop) reads as a premium perlevescent
-     sweep instead of a bright white glare. */
+  /* Premium perlevescent sheen travelling across the active card — a soft
+     gold→cyan iridescence with a silky multi-stop ramp (no harsh peaks, no
+     mix-blend-mode) plus a faint radial bloom for depth. Reads as a calm,
+     high-quality light sweep instead of a glare. */
   body.home-page #main-content #razbor .h-refutation-card::before {
     content: "";
     position: absolute;
@@ -246,18 +246,37 @@
     inset: -45% -20%;
     pointer-events: none;
     opacity: 0;
-    background: linear-gradient(
-      108deg,
-      transparent 38%,
-      color-mix(in srgb, var(--h-gold) 14%, transparent) 47%,
-      color-mix(in srgb, var(--h-accent) 18%, transparent) 51%,
-      color-mix(in srgb, var(--h-gold) 11%, transparent) 56%,
-      transparent 68%
-    );
+    background:
+      radial-gradient(120% 70% at 32% 38%, color-mix(in srgb, var(--h-gold) 7%, transparent), transparent 72%),
+      linear-gradient(
+        108deg,
+        transparent 34%,
+        color-mix(in srgb, var(--h-gold) 6%, transparent) 41%,
+        color-mix(in srgb, var(--h-gold) 13%, transparent) 46%,
+        color-mix(in srgb, var(--h-accent) 16%, transparent) 50%,
+        color-mix(in srgb, var(--h-gold) 13%, transparent) 54%,
+        color-mix(in srgb, var(--h-gold) 6%, transparent) 59%,
+        transparent 66%
+      );
     transform: translate3d(-34%, 0, 0) rotate(2deg);
     transition:
-      opacity 360ms ease,
-      transform 1100ms cubic-bezier(.22, 1, .36, 1);
+      opacity 420ms ease,
+      transform 1200ms cubic-bezier(.22, 1, .36, 1);
+  }
+
+  html.dark body.home-page #main-content #razbor .h-refutation-card::before {
+    background:
+      radial-gradient(120% 70% at 32% 38%, color-mix(in srgb, var(--h-gold) 9%, transparent), transparent 72%),
+      linear-gradient(
+        108deg,
+        transparent 34%,
+        color-mix(in srgb, var(--h-gold) 8%, transparent) 41%,
+        color-mix(in srgb, var(--h-gold) 16%, transparent) 46%,
+        color-mix(in srgb, var(--h-accent) 20%, transparent) 50%,
+        color-mix(in srgb, var(--h-gold) 16%, transparent) 54%,
+        color-mix(in srgb, var(--h-gold) 8%, transparent) 59%,
+        transparent 66%
+      );
   }
 
   body.home-page #main-content #razbor .h-refutation-card::after {
