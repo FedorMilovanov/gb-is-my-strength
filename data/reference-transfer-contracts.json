@@ -30,7 +30,7 @@
           "required": [
             "function normalizePath(value)",
             "function normalizeImage(value)",
-            "if (url.origin !== location.origin) return '';",
+            "if (!/^https?:$/.test(url.protocol)) return '';\n      if (url.origin !== location.origin) return '';\n      return url.href;",
             "window.GBFavoriteStore = api;"
           ],
           "forbidden": [
