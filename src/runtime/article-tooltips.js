@@ -1,4 +1,4 @@
-const VERSION = 16;
+const VERSION = 17;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -20,6 +20,15 @@ function overlayRuntime() {
 
 function mobileMode() {
   return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function viewportBounds() {
+  const visual = window.visualViewport;
+  const left = Number(visual?.offsetLeft) || 0;
+  const top = Number(visual?.offsetTop) || 0;
+  const width = Number(visual?.width) || document.documentElement.clientWidth || window.innerWidth;
+  const height = Number(visual?.height) || window.innerHeight;
+  return { left, top, width, height, right: left + width, bottom: top + height };
 }
 
 function cancelClose() {
@@ -134,7 +143,7 @@ function createScriptureTip(anchor) {
   const body = document.createElement('span');
   body.className = 'btip__text';
   body.textContent = configuredScripture(reference) || 'Ссылка на указанное место Священного Писания.';
-  tip.append(label, body);
+  tip.append(label, document.createTextNode(' '), body);
   anchor.appendChild(tip);
   return tip;
 }
@@ -221,12 +230,13 @@ function applyOverflow(tip, maxHeight) {
 }
 
 function positionMobile(tip) {
+  const viewport = viewportBounds();
   clearAuthoritativeGeometry(tip);
   setImportant(tip.style, 'left', '0px');
   setImportant(tip.style, 'right', '0px');
   setImportant(tip.style, 'top', 'auto');
   setImportant(tip.style, 'bottom', '0px');
-  applyOverflow(tip, Math.max(180, Math.floor(window.innerHeight * 0.72)));
+  applyOverflow(tip, Math.max(180, Math.floor(viewport.height * 0.72)));
 }
 
 function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
@@ -238,6 +248,7 @@ function preferredPlacement(naturalHeight, availableAbove, availableBelow, previ
 
 function positionDesktop(tip, anchor, preservePlacement = false) {
   const previousPlacement = tip.dataset.placement || '';
+  const viewport = viewportBounds();
   clearPositionGeometry(tip);
   clearSizeGeometry(tip);
   setImportant(tip.style, 'position', 'fixed');
@@ -246,13 +257,13 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
 
   const anchorRect = anchor.getBoundingClientRect();
   let tipRect = tip.getBoundingClientRect();
-  const width = Math.min(tipRect.width, Math.max(0, window.innerWidth - VIEWPORT_MARGIN * 2));
+  const width = Math.min(tipRect.width, Math.max(0, viewport.width - VIEWPORT_MARGIN * 2));
   let left = anchorRect.left + anchorRect.width / 2 - width / 2;
-  left = Math.max(VIEWPORT_MARGIN, Math.min(left, window.innerWidth - VIEWPORT_MARGIN - width));
+  left = Math.max(viewport.left + VIEWPORT_MARGIN, Math.min(left, viewport.right - VIEWPORT_MARGIN - width));
 
-  const viewportMax = Math.max(MIN_SCROLL_HEIGHT, window.innerHeight - VIEWPORT_MARGIN * 2);
-  const availableAbove = Math.max(0, anchorRect.top - VIEWPORT_MARGIN - TIP_GAP);
-  const availableBelow = Math.max(0, window.innerHeight - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
+  const viewportMax = Math.max(MIN_SCROLL_HEIGHT, viewport.height - VIEWPORT_MARGIN * 2);
+  const availableAbove = Math.max(0, anchorRect.top - viewport.top - VIEWPORT_MARGIN - TIP_GAP);
+  const availableBelow = Math.max(0, viewport.bottom - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
   const naturalHeight = Math.max(tip.scrollHeight || 0, tipRect.height || 0);
   const placement = preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
   const available = placement === 'top' ? availableAbove : availableBelow;
@@ -265,7 +276,7 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   let top = placement === 'top'
     ? anchorRect.top - renderedHeight - TIP_GAP
     : anchorRect.bottom + TIP_GAP;
-  top = Math.max(VIEWPORT_MARGIN, Math.min(top, window.innerHeight - VIEWPORT_MARGIN - renderedHeight));
+  top = Math.max(viewport.top + VIEWPORT_MARGIN, Math.min(top, viewport.bottom - VIEWPORT_MARGIN - renderedHeight));
 
   tip.dataset.placement = placement;
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
@@ -488,6 +499,15 @@ function claimOwner() {
   document.documentElement.dataset.gbArticleTooltipsVersion = String(VERSION);
 }
 
+function handleViewportChange() {
+  if (!active) return;
+  if (active.mobile !== mobileMode()) {
+    closeTooltip('mode-change');
+    return;
+  }
+  position(active.tip, active.anchor, true);
+}
+
 export function initGlossaryTooltips(scope = document) {
   const root = scope?.querySelectorAll ? scope : document;
   root.querySelectorAll('.gterm').forEach(initializeAnchor);
@@ -525,7 +545,9 @@ export function installArticleTooltips() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && active && !active.mobile) closeTooltip('escape');
   }, true);
-  window.addEventListener('resize', () => active && position(active.tip, active.anchor), { passive: true });
+  window.addEventListener('resize', handleViewportChange, { passive: true });
+  window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
+  window.visualViewport?.addEventListener('scroll', handleViewportChange, { passive: true });
   window.addEventListener('scroll', () => {
     if (!active || active.mobile) return;
     if (!active.anchor.isConnected) closeTooltip('detached');
