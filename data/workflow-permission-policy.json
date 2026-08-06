@@ -144,6 +144,32 @@
         }
       }
     },
+    ".github/workflows/tmp-legacy-reference-ledger-search-p3-01.yml": {
+      "jobs": {
+        "reconcile-and-verify": {
+          "permissions": {
+            "contents": "write"
+          },
+          "purpose": "Reconcile the immutable legacy reference ledger after the bounded SEARCH-P3-01 asset revision, verify the exact candidate, and remove the temporary capability before publication",
+          "allowedEvents": [
+            "pull_request"
+          ],
+          "repositoryBoundary": "same-repository pull request only",
+          "branchBoundary": "exact pull-request branch agent/search-trigger-labels-p3-01-safe-20260806 carrying autofix, based on current main and descended from exact implementation head 2ec30d22029f2f7e32f13b3d210357554064757f",
+          "mutationTargets": [
+            "five data/legacy-reference-ledger JSON files; temporary workflow, reconciler and permission registration must be removed in the same verified commit"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "contains(github.event.pull_request.labels.*.name, 'autofix')",
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            "ref: ${{ github.event.pull_request.head.ref }}",
+            "github.event.pull_request.head.ref == 'agent/search-trigger-labels-p3-01-safe-20260806'",
+            "git checkout 76737eefe16a0feb2fdf729c805d17b5cdcdc376 -- data/workflow-permission-policy.json"
+          ]
+        }
+      }
+    },
     ".github/workflows/indexnow.yml": {
       "jobs": {
         "headline-autofix": {
