@@ -1,17 +1,10 @@
 name: Visual Parity Guard — pixel-diff
 
-# Pixel-level visual parity check for Astro/strangler dist vs legacy root.
-# Source-only DOM-marker checks are already in `validate:static-publication` chain
-# (see scripts/visual-parity-contract.js). THIS workflow is the heavier pixel-level
-# witness for routes whose current owner still declares legacy-diff parity.
-#
-# Screenshot generation is diagnostic and must always reach the policy-aware
-# owner-approved baseline step. Explicit native-contract routes are guarded by
-# route-specific source/dist audits plus the all-route browser matrix instead of
-# being forced to resemble retired legacy HTML.
-#
-# Failures do NOT block deploy.yml (which uses visual:parity:production, the
-# DOM-marker gate). They create a GitHub Issue via notify-on-failure.yml.
+# Pixel-level visual parity diagnostics for Astro/strangler dist vs retained root HTML.
+# Blocking render authority is derived from migration/page-ownership.json through
+# data/visual-parity-authority.json. Root-vs-dist screenshots remain useful
+# historical diagnostics, but they no longer define production ownership for
+# Astro or explicitly retained built-app routes.
 
 on:
   pull_request:
@@ -21,12 +14,17 @@ on:
       - "articles/**"
       - "nagornaya/**"
       - "baptisty-rossii/**"
+      - "konfessii/**"
       - "css/**"
       - "js/**"
       - "images/**"
       - "karty/**"
       - "data/**"
+      - "migration/page-ownership.json"
       - "scripts/visual-parity-*.js"
+      - "scripts/visual-parity-*.mjs"
+      - "scripts/lib/visual-parity-authority.cjs"
+      - "scripts/baptists-built-app-*.mjs"
       - "scripts/home-progressive-enhancement-browser-test.js"
       - ".github/workflows/visual-parity.yml"
   push:
@@ -36,12 +34,17 @@ on:
       - "articles/**"
       - "nagornaya/**"
       - "baptisty-rossii/**"
+      - "konfessii/**"
       - "css/**"
       - "js/**"
       - "images/**"
       - "karty/**"
       - "data/**"
+      - "migration/page-ownership.json"
       - "scripts/visual-parity-*.js"
+      - "scripts/visual-parity-*.mjs"
+      - "scripts/lib/visual-parity-authority.cjs"
+      - "scripts/baptists-built-app-*.mjs"
       - "scripts/home-progressive-enhancement-browser-test.js"
       - ".github/workflows/visual-parity.yml"
   schedule:
@@ -49,7 +52,7 @@ on:
   workflow_dispatch:
     inputs:
       routes:
-        description: 'Comma-separated routes (default: landing routes plus the Nagornaya sources baseline).'
+        description: 'Comma-separated diagnostic root-vs-dist routes.'
         required: false
         type: string
         default: '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/nagornaya/istochniki/,/hard-texts/,/konfessii/,/pastor-series/,/map/'
@@ -59,7 +62,7 @@ on:
         type: string
         default: '1.0'
       updateBaseline:
-        description: 'If true, overwrite current measurements after explicit owner review.'
+        description: 'If true, overwrite diagnostic measurements after explicit owner review.'
         required: false
         type: boolean
         default: false
@@ -115,29 +118,52 @@ jobs:
             --threshold "$THRESHOLD" \
             --warn-only
 
-      - name: Verify against owner-approved route policy
+      - name: Measure Baptists built app
+        run: |
+          node scripts/baptists-built-app-measure.mjs \
+            --out-json reports/baptists-built-app-measure.json \
+            --out-md reports/baptists-built-app-measure.md
+          node scripts/baptists-built-app-browser-measure.mjs \
+            --runs 3 \
+            --out reports/baptists-built-app-browser-measure.json
+
+      - name: Verify transferred render authority
+        id: authority
+        run: |
+          node scripts/visual-parity-authority-audit.mjs \
+            --out-json reports/visual-parity-authority.json \
+            --out-md reports/visual-parity-authority.md
+
+      - name: Review retained legacy pixel baseline diagnostically
         id: baseline
+        continue-on-error: true
         run: node scripts/visual-parity-baseline.js
 
-      - name: Optionally update measurements (manual owner-approved runs only)
+      - name: Optionally update diagnostic measurements (manual owner-approved runs only)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.updateBaseline == 'true'
         run: node scripts/visual-parity-baseline.js --update
         env:
           OWNER_APPROVED: 'true'
 
-      - name: Upload screenshot artifacts
+      - name: Upload screenshot and measurement artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: visual-parity-reports
-          path: reports/visual-parity/
+          path: |
+            reports/visual-parity/
+            reports/visual-parity-authority.json
+            reports/visual-parity-authority.md
+            reports/baptists-built-app-measure.json
+            reports/baptists-built-app-measure.md
+            reports/baptists-built-app-browser-measure.json
           retention-days: 14
 
       - name: Summarise outcome
         if: always()
         run: |
           {
-            echo "## Pixel-diff summary"
+            echo "## Pixel-diff and ownership summary"
             echo ""
             if [ -f reports/visual-parity/summary.json ]; then
               echo "| Route | Desktop diff | Mobile diff |"
@@ -153,6 +179,19 @@ jobs:
                 });
               "
             else
-              echo "(no summary.json produced — check logs above)"
+              echo "(no visual summary produced — check logs above)"
+            fi
+            echo ""
+            if [ -f reports/baptists-built-app-browser-measure.json ]; then
+              node -e "
+                const fs = require('fs');
+                const r = JSON.parse(fs.readFileSync('reports/baptists-built-app-browser-measure.json', 'utf8'));
+                console.log('### Baptists built app');
+                console.log('');
+                console.log('- Recommendation: **' + r.summary.recommendation + '**');
+                console.log('- Median FCP: **' + r.summary.medianFcpMs + ' ms**');
+                console.log('- Median load: **' + r.summary.medianLoadMs + ' ms**');
+                console.log('- Median longest task: **' + r.summary.medianLongestTaskMs + ' ms**');
+              "
             fi
           } >> "$GITHUB_STEP_SUMMARY"
