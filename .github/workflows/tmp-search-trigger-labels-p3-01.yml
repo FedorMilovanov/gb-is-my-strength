@@ -47,6 +47,31 @@ jobs:
       - name: Apply bounded search label writer
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/tmp_search_trigger_labels_writer.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''assets = read("scripts/cache-bust-assets.js")
+          assets = replace_once(
+              assets,
+              "  'js/search.js',\\n",
+              "  'js/search-trigger-labels.js',\\n  'js/search.js',\\n",
+              "cache-bust asset registration",
+          )
+          write("scripts/cache-bust-assets.js", assets)
+          '''
+          new = '''assets = read("scripts/cache-bust-assets.js")
+          marker = "  'js/search.js',\\n"
+          if assets.count(marker) != 2:
+              raise SystemExit(f"cache-bust search asset occurrences: expected 2, found {assets.count(marker)}")
+          assets = assets.replace(marker, "  'js/search-trigger-labels.js',\\n  'js/search.js',\\n", 1)
+          write("scripts/cache-bust-assets.js", assets)
+          '''
+          if text.count(old) != 1:
+              raise SystemExit(f'writer patch anchor count: {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
           python3 scripts/tmp_search_trigger_labels_writer.py
           test ! -e scripts/tmp_search_trigger_labels_writer.py
           test ! -e .github/workflows/tmp-search-trigger-labels-p3-01.yml
