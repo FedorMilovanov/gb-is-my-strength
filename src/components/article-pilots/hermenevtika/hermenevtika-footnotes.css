@@ -6,6 +6,23 @@ main[data-hm-reader] .fn-marker::after {
   display: none;
 }
 
+/* Inline terms and Scripture references already expose a strong keyboard state
+   through accent colour, background and underline. Suppress the generic boxed
+   focus ring on this reading route so pointer-opened references never acquire
+   the reader-visible rectangular frame reported by the owner. */
+main[data-hm-reader] .gterm:focus-visible,
+main[data-hm-reader] .bref:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+main[data-hm-reader] .bref:focus-visible {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 /* The article's desktop Scripture and source cards are paper popovers, not
    outlined form controls. Keep this route-local: the floating nodes are moved
    under <body>, but this stylesheet is emitted only for Hermenevtika. */
