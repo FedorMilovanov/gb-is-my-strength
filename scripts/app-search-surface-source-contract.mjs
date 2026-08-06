@@ -97,6 +97,7 @@ check(count(allRouteText, '<AppSearchSurface mode=') === 4, 'exactly four app se
 check(count(allRouteText, 'id="gbSearchBtn"') === 0, 'route owners must not duplicate trigger internals');
 
 for (const marker of [
+  'js/search.js',
   'scripts/app-search-surface-source-contract.mjs',
   'scripts/app-search-surface-browser-contract.mjs',
   'src/components/search/AppSearchHead.astro',
