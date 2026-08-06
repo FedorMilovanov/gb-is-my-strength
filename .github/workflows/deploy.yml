@@ -149,6 +149,9 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Verify Home Refutations computed box model
+        run: node scripts/visual-parity-home-refutations-box-model-browser-test.js
+
       - name: Gill pre-v16 submenu regression audit
         env:
           GILL_SUBMENU_REQUIRE_LIVE: '1'
