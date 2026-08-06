@@ -44,7 +44,7 @@ jobs:
           test "${transport[0]}" = ".github/workflows/tmp-search-trigger-labels-p3-01.yml"
           test "${transport[1]}" = "scripts/tmp_search_trigger_labels_writer.py"
 
-      - name: Apply bounded search label writer
+      - name: Patch and apply bounded writer
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -52,6 +52,13 @@ jobs:
 
           path = Path('scripts/tmp_search_trigger_labels_writer.py')
           text = path.read_text(encoding='utf-8')
+
+          def replace_once(old, new, label):
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1, found {count}')
+              text = text.replace(old, new, 1)
 
           old_assets = '''assets = read("scripts/cache-bust-assets.js")
           assets = replace_once(
@@ -69,19 +76,15 @@ jobs:
           assets = assets.replace(marker, "  'js/search-trigger-labels.js',\\n  'js/search.js',\\n", 1)
           write("scripts/cache-bust-assets.js", assets)
           '''
-          if text.count(old_assets) != 1:
-              raise SystemExit(f'writer asset patch anchor count: {text.count(old_assets)}')
-          text = text.replace(old_assets, new_assets, 1)
+          replace_once(old_assets, new_assets, 'asset patch')
 
-          helper_start_marker = "  const sync = (root = document) => {\n"
-          helper_end_marker = "  window.addEventListener('pageshow', run);\n"
-          if text.count(helper_start_marker) != 1 or text.count(helper_end_marker) != 1:
-              raise SystemExit(
-                  f'writer helper structural anchors: start={text.count(helper_start_marker)} end={text.count(helper_end_marker)}'
-              )
-          helper_start = text.index(helper_start_marker)
-          helper_end = text.index(helper_end_marker, helper_start) + len(helper_end_marker)
-          new_helper = '''  const setAttr = (node, name, value) => {
+          start_marker = "  const sync = (root = document) => {\n"
+          end_marker = "  window.addEventListener('pageshow', run);\n"
+          if text.count(start_marker) != 1 or text.count(end_marker) != 1:
+              raise SystemExit(f'helper anchors start={text.count(start_marker)} end={text.count(end_marker)}')
+          start = text.index(start_marker)
+          end = text.index(end_marker, start) + len(end_marker)
+          helper = '''  const setAttr = (node, name, value) => {
             if (node.getAttribute(name) !== value) node.setAttribute(name, value);
           };
 
@@ -93,22 +96,15 @@ jobs:
             const key = shortcut();
             const mod = modifier();
             const nodes = collect(root);
-
             nodes.forEach((control) => {
               setAttr(control, 'data-search-shortcut', '');
               setAttr(control, 'data-search-shortcut-label', LABEL);
               setAttr(control, 'aria-label', `${LABEL} (${key})`);
               setAttr(control, 'title', `${LABEL} ${key}`);
               setAttr(control, 'data-search-label-ready', key);
-
-              control.querySelectorAll('[data-search-shortcut-value], .kb').forEach((hint) => {
-                setText(hint, key);
-              });
-              control.querySelectorAll('[data-search-shortcut-modifier]').forEach((hint) => {
-                setText(hint, mod);
-              });
+              control.querySelectorAll('[data-search-shortcut-value], .kb').forEach((hint) => setText(hint, key));
+              control.querySelectorAll('[data-search-shortcut-modifier]').forEach((hint) => setText(hint, mod));
             });
-
             return nodes.length;
           };
 
@@ -152,13 +148,20 @@ jobs:
           else run();
           window.addEventListener('pageshow', scheduleSync);
           '''
-          text = text[:helper_start] + new_helper + text[helper_end:]
+          text = text[:start] + helper + text[end:]
+
+          for old, new in (
+              ("control.setAttribute('aria-label', `${LABEL} (${key})`)", "setAttr(control, 'aria-label', `${LABEL} (${key})`)"),
+              ("control.setAttribute('title', `${LABEL} ${key}`)", "setAttr(control, 'title', `${LABEL} ${key}`)"),
+              ("control.setAttribute('data-search-label-ready', key)", "setAttr(control, 'data-search-label-ready', key)"),
+          ):
+              if text.count(old) != 1:
+                  raise SystemExit(f'source contract marker drift: {old} count={text.count(old)}')
+              text = text.replace(old, new, 1)
 
           source_marker = '  "window.GBSearchTriggerLabels = api",\n])'
           source_replacement = '  "window.GBSearchTriggerLabels = api",\n  "const observer = new MutationObserver",\n  "attributeFilter: [\'aria-label\', \'title\', \'data-search-shortcut-label\']",\n  "queueMicrotask",\n])'
-          if text.count(source_marker) != 1:
-              raise SystemExit(f'source observer marker count: {text.count(source_marker)}')
-          text = text.replace(source_marker, source_replacement, 1)
+          replace_once(source_marker, source_replacement, 'observer source contract')
 
           browser_marker = "    const trigger = page.locator('#gbSearchBtn').first();\n"
           browser_replacement = '''    const lateControl = page.locator(selector).first();
@@ -174,10 +177,7 @@ jobs:
 
             const trigger = page.locator('#gbSearchBtn').first();
           '''
-          if text.count(browser_marker) != 1:
-              raise SystemExit(f'browser late-drift marker count: {text.count(browser_marker)}')
-          text = text.replace(browser_marker, browser_replacement, 1)
-
+          replace_once(browser_marker, browser_replacement, 'late-drift browser contract')
           path.write_text(text, encoding='utf-8')
           PY
           python3 scripts/tmp_search_trigger_labels_writer.py
@@ -198,7 +198,7 @@ jobs:
       - name: Install immutable dependencies
         run: npm ci
 
-      - name: Synchronize governed asset revisions
+      - name: Synchronize and validate governed source
         run: |
           set -euo pipefail
           node scripts/cache-bust.js --write
@@ -208,76 +208,42 @@ jobs:
           npm run workflows:lint
           npm run astro:check
 
-      - name: Prove cache-bust projections are bounded
-        env:
-          EXPECTED_BASE: 8a51db9a2df74fa615a3eaca698144302e47e332
+      - name: Prove bounded functional and generated paths
         run: |
           set -euo pipefail
           git add -N .
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib
-          import re
-          import subprocess
+          import hashlib, re, subprocess
 
           base = '8a51db9a2df74fa615a3eaca698144302e47e332'
           root = Path('.')
           functional = {
-              '.github/workflows/search-modal-contract.yml',
-              'js/search-trigger-labels.js',
-              'js/search.js',
-              'scripts/cache-bust-assets.js',
-              'scripts/search-trigger-label-source-contract.mjs',
+              '.github/workflows/search-modal-contract.yml', 'js/search-trigger-labels.js', 'js/search.js',
+              'scripts/cache-bust-assets.js', 'scripts/search-trigger-label-source-contract.mjs',
               'scripts/search-trigger-label-browser-contract.mjs',
               'src/components/reader-platform/ReaderPreferencesHead.astro',
-              'src/components/home/HomePageChrome.astro',
-              'src/components/search/AppSearchSurface.astro',
+              'src/components/home/HomePageChrome.astro', 'src/components/search/AppSearchSurface.astro',
               'src/lib/asset-version.js',
           }
           changed = subprocess.check_output(['git', 'diff', '--name-only', base], text=True).splitlines()
-          new_hash = hashlib.md5((root / 'js/search.js').read_bytes()).hexdigest()[:8]
-
-          def base_text(path):
-              return subprocess.check_output(['git', 'show', f'{base}:{path}'], text=True)
-
-          def astro_expected(source):
-              return re.sub(
-                  r'((?:\.\./)*|/?)js/search\.js\?v=[^\s"\'&}>]+',
-                  lambda match: f'{match.group(1)}js/search.js?v={new_hash}',
-                  source,
-              )
-
-          def html_expected(source):
-              return re.sub(
-                  r'((?:\.\./)*js/search\.js)(?:\?v=[^\s"&]+)?',
-                  lambda match: f'{match.group(1)}?v={new_hash}',
-                  source,
-              )
-
-          extras = []
-          for path in changed:
-              if path in functional:
-                  continue
-              if path.endswith('.astro'):
-                  expected = astro_expected(base_text(path))
-              elif path.endswith('.html'):
-                  expected = html_expected(base_text(path))
+          missing = sorted(functional - set(changed))
+          if missing: raise SystemExit(f'missing functional paths: {missing}')
+          if any(p.startswith('.github/workflows/tmp-') or p.startswith('scripts/tmp_') for p in changed):
+              raise SystemExit('temporary transport survived')
+          search_hash = hashlib.md5((root / 'js/search.js').read_bytes()).hexdigest()[:8]
+          def base_text(p): return subprocess.check_output(['git', 'show', f'{base}:{p}'], text=True)
+          for p in changed:
+              if p in functional: continue
+              if p.endswith('.astro'):
+                  expected = re.sub(r'((?:\.\./)*|/?)js/search\.js\?v=[^\s"\'&}>]+', lambda m: f'{m.group(1)}js/search.js?v={search_hash}', base_text(p))
+              elif p.endswith('.html'):
+                  expected = re.sub(r'((?:\.\./)*js/search\.js)(?:\?v=[^\s"&]+)?', lambda m: f'{m.group(1)}?v={search_hash}', base_text(p))
               else:
-                  raise SystemExit(f'unexpected non-projection path: {path}')
-              actual = (root / path).read_text(encoding='utf-8')
-              if actual != expected:
-                  raise SystemExit(f'projection has non-cache-bust drift: {path}')
-              extras.append(path)
-
-          required = functional - {'src/lib/asset-version.js'}
-          missing = sorted(required - set(changed))
-          if missing:
-              raise SystemExit(f'missing functional paths: {missing}')
-          if 'src/lib/asset-version.js' not in changed:
-              raise SystemExit('asset-version helper was not regenerated')
-          if any(path.startswith('.github/workflows/tmp-') or path.startswith('scripts/tmp_') for path in changed):
-              raise SystemExit('temporary transport survived final diff')
-          print(f'BOUNDED SEARCH LABEL PATHS: {len(changed)} total; {len(extras)} cache-bust projections; search={new_hash}')
+                  raise SystemExit(f'unexpected non-projection path: {p}')
+              if (root / p).read_text(encoding='utf-8') != expected:
+                  raise SystemExit(f'non-cache-bust drift: {p}')
+          print(f'BOUNDED SEARCH LABEL PATHS: {len(changed)} total; search={search_hash}')
           print('\n'.join(changed))
           PY
 
@@ -289,7 +255,7 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Validate core app and label Search contracts
+      - name: Validate core app and late-drift label contracts
         run: |
           set -euo pipefail
           node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/core
