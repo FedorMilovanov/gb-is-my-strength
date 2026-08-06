@@ -63,7 +63,7 @@ function sourceContracts() {
     ['SRL-S11', 'Kod Da Vinci main explicitly declares the shared rail contract', kdvMain.includes('class="article-main article-main--hrail"') && kdvMain.includes('data-reader-root')],
     ['SRL-S12', 'Kod Da Vinci route explicitly declares its rail canvas', kdvRoute.includes('class="page-wrap page-wrap--hrail"')],
     ['SRL-S13', 'Kod Da Vinci adapter expands only the structural canvas', canvas.includes('width: 100%') && canvas.includes('max-width: none') && canvas.includes('margin-left: 0') && canvas.includes('margin-right: 0')],
-    ['SRL-S14', 'Kod Da Vinci adapter owns no article offset or measure', !/--hrail-|--hm-article-|\.article-main|\b(?:left|right|transform)\s*:/.test(canvas)],
+    ['SRL-S14', 'Kod Da Vinci adapter owns no article offset or measure', !/--hrail-|--hm-article-|\.article-main|(?:^|\n)\s*(?:left|right|transform)\s*:/.test(canvas)],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
