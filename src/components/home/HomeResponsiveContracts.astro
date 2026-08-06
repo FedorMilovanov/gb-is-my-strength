@@ -193,8 +193,31 @@
     transition: transform .22s cubic-bezier(.22, 1, .36, 1), border-color .32s ease, box-shadow .32s ease;
   }
 
+  /* Soft warm-cyan sheen over the featured cards (replaces the harsh white
+     tilt-gloss authored in css/home.css). A gentle gold→cyan iridescence tied
+     to --home-tilt-gloss reads as a premium perlevescent sweep instead of a
+     bright white glare. */
   body.home-page .home-v20 #main-content .h-featured-series::before {
     opacity: var(--home-tilt-gloss, 0);
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      color-mix(in srgb, var(--h-gold) 14%, transparent) 46%,
+      color-mix(in srgb, var(--h-accent) 16%, transparent) 52%,
+      color-mix(in srgb, var(--h-gold) 11%, transparent) 60%,
+      transparent 72%
+    );
+  }
+
+  html.dark body.home-page .home-v20 #main-content .h-featured-series::before {
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      color-mix(in srgb, var(--h-gold) 16%, transparent) 46%,
+      color-mix(in srgb, var(--h-accent) 18%, transparent) 52%,
+      color-mix(in srgb, var(--h-gold) 12%, transparent) 60%,
+      transparent 72%
+    );
   }
 
   body.home-page .home-v20 #main-content .h-featured-series:is(:hover, :focus-visible) {

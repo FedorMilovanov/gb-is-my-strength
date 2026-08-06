@@ -235,6 +235,10 @@
     border-radius: 13px 15px 15px 13px;
   }
 
+  /* Soft warm-cyan sheen travelling across the active card — replaces the old
+     harsh white diagonal flash. A gentle gold-cyan iridescence (no
+     mix-blend-mode, no near-opaque white stop) reads as a premium perlevescent
+     sweep instead of a bright white glare. */
   body.home-page #main-content #razbor .h-refutation-card::before {
     content: "";
     position: absolute;
@@ -244,17 +248,16 @@
     opacity: 0;
     background: linear-gradient(
       108deg,
-      transparent 36%,
-      rgba(255, 255, 255, .26) 47%,
-      rgba(255, 255, 255, .68) 51%,
-      rgba(255, 255, 255, .19) 56%,
+      transparent 38%,
+      color-mix(in srgb, var(--h-gold) 14%, transparent) 47%,
+      color-mix(in srgb, var(--h-accent) 18%, transparent) 51%,
+      color-mix(in srgb, var(--h-gold) 11%, transparent) 56%,
       transparent 68%
     );
     transform: translate3d(-34%, 0, 0) rotate(2deg);
     transition:
       opacity 360ms ease,
       transform 1100ms cubic-bezier(.22, 1, .36, 1);
-    mix-blend-mode: screen;
   }
 
   body.home-page #main-content #razbor .h-refutation-card::after {
@@ -395,7 +398,7 @@
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card::before,
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card::before {
-    opacity: .78;
+    opacity: .55;
     transform: translate3d(38%, 0, 0) rotate(2deg);
   }
 
