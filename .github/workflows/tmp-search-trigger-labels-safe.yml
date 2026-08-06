@@ -74,6 +74,38 @@ jobs:
       - name: Materialize bounded Search fix
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          writer = Path('scripts/tmp_search_trigger_labels_safe_writer.py')
+          text = writer.read_text(encoding='utf-8')
+          blocks = {
+              'workflow source assertion': '''workflow_marker = "  'src/components/search/AppSearchSurface.astro',\\n"
+          source = replace_once(
+              source,
+              workflow_marker,
+              workflow_marker + "  'src/components/home/HomePageChrome.astro',\\n",
+              "workflow Home path source contract",
+          )
+          ''',
+              'workflow mutation': '''workflow = read(".github/workflows/search-modal-contract.yml")
+          needle = "      - 'src/components/search/AppSearchSurface.astro'\\n"
+          if workflow.count(needle) != 2:
+              raise SystemExit(f"Search workflow App surface path count: expected 2, found {workflow.count(needle)}")
+          workflow = workflow.replace(
+              needle,
+              needle + "      - 'src/components/home/HomePageChrome.astro'\\n",
+          )
+          write(".github/workflows/search-modal-contract.yml", workflow)
+          ''',
+          }
+          for label, block in blocks.items():
+              count = text.count(block)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 exact writer block, found {count}')
+              text = text.replace(block, '', 1)
+          writer.write_text(text, encoding='utf-8')
+          PY
           python3 scripts/tmp_search_trigger_labels_safe_writer.py --write
           rm .github/workflows/tmp-search-trigger-labels-safe.yml
           rm scripts/tmp_search_trigger_labels_safe_writer.py
@@ -110,7 +142,6 @@ jobs:
           import subprocess
           base = '76737eefe16a0feb2fdf729c805d17b5cdcdc376'
           functional = {
-              '.github/workflows/search-modal-contract.yml',
               'js/search.js',
               'scripts/app-search-surface-source-contract.mjs',
               'scripts/app-search-surface-browser-contract.mjs',
@@ -125,9 +156,8 @@ jobs:
               raise SystemExit(f'missing functional paths: {sorted(functional - changed)}')
           forbidden = [
               path for path in changed
-              if path.startswith('.github/workflows/tmp-')
+              if path.startswith('.github/workflows/')
               or path.startswith('scripts/tmp_')
-              or path == '.github/workflows/glossary-contract.yml'
               or path == 'data/workflow-permission-policy.json'
           ]
           if forbidden:
