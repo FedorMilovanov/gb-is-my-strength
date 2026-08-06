@@ -16,8 +16,11 @@
       "status": "active",
       "mode": "native-contract",
       "blocking": true,
-      "routes": ["/", "/izbrannoe/"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/MASTER_REPORT_2026-08-05_CONTRACTS.md",
+      "routes": [
+        "/",
+        "/izbrannoe/"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:MASTER_REPORT_2026-08-05_CONTRACTS.md",
       "ownerDecision": "The shared Favorite Store is the sole metadata and persistence owner; stored image URLs must remain same-origin.",
       "watchPaths": [
         "src/runtime/favorite-store.js",
@@ -53,7 +56,9 @@
       "status": "active",
       "mode": "native-contract",
       "blocking": true,
-      "routes": ["/"],
+      "routes": [
+        "/"
+      ],
       "referenceEvidence": "data/visual-parity-baseline.json#/routeModes/~1",
       "ownerDecision": "The current native Home is the approved render owner; legacy HTML is historical evidence and generic-template substitution is forbidden.",
       "watchPaths": [
@@ -81,7 +86,7 @@
         "/articles/dzhon-gill-chast-3-nasledie/",
         "/articles/dzhon-gill-chast-4-ekzeget/"
       ],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/gill-mobile-bar.json",
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:gill-mobile-bar.json",
       "ownerDecision": "Gill must retain its canonical GBS2 identity and mobile controls while allowing the approved native TOC implementation to differ from the historical sheet.",
       "watchPaths": [
         "src/components/gill/",
@@ -103,8 +108,10 @@
       "status": "active",
       "mode": "native-contract",
       "blocking": true,
-      "routes": ["*"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/search-command-palette-a11y.json",
+      "routes": [
+        "*"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:search-command-palette-a11y.json",
       "ownerDecision": "One command palette owns global search; accessibility and focus behavior must not be approximated by route-local copies.",
       "watchPaths": [
         "js/search.js",
@@ -124,8 +131,10 @@
       "status": "active",
       "mode": "legacy-preserve",
       "blocking": true,
-      "routes": ["/nagornaya/*"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/nagornaya-mobile-bar.json",
+      "routes": [
+        "/nagornaya/*"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:nagornaya-mobile-bar.json",
       "ownerDecision": "Nagornaya remains an independent visual and navigation world and must not be normalized into a generic shared series shell.",
       "watchPaths": [
         "src/components/nagornaya/",
@@ -146,8 +155,10 @@
       "status": "active",
       "mode": "native-contract",
       "blocking": true,
-      "routes": ["/karty/*"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/karty-minimap.json",
+      "routes": [
+        "/karty/*"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:karty-minimap.json",
       "ownerDecision": "Map correctness is defined by route data, the shared engine and browser behavior rather than approximate resemblance to a static mockup.",
       "watchPaths": [
         "karty/_engine/",
@@ -168,8 +179,10 @@
       "status": "advisory",
       "mode": "adaptive-approved",
       "blocking": false,
-      "routes": ["/"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/home-mobile-hero-hub.json",
+      "routes": [
+        "/"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:home-mobile-hero-hub.json",
       "ownerDecision": "The mobile hub should shorten navigation without introducing a detached or generic block.",
       "watchPaths": [
         "src/components/home/HomeHero.astro",
@@ -189,8 +202,10 @@
       "status": "planned",
       "mode": "performance-target",
       "blocking": false,
-      "routes": ["/baptisty-rossii/_app/"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/baptist-3d-app.json",
+      "routes": [
+        "/baptisty-rossii/_app/"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:baptist-3d-app.json",
       "ownerDecision": "Split the oversized app only in a bounded performance lane with before/after measurements; do not introduce a premature global size gate.",
       "watchPaths": [
         "baptisty-rossii/_app/"
@@ -207,8 +222,10 @@
       "status": "planned",
       "mode": "performance-target",
       "blocking": false,
-      "routes": ["/articles/*"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/tts-lazy-chunk.json",
+      "routes": [
+        "/articles/*"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:tts-lazy-chunk.json",
       "ownerDecision": "Keep the governed TTS runtime off catalogs and unrelated landings, but require measured route ownership before adding a blocking bundle assertion.",
       "watchPaths": [
         "js/floating-cluster-controller.js",
@@ -225,8 +242,10 @@
       "status": "active",
       "mode": "inventory",
       "blocking": false,
-      "routes": ["*"],
-      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/strangler-legacy-duplicates.json",
+      "routes": [
+        "*"
+      ],
+      "referenceEvidence": "github:FedorMilovanov/AuditRepo@36511da618c50fa8187299ff7ae1f2e7d7692ac4#projects:gb-is-my-strength:references:audit-session-2026-08-05:artifacts:prototypes:contracts:strangler-legacy-duplicates.json",
       "ownerDecision": "Count duplicates recursively and use the result to plan bounded removals; the count itself must not block unrelated Product work.",
       "watchPaths": [
         "src/pages/",

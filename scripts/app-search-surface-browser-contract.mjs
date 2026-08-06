@@ -61,7 +61,17 @@ function ignorableConsoleError(text) {
 
 async function runCase(browserType, browserName, route, viewport, port) {
   const browser = await browserType.launch({ headless: true });
+  const platformScenario = browserName === 'webkit'
+    ? { platform: 'MacIntel', uaPlatform: 'macOS', expectedShortcut: '⌘+K', shortcutPress: 'Meta+K' }
+    : { platform: 'Win32', uaPlatform: 'Windows', expectedShortcut: 'Ctrl+K', shortcutPress: 'Control+K' };
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+  await page.addInitScript(({ platform, uaPlatform }) => {
+    Object.defineProperty(navigator, 'platform', { configurable: true, get: () => platform });
+    Object.defineProperty(navigator, 'userAgentData', {
+      configurable: true,
+      get: () => ({ platform: uaPlatform }),
+    });
+  }, platformScenario);
   const pageErrors = [];
   const consoleErrors = [];
   page.on('pageerror', (error) => pageErrors.push(String(error)));
@@ -76,6 +86,12 @@ async function runCase(browserType, browserName, route, viewport, port) {
     await page.goto(`http://127.0.0.1:${port}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     const trigger = page.locator('#gbSearchBtn');
     await trigger.waitFor({ state: 'visible', timeout: 30_000 });
+    await page.waitForFunction(({ expectedShortcut }) => {
+      const node = document.getElementById('gbSearchBtn');
+      return node?.getAttribute('data-search-label-ready') === expectedShortcut
+        && node?.getAttribute('aria-label') === `Поиск по всему сайту (${expectedShortcut})`
+        && node?.getAttribute('title') === `Поиск по всему сайту ${expectedShortcut}`;
+    }, platformScenario, { timeout: 30_000 });
     await page.locator(route.local).first().waitFor({ state: 'visible', timeout: 30_000 });
 
     const geometry = await page.evaluate(({ avoid, family }) => {
@@ -97,6 +113,8 @@ async function runCase(browserType, browserName, route, viewport, port) {
         avoid: avoidBoxes,
         triggerCount: document.querySelectorAll('#gbSearchBtn').length,
         label: triggerNode?.getAttribute('aria-label') || '',
+        title: triggerNode?.getAttribute('title') || '',
+        readiness: triggerNode?.getAttribute('data-search-label-ready') || '',
         localMapSearchCount: document.querySelectorAll('.me-search').length,
         atlasSearchCount: document.querySelectorAll('#atlasSearchInput').length,
         iframeCount: document.querySelectorAll('#appframe').length,
@@ -106,7 +124,9 @@ async function runCase(browserType, browserName, route, viewport, port) {
 
     assert.equal(geometry.triggerCount, 1, `${id}: exactly one global trigger`);
     assert.ok(geometry.trigger && geometry.trigger.width >= 44 && geometry.trigger.height >= 44, `${id}: 44px trigger`);
-    assert.match(geometry.label, /Поиск по всему сайту/);
+    assert.equal(geometry.label, `Поиск по всему сайту (${platformScenario.expectedShortcut})`, `${id}: exact platform aria label`);
+    assert.equal(geometry.title, `Поиск по всему сайту ${platformScenario.expectedShortcut}`, `${id}: exact platform title`);
+    assert.equal(geometry.readiness, platformScenario.expectedShortcut, `${id}: label readiness`);
     assert.ok(geometry.overflow <= 1, `${id}: horizontal overflow ${geometry.overflow}`);
     for (const entry of geometry.avoid) {
       assert.equal(overlap(geometry.trigger, entry.box), 0, `${id}: trigger overlaps ${entry.selector}`);
@@ -149,7 +169,7 @@ async function runCase(browserType, browserName, route, viewport, port) {
     await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
     assert.equal(await trigger.evaluate((node) => document.activeElement === node), true, `${id}: trigger focus restored`);
 
-    await page.keyboard.press('Control+K');
+    await page.keyboard.press(platformScenario.shortcutPress);
     await page.waitForFunction(() => document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
     const shortcutFocusStartedAt = Date.now();
     await page.waitForFunction(
@@ -165,7 +185,7 @@ async function runCase(browserType, browserName, route, viewport, port) {
 
     assert.deepEqual(pageErrors, [], `${id}: page errors`);
     assert.deepEqual(consoleErrors, [], `${id}: console errors`);
-    return { id, browser: browserName, viewport: viewport.name, route: route.path, geometry, modalGeometry, pageErrors, consoleErrors, status: 'PASS' };
+    return { id, browser: browserName, viewport: viewport.name, route: route.path, expectedShortcut: platformScenario.expectedShortcut, geometry, modalGeometry, pageErrors, consoleErrors, status: 'PASS' };
   } catch (error) {
     fs.mkdirSync(reportDir, { recursive: true });
     await page.screenshot({ path: path.join(reportDir, `${id}.png`), fullPage: true }).catch(() => {});
