@@ -1,4 +1,4 @@
-const VERSION = 17;
+const VERSION = 18;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -240,9 +240,13 @@ function positionMobile(tip) {
 }
 
 function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
-  if (preservePlacement && (previousPlacement === 'top' || previousPlacement === 'bottom')) return previousPlacement;
-  if (naturalHeight <= availableAbove) return 'top';
-  if (naturalHeight <= availableBelow) return 'bottom';
+  const fitsAbove = naturalHeight <= availableAbove;
+  const fitsBelow = naturalHeight <= availableBelow;
+  if (preservePlacement && previousPlacement === 'top' && fitsAbove) return 'top';
+  if (preservePlacement && previousPlacement === 'bottom' && fitsBelow) return 'bottom';
+  if (fitsAbove && fitsBelow) return previousPlacement === 'bottom' ? 'bottom' : 'top';
+  if (fitsAbove) return 'top';
+  if (fitsBelow) return 'bottom';
   return availableAbove >= availableBelow ? 'top' : 'bottom';
 }
 
