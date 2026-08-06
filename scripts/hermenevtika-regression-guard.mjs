@@ -9,8 +9,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT_DIR = path.join(ROOT, 'reports', 'hermenevtika-regression-guards');
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
+const OWNER = 'article-inline-tooltip';
+const OWNER_VERSION = 16;
 const OWNED_SELECTORS = ['.gterm', '.fn-marker', '.bref[data-ref]'];
-const VIEWPORTS = [1199, 1200, 1280, 1366, 1440, 1920];
+const VIEWPORTS = [390, 768, 1199, 1200, 1280, 1366, 1440, 1920];
 const MEASURES = { narrow: 42, normal: 50, wide: 58 };
 
 assert.ok(BASE, 'AUDIT_BASE is required');
@@ -20,42 +22,53 @@ const checks = [];
 function record(id, description, pass, evidence = null, area = 'hermenevtika-regression') {
   checks.push({ id, area, description, pass: Boolean(pass), evidence });
 }
-function read(relativePath) {
-  return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
+function readOptional(relativePath) {
+  const filePath = path.join(ROOT, relativePath);
+  return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 function sourceContracts() {
-  const runtime = read('src/runtime/article-tooltips.js');
-  const runtimeCss = read('src/runtime/article-tooltips.css');
-  const interactions = read('src/runtime/article-interactions.js');
-  const route = read('src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro');
-  const routeCss = read('src/components/article-pilots/hermenevtika/hermenevtika-footnotes.css');
-  const rail = read('src/components/article-pilots/_shared/ReaderRail.astro');
-  const settings = read('src/components/article-pilots/_shared/ReaderSettings.astro');
+  const runtime = readOptional('src/runtime/article-tooltips.js');
+  const runtimeCss = readOptional('src/runtime/article-tooltips.css');
+  const interactions = readOptional('src/runtime/article-interactions.js');
+  const route = readOptional('src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro');
+  const routeCss = readOptional('src/components/article-pilots/hermenevtika/hermenevtika-footnotes.css');
+  const rail = readOptional('src/components/article-pilots/_shared/ReaderRail.astro');
+  const settings = readOptional('src/components/article-pilots/_shared/ReaderSettings.astro');
 
-  record('HGR-S01', 'canonical tooltip owner epoch is at least 15', /const VERSION\s*=\s*(?:1[5-9]|[2-9]\d)\s*;/.test(runtime));
-  record('HGR-S02', 'runtime declares the three legacy selectors it retires', runtime.includes("new Set(['.gterm', '.fn-marker', '.bref[data-ref]'])"));
-  record('HGR-S03', 'Hermenevtika route has no direct tooltip installer', !route.includes('installArticleTooltips'));
-  record('HGR-S04', 'glossary expansion uses the canonical outer class', runtime.includes("tip.classList.toggle('gtip--expanded', expanded)"));
-  record('HGR-S05', 'runtime clears stale overflow-y geometry', runtime.includes("'overflow-y'") && runtime.includes('clearAuthoritativeGeometry'));
-  record('HGR-S06', 'overflow is conditional on measured content', runtime.includes('tip.scrollHeight > height + 1'));
-  record('HGR-S07', 'canonical bootstrap imports the tooltip owner stylesheet', interactions.includes("import './article-tooltips.css';"));
-  record('HGR-S08', 'owner stylesheet exposes an unconstrained natural popup state', /\.gb-floating-tip\s*\{[\s\S]*?max-height:\s*none;[\s\S]*?overflow:\s*visible;/.test(runtimeCss));
-  record('HGR-S09', 'owner stylesheet removes the rectangular paper-popover border', /\.btip\.gb-floating-tip,[\s\S]*?\.tooltip\.gb-floating-tip\s*\{[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*18px;/.test(runtimeCss));
-  record('HGR-S10', 'owner stylesheet retires boxed open and focus states', /\[aria-expanded="true"\][\s\S]*?:focus-visible[\s\S]*?outline:\s*none;[\s\S]*?box-shadow:\s*none;/.test(runtimeCss));
-  record('HGR-S11', 'owner stylesheet preserves text-level keyboard indicators', /\.gterm:focus-visible[\s\S]*?border-bottom-style:\s*dotted;[\s\S]*?\.bref:focus-visible[\s\S]*?text-decoration-style:\s*dotted;/.test(runtimeCss));
-  record('HGR-S12', 'forced-colors keeps an explicit underline fallback', /@media\s*\(forced-colors:\s*active\)[\s\S]*?text-decoration-line:\s*underline;/.test(runtimeCss));
-  record('HGR-S13', 'route stylesheet owns no popup skin or focus override', !/gb-floating-tip|\.gterm:focus-visible|\.bref:focus-visible/.test(routeCss));
-  record('HGR-S14', 'rail no longer uses the one-sided 334px margin floor', !rail.includes('margin-left: max((100vw - min(820px, 92vw)) / 2, 334px)'));
-  record('HGR-S15', 'desktop rail breakpoint has no 1200px overlap', rail.includes('@media(max-width:1199px)') && rail.includes('@media(min-width:1200px)'));
-  record('HGR-S16', 'rail declares an explicit remaining reading lane', rail.includes('--hrail-lane-width') && rail.includes('--hrail-lane-left'));
-  record('HGR-S17', 'reader settings own one measure for every direct article block', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)'));
-  record('HGR-S18', 'desktop measure modes are 42rem, 50rem and 58rem', /narrow:\s*'42rem'[\s\S]*normal:\s*'50rem'[\s\S]*wide:\s*'58rem'/.test(settings));
+  record('HGR-S01', 'canonical tooltip runtime source exists', runtime.length > 0);
+  record('HGR-S02', 'canonical tooltip owner stylesheet exists', runtimeCss.length > 0);
+  record('HGR-S03', 'canonical tooltip epoch is exactly 16', /const VERSION\s*=\s*16\s*;/.test(runtime));
+  record('HGR-S04', 'canonical owner name is exact', runtime.includes("const OWNER = 'article-inline-tooltip';"));
+  record('HGR-S05', 'runtime declares exactly the three legacy selectors it retires', runtime.includes("new Set(['.gterm', '.fn-marker', '.bref[data-ref]'])"));
+  record('HGR-S06', 'legacy controller retirement mutates the original array in place', /controllers\.splice\(index,\s*1\)/.test(runtime));
+  record('HGR-S07', 'runtime does not replace the public legacy-controller array', !/_tooltipControllers\s*=/.test(runtime));
+  record('HGR-S08', 'legacy hover and sticky timers are cleared before retirement', runtime.includes('clearLegacyControllerTimers') && runtime.includes('window.clearTimeout'));
+  record('HGR-S09', 'late legacy registration is retired after window load', /addEventListener\('load',\s*retireLegacyTooltipOwners/.test(runtime));
+  record('HGR-S10', 'runtime publishes exact owner identity', runtime.includes('dataset.gbArticleTooltipsOwner = OWNER'));
+  record('HGR-S11', 'runtime publishes exact owner epoch', runtime.includes('dataset.gbArticleTooltipsVersion = String(VERSION)'));
+  record('HGR-S12', 'Hermenevtika route has no direct tooltip installer', !route.includes('installArticleTooltips'));
+  record('HGR-S13', 'glossary expansion uses the canonical outer class', runtime.includes("tip.classList.toggle('gtip--expanded', expanded)"));
+  record('HGR-S14', 'runtime clears stale overflow-y geometry', runtime.includes("'overflow-y'") && runtime.includes('clearAuthoritativeGeometry'));
+  record('HGR-S15', 'overflow is conditional on measured content', runtime.includes('tip.scrollHeight > height + 1'));
+  record('HGR-S16', 'canonical bootstrap imports the owner stylesheet', interactions.includes("import './article-tooltips.css';"));
+  record('HGR-S17', 'owner stylesheet is scoped to the exact owner marker', runtimeCss.includes('data-gb-article-tooltips-owner="article-inline-tooltip"'));
+  record('HGR-S18', 'owner stylesheet exposes an unconstrained natural popup state', /\.gb-floating-tip\s*\{[\s\S]*?max-height:\s*none;[\s\S]*?overflow:\s*visible;/.test(runtimeCss));
+  record('HGR-S19', 'owner stylesheet removes rectangular paper-popover borders', /\.btip\.gb-floating-tip,[\s\S]*?\.tooltip\.gb-floating-tip\s*\{[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*18px;/.test(runtimeCss));
+  record('HGR-S20', 'owner stylesheet retires boxed open and focus states', /\[aria-expanded="true"\][\s\S]*?:focus-visible[\s\S]*?outline:\s*none;[\s\S]*?box-shadow:\s*none;/.test(runtimeCss));
+  record('HGR-S21', 'owner stylesheet preserves dotted text-level focus indicators', /\.gterm:focus-visible[\s\S]*?border-bottom-style:\s*dotted;[\s\S]*?\.bref:focus-visible[\s\S]*?text-decoration-style:\s*dotted;/.test(runtimeCss));
+  record('HGR-S22', 'forced-colors keeps an explicit underline fallback', /@media\s*\(forced-colors:\s*active\)[\s\S]*?text-decoration-line:\s*underline;/.test(runtimeCss));
+  record('HGR-S23', 'route stylesheet owns no popup skin or focus override', !/gb-floating-tip|\.gterm:focus-visible|\.bref:focus-visible/.test(routeCss));
+  record('HGR-S24', 'rail no longer uses the one-sided 334px margin floor', !rail.includes('margin-left: max((100vw - min(820px, 92vw)) / 2, 334px)'));
+  record('HGR-S25', 'desktop rail breakpoint has no 1200px overlap', rail.includes('@media(max-width:1199px)') && rail.includes('@media(min-width:1200px)'));
+  record('HGR-S26', 'rail declares an explicit remaining reading lane', rail.includes('--hrail-lane-width') && rail.includes('--hrail-lane-left'));
+  record('HGR-S27', 'rail balances free lane space without positional shifting', rail.includes('--hrail-lane-balance') && !/position:\s*relative;[\s\S]*?left:calc\(/.test(rail));
+  record('HGR-S28', 'reader settings own one measure for every direct article block', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)'));
+  record('HGR-S29', 'desktop measure modes are 42rem, 50rem and 58rem', /narrow:\s*'42rem'[\s\S]*normal:\s*'50rem'[\s\S]*wide:\s*'58rem'/.test(settings));
 }
 
 async function twoFrames(page) {
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 }
-
 async function setMeasure(page, measure) {
   await page.evaluate((value) => {
     const api = window.GBReaderPreferences;
@@ -63,12 +76,8 @@ async function setMeasure(page, measure) {
     api.set({ measure: value }, { source: 'hermenevtika-regression-guard' });
   }, measure);
   await twoFrames(page);
-  await page.waitForFunction((value) => {
-    const api = window.GBReaderPreferences;
-    return api && typeof api.get === 'function' && api.get()?.measure === value;
-  }, measure, { timeout: 3000 });
+  await page.waitForFunction((value) => window.GBReaderPreferences?.get?.()?.measure === value, measure, { timeout: 3000 });
 }
-
 async function layoutState(page) {
   return page.evaluate(() => {
     const visible = (element) => {
@@ -84,11 +93,6 @@ async function layoutState(page) {
     };
     const main = document.querySelector('.article-main.article-main--hrail');
     const mainStyle = main ? getComputedStyle(main) : null;
-    const railRect = rect('.hrail');
-    const mainRect = rect('.article-main.article-main--hrail');
-    const summaryRect = rect('.summary-card');
-    const proseRect = rect('.summary-card + p');
-    const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
     const resolveCustomLength = (property) => {
       if (!(main instanceof HTMLElement)) return Number.NaN;
       const probe = document.createElement('span');
@@ -101,42 +105,38 @@ async function layoutState(page) {
     };
     const laneLeft = resolveCustomLength('--hrail-lane-left');
     const rightGutter = resolveCustomLength('--hrail-right-gutter');
-    const expectedLaneCenter = Number.isFinite(laneLeft) && Number.isFinite(rightGutter)
-      ? (window.innerWidth + laneLeft - rightGutter) / 2
-      : null;
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
-      rootFont,
+      rootFont: parseFloat(getComputedStyle(document.documentElement).fontSize) || 16,
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       railVisible: visible(document.querySelector('.hrail')),
-      rail: railRect,
-      main: mainRect,
-      summary: summaryRect,
-      prose: proseRect,
-      expectedLaneCenter,
+      rail: rect('.hrail'),
+      main: rect('.article-main.article-main--hrail'),
+      summary: rect('.summary-card'),
+      prose: rect('.summary-card + p'),
+      expectedLaneCenter: Number.isFinite(laneLeft) && Number.isFinite(rightGutter) ? (window.innerWidth + laneLeft - rightGutter) / 2 : null,
       measureToken: mainStyle?.getPropertyValue('--hm-article-measure').trim() || '',
       shellToken: mainStyle?.getPropertyValue('--hm-article-shell').trim() || '',
     };
   });
 }
-
 function recordLayout(width, state) {
   const desktop = width >= 1200;
-  const prefix = `HGR-L${String(width)}`;
+  const prefix = `HGR-L${width}`;
   const overflow = state.scrollWidth - state.clientWidth;
   record(`${prefix}-01`, `${width}px rail visibility matches breakpoint`, state.railVisible === desktop, state, 'layout');
   record(`${prefix}-02`, `${width}px has no horizontal document overflow`, overflow <= 1, { overflow, state }, 'layout');
   record(`${prefix}-03`, `${width}px article main has real in-viewport geometry`, Boolean(state.main && state.main.width > 300 && state.main.left >= -1 && state.main.right <= width + 1), state, 'layout');
-  record(`${prefix}-04`, `${width}px summary and first prose block share a horizontal axis`, Boolean(state.summary && state.prose && Math.abs(state.summary.centerX - state.prose.centerX) <= 2), state, 'layout');
-  record(`${prefix}-05`, `${width}px summary and first prose block share the same measure`, Boolean(state.summary && state.prose && Math.abs(state.summary.width - state.prose.width) <= 2), state, 'layout');
+  record(`${prefix}-04`, `${width}px summary and prose share a horizontal axis`, Boolean(state.summary && state.prose && Math.abs(state.summary.centerX - state.prose.centerX) <= 2), state, 'layout');
+  record(`${prefix}-05`, `${width}px summary and prose share the same measure`, Boolean(state.summary && state.prose && Math.abs(state.summary.width - state.prose.width) <= 2), state, 'layout');
   if (desktop) {
     record(`${prefix}-06`, `${width}px article does not overlap the fixed rail`, Boolean(state.rail && state.main && state.main.left >= state.rail.right + 20), state, 'layout');
     record(`${prefix}-07`, `${width}px article is centred in the declared remaining lane`, Boolean(state.main && state.expectedLaneCenter != null && Math.abs(state.main.centerX - state.expectedLaneCenter) <= 3), state, 'layout');
     const minimum = width >= 1280 ? 760 : 700;
     record(`${prefix}-08`, `${width}px normal desktop prose is not pathologically narrow`, Boolean(state.prose && state.prose.width >= minimum), { minimum, state }, 'layout');
   } else {
-    record(`${prefix}-06`, `${width}px mobile article remains centred in the viewport`, Boolean(state.main && Math.abs(state.main.centerX - width / 2) <= 3), state, 'layout');
+    record(`${prefix}-06`, `${width}px article remains centred in the viewport`, Boolean(state.main && Math.abs(state.main.centerX - width / 2) <= 3), state, 'layout');
   }
 }
 
@@ -146,14 +146,13 @@ async function popupState(page, selector) {
     if (!(tip instanceof HTMLElement)) return null;
     const style = getComputedStyle(tip);
     const rect = tip.getBoundingClientRect();
-    const visibleDescendants = Array.from(tip.querySelectorAll('*')).filter((element) => {
+    const descendants = Array.from(tip.querySelectorAll('*')).filter((element) => {
       const childStyle = getComputedStyle(element);
       const childRect = element.getBoundingClientRect();
       return childStyle.display !== 'none' && childStyle.visibility !== 'hidden' && childRect.width > 0 && childRect.height > 0;
     });
-    const lastBottom = visibleDescendants.reduce((max, element) => Math.max(max, element.getBoundingClientRect().bottom), rect.top);
+    const lastBottom = descendants.reduce((max, element) => Math.max(max, element.getBoundingClientRect().bottom), rect.top);
     return {
-      className: tip.className,
       borderTopWidth: parseFloat(style.borderTopWidth) || 0,
       borderRadius: parseFloat(style.borderTopLeftRadius) || 0,
       overflowY: style.overflowY,
@@ -171,13 +170,11 @@ async function popupState(page, selector) {
     };
   }, selector);
 }
-
 function noFakeScrollbar(state) {
   if (!state) return false;
   const scrollable = state.overflowY === 'auto' || state.overflowY === 'scroll';
   return !scrollable || state.scrollHeight > state.clientHeight + 1;
 }
-
 async function keyboardFocusState(page, selector) {
   const prepared = await page.evaluate((targetSelector) => {
     const target = document.querySelector(targetSelector);
@@ -193,7 +190,6 @@ async function keyboardFocusState(page, selector) {
     return document.activeElement === sentinel;
   }, selector);
   if (!prepared) return null;
-
   await page.keyboard.press('Tab');
   await twoFrames(page);
   return page.evaluate((targetSelector) => {
@@ -201,14 +197,13 @@ async function keyboardFocusState(page, selector) {
     const sentinel = document.querySelector('[data-hgr-focus-sentinel="1"]');
     if (!(target instanceof HTMLElement)) return null;
     const style = getComputedStyle(target);
-    const normalizedBackground = style.backgroundColor.replace(/\s+/g, '');
+    const background = style.backgroundColor.replace(/\s+/g, '');
     const value = {
       focused: document.activeElement === target,
       focusVisible: target.matches(':focus-visible'),
       outlineWidth: parseFloat(style.outlineWidth) || 0,
       boxShadow: style.boxShadow,
-      backgroundColor: style.backgroundColor,
-      backgroundVisible: normalizedBackground !== 'rgba(0,0,0,0)' && normalizedBackground !== 'transparent',
+      backgroundVisible: background !== 'rgba(0,0,0,0)' && background !== 'transparent',
       borderBottomWidth: parseFloat(style.borderBottomWidth) || 0,
       borderBottomStyle: style.borderBottomStyle,
       textDecorationLine: style.textDecorationLine,
@@ -222,17 +217,29 @@ async function keyboardFocusState(page, selector) {
 
 async function popupContracts(page) {
   await page.setViewportSize({ width: 1366, height: 900 });
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.waitForFunction(() => window.GBArticleTooltips?.version >= 15 && document.documentElement.dataset.gbArticleInteractionsReady === '1', null, { timeout: 15000 });
+  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
+  await page.waitForFunction((expected) => {
+    const root = document.documentElement.dataset;
+    return window.GBArticleTooltips?.version === expected.version &&
+      window.GBArticleTooltips?.owner === expected.owner &&
+      root.gbArticleTooltipsOwner === expected.owner &&
+      root.gbArticleTooltipsVersion === String(expected.version);
+  }, { owner: OWNER, version: OWNER_VERSION }, { timeout: 15000 });
+  await twoFrames(page);
+
   const ownerState = await page.evaluate((ownedSelectors) => ({
-    version: window.GBArticleTooltips?.version || 0,
-    bootstrapReady: document.documentElement.dataset.gbArticleInteractionsReady || null,
+    globalVersion: window.GBArticleTooltips?.version || 0,
+    globalOwner: window.GBArticleTooltips?.owner || null,
+    markerOwner: document.documentElement.dataset.gbArticleTooltipsOwner || null,
+    markerVersion: document.documentElement.dataset.gbArticleTooltipsVersion || null,
+    interactionsReady: document.documentElement.dataset.gbArticleInteractionsReady || null,
     legacyOwners: Array.isArray(window.SiteUtils?._tooltipControllers)
       ? window.SiteUtils._tooltipControllers.map((controller) => controller?.anchorSel).filter((selector) => ownedSelectors.includes(selector))
       : [],
   }), OWNED_SELECTORS);
-  record('HGR-T01', 'canonical article tooltip owner v15 is installed through its bootstrap', ownerState.version >= 15 && ownerState.bootstrapReady === '1', ownerState, 'tooltip');
-  record('HGR-T02', 'no legacy controller remains for canonical tooltip selectors', ownerState.legacyOwners.length === 0, ownerState, 'tooltip');
+  record('HGR-T01', 'exact tooltip owner v16 is installed and published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
+  record('HGR-T02', 'shared interaction bootstrap completed after owner installation', ownerState.interactionsReady === '1', ownerState, 'tooltip');
+  record('HGR-T03', 'no legacy controller remains after the load boundary', ownerState.legacyOwners.length === 0, ownerState, 'tooltip');
 
   const glossaryFocus = await keyboardFocusState(page, '.gterm');
   record('HGR-F01', 'glossary receives real keyboard-visible focus', Boolean(glossaryFocus?.focused && glossaryFocus?.focusVisible), glossaryFocus, 'focus');
@@ -241,7 +248,7 @@ async function popupContracts(page) {
   await page.keyboard.press('Escape');
 
   const scriptureFocus = await keyboardFocusState(page, '.bref[data-ref]');
-  record('HGR-F04', 'Scripture reference receives real keyboard-visible focus', Boolean(scriptureFocus?.focused && scriptureFocus?.focusVisible), scriptureFocus, 'focus');
+  record('HGR-F04', 'Scripture receives real keyboard-visible focus', Boolean(scriptureFocus?.focused && scriptureFocus?.focusVisible), scriptureFocus, 'focus');
   record('HGR-F05', 'Scripture focus has no rectangular outline or box-shadow', Boolean(scriptureFocus && scriptureFocus.outlineWidth === 0 && scriptureFocus.boxShadow === 'none'), scriptureFocus, 'focus');
   record('HGR-F06', 'Scripture focus remains visible through tint and dotted underline', Boolean(scriptureFocus && scriptureFocus.backgroundVisible && scriptureFocus.textDecorationLine.includes('underline') && scriptureFocus.textDecorationStyle === 'dotted' && scriptureFocus.textDecorationThickness >= 1.5), scriptureFocus, 'focus');
   await page.keyboard.press('Escape');
@@ -252,38 +259,33 @@ async function popupContracts(page) {
   await page.waitForSelector('.btip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
   await twoFrames(page);
   const scriptureState = await popupState(page, '.btip.gb-floating-tip.is-open');
-  record('HGR-T03', 'Scripture popup uses the borderless paper treatment', Boolean(scriptureState && scriptureState.borderTopWidth === 0 && scriptureState.borderRadius >= 16), scriptureState, 'tooltip');
-  record('HGR-T04', 'Scripture popup remains inside the viewport', Boolean(scriptureState?.inViewport), scriptureState, 'tooltip');
-  record('HGR-T05', 'Scripture popup has no fake scrollbar', noFakeScrollbar(scriptureState), scriptureState, 'tooltip');
-  record('HGR-T06', 'Scripture popup has no large blank tail', Boolean(scriptureState && scriptureState.blankTail <= 48), scriptureState, 'tooltip');
+  record('HGR-T04', 'Scripture popup uses the borderless paper treatment', Boolean(scriptureState && scriptureState.borderTopWidth === 0 && scriptureState.borderRadius >= 16), scriptureState, 'tooltip');
+  record('HGR-T05', 'Scripture popup remains inside the viewport', Boolean(scriptureState?.inViewport), scriptureState, 'tooltip');
+  record('HGR-T06', 'Scripture popup has no fake scrollbar', noFakeScrollbar(scriptureState), scriptureState, 'tooltip');
+  record('HGR-T07', 'Scripture popup has no large blank tail', Boolean(scriptureState && scriptureState.blankTail <= 48), scriptureState, 'tooltip');
   await page.keyboard.press('Escape');
 
   const footnoteReady = await page.evaluate(() => {
     const marker = Array.from(document.querySelectorAll('.fn-marker')).find((candidate) => {
-      const directText = Array.from(candidate.childNodes)
-        .filter((node) => node.nodeType === Node.TEXT_NODE)
-        .map((node) => node.textContent || '')
-        .join('')
-        .replace(/\s+/g, '')
-        .trim();
-      return directText === '40';
+      const text = Array.from(candidate.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent || '').join('').replace(/\s+/g, '').trim();
+      return text === '40';
     });
     if (!(marker instanceof HTMLElement)) return false;
     marker.dataset.hgrFootnote = '40';
     return true;
   });
   const footnote = page.locator('[data-hgr-footnote="40"]');
-  record('HGR-T07', 'representative footnote 40 exists', footnoteReady && await footnote.count() === 1, { footnoteReady }, 'tooltip');
+  record('HGR-T08', 'representative footnote 40 exists', footnoteReady && await footnote.count() === 1, { footnoteReady }, 'tooltip');
   if (footnoteReady) {
     await footnote.scrollIntoViewIfNeeded();
     await footnote.click();
     await page.waitForSelector('.tooltip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
     await twoFrames(page);
-    const footnoteState = await popupState(page, '.tooltip.gb-floating-tip.is-open');
-    record('HGR-T08', 'footnote popup uses the borderless paper treatment', Boolean(footnoteState && footnoteState.borderTopWidth === 0 && footnoteState.borderRadius >= 16), footnoteState, 'tooltip');
-    record('HGR-T09', 'footnote popup remains inside the viewport', Boolean(footnoteState?.inViewport), footnoteState, 'tooltip');
-    record('HGR-T10', 'footnote popup has no fake scrollbar', noFakeScrollbar(footnoteState), footnoteState, 'tooltip');
-    record('HGR-T11', 'footnote popup has no large blank tail', Boolean(footnoteState && footnoteState.blankTail <= 48), footnoteState, 'tooltip');
+    const state = await popupState(page, '.tooltip.gb-floating-tip.is-open');
+    record('HGR-T09', 'footnote popup uses the borderless paper treatment', Boolean(state && state.borderTopWidth === 0 && state.borderRadius >= 16), state, 'tooltip');
+    record('HGR-T10', 'footnote popup remains inside the viewport', Boolean(state?.inViewport), state, 'tooltip');
+    record('HGR-T11', 'footnote popup has no fake scrollbar', noFakeScrollbar(state), state, 'tooltip');
+    record('HGR-T12', 'footnote popup has no large blank tail', Boolean(state && state.blankTail <= 48), state, 'tooltip');
     await page.keyboard.press('Escape');
   }
 
@@ -295,7 +297,7 @@ async function popupContracts(page) {
     return true;
   });
   const glossary = page.locator('[data-hgr-glossary="expandable"]');
-  record('HGR-T12', 'an expandable hydrated glossary term exists', glossaryReady && await glossary.count() === 1, { glossaryReady }, 'tooltip');
+  record('HGR-T13', 'an expandable hydrated glossary term exists', glossaryReady && await glossary.count() === 1, { glossaryReady }, 'tooltip');
   if (!glossaryReady) return;
 
   await glossary.scrollIntoViewIfNeeded();
@@ -311,14 +313,13 @@ async function popupContracts(page) {
       expandedClass: tip?.classList.contains('gtip--expanded') || false,
       staleInnerClass: tip?.querySelector('.gtip-luxury')?.classList.contains('is-expanded') || false,
       ariaExpanded: button?.getAttribute('aria-expanded') || null,
-      label: button?.getAttribute('aria-label') || null,
       detailHidden: detail?.getAttribute('aria-hidden') || null,
     };
   });
-  record('HGR-T13', 'compact glossary popup remains naturally sized', Boolean(compactState && compactState.height > 50 && compactState.height < 360), compactState, 'tooltip');
-  record('HGR-T14', 'compact glossary popup has no fake scrollbar', noFakeScrollbar(compactState), compactState, 'tooltip');
-  record('HGR-T15', 'compact glossary popup has no large blank tail', Boolean(compactState && compactState.blankTail <= 48), compactState, 'tooltip');
-  record('HGR-T16', 'compact glossary semantic state is collapsed and canonical', !compactSemantic.expandedClass && !compactSemantic.staleInnerClass && compactSemantic.ariaExpanded === 'false' && compactSemantic.detailHidden === 'true', compactSemantic, 'tooltip');
+  record('HGR-T14', 'compact glossary remains naturally sized', Boolean(compactState && compactState.height > 50 && compactState.height < 360), compactState, 'tooltip');
+  record('HGR-T15', 'compact glossary has no fake scrollbar', noFakeScrollbar(compactState), compactState, 'tooltip');
+  record('HGR-T16', 'compact glossary has no large blank tail', Boolean(compactState && compactState.blankTail <= 48), compactState, 'tooltip');
+  record('HGR-T17', 'compact glossary semantic state is collapsed and canonical', !compactSemantic.expandedClass && !compactSemantic.staleInnerClass && compactSemantic.ariaExpanded === 'false' && compactSemantic.detailHidden === 'true', compactSemantic, 'tooltip');
 
   await page.locator('.gtip.gb-floating-tip.is-open [data-gtip-expand]').click();
   await twoFrames(page);
@@ -340,13 +341,13 @@ async function popupContracts(page) {
       papyrusVisible: Boolean(papyrusRect && papyrusStyle && papyrusStyle.display !== 'none' && papyrusStyle.visibility !== 'hidden' && papyrusRect.height > 10),
     };
   });
-  record('HGR-T17', 'expanded glossary uses .gtip--expanded and no stale inner class', expandedSemantic.expandedClass && !expandedSemantic.staleInnerClass, expandedSemantic, 'tooltip');
-  record('HGR-T18', 'expanded glossary ARIA state and button label are truthful', expandedSemantic.ariaExpanded === 'true' && expandedSemantic.detailHidden === 'false' && expandedSemantic.label === 'Кратко' && expandedSemantic.buttonText.includes('Кратко'), expandedSemantic, 'tooltip');
-  record('HGR-T19', 'expanded papyrus detail is visibly rendered', expandedSemantic.papyrusVisible, expandedSemantic, 'tooltip');
-  record('HGR-T20', 'expanded glossary grows beyond its compact height', Boolean(expandedState && compactState && expandedState.height >= compactState.height + 40), { compactState, expandedState }, 'tooltip');
-  record('HGR-T21', 'expanded glossary remains inside the viewport', Boolean(expandedState?.inViewport), expandedState, 'tooltip');
-  record('HGR-T22', 'expanded glossary scrolls only on real overflow', noFakeScrollbar(expandedState), expandedState, 'tooltip');
-  record('HGR-T23', 'expanded glossary has no blank white panel', Boolean(expandedState && expandedState.blankTail <= 64), expandedState, 'tooltip');
+  record('HGR-T18', 'expanded glossary uses .gtip--expanded and no stale inner class', expandedSemantic.expandedClass && !expandedSemantic.staleInnerClass, expandedSemantic, 'tooltip');
+  record('HGR-T19', 'expanded glossary ARIA state and button label are truthful', expandedSemantic.ariaExpanded === 'true' && expandedSemantic.detailHidden === 'false' && expandedSemantic.label === 'Кратко' && expandedSemantic.buttonText.includes('Кратко'), expandedSemantic, 'tooltip');
+  record('HGR-T20', 'expanded papyrus detail is visibly rendered', expandedSemantic.papyrusVisible, expandedSemantic, 'tooltip');
+  record('HGR-T21', 'expanded glossary grows beyond its compact height', Boolean(expandedState && compactState && expandedState.height >= compactState.height + 40), { compactState, expandedState }, 'tooltip');
+  record('HGR-T22', 'expanded glossary remains inside the viewport', Boolean(expandedState?.inViewport), expandedState, 'tooltip');
+  record('HGR-T23', 'expanded glossary scrolls only on real overflow', noFakeScrollbar(expandedState), expandedState, 'tooltip');
+  record('HGR-T24', 'expanded glossary has no blank white panel', Boolean(expandedState && expandedState.blankTail <= 64), expandedState, 'tooltip');
 
   await page.locator('.gtip.gb-floating-tip.is-open [data-gtip-expand]').click();
   await twoFrames(page);
@@ -359,8 +360,8 @@ async function popupContracts(page) {
       detailHidden: tip?.querySelector('.gtip-detail-wrap')?.getAttribute('aria-hidden') || null,
     };
   });
-  record('HGR-T24', 'collapsing restores the compact semantic state', !collapsedSemantic.expandedClass && collapsedSemantic.ariaExpanded === 'false' && collapsedSemantic.detailHidden === 'true', collapsedSemantic, 'tooltip');
-  record('HGR-T25', 'collapsing restores approximately the compact height', Boolean(collapsedAgain && compactState && Math.abs(collapsedAgain.height - compactState.height) <= 12), { compactState, collapsedAgain }, 'tooltip');
+  record('HGR-T25', 'collapsing restores compact semantic state', !collapsedSemantic.expandedClass && collapsedSemantic.ariaExpanded === 'false' && collapsedSemantic.detailHidden === 'true', collapsedSemantic, 'tooltip');
+  record('HGR-T26', 'collapsing restores approximately compact height', Boolean(collapsedAgain && compactState && Math.abs(collapsedAgain.height - compactState.height) <= 12), { compactState, collapsedAgain }, 'tooltip');
 }
 
 sourceContracts();
@@ -403,7 +404,7 @@ try {
 }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'guard check IDs must be unique');
-assert.ok(checks.length >= 80, `Hermenevtika guard requires at least 80 checks, got ${checks.length}`);
+assert.ok(checks.length >= 120, `Hermenevtika guard requires at least 120 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
