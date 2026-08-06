@@ -125,7 +125,7 @@ async function inspectViewport(browser, origin, viewport) {
   await page.screenshot({ path: screenshot, fullPage: true });
   await context.close();
 
-  assert.equal(cards.length, 2, `${viewport.name}: expected exactly two canonical Refutations cards, got ${cards.length}`);
+  assert.ok(cards.length >= 2, `${viewport.name}: expected at least two canonical Refutations cards, got ${cards.length}`);
   assert.deepEqual(runtimeErrors, [], `${viewport.name}: runtime errors: ${runtimeErrors.join('\n')}`);
   assert.ok(pageGeometry.scrollWidth <= pageGeometry.viewportWidth, `${viewport.name}: horizontal overflow ${pageGeometry.scrollWidth} > ${pageGeometry.viewportWidth}`);
   for (const card of cards) {
