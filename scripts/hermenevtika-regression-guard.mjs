@@ -10,7 +10,7 @@ const REPORT_DIR = path.join(ROOT, 'reports', 'hermenevtika-regression-guards');
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
 const OWNER = 'article-inline-tooltip';
-const OWNER_VERSION = 18;
+const OWNER_VERSION = 19;
 const OWNED_SELECTORS = ['.gterm', '.fn-marker', '.bref[data-ref]'];
 
 assert.ok(BASE, 'AUDIT_BASE is required');
@@ -34,7 +34,7 @@ function sourceContracts() {
   const assertions = [
     ['HGT-S01', 'canonical tooltip runtime source exists', runtime.length > 0],
     ['HGT-S02', 'canonical tooltip owner stylesheet exists', runtimeCss.length > 0],
-    ['HGT-S03', 'canonical tooltip epoch is exactly 18', /const VERSION\s*=\s*18\s*;/.test(runtime)],
+    ['HGT-S03', 'canonical tooltip epoch is exactly 19', /const VERSION\s*=\s*19\s*;/.test(runtime)],
     ['HGT-S04', 'canonical owner name is exact', runtime.includes("const OWNER = 'article-inline-tooltip';")],
     ['HGT-S05', 'runtime claims exactly the three inline selectors', runtime.includes("new Set(['.gterm', '.fn-marker', '.bref[data-ref]'])")],
     ['HGT-S06', 'legacy retirement mutates the original controller array', /controllers\.splice\(index,\s*1\)/.test(runtime)],
@@ -63,6 +63,7 @@ function sourceContracts() {
     ['HGT-S29', 'crossing 768px closes the active owner cleanly', runtime.includes("closeTooltip('mode-change')") && runtime.includes('active.mobile !== mobileMode()')],
     ['HGT-S30', 'VisualViewport resize and pan use one canonical handler', runtime.includes("visualViewport?.addEventListener('resize', handleViewportChange") && runtime.includes("visualViewport?.addEventListener('scroll', handleViewportChange")],
     ['HGT-S31', 'placement is preserved only while resized content still fits that side', runtime.includes("previousPlacement === 'top' && fitsAbove") && runtime.includes("previousPlacement === 'bottom' && fitsBelow") && runtime.includes('if (fitsAbove && fitsBelow)')],
+    ['HGT-S32', 'mobile sheet budget restores the approved 85 percent VisualViewport cap', runtime.includes('const MOBILE_MAX_VIEWPORT_RATIO = 0.85;') && runtime.includes('function mobileSheetBudget(viewport)') && runtime.includes('viewport.height - VIEWPORT_MARGIN')],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -94,6 +95,7 @@ async function popupState(page, selector) {
       borderTopWidth: parseFloat(style.borderTopWidth) || 0,
       borderRadius: parseFloat(style.borderTopLeftRadius) || 0,
       overflowY: style.overflowY,
+      maxHeight: parseFloat(style.maxHeight) || 0,
       clientHeight: tip.clientHeight,
       scrollHeight: tip.scrollHeight,
       width: box.width,
@@ -197,6 +199,37 @@ async function modeTransitionContracts(page) {
   record('HGT-R11', 'mobile Scripture sheet remains inside viewport with rounded top corners', Boolean(mobile && mobile.inViewport && mobile.borderRadius >= 20), mobile, 'responsive');
   record('HGT-R12', 'mobile Scripture sheet has no large blank tail', Boolean(mobile && mobile.blankTail <= 48), mobile, 'responsive');
 
+  const mediumFixture = await page.evaluate(() => {
+    const tip = document.querySelector('.btip.gb-floating-tip.is-open');
+    if (!(tip instanceof HTMLElement)) return null;
+    const visualHeight = Number(window.visualViewport?.height) || window.innerHeight;
+    const oldBudget = Math.floor(visualHeight * 0.72);
+    const restoredBudget = Math.min(Math.floor(visualHeight * 0.85), Math.floor(visualHeight - 16));
+    const targetNaturalHeight = Math.floor((oldBudget + restoredBudget) / 2);
+    const before = tip.scrollHeight;
+    const filler = document.createElement('span');
+    filler.dataset.hgtMobileBudgetFiller = '1';
+    filler.style.display = 'block';
+    filler.style.width = '1px';
+    filler.style.height = `${Math.max(0, targetNaturalHeight - before)}px`;
+    filler.style.pointerEvents = 'none';
+    tip.appendChild(filler);
+    window.dispatchEvent(new Event('resize'));
+    return { visualHeight, oldBudget, restoredBudget, targetNaturalHeight, before };
+  });
+  await page.waitForTimeout(60);
+  await twoFrames(page);
+  const mediumMobile = await popupState(page, '.btip.gb-floating-tip.is-open');
+  const mediumFixtureValid = Boolean(mediumFixture && mediumMobile && mediumMobile.scrollHeight > mediumFixture.oldBudget + 2 && mediumMobile.scrollHeight <= mediumFixture.restoredBudget + 2);
+  record('HGT-R13', 'mobile fixture natural height exceeds legacy 72 percent but fits restored 85 percent budget', mediumFixtureValid, { mediumFixture, mediumMobile }, 'responsive');
+  record('HGT-R14', 'medium mobile Scripture content does not scroll when restored budget fits it', Boolean(mediumFixtureValid && !['auto', 'scroll'].includes(mediumMobile.overflowY) && mediumMobile.scrollHeight <= mediumMobile.clientHeight + 1), { mediumFixture, mediumMobile }, 'responsive');
+  record('HGT-R15', 'mobile max-height matches the restored measured budget instead of the legacy cap', Boolean(mediumFixtureValid && Math.abs(mediumMobile.maxHeight - mediumFixture.restoredBudget) <= 2), { mediumFixture, mediumMobile }, 'responsive');
+  await page.evaluate(() => {
+    document.querySelector('[data-hgt-mobile-budget-filler]')?.remove();
+    window.dispatchEvent(new Event('resize'));
+  });
+  await twoFrames(page);
+
   await page.setViewportSize({ width: 769, height: 900 });
   await page.waitForFunction(() => !document.querySelector('.gb-floating-tip.is-open'), null, { timeout: 3000 });
   await twoFrames(page);
@@ -222,7 +255,7 @@ async function popupContracts(page) {
       ? window.SiteUtils._tooltipControllers.map((item) => item?.anchorSel).filter((selector) => owned.includes(selector))
       : [],
   }), OWNED_SELECTORS);
-  record('HGT-T01', 'exact owner v18 is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
+  record('HGT-T01', 'exact owner v19 is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
   record('HGT-T02', 'shared interaction bootstrap completes after owner installation', ownerState.interactionsReady === '1', ownerState, 'tooltip');
   record('HGT-T03', 'no legacy owner remains after load', ownerState.legacyOwners.length === 0, ownerState, 'tooltip');
 
@@ -404,7 +437,7 @@ try {
 }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'tooltip guard check IDs must be unique');
-assert.ok(checks.length >= 79, `Hermenevtika tooltip guard requires at least 79 checks, got ${checks.length}`);
+assert.ok(checks.length >= 83, `Hermenevtika tooltip guard requires at least 83 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
