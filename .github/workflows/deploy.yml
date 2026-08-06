@@ -299,7 +299,7 @@ jobs:
         run: node release-tools/live-release-contract.mjs
 
       - name: Upload generic live release evidence
-        if: always()
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-live-deployment-${{ github.run_id }}
@@ -308,7 +308,7 @@ jobs:
           retention-days: 30
 
       - name: Verify live TTS capability extension
-        if: always()
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}
         env:
           LIVE_BASE_URL: https://gospod-bog.ru
           RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
@@ -317,7 +317,7 @@ jobs:
         run: node release-tools/tts-live-deployment-contract.mjs
 
       - name: Upload live TTS capability evidence
-        if: always()
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tts-live-deployment-${{ github.run_id }}
