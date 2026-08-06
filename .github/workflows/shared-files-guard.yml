@@ -95,6 +95,14 @@ jobs:
             --out-json reports/baptists-built-app-measure.json \
             --out-md reports/baptists-built-app-measure.md
 
+      - name: Legacy shadow retirement readiness
+        run: |
+          node --check scripts/legacy-shadow-retirement-readiness.mjs
+          node scripts/legacy-shadow-retirement-readiness.mjs --self-test
+          node scripts/legacy-shadow-retirement-readiness.mjs \
+            --out-json reports/legacy-shadow-retirement-readiness.json \
+            --out-md reports/legacy-shadow-retirement-readiness.md
+
       - name: Readiness-to-deploy workflow linkage
         run: node scripts/workflow-linkage-regression-test.js
 
@@ -197,6 +205,8 @@ jobs:
             reports/visual-parity-authority.md
             reports/baptists-built-app-measure.json
             reports/baptists-built-app-measure.md
+            reports/legacy-shadow-retirement-readiness.json
+            reports/legacy-shadow-retirement-readiness.md
           if-no-files-found: warn
           retention-days: 14
 
