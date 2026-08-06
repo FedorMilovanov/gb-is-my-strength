@@ -24,7 +24,7 @@ function parseArgs(argv) {
 }
 
 function normalize(value) {
-  return String(value).replace(/\\/g, '/');
+  return String(value || '').replace(/\\/g, '/').replace(/^\/+/, '');
 }
 
 function loadJson(filePath) {
@@ -62,19 +62,18 @@ function runInventory(root) {
 
 function loadLedger(root) {
   const manifest = loadJson(path.join(root, 'data', 'legacy-reference-ledger', 'manifest.json'));
-  const entries = [];
-  for (const relative of manifest.referenceShards || []) {
-    entries.push(...(loadJson(path.join(root, relative)).entries || []));
-  }
+  const entries = (manifest.referenceShards || []).flatMap((relative) => (
+    loadJson(path.join(root, relative)).entries || []
+  ));
   return { manifest, entries };
 }
 
-function parityPolicy(meta, authority) {
+function ownerClassification(meta) {
   const owner = String(meta?.owner || '');
   const status = String(meta?.status || '');
-  if (owner === 'built-app' || status === 'copy-as-built-asset') return authority.ownerPolicies?.['built-app'];
-  if (owner.startsWith('astro')) return authority.ownerPolicies?.astro;
-  return null;
+  if (owner === 'built-app' || status === 'copy-as-built-asset') return 'owned-independent';
+  if (owner.startsWith('astro')) return 'native-shadow';
+  return 'owned-legacy-or-static';
 }
 
 function auditParity(root, ownership, authority) {
@@ -82,12 +81,17 @@ function auditParity(root, ownership, authority) {
   let astro = 0;
   let builtApp = 0;
   for (const [route, meta] of Object.entries(ownership.routes || {})) {
-    const policy = parityPolicy(meta, authority);
-    if (String(meta.owner || '').startsWith('astro')) {
+    const kind = ownerClassification(meta);
+    const policy = kind === 'owned-independent'
+      ? authority.ownerPolicies?.['built-app']
+      : kind === 'native-shadow'
+        ? authority.ownerPolicies?.astro
+        : null;
+    if (kind === 'native-shadow') {
       astro += 1;
       if (policy?.mode !== 'native-contract') problems.push(`${route}: Astro route lacks native-contract authority`);
     }
-    if (meta.owner === 'built-app' || meta.status === 'copy-as-built-asset') {
+    if (kind === 'owned-independent') {
       builtApp += 1;
       if (policy?.mode !== 'built-app-contract') problems.push(`${route}: built app lacks built-app-contract authority`);
     }
@@ -116,19 +120,62 @@ function groupDependencies(dependencies) {
   }, {});
 }
 
+function effectiveInventory({ root, inventory, entries, ownership }) {
+  const inventoryItems = inventory.items || [];
+  const inventoryPaths = new Set(inventoryItems.map((item) => normalize(item.path)));
+  const items = [...inventoryItems];
+  const coverageGaps = [];
+
+  for (const entry of entries) {
+    const relative = normalize(entry.legacyPath);
+    if (inventoryPaths.has(relative)) continue;
+    const absolute = path.join(root, relative);
+    const meta = ownership.routes?.[entry.route] || null;
+    if (!meta || !fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
+    const classification = ownerClassification(meta);
+    const row = {
+      route: entry.route,
+      path: relative,
+      bytes: fs.statSync(absolute).size,
+      sha256: sha256(fs.readFileSync(absolute)),
+      classification,
+      ownerRoute: entry.route,
+      owner: meta.owner || null,
+      status: meta.status || null,
+      discoveredBy: 'immutable-ledger-cross-check',
+    };
+    items.push(row);
+    coverageGaps.push({
+      route: entry.route,
+      path: relative,
+      classification,
+      problem: 'current strangler inventory omitted a governed existing reference',
+    });
+  }
+
+  items.sort((left, right) => left.path.localeCompare(right.path, 'en'));
+  return { items, coverageGaps };
+}
+
 function buildReport({ root, inventory, manifest, entries, ownership, authority }) {
   const parity = auditParity(root, ownership, authority);
+  const effective = effectiveInventory({ root, inventory, entries, ownership });
   const byPath = new Map(entries.map((entry) => [normalize(entry.legacyPath), entry]));
   const byRoute = new Map(entries.map((entry) => [entry.route, entry]));
-  const nativeItems = (inventory.items || []).filter((item) => item.classification === 'native-shadow');
-  const builtApps = (inventory.items || []).filter((item) => item.classification === 'owned-independent');
+  const nativeItems = effective.items.filter((item) => item.classification === 'native-shadow');
+  const builtApps = effective.items.filter((item) => item.classification === 'owned-independent');
   const integrityProblems = [];
 
   const nativeShadows = nativeItems.map((item) => {
     const entry = byPath.get(normalize(item.path)) || byRoute.get(item.route) || null;
     if (!entry) {
       integrityProblems.push(`${item.path}: missing immutable ledger entry`);
-      return { route: item.route, path: item.path, bytes: item.bytes, decision: 'missing-ledger' };
+      return {
+        route: item.route,
+        path: item.path,
+        bytes: item.bytes,
+        decision: 'missing-ledger',
+      };
     }
     const buffer = fs.readFileSync(path.join(root, item.path));
     if (gitBlobSha1(buffer) !== entry.gitBlobSha1) integrityProblems.push(`${item.path}: Git blob mismatch`);
@@ -148,6 +195,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
       gitBlobSha1: entry.gitBlobSha1,
       byteSha256: entry.byteSha256,
       decision,
+      discoveredBy: item.discoveredBy || 'strangler-inventory',
     };
   });
 
@@ -167,13 +215,14 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     dependencyOwnerDecisions: dependencyOwnerDecisions.length,
     unknownDependencyImpacts: unknownDependencyImpacts.length,
     integrityProblems: integrityProblems.length,
+    inventoryCoverageProblems: effective.coverageGaps.length,
     parityProblems: parity.problems.length,
   };
   const blockerTotal = Object.values(blockingCounts).reduce((sum, count) => sum + count, 0);
   const deletionReady = blockerTotal === 0;
 
   return {
-    schemaVersion: '1.0.0',
+    schemaVersion: '1.1.0',
     generatedAt: new Date().toISOString(),
     source: {
       inventory: 'scripts/strangler-duplicate-inventory.mjs',
@@ -182,7 +231,8 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
       parityAuthority: 'data/visual-parity-authority.json',
     },
     summary: {
-      publicIndexes: inventory.summary?.publicIndexFiles || 0,
+      inventoryReportedPublicIndexes: inventory.summary?.publicIndexFiles || 0,
+      publicIndexes: effective.items.length,
       nativeShadows: nativeItems.length,
       nativeShadowBytes: nativeItems.reduce((sum, item) => sum + item.bytes, 0),
       builtApps: builtApps.length,
@@ -199,10 +249,11 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     },
     verdict: deletionReady ? 'SAFE_TO_OPEN_ATOMIC_QUARANTINE_MOVE' : 'NOT_YET_SAFE_TO_MOVE_OR_DELETE',
     reason: deletionReady
-      ? 'All immutable identities, owner decisions, dependency repoints and parity authority are complete.'
-      : 'Parity authority is transferred, but reference decisions and/or direct readers still block physical retirement.',
+      ? 'All immutable identities, inventory coverage, owner decisions, dependency repoints and parity authority are complete.'
+      : 'Parity authority is transferred, but inventory coverage, immutable identity, reference decisions and/or direct readers still block physical retirement.',
     parity,
     blockers: {
+      inventoryCoverageGaps: effective.coverageGaps,
       unknownReferences,
       mechanicalRepoints,
       obsoleteOrRepoint,
@@ -215,6 +266,8 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     builtApps: builtApps.map((item) => ({ route: item.route, path: item.path, bytes: item.bytes })),
     nextTransaction: {
       order: [
+        'repair strangler inventory coverage for every governed legacy path',
+        'add immutable ledger identity for every effective native shadow',
         'resolve missing reference classifications in route profiles and ledger',
         'repoint policy readers through migration/legacy-reference-path.js',
         'remove or repoint obsolete legacy audits',
@@ -249,27 +302,32 @@ function renderMarkdown(report) {
     '',
     `Verdict: **${report.verdict}**`,
     '',
-    `- Public index files: **${s.publicIndexes}**`,
+    `- Inventory-reported public indexes: **${s.inventoryReportedPublicIndexes}**`,
+    `- Effective governed public indexes: **${s.publicIndexes}**`,
     `- Astro native shadows: **${s.nativeShadows}** / **${s.nativeShadowBytes} bytes**`,
     `- Independent built apps retained: **${s.builtApps}**`,
     `- Ledger entries: **${s.ledgerEntries}**`,
+    `- Inventory coverage problems: **${s.inventoryCoverageProblems}**`,
+    `- Integrity problems: **${s.integrityProblems}**`,
     `- Classification-clear references: **${s.classificationClearReferences}**`,
     `- Reference owner decisions: **${s.referenceOwnerDecisions}**`,
     `- Mechanical reader repoints: **${s.mechanicalRepoints}**`,
     `- Obsolete readers to remove/repoint: **${s.obsoleteOrRepoint}**`,
     `- Dependency owner decisions: **${s.dependencyOwnerDecisions}**`,
-    `- Integrity problems: **${s.integrityProblems}**`,
     `- Parity authority problems: **${s.parityProblems}**`,
     `- Total blocking actions: **${s.blockerTotal}**`,
     `- Physical move authorized: **${s.physicalMoveAuthorized ? 'yes' : 'no'}**`,
     '',
     '## Boundary',
     '',
-    'The independent Baptists built app is never part of the 51-shadow retirement. A physical move is allowed only after this report reaches zero blocking actions.',
+    'The independent Baptists built app is never part of native-shadow retirement. A physical move is allowed only after this report reaches zero blocking actions.',
     '',
-    '## Blocking dependencies',
+    '## Inventory coverage gaps',
     '',
   ];
+  if (!report.blockers.inventoryCoverageGaps.length) lines.push('- none');
+  for (const row of report.blockers.inventoryCoverageGaps) lines.push(`- \`${row.path}\` — ${row.problem}`);
+  lines.push('', '## Blocking dependencies', '');
   for (const [label, rows] of [
     ['Mechanical repoint', report.blockers.mechanicalRepoints],
     ['Remove or repoint', report.blockers.obsoleteOrRepoint],
@@ -286,35 +344,53 @@ function renderMarkdown(report) {
 function runSelfTest() {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'legacy-shadow-self-test-'));
   try {
-    fs.mkdirSync(path.join(temp, 'articles', 'one'), { recursive: true });
-    fs.mkdirSync(path.join(temp, 'guards'), { recursive: true });
-    const html = Buffer.from('<!doctype html><h1>one</h1>');
-    fs.writeFileSync(path.join(temp, 'articles', 'one', 'index.html'), html);
+    for (const relative of ['about', 'rodosloviye', 'guards']) {
+      fs.mkdirSync(path.join(temp, relative), { recursive: true });
+    }
+    const about = Buffer.from('<!doctype html><h1>about</h1>');
+    const family = Buffer.from('<!doctype html><h1>family</h1>');
+    fs.writeFileSync(path.join(temp, 'about', 'index.html'), about);
+    fs.writeFileSync(path.join(temp, 'rodosloviye', 'index.html'), family);
     for (const name of ['source.js', 'dist.js', 'browser.js']) fs.writeFileSync(path.join(temp, 'guards', name), '');
 
     const report = buildReport({
       root: temp,
       inventory: {
         summary: { publicIndexFiles: 1 },
-        items: [{ route: '/articles/one/', path: 'articles/one/index.html', bytes: html.length, classification: 'native-shadow' }],
+        items: [{ route: '/about/', path: 'about/index.html', bytes: about.length, classification: 'native-shadow' }],
       },
       manifest: {
-        dependencies: [{ path: 'reader.js', quarantineImpact: 'owner-decision-required', evidenceToken: 'articles/one/index.html' }],
+        dependencies: [{ path: 'reader.js', quarantineImpact: 'owner-decision-required', evidenceToken: 'rodosloviye/index.html' }],
       },
       entries: [{
-        route: '/articles/one/',
-        legacyPath: 'articles/one/index.html',
+        route: '/rodosloviye/',
+        legacyPath: 'rodosloviye/index.html',
         classification: 'unknown-blocker',
         declaredLegacyStatus: null,
-        gitBlobSha1: gitBlobSha1(html),
-        byteSha256: sha256(html),
+        gitBlobSha1: gitBlobSha1(family),
+        byteSha256: sha256(family),
         profile: 'profile.json',
       }],
-      ownership: { routes: { '/articles/one/': { owner: 'astro', status: 'production-dist' } } },
-      authority: { ownerPolicies: { astro: { mode: 'native-contract', requiredGuards: ['guards/source.js', 'guards/dist.js', 'guards/browser.js'] } } },
+      ownership: {
+        routes: {
+          '/about/': { owner: 'astro', status: 'production-dist' },
+          '/rodosloviye/': { owner: 'astro', status: 'production-dist' },
+        },
+      },
+      authority: {
+        ownerPolicies: {
+          astro: { mode: 'native-contract', requiredGuards: ['guards/source.js', 'guards/dist.js', 'guards/browser.js'] },
+        },
+      },
     });
 
-    if (report.summary.deletionReady !== false || report.summary.referenceOwnerDecisions !== 1 || report.summary.dependencyOwnerDecisions !== 1) {
+    if (report.summary.publicIndexes !== 2
+      || report.summary.nativeShadows !== 2
+      || report.summary.inventoryCoverageProblems !== 1
+      || report.summary.integrityProblems !== 1
+      || report.summary.referenceOwnerDecisions !== 1
+      || report.summary.dependencyOwnerDecisions !== 1
+      || report.summary.deletionReady !== false) {
       throw new Error(`self-test did not fail closed: ${JSON.stringify(report.summary)}`);
     }
     console.log('✅ legacy shadow retirement readiness self-test passed');
