@@ -26,7 +26,7 @@ function before(text, first, second) {
   return left >= 0 && right >= 0 && left < right;
 }
 
-export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow }) {
+export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow, siteCss }) {
   const problems = [];
   const jobs = boundedJobs(workflow);
   const checks = [
@@ -69,6 +69,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
     ['deploy uploads dist with pinned Pages action', jobs.deploy, /actions\/upload-pages-artifact@[a-f0-9]{40}[\s\S]{0,100}path:\s*dist/],
     ['generic live receives two SHAs', jobs.deploy, /Verify generic live release contract[\s\S]*RELEASE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.release_sha \}\}[\s\S]*CONTROL_PLANE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.control_plane_sha \}\}/],
     ['generic live precedes TTS', jobs.deploy, /Verify generic live release contract[\s\S]{0,700}live-release-contract\.mjs[\s\S]*Verify live TTS capability extension[\s\S]{0,700}tts-live-deployment-contract\.mjs/],
+    ['TTS verifier is independent', jobs.deploy, /- name:\s*Verify live TTS capability extension\s*\n\s*if:\s*always\(\)/],
     ['generic and TTS artifacts separate', jobs.deploy, /release-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]*tts-live-deployment-\$\{\{ github\.run_id \}\}/],
     ['diagnostics remains manually inspectable', diagnostics, /workflow_dispatch:/],
     ['diagnostics is build-free', diagnostics, /Validate source metadata without building dist/],
@@ -87,7 +88,10 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
     ['download verifier recomputes both identities', verifier, /verifyReleaseCandidate\(\{[\s\S]{0,220}expectedReleaseSha,[\s\S]{0,100}expectedControlPlaneSha,/],
     ['generic live follows pointer', live, /\/deployments\/current\.json[\s\S]*pointer\.immutablePath/],
     ['generic live verifies both identities', live, /releaseSha[\s\S]*controlPlaneSha[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/],
+    ['generic live preserves preflight evidence', live, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/],
     ['TTS verifies both identities', tts, /RELEASE_SHA[\s\S]*CONTROL_PLANE_SHA[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/],
+    ['TTS preserves preflight evidence', tts, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/],
+    ['global border-box source contract', siteCss, /\*,::after,::before\{box-sizing:border-box\}/],
     ['source workflow owns release contract', ttsWorkflow, /scripts\/release-pipeline-contract-test\.mjs/],
     ['source workflow executes release contract', ttsWorkflow, /node scripts\/release-pipeline-contract-test\.mjs/],
   ];
@@ -95,8 +99,8 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
 
   const liveHomeTokens = [
     ["local candidate path", "const localHomePath = path.join(DIST, 'index.html');"],
-    ["local candidate bytes", "const localHomeBuffer = fs.readFileSync(localHomePath);"],
-    ["local candidate digest", "const localHomeDigest = sha256(localHomeBuffer);"],
+    ["local candidate bytes", "localHomeBuffer = fs.readFileSync(localHomePath);"],
+    ["local candidate digest", "localHomeDigest = sha256(localHomeBuffer);"],
     ["local candidate semantic contract", "assertHomeContract(localHomeBuffer, 'local candidate home');"],
     ["live Home fetch", "const homeResponse = await fetchBuffer('/', attempt, 'home-index');"],
     ["live Home byte equality", "assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');"],
@@ -107,11 +111,10 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
     ["approved Refutations marker", "'id=\"hRefutationsLabel\"'"],
     ["approved library routes", "for (const route of ['articles', 'series', 'biographies', 'maps', 'confessions']) {"],
     ["approved library dividers", "for (let divider = 0; divider < 4; divider += 1) {"],
-    ["approved Refutations geometry", "assert.match(html, /h-refutation-card[^}]{0,500}box-sizing:border-box/"],
     ["legacy Home owner rejection", "for (const legacy of ['class=\"hb-w\"', 'class=\"h-tetra\"', 'data-sacred-active']) {"],
   ];
   for (const [label, token] of liveHomeTokens) if (!live.includes(token)) problems.push(`generic live Home ${label}`);
-
+  if (live.includes('h-refutation-card[^}]{0,500}box-sizing:border-box')) problems.push('generic live parses extracted CSS from HTML');
 
   if (count(workflow, /\bnpm ci\b/g) !== 1) problems.push('release npm ci count drift');
   if (count(workflow, /npm run strangler:build:production-like/g) !== 1) problems.push('release production build count drift');
@@ -146,6 +149,7 @@ const sources = {
   live: read('scripts/live-release-contract.mjs'),
   tts: read('scripts/tts-live-deployment-contract.mjs'),
   ttsWorkflow: read('.github/workflows/tts-download-consent.yml'),
+  siteCss: read('css/site.css'),
 };
 assert.deepEqual(validate(sources), []);
 
@@ -185,6 +189,7 @@ const mutations = [
   ['deploy control SHA aliased', { ...sources, workflow: sources.workflow.replace('EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}', 'EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.release_sha }}') }],
   ['Pages before verify', { ...sources, workflow: sources.workflow.replace('Verify downloaded candidate identity', '__VERIFY__').replace('Upload exact candidate as Pages artifact', 'Verify downloaded candidate identity').replace('__VERIFY__', 'Upload exact candidate as Pages artifact') }],
   ['generic and TTS reversed', { ...sources, workflow: sources.workflow.replace('Verify generic live release contract', '__GENERIC__').replace('Verify live TTS capability extension', 'Verify generic live release contract').replace('__GENERIC__', 'Verify live TTS capability extension') }],
+  ['TTS verifier loses independent execution', { ...sources, workflow: sources.workflow.replace('- name: Verify live TTS capability extension\n        if: always()', '- name: Verify live TTS capability extension') }],
   ['mutable deploy action', { ...sources, workflow: sources.workflow.replace(PINS.deployPages, 'actions/deploy-pages@v5') }],
   ['manifest release/control aliased', { ...sources, library: sources.library.replace('controlPlaneSha,\n    immutablePath', 'controlPlaneSha: releaseSha,\n    immutablePath') }],
   ['candidate addressed by control plane', { ...sources, library: sources.library.replace('`${releaseSha}:${runIdentity}`', '`${controlPlaneSha}:${runIdentity}`') }],
@@ -192,6 +197,8 @@ const mutations = [
   ['writer output aliased', { ...sources, writer: sources.writer.replace('control_plane_sha=${report.controlPlaneSha}', 'control_plane_sha=${report.releaseSha}') }],
   ['verifier ignores control', { ...sources, verifier: sources.verifier.replace(/\n\s*expectedControlPlaneSha,\n/, '\n') }],
   ['generic live ignores release', { ...sources, live: sources.live.replace('expectedReleaseSha: releaseSha,', '') }],
+  ['generic live preflight evidence removed', { ...sources, live: sources.live.replace('failPreflight(error);', 'throw error;') }],
+  ['TTS preflight evidence removed', { ...sources, tts: sources.tts.replace('failPreflight(error);', 'throw error;') }],
   ["generic live local Home binding removed", { ...sources, live: sources.live.replace("assertHomeContract(localHomeBuffer, 'local candidate home');", "") }],
   ["generic live Home byte equality removed", { ...sources, live: sources.live.replace("assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');", "") }],
   ["generic live Home digest equality removed", { ...sources, live: sources.live.replace("assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');", "") }],
@@ -199,8 +206,9 @@ const mutations = [
   ["generic live approved marker removed", { ...sources, live: sources.live.replace("'class=\"h-sacred-name-label\"',", "") }],
   ["generic live route set narrowed", { ...sources, live: sources.live.replace("for (const route of ['articles', 'series', 'biographies', 'maps', 'confessions']) {", "for (const route of ['articles']) {") }],
   ["generic live divider count reduced", { ...sources, live: sources.live.replace("for (let divider = 0; divider < 4; divider += 1) {", "for (let divider = 0; divider < 3; divider += 1) {") }],
-  ["generic live Refutations geometry removed", { ...sources, live: sources.live.replace("assert.match(html, /h-refutation-card[^}]{0,500}box-sizing:border-box/", "assert.match(html, /.*/") }],
   ["generic live legacy rejection removed", { ...sources, live: sources.live.replace("for (const legacy of ['class=\"hb-w\"', 'class=\"h-tetra\"', 'data-sacred-active']) {", "for (const legacy of []) {") }],
+  ['generic live reintroduces CSS-in-HTML guess', { ...sources, live: `${sources.live}\n// h-refutation-card[^}]{0,500}box-sizing:border-box\n` }],
+  ['global border-box reset removed', { ...sources, siteCss: sources.siteCss.replace('*,::after,::before{box-sizing:border-box}', '*,::after,::before{box-sizing:content-box}') }],
   ['TTS ignores control', { ...sources, tts: sources.tts.replace('expectedControlPlaneSha: CONTROL_PLANE_SHA,', '') }],
   ['diagnostics rebuilds', { ...sources, diagnostics: `${sources.diagnostics}\n# npm ci\n# npm run strangler:build:production-like\n` }],
 ];
