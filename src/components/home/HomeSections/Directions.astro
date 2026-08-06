@@ -91,25 +91,27 @@ const routes = [
           data-home-route-index={index}
         >
           <span class="h-home-route__surface" aria-hidden="true"></span>
-          <span class="h-home-route__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-          <span class="h-home-route__glyph" aria-hidden="true">
-            <img
-              class={`h-route-object h-route-object--${route.key}`}
-              src={route.image}
-              alt=""
-              width={route.width}
-              height={route.height}
-              loading="eager"
-              decoding="async"
-              fetchpriority="low"
-            />
+          <span class="h-home-route__content">
+            <span class="h-home-route__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+            <span class="h-home-route__glyph" aria-hidden="true">
+              <img
+                class={`h-route-object h-route-object--${route.key}`}
+                src={route.image}
+                alt=""
+                width={route.width}
+                height={route.height}
+                loading="eager"
+                decoding="async"
+                fetchpriority="low"
+              />
+            </span>
+            <span class="h-home-route__copy">
+              <span class="h-home-route__eyebrow">{route.eyebrow}</span>
+              <strong>{route.title}</strong>
+              <span>{route.description}</span>
+            </span>
+            <span class="h-home-route__arrow" aria-hidden="true">→</span>
           </span>
-          <span class="h-home-route__copy">
-            <span class="h-home-route__eyebrow">{route.eyebrow}</span>
-            <strong>{route.title}</strong>
-            <span>{route.description}</span>
-          </span>
-          <span class="h-home-route__arrow" aria-hidden="true">→</span>
         </a>
       </>
     ))}
@@ -168,9 +170,10 @@ const routes = [
     position: relative;
     min-width: 0;
     min-height: 410px;
-    display: grid;
-    grid-template-rows: auto minmax(176px, 1fr) auto auto;
-    padding: 20px clamp(17px, 1.55vw, 25px) 23px;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
     border: 0;
     color: var(--h-heading);
     text-decoration: none;
@@ -183,6 +186,20 @@ const routes = [
       filter 360ms ease,
       transform 700ms cubic-bezier(.22, 1, .36, 1);
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Padded content wrapper — owns the grid layout + inline padding so the outer
+     card equals the full grid cell (padding:0) and the surface (inset:0) fills
+     it edge-to-edge between dividers. Mirrors the reference deck → full-width
+     card → surface → padded content ownership. */
+  body.home-page #main-content .h-home-route__content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: auto minmax(176px, 1fr) auto auto;
+    min-width: 0;
+    height: 100%;
+    padding: 20px clamp(17px, 1.55vw, 25px) 23px;
   }
 
   /* Full-width selection surface — a REAL element (not a pseudo) with
@@ -215,7 +232,8 @@ const routes = [
     transition: opacity 340ms ease, background-color 420ms ease, box-shadow 420ms ease;
   }
 
-  /* Soft top halo, clipped to the surface top edge (reference card-surface::before). */
+  /* Soft top halo, clipped to the surface top edge (reference card-surface::before).
+     Values 1:1: bright 34% / main 14%, opacity .78, blur 4px. */
   body.home-page #main-content .h-home-route__surface::before {
     content: "";
     position: absolute;
@@ -226,7 +244,7 @@ const routes = [
     border-radius: 50%;
     background: radial-gradient(
       ellipse at 50% 0,
-      color-mix(in srgb, var(--h-accent) 34%, transparent) 0%,
+      color-mix(in srgb, var(--h-accent-dim) 34%, transparent) 0%,
       color-mix(in srgb, var(--h-accent) 14%, transparent) 42%,
       transparent 76%
     );
@@ -236,7 +254,8 @@ const routes = [
   }
 
   /* Edge tint re-inking the very left/right edges so the highlight reads
-     across the full card width (reference card-surface::after). */
+     across the full card width (reference card-surface::after). Values carried
+     1:1: radial 5% + linear 2.5% at stops 23% / 77%. */
   body.home-page #main-content .h-home-route__surface::after {
     content: "";
     position: absolute;
@@ -245,10 +264,10 @@ const routes = [
     background:
       radial-gradient(70% 34% at 50% 0%, color-mix(in srgb, var(--h-accent) 5%, transparent), transparent 76%),
       linear-gradient(90deg,
-        color-mix(in srgb, var(--h-accent) 9%, transparent),
-        transparent 18%,
-        transparent 82%,
-        color-mix(in srgb, var(--h-accent) 9%, transparent));
+        color-mix(in srgb, var(--h-accent) 2.5%, transparent),
+        transparent 23%,
+        transparent 77%,
+        color-mix(in srgb, var(--h-accent) 2.5%, transparent));
   }
 
   html.dark body.home-page #main-content .h-home-route__surface {
@@ -263,16 +282,12 @@ const routes = [
   html.dark body.home-page #main-content .h-home-route__surface::before {
     background: radial-gradient(
       ellipse at 50% 0,
-      rgba(118, 211, 220, .22) 0%,
-      rgba(75, 187, 198, .10) 42%,
+      rgba(118, 211, 220, .18) 0%,
+      rgba(75, 187, 198, .07) 42%,
       transparent 76%
     );
-  }
-
-  /* Content stays above the surface. */
-  body.home-page #main-content .h-home-route > :not(.h-home-route__surface) {
-    position: relative;
-    z-index: 1;
+    opacity: .62;
+    filter: blur(5px);
   }
 
   /* Retire the legacy 1px underline ::after authored in css/home.css so it can
@@ -339,8 +354,9 @@ const routes = [
   }
 
   /* Reveal the surface (opacity:1 + full-height cyan side beams) on hover,
-     focus, active and JS-pinned is-active. :hover is listed so the highlight
-     fires immediately inside an iframe preview before the JS class lands. */
+     focus, active and JS-pinned is-active. Side-beam values carried 1:1 from
+     the reference light theme: inset 26px 0 68px -64px @ 28%. :hover is listed
+     so the highlight fires immediately inside an iframe preview. */
   body.home-page #main-content .h-home-route:is(.is-active, :hover, :active, :focus-visible) .h-home-route__surface {
     opacity: 1;
     box-shadow:
@@ -348,6 +364,16 @@ const routes = [
       inset 0 -1px 0 color-mix(in srgb, var(--h-accent) 7%, transparent),
       inset 26px 0 68px -64px color-mix(in srgb, var(--h-accent) 28%, transparent),
       inset -26px 0 68px -64px color-mix(in srgb, var(--h-accent) 28%, transparent);
+  }
+
+  /* Dark active side beams — 1:1 from the reference: inset 24px 0 62px -58px
+     rgba(75,187,198,.15). */
+  html.dark body.home-page #main-content .h-home-route:is(.is-active, :hover, :active, :focus-visible) .h-home-route__surface {
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .035),
+      inset 0 -1px rgba(75, 187, 198, .05),
+      inset 24px 0 62px -58px rgba(75, 187, 198, .15),
+      inset -24px 0 62px -58px rgba(75, 187, 198, .15);
   }
 
   /* Keyboard focus: a 2px ring instead of the side glow. */
@@ -672,6 +698,9 @@ const routes = [
 
     body.home-page #main-content .h-home-route {
       min-height: 430px;
+    }
+
+    body.home-page #main-content .h-home-route__content {
       grid-template-rows: auto minmax(190px, 1fr) auto auto;
       padding-inline: clamp(22px, 1.55vw, 30px);
     }
@@ -716,9 +745,12 @@ const routes = [
     body.home-page #main-content .h-home-route {
       flex: 0 0 min(82vw, 284px);
       min-height: 420px;
-      grid-template-rows: auto minmax(176px, 1fr) auto auto;
       scroll-snap-align: start;
       scroll-snap-stop: always;
+    }
+
+    body.home-page #main-content .h-home-route__content {
+      grid-template-rows: auto minmax(176px, 1fr) auto auto;
     }
 
     body.home-page #main-content .h-home-route__glyph {
@@ -758,6 +790,9 @@ const routes = [
     body.home-page #main-content .h-home-route {
       flex-basis: min(84vw, 284px);
       min-height: 396px;
+    }
+
+    body.home-page #main-content .h-home-route__content {
       grid-template-rows: auto minmax(152px, 1fr) auto auto;
       padding: 22px 20px 22px;
     }
@@ -820,6 +855,9 @@ const routes = [
 
     body.home-page #main-content .h-home-route {
       flex-basis: min(87vw, 272px);
+    }
+
+    body.home-page #main-content .h-home-route__content {
       padding-inline: 17px;
     }
   }
