@@ -235,11 +235,12 @@
     border-radius: 13px 15px 15px 13px;
   }
 
-  /* Premium perlevescent sheen travelling across the active card — a layered
-     gold→cyan iridescence: a soft radial bloom for depth + a wide, low-peak
-     multi-stop diagonal ramp + a faint second cross-sweep, so the light reads
-     as a calm high-quality perlevescent drift instead of a glare. No white, no
-     mix-blend-mode; peaks kept low (≤12%) for a silky transition. */
+  /* One completed soft sheen pass across the active card. A single moving
+     gold→cyan diagonal ramp + one faint radial bloom travels fully from off
+     the left edge to off the right edge, fading in and back out to opacity:0
+     so no bright band is left frozen on the card. No white peak, no
+     mix-blend-mode. One shot per activation, restarted when the active card
+     changes (scoped to the active selector). */
   body.home-page #main-content #razbor .h-refutation-card::before {
     content: "";
     position: absolute;
@@ -250,14 +251,6 @@
     background:
       radial-gradient(130% 80% at 30% 36%, color-mix(in srgb, var(--h-gold) 6%, transparent), transparent 74%),
       linear-gradient(
-        72deg,
-        transparent 30%,
-        color-mix(in srgb, var(--h-gold) 3%, transparent) 40%,
-        color-mix(in srgb, var(--h-accent) 4%, transparent) 50%,
-        color-mix(in srgb, var(--h-gold) 3%, transparent) 60%,
-        transparent 70%
-      ),
-      linear-gradient(
         108deg,
         transparent 33%,
         color-mix(in srgb, var(--h-gold) 5%, transparent) 40%,
@@ -267,23 +260,29 @@
         color-mix(in srgb, var(--h-gold) 5%, transparent) 60%,
         transparent 67%
       );
-    transform: translate3d(-34%, 0, 0) rotate(2deg);
-    transition:
-      opacity 460ms ease,
-      transform 1300ms cubic-bezier(.22, 1, .36, 1);
+    transform: translate3d(-68%, 0, 0) rotate(2deg);
+  }
+
+  @keyframes h-refutation-sheen-pass {
+    0% {
+      transform: translate3d(-68%, 0, 0) rotate(2deg);
+      opacity: 0;
+    }
+    18% {
+      opacity: .28;
+    }
+    68% {
+      opacity: .28;
+    }
+    100% {
+      transform: translate3d(68%, 0, 0) rotate(2deg);
+      opacity: 0;
+    }
   }
 
   html.dark body.home-page #main-content #razbor .h-refutation-card::before {
     background:
       radial-gradient(130% 80% at 30% 36%, color-mix(in srgb, var(--h-gold) 8%, transparent), transparent 74%),
-      linear-gradient(
-        72deg,
-        transparent 30%,
-        color-mix(in srgb, var(--h-gold) 4%, transparent) 40%,
-        color-mix(in srgb, var(--h-accent) 5%, transparent) 50%,
-        color-mix(in srgb, var(--h-gold) 4%, transparent) 60%,
-        transparent 70%
-      ),
       linear-gradient(
         108deg,
         transparent 33%,
@@ -372,20 +371,20 @@
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-shell {
-    transform: translate3d(29px, -11px, 0);
+    transform: translate3d(18px, -8px, 0);
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--right .h-refutation-shell {
-    transform: translate3d(5px, 7px, 0);
+    transform: translate3d(4px, 5px, 0);
     filter: saturate(.935) brightness(.992);
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-shell {
-    transform: translate3d(-29px, -11px, 0);
+    transform: translate3d(-18px, -8px, 0);
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--left .h-refutation-shell {
-    transform: translate3d(-5px, 7px, 0);
+    transform: translate3d(-4px, 5px, 0);
     filter: saturate(.935) brightness(.992);
   }
 
@@ -434,13 +433,12 @@
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card::before,
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card::before {
-    opacity: .55;
-    transform: translate3d(38%, 0, 0) rotate(2deg);
+    animation: h-refutation-sheen-pass 1250ms cubic-bezier(.22, 1, .36, 1) both;
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-ambient,
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-ambient {
-    opacity: 1;
+    opacity: .5;
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-article-thumb,
