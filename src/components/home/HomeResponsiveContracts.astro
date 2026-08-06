@@ -73,14 +73,14 @@
       color: rgba(235, 225, 206, .16);
     }
 
+    /* Translation floats above the word, source settles below — both
+       frameless, ink-on-paper, surfacing only on hover/focus. */
     body.home-page .home-v20 .h-ambient-word__tooltip {
-      top: auto;
-      bottom: calc(100% + .22em);
+      bottom: calc(100% + .34em);
+      left: 0;
       width: 100%;
       min-width: 0;
       max-width: none;
-      display: grid;
-      gap: 2px;
       padding: 0;
       border: 0;
       border-radius: 0;
@@ -94,28 +94,44 @@
       -webkit-backdrop-filter: none;
     }
 
+    body.home-page .home-v20 .h-ambient-word--right .h-ambient-word__tooltip {
+      left: auto;
+      right: 0;
+    }
+
     html.dark body.home-page .home-v20 .h-ambient-word__tooltip {
-      background: transparent;
-      box-shadow: none;
       color: #f1e5cd;
     }
 
     body.home-page .home-v20 .h-ambient-word__meaning {
+      display: block;
       color: inherit;
       font-family: var(--f-body);
       font-size: clamp(12px, .82vw, 14px);
-      font-style: italic;
+      font-style: normal;
       font-weight: 650;
       line-height: 1.18;
       text-shadow: 0 1px 5px rgba(24, 20, 16, .08);
     }
 
     body.home-page .home-v20 .h-ambient-word__source {
-      margin-top: 2px;
+      top: calc(100% + .28em);
+      left: 0;
+      width: 100%;
+      max-width: none;
+      margin-top: 0;
       color: color-mix(in srgb, var(--h-muted) 86%, transparent);
       font-size: 7px;
       font-weight: 720;
       letter-spacing: .1em;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-5px);
+    }
+
+    body.home-page .home-v20 .h-ambient-word--right .h-ambient-word__source {
+      left: auto;
+      right: 0;
     }
 
     body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) {
@@ -141,20 +157,11 @@
       transition-delay: .04s, 0s, .04s;
     }
 
-    /* Top-rail phrases reveal downward so their translation is never clipped by
-       the top of the page. */
-    body.home-page .home-v20 .h-ambient-word:nth-child(-n + 2) .h-ambient-word__tooltip,
-    body.home-page .home-v20 .h-ambient-word:nth-child(17) .h-ambient-word__tooltip,
-    body.home-page .home-v20 .h-ambient-word:nth-child(18) .h-ambient-word__tooltip {
-      top: calc(100% + .24em);
-      bottom: auto;
-      transform: translateY(-7px);
-    }
-
-    body.home-page .home-v20 .h-ambient-word:nth-child(-n + 2):is(:hover, :focus-within) .h-ambient-word__tooltip,
-    body.home-page .home-v20 .h-ambient-word:nth-child(17):is(:hover, :focus-within) .h-ambient-word__tooltip,
-    body.home-page .home-v20 .h-ambient-word:nth-child(18):is(:hover, :focus-within) .h-ambient-word__tooltip {
+    body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__source {
+      opacity: 1;
+      visibility: visible;
       transform: translateY(0);
+      transition-delay: .12s, 0s, .12s;
     }
   }
 
@@ -164,24 +171,18 @@
     }
   }
 
-  /* The gateway accent belongs to the complete card, not to its text padding.
-     A full-width edge reads as one deliberate selection instead of a narrow
-     underline floating inside cards of unequal optical width. */
-  @media (min-width: 761px) {
-    body.home-page .home-v20 #main-content .h-home-route::after {
-      right: 0;
-      left: 0;
-    }
-
-    body.home-page .home-v20 #main-content .h-home-route:is(:hover, :focus-visible) {
-      z-index: 2;
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--h-accent) 34%, transparent);
-    }
-  }
+  /* The gateway card selection (полноширинное выделение) is owned entirely by
+     Directions.astro: its ::before surface, full-height side-glow box-shadows
+     and ::after edge tint render the active card edge-to-edge without any 1px
+     frame. Keyboard focus keeps a 2px ring via Directions' :focus-visible
+     rule, so no hover frame is needed here. */
 
   /* Paired editorial cards used to rotate toward the pointer and physically
-     cross over their neighbour. Keep the depth in the image and shadow, but
-     make the card plane stable and non-overlapping. */
+     cross over their neighbour. The card plane stays flat and non-overlapping
+     at rest (so the visual-parity contract still reads transform:none), while
+     the premium 3D pointer tilt already authored in css/home.css is restored
+     on hover for fine-pointer, tilt-ready surfaces. Keyboard focus keeps the
+     border/shadow highlight without any 3D motion. */
   body.home-page .home-v20 #main-content .h-featured-series {
     --home-tilt-x: 0deg;
     --home-tilt-y: 0deg;
@@ -189,17 +190,24 @@
     --home-tilt-gloss: 0;
     transform: none;
     transform-style: flat;
-    transition: border-color .32s ease, box-shadow .32s ease;
+    transition: transform .22s cubic-bezier(.22, 1, .36, 1), border-color .32s ease, box-shadow .32s ease;
   }
 
   body.home-page .home-v20 #main-content .h-featured-series::before {
-    opacity: 0;
+    opacity: var(--home-tilt-gloss, 0);
   }
 
   body.home-page .home-v20 #main-content .h-featured-series:is(:hover, :focus-visible) {
-    transform: none;
     border-color: color-mix(in srgb, var(--h-accent) 28%, var(--h-border-strong));
     box-shadow: 0 30px 78px -54px rgba(3, 35, 48, .72), 0 0 0 1px color-mix(in srgb, var(--h-accent) 10%, transparent);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 #main-content .h-featured-series.is-home-tilt-ready:hover {
+      --home-tilt-lift: -2px;
+      --home-tilt-gloss: 1;
+      transform: perspective(1100px) rotateX(var(--home-tilt-x, 0deg)) rotateY(var(--home-tilt-y, 0deg)) translate3d(0, var(--home-tilt-lift, 0px), 0);
+    }
   }
 
   /* Publication cards are independent surfaces. Real grid gaps and a stationary
