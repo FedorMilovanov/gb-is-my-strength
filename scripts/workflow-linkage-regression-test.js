@@ -93,7 +93,10 @@ assert.doesNotMatch(diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist
 assert.doesNotMatch(diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, `${DIAGNOSTICS_PATH}: diagnostic workflow must not own production publication`);
 
 assert.ok(visual.includes(REFUTATIONS_BROWSER_COMMAND), `${VISUAL_PATH}: Refutations computed-geometry gate is missing`);
+assert.match(visual, /pull_request:[\s\S]*- "src\/\*\*"[\s\S]*push:[\s\S]*- "src\/\*\*"/, `${VISUAL_PATH}: Refutations source-owner changes do not trigger both PR and main checks`);
 assert.match(visual, /pull_request:[\s\S]*scripts\/visual-parity-\*\.js[\s\S]*push:[\s\S]*scripts\/visual-parity-\*\.js/, `${VISUAL_PATH}: browser-contract source changes do not trigger both PR and main checks`);
+assert.match(refutationsBrowser, /HomeSections['", ]+['"]Refutations\.astro/, `${REFUTATIONS_BROWSER_PATH}: canonical Refutations source owner is not read`);
+assert.match(refutationsBrowser, /REFUTATIONS_SOURCE[\s\S]*h-refutation-card[\s\S]*box-sizing:\\s\*border-box/, `${REFUTATIONS_BROWSER_PATH}: explicit source-owner border-box assertion is missing`);
 assert.match(refutationsBrowser, /assert\.ok\(VISUAL_WORKFLOW\.includes\(SCRIPT_COMMAND\)/, `${REFUTATIONS_BROWSER_PATH}: Visual Parity owner assertion is missing`);
 assert.match(refutationsBrowser, /assert\.ok\(DEPLOY_WORKFLOW\.includes\(SCRIPT_COMMAND\)/, `${REFUTATIONS_BROWSER_PATH}: release-readiness owner assertion is missing`);
 assert.match(refutationsBrowser, /boxSizing,\s*'border-box'/, `${REFUTATIONS_BROWSER_PATH}: computed border-box assertion is missing`);
@@ -104,5 +107,5 @@ console.log('✅ workflow linkage: one direct-push control plane owns readiness 
 console.log('✅ two-SHA boundary: release candidate identity is independent from trusted workflow identity');
 console.log('✅ build-once: one checkout, one npm ci, one production build, one deploy-pages');
 console.log('✅ privileged deploy: exact approved action identities, no source checkout/rebuild');
-console.log('✅ Refutations geometry: Visual Parity and immutable readiness execute one computed-style browser owner');
+console.log('✅ Refutations geometry: canonical source owner feeds one Visual Parity + immutable-readiness computed-style gate');
 console.log('✅ metadata workflow remains read-only and build-free');
