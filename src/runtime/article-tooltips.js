@@ -1,4 +1,4 @@
-const VERSION = 15;
+const VERSION = 16;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -229,7 +229,7 @@ function positionMobile(tip) {
   applyOverflow(tip, Math.max(180, Math.floor(window.innerHeight * 0.72)));
 }
 
-function preferredPlacement(anchorRect, naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
+function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
   if (preservePlacement && (previousPlacement === 'top' || previousPlacement === 'bottom')) return previousPlacement;
   if (naturalHeight <= availableAbove) return 'top';
   if (naturalHeight <= availableBelow) return 'bottom';
@@ -254,7 +254,7 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   const availableAbove = Math.max(0, anchorRect.top - VIEWPORT_MARGIN - TIP_GAP);
   const availableBelow = Math.max(0, window.innerHeight - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
   const naturalHeight = Math.max(tip.scrollHeight || 0, tipRect.height || 0);
-  const placement = preferredPlacement(anchorRect, naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
+  const placement = preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
   const available = placement === 'top' ? availableAbove : availableBelow;
 
   if (naturalHeight > available) applyOverflow(tip, Math.min(Math.max(MIN_SCROLL_HEIGHT, available), viewportMax));
@@ -464,19 +464,28 @@ function initializeAnchor(anchor) {
   });
 }
 
-function retireLegacyTooltipOwners() {
-  const siteUtils = window.SiteUtils;
-  const controllers = siteUtils?._tooltipControllers;
-  if (!Array.isArray(controllers)) return;
-  const retained = [];
-  for (const controller of controllers) {
-    if (OWNED_LEGACY_SELECTORS.has(controller?.anchorSel)) {
-      controller.close?.(true);
-      continue;
-    }
-    retained.push(controller);
+function clearLegacyControllerTimers(controller) {
+  for (const key of ['_hoverTimer', '_stickyT', 'hoverTimer', 'stickyTimer']) {
+    const timer = Number(controller?.[key] || 0);
+    if (timer) window.clearTimeout(timer);
   }
-  if (retained.length !== controllers.length) siteUtils._tooltipControllers = retained;
+}
+
+function retireLegacyTooltipOwners() {
+  const controllers = window.SiteUtils?._tooltipControllers;
+  if (!Array.isArray(controllers)) return;
+  for (let index = controllers.length - 1; index >= 0; index -= 1) {
+    const controller = controllers[index];
+    if (!OWNED_LEGACY_SELECTORS.has(controller?.anchorSel)) continue;
+    clearLegacyControllerTimers(controller);
+    controller.close?.(true);
+    controllers.splice(index, 1);
+  }
+}
+
+function claimOwner() {
+  document.documentElement.dataset.gbArticleTooltipsOwner = OWNER;
+  document.documentElement.dataset.gbArticleTooltipsVersion = String(VERSION);
 }
 
 export function initGlossaryTooltips(scope = document) {
@@ -490,9 +499,15 @@ export function initInlineTooltips(scope = document) {
 }
 
 export function installArticleTooltips() {
-  if (window.GBArticleTooltips?.version === VERSION) return window.GBArticleTooltips;
-  retireLegacyTooltipOwners();
+  if (window.GBArticleTooltips?.version === VERSION) {
+    claimOwner();
+    return window.GBArticleTooltips;
+  }
   window.SiteUtils = window.SiteUtils || {};
+  claimOwner();
+  retireLegacyTooltipOwners();
+  if (document.readyState === 'complete') retireLegacyTooltipOwners();
+  else window.addEventListener('load', retireLegacyTooltipOwners, { once: true });
   window.SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
   initInlineTooltips(document);
   document.addEventListener('gb:quiz-rendered', (event) => initInlineTooltips(event.detail?.root || document));
@@ -516,6 +531,6 @@ export function installArticleTooltips() {
     if (!active.anchor.isConnected) closeTooltip('detached');
     else position(active.tip, active.anchor, true);
   }, { passive: true, capture: true });
-  window.GBArticleTooltips = Object.freeze({ version: VERSION, init: initInlineTooltips, close: closeTooltip });
+  window.GBArticleTooltips = Object.freeze({ version: VERSION, owner: OWNER, init: initInlineTooltips, close: closeTooltip });
   return window.GBArticleTooltips;
 }
