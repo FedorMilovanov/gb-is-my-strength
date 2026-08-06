@@ -134,12 +134,16 @@
     .hmset-dot.is-on { background: #7a2e2e; }
     html.dark .hmset-dot.is-on { background: #e0a89c; }
 
-    /* --- Applied reader vars on Hermenevtika's #content only (глобально:
-       элементы вне этого компонента; маркер [data-hm-reader] не даёт правилам
-       протечь на другие страницы с id="content", включая Gill). --- */
-    :global([data-reader-root]) { --hm-article-line: 1.6; --hm-article-measure: 43rem; }
-    :global([data-reader-root] .article-body) { line-height: var(--hm-article-line); }
-    :global([data-reader-root] .article-body > *) { max-width: var(--hm-article-measure); margin-left: auto; margin-right: auto; }
+    /* Applied reader vars on Hermenevtika only. The route-scoped selector
+       outranks component margin shorthands (notably .summary-card), so every
+       direct reading block shares one width and one horizontal axis. */
+    :global(main[data-reader-root][data-hm-reader]) { --hm-article-line: 1.6; --hm-article-measure: 48rem; }
+    :global(main[data-reader-root][data-hm-reader] .article-body) { line-height: var(--hm-article-line); }
+    :global(main[data-reader-root][data-hm-reader].article-main.article-main--hrail .article-body > *) {
+      inline-size:min(100%,var(--hm-article-measure));
+      max-inline-size:none;
+      margin-inline:auto;
+    }
 
     /* Compatibility selector for existing standalone article CSS. The canonical
        Sepia state is global; GBReaderPreferences mirrors it onto this root. */
@@ -188,7 +192,7 @@
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '46rem' };
+  const MEASURE_VALUES: Record<string, string> = { narrow: '40rem', normal: '48rem', wide: '54rem' };
 
   function readerPreferences() {
     return (window as any).GBReaderPreferences || null;
