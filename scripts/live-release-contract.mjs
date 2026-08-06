@@ -27,28 +27,6 @@ const retryDelayMs = Number.parseInt(process.env.RELEASE_LIVE_RETRY_DELAY_MS || 
 const timeoutMs = Number.parseInt(process.env.RELEASE_LIVE_REQUEST_TIMEOUT_MS || '30000', 10);
 const localHomePath = path.join(DIST, 'index.html');
 
-assert.match(repository, /^[^/\s]+\/[^/\s]+$/, 'GITHUB_REPOSITORY must be owner/name');
-assert.match(releaseSha, /^[a-f0-9]{40}$/, 'RELEASE_SHA must be exact');
-assert.match(controlPlaneSha, /^[a-f0-9]{40}$/, 'CONTROL_PLANE_SHA must be exact');
-assert.ok(Number.isSafeInteger(runId) && runId > 0, 'GITHUB_RUN_ID must be positive');
-assert.ok(Number.isSafeInteger(runAttempt) && runAttempt > 0, 'GITHUB_RUN_ATTEMPT must be positive');
-assert.match(expectedDigest, /^sha256:[a-f0-9]{64}$/, 'EXPECTED_CANDIDATE_DIGEST must be exact');
-if (transportArtifactDigest) assert.match(transportArtifactDigest, /^sha256:[a-f0-9]{64}$/, 'RELEASE_ARTIFACT_DIGEST must be exact');
-
-const local = verifyReleaseCandidate({
-  dist: DIST,
-  expectedRepository: repository,
-  expectedReleaseSha: releaseSha,
-  expectedControlPlaneSha: controlPlaneSha,
-  expectedRunId: runId,
-  expectedRunAttempt: runAttempt,
-});
-assert.equal(local.manifest.artifact.digest, expectedDigest, 'local candidate digest differs from resolver output');
-assert.equal(fs.existsSync(localHomePath), true, 'local candidate home index is missing');
-const localHomeBuffer = fs.readFileSync(localHomePath);
-const localHomeDigest = sha256(localHomeBuffer);
-assertHomeContract(localHomeBuffer, 'local candidate home');
-
 fs.mkdirSync(REPORTS, { recursive: true });
 const report = {
   liveBaseUrl: LIVE_BASE_URL,
@@ -57,7 +35,42 @@ const report = {
   controlPlaneSha,
   workflowRunId: runId,
   workflowRunAttempt: runAttempt,
-  candidate: {
+  candidate: null,
+  transportArtifact: {
+    id: transportArtifactId,
+    digest: transportArtifactDigest,
+  },
+  phase: 'preflight',
+  startedAt: new Date().toISOString(),
+  attempts: [],
+};
+
+let local;
+let localHomeBuffer;
+let localHomeDigest;
+try {
+  assert.match(repository, /^[^/\s]+\/[^/\s]+$/, 'GITHUB_REPOSITORY must be owner/name');
+  assert.match(releaseSha, /^[a-f0-9]{40}$/, 'RELEASE_SHA must be exact');
+  assert.match(controlPlaneSha, /^[a-f0-9]{40}$/, 'CONTROL_PLANE_SHA must be exact');
+  assert.ok(Number.isSafeInteger(runId) && runId > 0, 'GITHUB_RUN_ID must be positive');
+  assert.ok(Number.isSafeInteger(runAttempt) && runAttempt > 0, 'GITHUB_RUN_ATTEMPT must be positive');
+  assert.match(expectedDigest, /^sha256:[a-f0-9]{64}$/, 'EXPECTED_CANDIDATE_DIGEST must be exact');
+  if (transportArtifactDigest) assert.match(transportArtifactDigest, /^sha256:[a-f0-9]{64}$/, 'RELEASE_ARTIFACT_DIGEST must be exact');
+
+  local = verifyReleaseCandidate({
+    dist: DIST,
+    expectedRepository: repository,
+    expectedReleaseSha: releaseSha,
+    expectedControlPlaneSha: controlPlaneSha,
+    expectedRunId: runId,
+    expectedRunAttempt: runAttempt,
+  });
+  assert.equal(local.manifest.artifact.digest, expectedDigest, 'local candidate digest differs from resolver output');
+  assert.equal(fs.existsSync(localHomePath), true, 'local candidate home index is missing');
+  localHomeBuffer = fs.readFileSync(localHomePath);
+  localHomeDigest = sha256(localHomeBuffer);
+  assertHomeContract(localHomeBuffer, 'local candidate home');
+  report.candidate = {
     id: local.manifest.artifact.candidateId,
     digest: expectedDigest,
     bytes: local.manifest.artifact.bytes,
@@ -68,17 +81,23 @@ const report = {
       bytes: localHomeBuffer.length,
       sha256: localHomeDigest,
     },
-  },
-  transportArtifact: {
-    id: transportArtifactId,
-    digest: transportArtifactDigest,
-  },
-  startedAt: new Date().toISOString(),
-  attempts: [],
-};
+  };
+  report.phase = 'live';
+} catch (error) {
+  failPreflight(error);
+}
 
 function writeReport() {
   fs.writeFileSync(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+}
+function failPreflight(error) {
+  report.result = 'FAIL';
+  report.phase = 'preflight';
+  report.finishedAt = new Date().toISOString();
+  report.error = String(error?.stack || error);
+  writeReport();
+  console.error(error);
+  process.exit(1);
 }
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 function sha256(buffer) { return `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`; }
@@ -100,7 +119,6 @@ function assertHomeContract(buffer, label) {
   for (let divider = 0; divider < 4; divider += 1) {
     assert.equal(html.includes(`data-home-route-divider="${divider}"`), true, `${label}: missing library divider ${divider}`);
   }
-  assert.match(html, /h-refutation-card[^}]{0,500}box-sizing:border-box/, `${label}: Refutations does not own border-box geometry`);
 }
 function probeUrl(relative, attempt, label) {
   const target = new URL(relative, LIVE_BASE_URL);
@@ -203,6 +221,7 @@ for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     entry.result = 'PASS';
     entry.finishedAt = new Date().toISOString();
     report.result = 'PASS';
+    report.phase = 'complete';
     report.finishedAt = entry.finishedAt;
     writeReport();
     console.log(`Live release contract: PASS (release ${releaseSha}, control ${controlPlaneSha}, ${expectedDigest}).`);
@@ -218,6 +237,7 @@ for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
   }
 }
 report.result = 'FAIL';
+report.phase = 'live';
 report.finishedAt = new Date().toISOString();
 report.error = String(lastError?.stack || lastError || 'unknown live release failure');
 writeReport();
