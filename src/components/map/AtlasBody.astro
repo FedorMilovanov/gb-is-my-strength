@@ -1,5 +1,6 @@
 ---
 import compiledRelations from '../../lib/relations/compiled';
+import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
 
 const compiled = compiledRelations;
 const nodes = compiled.nodes;
@@ -37,6 +38,7 @@ const edgeKinds = compiled.edgeKinds;
         <span>Фильтры</span>
       </button>
       <button class="atlas-reset" id="atlasReset" type="button">Сбросить</button>
+      <AppSearchSurface mode="atlas" />
     </div>
   </header>
 

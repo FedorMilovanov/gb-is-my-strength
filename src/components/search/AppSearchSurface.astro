@@ -1,0 +1,140 @@
+---
+interface Props {
+  mode: 'map-engine' | 'atlas' | 'baptizm';
+}
+
+const { mode } = Astro.props;
+---
+<button
+  id="gbSearchBtn"
+  class={`gb-app-search gb-app-search--${mode}`}
+  type="button"
+  aria-label="Поиск по всему сайту (Ctrl+K)"
+  title="Поиск по всему сайту Ctrl+K"
+  aria-haspopup="dialog"
+  data-app-search-trigger
+  data-search-shortcut
+  data-search-shortcut-label="Поиск по всему сайту"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="11" cy="11" r="7.5"></circle>
+    <path d="m20 20-3.8-3.8"></path>
+  </svg>
+</button>
+
+<style is:global>
+  .gb-app-search {
+    display: inline-grid;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .11);
+    border-radius: 12px;
+    background: rgba(10, 16, 25, .72);
+    color: #a5acb7;
+    box-shadow: 0 10px 26px -20px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .035);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease;
+  }
+
+  .gb-app-search svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .gb-app-search:is(:hover, :focus-visible) {
+    border-color: rgba(231, 199, 122, .42);
+    background: rgba(231, 199, 122, .09);
+    color: #e7c77a;
+  }
+
+  .gb-app-search:focus-visible {
+    outline: 2px solid #f4d894;
+    outline-offset: 2px;
+  }
+
+  .gb-app-search:active { transform: scale(.96); }
+
+  .gb-app-search--map-engine {
+    position: fixed;
+    inset-block-start: 10px;
+    inset-inline-end: 116px;
+    z-index: 17;
+    border-radius: 8px;
+    background: var(--me-control-bg, rgba(0, 0, 0, .55));
+    color: var(--me-muted, #9aa2ae);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  body.has-app-search-map .me-search { inset-inline-end: 168px; }
+  body.has-app-search-map .me-search:focus { inset-inline-end: 168px; }
+
+  .gb-app-search--atlas {
+    flex: 0 0 auto;
+    border-color: rgba(255, 255, 255, .085);
+    background: rgba(13, 21, 32, .72);
+    color: var(--atlas-muted, #a5acb7);
+  }
+
+  .gb-app-search--baptizm {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    border-color: rgba(255, 255, 255, .09);
+    background: rgba(255, 255, 255, .025);
+    color: var(--muted, #8a857f);
+  }
+
+  @media (max-width: 700px) {
+    .gb-app-search--map-engine {
+      inset-block-start: 8px;
+      inset-inline-end: 112px;
+    }
+
+    body.has-app-search-map .me-search,
+    body.has-app-search-map .me-search:focus {
+      inset-inline-end: 164px;
+      width: calc(100% - 272px);
+      min-width: 104px;
+      max-width: 190px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gb-app-search { transition: none; }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const trigger = document.querySelector('[data-app-search-trigger]');
+    if (!(trigger instanceof HTMLButtonElement)) return;
+    const platform = navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || '';
+    const modifier = /Mac|iPhone|iPad|iPod/i.test(platform) ? '⌘' : 'Ctrl';
+    const label = `Поиск по всему сайту (${modifier}+K)`;
+    trigger.setAttribute('aria-label', label);
+    trigger.setAttribute('title', `Поиск по всему сайту ${modifier}+K`);
+
+    window.addEventListener('keydown', (event) => {
+      if (!(event.ctrlKey || event.metaKey) || String(event.key).toLowerCase() !== 'k') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const search = window.GBSearch;
+      if (!search || typeof search.open !== 'function') return;
+      const isOpen = document.querySelector('.cp-backdrop')?.classList.contains('is-open') === true;
+      if (isOpen && typeof search.close === 'function') search.close();
+      else search.open();
+    }, true);
+  })();
+</script>

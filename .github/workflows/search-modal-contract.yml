@@ -7,6 +7,18 @@ on:
       - 'js/search.js'
       - 'css/command-palette.css'
       - 'scripts/search-modal-browser-contract.mjs'
+      - 'scripts/app-search-surface-source-contract.mjs'
+      - 'scripts/app-search-surface-browser-contract.mjs'
+      - 'src/components/search/AppSearchHead.astro'
+      - 'src/components/search/AppSearchSurface.astro'
+      - 'src/pages/karty/avraam/index.astro'
+      - 'src/pages/karty/ishod/index.astro'
+      - 'src/components/karty/avraam/AvraamPageHead.astro'
+      - 'src/components/karty/ishod/IshodPageHead.astro'
+      - 'src/components/konfessii/russkij-baptizm/Baptizm3DPageHead.astro'
+      - 'src/components/konfessii/russkij-baptizm/Baptizm3DBody.astro'
+      - 'src/components/map/MapPageHead.astro'
+      - 'src/components/map/AtlasBody.astro'
       - '.github/workflows/search-modal-contract.yml'
   push:
     branches: [main]
@@ -14,6 +26,18 @@ on:
       - 'js/search.js'
       - 'css/command-palette.css'
       - 'scripts/search-modal-browser-contract.mjs'
+      - 'scripts/app-search-surface-source-contract.mjs'
+      - 'scripts/app-search-surface-browser-contract.mjs'
+      - 'src/components/search/AppSearchHead.astro'
+      - 'src/components/search/AppSearchSurface.astro'
+      - 'src/pages/karty/avraam/index.astro'
+      - 'src/pages/karty/ishod/index.astro'
+      - 'src/components/karty/avraam/AvraamPageHead.astro'
+      - 'src/components/karty/ishod/IshodPageHead.astro'
+      - 'src/components/konfessii/russkij-baptizm/Baptizm3DPageHead.astro'
+      - 'src/components/konfessii/russkij-baptizm/Baptizm3DBody.astro'
+      - 'src/components/map/MapPageHead.astro'
+      - 'src/components/map/AtlasBody.astro'
       - '.github/workflows/search-modal-contract.yml'
   workflow_dispatch:
 
@@ -44,6 +68,9 @@ jobs:
         run: |
           node --check js/search.js
           node --check scripts/search-modal-browser-contract.mjs
+          node --check scripts/app-search-surface-source-contract.mjs
+          node --check scripts/app-search-surface-browser-contract.mjs
+          node scripts/app-search-surface-source-contract.mjs
           npm run astro:check
 
       - name: Build production-like publication
@@ -55,7 +82,9 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
 
       - name: Validate Search modal runtime
-        run: node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract
+        run: |
+          node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/core
+          node scripts/app-search-surface-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/app-surfaces
 
       - name: Verify validation is read-only
         run: git diff --exit-code
