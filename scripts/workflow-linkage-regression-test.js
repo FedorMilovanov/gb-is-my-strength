@@ -8,6 +8,9 @@ const assert = require('assert/strict');
 const ROOT = path.resolve(__dirname, '..');
 const DIAGNOSTICS_PATH = '.github/workflows/indexnow.yml';
 const RELEASE_PATH = '.github/workflows/deploy.yml';
+const VISUAL_PATH = '.github/workflows/visual-parity.yml';
+const REFUTATIONS_BROWSER_PATH = 'scripts/visual-parity-home-refutations-box-model-browser-test.js';
+const REFUTATIONS_BROWSER_COMMAND = `node ${REFUTATIONS_BROWSER_PATH}`;
 const PINS = Object.freeze({
   checkout: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1',
   downloadArtifact: 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1',
@@ -47,6 +50,8 @@ function jobSection(workflow, name, nextName = null) {
 
 const diagnostics = read(DIAGNOSTICS_PATH);
 const release = read(RELEASE_PATH);
+const visual = read(VISUAL_PATH);
+const refutationsBrowser = read(REFUTATIONS_BROWSER_PATH);
 const readiness = jobSection(release, 'readiness', 'deploy');
 const deploy = jobSection(release, 'deploy');
 const releasePaths = pushPaths(release, RELEASE_PATH);
@@ -65,6 +70,7 @@ assert.match(readiness, /git fetch --no-tags origin "\+main:refs\/remotes\/origi
 assert.match(readiness, /git merge-base --is-ancestor "\$RELEASE_SHA" "\$CONTROL_PLANE_SHA"/, `${RELEASE_PATH}: release/control ancestry proof is missing`);
 assert.match(readiness, /name:\s*Check source asset revisions without writing[\s\S]{0,180}node scripts\/cache-bust\.js/, `${RELEASE_PATH}: candidate revision check is missing`);
 assert.match(readiness, /npm run strangler:build:production-like/, `${RELEASE_PATH}: candidate build is missing`);
+assert.match(readiness, /Install Playwright Chromium[\s\S]*visual-parity-home-refutations-box-model-browser-test\.js/, `${RELEASE_PATH}: exact-candidate Refutations computed-geometry gate is missing`);
 assert.match(readiness, /Stage immutable verification tools from trusted control plane[\s\S]*git show "\$\{CONTROL_PLANE_SHA\}:scripts\/\$\{file\}"/, `${RELEASE_PATH}: verification tools are not sourced from the control plane`);
 assert.match(readiness, /release_sha:\s*\$\{\{ steps\.provenance\.outputs\.release_sha \}\}[\s\S]*control_plane_sha:\s*\$\{\{ steps\.provenance\.outputs\.control_plane_sha \}\}/, `${RELEASE_PATH}: readiness must expose both identities`);
 assert.match(readiness, /name:\s*Upload immutable release candidate/, `${RELEASE_PATH}: candidate artifact publication is missing`);
@@ -86,8 +92,17 @@ assert.doesNotMatch(release, /uses:\s*actions\/(?:checkout|download-artifact|upl
 assert.doesNotMatch(diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/, `${DIAGNOSTICS_PATH}: diagnostics must not duplicate the release build`);
 assert.doesNotMatch(diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, `${DIAGNOSTICS_PATH}: diagnostic workflow must not own production publication`);
 
+assert.ok(visual.includes(REFUTATIONS_BROWSER_COMMAND), `${VISUAL_PATH}: Refutations computed-geometry gate is missing`);
+assert.match(visual, /pull_request:[\s\S]*scripts\/visual-parity-\*\.js[\s\S]*push:[\s\S]*scripts\/visual-parity-\*\.js/, `${VISUAL_PATH}: browser-contract source changes do not trigger both PR and main checks`);
+assert.match(refutationsBrowser, /assert\.ok\(VISUAL_WORKFLOW\.includes\(SCRIPT_COMMAND\)/, `${REFUTATIONS_BROWSER_PATH}: Visual Parity owner assertion is missing`);
+assert.match(refutationsBrowser, /assert\.ok\(DEPLOY_WORKFLOW\.includes\(SCRIPT_COMMAND\)/, `${REFUTATIONS_BROWSER_PATH}: release-readiness owner assertion is missing`);
+assert.match(refutationsBrowser, /boxSizing,\s*'border-box'/, `${REFUTATIONS_BROWSER_PATH}: computed border-box assertion is missing`);
+assert.match(refutationsBrowser, /Math\.abs\(card\.cardWidth - card\.shellWidth\) <= 1/, `${REFUTATIONS_BROWSER_PATH}: card/shell width assertion is missing`);
+assert.match(refutationsBrowser, /Math\.abs\(card\.cardHeight - card\.shellHeight\) <= 1/, `${REFUTATIONS_BROWSER_PATH}: card/shell height assertion is missing`);
+
 console.log('✅ workflow linkage: one direct-push control plane owns readiness and Pages promotion');
 console.log('✅ two-SHA boundary: release candidate identity is independent from trusted workflow identity');
 console.log('✅ build-once: one checkout, one npm ci, one production build, one deploy-pages');
 console.log('✅ privileged deploy: exact approved action identities, no source checkout/rebuild');
+console.log('✅ Refutations geometry: Visual Parity and immutable readiness execute one computed-style browser owner');
 console.log('✅ metadata workflow remains read-only and build-free');
