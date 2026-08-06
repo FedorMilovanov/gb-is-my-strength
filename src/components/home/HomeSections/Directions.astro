@@ -91,27 +91,25 @@ const routes = [
           data-home-route-index={index}
         >
           <span class="h-home-route__surface" aria-hidden="true"></span>
-          <span class="h-home-route__content">
-            <span class="h-home-route__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-            <span class="h-home-route__glyph" aria-hidden="true">
-              <img
-                class={`h-route-object h-route-object--${route.key}`}
-                src={route.image}
-                alt=""
-                width={route.width}
-                height={route.height}
-                loading="eager"
-                decoding="async"
-                fetchpriority="low"
-              />
-            </span>
-            <span class="h-home-route__copy">
-              <span class="h-home-route__eyebrow">{route.eyebrow}</span>
-              <strong>{route.title}</strong>
-              <span>{route.description}</span>
-            </span>
-            <span class="h-home-route__arrow" aria-hidden="true">→</span>
+          <span class="h-home-route__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          <span class="h-home-route__glyph" aria-hidden="true">
+            <img
+              class={`h-route-object h-route-object--${route.key}`}
+              src={route.image}
+              alt=""
+              width={route.width}
+              height={route.height}
+              loading="eager"
+              decoding="async"
+              fetchpriority="low"
+            />
           </span>
+          <span class="h-home-route__copy">
+            <span class="h-home-route__eyebrow">{route.eyebrow}</span>
+            <strong>{route.title}</strong>
+            <span>{route.description}</span>
+          </span>
+          <span class="h-home-route__arrow" aria-hidden="true">→</span>
         </a>
       </>
     ))}
@@ -136,6 +134,14 @@ const routes = [
     position: relative;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr) 1px) minmax(0, 1fr);
+    /* The legacy 4-column owner in css/home.css sets gap: clamp(22px,3vw,44px).
+       This 9-track deck interleaves 1px dividers between cards, so any inherited
+       gap inserts ~30px on BOTH sides of every divider and shrinks each card to
+       the central two-thirds of its cell. Reset gap to 0 here so cards sit flush
+       against their dividers (edge-to-edge selection surface). */
+    gap: 0;
+    column-gap: 0;
+    row-gap: 0;
     border: 1px solid color-mix(in srgb, var(--h-border-strong) 82%, transparent);
     border-radius: 24px;
     background:
@@ -170,10 +176,9 @@ const routes = [
     position: relative;
     min-width: 0;
     min-height: 410px;
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding: 0;
+    display: grid;
+    grid-template-rows: auto minmax(176px, 1fr) auto auto;
+    padding: 20px clamp(17px, 1.55vw, 25px) 23px;
     border: 0;
     color: var(--h-heading);
     text-decoration: none;
@@ -192,14 +197,19 @@ const routes = [
      card equals the full grid cell (padding:0) and the surface (inset:0) fills
      it edge-to-edge between dividers. Mirrors the reference deck → full-width
      card → surface → padded content ownership. */
-  body.home-page #main-content .h-home-route__content {
+  /* Direct children (except the surface) sit above the surface. The surface is
+     position:absolute; inset:0 and fills the card's padding-box edge-to-edge —
+     the same model as the reference .card-surface inside a padded .library-card. */
+  body.home-page #main-content .h-home-route > :not(.h-home-route__surface) {
     position: relative;
     z-index: 1;
-    display: grid;
-    grid-template-rows: auto minmax(176px, 1fr) auto auto;
-    min-width: 0;
-    height: 100%;
-    padding: 20px clamp(17px, 1.55vw, 25px) 23px;
+  }
+
+  /* Retire the legacy 1px underline ::after authored in css/home.css so it can
+     no longer conflict with the selection surface. (The legacy owner lives in
+     a guarded shared file; removing it there is a separate cleanup task.) */
+  body.home-page #main-content .h-home-route::after {
+    content: none;
   }
 
   /* Full-width selection surface — a REAL element (not a pseudo) with
@@ -224,8 +234,8 @@ const routes = [
     background:
       radial-gradient(108% 62% at 50% -12%, color-mix(in srgb, var(--h-accent) 12%, transparent), transparent 68%),
       linear-gradient(180deg,
-        color-mix(in srgb, var(--h-surface-solid) 88%, transparent),
-        color-mix(in srgb, var(--h-surface-solid) 68%, transparent));
+        color-mix(in srgb, var(--h-surface-solid) 84%, transparent),
+        color-mix(in srgb, var(--h-surface-solid) 66%, transparent));
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, .38),
       inset 0 -1px 0 color-mix(in srgb, var(--h-accent) 7%, transparent);
@@ -288,12 +298,6 @@ const routes = [
     );
     opacity: .62;
     filter: blur(5px);
-  }
-
-  /* Retire the legacy 1px underline ::after authored in css/home.css so it can
-     no longer conflict with the selection surface. */
-  body.home-page #main-content .h-home-route::after {
-    content: none;
   }
 
   body.home-page #main-content .h-home-route__divider {
@@ -385,18 +389,18 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-routes[data-home-route-active] .h-home-route.h-in:not(.is-active) {
-    opacity: .84;
-    filter: saturate(.91);
+    opacity: .92;
+    filter: saturate(.96);
   }
 
   html.dark body.home-page #main-content .h-home-routes[data-home-route-active] .h-home-route.h-in:not(.is-active) {
-    opacity: .79;
-    filter: saturate(.88) brightness(.93);
+    opacity: .88;
+    filter: saturate(.93) brightness(.97);
   }
 
   body.home-page #main-content .h-home-route[data-home-route="articles"] {
-    --route-object-scale: 1.08;
-    --route-object-hover-scale: 1.096;
+    --route-object-scale: 1.16;
+    --route-object-hover-scale: 1.166;
     --route-object-y: 4px;
     --route-shadow-width: 56%;
     --route-shadow-height: 14px;
@@ -405,8 +409,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="series"] {
-    --route-object-scale: .98;
-    --route-object-hover-scale: .994;
+    --route-object-scale: .95;
+    --route-object-hover-scale: .956;
     --route-shadow-width: 61%;
     --route-shadow-height: 17px;
     --route-shadow-bottom: 17px;
@@ -414,8 +418,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="biographies"] {
-    --route-object-scale: 1.01;
-    --route-object-hover-scale: 1.024;
+    --route-object-scale: .98;
+    --route-object-hover-scale: .986;
     --route-object-y: -1px;
     --route-shadow-width: 45%;
     --route-shadow-height: 13px;
@@ -424,8 +428,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="maps"] {
-    --route-object-scale: 1.12;
-    --route-object-hover-scale: 1.136;
+    --route-object-scale: 1.06;
+    --route-object-hover-scale: 1.066;
     --route-object-y: 6px;
     --route-shadow-width: 68%;
     --route-shadow-height: 13px;
@@ -434,8 +438,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="confessions"] {
-    --route-object-scale: 1.04;
-    --route-object-hover-scale: 1.055;
+    --route-object-scale: 1.02;
+    --route-object-hover-scale: 1.026;
     --route-object-y: 4px;
     --route-shadow-width: 61%;
     --route-shadow-height: 16px;
@@ -698,9 +702,6 @@ const routes = [
 
     body.home-page #main-content .h-home-route {
       min-height: 430px;
-    }
-
-    body.home-page #main-content .h-home-route__content {
       grid-template-rows: auto minmax(190px, 1fr) auto auto;
       padding-inline: clamp(22px, 1.55vw, 30px);
     }
@@ -745,12 +746,9 @@ const routes = [
     body.home-page #main-content .h-home-route {
       flex: 0 0 min(82vw, 284px);
       min-height: 420px;
+      grid-template-rows: auto minmax(176px, 1fr) auto auto;
       scroll-snap-align: start;
       scroll-snap-stop: always;
-    }
-
-    body.home-page #main-content .h-home-route__content {
-      grid-template-rows: auto minmax(176px, 1fr) auto auto;
     }
 
     body.home-page #main-content .h-home-route__glyph {
@@ -790,9 +788,6 @@ const routes = [
     body.home-page #main-content .h-home-route {
       flex-basis: min(84vw, 284px);
       min-height: 396px;
-    }
-
-    body.home-page #main-content .h-home-route__content {
       grid-template-rows: auto minmax(152px, 1fr) auto auto;
       padding: 22px 20px 22px;
     }
@@ -855,9 +850,6 @@ const routes = [
 
     body.home-page #main-content .h-home-route {
       flex-basis: min(87vw, 272px);
-    }
-
-    body.home-page #main-content .h-home-route__content {
       padding-inline: 17px;
     }
   }
