@@ -1,0 +1,198 @@
+name: Temporary Search trigger labels P3-01 publisher
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - scripts/tmp_search_trigger_labels_writer.py
+      - .github/workflows/tmp-search-trigger-labels-p3-01.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: search-trigger-labels-p3-01-agent-search-trigger-labels-p3-01-20260806
+  cancel-in-progress: true
+
+jobs:
+  publish-clean-label-lane:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Guard exact base branch and transport shape
+        env:
+          EXPECTED_BASE: 8a51db9a2df74fa615a3eaca698144302e47e332
+          EXPECTED_BRANCH: agent/search-trigger-labels-p3-01-20260806
+          TARGET_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          git fetch origin main --no-tags
+          test "$(git rev-parse origin/main)" = "$EXPECTED_BASE"
+          test "$GITHUB_HEAD_REF" = "$EXPECTED_BRANCH"
+          mapfile -t transport < <(git diff --name-only "$EXPECTED_BASE"...HEAD)
+          printf '%s\n' "${transport[@]}"
+          test "${#transport[@]}" -eq 2
+          test "${transport[0]}" = ".github/workflows/tmp-search-trigger-labels-p3-01.yml"
+          test "${transport[1]}" = "scripts/tmp_search_trigger_labels_writer.py"
+
+      - name: Apply bounded search label writer
+        run: |
+          set -euo pipefail
+          python3 scripts/tmp_search_trigger_labels_writer.py
+          test ! -e scripts/tmp_search_trigger_labels_writer.py
+          test ! -e .github/workflows/tmp-search-trigger-labels-p3-01.yml
+          node --check js/search.js
+          node --check js/search-trigger-labels.js
+          node --check scripts/search-trigger-label-source-contract.mjs
+          node --check scripts/search-trigger-label-browser-contract.mjs
+          node scripts/search-trigger-label-source-contract.mjs
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Synchronize governed asset revisions
+        run: |
+          set -euo pipefail
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          node scripts/search-trigger-label-source-contract.mjs
+          npm run workflows:check
+          npm run workflows:lint
+          npm run astro:check
+
+      - name: Prove cache-bust projections are bounded
+        env:
+          EXPECTED_BASE: 8a51db9a2df74fa615a3eaca698144302e47e332
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+          import subprocess
+
+          base = '8a51db9a2df74fa615a3eaca698144302e47e332'
+          root = Path('.')
+          functional = {
+              '.github/workflows/search-modal-contract.yml',
+              'js/search-trigger-labels.js',
+              'js/search.js',
+              'scripts/cache-bust-assets.js',
+              'scripts/search-trigger-label-source-contract.mjs',
+              'scripts/search-trigger-label-browser-contract.mjs',
+              'src/components/reader-platform/ReaderPreferencesHead.astro',
+              'src/components/home/HomePageChrome.astro',
+              'src/components/search/AppSearchSurface.astro',
+              'src/lib/asset-version.js',
+          }
+          changed = subprocess.check_output(['git', 'diff', '--name-only', base], text=True).splitlines()
+          new_hash = hashlib.md5((root / 'js/search.js').read_bytes()).hexdigest()[:8]
+
+          def base_text(path):
+              return subprocess.check_output(['git', 'show', f'{base}:{path}'], text=True)
+
+          def astro_expected(source):
+              return re.sub(
+                  r'((?:\.\./)*|/?)js/search\.js\?v=[^\s"\'&}>]+',
+                  lambda match: f'{match.group(1)}js/search.js?v={new_hash}',
+                  source,
+              )
+
+          def html_expected(source):
+              return re.sub(
+                  r'((?:\.\./)*js/search\.js)(?:\?v=[^\s"&]+)?',
+                  lambda match: f'{match.group(1)}?v={new_hash}',
+                  source,
+              )
+
+          extras = []
+          for path in changed:
+              if path in functional:
+                  continue
+              if path.endswith('.astro'):
+                  expected = astro_expected(base_text(path))
+              elif path.endswith('.html'):
+                  expected = html_expected(base_text(path))
+              else:
+                  raise SystemExit(f'unexpected non-projection path: {path}')
+              actual = (root / path).read_text(encoding='utf-8')
+              if actual != expected:
+                  raise SystemExit(f'projection has non-cache-bust drift: {path}')
+              extras.append(path)
+
+          required = functional - {'src/lib/asset-version.js'}
+          missing = sorted(required - set(changed))
+          if missing:
+              raise SystemExit(f'missing functional paths: {missing}')
+          if 'src/lib/asset-version.js' not in changed:
+              raise SystemExit('asset-version helper was not regenerated')
+          if any(path.startswith('.github/workflows/tmp-') or path.startswith('scripts/tmp_') for path in changed):
+              raise SystemExit('temporary transport survived final diff')
+          print(f'BOUNDED SEARCH LABEL PATHS: {len(changed)} total; {len(extras)} cache-bust projections; search={new_hash}')
+          print('\n'.join(changed))
+          PY
+
+      - name: Build production-like publication
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Validate core app and label Search contracts
+        run: |
+          set -euo pipefail
+          node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/core
+          node scripts/app-search-surface-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/app-surfaces
+          node scripts/search-trigger-label-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/trigger-labels
+
+      - name: Recheck tracked diff and publication purity
+        run: |
+          set -euo pipefail
+          node scripts/cache-bust.js
+          node scripts/search-trigger-label-source-contract.mjs
+          git diff --check
+          test -z "$(git status --short --untracked-files=no | grep -E '^( M|M |A | D|D ) dist/|reports/' || true)"
+
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: temporary-search-trigger-labels-${{ github.run_id }}
+          path: reports/search-modal-contract/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Canonicalize to one clean commit and push guarded ref
+        env:
+          EXPECTED_BASE: 8a51db9a2df74fa615a3eaca698144302e47e332
+          BRANCH: agent/search-trigger-labels-p3-01-20260806
+          TARGET_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          rm -rf reports/search-modal-contract dist
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git reset --soft "$EXPECTED_BASE"
+          git add -A
+          test ! -e scripts/tmp_search_trigger_labels_writer.py
+          test ! -e .github/workflows/tmp-search-trigger-labels-p3-01.yml
+          git diff --cached --check
+          git commit -m "fix(search): unify platform-aware trigger labels"
+          git push --force-with-lease="refs/heads/$BRANCH:$TARGET_SHA" origin "HEAD:refs/heads/$BRANCH"
