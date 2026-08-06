@@ -1,4 +1,4 @@
-const VERSION = 14;
+const VERSION = 15;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -6,6 +6,7 @@ const HOVER_TRANSIT_MS = 520;
 const HOVER_TRANSIT_PADDING = 12;
 const VIEWPORT_MARGIN = 16;
 const TIP_GAP = 10;
+const MIN_SCROLL_HEIGHT = 96;
 
 let active = null;
 let closeTimer = 0;
@@ -155,6 +156,14 @@ function setGlossaryExpanded(tip, frame, expand, detail, expanded) {
   if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
 }
 
+function resetGlossaryTip(tip) {
+  if (!tip?.classList.contains('gtip')) return;
+  const frame = tip.querySelector(':scope > .gtip-luxury');
+  const expand = frame?.querySelector('[data-gtip-expand]');
+  const detail = frame?.querySelector('.gtip-detail-wrap');
+  if (frame && expand) setGlossaryExpanded(tip, frame, expand, detail, false);
+}
+
 function prepareGlossaryTip(tip) {
   if (!tip?.classList.contains('gtip')) return;
   let frame = tip.querySelector(':scope > .gtip-luxury');
@@ -164,6 +173,7 @@ function prepareGlossaryTip(tip) {
     while (tip.firstChild) frame.appendChild(tip.firstChild);
     tip.appendChild(frame);
   }
+  tip.dataset.luxury = 'true';
   const expand = frame.querySelector('[data-gtip-expand]');
   if (!expand || expand.dataset.gbExpandReady === '1') return;
   expand.dataset.gbExpandReady = '1';
@@ -174,11 +184,7 @@ function prepareGlossaryTip(tip) {
     event.stopPropagation();
     const expanded = expand.getAttribute('aria-expanded') !== 'true';
     setGlossaryExpanded(tip, frame, expand, detail, expanded);
-    if (active?.tip === tip) {
-      window.requestAnimationFrame(() => {
-        if (active?.tip === tip) position(tip, active.anchor);
-      });
-    }
+    if (active?.tip === tip) scheduleGeometry(active, true);
   });
 }
 
@@ -191,18 +197,27 @@ function setImportant(style, property, value) {
   style.setProperty(property, value, 'important');
 }
 
+function clearPositionGeometry(tip) {
+  for (const property of ['left', 'top', 'right', 'bottom']) tip.style.removeProperty(property);
+}
+
+function clearSizeGeometry(tip) {
+  for (const property of ['max-height', 'overflow-y']) tip.style.removeProperty(property);
+}
+
 function clearAuthoritativeGeometry(tip) {
-  for (const property of ['left', 'top', 'right', 'bottom', 'max-height', 'overflow-y']) {
-    tip.style.removeProperty(property);
-  }
+  clearPositionGeometry(tip);
+  clearSizeGeometry(tip);
   tip.removeAttribute('data-placement');
 }
 
 function applyOverflow(tip, maxHeight) {
-  if (!Number.isFinite(maxHeight) || maxHeight <= 0) return;
-  setImportant(tip.style, 'max-height', `${Math.floor(maxHeight)}px`);
-  const needsScroll = tip.scrollHeight > Math.floor(maxHeight) + 1;
+  if (!Number.isFinite(maxHeight) || maxHeight <= 0) return false;
+  const height = Math.max(MIN_SCROLL_HEIGHT, Math.floor(maxHeight));
+  setImportant(tip.style, 'max-height', `${height}px`);
+  const needsScroll = tip.scrollHeight > height + 1;
   setImportant(tip.style, 'overflow-y', needsScroll ? 'auto' : 'visible');
+  return needsScroll;
 }
 
 function positionMobile(tip) {
@@ -214,12 +229,20 @@ function positionMobile(tip) {
   applyOverflow(tip, Math.max(180, Math.floor(window.innerHeight * 0.72)));
 }
 
-function positionDesktop(tip, anchor) {
-  clearAuthoritativeGeometry(tip);
+function preferredPlacement(anchorRect, naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
+  if (preservePlacement && (previousPlacement === 'top' || previousPlacement === 'bottom')) return previousPlacement;
+  if (naturalHeight <= availableAbove) return 'top';
+  if (naturalHeight <= availableBelow) return 'bottom';
+  return availableAbove >= availableBelow ? 'top' : 'bottom';
+}
+
+function positionDesktop(tip, anchor, preservePlacement = false) {
+  const previousPlacement = tip.dataset.placement || '';
+  clearPositionGeometry(tip);
+  clearSizeGeometry(tip);
   setImportant(tip.style, 'position', 'fixed');
   setImportant(tip.style, 'right', 'auto');
   setImportant(tip.style, 'bottom', 'auto');
-  setImportant(tip.style, 'overflow-y', 'visible');
 
   const anchorRect = anchor.getBoundingClientRect();
   let tipRect = tip.getBoundingClientRect();
@@ -227,42 +250,61 @@ function positionDesktop(tip, anchor) {
   let left = anchorRect.left + anchorRect.width / 2 - width / 2;
   left = Math.max(VIEWPORT_MARGIN, Math.min(left, window.innerWidth - VIEWPORT_MARGIN - width));
 
+  const viewportMax = Math.max(MIN_SCROLL_HEIGHT, window.innerHeight - VIEWPORT_MARGIN * 2);
   const availableAbove = Math.max(0, anchorRect.top - VIEWPORT_MARGIN - TIP_GAP);
   const availableBelow = Math.max(0, window.innerHeight - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
-  const naturalHeight = tip.scrollHeight || tipRect.height;
-  let placement = 'top';
-  let top;
+  const naturalHeight = Math.max(tip.scrollHeight || 0, tipRect.height || 0);
+  const placement = preferredPlacement(anchorRect, naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
+  const available = placement === 'top' ? availableAbove : availableBelow;
 
-  if (naturalHeight <= availableAbove) {
-    top = anchorRect.top - naturalHeight - TIP_GAP;
-  } else if (naturalHeight <= availableBelow) {
-    placement = 'bottom';
-    top = anchorRect.bottom + TIP_GAP;
-  } else {
-    placement = availableAbove >= availableBelow ? 'top' : 'bottom';
-    const available = Math.max(160, placement === 'top' ? availableAbove : availableBelow);
-    applyOverflow(tip, Math.min(available, window.innerHeight - VIEWPORT_MARGIN * 2));
-    tipRect = tip.getBoundingClientRect();
-    const constrainedHeight = Math.min(tipRect.height, window.innerHeight - VIEWPORT_MARGIN * 2);
-    top = placement === 'top'
-      ? anchorRect.top - constrainedHeight - TIP_GAP
-      : anchorRect.bottom + TIP_GAP;
-  }
+  if (naturalHeight > available) applyOverflow(tip, Math.min(Math.max(MIN_SCROLL_HEIGHT, available), viewportMax));
+  else setImportant(tip.style, 'overflow-y', 'visible');
 
-  top = Math.max(VIEWPORT_MARGIN, Math.min(top, window.innerHeight - VIEWPORT_MARGIN - tip.getBoundingClientRect().height));
+  tipRect = tip.getBoundingClientRect();
+  const renderedHeight = Math.min(tipRect.height, viewportMax);
+  let top = placement === 'top'
+    ? anchorRect.top - renderedHeight - TIP_GAP
+    : anchorRect.bottom + TIP_GAP;
+  top = Math.max(VIEWPORT_MARGIN, Math.min(top, window.innerHeight - VIEWPORT_MARGIN - renderedHeight));
+
   tip.dataset.placement = placement;
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
   setImportant(tip.style, 'top', `${Math.round(top)}px`);
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
-function position(tip, anchor) {
+function position(tip, anchor, preservePlacement = false) {
   if (mobileMode()) positionMobile(tip);
-  else positionDesktop(tip, anchor);
+  else positionDesktop(tip, anchor, preservePlacement);
+}
+
+function stopGeometry(record) {
+  if (!record) return;
+  if (record.geometryFrame) window.cancelAnimationFrame(record.geometryFrame);
+  record.geometryFrame = 0;
+  record.geometryObserver?.disconnect();
+  record.geometryObserver = null;
+}
+
+function scheduleGeometry(record, preservePlacement = true) {
+  if (!record || active !== record || record.mobile || record.geometryFrame) return;
+  record.geometryFrame = window.requestAnimationFrame(() => {
+    record.geometryFrame = 0;
+    if (active !== record || !record.anchor.isConnected || !record.tip.isConnected) return;
+    position(record.tip, record.anchor, preservePlacement);
+  });
+}
+
+function observeGeometry(record) {
+  if (!record || record.mobile || typeof ResizeObserver !== 'function') return;
+  record.geometryObserver = new ResizeObserver(() => scheduleGeometry(record, true));
+  record.geometryObserver.observe(record.tip);
 }
 
 function restore(record) {
   const { tip, placeholder } = record;
+  stopGeometry(record);
+  resetGlossaryTip(tip);
   tip.classList.remove('gb-floating-tip', 'is-open');
   clearAuthoritativeGeometry(tip);
   tip.style.removeProperty('position');
@@ -303,7 +345,7 @@ function openTooltip(anchor, reason = 'open') {
       settleHover(active);
     }
     setImportant(tip.style, 'pointer-events', 'auto');
-    position(tip, anchor);
+    position(tip, anchor, true);
     return;
   }
   closeTooltip('replace');
@@ -326,11 +368,12 @@ function openTooltip(anchor, reason = 'open') {
     hoverSettled: reason !== 'hover',
     pointerBaseline: pointerEpoch,
     hoverTransitUntil: 0,
+    geometryFrame: 0,
+    geometryObserver: null,
   };
   position(tip, anchor);
-  window.requestAnimationFrame(() => {
-    if (active?.tip === tip) position(tip, anchor);
-  });
+  observeGeometry(active);
+  scheduleGeometry(active, true);
   if (reason === 'hover') settleHover(active);
 
   if (tip.dataset.gbInteractionBound !== '1') {
@@ -471,7 +514,7 @@ export function installArticleTooltips() {
   window.addEventListener('scroll', () => {
     if (!active || active.mobile) return;
     if (!active.anchor.isConnected) closeTooltip('detached');
-    else position(active.tip, active.anchor);
+    else position(active.tip, active.anchor, true);
   }, { passive: true, capture: true });
   window.GBArticleTooltips = Object.freeze({ version: VERSION, init: initInlineTooltips, close: closeTooltip });
   return window.GBArticleTooltips;
