@@ -6,21 +6,48 @@ main[data-hm-reader] .fn-marker::after {
   display: none;
 }
 
-/* Inline terms and Scripture references already expose a strong keyboard state
-   through accent colour, background and underline. Suppress the generic boxed
-   focus ring on this reading route so pointer-opened references never acquire
-   the reader-visible rectangular frame reported by the owner. */
+/* Inline terms and Scripture references need a visible keyboard state, but not
+   the generic rectangular outline + box-shadow combination. Keep the indicator
+   on the text itself: accent, paper tint and a strengthened dotted underline. */
 main[data-hm-reader] .gterm:focus-visible,
 main[data-hm-reader] .bref:focus-visible {
   outline: none;
   box-shadow: none;
+  color: var(--color-accent-strong, #5f2323);
+  background: color-mix(in srgb, var(--color-accent, #7a2e2e) 9%, transparent);
+}
+
+main[data-hm-reader] .gterm:focus-visible {
+  border-bottom-style: dotted;
+  border-bottom-width: 2px;
+  border-bottom-color: currentColor;
 }
 
 main[data-hm-reader] .bref:focus-visible {
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
+}
+
+html.dark main[data-hm-reader] .gterm:focus-visible,
+html.dark main[data-hm-reader] .bref:focus-visible {
+  color: var(--color-accent-strong, #e8b878);
+  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 12%, transparent);
+}
+
+@media (forced-colors: active) {
+  main[data-hm-reader] .gterm:focus-visible,
+  main[data-hm-reader] .bref:focus-visible {
+    color: Highlight;
+    background: Canvas;
+    border-bottom-color: Highlight;
+    text-decoration-color: Highlight;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
 }
 
 /* The article's desktop Scripture and source cards are paper popovers, not
