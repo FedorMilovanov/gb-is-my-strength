@@ -24,6 +24,12 @@
   }
 
   @media (max-width: 760px) {
+    body.home-page .h-footer {
+      width: auto;
+      margin-inline-start: max(20px, env(safe-area-inset-left, 0px));
+      margin-inline-end: max(20px, env(safe-area-inset-right, 0px));
+    }
+
     body.home-page .h-footer-separator {
       display: none;
     }
