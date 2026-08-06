@@ -94,6 +94,8 @@ html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref:focus-v
 
   html[data-gb-article-tooltips-owner="article-inline-tooltip"] .btip.gb-floating-tip,
   html[data-gb-article-tooltips-owner="article-inline-tooltip"] .tooltip.gb-floating-tip {
+    width: auto;
+    max-width: none;
     border: 0;
     border-radius: 24px 24px 0 0;
   }
