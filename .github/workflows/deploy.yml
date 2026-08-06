@@ -308,6 +308,7 @@ jobs:
           retention-days: 30
 
       - name: Verify live TTS capability extension
+        if: always()
         env:
           LIVE_BASE_URL: https://gospod-bog.ru
           RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
