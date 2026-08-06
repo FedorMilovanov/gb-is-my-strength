@@ -22,13 +22,14 @@ The report composes four existing authorities:
 
 ## Proofs
 
-For every current Astro native shadow the audit verifies:
+For every effective Astro native shadow the audit verifies:
 
+- the primary inventory and immutable ledger reconcile, including governed paths omitted by the inventory;
 - an immutable ledger entry exists;
-- route and repository path identity agree;
+- route and repository path identity agree exactly;
 - the current file's Git blob SHA-1 matches the ledger;
 - the current byte SHA-256 matches the ledger;
-- the reference has an explicit retirement classification;
+- the reference has an explicit, recognized retirement classification;
 - visual parity no longer depends on the root copy.
 
 Every recorded dependency is then grouped into:
@@ -44,11 +45,13 @@ Every recorded dependency is then grouped into:
 The report can authorize a later physical move only when all of these are zero:
 
 - unknown reference classifications;
+- unexpected or non-retirable reference classifications;
 - mechanical reader repoints;
 - obsolete readers;
 - dependency owner decisions;
 - unknown dependency impacts;
 - immutable identity failures;
+- inventory coverage failures;
 - parity-authority failures.
 
 Until then the verdict remains:
