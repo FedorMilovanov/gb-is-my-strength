@@ -476,3 +476,5 @@ jobs:
             reports/tooltip-marker-mobile.png
           if-no-files-found: warn
           retention-days: 14
+
+# P3-01 autofix synchronize trigger
