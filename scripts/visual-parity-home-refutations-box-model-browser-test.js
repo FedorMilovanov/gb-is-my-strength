@@ -11,13 +11,17 @@ const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'visual-parity', 'home-refutations-box-model');
 const REPORT_FILE = path.join(REPORT_DIR, 'report.json');
-const SITE_CSS = fs.readFileSync(path.join(ROOT, 'css', 'site.css'), 'utf8');
+const REFUTATIONS_SOURCE = fs.readFileSync(path.join(ROOT, 'src', 'components', 'home', 'HomeSections', 'Refutations.astro'), 'utf8');
 const VISUAL_WORKFLOW = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'visual-parity.yml'), 'utf8');
 const DEPLOY_WORKFLOW = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'deploy.yml'), 'utf8');
 const SCRIPT_COMMAND = 'node scripts/visual-parity-home-refutations-box-model-browser-test.js';
 
 fs.mkdirSync(REPORT_DIR, { recursive: true });
-assert.match(SITE_CSS, /\*,::after,::before\{box-sizing:border-box\}/, 'global border-box owner is missing from css/site.css');
+assert.match(
+  REFUTATIONS_SOURCE,
+  /#main-content #razbor \.h-refutation-card\s*\{[\s\S]{0,220}?box-sizing:\s*border-box\s*;/,
+  'Refutations source owner must retain explicit border-box geometry',
+);
 assert.ok(VISUAL_WORKFLOW.includes(SCRIPT_COMMAND), 'Visual Parity workflow must execute the Refutations box-model browser contract');
 assert.ok(DEPLOY_WORKFLOW.includes(SCRIPT_COMMAND), 'immutable release readiness must execute the Refutations box-model browser contract');
 
