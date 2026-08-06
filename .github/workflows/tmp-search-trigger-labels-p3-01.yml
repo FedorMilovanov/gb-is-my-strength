@@ -52,7 +52,8 @@ jobs:
 
           path = Path('scripts/tmp_search_trigger_labels_writer.py')
           text = path.read_text(encoding='utf-8')
-          old = '''assets = read("scripts/cache-bust-assets.js")
+
+          old_assets = '''assets = read("scripts/cache-bust-assets.js")
           assets = replace_once(
               assets,
               "  'js/search.js',\\n",
@@ -61,16 +62,157 @@ jobs:
           )
           write("scripts/cache-bust-assets.js", assets)
           '''
-          new = '''assets = read("scripts/cache-bust-assets.js")
+          new_assets = '''assets = read("scripts/cache-bust-assets.js")
           marker = "  'js/search.js',\\n"
           if assets.count(marker) != 2:
               raise SystemExit(f"cache-bust search asset occurrences: expected 2, found {assets.count(marker)}")
           assets = assets.replace(marker, "  'js/search-trigger-labels.js',\\n  'js/search.js',\\n", 1)
           write("scripts/cache-bust-assets.js", assets)
           '''
-          if text.count(old) != 1:
-              raise SystemExit(f'writer patch anchor count: {text.count(old)}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          if text.count(old_assets) != 1:
+              raise SystemExit(f'writer asset patch anchor count: {text.count(old_assets)}')
+          text = text.replace(old_assets, new_assets, 1)
+
+          old_helper = '''  const sync = (root = document) => {
+            const key = shortcut();
+            const mod = modifier();
+            const nodes = collect(root);
+
+            nodes.forEach((control) => {
+              control.setAttribute('data-search-shortcut', '');
+              control.setAttribute('data-search-shortcut-label', LABEL);
+              control.setAttribute('aria-label', `${LABEL} (${key})`);
+              control.setAttribute('title', `${LABEL} ${key}`);
+              control.setAttribute('data-search-label-ready', key);
+
+              control.querySelectorAll('[data-search-shortcut-value], .kb').forEach((hint) => {
+                hint.textContent = key;
+              });
+              control.querySelectorAll('[data-search-shortcut-modifier]').forEach((hint) => {
+                hint.textContent = mod;
+              });
+            });
+
+            return nodes.length;
+          };
+
+          const api = Object.freeze({
+            version: 1,
+            label: LABEL,
+            selector: SELECTOR,
+            platformValue,
+            modifier,
+            shortcut,
+            sync,
+          });
+
+          window.GBSearchTriggerLabels = api;
+          const run = () => api.sync(document);
+          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
+          else run();
+          window.addEventListener('pageshow', run);
+          '''
+          new_helper = '''  const setAttr = (node, name, value) => {
+            if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+          };
+
+          const setText = (node, value) => {
+            if (node.textContent !== value) node.textContent = value;
+          };
+
+          const sync = (root = document) => {
+            const key = shortcut();
+            const mod = modifier();
+            const nodes = collect(root);
+
+            nodes.forEach((control) => {
+              setAttr(control, 'data-search-shortcut', '');
+              setAttr(control, 'data-search-shortcut-label', LABEL);
+              setAttr(control, 'aria-label', `${LABEL} (${key})`);
+              setAttr(control, 'title', `${LABEL} ${key}`);
+              setAttr(control, 'data-search-label-ready', key);
+
+              control.querySelectorAll('[data-search-shortcut-value], .kb').forEach((hint) => {
+                setText(hint, key);
+              });
+              control.querySelectorAll('[data-search-shortcut-modifier]').forEach((hint) => {
+                setText(hint, mod);
+              });
+            });
+
+            return nodes.length;
+          };
+
+          const api = Object.freeze({
+            version: 1,
+            label: LABEL,
+            selector: SELECTOR,
+            platformValue,
+            modifier,
+            shortcut,
+            sync,
+          });
+
+          window.GBSearchTriggerLabels = api;
+          let syncQueued = false;
+          const scheduleSync = () => {
+            if (syncQueued) return;
+            syncQueued = true;
+            queueMicrotask(() => {
+              syncQueued = false;
+              api.sync(document);
+            });
+          };
+          const observer = new MutationObserver((records) => {
+            const relevant = records.some((record) => {
+              if (record.type === 'attributes') return record.target instanceof Element && record.target.matches(SELECTOR);
+              return [...record.addedNodes].some((node) => node instanceof Element && (node.matches(SELECTOR) || node.querySelector(SELECTOR)));
+            });
+            if (relevant) scheduleSync();
+          });
+          const run = () => {
+            api.sync(document);
+            observer.observe(document.documentElement, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ['aria-label', 'title', 'data-search-shortcut-label'],
+            });
+          };
+          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
+          else run();
+          window.addEventListener('pageshow', scheduleSync);
+          '''
+          if text.count(old_helper) != 1:
+              raise SystemExit(f'writer helper patch anchor count: {text.count(old_helper)}')
+          text = text.replace(old_helper, new_helper, 1)
+
+          source_marker = '  "window.GBSearchTriggerLabels = api",\n])'
+          source_replacement = '  "window.GBSearchTriggerLabels = api",\n  "const observer = new MutationObserver",\n  "attributeFilter: [\'aria-label\', \'title\', \'data-search-shortcut-label\']",\n  "queueMicrotask",\n])'
+          if text.count(source_marker) != 1:
+              raise SystemExit(f'source observer marker count: {text.count(source_marker)}')
+          text = text.replace(source_marker, source_replacement, 1)
+
+          browser_marker = '''    const trigger = page.locator('#gbSearchBtn').first();
+          '''
+          browser_replacement = '''    const lateControl = page.locator(selector).first();
+            await lateControl.evaluate((node) => {
+              node.setAttribute('aria-label', 'Поздний локальный drift');
+              node.setAttribute('title', 'Поздний локальный drift');
+            });
+            await page.waitForFunction(({ selector, shortcut }) => {
+              const control = document.querySelector(selector);
+              return control?.getAttribute('aria-label') === `Поиск по всему сайту (${shortcut})`
+                && control?.getAttribute('title') === `Поиск по всему сайту ${shortcut}`;
+            }, { selector, shortcut: scenario.shortcut }, { timeout: 10_000 });
+
+            const trigger = page.locator('#gbSearchBtn').first();
+          '''
+          if text.count(browser_marker) != 1:
+              raise SystemExit(f'browser late-drift marker count: {text.count(browser_marker)}')
+          text = text.replace(browser_marker, browser_replacement, 1)
+
+          path.write_text(text, encoding='utf-8')
           PY
           python3 scripts/tmp_search_trigger_labels_writer.py
           test ! -e scripts/tmp_search_trigger_labels_writer.py
