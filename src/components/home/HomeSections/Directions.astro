@@ -758,16 +758,16 @@ const routes = [
 
   @media (max-width: 760px) {
     body.home-page #main-content #issledovat {
-      padding-top: 52px;
-      padding-bottom: 34px;
+      padding-top: 44px;
+      padding-bottom: 18px;
     }
 
     body.home-page #main-content #issledovat + #publikacii {
-      padding-top: 32px;
+      padding-top: 28px;
     }
 
     body.home-page #main-content .h-home-section-head--gateway {
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
     body.home-page #main-content .h-home-section-head--gateway h2 {
@@ -780,47 +780,71 @@ const routes = [
       display: none;
     }
 
+    /* Mobile shelf: compact horizontal snap carousel. Card height follows
+       content (no min-height, no 1fr gap) so there is no white emptiness.
+       Objects are large enough to read; text is readable; content gathers. */
     body.home-page #main-content .h-home-routes {
-      min-height: 396px;
-      border-radius: 20px;
+      min-height: 0;
+      border-radius: 18px;
+      padding: 6px;
     }
 
     body.home-page #main-content .h-home-route {
-      flex-basis: min(84vw, 284px);
-      min-height: 396px;
-      grid-template-rows: auto minmax(152px, 1fr) auto auto;
-      padding: 22px 20px 22px;
+      flex-basis: min(82vw, 300px);
+      min-height: 0;
+      grid-template-rows: auto auto auto auto;
+      align-content: start;
+      padding: 18px 20px 18px;
+      border-radius: 14px;
     }
 
     body.home-page #main-content .h-home-route__glyph {
-      min-height: 152px;
-      margin-top: 0;
+      min-height: 110px;
+      margin: 4px 0 12px;
     }
 
     body.home-page #main-content .h-route-object {
-      width: min(82%, 146px);
-      max-height: 132px;
+      width: min(82%, 156px);
+      max-height: 116px;
+    }
+
+    body.home-page #main-content .h-home-route__index {
+      font-size: 8px;
+      letter-spacing: .22em;
+    }
+
+    body.home-page #main-content .h-home-route__eyebrow {
+      margin-bottom: 6px;
+      font-size: 8px;
+      letter-spacing: .16em;
     }
 
     body.home-page #main-content .h-home-route__copy strong {
-      font-size: 1.12rem;
-      line-height: 1.08;
+      font-size: 1.14rem;
+      line-height: 1.1;
     }
 
     body.home-page #main-content .h-home-route__copy > span:last-child {
       max-width: 100%;
       font-size: 12px;
-      line-height: 1.52;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     body.home-page #main-content .h-home-route__arrow {
-      margin-top: 14px;
+      margin-top: 10px;
       font-size: 16px;
     }
 
+    /* CTA sits close under the shelf, not in a separate desert. */
     body.home-page #main-content .h-home-gateway__footer {
       justify-content: flex-end;
-      padding-top: 14px;
+      gap: 12px;
+      padding-top: 12px;
+      font-size: 8px;
     }
 
     body.home-page #main-content .h-home-gateway__footer > span {
@@ -845,12 +869,12 @@ const routes = [
 
   @media (max-width: 340px) {
     body.home-page #main-content .h-home-routes {
-      border-radius: 18px;
+      border-radius: 16px;
     }
 
     body.home-page #main-content .h-home-route {
-      flex-basis: min(87vw, 272px);
-      padding-inline: 17px;
+      flex-basis: min(86vw, 280px);
+      padding-inline: 15px;
     }
   }
 

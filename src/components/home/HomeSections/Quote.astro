@@ -212,4 +212,81 @@
       transition: none;
     }
   }
+
+  /* Mobile-only premium stacked epigraph: иврит as the sacred top layer
+     (right-to-left, right-aligned), the gold reference as a small caption,
+     the Russian translation below. No frame, no borders — pure typography.
+     Desktop mirror layout is untouched above 760px. */
+  @media (max-width: 760px) {
+    body.home-page #main-content .h-quote-section {
+      padding: 14px 0 8px;
+    }
+
+    body.home-page #main-content .h-quote-section .h-ornament {
+      display: none;
+    }
+
+    body.home-page #main-content .h-quote-mirror {
+      flex-direction: column;
+      gap: 16px;
+      padding: 0;
+    }
+
+    /* иврит first, right-to-left, right-aligned. */
+    body.home-page #main-content .h-quote-right {
+      order: 1;
+      padding: 0;
+      justify-content: flex-end;
+    }
+
+    body.home-page #main-content .h-quote-left {
+      order: 2;
+      padding: 0;
+      text-align: left;
+    }
+
+    body.home-page #main-content .h-quote-divider {
+      display: none;
+    }
+
+    /* Hebrew sacred block — right-aligned, gathered. */
+    body.home-page #main-content .h-sacred-block--mirror {
+      margin-bottom: 0;
+    }
+
+    body.home-page #main-content .h-sacred-block--mirror .h-sacred-line--1 {
+      font-size: clamp(1.1rem, 5vw, 1.3rem);
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    body.home-page #main-content .h-sacred-block--mirror .h-sacred-line--2 {
+      font-size: clamp(.85rem, 3.8vw, 1rem);
+      line-height: 1.7;
+    }
+
+    /* Gold reference — plain text, no border separator. */
+    body.home-page #main-content .h-sacred-ref--mirror {
+      margin-top: 8px;
+      padding-top: 0;
+      border-top: 0;
+      font-size: 8px;
+      letter-spacing: .22em;
+    }
+
+    /* Russian translation — no frame, no border, just readable text. */
+    body.home-page #main-content .h-blockquote--mirror {
+      padding: 0;
+      border-left: 0;
+      font-size: clamp(.92rem, 3.6vw, 1.06rem);
+      line-height: 1.62;
+      margin-bottom: 6px;
+    }
+
+    body.home-page #main-content .h-cite--mirror {
+      padding-left: 0;
+      font-size: 8px;
+      letter-spacing: .22em;
+    }
+  }
 </style>
