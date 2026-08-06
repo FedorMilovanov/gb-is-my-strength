@@ -92,6 +92,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
     ['TTS verifies both identities', tts, /RELEASE_SHA[\s\S]*CONTROL_PLANE_SHA[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/],
     ['TTS preserves preflight evidence', tts, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/],
     ['global border-box source contract', siteCss, /\*,::after,::before\{box-sizing:border-box\}/],
+    ['source workflow tracks global CSS owner', ttsWorkflow, /pull_request:[\s\S]*- \"css\/site\.css\"[\s\S]*push:[\s\S]*- \"css\/site\.css\"/],
     ['source workflow owns release contract', ttsWorkflow, /scripts\/release-pipeline-contract-test\.mjs/],
     ['source workflow executes release contract', ttsWorkflow, /node scripts\/release-pipeline-contract-test\.mjs/],
   ];
@@ -211,6 +212,7 @@ const mutations = [
   ['generic live reintroduces CSS-in-HTML guess', { ...sources, live: `${sources.live}\n// h-refutation-card[^}]{0,500}box-sizing:border-box\n` }],
   ['global border-box reset removed', { ...sources, siteCss: sources.siteCss.replace('*,::after,::before{box-sizing:border-box}', '*,::after,::before{box-sizing:content-box}') }],
   ['TTS ignores control', { ...sources, tts: sources.tts.replace('expectedControlPlaneSha: CONTROL_PLANE_SHA,', '') }],
+  ['source workflow ignores global CSS owner', { ...sources, ttsWorkflow: sources.ttsWorkflow.replaceAll('      - \"css/site.css\"\n', '') }],
   ['diagnostics rebuilds', { ...sources, diagnostics: `${sources.diagnostics}\n# npm ci\n# npm run strangler:build:production-like\n` }],
 ];
 for (const [name, mutated] of mutations) assert.ok(validate(mutated).length > 0, `${name}: mutation must be rejected`);
