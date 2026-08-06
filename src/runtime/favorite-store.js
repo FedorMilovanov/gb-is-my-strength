@@ -44,6 +44,7 @@
     try {
       const url = new URL(raw, location.origin);
       if (!/^https?:$/.test(url.protocol)) return '';
+      if (url.origin !== location.origin) return '';
       return url.href;
     } catch {
       return '';
