@@ -105,6 +105,7 @@ jobs:
           EXPECTED_BASE: 8a51db9a2df74fa615a3eaca698144302e47e332
         run: |
           set -euo pipefail
+          git add -N .
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
