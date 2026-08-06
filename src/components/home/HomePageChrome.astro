@@ -31,11 +31,11 @@
         class="gb-nav-search-icon"
         id="gbSearchBtn"
         type="button"
-        aria-label="Поиск (Ctrl+K)"
-        title="Поиск Ctrl+K"
+        aria-label="Поиск по всему сайту"
+        title="Поиск по всему сайту"
         aria-expanded="false"
         data-search-shortcut
-        data-search-shortcut-label="Поиск"
+        data-search-shortcut-label="Поиск по всему сайту"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       </button>
@@ -267,22 +267,6 @@ window.SITE_CONFIG = {
     syncFocus();
   })();
 </script>
-<script is:inline>
-  (() => {
-    const platform = navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || '';
-    const modifier = /Mac|iPhone|iPad|iPod/i.test(platform) ? '⌘' : 'Ctrl';
-    const shortcut = `${modifier}+K`;
-
-    document.querySelectorAll('[data-search-shortcut]').forEach((control) => {
-      const label = control.getAttribute('data-search-shortcut-label') || 'Поиск';
-      control.setAttribute('aria-label', `${label} (${shortcut})`);
-      control.setAttribute('title', `${label} ${shortcut}`);
-    });
-    document.querySelectorAll('[data-search-shortcut-modifier]').forEach((hint) => {
-      hint.textContent = modifier;
-    });
-  })();
-</script>
 <script is:inline src="js/site-utils.js?v=30ed46cf" defer></script>
 <script is:inline src="js/scroll-perf.js?v=454d6f7b" defer></script>
 <script is:inline src="js/site.js?v=8009e039" defer></script>
@@ -304,7 +288,7 @@ window.SITE_CONFIG = {
   (() => {
     if (window.__gbSearchLazyBound) return;
     window.__gbSearchLazyBound = true;
-    const src = './js/search.js?v=ea540ce9';
+    const src = './js/search.js?v=78e5fd29';
 
     const isMobileNavOpen = () => {
       const trigger = document.getElementById('hMobileMenuBtn');

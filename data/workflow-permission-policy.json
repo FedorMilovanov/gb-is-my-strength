@@ -144,32 +144,6 @@
         }
       }
     },
-    ".github/workflows/tmp-search-trigger-labels-safe.yml": {
-      "jobs": {
-        "materialize-and-verify": {
-          "permissions": {
-            "contents": "write"
-          },
-          "purpose": "Materialize one bounded SEARCH-P3-01 successor on an explicitly labelled same-repository draft pull request, verify it, and remove the temporary transaction capability before publication",
-          "allowedEvents": [
-            "pull_request"
-          ],
-          "repositoryBoundary": "same-repository pull request only",
-          "branchBoundary": "exact pull-request head branch agent/search-trigger-labels-p3-01-safe-20260806 carrying the autofix label and based on exact main 76737eefe16a0feb2fdf729c805d17b5cdcdc376",
-          "mutationTargets": [
-            "pull-request source branch bounded Search trigger-label implementation; temporary workflow, writer, and permission registration must be removed in the same verified commit"
-          ],
-          "requiresConcurrency": true,
-          "requiredMarkers": [
-            "contains(github.event.pull_request.labels.*.name, 'autofix')",
-            "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.ref }}",
-            "github.event.pull_request.head.ref == 'agent/search-trigger-labels-p3-01-safe-20260806'",
-            "git checkout 76737eefe16a0feb2fdf729c805d17b5cdcdc376 -- data/workflow-permission-policy.json"
-          ]
-        }
-      }
-    },
     ".github/workflows/indexnow.yml": {
       "jobs": {
         "headline-autofix": {

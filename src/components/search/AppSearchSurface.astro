@@ -9,8 +9,8 @@ const { mode } = Astro.props;
   id="gbSearchBtn"
   class={`gb-app-search gb-app-search--${mode}`}
   type="button"
-  aria-label="Поиск по всему сайту (Ctrl+K)"
-  title="Поиск по всему сайту Ctrl+K"
+  aria-label="Поиск по всему сайту"
+  title="Поиск по всему сайту"
   aria-haspopup="dialog"
   data-app-search-trigger
   data-search-shortcut
@@ -120,12 +120,6 @@ const { mode } = Astro.props;
   (() => {
     const trigger = document.querySelector('[data-app-search-trigger]');
     if (!(trigger instanceof HTMLButtonElement)) return;
-    const platform = navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || '';
-    const modifier = /Mac|iPhone|iPad|iPod/i.test(platform) ? '⌘' : 'Ctrl';
-    const label = `Поиск по всему сайту (${modifier}+K)`;
-    trigger.setAttribute('aria-label', label);
-    trigger.setAttribute('title', `Поиск по всему сайту ${modifier}+K`);
-
     window.addEventListener('keydown', (event) => {
       if (!(event.ctrlKey || event.metaKey) || String(event.key).toLowerCase() !== 'k') return;
       event.preventDefault();
