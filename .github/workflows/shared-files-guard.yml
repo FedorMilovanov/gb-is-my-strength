@@ -97,10 +97,8 @@ jobs:
 
       - name: Legacy shadow retirement readiness
         run: |
-          node --check scripts/legacy-shadow-self-test-preload.cjs
           node --check scripts/legacy-shadow-retirement-readiness.mjs
-          NODE_OPTIONS="--require=$PWD/scripts/legacy-shadow-self-test-preload.cjs" \
-            node scripts/legacy-shadow-retirement-readiness.mjs --self-test
+          node scripts/legacy-shadow-retirement-readiness.mjs --self-test
           node scripts/legacy-shadow-retirement-readiness.mjs \
             --out-json reports/legacy-shadow-retirement-readiness.json \
             --out-md reports/legacy-shadow-retirement-readiness.md
