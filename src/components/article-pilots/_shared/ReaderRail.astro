@@ -166,15 +166,25 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
   .hrail-bottom-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .hrail-bottom-btn--text{font-family:var(--f-serif,Lora,Georgia,serif);font-size:12px;font-weight:700}
 
-  @media(max-width:1200px){ .hrail{display:none} }
+  @media(max-width:1199px){ .hrail{display:none} }
 
-  /* Article column clears the fixed rail on desktop only — text stays centred
-     in the viewport when there's room, the rail just hugs the left edge (Gill
-     precedent). .article-main's own base rule sets width:min(820px,92vw) with
-     margin:0 auto; a same-specificity override risks losing to load order, so
-     this uses the doubled-class selector to win outright. */
+  /* Hermenevtika stays viewport-centred whenever the rail leaves enough room.
+     On narrower desktops it shifts only by the measured rail clearance and
+     reserves the top-right control stack. One equation owns both width and
+     position; no hardcoded margin competes with the shared article shell. */
   @media(min-width:1200px){
-    .article-main.article-main--hrail{ margin-left: max((100vw - min(820px, 92vw)) / 2, 334px); }
+    main[data-hm-reader].article-main.article-main--hrail{
+      --hrail-inline-start:clamp(16px,2.4vw,40px);
+      --hrail-width:270px;
+      --hrail-gap:28px;
+      --reader-control-reserve:clamp(88px,8vw,112px);
+      --reader-left-edge:calc(var(--hrail-inline-start) + var(--hrail-width) + var(--hrail-gap));
+      --reader-available:calc(100vw - var(--reader-left-edge) - var(--reader-control-reserve));
+      --reader-shell-width:min(920px,var(--reader-available));
+      width:var(--reader-shell-width);
+      margin-left:max(calc((100vw - var(--reader-shell-width)) / 2),var(--reader-left-edge));
+      margin-right:0;
+    }
   }
 </style>
 
