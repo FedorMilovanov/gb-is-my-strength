@@ -1,0 +1,238 @@
+{
+  "version": 1,
+  "policy": {
+    "defaultEnforcement": "advisory",
+    "maxBlockingContracts": 8,
+    "maxDelegatedGuardsPerContract": 3,
+    "maxMarkersPerKindPerFile": 12,
+    "automaticHtmlTokenHarvest": false,
+    "newContractsStartAdvisory": true,
+    "exactReplicaRequiresSnapshotDigest": true
+  },
+  "contracts": [
+    {
+      "id": "favorite-store-canonical",
+      "title": "Canonical Favorite Store origin and ownership",
+      "status": "active",
+      "mode": "native-contract",
+      "blocking": true,
+      "routes": ["/", "/izbrannoe/"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/MASTER_REPORT_2026-08-05_CONTRACTS.md",
+      "ownerDecision": "The shared Favorite Store is the sole metadata and persistence owner; stored image URLs must remain same-origin.",
+      "watchPaths": [
+        "src/runtime/favorite-store.js",
+        "src/pages/izbrannoe/index.astro",
+        "src/components/home/HomeSections/Favorites.astro"
+      ],
+      "markerChecks": [
+        {
+          "path": "src/runtime/favorite-store.js",
+          "required": [
+            "function normalizePath(value)",
+            "function normalizeImage(value)",
+            "if (url.origin !== location.origin) return '';",
+            "window.GBFavoriteStore = api;"
+          ],
+          "forbidden": [
+            "eval(",
+            "new Function("
+          ],
+          "ordered": [
+            "function normalizePath(value)",
+            "function normalizeImage(value)",
+            "function metadataFromPage(overrides = {})"
+          ]
+        }
+      ],
+      "allowedDeviations": [],
+      "notes": "This is a narrow source contract. Browser behavior remains owned by the existing Home and Izbrannoe route tests."
+    },
+    {
+      "id": "home-native-reference",
+      "title": "Home premium native contract",
+      "status": "active",
+      "mode": "native-contract",
+      "blocking": true,
+      "routes": ["/"],
+      "referenceEvidence": "data/visual-parity-baseline.json#/routeModes/~1",
+      "ownerDecision": "The current native Home is the approved render owner; legacy HTML is historical evidence and generic-template substitution is forbidden.",
+      "watchPaths": [
+        "src/pages/index.astro",
+        "src/components/home/",
+        "css/home.css"
+      ],
+      "delegatedGuards": [
+        "scripts/home-visual-parity-audit.js",
+        "scripts/astro-home-pilot-audit.js"
+      ],
+      "allowedDeviations": [
+        "Legacy-vs-native pixel differences are diagnostic when the named native guards remain green."
+      ]
+    },
+    {
+      "id": "gill-mobile-chrome",
+      "title": "Gill mobile chrome and navigation",
+      "status": "active",
+      "mode": "adaptive-approved",
+      "blocking": true,
+      "routes": [
+        "/articles/dzhon-gill-chast-1-chelovek/",
+        "/articles/dzhon-gill-chast-2-uchenyi/",
+        "/articles/dzhon-gill-chast-3-nasledie/",
+        "/articles/dzhon-gill-chast-4-ekzeget/"
+      ],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/gill-mobile-bar.json",
+      "ownerDecision": "Gill must retain its canonical GBS2 identity and mobile controls while allowing the approved native TOC implementation to differ from the historical sheet.",
+      "watchPaths": [
+        "src/components/gill/",
+        "src/components/ui/floating-cluster/",
+        "css/gill.css"
+      ],
+      "delegatedGuards": [
+        "scripts/gill-canonical-chrome-guard.js",
+        "scripts/gill-mobile-layout-audit.js"
+      ],
+      "allowedDeviations": [
+        "The current gbs2 TOC scroller may replace the historical toc-sheet structure.",
+        "Accessibility corrections may change non-semantic wrapper markup."
+      ]
+    },
+    {
+      "id": "search-command-palette",
+      "title": "Unified command palette accessibility contract",
+      "status": "active",
+      "mode": "native-contract",
+      "blocking": true,
+      "routes": ["*"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/search-command-palette-a11y.json",
+      "ownerDecision": "One command palette owns global search; accessibility and focus behavior must not be approximated by route-local copies.",
+      "watchPaths": [
+        "js/search.js",
+        "css/command-palette.css",
+        "src/components/search/"
+      ],
+      "delegatedGuards": [
+        "scripts/search-modal-browser-contract.mjs"
+      ],
+      "allowedDeviations": [
+        "Strict-native app routes may keep their own local search in addition to the global palette."
+      ]
+    },
+    {
+      "id": "nagornaya-independent-world",
+      "title": "Nagornaya independent legacy-preserve world",
+      "status": "active",
+      "mode": "legacy-preserve",
+      "blocking": true,
+      "routes": ["/nagornaya/*"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/nagornaya-mobile-bar.json",
+      "ownerDecision": "Nagornaya remains an independent visual and navigation world and must not be normalized into a generic shared series shell.",
+      "watchPaths": [
+        "src/components/nagornaya/",
+        "src/pages/nagornaya/",
+        "css/nagornaya-mobile-toc.css"
+      ],
+      "delegatedGuards": [
+        "scripts/nagornaya-visual-parity-audit.js"
+      ],
+      "doNotModernizeReason": "A broad rewrite is expensive, owner-rejected and likely to destroy route-specific information architecture.",
+      "allowedDeviations": [
+        "Bounded accessibility and bug fixes are allowed when the independent visual identity remains intact."
+      ]
+    },
+    {
+      "id": "karty-map-runtime",
+      "title": "Karty native map runtime contract",
+      "status": "active",
+      "mode": "native-contract",
+      "blocking": true,
+      "routes": ["/karty/*"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/karty-minimap.json",
+      "ownerDecision": "Map correctness is defined by route data, the shared engine and browser behavior rather than approximate resemblance to a static mockup.",
+      "watchPaths": [
+        "karty/_engine/",
+        "data/maps/",
+        "src/pages/karty/"
+      ],
+      "delegatedGuards": [
+        "scripts/validate-map-routes.js",
+        "scripts/map-browser-smoke.js"
+      ],
+      "allowedDeviations": [
+        "The minimap may evolve visually while route geography, interaction and error-free runtime remain protected."
+      ]
+    },
+    {
+      "id": "home-mobile-hero-hub",
+      "title": "Home mobile hero hub review",
+      "status": "advisory",
+      "mode": "adaptive-approved",
+      "blocking": false,
+      "routes": ["/"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/home-mobile-hero-hub.json",
+      "ownerDecision": "The mobile hub should shorten navigation without introducing a detached or generic block.",
+      "watchPaths": [
+        "src/components/home/HomeHero.astro",
+        "src/components/home/HomeSections/"
+      ],
+      "delegatedGuards": [
+        "scripts/home-visual-parity-audit.js"
+      ],
+      "allowedDeviations": [
+        "Kicker and action affordances may be redesigned after owner review.",
+        "Desktop composition may differ from mobile."
+      ]
+    },
+    {
+      "id": "baptists-3d-split",
+      "title": "Baptists 3D app split target",
+      "status": "planned",
+      "mode": "performance-target",
+      "blocking": false,
+      "routes": ["/baptisty-rossii/_app/"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/baptist-3d-app.json",
+      "ownerDecision": "Split the oversized app only in a bounded performance lane with before/after measurements; do not introduce a premature global size gate.",
+      "watchPaths": [
+        "baptisty-rossii/_app/"
+      ],
+      "target": {
+        "htmlRawBytes": 51200,
+        "externalHashedJsCss": true
+      },
+      "allowedDeviations": []
+    },
+    {
+      "id": "tts-lazy-route-loading",
+      "title": "TTS lazy route loading target",
+      "status": "planned",
+      "mode": "performance-target",
+      "blocking": false,
+      "routes": ["/articles/*"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/tts-lazy-chunk.json",
+      "ownerDecision": "Keep the governed TTS runtime off catalogs and unrelated landings, but require measured route ownership before adding a blocking bundle assertion.",
+      "watchPaths": [
+        "js/floating-cluster-controller.js",
+        "src/components/ui/floating-cluster/"
+      ],
+      "target": {
+        "loadOnlyOnLongFormRoutes": true
+      },
+      "allowedDeviations": []
+    },
+    {
+      "id": "strangler-legacy-duplicates",
+      "title": "Legacy duplicate inventory",
+      "status": "active",
+      "mode": "inventory",
+      "blocking": false,
+      "routes": ["*"],
+      "referenceEvidence": "AuditRepo/projects/gb-is-my-strength/references/audit-session-2026-08-05/artifacts/prototypes/contracts/strangler-legacy-duplicates.json",
+      "ownerDecision": "Count duplicates recursively and use the result to plan bounded removals; the count itself must not block unrelated Product work.",
+      "watchPaths": [
+        "src/pages/",
+        "**/index.html"
+      ],
+      "allowedDeviations": []
+    }
+  ]
+}
