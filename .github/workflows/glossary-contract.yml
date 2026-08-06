@@ -76,7 +76,7 @@ jobs:
           test "$(git rev-parse origin/main)" = "$EXPECTED_BASE"
           test "$GITHUB_HEAD_REF" = "$EXPECTED_BRANCH"
           test -f scripts/tmp_search_trigger_labels_writer.py
-          test -f .github/workflows/tmp-search-trigger-labels-p3-01-v2.yml
+          test ! -e .github/workflows/tmp-search-trigger-labels-p3-01-v2.yml
 
       - name: Patch and apply bounded Search writer
         run: |
@@ -93,12 +93,6 @@ jobs:
               if count != 1:
                   raise SystemExit(f'{label}: expected 1, found {count}')
               text = text.replace(old, new, 1)
-
-          replace_once(
-              '.github/workflows/tmp-search-trigger-labels-p3-01.yml',
-              '.github/workflows/tmp-search-trigger-labels-p3-01-v2.yml',
-              'transport self-delete path',
-          )
 
           old_assets = '''assets = read("scripts/cache-bust-assets.js")
           assets = replace_once(
@@ -240,7 +234,6 @@ jobs:
           PY
           python3 scripts/tmp_search_trigger_labels_writer.py
           test ! -e scripts/tmp_search_trigger_labels_writer.py
-          test ! -e .github/workflows/tmp-search-trigger-labels-p3-01-v2.yml
           node --check js/search.js
           node --check js/search-trigger-labels.js
           node --check scripts/search-trigger-label-source-contract.mjs
@@ -477,4 +470,4 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-# P3-01 autofix synchronize trigger
+# P3-01 clean autofix synchronize trigger
