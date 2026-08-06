@@ -1,21 +1,21 @@
 /* Canonical presentation contract for article-inline-tooltip.
    Geometry limits are written by article-tooltips.js after real measurement;
    CSS supplies the natural, unconstrained state and the shared visual skin. */
-html[data-gb-article-interactions-ready="1"] .gb-floating-tip {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gb-floating-tip {
   max-height: none;
   overflow: visible;
 }
 
-html[data-gb-article-interactions-ready="1"] .gtip.gb-floating-tip {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gtip.gb-floating-tip {
   border-radius: 24px;
 }
 
-html[data-gb-article-interactions-ready="1"] .gtip.gb-floating-tip[data-luxury="true"] {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gtip.gb-floating-tip[data-luxury="true"] {
   padding: 0;
 }
 
-html[data-gb-article-interactions-ready="1"] .btip.gb-floating-tip,
-html[data-gb-article-interactions-ready="1"] .tooltip.gb-floating-tip {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .btip.gb-floating-tip,
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .tooltip.gb-floating-tip {
   border: 0;
   border-radius: 18px;
   background: rgba(255, 253, 249, .985);
@@ -25,8 +25,8 @@ html[data-gb-article-interactions-ready="1"] .tooltip.gb-floating-tip {
     inset 0 1px 0 rgba(255, 255, 255, .82);
 }
 
-html.dark[data-gb-article-interactions-ready="1"] .btip.gb-floating-tip,
-html.dark[data-gb-article-interactions-ready="1"] .tooltip.gb-floating-tip {
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .btip.gb-floating-tip,
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .tooltip.gb-floating-tip {
   border: 0;
   background: rgba(28, 24, 24, .985);
   box-shadow:
@@ -37,18 +37,18 @@ html.dark[data-gb-article-interactions-ready="1"] .tooltip.gb-floating-tip {
 
 /* The canonical owner keeps open/focus state on the inline text. The generic
    interaction stylesheet's rectangular outline is intentionally retired. */
-html[data-gb-article-interactions-ready="1"] .gterm[aria-expanded="true"],
-html[data-gb-article-interactions-ready="1"] .fn-marker[aria-expanded="true"],
-html[data-gb-article-interactions-ready="1"] .bref[aria-expanded="true"],
-html[data-gb-article-interactions-ready="1"] .gterm:focus-visible,
-html[data-gb-article-interactions-ready="1"] .fn-marker:focus-visible,
-html[data-gb-article-interactions-ready="1"] .bref:focus-visible {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm[aria-expanded="true"],
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker[aria-expanded="true"],
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref[aria-expanded="true"],
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm:focus-visible,
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker:focus-visible,
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref:focus-visible {
   outline: none;
   box-shadow: none;
 }
 
-html[data-gb-article-interactions-ready="1"] .gterm[aria-expanded="true"],
-html[data-gb-article-interactions-ready="1"] .gterm:focus-visible {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm[aria-expanded="true"],
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm:focus-visible {
   color: var(--color-accent-strong, var(--color-accent, #7a2e2e));
   background: color-mix(in srgb, var(--color-accent, #7a2e2e) 9%, transparent);
   border-bottom-style: dotted;
@@ -56,8 +56,8 @@ html[data-gb-article-interactions-ready="1"] .gterm:focus-visible {
   border-bottom-color: currentColor;
 }
 
-html[data-gb-article-interactions-ready="1"] .bref[aria-expanded="true"],
-html[data-gb-article-interactions-ready="1"] .bref:focus-visible {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref[aria-expanded="true"],
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref:focus-visible {
   color: var(--color-accent-strong, var(--color-accent, #7a2e2e));
   background: color-mix(in srgb, var(--color-accent, #7a2e2e) 9%, transparent);
   text-decoration-line: underline;
@@ -66,8 +66,8 @@ html[data-gb-article-interactions-ready="1"] .bref:focus-visible {
   text-underline-offset: 3px;
 }
 
-html[data-gb-article-interactions-ready="1"] .fn-marker[aria-expanded="true"],
-html[data-gb-article-interactions-ready="1"] .fn-marker:focus-visible {
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker[aria-expanded="true"],
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker:focus-visible {
   color: var(--color-accent-strong, var(--color-accent, #7a2e2e));
   background: color-mix(in srgb, var(--color-accent, #7a2e2e) 9%, transparent);
   text-decoration-line: underline;
@@ -76,36 +76,36 @@ html[data-gb-article-interactions-ready="1"] .fn-marker:focus-visible {
   text-underline-offset: 3px;
 }
 
-html.dark[data-gb-article-interactions-ready="1"] .gterm[aria-expanded="true"],
-html.dark[data-gb-article-interactions-ready="1"] .fn-marker[aria-expanded="true"],
-html.dark[data-gb-article-interactions-ready="1"] .bref[aria-expanded="true"],
-html.dark[data-gb-article-interactions-ready="1"] .gterm:focus-visible,
-html.dark[data-gb-article-interactions-ready="1"] .fn-marker:focus-visible,
-html.dark[data-gb-article-interactions-ready="1"] .bref:focus-visible {
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm[aria-expanded="true"],
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker[aria-expanded="true"],
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref[aria-expanded="true"],
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm:focus-visible,
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker:focus-visible,
+html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref:focus-visible {
   color: var(--color-accent-strong, #e8b878);
   background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 12%, transparent);
 }
 
 @media (max-width: 768px) {
-  html[data-gb-article-interactions-ready="1"] .gb-floating-tip {
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gb-floating-tip {
     max-height: none;
     overflow: visible;
   }
 
-  html[data-gb-article-interactions-ready="1"] .btip.gb-floating-tip,
-  html[data-gb-article-interactions-ready="1"] .tooltip.gb-floating-tip {
-    border-width: 1px 0 0;
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .btip.gb-floating-tip,
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .tooltip.gb-floating-tip {
+    border: 0;
     border-radius: 24px 24px 0 0;
   }
 }
 
 @media (forced-colors: active) {
-  html[data-gb-article-interactions-ready="1"] .gterm[aria-expanded="true"],
-  html[data-gb-article-interactions-ready="1"] .fn-marker[aria-expanded="true"],
-  html[data-gb-article-interactions-ready="1"] .bref[aria-expanded="true"],
-  html[data-gb-article-interactions-ready="1"] .gterm:focus-visible,
-  html[data-gb-article-interactions-ready="1"] .fn-marker:focus-visible,
-  html[data-gb-article-interactions-ready="1"] .bref:focus-visible {
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm[aria-expanded="true"],
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker[aria-expanded="true"],
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref[aria-expanded="true"],
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm:focus-visible,
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker:focus-visible,
+  html[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref:focus-visible {
     color: Highlight;
     background: Canvas;
     border-bottom-color: Highlight;
