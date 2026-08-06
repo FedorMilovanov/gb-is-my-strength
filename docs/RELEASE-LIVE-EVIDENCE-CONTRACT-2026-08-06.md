@@ -98,14 +98,18 @@ This preserves evidence after verifier failures without manufacturing missing-re
 
 Both uploads remain fail-closed with `if-no-files-found: error`.
 
-## Merge and issue-closure boundary
+## Verification and merge boundary
+
+The permanent source and browser contracts are part of the repository, but repository mutation is not itself proof that the final head passed them. Exact-head GitHub Actions evidence remains mandatory.
 
 Pre-merge requirements:
 
-- exact-head source, browser, visual and deploy-candidate workflows are terminal green;
+- exact-head source, browser, visual and deploy-candidate workflows are registered and terminal green;
 - review threads are resolved;
 - the branch is not behind current `main`;
 - the final diff remains inside the declared SYSTEM/test/documentation scope.
+
+If GitHub Actions does not register a check suite for the exact head, the PR is blocked rather than implicitly green.
 
 Post-merge requirements:
 
