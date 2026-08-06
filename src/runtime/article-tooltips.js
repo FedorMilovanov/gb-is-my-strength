@@ -1,8 +1,11 @@
-const VERSION = 13;
+const VERSION = 14;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
+const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
 const HOVER_TRANSIT_MS = 520;
 const HOVER_TRANSIT_PADDING = 12;
+const VIEWPORT_MARGIN = 16;
+const TIP_GAP = 10;
 
 let active = null;
 let closeTimer = 0;
@@ -142,6 +145,16 @@ function inlineTip(anchor) {
   return null;
 }
 
+function setGlossaryExpanded(tip, frame, expand, detail, expanded) {
+  expand.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  expand.setAttribute('aria-label', expanded ? 'Кратко' : 'Подробнее');
+  tip.classList.toggle('gtip--expanded', expanded);
+  frame.classList.remove('is-expanded');
+  const text = expand.querySelector('.gtip-expand-txt');
+  if (text) text.textContent = expanded ? 'Кратко' : 'Подробнее';
+  if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+}
+
 function prepareGlossaryTip(tip) {
   if (!tip?.classList.contains('gtip')) return;
   let frame = tip.querySelector(':scope > .gtip-luxury');
@@ -155,14 +168,17 @@ function prepareGlossaryTip(tip) {
   if (!expand || expand.dataset.gbExpandReady === '1') return;
   expand.dataset.gbExpandReady = '1';
   const detail = frame.querySelector('.gtip-detail-wrap');
+  setGlossaryExpanded(tip, frame, expand, detail, expand.getAttribute('aria-expanded') === 'true');
   expand.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
     const expanded = expand.getAttribute('aria-expanded') !== 'true';
-    expand.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    frame.classList.toggle('is-expanded', expanded);
-    if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
-    if (active?.tip === tip) position(tip, active.anchor);
+    setGlossaryExpanded(tip, frame, expand, detail, expanded);
+    if (active?.tip === tip) {
+      window.requestAnimationFrame(() => {
+        if (active?.tip === tip) position(tip, active.anchor);
+      });
+    }
   });
 }
 
@@ -176,40 +192,73 @@ function setImportant(style, property, value) {
 }
 
 function clearAuthoritativeGeometry(tip) {
-  for (const property of ['left', 'top', 'right', 'bottom', 'max-height']) tip.style.removeProperty(property);
+  for (const property of ['left', 'top', 'right', 'bottom', 'max-height', 'overflow-y']) {
+    tip.style.removeProperty(property);
+  }
+  tip.removeAttribute('data-placement');
 }
 
-function position(tip, anchor) {
-  if (mobileMode()) {
-    clearAuthoritativeGeometry(tip);
-    setImportant(tip.style, 'left', '0px');
-    setImportant(tip.style, 'right', '0px');
-    setImportant(tip.style, 'top', 'auto');
-    setImportant(tip.style, 'bottom', '0px');
-    setImportant(tip.style, 'max-height', `${Math.max(180, Math.floor(window.innerHeight * 0.72))}px`);
-    return;
-  }
+function applyOverflow(tip, maxHeight) {
+  if (!Number.isFinite(maxHeight) || maxHeight <= 0) return;
+  setImportant(tip.style, 'max-height', `${Math.floor(maxHeight)}px`);
+  const needsScroll = tip.scrollHeight > Math.floor(maxHeight) + 1;
+  setImportant(tip.style, 'overflow-y', needsScroll ? 'auto' : 'visible');
+}
 
-  const margin = 16;
-  const gap = 10;
+function positionMobile(tip) {
+  clearAuthoritativeGeometry(tip);
+  setImportant(tip.style, 'left', '0px');
+  setImportant(tip.style, 'right', '0px');
+  setImportant(tip.style, 'top', 'auto');
+  setImportant(tip.style, 'bottom', '0px');
+  applyOverflow(tip, Math.max(180, Math.floor(window.innerHeight * 0.72)));
+}
+
+function positionDesktop(tip, anchor) {
+  clearAuthoritativeGeometry(tip);
   setImportant(tip.style, 'position', 'fixed');
   setImportant(tip.style, 'right', 'auto');
   setImportant(tip.style, 'bottom', 'auto');
-  setImportant(tip.style, 'max-height', `${Math.max(160, window.innerHeight - margin * 2)}px`);
+  setImportant(tip.style, 'overflow-y', 'visible');
 
   const anchorRect = anchor.getBoundingClientRect();
-  const tipRect = tip.getBoundingClientRect();
-  const width = Math.min(tipRect.width, Math.max(0, window.innerWidth - margin * 2));
-  const height = Math.min(tipRect.height, Math.max(0, window.innerHeight - margin * 2));
+  let tipRect = tip.getBoundingClientRect();
+  const width = Math.min(tipRect.width, Math.max(0, window.innerWidth - VIEWPORT_MARGIN * 2));
   let left = anchorRect.left + anchorRect.width / 2 - width / 2;
-  left = Math.max(margin, Math.min(left, window.innerWidth - margin - width));
-  let top = anchorRect.top - height - gap;
-  if (top < margin) top = anchorRect.bottom + gap;
-  top = Math.max(margin, Math.min(top, window.innerHeight - margin - height));
+  left = Math.max(VIEWPORT_MARGIN, Math.min(left, window.innerWidth - VIEWPORT_MARGIN - width));
 
+  const availableAbove = Math.max(0, anchorRect.top - VIEWPORT_MARGIN - TIP_GAP);
+  const availableBelow = Math.max(0, window.innerHeight - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
+  const naturalHeight = tip.scrollHeight || tipRect.height;
+  let placement = 'top';
+  let top;
+
+  if (naturalHeight <= availableAbove) {
+    top = anchorRect.top - naturalHeight - TIP_GAP;
+  } else if (naturalHeight <= availableBelow) {
+    placement = 'bottom';
+    top = anchorRect.bottom + TIP_GAP;
+  } else {
+    placement = availableAbove >= availableBelow ? 'top' : 'bottom';
+    const available = Math.max(160, placement === 'top' ? availableAbove : availableBelow);
+    applyOverflow(tip, Math.min(available, window.innerHeight - VIEWPORT_MARGIN * 2));
+    tipRect = tip.getBoundingClientRect();
+    const constrainedHeight = Math.min(tipRect.height, window.innerHeight - VIEWPORT_MARGIN * 2);
+    top = placement === 'top'
+      ? anchorRect.top - constrainedHeight - TIP_GAP
+      : anchorRect.bottom + TIP_GAP;
+  }
+
+  top = Math.max(VIEWPORT_MARGIN, Math.min(top, window.innerHeight - VIEWPORT_MARGIN - tip.getBoundingClientRect().height));
+  tip.dataset.placement = placement;
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
   setImportant(tip.style, 'top', `${Math.round(top)}px`);
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
+}
+
+function position(tip, anchor) {
+  if (mobileMode()) positionMobile(tip);
+  else positionDesktop(tip, anchor);
 }
 
 function restore(record) {
@@ -372,6 +421,21 @@ function initializeAnchor(anchor) {
   });
 }
 
+function retireLegacyTooltipOwners() {
+  const siteUtils = window.SiteUtils;
+  const controllers = siteUtils?._tooltipControllers;
+  if (!Array.isArray(controllers)) return;
+  const retained = [];
+  for (const controller of controllers) {
+    if (OWNED_LEGACY_SELECTORS.has(controller?.anchorSel)) {
+      controller.close?.(true);
+      continue;
+    }
+    retained.push(controller);
+  }
+  if (retained.length !== controllers.length) siteUtils._tooltipControllers = retained;
+}
+
 export function initGlossaryTooltips(scope = document) {
   const root = scope?.querySelectorAll ? scope : document;
   root.querySelectorAll('.gterm').forEach(initializeAnchor);
@@ -384,6 +448,7 @@ export function initInlineTooltips(scope = document) {
 
 export function installArticleTooltips() {
   if (window.GBArticleTooltips?.version === VERSION) return window.GBArticleTooltips;
+  retireLegacyTooltipOwners();
   window.SiteUtils = window.SiteUtils || {};
   window.SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
   initInlineTooltips(document);
