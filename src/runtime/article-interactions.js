@@ -4,10 +4,13 @@ import { installArticleQuiz } from './article-quiz.js';
 import { installArticleImageViewer } from './article-image-viewer.js';
 
 const VERSION = 2;
+const TOOLTIP_OWNER = 'article-inline-tooltip';
 
 function install() {
   if (window.GBArticleInteractions?.version === VERSION) return;
   const tooltips = installArticleTooltips();
+  document.documentElement.dataset.gbArticleTooltipsOwner = TOOLTIP_OWNER;
+  document.documentElement.dataset.gbArticleTooltipsVersion = String(tooltips?.version || '');
   const quiz = installArticleQuiz();
   const imageViewer = installArticleImageViewer();
   window.GBArticleInteractions = Object.freeze({ version: VERSION, tooltips, quiz, imageViewer });
