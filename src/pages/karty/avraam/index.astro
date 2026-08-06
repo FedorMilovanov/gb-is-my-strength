@@ -8,14 +8,16 @@
  */
 import AvraamPageHead from '@/components/karty/avraam/AvraamPageHead.astro';
 import AvraamMap from '@/components/karty/avraam/AvraamMap.astro';
+import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <AvraamPageHead />
   </head>
-  <body>
+  <body class="has-app-search-map">
     <AvraamMap />
+    <AppSearchSurface mode="map-engine" />
     <script>
       const stage = document.querySelector('[data-map-stage]');
       const fallbackHeading = document.querySelector('h1.sr-only[data-pagefind-body]');

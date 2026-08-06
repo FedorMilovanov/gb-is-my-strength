@@ -11,7 +11,7 @@
   "stats": {
     "manifestItems": 74,
     "indexedRoutes": 73,
-    "scannedSourceFiles": 428,
+    "scannedSourceFiles": 430,
     "references": 980,
     "occurrences": 2355,
     "canonicalTextRecords": 148,
@@ -3334,7 +3334,7 @@
         {
           "url": "/karty/ishod/",
           "title": "Исход из Египта — интерактивная карта",
-          "context": "=\"UTF-8\" /> Исход из Египта — интерактивная карта Числа 33 | Господь Бог — Сила Моя <meta name=\"robots\" c",
+          "context": "derPreferencesHead /> Исход из Египта — интерактивная карта Числа 33 | Господь Бог — Сила Моя <meta name=\"robots\" c",
           "anchor": null,
           "raw": "Числа 33",
           "topics": [
