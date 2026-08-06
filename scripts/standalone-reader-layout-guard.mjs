@@ -50,12 +50,12 @@ function sourceContracts() {
   const lane = rail.match(/\.article-main\.article-main--hrail\s*\{([\s\S]*?)\n\s*\}/)?.[1] || '';
   const canvas = kdvChrome.match(/\.page-wrap\.page-wrap--hrail\s*\{([\s\S]*?)\n\s*\}/)?.[1] || '';
   const assertions = [
-    ['SRL-S01', 'one-sided 334px margin floor is retired', !rail.includes('margin-left: max((100vw - min(820px, 92vw)) / 2, 334px)')],
+    ['SRL-S01', 'one-sided legacy 334px formula is retired', !rail.includes('margin-left: max((100vw - min(820px, 92vw)) / 2, 334px)')],
     ['SRL-S02', 'desktop and mobile rail breakpoints do not overlap', rail.includes('@media(max-width:1199px)') && rail.includes('@media(min-width:1200px)')],
-    ['SRL-S03', 'ReaderRail declares the remaining reading lane', lane.includes('--hrail-lane-left') && lane.includes('--hrail-lane-width')],
-    ['SRL-S04', 'ReaderRail balances free lane space symmetrically', lane.includes('--hrail-lane-balance') && lane.includes('margin-left:calc(') && lane.includes('margin-right:calc(')],
-    ['SRL-S05', 'lane block uses no positional shift declaration', !/(?:^|\n)\s*(?:position|left|transform)\s*:/.test(lane)],
-    ['SRL-S06', 'lane width uses containing-block percentage, not viewport units', lane.includes('calc(100% -') && !lane.includes('100vw') && !lane.includes('100dvw')],
+    ['SRL-S03', 'ReaderRail declares the rail-safe edge and remaining width', lane.includes('--hrail-safe-left') && lane.includes('--hrail-available-width')],
+    ['SRL-S04', 'ReaderRail prefers viewport centre and clamps only at the rail-safe edge', lane.includes('--hrail-centered-left') && lane.includes('margin-left:max(var(--hrail-centered-left),var(--hrail-safe-left))') && lane.includes('margin-right:auto') && !lane.includes('--hrail-lane-balance')],
+    ['SRL-S05', 'rail geometry uses no positional transform trick', !/(?:^|\n)\s*(?:position|left|transform)\s*:/.test(lane)],
+    ['SRL-S06', 'available width uses containing-block percentage, not viewport units', lane.includes('calc(100% -') && !lane.includes('100vw') && !lane.includes('100dvw')],
     ['SRL-S07', 'ReaderSettings owns one normal 50rem measure', settings.includes('--hm-article-measure: 50rem')],
     ['SRL-S08', 'ReaderSettings derives shell from measure plus 6rem', settings.includes('--hm-article-shell: calc(var(--hm-article-measure) + 6rem)')],
     ['SRL-S09', 'every direct article block shares the measure owner', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)')],
@@ -103,20 +103,24 @@ async function layoutState(page, route) {
       probe.remove();
       return width;
     };
-    const laneLeft = resolveVar('--hrail-lane-left');
-    const rightGutter = resolveVar('--hrail-right-gutter');
+    const safeLeft = resolveVar('--hrail-safe-left');
     const clientWidth = document.documentElement.clientWidth;
+    const mainRect = rect(selectors.main);
+    const centeredLeft = mainRect ? (clientWidth - mainRect.width) / 2 : null;
     return {
       rootFont: parseFloat(getComputedStyle(document.documentElement).fontSize) || 16,
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth,
       railVisible: visible(document.querySelector('.hrail')),
       rail: rect('.hrail'),
-      main: rect(selectors.main),
+      main: mainRect,
       summary: rect(selectors.summary),
       prose: rect(selectors.prose),
       canvas: rect(selectors.canvas),
-      expectedLaneCenter: Number.isFinite(laneLeft) && Number.isFinite(rightGutter) ? (clientWidth + laneLeft - rightGutter) / 2 : null,
+      safeLeft: Number.isFinite(safeLeft) ? safeLeft : null,
+      centeredLeft,
+      expectedLeft: Number.isFinite(safeLeft) && centeredLeft != null ? Math.max(centeredLeft, safeLeft) : null,
+      viewportCenter: clientWidth / 2,
     };
   }, route);
 }
@@ -130,14 +134,16 @@ function recordLayout(route, width, state) {
   record(`${id}-04`, `${route.label} ${width}px summary and prose centres differ by at most 2px`, Boolean(state.summary && state.prose && Math.abs(state.summary.centerX - state.prose.centerX) <= 2), state, 'layout');
   record(`${id}-05`, `${route.label} ${width}px summary and prose widths differ by at most 2px`, Boolean(state.summary && state.prose && Math.abs(state.summary.width - state.prose.width) <= 2), state, 'layout');
   if (!desktop) {
-    record(`${id}-06`, `${route.label} ${width}px article stays viewport-centred`, Boolean(state.main && Math.abs(state.main.centerX - state.clientWidth / 2) <= 3), state, 'layout');
+    record(`${id}-06`, `${route.label} ${width}px article stays viewport-centred`, Boolean(state.main && Math.abs(state.main.centerX - state.viewportCenter) <= 3), state, 'layout');
     return;
   }
   record(`${id}-06`, `${route.label} ${width}px article clears the fixed rail`, Boolean(state.rail && state.main && state.main.left >= state.rail.right + 20), state, 'layout');
-  record(`${id}-07`, `${route.label} ${width}px article is centred in the declared lane`, Boolean(state.main && state.expectedLaneCenter != null && Math.abs(state.main.centerX - state.expectedLaneCenter) <= 3), state, 'layout');
+  record(`${id}-07`, `${route.label} ${width}px article uses only the minimum rail collision shift`, Boolean(state.main && state.expectedLeft != null && Math.abs(state.main.left - state.expectedLeft) <= 3), state, 'layout');
+  const centeringSafe = state.centeredLeft != null && state.safeLeft != null && state.centeredLeft >= state.safeLeft - 1;
+  record(`${id}-10`, `${route.label} ${width}px returns to the client-viewport centre whenever rail clearance allows it`, Boolean(!centeringSafe || (state.main && Math.abs(state.main.centerX - state.viewportCenter) <= 3)), { centeringSafe, state }, 'layout');
   const minimum = width >= 1280 ? 760 : 700;
   record(`${id}-08`, `${route.label} ${width}px normal prose is not pathologically narrow`, Boolean(state.prose && state.prose.width >= minimum), { minimum, state }, 'layout');
-  if (route.canvas) record(`${id}-09`, `${route.label} ${width}px rail canvas spans client width`, Boolean(state.canvas && Math.abs(state.canvas.width - state.clientWidth) <= 2 && Math.abs(state.canvas.centerX - state.clientWidth / 2) <= 2), state, 'layout');
+  if (route.canvas) record(`${id}-09`, `${route.label} ${width}px rail canvas spans client width`, Boolean(state.canvas && Math.abs(state.canvas.width - state.clientWidth) <= 2 && Math.abs(state.canvas.centerX - state.viewportCenter) <= 2), state, 'layout');
 }
 
 sourceContracts();
@@ -170,6 +176,8 @@ try {
       record(`${route.key}-M-${measure}-02`, `${route.label} ${measure} summary and prose remain aligned`, Boolean(state.summary && state.prose && Math.abs(state.summary.centerX - state.prose.centerX) <= 2), state, 'measure');
       record(`${route.key}-M-${measure}-03`, `${route.label} ${measure} summary and prose share width`, Boolean(state.summary && state.prose && Math.abs(state.summary.width - state.prose.width) <= 2), state, 'measure');
       record(`${route.key}-M-${measure}-04`, `${route.label} ${measure} has no horizontal overflow`, state.scrollWidth - state.clientWidth <= 1, state, 'measure');
+      const centeringSafe = state.centeredLeft != null && state.safeLeft != null && state.centeredLeft >= state.safeLeft - 1;
+      record(`${route.key}-M-${measure}-05`, `${route.label} ${measure} keeps viewport centre whenever the selected measure clears the rail`, Boolean(!centeringSafe || (state.main && Math.abs(state.main.centerX - state.viewportCenter) <= 3)), { centeringSafe, state }, 'measure');
     }
     record(`${route.key}-M-ORDER`, `${route.label} measure modes grow monotonically`, measured.narrow < measured.normal && measured.normal < measured.wide, measured, 'measure');
   }
@@ -180,7 +188,7 @@ try {
 }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'layout guard check IDs must be unique');
-assert.ok(checks.length >= 162, `Standalone reader layout guard requires at least 162 checks, got ${checks.length}`);
+assert.ok(checks.length >= 178, `Standalone reader layout guard requires at least 178 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
