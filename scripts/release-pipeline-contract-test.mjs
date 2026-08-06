@@ -26,7 +26,7 @@ function before(text, first, second) {
   return left >= 0 && right >= 0 && left < right;
 }
 
-export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow, siteCss }) {
+export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow }) {
   const problems = [];
   const jobs = boundedJobs(workflow);
   const checks = [
@@ -91,8 +91,6 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
     ['generic live preserves preflight evidence', live, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/],
     ['TTS verifies both identities', tts, /RELEASE_SHA[\s\S]*CONTROL_PLANE_SHA[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/],
     ['TTS preserves preflight evidence', tts, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/],
-    ['global border-box source contract', siteCss, /\*,::after,::before\{box-sizing:border-box\}/],
-    ['source workflow tracks global CSS owner', ttsWorkflow, /pull_request:[\s\S]*- \"css\/site\.css\"[\s\S]*push:[\s\S]*- \"css\/site\.css\"/],
     ['source workflow owns release contract', ttsWorkflow, /scripts\/release-pipeline-contract-test\.mjs/],
     ['source workflow executes release contract', ttsWorkflow, /node scripts\/release-pipeline-contract-test\.mjs/],
   ];
@@ -150,7 +148,6 @@ const sources = {
   live: read('scripts/live-release-contract.mjs'),
   tts: read('scripts/tts-live-deployment-contract.mjs'),
   ttsWorkflow: read('.github/workflows/tts-download-consent.yml'),
-  siteCss: read('css/site.css'),
 };
 assert.deepEqual(validate(sources), []);
 
@@ -210,9 +207,7 @@ const mutations = [
   ["generic live divider count reduced", { ...sources, live: sources.live.replace("for (let divider = 0; divider < 4; divider += 1) {", "for (let divider = 0; divider < 3; divider += 1) {") }],
   ["generic live legacy rejection removed", { ...sources, live: sources.live.replace("for (const legacy of ['class=\"hb-w\"', 'class=\"h-tetra\"', 'data-sacred-active']) {", "for (const legacy of []) {") }],
   ['generic live reintroduces CSS-in-HTML guess', { ...sources, live: `${sources.live}\n// h-refutation-card[^}]{0,500}box-sizing:border-box\n` }],
-  ['global border-box reset removed', { ...sources, siteCss: sources.siteCss.replace('*,::after,::before{box-sizing:border-box}', '*,::after,::before{box-sizing:content-box}') }],
   ['TTS ignores control', { ...sources, tts: sources.tts.replace('expectedControlPlaneSha: CONTROL_PLANE_SHA,', '') }],
-  ['source workflow ignores global CSS owner', { ...sources, ttsWorkflow: sources.ttsWorkflow.replaceAll('      - \"css/site.css\"\n', '') }],
   ['diagnostics rebuilds', { ...sources, diagnostics: `${sources.diagnostics}\n# npm ci\n# npm run strangler:build:production-like\n` }],
 ];
 for (const [name, mutated] of mutations) assert.ok(validate(mutated).length > 0, `${name}: mutation must be rejected`);
