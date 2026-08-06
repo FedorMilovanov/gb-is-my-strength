@@ -80,6 +80,21 @@ jobs:
             --out-json reports/strangler-duplicate-inventory.json \
             --out-md reports/strangler-duplicate-inventory.md
 
+      - name: Strangler parity authority and Baptists built-app measurement
+        run: |
+          node --check scripts/lib/visual-parity-authority.cjs
+          node --check scripts/visual-parity-authority-audit.mjs
+          node --check scripts/baptists-built-app-measure.mjs
+          node --check scripts/baptists-built-app-browser-measure.mjs
+          node scripts/visual-parity-authority-audit.mjs --self-test
+          node scripts/baptists-built-app-measure.mjs --self-test
+          node scripts/visual-parity-authority-audit.mjs \
+            --out-json reports/visual-parity-authority.json \
+            --out-md reports/visual-parity-authority.md
+          node scripts/baptists-built-app-measure.mjs \
+            --out-json reports/baptists-built-app-measure.json \
+            --out-md reports/baptists-built-app-measure.md
+
       - name: Readiness-to-deploy workflow linkage
         run: node scripts/workflow-linkage-regression-test.js
 
@@ -178,6 +193,10 @@ jobs:
             reports/bible-legacy-authority-regression.log
             reports/strangler-duplicate-inventory.json
             reports/strangler-duplicate-inventory.md
+            reports/visual-parity-authority.json
+            reports/visual-parity-authority.md
+            reports/baptists-built-app-measure.json
+            reports/baptists-built-app-measure.md
           if-no-files-found: warn
           retention-days: 14
 
