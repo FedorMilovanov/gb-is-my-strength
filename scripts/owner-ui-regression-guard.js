@@ -10,6 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 const problems = [];
 function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
@@ -81,11 +82,24 @@ mustContain('docs/OWNER-REQUIREMENTS.md', 'H1/H2/SEO/word-count не счита�
 mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', 'Astro — не самоцель', 'premium Astro roadmap exists');
 mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', '95%+ визуального совпадения legacy → Astro', 'roadmap visual parity target');
 mustContain('AGENTS-REFERENCE.md', 'Astro migration — premium visual parity only', 'reference visual parity doctrine');
+mustContain('docs/REFERENCE_TRANSFER_POLICY.md', 'exactness without CI paralysis', 'proportionate reference transfer policy');
+mustContain('docs/REFERENCE_TRANSFER_POLICY.md', 'A PR may not claim “1:1”', '1:1 evidence requirement');
 
 // PremiumControls protected subsystem guard (PC-001..PC-007)
 mustContain('src/components/ui/premium-controls/PremiumControlAnchor.astro', 'data-pc-anchor', 'PremiumControlAnchor component exists');
 mustContain('src/components/ui/floating-cluster/RomanNumeral.astro', 'gb-roman', 'RomanNumeral component exists');
 mustContain('AGENTS-REFERENCE.md', '3.10 PremiumControls / Floating Cluster', 'reference PremiumControls protected status');
+
+// Lightweight registry validation. This deliberately reuses existing route guards
+// instead of executing them again or adding another workflow.
+const referenceContracts = spawnSync(
+  process.execPath,
+  [path.join(ROOT, 'scripts/reference-transfer-contracts.mjs')],
+  { cwd: ROOT, stdio: 'inherit' },
+);
+if (referenceContracts.error) bad(`reference transfer contracts failed to start: ${referenceContracts.error.message}`);
+else if (referenceContracts.status !== 0) bad(`reference transfer contracts exited ${referenceContracts.status}`);
+else ok('reference transfer contracts passed');
 
 console.log('\nOWNER UI REGRESSION GUARD');
 if (problems.length) {

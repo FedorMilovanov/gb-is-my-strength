@@ -1,7 +1,7 @@
 # Work Modes — FAST / LANE / SYSTEM
 
-**Updated:** 2026-07-28  
-**Current policy version:** 4.4
+**Updated:** 2026-08-06  
+**Current policy version:** 4.5
 
 Purpose: choose proportionate verification without turning every change into the same ceremony.
 
@@ -23,6 +23,7 @@ Read companion policies only when applicable:
 - [LANE_LOCK_POLICY.md](LANE_LOCK_POLICY.md) — parallel agents, shared surfaces or ownership overlap;
 - [BRANCH_LIFECYCLE_V4.md](BRANCH_LIFECYCLE_V4.md) — branch recovery, supersession or cleanup;
 - [OWNER-INVARIANTS.md](OWNER-INVARIANTS.md) — owner-sensitive content, data or UI;
+- [REFERENCE_TRANSFER_POLICY.md](REFERENCE_TRANSFER_POLICY.md) — exact/adaptive reference work, 1:1 claims and the blocking-check budget;
 - [AGENT_PUSH_MODEL.md](AGENT_PUSH_MODEL.md) — authentication, remote publication or deploy evidence.
 
 Inspect environment capabilities only when the planned commands depend on them. A wording-only FAST change does not require a full CPU/RAM/disk/Playwright inventory.
@@ -50,6 +51,8 @@ All normal changes use a branch and PR. Direct `main` mutation is reserved for a
 | `SYSTEM` | shared/global/control-plane/governance | checks for the touched control-plane surface and exact-head evidence |
 
 Risk mode does not decide when to push. Execution and economical checkpoints are defined in `GIT_WORKTREE_POLICY.md`.
+
+Reference-based work is not automatically SYSTEM. A route-local implementation may be LANE, but creating or changing the transfer policy, a blocking contract, a protected reference snapshot or a shared guard is SYSTEM. Exact-replica claims must follow `REFERENCE_TRANSFER_POLICY.md`; “same text/classes” is not visual proof.
 
 ## 3. Minimum declaration
 
@@ -147,6 +150,8 @@ docs/OWNER-INVARIANTS.md
 docs/AGENT_PUSH_MODEL.md
 docs/GIT_WORKTREE_POLICY.md
 docs/BRANCH_LIFECYCLE_V4.md
+docs/REFERENCE_TRANSFER_POLICY.md
+data/reference-transfer-contracts.json
 astro.config.* / tsconfig.*
 sw.js
 migration/**
