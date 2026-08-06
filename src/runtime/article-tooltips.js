@@ -1,4 +1,4 @@
-const VERSION = 18;
+const VERSION = 19;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -7,6 +7,7 @@ const HOVER_TRANSIT_PADDING = 12;
 const VIEWPORT_MARGIN = 16;
 const TIP_GAP = 10;
 const MIN_SCROLL_HEIGHT = 96;
+const MOBILE_MAX_VIEWPORT_RATIO = 0.85;
 
 let active = null;
 let closeTimer = 0;
@@ -229,6 +230,12 @@ function applyOverflow(tip, maxHeight) {
   return needsScroll;
 }
 
+function mobileSheetBudget(viewport) {
+  const ratioBudget = Math.floor(viewport.height * MOBILE_MAX_VIEWPORT_RATIO);
+  const visualBudget = Math.floor(viewport.height - VIEWPORT_MARGIN);
+  return Math.max(MIN_SCROLL_HEIGHT, Math.min(ratioBudget, visualBudget));
+}
+
 function positionMobile(tip) {
   const viewport = viewportBounds();
   clearAuthoritativeGeometry(tip);
@@ -236,7 +243,7 @@ function positionMobile(tip) {
   setImportant(tip.style, 'right', '0px');
   setImportant(tip.style, 'top', 'auto');
   setImportant(tip.style, 'bottom', '0px');
-  applyOverflow(tip, Math.max(180, Math.floor(viewport.height * 0.72)));
+  applyOverflow(tip, mobileSheetBudget(viewport));
 }
 
 function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
