@@ -163,6 +163,24 @@ jobs:
           source_replacement = '  "window.GBSearchTriggerLabels = api",\n  "const observer = new MutationObserver",\n  "attributeFilter: [\'aria-label\', \'title\', \'data-search-shortcut-label\']",\n  "queueMicrotask",\n])'
           replace_once(source_marker, source_replacement, 'observer source contract')
 
+          readiness_old = '''    await page.waitForFunction(({ selector, shortcut }) => {
+      const controls = [...document.querySelectorAll(selector)];
+      return controls.length > 0 && controls.every((control) => control.getAttribute('data-search-label-ready') === shortcut);
+    }, { selector, shortcut: scenario.shortcut }, { timeout: 30_000 });
+'''
+          readiness_new = '''    await page.waitForFunction(({ selector, shortcut }) => {
+      const controls = [...document.querySelectorAll(selector)];
+      const expectedAria = `Поиск по всему сайту (${shortcut})`;
+      const expectedTitle = `Поиск по всему сайту ${shortcut}`;
+      return controls.length > 0 && controls.every((control) =>
+        control.getAttribute('data-search-label-ready') === shortcut
+        && control.getAttribute('aria-label') === expectedAria
+        && control.getAttribute('title') === expectedTitle
+      );
+    }, { selector, shortcut: scenario.shortcut }, { timeout: 30_000 });
+'''
+          replace_once(readiness_old, readiness_new, 'exact initial label readiness')
+
           browser_marker = "    const trigger = page.locator('#gbSearchBtn').first();\n"
           browser_replacement = '''    const lateControl = page.locator(selector).first();
             await lateControl.evaluate((node) => {
