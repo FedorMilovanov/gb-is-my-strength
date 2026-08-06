@@ -32,8 +32,10 @@ function loadJson(filePath) {
 }
 
 function gitBlobSha1(buffer) {
-  const header = Buffer.from(`blob ${buffer.length}\0`, 'utf8');
-  return crypto.createHash('sha1').update(header).update(buffer).digest('hex');
+  return crypto.createHash('sha1')
+    .update(Buffer.from(`blob ${buffer.length}\0`, 'utf8'))
+    .update(buffer)
+    .digest('hex');
 }
 
 function sha256(buffer) {
@@ -59,29 +61,28 @@ function runInventory(root) {
 }
 
 function loadLedger(root) {
-  const manifestPath = path.join(root, 'data', 'legacy-reference-ledger', 'manifest.json');
-  const manifest = loadJson(manifestPath);
+  const manifest = loadJson(path.join(root, 'data', 'legacy-reference-ledger', 'manifest.json'));
   const entries = [];
   for (const relative of manifest.referenceShards || []) {
-    const shard = loadJson(path.join(root, relative));
-    for (const entry of shard.entries || []) entries.push(entry);
+    entries.push(...(loadJson(path.join(root, relative)).entries || []));
   }
   return { manifest, entries };
 }
 
-function resolveParity(root, ownership, authority) {
-  const policyFor = (meta) => {
-    const owner = String(meta?.owner || '');
-    const status = String(meta?.status || '');
-    if (owner === 'built-app' || status === 'copy-as-built-asset') return authority.ownerPolicies?.['built-app'];
-    if (owner.startsWith('astro')) return authority.ownerPolicies?.astro;
-    return null;
-  };
+function parityPolicy(meta, authority) {
+  const owner = String(meta?.owner || '');
+  const status = String(meta?.status || '');
+  if (owner === 'built-app' || status === 'copy-as-built-asset') return authority.ownerPolicies?.['built-app'];
+  if (owner.startsWith('astro')) return authority.ownerPolicies?.astro;
+  return null;
+}
+
+function auditParity(root, ownership, authority) {
   const problems = [];
   let astro = 0;
   let builtApp = 0;
   for (const [route, meta] of Object.entries(ownership.routes || {})) {
-    const policy = policyFor(meta);
+    const policy = parityPolicy(meta, authority);
     if (String(meta.owner || '').startsWith('astro')) {
       astro += 1;
       if (policy?.mode !== 'native-contract') problems.push(`${route}: Astro route lacks native-contract authority`);
@@ -97,38 +98,41 @@ function resolveParity(root, ownership, authority) {
   return { astro, builtApp, problems, clear: problems.length === 0 };
 }
 
-function classifyDependency(dependency) {
-  const impact = dependency.quarantineImpact || 'unknown';
-  if (impact === 'none-fixture-policy-or-comment-only') return 'nonblocking';
-  if (impact === 'must-update-before-move') return 'mechanical-repoint';
-  if (impact === 'remove-or-repoint-before-move') return 'obsolete-or-repoint';
-  if (impact === 'owner-decision-required') return 'owner-decision';
-  return 'unknown-impact';
+function dependencyClass(dependency) {
+  switch (dependency.quarantineImpact) {
+    case 'none-fixture-policy-or-comment-only': return 'nonblocking';
+    case 'must-update-before-move': return 'mechanical-repoint';
+    case 'remove-or-repoint-before-move': return 'obsolete-or-repoint';
+    case 'owner-decision-required': return 'owner-decision';
+    default: return 'unknown-impact';
+  }
 }
 
-function audit(root) {
-  const inventory = runInventory(root);
-  const { manifest, entries } = loadLedger(root);
-  const ownership = loadJson(path.join(root, 'migration', 'page-ownership.json'));
-  const authority = loadJson(path.join(root, 'data', 'visual-parity-authority.json'));
-  const parity = resolveParity(root, ownership, authority);
+function groupDependencies(dependencies) {
+  return dependencies.reduce((groups, dependency) => {
+    const key = dependencyClass(dependency);
+    (groups[key] ||= []).push({ ...dependency, retirementClass: key });
+    return groups;
+  }, {});
+}
+
+function buildReport({ root, inventory, manifest, entries, ownership, authority }) {
+  const parity = auditParity(root, ownership, authority);
   const byPath = new Map(entries.map((entry) => [normalize(entry.legacyPath), entry]));
   const byRoute = new Map(entries.map((entry) => [entry.route, entry]));
-  const nativeShadows = inventory.items.filter((item) => item.classification === 'native-shadow');
-  const builtApps = inventory.items.filter((item) => item.classification === 'owned-independent');
+  const nativeItems = (inventory.items || []).filter((item) => item.classification === 'native-shadow');
+  const builtApps = (inventory.items || []).filter((item) => item.classification === 'owned-independent');
   const integrityProblems = [];
-  const shadowRows = nativeShadows.map((item) => {
+
+  const nativeShadows = nativeItems.map((item) => {
     const entry = byPath.get(normalize(item.path)) || byRoute.get(item.route) || null;
     if (!entry) {
       integrityProblems.push(`${item.path}: missing immutable ledger entry`);
-      return { ...item, ledger: null, decision: 'missing-ledger' };
+      return { route: item.route, path: item.path, bytes: item.bytes, decision: 'missing-ledger' };
     }
-    const absolute = path.join(root, item.path);
-    const buffer = fs.readFileSync(absolute);
-    const actualBlob = gitBlobSha1(buffer);
-    const actualSha256 = sha256(buffer);
-    if (actualBlob !== entry.gitBlobSha1) integrityProblems.push(`${item.path}: Git blob mismatch`);
-    if (actualSha256 !== entry.byteSha256) integrityProblems.push(`${item.path}: byte SHA-256 mismatch`);
+    const buffer = fs.readFileSync(path.join(root, item.path));
+    if (gitBlobSha1(buffer) !== entry.gitBlobSha1) integrityProblems.push(`${item.path}: Git blob mismatch`);
+    if (sha256(buffer) !== entry.byteSha256) integrityProblems.push(`${item.path}: byte SHA-256 mismatch`);
     const decision = entry.classification === 'migration-reference-only'
       ? 'classification-clear'
       : entry.classification === 'unknown-blocker'
@@ -138,43 +142,35 @@ function audit(root) {
       route: item.route,
       path: item.path,
       bytes: item.bytes,
-      gitBlobSha1: entry.gitBlobSha1,
-      byteSha256: entry.byteSha256,
+      profile: entry.profile,
       classification: entry.classification,
       declaredLegacyStatus: entry.declaredLegacyStatus,
-      profile: entry.profile,
+      gitBlobSha1: entry.gitBlobSha1,
+      byteSha256: entry.byteSha256,
       decision,
     };
   });
 
-  const dependencies = (manifest.dependencies || []).map((dependency) => ({
-    ...dependency,
-    retirementClass: classifyDependency(dependency),
-  }));
-  const dependencyGroups = Object.groupBy
-    ? Object.groupBy(dependencies, (dependency) => dependency.retirementClass)
-    : dependencies.reduce((groups, dependency) => {
-        (groups[dependency.retirementClass] ||= []).push(dependency);
-        return groups;
-      }, {});
+  const groups = groupDependencies(manifest.dependencies || []);
+  const unknownReferences = nativeShadows.filter((row) => row.decision === 'owner-decision-required');
+  const classificationClear = nativeShadows.filter((row) => row.decision === 'classification-clear');
+  const mechanicalRepoints = groups['mechanical-repoint'] || [];
+  const obsoleteOrRepoint = groups['obsolete-or-repoint'] || [];
+  const dependencyOwnerDecisions = groups['owner-decision'] || [];
+  const unknownDependencyImpacts = groups['unknown-impact'] || [];
+  const nonblockingDependencies = groups.nonblocking || [];
 
-  const unknownReferenceRows = shadowRows.filter((row) => row.decision === 'owner-decision-required');
-  const classificationClearRows = shadowRows.filter((row) => row.decision === 'classification-clear');
-  const mechanical = dependencyGroups['mechanical-repoint'] || [];
-  const obsolete = dependencyGroups['obsolete-or-repoint'] || [];
-  const decisions = dependencyGroups['owner-decision'] || [];
-  const unknownImpact = dependencyGroups['unknown-impact'] || [];
-  const nonblocking = dependencyGroups.nonblocking || [];
-  const blockers = {
-    referenceOwnerDecisions: unknownReferenceRows.length,
-    mechanicalRepoints: mechanical.length,
-    obsoleteOrRepoint: obsolete.length,
-    dependencyOwnerDecisions: decisions.length,
-    unknownDependencyImpacts: unknownImpact.length,
+  const blockingCounts = {
+    referenceOwnerDecisions: unknownReferences.length,
+    mechanicalRepoints: mechanicalRepoints.length,
+    obsoleteOrRepoint: obsoleteOrRepoint.length,
+    dependencyOwnerDecisions: dependencyOwnerDecisions.length,
+    unknownDependencyImpacts: unknownDependencyImpacts.length,
     integrityProblems: integrityProblems.length,
     parityProblems: parity.problems.length,
   };
-  const blockerTotal = Object.values(blockers).reduce((sum, value) => sum + value, 0);
+  const blockerTotal = Object.values(blockingCounts).reduce((sum, count) => sum + count, 0);
+  const deletionReady = blockerTotal === 0;
 
   return {
     schemaVersion: '1.0.0',
@@ -186,42 +182,40 @@ function audit(root) {
       parityAuthority: 'data/visual-parity-authority.json',
     },
     summary: {
-      publicIndexes: inventory.summary.publicIndexFiles,
-      nativeShadows: nativeShadows.length,
-      nativeShadowBytes: nativeShadows.reduce((sum, item) => sum + item.bytes, 0),
+      publicIndexes: inventory.summary?.publicIndexFiles || 0,
+      nativeShadows: nativeItems.length,
+      nativeShadowBytes: nativeItems.reduce((sum, item) => sum + item.bytes, 0),
       builtApps: builtApps.length,
       ledgerEntries: entries.length,
-      classificationClearReferences: classificationClearRows.length,
-      unknownReferenceDecisions: unknownReferenceRows.length,
-      dependencyRecords: dependencies.length,
-      nonblockingDependencies: nonblocking.length,
-      ...blockers,
+      classificationClearReferences: classificationClear.length,
+      unknownReferenceDecisions: unknownReferences.length,
+      dependencyRecords: (manifest.dependencies || []).length,
+      nonblockingDependencies: nonblockingDependencies.length,
+      ...blockingCounts,
       blockerTotal,
       parityAuthorityClear: parity.clear,
-      deletionReady: blockerTotal === 0,
-      physicalMoveAuthorized: blockerTotal === 0,
+      deletionReady,
+      physicalMoveAuthorized: deletionReady,
     },
-    verdict: blockerTotal === 0
-      ? 'SAFE_TO_OPEN_ATOMIC_QUARANTINE_MOVE'
-      : 'NOT_YET_SAFE_TO_MOVE_OR_DELETE',
-    reason: blockerTotal === 0
+    verdict: deletionReady ? 'SAFE_TO_OPEN_ATOMIC_QUARANTINE_MOVE' : 'NOT_YET_SAFE_TO_MOVE_OR_DELETE',
+    reason: deletionReady
       ? 'All immutable identities, owner decisions, dependency repoints and parity authority are complete.'
       : 'Parity authority is transferred, but reference decisions and/or direct readers still block physical retirement.',
     parity,
     blockers: {
-      unknownReferences: unknownReferenceRows,
-      mechanicalRepoints: mechanical,
-      obsoleteOrRepoint: obsolete,
-      dependencyOwnerDecisions: decisions,
-      unknownDependencyImpacts: unknownImpact,
+      unknownReferences,
+      mechanicalRepoints,
+      obsoleteOrRepoint,
+      dependencyOwnerDecisions,
+      unknownDependencyImpacts,
       integrityProblems,
     },
-    nonblockingDependencies: nonblocking,
-    nativeShadows: shadowRows,
+    nonblockingDependencies,
+    nativeShadows,
     builtApps: builtApps.map((item) => ({ route: item.route, path: item.path, bytes: item.bytes })),
     nextTransaction: {
       order: [
-        'resolve 30 missing reference classifications in route profiles/ledger',
+        'resolve missing reference classifications in route profiles and ledger',
         'repoint policy readers through migration/legacy-reference-path.js',
         'remove or repoint obsolete legacy audits',
         'decide the remaining direct-reader contracts',
@@ -230,9 +224,22 @@ function audit(root) {
         'prove production-like dist, Pagefind, browser routes and no quarantine publication',
       ],
       deleteBuiltApp: false,
-      deleteNativeShadowsNow: blockerTotal === 0,
+      deleteNativeShadowsNow: deletionReady,
     },
   };
+}
+
+function audit(root) {
+  const inventory = runInventory(root);
+  const { manifest, entries } = loadLedger(root);
+  return buildReport({
+    root,
+    inventory,
+    manifest,
+    entries,
+    ownership: loadJson(path.join(root, 'migration', 'page-ownership.json')),
+    authority: loadJson(path.join(root, 'data', 'visual-parity-authority.json')),
+  });
 }
 
 function renderMarkdown(report) {
@@ -279,27 +286,36 @@ function renderMarkdown(report) {
 function runSelfTest() {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'legacy-shadow-self-test-'));
   try {
-    fs.mkdirSync(path.join(temp, 'scripts'), { recursive: true });
-    fs.mkdirSync(path.join(temp, 'data', 'legacy-reference-ledger'), { recursive: true });
-    fs.mkdirSync(path.join(temp, 'data'), { recursive: true });
-    fs.mkdirSync(path.join(temp, 'migration'), { recursive: true });
     fs.mkdirSync(path.join(temp, 'articles', 'one'), { recursive: true });
+    fs.mkdirSync(path.join(temp, 'guards'), { recursive: true });
     const html = Buffer.from('<!doctype html><h1>one</h1>');
     fs.writeFileSync(path.join(temp, 'articles', 'one', 'index.html'), html);
-    fs.writeFileSync(path.join(temp, 'scripts', 'strangler-duplicate-inventory.mjs'), `#!/usr/bin/env node\nconst fs=require('fs'); const out=process.argv[process.argv.indexOf('--out-json')+1]; fs.writeFileSync(out, JSON.stringify({summary:{publicIndexFiles:1},items:[{route:'/articles/one/',path:'articles/one/index.html',bytes:${html.length},classification:'native-shadow'}]}));`);
-    fs.writeFileSync(path.join(temp, 'data', 'legacy-reference-ledger', 'manifest.json'), JSON.stringify({
-      referenceShards: ['data/legacy-reference-ledger/references-1.json'],
-      dependencies: [{ path: 'reader.js', quarantineImpact: 'owner-decision-required', evidenceToken: 'articles/one/index.html' }],
-    }));
-    fs.writeFileSync(path.join(temp, 'data', 'legacy-reference-ledger', 'references-1.json'), JSON.stringify({ entries: [{
-      route: '/articles/one/', legacyPath: 'articles/one/index.html', classification: 'unknown-blocker', declaredLegacyStatus: null,
-      gitBlobSha1: gitBlobSha1(html), byteSha256: sha256(html), profile: 'profile.json',
-    }] }));
-    fs.writeFileSync(path.join(temp, 'migration', 'page-ownership.json'), JSON.stringify({ routes: { '/articles/one/': { owner: 'astro', status: 'production-dist' } } }));
-    fs.writeFileSync(path.join(temp, 'data', 'visual-parity-authority.json'), JSON.stringify({ ownerPolicies: { astro: { mode: 'native-contract', requiredGuards: [] } } }));
-    const result = audit(temp);
-    if (result.summary.deletionReady !== false || result.summary.referenceOwnerDecisions !== 1 || result.summary.dependencyOwnerDecisions !== 1) {
-      throw new Error(`self-test did not fail closed: ${JSON.stringify(result.summary)}`);
+    for (const name of ['source.js', 'dist.js', 'browser.js']) fs.writeFileSync(path.join(temp, 'guards', name), '');
+
+    const report = buildReport({
+      root: temp,
+      inventory: {
+        summary: { publicIndexFiles: 1 },
+        items: [{ route: '/articles/one/', path: 'articles/one/index.html', bytes: html.length, classification: 'native-shadow' }],
+      },
+      manifest: {
+        dependencies: [{ path: 'reader.js', quarantineImpact: 'owner-decision-required', evidenceToken: 'articles/one/index.html' }],
+      },
+      entries: [{
+        route: '/articles/one/',
+        legacyPath: 'articles/one/index.html',
+        classification: 'unknown-blocker',
+        declaredLegacyStatus: null,
+        gitBlobSha1: gitBlobSha1(html),
+        byteSha256: sha256(html),
+        profile: 'profile.json',
+      }],
+      ownership: { routes: { '/articles/one/': { owner: 'astro', status: 'production-dist' } } },
+      authority: { ownerPolicies: { astro: { mode: 'native-contract', requiredGuards: ['guards/source.js', 'guards/dist.js', 'guards/browser.js'] } } },
+    });
+
+    if (report.summary.deletionReady !== false || report.summary.referenceOwnerDecisions !== 1 || report.summary.dependencyOwnerDecisions !== 1) {
+      throw new Error(`self-test did not fail closed: ${JSON.stringify(report.summary)}`);
     }
     console.log('✅ legacy shadow retirement readiness self-test passed');
   } finally {
