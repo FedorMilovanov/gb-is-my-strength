@@ -10,6 +10,7 @@ const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const AUDIT = path.join(__dirname, 'interactive-audit.js');
 const HERMENEVTIKA_REGRESSION_GUARD = path.join(__dirname, 'hermenevtika-regression-guard.mjs');
+const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
@@ -105,10 +106,19 @@ function runHermenevtikaRegressionGuard(baseUrl) {
   return runNodeScript(HERMENEVTIKA_REGRESSION_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runStandaloneReaderLayoutGuard(baseUrl) {
+  if (!fs.existsSync(STANDALONE_READER_LAYOUT_GUARD)) {
+    throw new Error(`Standalone reader layout guard is missing at ${STANDALONE_READER_LAYOUT_GUARD}`);
+  }
+  return runNodeScript(STANDALONE_READER_LAYOUT_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
 async function runInteractiveContracts(baseUrl) {
   const auditCode = await runAudit(baseUrl);
   if (auditCode !== 0) return auditCode;
-  return runHermenevtikaRegressionGuard(baseUrl);
+  const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
+  if (tooltipCode !== 0) return tooltipCode;
+  return runStandaloneReaderLayoutGuard(baseUrl);
 }
 
 async function runHomeDesignAudits() {
