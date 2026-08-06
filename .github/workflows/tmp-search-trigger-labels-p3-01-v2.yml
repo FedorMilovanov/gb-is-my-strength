@@ -320,3 +320,5 @@ jobs:
           git diff --cached --check
           git commit -m "fix(search): unify platform-aware trigger labels"
           git push --force-with-lease="refs/heads/$BRANCH:$TARGET_SHA" origin "HEAD:refs/heads/$BRANCH"
+
+# v2 synchronize trigger
