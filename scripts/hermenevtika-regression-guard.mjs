@@ -60,7 +60,7 @@ function sourceContracts() {
     ['HGR-S24', 'one-sided 334px margin floor is gone', !rail.includes('margin-left: max((100vw - min(820px, 92vw)) / 2, 334px)')],
     ['HGR-S25', 'rail breakpoint has no 1200px overlap', rail.includes('@media(max-width:1199px)') && rail.includes('@media(min-width:1200px)')],
     ['HGR-S26', 'rail declares an explicit remaining lane', lane.includes('--hrail-lane-width') && lane.includes('--hrail-lane-left')],
-    ['HGR-S27', 'lane balances space without positional shifting', lane.includes('--hrail-lane-balance') && !/\b(?:position|left|transform)\s*:/.test(lane)],
+    ['HGR-S27', 'lane balances space without positional shifting', lane.includes('--hrail-lane-balance') && !/(?:^|\n)\s*(?:position|left|transform)\s*:/.test(lane)],
     ['HGR-S28', 'lane uses containing-block width, not scrollbar-inclusive vw', lane.includes('calc(100% -') && !lane.includes('100vw')],
     ['HGR-S29', 'ReaderSettings owns every direct article block measure', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)')],
     ['HGR-S30', 'measure modes are exactly 42rem, 50rem and 58rem', /narrow:\s*'42rem'[\s\S]*normal:\s*'50rem'[\s\S]*wide:\s*'58rem'/.test(settings)],
