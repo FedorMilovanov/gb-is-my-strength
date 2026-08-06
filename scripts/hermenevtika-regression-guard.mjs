@@ -10,7 +10,7 @@ const REPORT_DIR = path.join(ROOT, 'reports', 'hermenevtika-regression-guards');
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
 const OWNER = 'article-inline-tooltip';
-const OWNER_VERSION = 16;
+const OWNER_VERSION = 17;
 const OWNED_SELECTORS = ['.gterm', '.fn-marker', '.bref[data-ref]'];
 const VIEWPORTS = [390, 768, 1199, 1200, 1280, 1366, 1440, 1920];
 const MEASURES = { narrow: 42, normal: 50, wide: 58 };
@@ -36,7 +36,7 @@ function sourceContracts() {
   const assertions = [
     ['HGR-S01', 'canonical tooltip runtime source exists', runtime.length > 0],
     ['HGR-S02', 'canonical tooltip owner stylesheet exists', runtimeCss.length > 0],
-    ['HGR-S03', 'canonical tooltip epoch is exactly 16', /const VERSION\s*=\s*16\s*;/.test(runtime)],
+    ['HGR-S03', 'canonical tooltip epoch is exactly 17', /const VERSION\s*=\s*17\s*;/.test(runtime)],
     ['HGR-S04', 'canonical owner name is exact', runtime.includes("const OWNER = 'article-inline-tooltip';")],
     ['HGR-S05', 'runtime declares exactly the three legacy selectors', runtime.includes("new Set(['.gterm', '.fn-marker', '.bref[data-ref]'])")],
     ['HGR-S06', 'legacy retirement mutates the original array in place', /controllers\.splice\(index,\s*1\)/.test(runtime)],
@@ -64,11 +64,20 @@ function sourceContracts() {
     ['HGR-S28', 'lane uses containing-block width, not scrollbar-inclusive vw', lane.includes('calc(100% -') && !lane.includes('100vw')],
     ['HGR-S29', 'ReaderSettings owns every direct article block measure', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)')],
     ['HGR-S30', 'measure modes are exactly 42rem, 50rem and 58rem', /narrow:\s*'42rem'[\s\S]*normal:\s*'50rem'[\s\S]*wide:\s*'58rem'/.test(settings)],
+    ['HGR-S31', 'tooltip geometry uses VisualViewport with client-width fallback', runtime.includes('function viewportBounds()') && runtime.includes('window.visualViewport') && runtime.includes('document.documentElement.clientWidth')],
+    ['HGR-S32', 'crossing the mobile breakpoint closes the active owner cleanly', runtime.includes("closeTooltip('mode-change')") && runtime.includes('active.mobile !== mobileMode()')],
+    ['HGR-S33', 'visual viewport resize and pan use the canonical viewport handler', runtime.includes("visualViewport?.addEventListener('resize', handleViewportChange") && runtime.includes("visualViewport?.addEventListener('scroll', handleViewportChange")],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
 
 const twoFrames = (page) => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+async function waitForOwner(page) {
+  await page.waitForFunction(({ owner, version }) => {
+    const data = document.documentElement.dataset;
+    return window.GBArticleTooltips?.version === version && window.GBArticleTooltips?.owner === owner && data.gbArticleTooltipsOwner === owner && data.gbArticleTooltipsVersion === String(version);
+  }, { owner: OWNER, version: OWNER_VERSION }, { timeout: 15000 });
+}
 async function setMeasure(page, measure) {
   await page.evaluate((value) => {
     const api = window.GBReaderPreferences;
@@ -175,14 +184,56 @@ async function keyboardFocusState(page, selector) {
     };
   }, selector);
 }
+async function restoredTooltipState(page) {
+  return page.evaluate(() => {
+    const anchor = document.querySelector('.bref[data-ref]');
+    const tip = anchor?.querySelector('.btip');
+    const staleProperties = tip instanceof HTMLElement
+      ? ['left', 'top', 'right', 'bottom', 'max-height', 'overflow-y', 'position', 'pointer-events', '--gb-tip-arrow-x'].filter((property) => tip.style.getPropertyValue(property))
+      : ['missing-inline-tip'];
+    const html = document.documentElement;
+    const body = document.body;
+    return {
+      anchorExpanded: anchor?.getAttribute('aria-expanded') || null,
+      openCount: document.querySelectorAll('.gb-floating-tip.is-open').length,
+      floatingCount: document.querySelectorAll('.gb-floating-tip').length,
+      locked: html.dataset.scrollLocked === '1' || body.classList.contains('no-scroll') || html.style.overflow === 'hidden' || body.style.overflow === 'hidden',
+      staleProperties,
+    };
+  });
+}
+async function modeTransitionContracts(page) {
+  await page.setViewportSize({ width: 769, height: 900 });
+  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
+  await waitForOwner(page);
+  const trigger = page.locator('.bref[data-ref]').first();
+  await trigger.scrollIntoViewIfNeeded();
+  await trigger.click();
+  await page.waitForSelector('.btip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
+  record('HGR-R01', 'desktop popup opens immediately above the mobile boundary', true, { width: 769 }, 'responsive-tooltip');
+  await page.setViewportSize({ width: 768, height: 900 });
+  await page.waitForFunction(() => !document.querySelector('.gb-floating-tip.is-open'), null, { timeout: 3000 });
+  await twoFrames(page);
+  const desktopToMobile = await restoredTooltipState(page);
+  record('HGR-R02', 'desktop-to-mobile transition closes the active popup', desktopToMobile.openCount === 0 && desktopToMobile.anchorExpanded === 'false', desktopToMobile, 'responsive-tooltip');
+  record('HGR-R03', 'desktop-to-mobile transition clears floating state, geometry and lock', desktopToMobile.floatingCount === 0 && desktopToMobile.staleProperties.length === 0 && !desktopToMobile.locked, desktopToMobile, 'responsive-tooltip');
+
+  await trigger.click();
+  await page.waitForSelector('.btip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
+  record('HGR-R04', 'mobile popup opens immediately below the desktop boundary', true, { width: 768 }, 'responsive-tooltip');
+  await page.setViewportSize({ width: 769, height: 900 });
+  await page.waitForFunction(() => !document.querySelector('.gb-floating-tip.is-open'), null, { timeout: 3000 });
+  await twoFrames(page);
+  const mobileToDesktop = await restoredTooltipState(page);
+  record('HGR-R05', 'mobile-to-desktop transition closes the active sheet', mobileToDesktop.openCount === 0 && mobileToDesktop.anchorExpanded === 'false', mobileToDesktop, 'responsive-tooltip');
+  record('HGR-R06', 'mobile-to-desktop transition clears scroll lock and authoritative geometry', mobileToDesktop.floatingCount === 0 && mobileToDesktop.staleProperties.length === 0 && !mobileToDesktop.locked, mobileToDesktop, 'responsive-tooltip');
+}
 
 async function popupContracts(page) {
+  await modeTransitionContracts(page);
   await page.setViewportSize({ width: 1366, height: 900 });
   await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
-  await page.waitForFunction(({ owner, version }) => {
-    const data = document.documentElement.dataset;
-    return window.GBArticleTooltips?.version === version && window.GBArticleTooltips?.owner === owner && data.gbArticleTooltipsOwner === owner && data.gbArticleTooltipsVersion === String(version);
-  }, { owner: OWNER, version: OWNER_VERSION }, { timeout: 15000 });
+  await waitForOwner(page);
   await twoFrames(page);
   const ownerState = await page.evaluate((owned) => ({
     globalVersion: window.GBArticleTooltips?.version || 0, globalOwner: window.GBArticleTooltips?.owner || null,
@@ -190,7 +241,7 @@ async function popupContracts(page) {
     interactionsReady: document.documentElement.dataset.gbArticleInteractionsReady || null,
     legacyOwners: Array.isArray(window.SiteUtils?._tooltipControllers) ? window.SiteUtils._tooltipControllers.map((item) => item?.anchorSel).filter((selector) => owned.includes(selector)) : [],
   }), OWNED_SELECTORS);
-  record('HGR-T01', 'exact owner v16 is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
+  record('HGR-T01', 'exact owner v17 is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
   record('HGR-T02', 'shared interaction bootstrap completed after owner installation', ownerState.interactionsReady === '1', ownerState, 'tooltip');
   record('HGR-T03', 'no legacy owner remains after load', ownerState.legacyOwners.length === 0, ownerState, 'tooltip');
 
@@ -294,7 +345,7 @@ try {
 } finally { await context.close(); await browser.close(); }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'guard check IDs must be unique');
-assert.ok(checks.length >= 134, `Hermenevtika guard requires at least 134 checks, got ${checks.length}`);
+assert.ok(checks.length >= 143, `Hermenevtika guard requires at least 143 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
