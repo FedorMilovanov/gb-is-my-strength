@@ -11,9 +11,9 @@ This contract separates three different proofs that must not be conflated:
 
 1. the immutable release candidate is internally valid and bound to its release SHA, control-plane SHA, workflow run and canonical tree digest;
 2. GitHub Pages serves the exact deployed Home bytes and critical assets selected by that candidate;
-3. rendered Home geometry satisfies browser-computed contracts after Astro has extracted and ordered CSS.
+3. rendered Home geometry satisfies browser-computed contracts after Astro has extracted and ordered component CSS.
 
-A live HTML verifier must not infer CSS ownership by searching serialized HTML for selector text. Astro is allowed to publish CSS as linked assets, and equivalent CSS extraction or ordering must not create a false release failure.
+A live HTML verifier must not infer CSS ownership by searching serialized HTML for selector text. Astro may extract component styles into linked assets, so correct CSS can govern the rendered page without appearing as literal selector text inside `dist/index.html`.
 
 ## Incident evidence
 
@@ -21,7 +21,7 @@ Pages run `31114789389` successfully downloaded and re-verified one immutable ca
 
 `h-refutation-card ... box-sizing:border-box`
 
-The candidate correctly stored the global box-model owner in `dist/css/site.css` and linked that stylesheet from `dist/index.html`. Because the assertion ran before report initialization, the generic JSON evidence was absent; its upload failed, the TTS verifier was skipped, and TTS evidence was also absent.
+The actual selector-level source owner is `src/components/home/HomeSections/Refutations.astro`, which explicitly declares `box-sizing: border-box` for `#razbor .h-refutation-card`. Astro legitimately emitted the effective CSS through linked stylesheet assets instead of embedding that selector text in `dist/index.html`. Because the invalid assertion ran before report initialization, the generic JSON evidence was absent; its upload failed, the TTS verifier was skipped, and TTS evidence was also absent.
 
 ## Candidate and live byte boundary
 
@@ -35,13 +35,16 @@ The generic verifier must retain all of these checks:
 - rejection of legacy Home owners;
 - exact byte count and SHA-256 for every critical asset declared by the immutable manifest.
 
-Removing the CSS-in-HTML assertion does not weaken any byte or identity proof.
+Removing the CSS-in-HTML assertion does not weaken any byte or identity proof. CSS presentation and geometry are proved by their own source/browser owners instead of by parsing HTML serialization.
 
-## Rendered geometry boundary
+## Refutations source and rendered-geometry boundary
 
-Refutations box-model geometry is a browser-computed contract, not an HTML serialization contract.
+Refutations box-model geometry has two permanent owners with different responsibilities:
 
-The canonical browser gate builds the production-like `dist`, serves that exact candidate and checks desktop and mobile Chromium for every `.h-refutation-card` under `#razbor`:
+1. `src/components/home/HomeSections/Refutations.astro` owns the explicit selector-level `box-sizing: border-box` rule for `.h-refutation-card`;
+2. `scripts/visual-parity-home-refutations-box-model-browser-test.js` owns the rendered computed-geometry proof against a production-like `dist`.
+
+The browser gate serves the exact built candidate and checks desktop and mobile Chromium for every `.h-refutation-card` under `#razbor`:
 
 - computed `box-sizing` is `border-box`;
 - each card retains its `.h-refutation-shell` owner;
@@ -49,12 +52,14 @@ The canonical browser gate builds the production-like `dist`, serves that exact 
 - every card is visible and has nonzero geometry;
 - the page has no horizontal overflow.
 
-The gate runs in both locations:
+The browser contract also reads the canonical `Refutations.astro` source and fails if its explicit selector-level border-box rule disappears.
+
+The same browser gate runs in both locations:
 
 - Visual Parity pull-request/push workflow;
 - immutable release readiness after the exact candidate build and Playwright installation.
 
-`css/site.css` remains linked to the release source-contract workflow so a future change to the global box-model owner cannot bypass the contract.
+Visual Parity already tracks `src/**` for both pull requests and pushes, so changes to the real Refutations source owner cannot bypass this computed-geometry contract. No unrelated TTS workflow or global-CSS trigger is used to claim ownership of this geometry.
 
 ## Evidence lifecycle
 
@@ -100,7 +105,7 @@ Pre-merge requirements:
 - exact-head source, browser, visual and deploy-candidate workflows are terminal green;
 - review threads are resolved;
 - the branch is not behind current `main`;
-- the final diff remains inside the declared SYSTEM/test scope.
+- the final diff remains inside the declared SYSTEM/test/documentation scope.
 
 Post-merge requirements:
 
