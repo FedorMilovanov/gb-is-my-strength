@@ -10,7 +10,7 @@ const REPORT_DIR = path.join(ROOT, 'reports', 'hermenevtika-regression-guards');
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
 const OWNER = 'article-inline-tooltip';
-const OWNER_VERSION = 17;
+const OWNER_VERSION = 18;
 const OWNED_SELECTORS = ['.gterm', '.fn-marker', '.bref[data-ref]'];
 
 assert.ok(BASE, 'AUDIT_BASE is required');
@@ -34,7 +34,7 @@ function sourceContracts() {
   const assertions = [
     ['HGT-S01', 'canonical tooltip runtime source exists', runtime.length > 0],
     ['HGT-S02', 'canonical tooltip owner stylesheet exists', runtimeCss.length > 0],
-    ['HGT-S03', 'canonical tooltip epoch is exactly 17', /const VERSION\s*=\s*17\s*;/.test(runtime)],
+    ['HGT-S03', 'canonical tooltip epoch is exactly 18', /const VERSION\s*=\s*18\s*;/.test(runtime)],
     ['HGT-S04', 'canonical owner name is exact', runtime.includes("const OWNER = 'article-inline-tooltip';")],
     ['HGT-S05', 'runtime claims exactly the three inline selectors', runtime.includes("new Set(['.gterm', '.fn-marker', '.bref[data-ref]'])")],
     ['HGT-S06', 'legacy retirement mutates the original controller array', /controllers\.splice\(index,\s*1\)/.test(runtime)],
@@ -62,6 +62,7 @@ function sourceContracts() {
     ['HGT-S28', 'geometry uses VisualViewport with client-width fallback', runtime.includes('function viewportBounds()') && runtime.includes('window.visualViewport') && runtime.includes('document.documentElement.clientWidth')],
     ['HGT-S29', 'crossing 768px closes the active owner cleanly', runtime.includes("closeTooltip('mode-change')") && runtime.includes('active.mobile !== mobileMode()')],
     ['HGT-S30', 'VisualViewport resize and pan use one canonical handler', runtime.includes("visualViewport?.addEventListener('resize', handleViewportChange") && runtime.includes("visualViewport?.addEventListener('scroll', handleViewportChange")],
+    ['HGT-S31', 'placement is preserved only while resized content still fits that side', runtime.includes("previousPlacement === 'top' && fitsAbove") && runtime.includes("previousPlacement === 'bottom' && fitsBelow") && runtime.includes('if (fitsAbove && fitsBelow)')],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -101,6 +102,7 @@ async function popupState(page, selector) {
       right: box.right,
       top: box.top,
       bottom: box.bottom,
+      placement: tip.dataset.placement || null,
       clientWidth,
       blankTail: Math.max(0, box.bottom - Math.max(box.top, ...bottoms)),
       inViewport: box.left >= -1 && box.top >= -1 && box.right <= clientWidth + 1 && box.bottom <= window.innerHeight + 1,
@@ -220,7 +222,7 @@ async function popupContracts(page) {
       ? window.SiteUtils._tooltipControllers.map((item) => item?.anchorSel).filter((selector) => owned.includes(selector))
       : [],
   }), OWNED_SELECTORS);
-  record('HGT-T01', 'exact owner v17 is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
+  record('HGT-T01', 'exact owner v18 is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
   record('HGT-T02', 'shared interaction bootstrap completes after owner installation', ownerState.interactionsReady === '1', ownerState, 'tooltip');
   record('HGT-T03', 'no legacy owner remains after load', ownerState.legacyOwners.length === 0, ownerState, 'tooltip');
 
@@ -272,7 +274,7 @@ async function popupContracts(page) {
   });
   record('HGT-T13', 'expandable hydrated glossary exists', glossaryReady, { glossaryReady }, 'tooltip');
   if (!glossaryReady) {
-    for (let id = 14; id <= 26; id += 1) record(`HGT-T${id}`, 'glossary contract requires an expandable hydrated term', false, { glossaryReady }, 'tooltip');
+    for (let id = 14; id <= 29; id += 1) record(`HGT-T${id}`, 'glossary contract requires an expandable hydrated term', false, { glossaryReady }, 'tooltip');
     return;
   }
 
@@ -306,23 +308,84 @@ async function popupContracts(page) {
   record('HGT-T17', 'compact glossary semantics are canonical', !compactSemantic.expanded && !compactSemantic.stale && compactSemantic.aria === 'false' && compactSemantic.hidden === 'true', compactSemantic, 'tooltip');
 
   await page.locator('.gtip.gb-floating-tip.is-open [data-gtip-expand]').click();
+  await page.waitForTimeout(460);
   await twoFrames(page);
   const expanded = await popupState(page, '.gtip.gb-floating-tip.is-open');
   const expandedSemantic = await semantic();
   record('HGT-T18', 'expanded glossary uses only .gtip--expanded', expandedSemantic.expanded && !expandedSemantic.stale, expandedSemantic, 'tooltip');
   record('HGT-T19', 'expanded ARIA and Кратко label are truthful', expandedSemantic.aria === 'true' && expandedSemantic.hidden === 'false' && expandedSemantic.label === 'Кратко' && expandedSemantic.text.includes('Кратко'), expandedSemantic, 'tooltip');
   record('HGT-T20', 'expanded papyrus is visible', expandedSemantic.papyrusVisible, expandedSemantic, 'tooltip');
-  record('HGT-T21', 'expanded glossary grows beyond compact height', Boolean(expanded && compact && expanded.height >= compact.height + 40), { compact, expanded }, 'tooltip');
+  record('HGT-T21', 'expanded glossary grows beyond compact height', Boolean(expanded && compact && expanded.scrollHeight >= compact.scrollHeight + 40), { compact, expanded }, 'tooltip');
   record('HGT-T22', 'expanded glossary remains inside viewport', Boolean(expanded?.inViewport), expanded, 'tooltip');
   record('HGT-T23', 'expanded glossary scrolls only on real overflow', noFakeScrollbar(expanded), expanded, 'tooltip');
   record('HGT-T24', 'expanded glossary has no blank white panel', Boolean(expanded && expanded.blankTail <= 64), expanded, 'tooltip');
 
   await page.locator('.gtip.gb-floating-tip.is-open [data-gtip-expand]').click();
+  await page.waitForTimeout(460);
   await twoFrames(page);
   const collapsed = await popupState(page, '.gtip.gb-floating-tip.is-open');
   const collapsedSemantic = await semantic();
   record('HGT-T25', 'collapse restores canonical semantics', !collapsedSemantic.expanded && collapsedSemantic.aria === 'false' && collapsedSemantic.hidden === 'true', collapsedSemantic, 'tooltip');
-  record('HGT-T26', 'collapse restores compact height', Boolean(collapsed && compact && Math.abs(collapsed.height - compact.height) <= 12), { compact, collapsed }, 'tooltip');
+  record('HGT-T26', 'collapse restores compact height', Boolean(collapsed && compact && Math.abs(collapsed.scrollHeight - compact.scrollHeight) <= 12), { compact, collapsed }, 'tooltip');
+
+  const compactNatural = Number(compact?.scrollHeight || 0);
+  const expandedNatural = Number(expanded?.scrollHeight || 0);
+  await page.keyboard.press('Escape');
+  await twoFrames(page);
+  const anchorHeight = await glossary.evaluate((element) => element.getBoundingClientRect().height);
+  const growth = expandedNatural - compactNatural;
+  const targetAvailableAbove = growth > 16
+    ? Math.min(expandedNatural - 8, compactNatural + Math.max(12, Math.min(40, growth / 2)))
+    : 0;
+  const targetTop = 16 + 10 + targetAvailableAbove;
+  const fixtureHeight = Math.ceil(Math.max(900, targetTop + anchorHeight + 10 + 16 + expandedNatural + 24));
+  await page.setViewportSize({ width: 1366, height: fixtureHeight });
+  await glossary.evaluate((element, top) => {
+    element.dataset.hgtOriginalStyle = element.getAttribute('style') || '';
+    element.style.setProperty('position', 'fixed', 'important');
+    element.style.setProperty('top', `${top}px`, 'important');
+    element.style.setProperty('left', '50%', 'important');
+    element.style.setProperty('display', 'inline-block', 'important');
+    element.style.setProperty('z-index', '2147483000', 'important');
+  }, targetTop);
+  await twoFrames(page);
+  await glossary.click();
+  await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
+  await twoFrames(page);
+  const compactFlip = await popupState(page, '.gtip.gb-floating-tip.is-open');
+  const flipSpace = await page.evaluate(() => {
+    const anchor = document.querySelector('[data-hgt-glossary="expandable"]');
+    if (!(anchor instanceof HTMLElement)) return null;
+    const rect = anchor.getBoundingClientRect();
+    return {
+      availableAbove: Math.max(0, rect.top - 16 - 10),
+      availableBelow: Math.max(0, window.innerHeight - 16 - rect.bottom - 10),
+      anchorTop: rect.top,
+      anchorBottom: rect.bottom,
+      viewportHeight: window.innerHeight,
+    };
+  });
+  const validFlipFixture = Boolean(compactFlip && flipSpace &&
+    compactFlip.placement === 'top' &&
+    compactNatural <= flipSpace.availableAbove + 1 &&
+    expandedNatural > flipSpace.availableAbove + 1 &&
+    expandedNatural <= flipSpace.availableBelow + 1);
+  record('HGT-T27', 'placement fixture makes compact fit above while expanded fits only below', validFlipFixture, { compactNatural, expandedNatural, compactFlip, flipSpace }, 'tooltip');
+
+  await page.locator('.gtip.gb-floating-tip.is-open [data-gtip-expand]').click();
+  await page.waitForTimeout(460);
+  await twoFrames(page);
+  const expandedFlip = await popupState(page, '.gtip.gb-floating-tip.is-open');
+  record('HGT-T28', 'expanded glossary switches from top to bottom before overflow', Boolean(validFlipFixture && expandedFlip?.placement === 'bottom'), { compactFlip, expandedFlip, flipSpace }, 'tooltip');
+  record('HGT-T29', 'expanded glossary avoids scrolling when the opposite side fits natural height', Boolean(validFlipFixture && expandedFlip && !['auto', 'scroll'].includes(expandedFlip.overflowY) && expandedFlip.scrollHeight <= expandedFlip.clientHeight + 1 && expandedFlip.inViewport), { expandedFlip, flipSpace }, 'tooltip');
+
+  await page.keyboard.press('Escape');
+  await glossary.evaluate((element) => {
+    const original = element.dataset.hgtOriginalStyle || '';
+    if (original) element.setAttribute('style', original);
+    else element.removeAttribute('style');
+    delete element.dataset.hgtOriginalStyle;
+  });
 }
 
 sourceContracts();
@@ -341,7 +404,7 @@ try {
 }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'tooltip guard check IDs must be unique');
-assert.ok(checks.length >= 75, `Hermenevtika tooltip guard requires at least 75 checks, got ${checks.length}`);
+assert.ok(checks.length >= 79, `Hermenevtika tooltip guard requires at least 79 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
