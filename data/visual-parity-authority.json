@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0.0",
+  "authorityId": "SYSTEM-VISUAL-PARITY-AUTHORITY-2026-08-06",
+  "ownershipSource": "migration/page-ownership.json",
+  "pixelBaseline": "data/visual-parity-baseline.json",
+  "policy": {
+    "legacyPixelDiffRole": "diagnostic-only-after-authority-transfer",
+    "legacyHtmlDeletionAuthority": false,
+    "retirementSequence": [
+      "transfer-blocking-parity-authority",
+      "retire-or-repoint-all-legacy-readers",
+      "prove-source-dist-browser-coverage",
+      "delete-route-bounded-shadow-set"
+    ],
+    "noDeletionInThisLane": true
+  },
+  "ownerPolicies": {
+    "astro": {
+      "mode": "native-contract",
+      "reason": "Astro source is the declared render owner; blocking parity is proven by ownership, production-like dist and all-route browser contracts rather than resemblance to a retained root HTML shadow.",
+      "requiredGuards": [
+        "scripts/check-page-ownership.js",
+        "scripts/dist-publication-audit.js",
+        "scripts/public-surface-browser-matrix.mjs"
+      ]
+    },
+    "built-app": {
+      "mode": "built-app-contract",
+      "reason": "The route is an explicitly retained independent built artifact; its blocking contract is exact artifact ownership plus bounded static/browser measurement, not Astro-to-legacy parity.",
+      "requiredGuards": [
+        "scripts/check-page-ownership.js",
+        "scripts/baptists-built-app-measure.mjs",
+        "scripts/app-search-surface-browser-contract.mjs"
+      ]
+    }
+  },
+  "routeAdditions": {
+    "/": [
+      "scripts/home-visual-parity-audit.js",
+      "scripts/astro-home-pilot-audit.js"
+    ],
+    "/articles/": [
+      "scripts/articles-visual-parity-audit.js",
+      "scripts/check-data-consistency.js"
+    ],
+    "/biografii/": [
+      "scripts/biografii-visual-parity-audit.js"
+    ],
+    "/baptisty-rossii/": [
+      "scripts/baptisty-rossii-visual-parity-audit.js"
+    ],
+    "/hard-texts/": [
+      "scripts/hard-texts-visual-parity-audit.js",
+      "scripts/check-data-consistency.js"
+    ],
+    "/map/": [
+      "scripts/atlas-browser-contract.mjs",
+      "scripts/check-engine-contracts.js"
+    ],
+    "/pastor-series/": [
+      "scripts/pastor-series-visual-parity-audit.js",
+      "scripts/diotrophes-wave12-browser-contract.mjs"
+    ],
+    "/konfessii/russkij-baptizm/_app/": [
+      "scripts/app-search-surface-source-contract.mjs"
+    ]
+  }
+}
