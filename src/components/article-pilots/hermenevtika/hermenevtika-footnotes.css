@@ -6,6 +6,32 @@ main[data-hm-reader] .fn-marker::after {
   display: none;
 }
 
+/* The article's desktop Scripture and source cards are paper popovers, not
+   outlined form controls. Keep this route-local: the floating nodes are moved
+   under <body>, but this stylesheet is emitted only for Hermenevtika. */
+@media (min-width: 769px) {
+  .btip.gb-floating-tip,
+  .tooltip.gb-floating-tip {
+    border: 0;
+    border-radius: 18px;
+    background: rgba(255, 253, 249, .985);
+    box-shadow:
+      0 18px 50px -18px rgba(42, 24, 20, .28),
+      0 4px 14px -8px rgba(42, 24, 20, .16),
+      inset 0 1px 0 rgba(255, 255, 255, .82);
+  }
+
+  html.dark .btip.gb-floating-tip,
+  html.dark .tooltip.gb-floating-tip {
+    border: 0;
+    background: rgba(28, 24, 24, .985);
+    box-shadow:
+      0 22px 58px -18px rgba(0, 0, 0, .68),
+      0 4px 16px -8px rgba(0, 0, 0, .5),
+      inset 0 1px 0 rgba(255, 255, 255, .07);
+  }
+}
+
 @media (pointer: coarse) {
   main[data-hm-reader] .fn-marker {
     display: inline-flex;
