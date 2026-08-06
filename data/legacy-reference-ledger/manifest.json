@@ -42,7 +42,7 @@
     "migrationReferenceOnly": 22,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 31,
+    "dependencies": 32,
     "dependencyUnknownBlockers": 7,
     "obsoleteWriters": 0
   },
@@ -179,6 +179,14 @@
       "classification": "obsolete",
       "quarantineImpact": "remove-or-repoint-before-move",
       "evidenceToken": "articles/20-antisovetov-pastoru/index.html",
+      "owner": "legacy-reference-quarantine"
+    },
+    {
+      "path": "scripts/legacy-shadow-retirement-readiness.mjs",
+      "access": "fixture-or-contract",
+      "classification": "production-required",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "scripts/strangler-duplicate-inventory.mjs",
       "owner": "legacy-reference-quarantine"
     },
     {
