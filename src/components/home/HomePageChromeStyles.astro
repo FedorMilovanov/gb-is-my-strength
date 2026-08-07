@@ -111,17 +111,6 @@
     }
   }
 
-  /* The source component's historical 1220px breakpoint predates the current
-     1120/1180px reading measure. Between 1220 and 1479px there is no physical
-     side rail, so manuscript phrases visibly sit beneath cards. Keep them off
-     until the curated 1480px rail contract takes ownership. */
-  @media (min-width: 1220px) and (max-width: 1479.98px) {
-    body.home-page .home-v20 .h-ambient-word {
-      display: none;
-      pointer-events: none;
-    }
-  }
-
   /* The shared search engine remains the data owner. Home only supplies a
      route-scoped visual skin and an explicit close affordance. Card planes stay
      stationary: depth comes from border, light and shadow rather than elements
@@ -224,18 +213,6 @@
     min-width: 310px;
   }
 
-  /* HomeAmbientPhrases is rendered inside the centred .home-content wrapper.
-     Its absolute containing block therefore used to be that wrapper, so even
-     small left/right offsets placed the manuscript words underneath the cards.
-     Expand only the ambient layer back to the viewport while retaining the
-     document-height coordinate system supplied by .home-content. */
-  body.home-page .home-v20 .h-ambient-native {
-    right: auto;
-    left: 50%;
-    width: 100vw;
-    transform: translateX(-50%);
-  }
-
   /* The directions block used to break out almost to the viewport edge while
      the manuscript phrases remained in those same rails. Keep every wide Home
      section on the native content measure so marginalia never sit under cards.
@@ -251,40 +228,6 @@
       max-width: none;
       margin-left: 0;
     }
-  }
-
-  /* Rail sizes are based on the narrowest physical free field, not just the
-     nominal content max-width. They still leave a visible safety gap while
-     giving the frameless translations enough measure to read as typography
-     rather than a stack of single-word fragments. */
-  @media (min-width: 1480px) and (max-width: 1599.98px) and (hover: hover) and (pointer: fine) {
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
-      width: 120px;
-      max-width: 120px;
-    }
-
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 20px; }
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 20px; }
-  }
-
-  @media (min-width: 1600px) and (max-width: 1699.98px) and (hover: hover) and (pointer: fine) {
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
-      width: 150px;
-      max-width: 150px;
-    }
-
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 20px; }
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 20px; }
-  }
-
-  @media (min-width: 1700px) and (hover: hover) and (pointer: fine) {
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word {
-      width: 200px;
-      max-width: 200px;
-    }
-
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word--left { left: 24px; }
-    body.home-page .home-v20 .h-ambient-native .h-ambient-word--right { right: 24px; }
   }
 
   /* The project statement, mirrored quotation and roadmap are consecutive
