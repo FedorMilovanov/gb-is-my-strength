@@ -199,12 +199,29 @@
     const rectWithinViewport = (rect, tolerance = 1) => rect.left >= -tolerance && rect.right <= innerWidth + tolerance;
     const lineCount = (element) => {
       if (!(element instanceof HTMLElement)) return 0;
+      const style = getComputedStyle(element);
+      const lineHeight = Number.parseFloat(style.lineHeight);
+      const height = element.getBoundingClientRect().height;
+      if (Number.isFinite(lineHeight) && lineHeight > 0 && height > 0) {
+        return Math.max(1, Math.round(height / lineHeight));
+      }
+
       const range = document.createRange();
       range.selectNodeContents(element);
-      const tops = [...range.getClientRects()]
+      const rects = [...range.getClientRects()]
         .filter((rect) => rect.width > .5 && rect.height > .5)
-        .map((rect) => Math.round(rect.top * 2) / 2);
-      return new Set(tops).size;
+        .sort((a, b) => a.top - b.top);
+      const rows = [];
+      rects.forEach((rect) => {
+        const row = rows.find((candidate) => rect.top < candidate.bottom - 1 && rect.bottom > candidate.top + 1);
+        if (row) {
+          row.top = Math.min(row.top, rect.top);
+          row.bottom = Math.max(row.bottom, rect.bottom);
+        } else {
+          rows.push({ top: rect.top, bottom: rect.bottom });
+        }
+      });
+      return rows.length;
     };
     const intrinsicSingleLineWidth = (element) => {
       if (!(element instanceof HTMLElement) || !(element.parentElement instanceof HTMLElement)) return 0;
