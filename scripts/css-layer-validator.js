@@ -3,25 +3,136 @@
  * css-layer-validator.js — РЕФАКТОРИНГ 6.0 Phase 2 tool.
  *
  * Validates a CSS file for @layer architecture:
- *   1. Declared layer order is correct and complete
- *   2. No unclosed braces
- *   3. All @layer blocks are in the declared order
- *   4. !important count does not exceed ceiling
- *   5. Reports unlayered rules vs layered rules ratio
+ *   1. A named-layer order statement exists before named layer blocks
+ *   2. Every named layer block belongs to that declared layer set
+ *   3. Re-opening an already declared named layer is allowed anywhere later
+ *      (CSS Cascade Layers append rules without changing layer precedence)
+ *   4. No unclosed braces
+ *   5. !important count does not exceed ceiling
+ *   6. Reports unlayered rules vs layered rules ratio
  *
  * Usage:
  *   node scripts/css-layer-validator.js css/site.css
- *   node scripts/css-layer-validator.js css/site.css --ceiling 202
+ *   node scripts/css-layer-validator.js css/site.css --ceiling=202
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 
+const LAYERED_TARGET_PCT = 80;
+const LAYER_NAME_PATTERN = '[A-Za-z_][\\w-]*(?:\\.[A-Za-z_][\\w-]*)*';
+
+function parseDeclaredLayers(cssText) {
+  const orderRegex = new RegExp(`@layer\\s+(${LAYER_NAME_PATTERN}(?:\\s*,\\s*${LAYER_NAME_PATTERN})*)\\s*;`);
+  const match = orderRegex.exec(cssText);
+  if (!match) return null;
+  return {
+    names: match[1].split(',').map(s => s.trim()).filter(Boolean),
+    pos: match.index,
+  };
+}
+
+function collectLayerBlocks(cssText) {
+  const blockRegex = new RegExp(`@layer\\s+(${LAYER_NAME_PATTERN})\\s*\\{`, 'g');
+  const blocks = [];
+  let match;
+  while ((match = blockRegex.exec(cssText)) !== null) {
+    blocks.push({ name: match[1], pos: match.index });
+  }
+  return blocks;
+}
+
+function validateLayerContract(declaration, foundLayers) {
+  const errors = [];
+  const warnings = [];
+  if (!declaration) return { errors, warnings };
+
+  const declared = declaration.names;
+  const declaredSet = new Set(declared);
+  if (declaredSet.size !== declared.length) {
+    errors.push('Duplicate layer name in @layer order declaration');
+  }
+
+  const firstBlock = foundLayers[0];
+  if (firstBlock && declaration.pos > firstBlock.pos) {
+    errors.push(
+      `@layer order declaration appears after the first named layer block ` +
+      `(declaration pos ${declaration.pos}, first block @layer ${firstBlock.name} at pos ${firstBlock.pos})`
+    );
+  }
+
+  for (const layer of foundLayers) {
+    if (!declaredSet.has(layer.name)) {
+      errors.push(`@layer ${layer.name} used but not declared in order (at pos ${layer.pos})`);
+    }
+  }
+
+  return { errors, warnings };
+}
+
+function runInternalContractChecks() {
+  const declaration = parseDeclaredLayers('@layer reset, base, components, utilities;');
+  const expected = ['reset', 'base', 'components', 'utilities'];
+  if (!declaration || JSON.stringify(declaration.names) !== JSON.stringify(expected)) {
+    throw new Error('internal contract: declared layer parsing regressed');
+  }
+
+  // Once the statement establishes precedence, named layers may be reopened in
+  // any later source order without changing layer precedence.
+  const reopenedBlocks = collectLayerBlocks(
+    '@layer reset, base, components, utilities; ' +
+    '@layer reset{} @layer utilities{} @layer components{} @layer base{}'
+  );
+  const reopened = validateLayerContract(declaration, reopenedBlocks);
+  if (reopened.errors.length !== 0 || reopened.warnings.length !== 0) {
+    throw new Error('internal contract: legal named-layer reopening was rejected');
+  }
+
+  const lateDeclarationText = '@layer base{} @layer reset, base; @layer reset{}';
+  const lateDeclaration = parseDeclaredLayers(lateDeclarationText);
+  const late = validateLayerContract(lateDeclaration, collectLayerBlocks(lateDeclarationText));
+  if (late.errors.length !== 1 || !late.errors[0].includes('appears after the first named layer block')) {
+    throw new Error('internal contract: late order declaration was not rejected');
+  }
+
+  const hyphenatedText = '@layer reset, base; @layer reset{} @layer base-extra{}';
+  const hyphenatedDeclaration = parseDeclaredLayers(hyphenatedText);
+  const hyphenatedBlocks = collectLayerBlocks(hyphenatedText);
+  const hyphenated = validateLayerContract(hyphenatedDeclaration, hyphenatedBlocks);
+  if (hyphenated.errors.length !== 1 || hyphenatedBlocks[1]?.name !== 'base-extra') {
+    throw new Error('internal contract: undeclared hyphenated layer was not detected exactly');
+  }
+
+  const duplicateText = '@layer reset, base, reset; @layer reset{} @layer base{}';
+  const duplicate = validateLayerContract(
+    parseDeclaredLayers(duplicateText),
+    collectLayerBlocks(duplicateText)
+  );
+  if (duplicate.errors.length !== 1 || !duplicate.errors[0].includes('Duplicate layer name')) {
+    throw new Error('internal contract: duplicate declaration name was not rejected');
+  }
+
+  if (parseDeclaredLayers('@layer reset{} @layer base{}') !== null) {
+    throw new Error('internal contract: missing order declaration was not detected');
+  }
+
+  if (LAYERED_TARGET_PCT !== 80) {
+    throw new Error('internal contract: layered coverage target drifted from the published 80% contract');
+  }
+}
+
+try {
+  runInternalContractChecks();
+} catch (error) {
+  console.error(`CSS layer validator internal contract failed: ${error.message}`);
+  process.exit(2);
+}
+
 const args = process.argv.slice(2);
 const cssFile = args.find(a => !a.startsWith('--'));
 const ceilingArg = args.find(a => a.startsWith('--ceiling='));
-const ceiling = ceilingArg ? parseInt(ceilingArg.split('=')[1]) : null;
+const ceiling = ceilingArg ? parseInt(ceilingArg.split('=')[1], 10) : null;
 
 if (!cssFile) {
   console.error('Usage: node scripts/css-layer-validator.js <css-file> [--ceiling=N]');
@@ -52,41 +163,29 @@ for (let i = 0; i < css.length; i++) {
 if (depth > 0) errors.push(`Unbalanced braces: ${depth} unclosed`);
 if (depth === 0) info.push('Brace balance: OK');
 
-// 2. Find @layer order declaration
-const orderMatch = css.match(/@layer\s+([\w,\s]+);/);
-if (!orderMatch) {
-  warnings.push('No @layer order declaration found');
+// 2. Find @layer order declaration and validate the named-layer contract.
+const declaration = parseDeclaredLayers(css);
+if (!declaration) {
+  errors.push('No @layer order declaration found');
 } else {
-  const declaredLayers = orderMatch[1].split(',').map(s => s.trim()).filter(Boolean);
-  info.push(`Declared layer order: ${declaredLayers.join(' → ')}`);
+  info.push(`Declared layer order: ${declaration.names.join(' → ')}`);
 
-  // 3. Find all @layer blocks and verify they match declared order
-  const layerBlockRegex = /@layer\s+(\w+)\s*\{/g;
-  const foundLayers = [];
-  let match;
-  while ((match = layerBlockRegex.exec(css)) !== null) {
-    foundLayers.push({ name: match[1], pos: match.index });
-  }
+  const foundLayers = collectLayerBlocks(css);
+  const layerResult = validateLayerContract(declaration, foundLayers);
+  errors.push(...layerResult.errors);
+  warnings.push(...layerResult.warnings);
 
-  // Check for undeclared layers
-  for (const fl of foundLayers) {
-    if (!orderMatch[1].includes(fl.name)) {
-      warnings.push(`@layer ${fl.name} used but not declared in order (at pos ${fl.pos})`);
-    }
-  }
-
-  // 4. Report layer sizes
   info.push(`Layer blocks found: ${foundLayers.length}`);
   const layerNames = [...new Set(foundLayers.map(f => f.name))];
   for (const name of layerNames) {
     const count = foundLayers.filter(f => f.name === name).length;
     if (count > 1) {
-      info.push(`  @layer ${name}: ${count} blocks`);
+      info.push(`  @layer ${name}: ${count} blocks (legal reopen)`);
     }
   }
 }
 
-// 5. !important count
+// 3. !important count
 const importantCount = (css.match(/!important/g) || []).length;
 info.push(`!important count: ${importantCount}`);
 if (ceiling !== null && importantCount > ceiling) {
@@ -95,18 +194,21 @@ if (ceiling !== null && importantCount > ceiling) {
   info.push(`!important ceiling ${ceiling}: OK (using ${importantCount})`);
 }
 
-// 6. Layered vs unlayered ratio
-function findMatchingBrace(css, start) {
+// 4. Layered vs unlayered ratio
+function findMatchingBrace(cssText, start) {
   let d = 0;
-  for (let i = start; i < css.length; i++) {
-    if (css[i] === '{') d++;
-    else if (css[i] === '}') { d--; if (d === 0) return i; }
+  for (let i = start; i < cssText.length; i++) {
+    if (cssText[i] === '{') d++;
+    else if (cssText[i] === '}') {
+      d--;
+      if (d === 0) return i;
+    }
   }
   return -1;
 }
 
 let layeredChars = 0;
-const layerBlockRe = /@layer\s+\w+\s*\{/g;
+const layerBlockRe = new RegExp(`@layer\\s+${LAYER_NAME_PATTERN}\\s*\\{`, 'g');
 let m;
 while ((m = layerBlockRe.exec(css)) !== null) {
   const end = findMatchingBrace(css, m.index + m[0].length - 1);
@@ -114,22 +216,23 @@ while ((m = layerBlockRe.exec(css)) !== null) {
 }
 const totalChars = css.length;
 const unlayeredChars = totalChars - layeredChars;
-const layeredPct = (layeredChars / totalChars * 100).toFixed(1);
+const layeredPctValue = totalChars > 0 ? layeredChars / totalChars * 100 : 0;
+const layeredPct = layeredPctValue.toFixed(1);
 info.push(`Layered: ${layeredChars} chars (${layeredPct}%)`);
-info.push(`Unlayered: ${unlayeredChars} chars (${(100 - parseFloat(layeredPct)).toFixed(1)}%)`);
+info.push(`Unlayered: ${unlayeredChars} chars (${(100 - layeredPctValue).toFixed(1)}%)`);
 
-if (parseFloat(layeredPct) < 50) {
-  warnings.push(`Only ${layeredPct}% of CSS is in @layer blocks (target: ≥80%)`);
+if (layeredPctValue < LAYERED_TARGET_PCT) {
+  warnings.push(`Only ${layeredPct}% of CSS is in @layer blocks (target: ≥${LAYERED_TARGET_PCT}%)`);
 }
 
-// 7. Report @media queries
+// 5. Report @media queries
 const mediaCount = (css.match(/@media/g) || []).length;
 info.push(`@media queries: ${mediaCount}`);
 
-// 8. Check for duplicate selectors (cheap heuristic).
-// Keep this deliberately linear: site-layered.css is large, and broad regexes
-// over minified CSS can become a CI timeout. Architecture validation above is
-// the blocking part; duplicate selector reporting is informational only.
+// 6. Check for duplicate selectors (cheap heuristic).
+// Keep this deliberately linear: site.css is large, and broad regexes over
+// minified CSS can become a CI timeout. Architecture validation above is the
+// blocking part; duplicate selector reporting is informational only.
 if (css.length < 250000) {
   const selectorRegex = /(^|})\s*([^{}@][^{}]{1,120})\{/g;
   const selectors = {};
