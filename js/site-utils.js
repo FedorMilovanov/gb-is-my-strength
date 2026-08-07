@@ -222,6 +222,32 @@
     if (!effectiveLocked()) stopEmergencyTimer();
   }
 
+  function searchShortcutEditableTarget(event) {
+    var target = event && event.target;
+    return Boolean(
+      target &&
+      target.nodeType === 1 &&
+      typeof target.closest === 'function' &&
+      target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]')
+    );
+  }
+
+  function isCanonicalSearchShortcut(event) {
+    var modifierCount = Number(Boolean(event && event.ctrlKey)) + Number(Boolean(event && event.metaKey));
+    return String(event && event.key || '').toLowerCase() === 'k' &&
+      modifierCount === 1 &&
+      !event.altKey &&
+      !event.shiftKey &&
+      !event.isComposing &&
+      !searchShortcutEditableTarget(event);
+  }
+
+  function handleSearchShortcut(event) {
+    if (!isCanonicalSearchShortcut(event)) return;
+    event.preventDefault();
+    window.dispatchEvent(new CustomEvent('gb:openSearch', { detail: { source: 'keyboard' } }));
+  }
+
   function protectedMethod(name, fn) {
     Object.defineProperty(api, name, {
       configurable: false,
@@ -232,6 +258,8 @@
       set: function () {}
     });
   }
+
+  document.addEventListener('keydown', handleSearchShortcut, true);
 
   protectedMethod('lockScroll', lockScroll);
   protectedMethod('unlockScroll', unlockScroll);
