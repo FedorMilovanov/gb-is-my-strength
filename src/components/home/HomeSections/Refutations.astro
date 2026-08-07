@@ -201,6 +201,7 @@
     --refutation-image-x: 0px;
     --refutation-image-y: 0px;
     --refutation-light-x: 50%;
+    --refutation-light-y: 46%;
     position: relative;
     z-index: 2;
     display: block;
@@ -300,6 +301,9 @@
     content: none;
   }
 
+  /* Pointer-following ambient light is deliberately broad and low-contrast.
+     Both axes follow the actual rendered card (not the static hit slot), so
+     the hotspot stays beneath the pointer even while the shell overlaps. */
   body.home-page #main-content #razbor .h-refutation-ambient {
     position: absolute;
     z-index: 0;
@@ -307,8 +311,13 @@
     pointer-events: none;
     opacity: 0;
     background:
-      radial-gradient(270px 170px at var(--refutation-light-x) 10%, rgba(66, 196, 213, .105), transparent 70%),
-      radial-gradient(260px 170px at 50% 110%, rgba(154, 109, 46, .075), transparent 68%);
+      radial-gradient(
+        245px 175px at var(--refutation-light-x) var(--refutation-light-y),
+        rgba(66, 196, 213, .095) 0%,
+        rgba(66, 196, 213, .045) 36%,
+        transparent 74%
+      ),
+      radial-gradient(270px 165px at 50% 112%, rgba(154, 109, 46, .06), transparent 70%);
     transition: opacity 700ms ease;
   }
 
@@ -371,20 +380,25 @@
     z-index: 1;
   }
 
+  /* Restore the crossed-card motion, but at a calmer amplitude than the old
+     18px version. The inside edge is softened below so overlap has depth
+     without dragging a bright vertical seam across the neighbouring card. */
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-shell {
-    transform: translate3d(0, -5px, 0);
+    transform: translate3d(14px, -7px, 0);
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--right .h-refutation-shell {
-    transform: translate3d(0, 2px, 0);
+    transform: translate3d(3px, 4px, 0);
+    filter: saturate(.97) brightness(.995);
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-shell {
-    transform: translate3d(0, -5px, 0);
+    transform: translate3d(-14px, -7px, 0);
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--left .h-refutation-shell {
-    transform: translate3d(0, 2px, 0);
+    transform: translate3d(-3px, 4px, 0);
+    filter: saturate(.97) brightness(.995);
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-shell::before,
@@ -413,6 +427,14 @@
       0 7px 18px rgba(55, 42, 22, .06);
   }
 
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card {
+    border-right-color: color-mix(in srgb, var(--h-border) 72%, transparent);
+  }
+
+  body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-card {
+    border-left-color: color-mix(in srgb, var(--h-border) 72%, transparent);
+  }
+
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--right .h-refutation-card,
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--left .h-refutation-card {
     border-color: color-mix(in srgb, var(--h-border) 82%, transparent);
@@ -431,7 +453,7 @@
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-ambient,
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="right"] .h-refutation-slot--right .h-refutation-ambient {
-    opacity: .5;
+    opacity: .44;
   }
 
   body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-article-thumb,
@@ -498,8 +520,13 @@
 
   html.dark body.home-page #main-content #razbor .h-refutation-ambient {
     background:
-      radial-gradient(300px 170px at var(--refutation-light-x) -8%, rgba(66, 196, 213, .12), transparent 72%),
-      radial-gradient(280px 170px at 50% 112%, rgba(199, 154, 88, .065), transparent 70%);
+      radial-gradient(
+        260px 180px at var(--refutation-light-x) var(--refutation-light-y),
+        rgba(66, 196, 213, .105) 0%,
+        rgba(66, 196, 213, .05) 36%,
+        transparent 74%
+      ),
+      radial-gradient(280px 170px at 50% 112%, rgba(199, 154, 88, .055), transparent 70%);
   }
 
   html.dark body.home-page #main-content #razbor .h-refutations-deck[data-refutations-active="left"] .h-refutation-slot--left .h-refutation-card,
@@ -687,6 +714,7 @@
       card.style.setProperty('--refutation-image-x', '0px');
       card.style.setProperty('--refutation-image-y', '0px');
       card.style.setProperty('--refutation-light-x', '50%');
+      card.style.setProperty('--refutation-light-y', '46%');
     };
 
     const setActive = (side, { pinned = false } = {}) => {
@@ -758,15 +786,18 @@
           || activeSide !== side
           || reducedMotion.matches) return;
 
-        const rect = slot.getBoundingClientRect();
-        const nx = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - .5) * 2));
-        const ny = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - .5) * 2));
+        const rect = card.getBoundingClientRect();
+        const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+        const nx = (px - .5) * 2;
+        const ny = (py - .5) * 2;
 
         window.cancelAnimationFrame(frame);
         frame = window.requestAnimationFrame(() => {
           card.style.setProperty('--refutation-image-x', `${(nx * 1.0).toFixed(2)}px`);
           card.style.setProperty('--refutation-image-y', `${(ny * 0.7).toFixed(2)}px`);
-          card.style.setProperty('--refutation-light-x', `${((nx + 1) * 50).toFixed(1)}%`);
+          card.style.setProperty('--refutation-light-x', `${(px * 100).toFixed(1)}%`);
+          card.style.setProperty('--refutation-light-y', `${(py * 100).toFixed(1)}%`);
         });
       };
 
