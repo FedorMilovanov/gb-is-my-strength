@@ -501,6 +501,7 @@ try {
   await context.close();
   await browser.close();
 }
+
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'tooltip guard check IDs must be unique');
 assert.ok(checks.length >= 88, `Hermenevtika tooltip guard requires at least 88 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
