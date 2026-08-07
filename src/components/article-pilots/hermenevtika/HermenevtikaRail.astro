@@ -11,3 +11,13 @@ interface Props { eyebrow: string; title: string; backHref: string; }
 const { eyebrow, title, backHref } = Astro.props;
 ---
 <ReaderRail eyebrow={eyebrow} title={title} backHref={backHref} toc={HERMENEVTIKA_TOC} settingsTrigger="hm" />
+<style is:global>
+  /* Ordinary article summary polish owns block spacing through a more-specific
+     margin shorthand in site.css. Preserve that vertical rhythm while restoring
+     the standalone reader's inline auto margins, so “Коротко” remains on the
+     same measured axis as the surrounding prose. */
+  main.article-main.article-main--hrail[data-reader-root] .article-body[data-pagefind-body] > .summary-card {
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
