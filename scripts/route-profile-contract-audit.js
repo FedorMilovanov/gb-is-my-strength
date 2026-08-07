@@ -12,6 +12,7 @@ const strict = process.argv.includes('--strict');
 const errors = [];
 const warnings = [];
 const ALLOWED_SCOPES = new Set(['excluded-semantic-lane']);
+const LEGACY_STATUSES = new Set(['canonical', 'reference-only', 'runtime-required', 'absent']);
 
 function issue(message, blocking = true) {
   if (blocking || strict) errors.push(message);
@@ -20,6 +21,31 @@ function issue(message, blocking = true) {
 
 function fileExists(rel) {
   return Boolean(rel) && fs.existsSync(`${ROOT}/${rel}`);
+}
+
+function validateLegacyAuthority(route, profile) {
+  const status = profile.legacyStatus;
+  if (!status) {
+    issue(`${route}: production profile missing explicit legacyStatus`);
+    return;
+  }
+  if (!LEGACY_STATUSES.has(status)) {
+    issue(`${route}: unknown legacyStatus=${status}`);
+    return;
+  }
+
+  if (status === 'absent') {
+    if (profile.legacyPath) issue(`${route}: legacyStatus=absent must not declare legacyPath=${profile.legacyPath}`);
+    return;
+  }
+
+  if (!profile.legacyPath) {
+    issue(`${route}: legacyStatus=${status} requires legacyPath`);
+    return;
+  }
+  if (!fileExists(profile.legacyPath.replace(/^\//, ''))) {
+    issue(`${route}: declared legacyPath not found: ${profile.legacyPath}`);
+  }
 }
 
 console.log('=== Route Profile Contract Audit ===');
@@ -61,6 +87,7 @@ for (const record of records) {
     productionAstro++;
     if (!profile.migrationMode) issue(`${route}: production Astro profile missing migrationMode`);
     if (!matrixEntry) issue(`${route}: production Astro route missing matrix entry`);
+    validateLegacyAuthority(route, profile);
   }
 
   if (matrixEntry) {
@@ -112,4 +139,4 @@ if (errors.length) {
 }
 
 console.log('');
-console.log('✅ Route profiles agree with ownership, matrix and actual source contracts');
+console.log('✅ Route profiles agree with ownership, matrix, explicit legacy authority and actual source contracts');
