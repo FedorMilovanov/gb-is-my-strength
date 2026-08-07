@@ -63,6 +63,12 @@ jobs:
             # The temporary writer itself performs the bounded source migration;
             # canonical asset revisions remain owned exclusively by glossary-contract.yml.
             node scripts/_temp-search-keyboard-owner-r4.mjs --apply --write
+            node - <<'NODE'
+          const fs = require('fs');
+          const file = 'src/components/search/AppSearchSurface.astro';
+          const source = fs.readFileSync(file, 'utf8').replace(/\n+$/, '\n');
+          fs.writeFileSync(file, source, 'utf8');
+          NODE
           else
             echo "Source already migrated; this invocation is ledger/self-clean reconciliation only."
           fi
