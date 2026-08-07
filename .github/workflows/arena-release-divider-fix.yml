@@ -1,0 +1,72 @@
+name: Arena Release Divider Fix
+
+on:
+  push:
+    branches:
+      - arena/019fd7ff-gb-is-my-strength
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: ${{ !contains(github.event.head_commit.message, '[divider-finalized]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: arena/019fd7ff-gb-is-my-strength
+          fetch-depth: 0
+
+      - name: Restore mobile divider contract and clean stale comments
+        shell: python
+        run: |
+          from pathlib import Path
+
+          directions = Path('src/components/home/HomeSections/Directions.astro')
+          s = directions.read_text(encoding='utf-8')
+
+          old = '''    /* Mobile shelf: compact horizontal snap carousel. Card height follows\n       content (no min-height, no 1fr gap) so there is no white emptiness.\n       Objects are large enough to read; text is readable; content gathers. */'''
+          new = '''    /* Mobile showcase shelf: one compact vertical card per snap. The archival\n       object leads, copy sits below it, and a narrow next-card peek preserves\n       discoverability without clipping neighbouring text. */'''
+          if old not in s:
+              raise SystemExit('Directions stale mobile comment not found')
+          s = s.replace(old, new, 1)
+
+          old = '''    body.home-page #main-content .h-home-routes {\n      min-height: 0;\n      border-radius: 18px;\n      padding: 8px;\n      gap: 12px;\n      scroll-padding-inline: 8px;\n    }\n\n    body.home-page #main-content .h-home-route__divider {\n      display: none;\n    }'''
+          new = '''    body.home-page #main-content .h-home-routes {\n      min-height: 0;\n      border-radius: 18px;\n      padding: 8px;\n      gap: 0;\n      scroll-padding-inline: 8px;\n    }\n\n    /* Keep the canonical 1px dividers measurable on mobile while treating\n       them as quiet shelf seams. The 4px side margins replace flex gap so the\n       next card can still peek without exposing clipped copy. */\n    body.home-page #main-content .h-home-route__divider {\n      display: block;\n      flex: 0 0 1px;\n      width: 1px;\n      min-width: 1px;\n      margin-inline: 4px;\n      align-self: stretch;\n      opacity: .45;\n    }'''
+          if old not in s:
+              raise SystemExit('Directions mobile deck block not found')
+          s = s.replace(old, new, 1)
+
+          old = '      flex: 0 0 calc(100% - 18px);'
+          new = '      flex: 0 0 calc(100% - 26px);'
+          if old not in s:
+              raise SystemExit('Directions mobile card basis not found')
+          s = s.replace(old, new, 1)
+
+          old = '      flex-basis: calc(100% - 16px);'
+          new = '      flex-basis: calc(100% - 24px);'
+          if old not in s:
+              raise SystemExit('Directions narrow card basis not found')
+          s = s.replace(old, new, 1)
+          directions.write_text(s, encoding='utf-8')
+
+          refutations = Path('src/components/home/HomeSections/Refutations.astro')
+          s = refutations.read_text(encoding='utf-8')
+          old = '''  /* Restore the crossed-card motion, but at a calmer amplitude than the old\n     18px version. The inside edge is softened below so overlap has depth\n     without dragging a bright vertical seam across the neighbouring card. */'''
+          new = '''  /* Restore the approved crossed-card motion at its original 18px depth.\n     The inside edge is softened below so overlap keeps depth without dragging\n     a bright vertical seam across the neighbouring card. */'''
+          if old not in s:
+              raise SystemExit('Refutations stale overlap comment not found')
+          s = s.replace(old, new, 1)
+          refutations.write_text(s, encoding='utf-8')
+
+      - name: Verify and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/home/HomeSections/Directions.astro src/components/home/HomeSections/Refutations.astro
+          git commit -m "fix(home): preserve mobile gateway divider contract [divider-finalized]"
+          git push origin HEAD:arena/019fd7ff-gb-is-my-strength
