@@ -64,6 +64,30 @@ async function takeSnapshot(page, elapsedMs) {
     const html = document.documentElement;
     const body = document.body;
     const bodyStyle = getComputedStyle(body);
+    const hiddenAncestorFor = (node) => {
+      let current = node;
+      while (current && current !== document.documentElement) {
+        if (current instanceof HTMLElement) {
+          const style = getComputedStyle(current);
+          const opacity = Number.parseFloat(style.opacity || '1');
+          const hiddenByAttribute = current.hidden || current.getAttribute('aria-hidden') === 'true';
+          const hiddenByStyle = style.display === 'none' || style.visibility === 'hidden' || opacity <= 0.01;
+          if (hiddenByAttribute || hiddenByStyle) {
+            return {
+              selector: selectorFor(current),
+              hidden: Boolean(current.hidden),
+              ariaHidden: current.getAttribute('aria-hidden'),
+              display: style.display,
+              visibility: style.visibility,
+              opacity: Number.isFinite(opacity) ? opacity : null,
+              position: style.position,
+            };
+          }
+        }
+        current = current.parentElement;
+      }
+      return null;
+    };
     const openSelectors = [
       '.mobile-nav.active', '.mobile-nav[aria-hidden="false"]',
       '.cp-backdrop.is-open', '.cp-panel[aria-hidden="false"]',
@@ -76,12 +100,13 @@ async function takeSnapshot(page, elapsedMs) {
     const openOverlays = [...new Set(openSelectors.flatMap((selector) =>
       [...document.querySelectorAll(selector)].map((node) => selectorFor(node))
     ))];
-    const offenders = [...document.querySelectorAll('body *')].map((node) => {
+    const offenderCandidates = [...document.querySelectorAll('body *')].map((node) => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
       const overflowRight = Math.max(0, rect.right - width);
       const overflowLeft = Math.max(0, -rect.left);
-      if (overflowRight <= 1 && overflowLeft <= 1 && node.scrollWidth <= node.clientWidth + 1) return null;
+      const localOverflow = Math.max(0, node.scrollWidth - node.clientWidth);
+      if (overflowRight <= 1 && overflowLeft <= 1 && localOverflow <= 1) return null;
       if (rect.width === 0 || rect.height === 0 || style.display === 'none' || style.visibility === 'hidden') return null;
       return {
         selector: selectorFor(node),
@@ -90,16 +115,38 @@ async function takeSnapshot(page, elapsedMs) {
         rect: { left: Math.round(rect.left * 10) / 10, right: Math.round(rect.right * 10) / 10, width: Math.round(rect.width * 10) / 10 },
         overflowRight: Math.round(overflowRight * 10) / 10,
         overflowLeft: Math.round(overflowLeft * 10) / 10,
+        localOverflow,
         clientWidth: node.clientWidth,
         scrollWidth: node.scrollWidth,
         display: style.display,
         position: style.position,
+        opacity: style.opacity,
         whiteSpace: style.whiteSpace,
         minWidth: style.minWidth,
         maxWidth: style.maxWidth,
         overflowX: style.overflowX,
+        hiddenAncestor: hiddenAncestorFor(node),
       };
-    }).filter(Boolean).sort((a, b) => Math.max(b.overflowRight, b.overflowLeft, b.scrollWidth - b.clientWidth) - Math.max(a.overflowRight, a.overflowLeft, a.scrollWidth - a.clientWidth)).slice(0, 40);
+    }).filter(Boolean);
+    const byLargestExcess = (a, b) =>
+      Math.max(b.overflowRight, b.overflowLeft, b.localOverflow) - Math.max(a.overflowRight, a.overflowLeft, a.localOverflow);
+    const offenders = [...offenderCandidates].sort(byLargestExcess).slice(0, 40);
+    const rightOffenders = offenderCandidates
+      .filter((item) => item.overflowRight > 1)
+      .sort((a, b) => b.overflowRight - a.overflowRight)
+      .slice(0, 40);
+    const leftOffenders = offenderCandidates
+      .filter((item) => item.overflowLeft > 1)
+      .sort((a, b) => b.overflowLeft - a.overflowLeft)
+      .slice(0, 40);
+    const localScrollOffenders = offenderCandidates
+      .filter((item) => item.localOverflow > 1)
+      .sort((a, b) => b.localOverflow - a.localOverflow)
+      .slice(0, 40);
+    const hiddenOffscreenOffenders = offenderCandidates
+      .filter((item) => item.hiddenAncestor && (item.overflowLeft > 1 || item.overflowRight > 1))
+      .sort(byLargestExcess)
+      .slice(0, 40);
 
     let lockSources = null;
     try {
@@ -154,6 +201,10 @@ async function takeSnapshot(page, elapsedMs) {
         scale: window.visualViewport.scale,
       } : null,
       offenders,
+      rightOffenders,
+      leftOffenders,
+      localScrollOffenders,
+      hiddenOffscreenOffenders,
     };
   }, { selectorForSource: selectorFor.toString(), elapsedMs });
 }
@@ -186,10 +237,21 @@ try {
     await page.screenshot({ path: join(outDir, `${safeName(failure.route, failure.viewport)}--settled.png`), fullPage: true });
     diagnostics.push({ route: failure.route, viewport: failure.viewport, timeline });
     for (const snapshot of timeline) {
-      console.log(`OVERFLOW-TIMELINE ${failure.route} ${failure.viewport} +${snapshot.elapsedMs}ms: document=${snapshot.documentWidth}, viewport=${snapshot.viewportWidth}, lock=${snapshot.html.dataScrollLocked || '0'}, bodyPadding=${snapshot.body.computed.paddingRight}, sources=${JSON.stringify(snapshot.lockState.sources)}`);
+      console.log(`OVERFLOW-TIMELINE ${failure.route} ${failure.viewport} +${snapshot.elapsedMs}ms: document=${snapshot.documentWidth}, viewport=${snapshot.viewportWidth}, html=${snapshot.html.scrollWidth}/${snapshot.html.clientWidth}, body=${snapshot.body.scrollWidth}/${snapshot.body.clientWidth}, lock=${snapshot.html.dataScrollLocked || '0'}, bodyPadding=${snapshot.body.computed.paddingRight}, sources=${JSON.stringify(snapshot.lockState.sources)}`);
     }
     const early = timeline.find((item) => item.elapsedMs === 300) || timeline[0];
-    for (const offender of early.offenders.slice(0, 8)) console.log(`  ${offender.selector} right=+${offender.overflowRight}px left=+${offender.overflowLeft}px scroll=${offender.scrollWidth}/${offender.clientWidth} ${offender.text}`);
+    for (const offender of early.rightOffenders.slice(0, 8)) {
+      console.log(`  RIGHT ${offender.selector} +${offender.overflowRight}px scroll=${offender.scrollWidth}/${offender.clientWidth} hiddenBy=${offender.hiddenAncestor?.selector || '-'} ${offender.text}`);
+    }
+    for (const offender of early.localScrollOffenders.slice(0, 8)) {
+      console.log(`  LOCAL ${offender.selector} +${offender.localOverflow}px scroll=${offender.scrollWidth}/${offender.clientWidth} hiddenBy=${offender.hiddenAncestor?.selector || '-'} ${offender.text}`);
+    }
+    for (const offender of early.leftOffenders.filter((item) => !item.hiddenAncestor).slice(0, 8)) {
+      console.log(`  LEFT ${offender.selector} +${offender.overflowLeft}px scroll=${offender.scrollWidth}/${offender.clientWidth} ${offender.text}`);
+    }
+    for (const offender of early.hiddenOffscreenOffenders.slice(0, 8)) {
+      console.log(`  HIDDEN-OFFSCREEN ${offender.selector} right=+${offender.overflowRight}px left=+${offender.overflowLeft}px hiddenBy=${offender.hiddenAncestor?.selector || '-'} ${offender.text}`);
+    }
     await context.close();
   }
 } finally {
