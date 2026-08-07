@@ -1,0 +1,78 @@
+name: FAQ JSON-LD Finalize Once
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/faq-jsonld-finalize-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Refuse stale branch head
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "${HEAD_BRANCH}"
+          test "$(git rev-parse "origin/${HEAD_BRANCH}")" = "${EXPECTED_HEAD}"
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
+
+      - name: Replace HTML sanitizer with plain-text owner
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('js/enhancements.js')
+          text = path.read_text(encoding='utf-8')
+          start_marker = 'var r,s,c=(i.textContent||"").trim().replace(/\\s+/g," "),l='
+          end_marker = ';c&&l&&a.push'
+          assert text.count(start_marker) == 1, f'expected one FAQ sanitizer start, got {text.count(start_marker)}'
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+          old = text[start:end]
+          assert 'n.innerHTML' in old, 'old FAQ owner must read innerHTML before repair'
+          assert 'document.createElement("div")' in old, 'old FAQ sanitizer container missing before repair'
+          replacement = 'var c=(i.textContent||"").trim().replace(/\\s+/g," "),l=(n.textContent||"").trim().replace(/\\s+/g," ")'
+          path.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
+          PY
+
+          node --check js/enhancements.js
+          node --check scripts/faq-jsonld-text-contract-test.js
+          node scripts/faq-jsonld-text-contract-test.js
+
+      - name: Project current asset revisions without touching references
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          node scripts/legacy-reference-inventory-audit.mjs
+          git diff --check
+
+      - name: Commit repair and retire finalizer
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/faq-jsonld-finalize-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'fix(security): serialize FAQ JSON-LD from plain text'
+          git push origin "HEAD:${HEAD_BRANCH}"
