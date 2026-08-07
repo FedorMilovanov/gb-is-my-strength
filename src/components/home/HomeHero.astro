@@ -611,10 +611,35 @@ import HomeAmbientPhrases from './HomeAmbientPhrases.astro';
       opacity: .35;
     }
 
-    body.home-page #main-content .h-hero-brand { margin-bottom: 20px; }
-    body.home-page #main-content .h-hero-brand__rule { width: 34px; flex-basis: 34px; }
-    body.home-page #main-content .h-hero-brand__copy span { font-size: 7px; }
-    body.home-page #main-content .h-hero-brand__copy strong { font-size: 12px; }
+    body.home-page #main-content .h-hero-brand {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      margin: 0 auto 22px;
+      padding-top: 14px;
+      border-top: 1px solid color-mix(in srgb, var(--h-gold) 30%, transparent);
+      width: min(100%, 320px);
+    }
+
+    body.home-page #main-content .h-hero-brand__rule {
+      display: none;
+    }
+
+    body.home-page #main-content .h-hero-brand__copy {
+      padding-top: 0;
+      text-align: center;
+    }
+
+    body.home-page #main-content .h-hero-brand__copy span {
+      font-size: 8px;
+      letter-spacing: .24em;
+    }
+
+    body.home-page #main-content .h-hero-brand__copy strong {
+      max-width: none;
+      font-size: 13px;
+      line-height: 1.42;
+    }
 
     body.home-page #main-content .h-sacred-block--hero { margin-bottom: 24px; }
     body.home-page #main-content .h-sacred-block--hero::before { margin-bottom: 12px; font-size: 7px; line-height: 1.5; letter-spacing: .17em; }
