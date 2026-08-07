@@ -201,19 +201,21 @@ try {
     const tourFacts = await page.evaluate(() => {
       document.body.focus();
       document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, cancelable: true }));
-      const params = new URL(location.href).searchParams;
+      const panel = document.querySelector('.me-panel.me-panel--open');
       return {
-        place: params.get('place') || '',
+        panelOpen: Boolean(panel),
+        panelName: panel?.querySelector('.me-panel__name')?.textContent || '',
+        panelStage: panel?.querySelector('.me-panel__stage')?.textContent || '',
         captionTitle: document.querySelector('.me-caption__title')?.textContent || '',
         captionStage: document.querySelector('.me-caption__stage')?.textContent || '',
         stage3Transform: document.querySelector('.me-stage-dot[data-stage="3"]')?.style.transform || '',
         stage0Transform: document.querySelector('.me-stage-dot[data-stage="0"]')?.style.transform || '',
       };
     });
-    const openedPlace = route.places.find((place) => place.id === tourFacts.place);
+    const openedPlace = route.places.find((place) => place.name === tourFacts.panelName);
     const firstLotStage = lotStory.stages[0];
     const expectedStage = route.stages[firstLotStage];
-    check('Lot tour opens a place from authored stage 3', openedPlace?.stage === firstLotStage, JSON.stringify(tourFacts));
+    check('Lot tour opens a dossier from authored stage 3', tourFacts.panelOpen && openedPlace?.stage === firstLotStage && tourFacts.panelStage.includes(expectedStage?.n || ''), JSON.stringify(tourFacts));
     check('Lot tour caption uses authored stage 3 content', tourFacts.captionTitle === (expectedStage?.t || '') && tourFacts.captionStage.includes(expectedStage?.n || ''), JSON.stringify({ tourFacts, expectedStage }));
     check('Lot tour animates the stage-3 dot, not sequence index 0', tourFacts.stage3Transform === 'scale(1.4)' && tourFacts.stage0Transform !== 'scale(1.4)', JSON.stringify(tourFacts));
     check('Tour scenario has no page errors', pageErrors.length === 0, pageErrors.join(' | '));

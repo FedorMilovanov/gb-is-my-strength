@@ -148,6 +148,14 @@ check(
   'ENGINE-P2-03 permits the blocking loading overlay only as an explicit opt-in while route data is genuinely pending.'
 );
 
+check(
+  'Screen-space anchors use SVG meet scale and reapply after canvas resize',
+  /const\s+viewScale\s*=\s*Math\.min\(renderedWidth\/Math\.max\(1,view\.w\),renderedHeight\/Math\.max\(1,view\.h\)\)/.test(source) &&
+    /const\s+unitsPerPixel\s*=\s*1\/Math\.max\(viewScale,Number\.EPSILON\)/.test(source) &&
+    /scaleResizeObserver\s*=\s*new ResizeObserver\(\(\)\s*=>\s*applyViewBox\(\)\)/.test(source),
+  'WAYP-P1-01 and all data-screen-anchor geometry require the actual xMidYMid meet scale to be reapplied on resize.'
+);
+
 if (failures) {
   console.error(`\n❌ map-engine regression guard: ${failures} failed check(s)`);
   process.exit(1);

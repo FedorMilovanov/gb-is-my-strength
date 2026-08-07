@@ -1467,7 +1467,7 @@ header.appendChild(shareBtn);
       if (labelEl) labelEl.textContent = km + ' km';
     }
     if (typeof ResizeObserver === 'function') {
-      scaleResizeObserver = new ResizeObserver(() => updateScaleBar());
+      scaleResizeObserver = new ResizeObserver(() => applyViewBox());
       scaleResizeObserver.observe(canvas);
     }
 
@@ -1705,7 +1705,10 @@ container.appendChild(panel);
       svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
       applySemanticZoom();
       const canvasRect=canvas.getBoundingClientRect();
-      const unitsPerPixel=view.w/Math.max(1,canvasRect.width);
+      const renderedWidth=Math.max(1,canvasRect.width);
+      const renderedHeight=Math.max(1,canvasRect.height);
+      const viewScale=Math.min(renderedWidth/Math.max(1,view.w),renderedHeight/Math.max(1,view.h));
+      const unitsPerPixel=1/Math.max(viewScale,Number.EPSILON);
       svg.querySelectorAll('[data-screen-anchor][data-map-x][data-map-y]').forEach(anchor=>{
         const x=Number(anchor.getAttribute('data-map-x')),y=Number(anchor.getAttribute('data-map-y'));
         if(Number.isFinite(x)&&Number.isFinite(y))anchor.setAttribute('transform',`translate(${x},${y}) scale(${unitsPerPixel.toFixed(4)})`);
