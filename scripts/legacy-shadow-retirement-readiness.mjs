@@ -42,6 +42,81 @@ function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
+function decodeEntities(value) {
+  const named = new Map([
+    ['amp', '&'], ['lt', '<'], ['gt', '>'], ['quot', '"'], ['apos', "'"], ['nbsp', ' '],
+    ['laquo', '«'], ['raquo', '»'], ['ndash', '–'], ['mdash', '—'], ['hellip', '…'],
+  ]);
+  return value.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (full, entity) => {
+    if (entity[0] === '#') {
+      const hex = entity[1]?.toLowerCase() === 'x';
+      const raw = entity.slice(hex ? 2 : 1);
+      const code = Number.parseInt(raw, hex ? 16 : 10);
+      return Number.isFinite(code) ? String.fromCodePoint(code) : full;
+    }
+    return named.get(entity.toLowerCase()) ?? full;
+  });
+}
+
+function htmlMetrics(buffer) {
+  const raw = buffer.toString('utf8');
+  const normalizedText = decodeEntities(
+    raw
+      .replace(/<!--[^]*?-->/g, ' ')
+      .replace(/<script\b[^>]*>[^]*?<\/script>/gi, ' ')
+      .replace(/<style\b[^>]*>[^]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' '),
+  ).replace(/\s+/g, ' ').trim();
+  const words = normalizedText.match(/[0-9A-Za-zА-Яа-яЁё]+(?:[-'’][0-9A-Za-zА-Яа-яЁё]+)*/g) || [];
+  return {
+    gitBlobSha1: gitBlobSha1(buffer),
+    byteSha256: sha256(buffer),
+    normalizedTextSha256: sha256(Buffer.from(normalizedText)),
+    bytes: buffer.length,
+    wordCount: words.length,
+    h1Count: (raw.match(/<h1\b/gi) || []).length,
+    h2Count: (raw.match(/<h2\b/gi) || []).length,
+  };
+}
+
+function findRouteProfile(root, route) {
+  const directory = path.join(root, 'data', 'route-profiles');
+  if (!fs.existsSync(directory)) return null;
+  for (const name of fs.readdirSync(directory).sort()) {
+    if (!name.endsWith('.json')) continue;
+    const relative = `data/route-profiles/${name}`;
+    const data = loadJson(path.join(root, relative));
+    if (data.route === route) return { path: relative, data };
+  }
+  return null;
+}
+
+function ledgerCandidate(root, manifest, item) {
+  const profile = findRouteProfile(root, item.route);
+  const buffer = fs.readFileSync(path.join(root, item.path));
+  const declaredLegacyStatus = profile?.data?.legacyStatus ?? null;
+  const classification = declaredLegacyStatus === 'reference-only'
+    ? 'migration-reference-only'
+    : declaredLegacyStatus === 'canonical' || declaredLegacyStatus === 'runtime-required'
+      ? 'production-required'
+      : 'unknown-blocker';
+  const decisionSource = profile
+    ? declaredLegacyStatus
+      ? `${profile.path}:legacyStatus`
+      : `${profile.path}:legacyStatus-missing`
+    : 'route-profile-missing';
+  return {
+    route: item.route,
+    profile: profile?.path ?? null,
+    legacyPath: item.path,
+    declaredLegacyStatus,
+    classification,
+    decisionSource,
+    sourceCommit: manifest.auditedAtCommit ?? null,
+    ...htmlMetrics(buffer),
+  };
+}
+
 function runInventory(root) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'legacy-shadow-readiness-'));
   const out = path.join(temp, 'inventory.json');
@@ -165,17 +240,21 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
   const nativeItems = effective.items.filter((item) => item.classification === 'native-shadow');
   const builtApps = effective.items.filter((item) => item.classification === 'owned-independent');
   const integrityProblems = [];
+  const missingLedgerCandidates = [];
 
   const nativeShadows = nativeItems.map((item) => {
     const itemPath = normalize(item.path);
     const entry = byPath.get(itemPath) || byRoute.get(item.route) || null;
     if (!entry) {
       integrityProblems.push(`${item.path}: missing immutable ledger entry`);
+      const candidate = ledgerCandidate(root, manifest, item);
+      missingLedgerCandidates.push(candidate);
       return {
         route: item.route,
         path: item.path,
         bytes: item.bytes,
         decision: 'missing-ledger',
+        ledgerCandidate: candidate,
       };
     }
     if (normalize(entry.legacyPath) !== itemPath) {
@@ -231,7 +310,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
   const deletionReady = blockerTotal === 0;
 
   return {
-    schemaVersion: '1.2.0',
+    schemaVersion: '1.3.0',
     generatedAt: new Date().toISOString(),
     source: {
       inventory: 'scripts/strangler-duplicate-inventory.mjs',
@@ -246,6 +325,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
       nativeShadowBytes: nativeItems.reduce((sum, item) => sum + item.bytes, 0),
       builtApps: builtApps.length,
       ledgerEntries: entries.length,
+      missingLedgerCandidates: missingLedgerCandidates.length,
       classificationClearReferences: classificationClear.length,
       unknownReferenceDecisions: unknownReferences.length,
       dependencyRecords: (manifest.dependencies || []).length,
@@ -263,6 +343,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     parity,
     blockers: {
       inventoryCoverageGaps: effective.coverageGaps,
+      missingLedgerCandidates,
       unknownReferences,
       unexpectedReferences,
       mechanicalRepoints,
@@ -277,7 +358,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     nextTransaction: {
       order: [
         'repair strangler inventory coverage for every governed legacy path',
-        'add immutable ledger identity for every effective native shadow',
+        'add immutable ledger identity for every effective native shadow using the emitted exact candidates',
         'resolve missing or unexpected reference classifications in route profiles and ledger',
         'repoint policy readers through migration/legacy-reference-path.js',
         'remove or repoint obsolete legacy audits',
@@ -317,6 +398,7 @@ function renderMarkdown(report) {
     `- Astro native shadows: **${s.nativeShadows}** / **${s.nativeShadowBytes} bytes**`,
     `- Independent built apps retained: **${s.builtApps}**`,
     `- Ledger entries: **${s.ledgerEntries}**`,
+    `- Missing ledger candidates: **${s.missingLedgerCandidates}**`,
     `- Inventory coverage problems: **${s.inventoryCoverageProblems}**`,
     `- Integrity problems: **${s.integrityProblems}**`,
     `- Classification-clear references: **${s.classificationClearReferences}**`,
@@ -338,7 +420,12 @@ function renderMarkdown(report) {
   ];
   if (!report.blockers.inventoryCoverageGaps.length) lines.push('- none');
   for (const row of report.blockers.inventoryCoverageGaps) lines.push(`- \`${row.path}\` — ${row.problem}`);
-  lines.push('', '## Unexpected reference classifications', '');
+  lines.push('', '## Missing ledger candidates', '');
+  if (!report.blockers.missingLedgerCandidates.length) lines.push('- none');
+  for (const row of report.blockers.missingLedgerCandidates) {
+    lines.push(`### \`${row.legacyPath}\``, '', '```json', JSON.stringify(row, null, 2), '```', '');
+  }
+  lines.push('## Unexpected reference classifications', '');
   if (!report.blockers.unexpectedReferences.length) lines.push('- none');
   for (const row of report.blockers.unexpectedReferences) lines.push(`- \`${row.path}\` — ${row.classification}`);
   lines.push('', '## Blocking dependencies', '');
@@ -358,7 +445,7 @@ function renderMarkdown(report) {
 function runSelfTest() {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'legacy-shadow-self-test-'));
   try {
-    for (const relative of ['about', 'rodosloviye', 'unexpected', 'guards']) {
+    for (const relative of ['about', 'rodosloviye', 'unexpected', 'guards', 'data/route-profiles']) {
       fs.mkdirSync(path.join(temp, relative), { recursive: true });
     }
     const about = Buffer.from('<!doctype html><h1>about</h1>');
@@ -367,6 +454,7 @@ function runSelfTest() {
     fs.writeFileSync(path.join(temp, 'about', 'index.html'), about);
     fs.writeFileSync(path.join(temp, 'rodosloviye', 'index.html'), family);
     fs.writeFileSync(path.join(temp, 'unexpected', 'index.html'), unexpected);
+    fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'about.json'), JSON.stringify({ route: '/about/' }));
     for (const name of ['source.js', 'dist.js', 'browser.js']) fs.writeFileSync(path.join(temp, 'guards', name), '');
 
     const report = buildReport({
@@ -379,6 +467,7 @@ function runSelfTest() {
         ],
       },
       manifest: {
+        auditedAtCommit: 'a'.repeat(40),
         dependencies: [{ path: 'reader.js', quarantineImpact: 'owner-decision-required', evidenceToken: 'rodosloviye/index.html' }],
       },
       entries: [
@@ -415,10 +504,16 @@ function runSelfTest() {
       },
     });
 
+    const candidate = report.blockers.missingLedgerCandidates[0];
     if (report.summary.publicIndexes !== 3
       || report.summary.nativeShadows !== 3
       || report.summary.inventoryCoverageProblems !== 1
       || report.summary.integrityProblems !== 1
+      || report.summary.missingLedgerCandidates !== 1
+      || candidate?.legacyPath !== 'about/index.html'
+      || candidate?.gitBlobSha1 !== gitBlobSha1(about)
+      || candidate?.byteSha256 !== sha256(about)
+      || candidate?.sourceCommit !== 'a'.repeat(40)
       || report.summary.referenceOwnerDecisions !== 1
       || report.summary.unexpectedReferenceClassifications !== 1
       || report.summary.dependencyOwnerDecisions !== 1

@@ -2,6 +2,22 @@
   "schemaVersion": "1.0.0",
   "entries": [
     {
+      "route": "/about/",
+      "profile": "data/route-profiles/about.json",
+      "legacyPath": "about/index.html",
+      "declaredLegacyStatus": "reference-only",
+      "classification": "migration-reference-only",
+      "decisionSource": "data/route-profiles/about.json:legacyStatus",
+      "sourceCommit": "2ec30d22029f2f7e32f13b3d210357554064757f",
+      "gitBlobSha1": "3f8429a0d0a6cb307c556d9275b6526a7cd3f608",
+      "byteSha256": "e51ec1f3a7398ef5a2374fe2b32c6ad9cbb0aaa22018549696ca128327f4d557",
+      "normalizedTextSha256": "ab03bc062597d76d865910885ba18794606e90f180876e0fc525b9309fb5f8fc",
+      "bytes": 34041,
+      "wordCount": 611,
+      "h1Count": 1,
+      "h2Count": 6
+    },
+    {
       "route": "/articles/20-antisovetov-pastoru/",
       "profile": "data/route-profiles/articles-20-antisovetov-pastoru.json",
       "legacyPath": "articles/20-antisovetov-pastoru/index.html",

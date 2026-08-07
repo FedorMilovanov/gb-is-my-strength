@@ -4,6 +4,8 @@
   "migrationLane": "shell-first",
   "currentStatus": "production-dist",
   "source": "src/pages/about/index.astro",
+  "legacyPath": "about/index.html",
+  "legacyStatus": "reference-only",
   "migrationMode": "strict-native",
   "statusDetail": "native-shadow (Phase 6, AGENTS-r249) → production-dist via AboutPageChrome + AboutMain",
   "migrationHistory": [
