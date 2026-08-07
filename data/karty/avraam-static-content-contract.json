@@ -1,0 +1,27 @@
+{
+  "contractVersion": 1,
+  "route": "/karty/avraam/",
+  "owner": "src/components/karty/avraam/AvraamMap.astro",
+  "sectionHeading": "Источники и метод: археологический аппарат (полный список)",
+  "sourceUnits": [
+    { "id": "scripture-text", "anchor": "<b>Текст:</b>" },
+    { "id": "ur", "anchor": "<b>Ур:</b>" },
+    { "id": "harran", "anchor": "<b>Харран:</b>" },
+    { "id": "tel-dan", "anchor": "<b>Тель Дан:</b>" },
+    { "id": "gerar-tel-haror", "anchor": "<b>Герар = Тель Харор</b>" },
+    { "id": "beersheba", "anchor": "<b>Беэр-Шева:</b>" },
+    { "id": "sodom", "anchor": "<b>Содом:</b>" },
+    { "id": "kikkar-argument", "anchor": "<b>Аргумент «киккара» (Быт 13:10):</b>" },
+    { "id": "zoar", "anchor": "<b>Цоар:</b>" },
+    { "id": "kadesh-barnea", "anchor": "<b>Кадеш-Барнеа:</b>" },
+    { "id": "shur-wilderness", "anchor": "<b>Пустыня Сур:</b>" },
+    { "id": "egypt", "anchor": "<b>Египет:</b>" },
+    { "id": "jerusalem-shalem", "anchor": "<b>Иерусалим/Шалем:</b>" },
+    { "id": "chronology", "anchor": "<b>Хронология:</b>" }
+  ],
+  "shechem": {
+    "placeId": "shechem",
+    "disputeTitle": "⚖ Сихем: Телль Балата и границы древнего города",
+    "nativeFallbackAnchor": "Раскопки в Телль-Балата вскрыли мощные укрепления и храм-крепость средней бронзы"
+  }
+}
