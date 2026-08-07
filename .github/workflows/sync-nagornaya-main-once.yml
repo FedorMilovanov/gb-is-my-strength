@@ -1,0 +1,42 @@
+name: Sync Nagornaya candidate to latest main once
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-nagornaya-main-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.event.pull_request.head.ref == 'fix/nagornaya-library-theme-series-20260808'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/nagornaya-library-theme-series-20260808
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge current main and self-clean
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_HEAD" || { echo "stale head: $actual != $EXPECTED_HEAD"; exit 1; }
+          git fetch origin main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge --no-edit origin/main
+          rm .github/workflows/sync-nagornaya-main-once.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo "nothing to commit after self-clean"
+            exit 1
+          fi
+          git commit -m "merge(main): refresh Nagornaya candidate after FAQ security closure"
+          git push origin HEAD:fix/nagornaya-library-theme-series-20260808
