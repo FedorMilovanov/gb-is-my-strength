@@ -78,7 +78,8 @@ function runFaqModule(moduleSource) {
 
 runFaqModule(faqSource);
 
-// Adversarial mutation: reverting the answer owner back to innerHTML must die.
+// This mutation is the permanent witness for the incident: text-only schema
+// serialization must fail if a future change reads HTML again.
 const mutated = faqSource.replace('(n.textContent||"")', '(n.innerHTML||"")');
 assert.notEqual(mutated, faqSource, 'mutation must actually replace the answer text owner');
 assert.throws(
