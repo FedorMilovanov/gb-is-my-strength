@@ -90,6 +90,7 @@ const routes = [
           data-home-route={route.key}
           data-home-route-index={index}
         >
+          <span class="h-home-route__surface" aria-hidden="true"></span>
           <span class="h-home-route__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
           <span class="h-home-route__glyph" aria-hidden="true">
             <img
@@ -133,6 +134,14 @@ const routes = [
     position: relative;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr) 1px) minmax(0, 1fr);
+    /* The legacy 4-column owner in css/home.css sets gap: clamp(22px,3vw,44px).
+       This 9-track deck interleaves 1px dividers between cards, so any inherited
+       gap inserts ~30px on BOTH sides of every divider and shrinks each card to
+       the central two-thirds of its cell. Reset gap to 0 here so cards sit flush
+       against their dividers (edge-to-edge selection surface). */
+    gap: 0;
+    column-gap: 0;
+    row-gap: 0;
     border: 1px solid color-mix(in srgb, var(--h-border-strong) 82%, transparent);
     border-radius: 24px;
     background:
@@ -184,25 +193,94 @@ const routes = [
     -webkit-tap-highlight-color: transparent;
   }
 
-  body.home-page #main-content .h-home-route::before {
-    content: "";
+  /* Padded content wrapper — owns the grid layout + inline padding so the outer
+     card equals the full grid cell (padding:0) and the surface (inset:0) fills
+     it edge-to-edge between dividers. Mirrors the reference deck → full-width
+     card → surface → padded content ownership. */
+  /* Direct children (except the surface) sit above the surface. The surface is
+     position:absolute; inset:0 and fills the card's padding-box edge-to-edge —
+     the same model as the reference .card-surface inside a padded .library-card. */
+  body.home-page #main-content .h-home-route > :not(.h-home-route__surface) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Retire the legacy 1px underline ::after authored in css/home.css so it can
+     no longer conflict with the selection surface. (The legacy owner lives in
+     a guarded shared file; removing it there is a separate cleanup task.) */
+  body.home-page #main-content .h-home-route::after {
+    content: none;
+  }
+
+  /* Full-width selection surface — a REAL element (not a pseudo) with
+     position:absolute; inset:0, so its bounding rect matches the card exactly
+     (edge-to-edge between dividers). This mirrors the reference .card-surface
+     and ends the cascade confusion: the card's ::before/::after pseudos are
+     retired (the legacy 1px underline ::after from css/home.css is neutralised
+     with content:none) and the selection lives on one measurable rectangle. */
+  body.home-page #main-content .h-home-route__surface {
     position: absolute;
     z-index: 0;
     inset: 0;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    transform: none;
+    overflow: hidden;
+    border: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
     background:
       radial-gradient(108% 62% at 50% -12%, color-mix(in srgb, var(--h-accent) 12%, transparent), transparent 68%),
       linear-gradient(180deg,
-        color-mix(in srgb, var(--h-surface-solid) 88%, transparent),
-        color-mix(in srgb, var(--h-surface-solid) 68%, transparent));
+        color-mix(in srgb, var(--h-surface-solid) 84%, transparent),
+        color-mix(in srgb, var(--h-surface-solid) 66%, transparent));
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, .38),
       inset 0 -1px 0 color-mix(in srgb, var(--h-accent) 7%, transparent);
-    opacity: 0;
-    pointer-events: none;
     transition: opacity 340ms ease, background-color 420ms ease, box-shadow 420ms ease;
   }
 
-  html.dark body.home-page #main-content .h-home-route::before {
+  /* Soft top halo, clipped to the surface top edge (reference card-surface::before).
+     Values 1:1: bright 34% / main 14%, opacity .78, blur 4px. */
+  body.home-page #main-content .h-home-route__surface::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 10%;
+    right: 10%;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at 50% 0,
+      color-mix(in srgb, var(--h-accent-dim) 34%, transparent) 0%,
+      color-mix(in srgb, var(--h-accent) 14%, transparent) 42%,
+      transparent 76%
+    );
+    filter: blur(4px);
+    opacity: .78;
+    pointer-events: none;
+  }
+
+  /* Edge tint re-inking the very left/right edges so the highlight reads
+     across the full card width (reference card-surface::after). Values carried
+     1:1: radial 5% + linear 2.5% at stops 23% / 77%. */
+  body.home-page #main-content .h-home-route__surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(70% 34% at 50% 0%, color-mix(in srgb, var(--h-accent) 5%, transparent), transparent 76%),
+      linear-gradient(90deg,
+        color-mix(in srgb, var(--h-accent) 2.5%, transparent),
+        transparent 23%,
+        transparent 77%,
+        color-mix(in srgb, var(--h-accent) 2.5%, transparent));
+  }
+
+  html.dark body.home-page #main-content .h-home-route__surface {
     background:
       radial-gradient(110% 68% at 50% -16%, rgba(75, 187, 198, .11), transparent 67%),
       linear-gradient(180deg, rgba(25, 47, 47, .82), rgba(12, 29, 29, .76));
@@ -211,9 +289,15 @@ const routes = [
       inset 0 -1px 0 rgba(75, 187, 198, .05);
   }
 
-  body.home-page #main-content .h-home-route > * {
-    position: relative;
-    z-index: 1;
+  html.dark body.home-page #main-content .h-home-route__surface::before {
+    background: radial-gradient(
+      ellipse at 50% 0,
+      rgba(118, 211, 220, .18) 0%,
+      rgba(75, 187, 198, .07) 42%,
+      transparent 76%
+    );
+    opacity: .62;
+    filter: blur(5px);
   }
 
   body.home-page #main-content .h-home-route__divider {
@@ -273,25 +357,50 @@ const routes = [
     box-shadow: 0 0 9px rgba(75, 187, 198, .05);
   }
 
-  body.home-page #main-content .h-home-route.is-active::before,
-  body.home-page #main-content .h-home-route:focus-visible::before,
-  body.home-page #main-content .h-home-route:active::before {
+  /* Reveal the surface (opacity:1 + full-height cyan side beams) on hover,
+     focus, active and JS-pinned is-active. Side-beam values carried 1:1 from
+     the reference light theme: inset 26px 0 68px -64px @ 28%. :hover is listed
+     so the highlight fires immediately inside an iframe preview. */
+  body.home-page #main-content .h-home-route:is(.is-active, :hover, :active, :focus-visible) .h-home-route__surface {
     opacity: 1;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .34),
+      inset 0 -1px 0 color-mix(in srgb, var(--h-accent) 7%, transparent),
+      inset 26px 0 68px -64px color-mix(in srgb, var(--h-accent) 28%, transparent),
+      inset -26px 0 68px -64px color-mix(in srgb, var(--h-accent) 28%, transparent);
+  }
+
+  /* Dark active side beams — 1:1 from the reference: inset 24px 0 62px -58px
+     rgba(75,187,198,.15). */
+  html.dark body.home-page #main-content .h-home-route:is(.is-active, :hover, :active, :focus-visible) .h-home-route__surface {
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, .035),
+      inset 0 -1px rgba(75, 187, 198, .05),
+      inset 24px 0 62px -58px rgba(75, 187, 198, .15),
+      inset -24px 0 62px -58px rgba(75, 187, 198, .15);
+  }
+
+  /* Keyboard focus: a 2px ring instead of the side glow. */
+  body.home-page #main-content .h-home-route:focus-visible .h-home-route__surface {
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, var(--h-accent) 34%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, .38),
+      inset 0 -1px 0 color-mix(in srgb, var(--h-accent) 7%, transparent);
   }
 
   body.home-page #main-content .h-home-routes[data-home-route-active] .h-home-route.h-in:not(.is-active) {
-    opacity: .84;
-    filter: saturate(.91);
+    opacity: .92;
+    filter: saturate(.96);
   }
 
   html.dark body.home-page #main-content .h-home-routes[data-home-route-active] .h-home-route.h-in:not(.is-active) {
-    opacity: .79;
-    filter: saturate(.88) brightness(.93);
+    opacity: .88;
+    filter: saturate(.93) brightness(.97);
   }
 
   body.home-page #main-content .h-home-route[data-home-route="articles"] {
-    --route-object-scale: 1.08;
-    --route-object-hover-scale: 1.096;
+    --route-object-scale: 1.16;
+    --route-object-hover-scale: 1.166;
     --route-object-y: 4px;
     --route-shadow-width: 56%;
     --route-shadow-height: 14px;
@@ -300,8 +409,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="series"] {
-    --route-object-scale: .98;
-    --route-object-hover-scale: .994;
+    --route-object-scale: .95;
+    --route-object-hover-scale: .956;
     --route-shadow-width: 61%;
     --route-shadow-height: 17px;
     --route-shadow-bottom: 17px;
@@ -309,8 +418,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="biographies"] {
-    --route-object-scale: 1.01;
-    --route-object-hover-scale: 1.024;
+    --route-object-scale: .98;
+    --route-object-hover-scale: .986;
     --route-object-y: -1px;
     --route-shadow-width: 45%;
     --route-shadow-height: 13px;
@@ -319,8 +428,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="maps"] {
-    --route-object-scale: 1.12;
-    --route-object-hover-scale: 1.136;
+    --route-object-scale: 1.06;
+    --route-object-hover-scale: 1.066;
     --route-object-y: 6px;
     --route-shadow-width: 68%;
     --route-shadow-height: 13px;
@@ -329,8 +438,8 @@ const routes = [
   }
 
   body.home-page #main-content .h-home-route[data-home-route="confessions"] {
-    --route-object-scale: 1.04;
-    --route-object-hover-scale: 1.055;
+    --route-object-scale: 1.02;
+    --route-object-hover-scale: 1.026;
     --route-object-y: 4px;
     --route-shadow-width: 61%;
     --route-shadow-height: 16px;
@@ -562,13 +671,6 @@ const routes = [
     outline: none;
   }
 
-  body.home-page #main-content .h-home-route:focus-visible::before {
-    box-shadow:
-      inset 0 0 0 2px color-mix(in srgb, var(--h-accent) 34%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, .38),
-      inset 0 -1px 0 color-mix(in srgb, var(--h-accent) 7%, transparent);
-  }
-
   body.home-page #main-content .h-home-gateway__footer {
     display: flex;
     align-items: center;
@@ -656,16 +758,16 @@ const routes = [
 
   @media (max-width: 760px) {
     body.home-page #main-content #issledovat {
-      padding-top: 52px;
-      padding-bottom: 34px;
+      padding-top: 44px;
+      padding-bottom: 18px;
     }
 
     body.home-page #main-content #issledovat + #publikacii {
-      padding-top: 32px;
+      padding-top: 28px;
     }
 
     body.home-page #main-content .h-home-section-head--gateway {
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
     body.home-page #main-content .h-home-section-head--gateway h2 {
@@ -678,47 +780,125 @@ const routes = [
       display: none;
     }
 
+    /* Mobile showcase shelf: one compact vertical card per snap. The archival
+       object leads, copy sits below it, and a narrow next-card peek preserves
+       discoverability without clipping neighbouring text. */
     body.home-page #main-content .h-home-routes {
-      min-height: 396px;
-      border-radius: 20px;
+      min-height: 0;
+      border-radius: 18px;
+      padding: 8px;
+      gap: 0;
+      scroll-padding-inline: 8px;
+    }
+
+    /* Keep the canonical 1px dividers measurable on mobile while treating
+       them as quiet shelf seams. The 4px side margins replace flex gap so the
+       next card can still peek without exposing clipped copy. */
+    body.home-page #main-content .h-home-route__divider {
+      display: block;
+      flex: 0 0 1px;
+      width: 1px;
+      min-width: 1px;
+      margin-inline: 4px;
+      align-self: stretch;
+      opacity: .45;
     }
 
     body.home-page #main-content .h-home-route {
-      flex-basis: min(84vw, 284px);
-      min-height: 396px;
-      grid-template-rows: auto minmax(152px, 1fr) auto auto;
-      padding: 22px 20px 22px;
+      flex: 0 0 calc(100% - 26px);
+      min-height: 236px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto 124px auto auto;
+      align-content: start;
+      padding: 14px 18px 16px;
+      border-radius: 14px;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
     }
 
     body.home-page #main-content .h-home-route__glyph {
-      min-height: 152px;
-      margin-top: 0;
+      width: 178px;
+      min-height: 124px;
+      height: 124px;
+      justify-self: center;
+      margin: 0 auto 8px;
     }
 
     body.home-page #main-content .h-route-object {
-      width: min(82%, 146px);
-      max-height: 132px;
+      width: 178px;
+      max-width: 178px;
+      max-height: 124px;
+    }
+
+    /* Mobile-only optical compensation for transparent PNG margins. */
+    body.home-page #main-content .h-home-route[data-home-route="articles"] {
+      --route-object-scale: 1.30;
+      --route-object-hover-scale: 1.306;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="series"] {
+      --route-object-scale: .96;
+      --route-object-hover-scale: .966;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="biographies"] {
+      --route-object-scale: .98;
+      --route-object-hover-scale: .986;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="maps"] {
+      --route-object-scale: 1.05;
+      --route-object-hover-scale: 1.056;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="confessions"] {
+      --route-object-scale: .94;
+      --route-object-hover-scale: .946;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route__index {
+      font-size: 8px;
+      letter-spacing: .22em;
+    }
+
+    body.home-page #main-content .h-home-route__eyebrow {
+      margin-bottom: 6px;
+      font-size: 8px;
+      letter-spacing: .16em;
     }
 
     body.home-page #main-content .h-home-route__copy strong {
-      font-size: 1.12rem;
-      line-height: 1.08;
+      margin-bottom: 6px;
+      font-size: 1rem;
+      line-height: 1.12;
     }
 
     body.home-page #main-content .h-home-route__copy > span:last-child {
       max-width: 100%;
       font-size: 12px;
-      line-height: 1.52;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     body.home-page #main-content .h-home-route__arrow {
-      margin-top: 14px;
+      margin-top: 8px;
       font-size: 16px;
     }
 
+    /* CTA sits close under the shelf, not in a separate desert. */
     body.home-page #main-content .h-home-gateway__footer {
       justify-content: flex-end;
-      padding-top: 14px;
+      gap: 12px;
+      padding-top: 12px;
+      font-size: 8px;
     }
 
     body.home-page #main-content .h-home-gateway__footer > span {
@@ -743,12 +923,12 @@ const routes = [
 
   @media (max-width: 340px) {
     body.home-page #main-content .h-home-routes {
-      border-radius: 18px;
+      border-radius: 16px;
     }
 
     body.home-page #main-content .h-home-route {
-      flex-basis: min(87vw, 272px);
-      padding-inline: 17px;
+      flex-basis: calc(100% - 24px);
+      padding-inline: 15px;
     }
   }
 
@@ -762,7 +942,7 @@ const routes = [
   @media (prefers-reduced-motion: reduce) {
     body.home-page #main-content .h-home-route,
     body.home-page #main-content .h-home-route__divider,
-    body.home-page #main-content .h-home-route::before,
+    body.home-page #main-content .h-home-route__surface,
     body.home-page #main-content .h-home-route__glyph::before,
     body.home-page #main-content .h-home-route__glyph::after,
     body.home-page #main-content .h-route-object,
