@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "authorityId": "SYSTEM-LEGACY-REFERENCE-INVENTORY-2026-08-05",
   "issue": 62,
-  "auditedAtCommit": "2ec30d22029f2f7e32f13b3d210357554064757f",
+  "auditedAtCommit": "dfaf22ad5936b27b1b634b0eda96f4161aaf9a21",
   "scope": "inventory-and-immutability-only",
   "policy": {
     "allowedClassifications": [
