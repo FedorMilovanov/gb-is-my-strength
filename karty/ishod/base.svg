@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid slice" aria-label="Географическая основа карты Исхода">
+  <title>Географическая основа карты Исхода</title>
+  <desc>Route-owned wrapper around the current self-contained atlas geography. Route markers, stages and uncertainty corridors remain owned by the Ishod route data and runtime.</desc>
+  <image href="/karty/avraam/base.svg" x="0" y="0" width="1900" height="1430" preserveAspectRatio="xMidYMid slice" />
+</svg>
