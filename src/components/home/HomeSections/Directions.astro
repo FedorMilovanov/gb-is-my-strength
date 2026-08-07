@@ -780,23 +780,32 @@ const routes = [
       display: none;
     }
 
-    /* Mobile shelf: compact horizontal snap carousel. Card height follows
-       content (no min-height, no 1fr gap) so there is no white emptiness.
-       Objects are large enough to read; text is readable; content gathers. */
+    /* Mobile showcase shelf: one compact vertical card per snap. The archival
+       object leads, copy sits below it, and a narrow next-card peek preserves
+       discoverability without clipping neighbouring text. */
     body.home-page #main-content .h-home-routes {
       min-height: 0;
       border-radius: 18px;
       padding: 8px;
-      gap: 12px;
+      gap: 0;
       scroll-padding-inline: 8px;
     }
 
+    /* Keep the canonical 1px dividers measurable on mobile while treating
+       them as quiet shelf seams. The 4px side margins replace flex gap so the
+       next card can still peek without exposing clipped copy. */
     body.home-page #main-content .h-home-route__divider {
-      display: none;
+      display: block;
+      flex: 0 0 1px;
+      width: 1px;
+      min-width: 1px;
+      margin-inline: 4px;
+      align-self: stretch;
+      opacity: .45;
     }
 
     body.home-page #main-content .h-home-route {
-      flex: 0 0 calc(100% - 18px);
+      flex: 0 0 calc(100% - 26px);
       min-height: 236px;
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: auto 124px auto auto;
@@ -918,7 +927,7 @@ const routes = [
     }
 
     body.home-page #main-content .h-home-route {
-      flex-basis: calc(100% - 16px);
+      flex-basis: calc(100% - 24px);
       padding-inline: 15px;
     }
   }
