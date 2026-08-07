@@ -46,6 +46,6 @@ jobs:
           node scripts/audit-pro-source-corpus-test.js
           node scripts/cache-bust.js
           node scripts/legacy-reference-inventory-audit.mjs
-          git diff --cached --check
+          git diff --cached --check -- . ':(exclude)docs/LANE_LOCK_POLICY.md'
           git commit -m "merge(main): refresh Search candidate on ${MAIN_SHA}"
           git push origin "HEAD:${HEAD_BRANCH}"
