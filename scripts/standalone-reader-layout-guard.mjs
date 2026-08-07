@@ -24,7 +24,7 @@ const ROUTES = [
     key: 'KDV',
     label: 'Kod Da Vinci',
     path: '/articles/kod-da-vinchi/',
-    main: '[data-reader-root][data-reader-rail-main]',
+    main: '[data-reader-root] > [data-reader-rail-main]',
     summary: '.summary-card',
     prose: '.article-body > p',
     canvas: '.page-wrap.page-wrap--hrail',
@@ -62,14 +62,15 @@ function sourceContracts() {
     ['SRL-S09', 'ReaderSettings derives shell from measure plus 6rem', settings.includes('--hm-article-shell: calc(var(--hm-article-measure) + 6rem)')],
     ['SRL-S10', 'every direct article block shares the measure owner', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)')],
     ['SRL-S11', 'measure modes are exactly 42rem, 50rem and 58rem', /narrow:\s*'42rem'[\s\S]*normal:\s*'50rem'[\s\S]*wide:\s*'58rem'/.test(settings)],
-    ['SRL-S12', 'Kod Da Vinci declares the shared rail contract without visual main classes', kdvMain.includes('data-reader-root data-reader-rail-main') && !/<main[^>]*\sclass=/.test(kdvMain)],
+    ['SRL-S12', 'Kod Da Vinci keeps a classless structural main and a separate inner reader shell', /<main[^>]*data-reader-root[^>]*>/.test(kdvMain) && !/<main[^>]*data-reader-rail-main/.test(kdvMain) && !/<main[^>]*\sclass=/.test(kdvMain) && /<div[^>]*data-reader-rail-main/.test(kdvMain)],
     ['SRL-S13', 'Kod Da Vinci route explicitly declares its rail canvas', kdvRoute.includes('class="page-wrap page-wrap--hrail"')],
-    ['SRL-S14', 'Kod Da Vinci adapter exposes only its structural 24px canvas origin plus width normalization', canvas.includes('--hrail-canvas-inset-left: 24px') && canvas.includes('width: 100%') && canvas.includes('max-width: none') && canvas.includes('margin-left: 0') && canvas.includes('margin-right: 0')],
+    ['SRL-S14', 'Kod Da Vinci adapter exposes only its structural 24px canvas origin plus auto block sizing', canvas.includes('--hrail-canvas-inset-left: 24px') && canvas.includes('width: auto') && canvas.includes('max-width: none') && canvas.includes('margin-left: 0') && canvas.includes('margin-right: 0')],
     ['SRL-S15', 'Kod Da Vinci adapter owns no article offset or reader measure', !/--hm-article-|\.article-main|(?:^|\n)\s*(?:left|right|transform)\s*:/.test(canvas)],
-    ['SRL-S16', 'ReaderRail has an explicit semantic marker path for classless consumers', rail.includes(':is(.article-main.article-main--hrail,[data-reader-rail-main])')],
+    ['SRL-S16', 'ReaderRail has an explicit semantic marker path for inner-shell consumers', rail.includes(':is(.article-main.article-main--hrail,[data-reader-rail-main])')],
     ['SRL-S17', 'Kod Da Vinci classless base-shell contract remains present', siteCss.includes('.page-wrap>main:not([class]){width:auto!important;max-width:100%!important;margin:0!important;padding:0!important}')],
-    ['SRL-S18', 'ReaderRail distinguishes padded and classless base-shell insets', rail.includes('.article-main.article-main--hrail{--hrail-base-inset:24px}') && rail.includes('[data-reader-rail-main]{--hrail-base-inset:0px}')],
+    ['SRL-S18', 'ReaderRail distinguishes padded Hermenevtika and zero-inset semantic reader shells', rail.includes('.article-main.article-main--hrail{--hrail-base-inset:24px}') && rail.includes('[data-reader-rail-main]{--hrail-base-inset:0px}')],
     ['SRL-S19', 'Hermenevtika global article shell still owns 24px inline padding', siteCss.includes('main.article-main{width:min(820px,92vw);margin:0 auto;padding:clamp(24px,3.5vw,44px) 24px')],
+    ['SRL-S20', 'Kod Da Vinci canvas never reintroduces percentage-width scrollable overflow', canvas.includes('width: auto') && !canvas.includes('width: 100%') && !canvas.includes('100vw') && !canvas.includes('100dvw')],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -139,11 +140,11 @@ function recordLayout(route, width, state) {
   const id = `${route.key}-L${width}`;
   record(`${id}-01`, `${route.label} ${width}px rail visibility matches breakpoint`, state.railVisible === desktop, state, 'layout');
   record(`${id}-02`, `${route.label} ${width}px has no horizontal overflow`, state.scrollWidth - state.clientWidth <= 1, state, 'layout');
-  record(`${id}-03`, `${route.label} ${width}px main stays inside client viewport`, Boolean(state.main && state.main.width > 300 && state.main.left >= -1 && state.main.right <= state.clientWidth + 1), state, 'layout');
+  record(`${id}-03`, `${route.label} ${width}px reader shell stays inside client viewport`, Boolean(state.main && state.main.width > 300 && state.main.left >= -1 && state.main.right <= state.clientWidth + 1), state, 'layout');
   record(`${id}-04`, `${route.label} ${width}px summary and prose centres differ by at most 2px`, Boolean(state.summary && state.prose && Math.abs(state.summary.centerX - state.prose.centerX) <= 2), state, 'layout');
   record(`${id}-05`, `${route.label} ${width}px summary and prose widths differ by at most 2px`, Boolean(state.summary && state.prose && Math.abs(state.summary.width - state.prose.width) <= 2), state, 'layout');
   if (!desktop) {
-    record(`${id}-06`, `${route.label} ${width}px article stays viewport-centred`, Boolean(state.main && Math.abs(state.main.centerX - state.viewportCenter) <= 3), state, 'layout');
+    record(`${id}-06`, `${route.label} ${width}px reader shell stays viewport-centred`, Boolean(state.main && Math.abs(state.main.centerX - state.viewportCenter) <= 3), state, 'layout');
     return;
   }
   record(`${id}-06`, `${route.label} ${width}px readable summary and prose clear rail plus declared gap`, Boolean(state.safeReadableLeft != null && state.prose && state.summary && state.prose.left >= state.safeReadableLeft - 2 && state.summary.left >= state.safeReadableLeft - 2), state, 'layout');
@@ -152,7 +153,7 @@ function recordLayout(route, width, state) {
   record(`${id}-10`, `${route.label} ${width}px readable content returns to client-viewport centre whenever rail clearance allows it`, Boolean(!centeringSafe || (state.prose && state.summary && Math.abs(state.prose.centerX - state.viewportCenter) <= 3 && Math.abs(state.summary.centerX - state.viewportCenter) <= 3)), { centeringSafe, state }, 'layout');
   const minimum = width >= 1280 ? 760 : 700;
   record(`${id}-08`, `${route.label} ${width}px normal prose is not pathologically narrow`, Boolean(state.prose && state.prose.width >= minimum), { minimum, state }, 'layout');
-  if (route.canvas) record(`${id}-09`, `${route.label} ${width}px rail canvas spans client width`, Boolean(state.canvas && Math.abs(state.canvas.width - state.clientWidth) <= 2 && Math.abs(state.canvas.centerX - state.viewportCenter) <= 2), state, 'layout');
+  if (route.canvas) record(`${id}-09`, `${route.label} ${width}px structural rail canvas spans client width`, Boolean(state.canvas && Math.abs(state.canvas.width - state.clientWidth) <= 2 && Math.abs(state.canvas.centerX - state.viewportCenter) <= 2), state, 'layout');
 }
 
 sourceContracts();
@@ -197,7 +198,7 @@ try {
 }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'layout guard check IDs must be unique');
-assert.ok(checks.length >= 183, `Standalone reader layout guard requires at least 183 checks, got ${checks.length}`);
+assert.ok(checks.length >= 184, `Standalone reader layout guard requires at least 184 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
