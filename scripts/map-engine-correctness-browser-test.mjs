@@ -193,7 +193,7 @@ try {
     await context.close();
   }
 
-  // Noncontiguous story tour must preserve authored stage identity.
+  // Noncontiguous story tour must preserve authored stage identity without crossing story ownership.
   {
     const context = await createContext(browser, base);
     const { page, pageErrors } = await openReadyPage(context, base);
@@ -203,6 +203,7 @@ try {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, cancelable: true }));
       const panel = document.querySelector('.me-panel.me-panel--open');
       return {
+        activeStory: document.querySelector('#stage')?.getAttribute('data-active-story') || '',
         panelOpen: Boolean(panel),
         panelName: panel?.querySelector('.me-panel__name')?.textContent || '',
         panelStage: panel?.querySelector('.me-panel__stage')?.textContent || '',
@@ -212,10 +213,11 @@ try {
         stage0Transform: document.querySelector('.me-stage-dot[data-stage="0"]')?.style.transform || '',
       };
     });
-    const openedPlace = route.places.find((place) => place.name === tourFacts.panelName);
     const firstLotStage = lotStory.stages[0];
     const expectedStage = route.stages[firstLotStage];
-    check('Lot tour opens a dossier from authored stage 3', tourFacts.panelOpen && openedPlace?.stage === firstLotStage && tourFacts.panelStage.includes(expectedStage?.n || ''), JSON.stringify(tourFacts));
+    const storyVisibleFirstStagePlaces = route.places.filter((place) => lotStory.places?.includes(place.id) && place.stage === firstLotStage);
+    check('Lot fixture exercises an authored stage with no story-visible dossier', storyVisibleFirstStagePlaces.length === 0, JSON.stringify(storyVisibleFirstStagePlaces.map((place) => place.id)));
+    check('Lot tour keeps the panel closed instead of opening a place outside the active story', tourFacts.activeStory === 'lot' && storyVisibleFirstStagePlaces.length === 0 && tourFacts.panelOpen === false, JSON.stringify({ tourFacts, storyVisibleFirstStagePlaces: storyVisibleFirstStagePlaces.map((place) => place.id) }));
     check('Lot tour caption uses authored stage 3 content', tourFacts.captionTitle === (expectedStage?.t || '') && tourFacts.captionStage.includes(expectedStage?.n || ''), JSON.stringify({ tourFacts, expectedStage }));
     check('Lot tour animates the stage-3 dot, not sequence index 0', tourFacts.stage3Transform === 'scale(1.4)' && tourFacts.stage0Transform !== 'scale(1.4)', JSON.stringify(tourFacts));
     check('Tour scenario has no page errors', pageErrors.length === 0, pageErrors.join(' | '));
