@@ -26,9 +26,9 @@ const {
   classifyLegacyAuthority,
   validateLegacyAuthorityProfile,
 } = require('./lib/legacy-source-authority');
+const { loadRouteRecords } = require('./lib/route-source-contract');
 
 const ROOT = path.resolve(__dirname, '..');
-const PROFILES_DIR = path.join(ROOT, 'data/route-profiles');
 const WRITE = process.argv.includes('--write');
 const { ASSETS } = require('./cache-bust-assets');
 
@@ -63,9 +63,9 @@ function deriveReferenceOnlyHtmlPaths(entries, options = {}) {
   for (const entry of entries) {
     const name = entry.name || 'route-profile';
     const profile = entry.profile;
-    const profileLabel = entry.profileFile ? repoRel(entry.profileFile) : name;
+    const profileLabel = entry.label || name;
 
-    // Validate every explicit production profile BEFORE branching on authority.
+    // Validate every production profile BEFORE branching on authority.
     // Otherwise missing/unknown legacyStatus could silently fall through and a
     // retained HTML file would re-enter the mutable cache-bust corpus.
     const issues = validateLegacyAuthorityProfile(profile, { pathExists });
@@ -102,19 +102,18 @@ function deriveReferenceOnlyHtmlPaths(entries, options = {}) {
 }
 
 function collectReferenceOnlyHtmlPaths() {
-  if (!fs.existsSync(PROFILES_DIR)) return new Set();
-
-  const entries = fs.readdirSync(PROFILES_DIR)
-    .filter((entry) => entry.endsWith('.json'))
-    .sort()
-    .map((name) => {
-      const profileFile = path.join(PROFILES_DIR, name);
-      return {
-        name,
-        profileFile,
-        profile: JSON.parse(fs.readFileSync(profileFile, 'utf8')),
-      };
-    });
+  // Reuse the same effective registry definition of production routes as the
+  // canonical route-profile contract. Build-only/dev fixtures and built apps are
+  // not production Astro profiles and must not become a second authority policy
+  // merely because a JSON fixture lives under data/route-profiles/.
+  const { records } = loadRouteRecords();
+  const entries = records
+    .filter((record) => record.owner?.owner === 'astro' && record.owner?.status === 'production-dist')
+    .map((record) => ({
+      name: record.route,
+      label: record.profileFile || record.route,
+      profile: record.profile,
+    }));
 
   return deriveReferenceOnlyHtmlPaths(entries);
 }
