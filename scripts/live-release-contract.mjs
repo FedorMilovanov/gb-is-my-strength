@@ -48,6 +48,8 @@ assert.equal(fs.existsSync(localHomePath), true, 'local candidate home index is 
 const localHomeBuffer = fs.readFileSync(localHomePath);
 const localHomeDigest = sha256(localHomeBuffer);
 assertHomeContract(localHomeBuffer, 'local candidate home');
+const localHomeStylesheets = readLocalStylesheets(localHomeBuffer, 'local candidate home');
+const localRefutationsStylesheet = findRefutationsStylesheet(localHomeStylesheets, 'local candidate home');
 
 fs.mkdirSync(REPORTS, { recursive: true });
 const report = {
@@ -67,6 +69,11 @@ const report = {
       path: '/index.html',
       bytes: localHomeBuffer.length,
       sha256: localHomeDigest,
+      refutationsStylesheet: {
+        path: localRefutationsStylesheet.path,
+        bytes: localRefutationsStylesheet.buffer.length,
+        sha256: localRefutationsStylesheet.sha256,
+      },
     },
   },
   transportArtifact: {
@@ -82,6 +89,52 @@ function writeReport() {
 }
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 function sha256(buffer) { return `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`; }
+function extractStylesheetPaths(buffer, label) {
+  const html = buffer.toString('utf8');
+  const paths = [];
+  for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+    const tag = match[0];
+    const rel = tag.match(/\brel=["']([^"']+)["']/i)?.[1] || '';
+    if (!rel.split(/\s+/).some((value) => value.toLowerCase() === 'stylesheet')) continue;
+    const href = tag.match(/\bhref=["']([^"']+)["']/i)?.[1];
+    assert.ok(href, `${label}: stylesheet link is missing href`);
+    const url = new URL(href, 'https://candidate.invalid/');
+    assert.equal(url.origin, 'https://candidate.invalid', `${label}: external stylesheet is not release-owned (${href})`);
+    paths.push(url.pathname);
+  }
+  assert.ok(paths.length > 0, `${label}: no release-owned stylesheets found`);
+  return [...new Set(paths)];
+}
+function readLocalStylesheets(homeBuffer, label) {
+  return extractStylesheetPaths(homeBuffer, label).map((pathname) => {
+    const relative = pathname.replace(/^\/+/, '');
+    const absolute = path.resolve(DIST, relative);
+    assert.equal(absolute.startsWith(`${DIST}${path.sep}`), true, `${label}: stylesheet escapes dist (${pathname})`);
+    assert.equal(fs.existsSync(absolute), true, `${label}: stylesheet is missing (${pathname})`);
+    const buffer = fs.readFileSync(absolute);
+    return { path: pathname, buffer, sha256: sha256(buffer) };
+  });
+}
+function assertRefutationsStylesheet(buffer, label) {
+  const css = buffer.toString('utf8');
+  assert.match(
+    css,
+    /\.h-refutation-card(?:[^{}]*)\{[^}]{0,1200}box-sizing\s*:\s*border-box/,
+    `${label}: Refutations does not own border-box geometry`,
+  );
+}
+function findRefutationsStylesheet(stylesheets, label) {
+  const matches = stylesheets.filter((record) => {
+    try {
+      assertRefutationsStylesheet(record.buffer, `${label} stylesheet ${record.path}`);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+  assert.equal(matches.length, 1, `${label}: expected exactly one Refutations border-box stylesheet, found ${matches.length}`);
+  return matches[0];
+}
 function assertHomeContract(buffer, label) {
   const html = buffer.toString('utf8');
   for (const marker of [
@@ -100,7 +153,6 @@ function assertHomeContract(buffer, label) {
   for (let divider = 0; divider < 4; divider += 1) {
     assert.equal(html.includes(`data-home-route-divider="${divider}"`), true, `${label}: missing library divider ${divider}`);
   }
-  assert.match(html, /h-refutation-card[^}]{0,500}box-sizing:border-box/, `${label}: Refutations does not own border-box geometry`);
 }
 function probeUrl(relative, attempt, label) {
   const target = new URL(relative, LIVE_BASE_URL);
@@ -137,7 +189,7 @@ function assertPointer(pointer) {
   assert.equal(pointer.controlPlaneSha, controlPlaneSha, 'live pointer control-plane SHA mismatch');
   assert.equal(pointer.immutablePath, local.manifest.immutablePath, 'live pointer immutable path mismatch');
   assert.equal(pointer.workflow?.name, 'Deploy to GitHub Pages', 'live pointer workflow mismatch');
-  assert.equal(pointer.workflow?.stage, 'readiness', 'live pointer stage mismatch');
+  assert.equal(pointer.workflow?.stage, 'readiness', 'live pointer workflow stage mismatch');
   assert.equal(pointer.workflow?.controlPlaneSha, controlPlaneSha, 'live pointer workflow control-plane SHA mismatch');
   assert.equal(pointer.workflow?.runId, runId, 'live pointer run ID mismatch');
   assert.equal(pointer.workflow?.runAttempt, runAttempt, 'live pointer run attempt mismatch');
@@ -167,6 +219,19 @@ async function verifyAttempt(attempt) {
   assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');
   assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');
   assertHomeContract(homeResponse.buffer, 'live home');
+  const liveRefutationsStyle = await fetchBuffer(localRefutationsStylesheet.path, attempt, 'home-refutations-stylesheet');
+  const liveRefutationsStyleDigest = sha256(liveRefutationsStyle.buffer);
+  assert.equal(
+    liveRefutationsStyle.buffer.length,
+    localRefutationsStylesheet.buffer.length,
+    'home-refutations-stylesheet: live byte count mismatch',
+  );
+  assert.equal(
+    liveRefutationsStyleDigest,
+    localRefutationsStylesheet.sha256,
+    'home-refutations-stylesheet: live SHA-256 mismatch',
+  );
+  assertRefutationsStylesheet(liveRefutationsStyle.buffer, 'live home Refutations stylesheet');
 
   const assets = {};
   for (const [name, record] of Object.entries(manifest.criticalAssets)) {
@@ -189,6 +254,12 @@ async function verifyAttempt(attempt) {
       url: homeResponse.url,
       bytes: homeResponse.buffer.length,
       sha256: homeDigest,
+      refutationsStylesheet: {
+        path: localRefutationsStylesheet.path,
+        url: liveRefutationsStyle.url,
+        bytes: liveRefutationsStyle.buffer.length,
+        sha256: liveRefutationsStyleDigest,
+      },
     },
     criticalAssets: assets,
   };
