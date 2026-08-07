@@ -200,10 +200,13 @@ try {
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'layout guard check IDs must be unique');
 assert.ok(checks.length >= 184, `Standalone reader layout guard requires at least 184 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
-const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
+const summary = { sha: process.env.SOURCE_SHA || process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
 fs.writeFileSync(path.join(REPORT_DIR, 'report.md'), ['# Standalone reader layout guards', '', `- SHA: \`${summary.sha || 'local'}\``, `- Checks: **${summary.checks}**`, `- Passed: **${summary.passed}**`, `- Failed: **${summary.failed}**`, '', '| ID | Result | Description |', '|---|---|---|', ...checks.map((item) => `| ${item.id} | ${item.pass ? 'PASS' : 'FAIL'} | ${item.description.replace(/\|/g, '\\|')} |`)].join('\n'));
-checks.forEach((item) => console.log(`[STANDALONE-READER-LAYOUT] ${item.pass ? 'PASS' : 'FAIL'} ${item.id} :: ${item.description}`));
+checks.forEach((item) => {
+  console.log(`[STANDALONE-READER-LAYOUT] ${item.pass ? 'PASS' : 'FAIL'} ${item.id} :: ${item.description}`);
+  if (!item.pass) console.log(`[STANDALONE-READER-LAYOUT-EVIDENCE] ${item.id} :: ${JSON.stringify(item.evidence)}`);
+});
 console.log('[STANDALONE-READER-LAYOUT-SUMMARY]', JSON.stringify(summary));
 assert.equal(failed.length, 0, `Standalone reader layout guards failed: ${failed.map((item) => item.id).join(', ')}`);
 console.log('Standalone reader layout guards: PASS');
