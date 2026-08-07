@@ -23,6 +23,8 @@ Pages run `31114789389` successfully downloaded and re-verified one immutable ca
 
 The actual selector-level source owner is `src/components/home/HomeSections/Refutations.astro`, which explicitly declares `box-sizing: border-box` for `#razbor .h-refutation-card`. Astro legitimately emitted the effective CSS through linked stylesheet assets instead of embedding that selector text in `dist/index.html`. Because the invalid assertion ran before report initialization, the generic JSON evidence was absent; its upload failed, the TTS verifier was skipped, and TTS evidence was also absent.
 
+A separate GitHub Actions/Pages incident on 2026-08-06/07 throttled webhook triggers. GitHub's incident resolution states that `push` and `pull_request` events lost during the incident are not replayed automatically. Therefore an exact head with no registered workflow runs remains unverified even after service recovery. Recovery requires a new legitimate repository event that produces a new exact head (or a supported rerun of an existing run); an empty/no-op commit, PR metadata edit, or inference from older green runs is not release evidence.
+
 ## Candidate and live byte boundary
 
 The generic verifier must retain all of these checks:
@@ -109,7 +111,7 @@ Pre-merge requirements:
 - the branch is not behind current `main`;
 - the final diff remains inside the declared SYSTEM/test/documentation scope.
 
-If GitHub Actions does not register a check suite for the exact head, the PR is blocked rather than implicitly green.
+If GitHub Actions does not register a check suite for the exact head, the PR is blocked rather than implicitly green. If an incident drops the trigger and the platform documents that dropped events will not be replayed, recovery must create a legitimate new exact head or rerun an existing registered workflow; no-op synchronization is forbidden.
 
 Post-merge requirements:
 
