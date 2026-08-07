@@ -38,7 +38,7 @@ for (const { slug, route } of allRoutes) {
   }
 }
 
-assert.strictEqual(MapEngine.version, '0.57.0', 'layers/theme/runtime contract belongs to map-engine v0.57.0');
+assert.strictEqual(MapEngine.version, '0.58.0', 'layers/theme/runtime contract belongs to map-engine v0.58.0');
 assert.strictEqual(MapEngine.getStageColor(0), '#e8c879');
 assert.strictEqual(MapEngine.getStageColor(6), 'hsl(320 48% 58%)', 'extended stages must receive a deterministic fallback color');
 assert.strictEqual(MapEngine.getStageColor(-3), '#e8c879', 'invalid negative stages must normalize to the first stage');
@@ -117,7 +117,7 @@ assert(source.includes("element.setAttribute('data-route-dash',spec.dash?'1':'0'
 assert(source.includes('function ensureGeneratedArrowMarker(stageIndex,pathIndex,color)'), 'generated routes must own generated marker IDs');
 assert(source.includes("const markerId=sourceKind==='authored'"), 'route marker IDs must preserve authored/generated source semantics');
 assert(!source.includes('layer.selector || `[data-layer="${layer.id}"]`'), 'exact-equality layer selector must not return');
-assert(source.includes('cfg.archaeologyProjection'), 'v0.57 must consume the governed archaeology projection directly');
+assert(source.includes('cfg.archaeologyProjection'), 'v0.58 must consume the governed archaeology projection directly');
 assert(!source.includes('ARCHAEOLOGY_REFERENCES'), 'hardcoded archaeology corpus must not return to the generic engine');
 assert(!source.includes('_classifySource'), 'keyword-based source classification must not return');
 assert(!source.includes('_renderArchaeologyFooter'), 'legacy archaeology footer must not return');
