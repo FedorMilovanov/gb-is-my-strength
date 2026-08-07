@@ -1,7 +1,7 @@
 # Lane Lock Policy — FAST / LANE / SYSTEM
 
-**Updated:** 2026-07-28  
-**Policy version:** 4.2
+**Updated:** 2026-08-08  
+**Policy version:** 4.3
 
 Purpose: prevent parallel agents from editing the same route, shared file, governance surface or release boundary.
 
@@ -41,6 +41,22 @@ Use the minimum declaration from `WORK_MODES.md`. The PR description and actual 
 8. Out-of-lane findings are recorded, not silently repaired.
 9. Temporary workflow, trigger, writer or patcher introduced by a lane must not survive that lane.
 10. A hygiene report is preliminary and read-only; it never authorizes cleanup.
+
+### Automated collision guard
+
+`Shared Files Guard` runs the read-only `scripts/lane-collision-guard.mjs` for pull requests. It supplements this policy; it does not replace the semantic pre-flight above.
+
+The machine boundary is intentionally narrow and stateless:
+
+- open same-repository pull requests are the active machine-readable ownership records; no lock file, lease, TTL, heartbeat or branch mutation exists;
+- for deterministic simultaneous ownership, the earlier pull-request number has precedence;
+- a later PR fails when it overlaps an earlier active same-repository PR on the exact same exclusive file;
+- known deterministic projection files are warning-only because shared generated output does not prove that the source owners collide;
+- fork pull requests do not claim an internal agent lane;
+- an earlier PR stops claiming precedence only after it is closed or explicitly records that the current PR supersedes/replaces it;
+- GitHub/API ambiguity fails closed rather than silently declaring a lane free.
+
+Exact-file automation cannot prove that two different files belong to the same logical route or shared surface. Agents must still inspect open work and declare the semantic collision boundary before mutation.
 
 ## 4. Active-work protection
 

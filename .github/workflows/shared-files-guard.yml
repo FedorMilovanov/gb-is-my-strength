@@ -2,7 +2,7 @@ name: Shared Files Guard
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
     branches: [main]
   push:
     branches: [main, "lane/**", "agent/**"]
@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   guard:
@@ -27,6 +28,20 @@ jobs:
         with:
           node-version: '22.23.1'
           cache: "npm"
+
+      - name: Lane collision guard contract
+        run: |
+          node --check scripts/lane-collision-guard.mjs
+          node --check scripts/lane-collision-guard-contract-test.mjs
+          node scripts/lane-collision-guard-contract-test.mjs
+
+      - name: Guard active lane collisions
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node scripts/lane-collision-guard.mjs
 
       - name: Asset revision drift (read-only)
         run: node scripts/cache-bust.js
