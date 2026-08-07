@@ -5,7 +5,11 @@ on:
     paths:
       - 'scripts/content-coverage-audit.js'
       - 'scripts/lib/route-source-contract.js'
+      - 'scripts/lib/accepted-semantic-manifest.js'
       - 'data/route-profiles/**'
+      - 'data/preservation/accepted-semantic-manifests.json'
+      - 'src/components/article-pilots/hermenevtika/**'
+      - 'src/components/article-pilots/gill-part1/**'
       - 'migration/page-ownership.json'
       - '.github/workflows/content-source-truth-coverage.yml'
   push:
@@ -13,7 +17,11 @@ on:
     paths:
       - 'scripts/content-coverage-audit.js'
       - 'scripts/lib/route-source-contract.js'
+      - 'scripts/lib/accepted-semantic-manifest.js'
       - 'data/route-profiles/**'
+      - 'data/preservation/accepted-semantic-manifests.json'
+      - 'src/components/article-pilots/hermenevtika/**'
+      - 'src/components/article-pilots/gill-part1/**'
       - 'migration/page-ownership.json'
       - '.github/workflows/content-source-truth-coverage.yml'
 
