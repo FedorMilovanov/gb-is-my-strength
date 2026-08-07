@@ -27,14 +27,15 @@ import { KOD_DA_VINCHI_TOC } from './kodDaVinchiToc';
   }
 
   /* This route keeps breadcrumb, main and footer inside .page-wrap. The
-     structural canvas spans the client border box, while its inherited 24px
-     inline padding remains the containing-block origin for the classless main.
-     Expose that origin as a structural token so ReaderRail can compare the
-     readable edge with the fixed rail in one coordinate system. */
+     structural canvas fills the client containing block through normal block
+     auto sizing, while its inherited 24px inline padding remains the origin
+     for the classless main. Avoid a percentage width here: the canvas does not
+     need one, and auto sizing keeps WebKit scrollable-overflow accounting bound
+     to the containing block instead of manufacturing width beyond it. */
   @media (min-width: 1200px) {
     .page-wrap.page-wrap--hrail {
       --hrail-canvas-inset-left: 24px;
-      width: 100%;
+      width: auto;
       max-width: none;
       margin-left: 0;
       margin-right: 0;
