@@ -221,17 +221,26 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await page.waitForTimeout(120);
     await assertSearchClosed(page, 'Ctrl+Meta+K');
 
+    const scrollYBeforeEditable = await page.evaluate(() => window.scrollY);
     await page.evaluate(() => {
       const editable = document.createElement('div');
       editable.id = 'home-contract-editable';
       editable.contentEditable = 'true';
       editable.textContent = 'editable';
+      editable.style.position = 'fixed';
+      editable.style.top = '0';
+      editable.style.left = '0';
+      editable.style.width = '1px';
+      editable.style.height = '1px';
+      editable.style.opacity = '0.01';
       document.body.appendChild(editable);
-      editable.focus();
+      editable.focus({ preventScroll: true });
     });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(120);
     await assertSearchClosed(page, 'editable Ctrl+K');
+    assert.equal(await page.evaluate(() => window.scrollY), scrollYBeforeEditable, 'editable shortcut fixture changed scroll position');
+    await page.evaluate(() => document.getElementById('home-contract-editable')?.remove());
 
     await menuButton.click();
     await waitForMenuState(page, true);
