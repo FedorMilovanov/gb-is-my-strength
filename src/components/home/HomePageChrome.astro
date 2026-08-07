@@ -355,21 +355,6 @@ window.SITE_CONFIG = {
       }));
     };
 
-    const onShortcut = (event) => {
-      if (String(event.key).toLowerCase() !== 'k' || (!event.metaKey && !event.ctrlKey)) return;
-      if (event.altKey || event.shiftKey || (event.metaKey && event.ctrlKey)) {
-        event.stopImmediatePropagation();
-        return;
-      }
-      if (window.GBSearch?.__ready && !isMobileNavOpen()) {
-        window.__gbHomeSearchOpener = stableOpener(document.activeElement);
-        return;
-      }
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      openSearch(document.activeElement);
-    };
-
     const onSearchClick = (event) => {
       const selector = [
         '#gbSearchBtn',
@@ -391,7 +376,6 @@ window.SITE_CONFIG = {
       if (target && !target.matches('[data-action="open-search"]')) window.closeMobileNav?.();
     };
 
-    document.addEventListener('keydown', onShortcut, true);
     document.addEventListener('click', onSearchClick, true);
     document.addEventListener('click', onCloseNavClick, true);
     window.addEventListener('gb:openSearch', () => openSearch(document.activeElement));
