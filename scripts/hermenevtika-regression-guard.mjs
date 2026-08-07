@@ -31,6 +31,8 @@ function sourceContracts() {
   const interactions = read('src/runtime/article-interactions.js');
   const route = read('src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro');
   const routeCss = read('src/components/article-pilots/hermenevtika/hermenevtika-footnotes.css');
+  const guard = read('scripts/hermenevtika-regression-guard.mjs');
+  const popupHelper = guard.match(/const testPopup = async[\s\S]*?\n  };/)?.[0] || '';
   const assertions = [
     ['HGT-S01', 'canonical tooltip runtime source exists', runtime.length > 0],
     ['HGT-S02', 'canonical tooltip owner stylesheet exists', runtimeCss.length > 0],
@@ -65,6 +67,7 @@ function sourceContracts() {
     ['HGT-S31', 'placement is preserved only while resized content still fits that side', runtime.includes("previousPlacement === 'top' && fitsAbove") && runtime.includes("previousPlacement === 'bottom' && fitsBelow") && runtime.includes('if (fitsAbove && fitsBelow)')],
     ['HGT-S32', 'mobile sheet budget restores the approved 85 percent VisualViewport cap', runtime.includes('const MOBILE_MAX_VIEWPORT_RATIO = 0.85;') && runtime.includes('function mobileSheetBudget(viewport)') && runtime.includes('viewport.height - VIEWPORT_MARGIN')],
     ['HGT-S33', 'desktop overflow budget may shrink below the historical 96px floor', runtime.includes('const height = Math.max(1, Math.floor(maxHeight));') && runtime.includes('applyOverflow(tip, Math.min(available, viewportMax))') && !runtime.includes('Math.min(Math.max(MIN_SCROLL_HEIGHT, available), viewportMax)')],
+    ['HGT-S34', 'popup geometry transport stays focus-owned instead of locator-click actionability', popupHelper.includes('await page.mouse.move(1, 1);') && popupHelper.includes('await trigger.blur();') && popupHelper.includes('await trigger.focus();') && !popupHelper.includes('trigger.click()')],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -274,7 +277,9 @@ async function popupContracts(page) {
   const testPopup = async (selector, openSelector, startId, label) => {
     const trigger = page.locator(selector).first();
     await trigger.scrollIntoViewIfNeeded();
-    await trigger.click();
+    await page.mouse.move(1, 1);
+    await trigger.blur();
+    await trigger.focus();
     await page.waitForSelector(openSelector, { state: 'visible', timeout: 3000 });
     await twoFrames(page);
     const state = await popupState(page, openSelector);
@@ -496,7 +501,6 @@ try {
   await context.close();
   await browser.close();
 }
-
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'tooltip guard check IDs must be unique');
 assert.ok(checks.length >= 88, `Hermenevtika tooltip guard requires at least 88 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
