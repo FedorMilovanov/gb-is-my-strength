@@ -1,4 +1,4 @@
-const VERSION = 19;
+const VERSION = 20;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -223,7 +223,7 @@ function clearAuthoritativeGeometry(tip) {
 
 function applyOverflow(tip, maxHeight) {
   if (!Number.isFinite(maxHeight) || maxHeight <= 0) return false;
-  const height = Math.max(MIN_SCROLL_HEIGHT, Math.floor(maxHeight));
+  const height = Math.max(1, Math.floor(maxHeight));
   setImportant(tip.style, 'max-height', `${height}px`);
   const needsScroll = tip.scrollHeight > height + 1;
   setImportant(tip.style, 'overflow-y', needsScroll ? 'auto' : 'visible');
@@ -279,7 +279,7 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   const placement = preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
   const available = placement === 'top' ? availableAbove : availableBelow;
 
-  if (naturalHeight > available) applyOverflow(tip, Math.min(Math.max(MIN_SCROLL_HEIGHT, available), viewportMax));
+  if (naturalHeight > available) applyOverflow(tip, Math.min(available, viewportMax));
   else setImportant(tip.style, 'overflow-y', 'visible');
 
   tipRect = tip.getBoundingClientRect();
