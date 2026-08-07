@@ -60,8 +60,9 @@ jobs:
           node --check scripts/_temp-search-keyboard-owner-r4.mjs
           if [ "$TXN_PHASE" = "source" ]; then
             # --write is the explicit capability marker required by Workflow Policy v2.
-            # The temporary writer itself performs the bounded source migration;
-            # canonical asset revisions remain owned exclusively by glossary-contract.yml.
+            # The temporary writer performs only bounded source migration.
+            # Canonical asset revisions remain owned by glossary-contract.yml,
+            # and permanent workflow mutation remains outside this Actions token boundary.
             node scripts/_temp-search-keyboard-owner-r4.mjs --apply --write
             node - <<'NODE'
           const fs = require('fs');
@@ -69,6 +70,7 @@ jobs:
           const source = fs.readFileSync(file, 'utf8').replace(/\n+$/, '\n');
           fs.writeFileSync(file, source, 'utf8');
           NODE
+            git restore --source=HEAD -- .github/workflows/search-modal-contract.yml
           else
             echo "Source already migrated; this invocation is ledger/self-clean reconciliation only."
           fi
@@ -88,7 +90,6 @@ jobs:
           git diff --check
           if [ "$TXN_PHASE" = "reconcile" ]; then
             node scripts/cache-bust.js
-            node scripts/app-search-surface-source-contract.mjs
             node scripts/audit-pro.js
             node scripts/legacy-reference-inventory-audit.mjs
             node scripts/legacy-reference-path-contract-test.js
@@ -103,7 +104,7 @@ jobs:
           git diff --name-only > /tmp/search-keyboard-owner-paths
           while IFS= read -r file; do
             case "$file" in
-              js/search.js|js/site-utils.js|404.html|scripts/audit-pro.js|scripts/app-search-surface-source-contract.mjs|scripts/app-search-surface-browser-contract.mjs|scripts/home-browser-contract.mjs|src/layouts/BaseLayout.astro|.github/workflows/search-modal-contract.yml) ;;
+              js/search.js|js/site-utils.js|404.html|scripts/audit-pro.js|scripts/app-search-surface-source-contract.mjs|scripts/app-search-surface-browser-contract.mjs|scripts/home-browser-contract.mjs|src/layouts/BaseLayout.astro) ;;
               *.html) ;;
               src/*.astro|src/*/*.astro|src/*/*/*.astro|src/*/*/*/*.astro|src/*/*/*/*/*.astro|src/*/*/*/*/*/*.astro) ;;
               *) echo "Unexpected Search keyboard owner source path: $file" >&2; exit 1 ;;
@@ -125,7 +126,7 @@ jobs:
           git add -u
           git commit -m "fix(search): centralize global keyboard ownership"
           git push origin "HEAD:${HEAD_REF}"
-          echo "Source migration published. The existing Glossary Contract now owns canonical cache-bust regeneration."
+          echo "Source migration published. Glossary Contract owns canonical cache-bust regeneration."
 
       - name: Commit clean transaction boundary
         if: env.TXN_PHASE == 'reconcile'
@@ -148,7 +149,6 @@ jobs:
           set -euo pipefail
           node /tmp/search-keyboard-owner-r4.mjs --refresh-ledger "$CLEAN_SOURCE_SHA"
           node scripts/cache-bust.js
-          node scripts/app-search-surface-source-contract.mjs
           node scripts/audit-pro.js
           node scripts/legacy-reference-inventory-audit.mjs
           node scripts/legacy-reference-path-contract-test.js
@@ -174,7 +174,6 @@ jobs:
           test ! -e .github/workflows/_temp-search-keyboard-owner-r4.yml
           test ! -e scripts/_temp-search-keyboard-owner-r4.mjs
           node scripts/cache-bust.js
-          node scripts/app-search-surface-source-contract.mjs
           node scripts/audit-pro.js
           node scripts/legacy-reference-inventory-audit.mjs
           node scripts/legacy-reference-path-contract-test.js
