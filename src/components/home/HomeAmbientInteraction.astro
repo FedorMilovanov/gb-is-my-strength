@@ -3,9 +3,10 @@
  * HomeAmbientInteraction.astro — progressive interaction owner for the
  * manuscript marginalia rendered by HomeAmbientPhrases.
  *
- * The phrase corpus remains static Astro markup. This owner upgrades every
- * visible phrase into one real keyboard/click control without duplicating the
- * phrase data or changing the safe-rail layout.
+ * HomeResponsiveContracts remains the only safe-rail geometry/alignment owner.
+ * This component upgrades visible phrases to keyboard/click controls and owns
+ * the disclosure timing, including the deliberate meaning-first/source-second
+ * reveal. It never computes or mutates phrase coordinates.
  */
 ---
 
@@ -21,17 +22,48 @@
     }
 
     body.home-page .h-ambient-word[data-ambient-interactive="true"]:focus-visible .h-ambient-word__text {
-      color: #171411;
-      filter: none;
       text-decoration: underline;
       text-decoration-color: color-mix(in srgb, var(--h-accent) 62%, transparent);
       text-decoration-thickness: 1px;
       text-underline-offset: .2em;
-      transform: translateY(-3px);
     }
 
-    html.dark body.home-page .h-ambient-word[data-ambient-interactive="true"]:focus-visible .h-ambient-word__text {
-      color: #f1e5cd;
+    /* The translation begins immediately but resolves through opacity, blur and
+       travel instead of popping on. The strong ease-out still satisfies the
+       existing 120ms readability witness; the slower blur/travel remains visible
+       after that sample. The source then starts as a separate second stroke. */
+    body.home-page .home-v20 .h-ambient-word__tooltip {
+      transition:
+        opacity .30s cubic-bezier(.16, 1, .3, 1),
+        transform .56s cubic-bezier(.16, 1, .3, 1),
+        filter .46s ease,
+        visibility 0s linear .58s;
+    }
+
+    body.home-page .home-v20 .h-ambient-word__source {
+      transition:
+        opacity .32s cubic-bezier(.16, 1, .3, 1),
+        transform .56s cubic-bezier(.16, 1, .3, 1),
+        filter .44s ease,
+        visibility 0s linear .58s;
+    }
+
+    body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__tooltip,
+    body.home-page .home-v20 .h-ambient-word[data-ambient-open] .h-ambient-word__tooltip {
+      opacity: 1;
+      visibility: visible;
+      filter: none;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition-delay: 0s, 0s, 0s, 0s;
+    }
+
+    body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__source,
+    body.home-page .home-v20 .h-ambient-word[data-ambient-open] .h-ambient-word__source {
+      opacity: 1;
+      visibility: visible;
+      filter: none;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition-delay: .34s, .34s, .34s, 0s;
     }
 
     body.home-page .h-ambient-word[data-ambient-open] {
@@ -49,25 +81,17 @@
       color: #f1e5cd;
       text-shadow: 0 2px 8px rgba(0, 0, 0, .45), 0 10px 30px rgba(66, 196, 213, .06);
     }
-
-    body.home-page .h-ambient-word[data-ambient-open] .h-ambient-word__tooltip {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-      transition-delay: .04s, 0s, .04s;
-    }
-
-    body.home-page .h-ambient-word[data-ambient-open] .h-ambient-word__source {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-      transition-delay: .12s, 0s, .12s;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     body.home-page .h-ambient-word[data-ambient-interactive="true"] {
       scroll-behavior: auto;
+    }
+
+    body.home-page .home-v20 .h-ambient-word__tooltip,
+    body.home-page .home-v20 .h-ambient-word__source {
+      filter: none;
+      transition: none;
     }
   }
 </style>
@@ -173,6 +197,41 @@
 
     const report = (message) => console.error(`[home-ambient-contract] ${message}`);
     const rectWithinViewport = (rect, tolerance = 1) => rect.left >= -tolerance && rect.right <= innerWidth + tolerance;
+    const lineCount = (element) => {
+      if (!(element instanceof HTMLElement)) return 0;
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const tops = [...range.getClientRects()]
+        .filter((rect) => rect.width > .5 && rect.height > .5)
+        .map((rect) => Math.round(rect.top * 2) / 2);
+      return new Set(tops).size;
+    };
+    const intrinsicSingleLineWidth = (element) => {
+      if (!(element instanceof HTMLElement) || !(element.parentElement instanceof HTMLElement)) return 0;
+      const clone = element.cloneNode(true);
+      if (!(clone instanceof HTMLElement)) return 0;
+      clone.removeAttribute('id');
+      clone.style.position = 'absolute';
+      clone.style.left = '-10000px';
+      clone.style.top = '0';
+      clone.style.width = 'max-content';
+      clone.style.maxWidth = 'none';
+      clone.style.whiteSpace = 'nowrap';
+      clone.style.transform = 'none';
+      clone.style.visibility = 'hidden';
+      clone.style.pointerEvents = 'none';
+      element.parentElement.appendChild(clone);
+      const width = clone.getBoundingClientRect().width;
+      clone.remove();
+      return width;
+    };
+    const firstTransitionDelay = (element) => {
+      if (!(element instanceof HTMLElement)) return 0;
+      const first = getComputedStyle(element).transitionDelay.split(',')[0]?.trim() || '0s';
+      return first.endsWith('ms') ? Number.parseFloat(first) / 1000 : Number.parseFloat(first) || 0;
+    };
+    const centreX = (rect) => rect ? (rect.left + rect.right) / 2 : NaN;
+
     const runContract = () => {
       syncVisibility();
       const visible = words.filter((word) => getComputedStyle(word).display !== 'none');
@@ -216,6 +275,9 @@
         const phraseRect = word.getBoundingClientRect();
         const edgeGap = edgeGapFor(word, phraseRect);
         const innerGap = innerGapFor(word, phraseRect);
+        const text = word.querySelector('.h-ambient-word__text');
+        const tooltip = word.querySelector('.h-ambient-word__tooltip');
+        const source = word.querySelector('.h-ambient-word__source');
 
         if (!rectWithinViewport(phraseRect)) report(`${prefix} leaves the viewport`);
         if (edgeGap < outerFloor - 1) {
@@ -225,18 +287,46 @@
           report(`${prefix} is only ${innerGap.toFixed(2)}px from the central reading surface; expected at least ${centerGuard.toFixed(2)}px`);
         }
 
+        if (getComputedStyle(word).textAlign !== 'center') report(`${prefix} phrase stack is not centred`);
+        if (text instanceof HTMLElement) {
+          if (getComputedStyle(text).textAlign !== 'center') report(`${prefix} original text is not centred`);
+          const intrinsic = intrinsicSingleLineWidth(text);
+          if (intrinsic <= phraseRect.width + 1 && lineCount(text) > 1) {
+            report(`${prefix} wraps even though its single-line ink fits the safe phrase width`);
+          }
+        }
+        if (tooltip instanceof HTMLElement && getComputedStyle(tooltip).textAlign !== 'center') {
+          report(`${prefix} translation is not centred`);
+        }
+        if (source instanceof HTMLElement && getComputedStyle(source).textAlign !== 'center') {
+          report(`${prefix} source is not centred`);
+        }
+
         word.click();
         if (!isPinned(word) || word.getAttribute('aria-expanded') !== 'true') {
           report(`${prefix} did not open by click`);
         }
 
-        const tooltip = word.querySelector('.h-ambient-word__tooltip');
-        const source = word.querySelector('.h-ambient-word__source');
-        if (tooltip instanceof HTMLElement && !rectWithinViewport(tooltip.getBoundingClientRect())) {
-          report(`${prefix} translation leaves the viewport`);
+        if (tooltip instanceof HTMLElement && source instanceof HTMLElement &&
+            firstTransitionDelay(source) - firstTransitionDelay(tooltip) < .30) {
+          report(`${prefix} disclosure no longer stages translation before source`);
         }
-        if (source instanceof HTMLElement && !rectWithinViewport(source.getBoundingClientRect())) {
-          report(`${prefix} source leaves the viewport`);
+
+        const tooltipRect = tooltip instanceof HTMLElement ? tooltip.getBoundingClientRect() : null;
+        const sourceRect = source instanceof HTMLElement ? source.getBoundingClientRect() : null;
+        if (tooltipRect && !rectWithinViewport(tooltipRect)) report(`${prefix} translation leaves the viewport`);
+        if (sourceRect && !rectWithinViewport(sourceRect)) report(`${prefix} source leaves the viewport`);
+        if (tooltipRect && innerGapFor(word, tooltipRect) < centerGuard - 1) {
+          report(`${prefix} translation intrudes into the central reading guard`);
+        }
+        if (sourceRect && innerGapFor(word, sourceRect) < centerGuard - 1) {
+          report(`${prefix} source intrudes into the central reading guard`);
+        }
+        if (tooltipRect && Math.abs(centreX(tooltipRect) - centreX(phraseRect)) > 1) {
+          report(`${prefix} translation axis drifted from the original phrase`);
+        }
+        if (sourceRect && Math.abs(centreX(sourceRect) - centreX(phraseRect)) > 1) {
+          report(`${prefix} source axis drifted from the original phrase`);
         }
 
         word.click();

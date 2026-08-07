@@ -67,7 +67,12 @@
 
      The ambient layer is rendered inside the centred .home-content wrapper, so
      expand only this decorative layer back to the viewport while retaining the
-     page-height coordinate system of its parent. */
+     page-height coordinate system of its parent.
+
+     The phrase box asks for its intrinsic max-content width, then the rail caps
+     it at the real safe budget. Short/medium originals therefore remain on one
+     line whenever they physically fit; genuinely long originals wrap only when
+     the viewport or central reading guard makes that necessary. */
   @media (min-width: 1480px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .h-ambient-native {
       right: auto;
@@ -85,26 +90,33 @@
       --ambient-preferred-edge: min(var(--ambient-edge), 240px);
       --ambient-edge-ceiling: calc(var(--ambient-rail-width) - var(--ambient-center-guard) - var(--ambient-min-width));
       --ambient-resolved-edge: clamp(var(--ambient-outer-floor), var(--ambient-preferred-edge), var(--ambient-edge-ceiling));
-      width: min(210px, max(var(--ambient-min-width), calc(var(--ambient-rail-width) - var(--ambient-resolved-edge) - var(--ambient-center-guard))));
-      max-width: 210px;
+      --ambient-available-width: calc(var(--ambient-rail-width) - var(--ambient-resolved-edge) - var(--ambient-center-guard));
+      width: max-content;
+      min-width: min(var(--ambient-min-width), var(--ambient-available-width));
+      max-width: var(--ambient-available-width);
       box-sizing: border-box;
       white-space: normal;
       overflow-wrap: normal;
       word-break: normal;
+      text-align: center;
       cursor: help;
     }
 
     body.home-page .home-v20 .h-ambient-word--left {
       left: var(--ambient-resolved-edge);
-      text-align: left;
+      text-align: center;
     }
 
     body.home-page .home-v20 .h-ambient-word--right {
       right: var(--ambient-resolved-edge);
-      text-align: right;
+      text-align: center;
     }
 
     body.home-page .home-v20 .h-ambient-word__text {
+      display: block;
+      max-width: 100%;
+      white-space: normal;
+      text-align: center;
       color: rgba(24, 31, 32, .16);
       filter: blur(.12px);
       text-shadow: 0 8px 24px rgba(89, 61, 24, .035);
@@ -114,11 +126,15 @@
       color: rgba(235, 225, 206, .16);
     }
 
-    /* Translation floats above the word, source settles below — both
-       frameless, ink-on-paper, surfacing only on hover/focus. */
+    /* Translation, original and cyan source form one centred manuscript stack.
+       The side of the page determines only the rail position — never internal
+       alignment. Translation resolves first; the source follows after a quiet
+       pause, so hover reads as two strokes of ink coming into focus rather than
+       an abrupt UI tooltip. */
     body.home-page .home-v20 .h-ambient-word__tooltip {
       bottom: calc(100% + .34em);
       left: 0;
+      right: auto;
       width: 100%;
       min-width: 0;
       max-width: none;
@@ -128,16 +144,28 @@
       background: transparent;
       box-shadow: none;
       color: #171411;
+      direction: ltr;
+      text-align: center;
+      white-space: normal;
       opacity: 0;
       visibility: hidden;
-      transform: translateY(7px);
+      filter: blur(1.25px);
+      transform: translate3d(0, 7px, 0) scale(.985);
+      transform-origin: 50% 50%;
+      transition:
+        opacity .50s cubic-bezier(.16, 1, .3, 1),
+        transform .62s cubic-bezier(.16, 1, .3, 1),
+        filter .50s ease,
+        visibility 0s linear .62s;
+      pointer-events: none;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
 
     body.home-page .home-v20 .h-ambient-word--right .h-ambient-word__tooltip {
-      left: auto;
-      right: 0;
+      left: 0;
+      right: auto;
+      text-align: center;
     }
 
     html.dark body.home-page .home-v20 .h-ambient-word__tooltip {
@@ -152,23 +180,39 @@
       font-style: normal;
       font-weight: 650;
       line-height: 1.18;
+      text-align: center;
       text-shadow: 0 1px 5px rgba(24, 20, 16, .08);
     }
 
     body.home-page .home-v20 .h-ambient-word__source {
       top: calc(100% + .28em);
       left: 0;
+      right: auto;
       width: 100%;
       max-width: none;
       margin-top: 0;
       color: color-mix(in srgb, var(--h-accent) 82%, #1d5d70 18%);
+      direction: ltr;
+      text-align: center;
+      white-space: normal;
+      font-family: var(--f-ui);
       font-size: 7px;
+      font-style: normal;
       font-weight: 740;
       letter-spacing: .1em;
+      text-transform: uppercase;
       text-shadow: 0 1px 8px color-mix(in srgb, var(--h-accent) 10%, transparent);
       opacity: 0;
       visibility: hidden;
-      transform: translateY(-5px);
+      filter: blur(1px);
+      transform: translate3d(0, -4px, 0) scale(.985);
+      transform-origin: 50% 50%;
+      transition:
+        opacity .46s cubic-bezier(.16, 1, .3, 1),
+        transform .58s cubic-bezier(.16, 1, .3, 1),
+        filter .46s ease,
+        visibility 0s linear .58s;
+      pointer-events: none;
     }
 
     html.dark body.home-page .home-v20 .h-ambient-word__source {
@@ -176,8 +220,9 @@
     }
 
     body.home-page .home-v20 .h-ambient-word--right .h-ambient-word__source {
-      left: auto;
-      right: 0;
+      left: 0;
+      right: auto;
+      text-align: center;
     }
 
     body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) {
@@ -199,15 +244,17 @@
     body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__tooltip {
       opacity: 1;
       visibility: visible;
-      transform: translateY(0);
-      transition-delay: .04s, 0s, .04s;
+      filter: none;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition-delay: .10s, .10s, .10s, 0s;
     }
 
     body.home-page .home-v20 .h-ambient-word:is(:hover, :focus-within) .h-ambient-word__source {
       opacity: 1;
       visibility: visible;
-      transform: translateY(0);
-      transition-delay: .12s, 0s, .12s;
+      filter: none;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition-delay: .34s, .34s, .34s, 0s;
     }
   }
 
