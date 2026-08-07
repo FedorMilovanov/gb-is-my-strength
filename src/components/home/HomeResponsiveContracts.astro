@@ -61,17 +61,31 @@
     }
   }
 
-  /* Every visible phrase, its translation and its source are physically bound
-     to the free rail between the viewport edge and the centred Home surface.
-     There is always a real outer inset plus a separate inner guard, so neither
-     the Hebrew/Greek/Latin word nor its hover disclosure can touch the edge or
-     drift under the central quote/cards. */
+  /* This route contract is the single geometry owner for manuscript marginalia.
+     HomeAmbientPhrases supplies the historical per-phrase preferred inset only;
+     the current viewport decides whether that preference physically fits.
+
+     The ambient layer is rendered inside the centred .home-content wrapper, so
+     expand only this decorative layer back to the viewport while retaining the
+     page-height coordinate system of its parent. */
   @media (min-width: 1480px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-native {
+      right: auto;
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+    }
+
     body.home-page .home-v20 .h-ambient-word {
       --ambient-content-width: 1120px;
-      --ambient-safe-edge: clamp(36px, 3vw, 72px);
-      --ambient-center-guard: clamp(24px, 2vw, 38px);
-      width: max(76px, calc((100vw - var(--ambient-content-width)) / 2 - var(--ambient-safe-edge) - var(--ambient-center-guard)));
+      --ambient-rail-width: calc((100vw - var(--ambient-content-width)) / 2);
+      --ambient-outer-floor: clamp(48px, 3vw, 64px);
+      --ambient-center-guard: clamp(22px, 1.5vw, 32px);
+      --ambient-min-width: 72px;
+      --ambient-preferred-edge: min(var(--ambient-edge), 240px);
+      --ambient-edge-ceiling: calc(var(--ambient-rail-width) - var(--ambient-center-guard) - var(--ambient-min-width));
+      --ambient-resolved-edge: clamp(var(--ambient-outer-floor), var(--ambient-preferred-edge), var(--ambient-edge-ceiling));
+      width: min(210px, max(var(--ambient-min-width), calc(var(--ambient-rail-width) - var(--ambient-resolved-edge) - var(--ambient-center-guard))));
       max-width: 210px;
       box-sizing: border-box;
       white-space: normal;
@@ -81,12 +95,12 @@
     }
 
     body.home-page .home-v20 .h-ambient-word--left {
-      left: var(--ambient-safe-edge);
+      left: var(--ambient-resolved-edge);
       text-align: left;
     }
 
     body.home-page .home-v20 .h-ambient-word--right {
-      right: var(--ambient-safe-edge);
+      right: var(--ambient-resolved-edge);
       text-align: right;
     }
 
