@@ -134,12 +134,22 @@
     .hmset-dot.is-on { background: #7a2e2e; }
     html.dark .hmset-dot.is-on { background: #e0a89c; }
 
-    /* --- Applied reader vars on Hermenevtika's #content only (глобально:
-       элементы вне этого компонента; маркер [data-hm-reader] не даёт правилам
-       протечь на другие страницы с id="content", включая Gill). --- */
-    :global([data-reader-root]) { --hm-article-line: 1.6; --hm-article-measure: 43rem; }
+    /* ReaderSettings owns one measure for every direct article block. The
+       shell derives from that same token, so summary cards, headings, prose,
+       figures and settings modes cannot acquire independent horizontal axes. */
+    :global([data-reader-root]) {
+      --hm-article-line: 1.6;
+      --hm-article-measure: 50rem;
+      --hm-article-shell: calc(var(--hm-article-measure) + 6rem);
+    }
     :global([data-reader-root] .article-body) { line-height: var(--hm-article-line); }
-    :global([data-reader-root] .article-body > *) { max-width: var(--hm-article-measure); margin-left: auto; margin-right: auto; }
+    :global([data-reader-root] .article-body > *) {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: var(--hm-article-measure);
+      margin-left: auto;
+      margin-right: auto;
+    }
 
     /* Compatibility selector for existing standalone article CSS. The canonical
        Sepia state is global; GBReaderPreferences mirrors it onto this root. */
@@ -188,7 +198,7 @@
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '46rem' };
+  const MEASURE_VALUES: Record<string, string> = { narrow: '42rem', normal: '50rem', wide: '58rem' };
 
   function readerPreferences() {
     return (window as any).GBReaderPreferences || null;

@@ -166,15 +166,35 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
   .hrail-bottom-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .hrail-bottom-btn--text{font-family:var(--f-serif,Lora,Georgia,serif);font-size:12px;font-weight:700}
 
-  @media(max-width:1200px){ .hrail{display:none} }
+  @media(max-width:1199px){ .hrail{display:none} }
 
-  /* Article column clears the fixed rail on desktop only — text stays centred
-     in the viewport when there's room, the rail just hugs the left edge (Gill
-     precedent). .article-main's own base rule sets width:min(820px,92vw) with
-     margin:0 auto; a same-specificity override risks losing to load order, so
-     this uses the doubled-class selector to win outright. */
+  /* The client viewport is the preferred reading axis. The rail constrains the
+     actual readable edge, not empty shell breathing room. Hermenevtika keeps
+     its historical 24px main padding; classless consumers have none. A route
+     adapter may expose the containing-block origin through the inherited
+     --hrail-canvas-inset-left token. */
   @media(min-width:1200px){
-    .article-main.article-main--hrail{ margin-left: max((100vw - min(820px, 92vw)) / 2, 334px); }
+    .article-main.article-main--hrail{--hrail-base-inset:24px}
+    [data-reader-rail-main]{--hrail-base-inset:0px}
+    :is(.article-main.article-main--hrail,[data-reader-rail-main]){
+      --hrail-left:clamp(16px,2.4vw,40px);
+      --hrail-width:270px;
+      --hrail-gap:clamp(24px,3vw,48px);
+      --hrail-right-gutter:clamp(24px,3vw,48px);
+      --hrail-safe-readable-left-viewport:calc(var(--hrail-left) + var(--hrail-width) + var(--hrail-gap));
+      --hrail-safe-readable-left:calc(var(--hrail-safe-readable-left-viewport) - var(--hrail-canvas-inset-left,0px));
+      --hrail-max-shell-width:calc(100% - var(--hrail-safe-readable-left) + var(--hrail-base-inset) - var(--hrail-right-gutter));
+      --hrail-shell-width:min(var(--hm-article-shell,56rem),var(--hrail-max-shell-width));
+      --hrail-readable-space:calc(var(--hrail-shell-width) - var(--hrail-base-inset) - var(--hrail-base-inset));
+      --hrail-readable-width:min(var(--hm-article-measure,50rem),var(--hrail-readable-space));
+      --hrail-content-inset:calc((var(--hrail-shell-width) - var(--hrail-readable-width)) / 2);
+      --hrail-safe-shell-left:calc(var(--hrail-safe-readable-left) - var(--hrail-content-inset));
+      --hrail-centered-left:calc((100% - var(--hrail-shell-width)) / 2);
+      box-sizing:border-box;
+      width:var(--hrail-shell-width);
+      margin-left:max(var(--hrail-centered-left),var(--hrail-safe-shell-left));
+      margin-right:auto;
+    }
   }
 </style>
 
