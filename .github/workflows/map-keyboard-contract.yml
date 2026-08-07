@@ -45,8 +45,8 @@ jobs:
           const fs = require('node:fs');
           const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
           const required = [
-            'map-engine.js v0.57',
-            "version:'0.57.0',buildDate:'2026-08-01'",
+            'map-engine.js v0.58',
+            "version:'0.58.0',buildDate:'2026-08-07'",
             'cfg.archaeologyProjection',
             'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
             '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
@@ -71,7 +71,7 @@ jobs:
             console.error('Missing or stale map source contract:', {missing, staleModulo: source.includes('stageIndex%STAGE_COLORS.length'), staleLegacyArchaeology});
             process.exit(1);
           }
-          console.log('PASS source map viewport, authored-path and v0.57 projection contracts');
+          console.log('PASS source map viewport, authored-path and v0.58 projection contracts');
           NODE
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml

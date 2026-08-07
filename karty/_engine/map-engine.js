@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.57 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.58 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -510,6 +510,7 @@ const MapEngine = (function() {
     // Cleanup tracking
     const _listeners = [];
     const _timers = [];
+    let scaleResizeObserver = null;
     let baseCssLeaseActive = false;
     let cleanupComplete = false;
     function _on(el, ev, fn, opts) { el.addEventListener(ev, fn, opts); _listeners.push({el, ev, fn, opts}); }
@@ -529,6 +530,8 @@ const MapEngine = (function() {
       _timers.length = 0;
       cancelAnimationFrame(rafId);
       if (tourTimer) clearTimeout(tourTimer);
+      scaleResizeObserver?.disconnect();
+      scaleResizeObserver = null;
       if(baseCssLeaseActive){
         baseCssLeaseActive=false;
         baseCssLeaseCount=Math.max(0,baseCssLeaseCount-1);
@@ -1225,8 +1228,8 @@ _on(searchInput,'input',()=>{
   searchTimer = setTimeout(() => {
     const q = searchInput.value.toLowerCase().trim();
     const allG = markersG.querySelectorAll('g[transform]');
+    const visibleIds = new Set(visiblePlaces().map(p => p.id));
     if (!q) {
-      const visibleIds = new Set(visiblePlaces().map(p => p.id));
       allG.forEach(g => {
         const placeId = g.getAttribute('data-place-id');
         g.style.opacity = !placeId || visibleIds.has(placeId) ? '1' : '.15';
@@ -1236,6 +1239,10 @@ _on(searchInput,'input',()=>{
     let matchCount = 0;
     allG.forEach(g => {
       const placeId = g.getAttribute('data-place-id');
+      if (placeId && !visibleIds.has(placeId)) {
+        g.style.opacity = '0';
+        return;
+      }
       const text = g.querySelector('text');
       let match = false;
       if (text && text.textContent && text.textContent.toLowerCase().includes(q)) match = true;
@@ -1335,6 +1342,9 @@ header.appendChild(shareBtn);
     // Toast notification
     const toastEl = document.createElement('div');
     toastEl.className = 'me-toast';
+    toastEl.setAttribute('role','status');
+    toastEl.setAttribute('aria-live','polite');
+    toastEl.setAttribute('aria-atomic','true');
     container.appendChild(toastEl);
     function showToast(msg, duration = 2000) {
       toastEl.textContent = msg;
@@ -1444,7 +1454,9 @@ header.appendChild(shareBtn);
     container.appendChild(scaleBar2);
     function updateScaleBar() {
       const pxPerKm = 1 / cfg.kmPerUnit;
-      const screenPxPerKm = (cfg.W0 / view.w) * pxPerKm;
+      const renderedWidth = canvas.getBoundingClientRect().width;
+      if (!(renderedWidth > 0 && view.w > 0)) return;
+      const screenPxPerKm = (renderedWidth / view.w) * pxPerKm;
       let km = 200;
       while (km * screenPxPerKm > 180 && km > 3) { km /= 2; }
       while (km * screenPxPerKm < 40 && km < 3200) { km *= 2; }
@@ -1453,6 +1465,10 @@ header.appendChild(shareBtn);
       const labelEl = document.getElementById('me-scale-label');
       if (lineEl) lineEl.style.width = barW + 'px';
       if (labelEl) labelEl.textContent = km + ' km';
+    }
+    if (typeof ResizeObserver === 'function') {
+      scaleResizeObserver = new ResizeObserver(() => applyViewBox());
+      scaleResizeObserver.observe(canvas);
     }
 
     // Panel backdrop
@@ -1689,7 +1705,10 @@ container.appendChild(panel);
       svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
       applySemanticZoom();
       const canvasRect=canvas.getBoundingClientRect();
-      const unitsPerPixel=view.w/Math.max(1,canvasRect.width);
+      const renderedWidth=Math.max(1,canvasRect.width);
+      const renderedHeight=Math.max(1,canvasRect.height);
+      const viewScale=Math.min(renderedWidth/Math.max(1,view.w),renderedHeight/Math.max(1,view.h));
+      const unitsPerPixel=1/Math.max(viewScale,Number.EPSILON);
       svg.querySelectorAll('[data-screen-anchor][data-map-x][data-map-y]').forEach(anchor=>{
         const x=Number(anchor.getAttribute('data-map-x')),y=Number(anchor.getAttribute('data-map-y'));
         if(Number.isFinite(x)&&Number.isFinite(y))anchor.setAttribute('transform',`translate(${x},${y}) scale(${unitsPerPixel.toFixed(4)})`);
@@ -1886,11 +1905,23 @@ container.appendChild(panel);
       // Waypoints
       (route.verified_waypoints||[]).forEach(wp=>{
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-        g.setAttribute('transform',`translate(${wp.x},${wp.y})`);g.setAttribute('data-layer','wp');g.setAttribute('opacity','0.4');
-        const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r','3');c.setAttribute('fill','#e8c879');
+        g.setAttribute('transform',`translate(${wp.x},${wp.y})`);
+        g.setAttribute('data-screen-anchor','waypoint');
+        g.setAttribute('data-map-x',String(wp.x));
+        g.setAttribute('data-map-y',String(wp.y));
+        g.setAttribute('data-layer','wp');
+        g.setAttribute('data-layer-all','wp');
+        g.setAttribute('opacity','0.9');
+        const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r','4');c.setAttribute('fill','#e8c879');
         g.appendChild(c);
-        const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x','8');t.setAttribute('y','3');
-        t.setAttribute('fill','#9aa2ae');t.setAttribute('font-size','7');t.textContent=wp.name||'';
+        const labelText=wp.name||'';
+        const labelWidth=Math.max(30,labelText.length*6.4+8);
+        const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        bg.setAttribute('x','7');bg.setAttribute('y','-9');bg.setAttribute('width',String(labelWidth));bg.setAttribute('height','18');bg.setAttribute('rx','4');
+        bg.setAttribute('fill','var(--me-label-bg,rgba(7,10,16,.78))');bg.setAttribute('stroke','var(--me-border,rgba(255,255,255,.12))');bg.setAttribute('stroke-width','.6');
+        g.appendChild(bg);
+        const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x','11');t.setAttribute('y','4');
+        t.setAttribute('fill','var(--me-label-text,#f4eedd)');t.setAttribute('font-size','11');t.textContent=labelText;
         g.appendChild(t);
         waypointsG.appendChild(g);
       });
@@ -2425,7 +2456,7 @@ container.appendChild(panel);
         const photos = place.photos;
         if (photos.length <= 1) {
           content.innerHTML = photos.map(ph=>`
-            <div><img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy" class="me-clickable-photo" data-src="${esc(ph.src||'')}" data-label="${esc(ph.label||'')}" data-credit="${esc(ph.credit||'')}">
+            <div><img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy" class="me-clickable-photo" data-photo-index="0" data-src="${esc(ph.src||ph.thumb||'')}" data-label="${esc(ph.label||'')}" data-credit="${esc(ph.credit||'')}">
             <div class="me-photo-label">${esc(ph.label||'')} · ${esc(ph.credit||'')}</div></div>
           `).join('');
           content.querySelectorAll('.me-clickable-photo').forEach(img => { img.style.cursor = 'pointer'; });
@@ -2433,7 +2464,7 @@ container.appendChild(panel);
           // Multi-photo gallery with dots
           const photosHtml = photos.map((ph,i) => `
             <div class="me-photo-slide" style="display:${i===0?'block':'none'}">
-              <img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy">
+              <img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy" class="me-clickable-photo" data-photo-index="${i}" data-src="${esc(ph.src||ph.thumb||'')}" data-label="${esc(ph.label||'')}" data-credit="${esc(ph.credit||'')}">
               <div class="me-photo-label">${esc(ph.label||'')} · ${esc(ph.credit||'')}</div>
             </div>`).join('');
           const dotsHtml = photos.map((_,i) => `
@@ -2647,14 +2678,9 @@ container.appendChild(panel);
 
     _on(panel.querySelector('.me-panel__close'),'click',close);
 
-    // Story toast for richer notification
+    // Story notifications share the canonical polite status owner.
     function showStoryToast(story) {
-      const toastEl2 = document.createElement('div');
-      toastEl2.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:26;padding:10px 20px;border-radius:12px;background:rgba(7,10,16,.92);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:14px;backdrop-filter:blur(12px);opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);text-align:center;white-space:nowrap';
-      toastEl2.innerHTML = '<div style="font-size:22px;margin-bottom:4px">📖</div>' + esc(story.t || story.label || story.id);
-      container.appendChild(toastEl2);
-      requestAnimationFrame(() => { toastEl2.style.opacity='1';toastEl2.style.transform='translate(-50%,-50%) scale(1)'; });
-      _tm(() => { toastEl2.style.opacity='0';toastEl2.style.transform='translate(-50%,-50%) scale(.9)';_tm(()=>toastEl2.remove(),400); }, 1500);
+      showToast('📖 ' + (story.t || story.label || story.id), 1800);
     }
 
     function setStory(storyId){
@@ -2671,6 +2697,7 @@ container.appendChild(panel);
       renderMarkers();
       renderStages();
       _tm(animateMarkersIn, 150);
+      showStoryToast(story);
       const mobileViewport=matchMedia('(max-width:560px)').matches?route.meta?.mobile_story_viewports?.[storyId]:null;
       const storyViewport = Array.isArray(mobileViewport)?mobileViewport:getStoryViewport(route, storyId);
       if(Array.isArray(storyViewport)) flyTo(storyViewport[0], storyViewport[1], storyViewport[2]);
@@ -2712,6 +2739,12 @@ container.appendChild(panel);
       const h=viewHeightForWidth(w);
       const to={x:clamp(cx-w/2,-cfg.padX,cfg.W0+cfg.padX-w),y:clamp(cy-h/2,-cfg.padY,cfg.H0+cfg.padY-h),w,h};
       cancelAnimationFrame(rafId);
+      const reduceMotion=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduceMotion||duration<=0){
+        view={...to};
+        applyViewBox();
+        return;
+      }
       const t0=performance.now();
       function step(t){
         let p=clamp((t-t0)/Math.max(1,duration),0,1);p=EASE.outCubic(p);
@@ -2831,13 +2864,13 @@ container.appendChild(panel);
       const sid=stageIds[tourStepIdx];
       const place=(route.places||[]).find(p=>p.stage===sid&&visiblePlaces().some(v=>v.id===p.id));
       if(place)open(place.id);
-      showCaption(route.stages&&route.stages[tourStepIdx], tourStepIdx, (route.stages||[]).length);
-      // Elastic animation on current stage dot
-      const stageDots = stagesBar.querySelectorAll('.me-stage-dot');
-      if (stageDots[tourStepIdx]) {
-        stageDots[tourStepIdx].style.transition = 'transform .2s cubic-bezier(.34,1.56,.64,1)';
-        stageDots[tourStepIdx].style.transform = 'scale(1.4)';
-        _tm(() => { stageDots[tourStepIdx].style.transform = 'scale(1)'; }, 300);
+      showCaption(route.stages?.[sid], tourStepIdx, stageIds);
+      // Elastic animation follows authored stage identity, not sequence index.
+      const stageDot = stagesBar.querySelector(`.me-stage-dot[data-stage="${sid}"]`);
+      if (stageDot) {
+        stageDot.style.transition = 'transform .2s cubic-bezier(.34,1.56,.64,1)';
+        stageDot.style.transform = 'scale(1.4)';
+        _tm(() => { stageDot.style.transform = 'scale(1)'; }, 300);
       }
       tourStepIdx++;
       const pct=Math.round((tourStepIdx/stageIds.length)*100);
@@ -2905,13 +2938,16 @@ container.appendChild(panel);
     
     // One gallery owner: delegation opens the canonical full-size source once.
     _on(panel,'click',e=>{
-      const img=e.target.closest('img');
+      const img=e.target.closest('img.me-clickable-photo');
       if(!img||!panel.contains(img))return;
       const src=img.dataset.src||img.currentSrc||img.src;
       if(!src)return;
       const photoContainer=img.closest('div');
       const label=img.dataset.label||photoContainer?.querySelector('.me-photo-label')?.textContent||'';
-      openPhoto(src,label,img.dataset.credit||'');
+      const activePlace=getActivePlace();
+      const parsedIndex=Number.parseInt(img.dataset.photoIndex||'0',10);
+      const photoIndex=Number.isInteger(parsedIndex)?parsedIndex:0;
+      openPhoto(src,label,img.dataset.credit||'',activePlace,photoIndex);
     });
 
     
@@ -2922,13 +2958,14 @@ container.appendChild(panel);
     captionBar.innerHTML = '<div class="me-caption__stage"></div><div class="me-caption__title"></div><div class="me-caption__dots"></div>';
     container.appendChild(captionBar);
     
-    function showCaption(stage, idx, total) {
+    function showCaption(stage, sequenceIndex, stageIds) {
       if (!stage) { captionBar.classList.remove('me-caption--visible'); return; }
       captionBar.style.transform = 'translate(-50%, calc(50% + 10px))';
       captionBar.querySelector('.me-caption__stage').textContent = 'ЭТАП ' + (stage.n || '') + ' · ' + (stage.r || '');
       captionBar.querySelector('.me-caption__title').textContent = stage.t || '';
-      captionBar.querySelector('.me-caption__dots').innerHTML = (route.stages||[]).map((_, i) => 
-        `<span class="me-caption__dot${i === idx ? ' me-caption__dot--active' : ''}${i < idx ? ' me-caption__dot--past' : ''}"></span>`
+      const tourStageIds=Array.isArray(stageIds)?stageIds:[];
+      captionBar.querySelector('.me-caption__dots').innerHTML = tourStageIds.map((_, i) =>
+        `<span class="me-caption__dot${i === sequenceIndex ? ' me-caption__dot--active' : ''}${i < sequenceIndex ? ' me-caption__dot--past' : ''}"></span>`
       ).join('');
       captionBar.classList.add('me-caption--visible');
       requestAnimationFrame(() => { captionBar.style.transform = 'translate(-50%, 50%)'; });
@@ -3202,11 +3239,15 @@ container.appendChild(panel);
     }, 800);
 
     // ── Loading state ──
-    const loadingEl=document.createElement('div');loadingEl.className='me-loading';
-    const placeCount = (route.places||[]).length;
-    loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div><div style="font-size:10px;color:rgba(154,162,174,.4);margin-top:4px">'+placeCount+' мест · '+(route.stages||[]).length+' этапов</div>';
-    container.appendChild(loadingEl);
-    _tm(()=>{loadingEl.style.opacity='0';_tm(()=>loadingEl.remove(),400);},600);
+    // createMap receives ready route data; a blocking overlay is therefore an
+    // explicit opt-in for wrappers that genuinely still have pending work.
+    if (opts.showLoading === true) {
+      const loadingEl=document.createElement('div');loadingEl.className='me-loading';
+      const placeCount = (route.places||[]).length;
+      loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div><div style="font-size:10px;color:rgba(154,162,174,.4);margin-top:4px">'+placeCount+' мест · '+(route.stages||[]).length+' этапов</div>';
+      container.appendChild(loadingEl);
+      _tm(()=>{loadingEl.style.opacity='0';_tm(()=>loadingEl.remove(),400);},600);
+    }
 
     
     // Keyboard shortcuts overlay
@@ -3295,7 +3336,7 @@ container.appendChild(panel);
     getStageColor,clientPointToView,distanceKm,
     // v0.3 rendering
     createMap,
-    version:'0.57.0',buildDate:'2026-08-01'
+    version:'0.58.0',buildDate:'2026-08-07'
   };
 })();
 
