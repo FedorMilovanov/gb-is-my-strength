@@ -27,6 +27,7 @@ function buildAuditProSourceCorpus({ root, entries, allHtmlFiles = [] }) {
   const records = [...entries].sort((a, b) => String(a.route).localeCompare(String(b.route), 'en'));
   const registeredByFile = new Map();
   const sourcePages = [];
+  const referenceOnly = [];
   const distOnly = [];
   const registeredNonProduction = [];
   const duplicateRootMappings = [];
@@ -43,8 +44,13 @@ function buildAuditProSourceCorpus({ root, entries, allHtmlFiles = [] }) {
     }
 
     const record = { route: entry.route, file, entry };
-    if (entry.status === 'production-dist') sourcePages.push(record);
-    else registeredNonProduction.push(record);
+    if (entry.status === 'production-dist' && entry.legacyStatus === 'reference-only') {
+      referenceOnly.push(record);
+    } else if (entry.status === 'production-dist') {
+      sourcePages.push(record);
+    } else {
+      registeredNonProduction.push(record);
+    }
   }
 
   const unregisteredRootHtml = [...new Set(allHtmlFiles.map(normalizeFile))]
@@ -56,6 +62,7 @@ function buildAuditProSourceCorpus({ root, entries, allHtmlFiles = [] }) {
 
   return {
     sourcePages,
+    referenceOnly,
     distOnly,
     registeredNonProduction,
     unregisteredRootHtml,
