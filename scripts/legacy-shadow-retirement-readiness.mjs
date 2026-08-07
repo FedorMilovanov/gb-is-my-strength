@@ -4,11 +4,14 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(SCRIPT_DIR, '..');
+const require = createRequire(import.meta.url);
+const { currentLegacyReferenceDisposition } = require('./lib/legacy-source-authority.js');
 
 function parseArgs(argv) {
   const args = { root: DEFAULT_ROOT, outJson: null, outMd: null, selfTest: false };
@@ -94,24 +97,12 @@ function findRouteProfile(root, route) {
 function ledgerCandidate(root, manifest, item) {
   const profile = findRouteProfile(root, item.route);
   const buffer = fs.readFileSync(path.join(root, item.path));
-  const declaredLegacyStatus = profile?.data?.legacyStatus ?? null;
-  const classification = declaredLegacyStatus === 'reference-only'
-    ? 'migration-reference-only'
-    : declaredLegacyStatus === 'canonical' || declaredLegacyStatus === 'runtime-required'
-      ? 'production-required'
-      : 'unknown-blocker';
-  const decisionSource = profile
-    ? declaredLegacyStatus
-      ? `${profile.path}:legacyStatus`
-      : `${profile.path}:legacyStatus-missing`
-    : 'route-profile-missing';
+  const disposition = currentLegacyReferenceDisposition(profile?.data || null, profile?.path || null);
   return {
     route: item.route,
     profile: profile?.path ?? null,
     legacyPath: item.path,
-    declaredLegacyStatus,
-    classification,
-    decisionSource,
+    ...disposition,
     sourceCommit: manifest.auditedAtCommit ?? null,
     ...htmlMetrics(buffer),
   };
@@ -266,18 +257,21 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     const buffer = fs.readFileSync(path.join(root, item.path));
     if (gitBlobSha1(buffer) !== entry.gitBlobSha1) integrityProblems.push(`${item.path}: Git blob mismatch`);
     if (sha256(buffer) !== entry.byteSha256) integrityProblems.push(`${item.path}: byte SHA-256 mismatch`);
-    const decision = entry.classification === 'migration-reference-only'
+
+    const current = ledgerCandidate(root, manifest, item);
+    const decision = current.classification === 'migration-reference-only'
       ? 'classification-clear'
-      : entry.classification === 'unknown-blocker'
+      : current.classification === 'unknown-blocker'
         ? 'owner-decision-required'
-        : `unexpected-${entry.classification}`;
+        : `unexpected-${current.classification}`;
     return {
       route: item.route,
       path: item.path,
       bytes: item.bytes,
-      profile: entry.profile,
-      classification: entry.classification,
-      declaredLegacyStatus: entry.declaredLegacyStatus,
+      profile: current.profile,
+      classification: current.classification,
+      declaredLegacyStatus: current.declaredLegacyStatus,
+      decisionSource: current.decisionSource,
       gitBlobSha1: entry.gitBlobSha1,
       byteSha256: entry.byteSha256,
       decision,
@@ -310,11 +304,12 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
   const deletionReady = blockerTotal === 0;
 
   return {
-    schemaVersion: '1.3.0',
+    schemaVersion: '1.4.0',
     generatedAt: new Date().toISOString(),
     source: {
       inventory: 'scripts/strangler-duplicate-inventory.mjs',
-      ledger: 'data/legacy-reference-ledger/manifest.json',
+      immutableLedger: 'data/legacy-reference-ledger/manifest.json',
+      currentReferenceAuthority: 'data/route-profiles/*.json',
       ownership: 'migration/page-ownership.json',
       parityAuthority: 'data/visual-parity-authority.json',
     },
@@ -338,8 +333,8 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     },
     verdict: deletionReady ? 'SAFE_TO_OPEN_ATOMIC_QUARANTINE_MOVE' : 'NOT_YET_SAFE_TO_MOVE_OR_DELETE',
     reason: deletionReady
-      ? 'All immutable identities, inventory coverage, reference classifications, owner decisions, dependency repoints and parity authority are complete.'
-      : 'Parity authority is transferred, but inventory coverage, immutable identity, reference classifications, owner decisions and/or direct readers still block physical retirement.',
+      ? 'All immutable identities, inventory coverage, current route-profile classifications, dependency decisions and parity authority are complete.'
+      : 'Parity authority is transferred, but inventory coverage, immutable identity, current route-profile classifications, dependency repoints and/or direct readers still block physical retirement.',
     parity,
     blockers: {
       inventoryCoverageGaps: effective.coverageGaps,
@@ -359,7 +354,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
       order: [
         'repair strangler inventory coverage for every governed legacy path',
         'add immutable ledger identity for every effective native shadow using the emitted exact candidates',
-        'resolve missing or unexpected reference classifications in route profiles and ledger',
+        'resolve missing or unexpected current classifications in route profiles',
         'repoint policy readers through migration/legacy-reference-path.js',
         'remove or repoint obsolete legacy audits',
         'decide the remaining direct-reader contracts',
@@ -413,7 +408,7 @@ function renderMarkdown(report) {
     '',
     '## Boundary',
     '',
-    'The independent Baptists built app is never part of native-shadow retirement. A physical move is allowed only after this report reaches zero blocking actions.',
+    'Current retirement classification is resolved from route profiles. The immutable ledger owns identity/hash evidence only. The independent Baptists built app is never part of native-shadow retirement.',
     '',
     '## Inventory coverage gaps',
     '',
@@ -454,7 +449,15 @@ function runSelfTest() {
     fs.writeFileSync(path.join(temp, 'about', 'index.html'), about);
     fs.writeFileSync(path.join(temp, 'rodosloviye', 'index.html'), family);
     fs.writeFileSync(path.join(temp, 'unexpected', 'index.html'), unexpected);
-    fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'about.json'), JSON.stringify({ route: '/about/' }));
+    fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'about.json'), JSON.stringify({
+      route: '/about/', legacyStatus: 'reference-only', legacyPath: 'about/index.html',
+    }));
+    fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'rodosloviye.json'), JSON.stringify({
+      route: '/rodosloviye/', legacyPath: 'rodosloviye/index.html',
+    }));
+    fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'unexpected.json'), JSON.stringify({
+      route: '/unexpected/', legacyStatus: 'runtime-required', legacyPath: 'unexpected/index.html',
+    }));
     for (const name of ['source.js', 'dist.js', 'browser.js']) fs.writeFileSync(path.join(temp, 'guards', name), '');
 
     const report = buildReport({
@@ -474,20 +477,20 @@ function runSelfTest() {
         {
           route: '/rodosloviye/',
           legacyPath: 'rodosloviye/index.html',
-          classification: 'unknown-blocker',
-          declaredLegacyStatus: null,
+          classification: 'migration-reference-only',
+          declaredLegacyStatus: 'reference-only',
           gitBlobSha1: gitBlobSha1(family),
           byteSha256: sha256(family),
-          profile: 'profile.json',
+          profile: 'snapshot-profile.json',
         },
         {
           route: '/unexpected/',
           legacyPath: 'unexpected/index.html',
-          classification: 'production-required',
-          declaredLegacyStatus: null,
+          classification: 'migration-reference-only',
+          declaredLegacyStatus: 'reference-only',
           gitBlobSha1: gitBlobSha1(unexpected),
           byteSha256: sha256(unexpected),
-          profile: 'profile.json',
+          profile: 'snapshot-profile.json',
         },
       ],
       ownership: {
@@ -511,6 +514,7 @@ function runSelfTest() {
       || report.summary.integrityProblems !== 1
       || report.summary.missingLedgerCandidates !== 1
       || candidate?.legacyPath !== 'about/index.html'
+      || candidate?.classification !== 'migration-reference-only'
       || candidate?.gitBlobSha1 !== gitBlobSha1(about)
       || candidate?.byteSha256 !== sha256(about)
       || candidate?.sourceCommit !== 'a'.repeat(40)

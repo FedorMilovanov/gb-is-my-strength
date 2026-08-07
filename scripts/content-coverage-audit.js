@@ -1,23 +1,26 @@
 #!/usr/bin/env node
 'use strict';
-// GATE-GAP-NATIVE-TEXT-PARITY (2026-07-05) — word-coverage guard.
+// GATE-GAP-NATIVE-TEXT-PARITY (2026-07-05) — authoritative word-coverage guard.
 //
-// Regression class: CONTENT-PARITY-LOSS-01. For routes whose legacy HTML is
-// still canonical/runtime-required, compare its WORD MULTISET with built dist.
+// Regression class: CONTENT-PARITY-LOSS-01. Only routes whose legacy HTML is
+// explicitly canonical/runtime-required (or still unprofiled under the legacy
+// conservative fallback) are compared with built dist.
 //
-// Strict-native routes use the declared Astro import graph as production truth.
-// Their legacy shadow is explicitly `reference-only` (or absent) and MUST NOT be
-// promoted back into a blocking content oracle. Those routes are validated by
-// the native source/dist contracts instead.
+// Strict-native routes must declare their retained legacy surface as
+// reference-only/absent and are protected by their native source/dist contracts.
+// This audit intentionally does not promote reference-only legacy HTML back into
+// a blocking oracle.
 //
-// Thresholds: warn > WARN_PCT, fail > FAIL_PCT of authoritative legacy words
-// missing from dist. Per-route allowlists below document intentional divergence.
+// Thresholds: warn > WARN_PCT, fail > FAIL_PCT of authoritative legacy word
+// OCCURRENCES missing from dist. Comparison is a true frequency deficit, not a
+// set-membership proxy.
 //
 // Usage: node scripts/content-coverage-audit.js   (requires built dist/)
+const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const {
-  legacyIsAuthoritative,
+  classifyLegacyAuthority,
   loadRouteProfile,
 } = require('./lib/legacy-source-authority');
 
@@ -26,29 +29,9 @@ const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const WARN_PCT = 2;
 const FAIL_PCT = 10;
 
-// Routes where dist intentionally diverges from an otherwise authoritative
-// legacy surface. Every entry MUST carry a reason.
-const ALLOW = new Map([
-  // Redesigned hub: legacy page is a thin index; native Astro home is richer
-  // and does not embed the legacy word set verbatim.
-  ['index.html', 'home hub redesigned natively (h-* system); legacy root is historical'],
-]);
-
-// Documented per-route thresholds (still audited — a rise above maxPct fails).
-// Use ONLY for pages whose authoritative legacy surface contains client-rendered
-// UI text or in-SVG labels that the native app renders at runtime.
-const THRESHOLD = new Map([
-  // Full-screen MapEngine app. Narrative (8 stages), editorial method note and
-  // the complete 14-item «Источники и метод» archaeology list are statically
-  // present (sr-only, data-pagefind-body). Remaining legacy-only words are
-  // in-SVG geo labels (ЛИВАН, ДЕЛЬТА НИЛА…) and old app UI strings rendered
-  // client-side by the engine.
-  ['karty/avraam/index.html', { maxPct: 40, reason: 'SVG geo labels + legacy app UI strings render client-side; narrative and sources are statically present' }],
-]);
-
 function words(txt) {
   const m = new Map();
-  for (const w of txt.matchAll(/[А-Яа-яЁё]{3,}/g)) {
+  for (const w of String(txt || '').matchAll(/[А-Яа-яЁё]{3,}/g)) {
     const k = w[0].toLowerCase();
     m.set(k, (m.get(k) || 0) + 1);
   }
@@ -56,10 +39,77 @@ function words(txt) {
 }
 
 function pageText(raw) {
-  return raw
+  return String(raw || '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<[^>]+>/g, ' ');
+}
+
+function frequencyDeficit(legacyWords, distWords, sampleLimit = 10) {
+  let total = 0;
+  let missing = 0;
+  const missingWords = [];
+
+  for (const [word, legacyCount] of legacyWords) {
+    total += legacyCount;
+    const distCount = distWords.get(word) || 0;
+    const deficit = Math.max(legacyCount - distCount, 0);
+    if (!deficit) continue;
+    missing += deficit;
+    if (missingWords.length < sampleLimit) missingWords.push(`${word}(-${deficit})`);
+  }
+
+  return { total, missing, missingWords };
+}
+
+function coverageHealth({ expected, exercised, undeclared }) {
+  const issues = [];
+  if (!Number.isInteger(expected) || expected < 0) issues.push('expected must be a non-negative integer');
+  if (!Number.isInteger(exercised) || exercised < 0) issues.push('exercised must be a non-negative integer');
+  if (!Number.isInteger(undeclared) || undeclared < 0) issues.push('undeclared must be a non-negative integer');
+  if (Number.isInteger(expected) && Number.isInteger(exercised) && exercised > expected) {
+    issues.push(`exercised ${exercised} exceeds expected ${expected}`);
+  }
+  if (Number.isInteger(expected) && Number.isInteger(exercised) && expected > 0 && exercised === 0) {
+    issues.push(`expected ${expected} authoritative comparison(s) but exercised 0`);
+  }
+  if (Number.isInteger(undeclared) && undeclared > 0) {
+    issues.push(`${undeclared} production Astro route(s) have undeclared legacy authority`);
+  }
+  return issues;
+}
+
+function runContractChecks() {
+  let checks = 0;
+  const check = (name, fn) => {
+    fn();
+    checks++;
+    console.log(`CONTRACT OK ${name}`);
+  };
+
+  check('frequency deficit counts repeated occurrence loss', () => {
+    const result = frequencyDeficit(new Map([['слово', 3]]), new Map([['слово', 1]]));
+    assert.equal(result.total, 3);
+    assert.equal(result.missing, 2);
+  });
+  check('extra dist occurrences do not create negative loss', () => {
+    assert.equal(frequencyDeficit(new Map([['слово', 1]]), new Map([['слово', 4]])).missing, 0);
+  });
+  check('health rejects expected-but-zero exercise', () => {
+    assert.equal(coverageHealth({ expected: 1, exercised: 0, undeclared: 0 }).length, 1);
+  });
+  check('health accepts an intentional empty authoritative set', () => {
+    assert.deepEqual(coverageHealth({ expected: 0, exercised: 0, undeclared: 0 }), []);
+  });
+  check('health rejects undeclared production authority', () => {
+    assert.equal(coverageHealth({ expected: 0, exercised: 0, undeclared: 1 }).length, 1);
+  });
+  check('authority distinguishes reference-only from undeclared', () => {
+    assert.equal(classifyLegacyAuthority({ legacyStatus: 'reference-only' }).kind, 'non-authoritative');
+    assert.equal(classifyLegacyAuthority({}).kind, 'undeclared');
+  });
+
+  console.log(`Content coverage internal contract: ${checks}/${checks} checks passed`);
 }
 
 function loadOwnership() {
@@ -68,64 +118,122 @@ function loadOwnership() {
   return j.routes || j.pages || j;
 }
 
-let failures = 0, checks = 0, warns = 0;
-const ok = m => { checks++; console.log('OK ' + m); };
-const bad = m => { checks++; failures++; console.log('FAIL ' + m); };
-const warn = m => { warns++; console.log('WARN ' + m); };
+function main() {
+  runContractChecks();
 
-if (!fs.existsSync(DIST)) {
-  console.error('dist not found at ' + DIST + ' — run a strangler build first');
-  process.exit(1);
+  let failures = 0;
+  let checks = 0;
+  let warns = 0;
+  let passed = 0;
+  const ok = (m) => { checks++; passed++; console.log('OK ' + m); };
+  const bad = (m) => { checks++; failures++; console.log('FAIL ' + m); };
+  const warn = (m) => { checks++; warns++; console.log('WARN ' + m); };
+
+  if (!fs.existsSync(DIST)) {
+    console.error('dist not found at ' + DIST + ' — run a strangler build first');
+    process.exit(1);
+  }
+
+  const ownership = loadOwnership();
+  let expected = 0;
+  let exercised = 0;
+  let skippedExplicit = 0;
+  let undeclared = 0;
+
+  for (const [route, meta] of Object.entries(ownership)) {
+    if (!meta || meta.owner !== 'astro') continue;
+
+    const { profile } = loadRouteProfile(route);
+    const authority = classifyLegacyAuthority(profile);
+
+    if (authority.kind === 'invalid') {
+      bad(`${route}: invalid legacyStatus=${authority.status}`);
+      continue;
+    }
+
+    if (authority.kind === 'undeclared') {
+      undeclared++;
+      const source = profile?.renderSource || profile?.source || meta.source || 'declared Astro source';
+      bad(`${route}: legacyStatus is not declared; production source=${source}`);
+      continue;
+    }
+
+    if (authority.kind !== 'authoritative') {
+      skippedExplicit++;
+      const source = profile?.renderSource || profile?.source || meta.source || 'declared Astro source';
+      console.log(`SKIP ${route}: legacyStatus=${authority.status}; production truth is ${source}`);
+      continue;
+    }
+
+    expected++;
+    const rel = route.replace(/^\//, '') + 'index.html';
+    const legacyPath = path.join(ROOT, rel === 'index.html' ? 'index.html' : rel);
+    const distPath = path.join(DIST, rel === 'index.html' ? 'index.html' : rel);
+
+    if (!fs.existsSync(legacyPath)) {
+      bad(`${route}: authoritative legacy surface missing at ${path.relative(ROOT, legacyPath)}`);
+      continue;
+    }
+    if (!fs.existsSync(distPath)) {
+      bad(`${route}: astro-owned authoritative route missing in dist`);
+      continue;
+    }
+
+    const lw = words(pageText(fs.readFileSync(legacyPath, 'utf8')));
+    const dw = words(pageText(fs.readFileSync(distPath, 'utf8')));
+    const { total, missing, missingWords } = frequencyDeficit(lw, dw);
+
+    if (!total) {
+      bad(`${route}: authoritative legacy surface has zero auditable Russian word occurrences`);
+      continue;
+    }
+
+    exercised++;
+    const pct = (missing / total) * 100;
+    if (pct > FAIL_PCT) {
+      bad(`${route}: ${pct.toFixed(1)}% authoritative legacy word occurrences missing from dist (${missing}/${total}); sample: ${missingWords.join(', ')}`);
+    } else if (pct > WARN_PCT) {
+      warn(`${route}: ${pct.toFixed(1)}% authoritative legacy word occurrences missing from dist (${missing}/${total}); sample: ${missingWords.join(', ')} — review; fail threshold ${FAIL_PCT}%`);
+    } else {
+      ok(`${route}: content occurrence coverage ${(100 - pct).toFixed(1)}% (${missing}/${total} missing)`);
+    }
+  }
+
+  for (const issue of coverageHealth({ expected, exercised, undeclared })) {
+    if (!issue.includes('undeclared legacy authority')) bad(`health: ${issue}`);
+  }
+
+  const health = {
+    expected,
+    exercised,
+    skippedExplicit,
+    undeclared,
+    warnings: warns,
+    failures,
+    passed,
+    checks,
+  };
+
+  console.log(`\nContent coverage audit: expected=${expected}, exercised=${exercised}, explicit-skips=${skippedExplicit}, undeclared=${undeclared}, warnings=${warns}, passed=${passed}/${checks}`);
+  console.log(`CONTENT_COVERAGE_HEALTH ${JSON.stringify(health)}`);
+
+  if (failures) {
+    console.log('\nFAIL content coverage audit failed');
+    process.exit(1);
+  }
+  if (warns) {
+    console.log('\nPASS-WITH-WARNINGS content coverage audit completed; warnings require review');
+    return;
+  }
+  console.log('\nOK content coverage audit passed');
 }
 
-const ownership = loadOwnership();
-let covered = 0, skipped = 0;
-for (const [route, meta] of Object.entries(ownership)) {
-  if (!meta || meta.owner !== 'astro') continue;
+if (require.main === module) main();
 
-  const { profile } = loadRouteProfile(route);
-  if (!legacyIsAuthoritative(profile)) {
-    skipped++;
-    const status = profile?.legacyStatus || 'unknown';
-    const source = profile?.renderSource || profile?.source || meta.source || 'declared Astro source';
-    console.log(`SKIP ${route}: legacyStatus=${status}; production truth is ${source}`);
-    continue;
-  }
-
-  const rel = route.replace(/^\//, '') + 'index.html';
-  const legacyPath = path.join(ROOT, rel === 'index.html' ? 'index.html' : rel);
-  const distPath = path.join(DIST, rel === 'index.html' ? 'index.html' : rel);
-  if (!fs.existsSync(legacyPath)) { skipped++; continue; }
-  if (!fs.existsSync(distPath)) { bad(`${route}: astro-owned but missing in dist`); continue; }
-  if (ALLOW.has(rel)) { skipped++; console.log(`SKIP ${route}: ${ALLOW.get(rel)}`); continue; }
-
-  const lw = words(pageText(fs.readFileSync(legacyPath, 'utf8')));
-  const dw = words(pageText(fs.readFileSync(distPath, 'utf8')));
-  let total = 0, missing = 0;
-  const missingWords = [];
-  for (const [w, n] of lw) {
-    total += n;
-    if (!dw.has(w)) { missing += n; if (missingWords.length < 10) missingWords.push(w); }
-  }
-  if (!total) { skipped++; continue; }
-  const pct = (missing / total) * 100;
-  covered++;
-  const th = THRESHOLD.get(rel);
-  if (th) {
-    if (pct > th.maxPct) bad(`${route}: ${pct.toFixed(1)}% missing exceeds documented threshold ${th.maxPct}% (${th.reason})`);
-    else ok(`${route}: ${pct.toFixed(1)}% missing within documented threshold ${th.maxPct}% (${th.reason})`);
-    continue;
-  }
-  if (pct > FAIL_PCT) {
-    bad(`${route}: ${pct.toFixed(1)}% authoritative legacy words missing from dist (${missing}/${total}); sample: ${missingWords.join(', ')}`);
-  } else if (pct > WARN_PCT) {
-    warn(`${route}: ${pct.toFixed(1)}% authoritative legacy words missing from dist (${missing}/${total}); sample: ${missingWords.join(', ')} — review; fail threshold ${FAIL_PCT}%`);
-    ok(`${route}: within fail threshold`);
-  } else {
-    ok(`${route}: content coverage ${(100 - pct).toFixed(1)}% (${missing}/${total} missing)`);
-  }
-}
-
-console.log(`\nContent coverage audit: ${covered} authoritative legacy routes compared, ${skipped} non-authoritative/absent routes skipped, ${warns} warnings, ${checks - failures}/${checks} checks passed`);
-if (failures) { console.log('\nFAIL content coverage audit failed'); process.exit(1); }
-console.log('\nOK content coverage audit passed');
+module.exports = {
+  coverageHealth,
+  frequencyDeficit,
+  pageText,
+  runContractChecks,
+  words,
+};

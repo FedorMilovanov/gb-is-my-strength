@@ -10,6 +10,7 @@
   "currentStatus": "production-dist",
   "statusDetail": "native-shadow componentized-main → production-dist",
   "source": "src/pages/biografii/index.astro",
+  "legacyStatus": "reference-only",
   "legacyPath": "biografii/index.html",
   "risk": 2,
   "hasMDX": false,

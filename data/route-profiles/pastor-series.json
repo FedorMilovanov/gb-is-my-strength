@@ -12,6 +12,7 @@
   "risk": 2,
   "hasMDX": false,
   "mdxPath": null,
+  "legacyStatus": "reference-only",
   "legacyPath": "pastor-series/index.html",
   "visualParity": {
     "desktop": 0,

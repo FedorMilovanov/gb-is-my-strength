@@ -7,6 +7,10 @@ const {
   loadRouteRecords,
   validateRecord,
 } = require('./lib/route-source-contract');
+const {
+  runLegacyAuthorityContractChecks,
+  validateLegacyAuthorityProfile,
+} = require('./lib/legacy-source-authority');
 
 const strict = process.argv.includes('--strict');
 const errors = [];
@@ -19,8 +23,11 @@ function issue(message, blocking = true) {
 }
 
 function fileExists(rel) {
-  return Boolean(rel) && fs.existsSync(`${ROOT}/${rel}`);
+  return Boolean(rel) && fs.existsSync(`${ROOT}/${String(rel).replace(/^\//, '')}`);
 }
+
+const authorityMutationChecks = runLegacyAuthorityContractChecks();
+console.log(`Legacy authority shape contract: ${authorityMutationChecks}/${authorityMutationChecks} mutation cases passed`);
 
 console.log('=== Route Profile Contract Audit ===');
 console.log(`Mode: ${strict ? 'STRICT' : 'WARN'}`);
@@ -61,6 +68,9 @@ for (const record of records) {
     productionAstro++;
     if (!profile.migrationMode) issue(`${route}: production Astro profile missing migrationMode`);
     if (!matrixEntry) issue(`${route}: production Astro route missing matrix entry`);
+    for (const message of validateLegacyAuthorityProfile(profile, { pathExists: fileExists })) {
+      issue(`${route}: ${message}`);
+    }
   }
 
   if (matrixEntry) {
@@ -112,4 +122,4 @@ if (errors.length) {
 }
 
 console.log('');
-console.log('✅ Route profiles agree with ownership, matrix and actual source contracts');
+console.log('✅ Route profiles agree with ownership, matrix, explicit legacy authority and actual source contracts');

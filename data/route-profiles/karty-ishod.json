@@ -13,6 +13,7 @@
   "risk": 2,
   "hasMDX": false,
   "mdxPath": null,
+  "legacyStatus": "reference-only",
   "legacyPath": "karty/ishod/index.html",
   "visualParity": {
     "desktop": 0,

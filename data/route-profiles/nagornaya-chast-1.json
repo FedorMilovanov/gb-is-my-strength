@@ -13,6 +13,7 @@
   "risk": 2,
   "hasMDX": false,
   "mdxPath": null,
+  "legacyStatus": "reference-only",
   "legacyPath": "nagornaya/chast-1/index.html",
   "visualParity": {
     "desktop": 0,
