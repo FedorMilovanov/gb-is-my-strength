@@ -27,6 +27,7 @@ on:
       - "src/runtime/atlas-runtime.js"
       - "src/runtime/relationship-panel.css"
       - "konfessii/russkij-baptizm/index.html"
+      - "karty/_engine/**"
       - "css/**"
       - "js/**"
       - "feed.xml"
@@ -68,6 +69,8 @@ on:
       - "scripts/project-relations-to-dist.mjs"
       - "scripts/astro-cache-bust-postbuild.js"
       - "scripts/route-semantics-browser-test.mjs"
+      - "scripts/map-engine-p0-regression-test.js"
+      - "scripts/map-engine-correctness-browser-test.mjs"
       - "scripts/nagornaya-source-integrity-regression-test.js"
       - "scripts/nagornaya-source-registry-test.js"
       - "scripts/nagornaya-epistemic-ui-browser-test.mjs"
@@ -137,6 +140,10 @@ jobs:
             node scripts/audit-pro-source-corpus-test.js
             node scripts/audit-pro.js
           } 2>&1 | tee reports/public-surface-registry.log
+
+      - name: Shared MapEngine source regression contract
+        if: always()
+        run: node scripts/map-engine-p0-regression-test.js
 
       - name: Migration matrix contract
         if: always()
@@ -277,6 +284,7 @@ jobs:
             reports/public-surface-browser-matrix.json
             reports/public-surface-browser-matrix.md
             reports/route-semantics-browser.json
+            reports/map-engine-correctness-browser.json
             reports/nagornaya-epistemic-ui-browser.json
             reports/public-surface-browser-diagnostics/**
           if-no-files-found: error
