@@ -113,6 +113,10 @@ function runInternalContractChecks() {
     throw new Error('internal contract: duplicate declaration name was not rejected');
   }
 
+  if (parseDeclaredLayers('@layer reset{} @layer base{}') !== null) {
+    throw new Error('internal contract: missing order declaration was not detected');
+  }
+
   if (LAYERED_TARGET_PCT !== 80) {
     throw new Error('internal contract: layered coverage target drifted from the published 80% contract');
   }
@@ -162,7 +166,7 @@ if (depth === 0) info.push('Brace balance: OK');
 // 2. Find @layer order declaration and validate the named-layer contract.
 const declaration = parseDeclaredLayers(css);
 if (!declaration) {
-  warnings.push('No @layer order declaration found');
+  errors.push('No @layer order declaration found');
 } else {
   info.push(`Declared layer order: ${declaration.names.join(' → ')}`);
 
