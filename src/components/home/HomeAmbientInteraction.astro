@@ -244,6 +244,7 @@
       const contentRect = content instanceof HTMLElement ? content.getBoundingClientRect() : null;
       const outerFloor = Math.min(64, Math.max(48, innerWidth * .03));
       const centerGuard = Math.min(32, Math.max(22, innerWidth * .015));
+      const motionAllowed = !matchMedia('(prefers-reduced-motion: reduce)').matches;
       const edgeGapFor = (word, rect = word.getBoundingClientRect()) => (
         word.classList.contains('h-ambient-word--left') ? rect.left : innerWidth - rect.right
       );
@@ -307,7 +308,7 @@
           report(`${prefix} did not open by click`);
         }
 
-        if (tooltip instanceof HTMLElement && source instanceof HTMLElement &&
+        if (motionAllowed && tooltip instanceof HTMLElement && source instanceof HTMLElement &&
             firstTransitionDelay(source) - firstTransitionDelay(tooltip) < .30) {
           report(`${prefix} disclosure no longer stages translation before source`);
         }
