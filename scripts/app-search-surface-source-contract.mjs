@@ -77,6 +77,8 @@ for (const marker of [
 check(!/\b(?:ctrlKey|metaKey)\b/.test(files.search), 'Search must not parse the global keyboard chord');
 check(files.search.includes('window.addEventListener("gb:openSearch",function(){ne()})'), 'loaded Search gb:openSearch transport missing');
 check(files.search.includes('window.addEventListener("gb:openSearch",function(){__gbLoadSearch(true)})'), 'bootstrap Search gb:openSearch transport missing');
+check(files.search.includes('we(),ie())'), 'Search open path must only warm Pagefind');
+check(!files.search.includes('ie(function(){E.value.trim()&&xe(E.value.trim())})'), 'Search open path must not re-run the current query');
 check(!files.baseLayout.includes('ctrlKey') && !files.baseLayout.includes('metaKey'), 'BaseLayout raw shortcut parser survived');
 check(files.baseLayout.includes('window.addEventListener("gb:openSearch"'), 'BaseLayout gb:openSearch loader missing');
 check(!files.home.includes('const onShortcut'), 'Home route-local shortcut parser survived');
