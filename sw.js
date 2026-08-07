@@ -71,6 +71,10 @@ function isStaticAsset(url) {
   return /\.(css|js|woff2?|ttf|otf|ico|svg|webmanifest)(?:$|\?)/i.test(url.pathname) || url.pathname.startsWith('/icons/');
 }
 
+function isNetworkFirstRuntime(url) {
+  return url.origin === self.location.origin && url.pathname === '/karty/_engine/map-engine.js';
+}
+
 function isHtmlPage(request) {
   return request.mode === 'navigate' || (
     request.method === 'GET' &&
@@ -330,7 +334,9 @@ self.addEventListener('fetch', (event) => {
   } else if (isStaticAsset(url)) {
     event.respondWith(isRevisioned(url)
       ? revisionedStaticNetworkFirst(request)
-      : cacheFirst(request, CACHE_STATIC));
+      : isNetworkFirstRuntime(url)
+        ? networkFirstWithCache(request, CACHE_STATIC)
+        : cacheFirst(request, CACHE_STATIC));
   } else if (isImage(url)) {
     event.respondWith(cacheFirst(request, CACHE_IMAGES, IMAGE_CACHE_LIMIT));
   } else if (isHtmlPage(request)) {
