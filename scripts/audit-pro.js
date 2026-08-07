@@ -156,6 +156,7 @@ const sourceCorpus = buildAuditProSourceCorpus({
 });
 const htmlFiles = sourceCorpus.sourcePages.map((item) => item.file).sort();
 const htmlPages = htmlFiles;
+const currentRuntimeHtmlPages = sourceCorpus.currentRuntimePages.map((item) => item.file).sort();
 
 if (sourceCorpus.duplicateRootMappings.length) {
   for (const item of sourceCorpus.duplicateRootMappings) {
@@ -597,7 +598,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
   const hashes = Object.fromEntries(CACHE_BUST_ASSETS.filter(exists).map(f => [f, md5short(f)]));
   let checked = 0;
   let issues = 0;
-  for (const p of htmlPages) {
+  for (const p of currentRuntimeHtmlPages) {
     const file = rel(p);
     const html = fs.readFileSync(p, 'utf8');
     for (const asset of CACHE_BUST_ASSETS) {
@@ -4326,7 +4327,7 @@ const JS_SIZE_FLOORS = {
   const candidates = [...new Set([
     ...allFiles.filter((file) => rel(file).startsWith('js/') && file.endsWith('.js')),
     ...allFiles.filter((file) => rel(file).startsWith('src/') && file.endsWith('.astro')),
-    ...htmlPages,
+    ...currentRuntimeHtmlPages,
     path.join(ROOT, '404.html'),
   ].filter((file) => fs.existsSync(file)))];
   const rawOwners = candidates.filter((file) => hasRawSearchShortcut(fs.readFileSync(file, 'utf8'))).map(rel).sort();
