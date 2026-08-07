@@ -16,11 +16,13 @@ const oldVersion = 'gb-v192-a07-fixture-20260731';
 const pagefindDataFile = findFirst(path.join(DIST, 'pagefind'), (file) => /[\\/](?:fragment|index)[\\/]/.test(file));
 assert.ok(pagefindDataFile, 'production-like dist must contain Pagefind index/fragment data');
 const pagefindDataPath = `/${path.relative(DIST, pagefindDataFile).replace(/\\/g, '/')}`;
+const mapEnginePath = '/karty/_engine/map-engine.js';
 
 const state = {
   release: 'old',
   failPrecachePath: '',
   dataValue: 'old',
+  mapEngineValue: 'old',
   requestCounts: new Map(),
 };
 
@@ -94,6 +96,10 @@ const server = http.createServer((request, response) => {
   }
   if (pathname === '/data/a07-offline-fixture.json') {
     send(response, 200, 'application/json; charset=utf-8', JSON.stringify({ value: state.dataValue }));
+    return;
+  }
+  if (pathname === mapEnginePath) {
+    send(response, 200, 'application/javascript; charset=utf-8', `window.__A07_MAP_ENGINE_VERSION__=${JSON.stringify(state.mapEngineValue)};`);
     return;
   }
   if (pathname === '/audio/a07-model.bin') {
@@ -193,6 +199,7 @@ try {
 
   state.release = 'old';
   state.dataValue = 'old';
+  state.mapEngineValue = 'old';
   const context = await browser.newContext({ serviceWorkers: 'allow' });
   const page = await context.newPage();
   await registerAndControl(page);
@@ -202,13 +209,31 @@ try {
   assert.ok(coldCaches.includes(`${oldVersion}-content`));
   const staticKeys = await page.evaluate(async (cacheName) => (await (await caches.open(cacheName)).keys()).map((request) => new URL(request.url).pathname), `${oldVersion}-static`);
   for (const required of ['/css/site.css', '/js/site-utils.js', '/pagefind/pagefind.js', '/404.html']) assert.ok(staticKeys.includes(required), required);
-  pass('cold atomic install', `${staticKeys.length} complete precache entries`);
+  assert.equal(staticKeys.includes(mapEnginePath), false);
+  pass('cold atomic install', `${staticKeys.length} complete precache entries; Karty engine remains runtime-fetched`);
 
   await context.setOffline(true);
   const revisionedOffline = await responseDigest(page, '/js/site-utils.js?v=a07-offline');
   assert.equal(revisionedOffline.status, 200);
   assert.ok(revisionedOffline.length > 100);
   pass('revisioned static offline fallback', 'exact miss resolved through canonical current precache');
+  await context.setOffline(false);
+
+  const engineRequestsBefore = state.requestCounts.get(mapEnginePath) || 0;
+  let mapEngine = await responseDigest(page, mapEnginePath);
+  assert.equal(mapEngine.status, 200);
+  assert.ok(mapEngine.text.includes('"old"'));
+  state.mapEngineValue = 'new';
+  mapEngine = await responseDigest(page, mapEnginePath);
+  assert.equal(mapEngine.status, 200);
+  assert.ok(mapEngine.text.includes('"new"'));
+  assert.equal((state.requestCounts.get(mapEnginePath) || 0) - engineRequestsBefore, 2);
+  await context.setOffline(true);
+  mapEngine = await responseDigest(page, mapEnginePath);
+  assert.equal(mapEngine.status, 200);
+  assert.ok(mapEngine.text.includes('"new"'));
+  assert.equal((state.requestCounts.get(mapEnginePath) || 0) - engineRequestsBefore, 2);
+  pass('Karty engine online freshness + offline fallback', 'old runtime cache replaced by online new value; latest value remains available offline');
   await context.setOffline(false);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -292,6 +317,7 @@ try {
     cacheVersion: currentVersion,
     oldFixtureVersion: oldVersion,
     pagefindDataPath,
+    mapEnginePath,
     scenarios: results,
     requestCounts: Object.fromEntries([...state.requestCounts.entries()].sort()),
   };
