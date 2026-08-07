@@ -676,7 +676,7 @@
     let leaveTimer = 0;
     let switchTimer = 0;
     let layerTimer = 0;
-    let frame = 0;
+    const motionStates = new Map();
     const removers = [];
 
     const on = (target, type, handler, options) => {
@@ -684,12 +684,95 @@
       removers.push(() => target.removeEventListener(type, handler, options));
     };
 
+    const getMotionState = (card) => {
+      let state = motionStates.get(card);
+      if (state) return state;
+      state = {
+        frame: 0,
+        lightX: 50,
+        lightY: 46,
+        targetLightX: 50,
+        targetLightY: 46,
+        imageX: 0,
+        imageY: 0,
+        targetImageX: 0,
+        targetImageY: 0,
+      };
+      motionStates.set(card, state);
+      return state;
+    };
+
+    const writeMotion = (card, state) => {
+      card.style.setProperty('--refutation-image-x', `${state.imageX.toFixed(2)}px`);
+      card.style.setProperty('--refutation-image-y', `${state.imageY.toFixed(2)}px`);
+      card.style.setProperty('--refutation-light-x', `${state.lightX.toFixed(1)}%`);
+      card.style.setProperty('--refutation-light-y', `${state.lightY.toFixed(1)}%`);
+    };
+
+    const runMotion = (card) => {
+      const state = getMotionState(card);
+      if (state.frame || reducedMotion.matches) {
+        if (reducedMotion.matches) {
+          state.lightX = state.targetLightX;
+          state.lightY = state.targetLightY;
+          state.imageX = state.targetImageX;
+          state.imageY = state.targetImageY;
+          writeMotion(card, state);
+        }
+        return;
+      }
+
+      const tick = () => {
+        state.frame = 0;
+        const lightEase = .14;
+        const imageEase = .18;
+        state.lightX += (state.targetLightX - state.lightX) * lightEase;
+        state.lightY += (state.targetLightY - state.lightY) * lightEase;
+        state.imageX += (state.targetImageX - state.imageX) * imageEase;
+        state.imageY += (state.targetImageY - state.imageY) * imageEase;
+        writeMotion(card, state);
+
+        const settled =
+          Math.abs(state.targetLightX - state.lightX) < .08
+          && Math.abs(state.targetLightY - state.lightY) < .08
+          && Math.abs(state.targetImageX - state.imageX) < .015
+          && Math.abs(state.targetImageY - state.imageY) < .015;
+
+        if (settled) {
+          state.lightX = state.targetLightX;
+          state.lightY = state.targetLightY;
+          state.imageX = state.targetImageX;
+          state.imageY = state.targetImageY;
+          writeMotion(card, state);
+          return;
+        }
+
+        state.frame = window.requestAnimationFrame(tick);
+      };
+
+      state.frame = window.requestAnimationFrame(tick);
+    };
+
+    const setMotionTarget = (card, px, py) => {
+      const state = getMotionState(card);
+      const nx = (px - .5) * 2;
+      const ny = (py - .5) * 2;
+      state.targetLightX = px * 100;
+      state.targetLightY = py * 100;
+      state.targetImageX = nx * 1.0;
+      state.targetImageY = ny * .7;
+      runMotion(card);
+    };
+
     const clearTimers = () => {
       window.clearTimeout(enterTimer);
       window.clearTimeout(leaveTimer);
       window.clearTimeout(switchTimer);
       window.clearTimeout(layerTimer);
-      window.cancelAnimationFrame(frame);
+      motionStates.forEach((state) => {
+        if (state.frame) window.cancelAnimationFrame(state.frame);
+        state.frame = 0;
+      });
     };
 
     const setLayerHints = (enabled) => {
@@ -708,13 +791,27 @@
       layerTimer = window.setTimeout(() => setLayerHints(false), 1000);
     };
 
-    const resetImage = (slot) => {
+    const resetImage = (slot, { immediate = false } = {}) => {
       const card = slot.querySelector('.h-refutation-card');
       if (!card) return;
-      card.style.setProperty('--refutation-image-x', '0px');
-      card.style.setProperty('--refutation-image-y', '0px');
-      card.style.setProperty('--refutation-light-x', '50%');
-      card.style.setProperty('--refutation-light-y', '46%');
+      const state = getMotionState(card);
+      state.targetLightX = 50;
+      state.targetLightY = 46;
+      state.targetImageX = 0;
+      state.targetImageY = 0;
+
+      if (immediate || reducedMotion.matches) {
+        if (state.frame) window.cancelAnimationFrame(state.frame);
+        state.frame = 0;
+        state.lightX = 50;
+        state.lightY = 46;
+        state.imageX = 0;
+        state.imageY = 0;
+        writeMotion(card, state);
+        return;
+      }
+
+      runMotion(card);
     };
 
     const setActive = (side, { pinned = false } = {}) => {
@@ -737,7 +834,9 @@
       if (pinned) pinnedSide = activeSide;
       deck.dataset.refutationsActive = activeSide;
       slots.forEach((slot) => {
-        slot.toggleAttribute('data-refutation-active', slot.dataset.refutationSide === activeSide);
+        const isActive = slot.dataset.refutationSide === activeSide;
+        slot.toggleAttribute('data-refutation-active', isActive);
+        if (!isActive) resetImage(slot);
       });
       setLayerHints(Boolean(activeSide));
       clearLayerHintsLater();
@@ -764,6 +863,7 @@
       const side = slot.dataset.refutationSide || '';
       const card = slot.querySelector('.h-refutation-card');
       if (!card || !side) return;
+      getMotionState(card);
 
       const handlePointerEnter = (event) => {
         if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
@@ -776,6 +876,7 @@
         if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
         window.clearTimeout(enterTimer);
         window.clearTimeout(leaveTimer);
+        resetImage(slot);
         leaveTimer = window.setTimeout(() => {
           if (!slot.matches(':focus-within')) clearActive();
         }, 200);
@@ -789,16 +890,7 @@
         const rect = card.getBoundingClientRect();
         const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
         const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-        const nx = (px - .5) * 2;
-        const ny = (py - .5) * 2;
-
-        window.cancelAnimationFrame(frame);
-        frame = window.requestAnimationFrame(() => {
-          card.style.setProperty('--refutation-image-x', `${(nx * 1.0).toFixed(2)}px`);
-          card.style.setProperty('--refutation-image-y', `${(ny * 0.7).toFixed(2)}px`);
-          card.style.setProperty('--refutation-light-x', `${(px * 100).toFixed(1)}%`);
-          card.style.setProperty('--refutation-light-y', `${(py * 100).toFixed(1)}%`);
-        });
+        setMotionTarget(card, px, py);
       };
 
       const handlePointerOut = (event) => {
@@ -862,7 +954,7 @@
       delete deck.dataset.refutationsSwitching;
       slots.forEach((slot) => {
         slot.removeAttribute('data-refutation-active');
-        resetImage(slot);
+        resetImage(slot, { immediate: true });
       });
       setLayerHints(false);
       removers.splice(0).forEach((remove) => remove());
