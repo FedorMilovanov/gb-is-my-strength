@@ -26,14 +26,25 @@ import { KOD_DA_VINCHI_TOC } from './kodDaVinchiToc';
     .kdv-cluster-scope { display: none; }
   }
 
+  /* Ordinary article summary polish uses a more-specific margin shorthand in
+     site.css. Restore only the reader engine's inline auto margins here so the
+     summary shares the same measured axis as prose instead of snapping to the
+     structural shell edge. */
+  .page-wrap--hrail main[data-reader-root] .article-body[data-pagefind-body] > .summary-card {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   /* This route keeps breadcrumb, main and footer inside .page-wrap. The
      structural canvas fills the client containing block through normal block
      auto sizing, while its inherited 24px inline padding remains the origin
-     for the classless main. Avoid a percentage width here: the canvas does not
-     need one, and auto sizing keeps WebKit scrollable-overflow accounting bound
-     to the containing block instead of manufacturing width beyond it. */
+     for the classless main. floating-cluster.css retains an older generic
+     body:has(.hrail) .page-wrap offset for legacy root pages; the semantic
+     page-wrap--hrail adapter must outrank that fallback on this native route.
+     Avoid a percentage width here: normal block sizing keeps WebKit
+     scrollable-overflow accounting bound to the containing block. */
   @media (min-width: 1200px) {
-    .page-wrap.page-wrap--hrail {
+    body:has(.hrail) .page-wrap.page-wrap--hrail {
       --hrail-canvas-inset-left: 24px;
       width: auto;
       max-width: none;
