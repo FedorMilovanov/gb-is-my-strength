@@ -3,9 +3,16 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
+const {
+  currentLegacyReferenceDisposition,
+  validateLegacyAuthorityProfile,
+} = require('./lib/legacy-source-authority.js');
+
 const MANIFEST_REL = 'data/legacy-reference-ledger/manifest.json';
 const SHARED_GUARD_REL = '.github/workflows/shared-files-guard.yml';
 const SELF_REL = 'scripts/legacy-reference-inventory-audit.mjs';
@@ -99,41 +106,17 @@ function collectProfiles() {
   for (const name of fs.readdirSync(dir).sort()) {
     if (!name.endsWith('.json')) continue;
     const profileRel = `data/route-profiles/${name}`;
-    const profile = readJson(profileRel);
-    if (!profile.legacyPath) continue;
+    const data = readJson(profileRel);
+    if (!data.legacyPath) continue;
     result.push({
-      route: profile.route,
+      route: data.route,
       profile: profileRel,
-      legacyPath: normalizeRel(profile.legacyPath),
-      declaredLegacyStatus: profile.legacyStatus ?? null,
+      legacyPath: normalizeRel(data.legacyPath),
+      data,
+      currentDisposition: currentLegacyReferenceDisposition(data, profileRel),
     });
   }
   return result.sort((a, b) => a.legacyPath.localeCompare(b.legacyPath));
-}
-
-function expectedClassification(profile) {
-  if (profile.route === '/' && profile.legacyPath === 'index.html') {
-    return {
-      classification: 'migration-reference-only',
-      decisionSource: 'issue-62-comment-5148492562',
-    };
-  }
-  if (profile.declaredLegacyStatus === 'reference-only') {
-    return {
-      classification: 'migration-reference-only',
-      decisionSource: `${profile.profile}:legacyStatus`,
-    };
-  }
-  if (profile.declaredLegacyStatus === 'canonical' || profile.declaredLegacyStatus === 'runtime-required') {
-    return {
-      classification: 'production-required',
-      decisionSource: `${profile.profile}:legacyStatus`,
-    };
-  }
-  return {
-    classification: 'unknown-blocker',
-    decisionSource: `${profile.profile}:legacyStatus-missing`,
-  };
 }
 
 function walk(root) {
@@ -180,6 +163,10 @@ function validateLedger(ledger) {
   if (ledger.policy?.normalValidation !== 'read-only') problem('normal validation must remain read-only');
   if (ledger.policy?.moveAllowedWhenUnknownBlockers !== false) problem('moves must remain blocked while unknown blockers exist');
   if (ledger.policy?.obsoleteWritersAllowed !== false) problem('obsolete writers must remain forbidden');
+  if (ledger.policy?.currentReferenceAuthority !== 'route-profiles') problem('current reference authority must be route-profiles');
+  if (ledger.policy?.referenceEntryAuthorityFields !== 'snapshot-at-auditedAtCommit') {
+    problem('reference entry authority fields must be declared historical snapshot metadata');
+  }
   const expectedFixtureDependencies = [...NON_BLOCKING_FIXTURE_DEPENDENCIES.keys()];
   if (JSON.stringify(ledger.policy?.nonBlockingFixtureDependencies) !== JSON.stringify(expectedFixtureDependencies)) {
     problem('non-blocking fixture dependency policy drifted');
@@ -205,12 +192,16 @@ function validateLedger(ledger) {
     }
     if (entry.route !== profile.route) problem(`${profile.legacyPath}: route mismatch`);
     if (entry.profile !== profile.profile) problem(`${profile.legacyPath}: profile owner mismatch`);
-    if ((entry.declaredLegacyStatus ?? null) !== profile.declaredLegacyStatus) problem(`${profile.legacyPath}: declared legacy status mismatch`);
-    if (!ALLOWED_CLASSIFICATIONS.has(entry.classification)) problem(`${profile.legacyPath}: invalid classification ${entry.classification}`);
-    const expected = expectedClassification(profile);
-    if (entry.classification !== expected.classification) problem(`${profile.legacyPath}: classification must be ${expected.classification}`);
-    if (entry.decisionSource !== expected.decisionSource) problem(`${profile.legacyPath}: decision source mismatch`);
+    if (!ALLOWED_CLASSIFICATIONS.has(entry.classification)) problem(`${profile.legacyPath}: invalid snapshot classification ${entry.classification}`);
     if (entry.sourceCommit !== ledger.auditedAtCommit) problem(`${profile.legacyPath}: sourceCommit must equal auditedAtCommit`);
+
+    const shapeIssues = validateLegacyAuthorityProfile(profile.data, {
+      pathExists: (relativePath) => fs.existsSync(path.join(ROOT, normalizeRel(relativePath))),
+    });
+    for (const message of shapeIssues) problem(`${profile.legacyPath}: current authority invalid: ${message}`);
+    if (profile.currentDisposition.classification === 'unknown-blocker' || profile.currentDisposition.classification === 'absent') {
+      problem(`${profile.legacyPath}: current route-profile authority is unresolved for an existing ledger reference`);
+    }
 
     const full = path.join(ROOT, profile.legacyPath);
     if (!fs.existsSync(full)) {
@@ -267,6 +258,10 @@ function validateLedger(ledger) {
   const obsoleteWriters = dependencies.filter((item) => item.classification === 'obsolete' && item.access === 'writer');
   if (obsoleteWriters.length > 0) problem(`obsolete writers must be removed: ${obsoleteWriters.map((item) => item.path).join(', ')}`);
 
+  // Manifest summary is the immutable ledger snapshot summary at auditedAtCommit.
+  // Current route-profile classifications are intentionally resolved at runtime
+  // and are reported by the retirement-readiness owner instead of being copied
+  // into every immutable shard entry.
   const expectedSummary = {
     references: refs.length,
     migrationReferenceOnly: refs.filter((item) => item.classification === 'migration-reference-only').length,
@@ -276,7 +271,7 @@ function validateLedger(ledger) {
     dependencyUnknownBlockers: dependencies.filter((item) => item.classification === 'unknown-blocker').length,
     obsoleteWriters: dependencies.filter((item) => item.classification === 'obsolete' && item.access === 'writer').length,
   };
-  if (JSON.stringify(ledger.summary) !== JSON.stringify(expectedSummary)) problem('summary does not match exact ledger contents');
+  if (JSON.stringify(ledger.summary) !== JSON.stringify(expectedSummary)) problem('snapshot summary does not match exact immutable ledger contents');
 
   if (!Array.isArray(ledger.referenceShards) || ledger.referenceShards.length !== 4) problem('exactly four reference shards are required');
   for (const shard of ledger.referenceShards || []) {
@@ -305,12 +300,7 @@ assert.deepEqual(problems, [], `Legacy reference inventory audit failed:\n- ${pr
 const mutations = [
   ['missing reference', (copy) => { copy.references.pop(); copy.summary.references--; }],
   ['hash drift', (copy) => { copy.references[0].byteSha256 = '0'.repeat(64); }],
-  ['unknown blocker laundering', (copy) => {
-    const target = copy.references.find((item) => item.classification === 'unknown-blocker');
-    target.classification = 'migration-reference-only';
-    copy.summary.unknownBlockers--;
-    copy.summary.migrationReferenceOnly++;
-  }],
+  ['invalid snapshot classification', (copy) => { copy.references[0].classification = 'invalid-snapshot'; }],
   ['unregistered dependency', (copy) => { copy.dependencies.pop(); copy.summary.dependencies--; }],
   ['move enabled with blockers', (copy) => { copy.policy.moveAllowedWhenUnknownBlockers = true; }],
   ['reviewed fixture relaundered as blocker', (copy) => {
@@ -345,10 +335,14 @@ for (const [label, mutate] of mutations) {
   assert.ok(validateLedger(copy).length > 0, `${label} mutation must fail closed`);
 }
 
+const current = collectProfiles().map((profile) => profile.currentDisposition);
+const currentMigrationOnly = current.filter((item) => item.classification === 'migration-reference-only').length;
+const currentProductionRequired = current.filter((item) => item.classification === 'production-required').length;
+const currentUnknown = current.filter((item) => item.classification === 'unknown-blocker').length;
+
 console.log(
-  `✅ Legacy reference inventory: ${ledger.summary.references} references; `
-  + `${ledger.summary.migrationReferenceOnly} migration-only; `
-  + `${ledger.summary.unknownBlockers} reference blockers; `
+  `✅ Legacy reference inventory: ${ledger.summary.references} immutable references; `
+  + `current authority=${currentMigrationOnly} migration-only/${currentProductionRequired} production-required/${currentUnknown} unresolved; `
   + `${ledger.summary.dependencies} dependencies; `
   + `${ledger.summary.dependencyUnknownBlockers} dependency blockers; `
   + `${mutations.length} adversarial mutations rejected`,
