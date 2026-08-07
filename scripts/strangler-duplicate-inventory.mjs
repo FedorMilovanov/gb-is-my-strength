@@ -9,18 +9,6 @@ import { fileURLToPath } from 'node:url';
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(SCRIPT_DIR, '..');
 const PUBLIC_ROOT_FILES = ['index.html'];
-const PUBLIC_DIRS = [
-  'about',
-  'articles',
-  'baptisty-rossii',
-  'biografii',
-  'hard-texts',
-  'karty',
-  'konfessii',
-  'map',
-  'nagornaya',
-  'pastor-series',
-];
 
 function normalizeSlashes(value) {
   return String(value).replace(/\\/g, '/');
@@ -72,13 +60,24 @@ function walkIndexFiles(directory, output) {
   }
 }
 
-function discoverPublicIndexes(root) {
+function ownershipDiscoveryRoots(routes) {
+  const roots = new Set();
+  for (const route of Object.keys(routes || {})) {
+    const first = String(route).split('/').filter(Boolean)[0];
+    if (first) roots.add(first);
+  }
+  return [...roots].sort((left, right) => left.localeCompare(right, 'en'));
+}
+
+function discoverPublicIndexes(root, routes) {
   const files = [];
   for (const relative of PUBLIC_ROOT_FILES) {
     const absolute = path.join(root, relative);
     if (fs.existsSync(absolute) && fs.statSync(absolute).isFile()) files.push(absolute);
   }
-  for (const relative of PUBLIC_DIRS) walkIndexFiles(path.join(root, relative), files);
+  for (const relative of ownershipDiscoveryRoots(routes)) {
+    walkIndexFiles(path.join(root, relative), files);
+  }
   return files.sort((left, right) => normalizeSlashes(left).localeCompare(normalizeSlashes(right), 'en'));
 }
 
@@ -141,7 +140,7 @@ function inventory(root, ownershipPath) {
   const manifest = loadOwnership(ownershipPath);
   const routes = manifest.routes;
   const seenRoutes = new Set();
-  const items = discoverPublicIndexes(root).map((filePath) => {
+  const items = discoverPublicIndexes(root, routes).map((filePath) => {
     const route = routeForIndex(root, filePath);
     if (seenRoutes.has(route)) throw new Error(`Multiple public index.html files resolve to ${route}`);
     seenRoutes.add(route);
@@ -163,18 +162,20 @@ function inventory(root, ownershipPath) {
   }
 
   return {
-    version: 1,
+    version: 2,
     source: 'migration/page-ownership.json',
     semantics: {
       advisoryCounts: true,
+      discoveryRoots: 'Top-level repository roots are derived from the governed ownership route set, not a hand-maintained directory allowlist.',
       nativeShadow: 'A legacy index.html exists at a route whose current owner is Astro.',
       ownedIndependent: 'The index belongs to an explicit built-app or copy-as-built-asset owner.',
-      unownedPublicIndex: 'A public index.html has no exact or containing independent owner.',
+      unownedPublicIndex: 'An index.html under a governed public root has no exact or containing independent owner.',
       retirementRule: 'Inventory is not deletion authority. Retire only in a separate bounded lane with source, dist and browser evidence.',
     },
     summary: {
       publicIndexFiles: items.length,
       totalBytes: items.reduce((sum, item) => sum + item.bytes, 0),
+      discoveryRoots: ownershipDiscoveryRoots(routes),
       classifications,
       bytesByClassification,
     },
@@ -192,6 +193,7 @@ function renderMarkdown(report) {
     '',
     `- Public index files: **${report.summary.publicIndexFiles}**`,
     `- Total bytes: **${report.summary.totalBytes}**`,
+    `- Ownership-derived discovery roots: **${report.summary.discoveryRoots.join(', ')}**`,
   ];
 
   for (const name of Object.keys(report.summary.classifications).sort()) {
@@ -223,12 +225,15 @@ function runSelfTest() {
     mkdirIndex('konfessii/app', '<!doctype html><title>built app</title>');
     mkdirIndex('konfessii/app/nested', '<!doctype html><title>app child</title>');
     mkdirIndex('about/unowned', '<!doctype html><title>unowned</title>');
+    mkdirIndex('rodosloviye', '<!doctype html><title>ownership-derived root</title>');
     fs.mkdirSync(path.join(root, 'migration'), { recursive: true });
     fs.writeFileSync(path.join(root, 'migration', 'page-ownership.json'), JSON.stringify({
       version: 2,
       routes: {
+        '/about/': { owner: 'astro', status: 'production-dist' },
         '/articles/native/': { owner: 'astro', status: 'production-dist' },
         '/konfessii/app/': { owner: 'built-app', status: 'copy-as-built-asset' },
+        '/rodosloviye/': { owner: 'astro', status: 'production-dist' },
       },
     }));
 
@@ -239,11 +244,15 @@ function runSelfTest() {
       ['/konfessii/app/', 'owned-independent'],
       ['/konfessii/app/nested/', 'owned-independent-descendant'],
       ['/about/unowned/', 'unowned-public-index'],
+      ['/rodosloviye/', 'native-shadow'],
     ]);
     for (const [route, classification] of expected) {
       if (byRoute.get(route) !== classification) {
         throw new Error(`Self-test mismatch for ${route}: expected ${classification}, received ${byRoute.get(route)}`);
       }
+    }
+    if (!report.summary.discoveryRoots.includes('rodosloviye')) {
+      throw new Error('Self-test did not derive rodosloviye from ownership routes');
     }
     console.log('✅ strangler duplicate inventory self-test passed');
   } finally {
