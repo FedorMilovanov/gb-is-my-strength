@@ -81,6 +81,39 @@ for (const r of routes) {
   }
 }
 
+const libraryThemeParts = [1, 2, 3, 5];
+const libraryThemeRequired = [
+  'var(--color-surface-2)',
+  'var(--color-accent)',
+  'var(--color-accent-strong)',
+  'var(--color-accent-soft)',
+  'var(--color-text)',
+  'var(--color-text-muted)',
+  'var(--color-border)',
+  'var(--shadow-sm)',
+  'color-mix(in srgb,var(--color-accent) 18%,transparent)',
+  'color-mix(in srgb,var(--color-accent) 24%,var(--color-border))',
+];
+const libraryThemeForbidden = ['#faf8f5', '#b8882a', '#8a5c10', '#8a7968', '#1c1410', 'rgba(120,83,0,.12)', 'rgba(184,136,42,.2)', 'rgba(184,136,42,.1)'];
+for (const part of libraryThemeParts) {
+  const rel = `src/components/nagornaya/chast-${part}/NagornayaChast${part}MainShell.astro`;
+  const source = read(rel);
+  const marker = '<!-- Читайте также -->';
+  const markerIndex = source.indexOf(marker);
+  const sectionStart = source.indexOf('<section style="margin-top:3rem;">', markerIndex);
+  const sectionEndStart = source.indexOf('</section>', sectionStart);
+  if (markerIndex < 0 || sectionStart < 0 || sectionEndStart < 0) {
+    bad(`chast-${part}: library section boundary missing`);
+    continue;
+  }
+  const block = source.slice(markerIndex, sectionEndStart + '</section>'.length);
+  must(block, '>Из библиотеки</span>', `chast-${part}: library heading preserved`);
+  for (const token of libraryThemeRequired) must(block, token, `chast-${part}: library token ${token}`);
+  for (const literal of libraryThemeForbidden) mustNot(block, literal, `chast-${part}: library light-only literal ${literal}`);
+}
+const part4Main = read('src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro');
+mustNot(part4Main, '>Из библиотеки</span>', 'chast-4: no library block introduced');
+
 mustNotExist('src/components/nagornaya/index/_legacy', 'index _legacy deleted');
 mustNotExist('src/components/nagornaya/istochniki/_legacy', 'istochniki _legacy deleted');
 mustNotExist('src/components/nagornaya/nakhodki/_legacy', 'nakhodki _legacy deleted');
