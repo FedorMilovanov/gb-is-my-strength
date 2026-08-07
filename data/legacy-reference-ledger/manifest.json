@@ -72,14 +72,6 @@
       "owner": "legacy-reference-quarantine"
     },
     {
-      "path": "scripts/lib/audit-pro-source-corpus.js",
-      "access": "policy-reader",
-      "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "legacyStatus",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
       "path": "scripts/audit-pro.js",
       "access": "reader",
       "classification": "unknown-blocker",
@@ -218,6 +210,14 @@
     {
       "path": "scripts/legacy-source-authority-regression-test.js",
       "access": "fixture-or-contract",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "must-update-before-move",
+      "evidenceToken": "legacyStatus",
+      "owner": "legacy-reference-quarantine"
+    },
+    {
+      "path": "scripts/lib/audit-pro-source-corpus.js",
+      "access": "policy-reader",
       "classification": "migration-reference-only",
       "quarantineImpact": "must-update-before-move",
       "evidenceToken": "legacyStatus",
