@@ -10,10 +10,20 @@
 ---
 
 <style is:global>
-  /* Keep a genuine outer rail for the manuscript marginalia. At intermediate
-     desktop widths we show a curated half-set; at wide widths the complete set
-     returns. Both modes are bounded to the free rail and cannot sit beneath the
-     central reading surface. */
+  /* Marginalia are decoration, never layout content. The leaf component keeps
+     them hidden by default; this route-level owner decides when the viewport
+     has a real outer rail. The former 1220–1479px window had no rail contract
+     and could place names of God under/against the central reading surface. */
+  @media (min-width: 1220px) and (max-width: 1479.98px) {
+    body.home-page .home-v20 .h-ambient-word {
+      display: none;
+      pointer-events: none;
+    }
+  }
+
+  /* At the first safe desktop width we deliberately show only half of the
+     marginalia, at a reduced scale. Below this breakpoint they disappear
+     before they can compete with the central reading surface. */
   @media (min-width: 1480px) and (max-width: 1599.98px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .home-content {
       max-width: 1120px;
@@ -21,6 +31,7 @@
 
     body.home-page .home-v20 .h-ambient-word {
       display: none;
+      font-size: calc(var(--ambient-size) * .82);
     }
 
     body.home-page .home-v20 .h-ambient-word:nth-child(odd) {
@@ -29,6 +40,9 @@
     }
   }
 
+  /* Full marginalia return once both rails are genuinely wide enough, but stay
+     slightly reduced until 1800px. This keeps the transition from curated to
+     full density soft rather than suddenly crowding the page. */
   @media (min-width: 1600px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .home-content {
       max-width: 1180px;
@@ -36,15 +50,28 @@
 
     body.home-page .home-v20 .h-ambient-word {
       display: block;
+      font-size: calc(var(--ambient-size) * .9);
       pointer-events: auto;
     }
   }
 
+  @media (min-width: 1800px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-word {
+      font-size: var(--ambient-size);
+    }
+  }
+
+  /* Every visible phrase, its translation and its source are physically bound
+     to the free rail between the viewport edge and the centred Home surface.
+     There is always a real outer inset plus a separate inner guard, so neither
+     the Hebrew/Greek/Latin word nor its hover disclosure can touch the edge or
+     drift under the central quote/cards. */
   @media (min-width: 1480px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .h-ambient-word {
       --ambient-content-width: 1120px;
-      --ambient-safe-edge: clamp(22px, var(--ambient-edge), 64px);
-      width: max(86px, calc((100vw - var(--ambient-content-width)) / 2 - var(--ambient-safe-edge) - 14px));
+      --ambient-safe-edge: clamp(36px, 3vw, 72px);
+      --ambient-center-guard: clamp(24px, 2vw, 38px);
+      width: max(76px, calc((100vw - var(--ambient-content-width)) / 2 - var(--ambient-safe-edge) - var(--ambient-center-guard)));
       max-width: 210px;
       box-sizing: border-box;
       white-space: normal;
@@ -120,13 +147,18 @@
       width: 100%;
       max-width: none;
       margin-top: 0;
-      color: color-mix(in srgb, var(--h-muted) 86%, transparent);
+      color: color-mix(in srgb, var(--h-accent) 82%, #1d5d70 18%);
       font-size: 7px;
-      font-weight: 720;
+      font-weight: 740;
       letter-spacing: .1em;
+      text-shadow: 0 1px 8px color-mix(in srgb, var(--h-accent) 10%, transparent);
       opacity: 0;
       visibility: hidden;
       transform: translateY(-5px);
+    }
+
+    html.dark body.home-page .home-v20 .h-ambient-word__source {
+      color: color-mix(in srgb, var(--h-accent) 88%, #d8f6f8 12%);
     }
 
     body.home-page .home-v20 .h-ambient-word--right .h-ambient-word__source {
