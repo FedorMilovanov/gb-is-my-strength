@@ -72,9 +72,9 @@ function collectReferenceOnlyHtmlPaths() {
       throw new Error(`cache-bust reference authority invalid for ${repoRel(profileFile)}: ${issues.join(' | ')}`);
     }
 
-    const target = resolveRepoHtml(authority.legacyPath);
+    const target = resolveRepoHtml(profile.legacyPath);
     if (!target) {
-      throw new Error(`cache-bust reference-only path must be repository HTML: ${authority.legacyPath || '(missing)'}`);
+      throw new Error(`cache-bust reference-only path must be repository HTML: ${profile.legacyPath || '(missing)'}`);
     }
 
     const previous = claimedBy.get(target.abs);
