@@ -8,22 +8,22 @@ interface LibraryLinkItem {
 
 interface Props {
   items: LibraryLinkItem[];
-  headingId?: string;
+  labelId?: string;
 }
 
 const {
   items,
-  headingId = 'nagornaya-library-links-title',
+  labelId = 'nagornaya-library-links-label',
 } = Astro.props;
 
-if (!/^[a-z][a-z0-9-]*$/.test(headingId)) {
-  throw new Error(`Invalid Nagornaya library headingId: ${headingId}`);
+if (!/^[a-z][a-z0-9-]*$/.test(labelId)) {
+  throw new Error(`Invalid Nagornaya library labelId: ${labelId}`);
 }
 ---
-<section class="nag-library-links" aria-labelledby={headingId}>
+<section class="nag-library-links" aria-labelledby={labelId}>
   <div class="nag-library-links__heading">
     <span class="nag-library-links__accent" aria-hidden="true"></span>
-    <h2 id={headingId}>Из библиотеки</h2>
+    <span class="nag-library-links__label" id={labelId}>Из библиотеки</span>
     <span class="nag-library-links__rule" aria-hidden="true"></span>
   </div>
 
@@ -65,8 +65,7 @@ if (!/^[a-z][a-z0-9-]*$/.test(headingId)) {
     background: linear-gradient(180deg, var(--color-accent), var(--color-accent-strong));
   }
 
-  .nag-library-links__heading h2 {
-    margin: 0;
+  .nag-library-links__label {
     color: var(--color-text-muted);
     font-family: monospace;
     font-size: 10px;
