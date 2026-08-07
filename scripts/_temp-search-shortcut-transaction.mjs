@@ -10,34 +10,27 @@ const HOME_HEAD = path.join(ROOT, 'src/components/home/HomeProgressiveEnhancemen
 const HOME_BROWSER = path.join(ROOT, 'scripts/home-browser-contract.mjs');
 const LEDGER_MANIFEST = path.join(ROOT, 'data/legacy-reference-ledger/manifest.json');
 
-function read(file) { return fs.readFileSync(file, 'utf8'); }
-function write(file, value) { fs.writeFileSync(file, value, 'utf8'); }
-function count(source, token) { return source.split(token).length - 1; }
+const read = (file) => fs.readFileSync(file, 'utf8');
+const write = (file, value) => fs.writeFileSync(file, value, 'utf8');
+const count = (source, token) => source.split(token).length - 1;
 
 function applySourceRepair() {
   let search = read(SEARCH);
+  const bootstrapPredicate = '(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()==="k"';
+  const runtimePredicate = '(e.metaKey||e.ctrlKey)&&"k"===String(e.key).toLowerCase()';
   assert.equal(count(search, 'function __gbSearchCanonicalShortcut'), 0, 'canonical shortcut helper already exists');
-  assert.equal(count(search, '(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()==="k"'), 1, 'bootstrap shortcut owner drifted');
-  assert.equal(count(search, '(e.metaKey||e.ctrlKey)&&"k"===String(e.key).toLowerCase()'), 1, 'loaded shortcut owner drifted');
+  assert.equal(count(search, bootstrapPredicate), 1, 'bootstrap shortcut predicate drifted');
+  assert.equal(count(search, runtimePredicate), 1, 'loaded shortcut predicate drifted');
 
   const helperAnchor = 'function __gbSyncSearchTriggerLabels(e)';
   assert.equal(count(search, helperAnchor), 1, 'search helper insertion anchor drifted');
   const helper = 'function __gbSearchEditableTarget(e){var t=e&&e.target;return!!(t&&1===t.nodeType&&t.closest&&t.closest(\'input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]\'))}function __gbSearchCanonicalShortcut(e){return String(e&&e.key||"").toLowerCase()==="k"&&Number(!!e.ctrlKey)+Number(!!e.metaKey)===1&&!e.altKey&&!e.shiftKey&&!e.isComposing&&!__gbSearchEditableTarget(e)}';
   search = search.replace(helperAnchor, helper + helperAnchor);
-
-  const bootstrapOld = 'document.addEventListener("keydown",function(e){(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()==="k"&&(e.preventDefault(),__gbLoadSearch(true))},true);';
-  const bootstrapNew = 'document.addEventListener("keydown",function(e){__gbSearchCanonicalShortcut(e)&&(e.preventDefault(),__gbLoadSearch(true))},true);';
-  assert.equal(count(search, bootstrapOld), 1, 'bootstrap listener exact owner drifted');
-  search = search.replace(bootstrapOld, bootstrapNew);
-
-  const runtimeRe = /document\.addEventListener\("keydown",function\(e\)\{\(e\.metaKey\|\|e\.ctrlKey\)&&"k"===String\(e\.key\)\.toLowerCase\(\)&&\(e\.preventDefault\(\),k\.classList\.contains\("open"\)\?Q\(\):W\(\)\),"Escape"===e\.key&&k\.classList\.contains\("open"\)&&Q\(\)\}\);/g;
-  const runtimeMatches = search.match(runtimeRe) || [];
-  assert.equal(runtimeMatches.length, 1, 'loaded runtime shortcut listener exact owner drifted');
-  search = search.replace(runtimeRe, 'document.addEventListener("keydown",function(e){__gbSearchCanonicalShortcut(e)&&(e.preventDefault(),k.classList.contains("open")?Q():W()),"Escape"===e.key&&k.classList.contains("open")&&Q()});');
-
+  search = search.replace(bootstrapPredicate, '__gbSearchCanonicalShortcut(e)');
+  search = search.replace(runtimePredicate, '__gbSearchCanonicalShortcut(e)');
   assert.equal(count(search, '__gbSearchCanonicalShortcut(e)&&'), 2, 'both shortcut owners must delegate to one predicate');
-  assert.equal(count(search, '(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()==="k"'), 0, 'broad bootstrap shortcut survived');
-  assert.equal(count(search, '(e.metaKey||e.ctrlKey)&&"k"===String(e.key).toLowerCase()'), 0, 'broad loaded shortcut survived');
+  assert.equal(count(search, bootstrapPredicate), 0, 'broad bootstrap shortcut survived');
+  assert.equal(count(search, runtimePredicate), 0, 'broad loaded shortcut survived');
   write(SEARCH, search);
 
   let home = read(HOME_HEAD);
@@ -47,8 +40,7 @@ function applySourceRepair() {
   const blockStart = home.lastIndexOf('<script is:inline>', markerAt);
   const blockEndStart = home.indexOf('</script>', markerAt);
   assert.ok(blockStart >= 0 && blockEndStart > markerAt, 'Home shortcut workaround script boundary missing');
-  const blockEnd = blockEndStart + '</script>'.length;
-  home = `${home.slice(0, blockStart)}${home.slice(blockEnd)}`.replace(/\n{3,}/g, '\n\n');
+  home = `${home.slice(0, blockStart)}${home.slice(blockEndStart + '</script>'.length)}`.replace(/\n{3,}/g, '\n\n');
   assert.equal(home.includes('stopImmediatePropagation'), false, 'Home route-local shortcut gate survived');
   write(HOME_HEAD, home);
 
@@ -66,7 +58,6 @@ function applySourceRepair() {
   const replacement = `    const assertInvalidSearchShortcut = async (label, press) => {\n      await press();\n      await page.waitForTimeout(120);\n      await assertSearchClosed(page, label);\n    };\n    const dispatchComposingCtrlK = () => page.evaluate(() => {\n      const event = new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', ctrlKey: true, bubbles: true, cancelable: true });\n      Object.defineProperty(event, 'isComposing', { value: true });\n      document.activeElement?.dispatchEvent(event);\n    });\n    const focusContractTextbox = (id, contentEditable = false) => page.evaluate(({ targetId, editable }) => {\n      let target = document.getElementById(targetId);\n      if (!target) {\n        target = document.createElement('div');\n        target.id = targetId;\n        target.tabIndex = 0;\n        target.setAttribute('role', 'textbox');\n        if (editable) target.contentEditable = 'true';\n        target.textContent = targetId;\n        document.body.appendChild(target);\n      }\n      target.focus();\n    }, { targetId: id, editable: contentEditable });\n\n    await assertInvalidSearchShortcut('bootstrap Alt+Ctrl+K', () => page.keyboard.press('Alt+Control+K'));\n    await assertInvalidSearchShortcut('bootstrap Shift+Ctrl+K', () => page.keyboard.press('Shift+Control+K'));\n    await assertInvalidSearchShortcut('bootstrap Ctrl+Meta+K', () => page.keyboard.press('Control+Meta+K'));\n    await focusContractTextbox('home-contract-editable', true);\n    await assertInvalidSearchShortcut('bootstrap editable Ctrl+K', () => page.keyboard.press('Control+K'));\n    await page.locator('body').click({ position: { x: 1, y: 1 } });\n    await assertInvalidSearchShortcut('bootstrap composing Ctrl+K', dispatchComposingCtrlK);\n\n    await page.keyboard.press('Control+K');\n    const searchInput = page.locator('.cp-input');\n    await searchInput.waitFor({ state: 'visible' });\n    await page.waitForFunction(() => {\n      const input = document.querySelector('.cp-input');\n      return input !== null && input === document.activeElement && window.GBSearch?.__ready === true;\n    });\n    assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, 'canonical Ctrl+K did not focus search input');\n    assert.equal(await page.locator('.cp-backdrop').count(), 1, 'search initialized more than once');\n    await page.keyboard.press('Escape');\n    await page.waitForFunction(() => {\n      const overlay = document.querySelector('.cp-backdrop');\n      return !overlay || getComputedStyle(overlay).display === 'none' || !overlay.classList.contains('open');\n    });\n\n    await page.locator('body').click({ position: { x: 1, y: 1 } });\n    await assertInvalidSearchShortcut('loaded Alt+Ctrl+K', () => page.keyboard.press('Alt+Control+K'));\n    await assertInvalidSearchShortcut('loaded Shift+Ctrl+K', () => page.keyboard.press('Shift+Control+K'));\n    await assertInvalidSearchShortcut('loaded Ctrl+Meta+K', () => page.keyboard.press('Control+Meta+K'));\n    await focusContractTextbox('home-contract-role-textbox', false);\n    await assertInvalidSearchShortcut('loaded role=textbox Ctrl+K', () => page.keyboard.press('Control+K'));\n    await page.locator('body').click({ position: { x: 1, y: 1 } });\n    await assertInvalidSearchShortcut('loaded composing Ctrl+K', dispatchComposingCtrlK);\n\n    await page.keyboard.press('Control+K');\n    await searchInput.waitFor({ state: 'visible' });\n    assert.equal(await page.locator('.cp-backdrop').count(), 1, 'loaded canonical Ctrl+K duplicated the search overlay');\n    await page.keyboard.press('Escape');\n    await page.waitForFunction(() => {\n      const overlay = document.querySelector('.cp-backdrop');\n      return !overlay || getComputedStyle(overlay).display === 'none' || !overlay.classList.contains('open');\n    });\n\n`;
   browser = `${browser.slice(0, start)}${replacement}${browser.slice(end)}`;
   write(HOME_BROWSER, browser);
-
   console.log('Search exact-shortcut source repair applied.');
 }
 
@@ -81,8 +72,8 @@ function decodeEntities(value) {
     return named.get(entity.toLowerCase()) ?? full;
   });
 }
-function sha256(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
-function gitBlobSha1(bytes) { return crypto.createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${bytes.length}\0`), bytes])).digest('hex'); }
+const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
+const gitBlobSha1 = (bytes) => crypto.createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${bytes.length}\0`), bytes])).digest('hex');
 function htmlMetrics(raw, bytes) {
   const normalizedText = decodeEntities(raw.replace(/<!--[^]*?-->/g,' ').replace(/<script\b[^>]*>[^]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[^]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ')).replace(/\s+/g,' ').trim();
   const words = normalizedText.match(/[0-9A-Za-zА-Яа-яЁё]+(?:[-'’][0-9A-Za-zА-Яа-яЁё]+)*/g) || [];
@@ -97,8 +88,7 @@ function refreshLedger(sourceSha) {
     const shardPath = path.join(ROOT, shardRel);
     const shard = JSON.parse(read(shardPath));
     for (const entry of shard.entries || []) {
-      const file = path.join(ROOT, entry.legacyPath);
-      const bytes = fs.readFileSync(file);
+      const bytes = fs.readFileSync(path.join(ROOT, entry.legacyPath));
       const next = htmlMetrics(bytes.toString('utf8'), bytes);
       assert.equal(next.normalizedTextSha256, entry.normalizedTextSha256, `${entry.legacyPath}: normalized text changed during asset projection`);
       assert.equal(next.wordCount, entry.wordCount, `${entry.legacyPath}: word count changed during asset projection`);
