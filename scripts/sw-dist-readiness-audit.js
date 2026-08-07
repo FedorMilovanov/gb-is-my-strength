@@ -123,6 +123,10 @@ function checkPrecache(rootSw) {
   if (forbiddenHtml.length) forbiddenHtml.forEach((asset) => bad(`content HTML must not be precached: ${asset}`));
   else ok('only /404.html is precached; content routes remain visit-driven');
 
+  if (assets.includes('/karty/_engine/map-engine.js')) {
+    bad('Karty shared map-engine.js must remain runtime-fetched so the freshness strategy can govern it');
+  } else ok('Karty shared map-engine.js is excluded from PRECACHE_ASSETS');
+
   if (REQUIRE_PAGEFIND) {
     if (assets.includes('/pagefind/pagefind.js')) ok('Pagefind bootstrap is precached');
     else bad('Pagefind bootstrap /pagefind/pagefind.js missing from PRECACHE_ASSETS');
@@ -146,6 +150,8 @@ function checkSwRuntimeShape(rootSw) {
   forbidPattern('sw.js HTML strategy', rootSw, /staleWhileRevalidate/, 'stale-while-revalidate navigation');
   requirePattern('sw.js revisioned static strategy', rootSw, /function\s+revisionedStaticNetworkFirst\s*\(/, 'network-first revisioned assets');
   requirePattern('sw.js revisioned static fallback', rootSw, /canonicalUrl\s*\(\s*url\s*\)/, 'canonical precache fallback');
+  requirePattern('sw.js Karty engine selector', rootSw, /function\s+isNetworkFirstRuntime\s*\(\s*url\s*\)[\s\S]{0,180}?url\.pathname\s*===\s*["']\/karty\/_engine\/map-engine\.js["']/, 'exact shared map-engine network-first selector');
+  requirePattern('sw.js Karty engine strategy', rootSw, /isStaticAsset\s*\(\s*url\s*\)[\s\S]{0,300}?isRevisioned\s*\(\s*url\s*\)[\s\S]{0,180}?isNetworkFirstRuntime\s*\(\s*url\s*\)[\s\S]{0,140}?networkFirstWithCache\s*\(\s*request\s*,\s*CACHE_STATIC\s*\)[\s\S]{0,140}?cacheFirst\s*\(\s*request\s*,\s*CACHE_STATIC\s*\)/, 'unversioned Karty engine uses network-first with static-cache offline fallback before generic cache-first');
   requirePattern('sw.js mutable data strategy', rootSw, /isMutableData[\s\S]+CACHE_DATA/, 'mutable /data/*.json network-first cache');
   requirePattern('sw.js Pagefind data strategy', rootSw, /isPagefindData[\s\S]+CACHE_PAGEFIND/, 'Pagefind data network-first cache');
   requirePattern('sw.js Pagefind static strategy', rootSw, /isPagefindStatic[\s\S]+cacheFirst/, 'Pagefind static cache-first');
