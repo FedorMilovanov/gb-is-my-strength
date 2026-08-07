@@ -37,6 +37,8 @@ const PROTECTED_PATTERNS = [
   'js/',
   'karty/_engine/',
   'scripts/guard-shared-files.js',
+  'scripts/lane-collision-guard.mjs',
+  'scripts/lane-collision-guard-contract-test.mjs',
   'scripts/check-workflows.js',
   'scripts/repository-control-plane-audit.mjs',
   'scripts/cache-bust.js',
