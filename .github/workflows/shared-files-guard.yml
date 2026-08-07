@@ -125,7 +125,9 @@ jobs:
         run: node scripts/visual-parity-policy-regression-test.js
 
       - name: Runtime integrity regressions
-        run: node scripts/runtime-integrity-test.js
+        run: |
+          node scripts/runtime-integrity-test.js
+          node scripts/faq-jsonld-text-contract-test.js
 
       - name: Overlay runtime contracts
         run: |

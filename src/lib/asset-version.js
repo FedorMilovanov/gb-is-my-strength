@@ -18,7 +18,7 @@ export const ASSET_VERSIONS = {
   'css/tts-download-notice.css': 'b9ef192f',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'fba4e559',
-  'js/enhancements.js': 'cbbdb283',
+  'js/enhancements.js': '1b5392b1',
   'js/floating-cluster-controller.js': '7b33c8e6',
   'js/glossary.js': '535493ed',
   'js/highlights.js': '25484760',
