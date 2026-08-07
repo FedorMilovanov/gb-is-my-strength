@@ -17,44 +17,84 @@ function put(rel, content = '<!doctype html>') {
   fs.writeFileSync(file, content);
   return file;
 }
+function readCorpus(records) {
+  return records.map((item) => fs.readFileSync(item.file, 'utf8')).join('\n');
+}
 
 const home = put('index.html');
 const article = put('articles/one/index.html');
+const reference = put(
+  'articles/reference/index.html',
+  '<!doctype html><script>document.addEventListener("keydown",e=>{if(e.ctrlKey&&String(e.key).toLowerCase()==="k")e.preventDefault()})</script><script src="/js/search.js?v=deadbeef"></script>',
+);
+const absentSnapshot = put('articles/absent/index.html', '<!doctype html><p>retired snapshot</p>');
 const draft = put('draft/index.html');
 const orphan = put('orphan/index.html');
 const notFound = put('404.html');
 const verification = put('google123.html');
 
 const entries = [
-  { route: '/', status: 'production-dist', surface: 'page' },
-  { route: '/articles/one/', status: 'production-dist', surface: 'article' },
-  { route: '/astro-only/', status: 'production-dist', surface: 'page' },
-  { route: '/draft/', status: 'shadow-pilot', surface: 'page' },
+  { route: '/', status: 'production-dist', surface: 'page', legacyStatus: 'runtime-required' },
+  { route: '/articles/one/', status: 'production-dist', surface: 'article', legacyStatus: 'canonical' },
+  { route: '/articles/reference/', status: 'production-dist', surface: 'article', legacyStatus: 'reference-only' },
+  { route: '/articles/absent/', status: 'production-dist', surface: 'article', legacyStatus: 'absent' },
+  { route: '/astro-only/', status: 'production-dist', surface: 'page', legacyStatus: 'absent' },
+  { route: '/draft/', status: 'shadow-pilot', surface: 'page', legacyStatus: 'reference-only' },
 ];
-const allHtmlFiles = [home, article, draft, orphan, notFound, verification];
+const allHtmlFiles = [home, article, reference, absentSnapshot, draft, orphan, notFound, verification];
 const baseline = buildAuditProSourceCorpus({ root, entries, allHtmlFiles });
 
 assert.strictEqual(routeToRootHtml(root, '/'), home);
 assert.strictEqual(routeToRootHtml(root, '/articles/one/'), article);
-assert.deepStrictEqual(baseline.sourcePages.map((item) => item.route), ['/', '/articles/one/']);
+assert.deepStrictEqual(
+  baseline.sourcePages.map((item) => item.route),
+  ['/', '/articles/absent/', '/articles/one/', '/articles/reference/'],
+);
+assert.deepStrictEqual(baseline.currentRuntimePages.map((item) => item.route), ['/', '/articles/one/']);
+assert.deepStrictEqual(baseline.referenceOnly.map((item) => item.route), ['/articles/reference/']);
 assert.deepStrictEqual(baseline.distOnly.map((item) => item.route), ['/astro-only/']);
 assert.deepStrictEqual(baseline.registeredNonProduction.map((item) => item.route), ['/draft/']);
 assert.deepStrictEqual(baseline.unregisteredRootHtml.map((item) => item.relative), ['orphan/index.html']);
 assert.deepStrictEqual(baseline.duplicateRootMappings, []);
-assert.strictEqual(baseline.productionRoutes, 3);
+assert.strictEqual(baseline.productionRoutes, 5);
+
+// Retained/absent snapshots stay visible to broad structural/forensic checks,
+// but current-runtime consumers (cache revision + G112) must not see them.
+assert(readCorpus(baseline.sourcePages).includes('deadbeef'));
+assert(readCorpus(baseline.sourcePages).includes('ctrlKey'));
+assert(!readCorpus(baseline.currentRuntimePages).includes('deadbeef'));
+assert(!readCorpus(baseline.currentRuntimePages).includes('ctrlKey'));
+assert(baseline.sourcePages.some((item) => item.route === '/articles/absent/'));
+assert(!baseline.currentRuntimePages.some((item) => item.route === '/articles/absent/'));
 
 const synthetic = buildAuditProSourceCorpus({
   root,
-  entries: [...entries, { route: '/future-native/', status: 'production-dist', surface: 'series' }],
+  entries: [...entries, { route: '/future-native/', status: 'production-dist', surface: 'series', legacyStatus: 'absent' }],
   allHtmlFiles,
 });
 assert(synthetic.distOnly.some((item) => item.route === '/future-native/'));
 assert(!synthetic.unregisteredRootHtml.some((item) => item.relative === 'future-native/index.html'));
 
+// Adversarial authority mutation: the exact same retained bytes become visible
+// to current runtime checks as soon as their route is made canonical.
+const referenceMutation = buildAuditProSourceCorpus({
+  root,
+  entries: entries.map((entry) => entry.route === '/articles/reference/'
+    ? { ...entry, legacyStatus: 'canonical' }
+    : entry),
+  allHtmlFiles,
+});
+assert(referenceMutation.sourcePages.some((item) => item.route === '/articles/reference/'));
+assert(referenceMutation.currentRuntimePages.some((item) => item.route === '/articles/reference/'));
+assert(!referenceMutation.referenceOnly.some((item) => item.route === '/articles/reference/'));
+assert(readCorpus(referenceMutation.currentRuntimePages).includes('deadbeef'));
+assert(readCorpus(referenceMutation.currentRuntimePages).includes('ctrlKey'));
+
 fs.unlinkSync(article);
 const removedShadow = buildAuditProSourceCorpus({ root, entries, allHtmlFiles: allHtmlFiles.filter((file) => file !== article) });
 assert(removedShadow.distOnly.some((item) => item.route === '/articles/one/'));
 assert(!removedShadow.sourcePages.some((item) => item.route === '/articles/one/'));
+assert(!removedShadow.currentRuntimePages.some((item) => item.route === '/articles/one/'));
 
 fs.rmSync(root, { recursive: true, force: true });
-console.log('✅ audit-pro source corpus mutations passed');
+console.log('✅ audit-pro forensic/current-runtime corpus mutations passed');

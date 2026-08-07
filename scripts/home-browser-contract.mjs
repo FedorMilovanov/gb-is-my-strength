@@ -221,20 +221,32 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await page.waitForTimeout(120);
     await assertSearchClosed(page, 'Ctrl+Meta+K');
 
+    const scrollYBeforeEditable = await page.evaluate(() => window.scrollY);
     await page.evaluate(() => {
       const editable = document.createElement('div');
       editable.id = 'home-contract-editable';
       editable.contentEditable = 'true';
       editable.textContent = 'editable';
+      editable.style.position = 'fixed';
+      editable.style.top = '0';
+      editable.style.left = '0';
+      editable.style.width = '1px';
+      editable.style.height = '1px';
+      editable.style.opacity = '0.01';
       document.body.appendChild(editable);
-      editable.focus();
+      editable.focus({ preventScroll: true });
     });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(120);
     await assertSearchClosed(page, 'editable Ctrl+K');
+    assert.equal(await page.evaluate(() => window.scrollY), scrollYBeforeEditable, 'editable shortcut fixture changed scroll position');
+    await page.evaluate(() => document.getElementById('home-contract-editable')?.remove());
 
-    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await menuButton.click();
+    await waitForMenuState(page, true);
     await page.keyboard.press('Control+K');
+    await waitForMenuState(page, false);
+    await assertScrollUnlocked(page, 'canonical Search shortcut from mobile menu');
     const searchInput = page.locator('.cp-input');
     await searchInput.waitFor({ state: 'visible' });
     await page.waitForFunction(() => {
@@ -243,6 +255,9 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     });
     assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, 'canonical Ctrl+K did not focus search input');
     assert.equal(await page.locator('.cp-backdrop').count(), 1, 'search initialized more than once');
+    await page.keyboard.press('Control+K');
+    await page.waitForTimeout(80);
+    assert.equal(await page.locator('.cp-backdrop.is-open').count(), 1, 'canonical Ctrl+K toggled an already-open Search closed');
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => {
       const overlay = document.querySelector('.cp-backdrop');

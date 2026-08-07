@@ -145,6 +145,7 @@ function derivePublicSurfaceEntry(record, mobileEntries = parseMobileChromeRegis
     routeRole,
     migrationLane: profile.migrationLane || null,
     section: profile.section || null,
+    legacyStatus: profile.legacyStatus || null,
     owner: record.owner?.owner || null,
     status: record.owner?.status || null,
     source: record.sourceRel || record.owner?.source || null,

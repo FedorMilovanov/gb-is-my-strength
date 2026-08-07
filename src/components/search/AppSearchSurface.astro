@@ -115,20 +115,3 @@ const { mode } = Astro.props;
     .gb-app-search { transition: none; }
   }
 </style>
-
-<script is:inline>
-  (() => {
-    const trigger = document.querySelector('[data-app-search-trigger]');
-    if (!(trigger instanceof HTMLButtonElement)) return;
-    window.addEventListener('keydown', (event) => {
-      if (!(event.ctrlKey || event.metaKey) || String(event.key).toLowerCase() !== 'k') return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      const search = window.GBSearch;
-      if (!search || typeof search.open !== 'function') return;
-      const isOpen = document.querySelector('.cp-backdrop')?.classList.contains('is-open') === true;
-      if (isOpen && typeof search.close === 'function') search.close();
-      else search.open();
-    }, true);
-  })();
-</script>
