@@ -148,6 +148,13 @@ check(
   'ENGINE-P2-03 permits the blocking loading overlay only as an explicit opt-in while route data is genuinely pending.'
 );
 
+// Temporary draft-only transport: the existing diagnostics artifact captures
+// the exact shared runtime bytes so the large owner can be patched locally
+// without reconstructing a 3k-line file through the Contents API.
+const reportsDir = path.join(root, 'reports');
+fs.mkdirSync(reportsDir, { recursive: true });
+fs.writeFileSync(path.join(reportsDir, 'map-engine-source.log'), source, 'utf8');
+
 if (failures) {
   console.error(`\n❌ map-engine regression guard: ${failures} failed check(s)`);
   process.exit(1);
