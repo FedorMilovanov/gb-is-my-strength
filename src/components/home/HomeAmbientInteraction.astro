@@ -172,6 +172,7 @@
     if (!['127.0.0.1', 'localhost'].includes(location.hostname)) return;
 
     const report = (message) => console.error(`[home-ambient-contract] ${message}`);
+    const rectWithinViewport = (rect, tolerance = 1) => rect.left >= -tolerance && rect.right <= innerWidth + tolerance;
     const runContract = () => {
       syncVisibility();
       const visible = words.filter((word) => getComputedStyle(word).display !== 'none');
@@ -179,6 +180,20 @@
       if (visible.length !== expected) {
         report(`expected ${expected} visible phrases at ${innerWidth}px, got ${visible.length}`);
       }
+
+      const content = document.querySelector('.home-content');
+      const contentRect = content instanceof HTMLElement ? content.getBoundingClientRect() : null;
+      const outerFloor = Math.min(64, Math.max(48, innerWidth * .03));
+      const centerGuard = Math.min(32, Math.max(22, innerWidth * .015));
+      const edgeGapFor = (word, rect = word.getBoundingClientRect()) => (
+        word.classList.contains('h-ambient-word--left') ? rect.left : innerWidth - rect.right
+      );
+      const innerGapFor = (word, rect = word.getBoundingClientRect()) => {
+        if (!contentRect) return Infinity;
+        return word.classList.contains('h-ambient-word--left')
+          ? contentRect.left - rect.right
+          : rect.left - contentRect.right;
+      };
 
       words.forEach((word, index) => {
         const shouldBeVisible = getComputedStyle(word).display !== 'none';
@@ -198,10 +213,32 @@
 
       visible.forEach((word, index) => {
         const prefix = `visible phrase ${index + 1}`;
+        const phraseRect = word.getBoundingClientRect();
+        const edgeGap = edgeGapFor(word, phraseRect);
+        const innerGap = innerGapFor(word, phraseRect);
+
+        if (!rectWithinViewport(phraseRect)) report(`${prefix} leaves the viewport`);
+        if (edgeGap < outerFloor - 1) {
+          report(`${prefix} is only ${edgeGap.toFixed(2)}px from the viewport edge; expected at least ${outerFloor.toFixed(2)}px`);
+        }
+        if (innerGap < centerGuard - 1) {
+          report(`${prefix} is only ${innerGap.toFixed(2)}px from the central reading surface; expected at least ${centerGuard.toFixed(2)}px`);
+        }
+
         word.click();
         if (!isPinned(word) || word.getAttribute('aria-expanded') !== 'true') {
           report(`${prefix} did not open by click`);
         }
+
+        const tooltip = word.querySelector('.h-ambient-word__tooltip');
+        const source = word.querySelector('.h-ambient-word__source');
+        if (tooltip instanceof HTMLElement && !rectWithinViewport(tooltip.getBoundingClientRect())) {
+          report(`${prefix} translation leaves the viewport`);
+        }
+        if (source instanceof HTMLElement && !rectWithinViewport(source.getBoundingClientRect())) {
+          report(`${prefix} source leaves the viewport`);
+        }
+
         word.click();
         if (isPinned(word) || word.getAttribute('aria-expanded') !== 'false') {
           report(`${prefix} did not close by second click`);
@@ -216,8 +253,43 @@
         if (!isPinned(word)) report(`${prefix} did not open by Space`);
         setPinned(word, false);
       });
+
+      if (innerWidth >= 1700) {
+        for (const side of ['left', 'right']) {
+          const sideGaps = visible
+            .filter((word) => word.classList.contains(`h-ambient-word--${side}`))
+            .map((word) => edgeGapFor(word));
+          const uniqueGaps = new Set(sideGaps.map((gap) => Math.round(gap)));
+          const spread = sideGaps.length ? Math.max(...sideGaps) - Math.min(...sideGaps) : 0;
+          if (uniqueGaps.size < 3 || spread < 20) {
+            report(`${side} marginalia lost their historical stagger (${uniqueGaps.size} positions, ${spread.toFixed(2)}px spread)`);
+          }
+        }
+
+        const holy = visible.find((word) => word.querySelector('.h-ambient-word__text')?.textContent?.trim() === 'ἅγιος ἅγιος ἅγιος');
+        if (holy) {
+          const actual = edgeGapFor(holy);
+          const historical = Math.min(innerWidth * .073, 240);
+          if (Math.abs(actual - historical) > 2) {
+            report(`ἅγιος placement drifted: ${actual.toFixed(2)}px, expected ${historical.toFixed(2)}px`);
+          }
+        } else {
+          report('ἅγιος phrase is missing from the full marginalia set');
+        }
+      }
     };
 
-    addEventListener('load', () => window.setTimeout(runContract, 140), { once: true });
+    let contractTimer = 0;
+    const scheduleContract = () => {
+      window.clearTimeout(contractTimer);
+      contractTimer = window.setTimeout(() => {
+        requestAnimationFrame(() => requestAnimationFrame(runContract));
+      }, 120);
+    };
+
+    addEventListener('resize', scheduleContract, { passive: true });
+    addEventListener('pageshow', scheduleContract);
+    document.fonts?.ready.then(scheduleContract);
+    addEventListener('load', scheduleContract, { once: true });
   })();
 </script>
