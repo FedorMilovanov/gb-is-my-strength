@@ -95,6 +95,10 @@ const libraryThemeRequired = [
   'color-mix(in srgb,var(--color-accent) 24%,var(--color-border))',
 ];
 const libraryThemeForbidden = ['#faf8f5', '#b8882a', '#8a5c10', '#8a7968', '#1c1410', 'rgba(120,83,0,.12)', 'rgba(184,136,42,.2)', 'rgba(184,136,42,.1)'];
+const libraryThemeHrefs = [
+  '../../articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
+  '../../articles/krajne-li-isporcheno-serdce/',
+];
 for (const part of libraryThemeParts) {
   const rel = `src/components/nagornaya/chast-${part}/NagornayaChast${part}MainShell.astro`;
   const source = read(rel);
@@ -110,6 +114,9 @@ for (const part of libraryThemeParts) {
   must(block, '>Из библиотеки</span>', `chast-${part}: library heading preserved`);
   for (const token of libraryThemeRequired) must(block, token, `chast-${part}: library token ${token}`);
   for (const literal of libraryThemeForbidden) mustNot(block, literal, `chast-${part}: library light-only literal ${literal}`);
+  const hrefs = [...block.matchAll(/<a class="gb-series-link" href="([^"]+)"/g)].map((match) => match[1]);
+  if (JSON.stringify(hrefs) === JSON.stringify(libraryThemeHrefs)) ok(`chast-${part}: canonical library link identity/order preserved`);
+  else bad(`chast-${part}: library links drifted (${hrefs.join(', ') || 'none'})`);
 }
 const part4Main = read('src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro');
 mustNot(part4Main, '>Из библиотеки</span>', 'chast-4: no library block introduced');
