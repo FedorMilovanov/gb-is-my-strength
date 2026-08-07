@@ -1,8 +1,13 @@
-const VERSION = 13;
+const VERSION = 20;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
+const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
 const HOVER_TRANSIT_MS = 520;
 const HOVER_TRANSIT_PADDING = 12;
+const VIEWPORT_MARGIN = 16;
+const TIP_GAP = 10;
+const MIN_SCROLL_HEIGHT = 96;
+const MOBILE_MAX_VIEWPORT_RATIO = 0.85;
 
 let active = null;
 let closeTimer = 0;
@@ -16,6 +21,15 @@ function overlayRuntime() {
 
 function mobileMode() {
   return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function viewportBounds() {
+  const visual = window.visualViewport;
+  const left = Number(visual?.offsetLeft) || 0;
+  const top = Number(visual?.offsetTop) || 0;
+  const width = Number(visual?.width) || document.documentElement.clientWidth || window.innerWidth;
+  const height = Number(visual?.height) || window.innerHeight;
+  return { left, top, width, height, right: left + width, bottom: top + height };
 }
 
 function cancelClose() {
@@ -130,7 +144,7 @@ function createScriptureTip(anchor) {
   const body = document.createElement('span');
   body.className = 'btip__text';
   body.textContent = configuredScripture(reference) || 'Ссылка на указанное место Священного Писания.';
-  tip.append(label, body);
+  tip.append(label, document.createTextNode(' '), body);
   anchor.appendChild(tip);
   return tip;
 }
@@ -142,6 +156,24 @@ function inlineTip(anchor) {
   return null;
 }
 
+function setGlossaryExpanded(tip, frame, expand, detail, expanded) {
+  expand.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  expand.setAttribute('aria-label', expanded ? 'Кратко' : 'Подробнее');
+  tip.classList.toggle('gtip--expanded', expanded);
+  frame.classList.remove('is-expanded');
+  const text = expand.querySelector('.gtip-expand-txt');
+  if (text) text.textContent = expanded ? 'Кратко' : 'Подробнее';
+  if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+}
+
+function resetGlossaryTip(tip) {
+  if (!tip?.classList.contains('gtip')) return;
+  const frame = tip.querySelector(':scope > .gtip-luxury');
+  const expand = frame?.querySelector('[data-gtip-expand]');
+  const detail = frame?.querySelector('.gtip-detail-wrap');
+  if (frame && expand) setGlossaryExpanded(tip, frame, expand, detail, false);
+}
+
 function prepareGlossaryTip(tip) {
   if (!tip?.classList.contains('gtip')) return;
   let frame = tip.querySelector(':scope > .gtip-luxury');
@@ -151,18 +183,18 @@ function prepareGlossaryTip(tip) {
     while (tip.firstChild) frame.appendChild(tip.firstChild);
     tip.appendChild(frame);
   }
+  tip.dataset.luxury = 'true';
   const expand = frame.querySelector('[data-gtip-expand]');
   if (!expand || expand.dataset.gbExpandReady === '1') return;
   expand.dataset.gbExpandReady = '1';
   const detail = frame.querySelector('.gtip-detail-wrap');
+  setGlossaryExpanded(tip, frame, expand, detail, expand.getAttribute('aria-expanded') === 'true');
   expand.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
     const expanded = expand.getAttribute('aria-expanded') !== 'true';
-    expand.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    frame.classList.toggle('is-expanded', expanded);
-    if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
-    if (active?.tip === tip) position(tip, active.anchor);
+    setGlossaryExpanded(tip, frame, expand, detail, expanded);
+    if (active?.tip === tip) scheduleGeometry(active, true);
   });
 }
 
@@ -175,45 +207,126 @@ function setImportant(style, property, value) {
   style.setProperty(property, value, 'important');
 }
 
-function clearAuthoritativeGeometry(tip) {
-  for (const property of ['left', 'top', 'right', 'bottom', 'max-height']) tip.style.removeProperty(property);
+function clearPositionGeometry(tip) {
+  for (const property of ['left', 'top', 'right', 'bottom']) tip.style.removeProperty(property);
 }
 
-function position(tip, anchor) {
-  if (mobileMode()) {
-    clearAuthoritativeGeometry(tip);
-    setImportant(tip.style, 'left', '0px');
-    setImportant(tip.style, 'right', '0px');
-    setImportant(tip.style, 'top', 'auto');
-    setImportant(tip.style, 'bottom', '0px');
-    setImportant(tip.style, 'max-height', `${Math.max(180, Math.floor(window.innerHeight * 0.72))}px`);
-    return;
-  }
+function clearSizeGeometry(tip) {
+  for (const property of ['max-height', 'overflow-y']) tip.style.removeProperty(property);
+}
 
-  const margin = 16;
-  const gap = 10;
+function clearAuthoritativeGeometry(tip) {
+  clearPositionGeometry(tip);
+  clearSizeGeometry(tip);
+  tip.removeAttribute('data-placement');
+}
+
+function applyOverflow(tip, maxHeight) {
+  if (!Number.isFinite(maxHeight) || maxHeight <= 0) return false;
+  const height = Math.max(1, Math.floor(maxHeight));
+  setImportant(tip.style, 'max-height', `${height}px`);
+  const needsScroll = tip.scrollHeight > height + 1;
+  setImportant(tip.style, 'overflow-y', needsScroll ? 'auto' : 'visible');
+  return needsScroll;
+}
+
+function mobileSheetBudget(viewport) {
+  const ratioBudget = Math.floor(viewport.height * MOBILE_MAX_VIEWPORT_RATIO);
+  const visualBudget = Math.floor(viewport.height - VIEWPORT_MARGIN);
+  return Math.max(MIN_SCROLL_HEIGHT, Math.min(ratioBudget, visualBudget));
+}
+
+function positionMobile(tip) {
+  const viewport = viewportBounds();
+  clearAuthoritativeGeometry(tip);
+  setImportant(tip.style, 'left', '0px');
+  setImportant(tip.style, 'right', '0px');
+  setImportant(tip.style, 'top', 'auto');
+  setImportant(tip.style, 'bottom', '0px');
+  applyOverflow(tip, mobileSheetBudget(viewport));
+}
+
+function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
+  const fitsAbove = naturalHeight <= availableAbove;
+  const fitsBelow = naturalHeight <= availableBelow;
+  if (preservePlacement && previousPlacement === 'top' && fitsAbove) return 'top';
+  if (preservePlacement && previousPlacement === 'bottom' && fitsBelow) return 'bottom';
+  if (fitsAbove && fitsBelow) return previousPlacement === 'bottom' ? 'bottom' : 'top';
+  if (fitsAbove) return 'top';
+  if (fitsBelow) return 'bottom';
+  return availableAbove >= availableBelow ? 'top' : 'bottom';
+}
+
+function positionDesktop(tip, anchor, preservePlacement = false) {
+  const previousPlacement = tip.dataset.placement || '';
+  const viewport = viewportBounds();
+  clearPositionGeometry(tip);
+  clearSizeGeometry(tip);
   setImportant(tip.style, 'position', 'fixed');
   setImportant(tip.style, 'right', 'auto');
   setImportant(tip.style, 'bottom', 'auto');
-  setImportant(tip.style, 'max-height', `${Math.max(160, window.innerHeight - margin * 2)}px`);
 
   const anchorRect = anchor.getBoundingClientRect();
-  const tipRect = tip.getBoundingClientRect();
-  const width = Math.min(tipRect.width, Math.max(0, window.innerWidth - margin * 2));
-  const height = Math.min(tipRect.height, Math.max(0, window.innerHeight - margin * 2));
+  let tipRect = tip.getBoundingClientRect();
+  const width = Math.min(tipRect.width, Math.max(0, viewport.width - VIEWPORT_MARGIN * 2));
   let left = anchorRect.left + anchorRect.width / 2 - width / 2;
-  left = Math.max(margin, Math.min(left, window.innerWidth - margin - width));
-  let top = anchorRect.top - height - gap;
-  if (top < margin) top = anchorRect.bottom + gap;
-  top = Math.max(margin, Math.min(top, window.innerHeight - margin - height));
+  left = Math.max(viewport.left + VIEWPORT_MARGIN, Math.min(left, viewport.right - VIEWPORT_MARGIN - width));
 
+  const viewportMax = Math.max(MIN_SCROLL_HEIGHT, viewport.height - VIEWPORT_MARGIN * 2);
+  const availableAbove = Math.max(0, anchorRect.top - viewport.top - VIEWPORT_MARGIN - TIP_GAP);
+  const availableBelow = Math.max(0, viewport.bottom - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
+  const naturalHeight = Math.max(tip.scrollHeight || 0, tipRect.height || 0);
+  const placement = preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
+  const available = placement === 'top' ? availableAbove : availableBelow;
+
+  if (naturalHeight > available) applyOverflow(tip, Math.min(available, viewportMax));
+  else setImportant(tip.style, 'overflow-y', 'visible');
+
+  tipRect = tip.getBoundingClientRect();
+  const renderedHeight = Math.min(tipRect.height, viewportMax);
+  let top = placement === 'top'
+    ? anchorRect.top - renderedHeight - TIP_GAP
+    : anchorRect.bottom + TIP_GAP;
+  top = Math.max(viewport.top + VIEWPORT_MARGIN, Math.min(top, viewport.bottom - VIEWPORT_MARGIN - renderedHeight));
+
+  tip.dataset.placement = placement;
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
   setImportant(tip.style, 'top', `${Math.round(top)}px`);
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
+function position(tip, anchor, preservePlacement = false) {
+  if (mobileMode()) positionMobile(tip);
+  else positionDesktop(tip, anchor, preservePlacement);
+}
+
+function stopGeometry(record) {
+  if (!record) return;
+  if (record.geometryFrame) window.cancelAnimationFrame(record.geometryFrame);
+  record.geometryFrame = 0;
+  record.geometryObserver?.disconnect();
+  record.geometryObserver = null;
+}
+
+function scheduleGeometry(record, preservePlacement = true) {
+  if (!record || active !== record || record.mobile || record.geometryFrame) return;
+  record.geometryFrame = window.requestAnimationFrame(() => {
+    record.geometryFrame = 0;
+    if (active !== record || !record.anchor.isConnected || !record.tip.isConnected) return;
+    position(record.tip, record.anchor, preservePlacement);
+  });
+}
+
+function observeGeometry(record) {
+  if (!record || record.mobile || typeof ResizeObserver !== 'function') return;
+  record.geometryObserver = new ResizeObserver(() => scheduleGeometry(record, true));
+  record.geometryObserver.observe(record.tip);
+}
+
 function restore(record) {
   const { tip, placeholder } = record;
+  stopGeometry(record);
+  resetGlossaryTip(tip);
   tip.classList.remove('gb-floating-tip', 'is-open');
   clearAuthoritativeGeometry(tip);
   tip.style.removeProperty('position');
@@ -254,7 +367,7 @@ function openTooltip(anchor, reason = 'open') {
       settleHover(active);
     }
     setImportant(tip.style, 'pointer-events', 'auto');
-    position(tip, anchor);
+    position(tip, anchor, true);
     return;
   }
   closeTooltip('replace');
@@ -277,11 +390,12 @@ function openTooltip(anchor, reason = 'open') {
     hoverSettled: reason !== 'hover',
     pointerBaseline: pointerEpoch,
     hoverTransitUntil: 0,
+    geometryFrame: 0,
+    geometryObserver: null,
   };
   position(tip, anchor);
-  window.requestAnimationFrame(() => {
-    if (active?.tip === tip) position(tip, anchor);
-  });
+  observeGeometry(active);
+  scheduleGeometry(active, true);
   if (reason === 'hover') settleHover(active);
 
   if (tip.dataset.gbInteractionBound !== '1') {
@@ -372,6 +486,39 @@ function initializeAnchor(anchor) {
   });
 }
 
+function clearLegacyControllerTimers(controller) {
+  for (const key of ['_hoverTimer', '_stickyT', 'hoverTimer', 'stickyTimer']) {
+    const timer = Number(controller?.[key] || 0);
+    if (timer) window.clearTimeout(timer);
+  }
+}
+
+function retireLegacyTooltipOwners() {
+  const controllers = window.SiteUtils?._tooltipControllers;
+  if (!Array.isArray(controllers)) return;
+  for (let index = controllers.length - 1; index >= 0; index -= 1) {
+    const controller = controllers[index];
+    if (!OWNED_LEGACY_SELECTORS.has(controller?.anchorSel)) continue;
+    clearLegacyControllerTimers(controller);
+    controller.close?.(true);
+    controllers.splice(index, 1);
+  }
+}
+
+function claimOwner() {
+  document.documentElement.dataset.gbArticleTooltipsOwner = OWNER;
+  document.documentElement.dataset.gbArticleTooltipsVersion = String(VERSION);
+}
+
+function handleViewportChange() {
+  if (!active) return;
+  if (active.mobile !== mobileMode()) {
+    closeTooltip('mode-change');
+    return;
+  }
+  position(active.tip, active.anchor, true);
+}
+
 export function initGlossaryTooltips(scope = document) {
   const root = scope?.querySelectorAll ? scope : document;
   root.querySelectorAll('.gterm').forEach(initializeAnchor);
@@ -383,8 +530,15 @@ export function initInlineTooltips(scope = document) {
 }
 
 export function installArticleTooltips() {
-  if (window.GBArticleTooltips?.version === VERSION) return window.GBArticleTooltips;
+  if (window.GBArticleTooltips?.version === VERSION) {
+    claimOwner();
+    return window.GBArticleTooltips;
+  }
   window.SiteUtils = window.SiteUtils || {};
+  claimOwner();
+  retireLegacyTooltipOwners();
+  if (document.readyState === 'complete') retireLegacyTooltipOwners();
+  else window.addEventListener('load', retireLegacyTooltipOwners, { once: true });
   window.SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
   initInlineTooltips(document);
   document.addEventListener('gb:quiz-rendered', (event) => initInlineTooltips(event.detail?.root || document));
@@ -402,12 +556,14 @@ export function installArticleTooltips() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && active && !active.mobile) closeTooltip('escape');
   }, true);
-  window.addEventListener('resize', () => active && position(active.tip, active.anchor), { passive: true });
+  window.addEventListener('resize', handleViewportChange, { passive: true });
+  window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
+  window.visualViewport?.addEventListener('scroll', handleViewportChange, { passive: true });
   window.addEventListener('scroll', () => {
     if (!active || active.mobile) return;
     if (!active.anchor.isConnected) closeTooltip('detached');
-    else position(active.tip, active.anchor);
+    else position(active.tip, active.anchor, true);
   }, { passive: true, capture: true });
-  window.GBArticleTooltips = Object.freeze({ version: VERSION, init: initInlineTooltips, close: closeTooltip });
+  window.GBArticleTooltips = Object.freeze({ version: VERSION, owner: OWNER, init: initInlineTooltips, close: closeTooltip });
   return window.GBArticleTooltips;
 }

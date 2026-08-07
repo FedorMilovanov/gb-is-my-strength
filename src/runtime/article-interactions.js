@@ -1,3 +1,4 @@
+import './article-tooltips.css';
 import { installArticleTooltips } from './article-tooltips.js';
 import { installArticleQuiz } from './article-quiz.js';
 import { installArticleImageViewer } from './article-image-viewer.js';
