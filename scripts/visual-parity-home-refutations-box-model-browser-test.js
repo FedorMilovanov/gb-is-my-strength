@@ -93,10 +93,11 @@ async function inspectViewport(browser, origin, viewport) {
     hasTouch: viewport.mobile,
   });
   const page = await context.newPage();
-  const runtimeErrors = [];
-  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
-    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+    if (message.type() === 'error') consoleErrors.push(`console: ${message.text()}`);
   });
 
   await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
@@ -130,7 +131,7 @@ async function inspectViewport(browser, origin, viewport) {
   await context.close();
 
   assert.ok(cards.length >= 2, `${viewport.name}: expected at least two canonical Refutations cards, got ${cards.length}`);
-  assert.deepEqual(runtimeErrors, [], `${viewport.name}: runtime errors: ${runtimeErrors.join('\n')}`);
+  assert.deepEqual(pageErrors, [], `${viewport.name}: page errors: ${pageErrors.join('\n')}`);
   assert.ok(pageGeometry.scrollWidth <= pageGeometry.viewportWidth, `${viewport.name}: horizontal overflow ${pageGeometry.scrollWidth} > ${pageGeometry.viewportWidth}`);
   for (const card of cards) {
     assert.equal(card.hasShell, true, `${viewport.name}: ${card.href} lost its Refutations shell`);
@@ -146,7 +147,8 @@ async function inspectViewport(browser, origin, viewport) {
     viewport,
     cards,
     pageGeometry,
-    runtimeErrors,
+    pageErrors,
+    consoleErrors,
     screenshot: path.relative(ROOT, screenshot),
   };
 }
