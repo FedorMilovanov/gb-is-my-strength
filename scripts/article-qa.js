@@ -11,7 +11,8 @@
  * well-formedness (empty gtip/tooltip = ERROR; gterm w/o tip = WARN); (3) mixed-
  * script contamination — a token mixing Cyrillic+Latin, or any CJK ideograph, is
  * homoglyph corruption that ships broken, unsearchable text (calibrated: 3 real
- * hits, 0 false positives across the corpus).
+ * hits, 0 false positives across the corpus); (4) accepted semantic manifests for
+ * selected high-value article owners, including adversarial deletion mutations.
  *
  * Deliberately NOT checked (would be noise, per calibration 2026-07-11):
  *  - «…» → source: blanket rule false-positives on Bible refs, emphasis, titles.
@@ -28,6 +29,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  runAcceptedSemanticManifestAudit,
+} = require('./lib/accepted-semantic-manifest');
 const ROOT = path.resolve(__dirname, '..');
 const STRICT = process.argv.includes('--strict');
 
@@ -66,10 +70,6 @@ for (const rel of files) {
   const text = sanitize(raw);
 
   // ── 1. Guillemet balance (ERROR: a dropped « or » is a real typo) ──
-  // Only «»: they are used EXCLUSIVELY as quotes, never inside URLs/code/filenames,
-  // so a mismatch is always real. Parens () were tested and DROPPED — they appear
-  // legitimately in URLs like `(vol.2)` and image names `(1495-1498).jpg`, which
-  // makes any static () balance unreliable (Charter §checks, calibration 2026-07-11).
   const cnt = (s, re) => (s.match(re) || []).length;
   const naG = cnt(text, /«/g), nbG = cnt(text, /»/g);
   if (naG !== nbG) err(rel, `несбалансированные кавычки «»: ${naG} откр. / ${nbG} закр.`);
@@ -82,28 +82,23 @@ for (const rel of files) {
   if (gterm && tipForTerm < gterm) warn(rel, `gterm без перевода/пояснения (${gterm} терминов, ${tipForTerm} с тултипом/глоссарием)`);
 
   // ── 3. Mixed-script contamination (ERROR: real corruption, never legitimate) ──
-  // A single word-token mixing Cyrillic with Latin — or any CJK ideograph in the
-  // prose — is always a defect in this Russian corpus (a homoglyph slip that ships
-  // broken, unsearchable text, e.g. «relig»+«ией», «Мартин»+lat.«a», a stray «传»).
-  // Calibrated 2026-07-11 against the WHOLE corpus: 3 hits, ALL real defects, 0
-  // false positives. Foreign titles/terms are whole-Latin tokens and never trip
-  // this. The one theoretical exception — a Russian inflection glued onto a Latin
-  // acronym («URLом») — is precluded by house style (hyphenate: «URL-ом»); if such
-  // a token ever legitimately appears, hyphenate it rather than loosening the rule.
   for (const tok of text.match(/[A-Za-zА-Яа-яЁё]+/g) || []) {
     if (/[А-Яа-яЁё]/.test(tok) && /[A-Za-z]/.test(tok))
       err(rel, `смешанный алфавит в слове (кириллица+латиница): «${tok}»`);
   }
   const cjk = text.match(/[㐀-鿿豈-﫿]/g);
   if (cjk) err(rel, `иероглиф(ы) в русском тексте: ${[...new Set(cjk)].join(' ')}`);
-
-  // NOTE: block-quote→attribution was prototyped and DROPPED after calibration —
-  // this corpus attributes via footnotes / surrounding prose that no cheap heuristic
-  // detects reliably, so the rule produced ~60 false positives. A noisy check is
-  // worse than none (Charter §checks). Attribution stays a human/review concern.
 }
 
-console.log('=== article-qa (guillemet balance · tooltip well-formedness · mixed-script) ===');
+// ── 4. Positive semantic preservation for selected high-value owners ──
+try {
+  const semantic = runAcceptedSemanticManifestAudit({ requireDist: false });
+  console.log(`Semantic manifest source contract: ${semantic.results.length} routes, ${semantic.mutationCasesKilled} deletion mutations killed.`);
+} catch (error) {
+  err('accepted-semantic-manifest', error.message);
+}
+
+console.log('=== article-qa (guillemet balance · tooltip well-formedness · mixed-script · semantic manifest) ===');
 console.log(`Scanned ${files.length} article files.\n`);
 for (const e of errors) console.log(`❌ ${e}`);
 for (const w of warnings) console.log(`⚠️  ${w}`);
