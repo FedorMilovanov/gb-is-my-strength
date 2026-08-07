@@ -68,8 +68,22 @@
       }
     };
 
-    addEventListener('resize', check, { passive: true });
-    addEventListener('load', check, { once: true });
-    document.fonts?.ready.then(check);
+    /* Viewport evidence changes several sizes back-to-back. A raw resize
+       listener can sample the old box before the new responsive layout is
+       painted and permanently report a transient edge contact. Keep every
+       geometry threshold unchanged, but coalesce lifecycle signals into the
+       next frame so this development contract measures the settled layout. */
+    let checkFrame = 0;
+    const scheduleCheck = () => {
+      if (checkFrame) cancelAnimationFrame(checkFrame);
+      checkFrame = requestAnimationFrame(() => {
+        checkFrame = 0;
+        check();
+      });
+    };
+
+    addEventListener('resize', scheduleCheck, { passive: true });
+    addEventListener('load', scheduleCheck, { once: true });
+    document.fonts?.ready.then(scheduleCheck);
   })();
 </script>
