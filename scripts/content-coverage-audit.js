@@ -15,6 +15,10 @@
 // OCCURRENCES missing from dist. Comparison is a true frequency deficit, not a
 // set-membership proxy.
 //
+// Selected high-value strict-native articles are additionally protected by one
+// positive semantic manifest that is checked against both canonical source and
+// the built dist projection.
+//
 // Usage: node scripts/content-coverage-audit.js   (requires built dist/)
 const assert = require('assert');
 const fs = require('fs');
@@ -23,6 +27,9 @@ const {
   classifyLegacyAuthority,
   loadRouteProfile,
 } = require('./lib/legacy-source-authority');
+const {
+  runAcceptedSemanticManifestAudit,
+} = require('./lib/accepted-semantic-manifest');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
@@ -201,6 +208,13 @@ function main() {
 
   for (const issue of coverageHealth({ expected, exercised, undeclared })) {
     if (!issue.includes('undeclared legacy authority')) bad(`health: ${issue}`);
+  }
+
+  try {
+    const semantic = runAcceptedSemanticManifestAudit({ requireDist: true });
+    ok(`accepted semantic source→dist manifests: ${semantic.results.length} routes, ${semantic.mutationCasesKilled} deletion mutations killed`);
+  } catch (error) {
+    bad(`accepted semantic source→dist manifests: ${error.message}`);
   }
 
   const health = {
