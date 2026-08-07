@@ -32,7 +32,12 @@ function sourceContracts() {
   const route = read('src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro');
   const routeCss = read('src/components/article-pilots/hermenevtika/hermenevtika-footnotes.css');
   const guard = read('scripts/hermenevtika-regression-guard.mjs');
-  const popupHelper = guard.match(/const testPopup = async[\s\S]*?\n  };/)?.[0] || '';
+  const popupHelperNeedle = ['  const test', 'Popup = async (selector, openSelector, startId, label) => {'].join('');
+  const popupHelperStart = guard.indexOf(popupHelperNeedle);
+  const popupHelperEnd = popupHelperStart >= 0 ? guard.indexOf('\n  };', popupHelperStart) : -1;
+  const popupHelper = popupHelperStart >= 0 && popupHelperEnd >= 0
+    ? guard.slice(popupHelperStart, popupHelperEnd + 5)
+    : '';
   const assertions = [
     ['HGT-S01', 'canonical tooltip runtime source exists', runtime.length > 0],
     ['HGT-S02', 'canonical tooltip owner stylesheet exists', runtimeCss.length > 0],
@@ -94,6 +99,17 @@ async function popupState(page, selector) {
       const childBox = element.getBoundingClientRect();
       return childStyle.display !== 'none' && childStyle.visibility !== 'hidden' && childBox.width > 0 && childBox.height > 0;
     }).map((element) => element.getBoundingClientRect().bottom);
+    const textBottoms = [];
+    const walker = document.createTreeWalker(tip, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (!String(node.textContent || '').trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects()) {
+        if (rect.width > 0 && rect.height > 0) textBottoms.push(rect.bottom);
+      }
+    }
     const clientWidth = document.documentElement.clientWidth;
     return {
       borderTopWidth: parseFloat(style.borderTopWidth) || 0,
@@ -110,7 +126,7 @@ async function popupState(page, selector) {
       bottom: box.bottom,
       placement: tip.dataset.placement || null,
       clientWidth,
-      blankTail: Math.max(0, box.bottom - Math.max(box.top, ...bottoms)),
+      blankTail: Math.max(0, box.bottom - Math.max(box.top, ...bottoms, ...textBottoms)),
       inViewport: box.left >= -1 && box.top >= -1 && box.right <= clientWidth + 1 && box.bottom <= window.innerHeight + 1,
     };
   }, selector);
@@ -142,6 +158,7 @@ async function keyboardFocusState(page, selector) {
       focused: document.activeElement === target,
       focusVisible: target.matches(':focus-visible'),
       outlineWidth: parseFloat(style.outlineWidth) || 0,
+      outlineStyle: style.outlineStyle,
       boxShadow: style.boxShadow,
       backgroundVisible: !['rgba(0,0,0,0)', 'transparent'].includes(background),
       borderBottomWidth: parseFloat(style.borderBottomWidth) || 0,
@@ -267,7 +284,7 @@ async function popupContracts(page) {
     const state = await keyboardFocusState(page, selector);
     const offset = prefix === 'glossary' ? 1 : 4;
     record(`HGT-F0${offset}`, `${prefix} receives keyboard-visible focus`, Boolean(state?.focused && state?.focusVisible), state, 'focus');
-    record(`HGT-F0${offset + 1}`, `${prefix} focus has no rectangular frame`, Boolean(state && state.outlineWidth === 0 && state.boxShadow === 'none'), state, 'focus');
+    record(`HGT-F0${offset + 1}`, `${prefix} focus has no rectangular frame`, Boolean(state && state.outlineStyle === 'none' && state.boxShadow === 'none'), state, 'focus');
     record(`HGT-F0${offset + 2}`, `${prefix} focus keeps a visible dotted text indicator`, Boolean(state && state.backgroundVisible && (decoration === 'border'
       ? state.borderBottomStyle === 'dotted' && state.borderBottomWidth >= 1.5
       : state.textDecorationLine.includes('underline') && state.textDecorationStyle === 'dotted' && state.textDecorationThickness >= 1.5)), state, 'focus');
@@ -505,10 +522,13 @@ try {
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'tooltip guard check IDs must be unique');
 assert.ok(checks.length >= 88, `Hermenevtika tooltip guard requires at least 88 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
-const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
+const summary = { sha: process.env.SOURCE_SHA || process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
 fs.writeFileSync(path.join(REPORT_DIR, 'report.md'), ['# Hermenevtika tooltip regression guards', '', `- SHA: \`${summary.sha || 'local'}\``, `- Checks: **${summary.checks}**`, `- Passed: **${summary.passed}**`, `- Failed: **${summary.failed}**`, '', '| ID | Result | Description |', '|---|---|---|', ...checks.map((item) => `| ${item.id} | ${item.pass ? 'PASS' : 'FAIL'} | ${item.description.replace(/\|/g, '\\|')} |`)].join('\n'));
-checks.forEach((item) => console.log(`[HERMENEVTIKA-TOOLTIP] ${item.pass ? 'PASS' : 'FAIL'} ${item.id} :: ${item.description}`));
+checks.forEach((item) => {
+  console.log(`[HERMENEVTIKA-TOOLTIP] ${item.pass ? 'PASS' : 'FAIL'} ${item.id} :: ${item.description}`);
+  if (!item.pass) console.log(`[HERMENEVTIKA-TOOLTIP-EVIDENCE] ${item.id} :: ${JSON.stringify(item.evidence)}`);
+});
 console.log('[HERMENEVTIKA-TOOLTIP-SUMMARY]', JSON.stringify(summary));
 assert.equal(failed.length, 0, `Hermenevtika tooltip guards failed: ${failed.map((item) => item.id).join(', ')}`);
 console.log('Hermenevtika tooltip guards: PASS');
