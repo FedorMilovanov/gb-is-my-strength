@@ -1,9 +1,8 @@
 name: Search Finalize Once
 
 on:
-  push:
-    branches:
-      - agent/system-search-keyboard-owner-r5
+  pull_request:
+    branches: [main]
     paths:
       - '.github/workflows/search-finalize-once.yml'
 
@@ -14,18 +13,23 @@ jobs:
   finalize:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
     steps:
-      - name: Checkout exact trigger
+      - name: Checkout exact PR head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Refuse stale branch head
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin "${GITHUB_REF_NAME}"
-          test "$(git rev-parse "origin/${GITHUB_REF_NAME}")" = "${GITHUB_SHA}"
+          git fetch origin "${HEAD_BRANCH}"
+          test "$(git rev-parse "origin/${HEAD_BRANCH}")" = "${EXPECTED_HEAD}"
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
 
       - name: Apply exact Search finalization
         shell: bash
@@ -77,4 +81,4 @@ jobs:
           git add js/search.js scripts/audit-pro.js .github/workflows/search-finalize-once.yml
           git diff --cached --check
           git commit -m 'fix(search): separate runtime authority and query ownership'
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin "HEAD:${HEAD_BRANCH}"
