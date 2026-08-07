@@ -51,6 +51,16 @@ function resolveRepoHtml(value) {
   return { rel, abs };
 }
 
+function productionAuthorityEntries(records) {
+  return records
+    .filter((record) => record.owner?.owner === 'astro' && record.owner?.status === 'production-dist')
+    .map((record) => ({
+      name: record.route,
+      label: record.profileFile || record.route,
+      profile: record.profile,
+    }));
+}
+
 function deriveReferenceOnlyHtmlPaths(entries, options = {}) {
   const protectedPaths = new Set();
   const claimedBy = new Map();
@@ -108,15 +118,7 @@ function collectReferenceOnlyHtmlPaths() {
   // not production Astro profiles and must not become a second authority policy
   // merely because a JSON fixture lives under data/route-profiles/.
   const { records } = loadRouteRecords();
-  const entries = records
-    .filter((record) => record.owner?.owner === 'astro' && record.owner?.status === 'production-dist')
-    .map((record) => ({
-      name: record.route,
-      label: record.profileFile || record.route,
-      profile: record.profile,
-    }));
-
-  return deriveReferenceOnlyHtmlPaths(entries);
+  return deriveReferenceOnlyHtmlPaths(productionAuthorityEntries(records));
 }
 
 function collectHTML(dir, acc = []) {
@@ -269,7 +271,40 @@ function assertAuthorityMutationContract() {
     throw new Error('cache-bust contract: runtime-required HTML must remain in mutable revision coverage');
   }
 
-  console.log('  ✔ cache-bust authority mutation contract: 8/8 checks');
+  const filtered = productionAuthorityEntries([
+    {
+      route: '/dev/astro-test/',
+      owner: { owner: 'astro', status: 'build-only' },
+      profileFile: 'data/route-profiles/dev-astro-test.json',
+      profile: { currentStatus: 'build-only', legacyPath: null },
+    },
+    {
+      route: '/production/',
+      owner: { owner: 'astro', status: 'production-dist' },
+      profileFile: 'data/route-profiles/production.json',
+      profile: { legacyStatus: 'reference-only', legacyPath: '/index.html' },
+    },
+  ]);
+  if (filtered.length !== 1 || filtered[0].name !== '/production/') {
+    throw new Error('cache-bust contract: build-only profile entered production authority corpus');
+  }
+  const filteredProtected = derive(filtered);
+  if (!filteredProtected.has(path.join(ROOT, 'index.html'))) {
+    throw new Error('cache-bust contract: valid production reference was lost after registry filtering');
+  }
+
+  expectFailure(
+    'production registry profile missing legacyStatus',
+    productionAuthorityEntries([{
+      route: '/production-missing/',
+      owner: { owner: 'astro', status: 'production-dist' },
+      profileFile: 'data/route-profiles/production-missing.json',
+      profile: { legacyPath: 'index.html' },
+    }]),
+    /missing explicit legacyStatus/
+  );
+
+  console.log('  ✔ cache-bust authority mutation contract: 10/10 checks');
 }
 
 function assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles) {
