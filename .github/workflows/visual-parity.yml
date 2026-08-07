@@ -105,6 +105,9 @@ jobs:
       - name: Verify home progressive enhancement
         run: node scripts/home-progressive-enhancement-browser-test.js
 
+      - name: Verify Home Refutations computed box model
+        run: node scripts/visual-parity-home-refutations-box-model-browser-test.js
+
       - name: Capture legacy-vs-dist pixel diagnostics
         id: screenshots
         env:
