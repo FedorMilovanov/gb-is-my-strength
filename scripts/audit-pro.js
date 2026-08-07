@@ -4311,31 +4311,59 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
-// G112. Search keyboard shortcuts contract.
-//   Ctrl/⌘+F must remain native browser find (never preventDefault/open palette).
-//   Ctrl/⌘+K opens the command palette and must be case-insensitive: Chromium
-//   reports Ctrl+K as key="K" in Playwright, so strict key==="k" breaks it.
+// G112. Search keyboard ownership contract.
+//   One raw global Ctrl/Meta+K boundary lives in js/site-utils.js.
+//   Route/Search consumers receive gb:openSearch and must never re-parse the chord.
 (function searchShortcutContractGuard() {
-  const offenders = [];
-  const searchJsPath = path.join(ROOT, 'js/search.js');
-  const searchJs = fs.existsSync(searchJsPath) ? fs.readFileSync(searchJsPath, 'utf8') : '';
-  if (!/String\(e\.key\)\.toLowerCase\(\).*?===\s*["']k["']|["']k["']\s*===\s*String\(e\.key\)\.toLowerCase\(\)/.test(searchJs)) {
-    offenders.push('js/search.js: Ctrl/⌘+K must compare String(e.key).toLowerCase() to "k"');
+  const hasRawSearchShortcut = (source) => {
+    const keydown = /addEventListener\s*\(\s*['"]keydown['"]/.test(source);
+    const modifier = /\b(?:ctrlKey|metaKey)\b/.test(source);
+    const keyK = /(?:String\s*\([^)]*\.key[^)]*\)\.toLowerCase\s*\(\)|\.key)\s*(?:===|==)\s*['"]k['"]/i.test(source)
+      || /['"]k['"]\s*(?:===|==)\s*(?:String\s*\([^)]*\.key[^)]*\)\.toLowerCase\s*\(\)|[^;\n]{0,80}\.key)/i.test(source)
+      || /toLowerCase\s*\(\)[\s\S]{0,80}['"]k['"]/i.test(source);
+    return keydown && modifier && keyK;
+  };
+  const candidates = [...new Set([
+    ...allFiles.filter((file) => rel(file).startsWith('js/') && file.endsWith('.js')),
+    ...allFiles.filter((file) => rel(file).startsWith('src/') && file.endsWith('.astro')),
+    ...htmlPages,
+    path.join(ROOT, '404.html'),
+  ].filter((file) => fs.existsSync(file)))];
+  const rawOwners = candidates.filter((file) => hasRawSearchShortcut(fs.readFileSync(file, 'utf8'))).map(rel).sort();
+
+  if (rawOwners.length !== 1 || rawOwners[0] !== 'js/site-utils.js') {
+    R.err(`Search shortcuts: raw Ctrl/Meta+K owner set must be exactly js/site-utils.js; got: ${rawOwners.join(', ') || 'none'}`);
+    return;
   }
-  if (!/case["']Escape["']\s*:\s*e\.preventDefault\(\),e\.stopPropagation\(\),re\(\)/.test(searchJs)) {
-    offenders.push('js/search.js: Escape inside command palette input must close palette, not merely clear query');
+
+  const siteUtils = read('js/site-utils.js');
+  const required = [
+    "String(event && event.key || '').toLowerCase() === 'k'",
+    'modifierCount === 1',
+    '!event.altKey',
+    '!event.shiftKey',
+    '!event.isComposing',
+    'input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]',
+    "window.dispatchEvent(new CustomEvent('gb:openSearch'",
+    "document.addEventListener('keydown', handleSearchShortcut, true)",
+  ];
+  const missing = required.filter((marker) => !siteUtils.includes(marker));
+  if (missing.length) {
+    R.err(`Search shortcuts: SiteUtils canonical boundary missing semantics: ${missing.join(' | ')}`);
+    return;
   }
-  const jsFiles = walk(ROOT).filter(f => f.endsWith('.js') && !/[\\/]node_modules[\\/]/.test(f));
-  for (const f of jsFiles) {
-    const js = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-    const suspicious = /(ctrlKey|metaKey)[\s\S]{0,160}(?:["']f["']|toLowerCase\(\)\s*===\s*["']f["'])[\s\S]{0,160}preventDefault\s*\(/i;
-    if (suspicious.test(js)) offenders.push(`${rel(f)}: possible Ctrl/⌘+F preventDefault`);
+
+  const searchJs = read('js/search.js');
+  if (/\b(?:ctrlKey|metaKey)\b/.test(searchJs)) {
+    R.err('Search shortcuts: js/search.js must consume gb:openSearch and never parse Ctrl/Meta');
+    return;
   }
-  if (offenders.length) {
-    R.err(`Search shortcut regression risk:\n  - ${offenders.join('\n  - ')}`);
-  } else {
-    R.ok('Search shortcuts: Ctrl/⌘+F stays native; Ctrl/⌘+K is case-insensitive');
+  if (!searchJs.includes('window.addEventListener("gb:openSearch"')) {
+    R.err('Search shortcuts: js/search.js lost the gb:openSearch transport');
+    return;
   }
+
+  R.ok('Search shortcuts: sole SiteUtils Ctrl/Meta+K owner; invalid/editable/IME chords fail closed');
 })();
 
 // G113. GBS series-world integrity contract.
