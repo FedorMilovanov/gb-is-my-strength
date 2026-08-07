@@ -35,7 +35,7 @@ const photoOwnerBlock = section('// One gallery owner:', '// Stage caption bar')
 const flyBlock = section('function flyTo(cx,cy,w,duration=700){', '// ── Pan/Zoom ──');
 const tourBlock = section('function runTourStep(){', '// Photo modal');
 const toastBlock = section('// Toast notification', '// Stage dots');
-const storyToastBlock = section('// Story toast for richer notification', 'function setStory(storyId){');
+const storyToastBlock = section('// Story notifications share the canonical polite status owner.', 'function setStory(storyId){');
 const setStoryBlock = section('function setStory(storyId){', 'function renderStories(){');
 const loadingBlock = section('// ── Loading state ──', '// Keyboard shortcuts overlay');
 
@@ -147,13 +147,6 @@ check(
     /className=['"]me-loading['"]/.test(loadingBlock),
   'ENGINE-P2-03 permits the blocking loading overlay only as an explicit opt-in while route data is genuinely pending.'
 );
-
-// Temporary draft-only transport: the existing diagnostics artifact captures
-// the exact shared runtime bytes so the large owner can be patched locally
-// without reconstructing a 3k-line file through the Contents API.
-const reportsDir = path.join(root, 'reports');
-fs.mkdirSync(reportsDir, { recursive: true });
-fs.writeFileSync(path.join(reportsDir, 'map-engine-source.log'), source, 'utf8');
 
 if (failures) {
   console.error(`\n❌ map-engine regression guard: ${failures} failed check(s)`);
