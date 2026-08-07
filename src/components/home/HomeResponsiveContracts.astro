@@ -40,9 +40,9 @@
     }
   }
 
-  /* Full marginalia return once both rails are genuinely wide enough, but stay
-     slightly reduced until 1800px. This keeps the transition from curated to
-     full density soft rather than suddenly crowding the page. */
+  /* Full marginalia return once both rails are genuinely wide enough. Type
+     scale grows in two quiet steps so the 1600–1799px rail keeps useful line
+     measure instead of forcing otherwise avoidable Hebrew/Greek wraps. */
   @media (min-width: 1600px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .home-content {
       max-width: 1180px;
@@ -50,12 +50,18 @@
 
     body.home-page .home-v20 .h-ambient-word {
       display: block;
-      font-size: calc(var(--ambient-size) * .9);
+      font-size: calc(var(--ambient-size) * .84);
       pointer-events: auto;
     }
   }
 
   @media (min-width: 1800px) and (hover: hover) and (pointer: fine) {
+    body.home-page .home-v20 .h-ambient-word {
+      font-size: calc(var(--ambient-size) * .92);
+    }
+  }
+
+  @media (min-width: 1920px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .h-ambient-word {
       font-size: var(--ambient-size);
     }
@@ -72,9 +78,9 @@
      Narrow desktop rails compress the whole historical profile toward the outer
      safe edge while retaining the differences between 5.8–8.3% placements. The
      compression eases out continuously and reaches the exact historical profile
-     at 1920px. That gives the original manuscript words enough measure to stay on
-     one line when the rail can support it, without collapsing the hand-set
-     stagger or stealing the centre-content guard. */
+     at 1920px. An 8px CSS-side allowance absorbs the stable scrollbar-gutter
+     difference between 100vw and the document client box; the measured physical
+     ink therefore still clears the original viewport-edge floor. */
   @media (min-width: 1480px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .h-ambient-native {
       right: auto;
@@ -86,7 +92,7 @@
     body.home-page .home-v20 .h-ambient-word {
       --ambient-content-width: 1120px;
       --ambient-rail-width: calc((100vw - var(--ambient-content-width)) / 2);
-      --ambient-outer-floor: clamp(48px, 3vw, 64px);
+      --ambient-outer-floor: clamp(56px, calc(3vw + 8px), 72px);
       --ambient-center-guard: clamp(22px, 1.5vw, 32px);
       --ambient-min-width: 72px;
       --ambient-profile-base: clamp(var(--ambient-outer-floor), calc(28.2vw - 430px), 5.8vw);
