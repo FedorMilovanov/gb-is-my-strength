@@ -4,40 +4,46 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'js/search.js'
-      - 'css/command-palette.css'
+      - 'js/**'
+      - '**/*.html'
+      - 'src/**/*.astro'
+      - 'src/lib/asset-version.js'
+      - 'data/route-profiles/**'
+      - 'data/search-manifest.json'
+      - 'data/scripture-search-index.json'
+      - 'scripts/audit-pro.js'
+      - 'scripts/audit-pro-source-corpus-test.js'
+      - 'scripts/lib/audit-pro-source-corpus.js'
+      - 'scripts/lib/legacy-source-authority.js'
+      - 'scripts/lib/public-surface-registry.js'
+      - 'scripts/lib/route-source-contract.js'
       - 'scripts/search-modal-browser-contract.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
       - 'scripts/app-search-surface-browser-contract.mjs'
-      - 'src/components/search/AppSearchHead.astro'
-      - 'src/components/search/AppSearchSurface.astro'
-      - 'src/pages/karty/avraam/index.astro'
-      - 'src/pages/karty/ishod/index.astro'
-      - 'src/components/karty/avraam/AvraamPageHead.astro'
-      - 'src/components/karty/ishod/IshodPageHead.astro'
-      - 'src/components/konfessii/russkij-baptizm/Baptizm3DPageHead.astro'
-      - 'src/components/konfessii/russkij-baptizm/Baptizm3DBody.astro'
-      - 'src/components/map/MapPageHead.astro'
-      - 'src/components/map/AtlasBody.astro'
+      - 'scripts/home-browser-contract.mjs'
+      - 'css/command-palette.css'
       - '.github/workflows/search-modal-contract.yml'
   push:
     branches: [main]
     paths:
-      - 'js/search.js'
-      - 'css/command-palette.css'
+      - 'js/**'
+      - '**/*.html'
+      - 'src/**/*.astro'
+      - 'src/lib/asset-version.js'
+      - 'data/route-profiles/**'
+      - 'data/search-manifest.json'
+      - 'data/scripture-search-index.json'
+      - 'scripts/audit-pro.js'
+      - 'scripts/audit-pro-source-corpus-test.js'
+      - 'scripts/lib/audit-pro-source-corpus.js'
+      - 'scripts/lib/legacy-source-authority.js'
+      - 'scripts/lib/public-surface-registry.js'
+      - 'scripts/lib/route-source-contract.js'
       - 'scripts/search-modal-browser-contract.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
       - 'scripts/app-search-surface-browser-contract.mjs'
-      - 'src/components/search/AppSearchHead.astro'
-      - 'src/components/search/AppSearchSurface.astro'
-      - 'src/pages/karty/avraam/index.astro'
-      - 'src/pages/karty/ishod/index.astro'
-      - 'src/components/karty/avraam/AvraamPageHead.astro'
-      - 'src/components/karty/ishod/IshodPageHead.astro'
-      - 'src/components/konfessii/russkij-baptizm/Baptizm3DPageHead.astro'
-      - 'src/components/konfessii/russkij-baptizm/Baptizm3DBody.astro'
-      - 'src/components/map/MapPageHead.astro'
-      - 'src/components/map/AtlasBody.astro'
+      - 'scripts/home-browser-contract.mjs'
+      - 'css/command-palette.css'
       - '.github/workflows/search-modal-contract.yml'
   workflow_dispatch:
 
@@ -70,7 +76,9 @@ jobs:
           node --check scripts/search-modal-browser-contract.mjs
           node --check scripts/app-search-surface-source-contract.mjs
           node --check scripts/app-search-surface-browser-contract.mjs
+          node scripts/audit-pro-source-corpus-test.js
           node scripts/app-search-surface-source-contract.mjs
+          node scripts/audit-pro.js
           npm run astro:check
 
       - name: Build production-like publication

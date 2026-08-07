@@ -27,6 +27,8 @@ function buildAuditProSourceCorpus({ root, entries, allHtmlFiles = [] }) {
   const records = [...entries].sort((a, b) => String(a.route).localeCompare(String(b.route), 'en'));
   const registeredByFile = new Map();
   const sourcePages = [];
+  const currentRuntimePages = [];
+  const referenceOnly = [];
   const distOnly = [];
   const registeredNonProduction = [];
   const duplicateRootMappings = [];
@@ -43,8 +45,19 @@ function buildAuditProSourceCorpus({ root, entries, allHtmlFiles = [] }) {
     }
 
     const record = { route: entry.route, file, entry };
-    if (entry.status === 'production-dist') sourcePages.push(record);
-    else registeredNonProduction.push(record);
+    if (entry.status === 'production-dist') {
+      // Keep every committed production shadow in the broad source corpus so
+      // structural/forensic checks still inspect retained evidence. Runtime
+      // semantics use the narrower currentRuntimePages subset below.
+      sourcePages.push(record);
+      if (entry.legacyStatus === 'reference-only') {
+        referenceOnly.push(record);
+      } else if (entry.legacyStatus !== 'absent') {
+        currentRuntimePages.push(record);
+      }
+    } else {
+      registeredNonProduction.push(record);
+    }
   }
 
   const unregisteredRootHtml = [...new Set(allHtmlFiles.map(normalizeFile))]
@@ -56,6 +69,8 @@ function buildAuditProSourceCorpus({ root, entries, allHtmlFiles = [] }) {
 
   return {
     sourcePages,
+    currentRuntimePages,
+    referenceOnly,
     distOnly,
     registeredNonProduction,
     unregisteredRootHtml,

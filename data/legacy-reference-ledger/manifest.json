@@ -44,7 +44,7 @@
     "migrationReferenceOnly": 23,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 33,
+    "dependencies": 35,
     "dependencyUnknownBlockers": 7,
     "obsoleteWriters": 0
   },
@@ -216,7 +216,23 @@
       "owner": "legacy-reference-quarantine"
     },
     {
+      "path": "scripts/lib/audit-pro-source-corpus.js",
+      "access": "policy-reader",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "must-update-before-move",
+      "evidenceToken": "legacyStatus",
+      "owner": "legacy-reference-quarantine"
+    },
+    {
       "path": "scripts/lib/legacy-source-authority.js",
+      "access": "policy-reader",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "must-update-before-move",
+      "evidenceToken": "legacyStatus",
+      "owner": "legacy-reference-quarantine"
+    },
+    {
+      "path": "scripts/lib/public-surface-registry.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
       "quarantineImpact": "must-update-before-move",

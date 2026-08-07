@@ -169,8 +169,54 @@ async function runCase(browserType, browserName, route, viewport, port) {
     await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
     assert.equal(await trigger.evaluate((node) => document.activeElement === node), true, `${id}: trigger focus restored`);
 
+    const assertShortcutClosed = async (label, press) => {
+      await press();
+      await page.waitForTimeout(80);
+      assert.equal(await page.locator('.cp-backdrop.is-open').count(), 0, `${id}: ${label} must not open Search`);
+    };
+    const invalidAlt = browserName === 'webkit' ? 'Alt+Meta+K' : 'Alt+Control+K';
+    const invalidShift = browserName === 'webkit' ? 'Shift+Meta+K' : 'Shift+Control+K';
+    await assertShortcutClosed('Alt-modified shortcut', () => page.keyboard.press(invalidAlt));
+    await assertShortcutClosed('Shift-modified shortcut', () => page.keyboard.press(invalidShift));
+    await assertShortcutClosed('Ctrl+Meta+K', () => page.keyboard.press('Control+Meta+K'));
+    await page.evaluate(() => {
+      const editor = document.createElement('div');
+      editor.id = 'app-search-contract-textbox';
+      editor.tabIndex = 0;
+      editor.setAttribute('role', 'textbox');
+      editor.textContent = 'editor';
+      document.body.appendChild(editor);
+      editor.focus();
+    });
+    await assertShortcutClosed('role=textbox shortcut', () => page.keyboard.press(platformScenario.shortcutPress));
+    await page.evaluate(() => {
+      const editor = document.createElement('div');
+      editor.id = 'app-search-contract-contenteditable';
+      editor.contentEditable = 'true';
+      editor.tabIndex = 0;
+      editor.textContent = 'editable';
+      document.body.appendChild(editor);
+      editor.focus();
+    });
+    await assertShortcutClosed('contenteditable shortcut', () => page.keyboard.press(platformScenario.shortcutPress));
+    await page.locator('#gbSearchBtn').focus();
+    await assertShortcutClosed('IME composing shortcut', () => page.evaluate(({ isMac }) => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'k',
+        ctrlKey: !isMac,
+        metaKey: isMac,
+        bubbles: true,
+        cancelable: true,
+      });
+      try { Object.defineProperty(event, 'isComposing', { configurable: true, value: true }); } catch {}
+      document.activeElement?.dispatchEvent(event);
+    }, { isMac: browserName === 'webkit' }));
+
     await page.keyboard.press(platformScenario.shortcutPress);
     await page.waitForFunction(() => document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
+    await page.keyboard.press(platformScenario.shortcutPress);
+    await page.waitForTimeout(80);
+    assert.equal(await page.locator('.cp-backdrop.is-open').count(), 1, `${id}: canonical shortcut must be idempotent-open while Search is already open`);
     const shortcutFocusStartedAt = Date.now();
     await page.waitForFunction(
       () => { const field = document.querySelector('.cp-input'); const modal = document.querySelector('.cp-backdrop'); return Boolean(field && modal?.classList.contains('is-open') && document.activeElement === field); },
