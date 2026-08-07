@@ -4,6 +4,7 @@
   "migrationLane": "native",
   "currentStatus": "production-dist",
   "source": "src/pages/izbrannoe/index.astro",
+  "legacyStatus": "absent",
   "migrationMode": "strict-native",
   "statusDetail": "native Astro (Favorites personal collection page)",
   "migrationHistory": [

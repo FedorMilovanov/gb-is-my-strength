@@ -19,6 +19,8 @@
       "comment-only"
     ],
     "normalValidation": "read-only",
+    "currentReferenceAuthority": "route-profiles",
+    "referenceEntryAuthorityFields": "snapshot-at-auditedAtCommit",
     "moveAllowedWhenUnknownBlockers": false,
     "homeDecision": "Root index.html is migration-reference-only per issue #62 comment 5148492562; no live-production P0 claim.",
     "obsoleteWritersAllowed": false,
