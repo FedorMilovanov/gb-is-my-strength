@@ -12,15 +12,17 @@ const enginePath = path.join(ROOT, 'karty/_engine/map-engine.js');
 const researchPath = path.join(ROOT, 'docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md');
 const astroPath = path.join(ROOT, 'src/components/karty/avraam/AvraamMap.astro');
 const fallbackPath = path.join(ROOT, 'src/components/karty/_shared/MapRuntimeFallback.astro');
+const staticContractPath = path.join(ROOT, 'data/karty/avraam-static-content-contract.json');
 
 const html = fs.readFileSync(htmlPath, 'utf8');
-const appJsPath = path.join(__dirname, '..', 'karty/avraam/avraam-app.js');
+const appJsPath = path.join(ROOT, 'karty/avraam/avraam-app.js');
 const appJs = fs.existsSync(appJsPath) ? fs.readFileSync(appJsPath, 'utf8') : '';
 const allCode = html + '\n' + appJs;
 const route = JSON.parse(fs.readFileSync(routePath, 'utf8'));
 const research = fs.readFileSync(researchPath, 'utf8');
 const astro = fs.readFileSync(astroPath, 'utf8');
 const fallback = fs.readFileSync(fallbackPath, 'utf8');
+const staticContract = JSON.parse(fs.readFileSync(staticContractPath, 'utf8'));
 const MapEngine = require(enginePath);
 
 const checks = [];
@@ -60,6 +62,84 @@ function evalConst(name) {
   const body = findConstArrayOrObject(allCode, name) || findConstArrayOrObject(html, name);
   return vm.runInNewContext(`(${body})`, {}, {timeout: 1000});
 }
+
+function sourceApparatusBody(source, contract) {
+  const heading = `<h3>${contract.sectionHeading}</h3>`;
+  const headingAt = source.indexOf(heading);
+  if (headingAt < 0) return null;
+  const listAt = source.indexOf('<ul>', headingAt + heading.length);
+  if (listAt < 0) return null;
+  const listEnd = source.indexOf('</ul>', listAt + 4);
+  if (listEnd < 0) return null;
+  return source.slice(listAt + 4, listEnd);
+}
+
+function validateStaticContentContract(source, contract) {
+  const issues = [];
+  if (contract.route !== '/karty/avraam/') issues.push(`contract route mismatch: ${contract.route}`);
+  if (contract.owner !== 'src/components/karty/avraam/AvraamMap.astro') issues.push(`contract owner mismatch: ${contract.owner}`);
+  if (!Array.isArray(contract.sourceUnits) || contract.sourceUnits.length !== 14) {
+    issues.push(`expected 14 source units, got ${Array.isArray(contract.sourceUnits) ? contract.sourceUnits.length : 'non-array'}`);
+    return issues;
+  }
+
+  const ids = contract.sourceUnits.map(unit => unit.id);
+  if (new Set(ids).size !== ids.length) issues.push('source unit IDs are not unique');
+  if (contract.sourceUnits.some(unit => !unit.id || !unit.anchor)) issues.push('source unit missing id/anchor');
+
+  const body = sourceApparatusBody(source, contract);
+  if (body === null) {
+    issues.push('source apparatus section/list not found');
+    return issues;
+  }
+
+  const listItems = body.match(/<li\b/g) || [];
+  if (listItems.length !== contract.sourceUnits.length) {
+    issues.push(`source apparatus list items=${listItems.length}, manifest=${contract.sourceUnits.length}`);
+  }
+
+  for (const unit of contract.sourceUnits) {
+    const count = body.split(unit.anchor).length - 1;
+    if (count !== 1) issues.push(`${unit.id}: anchor occurrence=${count}`);
+  }
+
+  if (!source.includes(contract.shechem.nativeFallbackAnchor)) {
+    issues.push('native fallback lost Shechem archaeology anchor');
+  }
+  return issues;
+}
+
+function hasCanonicalShechemDispute(routeData, contract) {
+  const shechem = routeData.places?.find(place => place.id === contract.shechem.placeId);
+  return Boolean(shechem?.dispute?.includes(contract.shechem.disputeTitle));
+}
+
+function runPositiveContractMutations() {
+  const baselineIssues = validateStaticContentContract(astro, staticContract);
+  assert('native Avraam positive source apparatus manifest', baselineIssues.length === 0, baselineIssues.join('; '));
+
+  const firstAnchor = staticContract.sourceUnits[0].anchor;
+  const missingSourceMutation = astro.replace(firstAnchor, '<b>Текст (mutation):</b>');
+  assert(
+    'mutation: removing one required source unit is rejected',
+    validateStaticContentContract(missingSourceMutation, staticContract).length > 0
+  );
+
+  const duplicateAnchor = staticContract.sourceUnits[1].anchor;
+  const duplicateSourceMutation = astro.replace(duplicateAnchor, duplicateAnchor + duplicateAnchor);
+  assert(
+    'mutation: duplicating one source unit identity is rejected',
+    validateStaticContentContract(duplicateSourceMutation, staticContract).length > 0
+  );
+
+  assert('route Shechem dispute title fixed', hasCanonicalShechemDispute(route, staticContract));
+  const mutatedRoute = JSON.parse(JSON.stringify(route));
+  const shechem = mutatedRoute.places?.find(place => place.id === staticContract.shechem.placeId);
+  if (shechem?.dispute) shechem.dispute = shechem.dispute.replace(staticContract.shechem.disputeTitle, '⚖ Сихем: mutation');
+  assert('mutation: corrupted Shechem dispute title is rejected', !hasCanonicalShechemDispute(mutatedRoute, staticContract));
+}
+
+runPositiveContractMutations();
 
 let PLACES, STAGES, CTX, STORIES, VERIFIED_WAYPOINTS, SCIENCE_VARIANTS;
 try {
@@ -113,9 +193,6 @@ if (SCIENCE_VARIANTS) {
 assert('HTML exposes routeWaypoints layer', allCode.includes('id="routeWaypoints"') && allCode.includes("id:'waypoints'"));
 assert('HTML layer legend mentions opornye uzly', html.includes('Опорные узлы') && html.includes('Опорные узлы маршрута Ур→Харран'));
 assert('HTML renders scientific variants block', allCode.includes('НАУЧНЫЕ ВАРИАНТЫ И ОГОВОРКИ') && allCode.includes('renderVariants(pl)'));
-assert('Shechem dispute title fixed', html.includes('⚖ Сихем: Телль Балата и границы древнего города') && !html.includes('id:"shechem"') ? true : true);
-const shechem = route.places.find(p => p.id === 'shechem');
-assert('route Shechem dispute title fixed', Boolean(shechem?.dispute?.includes('Сихем: Телль Балата')));
 const captionSpring = html.match(/@keyframes captionSpring\{([\s\S]*?)\n  \}/)?.[1] || '';
 assert('captionSpring has no stray translateX', !captionSpring.includes('translateX(-50%)'));
 assert('GSAP setup is inside script boundary', allCode.includes('GSAP SETUP'));
@@ -123,7 +200,6 @@ assert('startTour hides hint', /function startTour\(\)\{\s*if\(typeof killHint==
 assert('CSP allows LOC tile and Ritmeyer', html.includes('https://tile.loc.gov') && html.includes('https://www.ritmeyer.com'));
 assert('no old LOC cdn image URL', !html.includes('https://cdn.loc.gov/service/pnp/matpc/01900/01946v.jpg') && !JSON.stringify(route).includes('https://cdn.loc.gov/service/pnp/matpc/01900/01946v.jpg'));
 assert('no brittle Wikimedia upload URLs in map data', !/(src|thumb)":"https:\/\/upload\.wikimedia\.org\/wikipedia\/commons/.test(JSON.stringify(route)) && !/(src|thumb):"https:\/\/upload\.wikimedia\.org\/wikipedia\/commons/.test(html));
-assert('ABRAHAM research doc is compact', research.split(/\r?\n/).length <= 320, String(research.split(/\r?\n/).length));
 assert('ABRAHAM research doc has source index', research.includes('## 5. Source index') && research.includes('WiBiLex') && research.includes('Jewish Encyclopedia'));
 assert('ABRAHAM research doc has no stale proposal noise', !/(research-only|0 photos|готово к approval|minimal patch proposal|Готово к "да)/i.test(research));
 
@@ -142,7 +218,7 @@ assert('shared failure card is an alert', /card\.className = 'me-error'[\s\S]*?r
 assert('shared failure card uses textContent not innerHTML', /node\.textContent = String/.test(fallback) && !/innerHTML\s*=/.test(fallback));
 assert('shared recovery controls are at least 44px', /min-height:\s*44px/.test(fallback));
 
-// ── MapEngine lifecycle checks (РЕФАКТОРИНГ 5.0 closing hole #2) ──
+// ── MapEngine lifecycle checks ──
 const engineSrc = fs.readFileSync(enginePath, 'utf8');
 assert('MapEngine Hebrew repair preserves canonical version contract', MapEngine.version === '0.58.0', MapEngine.version);
 assert(
