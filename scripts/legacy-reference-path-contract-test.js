@@ -21,7 +21,7 @@ assert.equal(manifest.policy?.explicitReferenceApiContract, 'scripts/legacy-refe
 assert.deepEqual(manifest.policy?.explicitReferenceApiUsers, ['scripts/astro-ishod-pilot-audit.js']);
 
 const routes = listReferenceRoutes();
-assert.equal(routes.length, 52, 'resolver must expose all ledger-owned routes');
+assert.equal(routes.length, manifest.summary?.references, 'resolver must expose all ledger-owned routes');
 assert.equal(new Set(routes).size, routes.length, 'resolver routes must be unique');
 assert.ok(routes.includes('/karty/ishod/'), 'Ishod route must remain ledger-owned');
 
