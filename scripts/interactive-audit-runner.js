@@ -9,6 +9,8 @@ const { spawn } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const AUDIT = path.join(__dirname, 'interactive-audit.js');
+const HERMENEVTIKA_REGRESSION_GUARD = path.join(__dirname, 'hermenevtika-regression-guard.mjs');
+const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
@@ -97,6 +99,28 @@ function runAudit(baseUrl) {
   return runNodeScript(AUDIT, process.argv.slice(2), { AUDIT_BASE: baseUrl });
 }
 
+function runHermenevtikaRegressionGuard(baseUrl) {
+  if (!fs.existsSync(HERMENEVTIKA_REGRESSION_GUARD)) {
+    throw new Error(`Hermenevtika regression guard is missing at ${HERMENEVTIKA_REGRESSION_GUARD}`);
+  }
+  return runNodeScript(HERMENEVTIKA_REGRESSION_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
+function runStandaloneReaderLayoutGuard(baseUrl) {
+  if (!fs.existsSync(STANDALONE_READER_LAYOUT_GUARD)) {
+    throw new Error(`Standalone reader layout guard is missing at ${STANDALONE_READER_LAYOUT_GUARD}`);
+  }
+  return runNodeScript(STANDALONE_READER_LAYOUT_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
+async function runInteractiveContracts(baseUrl) {
+  const auditCode = await runAudit(baseUrl);
+  if (auditCode !== 0) return auditCode;
+  const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
+  if (tooltipCode !== 0) return tooltipCode;
+  return runStandaloneReaderLayoutGuard(baseUrl);
+}
+
 async function runHomeDesignAudits() {
   if (!fs.existsSync(HOME_DESIGN_AUDIT)) {
     throw new Error(`Home Design Audit Pro is missing at ${HOME_DESIGN_AUDIT}`);
@@ -124,7 +148,7 @@ async function closeServer(server) {
 (async () => {
   const explicitBase = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
   if (explicitBase) {
-    const auditCode = await runAudit(explicitBase);
+    const auditCode = await runInteractiveContracts(explicitBase);
     process.exitCode = auditCode === 0 ? await runHomeDesignAudits() : auditCode;
     return;
   }
@@ -138,7 +162,7 @@ async function closeServer(server) {
   console.log(`Interactive audit local dist server: ${baseUrl}`);
   let auditCode = 1;
   try {
-    auditCode = await runAudit(baseUrl);
+    auditCode = await runInteractiveContracts(baseUrl);
   } finally {
     await closeServer(server);
   }
