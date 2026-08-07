@@ -24,7 +24,7 @@ const ROUTES = [
     key: 'KDV',
     label: 'Kod Da Vinci',
     path: '/articles/kod-da-vinchi/',
-    main: '.article-main.article-main--hrail',
+    main: '[data-reader-root][data-reader-rail-main]',
     summary: '.summary-card',
     prose: '.article-body > p',
     canvas: '.page-wrap.page-wrap--hrail',
@@ -44,10 +44,11 @@ const read = (relativePath) => {
 function sourceContracts() {
   const rail = read('src/components/article-pilots/_shared/ReaderRail.astro');
   const settings = read('src/components/article-pilots/_shared/ReaderSettings.astro');
+  const siteCss = read('css/site.css');
   const kdvMain = read('src/components/article-pilots/kod-da-vinchi/KodDaVinchiMainShell.astro');
   const kdvChrome = read('src/components/article-pilots/kod-da-vinchi/KodDaVinchiPageChrome.astro');
   const kdvRoute = read('src/pages/articles/kod-da-vinchi/index.astro');
-  const lane = rail.match(/\.article-main\.article-main--hrail\s*\{([\s\S]*?)\n\s*\}/)?.[1] || '';
+  const lane = rail.match(/:is\(\.article-main\.article-main--hrail,\[data-reader-rail-main\]\)\s*\{([\s\S]*?)\n\s*\}/)?.[1] || '';
   const canvas = kdvChrome.match(/\.page-wrap\.page-wrap--hrail\s*\{([\s\S]*?)\n\s*\}/)?.[1] || '';
   const assertions = [
     ['SRL-S01', 'one-sided legacy 334px formula is retired', !rail.includes('margin-left: max((100vw - min(820px, 92vw)) / 2, 334px)')],
@@ -60,10 +61,12 @@ function sourceContracts() {
     ['SRL-S08', 'ReaderSettings derives shell from measure plus 6rem', settings.includes('--hm-article-shell: calc(var(--hm-article-measure) + 6rem)')],
     ['SRL-S09', 'every direct article block shares the measure owner', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)')],
     ['SRL-S10', 'measure modes are exactly 42rem, 50rem and 58rem', /narrow:\s*'42rem'[\s\S]*normal:\s*'50rem'[\s\S]*wide:\s*'58rem'/.test(settings)],
-    ['SRL-S11', 'Kod Da Vinci main explicitly declares the shared rail contract', kdvMain.includes('class="article-main article-main--hrail"') && kdvMain.includes('data-reader-root')],
+    ['SRL-S11', 'Kod Da Vinci declares the shared rail contract without visual main classes', kdvMain.includes('data-reader-root data-reader-rail-main') && !/<main[^>]*\sclass=/.test(kdvMain)],
     ['SRL-S12', 'Kod Da Vinci route explicitly declares its rail canvas', kdvRoute.includes('class="page-wrap page-wrap--hrail"')],
     ['SRL-S13', 'Kod Da Vinci adapter expands only the structural canvas', canvas.includes('width: 100%') && canvas.includes('max-width: none') && canvas.includes('margin-left: 0') && canvas.includes('margin-right: 0')],
     ['SRL-S14', 'Kod Da Vinci adapter owns no article offset or measure', !/--hrail-|--hm-article-|\.article-main|(?:^|\n)\s*(?:left|right|transform)\s*:/.test(canvas)],
+    ['SRL-S15', 'ReaderRail has an explicit semantic marker path for classless consumers', rail.includes(':is(.article-main.article-main--hrail,[data-reader-rail-main])')],
+    ['SRL-S16', 'Kod Da Vinci classless base-shell contract remains present', siteCss.includes('.page-wrap>main:not([class]){width:auto!important;max-width:100%!important;margin:0!important;padding:0!important}')],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -188,7 +191,7 @@ try {
 }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'layout guard check IDs must be unique');
-assert.ok(checks.length >= 178, `Standalone reader layout guard requires at least 178 checks, got ${checks.length}`);
+assert.ok(checks.length >= 180, `Standalone reader layout guard requires at least 180 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
