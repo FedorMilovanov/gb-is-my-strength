@@ -69,10 +69,12 @@
      expand only this decorative layer back to the viewport while retaining the
      page-height coordinate system of its parent.
 
-     The phrase box asks for its intrinsic max-content width, then the rail caps
-     it at the real safe budget. Short/medium originals therefore remain on one
-     line whenever they physically fit; genuinely long originals wrap only when
-     the viewport or central reading guard makes that necessary. */
+     Narrow desktop rails compress the whole historical profile toward the outer
+     safe edge while retaining the differences between 5.8–8.3% placements. The
+     compression eases out continuously and reaches the exact historical profile
+     at 1920px. That gives the original manuscript words enough measure to stay on
+     one line when the rail can support it, without collapsing the hand-set
+     stagger or stealing the centre-content guard. */
   @media (min-width: 1480px) and (hover: hover) and (pointer: fine) {
     body.home-page .home-v20 .h-ambient-native {
       right: auto;
@@ -87,7 +89,9 @@
       --ambient-outer-floor: clamp(48px, 3vw, 64px);
       --ambient-center-guard: clamp(22px, 1.5vw, 32px);
       --ambient-min-width: 72px;
-      --ambient-preferred-edge: min(var(--ambient-edge), 240px);
+      --ambient-profile-base: clamp(var(--ambient-outer-floor), calc(19.8vw - 268.8px), 5.8vw);
+      --ambient-profile-stagger: calc(var(--ambient-edge) - 5.8vw);
+      --ambient-preferred-edge: min(calc(var(--ambient-profile-base) + var(--ambient-profile-stagger)), 240px);
       --ambient-edge-ceiling: calc(var(--ambient-rail-width) - var(--ambient-center-guard) - var(--ambient-min-width));
       --ambient-resolved-edge: clamp(var(--ambient-outer-floor), var(--ambient-preferred-edge), var(--ambient-edge-ceiling));
       --ambient-available-width: calc(var(--ambient-rail-width) - var(--ambient-resolved-edge) - var(--ambient-center-guard));
