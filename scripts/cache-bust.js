@@ -30,7 +30,6 @@ const {
 const ROOT = path.resolve(__dirname, '..');
 const PROFILES_DIR = path.join(ROOT, 'data/route-profiles');
 const WRITE = process.argv.includes('--write');
-const CHECK = !WRITE;
 const { ASSETS } = require('./cache-bust-assets');
 
 function md5short(relPath) {
@@ -51,41 +50,73 @@ function resolveRepoHtml(value) {
   return { rel, abs };
 }
 
-function collectReferenceOnlyHtmlPaths() {
+function deriveReferenceOnlyHtmlPaths(entries, options = {}) {
   const protectedPaths = new Set();
   const claimedBy = new Map();
-  if (!fs.existsSync(PROFILES_DIR)) return protectedPaths;
-
-  for (const name of fs.readdirSync(PROFILES_DIR).filter((entry) => entry.endsWith('.json')).sort()) {
-    const profileFile = path.join(PROFILES_DIR, name);
-    const profile = JSON.parse(fs.readFileSync(profileFile, 'utf8'));
-    const authority = classifyLegacyAuthority(profile);
-    if (authority.status !== 'reference-only') continue;
-
-    const issues = validateLegacyAuthorityProfile(profile, {
-      pathExists: (rel) => {
+  const pathExists = typeof options.pathExists === 'function'
+    ? options.pathExists
+    : (rel) => {
         const target = resolveRepoHtml(rel);
         return Boolean(target && fs.existsSync(target.abs));
-      },
-    });
+      };
+
+  for (const entry of entries) {
+    const name = entry.name || 'route-profile';
+    const profile = entry.profile;
+    const profileLabel = entry.profileFile ? repoRel(entry.profileFile) : name;
+
+    // Validate every explicit production profile BEFORE branching on authority.
+    // Otherwise missing/unknown legacyStatus could silently fall through and a
+    // retained HTML file would re-enter the mutable cache-bust corpus.
+    const issues = validateLegacyAuthorityProfile(profile, { pathExists });
     if (issues.length) {
-      throw new Error(`cache-bust reference authority invalid for ${repoRel(profileFile)}: ${issues.join(' | ')}`);
+      throw new Error(`cache-bust legacy authority invalid for ${profileLabel}: ${issues.join(' | ')}`);
     }
+
+    const authority = classifyLegacyAuthority(profile);
+    if (authority.status === 'absent') continue;
 
     const target = resolveRepoHtml(profile.legacyPath);
     if (!target) {
-      throw new Error(`cache-bust reference-only path must be repository HTML: ${profile.legacyPath || '(missing)'}`);
+      throw new Error(`cache-bust legacyPath must be repository HTML for ${profileLabel}: ${profile.legacyPath || '(missing)'}`);
     }
 
+    // Uniqueness is global across every explicit non-absent claimant. A
+    // reference-only profile must never be able to hide an active canonical or
+    // runtime-required HTML source from revision checking.
     const previous = claimedBy.get(target.abs);
     if (previous && previous !== name) {
-      throw new Error(`cache-bust duplicate reference-only legacyPath ${target.rel}: ${previous}, ${name}`);
+      throw new Error(`cache-bust duplicate legacyPath ${target.rel}: ${previous}, ${name}`);
     }
     claimedBy.set(target.abs, name);
-    protectedPaths.add(target.abs);
+
+    if (authority.status === 'reference-only') {
+      if (target.abs === path.join(ROOT, '404.html')) {
+        throw new Error('cache-bust 404.html must remain an active utility surface, not reference-only');
+      }
+      protectedPaths.add(target.abs);
+    }
   }
 
   return protectedPaths;
+}
+
+function collectReferenceOnlyHtmlPaths() {
+  if (!fs.existsSync(PROFILES_DIR)) return new Set();
+
+  const entries = fs.readdirSync(PROFILES_DIR)
+    .filter((entry) => entry.endsWith('.json'))
+    .sort()
+    .map((name) => {
+      const profileFile = path.join(PROFILES_DIR, name);
+      return {
+        name,
+        profileFile,
+        profile: JSON.parse(fs.readFileSync(profileFile, 'utf8')),
+      };
+    });
+
+  return deriveReferenceOnlyHtmlPaths(entries);
 }
 
 function collectHTML(dir, acc = []) {
@@ -176,6 +207,71 @@ function assertRewriteAstroContract() {
   }
 }
 
+function assertAuthorityMutationContract() {
+  const syntacticHtmlExists = (rel) => Boolean(resolveRepoHtml(rel));
+  const derive = (entries) => deriveReferenceOnlyHtmlPaths(entries, { pathExists: syntacticHtmlExists });
+  const expectFailure = (label, entries, pattern) => {
+    let failure = null;
+    try {
+      derive(entries);
+    } catch (error) {
+      failure = error;
+    }
+    if (!failure) throw new Error(`cache-bust mutation survived: ${label}`);
+    if (pattern && !pattern.test(String(failure.message))) {
+      throw new Error(`cache-bust mutation failed for wrong reason (${label}): ${failure.message}`);
+    }
+  };
+
+  expectFailure(
+    'missing legacyStatus',
+    [{ name: 'missing.json', profile: { legacyPath: 'index.html' } }],
+    /missing explicit legacyStatus/
+  );
+  expectFailure(
+    'unknown legacyStatus',
+    [{ name: 'unknown.json', profile: { legacyStatus: 'mystery', legacyPath: 'index.html' } }],
+    /unknown legacyStatus/
+  );
+  expectFailure(
+    'path traversal',
+    [{ name: 'traversal.json', profile: { legacyStatus: 'reference-only', legacyPath: '../outside.html' } }],
+    /declared legacyPath not found/
+  );
+  expectFailure(
+    'non-HTML legacyPath',
+    [{ name: 'non-html.json', profile: { legacyStatus: 'reference-only', legacyPath: 'legacy/data.json' } }],
+    /declared legacyPath not found/
+  );
+  expectFailure(
+    'active-vs-reference duplicate claim',
+    [
+      { name: 'active.json', profile: { legacyStatus: 'runtime-required', legacyPath: 'legacy/shared/index.html' } },
+      { name: 'reference.json', profile: { legacyStatus: 'reference-only', legacyPath: 'legacy/shared/index.html' } },
+    ],
+    /duplicate legacyPath/
+  );
+  expectFailure(
+    '404 reference-only claim',
+    [{ name: '404.json', profile: { legacyStatus: 'reference-only', legacyPath: '404.html' } }],
+    /404\.html must remain an active utility surface/
+  );
+
+  const valid = derive([
+    { name: 'home-reference.json', profile: { legacyStatus: 'reference-only', legacyPath: '/index.html' } },
+    { name: 'active.json', profile: { legacyStatus: 'runtime-required', legacyPath: 'legacy/active/index.html' } },
+    { name: 'absent.json', profile: { legacyStatus: 'absent' } },
+  ]);
+  if (!valid.has(path.join(ROOT, 'index.html'))) {
+    throw new Error('cache-bust contract: leading-slash reference path was not normalized/protected');
+  }
+  if (valid.has(path.join(ROOT, 'legacy/active/index.html'))) {
+    throw new Error('cache-bust contract: runtime-required HTML must remain in mutable revision coverage');
+  }
+
+  console.log('  ✔ cache-bust authority mutation contract: 8/8 checks');
+}
+
 function assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles) {
   if (!referenceOnlyHtml.size) {
     throw new Error('cache-bust authority contract expected at least one reference-only HTML snapshot');
@@ -208,6 +304,7 @@ function inspectFile(file, transform, hashes, changes) {
 function main() {
   console.log(`\n⚡ asset revision ${WRITE ? 'WRITE' : 'READ-ONLY CHECK'}\n`);
   assertRewriteAstroContract();
+  assertAuthorityMutationContract();
 
   const referenceOnlyHtml = collectReferenceOnlyHtmlPaths();
   const htmlFiles = collectHTML(ROOT);
