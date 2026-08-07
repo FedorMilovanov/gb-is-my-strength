@@ -18,6 +18,21 @@ import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
   </head>
   <body class="has-app-search-map">
     <IshodMap />
+    <script is:inline>
+      (function(){
+        var engine = window.MapEngine;
+        if (!engine || typeof engine.createMap !== 'function') return;
+        var createMap = engine.createMap;
+        engine.createMap = function(container, routeData, options) {
+          if (!container || container.id !== 'stage') {
+            return createMap.call(engine, container, routeData, options);
+          }
+          engine.createMap = createMap;
+          var nextOptions = Object.assign({}, options || {}, { baseGeoUrl: 'base.svg' });
+          return createMap.call(engine, container, routeData, nextOptions);
+        };
+      })();
+    </script>
     <AppSearchSurface mode="map-engine" />
   </body>
 </html>
