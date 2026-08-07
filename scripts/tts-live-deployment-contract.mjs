@@ -21,23 +21,6 @@ const MAX_ATTEMPTS = Number.parseInt(process.env.TTS_LIVE_MAX_ATTEMPTS || '36', 
 const RETRY_DELAY_MS = Number.parseInt(process.env.TTS_LIVE_RETRY_DELAY_MS || '10000', 10);
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.TTS_LIVE_REQUEST_TIMEOUT_MS || '30000', 10);
 
-assert.match(RELEASE_SHA, /^[a-f0-9]{40}$/, 'RELEASE_SHA must be an exact 40-character commit SHA');
-assert.match(CONTROL_PLANE_SHA, /^[a-f0-9]{40}$/, 'CONTROL_PLANE_SHA must be an exact 40-character commit SHA');
-assert.match(EXPECTED_REPOSITORY, /^[^/\s]+\/[^/\s]+$/, 'GITHUB_REPOSITORY must be owner/name');
-assert.ok(Number.isSafeInteger(WORKFLOW_RUN_ID) && WORKFLOW_RUN_ID > 0, 'GITHUB_RUN_ID must be positive');
-assert.ok(Number.isSafeInteger(WORKFLOW_RUN_ATTEMPT) && WORKFLOW_RUN_ATTEMPT > 0, 'GITHUB_RUN_ATTEMPT must be positive');
-assert.match(EXPECTED_CANDIDATE_DIGEST, /^sha256:[a-f0-9]{64}$/, 'EXPECTED_CANDIDATE_DIGEST must be exact');
-
-const local = verifyReleaseCandidate({
-  dist: DIST,
-  expectedRepository: EXPECTED_REPOSITORY,
-  expectedReleaseSha: RELEASE_SHA,
-  expectedControlPlaneSha: CONTROL_PLANE_SHA,
-  expectedRunId: WORKFLOW_RUN_ID,
-  expectedRunAttempt: WORKFLOW_RUN_ATTEMPT,
-});
-assert.equal(local.manifest.artifact.digest, EXPECTED_CANDIDATE_DIGEST, 'local TTS candidate digest mismatch');
-
 const ROUTES = Object.freeze([
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/articles/20-antisovetov-pastoru/',
@@ -49,29 +32,6 @@ const PUBLIC_ASSETS = Object.freeze({
   noticeCss: 'css/tts-download-notice.css',
   serviceWorker: 'sw.js',
 });
-const ttsManifest = local.manifest.extensions?.tts;
-assert.ok(ttsManifest?.assets, 'release candidate lacks extensions.tts assets');
-assert.deepEqual(ttsManifest.lazyNoPrecache, [PUBLIC_ASSETS.noticeCss, PUBLIC_ASSETS.engine, PUBLIC_ASSETS.worker]);
-
-function readDist(relativePath) {
-  const absolute = path.join(DIST, relativePath);
-  assert.ok(fs.existsSync(absolute) && fs.statSync(absolute).isFile(), `dist asset is missing: ${relativePath}`);
-  return fs.readFileSync(absolute);
-}
-function md5(buffer) { return crypto.createHash('md5').update(buffer).digest('hex').slice(0, 8); }
-function sha256(buffer) { return `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`; }
-
-const deployed = Object.fromEntries(Object.entries(PUBLIC_ASSETS).map(([name, relative]) => [name, readDist(relative)]));
-const runIdentity = `${WORKFLOW_RUN_ID}-${WORKFLOW_RUN_ATTEMPT}`;
-const expected = Object.freeze({
-  currentPointerPath: '/deployments/current.json',
-  provenancePath: `/deployments/${RELEASE_SHA}/${runIdentity}.json`,
-  candidateDigest: EXPECTED_CANDIDATE_DIGEST,
-  controllerPath: `/js/floating-cluster-controller.js?v=${md5(deployed.controller)}`,
-  enginePath: `/js/vosk-tts-engine.js?v=${md5(deployed.engine)}`,
-  workerPath: `/js/vosk-tts-worker.js?v=${md5(deployed.worker)}`,
-  noticeCssPath: `/css/tts-download-notice.css?v=${md5(deployed.noticeCss)}`,
-});
 
 fs.mkdirSync(REPORTS, { recursive: true });
 const report = {
@@ -82,11 +42,73 @@ const report = {
   workflowRunId: WORKFLOW_RUN_ID,
   workflowRunAttempt: WORKFLOW_RUN_ATTEMPT,
   candidateDigest: EXPECTED_CANDIDATE_DIGEST,
-  expected,
+  expected: null,
+  phase: 'preflight',
   startedAt: new Date().toISOString(),
   attempts: [],
 };
+
+let local;
+let ttsManifest;
+let deployed;
+let runIdentity;
+let expected;
+try {
+  assert.match(RELEASE_SHA, /^[a-f0-9]{40}$/, 'RELEASE_SHA must be an exact 40-character commit SHA');
+  assert.match(CONTROL_PLANE_SHA, /^[a-f0-9]{40}$/, 'CONTROL_PLANE_SHA must be an exact 40-character commit SHA');
+  assert.match(EXPECTED_REPOSITORY, /^[^/\s]+\/[^/\s]+$/, 'GITHUB_REPOSITORY must be owner/name');
+  assert.ok(Number.isSafeInteger(WORKFLOW_RUN_ID) && WORKFLOW_RUN_ID > 0, 'GITHUB_RUN_ID must be positive');
+  assert.ok(Number.isSafeInteger(WORKFLOW_RUN_ATTEMPT) && WORKFLOW_RUN_ATTEMPT > 0, 'GITHUB_RUN_ATTEMPT must be positive');
+  assert.match(EXPECTED_CANDIDATE_DIGEST, /^sha256:[a-f0-9]{64}$/, 'EXPECTED_CANDIDATE_DIGEST must be exact');
+
+  local = verifyReleaseCandidate({
+    dist: DIST,
+    expectedRepository: EXPECTED_REPOSITORY,
+    expectedReleaseSha: RELEASE_SHA,
+    expectedControlPlaneSha: CONTROL_PLANE_SHA,
+    expectedRunId: WORKFLOW_RUN_ID,
+    expectedRunAttempt: WORKFLOW_RUN_ATTEMPT,
+  });
+  assert.equal(local.manifest.artifact.digest, EXPECTED_CANDIDATE_DIGEST, 'local TTS candidate digest mismatch');
+  ttsManifest = local.manifest.extensions?.tts;
+  assert.ok(ttsManifest?.assets, 'release candidate lacks extensions.tts assets');
+  assert.deepEqual(ttsManifest.lazyNoPrecache, [PUBLIC_ASSETS.noticeCss, PUBLIC_ASSETS.engine, PUBLIC_ASSETS.worker]);
+
+  deployed = Object.fromEntries(Object.entries(PUBLIC_ASSETS).map(([name, relative]) => [name, readDist(relative)]));
+  runIdentity = `${WORKFLOW_RUN_ID}-${WORKFLOW_RUN_ATTEMPT}`;
+  expected = Object.freeze({
+    currentPointerPath: '/deployments/current.json',
+    provenancePath: `/deployments/${RELEASE_SHA}/${runIdentity}.json`,
+    candidateDigest: EXPECTED_CANDIDATE_DIGEST,
+    controllerPath: `/js/floating-cluster-controller.js?v=${md5(deployed.controller)}`,
+    enginePath: `/js/vosk-tts-engine.js?v=${md5(deployed.engine)}`,
+    workerPath: `/js/vosk-tts-worker.js?v=${md5(deployed.worker)}`,
+    noticeCssPath: `/css/tts-download-notice.css?v=${md5(deployed.noticeCss)}`,
+  });
+  report.expected = expected;
+  report.phase = 'live';
+} catch (error) {
+  failPreflight(error);
+}
+
+function readDist(relativePath) {
+  const absolute = path.join(DIST, relativePath);
+  assert.ok(fs.existsSync(absolute) && fs.statSync(absolute).isFile(), `dist asset is missing: ${relativePath}`);
+  return fs.readFileSync(absolute);
+}
+function md5(buffer) { return crypto.createHash('md5').update(buffer).digest('hex').slice(0, 8); }
+function sha256(buffer) { return `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`; }
+
 function writeReport() { fs.writeFileSync(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8'); }
+function failPreflight(error) {
+  report.result = 'FAIL';
+  report.phase = 'preflight';
+  report.finishedAt = new Date().toISOString();
+  report.error = String(error?.stack || error);
+  writeReport();
+  console.error(error);
+  process.exit(1);
+}
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 function decodeHtmlAttribute(value) {
   return String(value || '').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&amp;/gi, '&');
@@ -273,6 +295,7 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     entry.result = 'PASS';
     entry.finishedAt = new Date().toISOString();
     report.result = 'PASS';
+    report.phase = 'complete';
     report.finishedAt = entry.finishedAt;
     writeReport();
     console.log(`TTS live deployment contract: PASS (release ${RELEASE_SHA}, control ${CONTROL_PLANE_SHA}, run ${runIdentity}, candidate ${EXPECTED_CANDIDATE_DIGEST}).`);
@@ -288,6 +311,7 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
   }
 }
 report.result = 'FAIL';
+report.phase = 'live';
 report.finishedAt = new Date().toISOString();
 report.error = String(lastError?.stack || lastError || 'unknown live deployment failure');
 writeReport();
