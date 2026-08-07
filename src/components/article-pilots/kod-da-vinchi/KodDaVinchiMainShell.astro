@@ -2,23 +2,17 @@
 /**
  * KodDaVinchiMainShell — Phase 2: semantic split of <main>.
  *
- * NOTE: <main> tag is included here. The .page-wrap is opened/closed
- * in index.astro so that <main> stays INSIDE .page-wrap for CSS selectors.
- *
- * The classless <main> remains the route's structural canvas and therefore
- * keeps the canonical `.page-wrap > main:not([class])` reset. ReaderRail owns
- * the inner standalone-reader shell instead: this avoids fighting the
- * structural canvas with competing !important width/margin declarations while
- * still giving Header + ArticleBody + PostArticle one shared desktop axis.
+ * NOTE: <main> stays classless inside .page-wrap so the canonical
+ * `.page-wrap > main:not([class])` reset remains authoritative. The outer
+ * .page-wrap is now the single standalone-reader root and ReaderRail shell;
+ * this semantic <main> no longer owns horizontal reader geometry.
  */
 import KodDaVinchiArticleHeaderHero from './KodDaVinchiArticleHeaderHero.astro';
 import KodDaVinchiArticleBody from './KodDaVinchiArticleBody.astro';
 import KodDaVinchiPostArticle from './KodDaVinchiPostArticle.astro';
 ---
-  <main id="main-content" data-reader-root>
-    <div data-reader-rail-main>
-      <KodDaVinchiArticleHeaderHero />
-      <KodDaVinchiArticleBody />
-      <KodDaVinchiPostArticle />
-    </div>
-  </main>
+<main id="main-content">
+  <KodDaVinchiArticleHeaderHero />
+  <KodDaVinchiArticleBody />
+  <KodDaVinchiPostArticle />
+</main>

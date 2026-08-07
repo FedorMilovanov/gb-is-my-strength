@@ -150,6 +150,14 @@
       margin-left: auto;
       margin-right: auto;
     }
+    /* The standalone reader owns horizontal centring. The global cosmetic
+       summary-card rule supplies block spacing but must not become a second
+       inline margin owner. This selector deliberately shares that route scope
+       and adds the reader-root ownership boundary instead of using !important. */
+    :global(body:not(.nagornaya-page) [data-reader-root] .article-body > .summary-card) {
+      margin-left: auto;
+      margin-right: auto;
+    }
 
     /* Compatibility selector for existing standalone article CSS. The canonical
        Sepia state is global; GBReaderPreferences mirrors it onto this root. */
@@ -178,6 +186,17 @@
       border-color: rgba(74,56,32,.14) !important;
     }
     :global(html:has([data-reader-root][data-hm-reader-theme="sepia"]) body) { background: #ece0c6; }
+  }
+
+  /* A padded page-wrap can be the ReaderRail shell itself. On desktop the rail
+     owns width/margins, so retire only page-wrap's inherited 820px cap and tell
+     the shared geometry the true 24px inline shell inset. Mobile/tablet keep
+     the ordinary page-wrap contract because ReaderRail is absent there. */
+  @media (min-width: 1200px) {
+    :global(.page-wrap[data-reader-root][data-reader-rail-main]) {
+      --hrail-base-inset: 24px;
+      max-width: none;
+    }
   }
 
   /* ДЕСКТОП: не полноширинный bottom-sheet, а компактный поповер снизу-слева —
