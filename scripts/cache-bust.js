@@ -8,6 +8,11 @@
  * Explicit write mode is retained only as a migration bridge:
  *   node scripts/cache-bust.js --write
  *
+ * Route profiles are the current legacy/reference authority. HTML declared
+ * legacyStatus=reference-only is immutable snapshot evidence and is therefore
+ * intentionally excluded from both drift checking and source rewriting. Active,
+ * authoritative and unprofiled HTML remain conservatively covered.
+ *
  * The long-term target is a generated asset manifest (#56/#64), not permanent
  * source rewriting. Historical implementation is archived under
  * scripts/legacy-generators/.
@@ -17,8 +22,13 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const {
+  classifyLegacyAuthority,
+  validateLegacyAuthorityProfile,
+} = require('./lib/legacy-source-authority');
 
 const ROOT = path.resolve(__dirname, '..');
+const PROFILES_DIR = path.join(ROOT, 'data/route-profiles');
 const WRITE = process.argv.includes('--write');
 const CHECK = !WRITE;
 const { ASSETS } = require('./cache-bust-assets');
@@ -27,6 +37,46 @@ function md5short(relPath) {
   const abs = path.join(ROOT, relPath);
   if (!fs.existsSync(abs)) return null;
   return crypto.createHash('md5').update(fs.readFileSync(abs)).digest('hex').slice(0, 8);
+}
+
+function repoRel(abs) {
+  return path.relative(ROOT, abs).replace(/\\/g, '/');
+}
+
+function collectReferenceOnlyHtmlPaths() {
+  const protectedPaths = new Set();
+  const claimedBy = new Map();
+  if (!fs.existsSync(PROFILES_DIR)) return protectedPaths;
+
+  for (const name of fs.readdirSync(PROFILES_DIR).filter((entry) => entry.endsWith('.json')).sort()) {
+    const profileFile = path.join(PROFILES_DIR, name);
+    const profile = JSON.parse(fs.readFileSync(profileFile, 'utf8'));
+    const authority = classifyLegacyAuthority(profile);
+    if (authority.status !== 'reference-only') continue;
+
+    const issues = validateLegacyAuthorityProfile(profile, {
+      pathExists: (rel) => fs.existsSync(path.resolve(ROOT, rel)),
+    });
+    if (issues.length) {
+      throw new Error(`cache-bust reference authority invalid for ${repoRel(profileFile)}: ${issues.join(' | ')}`);
+    }
+
+    const legacyPath = String(profile.legacyPath || '').replace(/\\/g, '/');
+    const abs = path.resolve(ROOT, legacyPath);
+    const insideRoot = abs.startsWith(`${ROOT}${path.sep}`);
+    if (!insideRoot || !legacyPath.endsWith('.html')) {
+      throw new Error(`cache-bust reference-only path must be repository HTML: ${legacyPath}`);
+    }
+
+    const previous = claimedBy.get(abs);
+    if (previous && previous !== name) {
+      throw new Error(`cache-bust duplicate reference-only legacyPath ${legacyPath}: ${previous}, ${name}`);
+    }
+    claimedBy.set(abs, name);
+    protectedPaths.add(abs);
+  }
+
+  return protectedPaths;
 }
 
 function collectHTML(dir, acc = []) {
@@ -117,6 +167,27 @@ function assertRewriteAstroContract() {
   }
 }
 
+function assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles) {
+  if (!referenceOnlyHtml.size) {
+    throw new Error('cache-bust authority contract expected at least one reference-only HTML snapshot');
+  }
+
+  const collected = new Set(htmlFiles.map((file) => path.resolve(file)));
+  const protectedInCorpus = [...referenceOnlyHtml].filter((file) => collected.has(file));
+  if (!protectedInCorpus.length) {
+    throw new Error('cache-bust authority contract found no reference-only HTML inside rewrite corpus');
+  }
+
+  for (const file of protectedInCorpus) {
+    if (!fs.existsSync(file)) throw new Error(`cache-bust protected snapshot missing: ${repoRel(file)}`);
+  }
+
+  const utility404 = path.join(ROOT, '404.html');
+  if (referenceOnlyHtml.has(utility404)) {
+    throw new Error('cache-bust authority contract must not classify 404.html as reference-only');
+  }
+}
+
 function inspectFile(file, transform, hashes, changes) {
   const source = fs.readFileSync(file, 'utf8');
   const expected = transform(source, hashes);
@@ -128,6 +199,11 @@ function inspectFile(file, transform, hashes, changes) {
 function main() {
   console.log(`\n⚡ asset revision ${WRITE ? 'WRITE' : 'READ-ONLY CHECK'}\n`);
   assertRewriteAstroContract();
+
+  const referenceOnlyHtml = collectReferenceOnlyHtmlPaths();
+  const htmlFiles = collectHTML(ROOT);
+  assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles);
+
   const hashes = {};
   const missingAssets = [];
   for (const asset of ASSETS) {
@@ -144,9 +220,17 @@ function main() {
   const helper = path.join(ROOT, 'src/lib/asset-version.js');
   if (fs.existsSync(helper)) inspectFile(helper, expectedAssetVersionHelper, hashes, changes);
 
-  for (const file of collectHTML(ROOT)) inspectFile(file, rewriteHTML, hashes, changes);
+  let protectedCount = 0;
+  for (const file of htmlFiles) {
+    if (referenceOnlyHtml.has(path.resolve(file))) {
+      protectedCount += 1;
+      continue;
+    }
+    inspectFile(file, rewriteHTML, hashes, changes);
+  }
   for (const file of collectAstro(path.join(ROOT, 'src'))) inspectFile(file, rewriteAstro, hashes, changes);
 
+  console.log(`  ↪ preserved reference-only HTML snapshots: ${protectedCount}`);
   console.log('\n' + '─'.repeat(60));
   if (missingAssets.length) {
     console.error(`❌ Missing declared assets: ${missingAssets.join(', ')}`);
