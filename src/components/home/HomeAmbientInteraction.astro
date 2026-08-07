@@ -268,10 +268,14 @@
 
         const holy = visible.find((word) => word.querySelector('.h-ambient-word__text')?.textContent?.trim() === 'ἅγιος ἅγιος ἅγιος');
         if (holy) {
+          const historicalPreference = holy.style.getPropertyValue('--ambient-edge').trim();
+          if (historicalPreference !== '7.3%') {
+            report(`ἅγιος historical preference drifted: ${historicalPreference || 'missing'}, expected 7.3%`);
+          }
           const actual = edgeGapFor(holy);
-          const historical = Math.min(innerWidth * .073, 240);
-          if (Math.abs(actual - historical) > 2) {
-            report(`ἅγιος placement drifted: ${actual.toFixed(2)}px, expected ${historical.toFixed(2)}px`);
+          const resolved = Number.parseFloat(getComputedStyle(holy).right);
+          if (!Number.isFinite(resolved) || Math.abs(actual - resolved) > 1) {
+            report(`ἅγιος resolved edge disagrees with rendered geometry: ${actual.toFixed(2)}px vs ${Number.isFinite(resolved) ? resolved.toFixed(2) : 'invalid'}`);
           }
         } else {
           report('ἅγιος phrase is missing from the full marginalia set');
