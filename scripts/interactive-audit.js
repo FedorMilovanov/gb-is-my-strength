@@ -388,8 +388,8 @@ async function checkHermenevtikaFootnotes(browser) {
   if (missingMarkers.length) push('hermenevtika-footnote-marker-missing', HERMENEUTIKA_URL, missingMarkers);
   const blockedMarkers = markerHitState.filter((state) => state.present && !state.ownsCenter);
   if (blockedMarkers.length) push('hermenevtika-footnote-marker-hitbox-overlap', HERMENEUTIKA_URL, blockedMarkers);
-  const hoverMarkerUnavailable = missingMarkers.some((state) => state.number === '40')
-    || blockedMarkers.some((state) => state.number === '40');
+  const hoverMarkerCenter = markerHitState.find((state) => state.number === '40' && state.present && state.ownsCenter) || null;
+  const hoverMarkerUnavailable = !hoverMarkerCenter;
 
   const readStaticFootnoteHoverState = () => desktop.evaluate(() => {
     const marker = document.querySelector('[data-audit-footnote="40"]');
@@ -424,7 +424,12 @@ async function checkHermenevtikaFootnotes(browser) {
   });
 
   if (!hoverMarkerUnavailable) {
-    await hoverMarker.hover();
+    // The marker centre was physically proven above with elementFromPoint().
+    // locator.hover() is the wrong transport here: once pointerenter opens an
+    // interactive body-mounted tooltip, Playwright re-runs actionability and
+    // treats that successful hover result as a pointer interceptor. Move the
+    // real mouse to the already-proven hit point instead; no force or CSS bypass.
+    await desktop.mouse.move(hoverMarkerCenter.centerX, hoverMarkerCenter.centerY);
     await desktop.waitForFunction(() => {
       const marker = document.querySelector('[data-audit-footnote="40"]');
       return marker?.getAttribute('aria-expanded') === 'true'
@@ -475,7 +480,7 @@ async function checkHermenevtikaFootnotes(browser) {
         break;
       }
       if (crossing < 2) {
-        await hoverMarker.hover();
+        await desktop.mouse.move(hoverMarkerCenter.centerX, hoverMarkerCenter.centerY, { steps: 12 });
         await desktop.waitForTimeout(80);
       }
     }
