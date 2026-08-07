@@ -12,6 +12,7 @@
   "risk": 5,
   "hasMDX": false,
   "mdxPath": null,
+  "legacyStatus": "runtime-required",
   "legacyPath": "konfessii/russkij-baptizm/_app/index.html",
   "visualParity": {
     "desktop": 0,

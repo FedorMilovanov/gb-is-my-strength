@@ -13,6 +13,7 @@
   "risk": 1,
   "hasMDX": false,
   "mdxPath": null,
+  "legacyStatus": "reference-only",
   "legacyPath": "karty/melachim/index.html",
   "visualParity": {
     "desktop": 0,

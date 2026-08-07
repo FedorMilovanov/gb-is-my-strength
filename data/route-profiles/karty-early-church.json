@@ -13,6 +13,7 @@
   "risk": 2,
   "hasMDX": false,
   "mdxPath": null,
+  "legacyStatus": "reference-only",
   "legacyPath": "karty/early-church/index.html",
   "visualParity": {
     "desktop": 0,
