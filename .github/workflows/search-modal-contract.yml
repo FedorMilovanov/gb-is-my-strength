@@ -5,6 +5,20 @@ on:
     branches: [main]
     paths:
       - 'js/search.js'
+      - 'js/site-utils.js'
+      - '404.html'
+      - 'scripts/audit-pro.js'
+      - 'scripts/home-browser-contract.mjs'
+      - 'src/layouts/BaseLayout.astro'
+      - 'src/components/home/**'
+      - 'src/components/about/AboutPageChrome.astro'
+      - 'src/components/articles/ArticlesPageFooter.astro'
+      - 'src/components/article-pilots/**'
+      - 'src/components/baptisty-rossii/**'
+      - 'src/components/biografii/BiografiiPageFooter.astro'
+      - 'src/components/nagornaya/**'
+      - 'src/components/pastor-series/PastorSeriesPageChrome.astro'
+      - 'src/components/rodosloviye/RodosloviyeBody.astro'
       - 'css/command-palette.css'
       - 'scripts/search-modal-browser-contract.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
@@ -24,6 +38,20 @@ on:
     branches: [main]
     paths:
       - 'js/search.js'
+      - 'js/site-utils.js'
+      - '404.html'
+      - 'scripts/audit-pro.js'
+      - 'scripts/home-browser-contract.mjs'
+      - 'src/layouts/BaseLayout.astro'
+      - 'src/components/home/**'
+      - 'src/components/about/AboutPageChrome.astro'
+      - 'src/components/articles/ArticlesPageFooter.astro'
+      - 'src/components/article-pilots/**'
+      - 'src/components/baptisty-rossii/**'
+      - 'src/components/biografii/BiografiiPageFooter.astro'
+      - 'src/components/nagornaya/**'
+      - 'src/components/pastor-series/PastorSeriesPageChrome.astro'
+      - 'src/components/rodosloviye/RodosloviyeBody.astro'
       - 'css/command-palette.css'
       - 'scripts/search-modal-browser-contract.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
@@ -71,6 +99,7 @@ jobs:
           node --check scripts/app-search-surface-source-contract.mjs
           node --check scripts/app-search-surface-browser-contract.mjs
           node scripts/app-search-surface-source-contract.mjs
+          node scripts/audit-pro.js
           npm run astro:check
 
       - name: Build production-like publication
