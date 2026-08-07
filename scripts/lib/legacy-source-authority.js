@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const fs = require('fs');
 const { findProfileFile } = require('./route-source-contract');
 
@@ -112,6 +113,24 @@ function currentLegacyReferenceDisposition(profile, profilePath = 'route-profile
   };
 }
 
+function runLegacyAuthorityContractChecks() {
+  const cases = [
+    [{}, 1, 'missing status is rejected'],
+    [{ legacyStatus: 'unknown-state' }, 1, 'unknown status is rejected'],
+    [{ legacyStatus: 'absent', legacyPath: 'old/index.html' }, 1, 'absent with a path is rejected'],
+    [{ legacyStatus: 'reference-only' }, 1, 'reference-only without a path is rejected'],
+    [{ legacyStatus: 'absent' }, 0, 'explicit absent is valid'],
+    [{ legacyStatus: 'reference-only', legacyPath: 'old/index.html' }, 0, 'explicit reference-only shape is valid'],
+  ];
+  for (const [profile, expectedIssues, label] of cases) {
+    assert.equal(validateLegacyAuthorityProfile(profile).length, expectedIssues, label);
+  }
+  assert.equal(currentLegacyReferenceDisposition({ legacyStatus: 'reference-only' }, 'p').classification, 'migration-reference-only');
+  assert.equal(currentLegacyReferenceDisposition({ legacyStatus: 'runtime-required' }, 'p').classification, 'production-required');
+  assert.equal(currentLegacyReferenceDisposition({}, 'p').classification, 'unknown-blocker');
+  return cases.length + 3;
+}
+
 function legacyIsAuthoritative(profile) {
   return classifyLegacyAuthority(profile).kind === 'authoritative';
 }
@@ -124,5 +143,6 @@ module.exports = {
   currentLegacyReferenceDisposition,
   legacyIsAuthoritative,
   loadRouteProfile,
+  runLegacyAuthorityContractChecks,
   validateLegacyAuthorityProfile,
 };
