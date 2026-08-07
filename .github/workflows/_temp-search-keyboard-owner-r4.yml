@@ -1,0 +1,134 @@
+name: Temporary Search Keyboard Owner R4
+
+on:
+  pull_request:
+    types: [labeled]
+    branches: [main]
+
+concurrency:
+  group: temp-search-keyboard-owner-r4-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/system-search-keyboard-owner-r4'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout exact pull-request branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Apply sole Search keyboard owner migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/_temp-search-keyboard-owner-r4.mjs
+          node scripts/_temp-search-keyboard-owner-r4.mjs --apply
+          node --check js/site-utils.js
+          node --check js/search.js
+          node --check scripts/audit-pro.js
+          node --check scripts/app-search-surface-source-contract.mjs
+          node --check scripts/app-search-surface-browser-contract.mjs
+          node --check scripts/home-browser-contract.mjs
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          node scripts/app-search-surface-source-contract.mjs
+          node scripts/audit-pro.js
+          npm run workflows:check
+          npm run astro:check
+          git diff --check
+
+      - name: Verify bounded source and deterministic projection paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only > /tmp/search-keyboard-owner-paths
+          while IFS= read -r file; do
+            case "$file" in
+              js/search.js|js/site-utils.js|404.html|scripts/audit-pro.js|scripts/app-search-surface-source-contract.mjs|scripts/app-search-surface-browser-contract.mjs|scripts/home-browser-contract.mjs|src/layouts/BaseLayout.astro|src/lib/asset-version.js|.github/workflows/search-modal-contract.yml) ;;
+              *.html) ;;
+              src/*.astro|src/*/*.astro|src/*/*/*.astro|src/*/*/*/*.astro|src/*/*/*/*/*.astro|src/*/*/*/*/*/*.astro) ;;
+              *) echo "Unexpected Search keyboard owner transaction path: $file" >&2; exit 1 ;;
+            esac
+          done < /tmp/search-keyboard-owner-paths
+
+      - name: Commit source and deterministic asset projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "fix(search): centralize global keyboard ownership"
+
+      - name: Remove temporary transaction owners
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp scripts/_temp-search-keyboard-owner-r4.mjs /tmp/search-keyboard-owner-r4.mjs
+          git rm .github/workflows/_temp-search-keyboard-owner-r4.yml scripts/_temp-search-keyboard-owner-r4.mjs
+          git commit -m "chore(search): remove temporary owner transaction"
+          echo "CLEAN_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Refresh immutable legacy-reference ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          node /tmp/search-keyboard-owner-r4.mjs --refresh-ledger "$CLEAN_SOURCE_SHA"
+          node scripts/cache-bust.js
+          node scripts/app-search-surface-source-contract.mjs
+          node scripts/audit-pro.js
+          node scripts/legacy-reference-inventory-audit.mjs
+          node scripts/legacy-reference-path-contract-test.js
+          node scripts/strangler-duplicate-inventory.mjs --self-test
+          npm run workflows:check
+          git diff --check
+          git add data/legacy-reference-ledger/manifest.json \
+                  data/legacy-reference-ledger/references-1.json \
+                  data/legacy-reference-ledger/references-2.json \
+                  data/legacy-reference-ledger/references-3.json \
+                  data/legacy-reference-ledger/references-4.json
+          git commit -m "chore(search): reconcile immutable reference bytes"
+
+      - name: Final self-clean and race guard
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          START_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test ! -e .github/workflows/_temp-search-keyboard-owner-r4.yml
+          test ! -e scripts/_temp-search-keyboard-owner-r4.mjs
+          node scripts/cache-bust.js
+          node scripts/app-search-surface-source-contract.mjs
+          node scripts/audit-pro.js
+          node scripts/legacy-reference-inventory-audit.mjs
+          node scripts/legacy-reference-path-contract-test.js
+          node scripts/strangler-duplicate-inventory.mjs --self-test
+          npm run workflows:check
+          git diff --check
+          test -z "$(git status --porcelain)"
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$START_SHA"
+          git push origin "HEAD:${HEAD_REF}"
