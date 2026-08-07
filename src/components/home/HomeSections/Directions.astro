@@ -786,26 +786,70 @@ const routes = [
     body.home-page #main-content .h-home-routes {
       min-height: 0;
       border-radius: 18px;
-      padding: 6px;
+      padding: 8px;
+      gap: 12px;
+      scroll-padding-inline: 8px;
+    }
+
+    body.home-page #main-content .h-home-route__divider {
+      display: none;
     }
 
     body.home-page #main-content .h-home-route {
-      flex-basis: min(82vw, 300px);
-      min-height: 0;
-      grid-template-rows: auto auto auto auto;
+      flex: 0 0 calc(100% - 18px);
+      min-height: 236px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto 124px auto auto;
       align-content: start;
-      padding: 18px 20px 18px;
+      padding: 14px 18px 16px;
       border-radius: 14px;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
     }
 
     body.home-page #main-content .h-home-route__glyph {
-      min-height: 110px;
-      margin: 4px 0 12px;
+      width: 178px;
+      min-height: 124px;
+      height: 124px;
+      justify-self: center;
+      margin: 0 auto 8px;
     }
 
     body.home-page #main-content .h-route-object {
-      width: min(82%, 156px);
-      max-height: 116px;
+      width: 178px;
+      max-width: 178px;
+      max-height: 124px;
+    }
+
+    /* Mobile-only optical compensation for transparent PNG margins. */
+    body.home-page #main-content .h-home-route[data-home-route="articles"] {
+      --route-object-scale: 1.30;
+      --route-object-hover-scale: 1.306;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="series"] {
+      --route-object-scale: .96;
+      --route-object-hover-scale: .966;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="biographies"] {
+      --route-object-scale: .98;
+      --route-object-hover-scale: .986;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="maps"] {
+      --route-object-scale: 1.05;
+      --route-object-hover-scale: 1.056;
+      --route-object-y: 0px;
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="confessions"] {
+      --route-object-scale: .94;
+      --route-object-hover-scale: .946;
+      --route-object-y: 0px;
     }
 
     body.home-page #main-content .h-home-route__index {
@@ -820,8 +864,9 @@ const routes = [
     }
 
     body.home-page #main-content .h-home-route__copy strong {
-      font-size: 1.14rem;
-      line-height: 1.1;
+      margin-bottom: 6px;
+      font-size: 1rem;
+      line-height: 1.12;
     }
 
     body.home-page #main-content .h-home-route__copy > span:last-child {
@@ -835,7 +880,7 @@ const routes = [
     }
 
     body.home-page #main-content .h-home-route__arrow {
-      margin-top: 10px;
+      margin-top: 8px;
       font-size: 16px;
     }
 
@@ -873,7 +918,7 @@ const routes = [
     }
 
     body.home-page #main-content .h-home-route {
-      flex-basis: min(86vw, 280px);
+      flex-basis: calc(100% - 16px);
       padding-inline: 15px;
     }
   }
