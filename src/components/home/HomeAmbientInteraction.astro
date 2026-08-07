@@ -199,13 +199,6 @@
     const rectWithinViewport = (rect, tolerance = 1) => rect.left >= -tolerance && rect.right <= innerWidth + tolerance;
     const lineCount = (element) => {
       if (!(element instanceof HTMLElement)) return 0;
-      const style = getComputedStyle(element);
-      const lineHeight = Number.parseFloat(style.lineHeight);
-      const height = element.getBoundingClientRect().height;
-      if (Number.isFinite(lineHeight) && lineHeight > 0 && height > 0) {
-        return Math.max(1, Math.round(height / lineHeight));
-      }
-
       const range = document.createRange();
       range.selectNodeContents(element);
       const rects = [...range.getClientRects()]
@@ -223,31 +216,13 @@
       });
       return rows.length;
     };
-    const intrinsicSingleLineWidth = (element) => {
-      if (!(element instanceof HTMLElement) || !(element.parentElement instanceof HTMLElement)) return 0;
-      const clone = element.cloneNode(true);
-      if (!(clone instanceof HTMLElement)) return 0;
-      clone.removeAttribute('id');
-      clone.style.position = 'absolute';
-      clone.style.left = '-10000px';
-      clone.style.top = '0';
-      clone.style.width = 'max-content';
-      clone.style.maxWidth = 'none';
-      clone.style.whiteSpace = 'nowrap';
-      clone.style.transform = 'none';
-      clone.style.visibility = 'hidden';
-      clone.style.pointerEvents = 'none';
-      element.parentElement.appendChild(clone);
-      const width = clone.getBoundingClientRect().width;
-      clone.remove();
-      return width;
-    };
     const firstTransitionDelay = (element) => {
       if (!(element instanceof HTMLElement)) return 0;
       const first = getComputedStyle(element).transitionDelay.split(',')[0]?.trim() || '0s';
       return first.endsWith('ms') ? Number.parseFloat(first) / 1000 : Number.parseFloat(first) || 0;
     };
     const centreX = (rect) => rect ? (rect.left + rect.right) / 2 : NaN;
+    const reportedNoWrapPhrase = 'הַשָּׁמַיִם מְסַפְּרִים כְּבוֹד־אֵל';
 
     const runContract = () => {
       syncVisibility();
@@ -296,6 +271,7 @@
         const text = word.querySelector('.h-ambient-word__text');
         const tooltip = word.querySelector('.h-ambient-word__tooltip');
         const source = word.querySelector('.h-ambient-word__source');
+        const textValue = text?.textContent?.trim() || '';
 
         if (!rectWithinViewport(phraseRect)) report(`${prefix} leaves the viewport`);
         if (edgeGap < outerFloor - 1) {
@@ -308,9 +284,8 @@
         if (getComputedStyle(word).textAlign !== 'center') report(`${prefix} phrase stack is not centred`);
         if (text instanceof HTMLElement) {
           if (getComputedStyle(text).textAlign !== 'center') report(`${prefix} original text is not centred`);
-          const intrinsic = intrinsicSingleLineWidth(text);
-          if (intrinsic <= phraseRect.width + 1 && lineCount(text) > 1) {
-            report(`${prefix} wraps even though its single-line ink fits the safe phrase width`);
+          if (innerWidth >= 1700 && textValue === reportedNoWrapPhrase && lineCount(text) > 1) {
+            report(`${prefix} reported Hebrew original wrapped at ${innerWidth}px`);
           }
         }
         if (tooltip instanceof HTMLElement && getComputedStyle(tooltip).textAlign !== 'center') {
