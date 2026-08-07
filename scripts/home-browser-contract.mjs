@@ -8,6 +8,13 @@ import { chromium, webkit } from 'playwright';
 import { runResponsiveEvidence, runResponsiveNoJavaScript } from './home-responsive-evidence-contract.mjs';
 
 const ROOT = path.resolve(process.cwd());
+const SEARCH_SOURCE = fs.readFileSync(path.join(ROOT, 'js/search.js'), 'utf8');
+const HOME_PROGRESSIVE_SOURCE = fs.readFileSync(path.join(ROOT, 'src/components/home/HomeProgressiveEnhancementHead.astro'), 'utf8');
+assert.equal((SEARCH_SOURCE.match(/function __gbSearchCanonicalShortcut\(/g) || []).length, 1, 'Search must expose one canonical shortcut predicate');
+assert.equal((SEARCH_SOURCE.match(/__gbSearchCanonicalShortcut\(e\)&&/g) || []).length, 2, 'bootstrap and loaded Search owners must share the canonical predicate');
+assert.equal(SEARCH_SOURCE.includes('(e.metaKey||e.ctrlKey)&&String(e.key).toLowerCase()===\"k\"'), false, 'broad bootstrap shortcut owner returned');
+assert.equal(SEARCH_SOURCE.includes('(e.metaKey||e.ctrlKey)&&\"k\"===String(e.key).toLowerCase()'), false, 'broad loaded shortcut owner returned');
+assert.equal(HOME_PROGRESSIVE_SOURCE.includes('stopImmediatePropagation'), false, 'Home must not shadow shared Search shortcut ownership');
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'home-browser-contract');
 const BROWSERS = { chromium, webkit };
@@ -214,35 +221,65 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await waitForMenuState(page, false);
     await assertScrollUnlocked(page, 'BFCache pageshow');
 
-    await page.keyboard.press('Alt+Control+K');
-    await page.waitForTimeout(120);
-    await assertSearchClosed(page, 'Alt+Ctrl+K');
-    await page.keyboard.press('Control+Meta+K');
-    await page.waitForTimeout(120);
-    await assertSearchClosed(page, 'Ctrl+Meta+K');
-
-    await page.evaluate(() => {
-      const editable = document.createElement('div');
-      editable.id = 'home-contract-editable';
-      editable.contentEditable = 'true';
-      editable.textContent = 'editable';
-      document.body.appendChild(editable);
-      editable.focus();
+    const assertInvalidSearchShortcut = async (label, press) => {
+      await press();
+      await page.waitForTimeout(120);
+      await assertSearchClosed(page, label);
+    };
+    const dispatchComposingCtrlK = () => page.evaluate(() => {
+      const event = new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', ctrlKey: true, bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'isComposing', { value: true });
+      document.activeElement?.dispatchEvent(event);
     });
-    await page.keyboard.press('Control+K');
-    await page.waitForTimeout(120);
-    await assertSearchClosed(page, 'editable Ctrl+K');
+    const focusContractTextbox = (id, contentEditable = false) => page.evaluate(({ targetId, editable }) => {
+      let target = document.getElementById(targetId);
+      if (!target) {
+        target = document.createElement('div');
+        target.id = targetId;
+        target.tabIndex = 0;
+        target.setAttribute('role', 'textbox');
+        if (editable) target.contentEditable = 'true';
+        target.textContent = targetId;
+        document.body.appendChild(target);
+      }
+      target.focus();
+    }, { targetId: id, editable: contentEditable });
 
+    await assertInvalidSearchShortcut('bootstrap Alt+Ctrl+K', () => page.keyboard.press('Alt+Control+K'));
+    await assertInvalidSearchShortcut('bootstrap Shift+Ctrl+K', () => page.keyboard.press('Shift+Control+K'));
+    await assertInvalidSearchShortcut('bootstrap Ctrl+Meta+K', () => page.keyboard.press('Control+Meta+K'));
+    await focusContractTextbox('home-contract-editable', true);
+    await assertInvalidSearchShortcut('bootstrap editable Ctrl+K', () => page.keyboard.press('Control+K'));
     await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await assertInvalidSearchShortcut('bootstrap composing Ctrl+K', dispatchComposingCtrlK);
+
     await page.keyboard.press('Control+K');
     const searchInput = page.locator('.cp-input');
     await searchInput.waitFor({ state: 'visible' });
     await page.waitForFunction(() => {
       const input = document.querySelector('.cp-input');
-      return input !== null && input === document.activeElement;
+      return input !== null && input === document.activeElement && window.GBSearch?.__ready === true;
     });
     assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, 'canonical Ctrl+K did not focus search input');
     assert.equal(await page.locator('.cp-backdrop').count(), 1, 'search initialized more than once');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => {
+      const overlay = document.querySelector('.cp-backdrop');
+      return !overlay || getComputedStyle(overlay).display === 'none' || !overlay.classList.contains('open');
+    });
+
+    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await assertInvalidSearchShortcut('loaded Alt+Ctrl+K', () => page.keyboard.press('Alt+Control+K'));
+    await assertInvalidSearchShortcut('loaded Shift+Ctrl+K', () => page.keyboard.press('Shift+Control+K'));
+    await assertInvalidSearchShortcut('loaded Ctrl+Meta+K', () => page.keyboard.press('Control+Meta+K'));
+    await focusContractTextbox('home-contract-role-textbox', false);
+    await assertInvalidSearchShortcut('loaded role=textbox Ctrl+K', () => page.keyboard.press('Control+K'));
+    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await assertInvalidSearchShortcut('loaded composing Ctrl+K', dispatchComposingCtrlK);
+
+    await page.keyboard.press('Control+K');
+    await searchInput.waitFor({ state: 'visible' });
+    assert.equal(await page.locator('.cp-backdrop').count(), 1, 'loaded canonical Ctrl+K duplicated the search overlay');
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => {
       const overlay = document.querySelector('.cp-backdrop');
