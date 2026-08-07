@@ -56,23 +56,25 @@ function frequencyDeficit(legacyWords, distWords, sampleLimit = 10) {
     const deficit = Math.max(legacyCount - distCount, 0);
     if (!deficit) continue;
     missing += deficit;
-    if (missingWords.length < sampleLimit) {
-      missingWords.push(`${word}(-${deficit})`);
-    }
+    if (missingWords.length < sampleLimit) missingWords.push(`${word}(-${deficit})`);
   }
 
   return { total, missing, missingWords };
 }
 
-function coverageHealth({ expected, exercised }) {
+function coverageHealth({ expected, exercised, undeclared }) {
   const issues = [];
   if (!Number.isInteger(expected) || expected < 0) issues.push('expected must be a non-negative integer');
   if (!Number.isInteger(exercised) || exercised < 0) issues.push('exercised must be a non-negative integer');
+  if (!Number.isInteger(undeclared) || undeclared < 0) issues.push('undeclared must be a non-negative integer');
   if (Number.isInteger(expected) && Number.isInteger(exercised) && exercised > expected) {
     issues.push(`exercised ${exercised} exceeds expected ${expected}`);
   }
   if (Number.isInteger(expected) && Number.isInteger(exercised) && expected > 0 && exercised === 0) {
     issues.push(`expected ${expected} authoritative comparison(s) but exercised 0`);
+  }
+  if (Number.isInteger(undeclared) && undeclared > 0) {
+    issues.push(`${undeclared} production Astro route(s) have undeclared legacy authority`);
   }
   return issues;
 }
@@ -94,10 +96,13 @@ function runContractChecks() {
     assert.equal(frequencyDeficit(new Map([['слово', 1]]), new Map([['слово', 4]])).missing, 0);
   });
   check('health rejects expected-but-zero exercise', () => {
-    assert.equal(coverageHealth({ expected: 1, exercised: 0 }).length, 1);
+    assert.equal(coverageHealth({ expected: 1, exercised: 0, undeclared: 0 }).length, 1);
   });
   check('health accepts an intentional empty authoritative set', () => {
-    assert.deepEqual(coverageHealth({ expected: 0, exercised: 0 }), []);
+    assert.deepEqual(coverageHealth({ expected: 0, exercised: 0, undeclared: 0 }), []);
+  });
+  check('health rejects undeclared production authority', () => {
+    assert.equal(coverageHealth({ expected: 0, exercised: 0, undeclared: 1 }).length, 1);
   });
   check('authority distinguishes reference-only from undeclared', () => {
     assert.equal(classifyLegacyAuthority({ legacyStatus: 'reference-only' }).kind, 'non-authoritative');
@@ -133,7 +138,7 @@ function main() {
   let expected = 0;
   let exercised = 0;
   let skippedExplicit = 0;
-  let skippedUndeclared = 0;
+  let undeclared = 0;
 
   for (const [route, meta] of Object.entries(ownership)) {
     if (!meta || meta.owner !== 'astro') continue;
@@ -147,9 +152,9 @@ function main() {
     }
 
     if (authority.kind === 'undeclared') {
-      skippedUndeclared++;
+      undeclared++;
       const source = profile?.renderSource || profile?.source || meta.source || 'declared Astro source';
-      console.log(`SKIP-UNDECLARED ${route}: legacyStatus is not declared; production source=${source}`);
+      bad(`${route}: legacyStatus is not declared; production source=${source}`);
       continue;
     }
 
@@ -194,20 +199,22 @@ function main() {
     }
   }
 
-  for (const issue of coverageHealth({ expected, exercised })) bad(`health: ${issue}`);
+  for (const issue of coverageHealth({ expected, exercised, undeclared })) {
+    if (!issue.includes('undeclared legacy authority')) bad(`health: ${issue}`);
+  }
 
   const health = {
     expected,
     exercised,
     skippedExplicit,
-    skippedUndeclared,
+    undeclared,
     warnings: warns,
     failures,
     passed,
     checks,
   };
 
-  console.log(`\nContent coverage audit: expected=${expected}, exercised=${exercised}, explicit-skips=${skippedExplicit}, undeclared-skips=${skippedUndeclared}, warnings=${warns}, passed=${passed}/${checks}`);
+  console.log(`\nContent coverage audit: expected=${expected}, exercised=${exercised}, explicit-skips=${skippedExplicit}, undeclared=${undeclared}, warnings=${warns}, passed=${passed}/${checks}`);
   console.log(`CONTENT_COVERAGE_HEALTH ${JSON.stringify(health)}`);
 
   if (failures) {
