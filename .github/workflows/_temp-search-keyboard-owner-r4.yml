@@ -15,6 +15,7 @@ permissions:
 jobs:
   apply:
     if: >-
+      github.event_name == 'pull_request' &&
       contains(github.event.pull_request.labels.*.name, 'autofix') &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'agent/system-search-keyboard-owner-r4'
@@ -39,59 +40,103 @@ jobs:
       - name: Install immutable dependencies
         run: npm ci
 
-      - name: Apply sole Search keyboard owner migration
+      - name: Detect transaction phase
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -q "function isCanonicalSearchShortcut(event)" js/site-utils.js; then
+            node scripts/cache-bust.js
+            echo "TXN_PHASE=reconcile" >> "$GITHUB_ENV"
+            echo "Search source is already migrated and asset revisions are synchronized."
+          else
+            echo "TXN_PHASE=source" >> "$GITHUB_ENV"
+            echo "Search source migration is pending."
+          fi
+
+      - name: Write Search owner source
         shell: bash
         run: |
           set -euo pipefail
           node --check scripts/_temp-search-keyboard-owner-r4.mjs
-          node scripts/_temp-search-keyboard-owner-r4.mjs --apply
+          if [ "$TXN_PHASE" = "source" ]; then
+            # --write is the explicit capability marker required by Workflow Policy v2.
+            # The temporary writer itself performs the bounded source migration;
+            # canonical asset revisions remain owned exclusively by glossary-contract.yml.
+            node scripts/_temp-search-keyboard-owner-r4.mjs --apply --write
+          else
+            echo "Source already migrated; this invocation is ledger/self-clean reconciliation only."
+          fi
+
+      - name: Validate transaction state
+        shell: bash
+        run: |
+          set -euo pipefail
           node --check js/site-utils.js
           node --check js/search.js
           node --check scripts/audit-pro.js
           node --check scripts/app-search-surface-source-contract.mjs
           node --check scripts/app-search-surface-browser-contract.mjs
           node --check scripts/home-browser-contract.mjs
-          node scripts/cache-bust.js --write
-          node scripts/cache-bust.js
-          node scripts/app-search-surface-source-contract.mjs
-          node scripts/audit-pro.js
           npm run workflows:check
           npm run astro:check
           git diff --check
+          if [ "$TXN_PHASE" = "reconcile" ]; then
+            node scripts/cache-bust.js
+            node scripts/app-search-surface-source-contract.mjs
+            node scripts/audit-pro.js
+            node scripts/legacy-reference-inventory-audit.mjs
+            node scripts/legacy-reference-path-contract-test.js
+            node scripts/strangler-duplicate-inventory.mjs --self-test
+          fi
 
-      - name: Verify bounded source and deterministic projection paths
+      - name: Verify bounded source paths
+        if: env.TXN_PHASE == 'source'
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only > /tmp/search-keyboard-owner-paths
           while IFS= read -r file; do
             case "$file" in
-              js/search.js|js/site-utils.js|404.html|scripts/audit-pro.js|scripts/app-search-surface-source-contract.mjs|scripts/app-search-surface-browser-contract.mjs|scripts/home-browser-contract.mjs|src/layouts/BaseLayout.astro|src/lib/asset-version.js|.github/workflows/search-modal-contract.yml) ;;
+              js/search.js|js/site-utils.js|404.html|scripts/audit-pro.js|scripts/app-search-surface-source-contract.mjs|scripts/app-search-surface-browser-contract.mjs|scripts/home-browser-contract.mjs|src/layouts/BaseLayout.astro|.github/workflows/search-modal-contract.yml) ;;
               *.html) ;;
               src/*.astro|src/*/*.astro|src/*/*/*.astro|src/*/*/*/*.astro|src/*/*/*/*/*.astro|src/*/*/*/*/*/*.astro) ;;
-              *) echo "Unexpected Search keyboard owner transaction path: $file" >&2; exit 1 ;;
+              *) echo "Unexpected Search keyboard owner source path: $file" >&2; exit 1 ;;
             esac
           done < /tmp/search-keyboard-owner-paths
 
-      - name: Commit source and deterministic asset projections
+      - name: Commit source migration
+        if: env.TXN_PHASE == 'source'
         shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          START_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$START_SHA"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
           git commit -m "fix(search): centralize global keyboard ownership"
+          git push origin "HEAD:${HEAD_REF}"
+          echo "Source migration published. The existing Glossary Contract now owns canonical cache-bust regeneration."
 
-      - name: Remove temporary transaction owners
+      - name: Commit clean transaction boundary
+        if: env.TXN_PHASE == 'reconcile'
         shell: bash
         run: |
           set -euo pipefail
           cp scripts/_temp-search-keyboard-owner-r4.mjs /tmp/search-keyboard-owner-r4.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/workflows/_temp-search-keyboard-owner-r4.yml scripts/_temp-search-keyboard-owner-r4.mjs
+          npm run workflows:check
+          git diff --check
           git commit -m "chore(search): remove temporary owner transaction"
           echo "CLEAN_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Refresh immutable legacy-reference ledger
+        if: env.TXN_PHASE == 'reconcile'
         shell: bash
         run: |
           set -euo pipefail
@@ -103,6 +148,7 @@ jobs:
           node scripts/legacy-reference-path-contract-test.js
           node scripts/strangler-duplicate-inventory.mjs --self-test
           npm run workflows:check
+          npm run astro:check
           git diff --check
           git add data/legacy-reference-ledger/manifest.json \
                   data/legacy-reference-ledger/references-1.json \
@@ -111,7 +157,8 @@ jobs:
                   data/legacy-reference-ledger/references-4.json
           git commit -m "chore(search): reconcile immutable reference bytes"
 
-      - name: Final self-clean and race guard
+      - name: Final self-clean race guard and push
+        if: env.TXN_PHASE == 'reconcile'
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
