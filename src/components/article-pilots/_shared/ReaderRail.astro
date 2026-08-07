@@ -195,6 +195,15 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
       margin-left:max(var(--hrail-centered-left),var(--hrail-safe-shell-left));
       margin-right:auto;
     }
+    /* Native padded page-wrap shells can coexist with the retained legacy
+       floating-cluster bridge. This remains ReaderRail-owned geometry: the
+       semantic native marker gives the same computed margins enough cascade
+       specificity to supersede legacy `body:has(.hrail) .page-wrap` without
+       !important, route offsets, or deleting legacy behavior. */
+    .page-wrap[data-reader-root][data-reader-rail-main]{
+      margin-left:max(var(--hrail-centered-left),var(--hrail-safe-shell-left));
+      margin-right:auto;
+    }
   }
 </style>
 
