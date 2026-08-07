@@ -68,17 +68,19 @@
       }
     };
 
-    /* Viewport evidence changes several sizes back-to-back. A raw resize
-       listener can sample the old box before the new responsive layout is
-       painted and permanently report a transient edge contact. Keep every
-       geometry threshold unchanged, but coalesce lifecycle signals into the
-       next frame so this development contract measures the settled layout. */
+    /* Viewport evidence changes several sizes back-to-back. A resize can land
+       between responsive style invalidation and the following painted layout.
+       Keep every geometry threshold unchanged, but coalesce lifecycle signals
+       through two animation frames so the development contract measures the
+       same settled geometry that the browser evidence records. */
     let checkFrame = 0;
     const scheduleCheck = () => {
       if (checkFrame) cancelAnimationFrame(checkFrame);
       checkFrame = requestAnimationFrame(() => {
-        checkFrame = 0;
-        check();
+        checkFrame = requestAnimationFrame(() => {
+          checkFrame = 0;
+          check();
+        });
       });
     };
 
