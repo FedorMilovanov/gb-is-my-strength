@@ -1,3 +1,4 @@
+# one-shot synchronize trigger
 name: Sync Nagornaya candidate to latest main once
 
 on:
