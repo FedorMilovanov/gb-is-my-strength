@@ -16,6 +16,7 @@
 // set-membership proxy.
 //
 // Usage: node scripts/content-coverage-audit.js   (requires built dist/)
+const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const {
@@ -76,6 +77,36 @@ function coverageHealth({ expected, exercised }) {
   return issues;
 }
 
+function runContractChecks() {
+  let checks = 0;
+  const check = (name, fn) => {
+    fn();
+    checks++;
+    console.log(`CONTRACT OK ${name}`);
+  };
+
+  check('frequency deficit counts repeated occurrence loss', () => {
+    const result = frequencyDeficit(new Map([['слово', 3]]), new Map([['слово', 1]]));
+    assert.equal(result.total, 3);
+    assert.equal(result.missing, 2);
+  });
+  check('extra dist occurrences do not create negative loss', () => {
+    assert.equal(frequencyDeficit(new Map([['слово', 1]]), new Map([['слово', 4]])).missing, 0);
+  });
+  check('health rejects expected-but-zero exercise', () => {
+    assert.equal(coverageHealth({ expected: 1, exercised: 0 }).length, 1);
+  });
+  check('health accepts an intentional empty authoritative set', () => {
+    assert.deepEqual(coverageHealth({ expected: 0, exercised: 0 }), []);
+  });
+  check('authority distinguishes reference-only from undeclared', () => {
+    assert.equal(classifyLegacyAuthority({ legacyStatus: 'reference-only' }).kind, 'non-authoritative');
+    assert.equal(classifyLegacyAuthority({}).kind, 'undeclared');
+  });
+
+  console.log(`Content coverage internal contract: ${checks}/${checks} checks passed`);
+}
+
 function loadOwnership() {
   const p = path.join(ROOT, 'migration', 'page-ownership.json');
   const j = JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -83,6 +114,8 @@ function loadOwnership() {
 }
 
 function main() {
+  runContractChecks();
+
   let failures = 0;
   let checks = 0;
   let warns = 0;
@@ -194,5 +227,6 @@ module.exports = {
   coverageHealth,
   frequencyDeficit,
   pageText,
+  runContractChecks,
   words,
 };
