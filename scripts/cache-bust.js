@@ -30,6 +30,7 @@ const { loadRouteRecords } = require('./lib/route-source-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const WRITE = process.argv.includes('--write');
+const CHECK = !WRITE;
 const { ASSETS } = require('./cache-bust-assets');
 
 function md5short(relPath) {
