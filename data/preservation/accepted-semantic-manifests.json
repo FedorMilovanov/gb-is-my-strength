@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "routes": [
+    {
+      "id": "hermenevtika",
+      "route": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+      "owner": "src/components/article-pilots/hermenevtika/HermenevtikaBody.astro",
+      "sourceFiles": [
+        "src/components/article-pilots/hermenevtika/HermenevtikaBody.astro"
+      ],
+      "distPath": "articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html",
+      "requiredUnits": [
+        {
+          "id": "article-stated-purpose",
+          "anchor": "Цель этой статьи — оценить претензии христоцентричной герменевтики в этом отношении"
+        },
+        {
+          "id": "scripture-objection",
+          "anchor": "такое изменение не обосновано Писанием"
+        },
+        {
+          "id": "gh-sufficiency",
+          "anchor": "грамматико-исторический метод не только оправдан Писанием, но и более чем достаточен"
+        },
+        {
+          "id": "authorial-intent-boundary",
+          "anchor": "связь со Христом помимо авторского замысла, жанра и контекста"
+        },
+        {
+          "id": "exegesis-boundary",
+          "anchor": "Богословие не должно подменять экзегезу"
+        },
+        {
+          "id": "primary-discussion-source",
+          "anchor": "Abner Chou"
+        }
+      ]
+    },
+    {
+      "id": "gill-part-1",
+      "route": "/articles/dzhon-gill-chast-1-chelovek/",
+      "owner": "src/components/article-pilots/gill-part1/GillPart1ArticleBody.astro",
+      "sourceFiles": [
+        "src/components/article-pilots/gill-part1/GillPart1SectionIntro.astro",
+        "src/components/article-pilots/gill-part1/GillPart1SectionPastor.astro",
+        "src/components/article-pilots/gill-part1/GillPart1SectionContextSouthwark.astro",
+        "src/components/article-pilots/gill-part1/GillPart1SectionGoatyardDecl.astro"
+      ],
+      "distPath": "articles/dzhon-gill-chast-1-chelovek/index.html",
+      "delegatedGuards": [
+        "scripts/gill-final-source-reconciliation-audit.mjs"
+      ],
+      "requiredUnits": [
+        {
+          "id": "birth-date-old-style",
+          "anchor": "23 ноября 1697 года по старому стилю"
+        },
+        {
+          "id": "stinton-succession",
+          "anchor": "пастора Бенджамина Стинтона"
+        },
+        {
+          "id": "ordination-date-age",
+          "anchor": "22 марта 1720 года, в двадцать два года"
+        },
+        {
+          "id": "pastorate-duration",
+          "anchor": "Гилл оставался пастором этой общины пятьдесят один год"
+        },
+        {
+          "id": "southwark-gin-context",
+          "anchor": "Gin Craze и парламентские Gin Acts"
+        },
+        {
+          "id": "dissenter-legal-context",
+          "anchor": "Corporation и Test Acts"
+        },
+        {
+          "id": "goat-yard-declaration",
+          "anchor": "В 1729 году община Хорслидауна приняла двенадцатистатейную Декларацию веры и практики"
+        },
+        {
+          "id": "declaration-limit",
+          "anchor": "Её нельзя противопоставлять Лондонскому исповеданию 1689 года как единственный стандарт на следующие полтора века"
+        }
+      ]
+    }
+  ]
+}
