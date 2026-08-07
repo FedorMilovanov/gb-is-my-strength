@@ -31,9 +31,15 @@ import { KOD_DA_VINCHI_TOC } from './kodDaVinchiToc';
      auto sizing, while its inherited 24px inline padding remains the origin
      for the classless main. Avoid a percentage width here: the canvas does not
      need one, and auto sizing keeps WebKit scrollable-overflow accounting bound
-     to the containing block instead of manufacturing width beyond it. */
+     to the containing block instead of manufacturing width beyond it.
+
+     The explicit body/route selector also outranks the legacy bridge rule in
+     floating-cluster.css (`body:has(.hrail) .page-wrap`), which still protects
+     old root pages with the historical one-sided rail shift. Canonical KDV has
+     its own ReaderRail geometry now, so that legacy 334px/820px shift must not
+     re-own this marked canvas. No !important or global legacy rewrite needed. */
   @media (min-width: 1200px) {
-    .page-wrap.page-wrap--hrail {
+    body.gbs-paper > .page-wrap.page-wrap--hrail {
       --hrail-canvas-inset-left: 24px;
       width: auto;
       max-width: none;

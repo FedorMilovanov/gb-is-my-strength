@@ -150,6 +150,14 @@
       margin-left: auto;
       margin-right: auto;
     }
+    /* The ordinary summary skin in site.css owns vertical rhythm with a
+       margin shorthand that also resets inline auto margins. Standalone-reader
+       roots own the reading axis, so restore only the inline component here at
+       higher owner specificity; no !important and no sitewide summary change. */
+    :global(body:not(.nagornaya-page) [data-reader-root] .article-body > .summary-card) {
+      margin-left: auto;
+      margin-right: auto;
+    }
 
     /* Compatibility selector for existing standalone article CSS. The canonical
        Sepia state is global; GBReaderPreferences mirrors it onto this root. */
