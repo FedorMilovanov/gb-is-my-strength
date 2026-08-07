@@ -43,6 +43,14 @@ function repoRel(abs) {
   return path.relative(ROOT, abs).replace(/\\/g, '/');
 }
 
+function resolveRepoHtml(value) {
+  const rel = String(value || '').replace(/\\/g, '/').replace(/^\/+/, '');
+  if (!rel || !rel.endsWith('.html')) return null;
+  const abs = path.resolve(ROOT, rel);
+  if (abs === ROOT || !abs.startsWith(`${ROOT}${path.sep}`)) return null;
+  return { rel, abs };
+}
+
 function collectReferenceOnlyHtmlPaths() {
   const protectedPaths = new Set();
   const claimedBy = new Map();
@@ -55,25 +63,26 @@ function collectReferenceOnlyHtmlPaths() {
     if (authority.status !== 'reference-only') continue;
 
     const issues = validateLegacyAuthorityProfile(profile, {
-      pathExists: (rel) => fs.existsSync(path.resolve(ROOT, rel)),
+      pathExists: (rel) => {
+        const target = resolveRepoHtml(rel);
+        return Boolean(target && fs.existsSync(target.abs));
+      },
     });
     if (issues.length) {
       throw new Error(`cache-bust reference authority invalid for ${repoRel(profileFile)}: ${issues.join(' | ')}`);
     }
 
-    const legacyPath = String(profile.legacyPath || '').replace(/\\/g, '/');
-    const abs = path.resolve(ROOT, legacyPath);
-    const insideRoot = abs.startsWith(`${ROOT}${path.sep}`);
-    if (!insideRoot || !legacyPath.endsWith('.html')) {
-      throw new Error(`cache-bust reference-only path must be repository HTML: ${legacyPath}`);
+    const target = resolveRepoHtml(authority.legacyPath);
+    if (!target) {
+      throw new Error(`cache-bust reference-only path must be repository HTML: ${authority.legacyPath || '(missing)'}`);
     }
 
-    const previous = claimedBy.get(abs);
+    const previous = claimedBy.get(target.abs);
     if (previous && previous !== name) {
-      throw new Error(`cache-bust duplicate reference-only legacyPath ${legacyPath}: ${previous}, ${name}`);
+      throw new Error(`cache-bust duplicate reference-only legacyPath ${target.rel}: ${previous}, ${name}`);
     }
-    claimedBy.set(abs, name);
-    protectedPaths.add(abs);
+    claimedBy.set(target.abs, name);
+    protectedPaths.add(target.abs);
   }
 
   return protectedPaths;
