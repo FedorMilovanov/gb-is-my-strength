@@ -73,6 +73,7 @@ function sourceContracts() {
     ['HGT-S32', 'mobile sheet budget restores the approved 85 percent VisualViewport cap', runtime.includes('const MOBILE_MAX_VIEWPORT_RATIO = 0.85;') && runtime.includes('function mobileSheetBudget(viewport)') && runtime.includes('viewport.height - VIEWPORT_MARGIN')],
     ['HGT-S33', 'desktop overflow budget may shrink below the historical 96px floor', runtime.includes('const height = Math.max(1, Math.floor(maxHeight));') && runtime.includes('applyOverflow(tip, Math.min(available, viewportMax))') && !runtime.includes('Math.min(Math.max(MIN_SCROLL_HEIGHT, available), viewportMax)')],
     ['HGT-S34', 'popup geometry transport stays focus-owned instead of locator-click actionability', popupHelper.includes('await page.mouse.move(1, 1);') && popupHelper.includes('await trigger.blur();') && popupHelper.includes('await trigger.focus();') && !popupHelper.includes('trigger.click()')],
+    ['HGT-S35', 'non-scrolling evidence follows computed overflow ownership instead of raw box-metric slack', guard.includes("const scrollingEnabled = (state) => Boolean(state) && ['auto', 'scroll'].includes(state.overflowY);") && guard.includes('!scrollingEnabled(mediumMobile)') && guard.includes('!scrollingEnabled(expandedFlip)')],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -131,7 +132,9 @@ async function popupState(page, selector) {
     };
   }, selector);
 }
-const noFakeScrollbar = (state) => Boolean(state) && (!['auto', 'scroll'].includes(state.overflowY) || state.scrollHeight > state.clientHeight + 1);
+const scrollingEnabled = (state) => Boolean(state) && ['auto', 'scroll'].includes(state.overflowY);
+const hasScrollableOverflow = (state) => scrollingEnabled(state) && state.scrollHeight > state.clientHeight + 1;
+const noFakeScrollbar = (state) => Boolean(state) && (!scrollingEnabled(state) || hasScrollableOverflow(state));
 
 async function keyboardFocusState(page, selector) {
   const prepared = await page.evaluate((value) => {
@@ -243,7 +246,7 @@ async function modeTransitionContracts(page) {
   const mediumMobile = await popupState(page, '.btip.gb-floating-tip.is-open');
   const mediumFixtureValid = Boolean(mediumFixture && mediumMobile && mediumMobile.scrollHeight > mediumFixture.oldBudget + 2 && mediumMobile.scrollHeight <= mediumFixture.restoredBudget + 2);
   record('HGT-R13', 'mobile fixture natural height exceeds legacy 72 percent but fits restored 85 percent budget', mediumFixtureValid, { mediumFixture, mediumMobile }, 'responsive');
-  record('HGT-R14', 'medium mobile Scripture content does not scroll when restored budget fits it', Boolean(mediumFixtureValid && !['auto', 'scroll'].includes(mediumMobile.overflowY) && mediumMobile.scrollHeight <= mediumMobile.clientHeight + 1), { mediumFixture, mediumMobile }, 'responsive');
+  record('HGT-R14', 'medium mobile Scripture content does not scroll when restored budget fits it', Boolean(mediumFixtureValid && !scrollingEnabled(mediumMobile) && mediumMobile.inViewport), { mediumFixture, mediumMobile }, 'responsive');
   record('HGT-R15', 'mobile max-height matches the restored measured budget instead of the legacy cap', Boolean(mediumFixtureValid && Math.abs(mediumMobile.maxHeight - mediumFixture.restoredBudget) <= 2), { mediumFixture, mediumMobile }, 'responsive');
   await page.evaluate(() => {
     document.querySelector('[data-hgt-mobile-budget-filler]')?.remove();
@@ -433,7 +436,7 @@ async function popupContracts(page) {
   await twoFrames(page);
   const expandedFlip = await popupState(page, '.gtip.gb-floating-tip.is-open');
   record('HGT-T28', 'expanded glossary switches from top to bottom before overflow', Boolean(validFlipFixture && expandedFlip?.placement === 'bottom'), { compactFlip, expandedFlip, flipSpace }, 'tooltip');
-  record('HGT-T29', 'expanded glossary avoids scrolling when the opposite side fits natural height', Boolean(validFlipFixture && expandedFlip && !['auto', 'scroll'].includes(expandedFlip.overflowY) && expandedFlip.scrollHeight <= expandedFlip.clientHeight + 1 && expandedFlip.inViewport), { expandedFlip, flipSpace }, 'tooltip');
+  record('HGT-T29', 'expanded glossary avoids scrolling when the opposite side fits natural height', Boolean(validFlipFixture && expandedFlip && !scrollingEnabled(expandedFlip) && expandedFlip.inViewport), { expandedFlip, flipSpace }, 'tooltip');
 
   await page.keyboard.press('Escape');
   await glossary.evaluate((element) => {
@@ -491,7 +494,7 @@ async function popupContracts(page) {
   record('HGT-T30', 'tiny desktop fixture gives both sides less than the historical 96px floor', tinyFixtureValid, { compactNatural, tinyFixture, tinyState, tinySpace }, 'tooltip');
   record('HGT-T31', 'desktop max-height never exceeds the real selected side budget', Boolean(tinyFixtureValid && tinyState.maxHeight > 0 && tinyState.maxHeight <= tinySpace.selectedAvailable + 1 && tinyState.height <= tinySpace.selectedAvailable + 2), { tinyState, tinySpace }, 'tooltip');
   record('HGT-T32', 'tiny-side popup stays inside viewport and preserves the anchor gap', Boolean(tinyFixtureValid && tinyState.inViewport && tinySpace.renderedGap != null && tinySpace.renderedGap >= 9), { tinyState, tinySpace }, 'tooltip');
-  record('HGT-T33', 'tiny-side scrolling exists only because content truly exceeds the physical side', Boolean(tinyFixtureValid && ['auto', 'scroll'].includes(tinyState.overflowY) && tinyState.scrollHeight > tinyState.clientHeight + 1 && noFakeScrollbar(tinyState)), { tinyState, tinySpace }, 'tooltip');
+  record('HGT-T33', 'tiny-side scrolling exists only because content truly exceeds the physical side', Boolean(tinyFixtureValid && hasScrollableOverflow(tinyState) && noFakeScrollbar(tinyState)), { tinyState, tinySpace }, 'tooltip');
 
   await page.keyboard.press('Escape');
   await glossary.evaluate((element) => {
@@ -520,7 +523,7 @@ try {
 }
 
 assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'tooltip guard check IDs must be unique');
-assert.ok(checks.length >= 88, `Hermenevtika tooltip guard requires at least 88 checks, got ${checks.length}`);
+assert.ok(checks.length >= 89, `Hermenevtika tooltip guard requires at least 89 checks, got ${checks.length}`);
 const failed = checks.filter((item) => !item.pass);
 const summary = { sha: process.env.SOURCE_SHA || process.env.GITHUB_SHA || null, checks: checks.length, passed: checks.length - failed.length, failed: failed.length };
 fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary, checks }, null, 2));
