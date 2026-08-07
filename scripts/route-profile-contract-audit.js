@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 'use strict';
 
-const assert = require('assert');
 const fs = require('fs');
 const {
   ROOT,
   loadRouteRecords,
   validateRecord,
 } = require('./lib/route-source-contract');
+const {
+  runLegacyAuthorityContractChecks,
+  validateLegacyAuthorityProfile,
+} = require('./lib/legacy-source-authority');
 
 const strict = process.argv.includes('--strict');
 const errors = [];
 const warnings = [];
 const ALLOWED_SCOPES = new Set(['excluded-semantic-lane']);
-const LEGACY_STATUSES = new Set(['canonical', 'reference-only', 'runtime-required', 'absent']);
 
 function issue(message, blocking = true) {
   if (blocking || strict) errors.push(message);
@@ -21,56 +23,11 @@ function issue(message, blocking = true) {
 }
 
 function fileExists(rel) {
-  return Boolean(rel) && fs.existsSync(`${ROOT}/${rel}`);
+  return Boolean(rel) && fs.existsSync(`${ROOT}/${String(rel).replace(/^\//, '')}`);
 }
 
-function legacyAuthorityShapeIssues(profile) {
-  const issues = [];
-  const status = profile?.legacyStatus;
-  if (!status) {
-    issues.push('production profile missing explicit legacyStatus');
-    return issues;
-  }
-  if (!LEGACY_STATUSES.has(status)) {
-    issues.push(`unknown legacyStatus=${status}`);
-    return issues;
-  }
-  if (status === 'absent' && profile.legacyPath) {
-    issues.push(`legacyStatus=absent must not declare legacyPath=${profile.legacyPath}`);
-  }
-  if (status !== 'absent' && !profile.legacyPath) {
-    issues.push(`legacyStatus=${status} requires legacyPath`);
-  }
-  return issues;
-}
-
-function runLegacyAuthorityContractChecks() {
-  const cases = [
-    [{}, 1, 'missing status is rejected'],
-    [{ legacyStatus: 'unknown-state' }, 1, 'unknown status is rejected'],
-    [{ legacyStatus: 'absent', legacyPath: 'old/index.html' }, 1, 'absent with a path is rejected'],
-    [{ legacyStatus: 'reference-only' }, 1, 'reference-only without a path is rejected'],
-    [{ legacyStatus: 'absent', legacyPath: null }, 0, 'explicit absent is valid'],
-    [{ legacyStatus: 'reference-only', legacyPath: 'old/index.html' }, 0, 'explicit reference-only shape is valid'],
-  ];
-  for (const [profile, expectedIssues, label] of cases) {
-    assert.equal(legacyAuthorityShapeIssues(profile).length, expectedIssues, label);
-  }
-  console.log(`Legacy authority shape contract: ${cases.length}/${cases.length} mutation cases passed`);
-}
-
-function validateLegacyAuthority(route, profile) {
-  const shapeIssues = legacyAuthorityShapeIssues(profile);
-  for (const message of shapeIssues) issue(`${route}: ${message}`);
-  if (shapeIssues.length) return;
-
-  if (profile.legacyStatus !== 'absent') {
-    const rel = profile.legacyPath.replace(/^\//, '');
-    if (!fileExists(rel)) issue(`${route}: declared legacyPath not found: ${profile.legacyPath}`);
-  }
-}
-
-runLegacyAuthorityContractChecks();
+const authorityMutationChecks = runLegacyAuthorityContractChecks();
+console.log(`Legacy authority shape contract: ${authorityMutationChecks}/${authorityMutationChecks} mutation cases passed`);
 
 console.log('=== Route Profile Contract Audit ===');
 console.log(`Mode: ${strict ? 'STRICT' : 'WARN'}`);
@@ -111,7 +68,9 @@ for (const record of records) {
     productionAstro++;
     if (!profile.migrationMode) issue(`${route}: production Astro profile missing migrationMode`);
     if (!matrixEntry) issue(`${route}: production Astro route missing matrix entry`);
-    validateLegacyAuthority(route, profile);
+    for (const message of validateLegacyAuthorityProfile(profile, { pathExists: fileExists })) {
+      issue(`${route}: ${message}`);
+    }
   }
 
   if (matrixEntry) {
