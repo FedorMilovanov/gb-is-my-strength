@@ -362,10 +362,57 @@ assert.ok(port > 0, 'failed to bind static server');
 async function runContinuationContract(browserType, browserName, port) {
   const browser = await browserType.launch({ headless: true });
   const summary = { browser: browserName, pagefind: null, fallback: null, scripture: null };
+  let phase = 'setup';
+  let activePage = null;
+  let consoleErrors = [];
+  let pageErrors = [];
+
+  async function writeContinuationFailure(error) {
+    fs.mkdirSync(reportDir, { recursive: true });
+    const safePhase = String(phase || 'unknown').replace(/[^a-z0-9_-]+/gi, '-');
+    let state = {};
+    if (activePage) {
+      state = await activePage.evaluate(() => ({
+        url: location.href,
+        input: document.querySelector('.cp-input')?.value || '',
+        status: document.getElementById('cp-status')?.textContent || '',
+        optionCount: document.querySelectorAll('.cp-item[role="option"]').length,
+        moreCount: document.querySelectorAll('#cp-more-wrap > .cp-more').length,
+        moreHtml: document.getElementById('cp-more-wrap')?.innerHTML || '',
+        listHtml: (document.getElementById('cp-listbox')?.innerHTML || '').slice(0, 4000),
+        scope: document.querySelector('.cp-scope-chip.active')?.dataset.scope || '',
+        pagefindReady: window.__pagefindReady__ === true,
+        pagefindFailed: window.__pagefindFailed__ === true,
+        hasPagefind: !!window.__pagefind__,
+        searchReady: window.GBSearch?.__ready === true,
+      })).catch((stateError) => ({ stateError: String(stateError) }));
+      await activePage.screenshot({
+        path: path.join(reportDir, 'continuation-failure-' + browserName + '-' + safePhase + '.png'),
+        fullPage: true,
+      }).catch(() => {});
+    }
+    fs.writeFileSync(
+      path.join(reportDir, 'continuation-failure-' + browserName + '-' + safePhase + '.json'),
+      JSON.stringify({
+        browser: browserName,
+        phase,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+        consoleErrors,
+        pageErrors,
+        state,
+      }, null, 2) + '\n',
+    );
+  }
 
   async function openFixture(configure) {
     const context = await browser.newContext({ viewport: { width: 960, height: 760 } });
     const page = await context.newPage();
+    activePage = page;
+    consoleErrors = [];
+    pageErrors = [];
+    page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+    page.on('pageerror', (error) => pageErrors.push(String(error)));
     if (configure) await configure(page);
     await page.goto('http://127.0.0.1:' + port + '/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await page.waitForFunction(() => window.GBSearch && typeof window.GBSearch.open === 'function');
@@ -399,6 +446,7 @@ async function runContinuationContract(browserType, browserName, port) {
   }
 
   try {
+    phase = 'pagefind';
     {
       const pagefindModule = [
         'export async function search() {',
@@ -428,6 +476,7 @@ async function runContinuationContract(browserType, browserName, port) {
       await context.close();
     }
 
+    phase = 'fallback';
     {
       const manifest = {
         items: Array.from({ length: 16 }, (_, index) => ({
@@ -455,6 +504,7 @@ async function runContinuationContract(browserType, browserName, port) {
       await context.close();
     }
 
+    phase = 'scripture';
     {
       const scriptureIndex = {
         schemaVersion: 1,
@@ -505,6 +555,9 @@ async function runContinuationContract(browserType, browserName, port) {
     }
 
     return { continuation: summary };
+  } catch (error) {
+    await writeContinuationFailure(error);
+    throw error;
   } finally {
     await browser.close();
   }
