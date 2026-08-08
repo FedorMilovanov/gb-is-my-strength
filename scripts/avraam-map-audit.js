@@ -114,6 +114,37 @@ function hasCanonicalShechemDispute(routeData, contract) {
   return Boolean(shechem?.dispute?.includes(contract.shechem.disputeTitle));
 }
 
+const HAMMAM_ROUTE_RETRACTION_MARKERS = [
+  'официально ретрагирована Scientific Reports 24.04.2025',
+  'отозвана Scientific Reports 24.04.2025',
+];
+const HAMMAM_NATIVE_RETRACTION_MARKER = 'официально отозвана журналом Scientific Reports 24.04.2025';
+const HAMMAM_OLD_POSITIVE_PHRASE = 'со следами мощного разрушительного события';
+
+function hasCanonicalHammamRetraction(routeData) {
+  const hammam = routeData.places?.find(place => place.id === 'hammam');
+  if (!hammam) return false;
+  const arch = String(hammam.arch || '');
+  const dispute = String(hammam.dispute || '');
+  return HAMMAM_ROUTE_RETRACTION_MARKERS.some(marker => arch.includes(marker))
+    && HAMMAM_ROUTE_RETRACTION_MARKERS.some(marker => dispute.includes(marker));
+}
+
+function sodomStaticStage(source) {
+  const start = source.indexOf('<h3>Этап VI. Катастрофа Содома (Бытие 18–19)</h3>');
+  if (start < 0) return '';
+  const end = source.indexOf('<h3>Этап VII.', start);
+  return source.slice(start, end < 0 ? source.length : end);
+}
+
+function hasNativeHammamRetraction(source) {
+  const stage = sodomStaticStage(source);
+  return stage.includes('Талл эль-Хаммам')
+    && stage.includes(HAMMAM_NATIVE_RETRACTION_MARKER)
+    && stage.includes('нельзя использовать как установленное положительное доказательство')
+    && !stage.includes(HAMMAM_OLD_POSITIVE_PHRASE);
+}
+
 function runPositiveContractMutations() {
   const baselineIssues = validateStaticContentContract(astro, staticContract);
   assert('native Avraam positive source apparatus manifest', baselineIssues.length === 0, baselineIssues.join('; '));
@@ -137,6 +168,21 @@ function runPositiveContractMutations() {
   const shechem = mutatedRoute.places?.find(place => place.id === staticContract.shechem.placeId);
   if (shechem?.dispute) shechem.dispute = shechem.dispute.replace(staticContract.shechem.disputeTitle, '⚖ Сихем: mutation');
   assert('mutation: corrupted Shechem dispute title is rejected', !hasCanonicalShechemDispute(mutatedRoute, staticContract));
+
+  assert('route Tall el-Hammam keeps 2025 retraction boundary', hasCanonicalHammamRetraction(route));
+  const mutatedHammamRoute = JSON.parse(JSON.stringify(route));
+  const hammam = mutatedHammamRoute.places?.find(place => place.id === 'hammam');
+  if (hammam) {
+    hammam.arch = String(hammam.arch || '').replace(/(?:официально ретрагирована|отозвана) Scientific Reports 24\.04\.2025/g, 'airburst claim retained');
+    hammam.dispute = String(hammam.dispute || '').replace(/(?:официально ретрагирована|отозвана) Scientific Reports 24\.04\.2025/g, 'airburst claim retained');
+  }
+  assert('mutation: removing Tall el-Hammam route retraction is rejected', !hasCanonicalHammamRetraction(mutatedHammamRoute));
+
+  assert('native Tall el-Hammam fallback exposes 2025 retraction boundary', hasNativeHammamRetraction(astro));
+  const mutatedHammamAstro = astro
+    .replace(HAMMAM_NATIVE_RETRACTION_MARKER, 'статья 2021 года остаётся положительным доказательством')
+    .replace('нельзя использовать как установленное положительное доказательство', 'можно использовать как установленное положительное доказательство');
+  assert('mutation: weakening native Tall el-Hammam retraction boundary is rejected', !hasNativeHammamRetraction(mutatedHammamAstro));
 }
 
 runPositiveContractMutations();
