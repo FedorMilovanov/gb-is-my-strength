@@ -30,6 +30,7 @@
       "scripts/astro-ishod-pilot-audit.js",
       "scripts/content-source-provenance-audit.js",
       "scripts/legacy-shadow-retirement-readiness.mjs",
+      "scripts/legacy-shadow-wrapper-audit.js",
       "scripts/lib/audit-pro-source-corpus.js",
       "scripts/lib/legacy-source-authority.js",
       "scripts/lib/route-source-contract.js"
@@ -216,8 +217,8 @@
       "path": "scripts/legacy-shadow-wrapper-audit.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "legacyPath",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveReferenceForRoute",
       "owner": "legacy-reference-quarantine"
     },
     {
