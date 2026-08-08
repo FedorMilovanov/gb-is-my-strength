@@ -29,6 +29,7 @@
     "explicitReferenceApiUsers": [
       "scripts/astro-ishod-pilot-audit.js",
       "scripts/content-source-provenance-audit.js",
+      "scripts/lib/audit-pro-source-corpus.js",
       "scripts/lib/legacy-source-authority.js"
     ],
     "nonBlockingFixtureDependencies": [
@@ -229,7 +230,7 @@
       "path": "scripts/lib/audit-pro-source-corpus.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "legacyStatus",
       "owner": "legacy-reference-quarantine"
     },
