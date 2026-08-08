@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 /*
- * Guard /articles/ 100% native Astro catalog contract.
+ * Guard /articles/ native Astro catalog contract.
  *
- * LANE visual-fix-articles-index-2026-06-23 replaces the former
- * native-shadow recipe (loadLegacyFullDocument + _legacy fragments) with a
- * full native document split into named Astro components.
+ * The exhaustive library is derived from existing publication authorities:
+ * data/search-manifest.json owns reader-facing metadata and
+ * migration/page-ownership.json owns current production disposition. The old
+ * hand-maintained ArticlesPublicationsSection must not return as a second
+ * catalog authority.
  */
 'use strict';
 const fs = require('fs');
@@ -25,7 +27,7 @@ const page = read('src/pages/articles/index.astro');
 const chrome = read('src/components/articles/ArticlesPageChrome.astro');
 const main = read('src/components/articles/ArticlesMain.astro');
 const footer = read('src/components/articles/ArticlesPageFooter.astro');
-const publications = read('src/components/articles/ArticlesPublicationsSection.astro');
+const library = read('src/components/articles/ArticlesLibrarySection.astro');
 const refutations = read('src/components/articles/ArticlesRefutationsSection.astro');
 const hero = read('src/components/articles/ArticlesHeroSection.astro');
 const endBlock = read('src/components/articles/ArticlesArticleEndBlock.astro');
@@ -39,11 +41,12 @@ for (const [rel, label] of [
   ['src/components/articles/ArticlesMain.astro', 'ArticlesMain.astro'],
   ['src/components/articles/ArticlesPageFooter.astro', 'ArticlesPageFooter.astro'],
   ['src/components/articles/ArticlesHeroSection.astro', 'ArticlesHeroSection.astro'],
-  ['src/components/articles/ArticlesPublicationsSection.astro', 'ArticlesPublicationsSection.astro'],
+  ['src/components/articles/ArticlesLibrarySection.astro', 'ArticlesLibrarySection.astro'],
   ['src/components/articles/ArticlesRefutationsSection.astro', 'ArticlesRefutationsSection.astro'],
   ['src/components/articles/ArticlesArticleEndBlock.astro', 'ArticlesArticleEndBlock.astro'],
 ]) mustExist(rel, label);
 
+mustNotExist('src/components/articles/ArticlesPublicationsSection.astro', 'retired hand-authored ArticlesPublicationsSection');
 mustNotExist('src/components/articles/_legacy', 'src/components/articles/_legacy deleted');
 
 for (const comp of ['ArticlesPageChrome', 'ArticlesMain', 'ArticlesPageFooter']) {
@@ -59,26 +62,31 @@ must(chrome, 'h-navbar', 'ArticlesPageChrome preserves top navigation');
 must(main, '<main id="main-content">', 'ArticlesMain preserves semantic main wrapper');
 must(main, 'h-mobile-nav', 'ArticlesMain preserves mobile nav');
 must(main, 'home-v20', 'ArticlesMain preserves premium home-v20 wrapper');
-must(main, "../../../data/series.json", 'ArticlesMain uses shared data/series.json');
-for (const comp of ['ArticlesHeroSection','ArticlesPublicationsSection','ArticlesRefutationsSection','ArticlesArticleEndBlock']) {
+for (const comp of ['ArticlesHeroSection','ArticlesLibrarySection','ArticlesRefutationsSection','ArticlesArticleEndBlock']) {
   must(main, comp, `ArticlesMain uses ${comp}`);
 }
+mustNot(main, 'ArticlesPublicationsSection', 'retired hand-authored publications owner');
+mustNot(main, '../../../data/series.json', 'second catalog projection through series.json');
 must(footer, 'gb-accuracy-block', 'ArticlesPageFooter preserves feedback block');
 must(footer, 'h-scroll-top', 'ArticlesPageFooter preserves scroll-top control');
 must(footer, 'site.js', 'ArticlesPageFooter preserves runtime script');
 
 for (const [content, marker, label] of [
   [hero, 'h-hero-title', 'ArticlesHeroSection marker: h-hero-title'],
-  [publications, 'id="publikacii"', 'ArticlesPublicationsSection marker: publications section'],
-  [publications, 'Тайны человеческого сердца — серия', 'ArticlesPublicationsSection marker: hard-texts series'],
-  [publications, '/nagornaya/seriya/', 'ArticlesPublicationsSection marker: nagornaya series'],
-  [publications, 'hardTextsPartsLabel', 'ArticlesPublicationsSection receives series label from data'],
+  [library, "../../../data/search-manifest.json", 'ArticlesLibrarySection uses canonical reader metadata'],
+  [library, "../../../migration/page-ownership.json", 'ArticlesLibrarySection uses route publication authority'],
+  [library, "item.type === 'article'", 'ArticlesLibrarySection derives article membership'],
+  [library, "status === 'production-dist'", 'ArticlesLibrarySection filters current production routes'],
+  [library, 'data-catalog-source="search-manifest+page-ownership"', 'ArticlesLibrarySection records projection authority'],
+  [library, 'id="publikacii"', 'ArticlesLibrarySection preserves publications anchor'],
+  [library, 'data-catalog-route={item.url}', 'ArticlesLibrarySection renders canonical article routes'],
+  [library, 'h-article-list--grid', 'ArticlesLibrarySection preserves premium grid classes'],
   [refutations, 'id="razbor"', 'ArticlesRefutationsSection marker: refutations section'],
   [refutations, 'историческая подмена', 'ArticlesRefutationsSection marker: kod-da-vinchi copy'],
   [endBlock, 'Soli Deo Gloria', 'ArticlesArticleEndBlock marker: SDG'],
 ]) must(content, marker, label);
 
-for (const content of [page, chrome, main, footer, publications, refutations, hero, endBlock]) {
+for (const content of [page, chrome, main, footer, library, refutations, hero, endBlock]) {
   for (const marker of [
     'loadLegacyFullDocument',
     '?raw',
@@ -103,4 +111,4 @@ if (dist) {
 
 console.log('\nARTICLES VISUAL PARITY AUDIT');
 if (problems.length) { console.log(`❌ ${problems.length} problem(s).`); process.exit(1); }
-ok('/articles/ catalog is 100% native Astro and visual-parity guarded');
+ok('/articles/ catalog is native Astro, authority-derived and visual-parity guarded');
