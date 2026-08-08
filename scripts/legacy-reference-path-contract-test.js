@@ -25,12 +25,11 @@ assert.equal(manifest.policy?.explicitReferenceApiContract, 'scripts/legacy-refe
 assert.deepEqual(
   [...(manifest.policy?.explicitReferenceApiUsers || [])].sort(),
   [
-    'scripts/article-native-contract-audit.js',
     'scripts/astro-ishod-pilot-audit.js',
+    'scripts/content-source-provenance-audit.js',
     'scripts/lib/legacy-source-authority.js',
-    'scripts/lib/route-source-contract.js',
   ].sort(),
-  'explicit reference API users must match the migrated policy-reader wave'
+  'explicit reference API users must match the migrated physical-reference readers'
 );
 
 const routes = listReferenceRoutes();
