@@ -66,6 +66,9 @@ for (const marker of [
 check(!files.search.includes('Поиск (⌘K)'), 'Mac-only fallback aria label survived');
 check(!files.search.includes('Поиск ⌘K'), 'Mac-only fallback title survived');
 check(!files.search.includes('<span class="kb">⌘K</span>'), 'Mac-only visible fallback survived');
+check(files.search.includes('function __gbHydratePagefind(e,t){var i=new Array(e.length),n=0,r=Math.min(8,e.length);'), 'Pagefind hydration must remain bounded to eight workers');
+check(files.search.includes('t===M&&(i[r]=e)'), 'Pagefind hydration worker must remain generation-guarded');
+check(!files.search.includes('Promise.all(n.map(function(e){return e.data()}))'), 'unbounded Pagefind data() hydration survived');
 
 for (const marker of [
   "String(event && event.key || '').toLowerCase() === 'k'",
