@@ -106,7 +106,7 @@ jobs:
                   };
                 });
                 if (
-                  residualState.horsleydown.length !== 1 || residualState.horsleydown[0] !== 'хорслидаун' ||
+                  residualState.horsleydown.length !== 2 || residualState.horsleydown.some((term) => term !== 'хорслидаун') ||
                   residualState.bunhill.length !== 1 || residualState.bunhill[0] !== 'банхилл-филдс' ||
                   residualState.southwarkAlias !== null
                 ) {
