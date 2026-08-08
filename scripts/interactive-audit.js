@@ -265,6 +265,40 @@ async function checkGlossary(browser) {
         readinessError = String(error.message || error).slice(0, 500);
       }
 
+      if (!readinessError && url === '/articles/dzhon-gill-chast-1-chelovek/') {
+      const residualState = await page.evaluate(() => {
+        const runtime = window.__gbGlossaryRuntime;
+        const nodes = Array.from(document.querySelectorAll('article .gterm'));
+        const label = (node) => Array.from(node.childNodes)
+          .filter((child) => child.nodeType === Node.TEXT_NODE)
+          .map((child) => child.textContent || '')
+          .join('')
+          .trim();
+        const termsByLabel = (value) => nodes
+          .filter((node) => label(node) === value)
+          .map((node) => node.getAttribute('data-term'));
+        const horsleydown = termsByLabel('Хорслидаун');
+        const bunhill = termsByLabel('Bunhill Fields');
+        const southwarkAlias = runtime?.aliasAll?.['саутварк'] ?? null;
+        const ok = (
+          horsleydown.length === 2 && horsleydown.every((term) => term === 'хорслидаун') &&
+          bunhill.length === 1 && bunhill[0] === 'банхилл-филдс' &&
+          southwarkAlias === null
+        );
+        return {
+          ok,
+          horsleydown,
+          bunhill,
+          southwarkAlias,
+          horsleydownCodes: horsleydown.map((term) => Array.from(term || '').map((char) => char.codePointAt(0))),
+          bunhillCodes: bunhill.map((term) => Array.from(term || '').map((char) => char.codePointAt(0))),
+        };
+      });
+      if (!residualState.ok) {
+        push('gill-part1-glossary-residuals', url, residualState);
+      }
+    }
+
       const target = terms.first();
       if (!readinessError) {
         try {
