@@ -1,3 +1,4 @@
+# one-shot trigger; self-deletes after successful repair
 name: Search P3 deterministic Pagefind fixture repair once
 
 on:
