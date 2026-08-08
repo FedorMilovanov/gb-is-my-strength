@@ -17,7 +17,9 @@ on:
       - 'scripts/legacy-source-authority-regression-test.js'
       - 'data/route-profiles/**'
       - 'data/preservation/accepted-semantic-manifests.json'
+      - 'src/content/articles/**'
       - 'src/pages/articles/dzhon-gill-*/**'
+      - 'src/components/baptisty-rossii/**'
       - 'src/components/article-pilots/hermenevtika/**'
       - 'src/components/article-pilots/gill-part1/**'
       - 'src/components/article-pilots/gill-context/**'
@@ -40,7 +42,9 @@ on:
       - 'scripts/legacy-source-authority-regression-test.js'
       - 'data/route-profiles/**'
       - 'data/preservation/accepted-semantic-manifests.json'
+      - 'src/content/articles/**'
       - 'src/pages/articles/dzhon-gill-*/**'
+      - 'src/components/baptisty-rossii/**'
       - 'src/components/article-pilots/hermenevtika/**'
       - 'src/components/article-pilots/gill-part1/**'
       - 'src/components/article-pilots/gill-context/**'
@@ -70,7 +74,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22.23.1'
+          node-version: 22.23.1
           cache: npm
 
       - name: Install dependencies
