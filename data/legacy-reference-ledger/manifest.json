@@ -65,8 +65,8 @@
       "path": "scripts/article-native-contract-audit.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "legacyPath",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveDeclaredLegacyReference",
       "owner": "legacy-reference-quarantine"
     },
     {
