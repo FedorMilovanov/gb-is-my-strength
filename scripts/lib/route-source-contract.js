@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { resolveLogicalReferenceStorage } = require('../../migration/legacy-reference-path.js');
 
 const ROOT = path.resolve(__dirname, '../..');
 const OWNERSHIP_FILE = path.join(ROOT, 'migration/page-ownership.json');
@@ -39,6 +40,12 @@ function readJson(file) {
 
 function existsRel(rel) {
   return Boolean(rel) && fs.existsSync(path.join(ROOT, rel));
+}
+
+function legacyReferenceStorageExists(logicalPath, options = {}) {
+  if (!logicalPath) return false;
+  const root = options.root ? path.resolve(options.root) : ROOT;
+  return resolveLogicalReferenceStorage(logicalPath, { root, mustExist: false }).exists;
 }
 
 function routeToFlatProfileNames(route) {
@@ -369,7 +376,7 @@ function validateRecord(record, options = {}) {
 
     if (profile.legacyStatus === 'reference-only') {
       if (!profile.legacyPath) issue('legacyStatus=reference-only requires legacyPath');
-      else if (!existsRel(profile.legacyPath)) issue(`legacy reference not found: ${profile.legacyPath}`);
+      else if (!legacyReferenceStorageExists(profile.legacyPath)) issue(`legacy reference not found: ${profile.legacyPath}`);
     }
 
     if (profile.hasMDX === true && profile.mdxStatus === 'reference-only') {
@@ -389,6 +396,7 @@ module.exports = {
   REFERENCE_STATUSES,
   TRAVERSABLE_EXTENSIONS,
   existsRel,
+  legacyReferenceStorageExists,
   findProfileFile,
   inspectRouteSource,
   inspectReferenceContent,

@@ -16,6 +16,7 @@ const {
   resolveReferenceForRoute,
   resolveReferencePath,
 } = require('../migration/legacy-reference-path');
+const { legacyReferenceStorageExists } = require('./lib/route-source-contract.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, MANIFEST_REL), 'utf8'));
@@ -30,6 +31,7 @@ assert.deepEqual(
     'scripts/legacy-shadow-retirement-readiness.mjs',
     'scripts/lib/audit-pro-source-corpus.js',
     'scripts/lib/legacy-source-authority.js',
+    'scripts/lib/route-source-contract.js',
   ].sort(),
   'explicit reference API users must match the migrated physical-reference readers'
 );
@@ -48,6 +50,22 @@ assert.deepEqual(
     evidenceToken: 'resolveLogicalReferenceStorage',
   },
   'retirement readiness must be an explicit nonblocking resolver-backed policy reader'
+);
+const routeSourceDependency = (manifest.dependencies || []).find((row) => row.path === 'scripts/lib/route-source-contract.js');
+assert.deepEqual(
+  routeSourceDependency && {
+    access: routeSourceDependency.access,
+    classification: routeSourceDependency.classification,
+    quarantineImpact: routeSourceDependency.quarantineImpact,
+    evidenceToken: routeSourceDependency.evidenceToken,
+  },
+  {
+    access: 'policy-reader',
+    classification: 'migration-reference-only',
+    quarantineImpact: 'none-fixture-policy-or-comment-only',
+    evidenceToken: 'resolveLogicalReferenceStorage',
+  },
+  'route source contract must be an explicit nonblocking resolver-backed policy reader'
 );
 
 const routes = listReferenceRoutes();
@@ -85,6 +103,11 @@ try {
   const moved = resolveLogicalReferenceStorage(logical, { root: tempRoot });
   assert.equal(moved.repositoryPath, quarantined, 'quarantined reference must resolve without rewriting ledger identity');
   assert.equal(moved.exists, true);
+  assert.equal(
+    legacyReferenceStorageExists(logical, { root: tempRoot }),
+    true,
+    'route source contract must accept a quarantine-only retained reference'
+  );
 
   fs.mkdirSync(path.dirname(path.join(tempRoot, logical)), { recursive: true });
   fs.writeFileSync(path.join(tempRoot, logical), '<!doctype html><title>duplicate</title>');
@@ -93,12 +116,22 @@ try {
     /storage is ambiguous/,
     'duplicate active + quarantined storage must fail closed'
   );
+  assert.throws(
+    () => legacyReferenceStorageExists(logical, { root: tempRoot }),
+    /storage is ambiguous/,
+    'route source contract must inherit active + quarantine ambiguity rejection'
+  );
 
   fs.rmSync(path.join(tempRoot, logical));
   fs.rmSync(path.join(tempRoot, quarantined));
   const absent = resolveLogicalReferenceStorage(logical, { root: tempRoot, mustExist: false });
   assert.equal(absent.repositoryPath, logical, 'non-existing planning lookup keeps the immutable logical location');
   assert.equal(absent.exists, false);
+  assert.equal(
+    legacyReferenceStorageExists(logical, { root: tempRoot }),
+    false,
+    'route source contract must still reject a missing retained reference'
+  );
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
