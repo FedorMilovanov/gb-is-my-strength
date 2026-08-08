@@ -7,6 +7,9 @@ const {
   ROOT,
   loadRouteRecords,
 } = require('./lib/route-source-contract');
+const {
+  resolveDeclaredLegacyReference,
+} = require('./lib/legacy-source-authority');
 
 const strict = process.argv.includes('--strict');
 const SERIES_FILE = path.join(ROOT, 'data/series.json');
@@ -108,10 +111,18 @@ for (const profile of profiles) {
   if (profile.legacyStatus === 'reference-only' || profile.legacyStatus === 'runtime-required' || profile.legacyStatus === 'canonical') {
     if (!profile.legacyPath) issue(`${profile.route}: legacyStatus=${profile.legacyStatus} requires legacyPath`);
     else {
-      if (!existsRel(profile.legacyPath)) issue(`${profile.route}: legacy source missing: ${profile.legacyPath}`);
-      const owners = legacyOwners.get(profile.legacyPath) || [];
-      owners.push({ route: profile.route, status: profile.legacyStatus });
-      legacyOwners.set(profile.legacyPath, owners);
+      try {
+        const reference = resolveDeclaredLegacyReference(profile);
+        const owners = legacyOwners.get(reference.logicalPath) || [];
+        owners.push({
+          route: profile.route,
+          status: profile.legacyStatus,
+          storagePath: reference.repositoryPath,
+        });
+        legacyOwners.set(reference.logicalPath, owners);
+      } catch (error) {
+        issue(`${profile.route}: legacy source unavailable through reference API: ${error.message}`);
+      }
     }
   }
   if (profile.legacyStatus === 'absent' && profile.legacyPath) {
