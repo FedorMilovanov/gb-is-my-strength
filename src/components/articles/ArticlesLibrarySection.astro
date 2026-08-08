@@ -1,0 +1,63 @@
+---
+/**
+ * ArticlesLibrarySection.astro — exhaustive /articles/ projection.
+ *
+ * This is deliberately derived from existing publication authorities rather
+ * than a second hand-maintained catalog. Search manifest owns reader-facing
+ * metadata; page-ownership owns whether a route is current production output.
+ */
+import searchManifest from '../../../data/search-manifest.json';
+import pageOwnership from '../../../migration/page-ownership.json';
+
+const productionRoutes = pageOwnership.routes as Record<string, { status?: string }>;
+const items = searchManifest.items
+  .filter((item) => (
+    item.type === 'article'
+    && typeof item.url === 'string'
+    && productionRoutes[item.url]?.status === 'production-dist'
+  ))
+  .sort((a, b) => {
+    const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
+    if (priorityDelta) return priorityDelta;
+    const modifiedDelta = Date.parse(String(b.modifiedTime || '')) - Date.parse(String(a.modifiedTime || ''));
+    if (Number.isFinite(modifiedDelta) && modifiedDelta) return modifiedDelta;
+    return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
+  });
+---
+<section
+  class="h-section h-reveal"
+  id="polnaya-biblioteka"
+  aria-labelledby="hLibraryLabel"
+  data-catalog-source="search-manifest+page-ownership"
+>
+  <p class="h-section-label" id="hLibraryLabel">Полная библиотека</p>
+  <div class="h-section-accent" aria-hidden="true"></div>
+  <p class="h-section-desc">
+    {items.length} опубликованных материалов. Список собирается из текущих production-маршрутов и канонических метаданных, поэтому новая опубликованная статья появляется здесь без ручного дублирования карточки.
+  </p>
+
+  <div class="h-articles-group">
+    <ul class="h-article-list h-article-list--grid">
+      {items.map((item) => (
+        <li>
+          <a href={item.url} class="h-article-card" data-catalog-route={item.url}>
+            <div class="h-article-body">
+              <h2 class="h-article-title">{item.title}</h2>
+              <div class="h-article-meta">
+                <span class="h-meta-author">{item.editor ? `Редактор: ${item.editor}` : 'Господь Бог — Сила Моя'}</span>
+                {Number.isFinite(item.readTime) && (
+                  <>
+                    <span class="h-meta-sep" aria-hidden="true">·</span>
+                    <span class="h-meta-time">{item.readTime} мин</span>
+                  </>
+                )}
+                {item.section && <span class="h-meta-tag h-meta-tag--neutral">{item.section}</span>}
+              </div>
+              {item.description && <p class="h-article-abstract">{item.description}</p>}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
