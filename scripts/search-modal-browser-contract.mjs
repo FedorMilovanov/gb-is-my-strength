@@ -42,6 +42,10 @@ function validateSource() {
   assert.ok(!cssSource.includes('z-index:var(--z-modal,10000)'), 'weak modal layer survived');
   assert.ok(!cssSource.includes('min-height:32px'), '32px scope target survived');
   assert.match(cssSource, /\.gb-nav-search-icon\{[^}]*width:44px;[^}]*height:44px;/, '44px search trigger missing');
+  for (const marker of ['id=\"cp-more-wrap\"', 'class=\"cp-more\"', 'Показано ']) assert.ok(jsSource.includes(marker), 'missing continuation JS marker: ' + marker);
+  assert.ok(!jsSource.includes('i.results.slice(0,10)'), 'Pagefind pre-hydration cap survived');
+  assert.ok(jsSource.includes('function __gbSearchExactScripture(e){__gbClearMore();'), 'exact Scripture must clear stale continuation before async index load');
+  for (const marker of ['.cp-more-wrap:empty', '.cp-more:focus-visible']) assert.ok(cssSource.includes(marker), 'missing continuation CSS marker: ' + marker);
 }
 
 function mime(file) {
@@ -354,6 +358,277 @@ const address = server.address();
 const port = typeof address === 'object' && address ? address.port : 0;
 assert.ok(port > 0, 'failed to bind static server');
 
+
+async function runContinuationContract(browserType, browserName, port, viewport) {
+  const browser = await browserType.launch({ headless: true });
+  const summary = { browser: browserName, viewport, pagefind: null, fallback: null, scripture: null, staleClear: null, staleShortQuery: null };
+  let phase = 'setup';
+  let activePage = null;
+  let consoleErrors = [];
+  let pageErrors = [];
+
+  async function writeContinuationFailure(error) {
+    fs.mkdirSync(reportDir, { recursive: true });
+    const safePhase = String(phase || 'unknown').replace(/[^a-z0-9_-]+/gi, '-');
+    let state = {};
+    if (activePage) {
+      state = await activePage.evaluate(() => ({
+        url: location.href,
+        input: document.querySelector('.cp-input')?.value || '',
+        status: document.getElementById('cp-status')?.textContent || '',
+        optionCount: document.querySelectorAll('.cp-item[role="option"]').length,
+        moreCount: document.querySelectorAll('#cp-more-wrap > .cp-more').length,
+        moreHtml: document.getElementById('cp-more-wrap')?.innerHTML || '',
+        listHtml: (document.getElementById('cp-listbox')?.innerHTML || '').slice(0, 4000),
+        scope: document.querySelector('.cp-scope-chip.active')?.dataset.scope || '',
+        pagefindReady: window.__pagefindReady__ === true,
+        pagefindFailed: window.__pagefindFailed__ === true,
+        hasPagefind: !!window.__pagefind__,
+        pagefindFixture: window.__pagefind__?.__fixture || null,
+        searchReady: window.GBSearch?.__ready === true,
+      })).catch((stateError) => ({ stateError: String(stateError) }));
+      await activePage.screenshot({
+        path: path.join(reportDir, 'continuation-failure-' + browserName + '-' + safePhase + '.png'),
+        fullPage: true,
+      }).catch(() => {});
+    }
+    fs.writeFileSync(
+      path.join(reportDir, 'continuation-failure-' + browserName + '-' + safePhase + '.json'),
+      JSON.stringify({
+        browser: browserName,
+        phase,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+        consoleErrors,
+        pageErrors,
+        state,
+      }, null, 2) + '\n',
+    );
+  }
+
+  async function openFixture(configure, viewport = { width: 960, height: 760 }) {
+    const context = await browser.newContext({ viewport, serviceWorkers: 'block' });
+    const page = await context.newPage();
+    assert.deepEqual(page.viewportSize(), viewport, 'continuation fixture must use requested viewport');
+    activePage = page;
+    consoleErrors = [];
+    pageErrors = [];
+    page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+    page.on('pageerror', (error) => pageErrors.push(String(error)));
+    if (configure) await configure(page);
+    await page.goto('http://127.0.0.1:' + port + '/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('gb:openSearch')));
+    await page.waitForFunction(
+      () => window.GBSearch?.__ready === true && document.querySelector('.cp-backdrop')?.classList.contains('is-open'),
+      null,
+      { timeout: 30_000 },
+    );
+    return { context, page, input: page.locator('.cp-input') };
+  }
+
+  async function assertPaged(page, total, label) {
+    await page.waitForFunction(({ total, label }) => {
+      const status = document.getElementById('cp-status')?.textContent || '';
+      return document.querySelectorAll('.cp-item[role="option"]').length === 12 &&
+        status === 'Показано 12 из ' + total + ' ' + label &&
+        !!document.querySelector('#cp-more-wrap > .cp-more');
+    }, { total, label }, { timeout: 30_000 });
+    assert.equal(await page.locator('#cp-listbox .cp-more').count(), 0, 'continuation button must stay outside listbox');
+
+    let shown = 12;
+    const windows = [shown];
+    while (shown < total) {
+      await page.locator('#cp-more-wrap > .cp-more').click();
+      shown = Math.min(shown + 12, total);
+      windows.push(shown);
+      await page.waitForFunction(({ shown, total, label }) => {
+        const status = document.getElementById('cp-status')?.textContent || '';
+        const expectedStatus = shown < total
+          ? 'Показано ' + shown + ' из ' + total + ' ' + label
+          : String(total) + ' ' + label;
+        return document.querySelectorAll('.cp-item[role="option"]').length === shown &&
+          status === expectedStatus &&
+          Boolean(document.querySelector('#cp-more-wrap > .cp-more')) === (shown < total);
+      }, { shown, total, label }, { timeout: 30_000 });
+      assert.equal(await page.locator('#cp-listbox .cp-more').count(), 0, 'continuation button must remain outside listbox');
+      const ids = await page.locator('.cp-item[role="option"]').evaluateAll((nodes) => nodes.map((node) => node.id));
+      assert.equal(new Set(ids).size, shown, 'continued options must keep unique ids');
+    }
+    return { initial: 12, total, windows };
+  }
+
+  try {
+    phase = 'pagefind';
+    {
+      const pagefindModule = [
+        'export const __fixture = "pagefind-continuation";',
+        'export async function search() {',
+        "  const urls = Array.from({ length: 28 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : '/fixture/pagefind-' + index + '/');",
+        '  return {',
+        '    results: urls.map((url, index) => ({',
+        '      data: async () => ({',
+        '        url,',
+        "        meta: { title: 'Fixture Pagefind ' + index, author: '', readTime: '1', category: 'Fixture', scripture: '' },",
+        "        excerpt: 'Fixture Pagefind excerpt ' + index,",
+        '      }),',
+        '    })),',
+        '  };',
+        '}',
+      ].join('\n');
+      const { context, page, input } = await openFixture(async (fixturePage) => {
+        await fixturePage.route('**/pagefind/pagefind.js', async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'text/javascript',
+            body: route.request().method() === 'HEAD' ? '' : pagefindModule,
+          });
+        });
+      }, viewport);
+      await page.waitForFunction(() => window.__pagefind__?.__fixture === 'pagefind-continuation', null, { timeout: 30_000 });
+      await input.fill('fixture-pagefind');
+      summary.pagefind = await assertPaged(page, 27, 'рез.');
+      await context.close();
+    }
+
+    phase = 'stale-query';
+    {
+      const delayedPagefindModule = [
+        'export const __fixture = "pagefind-stale-query";',
+        'export async function search() {',
+        '  window.__searchP3RaceStarted = (window.__searchP3RaceStarted || 0) + 1;',
+        '  return {',
+        '    results: Array.from({ length: 25 }, (_, index) => ({',
+        '      data: async () => {',
+        '        await new Promise((resolve) => setTimeout(resolve, 220));',
+        '        return {',
+        "          url: '/fixture/clear-race-' + index + '/',",
+        "          meta: { title: 'Clear Race ' + index, author: '', readTime: '1', category: 'Fixture', scripture: '' },",
+        "          excerpt: 'Clear Race excerpt ' + index,",
+        '        };',
+        '      },',
+        '    })),',
+        '  };',
+        '}',
+      ].join('\n');
+      const { context, page, input } = await openFixture(async (fixturePage) => {
+        await fixturePage.route('**/pagefind/pagefind.js', async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'text/javascript',
+            body: route.request().method() === 'HEAD' ? '' : delayedPagefindModule,
+          });
+        });
+      }, viewport);
+
+      await page.waitForFunction(() => window.__pagefind__?.__fixture === 'pagefind-stale-query', null, { timeout: 30_000 });
+      await input.fill('clearrace');
+      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 1, null, { timeout: 30_000 });
+      await page.locator('.cp-clear').click();
+      await page.waitForTimeout(650);
+      assert.equal(await input.inputValue(), '');
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'clear must not resurrect stale continuation');
+      assert.equal((await page.locator('.cp-item-title').allTextContents()).some((text) => text.includes('Clear Race')), false, 'clear must not resurrect stale Pagefind results');
+      summary.staleClear = true;
+
+      await input.fill('clearrace');
+      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 2, null, { timeout: 30_000 });
+      await input.fill('x');
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'new input must clear stale continuation immediately');
+      await page.waitForTimeout(650);
+      assert.equal(await input.inputValue(), 'x');
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'short query must not resurrect stale continuation');
+      assert.equal((await page.locator('.cp-item-title').allTextContents()).some((text) => text.includes('Clear Race')), false, 'short query must not resurrect stale Pagefind results');
+      summary.staleShortQuery = true;
+      await context.close();
+    }
+
+    phase = 'fallback';
+    {
+      const manifest = {
+        items: Array.from({ length: 25 }, (_, index) => ({
+          id: 'fallback-' + index,
+          type: 'article',
+          url: '/fixture/fallback-' + index + '/',
+          title: 'fixturefallback ' + index,
+          description: 'fixturefallback material ' + index,
+          section: 'Fixture',
+          author: 'Fixture Author',
+          priority: 100 - index,
+          tags: ['fixturefallback'],
+        })),
+      };
+      const { context, page, input } = await openFixture(async (fixturePage) => {
+        await fixturePage.route('**/pagefind/pagefind.js', async (route) => {
+          await route.fulfill({ status: 404, contentType: 'text/plain', body: 'missing in fallback fixture' });
+        });
+        await fixturePage.route('**/data/search-manifest.json', async (route) => {
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(manifest) });
+        });
+      }, viewport);
+      await input.fill('fixturefallback');
+      summary.fallback = await assertPaged(page, 25, 'рез.');
+      await context.close();
+    }
+
+    phase = 'scripture';
+    {
+      const scriptureIndex = {
+        schemaVersion: 1,
+        references: [{
+          id: 'jer-17-9-fixture',
+          label: 'Иер 17:9',
+          occurrences: Array.from({ length: 25 }, (_, index) => ({
+            url: '/fixture/scripture-' + index + '/',
+            anchor: 'fixture-' + index,
+            title: 'Fixture Scripture ' + index,
+            context: 'Fixture context ' + index,
+            topics: ['fixture'],
+          })),
+        }],
+      };
+      const staleManifest = {
+        items: Array.from({ length: 16 }, (_, index) => ({
+          id: 'stale-' + index,
+          type: 'article',
+          url: '/fixture/stale-' + index + '/',
+          title: 'stalerace ' + index,
+          description: 'stalerace material ' + index,
+          section: 'Fixture',
+          author: 'Fixture Author',
+          priority: 100 - index,
+          tags: ['stalerace'],
+        })),
+      };
+      const { context, page, input } = await openFixture(async (fixturePage) => {
+        await fixturePage.route('**/pagefind/pagefind.js', async (route) => {
+          await route.fulfill({ status: 404, contentType: 'text/plain', body: 'missing in stale continuation fixture' });
+        });
+        await fixturePage.route('**/data/search-manifest.json', async (route) => {
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(staleManifest) });
+        });
+        await fixturePage.route('**/data/scripture-search-index.json', async (route) => {
+          await new Promise((resolve) => setTimeout(resolve, 350));
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(scriptureIndex) });
+        });
+      }, viewport);
+      await input.fill('stalerace');
+      await page.waitForFunction(() => document.querySelectorAll('.cp-item[role="option"]').length === 12 && !!document.querySelector('#cp-more-wrap > .cp-more'), null, { timeout: 30_000 });
+      await page.locator('[data-scope="scripture"]').click();
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'exact Scripture must clear stale continuation before index response');
+      await input.fill('Иер 17:9');
+      summary.scripture = await assertPaged(page, 25, 'вх.');
+      await context.close();
+    }
+
+    return { continuation: summary };
+  } catch (error) {
+    await writeContinuationFailure(error);
+    throw error;
+  } finally {
+    await browser.close();
+  }
+}
+
 const matrix = [
   [chromium, 'chromium', { width: 1440, height: 900 }],
   [chromium, 'chromium', { width: 390, height: 844 }],
@@ -365,6 +640,9 @@ try {
   for (let index = 0; index < matrix.length; index += 1) {
     const [browserType, browserName, viewport] = matrix[index];
     results.push(await runCase(browserType, browserName, viewport, port, index + 1));
+  }
+  for (const [browserType, browserName, viewport] of matrix) {
+    results.push(await runContinuationContract(browserType, browserName, port, viewport));
   }
 } finally {
   await new Promise((resolve) => server.close(resolve));
@@ -382,6 +660,11 @@ const report = {
     touchTargets44px: true,
     focusVisible: true,
     chromiumWebkitDesktopMobile: true,
+    truthfulContinuation: true,
+    continuationMultiStep: true,
+    continuationDesktopMobile: true,
+    staleAsyncInvalidation: true,
+    boundedPagefindHydration: true,
   },
   results,
 };
@@ -393,7 +676,7 @@ fs.writeFileSync(path.join(reportDir, 'report.md'), [
   '- Engines: Chromium, WebKit',
   '- Viewports: 1440x900, 390x844',
   '- Result: PASS',
-  '- Coverage: combobox/listbox ARIA, active descendant, close control, full modal Tab trap, top-layer ordering, 44px targets, focus-visible, focus restoration, Escape/backdrop closure.',
+  '- Coverage: combobox/listbox ARIA, active descendant, close control, full modal Tab trap, top-layer ordering, 44px targets, focus-visible, focus restoration, Escape/backdrop closure, truthful multi-step continuation, desktop/mobile continuation, stale async invalidation and bounded Pagefind hydration.',
   '',
 ].join('\n'));
 console.log(`SEARCH MODAL CONTRACT: PASS (${results.length}/${results.length})`);
