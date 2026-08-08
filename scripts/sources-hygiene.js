@@ -30,6 +30,7 @@ const FORBIDDEN = [
   [/URL\s+зафиксирован/i, 'backstage note «URL зафиксирован…»'],
   [/что\s+нужно\s+исправить\s+в\s+3D/i, 'working note «что нужно исправить в 3D…»'],
   [/очередь\s+правок\s+3D-карты/i, 'working note «очередь правок 3D-карты»'],
+  [/_app\/index\.html/i, 'internal generated-app path (_app/index.html)'],
   [/Исследовательское\s+досье\s+статьи/i, 'backstage note «Исследовательское досье статьи»'],
   [/\/(baptisty-rossii|articles|hard-texts|nagornaya)\/research\//, 'internal research dir path'],
   [/<code>[^<]*\.(md|txt|csv)<\/code>/i, 'internal source file shown in <code> (.md/.txt/.csv)'],
@@ -37,14 +38,15 @@ const FORBIDDEN = [
 
 // Regression fixtures for exact leak classes that previously reached public prose
 // or reader-facing metadata. They make the scanner fail closed if a later regex
-// refactor silently loses ё/е, workspace-note, or 3D edit-queue coverage while the
-// repository happens not to contain an example.
+// refactor silently loses ё/е, workspace-note, 3D edit-queue, or generated-app
+// path coverage while the repository happens not to contain an example.
 const FORBIDDEN_FIXTURES = [
   'Для сверки сохранены локально первые контрольные выпуски.',
   'Для сверки сохранён локально контрольный выпуск.',
   'В research заведён каталог.',
   'После находки PDF-корпуса следующий шаг уже начат: в research заведён каталог.',
   'В справочнике указана очередь правок 3D-карты.',
+  'Не редактируйте читательскую страницу вручную в _app/index.html.',
 ];
 
 for (const fixture of FORBIDDEN_FIXTURES) {
