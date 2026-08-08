@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// trigger deterministic Pagefind fixture transaction
 import fs from 'node:fs';
 import process from 'node:process';
 
