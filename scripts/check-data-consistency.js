@@ -268,7 +268,7 @@ for (const [key, info] of Object.entries(series)) {
   if (landingUrl && searchByUrl.has(landingUrl)) {
     const st = searchByUrl.get(landingUrl).readTime;
     if (Number.isFinite(st) && total && st !== total) {
-      fail('series-landing-total-drift', `${landingUrl}: manifest=${st}, sum(parts)=${total})`);
+      fail('series-landing-total-drift', `${landingUrl}: manifest=${st}, sum(parts)=${total}`);
     }
   }
 }
