@@ -34,57 +34,44 @@ jobs:
         with:
           node-version: '22.23.1'
 
-      - name: Apply bounded stale interaction repair and Search revision projection
+      - name: Apply bounded stale interaction repair
         run: node scripts/search-stale-interaction-finalizer.mjs --write
 
-      - name: Validate patched Search tree
+      - name: Validate semantic Search patch
         run: |
           set -euo pipefail
           node --check js/search.js
           node --check scripts/search-modal-browser-contract.mjs
-          node scripts/cache-bust.js
-          node scripts/app-search-surface-source-contract.mjs
+          node --check scripts/search-stale-interaction-finalizer.mjs
           node scripts/check-workflows.js
           git diff --check
 
-      - name: Enforce bounded transaction scope
+      - name: Enforce semantic transaction scope
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$(git diff --name-only -- js/search.js)" || { echo 'search.js did not change' >&2; exit 1; }
-          test -n "$(git diff --name-only -- scripts/search-modal-browser-contract.mjs)" || { echo 'browser contract did not change' >&2; exit 1; }
-          while IFS= read -r path; do
-            [ -z "$path" ] && continue
-            case "$path" in
-              js/search.js|scripts/search-modal-browser-contract.mjs|scripts/search-stale-interaction-finalizer.mjs|.github/workflows/search-stale-interaction-finalizer.yml|404.html|src/lib/asset-version.js|src/components/*.astro)
-                ;;
-              *)
-                echo "unexpected stale-interaction transaction path: $path" >&2
-                exit 1
-                ;;
-            esac
-          done < <(git diff --name-only | sort)
+          ACTUAL="$(git diff --name-only | sort)"
+          EXPECTED="$(printf '%s\n' 'js/search.js' 'scripts/search-modal-browser-contract.mjs' | sort)"
+          test "$ACTUAL" = "$EXPECTED" || {
+            echo 'unexpected Search semantic transaction paths' >&2
+            printf 'actual:\n%s\nexpected:\n%s\n' "$ACTUAL" "$EXPECTED" >&2
+            exit 1
+          }
 
-      - name: Self-clean transport and publish exact branch
+      - name: Self-clean transport and publish semantic patch
         shell: bash
         run: |
           set -euo pipefail
           rm -f scripts/search-stale-interaction-finalizer.mjs .github/workflows/search-stale-interaction-finalizer.yml
           git diff --check
           git add -u
-          test -n "$(git diff --cached --name-only -- js/search.js)"
-          test -n "$(git diff --cached --name-only -- scripts/search-modal-browser-contract.mjs)"
-          while IFS= read -r path; do
-            [ -z "$path" ] && continue
-            case "$path" in
-              js/search.js|scripts/search-modal-browser-contract.mjs|scripts/search-stale-interaction-finalizer.mjs|.github/workflows/search-stale-interaction-finalizer.yml|404.html|src/lib/asset-version.js|src/components/*.astro)
-                ;;
-              *)
-                echo "unexpected staged stale-interaction path: $path" >&2
-                exit 1
-                ;;
-            esac
-          done < <(git diff --cached --name-only | sort)
+          ACTUAL="$(git diff --cached --name-only | sort)"
+          EXPECTED="$(printf '%s\n' '.github/workflows/search-stale-interaction-finalizer.yml' 'js/search.js' 'scripts/search-modal-browser-contract.mjs' 'scripts/search-stale-interaction-finalizer.mjs' | sort)"
+          test "$ACTUAL" = "$EXPECTED" || {
+            echo 'unexpected staged Search semantic transaction paths' >&2
+            printf 'actual:\n%s\nexpected:\n%s\n' "$ACTUAL" "$EXPECTED" >&2
+            exit 1
+          }
           git diff --cached --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
