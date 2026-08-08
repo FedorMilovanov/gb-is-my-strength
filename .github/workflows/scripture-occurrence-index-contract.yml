@@ -2,6 +2,7 @@ name: Scripture Occurrence Index Contract
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     branches: [main]
     paths:
       - "data/scripture-search-index.json"
@@ -81,21 +82,39 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
+      - name: Resolve live pull request branch
+        id: pr-branch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}.git" "refs/heads/${HEAD_REF}" >/dev/null; then
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "PR branch ${HEAD_REF} no longer exists; autofix is obsolete."
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Checkout exact PR branch
+        if: steps.pr-branch.outputs.exists == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
       - name: Set up Node 22.23.1
+        if: steps.pr-branch.outputs.exists == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
           cache: npm
       - name: Install immutable dependencies
+        if: steps.pr-branch.outputs.exists == 'true'
         run: npm ci
       - name: Regenerate deterministic Scripture occurrence index
+        if: steps.pr-branch.outputs.exists == 'true'
         run: node scripts/build-scripture-occurrence-index.mjs --write
       - name: Validate generated index and bounded diff
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
         run: |
           node scripts/build-scripture-occurrence-index.mjs --check
           node scripts/scripture-occurrence-index-contract.mjs
@@ -108,11 +127,17 @@ jobs:
             exit 1
           fi
       - name: Commit exact generated projection
+        if: steps.pr-branch.outputs.exists == 'true'
+        shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           if git diff --quiet -- data/scripture-search-index.json; then
             echo "Scripture occurrence index already current."
+            exit 0
+          fi
+          if ! git ls-remote --exit-code --heads origin "refs/heads/${HEAD_REF}" >/dev/null; then
+            echo "PR branch ${HEAD_REF} disappeared after validation; autofix result is obsolete."
             exit 0
           fi
           git config user.name "github-actions[bot]"
