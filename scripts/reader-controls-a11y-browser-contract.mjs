@@ -37,7 +37,7 @@ const ROUTES = [
       { id: 'learning', trigger: '#mobLearningBtn', target: '#gillLearningOverlay', popup: 'dialog' },
     ],
     desktopSurfaces: [
-      { id: 'settings', trigger: '[data-gill-settings-open]:visible', target: '#gillSettingsOverlay', popup: 'dialog' },
+      { id: 'settings', trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', popup: 'dialog' },
     ],
   },
   { id: 'antisovetov', route: '/articles/20-antisovetov-pastoru/' },
@@ -192,7 +192,13 @@ async function auditSlot(page, routeId, selectors, checks) {
 
 async function surfaceSnapshot(page, spec) {
   return page.evaluate(({ trigger, target }) => {
-    const triggerNode = document.querySelector(trigger);
+    const visible = (node) => {
+      if (!node) return false;
+      const style = getComputedStyle(node); const rect = node.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.01 && rect.width > 0 && rect.height > 0;
+    };
+    const candidates = Array.from(document.querySelectorAll(trigger));
+    const triggerNode = candidates.find(visible) || candidates[0] || null;
     const targetNode = document.querySelector(target);
     const targetId = targetNode?.id || '';
     const open = Boolean(targetNode) && (
@@ -214,6 +220,19 @@ async function surfaceSnapshot(page, spec) {
   }, spec);
 }
 
+async function clickVisible(page, selector) {
+  const candidates = page.locator(selector);
+  const count = await candidates.count();
+  for (let index = 0; index < count; index += 1) {
+    const candidate = candidates.nth(index);
+    if (await candidate.isVisible().catch(() => false)) {
+      await candidate.click();
+      return true;
+    }
+  }
+  return false;
+}
+
 async function auditSurface(page, routeId, viewportId, spec, checks) {
   const prefix = `${routeId}-${viewportId}-surface-${spec.id}`;
   await page.evaluate(() => window.GBReaderControlsA11y.refresh());
@@ -224,17 +243,17 @@ async function auditSurface(page, routeId, viewportId, spec, checks) {
   record(checks, `${prefix}-03`, 'closed surface reports collapsed trigger state', !closed.open && closed.expanded === 'false', closed);
   if (spec.popup) record(checks, `${prefix}-04`, 'dialog trigger exposes popup semantics', closed.haspopup === spec.popup, closed);
 
-  const trigger = page.locator(spec.trigger).first();
-  await trigger.click();
+  const clicked = await clickVisible(page, spec.trigger);
+  record(checks, `${prefix}-05`, 'a rendered trigger can be activated', clicked, closed);
   await page.waitForTimeout(160);
   const opened = await surfaceSnapshot(page, spec);
-  record(checks, `${prefix}-05`, 'trigger opens its declared surface', opened.open, opened);
-  record(checks, `${prefix}-06`, 'open surface reports expanded trigger state', opened.expanded === 'true', opened);
+  record(checks, `${prefix}-06`, 'trigger opens its declared surface', clicked && opened.open, opened);
+  record(checks, `${prefix}-07`, 'open surface reports expanded trigger state', clicked && opened.expanded === 'true', opened);
 
   await page.keyboard.press('Escape');
   await page.waitForTimeout(160);
   const afterEscape = await surfaceSnapshot(page, spec);
-  record(checks, `${prefix}-07`, 'Escape closes surface and restores collapsed state', !afterEscape.open && afterEscape.expanded === 'false', afterEscape);
+  record(checks, `${prefix}-08`, 'Escape closes surface and restores collapsed state', !afterEscape.open && afterEscape.expanded === 'false', afterEscape);
 }
 
 async function auditMobile(browser, origin, routeInfo) {
