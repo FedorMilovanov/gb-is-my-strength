@@ -1,9 +1,10 @@
 (() => {
   'use strict';
 
-  const VERSION = 1;
+  const VERSION = 2;
   const BOUND_ATTR = 'data-reader-controls-a11y-bound';
   const slots = new Set();
+  const surfaceRelations = new Map();
 
   function setAttr(element, name, value) {
     if (!element) return;
@@ -213,6 +214,63 @@
     }));
   }
 
+  function surfaceIsOpen(target) {
+    if (!(target instanceof HTMLElement) || target.hidden || target.hasAttribute('inert')) return false;
+    const ariaHidden = target.getAttribute('aria-hidden');
+    if (ariaHidden === 'false') return true;
+    if (ariaHidden === 'true') return false;
+    return target.classList.contains('is-open') || target.classList.contains('open') || target.classList.contains('active');
+  }
+
+  function bindSurfaceRelation(config) {
+    const target = document.querySelector(config.target);
+    if (!(target instanceof HTMLElement)) return;
+    const targetId = ensureId(target, config.fallbackId);
+    let record = surfaceRelations.get(target);
+    if (!record) {
+      record = {
+        target,
+        targetId,
+        triggers: new Set(),
+        popup: config.popup || null,
+        sync: null,
+        observer: null,
+      };
+      record.sync = () => {
+        const open = surfaceIsOpen(target);
+        record.triggers.forEach((trigger) => {
+          if (!(trigger instanceof HTMLElement) || !trigger.isConnected) {
+            record.triggers.delete(trigger);
+            return;
+          }
+          setAttr(trigger, 'aria-controls', targetId);
+          setAttr(trigger, 'aria-expanded', open ? 'true' : 'false');
+          if (record.popup) setAttr(trigger, 'aria-haspopup', record.popup);
+        });
+      };
+      record.observer = new MutationObserver(record.sync);
+      record.observer.observe(target, { attributes: true, attributeFilter: ['class', 'aria-hidden', 'hidden', 'inert'] });
+      surfaceRelations.set(target, record);
+    }
+
+    document.querySelectorAll(config.trigger).forEach((trigger) => {
+      if (trigger instanceof HTMLElement) record.triggers.add(trigger);
+    });
+    record.sync();
+  }
+
+  function bindSurfaceRelations() {
+    [
+      { trigger: '#hmBottomBtn, #hmSectionBtn', target: '#hmSheet', fallbackId: 'hmSheet', popup: 'dialog' },
+      { trigger: '#hmSettingsBtn, #hrailSettingsBtn, #gbFcSettings', target: '#hmSettings', fallbackId: 'hmSettings', popup: 'dialog' },
+      { trigger: '#mobPartTocBtn', target: '#partTocOverlay', fallbackId: 'partTocOverlay', popup: 'dialog' },
+      { trigger: '#mobTocBtn', target: '#seriesTocOverlay', fallbackId: 'seriesTocOverlay', popup: 'dialog' },
+      { trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', fallbackId: 'gillSettingsOverlay', popup: 'dialog' },
+      { trigger: '[data-gill-learning-open]', target: '#gillLearningOverlay', fallbackId: 'gillLearningOverlay', popup: 'dialog' },
+      { trigger: '#hMobileMenuBtn', target: '#hMobileNav', fallbackId: 'hMobileNav', popup: null },
+    ].forEach(bindSurfaceRelation);
+  }
+
   function syncPlayPopupSemantics() {
     document.querySelectorAll('[data-fc-action="play"]').forEach((button) => {
       const controls = button.getAttribute('aria-controls');
@@ -225,7 +283,14 @@
 
   function refresh() {
     bindSlots();
+    bindSurfaceRelations();
     slots.forEach((slot) => slot.sync());
+    surfaceRelations.forEach((relation, target) => {
+      if (!target.isConnected) {
+        relation.observer?.disconnect();
+        surfaceRelations.delete(target);
+      } else relation.sync();
+    });
     syncPlayPopupSemantics();
   }
 
@@ -249,6 +314,16 @@
       tabStops: slot.chips.filter((chip) => chip.tabIndex === 0).length,
       controls: slot.badge.getAttribute('aria-controls'),
       expanded: slot.badge.getAttribute('aria-expanded'),
+    })),
+    getSurfaceState: () => Array.from(surfaceRelations.values()).map((relation) => ({
+      target: relation.targetId,
+      open: surfaceIsOpen(relation.target),
+      triggers: Array.from(relation.triggers).filter((trigger) => trigger.isConnected).map((trigger) => ({
+        id: trigger.id || '',
+        controls: trigger.getAttribute('aria-controls'),
+        expanded: trigger.getAttribute('aria-expanded'),
+        haspopup: trigger.getAttribute('aria-haspopup'),
+      })),
     })),
   });
 })();
