@@ -3,7 +3,7 @@
 // Run `node scripts/cache-bust.js` to update VERSIONS below after CSS/JS changes
 
 export const ASSET_VERSIONS = {
-  'css/command-palette.css': 'c174cedb',
+  'css/command-palette.css': '3b88813f',
   'css/enhancements-runtime.css': '97a3e924',
   'css/floating-cluster.css': '85a1bfb6',
   'css/highlights-runtime.css': '9f42844a',
@@ -28,7 +28,7 @@ export const ASSET_VERSIONS = {
   'js/reader-preferences.js': '63b588b5',
   'js/reader-state.js': 'b3deb501',
   'js/scroll-perf.js': '454d6f7b',
-  'js/search.js': 'bdb556ee',
+  'js/search.js': '5bb24c97',
   'js/site-utils.js': '661c6cc1',
   'js/site.js': '8009e039',
   'js/sw-register.js': '3fbabcf1',
