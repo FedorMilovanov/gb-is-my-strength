@@ -1,9 +1,10 @@
 name: Temporary Gill glossary residual projector
 
 on:
-  push:
+  pull_request:
+    types: [opened]
     branches:
-      - fix/gill-part1-glossary-residuals-20260808
+      - main
     paths:
       - .github/workflows/tmp-gill-glossary-residuals-projector.yml
 
@@ -19,17 +20,18 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - name: Checkout exact triggering commit
+      - name: Checkout exact PR head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
-          fetch-depth: 2
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
           persist-credentials: true
 
-      - name: Require expected lane base
+      - name: Require expected lane ancestry and temporary-only prestate
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "7dd0c2fda74cd52afebf0ca3e20c710f936a961f"
+          git merge-base --is-ancestor 7dd0c2fda74cd52afebf0ca3e20c710f936a961f HEAD
+          test "$(git diff --name-only 7dd0c2fda74cd52afebf0ca3e20c710f936a961f...HEAD)" = ".github/workflows/tmp-gill-glossary-residuals-projector.yml"
 
       - name: Apply bounded glossary data and runtime regression
         run: |
@@ -48,7 +50,6 @@ jobs:
                 "банхилл-филдс",
                 "Bunhill Fields"
               ],'''
-          # Preserve file formatting exactly; locate the alias block only within the Bunhill entry.
           key_at = text.index('  "банхилл-филдс": {')
           next_at = text.index('  "кеннингтон-коммон": {', key_at)
           bunhill = text[key_at:next_at]
@@ -76,7 +77,6 @@ jobs:
           text = text.replace(marker, horsleydown + marker, 1)
           glossary_path.write_text(text, encoding='utf-8')
 
-          # Parse after surgical text patch and prove broad Southwark alias was not introduced.
           glossary = json.loads(text)
           assert glossary['банхилл-филдс']['aliases'].count('Bunhill Fields') == 1
           assert glossary['хорслидаун']['aliases'] == ['хорслидаун', 'Horsleydown']
