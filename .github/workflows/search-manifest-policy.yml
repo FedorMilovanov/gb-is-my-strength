@@ -14,6 +14,7 @@ on:
       - "migration/page-ownership.json"
       - "src/content/**"
       - "src/pages/**"
+      - "src/components/**/*PageHead.astro"
       - "src/components/nagornaya/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
@@ -37,6 +38,7 @@ on:
       - "migration/page-ownership.json"
       - "src/content/**"
       - "src/pages/**"
+      - "src/components/**/*PageHead.astro"
       - "src/components/nagornaya/**"
       - "scripts/rss-feed-normalizer.js"
       - "scripts/rss-feed-normalizer-test.js"
@@ -116,6 +118,9 @@ jobs:
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
+
+      - name: Require existing manifest rows to match built PageHead authority
+        run: node scripts/search-manifest-policy-normalizer.js --dist=dist
 
       - name: Build Pagefind index
         run: npm run pagefind:build:dist
@@ -222,6 +227,7 @@ jobs:
       - name: Validate normalized production policy
         if: steps.pr-branch.outputs.exists == 'true'
         run: |
+          node scripts/search-manifest-policy-normalizer.js --dist=dist --promote-rss-articles
           node scripts/rss-feed-normalizer.js --check
           node scripts/sitemap-policy-normalizer.js --check
           node scripts/search-index-policy-inventory.js --dist=dist --strict
