@@ -337,7 +337,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
       { href: '#timeline', label: 'Даты: рабочая хронология серии', level: 2, },
       { href: '#documents', label: 'Документы: уже опираемся и ещё ищем', level: 2, },
       { href: '#disputed-facts', label: 'Спорные факты и редакционные предохранители', level: 2, },
-      { href: '#map-backlog', label: 'Очередь правок 3D-карты', level: 2, },
+      { href: '#map-backlog', label: 'Исторические связи для 3D-карты', level: 2, },
       { href: '#transferred', label: 'Что уже перенесено в статьи', level: 2, },
       { href: '#what-to-search-next', label: 'Что копать дальше', level: 2, },
       { href: '#glossary', label: 'Глоссарий коротко', level: 2, },
