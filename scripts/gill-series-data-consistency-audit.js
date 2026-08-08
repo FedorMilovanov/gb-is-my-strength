@@ -3,15 +3,17 @@
 
 /**
  * Gill Series Data Consistency Audit
- * 
+ *
  * Verifies that src/components/article-pilots/gill-series/gillSeriesData.ts
- * stays in sync with canonical content sources:
+ * stays in sync with canonical content sources and public Gill projections:
  * - MDX frontmatter readingTime
  * - data/series.json
  * - data/search-manifest.json
  * - migration/page-ownership.json
  * - route existence
- * 
+ * - /biografii/ Gill shelves
+ * - data/links-graph.json Gill nodes
+ *
  * Created: 2026-06-29 — Lane A gill-series-data-consistency-audit
  */
 
@@ -143,10 +145,6 @@ if (seriesJson && seriesJson['dzhon-gill']) {
 const searchManifest = readJSON('data/search-manifest.json');
 if (searchManifest && Array.isArray(searchManifest.items)) {
   seriesItems.forEach(item => {
-    const url = item.href.replace(/\/$/, '') + '/'; // ensure trailing slash (manifest uses trailing slash)
-    // manifest actually stores with trailing slash
-    const found = searchManifest.items.find(it => it.url === item.href || it.url === item.href.replace(/\/$/, '') || (it.url + '/') === item.href);
-    const found2 = searchManifest.items.find(it => it.id && it.id.includes(item.id.replace('part','').replace('context','istoricheskiy')) || it.url === item.href);
     const entry = searchManifest.items.find(e => e.url === item.href);
     if (!entry) {
       warn(`search-manifest entry not found by exact url for ${item.href}, trying fuzzy`);
@@ -178,7 +176,7 @@ const expectedTotal = seriesItems.reduce((sum, item) => sum + item.readingTimeMi
 // Internal ids/slugs unchanged; only display order/numbering swapped.
 const expectedOrder = ['context','part1','part2','part4','part3','spravochnik'];
 let cumulative = 0;
-expectedOrder.forEach((pid, idx) => {
+expectedOrder.forEach((pid) => {
   const pd = pageData[pid];
   if (!pd) { bad('pageData missing', pid); return; }
   if (pd.totalMin !== expectedTotal) bad('totalMin mismatch', `${pid}: expected ${expectedTotal}, got ${pd.totalMin}`);
@@ -228,7 +226,6 @@ const expectedMarks = [
 expectedMarks.forEach(exp => {
   const found = seriesItems.find(s => s.id === exp.id);
   if (!found) { bad('series mark missing item', exp.id); return; }
-  // markKind/value already parsed
   if (found.markKind !== exp.kind || found.markValue !== exp.value) {
     bad('series mark mismatch', `${exp.id}: expected ${exp.kind}/${exp.value}, got ${found.markKind}/${found.markValue}`);
   } else {
@@ -236,12 +233,76 @@ expectedMarks.forEach(exp => {
   }
 });
 
-// 10. Check for raw Roman numeral regressions in built files? (optional, skip if no dist)
-// We do a light source check only here; full built check is in premium-controls-rollout-audit
+// 10. Public projection convergence.
+// The canonical Gill order lives in GILL_SERIES_ITEMS. Public shelves may show
+// a bounded subset, but they must not silently skip a numbered part or reorder
+// III/IV by the historical slug numbers.
+function assertProjectionOrder(file, ids, label) {
+  const text = readText(file);
+  if (!text) return;
+  let previous = -1;
+  for (const id of ids) {
+    const item = seriesItems.find((entry) => entry.id === id);
+    if (!item) { bad(`${label}: canonical item missing`, id); continue; }
+    const href = `..${item.href}`;
+    const hits = text.split(href).length - 1;
+    if (hits !== 1) {
+      bad(`${label}: expected exactly one projected route`, `${href}: got ${hits}`);
+      continue;
+    }
+    const index = text.indexOf(href);
+    if (index <= previous) bad(`${label}: route order drift`, href);
+    previous = index;
+  }
+  if (/Трилогия/.test(text)) bad(`${label}: stale «Трилогия» label survives six-item Gill series`);
+  else ok(`${label}: canonical Gill route order and series wording OK`);
+}
+
+assertProjectionOrder(
+  'src/components/biografii/BiografiiRecentSection.astro',
+  expectedOrder,
+  '/biografii/ recent Gill shelf'
+);
+assertProjectionOrder(
+  'src/components/biografii/BiografiiAwakeningSection.astro',
+  ['part1','part2','part4','part3'],
+  '/biografii/ XVIII-century Gill shelf'
+);
+
+const linksGraph = readJSON('data/links-graph.json');
+if (linksGraph && Array.isArray(linksGraph.nodes)) {
+  const nodeByUrl = new Map(linksGraph.nodes.map((node) => [node.url, node]));
+  for (const item of seriesItems) {
+    const node = nodeByUrl.get(item.href);
+    if (!node) {
+      bad('links-graph missing Gill route', item.href);
+      continue;
+    }
+    if (item.markKind === 'roman') {
+      const expectedTitleFragment = item.title.replace('. ', ': ');
+      if (!String(node.title || '').includes(expectedTitleFragment)) {
+        bad('links-graph Gill display title drift', `${item.href}: expected «${expectedTitleFragment}» in «${node.title || ''}»`);
+      } else {
+        ok(`links-graph Gill title matches canonical display number: ${item.id}`);
+      }
+    }
+  }
+
+  // These two stable slugs deliberately no longer encode their display number.
+  // Keep ordinal prose out of the graph descriptions so a future display-order
+  // change cannot create a second, conflicting numbering authority.
+  for (const id of ['part4','part3']) {
+    const item = seriesItems.find((entry) => entry.id === id);
+    const node = item && nodeByUrl.get(item.href);
+    if (node && /(?:Третья|Четвёртая) часть серии/.test(String(node.desc || ''))) {
+      bad('links-graph Gill description duplicates display ordinal authority', `${item.href}: ${node.desc}`);
+    }
+  }
+}
 
 console.log('\n=== Gill Series Data Consistency Summary ===');
 if (failures === 0) {
-  console.log('✅ ALL CHECKS PASSED — gillSeriesData.ts is consistent with MDX / series.json / search-manifest / page-ownership');
+  console.log('✅ ALL CHECKS PASSED — Gill canonical data and public projections are consistent');
   process.exit(0);
 } else {
   console.error(`❌ ${failures} consistency failure(s)`);
