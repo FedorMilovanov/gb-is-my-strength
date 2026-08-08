@@ -7,22 +7,24 @@
  * Authority:
  *   scripts/lib/public-surface-registry.js
  * Evidence:
- *   production-like dist HTML
+ *   production-like dist rendered in Chromium
  *
  * This is deliberately not a second publication registry. Every current
  * reading route is derived from the existing public-surface authority and must
- * have at least one real, static, human-facing inbound <a href> witness from a
- * different public route. Search, sitemap, RSS and self-links do not count.
+ * have at least one real, rendered, human-facing inbound <a href> witness from
+ * a different public route. Search, sitemap, RSS and self-links do not count.
  */
 
 const fs = require('fs');
+const http = require('http');
 const path = require('path');
+const { chromium } = require('playwright');
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 
 const ROOT = process.cwd();
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const OUT = process.env.HUMAN_REACHABILITY_REPORT || path.join(ROOT, 'reports', 'current-gold', 'human-reachability.json');
-const ORIGIN = 'https://gospod-bog.ru';
+const PRODUCTION_ORIGIN = 'https://gospod-bog.ru';
 const NON_HUMAN_SOURCE_ROUTES = new Set(['/search/']);
 
 function canonicalRoute(route) {
@@ -39,58 +41,140 @@ function distFileForRoute(route) {
   return clean ? path.join(DIST, clean, 'index.html') : path.join(DIST, 'index.html');
 }
 
-function stripNonDocumentMarkup(html) {
-  return String(html || '')
-    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
-    .replace(/<style\b[\s\S]*?<\/style>/gi, '')
-    .replace(/<template\b[\s\S]*?<\/template>/gi, '');
+function contentType(file) {
+  const ext = path.extname(file).toLowerCase();
+  return ({
+    '.html': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.webp': 'image/webp',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.woff2': 'font/woff2',
+  })[ext] || 'application/octet-stream';
 }
 
-function extractAnchors(html) {
-  const clean = stripNonDocumentMarkup(html);
-  const anchors = [];
-  const re = /<a\b([^>]*?)\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))([^>]*)>/gi;
-  let match;
-  while ((match = re.exec(clean))) {
-    const attrs = `${match[1] || ''} ${match[5] || ''}`;
-    const href = match[2] ?? match[3] ?? match[4] ?? '';
-    if (/\bhidden\b/i.test(attrs) || /aria-hidden\s*=\s*["']?true/i.test(attrs)) continue;
-    anchors.push({ href: String(href).trim(), attrs: attrs.trim() });
-  }
-  return anchors;
+function requestFile(urlPath) {
+  let pathname;
+  try { pathname = decodeURIComponent(String(urlPath || '/').split(/[?#]/, 1)[0]); }
+  catch { return null; }
+  const normalized = path.posix.normalize(pathname).replace(/^\/+/, '');
+  if (normalized.startsWith('../') || normalized.includes('/../')) return null;
+  const relative = normalized && !normalized.endsWith('/') ? normalized : `${normalized}index.html`;
+  const absolute = path.resolve(DIST, relative || 'index.html');
+  const rootPrefix = `${path.resolve(DIST)}${path.sep}`;
+  if (absolute !== path.resolve(DIST) && !absolute.startsWith(rootPrefix)) return null;
+  return absolute;
 }
 
-function resolvePublicRoute(href, sourceRoute) {
+async function startDistServer() {
+  const server = http.createServer((req, res) => {
+    const file = requestFile(req.url);
+    if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+      res.statusCode = 404;
+      res.end('Not found');
+      return;
+    }
+    res.statusCode = 200;
+    res.setHeader('Content-Type', contentType(file));
+    fs.createReadStream(file).pipe(res);
+  });
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  return {
+    server,
+    origin: `http://127.0.0.1:${address.port}`,
+    close: () => new Promise((resolve) => server.close(resolve)),
+  };
+}
+
+function resolvePublicRoute(href, sourceRoute, localOrigin) {
   if (!href || href.startsWith('#')) return null;
   if (/^(?:javascript|mailto|tel|data):/i.test(href)) return null;
   let url;
-  try {
-    url = new URL(href, `${ORIGIN}${canonicalRoute(sourceRoute)}`);
-  } catch {
-    return null;
-  }
-  if (url.origin !== ORIGIN) return null;
+  try { url = new URL(href, `${localOrigin}${canonicalRoute(sourceRoute)}`); }
+  catch { return null; }
+  if (url.origin !== localOrigin && url.origin !== PRODUCTION_ORIGIN) return null;
   return canonicalRoute(url.pathname);
 }
 
-function assertSelfFixtures() {
-  const cases = [
-    ['/articles/a/', '../b/', '/articles/b/'],
-    ['/articles/a/', '/hard-texts/x/?q=1#p', '/hard-texts/x/'],
-    ['/', '/articles/a/', '/articles/a/'],
-    ['/articles/a/', '#note', null],
-    ['/articles/a/', 'https://example.com/x/', null],
-  ];
-  for (const [source, href, expected] of cases) {
-    const actual = resolvePublicRoute(href, source);
-    if (actual !== expected) {
-      throw new Error(`human-reachability resolver fixture failed: ${source} + ${href} => ${actual}; expected ${expected}`);
+async function renderedAnchors(page) {
+  return page.locator('a[href]').evaluateAll((anchors) => {
+    function meaningful(anchor) {
+      const text = String(anchor.textContent || '').replace(/\s+/g, ' ').trim();
+      const aria = String(anchor.getAttribute('aria-label') || '').trim();
+      const title = String(anchor.getAttribute('title') || '').trim();
+      const imageAlt = [...anchor.querySelectorAll('img[alt]')]
+        .map((image) => String(image.getAttribute('alt') || '').trim())
+        .filter(Boolean)
+        .join(' ');
+      return Boolean(text || aria || title || imageAlt);
     }
+
+    function rendered(anchor) {
+      if (anchor.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
+      if (!meaningful(anchor)) return false;
+
+      for (let node = anchor; node && node instanceof Element; node = node.parentElement) {
+        const style = getComputedStyle(node);
+        if (style.display === 'none') return false;
+        if (style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+        if (Number.parseFloat(style.opacity || '1') <= 0.001) return false;
+        if (style.contentVisibility === 'hidden') return false;
+        if (style.pointerEvents === 'none') return false;
+      }
+
+      const rects = [...anchor.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
+      if (!rects.length) return false;
+      const doc = document.documentElement;
+      const maxX = Math.max(doc.scrollWidth, doc.clientWidth);
+      const maxY = Math.max(doc.scrollHeight, doc.clientHeight);
+      return rects.some((rect) => rect.right > 0 && rect.left < maxX && rect.bottom > 0 && rect.top < maxY);
+    }
+
+    return anchors
+      .filter(rendered)
+      .map((anchor) => ({
+        href: anchor.getAttribute('href') || '',
+        rel: anchor.getAttribute('rel') || '',
+        text: String(anchor.textContent || anchor.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+      }));
+  });
+}
+
+async function assertBrowserFixtures(page) {
+  await page.setContent(`<!doctype html><html><head><style>
+    .display-none { display:none }
+    .visibility-hidden { visibility:hidden }
+    .opacity-zero { opacity:0 }
+    .pointer-none { pointer-events:none }
+    .off-canvas { position:absolute; left:-10000px; top:0 }
+  </style></head><body>
+    <a href="/visible/">Visible witness</a>
+    <div hidden><a href="/hidden-parent/">Hidden parent</a></div>
+    <div aria-hidden="true"><a href="/aria-hidden-parent/">ARIA hidden parent</a></div>
+    <div inert><a href="/inert-parent/">Inert parent</a></div>
+    <div class="display-none"><a href="/display-none/">Display none</a></div>
+    <div class="visibility-hidden"><a href="/visibility-hidden/">Visibility hidden</a></div>
+    <div class="opacity-zero"><a href="/opacity-zero/">Opacity zero</a></div>
+    <div class="pointer-none"><a href="/pointer-none/">Pointer none</a></div>
+    <a class="off-canvas" href="/off-canvas/">Off canvas</a>
+    <a href="/empty/"></a>
+  </body></html>`);
+  const hrefs = (await renderedAnchors(page)).map((item) => item.href).sort();
+  const expected = ['/visible/'];
+  if (JSON.stringify(hrefs) !== JSON.stringify(expected)) {
+    throw new Error(`rendered-anchor adversarial fixtures failed: got ${JSON.stringify(hrefs)}, expected ${JSON.stringify(expected)}`);
   }
 }
 
-function main() {
-  assertSelfFixtures();
+async function main() {
   if (!fs.existsSync(DIST)) throw new Error(`production-like dist is missing: ${DIST}`);
 
   const registry = buildPublicSurfaceRegistry();
@@ -106,27 +190,49 @@ function main() {
     .sort();
   const readingSet = new Set(readingRoutes);
   const inbound = new Map(readingRoutes.map((route) => [route, new Map()]));
-  const missingBuiltSources = [];
+  const missingBuiltSources = readingRoutes.filter((route) => !fs.existsSync(distFileForRoute(route)));
 
-  for (const source of entries) {
-    if (NON_HUMAN_SOURCE_ROUTES.has(source.route)) continue;
-    const file = distFileForRoute(source.route);
-    if (!fs.existsSync(file)) {
-      // Some non-HTML special/application surfaces can legitimately have a
-      // different built shape. Reading routes, however, must always exist.
-      if (source.routeRole === 'reading') missingBuiltSources.push(source.route);
-      continue;
-    }
-    const html = fs.readFileSync(file, 'utf8');
-    for (const anchor of extractAnchors(html)) {
-      const target = resolvePublicRoute(anchor.href, source.route);
-      if (!target || !readingSet.has(target) || target === source.route) continue;
-      if (/\brel\s*=\s*["'][^"']*\bnofollow\b/i.test(anchor.attrs)) continue;
-      const witnesses = inbound.get(target);
-      if (!witnesses.has(source.route)) {
-        witnesses.set(source.route, { source: source.route, href: anchor.href });
+  const server = await startDistServer();
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      viewport: { width: 1280, height: 900 },
+    });
+    await context.route('**/*', async (route) => {
+      const type = route.request().resourceType();
+      if (['image', 'font', 'media'].includes(type)) return route.abort();
+      return route.continue();
+    });
+    const page = await context.newPage();
+    page.setDefaultNavigationTimeout(12_000);
+    await assertBrowserFixtures(page);
+
+    for (const source of entries) {
+      if (NON_HUMAN_SOURCE_ROUTES.has(source.route)) continue;
+      const file = distFileForRoute(source.route);
+      if (!fs.existsSync(file)) continue;
+
+      const response = await page.goto(`${server.origin}${source.route}`, { waitUntil: 'domcontentloaded' });
+      if (!response || !response.ok()) {
+        throw new Error(`cannot render public source route ${source.route}: HTTP ${response?.status() ?? '<no response>'}`);
+      }
+
+      for (const anchor of await renderedAnchors(page)) {
+        if (/\bnofollow\b/i.test(anchor.rel)) continue;
+        const target = resolvePublicRoute(anchor.href, source.route, server.origin);
+        if (!target || !readingSet.has(target) || target === source.route) continue;
+        const witnesses = inbound.get(target);
+        if (!witnesses.has(source.route)) {
+          witnesses.set(source.route, { source: source.route, href: anchor.href, text: anchor.text });
+        }
       }
     }
+
+    await context.close();
+  } finally {
+    await browser.close();
+    await server.close();
   }
 
   const routes = readingRoutes.map((route) => {
@@ -145,8 +251,9 @@ function main() {
 
   const orphans = routes.filter((item) => item.inboundCount === 0).map((item) => item.route);
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     authority: 'scripts/lib/public-surface-registry.js',
+    evidenceMode: 'rendered-chromium-static-navigation',
     productSha: process.env.GITHUB_SHA || null,
     readingRoutes: routes.length,
     reachableRoutes: routes.length - orphans.length,
@@ -159,8 +266,12 @@ function main() {
       sitemapCounts: false,
       rssCounts: false,
       externalLinksCount: false,
-      hiddenAnchorsCount: false,
+      hiddenOrAriaHiddenAncestorsCount: false,
+      cssHiddenOrNonRenderedAnchorsCount: false,
+      pointerDisabledAnchorsCount: false,
+      emptyUnlabelledAnchorsCount: false,
       nofollowAnchorsCount: false,
+      javascriptEnabled: false,
     },
     routes,
   };
@@ -176,12 +287,10 @@ function main() {
     console.error(`❌ Human-orphan reading routes: ${orphans.join(', ')}`);
   }
   if (missingBuiltSources.length || orphans.length) process.exit(1);
-  console.log('✅ Every current reading route has a distinct public human inbound-link witness.');
+  console.log('✅ Every current reading route has a distinct rendered public human inbound-link witness.');
 }
 
-try {
-  main();
-} catch (error) {
+main().catch((error) => {
   console.error(`FATAL ${error?.stack || error}`);
   process.exit(1);
-}
+});
