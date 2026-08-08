@@ -99,17 +99,24 @@ jobs:
                   const termsByLabel = (value) => nodes
                     .filter((node) => label(node) === value)
                     .map((node) => node.getAttribute('data-term'));
+                  const horsleydown = termsByLabel('Хорслидаун');
+                  const bunhill = termsByLabel('Bunhill Fields');
+                  const southwarkAlias = runtime?.aliasAll?.['саутварк'] ?? null;
+                  const ok = (
+                    horsleydown.length === 2 && horsleydown.every((term) => term === 'хорслидаун') &&
+                    bunhill.length === 1 && bunhill[0] === 'банхилл-филдс' &&
+                    southwarkAlias === null
+                  );
                   return {
-                    horsleydown: termsByLabel('Хорслидаун'),
-                    bunhill: termsByLabel('Bunhill Fields'),
-                    southwarkAlias: runtime?.aliasAll?.['саутварк'] || null,
+                    ok,
+                    horsleydown,
+                    bunhill,
+                    southwarkAlias,
+                    horsleydownCodes: horsleydown.map((term) => Array.from(term || '').map((char) => char.codePointAt(0))),
+                    bunhillCodes: bunhill.map((term) => Array.from(term || '').map((char) => char.codePointAt(0))),
                   };
                 });
-                if (
-                  residualState.horsleydown.length !== 2 || residualState.horsleydown.some((term) => term !== 'хорслидаун') ||
-                  residualState.bunhill.length !== 1 || residualState.bunhill[0] !== 'банхилл-филдс' ||
-                  residualState.southwarkAlias !== null
-                ) {
+                if (!residualState.ok) {
                   push('gill-part1-glossary-residuals', url, residualState);
                 }
               }
