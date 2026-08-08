@@ -27,7 +27,9 @@
     "explicitReferenceApi": "migration/legacy-reference-path.js",
     "explicitReferenceApiContract": "scripts/legacy-reference-path-contract-test.js",
     "explicitReferenceApiUsers": [
-      "scripts/astro-ishod-pilot-audit.js"
+      "scripts/astro-ishod-pilot-audit.js",
+      "scripts/content-source-provenance-audit.js",
+      "scripts/lib/legacy-source-authority.js"
     ],
     "nonBlockingFixtureDependencies": [
       "scripts/audit-pro-source-corpus-test.js",
@@ -99,7 +101,7 @@
       "path": "scripts/content-coverage-audit.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "legacyStatus",
       "owner": "legacy-reference-quarantine"
     },
@@ -107,7 +109,7 @@
       "path": "scripts/content-source-provenance-audit.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "legacyStatus",
       "owner": "legacy-reference-quarantine"
     },
@@ -211,7 +213,7 @@
       "path": "scripts/legacy-source-authority-regression-test.js",
       "access": "fixture-or-contract",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "legacyStatus",
       "owner": "legacy-reference-quarantine"
     },
@@ -227,7 +229,7 @@
       "path": "scripts/lib/legacy-source-authority.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "legacyStatus",
       "owner": "legacy-reference-quarantine"
     },
@@ -235,7 +237,7 @@
       "path": "scripts/lib/public-surface-registry.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "legacyStatus",
       "owner": "legacy-reference-quarantine"
     },
