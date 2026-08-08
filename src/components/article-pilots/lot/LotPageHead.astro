@@ -196,4 +196,6 @@ const jsonLd = {
 <link rel="stylesheet" href="../../css/mobile-hotfix.css?v=a6a3187a" />
 <link rel="stylesheet" href="../../css/floating-cluster.css?v=85a1bfb6" />
 
-<script is:inline set:html={`window.SITE_CONFIG = ${JSON.stringify(siteConfig)};`}></script>
+<script is:inline define:vars={{ siteConfig }}>
+  window.SITE_CONFIG = siteConfig;
+</script>
