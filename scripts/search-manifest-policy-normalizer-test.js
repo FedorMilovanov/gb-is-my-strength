@@ -116,6 +116,82 @@ assert.deepEqual(second.seeded, []);
 assert.deepEqual(second.promoted, []);
 assert.deepEqual(second.added, []);
 
+const existingPolicy = { ...policy, searchManifestPolicy: 'include' };
+const existingRegistry = { version: 1, routes: { [route]: existingPolicy } };
+const existingManifest = {
+  version: 1,
+  generatedAt: '2026-01-01T00:00:00Z',
+  items: [{
+    id: 'fixture',
+    type: 'article',
+    url: route,
+    title: 'Старый заголовок',
+    description: 'Старое описание',
+    section: 'Старый раздел',
+    editor: 'Старый редактор',
+    image: '/images/old.webp',
+    tags: ['старый-тег'],
+    publishedTime: '2025-01-01T00:00:00+03:00',
+    modifiedTime: '2025-01-02T00:00:00+03:00',
+    readTime: 99,
+    featured: true,
+    priority: 88,
+    scripture: 'Ин 3:16',
+    seriesId: 'manual-series',
+    seriesPosition: 7,
+    author: 'Редакционный автор',
+    wordCount: 4321,
+    customFuture: { keep: true },
+  }],
+};
+const existingResult = applyMigration({
+  policyRegistry: existingRegistry,
+  manifest: existingManifest,
+  seriesData: {},
+  productionRecords: records,
+  distRoot: root,
+  promoteRssArticles: false,
+});
+assert.deepEqual(existingResult.seeded, []);
+assert.deepEqual(existingResult.promoted, []);
+assert.deepEqual(existingResult.added, []);
+assert.equal(existingResult.reconciled.length, 1);
+assert.equal(existingResult.reconciled[0].route, route);
+assert.deepEqual(
+  existingResult.reconciled[0].fields.map((entry) => entry.field).sort(),
+  ['description', 'editor', 'image', 'modifiedTime', 'publishedTime', 'readTime', 'section', 'tags', 'title'].sort()
+);
+const reconciledItem = existingManifest.items[0];
+assert.equal(reconciledItem.title, 'Нативный заголовок');
+assert.equal(reconciledItem.description, 'Нативное описание');
+assert.equal(reconciledItem.section, 'Богословие');
+assert.equal(reconciledItem.editor, 'Фёдор Милованов');
+assert.equal(reconciledItem.image, '/images/fixture.webp');
+assert.deepEqual(reconciledItem.tags, ['сердце', 'богословие']);
+assert.equal(reconciledItem.publishedTime, '2026-07-20T00:00:00+03:00');
+assert.equal(reconciledItem.modifiedTime, '2026-07-21T00:00:00+03:00');
+assert.equal(reconciledItem.readTime, 17);
+assert.equal(reconciledItem.featured, true);
+assert.equal(reconciledItem.priority, 88);
+assert.equal(reconciledItem.scripture, 'Ин 3:16');
+assert.equal(reconciledItem.seriesId, 'manual-series');
+assert.equal(reconciledItem.seriesPosition, 7);
+assert.equal(reconciledItem.author, 'Редакционный автор');
+assert.equal(reconciledItem.wordCount, 4321);
+assert.deepEqual(reconciledItem.customFuture, { keep: true });
+assert.equal(refreshGeneratedAt(existingManifest), true);
+assert.equal(existingManifest.generatedAt, '2026-07-20T21:00:00Z');
+const existingSecond = applyMigration({
+  policyRegistry: existingRegistry,
+  manifest: existingManifest,
+  seriesData: {},
+  productionRecords: records,
+  distRoot: root,
+  promoteRssArticles: false,
+});
+assert.deepEqual(existingSecond.reconciled, []);
+assert.equal(refreshGeneratedAt(existingManifest), false);
+
 const seriesData = {
   'fixture-series': {
     baseUrl: '/hard-texts/',
