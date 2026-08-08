@@ -3,7 +3,7 @@
  * Guard /articles/ native Astro catalog contract.
  *
  * The exhaustive library is derived from existing publication authorities:
- * data/search-manifest.json owns reader-facing metadata and
+ * data/search-manifest.json owns reader-facing metadata (including covers) and
  * migration/page-ownership.json owns current production disposition. The old
  * hand-maintained ArticlesPublicationsSection must not return as a second
  * catalog authority.
@@ -14,6 +14,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const problems = [];
 function read(rel){ return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
+function readJson(rel){ return JSON.parse(read(rel)); }
 function exists(rel){ return fs.existsSync(path.join(ROOT, rel)); }
 function ok(msg){ console.log('✅ ' + msg); }
 function bad(msg){ problems.push(msg); console.log('❌ ' + msg); }
@@ -21,6 +22,17 @@ function must(haystack, needle, label){ haystack.includes(needle) ? ok(label || 
 function mustNot(haystack, needle, label){ !haystack.includes(needle) ? ok(`no ${label || needle}`) : bad(`forbidden present: ${label || needle}`); }
 function mustExist(rel, label){ exists(rel) ? ok(label || rel) : bad(`missing file: ${label || rel}`); }
 function mustNotExist(rel, label){ !exists(rel) ? ok(`absent: ${label || rel}`) : bad(`forbidden file/dir present: ${label || rel}`); }
+function publicRoute(url){
+  const route = String(url || '').split(/[?#]/, 1)[0] || '/';
+  return route === '/' ? '/' : `${route.replace(/^\/+|\/+$/g, '')}/`.replace(/^/, '/');
+}
+function repositoryMediaPath(image){
+  const value = String(image || '').split(/[?#]/, 1)[0];
+  if (!value.startsWith('/') || value.startsWith('//')) return null;
+  const rel = value.replace(/^\/+/, '');
+  if (!rel || rel.includes('..')) return null;
+  return rel;
+}
 
 const legacy = read('articles/index.html');
 const page = read('src/pages/articles/index.astro');
@@ -31,6 +43,8 @@ const library = read('src/components/articles/ArticlesLibrarySection.astro');
 const refutations = read('src/components/articles/ArticlesRefutationsSection.astro');
 const hero = read('src/components/articles/ArticlesHeroSection.astro');
 const endBlock = read('src/components/articles/ArticlesArticleEndBlock.astro');
+const searchManifest = readJson('data/search-manifest.json');
+const pageOwnership = readJson('migration/page-ownership.json');
 
 for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-list']) {
   must(legacy, marker, `legacy /articles/ marker: ${marker}`);
@@ -76,10 +90,15 @@ for (const [content, marker, label] of [
   [library, "../../../data/search-manifest.json", 'ArticlesLibrarySection uses canonical reader metadata'],
   [library, "../../../migration/page-ownership.json", 'ArticlesLibrarySection uses route publication authority'],
   [library, "item.type === 'article'", 'ArticlesLibrarySection derives article membership'],
+  [library, "item.type === 'series'", 'ArticlesLibrarySection derives series membership'],
   [library, "status === 'production-dist'", 'ArticlesLibrarySection filters current production routes'],
   [library, 'data-catalog-source="search-manifest+page-ownership"', 'ArticlesLibrarySection records projection authority'],
   [library, 'id="publikacii"', 'ArticlesLibrarySection preserves publications anchor'],
   [library, 'data-catalog-route={item.url}', 'ArticlesLibrarySection renders canonical article routes'],
+  [library, 'data-catalog-series={item.url}', 'ArticlesLibrarySection renders canonical series routes'],
+  [library, 'item.image &&', 'ArticlesLibrarySection projects manifest cover presence'],
+  [library, 'class="h-article-thumb"', 'ArticlesLibrarySection preserves premium thumbnail shell'],
+  [library, 'src={item.image}', 'ArticlesLibrarySection projects canonical cover path'],
   [library, 'h-article-list--grid', 'ArticlesLibrarySection preserves premium grid classes'],
   [refutations, 'id="razbor"', 'ArticlesRefutationsSection marker: refutations section'],
   [refutations, 'историческая подмена', 'ArticlesRefutationsSection marker: kod-da-vinchi copy'],
@@ -101,14 +120,42 @@ for (const content of [page, chrome, main, footer, library, refutations, hero, e
   }
 }
 
+const productionRoutes = pageOwnership.routes || {};
+const projected = (searchManifest.items || []).filter((item) => {
+  if (!['article', 'series'].includes(item.type)) return false;
+  return productionRoutes[publicRoute(item.url)]?.status === 'production-dist';
+});
+const projectedUrls = projected.map((item) => String(item.url || ''));
+if (new Set(projectedUrls).size === projectedUrls.length) ok(`derived catalog routes are unique: ${projectedUrls.length}`);
+else bad('derived catalog would render duplicate article/series URLs');
+
+for (const item of projected) {
+  const label = item.id || item.url || '<unknown>';
+  const rel = repositoryMediaPath(item.image);
+  if (!rel) {
+    bad(`${label}: published catalog item has no repository-local image authority`);
+    continue;
+  }
+  if (!exists(rel)) {
+    bad(`${label}: catalog image missing from repository: ${rel}`);
+    continue;
+  }
+  ok(`${label}: catalog image authority resolves: ${rel}`);
+}
+if (projected.length) ok(`derived catalog media coverage checked for ${projected.length} published article/series item(s)`);
+else bad('derived catalog projection has no published article/series items');
+
 const dist = exists('dist/articles/index.html') ? read('dist/articles/index.html') : '';
 if (dist) {
-  for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'gb-accuracy-block']) {
+  for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block']) {
     must(dist, marker, `dist /articles/ marker: ${marker}`);
   }
   mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
+  const renderedThumbs = (dist.match(/class=["'][^"']*\bh-article-thumb\b[^"']*["']/g) || []).length;
+  if (renderedThumbs >= projected.length) ok(`dist catalog thumbnails cover projected items: ${renderedThumbs}/${projected.length}`);
+  else bad(`dist catalog thumbnail count ${renderedThumbs} is below projected item count ${projected.length}`);
 }
 
 console.log('\nARTICLES VISUAL PARITY AUDIT');
 if (problems.length) { console.log(`❌ ${problems.length} problem(s).`); process.exit(1); }
-ok('/articles/ catalog is native Astro, authority-derived and visual-parity guarded');
+ok('/articles/ catalog is native Astro, authority-derived, media-complete and visual-parity guarded');
