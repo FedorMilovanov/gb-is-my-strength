@@ -63,6 +63,48 @@ function fixtureHtml() {
 </html>`;
 }
 
+function gillFixtureHtml() {
+  const cadenceGap = Array.from({ length: 21 }, (_, index) =>
+    fillerParagraph(`gill_${index}`)
+  ).join("");
+
+  return `<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Gill Part I glossary residual fixture</title>
+  <style>.gtip { display: none; }</style>
+</head>
+<body>
+  <article data-pagefind-body>
+    <p class="reveal" id="gill-horsley-first">
+      В 1719 году церковь в Хорслидаун пригласила Джона Гилла проповедовать.
+      <span id="gill-southwark-first">Саутварк</span> остаётся географическим контекстом, а не glossary-term.
+    </p>
+
+    ${cadenceGap}
+
+    <p class="reveal" id="gill-horsley-far">
+      Поздний контекст снова называет Хорслидаун в
+      <span id="gill-southwark-far">Саутварке</span>, а погребение в
+      <span id="gill-bunhill">Bunhill Fields</span> отмечает нонконформистскую принадлежность.
+    </p>
+  </article>
+
+  <script>
+    window.SiteUtils = {
+      initGlossaryTooltips(root) {
+        root.querySelectorAll('.gterm').forEach((term) => {
+          term.dataset.tooltipReady = '1';
+        });
+      }
+    };
+  </script>
+  <script src="/js/glossary.js"></script>
+</body>
+</html>`;
+}
+
 function contentType(filePath) {
   if (filePath.endsWith(".js")) return "text/javascript; charset=utf-8";
   if (filePath.endsWith(".json")) return "application/json; charset=utf-8";
@@ -80,6 +122,15 @@ function startServer() {
         "cache-control": "no-store"
       });
       response.end(fixtureHtml());
+      return;
+    }
+
+    if (url.pathname === "/gill-fixture/") {
+      response.writeHead(200, {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "no-store"
+      });
+      response.end(gillFixtureHtml());
       return;
     }
 
@@ -186,9 +237,72 @@ function startServer() {
       result.totalTerms,
       "all hydrated terms must enter the shared tooltip initializer"
     );
+
+    await page.goto(`${origin}/gill-fixture/`, { waitUntil: "networkidle" });
+    await page.waitForFunction(() => {
+      const first = document.querySelector("#gill-horsley-first .gterm");
+      const far = document.querySelector("#gill-horsley-far .gterm");
+      const bunhill = document.querySelector("#gill-bunhill .gterm");
+      return Boolean(
+        first && far && bunhill &&
+        first.dataset.tooltipReady === "1" &&
+        far.dataset.tooltipReady === "1" &&
+        bunhill.dataset.tooltipReady === "1"
+      );
+    });
+
+    const gill = await page.evaluate(() => {
+      const runtime = window.__gbGlossaryRuntime;
+      const label = (node) => Array.from(node.childNodes)
+        .filter((child) => child.nodeType === Node.TEXT_NODE)
+        .map((child) => child.textContent || "")
+        .join("")
+        .trim();
+      const terms = Array.from(document.querySelectorAll("article .gterm"));
+      const horsleydown = terms
+        .filter((node) => label(node) === "Хорслидаун")
+        .map((node) => node.dataset.term);
+      return {
+        horsleydown,
+        bunhill: document.querySelector("#gill-bunhill .gterm")?.dataset.term || null,
+        southwarkTerms:
+          document.querySelectorAll("#gill-southwark-first .gterm, #gill-southwark-far .gterm").length,
+        horsleydownEnglishAlias: runtime?.aliasAll?.horsleydown || null,
+        southwarkAlias: runtime?.aliasAll?.["саутварк"] || null,
+        readyCount: document.querySelectorAll(".gterm[data-tooltip-ready='1']").length,
+        totalTerms: document.querySelectorAll(".gterm").length
+      };
+    });
+
+    assert.deepEqual(
+      gill.horsleydown,
+      ["хорслидаун", "хорслидаун"],
+      "Gill Part I residual must hydrate two cadence-separated Horsleydown occurrences"
+    );
+    assert.equal(
+      gill.bunhill,
+      "банхилл-филдс",
+      "visible English Bunhill Fields must resolve to the canonical Cyrillic entry"
+    );
+    assert.equal(
+      gill.horsleydownEnglishAlias,
+      "хорслидаун",
+      "English Horsleydown alias must remain mapped to the canonical Gill entry"
+    );
+    assert.equal(
+      gill.southwarkTerms,
+      0,
+      "Gill repair must not over-broaden Southwark into a glossary trigger"
+    );
+    assert.equal(gill.southwarkAlias, null, "Southwark must remain outside the glossary alias map");
+    assert.equal(
+      gill.readyCount,
+      gill.totalTerms,
+      "all Gill residual terms must enter the shared tooltip initializer"
+    );
     assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join("; ")}`);
 
-    console.log("Universal glossary browser contract passed.");
+    console.log("Universal glossary browser contract passed, including Gill Part I residuals.");
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
