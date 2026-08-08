@@ -20,8 +20,8 @@ function normalizeRoute(route) {
   if (!value || value.includes('\0') || value.includes('\\') || value.includes('?') || value.includes('#')) {
     throw new Error(`invalid reference route: ${JSON.stringify(route)}`);
   }
-  if (/^[a-z][a-z0-9+.-]*:/i.test(value) || value.startsWith('//')) {
-    throw new Error(`reference route must be repository-local: ${value}`);
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value) || value.startsWith('//') || /\/{2,}/.test(value)) {
+    throw new Error(`reference route must be an unambiguous repository-local path: ${value}`);
   }
   const segments = value.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
   if (segments.some((segment) => segment === '.' || segment === '..')) {
