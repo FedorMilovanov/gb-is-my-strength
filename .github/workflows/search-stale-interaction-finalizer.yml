@@ -35,32 +35,47 @@ jobs:
           node-version: '22.23.1'
 
       - name: Apply bounded stale interaction repair
-        run: |
-          node scripts/search-stale-interaction-finalizer.mjs --write
-          node scripts/cache-bust.js
+        run: node scripts/search-stale-interaction-finalizer.mjs --write
+
+      - name: Project current Search asset revision
+        run: node scripts/cache-bust.js --write
 
       - name: Validate patched Search tree
         run: |
+          set -euo pipefail
           node --check js/search.js
           node --check scripts/search-modal-browser-contract.mjs
+          node scripts/cache-bust.js
           node scripts/app-search-surface-source-contract.mjs
           node scripts/check-workflows.js
           git diff --check
 
+      - name: Enforce bounded transaction scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$(git diff --name-only -- js/search.js)" || { echo 'search.js did not change' >&2; exit 1; }
+          test -n "$(git diff --name-only -- scripts/search-modal-browser-contract.mjs)" || { echo 'browser contract did not change' >&2; exit 1; }
+          while IFS= read -r path; do
+            [ -z "$path" ] && continue
+            case "$path" in
+              js/search.js|scripts/search-modal-browser-contract.mjs|scripts/search-stale-interaction-finalizer.mjs|.github/workflows/search-stale-interaction-finalizer.yml|404.html|src/lib/asset-version.js|src/components/*.astro)
+                ;;
+              *)
+                echo "unexpected stale-interaction transaction path: $path" >&2
+                exit 1
+                ;;
+            esac
+          done < <(git diff --name-only | sort)
+
       - name: Self-clean transport and publish exact branch
         run: |
+          set -euo pipefail
           rm -f scripts/search-stale-interaction-finalizer.mjs .github/workflows/search-stale-interaction-finalizer.yml
           git diff --check
-          test -n "$(git diff --name-only -- js/search.js)" || { echo 'search.js did not change'; exit 1; }
-          test -n "$(git diff --name-only -- scripts/search-modal-browser-contract.mjs)" || { echo 'browser contract did not change'; exit 1; }
-          while IFS= read -r path; do
-            case "$path" in
-              js/search.js|scripts/search-modal-browser-contract.mjs|scripts/search-stale-interaction-finalizer.mjs|.github/workflows/search-stale-interaction-finalizer.yml|404.html|src/lib/asset-version.js|src/*.astro) ;;
-              *) echo "unexpected transaction path: $path"; exit 1 ;;
-            esac
-          done < <(git diff --name-only)
-          git add -u
-          git diff --cached --check
+          git add -A
+          test -n "$(git diff --cached --name-only -- js/search.js)"
+          test -n "$(git diff --cached --name-only -- scripts/search-modal-browser-contract.mjs)"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'fix(search): invalidate stale interactive results'
