@@ -30,8 +30,8 @@ const html = `<!doctype html><html><head>
 <title>Fallback | Господь Бог — Сила Моя</title>
 <meta property="og:title" content="Нативный заголовок">
 <meta name="description" content="Нативное описание">
-<meta name="author" content="Фёдор Милованов">
-<meta property="article:section" content="Богословие">
+<meta name="author" content="Автор, не редактор">
+<meta property="article:section" content="Тематический раздел">
 <meta property="article:published_time" content="2026-07-20T00:00:00+03:00">
 <meta property="article:modified_time" content="2026-07-21T00:00:00+03:00">
 <meta property="article:tag" content="сердце">
@@ -67,9 +67,11 @@ assert.equal(item.id, 'fixture');
 assert.equal(item.type, 'article');
 assert.equal(item.title, 'Нативный заголовок');
 assert.equal(item.description, 'Нативное описание');
+assert.equal(item.section, 'Богословие');
 assert.equal(item.image, '/images/fixture.webp');
 assert.deepEqual(item.tags, ['сердце', 'богословие']);
 assert.equal(item.readTime, 17);
+assert.equal(buildManifestItem(route, policy, html, 23).readTime, 23);
 assert.equal(buildManifestItem(route, policy, htmlWithoutRuntimeReadTime, 23).readTime, 23);
 
 const registry = { version: 1, routes: { [route]: { ...policy } } };
@@ -129,7 +131,7 @@ const existingManifest = {
     description: 'Старое описание',
     section: 'Старый раздел',
     editor: 'Старый редактор',
-    tags: ['старый-тег'],
+    tags: ['редакционный-тег'],
     publishedTime: '2025-01-01T00:00:00+03:00',
     modifiedTime: '2025-01-02T00:00:00+03:00',
     readTime: 99,
@@ -158,23 +160,23 @@ assert.equal(existingResult.reconciled.length, 1);
 assert.equal(existingResult.reconciled[0].route, route);
 assert.deepEqual(
   existingResult.reconciled[0].fields.map((entry) => entry.field).sort(),
-  ['description', 'editor', 'image', 'modifiedTime', 'publishedTime', 'readTime', 'section', 'tags', 'title'].sort()
+  ['description', 'image', 'readTime', 'section', 'title'].sort()
 );
 const existingKinds = Object.fromEntries(existingResult.reconciled[0].fields.map((entry) => [entry.field, entry.kind]));
 assert.equal(existingKinds.image, 'missing');
-for (const field of ['description', 'editor', 'modifiedTime', 'publishedTime', 'readTime', 'section', 'tags', 'title']) {
+for (const field of ['description', 'readTime', 'section', 'title']) {
   assert.equal(existingKinds[field], 'mismatch');
 }
 const reconciledItem = existingManifest.items[0];
 assert.equal(reconciledItem.title, 'Нативный заголовок');
 assert.equal(reconciledItem.description, 'Нативное описание');
 assert.equal(reconciledItem.section, 'Богословие');
-assert.equal(reconciledItem.editor, 'Фёдор Милованов');
 assert.equal(reconciledItem.image, '/images/fixture.webp');
-assert.deepEqual(reconciledItem.tags, ['сердце', 'богословие']);
-assert.equal(reconciledItem.publishedTime, '2026-07-20T00:00:00+03:00');
-assert.equal(reconciledItem.modifiedTime, '2026-07-21T00:00:00+03:00');
 assert.equal(reconciledItem.readTime, 17);
+assert.equal(reconciledItem.editor, 'Старый редактор');
+assert.deepEqual(reconciledItem.tags, ['редакционный-тег']);
+assert.equal(reconciledItem.publishedTime, '2025-01-01T00:00:00+03:00');
+assert.equal(reconciledItem.modifiedTime, '2025-01-02T00:00:00+03:00');
 assert.equal(reconciledItem.featured, true);
 assert.equal(reconciledItem.priority, 88);
 assert.equal(reconciledItem.scripture, 'Ин 3:16');
@@ -183,8 +185,8 @@ assert.equal(reconciledItem.seriesPosition, 7);
 assert.equal(reconciledItem.author, 'Редакционный автор');
 assert.equal(reconciledItem.wordCount, 4321);
 assert.deepEqual(reconciledItem.customFuture, { keep: true });
-assert.equal(refreshGeneratedAt(existingManifest), true);
-assert.equal(existingManifest.generatedAt, '2026-07-20T21:00:00Z');
+assert.equal(refreshGeneratedAt(existingManifest), false);
+assert.equal(existingManifest.generatedAt, '2026-01-01T00:00:00Z');
 const existingSecond = applyMigration({
   policyRegistry: existingRegistry,
   manifest: existingManifest,
@@ -209,7 +211,8 @@ const landingHtml = `<!doctype html><html><head>
 <title>Главная | Господь Бог — Сила Моя</title>
 <meta property="og:title" content="Новая главная">
 <meta name="description" content="Новое публичное описание">
-<meta name="author" content="Фёдор Милованов">
+<meta name="author" content="Автор страницы">
+<meta property="article:section" content="SEO-раздел">
 <meta property="og:image" content="https://gospod-bog.ru/images/new-home.webp">
 </head><body></body></html>`;
 fs.writeFileSync(path.join(root, 'index.html'), landingHtml);
@@ -222,7 +225,7 @@ const landingManifest = {
     title: 'Старая главная',
     description: 'Старое публичное описание',
     section: 'Старый раздел',
-    editor: 'Старый редактор',
+    editor: 'Ручной редактор',
     image: '/images/old-home.webp',
     tags: ['manual-landing-tag'],
     publishedTime: '2026-06-18T00:00:00+03:00',
@@ -241,14 +244,14 @@ const landingResult = applyMigration({
 });
 assert.deepEqual(
   landingResult.reconciled[0].fields.map((entry) => entry.field).sort(),
-  ['description', 'editor', 'image', 'section', 'title'].sort()
+  ['description', 'image', 'section', 'title'].sort()
 );
 const landingItem = landingManifest.items[0];
 assert.equal(landingItem.title, 'Новая главная');
 assert.equal(landingItem.description, 'Новое публичное описание');
 assert.equal(landingItem.section, 'Главная');
-assert.equal(landingItem.editor, 'Фёдор Милованов');
 assert.equal(landingItem.image, '/images/new-home.webp');
+assert.equal(landingItem.editor, 'Ручной редактор');
 assert.deepEqual(landingItem.tags, ['manual-landing-tag']);
 assert.equal(landingItem.publishedTime, '2026-06-18T00:00:00+03:00');
 assert.equal(landingItem.modifiedTime, '2026-06-18T21:00:00+03:00');
@@ -284,7 +287,7 @@ const seriesRecords = [
 ];
 const seriesHtmlFile = path.join(root, 'hard-texts/fixture-part/index.html');
 fs.mkdirSync(path.dirname(seriesHtmlFile), { recursive: true });
-fs.writeFileSync(seriesHtmlFile, htmlWithoutRuntimeReadTime);
+fs.writeFileSync(seriesHtmlFile, html);
 const seriesResult = applyMigration({
   policyRegistry: seriesRegistry,
   manifest: seriesManifest,
