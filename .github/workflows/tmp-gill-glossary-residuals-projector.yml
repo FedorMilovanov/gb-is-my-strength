@@ -30,8 +30,8 @@ jobs:
       - name: Require expected lane ancestry and temporary-only prestate
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor 7dd0c2fda74cd52afebf0ca3e20c710f936a961f HEAD
-          test "$(git diff --name-only 7dd0c2fda74cd52afebf0ca3e20c710f936a961f...HEAD)" = ".github/workflows/tmp-gill-glossary-residuals-projector.yml"
+          git merge-base --is-ancestor 0138ab79804458bc65827679adc0faf8a4e50898 HEAD
+          test "$(git diff --name-only 0138ab79804458bc65827679adc0faf8a4e50898...HEAD)" = ".github/workflows/tmp-gill-glossary-residuals-projector.yml"
 
       - name: Apply bounded glossary data and runtime regression
         run: |
