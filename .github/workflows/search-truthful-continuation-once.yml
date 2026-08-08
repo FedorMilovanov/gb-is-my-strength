@@ -1,0 +1,75 @@
+name: Search truthful continuation transaction once
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - 'scripts/search-truthful-continuation-applicator.mjs'
+      - '.github/workflows/search-truthful-continuation-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-self-clean:
+    if: github.event.pull_request.head.ref == 'fix/search-truthful-continuation-20260808-tx'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact transaction branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: fix/search-truthful-continuation-20260808-tx
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Prove exact transaction base
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git fetch origin main
+          test "$(git merge-base HEAD origin/main)" = "$EXPECTED_BASE"
+
+      - name: Check applicator syntax before mutation
+        run: node --check scripts/search-truthful-continuation-applicator.mjs
+
+      - name: Apply exact-count Search continuation repair
+        run: node scripts/search-truthful-continuation-applicator.mjs --write
+
+      - name: Validate mutated source and contract syntax
+        run: |
+          node --check js/search.js
+          node --check scripts/search-modal-browser-contract.mjs
+
+      - name: Project canonical asset revisions
+        run: node scripts/cache-bust.js --write
+
+      - name: Validate final Search and cache contracts read-only
+        run: |
+          node scripts/search-truthful-continuation-applicator.mjs
+          node scripts/cache-bust.js
+          git diff --check
+
+      - name: Self-clean transaction transport and push final tree
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          rm .github/workflows/search-truthful-continuation-once.yml
+          rm scripts/search-truthful-continuation-applicator.mjs
+          git add -A
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(search): make result continuation truthful"
+          git push origin "HEAD:${HEAD_REF}"
