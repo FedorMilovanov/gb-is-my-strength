@@ -74,7 +74,7 @@ assert.equal(item.readTime, 17);
 assert.equal(buildManifestItem(route, policy, html, 23).readTime, 17);
 assert.equal(buildManifestItem(route, policy, htmlWithoutRuntimeReadTime, 23).readTime, 23);
 
-const registry = { version: 1, routes: { [route]: { ...policy } };
+const registry = { version: 1, routes: { [route]: { ...policy } } };
 const manifest = { version: 1, items: [] };
 const records = [{ route, owner: { status: 'production-dist' } }];
 assert.equal(migrationCandidates({
