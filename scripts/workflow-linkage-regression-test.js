@@ -8,6 +8,7 @@ const assert = require('assert/strict');
 const ROOT = path.resolve(__dirname, '..');
 const DIAGNOSTICS_PATH = '.github/workflows/indexnow.yml';
 const RELEASE_PATH = '.github/workflows/deploy.yml';
+const CANDIDATE_PATH = '.github/workflows/deploy-candidate-contract.yml';
 const VISUAL_PATH = '.github/workflows/visual-parity.yml';
 const REFUTATIONS_BROWSER_PATH = 'scripts/visual-parity-home-refutations-box-model-browser-test.js';
 const REFUTATIONS_BROWSER_COMMAND = `node ${REFUTATIONS_BROWSER_PATH}`;
@@ -50,6 +51,7 @@ function jobSection(workflow, name, nextName = null) {
 
 const diagnostics = read(DIAGNOSTICS_PATH);
 const release = read(RELEASE_PATH);
+const candidate = read(CANDIDATE_PATH);
 const visual = read(VISUAL_PATH);
 const refutationsBrowser = read(REFUTATIONS_BROWSER_PATH);
 const readiness = jobSection(release, 'readiness', 'deploy');
@@ -92,6 +94,18 @@ assert.doesNotMatch(release, /uses:\s*actions\/(?:checkout|download-artifact|upl
 assert.doesNotMatch(diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/, `${DIAGNOSTICS_PATH}: diagnostics must not duplicate the release build`);
 assert.doesNotMatch(diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, `${DIAGNOSTICS_PATH}: diagnostic workflow must not own production publication`);
 
+const candidateBuild = candidate.indexOf('npm run strangler:build:production-like');
+const candidateFreeze = candidate.indexOf('node scripts/editorial-metadata-freeze-audit.js');
+assert.notEqual(candidateBuild, -1, `${CANDIDATE_PATH}: production-like build is missing`);
+assert.notEqual(candidateFreeze, -1, `${CANDIDATE_PATH}: editorial metadata freeze audit is missing`);
+assert.ok(candidateFreeze > candidateBuild, `${CANDIDATE_PATH}: editorial freeze must validate the already-built production candidate`);
+assert.equal((candidate.match(/npm run strangler:build:production-like/g) || []).length, 1, `${CANDIDATE_PATH}: exactly one production-like build is allowed`);
+assert.equal((candidate.match(/node scripts\/editorial-metadata-freeze-audit\.js/g) || []).length, 1, `${CANDIDATE_PATH}: exactly one editorial freeze audit is required`);
+assert.match(candidate, /permissions:\s*\n\s*contents:\s*read/, `${CANDIDATE_PATH}: workflow must remain read-only`);
+assert.doesNotMatch(candidate, /contents:\s*write|editorial-metadata-registry\.js\s+--write/, `${CANDIDATE_PATH}: candidate must not gain editorial write authority`);
+assert.match(candidate, /editorial-metadata-freeze-audit\.js[\s\S]{0,180}reports\/editorial-metadata-freeze\.log/, `${CANDIDATE_PATH}: freeze audit evidence must be captured`);
+assert.match(candidate, /path:\s*\|[\s\S]*reports\/editorial-metadata-freeze\.log/, `${CANDIDATE_PATH}: freeze evidence must be uploaded with candidate diagnostics`);
+
 assert.ok(visual.includes(REFUTATIONS_BROWSER_COMMAND), `${VISUAL_PATH}: Refutations computed-geometry gate is missing`);
 assert.match(visual, /pull_request:[\s\S]*- "src\/\*\*"[\s\S]*push:[\s\S]*- "src\/\*\*"/, `${VISUAL_PATH}: Refutations source-owner changes do not trigger both PR and main checks`);
 assert.match(visual, /pull_request:[\s\S]*scripts\/visual-parity-\*\.js[\s\S]*push:[\s\S]*scripts\/visual-parity-\*\.js/, `${VISUAL_PATH}: browser-contract source changes do not trigger both PR and main checks`);
@@ -107,5 +121,6 @@ console.log('✅ workflow linkage: one direct-push control plane owns readiness 
 console.log('✅ two-SHA boundary: release candidate identity is independent from trusted workflow identity');
 console.log('✅ build-once: one checkout, one npm ci, one production build, one deploy-pages');
 console.log('✅ privileged deploy: exact approved action identities, no source checkout/rebuild');
+console.log('✅ PR candidate reuses one production build for read-only editorial date freeze');
 console.log('✅ Refutations geometry: canonical source owner feeds one Visual Parity + immutable-readiness computed-style gate');
 console.log('✅ metadata workflow remains read-only and build-free');
