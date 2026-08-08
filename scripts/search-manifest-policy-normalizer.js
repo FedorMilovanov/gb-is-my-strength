@@ -18,6 +18,13 @@ const DERIVED_MANIFEST_FIELDS = Object.freeze([
   'modifiedTime',
   'readTime',
 ]);
+const EXISTING_RECONCILABLE_FIELDS = Object.freeze([
+  'title',
+  'description',
+  'section',
+  'image',
+  'readTime',
+]);
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = { dist: 'dist', write: false, promoteRssArticles: false };
@@ -221,7 +228,7 @@ function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
   const description = firstMeta(html, 'name', 'description')
     || firstMeta(html, 'property', 'og:description');
   const editor = firstMeta(html, 'name', 'author') || 'Фёдор Милованов';
-  const section = firstMeta(html, 'property', 'article:section') || policy.librarySection;
+  const section = policy.librarySection || firstMeta(html, 'property', 'article:section');
   const rawImage = firstMeta(html, 'property', 'og:image');
   const image = normalizeImage(rawImage);
   const tags = [...new Set(metaValues(html, 'property', 'article:tag'))];
@@ -229,7 +236,10 @@ function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
   const explicitModifiedTime = firstMeta(html, 'property', 'article:modified_time');
   const modifiedTime = explicitModifiedTime || publishedTime;
   const htmlReadTime = readingTime(html);
-  const readTime = Number.isInteger(htmlReadTime) ? htmlReadTime : fallbackReadTime;
+  const canonicalSeriesReadTime = Number.isInteger(fallbackReadTime) && fallbackReadTime > 0
+    ? fallbackReadTime
+    : null;
+  const readTime = canonicalSeriesReadTime || htmlReadTime;
 
   const missingCore = [];
   if (!title) missingCore.push('title');
@@ -250,11 +260,8 @@ function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
     modifiedTime,
     readTime,
   };
-  const ownedFields = new Set(['title', 'description', 'section', 'editor']);
+  const ownedFields = new Set(['title', 'description', 'section']);
   if (rawImage) ownedFields.add('image');
-  if (tags.length) ownedFields.add('tags');
-  if (publishedTime) ownedFields.add('publishedTime');
-  if (modifiedTime) ownedFields.add('modifiedTime');
   if (Number.isInteger(readTime) && readTime > 0) ownedFields.add('readTime');
 
   return { values, ownedFields };
@@ -359,7 +366,7 @@ function reconcileExistingManifestRows({
       canonicalReadTimes.get(route) || null
     );
     const fields = [];
-    for (const field of DERIVED_MANIFEST_FIELDS) {
+    for (const field of EXISTING_RECONCILABLE_FIELDS) {
       if (!ownedFields.has(field) || manifestValuesEqual(existing[field], canonical[field])) continue;
       const hasCurrent = Object.prototype.hasOwnProperty.call(existing, field);
       fields.push({
@@ -491,6 +498,7 @@ if (require.main === module) {
 module.exports = {
   SEARCHABLE_ARTICLE_KINDS,
   DERIVED_MANIFEST_FIELDS,
+  EXISTING_RECONCILABLE_FIELDS,
   parseArgs,
   manifestMaxModifiedAt,
   refreshGeneratedAt,
