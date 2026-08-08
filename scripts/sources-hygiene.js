@@ -23,13 +23,32 @@ const LIST = process.argv.includes('--list');
 const FORBIDDEN = [
   [/raw-sources\//, 'internal OCR path (raw-sources/…)'],
   [/research-досье/, 'backstage phrase «research-досье»'],
-  [/сохранён[а-я]*\s+локально/i, 'backstage note «сохранён локально»'],
+  [/сохран[её]н[а-я]*\s+локально/i, 'backstage note «сохранён/сохранены локально»'],
+  [/\bв\s+research\b/i, 'internal research workspace reference'],
+  [/следующий\s+шаг\s+уже\s+начат/i, 'working note «следующий шаг уже начат»'],
   [/URL\s+зафиксирован/i, 'backstage note «URL зафиксирован…»'],
   [/что\s+нужно\s+исправить\s+в\s+3D/i, 'working note «что нужно исправить в 3D…»'],
   [/Исследовательское\s+досье\s+статьи/i, 'backstage note «Исследовательское досье статьи»'],
   [/\/(baptisty-rossii|articles|hard-texts|nagornaya)\/research\//, 'internal research dir path'],
   [/<code>[^<]*\.(md|txt|csv)<\/code>/i, 'internal source file shown in <code> (.md/.txt/.csv)'],
 ];
+
+// Regression fixtures for exact leak classes that previously reached public prose.
+// They make the scanner fail closed if a later regex refactor silently loses ё/е or
+// workspace-note coverage while the repository happens not to contain an example.
+const FORBIDDEN_FIXTURES = [
+  'Для сверки сохранены локально первые контрольные выпуски.',
+  'Для сверки сохранён локально контрольный выпуск.',
+  'После находки PDF-корпуса следующий шаг уже начат: в research заведён каталог.',
+];
+
+for (const fixture of FORBIDDEN_FIXTURES) {
+  const caught = FORBIDDEN.some(([re]) => new RegExp(re.source, re.flags.replace('g', '')).test(fixture));
+  if (!caught) {
+    console.error(`❌ sources:hygiene regression fixture is no longer caught: ${fixture}`);
+    process.exit(1);
+  }
+}
 
 // Directories whose article bodies are reader-facing production content.
 const SCAN_DIRS = [
