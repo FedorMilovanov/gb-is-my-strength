@@ -2,12 +2,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { createRequire } from 'node:module';
 import { chromium, webkit } from 'playwright';
+
+const require = createRequire(import.meta.url);
+const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry.js');
 
 const ROOT = process.cwd();
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const BASE = String(process.env.AUDIT_BASE || 'http://127.0.0.1:8080').replace(/\/$/, '');
 const OUT = path.join(ROOT, 'reports', 'interactive-audit', 'article-control-census');
+const EXPECTED_READING_ROUTES = 55;
 const VIEWS = [
   ['390', 390, 844, true], ['412', 412, 915, true],
   ['1024', 1024, 900, false], ['1366', 1366, 900, false],
@@ -22,27 +27,33 @@ const family = (r) => r.includes('hermenevticheskaya-otsenka') ? 'hermenevtika'
   : r.startsWith('/nagornaya/chast-') ? 'nagornaya'
   : r.startsWith('/articles/') ? 'articles' : 'other';
 
-function walk(dir, out = []) {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const f = path.join(dir, e.name);
-    if (e.isDirectory()) walk(f, out);
-    else if (e.isFile() && e.name === 'index.html') out.push(f);
-  }
-  return out;
+function distFileForRoute(route) {
+  return path.join(DIST, route.replace(/^\/+|\/+$/g, ''), 'index.html');
 }
 
 function discoverRoutes() {
-  const excluded = new Set(['/articles/','/baptisty-rossii/','/hard-texts/','/hard-texts/genesis-6/','/nagornaya/','/nagornaya/istochniki/','/nagornaya/nakhodki/','/nagornaya/seriya/']);
-  const prefixes = ['/articles/','/baptisty-rossii/','/hard-texts/','/nagornaya/'];
-  const routes = [];
-  for (const f of walk(DIST)) {
-    const rel = path.relative(DIST, f).split(path.sep).join('/');
-    const route = rel === 'index.html' ? '/' : `/${rel.replace(/index\.html$/, '')}`;
-    if (excluded.has(route) || !prefixes.some((p) => route.startsWith(p))) continue;
-    const html = fs.readFileSync(f, 'utf8');
-    if (html.includes('data-pagefind-body') && /<article\b|article-body/.test(html)) routes.push(route);
+  const registry = buildPublicSurfaceRegistry();
+  if (registry.errors.length) {
+    throw new Error(`Public surface registry is invalid:\n${registry.errors.join('\n')}`);
   }
-  return [...new Set(routes)].sort();
+  const entries = registry.entries
+    .filter((entry) => entry.routeRole === 'reading')
+    .sort((a, b) => a.route.localeCompare(b.route));
+  const routes = entries.map((entry) => entry.route);
+  const missingDist = routes.filter((route) => !fs.existsSync(distFileForRoute(route)));
+  if (missingDist.length) {
+    throw new Error(`Reading routes missing from production-like dist: ${missingDist.join(', ')}`);
+  }
+  if (routes.length !== EXPECTED_READING_ROUTES) {
+    throw new Error(`Reading route authority count ${routes.length} != ${EXPECTED_READING_ROUTES}: ${routes.join(', ')}`);
+  }
+  const familyCounts = routes.reduce((acc, route) => {
+    const key = family(route);
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  console.log(`ARTICLE CONTROL ROUTE AUTHORITY routes=${routes.length} families=${JSON.stringify(familyCounts)}`);
+  return routes;
 }
 
 async function makeContext(browser, width, height, mobile) {
@@ -75,7 +86,8 @@ async function snapshot(page) {
       return { id:e.id||'', name:name(e).slice(0,160), text:(e.textContent||'').replace(/\s+/g,' ').trim().slice(0,100), cls:String(e.className||'').slice(0,140), fc:e.getAttribute('data-fc-action')||'', action:e.getAttribute('data-action')||'', ariaControls:e.getAttribute('aria-controls')||'', ordinal, w:+r.width.toFixed(1), h:+r.height.toFixed(1), inView, clipped:inView&&(r.left<-1||r.top<-1||r.right>innerWidth+1||r.bottom>innerHeight+1), owns:!inView||!!(hit&&(hit===e||e.contains(hit))), inline };
     });
     const ids=[...document.querySelectorAll('[id]')].map(e=>e.id).filter(Boolean);
-    return { overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth, controls, dupIds:[...new Set(ids.filter((id,i)=>ids.indexOf(id)!==i))] };
+    const invalidListChildren=[...document.querySelectorAll('ul > :not(li):not(script):not(template),ol > :not(li):not(script):not(template)')].filter(rendered).map((e)=>({tag:e.tagName,id:e.id||'',cls:String(e.className||'').slice(0,120)}));
+    return { overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth, controls, dupIds:[...new Set(ids.filter((id,i)=>ids.indexOf(id)!==i))], invalidListChildren };
   });
 }
 
@@ -127,6 +139,7 @@ async function scene(browser, browserName, route, view, doClicks) {
     const snap=await snapshot(page);
     if(snap.overflow>1) issues.push(['page-horizontal-overflow',snap.overflow]);
     if(snap.dupIds.length) issues.push(['duplicate-dom-ids',snap.dupIds.slice(0,20)]);
+    if(snap.invalidListChildren.length) issues.push(['invalid-list-direct-child',snap.invalidListChildren.slice(0,20)]);
     for(const c of snap.controls){
       if(!c.name&&!c.inline) issues.push(['control-no-accessible-name',c]);
       if(!c.inline&&(c.w<24||c.h<24)) issues.push(['small-control-target',c]);
@@ -152,13 +165,13 @@ async function scene(browser, browserName, route, view, doClicks) {
 
 async function main(){
   fs.rmSync(OUT,{recursive:true,force:true}); fs.mkdirSync(OUT,{recursive:true});
-  const routes=discoverRoutes(); if(routes.length<55) throw new Error(`Reading route census ${routes.length}<55: ${routes.join(', ')}`);
+  const routes=discoverRoutes();
   const scenes=[]; const cb=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
   try{for(const r of routes)for(const v of VIEWS)scenes.push(await scene(cb,'chromium',r,v,CLICK_VIEWS.has(v[0])))}finally{await cb.close()}
   const reps=[]; for(const f of ['hermenevtika','gill','baptisty','hard-texts','nagornaya','articles']){const r=routes.find(x=>family(x)===f);if(r)reps.push(r)}
   const wb=await webkit.launch({headless:true}); try{for(const r of reps)for(const v of VIEWS.filter(x=>CLICK_VIEWS.has(x[0])))scenes.push(await scene(wb,'webkit',r,v,true))}finally{await wb.close()}
   const issues=scenes.flatMap(s=>s.issues.map(([kind,detail])=>({route:s.route,family:s.family,browser:s.browser,view:s.view,kind,detail})));
-  const summary={schemaVersion:1,sourceSha:process.env.SOURCE_SHA||'',generatedAt:new Date().toISOString(),routeCount:routes.length,sceneCount:scenes.length,controlObservations:scenes.reduce((n,s)=>n+s.controls,0),uniqueControlClicks:scenes.reduce((n,s)=>n+s.clicks.length,0),webkitRepresentatives:reps,issueCount:issues.length,issues};
+  const summary={schemaVersion:2,sourceSha:process.env.SOURCE_SHA||'',generatedAt:new Date().toISOString(),routeCount:routes.length,sceneCount:scenes.length,controlObservations:scenes.reduce((n,s)=>n+s.controls,0),uniqueControlClicks:scenes.reduce((n,s)=>n+s.clicks.length,0),webkitRepresentatives:reps,issueCount:issues.length,issues};
   fs.writeFileSync(path.join(OUT,'summary.json'),JSON.stringify(summary,null,2)+'\n'); fs.writeFileSync(path.join(OUT,'scenes.json'),JSON.stringify(scenes,null,2)+'\n');
   console.log(`ARTICLE CONTROL CENSUS routes=${summary.routeCount} scenes=${summary.sceneCount} controls=${summary.controlObservations} clicks=${summary.uniqueControlClicks}`);
   if(issues.length){console.log(`❌ ${issues.length} issue(s)`);for(const i of issues.slice(0,150))console.log(`- ${i.kind} ${i.browser}/${i.view} ${i.route}: ${JSON.stringify(i.detail)}`);process.exitCode=1}else console.log('✅ Article control census passed');
