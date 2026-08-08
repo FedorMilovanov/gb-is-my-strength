@@ -72,3 +72,5 @@ html.dark body.nagornaya-page .btoc-link-num { color: #f59e0b; }
   outline-offset:2px;
   box-shadow:0 0 0 4px var(--cp-accent-soft);
 }
+
+.cp-more-wrap{flex:0 0 auto;padding:7px 14px 10px;border-top:1px solid var(--cp-border-soft);background:color-mix(in srgb,var(--cp-bg-surface) 38%,var(--cp-bg-card))}.cp-more-wrap:empty{display:none}.cp-more{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;border:1px solid color-mix(in srgb,var(--cp-accent) 22%,var(--cp-border));border-radius:10px;background:var(--cp-bg-card);color:var(--cp-accent);font-family:var(--cp-font-ui);font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:background .18s var(--cp-ease),border-color .18s var(--cp-ease),transform .18s var(--cp-ease),box-shadow .18s var(--cp-ease);touch-action:manipulation}.cp-more:hover{background:var(--cp-accent-soft);border-color:color-mix(in srgb,var(--cp-accent) 42%,var(--cp-border))}.cp-more:active{transform:scale(.985)}.cp-more:focus-visible{outline:0;box-shadow:0 0 0 3px var(--cp-accent-soft);border-color:var(--cp-accent)}
