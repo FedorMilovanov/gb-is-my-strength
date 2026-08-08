@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto';
 import fs from 'node:fs';
+import path from 'node:path';
 
 const WRITE = process.argv.includes('--write');
 if (!WRITE) {
@@ -17,6 +19,17 @@ function replaceExactly(source, before, after, label) {
     throw new Error(`${label}: replacement already present before transaction`);
   }
   return source.slice(0, first) + after + source.slice(first + before.length);
+}
+
+function walkAstro(dir) {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const target = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkAstro(target));
+    else if (entry.isFile() && entry.name.endsWith('.astro')) out.push(target.replace(/\\/g, '/'));
+  }
+  return out;
 }
 
 const searchPath = 'js/search.js';
@@ -48,6 +61,33 @@ search = replaceExactly(
 );
 
 fs.writeFileSync(searchPath, search);
+
+const searchRevision = crypto.createHash('md5').update(fs.readFileSync(searchPath)).digest('hex').slice(0, 8);
+const projectionTargets = [
+  '404.html',
+  'src/lib/asset-version.js',
+  ...walkAstro('src/components'),
+];
+const projected = [];
+for (const target of projectionTargets) {
+  if (!fs.existsSync(target)) continue;
+  const before = fs.readFileSync(target, 'utf8');
+  let after = before;
+  if (target === 'src/lib/asset-version.js') {
+    const re = /('js\/search\.js'\s*:\s*')[0-9a-f]{8}(')/g;
+    const matches = before.match(re) || [];
+    if (matches.length !== 1) throw new Error(`asset-version Search revision: expected 1 match, got ${matches.length}`);
+    after = before.replace(re, `$1${searchRevision}$2`);
+  } else {
+    after = before.replace(/((?:\.\.\/)*|\/?)js\/search\.js\?v=[0-9a-f]{8}/g, `$1js/search.js?v=${searchRevision}`);
+  }
+  if (after !== before) {
+    fs.writeFileSync(target, after);
+    projected.push(target);
+  }
+}
+if (!projected.includes('src/lib/asset-version.js')) throw new Error('Search asset-version projection did not change');
+if (projected.length < 2) throw new Error(`Search revision projection unexpectedly narrow: ${projected.join(', ')}`);
 
 const browserPath = 'scripts/search-modal-browser-contract.mjs';
 let browser = fs.readFileSync(browserPath, 'utf8');
@@ -102,5 +142,4 @@ browser = replaceExactly(
 );
 
 fs.writeFileSync(browserPath, browser);
-
-console.log('SEARCH STALE INTERACTION FINALIZER: structural patch applied');
+console.log(`SEARCH STALE INTERACTION FINALIZER: patch applied; search revision ${searchRevision}; projected ${projected.length} consumer(s)`);
