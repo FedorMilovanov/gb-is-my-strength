@@ -246,13 +246,22 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await waitForMenuState(page, true);
     await page.keyboard.press('Control+K');
     await waitForMenuState(page, false);
-    await assertScrollUnlocked(page, 'canonical Search shortcut from mobile menu');
     const searchInput = page.locator('.cp-input');
     await searchInput.waitFor({ state: 'visible' });
     await page.waitForFunction(() => {
       const input = document.querySelector('.cp-input');
       return input !== null && input === document.activeElement;
     });
+    const searchLockState = await page.evaluate(() => ({
+      bodyPosition: getComputedStyle(document.body).position,
+      bodyOverflow: getComputedStyle(document.body).overflow,
+      lockCount: Number(window.SiteUtils?._scrollLockCount || 0),
+      sources: Object.keys(window.SiteUtils?._scrollLockSources || {}).sort(),
+    }));
+    assert.deepEqual(searchLockState.sources, ['command-palette'], 'canonical Search handoff retained a stale or duplicate scroll-lock owner');
+    assert.equal(searchLockState.lockCount, 1, 'canonical Search handoff did not leave exactly one scroll-lock owner');
+    assert.equal(searchLockState.bodyPosition, 'fixed', 'open Search did not keep body position locked');
+    assert.equal(searchLockState.bodyOverflow, 'hidden', 'open Search did not keep body overflow locked');
     assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, 'canonical Ctrl+K did not focus search input');
     assert.equal(await page.locator('.cp-backdrop').count(), 1, 'search initialized more than once');
     await page.keyboard.press('Control+K');
@@ -263,6 +272,7 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
       const overlay = document.querySelector('.cp-backdrop');
       return !overlay || getComputedStyle(overlay).display === 'none' || !overlay.classList.contains('open');
     });
+    await assertScrollUnlocked(page, 'canonical Search close after mobile-menu handoff');
 
     const hebrew = page.locator('.h-sacred-block--hero button.h-sacred-word').first();
     const hebrewCountBefore = await page.locator('.h-sacred-block--hero button.h-sacred-word').count();
