@@ -21,6 +21,7 @@ on:
       - "scripts/sitemap-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
+      - "scripts/search-manifest-new-row-role-authority-test.js"
       - "scripts/search-index-policy-inventory.js"
       - "scripts/discovery-followups-browser-test.mjs"
       - "scripts/lib/search-index-policy-contract.js"
@@ -45,6 +46,7 @@ on:
       - "scripts/sitemap-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer-test.js"
+      - "scripts/search-manifest-new-row-role-authority-test.js"
       - "scripts/search-index-policy-inventory.js"
       - "scripts/discovery-followups-browser-test.mjs"
       - "scripts/lib/search-index-policy-contract.js"
@@ -78,6 +80,7 @@ jobs:
         run: |
           node --check scripts/search-manifest-policy-normalizer.js
           node --check scripts/search-manifest-policy-normalizer-test.js
+          node --check scripts/search-manifest-new-row-role-authority-test.js
           node --check scripts/rss-feed-normalizer.js
           node --check scripts/rss-feed-normalizer-test.js
           node --check scripts/sitemap-policy-normalizer.js
@@ -86,6 +89,7 @@ jobs:
       - name: Test normalizer mutations and idempotence
         run: |
           node scripts/search-manifest-policy-normalizer-test.js
+          node scripts/search-manifest-new-row-role-authority-test.js
           node scripts/rss-feed-normalizer-test.js
 
       - name: Require deterministic canonical discovery projection
@@ -208,6 +212,7 @@ jobs:
         if: steps.pr-branch.outputs.exists == 'true'
         run: |
           node scripts/search-manifest-policy-normalizer-test.js
+          node scripts/search-manifest-new-row-role-authority-test.js
           node scripts/rss-feed-normalizer-test.js
 
       - name: Normalize explicit RSS article membership
