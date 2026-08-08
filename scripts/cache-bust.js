@@ -56,6 +56,7 @@ function productionAuthorityEntries(records) {
     .filter((record) => record.owner?.owner === 'astro' && record.owner?.status === 'production-dist')
     .map((record) => ({
       name: record.route,
+      route: record.route,
       label: record.profileFile || record.route,
       profile: record.profile,
     }));
@@ -73,13 +74,17 @@ function deriveReferenceOnlyHtmlPaths(entries, options = {}) {
 
   for (const entry of entries) {
     const name = entry.name || 'route-profile';
+    const route = entry.route || '';
     const profile = entry.profile;
     const profileLabel = entry.label || name;
 
-    // Validate every production profile BEFORE branching on authority.
-    // Otherwise missing/unknown legacyStatus could silently fall through and a
-    // retained HTML file would re-enter the mutable cache-bust corpus.
-    const issues = validateLegacyAuthorityProfile(profile, { pathExists });
+    // Production route profiles must validate retained storage through the
+    // central logical-reference resolver. Synthetic fixtures without route
+    // identity may still inject a logical pathExists contract.
+    const validationOptions = route
+      ? { route, resolveReferenceForRoute: options.resolveReferenceForRoute }
+      : { pathExists };
+    const issues = validateLegacyAuthorityProfile(profile, validationOptions);
     if (issues.length) {
       throw new Error(`cache-bust legacy authority invalid for ${profileLabel}: ${issues.join(' | ')}`);
     }
@@ -87,6 +92,9 @@ function deriveReferenceOnlyHtmlPaths(entries, options = {}) {
     const authority = classifyLegacyAuthority(profile);
     if (authority.status === 'absent') continue;
 
+    // This remains the logical root-corpus identity, not the physical storage
+    // location. Quarantine files live outside collectHTML() and must never
+    // become a second cache-bust rewrite corpus.
     const target = resolveRepoHtml(profile.legacyPath);
     if (!target) {
       throw new Error(`cache-bust legacyPath must be repository HTML for ${profileLabel}: ${profile.legacyPath || '(missing)'}`);
@@ -211,11 +219,14 @@ function assertRewriteAstroContract() {
 
 function assertAuthorityMutationContract() {
   const syntacticHtmlExists = (rel) => Boolean(resolveRepoHtml(rel));
-  const derive = (entries) => deriveReferenceOnlyHtmlPaths(entries, { pathExists: syntacticHtmlExists });
-  const expectFailure = (label, entries, pattern) => {
+  const derive = (entries, options = {}) => deriveReferenceOnlyHtmlPaths(entries, {
+    pathExists: syntacticHtmlExists,
+    ...options,
+  });
+  const expectFailure = (label, entries, pattern, options = {}) => {
     let failure = null;
     try {
-      derive(entries);
+      derive(entries, options);
     } catch (error) {
       failure = error;
     }
@@ -288,10 +299,48 @@ function assertAuthorityMutationContract() {
   if (filtered.length !== 1 || filtered[0].name !== '/production/') {
     throw new Error('cache-bust contract: build-only profile entered production authority corpus');
   }
-  const filteredProtected = derive(filtered);
+  const filteredProtected = derive(filtered, {
+    resolveReferenceForRoute: (route) => ({
+      route,
+      logicalPath: 'index.html',
+      repositoryPath: 'migration/legacy-reference/index.html',
+      absolutePath: path.join(ROOT, 'migration/legacy-reference/index.html'),
+      exists: true,
+    }),
+  });
   if (!filteredProtected.has(path.join(ROOT, 'index.html'))) {
     throw new Error('cache-bust contract: valid production reference was lost after registry filtering');
   }
+
+  const quarantineOnly = productionAuthorityEntries([{
+    route: '/quarantine-only/',
+    owner: { owner: 'astro', status: 'production-dist' },
+    profileFile: 'data/route-profiles/quarantine-only.json',
+    profile: { legacyStatus: 'reference-only', legacyPath: '/legacy/quarantined/index.html' },
+  }]);
+  const quarantineProtected = derive(quarantineOnly, {
+    resolveReferenceForRoute: (route) => ({
+      route,
+      logicalPath: 'legacy/quarantined/index.html',
+      repositoryPath: 'migration/legacy-reference/legacy/quarantined/index.html',
+      absolutePath: path.join(ROOT, 'migration/legacy-reference/legacy/quarantined/index.html'),
+      exists: true,
+    }),
+  });
+  if (!quarantineProtected.has(path.join(ROOT, 'legacy/quarantined/index.html'))) {
+    throw new Error('cache-bust contract: quarantine-only reference lost logical root-corpus identity');
+  }
+
+  expectFailure(
+    'active+quarantine storage ambiguity',
+    quarantineOnly,
+    /ambiguity/,
+    {
+      resolveReferenceForRoute: () => {
+        throw new Error('legacy reference storage ambiguity: active and quarantine copies both exist');
+      },
+    }
+  );
 
   expectFailure(
     'production registry profile missing legacyStatus',
@@ -304,7 +353,7 @@ function assertAuthorityMutationContract() {
     /missing explicit legacyStatus/
   );
 
-  console.log('  ✔ cache-bust authority mutation contract: 10/10 checks');
+  console.log('  ✔ cache-bust authority mutation contract: 12/12 checks');
 }
 
 function assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles) {
@@ -314,10 +363,10 @@ function assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles) {
 
   const collected = new Set(htmlFiles.map((file) => path.resolve(file)));
   const protectedInCorpus = [...referenceOnlyHtml].filter((file) => collected.has(file));
-  if (!protectedInCorpus.length) {
-    throw new Error('cache-bust authority contract found no reference-only HTML inside rewrite corpus');
-  }
 
+  // A fully migrated reference set may have zero active-root snapshots in the
+  // mutable corpus. Any logical reference that is still present there must stay
+  // immutable, while quarantine storage remains outside collectHTML().
   for (const file of protectedInCorpus) {
     if (!fs.existsSync(file)) throw new Error(`cache-bust protected snapshot missing: ${repoRel(file)}`);
   }
