@@ -268,11 +268,26 @@ function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
 }
 
 function buildManifestItem(route, policy, html, fallbackReadTime = null) {
-  const { values } = deriveManifestFields(route, policy, html, fallbackReadTime);
+  const title = firstMeta(html, 'property', 'og:title')
+    || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
+  const description = firstMeta(html, 'name', 'description')
+    || firstMeta(html, 'property', 'og:description');
+  const editor = firstMeta(html, 'name', 'author') || 'Фёдор Милованов';
+  const section = firstMeta(html, 'property', 'article:section') || policy.librarySection;
+  const image = normalizeImage(firstMeta(html, 'property', 'og:image'));
+  const tags = [...new Set(metaValues(html, 'property', 'article:tag'))];
+  const publishedTime = firstMeta(html, 'property', 'article:published_time');
+  const modifiedTime = firstMeta(html, 'property', 'article:modified_time') || publishedTime;
+  const htmlReadTime = readingTime(html);
+  const readTime = Number.isInteger(htmlReadTime) ? htmlReadTime : fallbackReadTime;
+
   const missing = [];
-  if (!values.publishedTime) missing.push('publishedTime');
-  if (!values.modifiedTime) missing.push('modifiedTime');
-  if (!Number.isInteger(values.readTime) || values.readTime < 1) missing.push('readTime');
+  if (!title) missing.push('title');
+  if (!description) missing.push('description');
+  if (!section) missing.push('section');
+  if (!publishedTime) missing.push('publishedTime');
+  if (!modifiedTime) missing.push('modifiedTime');
+  if (!Number.isInteger(readTime) || readTime < 1) missing.push('readTime');
   if (missing.length) {
     throw new Error(`${normalizeRoute(route)}: built PageHead missing ${missing.join(', ')}`);
   }
@@ -281,9 +296,17 @@ function buildManifestItem(route, policy, html, fallbackReadTime = null) {
     id: routeId(route),
     type: contentKindToManifestType(policy.contentKind),
     url: normalizeRoute(route),
-    ...values,
+    title,
+    description,
+    section,
+    editor,
+    image,
+    tags,
     featured: false,
     priority: 0.6,
+    publishedTime,
+    modifiedTime,
+    readTime,
   };
 }
 
