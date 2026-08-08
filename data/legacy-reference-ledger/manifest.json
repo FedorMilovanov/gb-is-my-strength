@@ -29,6 +29,7 @@
     "explicitReferenceApiUsers": [
       "scripts/astro-ishod-pilot-audit.js",
       "scripts/content-source-provenance-audit.js",
+      "scripts/legacy-shadow-retirement-readiness.mjs",
       "scripts/lib/audit-pro-source-corpus.js",
       "scripts/lib/legacy-source-authority.js"
     ],
@@ -204,10 +205,10 @@
     },
     {
       "path": "scripts/legacy-shadow-retirement-readiness.mjs",
-      "access": "fixture-or-contract",
-      "classification": "production-required",
+      "access": "policy-reader",
+      "classification": "migration-reference-only",
       "quarantineImpact": "none-fixture-policy-or-comment-only",
-      "evidenceToken": "scripts/strangler-duplicate-inventory.mjs",
+      "evidenceToken": "resolveLogicalReferenceStorage",
       "owner": "legacy-reference-quarantine"
     },
     {
