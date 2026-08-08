@@ -12,6 +12,7 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(SCRIPT_DIR, '..');
 const require = createRequire(import.meta.url);
 const { currentLegacyReferenceDisposition } = require('./lib/legacy-source-authority.js');
+const { resolveLogicalReferenceStorage } = require('../migration/legacy-reference-path.js');
 
 function parseArgs(argv) {
   const args = { root: DEFAULT_ROOT, outJson: null, outMd: null, selfTest: false };
@@ -94,9 +95,9 @@ function findRouteProfile(root, route) {
   return null;
 }
 
-function ledgerCandidate(root, manifest, item) {
+function ledgerCandidate(root, manifest, item, buffer = null) {
   const profile = findRouteProfile(root, item.route);
-  const buffer = fs.readFileSync(path.join(root, item.path));
+  const sourceBuffer = buffer || fs.readFileSync(path.join(root, item.path));
   const disposition = currentLegacyReferenceDisposition(profile?.data || null, profile?.path || null);
   return {
     route: item.route,
@@ -104,7 +105,7 @@ function ledgerCandidate(root, manifest, item) {
     legacyPath: item.path,
     ...disposition,
     sourceCommit: manifest.auditedAtCommit ?? null,
-    ...htmlMetrics(buffer),
+    ...htmlMetrics(sourceBuffer),
   };
 }
 
@@ -195,28 +196,34 @@ function effectiveInventory({ root, inventory, entries, ownership }) {
   for (const entry of entries) {
     const relative = normalize(entry.legacyPath);
     if (inventoryPaths.has(relative)) continue;
-    const absolute = path.join(root, relative);
+    const storage = resolveLogicalReferenceStorage(relative, { root, mustExist: false });
     const meta = ownership.routes?.[entry.route] || null;
-    if (!meta || !fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
+    if (!meta || !storage.exists) continue;
     const classification = ownerClassification(meta);
+    const buffer = fs.readFileSync(storage.absolutePath);
     const row = {
       route: entry.route,
       path: relative,
-      bytes: fs.statSync(absolute).size,
-      sha256: sha256(fs.readFileSync(absolute)),
+      storagePath: storage.repositoryPath,
+      bytes: buffer.length,
+      sha256: sha256(buffer),
       classification,
       ownerRoute: entry.route,
       owner: meta.owner || null,
       status: meta.status || null,
-      discoveredBy: 'immutable-ledger-cross-check',
+      discoveredBy: storage.repositoryPath === relative
+        ? 'immutable-ledger-cross-check'
+        : 'immutable-ledger-quarantine-fallback',
     };
     items.push(row);
-    coverageGaps.push({
-      route: entry.route,
-      path: relative,
-      classification,
-      problem: 'current strangler inventory omitted a governed existing reference',
-    });
+    if (storage.repositoryPath === relative) {
+      coverageGaps.push({
+        route: entry.route,
+        path: relative,
+        classification,
+        problem: 'current strangler inventory omitted a governed existing active reference',
+      });
+    }
   }
 
   items.sort((left, right) => left.path.localeCompare(right.path, 'en'));
@@ -243,6 +250,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
       return {
         route: item.route,
         path: item.path,
+        storagePath: item.path,
         bytes: item.bytes,
         decision: 'missing-ledger',
         ledgerCandidate: candidate,
@@ -254,11 +262,12 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     if (entry.route !== item.route) {
       integrityProblems.push(`${item.path}: ledger route mismatch (${entry.route} != ${item.route})`);
     }
-    const buffer = fs.readFileSync(path.join(root, item.path));
+    const storage = resolveLogicalReferenceStorage(entry.legacyPath, { root });
+    const buffer = fs.readFileSync(storage.absolutePath);
     if (gitBlobSha1(buffer) !== entry.gitBlobSha1) integrityProblems.push(`${item.path}: Git blob mismatch`);
     if (sha256(buffer) !== entry.byteSha256) integrityProblems.push(`${item.path}: byte SHA-256 mismatch`);
 
-    const current = ledgerCandidate(root, manifest, item);
+    const current = ledgerCandidate(root, manifest, item, buffer);
     const decision = current.classification === 'migration-reference-only'
       ? 'classification-clear'
       : current.classification === 'unknown-blocker'
@@ -267,7 +276,8 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     return {
       route: item.route,
       path: item.path,
-      bytes: item.bytes,
+      storagePath: storage.repositoryPath,
+      bytes: buffer.length,
       profile: current.profile,
       classification: current.classification,
       declaredLegacyStatus: current.declaredLegacyStatus,
@@ -304,7 +314,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
   const deletionReady = blockerTotal === 0;
 
   return {
-    schemaVersion: '1.4.0',
+    schemaVersion: '1.5.0',
     generatedAt: new Date().toISOString(),
     source: {
       inventory: 'scripts/strangler-duplicate-inventory.mjs',
@@ -312,6 +322,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
       currentReferenceAuthority: 'data/route-profiles/*.json',
       ownership: 'migration/page-ownership.json',
       parityAuthority: 'data/visual-parity-authority.json',
+      physicalReferenceStorage: 'migration/legacy-reference-path.js',
     },
     summary: {
       inventoryReportedPublicIndexes: inventory.summary?.publicIndexFiles || 0,
@@ -352,7 +363,7 @@ function buildReport({ root, inventory, manifest, entries, ownership, authority 
     builtApps: builtApps.map((item) => ({ route: item.route, path: item.path, bytes: item.bytes })),
     nextTransaction: {
       order: [
-        'repair strangler inventory coverage for every governed legacy path',
+        'repair strangler inventory coverage for every governed active legacy path',
         'add immutable ledger identity for every effective native shadow using the emitted exact candidates',
         'resolve missing or unexpected current classifications in route profiles',
         'repoint policy readers through migration/legacy-reference-path.js',
@@ -408,7 +419,7 @@ function renderMarkdown(report) {
     '',
     '## Boundary',
     '',
-    'Current retirement classification is resolved from route profiles. The immutable ledger owns identity/hash evidence only. The independent Baptists built app is never part of native-shadow retirement.',
+    'Current retirement classification is resolved from route profiles. The immutable ledger owns identity/hash evidence only. Physical bytes for ledger-owned references are resolved through migration/legacy-reference-path.js, so active and quarantine storage share one fail-closed authority. The independent Baptists built app is never part of native-shadow retirement.',
     '',
     '## Inventory coverage gaps',
     '',
@@ -440,27 +451,27 @@ function renderMarkdown(report) {
 function runSelfTest() {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'legacy-shadow-self-test-'));
   try {
-    for (const relative of ['about', 'rodosloviye', 'unexpected', 'guards', 'data/route-profiles']) {
+    for (const relative of ['about', 'unexpected', 'guards', 'data/route-profiles', 'migration/legacy-reference/rodosloviye']) {
       fs.mkdirSync(path.join(temp, relative), { recursive: true });
     }
     const about = Buffer.from('<!doctype html><h1>about</h1>');
     const family = Buffer.from('<!doctype html><h1>family</h1>');
     const unexpected = Buffer.from('<!doctype html><h1>unexpected</h1>');
     fs.writeFileSync(path.join(temp, 'about', 'index.html'), about);
-    fs.writeFileSync(path.join(temp, 'rodosloviye', 'index.html'), family);
+    fs.writeFileSync(path.join(temp, 'migration', 'legacy-reference', 'rodosloviye', 'index.html'), family);
     fs.writeFileSync(path.join(temp, 'unexpected', 'index.html'), unexpected);
     fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'about.json'), JSON.stringify({
       route: '/about/', legacyStatus: 'reference-only', legacyPath: 'about/index.html',
     }));
     fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'rodosloviye.json'), JSON.stringify({
-      route: '/rodosloviye/', legacyPath: 'rodosloviye/index.html',
+      route: '/rodosloviye/', legacyStatus: 'reference-only', legacyPath: 'rodosloviye/index.html',
     }));
     fs.writeFileSync(path.join(temp, 'data', 'route-profiles', 'unexpected.json'), JSON.stringify({
       route: '/unexpected/', legacyStatus: 'runtime-required', legacyPath: 'unexpected/index.html',
     }));
     for (const name of ['source.js', 'dist.js', 'browser.js']) fs.writeFileSync(path.join(temp, 'guards', name), '');
 
-    const report = buildReport({
+    const fixture = {
       root: temp,
       inventory: {
         summary: { publicIndexFiles: 2 },
@@ -505,12 +516,14 @@ function runSelfTest() {
           astro: { mode: 'native-contract', requiredGuards: ['guards/source.js', 'guards/dist.js', 'guards/browser.js'] },
         },
       },
-    });
+    };
 
+    const report = buildReport(fixture);
     const candidate = report.blockers.missingLedgerCandidates[0];
+    const familyRow = report.nativeShadows.find((row) => row.route === '/rodosloviye/');
     if (report.summary.publicIndexes !== 3
       || report.summary.nativeShadows !== 3
-      || report.summary.inventoryCoverageProblems !== 1
+      || report.summary.inventoryCoverageProblems !== 0
       || report.summary.integrityProblems !== 1
       || report.summary.missingLedgerCandidates !== 1
       || candidate?.legacyPath !== 'about/index.html'
@@ -518,13 +531,27 @@ function runSelfTest() {
       || candidate?.gitBlobSha1 !== gitBlobSha1(about)
       || candidate?.byteSha256 !== sha256(about)
       || candidate?.sourceCommit !== 'a'.repeat(40)
-      || report.summary.referenceOwnerDecisions !== 1
+      || familyRow?.storagePath !== 'migration/legacy-reference/rodosloviye/index.html'
+      || familyRow?.gitBlobSha1 !== gitBlobSha1(family)
+      || report.summary.referenceOwnerDecisions !== 0
       || report.summary.unexpectedReferenceClassifications !== 1
       || report.summary.dependencyOwnerDecisions !== 1
       || report.summary.deletionReady !== false) {
       throw new Error(`self-test did not fail closed: ${JSON.stringify(report.summary)}`);
     }
-    console.log('✅ legacy shadow retirement readiness self-test passed');
+
+    fs.mkdirSync(path.join(temp, 'rodosloviye'), { recursive: true });
+    fs.writeFileSync(path.join(temp, 'rodosloviye', 'index.html'), family);
+    let ambiguityRejected = false;
+    try {
+      buildReport(fixture);
+    } catch (error) {
+      ambiguityRejected = /storage is ambiguous/.test(String(error?.message || error));
+    }
+    if (!ambiguityRejected) throw new Error('self-test did not reject active + quarantine ambiguity');
+    fs.rmSync(path.join(temp, 'rodosloviye'), { recursive: true, force: true });
+
+    console.log('✅ legacy shadow retirement readiness self-test passed (quarantine-aware + ambiguity fail-closed)');
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }

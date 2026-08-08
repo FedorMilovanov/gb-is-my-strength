@@ -27,10 +27,27 @@ assert.deepEqual(
   [
     'scripts/astro-ishod-pilot-audit.js',
     'scripts/content-source-provenance-audit.js',
+    'scripts/legacy-shadow-retirement-readiness.mjs',
     'scripts/lib/audit-pro-source-corpus.js',
     'scripts/lib/legacy-source-authority.js',
   ].sort(),
   'explicit reference API users must match the migrated physical-reference readers'
+);
+const readinessDependency = (manifest.dependencies || []).find((row) => row.path === 'scripts/legacy-shadow-retirement-readiness.mjs');
+assert.deepEqual(
+  readinessDependency && {
+    access: readinessDependency.access,
+    classification: readinessDependency.classification,
+    quarantineImpact: readinessDependency.quarantineImpact,
+    evidenceToken: readinessDependency.evidenceToken,
+  },
+  {
+    access: 'policy-reader',
+    classification: 'migration-reference-only',
+    quarantineImpact: 'none-fixture-policy-or-comment-only',
+    evidenceToken: 'resolveLogicalReferenceStorage',
+  },
+  'retirement readiness must be an explicit nonblocking resolver-backed policy reader'
 );
 
 const routes = listReferenceRoutes();
