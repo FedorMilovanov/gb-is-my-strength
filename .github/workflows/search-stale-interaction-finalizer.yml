@@ -1,0 +1,59 @@
+name: Search stale interaction repair once
+
+on:
+  pull_request:
+    types: [synchronize]
+    paths:
+      - 'scripts/search-stale-interaction-finalizer.mjs'
+      - '.github/workflows/search-stale-interaction-finalizer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  stale-interaction-autofix:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Apply bounded stale interaction repair
+        run: node scripts/search-stale-interaction-finalizer.mjs --write
+
+      - name: Validate patched Search tree
+        run: |
+          node --check js/search.js
+          node --check scripts/search-modal-browser-contract.mjs
+          node scripts/app-search-surface-source-contract.mjs
+          node scripts/check-workflows.js
+          git diff --check
+
+      - name: Self-clean transport and publish exact branch
+        run: |
+          rm -f scripts/search-stale-interaction-finalizer.mjs .github/workflows/search-stale-interaction-finalizer.yml
+          git diff --check
+          git add js/search.js scripts/search-modal-browser-contract.mjs scripts/search-stale-interaction-finalizer.mjs .github/workflows/search-stale-interaction-finalizer.yml
+          ACTUAL="$(git diff --cached --name-only | sort)"
+          EXPECTED="$(printf '%s\n' '.github/workflows/search-stale-interaction-finalizer.yml' 'js/search.js' 'scripts/search-modal-browser-contract.mjs' 'scripts/search-stale-interaction-finalizer.mjs' | sort)"
+          test "$ACTUAL" = "$EXPECTED" || { echo 'unexpected staged paths'; printf 'actual:\n%s\nexpected:\n%s\n' "$ACTUAL" "$EXPECTED"; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(search): invalidate stale interactive results'
+          git push origin "HEAD:${HEAD_REF}"
