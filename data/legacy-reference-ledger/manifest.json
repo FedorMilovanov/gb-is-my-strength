@@ -33,7 +33,8 @@
       "scripts/legacy-shadow-wrapper-audit.js",
       "scripts/lib/audit-pro-source-corpus.js",
       "scripts/lib/legacy-source-authority.js",
-      "scripts/lib/route-source-contract.js"
+      "scripts/lib/route-source-contract.js",
+      "scripts/nagornaya-visual-parity-audit.js"
     ],
     "nonBlockingFixtureDependencies": [
       "scripts/audit-pro-source-corpus-test.js",
@@ -295,10 +296,10 @@
     },
     {
       "path": "scripts/nagornaya-visual-parity-audit.js",
-      "access": "reader",
+      "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "nagornaya/chast-1/index.html",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveReferenceForRoute",
       "owner": "legacy-reference-quarantine"
     },
     {
