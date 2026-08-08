@@ -44,7 +44,8 @@ function validateSource() {
   assert.match(cssSource, /\.gb-nav-search-icon\{[^}]*width:44px;[^}]*height:44px;/, '44px search trigger missing');
   for (const marker of ['id=\"cp-more-wrap\"', 'class=\"cp-more\"', 'Показано ']) assert.ok(jsSource.includes(marker), 'missing continuation JS marker: ' + marker);
   assert.ok(!jsSource.includes('i.results.slice(0,10)'), 'Pagefind pre-hydration cap survived');
-  assert.ok(jsSource.includes('function __gbSearchExactScripture(e){__gbClearMore();'), 'exact Scripture must clear stale continuation before async index load');
+  assert.ok(jsSource.includes('function __gbInvalidateVisibleResults(){__gbClearMore(),j=[],_=0,E.removeAttribute("aria-activedescendant"),S.innerHTML="",T.textContent="",ce()}'), 'query mutation must invalidate stale interactive result state');
+  assert.ok(jsSource.includes('function __gbSearchExactScripture(e){__gbInvalidateVisibleResults();'), 'exact Scripture must invalidate stale interactive state before async index load');
   for (const marker of ['.cp-more-wrap:empty', '.cp-more:focus-visible']) assert.ok(cssSource.includes(marker), 'missing continuation CSS marker: ' + marker);
 }
 
@@ -361,7 +362,7 @@ assert.ok(port > 0, 'failed to bind static server');
 
 async function runContinuationContract(browserType, browserName, port, viewport) {
   const browser = await browserType.launch({ headless: true });
-  const summary = { browser: browserName, viewport, pagefind: null, fallback: null, scripture: null, staleClear: null, staleShortQuery: null };
+  const summary = { browser: browserName, viewport, pagefind: null, fallback: null, scripture: null, staleClear: null, staleShortQuery: null, staleKeyboard: null };
   let phase = 'setup';
   let activePage = null;
   let consoleErrors = [];
@@ -494,12 +495,12 @@ async function runContinuationContract(browserType, browserName, port, viewport)
     {
       const delayedPagefindModule = [
         'export const __fixture = "pagefind-stale-query";',
-        'export async function search() {',
+        'export async function search(query) {',
         '  window.__searchP3RaceStarted = (window.__searchP3RaceStarted || 0) + 1;',
         '  return {',
         '    results: Array.from({ length: 25 }, (_, index) => ({',
         '      data: async () => {',
-        '        await new Promise((resolve) => setTimeout(resolve, 220));',
+        "        if (query !== 'seedrace') await new Promise((resolve) => setTimeout(resolve, 220));",
         '        return {',
         "          url: '/fixture/clear-race-' + index + '/',",
         "          meta: { title: 'Clear Race ' + index, author: '', readTime: '1', category: 'Fixture', scripture: '' },",
@@ -521,8 +522,19 @@ async function runContinuationContract(browserType, browserName, port, viewport)
       }, viewport);
 
       await page.waitForFunction(() => window.__pagefind__?.__fixture === 'pagefind-stale-query', null, { timeout: 30_000 });
+      await input.fill('seedrace');
+      await page.waitForFunction(() => document.querySelectorAll('.cp-item[role=\"option\"]').length === 12 && !!document.querySelector('#cp-read-btn'), null, { timeout: 30_000 });
+      const beforeStaleMutationUrl = page.url();
       await input.fill('clearrace');
-      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 1, null, { timeout: 30_000 });
+      assert.equal(await page.locator('.cp-item[role=\"option\"]').count(), 0, 'query mutation must remove stale options immediately');
+      assert.equal(await input.getAttribute('aria-activedescendant'), null, 'query mutation must clear stale active descendant immediately');
+      assert.equal(await page.locator('#cp-read-btn').count(), 0, 'query mutation must clear stale preview action immediately');
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'query mutation must clear stale continuation immediately');
+      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 2, null, { timeout: 30_000 });
+      await input.press('Enter');
+      assert.equal(page.url(), beforeStaleMutationUrl, 'Enter during pending hydration must not navigate to a stale result');
+      assert.equal(await page.locator('.cp-backdrop.is-open').count(), 1, 'Enter during pending hydration must keep Search open');
+      summary.staleKeyboard = true;
       await page.locator('.cp-clear').click();
       await page.waitForTimeout(650);
       assert.equal(await input.inputValue(), '');
@@ -531,7 +543,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
       summary.staleClear = true;
 
       await input.fill('clearrace');
-      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 2, null, { timeout: 30_000 });
+      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 3, null, { timeout: 30_000 });
       await input.fill('x');
       assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'new input must clear stale continuation immediately');
       await page.waitForTimeout(650);
@@ -664,6 +676,7 @@ const report = {
     continuationMultiStep: true,
     continuationDesktopMobile: true,
     staleAsyncInvalidation: true,
+    staleInteractiveInvalidation: true,
     boundedPagefindHydration: true,
   },
   results,
@@ -676,7 +689,7 @@ fs.writeFileSync(path.join(reportDir, 'report.md'), [
   '- Engines: Chromium, WebKit',
   '- Viewports: 1440x900, 390x844',
   '- Result: PASS',
-  '- Coverage: combobox/listbox ARIA, active descendant, close control, full modal Tab trap, top-layer ordering, 44px targets, focus-visible, focus restoration, Escape/backdrop closure, truthful multi-step continuation, desktop/mobile continuation, stale async invalidation and bounded Pagefind hydration.',
+  '- Coverage: combobox/listbox ARIA, active descendant, close control, full modal Tab trap, top-layer ordering, 44px targets, focus-visible, focus restoration, Escape/backdrop closure, truthful multi-step continuation, desktop/mobile continuation, stale async/interactive invalidation and bounded Pagefind hydration.',
   '',
 ].join('\n'));
 console.log(`SEARCH MODAL CONTRACT: PASS (${results.length}/${results.length})`);
