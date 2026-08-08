@@ -69,3 +69,54 @@ jobs:
         run: node scripts/scripture-occurrence-index-contract.mjs --dist=dist
       - name: Verify validation is read-only
         run: git diff --exit-code
+
+  scripture-index-autofix:
+    name: Label-gated deterministic index autofix
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - name: Install immutable dependencies
+        run: npm ci
+      - name: Regenerate deterministic Scripture occurrence index
+        run: node scripts/build-scripture-occurrence-index.mjs --write
+      - name: Validate generated index and bounded diff
+        run: |
+          node scripts/build-scripture-occurrence-index.mjs --check
+          node scripts/scripture-occurrence-index-contract.mjs
+          git diff --check
+          changed="$(git diff --name-only)"
+          unexpected="$(printf '%s\n' "$changed" | sed '/^$/d' | grep -v '^data/scripture-search-index\.json$' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected Scripture autofix paths:"
+            printf '%s\n' "$unexpected"
+            exit 1
+          fi
+      - name: Commit exact generated projection
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git diff --quiet -- data/scripture-search-index.json; then
+            echo "Scripture occurrence index already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/scripture-search-index.json
+          git commit -m "chore(scripture): regenerate occurrence index"
+          git push origin "HEAD:${HEAD_REF}"
