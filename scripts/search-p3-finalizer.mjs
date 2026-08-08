@@ -12,6 +12,11 @@ function replaceOnce(source, oldText, newText, label) {
   return source.replace(oldText, newText);
 }
 
+function replaceFirst(source, oldText, newText, label) {
+  if (!source.includes(oldText)) throw new Error(`[search-p3-finalizer] ${label}: marker missing`);
+  return source.replace(oldText, newText);
+}
+
 function replaceSection(source, startMarker, endMarker, replacement, label) {
   const start = source.indexOf(startMarker);
   if (start < 0) throw new Error(`[search-p3-finalizer] ${label}: start marker missing`);
@@ -104,7 +109,7 @@ function transformContract(source) {
 
   source = replaceOnce(source, 'Array.from({ length: 16 }, (_, index) => index < 2', 'Array.from({ length: 28 }, (_, index) => index < 2', 'expand Pagefind fixture past two windows');
   source = replaceOnce(source, "summary.pagefind = await assertPaged(page, 15, 'рез.');", "summary.pagefind = await assertPaged(page, 27, 'рез.');", 'expect deduped Pagefind multi-step total');
-  source = replaceOnce(source, 'items: Array.from({ length: 16 }, (_, index) => ({', 'items: Array.from({ length: 25 }, (_, index) => ({', 'expand fallback fixture past two windows');
+  source = replaceFirst(source, 'items: Array.from({ length: 16 }, (_, index) => ({', 'items: Array.from({ length: 25 }, (_, index) => ({', 'expand fallback fixture past two windows');
   source = replaceOnce(source, "summary.fallback = await assertPaged(page, 16, 'рез.');", "summary.fallback = await assertPaged(page, 25, 'рез.');", 'expect fallback multi-step total');
   source = replaceOnce(source, 'occurrences: Array.from({ length: 15 }, (_, index) => ({', 'occurrences: Array.from({ length: 25 }, (_, index) => ({', 'expand Scripture fixture past two windows');
   source = replaceOnce(source, "summary.scripture = await assertPaged(page, 15, 'вх.');", "summary.scripture = await assertPaged(page, 25, 'вх.');", 'expect Scripture multi-step total');
