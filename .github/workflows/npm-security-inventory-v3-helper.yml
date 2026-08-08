@@ -1,0 +1,146 @@
+name: npm security inventory v3 helper
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.event.pull_request.head.ref == 'audit/npm-security-inventory-v3-20260808'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact audited main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: 6d671d0e30bff8da1f7354a00191ab990f17ed12
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install exact lockfile
+        run: npm ci
+
+      - name: Capture full and production-only advisory evidence
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          mkdir -p reports/npm-security
+
+          npm audit --json > reports/npm-security/audit-all.json
+          audit_all_status=$?
+
+          npm audit --omit=dev --json > reports/npm-security/audit-production.json
+          audit_production_status=$?
+
+          npm ls --all --json > reports/npm-security/tree.json
+          tree_status=$?
+
+          set -e
+          printf '{"auditAll":%s,"auditProduction":%s,"tree":%s}\n' \
+            "$audit_all_status" "$audit_production_status" "$tree_status" \
+            > reports/npm-security/exit-status.json
+
+          test -s reports/npm-security/audit-all.json
+          test -s reports/npm-security/audit-production.json
+          test -s reports/npm-security/tree.json
+
+      - name: Build deterministic advisory summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('reports/npm-security')
+          statuses = json.loads((root / 'exit-status.json').read_text())
+
+          def summarize(source):
+              audit = json.loads((root / source).read_text())
+              vulnerabilities = audit.get('vulnerabilities', {})
+              rows = []
+              for name, item in vulnerabilities.items():
+                  via = []
+                  for entry in item.get('via', []):
+                      if isinstance(entry, str):
+                          via.append({'package': entry})
+                      else:
+                          via.append({
+                              'source': entry.get('source'),
+                              'title': entry.get('title'),
+                              'severity': entry.get('severity'),
+                              'range': entry.get('range'),
+                              'url': entry.get('url'),
+                              'cwe': entry.get('cwe'),
+                          })
+                  rows.append({
+                      'package': name,
+                      'severity': item.get('severity'),
+                      'direct': item.get('isDirect'),
+                      'range': item.get('range'),
+                      'nodes': item.get('nodes', []),
+                      'fixAvailable': item.get('fixAvailable'),
+                      'effects': item.get('effects', []),
+                      'via': via,
+                  })
+              rank = {'critical': 0, 'high': 1, 'moderate': 2, 'low': 3, 'info': 4}
+              rows.sort(key=lambda row: (rank.get(row['severity'], 9), row['package']))
+              return {
+                  'metadata': audit.get('metadata', {}),
+                  'packages': rows,
+              }
+
+          full = summarize('audit-all.json')
+          production = summarize('audit-production.json')
+          summary = {
+              'auditedProductSha': '6d671d0e30bff8da1f7354a00191ab990f17ed12',
+              'node': '22.12.0',
+              'statuses': statuses,
+              'allDependencies': full,
+              'productionOnly': production,
+          }
+          (root / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n')
+
+          lines = ['# npm security inventory v3', '']
+          for label, block in [('all dependencies', full), ('production only (`--omit=dev`)', production)]:
+              counts = block.get('metadata', {}).get('vulnerabilities', {})
+              lines.append(f'## {label}')
+              lines.append('Counts: ' + ', '.join(f'{key}={value}' for key, value in counts.items()))
+              lines.append('')
+              lines.append('| Package | Severity | Direct | Range | Fix available | Dependency nodes |')
+              lines.append('|---|---|---:|---|---|---|')
+              for row in block['packages']:
+                  fix = row['fixAvailable']
+                  if isinstance(fix, dict):
+                      fix_text = f"{fix.get('name')}@{fix.get('version')} force={fix.get('isSemVerMajor')}"
+                  else:
+                      fix_text = str(fix)
+                  nodes = ', '.join(row['nodes'][:5])
+                  lines.append(f"| `{row['package']}` | {row['severity']} | {row['direct']} | `{row['range']}` | `{fix_text}` | `{nodes}` |")
+              if not block['packages']:
+                  lines.append('| — | — | — | — | — | — |')
+              lines.append('')
+          (root / 'summary.md').write_text('\n'.join(lines) + '\n')
+          print('\n'.join(lines))
+          PY
+
+      - name: Publish summary
+        run: cat reports/npm-security/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload exact audit evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: npm-security-inventory-main-6d671d0e-v3
+          path: reports/npm-security
+          if-no-files-found: error
+          retention-days: 3
