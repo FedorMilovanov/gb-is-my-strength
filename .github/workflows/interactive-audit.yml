@@ -141,7 +141,7 @@ jobs:
 
           run=false
           reason=unrelated-change
-          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/article-controls-browser-contract\.mjs|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/components/home/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/components/home/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
@@ -253,5 +253,71 @@ jobs:
         with:
           name: runtime-interactive-audit-${{ github.run_id }}-${{ github.run_attempt }}
           path: reports/interactive-audit
+          if-no-files-found: error
+          retention-days: 14
+
+  article-control-census:
+    name: Article controls all-reading-route census
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax-check census
+        run: node --check scripts/article-controls-browser-contract.mjs
+
+      - name: Install Chromium and WebKit for Playwright
+        run: timeout 12m npx playwright install --with-deps chromium webkit
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index into dist
+        run: npm run pagefind:build:dist
+
+      - name: Start production-like dist server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 -d dist > /tmp/gb-control-census-http.log 2>&1 &
+          echo $! > /tmp/gb-control-census-http.pid
+          sleep 2
+          curl -fsS http://127.0.0.1:8080/ >/dev/null
+
+      - name: Run all-reading-route control census
+        env:
+          AUDIT_BASE: http://127.0.0.1:8080
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports/interactive-audit/article-control-census
+          node scripts/article-controls-browser-contract.mjs 2>&1 |
+            tee reports/interactive-audit/article-control-census/output.log
+
+      - name: Stop census server
+        if: always()
+        run: |
+          if [ -f /tmp/gb-control-census-http.pid ]; then
+            kill "$(cat /tmp/gb-control-census-http.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload all-reading-route census evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: article-control-census-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/interactive-audit/article-control-census
           if-no-files-found: error
           retention-days: 14
