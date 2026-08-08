@@ -31,6 +31,12 @@ const coverage = fs.readFileSync(path.join(ROOT, 'scripts/content-coverage-audit
 assert(coverage.includes("require('./lib/legacy-source-authority')"), 'content coverage must use shared source authority');
 assert(!/function\s+legacyIsAuthoritative\s*\(/.test(coverage), 'content coverage must not fork the authority helper');
 
+const nativeArticleAudit = fs.readFileSync(path.join(ROOT, 'scripts/article-native-contract-audit.js'), 'utf8');
+assert(nativeArticleAudit.includes("require('./lib/legacy-source-authority')"), 'native article audit must use shared source authority');
+assert(nativeArticleAudit.includes('resolveDeclaredLegacyReference(profile, { route, mustExist: false })'), 'native article audit must resolve retained bytes through declared legacy reference authority');
+assert(nativeArticleAudit.includes('fs.readFileSync(legacyReference.absolutePath'), 'native article byte-copy comparison must read resolved reference storage');
+assert(!/path\.join\(ROOT,\s*profile\.legacyPath\)/.test(nativeArticleAudit), 'native article audit must not restore active-root legacyPath reads');
+
 for (const item of GILL_ROUTES) {
   const { file, profile } = loadRouteProfile(item.route);
   assert(file, `${item.route}: route profile must exist`);
@@ -77,4 +83,4 @@ assert(dataConsistency.includes('const projectionFallback = !legacyIsAuthoritati
 assert(!/const canonical = canonicalFromHtml\(file, item\.readTime\);\s*assertEqual/.test(dataConsistency), 'unconditional manifest-vs-root HTML oracle must not return');
 assert(!/const canonical = canonicalFromHtml\(file, search && search\.readTime\)/.test(dataConsistency), 'unconditional series-vs-root HTML oracle must not return');
 
-console.log('✅ Gill source authority, reading-time, Pagefind and data-consistency contracts passed');
+console.log('✅ Native article, Gill source authority, reading-time, Pagefind and data-consistency contracts passed');

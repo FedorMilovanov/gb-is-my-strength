@@ -10,6 +10,7 @@ const {
   loadRouteRecords,
   validateRecord,
 } = require('./lib/route-source-contract');
+const { resolveDeclaredLegacyReference } = require('./lib/legacy-source-authority');
 
 const DIST = path.join(ROOT, 'dist');
 const BASELINE_FILE = path.join(ROOT, 'data/public-content-baseline.json');
@@ -276,9 +277,11 @@ function auditArticle(record, baselineByUrl) {
     if (!html.includes(marker)) bad(`${label}: required route marker missing: ${marker}`);
   }
 
-  const legacyPath = profile.legacyPath ? path.join(ROOT, profile.legacyPath) : null;
-  if (legacyPath && fs.existsSync(legacyPath)) {
-    const legacy = fs.readFileSync(legacyPath, 'utf8');
+  const legacyReference = profile.legacyPath
+    ? resolveDeclaredLegacyReference(profile, { route, mustExist: false })
+    : null;
+  if (legacyReference?.exists) {
+    const legacy = fs.readFileSync(legacyReference.absolutePath, 'utf8');
     if (legacy === html) bad(`${label}: strict-native dist is byte-identical to legacy reference`);
     else ok(`${label}: strict-native dist is not a legacy byte copy`);
   }
