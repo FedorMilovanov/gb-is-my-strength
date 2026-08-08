@@ -38,6 +38,15 @@ assert.equal(ordinary.author, 'Автор, не редактор');
 assert.equal(Object.hasOwn(ordinary, 'editor'), false, 'author must not be relabelled as editor');
 assert.equal(Object.hasOwn(ordinary, 'translator'), false);
 
+const metaOnlyHtml = ordinaryHtml.replace(
+  /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
+  '<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage"}</script>'
+);
+const metaOnly = buildManifestItem('/articles/meta-only-role-fixture/', basePolicy, metaOnlyHtml);
+assert.equal(Object.hasOwn(metaOnly, 'author'), false, 'meta author must not assign author without structured Article role authority');
+assert.equal(Object.hasOwn(metaOnly, 'editor'), false, 'meta author must never assign editor authority');
+assert.equal(Object.hasOwn(metaOnly, 'translator'), false);
+
 const translationHtml = `<!doctype html><html><head>
 <title>Перевод | Господь Бог — Сила Моя</title>
 <meta property="og:title" content="Переводной материал">
