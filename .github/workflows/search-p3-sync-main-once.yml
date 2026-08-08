@@ -1,3 +1,4 @@
+# one-shot trigger; self-deletes after latest-main merge
 name: Search P3 sync latest main once
 
 on:
