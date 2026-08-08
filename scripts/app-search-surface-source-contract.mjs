@@ -69,6 +69,10 @@ check(!files.search.includes('<span class="kb">⌘K</span>'), 'Mac-only visible 
 check(files.search.includes('function __gbHydratePagefind(e,t){var i=new Array(e.length),n=0,r=Math.min(8,e.length);'), 'Pagefind hydration must remain bounded to eight workers');
 check(files.search.includes('t===M&&(i[r]=e)'), 'Pagefind hydration worker must remain generation-guarded');
 check(!files.search.includes('Promise.all(n.map(function(e){return e.data()}))'), 'unbounded Pagefind data() hydration survived');
+check(files.search.includes('function __gbInvalidateVisibleResults(){__gbClearMore(),j=[],_=0,E.removeAttribute("aria-activedescendant"),S.innerHTML="",T.textContent="",ce()}'), 'query mutation must invalidate stale interactive result state');
+check(files.search.includes('function xe(e){__gbInvalidateVisibleResults();if(e&&!(e.length<2))'), 'query execution must invalidate stale interactive state before async search');
+check(files.search.includes('E.addEventListener("input",function(){A=E.value.trim(),++M,__gbInvalidateVisibleResults(),L.style.display=A?"":"none"'), 'input mutation must invalidate stale interactive state synchronously');
+check(files.search.includes('function __gbSearchExactScripture(e){__gbInvalidateVisibleResults();var t=++M;'), 'exact Scripture must invalidate stale interactive state before async index load');
 
 for (const marker of [
   "String(event && event.key || '').toLowerCase() === 'k'",
