@@ -2,7 +2,7 @@ name: Temporary Gill glossary residual projector
 
 on:
   pull_request:
-    types: [opened]
+    types: [synchronize]
     branches:
       - main
     paths:
@@ -84,16 +84,10 @@ jobs:
 
           audit_path = Path('scripts/interactive-audit.js')
           audit = audit_path.read_text(encoding='utf-8')
-          needle = '''      } catch (error) {
-                readinessError = String(error.message || error).slice(0, 500);
-              }
-
-              const target = terms.first();'''
-          replacement = '''      } catch (error) {
-                readinessError = String(error.message || error).slice(0, 500);
-              }
-
-              if (!readinessError && url === '/articles/dzhon-gill-chast-1-chelovek/') {
+          needle = '      const target = terms.first();'
+          if audit.count(needle) != 1:
+              raise SystemExit(f'unexpected glossary target marker count: {audit.count(needle)}')
+          addition = '''      if (!readinessError && url === '/articles/dzhon-gill-chast-1-chelovek/') {
                 const residualState = await page.evaluate(() => {
                   const runtime = window.__gbGlossaryRuntime;
                   const nodes = Array.from(document.querySelectorAll('article .gterm'));
@@ -120,10 +114,8 @@ jobs:
                 }
               }
 
-              const target = terms.first();'''
-          if audit.count(needle) != 1:
-              raise SystemExit('interactive glossary audit insertion point changed; fail closed')
-          audit_path.write_text(audit.replace(needle, replacement, 1), encoding='utf-8')
+          '''
+          audit_path.write_text(audit.replace(needle, addition + needle, 1), encoding='utf-8')
           PY
 
       - name: Static validation
@@ -149,17 +141,18 @@ jobs:
       - name: Run canonical interactive runtime audit
         run: npm run interactive-audit
 
-      - name: Enforce bounded final diff
+      - name: Remove temporary executor and enforce final-tree scope
         run: |
           set -euo pipefail
+          rm .github/workflows/tmp-gill-glossary-residuals-projector.yml
           git diff --check
-          test "$(git diff --name-only | sort)" = "$(printf '%s\n' data/glossary.json scripts/interactive-audit.js | sort)"
+          test "$(git diff --name-only | sort)" = "$(printf '%s\n' .github/workflows/tmp-gill-glossary-residuals-projector.yml data/glossary.json scripts/interactive-audit.js | sort)"
 
-      - name: Commit bounded repair
+      - name: Commit bounded repair and executor retirement
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/glossary.json scripts/interactive-audit.js
+          git add -A .github/workflows/tmp-gill-glossary-residuals-projector.yml data/glossary.json scripts/interactive-audit.js
           git commit -m "fix(gill): restore glossary residuals"
           git push origin HEAD:fix/gill-part1-glossary-residuals-20260808
