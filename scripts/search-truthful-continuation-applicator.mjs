@@ -8,7 +8,7 @@ const cssPath = 'css/command-palette.css';
 const browserPath = 'scripts/search-modal-browser-contract.mjs';
 
 function fail(message) {
-  throw new Error(`[search-continuation] ${message}`);
+  throw new Error('[search-continuation] ' + message);
 }
 
 function countOf(text, needle) {
@@ -18,18 +18,15 @@ function countOf(text, needle) {
 
 function replaceOnce(text, needle, replacement, label) {
   const count = countOf(text, needle);
-  if (count !== 1) fail(`${label}: expected exactly one match, got ${count}`);
+  if (count !== 1) fail(label + ': expected exactly one match, got ' + count);
   return text.replace(needle, replacement);
 }
 
 function replaceRange(text, startMarker, endMarker, transform, label) {
   const start = text.indexOf(startMarker);
   const end = text.indexOf(endMarker, start + startMarker.length);
-  if (start < 0 || end < 0 || end <= start) fail(`${label}: range markers not found`);
-  const before = text.slice(0, start);
-  const range = text.slice(start, end);
-  const after = text.slice(end);
-  return before + transform(range) + after;
+  if (start < 0 || end < 0 || end <= start) fail(label + ': range markers not found');
+  return text.slice(0, start) + transform(text.slice(start, end)) + text.slice(end);
 }
 
 function patchSearch(source) {
@@ -47,9 +44,14 @@ function patchSearch(source) {
     'continuation owner handle',
   );
 
-  source = replaceOnce(source, 'function ae(e){var t=[];', 'function ae(e){__gbClearMore();var t=[];', 'render clears stale continuation');
+  source = replaceOnce(
+    source,
+    'function ae(e){var t=[];',
+    'function ae(e){__gbClearMore();var t=[];',
+    'render clears stale continuation',
+  );
 
-  const helpers = 'var __gbSearchPageSize=12;function __gbClearMore(){More&&(More.innerHTML="")}function __gbGroupTotal(e){return(e||[]).reduce(function(e,t){return e+(t&&Array.isArray(t.items)?t.items.length:0)},0)}function __gbSliceGroups(e,t){var n=t,r=[];return(e||[]).forEach(function(e){if(n>0&&e&&Array.isArray(e.items)){var t=e.items.slice(0,n);t.length&&(r.push({name:e.name,items:t}),n-=t.length)}}),r}function __gbRenderWindow(e,t,n){var r=__gbGroupTotal(e),a=Math.min(Number(t)||__gbSearchPageSize,r),o=_;ae(__gbSliceGroups(e,a)),o>0&&j.length&&oe(Math.min(o,j.length-1),!1),T.textContent=r>a?"Показано "+a+" из "+r+" "+(n||"рез."):r+" "+(n||"рез.");if(r>a&&More){More.innerHTML=\'<button type="button" class="cp-more">Показать ещё</button>\';var c=More.querySelector(".cp-more");c&&(c.setAttribute("aria-label","Показать ещё результаты. Показано "+a+" из "+r),c.addEventListener("click",function(){var t=Math.min(a+__gbSearchPageSize,r);__gbRenderWindow(e,t,n),requestAnimationFrame(function(){var e=More&&More.querySelector(".cp-more");(e||E).focus()})}))}return r}';
+  const helpers = String.raw`var __gbSearchPageSize=12;function __gbClearMore(){More&&(More.innerHTML="")}function __gbGroupTotal(e){return(e||[]).reduce(function(e,t){return e+(t&&Array.isArray(t.items)?t.items.length:0)},0)}function __gbSliceGroups(e,t){var n=t,r=[];return(e||[]).forEach(function(e){if(n>0&&e&&Array.isArray(e.items)){var t=e.items.slice(0,n);t.length&&(r.push({name:e.name,items:t}),n-=t.length)}}),r}function __gbRenderWindow(e,t,n){var r=__gbGroupTotal(e),a=Math.min(Number(t)||__gbSearchPageSize,r),o=_;ae(__gbSliceGroups(e,a)),o>0&&j.length&&oe(Math.min(o,j.length-1),!1),T.textContent=r>a?"Показано "+a+" из "+r+" "+(n||"рез."):r+" "+(n||"рез.");if(r>a&&More){More.innerHTML='<button type="button" class="cp-more">Показать ещё</button>';var c=More.querySelector(".cp-more");c&&(c.setAttribute("aria-label","Показать ещё результаты. Показано "+a+" из "+r),c.addEventListener("click",function(){var t=Math.min(a+__gbSearchPageSize,r);__gbRenderWindow(e,t,n),requestAnimationFrame(function(){var e=More&&More.querySelector(".cp-more");(e||E).focus()})}))}return r}`;
   source = replaceOnce(source, 'function oe(e,t){', helpers + 'function oe(e,t){', 'pagination helpers');
 
   for (const [needle, replacement, label] of [
@@ -58,11 +60,13 @@ function patchSearch(source) {
     ['function we(){if("authors"!==C)', 'function we(){__gbClearMore();if("authors"!==C)', 'default state clears continuation'],
     ['function ke(){S.innerHTML=', 'function ke(){__gbClearMore();S.innerHTML=', 'default hint clears continuation'],
     ['function xe(e){if(e&&!(e.length<2))', 'function xe(e){__gbClearMore();if(e&&!(e.length<2))', 'query clears stale continuation'],
-  ]) source = replaceOnce(source, needle, replacement, label);
+  ]) {
+    source = replaceOnce(source, needle, replacement, label);
+  }
 
   source = replaceRange(source, 'function ye(e){', 'function be(e){', (range) => {
     const capCount = countOf(range, '.slice(0,12)');
-    if (capCount !== 1) fail(`fallback cap: expected one slice(0,12), got ${capCount}`);
+    if (capCount !== 1) fail('fallback cap: expected one slice(0,12), got ' + capCount);
     range = range.replace('.slice(0,12)', '');
     range = replaceOnce(
       range,
@@ -90,15 +94,14 @@ function patchSearch(source) {
   if (exactStart < 0 || exactEnd < 0) fail('exact Scripture function markers missing');
   const oldExact = source.slice(exactStart, exactEnd);
   if (countOf(oldExact, 'n=n.slice(0,12)') !== 1) fail('exact Scripture old cap missing or duplicated');
-  const newExact = 'function __gbRenderExactScripture(e,t){var i={},n=[];return(t.occurrences||[]).forEach(function(r,a){var o=r.url+"#"+(r.anchor||"");i[o]||(i[o]=!0,n.push(__gbScriptureOccurrenceItem(t,r,a,e)))}),!!n.length&&(__gbRenderWindow([{name:"Точные вхождения",items:n}],__gbSearchPageSize,"вх."),!0)}';
+  const newExact = String.raw`function __gbRenderExactScripture(e,t){var i={},n=[];return(t.occurrences||[]).forEach(function(r,a){var o=r.url+"#"+(r.anchor||"");i[o]||(i[o]=!0,n.push(__gbScriptureOccurrenceItem(t,r,a,e)))}),!!n.length&&(__gbRenderWindow([{name:"Точные вхождения",items:n}],__gbSearchPageSize,"вх."),!0)}`;
   source = source.slice(0, exactStart) + newExact + source.slice(exactEnd);
 
   return source;
 }
 
 function patchCss(source) {
-  const marker = '.cp-more-wrap:empty';
-  if (source.includes(marker)) fail('continuation CSS already exists before transaction');
+  if (source.includes('.cp-more-wrap:empty')) fail('continuation CSS already exists before transaction');
   return source + '\n.cp-more-wrap{flex:0 0 auto;padding:7px 14px 10px;border-top:1px solid var(--cp-border-soft);background:color-mix(in srgb,var(--cp-bg-surface) 38%,var(--cp-bg-card))}.cp-more-wrap:empty{display:none}.cp-more{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;border:1px solid color-mix(in srgb,var(--cp-accent) 22%,var(--cp-border));border-radius:10px;background:var(--cp-bg-card);color:var(--cp-accent);font-family:var(--cp-font-ui);font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:background .18s var(--cp-ease),border-color .18s var(--cp-ease),transform .18s var(--cp-ease),box-shadow .18s var(--cp-ease);touch-action:manipulation}.cp-more:hover{background:var(--cp-accent-soft);border-color:color-mix(in srgb,var(--cp-accent) 42%,var(--cp-border))}.cp-more:active{transform:scale(.985)}.cp-more:focus-visible{outline:0;box-shadow:0 0 0 3px var(--cp-accent-soft);border-color:var(--cp-accent)}\n';
 }
 
@@ -111,7 +114,7 @@ async function runContinuationContract(browserType, browserName, port) {
     const context = await browser.newContext({ viewport: { width: 960, height: 760 } });
     const page = await context.newPage();
     if (configure) await configure(page);
-    await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.goto('http://127.0.0.1:' + port + '/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await page.waitForFunction(() => window.GBSearch && typeof window.GBSearch.open === 'function');
     await page.evaluate(() => window.GBSearch.open());
     await page.waitForFunction(
@@ -126,7 +129,7 @@ async function runContinuationContract(browserType, browserName, port) {
     await page.waitForFunction(({ total, label }) => {
       const status = document.getElementById('cp-status')?.textContent || '';
       return document.querySelectorAll('.cp-item[role="option"]').length === 12 &&
-        status === `Показано 12 из ${total} ${label}` &&
+        status === 'Показано 12 из ' + total + ' ' + label &&
         !!document.querySelector('#cp-more-wrap > .cp-more');
     }, { total, label }, { timeout: 30_000 });
     assert.equal(await page.locator('#cp-listbox .cp-more').count(), 0, 'continuation button must stay outside listbox');
@@ -134,7 +137,7 @@ async function runContinuationContract(browserType, browserName, port) {
     await page.waitForFunction(({ total, label }) => {
       const status = document.getElementById('cp-status')?.textContent || '';
       return document.querySelectorAll('.cp-item[role="option"]').length === total &&
-        status === `${total} ${label}` &&
+        status === String(total) + ' ' + label &&
         !document.querySelector('#cp-more-wrap > .cp-more');
     }, { total, label }, { timeout: 30_000 });
     const ids = await page.locator('.cp-item[role="option"]').evaluateAll((nodes) => nodes.map((node) => node.id));
@@ -146,14 +149,14 @@ async function runContinuationContract(browserType, browserName, port) {
     {
       const { context, page, input } = await openFixture();
       await page.evaluate(() => {
-        const urls = Array.from({ length: 16 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : `/fixture/pagefind-${index}/`);
+        const urls = Array.from({ length: 16 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : '/fixture/pagefind-' + index + '/');
         window.__pagefind__ = {
           search: async () => ({
             results: urls.map((url, index) => ({
               data: async () => ({
                 url,
-                meta: { title: `Fixture Pagefind ${index}`, author: '', readTime: '1', category: 'Fixture', scripture: '' },
-                excerpt: `Fixture Pagefind excerpt ${index}`,
+                meta: { title: 'Fixture Pagefind ' + index, author: '', readTime: '1', category: 'Fixture', scripture: '' },
+                excerpt: 'Fixture Pagefind excerpt ' + index,
               }),
             })),
           }),
@@ -169,11 +172,11 @@ async function runContinuationContract(browserType, browserName, port) {
     {
       const manifest = {
         items: Array.from({ length: 16 }, (_, index) => ({
-          id: `fallback-${index}`,
+          id: 'fallback-' + index,
           type: 'article',
-          url: `/fixture/fallback-${index}/`,
-          title: `fixturefallback ${index}`,
-          description: `fixturefallback material ${index}`,
+          url: '/fixture/fallback-' + index + '/',
+          title: 'fixturefallback ' + index,
+          description: 'fixturefallback material ' + index,
           section: 'Fixture',
           author: 'Fixture Author',
           priority: 100 - index,
@@ -200,10 +203,10 @@ async function runContinuationContract(browserType, browserName, port) {
           id: 'jer-17-9-fixture',
           label: 'Иер 17:9',
           occurrences: Array.from({ length: 15 }, (_, index) => ({
-            url: `/fixture/scripture-${index}/`,
-            anchor: `fixture-${index}`,
-            title: `Fixture Scripture ${index}`,
-            context: `Fixture context ${index}`,
+            url: '/fixture/scripture-' + index + '/',
+            anchor: 'fixture-' + index,
+            title: 'Fixture Scripture ' + index,
+            context: 'Fixture context ' + index,
             topics: ['fixture'],
           })),
         }],
@@ -227,13 +230,9 @@ async function runContinuationContract(browserType, browserName, port) {
 `;
 
 function patchBrowser(source) {
-  source = replaceOnce(
-    source,
-    "  assert.match(cssSource, /\\.gb-nav-search-icon\\{[^}]*width:44px;[^}]*height:44px;/, '44px search trigger missing');\n}",
-    "  assert.match(cssSource, /\\.gb-nav-search-icon\\{[^}]*width:44px;[^}]*height:44px;/, '44px search trigger missing');\n  for (const marker of ['id=\\\"cp-more-wrap\\\"', 'class=\\\"cp-more\\\"', 'Показано ']) assert.ok(jsSource.includes(marker), `missing continuation JS marker: ${marker}`);\n  assert.ok(!jsSource.includes('i.results.slice(0,10)'), 'Pagefind pre-hydration cap survived');\n  for (const marker of ['.cp-more-wrap:empty', '.cp-more:focus-visible']) assert.ok(cssSource.includes(marker), `missing continuation CSS marker: ${marker}`);\n}",
-    'Search source validation extension',
-  );
-
+  const validationNeedle = "  assert.match(cssSource, /\\.gb-nav-search-icon\\{[^}]*width:44px;[^}]*height:44px;/, '44px search trigger missing');\n}";
+  const validationReplacement = "  assert.match(cssSource, /\\.gb-nav-search-icon\\{[^}]*width:44px;[^}]*height:44px;/, '44px search trigger missing');\n  for (const marker of ['id=\\\"cp-more-wrap\\\"', 'class=\\\"cp-more\\\"', 'Показано ']) assert.ok(jsSource.includes(marker), 'missing continuation JS marker: ' + marker);\n  assert.ok(!jsSource.includes('i.results.slice(0,10)'), 'Pagefind pre-hydration cap survived');\n  for (const marker of ['.cp-more-wrap:empty', '.cp-more:focus-visible']) assert.ok(cssSource.includes(marker), 'missing continuation CSS marker: ' + marker);\n}";
+  source = replaceOnce(source, validationNeedle, validationReplacement, 'Search source validation extension');
   source = replaceOnce(source, 'const matrix = [', continuationBrowserHelper + '\nconst matrix = [', 'continuation browser helper');
   source = replaceOnce(
     source,
@@ -245,22 +244,23 @@ function patchBrowser(source) {
 }
 
 function validateFinal(search, css, browser) {
-  const requiredSearch = [
+  for (const marker of [
     'id="cp-more-wrap"',
     'class="cp-more"',
     'var __gbSearchPageSize=12',
     'Показано ',
     '__gbRenderWindow(h,__gbSearchPageSize)',
     '__gbRenderWindow([{name:"Точные вхождения",items:n}],__gbSearchPageSize,"вх.")',
-  ];
-  for (const marker of requiredSearch) if (!search.includes(marker)) fail(`final search missing marker: ${marker}`);
+  ]) if (!search.includes(marker)) fail('final search missing marker: ' + marker);
+
   if (search.includes('i.results.slice(0,10)')) fail('final search still caps Pagefind before hydration');
   const fallbackRange = search.slice(search.indexOf('function ye(e){'), search.indexOf('function be(e){'));
   if (fallbackRange.includes('.slice(0,12)')) fail('final fallback search still caps at 12 before continuation');
   const exactRange = search.slice(search.indexOf('function __gbRenderExactScripture'), search.indexOf('function __gbSearchExactScripture'));
   if (exactRange.includes('slice(0,12)')) fail('final exact Scripture still caps before continuation');
-  for (const marker of ['.cp-more-wrap:empty', '.cp-more:focus-visible']) if (!css.includes(marker)) fail(`final CSS missing marker: ${marker}`);
-  for (const marker of ['runContinuationContract', 'Pagefind pre-hydration cap survived', "assertPaged(page, 16, 'рез.')", "assertPaged(page, 15, 'вх.')"]) if (!browser.includes(marker)) fail(`final browser contract missing marker: ${marker}`);
+
+  for (const marker of ['.cp-more-wrap:empty', '.cp-more:focus-visible']) if (!css.includes(marker)) fail('final CSS missing marker: ' + marker);
+  for (const marker of ['runContinuationContract', 'Pagefind pre-hydration cap survived', "assertPaged(page, 16, 'рез.')", "assertPaged(page, 15, 'вх.')"]) if (!browser.includes(marker)) fail('final browser contract missing marker: ' + marker);
 }
 
 let search = fs.readFileSync(searchPath, 'utf8');
