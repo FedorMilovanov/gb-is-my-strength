@@ -71,6 +71,14 @@ jobs:
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
+      - name: Verify frozen editorial projections
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-metadata-freeze.log
+
       - name: Build Pagefind index into dist
         run: npm run pagefind:build:dist
 
@@ -129,5 +137,6 @@ jobs:
             reports/a07-sw-static-audit.md
             reports/a07-offline-pwa-browser.json
             reports/a07-offline-pwa-browser.md
+            reports/editorial-metadata-freeze.log
           if-no-files-found: error
           retention-days: 14
