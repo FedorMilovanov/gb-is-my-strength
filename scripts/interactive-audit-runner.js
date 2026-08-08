@@ -11,6 +11,7 @@ const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const AUDIT = path.join(__dirname, 'interactive-audit.js');
 const HERMENEVTIKA_REGRESSION_GUARD = path.join(__dirname, 'hermenevtika-regression-guard.mjs');
 const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
+const ARTICLE_CONTROL_CENSUS = path.join(__dirname, 'article-controls-browser-contract.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
@@ -113,12 +114,21 @@ function runStandaloneReaderLayoutGuard(baseUrl) {
   return runNodeScript(STANDALONE_READER_LAYOUT_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runArticleControlCensus(baseUrl) {
+  if (!fs.existsSync(ARTICLE_CONTROL_CENSUS)) {
+    throw new Error(`Article control census is missing at ${ARTICLE_CONTROL_CENSUS}`);
+  }
+  return runNodeScript(ARTICLE_CONTROL_CENSUS, [], { AUDIT_BASE: baseUrl });
+}
+
 async function runInteractiveContracts(baseUrl) {
   const auditCode = await runAudit(baseUrl);
   if (auditCode !== 0) return auditCode;
   const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
   if (tooltipCode !== 0) return tooltipCode;
-  return runStandaloneReaderLayoutGuard(baseUrl);
+  const standaloneCode = await runStandaloneReaderLayoutGuard(baseUrl);
+  if (standaloneCode !== 0) return standaloneCode;
+  return runArticleControlCensus(baseUrl);
 }
 
 async function runHomeDesignAudits() {
