@@ -1,22 +1,29 @@
 #!/usr/bin/env node
 /*
  * legacy-shadow-wrapper-audit.js — verify every registry-owned Astro route that
- * still has a committed legacy HTML shadow.
+ * has a ledger-owned retained legacy HTML reference.
  *
- * The route set is derived from migration/page-ownership.json. The audit guards
- * semantic continuity rather than freezing stale wording: canonical ownership,
- * required metadata/H1, indexability disposition, route-specific structural
- * markers and a lower bound on retained reader text.
+ * Route membership is the intersection of current production Astro ownership and
+ * the immutable legacy-reference ledger. Physical bytes are resolved only through
+ * migration/legacy-reference-path.js, so active-root and quarantined storage keep
+ * the same logical identity and ambiguity still fails closed.
+ *
+ * The audit guards semantic continuity rather than freezing stale wording:
+ * canonical ownership, required metadata/H1, indexability disposition,
+ * route-specific structural markers and a lower bound on retained reader text.
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const {
+  listReferenceRoutes,
+  resolveReferenceForRoute,
+} = require('../migration/legacy-reference-path');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
-const OWNERSHIP = path.join(ROOT, 'migration', 'page-ownership.json');
 const SITE = 'https://gospod-bog.ru';
 const NO_BUILD = process.argv.includes('--no-build');
 
@@ -86,43 +93,69 @@ function mustPresent(label, value) {
   if (String(value || '').trim()) ok(`${label}: present`);
   else bad(`${label}: missing or empty`);
 }
-function loadOwnership() {
-  if (!fs.existsSync(OWNERSHIP)) {
+function loadOwnership(options = {}) {
+  const root = options.root ? path.resolve(options.root) : ROOT;
+  const ownership = path.join(root, 'migration', 'page-ownership.json');
+  if (!fs.existsSync(ownership)) {
     bad('migration/page-ownership.json missing');
     return null;
   }
-  try { return JSON.parse(read(OWNERSHIP)); }
+  try { return JSON.parse(read(ownership)); }
   catch (error) {
     bad(`migration/page-ownership.json invalid JSON: ${error.message}`);
     return null;
   }
 }
-function discoverRoutes() {
-  const manifest = loadOwnership();
+function discoverRoutes(options = {}) {
+  const root = options.root ? path.resolve(options.root) : ROOT;
+  const routeOverrides = options.routeOverrides || ROUTE_OVERRIDES;
+  const manifest = loadOwnership({ root });
   if (!manifest || !manifest.routes || typeof manifest.routes !== 'object') {
     bad('ownership manifest routes object missing');
     return [];
   }
 
+  const referenceRoutes = new Set(listReferenceRoutes());
   const routes = Object.entries(manifest.routes)
-    .filter(([, meta]) => meta && meta.owner === 'astro' && meta.status === 'production-dist')
-    .map(([route]) => ({ route, rel: routeToRel(route) }))
-    .filter(({ rel }) => fs.existsSync(path.join(ROOT, rel)))
-    .map(({ route, rel }) => ({
-      route,
-      rel,
-      url: canonicalUrl(route),
-      marker: ROUTE_OVERRIDES[route]?.marker || '',
-      ratio: ROUTE_OVERRIDES[route]?.ratio || DEFAULT_RATIO,
-    }))
+    .filter(([route, meta]) => (
+      meta
+      && meta.owner === 'astro'
+      && meta.status === 'production-dist'
+      && referenceRoutes.has(route)
+    ))
+    .map(([route]) => {
+      let reference;
+      try {
+        reference = resolveReferenceForRoute(route, { root });
+      } catch (error) {
+        bad(`${route}: ${error.message}`);
+        return null;
+      }
+      return {
+        route,
+        rel: routeToRel(route),
+        logicalPath: reference.logicalPath,
+        storagePath: reference.repositoryPath,
+        legacyAbsolutePath: reference.absolutePath,
+        url: canonicalUrl(route),
+        marker: routeOverrides[route]?.marker || '',
+        ratio: routeOverrides[route]?.ratio || DEFAULT_RATIO,
+      };
+    })
+    .filter(Boolean)
     .sort((a, b) => a.route.localeCompare(b.route));
 
   const discovered = new Set(routes.map(({ route }) => route));
-  for (const route of Object.keys(ROUTE_OVERRIDES)) {
-    if (!discovered.has(route)) bad(`${route}: route override has no registry-owned committed legacy shadow`);
+  for (const route of Object.keys(routeOverrides)) {
+    if (!discovered.has(route)) bad(`${route}: route override has no registry-owned retained legacy reference`);
   }
-  if (!routes.length) bad('no registry-owned committed legacy shadows discovered');
-  if (new Set(routes.map(({ rel }) => rel)).size !== routes.length) bad('duplicate legacy shadow file discovered');
+  if (!routes.length) bad('no registry-owned retained legacy references discovered');
+  if (new Set(routes.map(({ logicalPath }) => logicalPath)).size !== routes.length) {
+    bad('duplicate logical legacy reference discovered');
+  }
+  if (new Set(routes.map(({ storagePath }) => storagePath)).size !== routes.length) {
+    bad('duplicate resolved legacy reference storage discovered');
+  }
   return routes;
 }
 function runBuild() {
@@ -133,10 +166,10 @@ function runBuild() {
   if (res.status !== 0) process.exit(res.status || 1);
 }
 function auditRoute(route) {
-  const legacyPath = path.join(ROOT, route.rel);
+  const legacyPath = route.legacyAbsolutePath;
   const distPath = path.join(DIST, route.rel);
-  console.log(`\nWRAPPER: ${route.rel}`);
-  if (!fs.existsSync(legacyPath)) return bad(`${route.rel}: legacy file missing`);
+  console.log(`\nWRAPPER: ${route.rel} [reference=${route.storagePath}]`);
+  if (!fs.existsSync(legacyPath)) return bad(`${route.logicalPath}: resolved legacy reference file missing`);
   if (!fs.existsSync(distPath)) return bad(`${route.rel}: dist file missing`);
   const legacy = read(legacyPath);
   const astro = read(distPath);
@@ -150,7 +183,7 @@ function auditRoute(route) {
   mustPresent(`${route.rel} title`, title(astro));
   mustPresent(`${route.rel} description`, meta(astro, 'description'));
   mustPresent(`${route.rel} H1`, h1(astro));
-  mustEqual(`${route.rel} noindex disposition mirrors committed shadow`, hasNoindex(astro), hasNoindex(legacy));
+  mustEqual(`${route.rel} noindex disposition mirrors retained reference`, hasNoindex(astro), hasNoindex(legacy));
 
   const legacyWords = wordCount(legacy);
   const astroWords = wordCount(astro);
@@ -166,7 +199,7 @@ function main() {
     console.log(`\n❌ legacy shadow discovery failed: ${problems.length} issue(s)`);
     process.exit(1);
   }
-  console.log(`✅ registry-derived legacy shadow set: ${routes.length} route(s)`);
+  console.log(`✅ registry/reference-derived legacy shadow set: ${routes.length} route(s)`);
   runBuild();
   routes.forEach(auditRoute);
   console.log('');
@@ -174,7 +207,7 @@ function main() {
     console.log(`❌ legacy shadow wrapper audit failed: ${problems.length} issue(s)`);
     process.exit(1);
   }
-  console.log(`✅ legacy shadow wrapper audit passed (${routes.length} registry-derived route(s))`);
+  console.log(`✅ legacy shadow wrapper audit passed (${routes.length} registry/reference-derived route(s))`);
 }
 
 if (require.main === module) main();

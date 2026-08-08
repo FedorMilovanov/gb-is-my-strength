@@ -16,6 +16,7 @@ const {
   resolveReferenceForRoute,
   resolveReferencePath,
 } = require('../migration/legacy-reference-path');
+const { discoverRoutes: discoverWrapperRoutes } = require('./legacy-shadow-wrapper-audit.js');
 const { legacyReferenceStorageExists } = require('./lib/route-source-contract.js');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -29,6 +30,7 @@ assert.deepEqual(
     'scripts/astro-ishod-pilot-audit.js',
     'scripts/content-source-provenance-audit.js',
     'scripts/legacy-shadow-retirement-readiness.mjs',
+    'scripts/legacy-shadow-wrapper-audit.js',
     'scripts/lib/audit-pro-source-corpus.js',
     'scripts/lib/legacy-source-authority.js',
     'scripts/lib/route-source-contract.js',
@@ -50,6 +52,22 @@ assert.deepEqual(
     evidenceToken: 'resolveLogicalReferenceStorage',
   },
   'retirement readiness must be an explicit nonblocking resolver-backed policy reader'
+);
+const wrapperDependency = (manifest.dependencies || []).find((row) => row.path === 'scripts/legacy-shadow-wrapper-audit.js');
+assert.deepEqual(
+  wrapperDependency && {
+    access: wrapperDependency.access,
+    classification: wrapperDependency.classification,
+    quarantineImpact: wrapperDependency.quarantineImpact,
+    evidenceToken: wrapperDependency.evidenceToken,
+  },
+  {
+    access: 'policy-reader',
+    classification: 'migration-reference-only',
+    quarantineImpact: 'none-fixture-policy-or-comment-only',
+    evidenceToken: 'resolveReferenceForRoute',
+  },
+  'legacy shadow wrapper audit must be an explicit nonblocking resolver-backed policy reader'
 );
 const routeSourceDependency = (manifest.dependencies || []).find((row) => row.path === 'scripts/lib/route-source-contract.js');
 assert.deepEqual(
@@ -132,6 +150,31 @@ try {
     false,
     'route source contract must still reject a missing retained reference'
   );
+
+  const ownershipPath = path.join(tempRoot, 'migration', 'page-ownership.json');
+  fs.mkdirSync(path.dirname(ownershipPath), { recursive: true });
+  fs.writeFileSync(ownershipPath, JSON.stringify({
+    routes: {
+      '/karty/ishod/': { owner: 'astro', status: 'production-dist' },
+      '/not-ledger-owned/': { owner: 'astro', status: 'production-dist' },
+    },
+  }, null, 2));
+  const wrapperQuarantined = `${REFERENCE_STORAGE_ROOT_REL}/${ishod.logicalPath}`;
+  fs.mkdirSync(path.dirname(path.join(tempRoot, wrapperQuarantined)), { recursive: true });
+  fs.writeFileSync(path.join(tempRoot, wrapperQuarantined), '<!doctype html><title>Ishod retained reference</title>');
+
+  assert.equal(
+    fs.existsSync(path.join(tempRoot, ishod.logicalPath)),
+    false,
+    'wrapper fixture must keep the active-root Ishod reference absent'
+  );
+  const wrapperRoutes = discoverWrapperRoutes({ root: tempRoot, routeOverrides: {} });
+  assert.equal(wrapperRoutes.length, 1, 'wrapper discovery must use ledger membership rather than active-root file existence');
+  assert.equal(wrapperRoutes[0].route, '/karty/ishod/');
+  assert.equal(wrapperRoutes[0].rel, 'karty/ishod/index.html');
+  assert.equal(wrapperRoutes[0].logicalPath, ishod.logicalPath);
+  assert.equal(wrapperRoutes[0].storagePath, wrapperQuarantined);
+  assert.equal(wrapperRoutes[0].legacyAbsolutePath, path.join(tempRoot, wrapperQuarantined));
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
@@ -149,4 +192,4 @@ const rejected = [
 ];
 for (const attempt of rejected) assert.throws(attempt);
 
-console.log(`✅ Explicit legacy reference-path contract: ${routes.length} routes; quarantine fallback + ambiguity fail-closed; ${rejected.length} adversarial resolutions rejected`);
+console.log(`✅ Explicit legacy reference-path contract: ${routes.length} routes; quarantine fallback + wrapper discovery + ambiguity fail-closed; ${rejected.length} adversarial resolutions rejected`);
