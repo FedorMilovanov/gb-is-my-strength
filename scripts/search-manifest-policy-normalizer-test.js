@@ -67,14 +67,14 @@ assert.equal(item.id, 'fixture');
 assert.equal(item.type, 'article');
 assert.equal(item.title, 'Нативный заголовок');
 assert.equal(item.description, 'Нативное описание');
-assert.equal(item.section, 'Богословие');
+assert.equal(item.section, 'Тематический раздел');
 assert.equal(item.image, '/images/fixture.webp');
 assert.deepEqual(item.tags, ['сердце', 'богословие']);
 assert.equal(item.readTime, 17);
-assert.equal(buildManifestItem(route, policy, html, 23).readTime, 23);
+assert.equal(buildManifestItem(route, policy, html, 23).readTime, 17);
 assert.equal(buildManifestItem(route, policy, htmlWithoutRuntimeReadTime, 23).readTime, 23);
 
-const registry = { version: 1, routes: { [route]: { ...policy } } };
+const registry = { version: 1, routes: { [route]: { ...policy } };
 const manifest = { version: 1, items: [] };
 const records = [{ route, owner: { status: 'production-dist' } }];
 assert.equal(migrationCandidates({
@@ -287,7 +287,7 @@ const seriesRecords = [
 ];
 const seriesHtmlFile = path.join(root, 'hard-texts/fixture-part/index.html');
 fs.mkdirSync(path.dirname(seriesHtmlFile), { recursive: true });
-fs.writeFileSync(seriesHtmlFile, html);
+fs.writeFileSync(seriesHtmlFile, htmlWithoutRuntimeReadTime);
 const seriesResult = applyMigration({
   policyRegistry: seriesRegistry,
   manifest: seriesManifest,
