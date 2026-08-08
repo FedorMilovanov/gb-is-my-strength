@@ -69,6 +69,7 @@ jobs:
 
       - name: Check normalizer syntax
         run: |
+          node --check scripts/_temp-css-duplicate-owner-cleanup.mjs
           node --check scripts/glossary-placement-normalizer.js
           node --check scripts/tooltip-trigger-normalizer.js
           node --check scripts/tooltip-style-normalizer.js
@@ -83,6 +84,7 @@ jobs:
 
       - name: Normalize source and shared marker styles
         run: |
+          node scripts/_temp-css-duplicate-owner-cleanup.mjs
           node scripts/glossary-placement-normalizer.js --write
           node scripts/tooltip-trigger-normalizer.js --write
           node scripts/tooltip-style-normalizer.js --write
@@ -90,11 +92,13 @@ jobs:
 
       - name: Validate normalized tree
         run: |
+          node scripts/css-layer-validator.js css/site.css --ceiling=200
           node scripts/glossary-contract-audit.js
           node scripts/tooltip-trigger-normalizer.js
           node scripts/tooltip-style-normalizer.js
           node scripts/tooltip-icon-audit.js
           node scripts/cache-bust.js
+          node scripts/legacy-reference-inventory-audit.mjs
 
       - name: Commit normalization
         shell: bash
@@ -102,7 +106,10 @@ jobs:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
-          if git diff --quiet; then
+          git fetch origin main
+          git checkout origin/main -- .github/workflows/glossary-contract.yml
+          git rm scripts/_temp-css-duplicate-owner-cleanup.mjs
+          if git diff --quiet && git diff --cached --quiet; then
             echo "No normalization changes required."
             exit 0
           fi
@@ -110,7 +117,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
-          git commit -m "fix(content): normalize glossary and tooltip contracts"
+          git commit -m "cleanup(css): remove duplicate shared owners"
           git push origin "HEAD:${HEAD_REF}"
 
   source-contract:
