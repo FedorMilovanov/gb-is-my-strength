@@ -153,8 +153,13 @@ for (const item of searchItems) {
   if (!url || !url.startsWith('/')) continue;
   const file = routeToFile(url);
   if (!exists(file)) continue;
+  const { profile } = loadRouteProfile(url);
+  const authoritativeLegacy = legacyIsAuthoritative(profile);
   const h1 = textOfFirstH1(file);
-  if (item.type === 'article' && h1) {
+  // Root HTML H1 may constrain discovery title only while that root document is
+  // still an authoritative legacy source. Strict-native/reference-only routes
+  // derive search-manifest.title from built PageHead authority instead.
+  if (item.type === 'article' && h1 && authoritativeLegacy) {
     const nt = norm(item.title);
     const nh = norm(h1);
     // Titles may add category/subtitle, but should at least contain the H1 core or vice versa.
@@ -163,8 +168,6 @@ for (const item of searchItems) {
       if (!hCore.every(w => nt.includes(w))) fail('search-title-h1-drift', `${item.url}: h1="${h1}", manifest="${item.title}"`);
     }
   }
-  const { profile } = loadRouteProfile(url);
-  const authoritativeLegacy = legacyIsAuthoritative(profile);
   const htmlTimes = extractHtmlReadTimes(file) || {};
   const canonical = canonicalForRoute(url, file, item.readTime);
   if (authoritativeLegacy) {
@@ -265,7 +268,7 @@ for (const [key, info] of Object.entries(series)) {
   if (landingUrl && searchByUrl.has(landingUrl)) {
     const st = searchByUrl.get(landingUrl).readTime;
     if (Number.isFinite(st) && total && st !== total) {
-      fail('series-landing-total-drift', `${landingUrl}: manifest=${st}, sum(parts)=${total}`);
+      fail('series-landing-total-drift', `${landingUrl}: manifest=${st}, sum(parts)=${total})`);
     }
   }
 }
