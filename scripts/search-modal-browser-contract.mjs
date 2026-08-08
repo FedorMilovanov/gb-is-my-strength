@@ -408,6 +408,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
   async function openFixture(configure, viewport = { width: 960, height: 760 }) {
     const context = await browser.newContext({ viewport });
     const page = await context.newPage();
+    assert.deepEqual(page.viewportSize(), viewport, 'continuation fixture must use requested viewport');
     activePage = page;
     consoleErrors = [];
     pageErrors = [];
@@ -480,7 +481,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
             body: route.request().method() === 'HEAD' ? '' : pagefindModule,
           });
         });
-      });
+      }, viewport);
       await input.fill('fixture-pagefind');
       summary.pagefind = await assertPaged(page, 27, 'рез.');
       await context.close();
@@ -558,7 +559,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
         await fixturePage.route('**/data/search-manifest.json', async (route) => {
           await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(manifest) });
         });
-      });
+      }, viewport);
       await input.fill('fixturefallback');
       summary.fallback = await assertPaged(page, 25, 'рез.');
       await context.close();
@@ -604,7 +605,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
           await new Promise((resolve) => setTimeout(resolve, 350));
           await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(scriptureIndex) });
         });
-      });
+      }, viewport);
       await input.fill('stalerace');
       await page.waitForFunction(() => document.querySelectorAll('.cp-item[role="option"]').length === 12 && !!document.querySelector('#cp-more-wrap > .cp-more'), null, { timeout: 30_000 });
       await page.locator('[data-scope="scripture"]').click();
