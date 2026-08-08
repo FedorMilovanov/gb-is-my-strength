@@ -44,6 +44,7 @@ function validateSource() {
   assert.match(cssSource, /\.gb-nav-search-icon\{[^}]*width:44px;[^}]*height:44px;/, '44px search trigger missing');
   for (const marker of ['id=\"cp-more-wrap\"', 'class=\"cp-more\"', 'Показано ']) assert.ok(jsSource.includes(marker), 'missing continuation JS marker: ' + marker);
   assert.ok(!jsSource.includes('i.results.slice(0,10)'), 'Pagefind pre-hydration cap survived');
+  assert.ok(jsSource.includes('function __gbSearchExactScripture(e){__gbClearMore();'), 'exact Scripture must clear stale continuation before async index load');
   for (const marker of ['.cp-more-wrap:empty', '.cp-more:focus-visible']) assert.ok(cssSource.includes(marker), 'missing continuation CSS marker: ' + marker);
 }
 
@@ -463,12 +464,35 @@ async function runContinuationContract(browserType, browserName, port) {
           })),
         }],
       };
+      const staleManifest = {
+        items: Array.from({ length: 16 }, (_, index) => ({
+          id: 'stale-' + index,
+          type: 'article',
+          url: '/fixture/stale-' + index + '/',
+          title: 'stalerace ' + index,
+          description: 'stalerace material ' + index,
+          section: 'Fixture',
+          author: 'Fixture Author',
+          priority: 100 - index,
+          tags: ['stalerace'],
+        })),
+      };
       const { context, page, input } = await openFixture(async (fixturePage) => {
+        await fixturePage.route('**/pagefind/pagefind.js', async (route) => {
+          await route.fulfill({ status: 404, contentType: 'text/plain', body: 'missing in stale continuation fixture' });
+        });
+        await fixturePage.route('**/data/search-manifest.json', async (route) => {
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(staleManifest) });
+        });
         await fixturePage.route('**/data/scripture-search-index.json', async (route) => {
+          await new Promise((resolve) => setTimeout(resolve, 350));
           await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(scriptureIndex) });
         });
       });
+      await input.fill('stalerace');
+      await page.waitForFunction(() => document.querySelectorAll('.cp-item[role="option"]').length === 12 && !!document.querySelector('#cp-more-wrap > .cp-more'), null, { timeout: 30_000 });
       await page.locator('[data-scope="scripture"]').click();
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'exact Scripture must clear stale continuation before index response');
       await input.fill('Иер 17:9');
       summary.scripture = await assertPaged(page, 15, 'вх.');
       await context.close();
