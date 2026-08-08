@@ -3,6 +3,10 @@
 const assert = require('assert');
 const fs = require('fs');
 const { findProfileFile } = require('./route-source-contract');
+const {
+  normalizeRepositoryPath,
+  resolveReferenceForRoute,
+} = require('../../migration/legacy-reference-path');
 
 const AUTHORITATIVE_LEGACY_STATUSES = new Set(['canonical', 'runtime-required']);
 const NON_AUTHORITATIVE_LEGACY_STATUSES = new Set(['reference-only', 'absent']);
@@ -47,6 +51,29 @@ function classifyLegacyAuthority(profile) {
   return { kind: 'invalid', status, explicit: true };
 }
 
+function resolveDeclaredLegacyReference(profile, options = {}) {
+  const status = typeof profile?.legacyStatus === 'string'
+    ? profile.legacyStatus.trim()
+    : '';
+  if (status === 'absent') return null;
+
+  const route = options.route || profile?.route || '';
+  const logicalPath = typeof profile?.legacyPath === 'string'
+    ? normalizeRepositoryPath(profile.legacyPath)
+    : '';
+  if (!route) throw new Error('declared legacy reference requires route identity');
+  if (!logicalPath) throw new Error(`declared legacy reference requires legacyPath for ${route}`);
+
+  const resolver = typeof options.resolveReferenceForRoute === 'function'
+    ? options.resolveReferenceForRoute
+    : resolveReferenceForRoute;
+  const resolved = resolver(route, { mustExist: options.mustExist !== false });
+  if (resolved.logicalPath !== logicalPath) {
+    throw new Error(`route/profile legacy identity mismatch for ${route}: profile=${logicalPath}, ledger=${resolved.logicalPath}`);
+  }
+  return resolved;
+}
+
 function validateLegacyAuthorityProfile(profile, options = {}) {
   const issues = [];
   const status = typeof profile?.legacyStatus === 'string'
@@ -75,7 +102,20 @@ function validateLegacyAuthorityProfile(profile, options = {}) {
     return issues;
   }
 
-  if (typeof options.pathExists === 'function' && !options.pathExists(referencePath)) {
+  const route = options.route || profile?.route || '';
+  if (route && options.verifyReference !== false) {
+    try {
+      resolveDeclaredLegacyReference(profile, {
+        route,
+        mustExist: options.mustExist !== false,
+        resolveReferenceForRoute: options.resolveReferenceForRoute,
+      });
+    } catch (error) {
+      issues.push(error.message);
+    }
+  } else if (typeof options.pathExists === 'function' && !options.pathExists(referencePath)) {
+    // Synthetic/unit fixtures without route identity may inject a logical-path
+    // validator. Production route profiles must use the explicit route API.
     issues.push(`declared legacyPath not found: ${referencePath}`);
   }
   return issues;
@@ -125,10 +165,35 @@ function runLegacyAuthorityContractChecks() {
   for (const [profile, expectedIssues, label] of cases) {
     assert.equal(validateLegacyAuthorityProfile(profile).length, expectedIssues, label);
   }
+
+  const syntheticResolver = (route) => ({
+    route,
+    logicalPath: 'old/index.html',
+    repositoryPath: 'migration/legacy-reference/old/index.html',
+    absolutePath: '/tmp/reference.html',
+    exists: true,
+  });
+  assert.equal(
+    resolveDeclaredLegacyReference(
+      { route: '/old/', legacyStatus: 'reference-only', legacyPath: 'old/index.html' },
+      { resolveReferenceForRoute: syntheticResolver }
+    ).repositoryPath,
+    'migration/legacy-reference/old/index.html',
+    'declared reference resolution must be storage-agnostic'
+  );
+  assert.throws(
+    () => resolveDeclaredLegacyReference(
+      { route: '/old/', legacyStatus: 'reference-only', legacyPath: 'wrong/index.html' },
+      { resolveReferenceForRoute: syntheticResolver }
+    ),
+    /route\/profile legacy identity mismatch/,
+    'profile/ledger identity mismatch must fail closed'
+  );
+
   assert.equal(currentLegacyReferenceDisposition({ legacyStatus: 'reference-only' }, 'p').classification, 'migration-reference-only');
   assert.equal(currentLegacyReferenceDisposition({ legacyStatus: 'runtime-required' }, 'p').classification, 'production-required');
   assert.equal(currentLegacyReferenceDisposition({}, 'p').classification, 'unknown-blocker');
-  return cases.length + 3;
+  return cases.length + 5;
 }
 
 function legacyIsAuthoritative(profile) {
@@ -143,6 +208,7 @@ module.exports = {
   currentLegacyReferenceDisposition,
   legacyIsAuthoritative,
   loadRouteProfile,
+  resolveDeclaredLegacyReference,
   runLegacyAuthorityContractChecks,
   validateLegacyAuthorityProfile,
 };
