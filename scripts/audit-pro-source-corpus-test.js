@@ -20,6 +20,26 @@ function put(rel, content = '<!doctype html>') {
 function readCorpus(records) {
   return records.map((item) => fs.readFileSync(item.file, 'utf8')).join('\n');
 }
+function relativeForRoute(route) {
+  return path.relative(root, routeToRootHtml(root, route)).replace(/\\/g, '/');
+}
+function fixtureResolveReference(route, options = {}) {
+  const logical = relativeForRoute(route);
+  const active = path.join(root, logical);
+  const quarantineRel = path.posix.join('migration/legacy-reference', logical);
+  const quarantine = path.join(root, quarantineRel);
+  const existing = [
+    { absolutePath: active, repositoryPath: logical },
+    { absolutePath: quarantine, repositoryPath: quarantineRel },
+  ].filter((item) => fs.existsSync(item.absolutePath));
+  if (existing.length > 1) throw new Error(`fixture reference storage is ambiguous for ${logical}`);
+  if (existing.length === 1) return { ...existing[0], logicalPath: logical, route, exists: true };
+  if (options.mustExist !== false) throw new Error(`fixture reference missing for ${route}`);
+  return { absolutePath: active, repositoryPath: logical, logicalPath: logical, route, exists: false };
+}
+function corpus(entries, allHtmlFiles) {
+  return buildAuditProSourceCorpus({ root, entries, allHtmlFiles, resolveReference: fixtureResolveReference });
+}
 
 const home = put('index.html');
 const article = put('articles/one/index.html');
@@ -42,7 +62,7 @@ const entries = [
   { route: '/draft/', status: 'shadow-pilot', surface: 'page', legacyStatus: 'reference-only' },
 ];
 const allHtmlFiles = [home, article, reference, absentSnapshot, draft, orphan, notFound, verification];
-const baseline = buildAuditProSourceCorpus({ root, entries, allHtmlFiles });
+const baseline = corpus(entries, allHtmlFiles);
 
 assert.strictEqual(routeToRootHtml(root, '/'), home);
 assert.strictEqual(routeToRootHtml(root, '/articles/one/'), article);
@@ -67,34 +87,51 @@ assert(!readCorpus(baseline.currentRuntimePages).includes('ctrlKey'));
 assert(baseline.sourcePages.some((item) => item.route === '/articles/absent/'));
 assert(!baseline.currentRuntimePages.some((item) => item.route === '/articles/absent/'));
 
-const synthetic = buildAuditProSourceCorpus({
-  root,
-  entries: [...entries, { route: '/future-native/', status: 'production-dist', surface: 'series', legacyStatus: 'absent' }],
-  allHtmlFiles,
-});
+// Storage move contract: a production reference can move under the quarantine
+// root without changing route identity or the broad forensic corpus.
+const quarantineRel = 'migration/legacy-reference/articles/reference/index.html';
+const quarantineReference = path.join(root, quarantineRel);
+fs.mkdirSync(path.dirname(quarantineReference), { recursive: true });
+fs.renameSync(reference, quarantineReference);
+const movedFiles = allHtmlFiles.filter((file) => file !== reference);
+const moved = corpus(entries, movedFiles);
+assert.deepStrictEqual(moved.referenceOnly.map((item) => item.route), ['/articles/reference/']);
+assert.strictEqual(moved.referenceOnly[0].file, quarantineReference);
+assert(readCorpus(moved.sourcePages).includes('deadbeef'));
+assert(!moved.unregisteredRootHtml.some((item) => item.relative === 'articles/reference/index.html'));
+
+const synthetic = corpus(
+  [...entries, { route: '/future-native/', status: 'production-dist', surface: 'series', legacyStatus: 'absent' }],
+  movedFiles,
+);
 assert(synthetic.distOnly.some((item) => item.route === '/future-native/'));
 assert(!synthetic.unregisteredRootHtml.some((item) => item.relative === 'future-native/index.html'));
 
-// Adversarial authority mutation: the exact same retained bytes become visible
-// to current runtime checks as soon as their route is made canonical.
-const referenceMutation = buildAuditProSourceCorpus({
-  root,
-  entries: entries.map((entry) => entry.route === '/articles/reference/'
+// Adversarial authority mutation: the exact same quarantined retained bytes
+// become visible to current runtime checks as soon as their route is canonical.
+const referenceMutation = corpus(
+  entries.map((entry) => entry.route === '/articles/reference/'
     ? { ...entry, legacyStatus: 'canonical' }
     : entry),
-  allHtmlFiles,
-});
+  movedFiles,
+);
 assert(referenceMutation.sourcePages.some((item) => item.route === '/articles/reference/'));
 assert(referenceMutation.currentRuntimePages.some((item) => item.route === '/articles/reference/'));
 assert(!referenceMutation.referenceOnly.some((item) => item.route === '/articles/reference/'));
 assert(readCorpus(referenceMutation.currentRuntimePages).includes('deadbeef'));
 assert(readCorpus(referenceMutation.currentRuntimePages).includes('ctrlKey'));
 
+// Duplicate active + quarantine storage must fail closed rather than choosing a
+// source nondeterministically.
+put('articles/reference/index.html', '<!doctype html><p>duplicate</p>');
+assert.throws(() => corpus(entries, [...movedFiles, reference]), /storage is ambiguous/);
+fs.unlinkSync(reference);
+
 fs.unlinkSync(article);
-const removedShadow = buildAuditProSourceCorpus({ root, entries, allHtmlFiles: allHtmlFiles.filter((file) => file !== article) });
+const removedShadow = corpus(entries, movedFiles.filter((file) => file !== article));
 assert(removedShadow.distOnly.some((item) => item.route === '/articles/one/'));
 assert(!removedShadow.sourcePages.some((item) => item.route === '/articles/one/'));
 assert(!removedShadow.currentRuntimePages.some((item) => item.route === '/articles/one/'));
 
 fs.rmSync(root, { recursive: true, force: true });
-console.log('✅ audit-pro forensic/current-runtime corpus mutations passed');
+console.log('✅ audit-pro forensic/current-runtime corpus mutations passed with quarantine-aware storage');
