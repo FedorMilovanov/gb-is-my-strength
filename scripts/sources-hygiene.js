@@ -4,11 +4,12 @@
 /*
  * sources:hygiene — enforces Charter standard S12 (docs/ARTICLE-STANDARD-CHARTER.md):
  * "ссылка ведёт к читателю, а не к диску". Backstage research scaffolding must never
- * ship in article bodies or source lists — no repo paths, OCR filenames, or working
- * notes. This is a pure string scan (fast, deterministic); it complements audit-pro's
- * base-path-leak check with editorial-apparatus leaks.
+ * ship in article bodies, source lists or reader-facing discovery metadata — no repo
+ * paths, OCR filenames, or working notes. This is a pure string scan (fast,
+ * deterministic); it complements audit-pro's base-path-leak check with editorial-
+ * apparatus leaks.
  *
- * Scope: published article content only — MDX twins + article/series pilot bodies.
+ * Scope: published article content + search-manifest reader metadata.
  * Usage: node scripts/sources-hygiene.js            (check, exit 1 on any violation)
  *        node scripts/sources-hygiene.js --list      (also print every match)
  */
@@ -41,6 +42,7 @@ const FORBIDDEN_FIXTURES = [
   'Для сверки сохранён локально контрольный выпуск.',
   'В research заведён каталог.',
   'После находки PDF-корпуса следующий шаг уже начат: в research заведён каталог.',
+  'Живой справочник: research-досье и очередь правок 3D-карты.',
 ];
 
 for (const fixture of FORBIDDEN_FIXTURES) {
@@ -59,6 +61,7 @@ const SCAN_DIRS = [
   'src/components/pastor-series',
   'src/components/hard-texts',
 ];
+const SEARCH_MANIFEST_REL = 'data/search-manifest.json';
 
 function walk(dir, out = []) {
   const abs = path.join(ROOT, dir);
@@ -71,6 +74,15 @@ function walk(dir, out = []) {
   return out;
 }
 
+function matchForbidden(text) {
+  const hits = [];
+  for (const [re, label] of FORBIDDEN) {
+    const matches = String(text || '').match(new RegExp(re, re.flags.includes('g') ? re.flags : re.flags + 'g'));
+    if (matches) hits.push({ label, matches });
+  }
+  return hits;
+}
+
 const files = SCAN_DIRS.flatMap(d => walk(d));
 let violations = 0;
 const perFile = {};
@@ -78,22 +90,43 @@ const perFile = {};
 for (const rel of files) {
   let text;
   try { text = fs.readFileSync(path.join(ROOT, rel), 'utf8'); } catch { continue; }
-  for (const [re, label] of FORBIDDEN) {
-    const m = text.match(new RegExp(re, re.flags.includes('g') ? re.flags : re.flags + 'g'));
-    if (m) {
-      violations += m.length;
-      (perFile[rel] ||= []).push(`${label} ×${m.length}`);
-      if (LIST) for (const hit of m.slice(0, 3)) console.log(`  ${rel}: …${hit}…`);
-    }
+  for (const { label, matches } of matchForbidden(text)) {
+    violations += matches.length;
+    (perFile[rel] ||= []).push(`${label} ×${matches.length}`);
+    if (LIST) for (const hit of matches.slice(0, 3)) console.log(`  ${rel}: …${hit}…`);
   }
 }
 
+// Discovery metadata is reader-facing too: Search renders manifest descriptions,
+// and derived catalogs may project them verbatim. Scan only fields that can reach
+// readers, rather than raw-string-scanning tags/ids or unrelated machine metadata.
+let manifestItems = 0;
+try {
+  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, SEARCH_MANIFEST_REL), 'utf8'));
+  if (!Array.isArray(manifest.items)) throw new Error('items[] missing');
+  manifestItems = manifest.items.length;
+  for (const item of manifest.items) {
+    const identity = String(item.id || item.url || '<unknown>');
+    for (const field of ['title', 'description']) {
+      for (const { label, matches } of matchForbidden(item?.[field])) {
+        violations += matches.length;
+        const key = `${SEARCH_MANIFEST_REL}#${identity}.${field}`;
+        (perFile[key] ||= []).push(`${label} ×${matches.length}`);
+        if (LIST) for (const hit of matches.slice(0, 3)) console.log(`  ${key}: …${hit}…`);
+      }
+    }
+  }
+} catch (error) {
+  console.error(`❌ sources:hygiene cannot validate ${SEARCH_MANIFEST_REL}: ${error.message}`);
+  process.exit(1);
+}
+
 console.log('=== sources:hygiene (Charter S12) ===');
-console.log(`Scanned ${files.length} article files across ${SCAN_DIRS.length} scopes.`);
+console.log(`Scanned ${files.length} article files across ${SCAN_DIRS.length} scopes + ${manifestItems} search-manifest item(s).`);
 if (!violations) {
-  console.log('✅ No backstage research scaffolding in reader-facing content.');
+  console.log('✅ No backstage research scaffolding in reader-facing content or discovery metadata.');
   process.exit(0);
 }
 for (const [f, labels] of Object.entries(perFile)) console.log(`❌ ${f} — ${labels.join('; ')}`);
-console.log(`\n❌ ${violations} backstage-leak marker(s) in ${Object.keys(perFile).length} file(s). Clean before publish (S12).`);
+console.log(`\n❌ ${violations} backstage-leak marker(s) in ${Object.keys(perFile).length} reader-facing surface(s). Clean before publish (S12).`);
 process.exit(1);
