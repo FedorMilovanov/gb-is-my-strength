@@ -10,6 +10,7 @@ const files = {
   surface: read('src/components/search/AppSearchSurface.astro'),
   search: read('js/search.js'),
   siteUtils: read('js/site-utils.js'),
+  commandPalette: read('css/command-palette.css'),
   baseLayout: read('src/layouts/BaseLayout.astro'),
   home: read('src/components/home/HomePageChrome.astro'),
   homeProgressive: read('src/components/home/HomeProgressiveEnhancementHead.astro'),
@@ -31,11 +32,13 @@ const files = {
 let passed = 0;
 const check = (condition, message) => { assert.ok(condition, message); passed += 1; };
 const count = (text, marker) => text.split(marker).length - 1;
+const assetHash = (text) => crypto.createHash('md5').update(text).digest('hex').slice(0, 8);
 
-check(files.head.includes('/css/command-palette.css?v=c174cedb'), 'current command-palette revision missing');
-const searchHash = crypto.createHash('md5').update(files.search).digest('hex').slice(0, 8);
+const commandPaletteHash = assetHash(files.commandPalette);
+check(files.head.includes(`/css/command-palette.css?v=${commandPaletteHash}`), 'current command-palette revision missing');
+const searchHash = assetHash(files.search);
 check(files.head.includes(`/js/search.js?v=${searchHash}`), 'current search revision missing');
-const siteUtilsHash = crypto.createHash('md5').update(files.siteUtils).digest('hex').slice(0, 8);
+const siteUtilsHash = assetHash(files.siteUtils);
 check(files.head.includes(`/js/site-utils.js?v=${siteUtilsHash}`), 'current SiteUtils revision missing');
 check(files.head.indexOf('/js/site-utils.js') < files.head.indexOf('/js/search.js'), 'SiteUtils must load before Search');
 check(files.head.includes('defer'), 'search bootstrap must remain deferred');
