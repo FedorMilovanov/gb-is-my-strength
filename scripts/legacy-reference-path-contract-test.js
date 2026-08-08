@@ -27,6 +27,7 @@ assert.deepEqual(
   [
     'scripts/astro-ishod-pilot-audit.js',
     'scripts/content-source-provenance-audit.js',
+    'scripts/lib/audit-pro-source-corpus.js',
     'scripts/lib/legacy-source-authority.js',
   ].sort(),
   'explicit reference API users must match the migrated physical-reference readers'
