@@ -9,23 +9,16 @@ const publishedTime = '2026-08-09T00:00:00+03:00';
 const readingTime = 28;
 const ogImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp';
 
-const quizQuestions = LOT_QUIZ_QUESTIONS.map((item, index) => ({
-  id: `q${index + 1}`,
-  type: 'single',
-  category: 'lot',
-  difficulty: index < 3 ? 'hard' : 'medium',
+const quizQuestions = LOT_QUIZ_QUESTIONS.map((item) => ({
+  id: item.id,
+  type: item.type,
+  category: item.category,
+  difficulty: item.difficulty,
   question: item.q,
   options: item.options,
-  explanation: {
-    short: item.explanation,
-    full: item.explanation,
-    anchor: item.sourceRef.id,
-  },
+  explanation: item.explanation,
   correct: item.answer,
-  sourceRef: {
-    label: item.sourceRef.label,
-    href: `#${item.sourceRef.id}`,
-  },
+  sourceRef: item.sourceRef,
 }));
 
 const siteConfig = {
