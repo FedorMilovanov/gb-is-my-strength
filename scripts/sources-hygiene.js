@@ -24,7 +24,7 @@ const FORBIDDEN = [
   [/raw-sources\//, 'internal OCR path (raw-sources/…)'],
   [/research-досье/, 'backstage phrase «research-досье»'],
   [/сохран[её]н[а-я]*\s+локально/i, 'backstage note «сохранён/сохранены локально»'],
-  [/\bв\s+research\b/i, 'internal research workspace reference'],
+  [/в\s+research\b/i, 'internal research workspace reference'],
   [/следующий\s+шаг\s+уже\s+начат/i, 'working note «следующий шаг уже начат»'],
   [/URL\s+зафиксирован/i, 'backstage note «URL зафиксирован…»'],
   [/что\s+нужно\s+исправить\s+в\s+3D/i, 'working note «что нужно исправить в 3D…»'],
@@ -39,6 +39,7 @@ const FORBIDDEN = [
 const FORBIDDEN_FIXTURES = [
   'Для сверки сохранены локально первые контрольные выпуски.',
   'Для сверки сохранён локально контрольный выпуск.',
+  'В research заведён каталог.',
   'После находки PDF-корпуса следующий шаг уже начат: в research заведён каталог.',
 ];
 
