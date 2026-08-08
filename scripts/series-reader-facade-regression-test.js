@@ -9,6 +9,8 @@ const { auditSeriesFragments } = require('./series-reader-fragment-audit');
 const ROOT = path.resolve(__dirname, '..');
 const FACADE = path.join(ROOT, 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro');
 const HEART_SERIES_DATA = path.join(ROOT, 'src/components/article-pilots/_shared/heartSeriesData.ts');
+const MOBILE_BAR = path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
+const SERIES_CONFIG = path.join(ROOT, 'src/components/article-pilots/_shared/series/seriesConfig.ts');
 const DIST = path.join(ROOT, 'dist');
 const IMPLEMENTATION_IMPORT = "import GillSeriesChrome from '../../gill-series/GillSeriesChrome.astro';";
 const DIRECT_IMPORT_RE = /import\s+[A-Za-z_$][\w$]*\s+from\s+['"][^'"]*GillSeriesChrome\.astro['"]/;
@@ -38,6 +40,12 @@ assert.match(heartProgress[0], /const item = heartItem\(pageId\);/, 'heartProgre
 assert.match(heartProgress[0], /partMin:\s*item\.minutes/, 'heartProgress must use the validated item');
 assert.doesNotMatch(heartProgress[0], /HEART_SERIES_ITEMS\[idx\]\.minutes/, 'heartProgress must not dereference an unchecked index');
 
+const mobileBar = fs.readFileSync(MOBILE_BAR, 'utf8');
+const seriesConfig = fs.readFileSync(SERIES_CONFIG, 'utf8');
+assert.match(seriesConfig, /railBackHref:\s*string;/, 'SeriesConfig must keep railBackHref as required route authority');
+assert.match(mobileBar, /data-home-href=\{config\.railBackHref\}/, 'shared mobile Back must derive its fallback from config.railBackHref');
+assert.doesNotMatch(mobileBar, /data-home-href=["']\.\.\/\.\.\/biografii\//, 'shared mobile Back must not hardcode Gill biographies');
+
 const sourceFiles = walk(path.join(ROOT, 'src')).filter((file) => /\.(?:astro|ts|tsx|js|jsx|mjs|cjs)$/.test(file));
 const illegal = [];
 let facadeImports = 0;
@@ -56,4 +64,4 @@ if (fs.existsSync(DIST)) {
   assert.equal(report.result, 'PASS', `rendered series fragment contract failed: ${report.errors.join('; ')}`);
 }
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; heart progress fail-closed; fragment audit registered`);
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; heart progress fail-closed; mobile Back config-owned; fragment audit registered`);
