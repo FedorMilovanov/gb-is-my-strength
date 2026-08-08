@@ -215,27 +215,57 @@ function applyPolicySeeds({ policyRegistry, seriesData, productionRecords }) {
   return seeded;
 }
 
-function buildManifestItem(route, policy, html, fallbackReadTime = null) {
+function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
   const title = firstMeta(html, 'property', 'og:title')
     || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
   const description = firstMeta(html, 'name', 'description')
     || firstMeta(html, 'property', 'og:description');
   const editor = firstMeta(html, 'name', 'author') || 'Фёдор Милованов';
   const section = firstMeta(html, 'property', 'article:section') || policy.librarySection;
-  const image = normalizeImage(firstMeta(html, 'property', 'og:image'));
+  const rawImage = firstMeta(html, 'property', 'og:image');
+  const image = normalizeImage(rawImage);
   const tags = [...new Set(metaValues(html, 'property', 'article:tag'))];
   const publishedTime = firstMeta(html, 'property', 'article:published_time');
-  const modifiedTime = firstMeta(html, 'property', 'article:modified_time') || publishedTime;
+  const explicitModifiedTime = firstMeta(html, 'property', 'article:modified_time');
+  const modifiedTime = explicitModifiedTime || publishedTime;
   const htmlReadTime = readingTime(html);
   const readTime = Number.isInteger(htmlReadTime) ? htmlReadTime : fallbackReadTime;
 
+  const missingCore = [];
+  if (!title) missingCore.push('title');
+  if (!description) missingCore.push('description');
+  if (!section) missingCore.push('section');
+  if (missingCore.length) {
+    throw new Error(`${normalizeRoute(route)}: built PageHead missing ${missingCore.join(', ')}`);
+  }
+
+  const values = {
+    title,
+    description,
+    section,
+    editor,
+    image,
+    tags,
+    publishedTime,
+    modifiedTime,
+    readTime,
+  };
+  const ownedFields = new Set(['title', 'description', 'section', 'editor']);
+  if (rawImage) ownedFields.add('image');
+  if (tags.length) ownedFields.add('tags');
+  if (publishedTime) ownedFields.add('publishedTime');
+  if (modifiedTime) ownedFields.add('modifiedTime');
+  if (Number.isInteger(readTime) && readTime > 0) ownedFields.add('readTime');
+
+  return { values, ownedFields };
+}
+
+function buildManifestItem(route, policy, html, fallbackReadTime = null) {
+  const { values } = deriveManifestFields(route, policy, html, fallbackReadTime);
   const missing = [];
-  if (!title) missing.push('title');
-  if (!description) missing.push('description');
-  if (!section) missing.push('section');
-  if (!publishedTime) missing.push('publishedTime');
-  if (!modifiedTime) missing.push('modifiedTime');
-  if (!Number.isInteger(readTime) || readTime < 1) missing.push('readTime');
+  if (!values.publishedTime) missing.push('publishedTime');
+  if (!values.modifiedTime) missing.push('modifiedTime');
+  if (!Number.isInteger(values.readTime) || values.readTime < 1) missing.push('readTime');
   if (missing.length) {
     throw new Error(`${normalizeRoute(route)}: built PageHead missing ${missing.join(', ')}`);
   }
@@ -244,17 +274,9 @@ function buildManifestItem(route, policy, html, fallbackReadTime = null) {
     id: routeId(route),
     type: contentKindToManifestType(policy.contentKind),
     url: normalizeRoute(route),
-    title,
-    description,
-    section,
-    editor,
-    image,
-    tags,
+    ...values,
     featured: false,
     priority: 0.6,
-    publishedTime,
-    modifiedTime,
-    readTime,
   };
 }
 
@@ -330,7 +352,7 @@ function reconcileExistingManifestRows({
 
     const distFile = routeToDistFile(route, distRoot);
     if (!fs.existsSync(distFile)) throw new Error(`${route}: missing built HTML ${distFile}`);
-    const canonical = buildManifestItem(
+    const { values: canonical, ownedFields } = deriveManifestFields(
       route,
       policy,
       fs.readFileSync(distFile, 'utf8'),
@@ -338,10 +360,12 @@ function reconcileExistingManifestRows({
     );
     const fields = [];
     for (const field of DERIVED_MANIFEST_FIELDS) {
-      if (manifestValuesEqual(existing[field], canonical[field])) continue;
+      if (!ownedFields.has(field) || manifestValuesEqual(existing[field], canonical[field])) continue;
+      const hasCurrent = Object.prototype.hasOwnProperty.call(existing, field);
       fields.push({
         field,
-        current: Object.prototype.hasOwnProperty.call(existing, field) ? existing[field] : null,
+        kind: hasCurrent ? 'mismatch' : 'missing',
+        current: hasCurrent ? existing[field] : null,
         canonical: canonical[field],
       });
       existing[field] = Array.isArray(canonical[field]) ? [...canonical[field]] : canonical[field];
@@ -433,7 +457,7 @@ function main() {
   console.log(`Search manifest existing-row drift: ${result.reconciled.length}`);
   for (const row of result.reconciled) {
     for (const entry of row.fields) {
-      console.log(`RECONCILE ${row.route} ${entry.field}: ${JSON.stringify(entry.current)} -> ${JSON.stringify(entry.canonical)}`);
+      console.log(`RECONCILE ${row.route} ${entry.kind} ${entry.field}: ${JSON.stringify(entry.current)} -> ${JSON.stringify(entry.canonical)}`);
     }
   }
   console.log(`Search manifest generatedAt refreshed: ${generatedAtRefreshed ? 'yes' : 'no'}`);
@@ -482,6 +506,7 @@ module.exports = {
   seriesReadingTimes,
   seriesPolicySeeds,
   applyPolicySeeds,
+  deriveManifestFields,
   buildManifestItem,
   migrationCandidates,
   manifestRowsByRoute,
