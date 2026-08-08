@@ -1,0 +1,160 @@
+name: Search manifest field parity diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/audit-search-manifest-field-parity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact audited Product main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 1f14761a7c920e1d224e77d3ccfec8638a1d426c
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Inventory existing-row metadata parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/manifest-field-parity
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const ROOT = process.cwd();
+          const manifest = JSON.parse(fs.readFileSync('data/search-manifest.json','utf8'));
+          const site = 'https://gospod-bog.ru';
+
+          const decode = (s) => String(s || '')
+            .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&')
+            .replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+            .replace(/\s+/g,' ').trim();
+          const tagAttr = (html, kind, key, value) => {
+            const tags = html.match(/<meta\b[^>]*>/gi) || [];
+            for (const tag of tags) {
+              const m = tag.match(new RegExp(`\\b${key}\\s*=\\s*["']([^"']+)["']`, 'i'));
+              if (!m || m[1].toLowerCase() !== value.toLowerCase()) continue;
+              const c = tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i);
+              if (c) return decode(c[1]);
+            }
+            return '';
+          };
+          const titleOf = (html) => decode((html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)||[])[1]);
+          const normalizeImage = (value) => {
+            if (!value) return '';
+            try { return new URL(value, site).pathname; } catch { return String(value); }
+          };
+          const jsonLdDates = (html) => {
+            const scripts = [...html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+            const nodes = [];
+            const walk = (x) => {
+              if (!x || typeof x !== 'object') return;
+              if (Array.isArray(x)) return x.forEach(walk);
+              nodes.push(x);
+              if (Array.isArray(x['@graph'])) x['@graph'].forEach(walk);
+            };
+            for (const match of scripts) {
+              try { walk(JSON.parse(match[1])); } catch {}
+            }
+            const preferred = nodes.find((n) => ['Article','NewsArticle','BlogPosting'].includes(n['@type']))
+              || nodes.find((n) => n.datePublished || n.dateModified) || {};
+            return { published: preferred.datePublished || '', modified: preferred.dateModified || '' };
+          };
+          const sameInstant = (a,b) => {
+            if (!a || !b) return null;
+            const x = Date.parse(a), y = Date.parse(b);
+            return Number.isFinite(x) && Number.isFinite(y) ? x === y : String(a) === String(b);
+          };
+
+          const rows = [];
+          for (const item of manifest.items || []) {
+            if (!item?.url || String(item.url).includes('#')) continue;
+            let pathname;
+            try { pathname = new URL(item.url, site).pathname; } catch { continue; }
+            const clean = pathname.replace(/^\/+|\/+$/g,'');
+            const rel = clean ? path.join('dist', clean, 'index.html') : path.join('dist','index.html');
+            if (!fs.existsSync(rel)) continue;
+            const html = fs.readFileSync(rel,'utf8');
+            const built = {
+              title: titleOf(html),
+              description: tagAttr(html,'meta','name','description'),
+              image: normalizeImage(tagAttr(html,'meta','property','og:image')),
+              ...jsonLdDates(html),
+            };
+            const projected = {
+              title: decode(item.title),
+              description: decode(item.description),
+              image: normalizeImage(item.image),
+              published: item.publishedTime || '',
+              modified: item.modifiedTime || '',
+            };
+            const diff = {
+              title: Boolean(projected.title && built.title && projected.title !== built.title),
+              description: Boolean(projected.description && built.description && projected.description !== built.description),
+              imageMissing: Boolean(built.image && !projected.image),
+              imageMismatch: Boolean(built.image && projected.image && built.image !== projected.image),
+              published: sameInstant(projected.published, built.published) === false,
+              modified: sameInstant(projected.modified, built.modified) === false,
+            };
+            rows.push({ id:item.id||null, type:item.type||null, url:pathname, projected, built, diff });
+          }
+
+          const fields = ['title','description','imageMissing','imageMismatch','published','modified'];
+          const counts = Object.fromEntries(fields.map((f)=>[f, rows.filter((r)=>r.diff[f]).length]));
+          const any = rows.filter((r)=>fields.some((f)=>r.diff[f]));
+          const report = {
+            auditedProductSha:'1f14761a7c920e1d224e77d3ccfec8638a1d426c',
+            comparedRows: rows.length,
+            rowsWithAnyDifference:any.length,
+            counts,
+            differences:any,
+          };
+          fs.writeFileSync('reports/manifest-field-parity/report.json', JSON.stringify(report,null,2)+'\n');
+
+          const lines = [
+            '# Search manifest existing-row field parity', '',
+            `Audited Product: \`${report.auditedProductSha}\``,
+            `Compared built manifest rows: **${rows.length}**`,
+            `Rows with at least one observed difference: **${any.length}**`, '',
+            '| Field | Count |','|---|---:|',
+            ...Object.entries(counts).map(([k,v])=>`| ${k} | ${v} |`), '',
+            '## Missing manifest image while built PageHead has OG image','',
+            ...rows.filter(r=>r.diff.imageMissing).map(r=>`- \`${r.url}\` — built: \`${r.built.image}\``), '',
+            '## Sample field differences','',
+            ...any.slice(0,40).map(r=>`- \`${r.url}\` — ${fields.filter(f=>r.diff[f]).join(', ')}`), ''
+          ];
+          fs.writeFileSync('reports/manifest-field-parity/report.md', lines.join('\n'));
+          console.log(lines.join('\n'));
+          NODE
+
+      - name: Publish inventory summary
+        run: cat reports/manifest-field-parity/report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload read-only evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: search-manifest-field-parity-main-1f14761a
+          path: reports/manifest-field-parity
+          if-no-files-found: error
+          retention-days: 3
