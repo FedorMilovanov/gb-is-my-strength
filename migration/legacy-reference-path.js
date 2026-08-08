@@ -5,6 +5,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const MANIFEST_REL = 'data/legacy-reference-ledger/manifest.json';
+const REFERENCE_STORAGE_ROOT_REL = 'migration/legacy-reference';
 const FORBIDDEN_STORAGE_ROOTS = new Set(['dist', 'public']);
 
 let cachedLedger = null;
@@ -88,34 +89,69 @@ function loadLedger() {
   return cachedLedger;
 }
 
-function assertRegularRepositoryFile(repositoryPath, options = {}) {
-  const mustExist = options.mustExist !== false;
+function resolveInsideRoot(root, repositoryPath) {
   const normalized = normalizeRepositoryPath(repositoryPath);
-  const absolutePath = path.resolve(ROOT, normalized);
-  const rootPrefix = `${ROOT}${path.sep}`;
-  if (absolutePath !== ROOT && !absolutePath.startsWith(rootPrefix)) {
+  const absoluteRoot = path.resolve(root);
+  const absolutePath = path.resolve(absoluteRoot, normalized);
+  const rootPrefix = `${absoluteRoot}${path.sep}`;
+  if (absolutePath !== absoluteRoot && !absolutePath.startsWith(rootPrefix)) {
     throw new Error(`reference escaped repository root: ${normalized}`);
   }
+  return { absoluteRoot, absolutePath, repositoryPath: normalized };
+}
+
+function assertRegularRepositoryFile(repositoryPath, options = {}) {
+  const root = options.root ? path.resolve(options.root) : ROOT;
+  const mustExist = options.mustExist !== false;
+  const resolved = resolveInsideRoot(root, repositoryPath);
+  const { absoluteRoot, absolutePath } = resolved;
+  const rootPrefix = `${absoluteRoot}${path.sep}`;
 
   if (!fs.existsSync(absolutePath)) {
-    if (mustExist) throw new Error(`ledger-owned reference file is missing: ${normalized}`);
-    return { absolutePath, repositoryPath: normalized, exists: false };
+    if (mustExist) throw new Error(`ledger-owned reference file is missing: ${resolved.repositoryPath}`);
+    return { ...resolved, exists: false };
   }
 
-  let cursor = ROOT;
-  for (const segment of normalized.split('/')) {
+  let cursor = absoluteRoot;
+  for (const segment of resolved.repositoryPath.split('/')) {
     cursor = path.join(cursor, segment);
     const stat = fs.lstatSync(cursor);
-    if (stat.isSymbolicLink()) throw new Error(`reference path contains a symlink: ${normalized}`);
+    if (stat.isSymbolicLink()) throw new Error(`reference path contains a symlink: ${resolved.repositoryPath}`);
   }
   const stat = fs.lstatSync(absolutePath);
-  if (!stat.isFile()) throw new Error(`reference path is not a regular file: ${normalized}`);
+  if (!stat.isFile()) throw new Error(`reference path is not a regular file: ${resolved.repositoryPath}`);
 
   const realPath = fs.realpathSync(absolutePath);
-  if (realPath !== ROOT && !realPath.startsWith(rootPrefix)) {
-    throw new Error(`reference real path escaped repository root: ${normalized}`);
+  if (realPath !== absoluteRoot && !realPath.startsWith(rootPrefix)) {
+    throw new Error(`reference real path escaped repository root: ${resolved.repositoryPath}`);
   }
-  return { absolutePath, repositoryPath: normalized, exists: true };
+  return { ...resolved, exists: true };
+}
+
+function referenceStorageCandidates(logicalPath) {
+  const normalized = normalizeRepositoryPath(logicalPath);
+  return Object.freeze([
+    normalized,
+    normalizeRepositoryPath(path.posix.join(REFERENCE_STORAGE_ROOT_REL, normalized)),
+  ]);
+}
+
+function resolveLogicalReferenceStorage(logicalPath, options = {}) {
+  const root = options.root ? path.resolve(options.root) : ROOT;
+  const mustExist = options.mustExist !== false;
+  const candidates = referenceStorageCandidates(logicalPath);
+  const existing = candidates
+    .map((repositoryPath) => assertRegularRepositoryFile(repositoryPath, { root, mustExist: false }))
+    .filter((candidate) => candidate.exists);
+
+  if (existing.length > 1) {
+    throw new Error(`legacy reference storage is ambiguous for ${normalizeRepositoryPath(logicalPath)}: ${existing.map((item) => item.repositoryPath).join(', ')}`);
+  }
+  if (existing.length === 1) return Object.freeze(existing[0]);
+  if (mustExist) {
+    throw new Error(`ledger-owned reference file is missing from both active and quarantine storage: ${normalizeRepositoryPath(logicalPath)}`);
+  }
+  return Object.freeze(assertRegularRepositoryFile(candidates[0], { root, mustExist: false }));
 }
 
 function resolveReferenceForRoute(route, options = {}) {
@@ -123,7 +159,13 @@ function resolveReferenceForRoute(route, options = {}) {
   const ledger = loadLedger();
   const entry = ledger.byRoute.get(normalizedRoute);
   if (!entry) throw new Error(`route is not owned by the legacy reference ledger: ${normalizedRoute}`);
-  return Object.freeze({ ...assertRegularRepositoryFile(entry.legacyPath, options), route: normalizedRoute, entry });
+  const storage = resolveLogicalReferenceStorage(entry.legacyPath, options);
+  return Object.freeze({
+    ...storage,
+    route: normalizedRoute,
+    logicalPath: entry.legacyPath,
+    entry,
+  });
 }
 
 function resolveReferencePath(repositoryPath, options = {}) {
@@ -131,7 +173,13 @@ function resolveReferencePath(repositoryPath, options = {}) {
   const ledger = loadLedger();
   const entry = ledger.byPath.get(normalizedPath);
   if (!entry) throw new Error(`path is not owned by the legacy reference ledger: ${normalizedPath}`);
-  return Object.freeze({ ...assertRegularRepositoryFile(normalizedPath, options), route: entry.route, entry });
+  const storage = resolveLogicalReferenceStorage(entry.legacyPath, options);
+  return Object.freeze({
+    ...storage,
+    route: entry.route,
+    logicalPath: entry.legacyPath,
+    entry,
+  });
 }
 
 function listReferenceRoutes() {
@@ -140,9 +188,12 @@ function listReferenceRoutes() {
 
 module.exports = {
   MANIFEST_REL,
+  REFERENCE_STORAGE_ROOT_REL,
   listReferenceRoutes,
   normalizeRepositoryPath,
   normalizeRoute,
+  referenceStorageCandidates,
+  resolveLogicalReferenceStorage,
   resolveReferenceForRoute,
   resolveReferencePath,
 };
