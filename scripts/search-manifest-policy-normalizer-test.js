@@ -129,7 +129,6 @@ const existingManifest = {
     description: 'Старое описание',
     section: 'Старый раздел',
     editor: 'Старый редактор',
-    image: '/images/old.webp',
     tags: ['старый-тег'],
     publishedTime: '2025-01-01T00:00:00+03:00',
     modifiedTime: '2025-01-02T00:00:00+03:00',
@@ -161,6 +160,11 @@ assert.deepEqual(
   existingResult.reconciled[0].fields.map((entry) => entry.field).sort(),
   ['description', 'editor', 'image', 'modifiedTime', 'publishedTime', 'readTime', 'section', 'tags', 'title'].sort()
 );
+const existingKinds = Object.fromEntries(existingResult.reconciled[0].fields.map((entry) => [entry.field, entry.kind]));
+assert.equal(existingKinds.image, 'missing');
+for (const field of ['description', 'editor', 'modifiedTime', 'publishedTime', 'readTime', 'section', 'tags', 'title']) {
+  assert.equal(existingKinds[field], 'mismatch');
+}
 const reconciledItem = existingManifest.items[0];
 assert.equal(reconciledItem.title, 'Нативный заголовок');
 assert.equal(reconciledItem.description, 'Нативное описание');
@@ -191,6 +195,65 @@ const existingSecond = applyMigration({
 });
 assert.deepEqual(existingSecond.reconciled, []);
 assert.equal(refreshGeneratedAt(existingManifest), false);
+
+const landingRoute = '/';
+const landingPolicy = {
+  ...policy,
+  searchManifestPolicy: 'include',
+  rssPolicy: 'exclude',
+  contentKind: 'landing',
+  librarySection: 'Главная',
+  topicCategory: 'Библиотека',
+};
+const landingHtml = `<!doctype html><html><head>
+<title>Главная | Господь Бог — Сила Моя</title>
+<meta property="og:title" content="Новая главная">
+<meta name="description" content="Новое публичное описание">
+<meta name="author" content="Фёдор Милованов">
+<meta property="og:image" content="https://gospod-bog.ru/images/new-home.webp">
+</head><body></body></html>`;
+fs.writeFileSync(path.join(root, 'index.html'), landingHtml);
+const landingManifest = {
+  version: 1,
+  items: [{
+    id: 'home',
+    type: 'landing',
+    url: landingRoute,
+    title: 'Старая главная',
+    description: 'Старое публичное описание',
+    section: 'Старый раздел',
+    editor: 'Старый редактор',
+    image: '/images/old-home.webp',
+    tags: ['manual-landing-tag'],
+    publishedTime: '2026-06-18T00:00:00+03:00',
+    modifiedTime: '2026-06-18T21:00:00+03:00',
+    readTime: 2,
+    featured: true,
+  }],
+};
+const landingResult = applyMigration({
+  policyRegistry: { version: 1, routes: { [landingRoute]: landingPolicy } },
+  manifest: landingManifest,
+  seriesData: {},
+  productionRecords: [{ route: landingRoute, owner: { status: 'production-dist' } }],
+  distRoot: root,
+  promoteRssArticles: false,
+});
+assert.deepEqual(
+  landingResult.reconciled[0].fields.map((entry) => entry.field).sort(),
+  ['description', 'editor', 'image', 'section', 'title'].sort()
+);
+const landingItem = landingManifest.items[0];
+assert.equal(landingItem.title, 'Новая главная');
+assert.equal(landingItem.description, 'Новое публичное описание');
+assert.equal(landingItem.section, 'Главная');
+assert.equal(landingItem.editor, 'Фёдор Милованов');
+assert.equal(landingItem.image, '/images/new-home.webp');
+assert.deepEqual(landingItem.tags, ['manual-landing-tag']);
+assert.equal(landingItem.publishedTime, '2026-06-18T00:00:00+03:00');
+assert.equal(landingItem.modifiedTime, '2026-06-18T21:00:00+03:00');
+assert.equal(landingItem.readTime, 2);
+assert.equal(landingItem.featured, true);
 
 const seriesData = {
   'fixture-series': {
@@ -253,7 +316,11 @@ assert.deepEqual(seriesSecond.added, []);
 
 assert.throws(
   () => buildManifestItem(route, policy, '<html><head><title>Broken</title></head></html>'),
-  /missing description, publishedTime, modifiedTime, readTime/
+  /missing description/
+);
+assert.throws(
+  () => buildManifestItem(route, policy, '<html><head><title>Broken</title><meta name="description" content="Есть описание"></head></html>'),
+  /missing publishedTime, modifiedTime, readTime/
 );
 assert.throws(
   () => seriesPolicySeeds({ broken: { searchPolicy: {}, baseUrl: '/', parts: [] } }),
