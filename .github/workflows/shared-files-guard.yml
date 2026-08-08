@@ -87,9 +87,11 @@ jobs:
           node --check scripts/legacy-reference-inventory-audit.mjs
           node --check migration/legacy-reference-path.js
           node --check scripts/legacy-reference-path-contract-test.js
+          node --check scripts/audit-pro-source-corpus-test.js
           node --check scripts/strangler-duplicate-inventory.mjs
           node scripts/legacy-reference-inventory-audit.mjs
           node scripts/legacy-reference-path-contract-test.js
+          node scripts/audit-pro-source-corpus-test.js
           node scripts/strangler-duplicate-inventory.mjs --self-test
           node scripts/strangler-duplicate-inventory.mjs \
             --out-json reports/strangler-duplicate-inventory.json \
