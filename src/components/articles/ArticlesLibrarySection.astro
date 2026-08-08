@@ -2,41 +2,71 @@
 /**
  * ArticlesLibrarySection.astro — exhaustive /articles/ projection.
  *
- * This is deliberately derived from existing publication authorities rather
- * than a second hand-maintained catalog. Search manifest owns reader-facing
- * metadata; page-ownership owns whether a route is current production output.
+ * Derived from existing publication authorities rather than a second
+ * hand-maintained catalog. Search manifest owns reader-facing metadata;
+ * page-ownership decides whether the destination is current production output.
  */
 import searchManifest from '../../../data/search-manifest.json';
 import pageOwnership from '../../../migration/page-ownership.json';
 
 const productionRoutes = pageOwnership.routes as Record<string, { status?: string }>;
+const routeIsPublished = (url: string) => {
+  const route = String(url || '').split('#')[0];
+  return productionRoutes[route]?.status === 'production-dist';
+};
+const byEditorialOrder = (a: (typeof searchManifest.items)[number], b: (typeof searchManifest.items)[number]) => {
+  const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
+  if (priorityDelta) return priorityDelta;
+  const aModified = Date.parse(String(a.modifiedTime || ''));
+  const bModified = Date.parse(String(b.modifiedTime || ''));
+  if (Number.isFinite(aModified) && Number.isFinite(bModified) && bModified !== aModified) return bModified - aModified;
+  return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
+};
+
+const series = searchManifest.items
+  .filter((item) => item.type === 'series' && typeof item.url === 'string' && routeIsPublished(item.url))
+  .sort(byEditorialOrder);
 const items = searchManifest.items
-  .filter((item) => (
-    item.type === 'article'
-    && typeof item.url === 'string'
-    && productionRoutes[item.url]?.status === 'production-dist'
-  ))
-  .sort((a, b) => {
-    const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
-    if (priorityDelta) return priorityDelta;
-    const modifiedDelta = Date.parse(String(b.modifiedTime || '')) - Date.parse(String(a.modifiedTime || ''));
-    if (Number.isFinite(modifiedDelta) && modifiedDelta) return modifiedDelta;
-    return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
-  });
+  .filter((item) => item.type === 'article' && typeof item.url === 'string' && routeIsPublished(item.url))
+  .sort(byEditorialOrder);
 ---
 <section
   class="h-section h-reveal"
-  id="polnaya-biblioteka"
+  id="publikacii"
   aria-labelledby="hLibraryLabel"
   data-catalog-source="search-manifest+page-ownership"
 >
-  <p class="h-section-label" id="hLibraryLabel">Полная библиотека</p>
+  <p class="h-section-label" id="hLibraryLabel">Все статьи</p>
   <div class="h-section-accent" aria-hidden="true"></div>
   <p class="h-section-desc">
-    {items.length} опубликованных материалов. Список собирается из текущих production-маршрутов и канонических метаданных, поэтому новая опубликованная статья появляется здесь без ручного дублирования карточки.
+    {items.length} опубликованных материалов. Список обновляется вместе с библиотекой, поэтому новые опубликованные статьи появляются здесь автоматически.
   </p>
 
-  <div class="h-articles-group">
+  {series.length > 0 && (
+    <div class="h-articles-group" aria-labelledby="hSeriesLabel">
+      <p class="h-section-label" id="hSeriesLabel">Серии</p>
+      <ul class="h-article-list h-article-list--grid">
+        {series.map((item) => (
+          <li>
+            <a href={item.url} class="h-article-card" data-catalog-series={item.url}>
+              <div class="h-article-body">
+                <h2 class="h-article-title">{item.title}</h2>
+                <div class="h-article-meta">
+                  {Number.isFinite(item.readTime) && <span class="h-meta-time">{item.readTime} мин</span>}
+                  {item.section && <span class="h-meta-tag h-meta-tag--neutral">{item.section}</span>}
+                  <span class="h-meta-tag">Серия</span>
+                </div>
+                {item.description && <p class="h-article-abstract">{item.description}</p>}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  <div class="h-articles-group" aria-labelledby="hArticlesLabel">
+    <p class="h-section-label" id="hArticlesLabel">Материалы</p>
     <ul class="h-article-list h-article-list--grid">
       {items.map((item) => (
         <li>
