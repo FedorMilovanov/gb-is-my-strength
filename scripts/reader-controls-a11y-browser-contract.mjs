@@ -19,11 +19,26 @@ const ROUTES = [
     id: 'herm',
     route: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
     slot: { root: '.hmtop', rail: '.hm-speedrail', badge: '.hm-spdbadge', alternate: '.hm-slot-search', chip: '.hm-spd' },
+    mobileSurfaces: [
+      { id: 'toc', trigger: '#hmSectionBtn', target: '#hmSheet', popup: 'dialog' },
+      { id: 'settings', trigger: '#hmSettingsBtn', target: '#hmSettings', popup: 'dialog' },
+    ],
+    desktopSurfaces: [
+      { id: 'settings', trigger: '#hrailSettingsBtn', target: '#hmSettings', popup: 'dialog' },
+    ],
   },
   {
     id: 'gill',
     route: '/articles/dzhon-gill-chast-1-chelovek/',
     slot: { root: '[data-fc-speed-mode="inline"]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.mobile-learning-trigger', chip: '.mobile-speed' },
+    mobileSurfaces: [
+      { id: 'part-toc', trigger: '#mobPartTocBtn', target: '#partTocOverlay', popup: 'dialog' },
+      { id: 'settings', trigger: '#mobSettingsBtn', target: '#gillSettingsOverlay', popup: 'dialog' },
+      { id: 'learning', trigger: '#mobLearningBtn', target: '#gillLearningOverlay', popup: 'dialog' },
+    ],
+    desktopSurfaces: [
+      { id: 'settings', trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', popup: 'dialog' },
+    ],
   },
   { id: 'antisovetov', route: '/articles/20-antisovetov-pastoru/' },
 ];
@@ -121,7 +136,7 @@ async function slotSnapshot(page, selectors) {
 
 async function auditSlot(page, routeId, selectors, checks) {
   const prefix = `${routeId}-slot`;
-  await page.waitForFunction(() => Boolean(window.GBReaderControlsA11y?.version), null, { timeout: 10000 });
+  await page.waitForFunction(() => Number(window.GBReaderControlsA11y?.version) >= 2, null, { timeout: 10000 });
   await page.evaluate(() => window.GBReaderControlsA11y.refresh());
   await page.waitForTimeout(80);
 
@@ -175,6 +190,72 @@ async function auditSlot(page, routeId, selectors, checks) {
   record(checks, `${prefix}-24`, 'alternate layer is restored', afterEnter.alternateAriaHidden !== 'true' && !afterEnter.alternateInert, afterEnter);
 }
 
+async function surfaceSnapshot(page, spec) {
+  return page.evaluate(({ trigger, target }) => {
+    const visible = (node) => {
+      if (!node) return false;
+      const style = getComputedStyle(node); const rect = node.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.01 && rect.width > 0 && rect.height > 0;
+    };
+    const candidates = Array.from(document.querySelectorAll(trigger));
+    const triggerNode = candidates.find(visible) || candidates[0] || null;
+    const targetNode = document.querySelector(target);
+    const targetId = targetNode?.id || '';
+    const open = Boolean(targetNode) && (
+      targetNode.getAttribute('aria-hidden') === 'false'
+      || targetNode.classList.contains('is-open')
+      || targetNode.classList.contains('open')
+      || targetNode.classList.contains('active')
+    );
+    return {
+      triggerExists: Boolean(triggerNode),
+      targetExists: Boolean(targetNode),
+      targetId,
+      controls: triggerNode?.getAttribute('aria-controls') || null,
+      expanded: triggerNode?.getAttribute('aria-expanded') || null,
+      haspopup: triggerNode?.getAttribute('aria-haspopup') || null,
+      controlledExists: Boolean(triggerNode?.getAttribute('aria-controls') && document.getElementById(triggerNode.getAttribute('aria-controls'))),
+      open,
+    };
+  }, spec);
+}
+
+async function clickVisible(page, selector) {
+  const candidates = page.locator(selector);
+  const count = await candidates.count();
+  for (let index = 0; index < count; index += 1) {
+    const candidate = candidates.nth(index);
+    if (await candidate.isVisible().catch(() => false)) {
+      await candidate.click();
+      return true;
+    }
+  }
+  return false;
+}
+
+async function auditSurface(page, routeId, viewportId, spec, checks) {
+  const prefix = `${routeId}-${viewportId}-surface-${spec.id}`;
+  await page.evaluate(() => window.GBReaderControlsA11y.refresh());
+  await page.waitForTimeout(80);
+  const closed = await surfaceSnapshot(page, spec);
+  record(checks, `${prefix}-01`, 'trigger and controlled surface exist', closed.triggerExists && closed.targetExists, closed);
+  record(checks, `${prefix}-02`, 'trigger points to the exact surface', Boolean(closed.targetId && closed.controls === closed.targetId && closed.controlledExists), closed);
+  record(checks, `${prefix}-03`, 'closed surface reports collapsed trigger state', !closed.open && closed.expanded === 'false', closed);
+  if (spec.popup) record(checks, `${prefix}-04`, 'dialog trigger exposes popup semantics', closed.haspopup === spec.popup, closed);
+
+  const clicked = await clickVisible(page, spec.trigger);
+  record(checks, `${prefix}-05`, 'a rendered trigger can be activated', clicked, closed);
+  await page.waitForTimeout(160);
+  const opened = await surfaceSnapshot(page, spec);
+  record(checks, `${prefix}-06`, 'trigger opens its declared surface', clicked && opened.open, opened);
+  record(checks, `${prefix}-07`, 'open surface reports expanded trigger state', clicked && opened.expanded === 'true', opened);
+
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(160);
+  const afterEscape = await surfaceSnapshot(page, spec);
+  record(checks, `${prefix}-08`, 'Escape closes surface and restores collapsed state', !afterEscape.open && afterEscape.expanded === 'false', afterEscape);
+}
+
 async function auditMobile(browser, origin, routeInfo) {
   const context = await browser.newContext({ viewport: MOBILE, isMobile: true, hasTouch: true });
   await installSpeechFixture(context);
@@ -194,12 +275,13 @@ async function auditMobile(browser, origin, routeInfo) {
         return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
       }).map((node) => ({ haspopup: node.getAttribute('aria-haspopup'), controls: node.getAttribute('aria-controls') })),
     }));
-    record(checks, `${routeInfo.id}-mobile-03`, 'a11y controller API is ready', base.controlsApi === 1, base);
+    record(checks, `${routeInfo.id}-mobile-03`, 'a11y controller API v2 is ready', Number(base.controlsApi) >= 2, base);
     record(checks, `${routeInfo.id}-mobile-04`, 'canonical TTS API remains ready', Number(base.ttsApi) >= 2, base);
     record(checks, `${routeInfo.id}-mobile-05`, 'exactly one Play is visible', base.visiblePlay.length === 1, base.visiblePlay);
     record(checks, `${routeInfo.id}-mobile-06`, 'mobile Play makes no false popup claim', base.visiblePlay.every((item) => item.haspopup !== 'true'), base.visiblePlay);
 
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
+    for (const surface of routeInfo.mobileSurfaces || []) await auditSurface(page, routeInfo.id, 'mobile', surface, checks);
 
     const play = page.locator('[data-fc-action="play"]:visible').first();
     const before = await page.evaluate(() => window.__controlsA11ySpeech.speaks);
@@ -240,10 +322,11 @@ async function auditDesktop(browser, origin, routeInfo) {
       };
     });
     record(checks, `${routeInfo.id}-desktop-01`, 'desktop route loads', Boolean(response && response.status() < 400), response?.status());
-    record(checks, `${routeInfo.id}-desktop-02`, 'desktop controller API is ready', state.controlsApi === 1, state);
+    record(checks, `${routeInfo.id}-desktop-02`, 'desktop controller API v2 is ready', Number(state.controlsApi) >= 2, state);
     record(checks, `${routeInfo.id}-desktop-03`, 'desktop has one visible Play', state.plays.length === 1, state.plays);
     record(checks, `${routeInfo.id}-desktop-04`, 'desktop popup claim remains truthful', state.plays.every((item) => item.haspopup !== 'true' || (item.controls && item.target)), state.plays);
     record(checks, `${routeInfo.id}-desktop-05`, 'desktop has no page errors', pageErrors.length === 0, pageErrors);
+    for (const surface of routeInfo.desktopSurfaces || []) await auditSurface(page, routeInfo.id, 'desktop', surface, checks);
     return { caseId: `${routeInfo.id}-desktop`, checks, pageErrors };
   } finally {
     await context.close();
@@ -265,7 +348,7 @@ try {
     pass: checks.length - failures.length,
     failures: failures.length,
   };
-  assert.ok(checks.length >= 70, `expected at least 70 named checks, got ${checks.length}`);
+  assert.ok(checks.length >= 100, `expected at least 100 named checks, got ${checks.length}`);
   assert.equal(new Set(checks.map((item) => item.id)).size, checks.length, 'check IDs must be unique');
   fs.writeFileSync(path.join(REPORTS, 'reader-controls-a11y-browser-contract.json'), JSON.stringify({ summary, cases }, null, 2));
   const lines = [
