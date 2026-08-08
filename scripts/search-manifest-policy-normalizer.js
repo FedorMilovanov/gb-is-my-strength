@@ -7,6 +7,24 @@ const { normalizeRoute } = require('./lib/rss-route-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const SEARCHABLE_ARTICLE_KINDS = new Set(['article', 'translation', 'series-article']);
+const DERIVED_MANIFEST_FIELDS = Object.freeze([
+  'title',
+  'description',
+  'section',
+  'editor',
+  'image',
+  'tags',
+  'publishedTime',
+  'modifiedTime',
+  'readTime',
+]);
+const EXISTING_RECONCILABLE_FIELDS = Object.freeze([
+  'title',
+  'description',
+  'section',
+  'image',
+  'readTime',
+]);
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = { dist: 'dist', write: false, promoteRssArticles: false };
@@ -204,6 +222,51 @@ function applyPolicySeeds({ policyRegistry, seriesData, productionRecords }) {
   return seeded;
 }
 
+function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
+  const title = firstMeta(html, 'property', 'og:title')
+    || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
+  const description = firstMeta(html, 'name', 'description')
+    || firstMeta(html, 'property', 'og:description');
+  const editor = firstMeta(html, 'name', 'author') || 'Фёдор Милованов';
+  const section = policy.librarySection || firstMeta(html, 'property', 'article:section');
+  const rawImage = firstMeta(html, 'property', 'og:image');
+  const image = normalizeImage(rawImage);
+  const tags = [...new Set(metaValues(html, 'property', 'article:tag'))];
+  const publishedTime = firstMeta(html, 'property', 'article:published_time');
+  const explicitModifiedTime = firstMeta(html, 'property', 'article:modified_time');
+  const modifiedTime = explicitModifiedTime || publishedTime;
+  const htmlReadTime = readingTime(html);
+  const canonicalSeriesReadTime = Number.isInteger(fallbackReadTime) && fallbackReadTime > 0
+    ? fallbackReadTime
+    : null;
+  const readTime = canonicalSeriesReadTime || htmlReadTime;
+
+  const missingCore = [];
+  if (!title) missingCore.push('title');
+  if (!description) missingCore.push('description');
+  if (!section) missingCore.push('section');
+  if (missingCore.length) {
+    throw new Error(`${normalizeRoute(route)}: built PageHead missing ${missingCore.join(', ')}`);
+  }
+
+  const values = {
+    title,
+    description,
+    section,
+    editor,
+    image,
+    tags,
+    publishedTime,
+    modifiedTime,
+    readTime,
+  };
+  const ownedFields = new Set(['title', 'description', 'section']);
+  if (rawImage) ownedFields.add('image');
+  if (Number.isInteger(readTime) && readTime > 0) ownedFields.add('readTime');
+
+  return { values, ownedFields };
+}
+
 function buildManifestItem(route, policy, html, fallbackReadTime = null) {
   const title = firstMeta(html, 'property', 'og:title')
     || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
@@ -280,6 +343,69 @@ function migrationCandidates({ policyRegistry, manifest, productionRecords, prom
   return candidates.sort((a, b) => a.route.localeCompare(b.route, 'ru'));
 }
 
+function manifestRowsByRoute(manifest) {
+  const byRoute = new Map();
+  for (const item of Array.isArray(manifest?.items) ? manifest.items : []) {
+    if (!item?.url || String(item.url).includes('#')) continue;
+    const route = normalizeRoute(item.url);
+    if (byRoute.has(route)) throw new Error(`${route}: duplicate existing manifest route`);
+    byRoute.set(route, item);
+  }
+  return byRoute;
+}
+
+function manifestValuesEqual(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function reconcileExistingManifestRows({
+  policyRegistry,
+  manifest,
+  productionRecords,
+  distRoot,
+  canonicalReadTimes,
+}) {
+  const productionRoutes = new Set(
+    (productionRecords || [])
+      .filter((record) => record?.owner?.status === 'production-dist')
+      .map((record) => normalizeRoute(record.route))
+  );
+  const byRoute = manifestRowsByRoute(manifest);
+  const reconciled = [];
+
+  for (const [rawRoute, policy] of Object.entries(policyRegistry.routes || {})
+    .sort(([left], [right]) => normalizeRoute(left).localeCompare(normalizeRoute(right), 'ru'))) {
+    const route = normalizeRoute(rawRoute);
+    if (!productionRoutes.has(route) || policy.searchManifestPolicy !== 'include') continue;
+    const existing = byRoute.get(route);
+    if (!existing) continue;
+
+    const distFile = routeToDistFile(route, distRoot);
+    if (!fs.existsSync(distFile)) throw new Error(`${route}: missing built HTML ${distFile}`);
+    const { values: canonical, ownedFields } = deriveManifestFields(
+      route,
+      policy,
+      fs.readFileSync(distFile, 'utf8'),
+      canonicalReadTimes.get(route) || null
+    );
+    const fields = [];
+    for (const field of EXISTING_RECONCILABLE_FIELDS) {
+      if (!ownedFields.has(field) || manifestValuesEqual(existing[field], canonical[field])) continue;
+      const hasCurrent = Object.prototype.hasOwnProperty.call(existing, field);
+      fields.push({
+        field,
+        kind: hasCurrent ? 'mismatch' : 'missing',
+        current: hasCurrent ? existing[field] : null,
+        canonical: canonical[field],
+      });
+      existing[field] = Array.isArray(canonical[field]) ? [...canonical[field]] : canonical[field];
+    }
+    if (fields.length) reconciled.push({ route, fields });
+  }
+
+  return reconciled;
+}
+
 function applyMigration({ policyRegistry, manifest, seriesData, productionRecords, distRoot, promoteRssArticles }) {
   if (!Array.isArray(manifest.items)) manifest.items = [];
   const canonicalReadTimes = seriesReadingTimes(seriesData);
@@ -318,7 +444,15 @@ function applyMigration({ policyRegistry, manifest, seriesData, productionRecord
     added.push(route);
   }
 
-  return { seeded, candidates, promoted, added };
+  const reconciled = reconcileExistingManifestRows({
+    policyRegistry,
+    manifest,
+    productionRecords,
+    distRoot,
+    canonicalReadTimes,
+  });
+
+  return { seeded, candidates, promoted, added, reconciled };
 }
 
 function main() {
@@ -340,32 +474,39 @@ function main() {
     distRoot,
     promoteRssArticles: options.promoteRssArticles,
   });
-  const migrationChanged = Boolean(result.seeded.length || result.promoted.length || result.added.length);
-  const generatedAtRefreshed = migrationChanged ? false : refreshGeneratedAt(manifest);
+  const policyChanged = Boolean(result.seeded.length || result.promoted.length);
+  const manifestChanged = Boolean(result.added.length || result.reconciled.length);
+  const generatedAtRefreshed = refreshGeneratedAt(manifest);
+  const anyChanged = Boolean(policyChanged || manifestChanged || generatedAtRefreshed);
 
   console.log(`Search policy seeds: ${result.seeded.length}`);
   for (const route of result.seeded) console.log(`SEED ${route}`);
   console.log(`Search manifest migration candidates: ${result.candidates.length}`);
   for (const route of result.promoted) console.log(`PROMOTE ${route}`);
   for (const route of result.added) console.log(`ADD ${route}`);
+  console.log(`Search manifest existing-row drift: ${result.reconciled.length}`);
+  for (const row of result.reconciled) {
+    for (const entry of row.fields) {
+      console.log(`RECONCILE ${row.route} ${entry.kind} ${entry.field}: ${JSON.stringify(entry.current)} -> ${JSON.stringify(entry.canonical)}`);
+    }
+  }
   console.log(`Search manifest generatedAt refreshed: ${generatedAtRefreshed ? 'yes' : 'no'}`);
 
   if (!options.write) {
-    if (result.seeded.length || result.promoted.length || result.added.length || generatedAtRefreshed) process.exitCode = 1;
+    if (anyChanged) process.exitCode = 1;
     return;
   }
 
-  if (!migrationChanged && !generatedAtRefreshed) {
+  if (!anyChanged) {
     console.log('No search policy or manifest migration changes required.');
     return;
   }
-  if (migrationChanged) {
+  if (policyChanged) {
     policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
-    manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
     writeJson(policyFile, policyRegistry);
   }
-  writeJson(manifestFile, manifest);
-  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s), ${result.added.length} manifest item(s) and generatedAt refresh=${generatedAtRefreshed}.`);
+  if (manifestChanged || generatedAtRefreshed) writeJson(manifestFile, manifest);
+  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s), ${result.added.length} manifest item(s), ${result.reconciled.length} reconciled existing row(s), generatedAt refresh=${generatedAtRefreshed}.`);
 }
 
 if (require.main === module) {
@@ -379,6 +520,8 @@ if (require.main === module) {
 
 module.exports = {
   SEARCHABLE_ARTICLE_KINDS,
+  DERIVED_MANIFEST_FIELDS,
+  EXISTING_RECONCILABLE_FIELDS,
   parseArgs,
   manifestMaxModifiedAt,
   refreshGeneratedAt,
@@ -394,7 +537,10 @@ module.exports = {
   seriesReadingTimes,
   seriesPolicySeeds,
   applyPolicySeeds,
+  deriveManifestFields,
   buildManifestItem,
   migrationCandidates,
+  manifestRowsByRoute,
+  reconcileExistingManifestRows,
   applyMigration,
 };
