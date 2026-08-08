@@ -7,6 +7,17 @@ const { normalizeRoute } = require('./lib/rss-route-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const SEARCHABLE_ARTICLE_KINDS = new Set(['article', 'translation', 'series-article']);
+const DERIVED_MANIFEST_FIELDS = Object.freeze([
+  'title',
+  'description',
+  'section',
+  'editor',
+  'image',
+  'tags',
+  'publishedTime',
+  'modifiedTime',
+  'readTime',
+]);
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = { dist: 'dist', write: false, promoteRssArticles: false };
@@ -280,6 +291,67 @@ function migrationCandidates({ policyRegistry, manifest, productionRecords, prom
   return candidates.sort((a, b) => a.route.localeCompare(b.route, 'ru'));
 }
 
+function manifestRowsByRoute(manifest) {
+  const byRoute = new Map();
+  for (const item of Array.isArray(manifest?.items) ? manifest.items : []) {
+    if (!item?.url || String(item.url).includes('#')) continue;
+    const route = normalizeRoute(item.url);
+    if (byRoute.has(route)) throw new Error(`${route}: duplicate existing manifest route`);
+    byRoute.set(route, item);
+  }
+  return byRoute;
+}
+
+function manifestValuesEqual(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function reconcileExistingManifestRows({
+  policyRegistry,
+  manifest,
+  productionRecords,
+  distRoot,
+  canonicalReadTimes,
+}) {
+  const productionRoutes = new Set(
+    (productionRecords || [])
+      .filter((record) => record?.owner?.status === 'production-dist')
+      .map((record) => normalizeRoute(record.route))
+  );
+  const byRoute = manifestRowsByRoute(manifest);
+  const reconciled = [];
+
+  for (const [rawRoute, policy] of Object.entries(policyRegistry.routes || {})
+    .sort(([left], [right]) => normalizeRoute(left).localeCompare(normalizeRoute(right), 'ru'))) {
+    const route = normalizeRoute(rawRoute);
+    if (!productionRoutes.has(route) || policy.searchManifestPolicy !== 'include') continue;
+    const existing = byRoute.get(route);
+    if (!existing) continue;
+
+    const distFile = routeToDistFile(route, distRoot);
+    if (!fs.existsSync(distFile)) throw new Error(`${route}: missing built HTML ${distFile}`);
+    const canonical = buildManifestItem(
+      route,
+      policy,
+      fs.readFileSync(distFile, 'utf8'),
+      canonicalReadTimes.get(route) || null
+    );
+    const fields = [];
+    for (const field of DERIVED_MANIFEST_FIELDS) {
+      if (manifestValuesEqual(existing[field], canonical[field])) continue;
+      fields.push({
+        field,
+        current: Object.prototype.hasOwnProperty.call(existing, field) ? existing[field] : null,
+        canonical: canonical[field],
+      });
+      existing[field] = Array.isArray(canonical[field]) ? [...canonical[field]] : canonical[field];
+    }
+    if (fields.length) reconciled.push({ route, fields });
+  }
+
+  return reconciled;
+}
+
 function applyMigration({ policyRegistry, manifest, seriesData, productionRecords, distRoot, promoteRssArticles }) {
   if (!Array.isArray(manifest.items)) manifest.items = [];
   const canonicalReadTimes = seriesReadingTimes(seriesData);
@@ -318,7 +390,15 @@ function applyMigration({ policyRegistry, manifest, seriesData, productionRecord
     added.push(route);
   }
 
-  return { seeded, candidates, promoted, added };
+  const reconciled = reconcileExistingManifestRows({
+    policyRegistry,
+    manifest,
+    productionRecords,
+    distRoot,
+    canonicalReadTimes,
+  });
+
+  return { seeded, candidates, promoted, added, reconciled };
 }
 
 function main() {
@@ -340,32 +420,39 @@ function main() {
     distRoot,
     promoteRssArticles: options.promoteRssArticles,
   });
-  const migrationChanged = Boolean(result.seeded.length || result.promoted.length || result.added.length);
-  const generatedAtRefreshed = migrationChanged ? false : refreshGeneratedAt(manifest);
+  const policyChanged = Boolean(result.seeded.length || result.promoted.length);
+  const manifestChanged = Boolean(result.added.length || result.reconciled.length);
+  const generatedAtRefreshed = refreshGeneratedAt(manifest);
+  const anyChanged = Boolean(policyChanged || manifestChanged || generatedAtRefreshed);
 
   console.log(`Search policy seeds: ${result.seeded.length}`);
   for (const route of result.seeded) console.log(`SEED ${route}`);
   console.log(`Search manifest migration candidates: ${result.candidates.length}`);
   for (const route of result.promoted) console.log(`PROMOTE ${route}`);
   for (const route of result.added) console.log(`ADD ${route}`);
+  console.log(`Search manifest existing-row drift: ${result.reconciled.length}`);
+  for (const row of result.reconciled) {
+    for (const entry of row.fields) {
+      console.log(`RECONCILE ${row.route} ${entry.field}: ${JSON.stringify(entry.current)} -> ${JSON.stringify(entry.canonical)}`);
+    }
+  }
   console.log(`Search manifest generatedAt refreshed: ${generatedAtRefreshed ? 'yes' : 'no'}`);
 
   if (!options.write) {
-    if (result.seeded.length || result.promoted.length || result.added.length || generatedAtRefreshed) process.exitCode = 1;
+    if (anyChanged) process.exitCode = 1;
     return;
   }
 
-  if (!migrationChanged && !generatedAtRefreshed) {
+  if (!anyChanged) {
     console.log('No search policy or manifest migration changes required.');
     return;
   }
-  if (migrationChanged) {
+  if (policyChanged) {
     policyRegistry.reviewedAt = new Date().toISOString().slice(0, 10);
-    manifest.generatedAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
     writeJson(policyFile, policyRegistry);
   }
-  writeJson(manifestFile, manifest);
-  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s), ${result.added.length} manifest item(s) and generatedAt refresh=${generatedAtRefreshed}.`);
+  if (manifestChanged || generatedAtRefreshed) writeJson(manifestFile, manifest);
+  console.log(`Wrote ${result.seeded.length} policy seed(s), ${result.promoted.length} promotion(s), ${result.added.length} manifest item(s), ${result.reconciled.length} reconciled existing row(s), generatedAt refresh=${generatedAtRefreshed}.`);
 }
 
 if (require.main === module) {
@@ -379,6 +466,7 @@ if (require.main === module) {
 
 module.exports = {
   SEARCHABLE_ARTICLE_KINDS,
+  DERIVED_MANIFEST_FIELDS,
   parseArgs,
   manifestMaxModifiedAt,
   refreshGeneratedAt,
@@ -396,5 +484,7 @@ module.exports = {
   applyPolicySeeds,
   buildManifestItem,
   migrationCandidates,
+  manifestRowsByRoute,
+  reconcileExistingManifestRows,
   applyMigration,
 };
