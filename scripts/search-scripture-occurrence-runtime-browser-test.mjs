@@ -106,7 +106,7 @@ async function openSearch(page) {
 }
 
 async function exactBeforePagefind(origin, browser, fixture, report) {
-  const context = await browser.newContext({ baseURL: origin, viewport: { width: 1280, height: 900 } });
+  const context = await browser.newContext({ baseURL: origin, viewport: { width: 1280, height: 900 }, serviceWorkers: 'block' });
   const page = await context.newPage();
   const errors = [];
   const pagefindRequests = [];
@@ -165,15 +165,19 @@ async function exactBeforePagefind(origin, browser, fixture, report) {
 }
 
 async function indexFailureFallsBack(origin, browser, fixture, report) {
-  const context = await browser.newContext({ baseURL: origin, viewport: { width: 390, height: 844 } });
+  const context = await browser.newContext({ baseURL: origin, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
   const page = await context.newPage();
   const errors = [];
+  let failedIndexRequests = 0;
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
     const text = message.text();
     if (message.type() === 'error' && !isExpectedLocalOriginIconCsp(text)) errors.push(`console: ${text}`);
   });
-  await page.route('**/data/scripture-search-index.json', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"fixture"}' }));
+  await page.route('**/data/scripture-search-index.json', (route) => {
+    failedIndexRequests += 1;
+    return route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"fixture"}' });
+  });
 
   await openSearch(page);
   await page.locator('.cp-input').fill(fixture.label);
@@ -183,12 +187,14 @@ async function indexFailureFallsBack(origin, browser, fixture, report) {
     const empty = document.querySelector('.cp-empty-title');
     return !loading && (groups > 0 || Boolean(empty));
   }, null, { timeout: 12000 });
+  assert.equal(failedIndexRequests, 1, 'failure fixture must intercept exactly one Scripture occurrence index request');
   const exactGroups = await page.locator('.cp-group-hd').filter({ hasText: 'Точные вхождения' }).count();
   assert.equal(exactGroups, 0, 'failed index request must not invent exact results');
   assert.equal(errors.length, 0, errors.join('\n'));
 
   report.fallback = {
     reference: fixture.label,
+    failedIndexRequests,
     groupNames: await page.locator('.cp-group-hd > span:first-child').allTextContents(),
     emptyTitle: await page.locator('.cp-empty-title').textContent().catch(() => null),
   };
@@ -196,7 +202,7 @@ async function indexFailureFallsBack(origin, browser, fixture, report) {
 }
 
 async function keyboardNavigation(origin, browser, fixture, report) {
-  const context = await browser.newContext({ baseURL: origin, viewport: { width: 1024, height: 768 } });
+  const context = await browser.newContext({ baseURL: origin, viewport: { width: 1024, height: 768 }, serviceWorkers: 'block' });
   const page = await context.newPage();
   await openSearch(page);
   await page.locator('.cp-input').fill(fixture.label);
