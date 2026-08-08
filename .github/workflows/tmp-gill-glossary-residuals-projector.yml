@@ -1,4 +1,5 @@
 name: Temporary Gill glossary residual projector
+# One synchronize event after re-adding the previously registered workflow identity.
 
 on:
   pull_request:
