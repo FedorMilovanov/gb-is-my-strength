@@ -5,7 +5,7 @@
 export const ASSET_VERSIONS = {
   'css/command-palette.css': 'c174cedb',
   'css/enhancements-runtime.css': '97a3e924',
-  'css/floating-cluster.css': 'd26d83c2',
+  'css/floating-cluster.css': '85a1bfb6',
   'css/highlights-runtime.css': '9f42844a',
   'css/home.css': 'a4c21e0e',
   'css/mobile-hotfix.css': 'a6a3187a',
@@ -13,7 +13,7 @@ export const ASSET_VERSIONS = {
   'css/reader-preferences.css': '2b0b76ce',
   'css/series-manuscript.css': '11475bd7',
   'css/series-samizdat.css': '2c4a9f29',
-  'css/site.css': 'e3f745d1',
+  'css/site.css': 'd1015157',
   'css/sw-toast.css': 'efbe868b',
   'css/tts-download-notice.css': 'b9ef192f',
   'fonts/fonts.css': '864cc57a',
