@@ -79,33 +79,35 @@ const hasQuiz = quizItems.length > 0;
         </div>
       </section>
 
-      <section class="gill-panel" id="panelQuiz" role="tabpanel" aria-labelledby="tabQuiz" data-panel="quiz" hidden>
-        <div class="quiz-meta"><span class="quiz-category" id="glsQuizCategory"></span><span id="glsQuizStreak"></span></div>
-        <!-- Метр калибровки (CBM): насколько уверенность совпадает со знанием.
-             Виден только после первого ответа (seen>0). -->
-        <div class="quiz-calib" id="glsQuizCalib" hidden title="Совпадение уверенности с результатом">
-          <span class="quiz-calib__lbl">Калибровка</span>
-          <span class="quiz-calib__bar"><i id="glsQuizCalibFill"></i></span>
-          <span class="quiz-calib__pct" id="glsQuizCalibPct"></span>
-        </div>
-        <h4 class="quiz-question" id="glsQuizQuestion"></h4>
-        <div class="quiz-options" id="glsQuizOptions"></div>
-        <!-- Certainty-Based Marking: сначала оцени уверенность → это разблокирует
-             варианты. Строится в JS (renderQuiz). -->
-        <div class="quiz-conf" id="glsQuizConf">
-          <span class="quiz-conf__q">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-9 9M12 3a9 9 0 0 1 9 9" /><path d="M12 12l4-3" /></svg>
-            Насколько уверены?
-          </span>
-          <div class="quiz-conf__row" id="glsQuizConfRow"></div>
-        </div>
-        <div class="quiz-verdict" id="glsQuizVerdict" hidden></div>
-        <div class="quiz-explanation" id="glsQuizExplanation" hidden></div>
-        <a class="quiz-source" id="glsQuizSource" href="#" hidden></a>
-        <button type="button" class="quiz-next" id="glsQuizNext">Следующий вопрос</button>
-        <div id="glsQuizLive" class="sr-only" aria-live="polite"></div>
-        <div id="gillQuizData" data-quiz={JSON.stringify(quizItems)} hidden></div>
-      </section>
+      {hasQuiz && (
+        <section class="gill-panel" id="panelQuiz" role="tabpanel" aria-labelledby="tabQuiz" data-panel="quiz" hidden>
+          <div class="quiz-meta"><span class="quiz-category" id="glsQuizCategory"></span><span id="glsQuizStreak"></span></div>
+          <!-- Метр калибровки (CBM): насколько уверенность совпадает со знанием.
+               Виден только после первого ответа (seen>0). -->
+          <div class="quiz-calib" id="glsQuizCalib" hidden title="Совпадение уверенности с результатом">
+            <span class="quiz-calib__lbl">Калибровка</span>
+            <span class="quiz-calib__bar"><i id="glsQuizCalibFill"></i></span>
+            <span class="quiz-calib__pct" id="glsQuizCalibPct"></span>
+          </div>
+          <h4 class="quiz-question" id="glsQuizQuestion"></h4>
+          <div class="quiz-options" id="glsQuizOptions"></div>
+          <!-- Certainty-Based Marking: сначала оцени уверенность → это разблокирует
+               варианты. Строится в JS (renderQuiz). -->
+          <div class="quiz-conf" id="glsQuizConf">
+            <span class="quiz-conf__q">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-9 9M12 3a9 9 0 0 1 9 9" /><path d="M12 12l4-3" /></svg>
+              Насколько уверены?
+            </span>
+            <div class="quiz-conf__row" id="glsQuizConfRow"></div>
+          </div>
+          <div class="quiz-verdict" id="glsQuizVerdict" hidden></div>
+          <div class="quiz-explanation" id="glsQuizExplanation" hidden></div>
+          <a class="quiz-source" id="glsQuizSource" href="#" hidden></a>
+          <button type="button" class="quiz-next" id="glsQuizNext">Следующий вопрос</button>
+          <div id="glsQuizLive" class="sr-only" aria-live="polite"></div>
+          <div id="gillQuizData" data-quiz={JSON.stringify(quizItems)} hidden></div>
+        </section>
+      )}
 
       <section class="gill-panel" id="panelNotes" role="tabpanel" aria-labelledby="tabNotes" data-panel="notes" hidden>
         <div id="notesList"></div>
