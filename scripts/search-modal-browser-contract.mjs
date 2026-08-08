@@ -384,6 +384,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
         pagefindReady: window.__pagefindReady__ === true,
         pagefindFailed: window.__pagefindFailed__ === true,
         hasPagefind: !!window.__pagefind__,
+        pagefindFixture: window.__pagefind__?.__fixture || null,
         searchReady: window.GBSearch?.__ready === true,
       })).catch((stateError) => ({ stateError: String(stateError) }));
       await activePage.screenshot({
@@ -406,7 +407,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
   }
 
   async function openFixture(configure, viewport = { width: 960, height: 760 }) {
-    const context = await browser.newContext({ viewport });
+    const context = await browser.newContext({ viewport, serviceWorkers: 'block' });
     const page = await context.newPage();
     assert.deepEqual(page.viewportSize(), viewport, 'continuation fixture must use requested viewport');
     activePage = page;
@@ -460,6 +461,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
     phase = 'pagefind';
     {
       const pagefindModule = [
+        'export const __fixture = "pagefind-continuation";',
         'export async function search() {',
         "  const urls = Array.from({ length: 28 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : '/fixture/pagefind-' + index + '/');",
         '  return {',
@@ -482,6 +484,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
           });
         });
       }, viewport);
+      await page.waitForFunction(() => window.__pagefind__?.__fixture === 'pagefind-continuation', null, { timeout: 30_000 });
       await input.fill('fixture-pagefind');
       summary.pagefind = await assertPaged(page, 27, 'рез.');
       await context.close();
@@ -490,6 +493,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
     phase = 'stale-query';
     {
       const delayedPagefindModule = [
+        'export const __fixture = "pagefind-stale-query";',
         'export async function search() {',
         '  window.__searchP3RaceStarted = (window.__searchP3RaceStarted || 0) + 1;',
         '  return {',
@@ -516,6 +520,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
         });
       }, viewport);
 
+      await page.waitForFunction(() => window.__pagefind__?.__fixture === 'pagefind-stale-query', null, { timeout: 30_000 });
       await input.fill('clearrace');
       await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 1, null, { timeout: 30_000 });
       await page.locator('.cp-clear').click();
