@@ -359,9 +359,9 @@ const port = typeof address === 'object' && address ? address.port : 0;
 assert.ok(port > 0, 'failed to bind static server');
 
 
-async function runContinuationContract(browserType, browserName, port) {
+async function runContinuationContract(browserType, browserName, port, viewport) {
   const browser = await browserType.launch({ headless: true });
-  const summary = { browser: browserName, pagefind: null, fallback: null, scripture: null };
+  const summary = { browser: browserName, viewport, pagefind: null, fallback: null, scripture: null, staleClear: null, staleShortQuery: null };
   let phase = 'setup';
   let activePage = null;
   let consoleErrors = [];
@@ -405,8 +405,8 @@ async function runContinuationContract(browserType, browserName, port) {
     );
   }
 
-  async function openFixture(configure) {
-    const context = await browser.newContext({ viewport: { width: 960, height: 760 } });
+  async function openFixture(configure, viewport = { width: 960, height: 760 }) {
+    const context = await browser.newContext({ viewport });
     const page = await context.newPage();
     activePage = page;
     consoleErrors = [];
@@ -415,8 +415,7 @@ async function runContinuationContract(browserType, browserName, port) {
     page.on('pageerror', (error) => pageErrors.push(String(error)));
     if (configure) await configure(page);
     await page.goto('http://127.0.0.1:' + port + '/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
-    await page.waitForFunction(() => window.GBSearch && typeof window.GBSearch.open === 'function');
-    await page.evaluate(() => window.GBSearch.open());
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('gb:openSearch')));
     await page.waitForFunction(
       () => window.GBSearch?.__ready === true && document.querySelector('.cp-backdrop')?.classList.contains('is-open'),
       null,
@@ -433,16 +432,27 @@ async function runContinuationContract(browserType, browserName, port) {
         !!document.querySelector('#cp-more-wrap > .cp-more');
     }, { total, label }, { timeout: 30_000 });
     assert.equal(await page.locator('#cp-listbox .cp-more').count(), 0, 'continuation button must stay outside listbox');
-    await page.locator('#cp-more-wrap > .cp-more').click();
-    await page.waitForFunction(({ total, label }) => {
-      const status = document.getElementById('cp-status')?.textContent || '';
-      return document.querySelectorAll('.cp-item[role="option"]').length === total &&
-        status === String(total) + ' ' + label &&
-        !document.querySelector('#cp-more-wrap > .cp-more');
-    }, { total, label }, { timeout: 30_000 });
-    const ids = await page.locator('.cp-item[role="option"]').evaluateAll((nodes) => nodes.map((node) => node.id));
-    assert.equal(new Set(ids).size, total, 'continued options must keep unique ids');
-    return { initial: 12, total };
+
+    let shown = 12;
+    const windows = [shown];
+    while (shown < total) {
+      await page.locator('#cp-more-wrap > .cp-more').click();
+      shown = Math.min(shown + 12, total);
+      windows.push(shown);
+      await page.waitForFunction(({ shown, total, label }) => {
+        const status = document.getElementById('cp-status')?.textContent || '';
+        const expectedStatus = shown < total
+          ? 'Показано ' + shown + ' из ' + total + ' ' + label
+          : String(total) + ' ' + label;
+        return document.querySelectorAll('.cp-item[role="option"]').length === shown &&
+          status === expectedStatus &&
+          Boolean(document.querySelector('#cp-more-wrap > .cp-more')) === (shown < total);
+      }, { shown, total, label }, { timeout: 30_000 });
+      assert.equal(await page.locator('#cp-listbox .cp-more').count(), 0, 'continuation button must remain outside listbox');
+      const ids = await page.locator('.cp-item[role="option"]').evaluateAll((nodes) => nodes.map((node) => node.id));
+      assert.equal(new Set(ids).size, shown, 'continued options must keep unique ids');
+    }
+    return { initial: 12, total, windows };
   }
 
   try {
@@ -450,7 +460,7 @@ async function runContinuationContract(browserType, browserName, port) {
     {
       const pagefindModule = [
         'export async function search() {',
-        "  const urls = Array.from({ length: 16 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : '/fixture/pagefind-' + index + '/');",
+        "  const urls = Array.from({ length: 28 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : '/fixture/pagefind-' + index + '/');",
         '  return {',
         '    results: urls.map((url, index) => ({',
         '      data: async () => ({',
@@ -472,14 +482,64 @@ async function runContinuationContract(browserType, browserName, port) {
         });
       });
       await input.fill('fixture-pagefind');
-      summary.pagefind = await assertPaged(page, 15, 'рез.');
+      summary.pagefind = await assertPaged(page, 27, 'рез.');
+      await context.close();
+    }
+
+    phase = 'stale-query';
+    {
+      const delayedPagefindModule = [
+        'export async function search() {',
+        '  window.__searchP3RaceStarted = (window.__searchP3RaceStarted || 0) + 1;',
+        '  return {',
+        '    results: Array.from({ length: 25 }, (_, index) => ({',
+        '      data: async () => {',
+        '        await new Promise((resolve) => setTimeout(resolve, 220));',
+        '        return {',
+        "          url: '/fixture/clear-race-' + index + '/',",
+        "          meta: { title: 'Clear Race ' + index, author: '', readTime: '1', category: 'Fixture', scripture: '' },",
+        "          excerpt: 'Clear Race excerpt ' + index,",
+        '        };',
+        '      },',
+        '    })),',
+        '  };',
+        '}',
+      ].join('\n');
+      const { context, page, input } = await openFixture(async (fixturePage) => {
+        await fixturePage.route('**/pagefind/pagefind.js', async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'text/javascript',
+            body: route.request().method() === 'HEAD' ? '' : delayedPagefindModule,
+          });
+        });
+      }, viewport);
+
+      await input.fill('clearrace');
+      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 1, null, { timeout: 30_000 });
+      await page.locator('.cp-clear').click();
+      await page.waitForTimeout(650);
+      assert.equal(await input.inputValue(), '');
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'clear must not resurrect stale continuation');
+      assert.equal((await page.locator('.cp-item-title').allTextContents()).some((text) => text.includes('Clear Race')), false, 'clear must not resurrect stale Pagefind results');
+      summary.staleClear = true;
+
+      await input.fill('clearrace');
+      await page.waitForFunction(() => (window.__searchP3RaceStarted || 0) >= 2, null, { timeout: 30_000 });
+      await input.fill('x');
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'new input must clear stale continuation immediately');
+      await page.waitForTimeout(650);
+      assert.equal(await input.inputValue(), 'x');
+      assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'short query must not resurrect stale continuation');
+      assert.equal((await page.locator('.cp-item-title').allTextContents()).some((text) => text.includes('Clear Race')), false, 'short query must not resurrect stale Pagefind results');
+      summary.staleShortQuery = true;
       await context.close();
     }
 
     phase = 'fallback';
     {
       const manifest = {
-        items: Array.from({ length: 16 }, (_, index) => ({
+        items: Array.from({ length: 25 }, (_, index) => ({
           id: 'fallback-' + index,
           type: 'article',
           url: '/fixture/fallback-' + index + '/',
@@ -500,7 +560,7 @@ async function runContinuationContract(browserType, browserName, port) {
         });
       });
       await input.fill('fixturefallback');
-      summary.fallback = await assertPaged(page, 16, 'рез.');
+      summary.fallback = await assertPaged(page, 25, 'рез.');
       await context.close();
     }
 
@@ -511,7 +571,7 @@ async function runContinuationContract(browserType, browserName, port) {
         references: [{
           id: 'jer-17-9-fixture',
           label: 'Иер 17:9',
-          occurrences: Array.from({ length: 15 }, (_, index) => ({
+          occurrences: Array.from({ length: 25 }, (_, index) => ({
             url: '/fixture/scripture-' + index + '/',
             anchor: 'fixture-' + index,
             title: 'Fixture Scripture ' + index,
@@ -550,7 +610,7 @@ async function runContinuationContract(browserType, browserName, port) {
       await page.locator('[data-scope="scripture"]').click();
       assert.equal(await page.locator('#cp-more-wrap > .cp-more').count(), 0, 'exact Scripture must clear stale continuation before index response');
       await input.fill('Иер 17:9');
-      summary.scripture = await assertPaged(page, 15, 'вх.');
+      summary.scripture = await assertPaged(page, 25, 'вх.');
       await context.close();
     }
 
@@ -575,8 +635,9 @@ try {
     const [browserType, browserName, viewport] = matrix[index];
     results.push(await runCase(browserType, browserName, viewport, port, index + 1));
   }
-  results.push(await runContinuationContract(chromium, 'chromium', port));
-  results.push(await runContinuationContract(webkit, 'webkit', port));
+  for (const [browserType, browserName, viewport] of matrix) {
+    results.push(await runContinuationContract(browserType, browserName, port, viewport));
+  }
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
@@ -593,6 +654,11 @@ const report = {
     touchTargets44px: true,
     focusVisible: true,
     chromiumWebkitDesktopMobile: true,
+    truthfulContinuation: true,
+    continuationMultiStep: true,
+    continuationDesktopMobile: true,
+    staleAsyncInvalidation: true,
+    boundedPagefindHydration: true,
   },
   results,
 };
@@ -604,7 +670,7 @@ fs.writeFileSync(path.join(reportDir, 'report.md'), [
   '- Engines: Chromium, WebKit',
   '- Viewports: 1440x900, 390x844',
   '- Result: PASS',
-  '- Coverage: combobox/listbox ARIA, active descendant, close control, full modal Tab trap, top-layer ordering, 44px targets, focus-visible, focus restoration, Escape/backdrop closure.',
+  '- Coverage: combobox/listbox ARIA, active descendant, close control, full modal Tab trap, top-layer ordering, 44px targets, focus-visible, focus restoration, Escape/backdrop closure, truthful multi-step continuation, desktop/mobile continuation, stale async invalidation and bounded Pagefind hydration.',
   '',
 ].join('\n'));
 console.log(`SEARCH MODAL CONTRACT: PASS (${results.length}/${results.length})`);
