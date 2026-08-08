@@ -172,7 +172,8 @@ async function indexFailureFallsBack(origin, browser, fixture, report) {
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
     const text = message.text();
-    if (message.type() === 'error' && !isExpectedLocalOriginIconCsp(text)) errors.push(`console: ${text}`);
+    const expectedInjected503 = text === 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)';
+    if (message.type() === 'error' && !isExpectedLocalOriginIconCsp(text) && !expectedInjected503) errors.push(`console: ${text}`);
   });
   await page.route('**/data/scripture-search-index.json', (route) => {
     failedIndexRequests += 1;
