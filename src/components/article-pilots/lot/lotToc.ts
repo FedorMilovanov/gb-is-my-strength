@@ -16,6 +16,9 @@ export const LOT_TOC = [
   { id: 'sec-archaeology', label: 'Археология' },
   { id: 'sec-tall-el-hammam', label: 'Tall el-Hammam' },
   { id: 'sec-zoar-tradition', label: 'Цоар и традиция' },
-  { id: 'sec-reading', label: 'Как читать историю' },
+  { id: 'sec-how-to-read', label: 'Как читать историю' },
+  { id: 'sec-main-theology', label: 'Что здесь главное' },
+  { id: 'sec-conclusion', label: 'Итог' },
   { id: 'sec-quiz', label: 'Проверь себя' },
+  { id: 'lot-sources-title', label: 'Источники' },
 ] as const;
