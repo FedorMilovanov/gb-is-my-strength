@@ -4,12 +4,14 @@
 /*
  * sources:hygiene — enforces Charter standard S12 (docs/ARTICLE-STANDARD-CHARTER.md):
  * "ссылка ведёт к читателю, а не к диску". Backstage research scaffolding must never
- * ship in article bodies, reader-facing metadata, or source lists — no repo paths,
- * OCR filenames, or working notes. This is a pure string scan (fast, deterministic);
- * it complements audit-pro's base-path-leak check with editorial-apparatus leaks.
+ * ship in article bodies, reader-facing metadata, source lists, or declarative
+ * reader-chrome labels — no repo paths, OCR filenames, or working notes. This is
+ * a pure string scan (fast, deterministic); it complements audit-pro's
+ * base-path-leak check with editorial-apparatus leaks.
  *
- * Scope: published article content only — MDX twins + article/series pilot bodies
- * and their reader-facing PageHead metadata.
+ * Scope: published article content — MDX twins + article/series pilot bodies,
+ * reader-facing PageHead metadata, and explicit declarative reader config that
+ * projects labels into public TOC/chrome.
  * Usage: node scripts/sources-hygiene.js            (check, exit 1 on any violation)
  *        node scripts/sources-hygiene.js --list      (also print every match)
  */
@@ -66,6 +68,12 @@ const SCAN_DIRS = [
   'src/components/hard-texts',
 ];
 
+// Declarative non-.astro owners whose strings are projected directly into reader
+// chrome. Keep this explicit rather than scanning arbitrary TypeScript imports.
+const SCAN_FILES = [
+  'src/components/article-pilots/_shared/series/baptistFlatSeriesConfig.ts',
+];
+
 function walk(dir, out = []) {
   const abs = path.join(ROOT, dir);
   if (!fs.existsSync(abs)) return out;
@@ -77,7 +85,7 @@ function walk(dir, out = []) {
   return out;
 }
 
-const files = SCAN_DIRS.flatMap(d => walk(d));
+const files = [...SCAN_DIRS.flatMap(d => walk(d)), ...SCAN_FILES];
 let violations = 0;
 const perFile = {};
 
@@ -95,9 +103,9 @@ for (const rel of files) {
 }
 
 console.log('=== sources:hygiene (Charter S12) ===');
-console.log(`Scanned ${files.length} article/metadata files across ${SCAN_DIRS.length} scopes.`);
+console.log(`Scanned ${files.length} article/metadata/config files across ${SCAN_DIRS.length} directory scopes + ${SCAN_FILES.length} explicit reader config(s).`);
 if (!violations) {
-  console.log('✅ No backstage research scaffolding in reader-facing content/metadata.');
+  console.log('✅ No backstage research scaffolding in reader-facing content/metadata/config.');
   process.exit(0);
 }
 for (const [f, labels] of Object.entries(perFile)) console.log(`❌ ${f} — ${labels.join('; ')}`);
