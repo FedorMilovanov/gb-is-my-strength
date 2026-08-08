@@ -400,22 +400,28 @@ async function runContinuationContract(browserType, browserName, port) {
 
   try {
     {
-      const { context, page, input } = await openFixture();
-      await page.evaluate(() => {
-        const urls = Array.from({ length: 16 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : '/fixture/pagefind-' + index + '/');
-        window.__pagefind__ = {
-          search: async () => ({
-            results: urls.map((url, index) => ({
-              data: async () => ({
-                url,
-                meta: { title: 'Fixture Pagefind ' + index, author: '', readTime: '1', category: 'Fixture', scripture: '' },
-                excerpt: 'Fixture Pagefind excerpt ' + index,
-              }),
-            })),
-          }),
-        };
-        window.__pagefindReady__ = true;
-        window.__pagefindFailed__ = false;
+      const pagefindModule = [
+        'export async function search() {',
+        "  const urls = Array.from({ length: 16 }, (_, index) => index < 2 ? '/fixture/pagefind-duplicate/' : '/fixture/pagefind-' + index + '/');",
+        '  return {',
+        '    results: urls.map((url, index) => ({',
+        '      data: async () => ({',
+        '        url,',
+        "        meta: { title: 'Fixture Pagefind ' + index, author: '', readTime: '1', category: 'Fixture', scripture: '' },",
+        "        excerpt: 'Fixture Pagefind excerpt ' + index,",
+        '      }),',
+        '    })),',
+        '  };',
+        '}',
+      ].join('\n');
+      const { context, page, input } = await openFixture(async (fixturePage) => {
+        await fixturePage.route('**/pagefind/pagefind.js', async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'text/javascript',
+            body: route.request().method() === 'HEAD' ? '' : pagefindModule,
+          });
+        });
       });
       await input.fill('fixture-pagefind');
       summary.pagefind = await assertPaged(page, 15, 'рез.');
