@@ -27,6 +27,7 @@ on:
       - "scripts/cache-bust-assets.js"
       - "scripts/project-relations-to-dist.mjs"
       - "scripts/dist-publication-audit.js"
+      - "scripts/human-reachability-audit.js"
       - "scripts/series-reader-fragment-audit.js"
       - "scripts/extract-url-contract.js"
       - "scripts/compare-url-contract.js"
@@ -93,6 +94,9 @@ jobs:
           node scripts/dist-publication-audit.js --require-pagefind --forbid-dev 2>&1 \
             | tee reports/dist-publication-audit.log
 
+      - name: Current Gold human reachability
+        run: node scripts/human-reachability-audit.js
+
       - name: Public URL contract compare on candidate dist
         shell: bash
         run: |
@@ -116,6 +120,7 @@ jobs:
             reports/relation-projection.json
             reports/dist-publication-audit.json
             reports/dist-publication-audit.log
+            reports/current-gold/human-reachability.json
             reports/series-reader-fragment-audit.json
             reports/url-contract-dist.json
             reports/url-contract-dist.md
