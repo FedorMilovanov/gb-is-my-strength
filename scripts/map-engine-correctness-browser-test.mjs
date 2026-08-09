@@ -103,6 +103,21 @@ function expectedScaleDelta(facts) {
   return Math.abs(facts.lineWidth - facts.expectedWidth);
 }
 
+async function waitForScaleConvergence(page, scaleFacts, before, timeoutMs = 1500) {
+  const deadline = Date.now() + timeoutMs;
+  let facts = await scaleFacts();
+  while (Date.now() < deadline) {
+    if (
+      facts.renderedWidth < before.renderedWidth - 100
+      && facts.expectedWidth > 0
+      && expectedScaleDelta(facts) <= 2.5
+    ) return facts;
+    await page.waitForTimeout(25);
+    facts = await scaleFacts();
+  }
+  return facts;
+}
+
 const route = JSON.parse(await readFile(join(DIST, 'karty', 'avraam', 'route.json'), 'utf8'));
 const lotStory = route.stories.find((story) => story.id === 'lot');
 const akedaStory = route.stories.find((story) => story.id === 'akeda');
@@ -145,8 +160,7 @@ try {
     check('Scale bar matches rendered canvas geometry before resize', before.renderedWidth > 0 && before.expectedWidth > 0 && expectedScaleDelta(before) <= 2.5, JSON.stringify(before));
 
     await page.setViewportSize({ width: 760, height: 820 });
-    await page.waitForTimeout(120);
-    const after = await scaleFacts();
+    const after = await waitForScaleConvergence(page, scaleFacts, before);
     check('Canvas really resized without a route reload', after.renderedWidth < before.renderedWidth - 100, JSON.stringify({ before, after }));
     check('Scale bar recomputes after rendered-width resize', after.expectedWidth > 0 && expectedScaleDelta(after) <= 2.5, JSON.stringify(after));
 
