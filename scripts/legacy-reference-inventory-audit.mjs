@@ -10,6 +10,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const {
   currentLegacyReferenceDisposition,
+  resolveDeclaredLegacyReference,
   validateLegacyAuthorityProfile,
 } = require('./lib/legacy-source-authority.js');
 
@@ -195,19 +196,24 @@ function validateLedger(ledger) {
     if (!ALLOWED_CLASSIFICATIONS.has(entry.classification)) problem(`${profile.legacyPath}: invalid snapshot classification ${entry.classification}`);
     if (entry.sourceCommit !== ledger.auditedAtCommit) problem(`${profile.legacyPath}: sourceCommit must equal auditedAtCommit`);
 
-    const shapeIssues = validateLegacyAuthorityProfile(profile.data, {
-      pathExists: (relativePath) => fs.existsSync(path.join(ROOT, normalizeRel(relativePath))),
-    });
+    const shapeIssues = validateLegacyAuthorityProfile(profile.data, { route: profile.route });
     for (const message of shapeIssues) problem(`${profile.legacyPath}: current authority invalid: ${message}`);
     if (profile.currentDisposition.classification === 'unknown-blocker' || profile.currentDisposition.classification === 'absent') {
       problem(`${profile.legacyPath}: current route-profile authority is unresolved for an existing ledger reference`);
     }
 
-    const full = path.join(ROOT, profile.legacyPath);
-    if (!fs.existsSync(full)) {
-      problem(`${profile.legacyPath}: reference file missing`);
+    let resolvedReference;
+    try {
+      resolvedReference = resolveDeclaredLegacyReference(profile.data, { route: profile.route });
+    } catch (error) {
+      problem(`${profile.legacyPath}: reference storage invalid: ${error.message}`);
       continue;
     }
+    if (!resolvedReference?.absolutePath) {
+      problem(`${profile.legacyPath}: reference storage did not resolve`);
+      continue;
+    }
+    const full = resolvedReference.absolutePath;
     const stat = fs.lstatSync(full);
     if (!stat.isFile() || stat.isSymbolicLink()) {
       problem(`${profile.legacyPath}: reference must be a regular non-symlink file`);
