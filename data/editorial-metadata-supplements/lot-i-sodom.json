@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "lot-i-sodom-publication-2026-08-09",
+  "records": {
+    "/articles/lot-i-sodom/": {
+      "route": "/articles/lot-i-sodom/",
+      "canonical": "https://gospod-bog.ru/articles/lot-i-sodom/",
+      "title": "Лот: праведник у ворот Содома | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/lot/LotPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-08-08T21:00:00.000Z",
+      "editorialModifiedAt": "2026-08-08T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "lot-native-publication-2026-08-09",
+      "observations": {
+        "visiblePublishedAt": "2026-08-08T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-08-08T21:00:00.000Z",
+        "metaModifiedAt": "2026-08-08T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-08-08T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-08-08T21:00:00.000Z",
+        "searchPublishedAt": "2026-08-08T21:00:00.000Z",
+        "searchModifiedAt": "2026-08-08T21:00:00.000Z",
+        "sitemapLastmod": "2026-08-08T21:00:00.000Z",
+        "rssPublishedAt": "2026-08-08T21:00:00.000Z"
+      }
+    }
+  }
+}
