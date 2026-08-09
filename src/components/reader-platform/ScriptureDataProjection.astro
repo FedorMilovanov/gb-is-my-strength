@@ -1,14 +1,26 @@
 ---
 import scriptureIndex from '../../../data/scripture-search-index.json';
+import { isBibleRecordPublicationEligible } from '../../lib/bible-reference-core.mjs';
 
 type ScriptureOccurrence = {
   url?: string | null;
   raw?: string | null;
 };
 
+type CanonicalSource = {
+  translation?: string | null;
+  source?: string | null;
+  sourceUrl?: string | null;
+  rights?: string | null;
+  rightsState?: string | null;
+  publicationState?: string | null;
+  holds?: string[] | null;
+};
+
 type ScriptureReference = {
   label?: string | null;
   canonicalText?: string | null;
+  canonicalSource?: CanonicalSource | null;
   occurrences?: ScriptureOccurrence[];
 };
 
@@ -24,7 +36,7 @@ const scriptureData: Record<string, string> = {};
 
 for (const reference of (scriptureIndex.references || []) as ScriptureReference[]) {
   const text = String(reference.canonicalText || '').trim();
-  if (!text) continue;
+  if (!text || !isBibleRecordPublicationEligible(reference.canonicalSource || {})) continue;
 
   const routeOccurrences = (reference.occurrences || []).filter(
     (occurrence) => normalizeRoute(String(occurrence.url || '')) === route,
