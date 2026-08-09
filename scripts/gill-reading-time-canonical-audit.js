@@ -111,7 +111,7 @@ const scanFiles = [
   'index.html',
   'src/components/home/_legacy/main.html',
   'src/components/home/_legacy/publications.html',
-  'src/components/articles/ArticlesPublicationsSection.astro',
+  'src/components/articles/ArticlesLibrarySection.astro',
   'data/series.json',
   'data/search-manifest.json',
   'data/links-graph.json',
@@ -159,18 +159,32 @@ for (const slug of GILL_ORDER) {
   else bad(`${rel}: missing canonical ${expected} мин`);
 }
 
-// Gill catalog reading-time bindings: /articles/ must project data/series.json.
+// /articles/ no longer owns Gill minutes by hand. Its exhaustive projection
+// must consume the already-validated search manifest and page-ownership
+// publication boundary instead of recreating per-card bindings.
 const catalogMain = read('src/components/articles/ArticlesMain.astro');
-const catalogCards = read('src/components/articles/ArticlesPublicationsSection.astro');
-if (catalogMain.includes("const gill = seriesData['dzhon-gill'];") && catalogMain.includes('gillReadingTime={gillReadingTime}')) ok('articles catalog derives Gill reading times from series.json');
-else bad('articles catalog does not derive Gill reading times from series.json');
-for (const slug of ['dzhon-gill-istoricheskiy-kontekst', 'dzhon-gill-spravochnik']) {
-  const binding = `gillReadingTime['${slug}']`;
-  if (catalogCards.includes(binding)) ok(`articles catalog binding: ${slug}`);
-  else bad(`articles catalog missing canonical binding: ${slug}`);
+const catalogLibrary = read('src/components/articles/ArticlesLibrarySection.astro');
+const retiredCatalogRel = 'src/components/articles/ArticlesPublicationsSection.astro';
+if (catalogMain.includes("import ArticlesLibrarySection from './ArticlesLibrarySection.astro';")
+    && catalogMain.includes('<ArticlesLibrarySection />')) {
+  ok('articles catalog mounts the derived library owner');
+} else {
+  bad('articles catalog does not mount the derived library owner');
 }
-if (/\b(?:16|8)\s*мин\b/.test(catalogCards)) bad('articles catalog retains stale Gill 16/8 minute literal');
-else ok('articles catalog has no stale Gill 16/8 minute literals');
+if (!fs.existsSync(path.join(ROOT, retiredCatalogRel))) ok('hand-authored ArticlesPublicationsSection is retired');
+else bad('hand-authored ArticlesPublicationsSection returned as a second metadata owner');
+if (catalogLibrary.includes("import searchManifest from '../../../data/search-manifest.json';")
+    && catalogLibrary.includes("import pageOwnership from '../../../migration/page-ownership.json';")
+    && catalogLibrary.includes('data-catalog-source="search-manifest+page-ownership"')
+    && catalogLibrary.includes("item.type === 'article'")
+    && catalogLibrary.includes("item.type === 'series'")
+    && catalogLibrary.includes("productionRoutes[route]?.status === 'production-dist'")) {
+  ok('articles catalog derives membership/readTime from current publication authorities');
+} else {
+  bad('articles catalog derived-authority contract is incomplete');
+}
+if (/\b(?:16|8)\s*мин\b/.test(catalogLibrary)) bad('derived articles catalog contains stale hand-authored Gill 16/8 minute literal');
+else ok('derived articles catalog has no stale Gill 16/8 minute literals');
 
 if (problems.length) {
   console.log(`\n❌ Gill reading-time canonical audit failed: ${problems.length} issue(s)`);
