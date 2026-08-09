@@ -107,6 +107,11 @@ jobs:
           node --check scripts/baptisty-roadmap-audit.js
           node scripts/baptisty-roadmap-audit.js
 
+      - name: Retained readable reference authority
+        run: |
+          node --check scripts/readable-audit.js
+          node scripts/readable-audit.js
+
       - name: Owner UI retained reference authority
         run: |
           node --check scripts/owner-ui-regression-guard.js
