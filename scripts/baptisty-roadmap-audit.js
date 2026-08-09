@@ -66,11 +66,69 @@ else {
     if (!docLower.includes(marker)) fail(`human roadmap missing marker: ${marker}`);
   }
 }
+
 if (!exists('baptisty-rossii/research/media-ledger.md')) fail('media ledger file missing');
 else {
   const ledger = read('baptisty-rossii/research/media-ledger.md');
   for (const marker of ['Public Domain', 'CC BY-SA', 'unknown license', 'AI-generated image']) {
     if (!ledger.includes(marker)) fail(`media ledger missing policy marker: ${marker}`);
+  }
+
+  const ledgerRows = new Map();
+  for (const line of ledger.split(/\r?\n/)) {
+    if (!line.startsWith('| `')) continue;
+    const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
+    if (cells.length < 11) {
+      fail(`media ledger evidence row has ${cells.length} columns; expected 11`);
+      continue;
+    }
+    const evidenceId = cells[0].replace(/^`|`$/g, '');
+    if (!evidenceId) continue;
+    if (ledgerRows.has(evidenceId)) {
+      fail(`media ledger duplicate evidence id: ${evidenceId}`);
+      continue;
+    }
+    ledgerRows.set(evidenceId, {
+      article: cells[1].replace(/^`|`$/g, ''),
+      localPath: cells[2].replace(/^`|`$/g, ''),
+      sourceUrl: cells[4],
+      license: cells[6],
+      masterProof: cells[9],
+      status: cells[10],
+    });
+  }
+
+  const evidenceMarkers = new Map();
+  const componentDir = path.join(ROOT, 'src/components/baptisty-rossii');
+  for (const name of fs.readdirSync(componentDir).filter((entry) => entry.endsWith('.astro'))) {
+    const rel = `src/components/baptisty-rossii/${name}`;
+    const source = read(rel);
+    const markerRe = /data-baptist-master-evidence="([^"]+)"/g;
+    for (const match of source.matchAll(markerRe)) {
+      const evidenceId = match[1];
+      if (evidenceMarkers.has(evidenceId)) fail(`duplicate published Baptist evidence id: ${evidenceId}`);
+      else evidenceMarkers.set(evidenceId, rel);
+    }
+  }
+
+  for (const [evidenceId, sourceFile] of evidenceMarkers) {
+    const row = ledgerRows.get(evidenceId);
+    if (!row) {
+      fail(`${sourceFile}: published evidence ${evidenceId} is missing from media ledger`);
+      continue;
+    }
+    if (!row.article) fail(`${evidenceId}: media ledger article is empty`);
+    if (!row.localPath || !exists(row.localPath)) fail(`${evidenceId}: registered local media file is missing: ${row.localPath || '(empty)'}`);
+    if (!/^https:\/\//.test(row.sourceUrl)) fail(`${evidenceId}: Source URL must be an https provenance URL`);
+    if (!allowed.has(row.license)) fail(`${evidenceId}: published evidence has disallowed license: ${row.license}`);
+    if (!/[a-f0-9]{64}/i.test(row.masterProof)) fail(`${evidenceId}: MASTER proof must include a SHA-256`);
+    if (!/PUBLISHED/i.test(row.status) || !/VERIFIED/i.test(row.status)) fail(`${evidenceId}: production evidence must be PUBLISHED / VERIFIED`);
+  }
+
+  for (const [evidenceId, row] of ledgerRows) {
+    if (/PUBLISHED/i.test(row.status) && !evidenceMarkers.has(evidenceId)) {
+      fail(`${evidenceId}: ledger says PUBLISHED but no production data-baptist-master-evidence marker exists`);
+    }
   }
 }
 
