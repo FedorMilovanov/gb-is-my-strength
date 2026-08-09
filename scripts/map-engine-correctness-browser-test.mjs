@@ -164,6 +164,33 @@ try {
     check('Canvas really resized without a route reload', after.renderedWidth < before.renderedWidth - 100, JSON.stringify({ before, after }));
     check('Scale bar recomputes after rendered-width resize', after.expectedWidth > 0 && expectedScaleDelta(after) <= 2.5, JSON.stringify(after));
 
+    const originalScaleLineStyle = await page.evaluate((staleWidth) => {
+      const line = document.querySelector('#me-scale-line');
+      if (!line) return null;
+      const originalStyle = line.getAttribute('style');
+      line.style.setProperty('transition', 'none', 'important');
+      line.style.setProperty('width', `${staleWidth}px`, 'important');
+      return originalStyle;
+    }, after.expectedWidth + 20);
+    const stale = await waitForScaleConvergence(page, scaleFacts, before, 150);
+    check(
+      'Scale convergence wait rejects deliberately stale scale-bar geometry',
+      originalScaleLineStyle !== null && stale.expectedWidth > 0 && expectedScaleDelta(stale) > 2.5,
+      JSON.stringify(stale),
+    );
+    await page.evaluate((originalStyle) => {
+      const line = document.querySelector('#me-scale-line');
+      if (!line) return;
+      if (originalStyle === null) line.removeAttribute('style');
+      else line.setAttribute('style', originalStyle);
+    }, originalScaleLineStyle);
+    const restored = await waitForScaleConvergence(page, scaleFacts, before);
+    check(
+      'Scale bar recovers after stale-geometry mutation is removed',
+      restored.expectedWidth > 0 && expectedScaleDelta(restored) <= 2.5,
+      JSON.stringify(restored),
+    );
+
     const waypointFacts = await page.evaluate(() => {
       const anchors = [...document.querySelectorAll('#me-waypoints [data-screen-anchor="waypoint"]')];
       return anchors.map((anchor) => {
