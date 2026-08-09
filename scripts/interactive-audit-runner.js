@@ -10,6 +10,7 @@ const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const AUDIT = path.join(__dirname, 'interactive-audit.js');
 const HERMENEVTIKA_REGRESSION_GUARD = path.join(__dirname, 'hermenevtika-regression-guard.mjs');
+const SCRIPTURE_TOOLTIP_PROJECTION_GUARD = path.join(__dirname, 'scripture-tooltip-projection-browser-test.mjs');
 const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
@@ -107,6 +108,13 @@ function runHermenevtikaRegressionGuard(baseUrl) {
   return runNodeScript(HERMENEVTIKA_REGRESSION_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runScriptureTooltipProjectionGuard(baseUrl) {
+  if (!fs.existsSync(SCRIPTURE_TOOLTIP_PROJECTION_GUARD)) {
+    throw new Error(`Scripture tooltip projection guard is missing at ${SCRIPTURE_TOOLTIP_PROJECTION_GUARD}`);
+  }
+  return runNodeScript(SCRIPTURE_TOOLTIP_PROJECTION_GUARD, [], { BASE: baseUrl });
+}
+
 function runStandaloneReaderLayoutGuard(baseUrl) {
   if (!fs.existsSync(STANDALONE_READER_LAYOUT_GUARD)) {
     throw new Error(`Standalone reader layout guard is missing at ${STANDALONE_READER_LAYOUT_GUARD}`);
@@ -198,6 +206,8 @@ async function runInteractiveContracts(baseUrl) {
   if (quizCode !== 0) return quizCode;
   const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
   if (tooltipCode !== 0) return tooltipCode;
+  const scriptureCode = await runScriptureTooltipProjectionGuard(baseUrl);
+  if (scriptureCode !== 0) return scriptureCode;
   return runStandaloneReaderLayoutGuard(baseUrl);
 }
 

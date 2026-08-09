@@ -22,6 +22,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { serializePublicScriptureIndex } = require('./public-scripture-index.js');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -29,6 +30,8 @@ const OWNERSHIP = path.join(ROOT, 'migration/page-ownership.json');
 const OMIT_BUILD_ONLY = process.argv.includes('--omit-build-only') || process.argv.includes('--production-like');
 const DRY_RUN = process.argv.includes('--dry-run');
 const WRITE_MANIFEST = !process.argv.includes('--no-manifest');
+const PUBLIC_SCRIPTURE_INDEX = 'data/scripture-search-index.json';
+const INTERNAL_SOURCE_DIRS = new Set(['data/bible']);
 
 const PUBLIC_ROOT_FILES = [
   '.nojekyll',
@@ -72,6 +75,7 @@ function rel(abs) { return path.relative(ROOT, abs).replace(/\\/g, '/'); }
 function relDist(abs) { return path.relative(DIST, abs).replace(/\\/g, '/'); }
 function isAstroOwned(meta) { return String(meta.owner || '').startsWith('astro'); }
 function isBuildOnly(meta) { return String(meta.status || '') === 'build-only'; }
+function isInternalSourceDir(abs) { return INTERNAL_SOURCE_DIRS.has(rel(abs)); }
 function loadOwnership() {
   const astroRoutes = new Map();
   const omittedRoutes = new Map();
@@ -108,6 +112,7 @@ function makeStats() {
     copied: [],
     skippedAstroOwned: [],
     skippedExisting: [],
+    skippedInternalSourceDirs: [],
     removedGenerated: [],
     omittedBuildOnly: [],
   };
@@ -147,13 +152,28 @@ function shouldSkipLegacyFile(srcAbs, astroRoutes) {
 function ensureDir(file) {
   if (!DRY_RUN) fs.mkdirSync(path.dirname(file), { recursive: true });
 }
+function transformedPublicBytes(src) {
+  if (rel(src) !== PUBLIC_SCRIPTURE_INDEX) return null;
+  const input = JSON.parse(fs.readFileSync(src, 'utf8'));
+  return Buffer.from(serializePublicScriptureIndex(input), 'utf8');
+}
 function copyFile(src, dest, stats) {
-  const size = fs.statSync(src).size;
+  const transformed = transformedPublicBytes(src);
+  const size = transformed ? transformed.length : fs.statSync(src).size;
   ensureDir(dest);
-  if (!DRY_RUN) fs.copyFileSync(src, dest);
+  if (!DRY_RUN) {
+    if (transformed) fs.writeFileSync(dest, transformed);
+    else fs.copyFileSync(src, dest);
+  }
   stats.files += 1;
   stats.bytes += size;
-  stats.copied.push({ source: rel(src), destination: relDist(dest), bytes: size, route: routeForFile(src) });
+  stats.copied.push({
+    source: rel(src),
+    destination: relDist(dest),
+    bytes: size,
+    route: routeForFile(src),
+    ...(transformed ? { transform: 'public-scripture-search-index-v1' } : {}),
+  });
 }
 
 function removeAstroGeneratedSitemaps(stats) {
@@ -178,6 +198,10 @@ function copyDir(srcDir, destDir, astroRoutes, stats) {
     const dest = path.join(destDir, ent.name);
     if (ent.isDirectory()) {
       if (NEVER_COPY_DIRS.has(ent.name)) continue;
+      if (isInternalSourceDir(src)) {
+        stats.skippedInternalSourceDirs.push(rel(src));
+        continue;
+      }
       copyDir(src, dest, astroRoutes, stats);
     } else if (ent.isFile()) {
       if (shouldSkipLegacyFile(src, astroRoutes)) {
@@ -237,6 +261,7 @@ function writeCopyManifest(stats, astroRoutes, omittedRoutes) {
     copied: stats.copied,
     skippedAstroOwned: [...new Set(stats.skippedAstroOwned)],
     skippedExisting: stats.skippedExisting,
+    skippedInternalSourceDirs: [...new Set(stats.skippedInternalSourceDirs)],
     removedGenerated: stats.removedGenerated,
     omittedBuildOnly: stats.omittedBuildOnly,
   };
@@ -247,6 +272,7 @@ function printSummary(stats) {
   const action = DRY_RUN ? 'would copy' : 'copied';
   console.log(`✅ copy-legacy-to-dist: ${action} ${stats.files} files (${Math.round(stats.bytes / 1024)} KB)`);
   if (stats.skippedAstroOwned.length) console.log(`   Astro-owned legacy pages skipped: ${[...new Set(stats.skippedAstroOwned)].join(', ')}`);
+  if (stats.skippedInternalSourceDirs.length) console.log(`   Internal source directories not published: ${[...new Set(stats.skippedInternalSourceDirs)].join(', ')}`);
   if (stats.omittedBuildOnly.length) console.log(`   Build-only Astro routes ${DRY_RUN ? 'would be omitted' : 'omitted'}: ${stats.omittedBuildOnly.join(', ')}`);
   if (stats.removedGenerated.length) console.log(`   Partial Astro sitemap files ${DRY_RUN ? 'would be removed' : 'removed'}: ${stats.removedGenerated.join(', ')}`);
   if (stats.skippedExisting.length) console.log(`   Existing dist files preserved: ${stats.skippedExisting.slice(0, 12).join(', ')}${stats.skippedExisting.length > 12 ? '…' : ''}`);

@@ -5,6 +5,59 @@ import { fileURLToPath } from 'node:url';
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_REPOSITORY_ROOT = path.resolve(MODULE_DIR, '../..');
 
+export const BIBLE_RIGHTS_STATES = Object.freeze({
+  UNKNOWN: 'RIGHTS_UNKNOWN',
+  PERMISSION_REQUIRED: 'PERMISSION_REQUIRED',
+  ELIGIBLE: 'PUBLICATION_ELIGIBLE',
+});
+
+export const BIBLE_PUBLICATION_STATES = Object.freeze({
+  BLOCKED: 'BLOCKED',
+  REFERENCE: 'REFERENCE',
+  APPROVED: 'PUBLICATION_APPROVED',
+});
+
+const KNOWN_RIGHTS_STATES = new Set(Object.values(BIBLE_RIGHTS_STATES));
+const KNOWN_PUBLICATION_STATES = new Set(Object.values(BIBLE_PUBLICATION_STATES));
+
+function normalizeRightsState(value) {
+  const state = String(value || '').trim().toUpperCase();
+  return KNOWN_RIGHTS_STATES.has(state) ? state : BIBLE_RIGHTS_STATES.UNKNOWN;
+}
+
+function normalizePublicationState(value) {
+  const state = String(value || '').trim().toUpperCase();
+  return KNOWN_PUBLICATION_STATES.has(state) ? state : BIBLE_PUBLICATION_STATES.BLOCKED;
+}
+
+function normalizeHolds(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map((item) => String(item || '').trim().toUpperCase()).filter(Boolean))].sort();
+}
+
+export function mergeBiblePublicationMeta(base = {}, override = {}) {
+  return {
+    ...base,
+    ...override,
+    holds: normalizeHolds([
+      ...(Array.isArray(base.holds) ? base.holds : []),
+      ...(Array.isArray(override.holds) ? override.holds : []),
+    ]),
+  };
+}
+
+export function isBibleRecordPublicationEligible(record = {}) {
+  if (record.publicationState !== BIBLE_PUBLICATION_STATES.APPROVED) return false;
+  if (record.rightsState !== BIBLE_RIGHTS_STATES.ELIGIBLE) return false;
+  if ((record.holds || []).length > 0) return false;
+  return Boolean(
+    String(record.translation || '').trim()
+    && String(record.source || '').trim()
+    && String(record.sourceUrl || '').trim()
+    && String(record.rights || '').trim()
+  );
+}
+
 export function normalizeBookAlias(value) {
   return String(value || '')
     .toLowerCase()
@@ -85,6 +138,8 @@ export function normalizeBibleRecord(value, bookMeta = {}, key = '') {
 
   const text = String(record.text || '').trim();
   const completeness = record.completeness === 'excerpt' ? 'excerpt' : 'full';
+  const inheritedHolds = Array.isArray(bookMeta.holds) ? bookMeta.holds : [];
+  const recordHolds = Array.isArray(record.holds) ? record.holds : [];
 
   return {
     key: normalizeVerseKey(key),
@@ -94,7 +149,10 @@ export function normalizeBibleRecord(value, bookMeta = {}, key = '') {
     translation: String(record.translation || bookMeta.translation || '').trim(),
     source: String(record.source || bookMeta.source || '').trim(),
     sourceUrl: String(record.sourceUrl || bookMeta.sourceUrl || '').trim(),
-    rights: String(record.rights || bookMeta.rights || '').trim()
+    rights: String(record.rights || bookMeta.rights || '').trim(),
+    rightsState: normalizeRightsState(record.rightsState || bookMeta.rightsState),
+    publicationState: normalizePublicationState(record.publicationState || bookMeta.publicationState),
+    holds: normalizeHolds([...inheritedHolds, ...recordHolds]),
   };
 }
 
@@ -107,7 +165,10 @@ export function loadBibleCorpus(registry, root = DEFAULT_REPOSITORY_ROOT) {
     if (!fs.existsSync(file)) continue;
 
     const json = JSON.parse(fs.readFileSync(file, 'utf8'));
-    const meta = json._meta || {};
+    const translationId = String(book.translation || registry.defaultTranslationByTestament?.[book.testament] || '').trim();
+    const translationPolicy = registry.translations?.[translationId] || {};
+    const meta = mergeBiblePublicationMeta(translationPolicy, json._meta || {});
+    if (!meta.translation && translationPolicy.label) meta.translation = translationPolicy.label;
     const entries = [];
 
     for (const [rawKey, value] of Object.entries(json)) {
@@ -151,6 +212,9 @@ export function resolveBibleReference(parsed, corpus) {
     records.push(record);
   }
 
+  const rightsStates = [...new Set(records.map((record) => record.rightsState))];
+  const publicationStates = [...new Set(records.map((record) => record.publicationState))];
+
   return {
     reference: parsed.original,
     key: parsed.key,
@@ -163,6 +227,9 @@ export function resolveBibleReference(parsed, corpus) {
     source: [...new Set(records.map((record) => record.source).filter(Boolean))].join('; '),
     sourceUrl: [...new Set(records.map((record) => record.sourceUrl).filter(Boolean))].join('; '),
     rights: [...new Set(records.map((record) => record.rights).filter(Boolean))].join('; '),
+    rightsState: rightsStates.length === 1 ? rightsStates[0] : BIBLE_RIGHTS_STATES.UNKNOWN,
+    publicationState: publicationStates.length === 1 ? publicationStates[0] : BIBLE_PUBLICATION_STATES.BLOCKED,
+    holds: [...new Set(records.flatMap((record) => record.holds || []))].sort(),
     file: [...new Set(records.map((record) => record.file))].join(', ')
   };
 }
@@ -197,6 +264,9 @@ export function createBibleResolver(root = DEFAULT_REPOSITORY_ROOT) {
               text: record.text,
               translation: record.translation,
               completeness: record.completeness,
+              rightsState: record.rightsState,
+              publicationState: record.publicationState,
+              holds: record.holds,
               ...(record.note ? { note: record.note } : {}),
               ...(record.source ? { source: record.source } : {}),
               ...(record.sourceUrl ? { sourceUrl: record.sourceUrl } : {}),
