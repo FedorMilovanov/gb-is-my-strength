@@ -185,6 +185,15 @@ function runPublicationEligibilityFixtures(resolver) {
   }, {}, '1:4');
   if (isBibleRecordPublicationEligible(held)) fail('publication fixture: any hold must fail closed');
 
+  const inheritedHold = normalizeBibleRecord({
+    ...approved,
+    holds: [],
+  }, {
+    holds: ['RIGHTS_HOLD'],
+  }, '1:5');
+  if (!inheritedHold.holds.includes('RIGHTS_HOLD')) fail('publication fixture: record-level empty holds must not clear inherited RIGHTS_HOLD');
+  if (isBibleRecordPublicationEligible(inheritedHold)) fail('publication fixture: inherited translation/book hold must remain blocking');
+
   const cassian = resolver.resolve('2 Тимофею 2:14–15').record;
   if (!cassian?.text) fail('publication fixture: current Cassian negative witness must resolve internally');
   else {
