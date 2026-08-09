@@ -97,6 +97,11 @@ jobs:
             --out-json reports/strangler-duplicate-inventory.json \
             --out-md reports/strangler-duplicate-inventory.md
 
+      - name: Gill claim surface reference authority
+        run: |
+          node --check scripts/gill-claim-surface-audit.js
+          node scripts/gill-claim-surface-audit.js --json
+
       - name: Strangler parity authority and Baptists built-app measurement
         run: |
           node --check scripts/lib/visual-parity-authority.cjs
