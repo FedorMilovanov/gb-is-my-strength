@@ -9,6 +9,8 @@ const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevt
 const REFERENCE = '2 Тимофею 2:14–15';
 const MISSING_REFERENCE = '__scripture_projection_missing__';
 const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
+const TOOLTIP_OWNER = 'article-inline-tooltip';
+const TOOLTIP_VERSION = 20;
 
 const normalizeRoute = (value) => {
   let route = String(value || '/').split('#', 1)[0] || '/';
@@ -54,16 +56,22 @@ page.on('console', (message) => {
 });
 
 try {
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => window.GBArticleTooltips?.VERSION === 20);
+  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
+  await page.waitForFunction(({ owner, version }) => {
+    const data = document.documentElement.dataset;
+    return window.GBArticleTooltips?.version === version &&
+      window.GBArticleTooltips?.owner === owner &&
+      data.gbArticleTooltipsOwner === owner &&
+      data.gbArticleTooltipsVersion === String(version);
+  }, { owner: TOOLTIP_OWNER, version: TOOLTIP_VERSION }, { timeout: 15000 });
 
   const projectionSnapshot = await page.evaluate(() => ({
-    ownerVersion: window.GBArticleTooltips?.VERSION || null,
-    ownerName: window.GBArticleTooltips?.OWNER || null,
+    ownerVersion: window.GBArticleTooltips?.version || null,
+    ownerName: window.GBArticleTooltips?.owner || null,
     scriptureData: Object.fromEntries(Object.entries(window.SCRIPTURE_DATA || {}).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
   }));
-  assert.equal(projectionSnapshot.ownerVersion, 20, 'canonical article tooltip owner version must remain v20');
-  assert.equal(projectionSnapshot.ownerName, 'article-inline-tooltip', 'canonical article tooltip owner must remain unchanged');
+  assert.equal(projectionSnapshot.ownerVersion, TOOLTIP_VERSION, 'canonical article tooltip owner version must remain v20');
+  assert.equal(projectionSnapshot.ownerName, TOOLTIP_OWNER, 'canonical article tooltip owner must remain unchanged');
   assert.deepEqual(
     projectionSnapshot.scriptureData,
     Object.fromEntries(Object.entries(EXPECTED_PROJECTION).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
