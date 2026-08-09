@@ -1,0 +1,180 @@
+name: History Image Bloat Diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/history-image-bloat-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    name: Inventory reachable Git blobs without mutation
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout full repository history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch all branch and tag refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --force --prune --no-recurse-submodules origin \
+            '+refs/heads/*:refs/remotes/origin/*' \
+            '+refs/tags/*:refs/tags/*'
+          git count-objects -vH
+
+      - name: Build immutable blob inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          git rev-list --objects --all > reports/reachable-objects.txt
+          git cat-file --batch-check='%(objectname) %(objecttype) %(objectsize) %(rest)' \
+            < reports/reachable-objects.txt > reports/object-metadata.txt
+          git ls-tree -r --long refs/remotes/origin/main > reports/main-tip-tree.txt
+
+          python3 - <<'PY'
+          import csv, json, os
+          from collections import Counter, defaultdict
+          from pathlib import Path
+
+          IMAGE_EXTS = {
+              '.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif',
+              '.bmp', '.tif', '.tiff', '.heic', '.heif', '.ico'
+          }
+
+          current_oids = set()
+          with open('reports/main-tip-tree.txt', encoding='utf-8', errors='replace') as f:
+              for line in f:
+                  # <mode> <type> <oid> <size>\t<path>
+                  left = line.split('\t', 1)[0].split()
+                  if len(left) >= 3:
+                      current_oids.add(left[2])
+
+          rows = []
+          with open('reports/object-metadata.txt', encoding='utf-8', errors='replace') as f:
+              for line in f:
+                  parts = line.rstrip('\n').split(' ', 3)
+                  if len(parts) < 3:
+                      continue
+                  oid, typ, size_s = parts[:3]
+                  if typ != 'blob':
+                      continue
+                  path = parts[3] if len(parts) == 4 else ''
+                  try:
+                      size = int(size_s)
+                  except ValueError:
+                      continue
+                  ext = Path(path).suffix.lower()
+                  is_image = ext in IMAGE_EXTS
+                  in_main_tip = oid in current_oids
+                  rows.append({
+                      'oid': oid,
+                      'bytes': size,
+                      'mib': round(size / 1024 / 1024, 3),
+                      'path': path,
+                      'ext': ext,
+                      'is_image': is_image,
+                      'in_main_tip': in_main_tip,
+                      'historical_only_vs_main_tip': not in_main_tip,
+                  })
+
+          rows.sort(key=lambda r: r['bytes'], reverse=True)
+          image_rows = [r for r in rows if r['is_image']]
+          hist_images = [r for r in image_rows if r['historical_only_vs_main_tip']]
+          large_hist_images = [r for r in hist_images if r['bytes'] >= 1024 * 1024]
+          large_non_images = [r for r in rows if not r['is_image'] and r['bytes'] >= 10 * 1024 * 1024]
+
+          def write_csv(name, data):
+              path = f'reports/{name}'
+              fields = ['oid','bytes','mib','path','ext','is_image','in_main_tip','historical_only_vs_main_tip']
+              with open(path, 'w', newline='', encoding='utf-8') as out:
+                  w = csv.DictWriter(out, fieldnames=fields)
+                  w.writeheader()
+                  w.writerows(data)
+
+          write_csv('all-blobs.csv', rows)
+          write_csv('top-500-blobs.csv', rows[:500])
+          write_csv('historical-image-blobs.csv', hist_images)
+          write_csv('historical-image-blobs-over-1MiB.csv', large_hist_images)
+          write_csv('large-non-image-blobs-over-10MiB.csv', large_non_images)
+
+          by_ext = defaultdict(lambda: {'count': 0, 'bytes': 0, 'historical_only_count': 0, 'historical_only_bytes': 0})
+          for r in image_rows:
+              x = by_ext[r['ext'] or '(none)']
+              x['count'] += 1
+              x['bytes'] += r['bytes']
+              if r['historical_only_vs_main_tip']:
+                  x['historical_only_count'] += 1
+                  x['historical_only_bytes'] += r['bytes']
+
+          summary = {
+              'main_tip': os.popen('git rev-parse refs/remotes/origin/main').read().strip(),
+              'reachable_unique_blobs': len(rows),
+              'reachable_unique_blob_bytes_uncompressed': sum(r['bytes'] for r in rows),
+              'image_unique_blobs': len(image_rows),
+              'image_unique_blob_bytes_uncompressed': sum(r['bytes'] for r in image_rows),
+              'historical_only_image_unique_blobs_vs_main_tip': len(hist_images),
+              'historical_only_image_bytes_uncompressed_vs_main_tip': sum(r['bytes'] for r in hist_images),
+              'historical_only_images_over_1MiB': len(large_hist_images),
+              'historical_only_images_over_1MiB_bytes': sum(r['bytes'] for r in large_hist_images),
+              'large_non_images_over_10MiB': len(large_non_images),
+              'image_extensions': {
+                  ext: {
+                      **vals,
+                      'mib': round(vals['bytes']/1024/1024, 3),
+                      'historical_only_mib': round(vals['historical_only_bytes']/1024/1024, 3),
+                  }
+                  for ext, vals in sorted(by_ext.items(), key=lambda kv: kv[1]['historical_only_bytes'], reverse=True)
+              },
+              'top_50_historical_images': large_hist_images[:50],
+              'top_30_all_blobs': rows[:30],
+          }
+          with open('reports/summary.json', 'w', encoding='utf-8') as out:
+              json.dump(summary, out, ensure_ascii=False, indent=2)
+
+          mib = lambda n: n / 1024 / 1024
+          lines = [
+              '# Git history image-bloat inventory',
+              '',
+              f"- Main tip: `{summary['main_tip']}`",
+              f"- Reachable unique blobs: **{len(rows):,}** / **{mib(sum(r['bytes'] for r in rows)):.1f} MiB** uncompressed",
+              f"- Image blobs: **{len(image_rows):,}** / **{mib(sum(r['bytes'] for r in image_rows)):.1f} MiB** uncompressed",
+              f"- Historical-only image blobs vs current main tree: **{len(hist_images):,}** / **{mib(sum(r['bytes'] for r in hist_images)):.1f} MiB** uncompressed",
+              f"- Historical-only images >=1 MiB: **{len(large_hist_images):,}** / **{mib(sum(r['bytes'] for r in large_hist_images)):.1f} MiB** uncompressed",
+              f"- Non-image blobs >=10 MiB: **{len(large_non_images):,}**",
+              '',
+              '## Historical-only image bytes by extension',
+              '',
+              '| ext | blobs | historical-only MiB | total image MiB |',
+              '|---|---:|---:|---:|',
+          ]
+          for ext, vals in summary['image_extensions'].items():
+              lines.append(f"| {ext} | {vals['historical_only_count']:,} | {vals['historical_only_mib']:.1f} | {vals['mib']:.1f} |")
+
+          lines += ['', '## Largest historical-only images', '', '| MiB | ext | oid | representative path |', '|---:|---|---|---|']
+          for r in large_hist_images[:100]:
+              safe_path = r['path'].replace('|', '\\|')
+              lines.append(f"| {r['mib']:.2f} | {r['ext']} | `{r['oid']}` | `{safe_path}` |")
+
+          lines += ['', '> This job is read-only. `historical_only_vs_main_tip=true` means the blob is not present in the current main tip tree; it does not by itself authorize deletion.']
+          Path('reports/summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+
+          cat reports/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload read-only history inventory
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: history-image-bloat-inventory-${{ github.run_id }}
+          path: reports
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
