@@ -1,0 +1,22 @@
+---
+import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
+import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
+import HermenevtikaMobileBar from '@/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro';
+import ReaderSettings from '@/components/article-pilots/_shared/ReaderSettings.astro';
+import { LOT_TOC } from './lotToc';
+---
+
+<FloatingCluster mode="single" variant="hermeneutics" audioState="none" />
+<ReaderRail
+  eyebrow="Экзегеза · Бытие 13–19"
+  title="Лот: праведник у ворот Содома"
+  backHref="../../"
+  toc={LOT_TOC}
+/>
+<HermenevtikaMobileBar
+  title="Лот: праведник у ворот Содома"
+  backHref="../../"
+  readingMinutes={28}
+  toc={LOT_TOC}
+/>
+<ReaderSettings />
