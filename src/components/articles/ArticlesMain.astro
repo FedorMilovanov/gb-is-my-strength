@@ -2,32 +2,14 @@
 /**
  * ArticlesMain.astro — native semantic catalog body for /articles/.
  *
- * 100% native lane (2026-06-23): no loader-backed document shell and no raw
- * legacy fragment imports. The component keeps the premium catalog DOM
- * (mobile menu, home-v20 wrapper, hero, publications/refutations grids and SDG
- * block) as first-class Astro markup and derives series counters from the shared
- * data/series.json contract.
+ * The exhaustive article/series projection is owned by ArticlesLibrarySection,
+ * which derives current published destinations from existing repository
+ * authorities instead of a second hand-maintained card inventory.
  */
-import seriesData from '../../../data/series.json';
 import ArticlesHeroSection from './ArticlesHeroSection.astro';
-import ArticlesPublicationsSection from './ArticlesPublicationsSection.astro';
+import ArticlesLibrarySection from './ArticlesLibrarySection.astro';
 import ArticlesRefutationsSection from './ArticlesRefutationsSection.astro';
 import ArticlesArticleEndBlock from './ArticlesArticleEndBlock.astro';
-
-const hardTexts = seriesData['hard-texts'];
-const genesis6 = seriesData['genesis-6'];
-const nagornaya = seriesData.nagornaya;
-const gill = seriesData['dzhon-gill'];
-const gillReadingTime = Object.fromEntries(
-  gill.parts.map((part) => [part.slug, part.readingTime]),
-);
-const hardTextsPublished = hardTexts.parts.filter((part) => part.status === 'published').length;
-const hardTextsPartsLabel = `${hardTexts.parts.length} части (${hardTextsPublished} опубликованы)`;
-const genesis6Published = genesis6.parts.filter((part) => part.status === 'published');
-const genesis6TotalMinutes = genesis6Published.reduce((sum, part) => sum + part.readingTime, 0);
-const genesis6PartsLabel = `${genesis6Published.length} опубликованных разборов · ${genesis6TotalMinutes} мин`;
-const nagornayaPublished = nagornaya.parts.filter((part) => part.status === 'published').length;
-const nagornayaPartsLabel = `${nagornayaPublished} частей`;
 ---
 <main id="main-content">
 
@@ -47,12 +29,7 @@ const nagornayaPartsLabel = `${nagornayaPublished} частей`;
   <div class="home-content">
 
     <ArticlesHeroSection />
-<ArticlesPublicationsSection
-  hardTextsPartsLabel={hardTextsPartsLabel}
-  genesis6PartsLabel={genesis6PartsLabel}
-  nagornayaPartsLabel={nagornayaPartsLabel}
-  gillReadingTime={gillReadingTime}
-/>
+<ArticlesLibrarySection />
 <ArticlesRefutationsSection />
 <ArticlesArticleEndBlock />
 
