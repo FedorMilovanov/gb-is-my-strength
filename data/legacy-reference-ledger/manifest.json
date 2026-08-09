@@ -34,7 +34,8 @@
       "scripts/lib/audit-pro-source-corpus.js",
       "scripts/lib/legacy-source-authority.js",
       "scripts/lib/route-source-contract.js",
-      "scripts/nagornaya-visual-parity-audit.js"
+      "scripts/nagornaya-visual-parity-audit.js",
+      "scripts/visual-parity-contract.js"
     ],
     "nonBlockingFixtureDependencies": [
       "scripts/audit-pro-source-corpus-test.js",
@@ -51,8 +52,8 @@
     "migrationReferenceOnly": 23,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 36,
-    "dependencyUnknownBlockers": 7,
+    "dependencies": 33,
+    "dependencyUnknownBlockers": 4,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -138,8 +139,8 @@
       "path": "scripts/gill-claim-surface-audit.js",
       "access": "reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "articles/${slug}/index.html",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveDeclaredLegacyReference",
       "owner": "legacy-reference-quarantine"
     },
     {
@@ -172,30 +173,6 @@
       "classification": "migration-reference-only",
       "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "resolveDeclaredLegacyReference",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/legacy-audits/article-mdx-pilot-audit-legacy.js",
-      "access": "policy-reader",
-      "classification": "obsolete",
-      "quarantineImpact": "remove-or-repoint-before-move",
-      "evidenceToken": "articles/dzhon-gill-spravochnik/index.html",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/legacy-audits/baptisty-series-shadow-audit-legacy.js",
-      "access": "reader",
-      "classification": "obsolete",
-      "quarantineImpact": "remove-or-repoint-before-move",
-      "evidenceToken": "baptisty-rossii/${slug}/index.html",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/legacy-audits/check-mdx-html-parity-legacy.js",
-      "access": "reader",
-      "classification": "obsolete",
-      "quarantineImpact": "remove-or-repoint-before-move",
-      "evidenceToken": "articles/20-antisovetov-pastoru/index.html",
       "owner": "legacy-reference-quarantine"
     },
     {
@@ -273,25 +250,25 @@
     {
       "path": "scripts/nagornaya-bar-asset-contract-test.js",
       "access": "fixture-or-contract",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "nagornaya/chast-${part}/index.html",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveDeclaredLegacyReference",
       "owner": "legacy-reference-quarantine"
     },
     {
       "path": "scripts/nagornaya-pastoral-safety-regression-test.js",
       "access": "fixture-or-contract",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "nagornaya/chast-5/index.html",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveDeclaredLegacyReference",
       "owner": "legacy-reference-quarantine"
     },
     {
       "path": "scripts/nagornaya-source-integrity-regression-test.js",
       "access": "fixture-or-contract",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "nagornaya/istochniki/index.html",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveDeclaredLegacyReference",
       "owner": "legacy-reference-quarantine"
     },
     {
@@ -338,8 +315,8 @@
       "path": "scripts/visual-parity-contract.js",
       "access": "reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "nagornaya/seriya/index.html",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveReferenceForRoute",
       "owner": "legacy-reference-quarantine"
     },
     {
