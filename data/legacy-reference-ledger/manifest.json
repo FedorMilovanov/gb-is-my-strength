@@ -146,8 +146,8 @@
       "path": "scripts/gill-context-visual-parity-audit.js",
       "access": "policy-reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "articles/dzhon-gill-istoricheskiy-kontekst/index.html",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveDeclaredLegacyReference",
       "owner": "legacy-reference-quarantine"
     },
     {
