@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { chromium } from 'playwright';
 import { createBibleResolver } from '../src/lib/bible-reference-core.mjs';
 
@@ -9,10 +10,39 @@ const REFERENCE = '2 Тимофею 2:14–15';
 const MISSING_REFERENCE = '__scripture_projection_missing__';
 const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
 
+const normalizeRoute = (value) => {
+  let route = String(value || '/').split('#', 1)[0] || '/';
+  if (!route.startsWith('/')) route = `/${route}`;
+  if (!route.includes('.') && !route.endsWith('/')) route += '/';
+  return route;
+};
+
+const scriptureIndex = JSON.parse(
+  fs.readFileSync(new URL('../data/scripture-search-index.json', import.meta.url), 'utf8'),
+);
+const EXPECTED_PROJECTION = {};
+for (const reference of scriptureIndex.references || []) {
+  const text = String(reference.canonicalText || '').trim();
+  if (!text) continue;
+  const routeOccurrences = (reference.occurrences || []).filter(
+    (occurrence) => normalizeRoute(occurrence.url) === ROUTE,
+  );
+  if (routeOccurrences.length === 0) continue;
+  for (const occurrence of routeOccurrences) {
+    const raw = String(occurrence.raw || '').trim();
+    if (raw) EXPECTED_PROJECTION[raw] = text;
+  }
+  const label = String(reference.label || '').trim();
+  if (label) EXPECTED_PROJECTION[label] = text;
+}
+assert(Object.keys(EXPECTED_PROJECTION).length > 0, 'Hermenevtika must have centrally resolved route-scoped Scripture records');
+
 const resolver = createBibleResolver();
 const { record } = resolver.resolve(REFERENCE);
 assert(record?.text, `Central Bible corpus must resolve ${REFERENCE}`);
 const EXPECTED_TEXT = record.text;
+assert.equal(EXPECTED_PROJECTION[REFERENCE], EXPECTED_TEXT,
+  'occurrence index canonical text must agree with the independent central resolver');
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
@@ -27,18 +57,18 @@ try {
   await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.GBArticleTooltips?.VERSION === 20);
 
-  const projectedText = await page.evaluate((reference) => window.SCRIPTURE_DATA?.[reference] || null, REFERENCE);
-  assert.equal(projectedText, EXPECTED_TEXT, 'route projection must expose the central canonical text');
-
   const projectionSnapshot = await page.evaluate(() => ({
     ownerVersion: window.GBArticleTooltips?.VERSION || null,
     ownerName: window.GBArticleTooltips?.OWNER || null,
-    projectedKeys: Object.keys(window.SCRIPTURE_DATA || {}),
+    scriptureData: Object.fromEntries(Object.entries(window.SCRIPTURE_DATA || {}).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
   }));
   assert.equal(projectionSnapshot.ownerVersion, 20, 'canonical article tooltip owner version must remain v20');
   assert.equal(projectionSnapshot.ownerName, 'article-inline-tooltip', 'canonical article tooltip owner must remain unchanged');
-  assert(projectionSnapshot.projectedKeys.length > 0, 'current route must receive at least one canonical Scripture record');
-  assert(projectionSnapshot.projectedKeys.length < 100, 'route projection must stay route-scoped rather than shipping the whole corpus');
+  assert.deepEqual(
+    projectionSnapshot.scriptureData,
+    Object.fromEntries(Object.entries(EXPECTED_PROJECTION).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
+    'browser Scripture payload must equal the canonical current-route projection exactly',
+  );
 
   // The old retained route-local payload must not be required for the native handoff.
   await page.evaluate(() => document.querySelector('#bibleRefs')?.remove());
