@@ -1,0 +1,28 @@
+{
+  "route": "/articles/lot-i-sodom/",
+  "profiledAt": "2026-08-09",
+  "migrationLane": "content",
+  "routeType": "article",
+  "surfaceContractVersion": 1,
+  "surface": "article",
+  "section": "articles",
+  "slug": "lot-i-sodom",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/lot-i-sodom/index.astro",
+  "risk": 2,
+  "sourceContractVersion": 1,
+  "contentSourceMode": "astro-native-entry",
+  "renderSource": "src/pages/articles/lot-i-sodom/index.astro",
+  "metadataSourceMode": "astro-head-import",
+  "hasMDX": false,
+  "mdxStatus": "absent",
+  "mdxPath": null,
+  "legacyStatus": "absent",
+  "legacyPath": null,
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null,
+  "migrationMode": "strict-native"
+}
