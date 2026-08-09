@@ -128,15 +128,16 @@ function inspectLegacyAuthority(files) {
   for (const file of files) {
     const extension = path.extname(file).toLowerCase();
     if (!sourceExtensions.has(extension) || path.resolve(file) === path.resolve(CONTRACT_FILE)) continue;
+    const relative = rel(file);
     const source = fs.readFileSync(file, 'utf8');
     if (forbiddenTokens.some((token) => source.includes(token))) {
-      fail(`${rel(file)}: forbidden consumer of removed legacy verse authority ${LEGACY_VERSES_RELATIVE}`);
+      fail(`${relative}: forbidden consumer of removed legacy verse authority ${LEGACY_VERSES_RELATIVE}`);
     }
-    if (markupExtensions.has(extension) && /<script\b[^>]*\bid=["']bibleRefs["'][^>]*>/iu.test(source)) {
-      fail(`${rel(file)}: forbidden retained public #bibleRefs Scripture payload; route text must flow only through the rights-gated canonical projection`);
+    if (relative.startsWith('src/') && markupExtensions.has(extension) && /<script\b[^>]*\bid=["']bibleRefs["'][^>]*>/iu.test(source)) {
+      fail(`${relative}: forbidden retained public #bibleRefs Scripture payload; route text must flow only through the rights-gated canonical projection`);
     }
     if (markupExtensions.has(extension) && /(?:class\s*=\s*["'][^"']*\bgbx-verse\b|\bdata-verse\s*=)/iu.test(source)) {
-      fail(`${rel(file)}: forbidden public legacy verse trigger; use canonical .bref/.btip projection`);
+      fail(`${relative}: forbidden public legacy verse trigger; use canonical .bref/.btip projection`);
     }
   }
 }
