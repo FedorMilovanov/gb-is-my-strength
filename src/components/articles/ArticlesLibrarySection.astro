@@ -1,0 +1,132 @@
+---
+/**
+ * ArticlesLibrarySection.astro — exhaustive /articles/ projection.
+ *
+ * Derived from existing publication authorities rather than a second
+ * hand-maintained catalog. Search manifest owns reader-facing metadata;
+ * page-ownership decides whether the destination is current production output.
+ */
+import searchManifest from '../../../data/search-manifest.json';
+import pageOwnership from '../../../migration/page-ownership.json';
+
+interface CatalogItem {
+  id?: string;
+  type?: string;
+  url: string;
+  title?: string;
+  description?: string;
+  section?: string;
+  editor?: string;
+  readTime?: number;
+  image?: string;
+  priority?: number;
+  modifiedTime?: string;
+}
+
+const manifestItems = searchManifest.items as CatalogItem[];
+const productionRoutes = pageOwnership.routes as Record<string, { status?: string }>;
+const routeIsPublished = (url: string) => {
+  const route = String(url || '').split('#')[0];
+  return productionRoutes[route]?.status === 'production-dist';
+};
+const byEditorialOrder = (a: CatalogItem, b: CatalogItem) => {
+  const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
+  if (priorityDelta) return priorityDelta;
+  const aModified = Date.parse(String(a.modifiedTime || ''));
+  const bModified = Date.parse(String(b.modifiedTime || ''));
+  if (Number.isFinite(aModified) && Number.isFinite(bModified) && bModified !== aModified) return bModified - aModified;
+  return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
+};
+
+const series = manifestItems
+  .filter((item) => item.type === 'series' && routeIsPublished(item.url))
+  .sort(byEditorialOrder);
+const items = manifestItems
+  .filter((item) => item.type === 'article' && routeIsPublished(item.url))
+  .sort(byEditorialOrder);
+---
+<section
+  class="h-section h-reveal"
+  id="publikacii"
+  aria-labelledby="hLibraryLabel"
+  data-catalog-source="search-manifest+page-ownership"
+>
+  <p class="h-section-label" id="hLibraryLabel">Все статьи</p>
+  <div class="h-section-accent" aria-hidden="true"></div>
+  <p class="h-section-desc">
+    {items.length} опубликованных материалов. Список обновляется вместе с библиотекой, поэтому новые опубликованные статьи появляются здесь автоматически.
+  </p>
+
+  {series.length > 0 && (
+    <div class="h-articles-group" aria-labelledby="hSeriesLabel">
+      <p class="h-section-label" id="hSeriesLabel">Серии</p>
+      <ul class="h-article-list h-article-list--grid">
+        {series.map((item) => (
+          <li class="h-article-li--full">
+            <a href={item.url} class="h-article-card" data-catalog-series={item.url}>
+              {item.image && (
+                <div class="h-article-thumb">
+                  <img
+                    src={item.image}
+                    alt=""
+                    decoding="async"
+                    loading="lazy"
+                    width="160"
+                    height="108"
+                  />
+                </div>
+              )}
+              <div class="h-article-body">
+                <h2 class="h-article-title">{item.title || item.id || item.url}</h2>
+                <div class="h-article-meta">
+                  {Number.isFinite(item.readTime) && <span class="h-meta-time">{item.readTime} мин</span>}
+                  {item.section && <span class="h-meta-tag h-meta-tag--neutral">{item.section}</span>}
+                  <span class="h-meta-tag">Серия</span>
+                </div>
+                {item.description && <p class="h-article-abstract">{item.description}</p>}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  <div class="h-articles-group" aria-labelledby="hArticlesLabel">
+    <p class="h-section-label" id="hArticlesLabel">Материалы</p>
+    <ul class="h-article-list h-article-list--grid">
+      {items.map((item) => (
+        <li>
+          <a href={item.url} class="h-article-card" data-catalog-route={item.url}>
+            {item.image && (
+              <div class="h-article-thumb">
+                <img
+                  src={item.image}
+                  alt=""
+                  decoding="async"
+                  loading="lazy"
+                  width="160"
+                  height="108"
+                />
+              </div>
+            )}
+            <div class="h-article-body">
+              <h2 class="h-article-title">{item.title || item.id || item.url}</h2>
+              <div class="h-article-meta">
+                <span class="h-meta-author">{item.editor ? `Редактор: ${item.editor}` : 'Господь Бог — Сила Моя'}</span>
+                {Number.isFinite(item.readTime) && (
+                  <>
+                    <span class="h-meta-sep" aria-hidden="true">·</span>
+                    <span class="h-meta-time">{item.readTime} мин</span>
+                  </>
+                )}
+                {item.section && <span class="h-meta-tag h-meta-tag--neutral">{item.section}</span>}
+              </div>
+              {item.description && <p class="h-article-abstract">{item.description}</p>}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
