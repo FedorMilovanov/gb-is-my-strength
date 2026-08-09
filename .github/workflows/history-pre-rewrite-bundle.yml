@@ -1,0 +1,68 @@
+name: Pre-Rewrite Git Recovery Bundle
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/history-pre-rewrite-bundle.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    name: Export owner-managed refs as recovery bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout trigger
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Clone owner-managed refs only
+        shell: bash
+        env:
+          REPO_URL: https://github.com/${{ github.repository }}.git
+        run: |
+          set -euo pipefail
+          git init --bare source.git
+          cd source.git
+          git remote add origin "$REPO_URL"
+          git fetch --force --prune --no-recurse-submodules origin \
+            '+refs/heads/*:refs/heads/*' \
+            '+refs/tags/*:refs/tags/*'
+          git remote remove origin
+
+      - name: Create and verify immutable recovery bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p recovery
+          cd source.git
+          git for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags | sort > ../recovery/REFS.txt
+          git rev-parse refs/heads/main > ../recovery/MAIN_COMMIT.txt
+          git rev-parse 'refs/heads/main^{tree}' > ../recovery/MAIN_TREE.txt
+          git bundle create ../recovery/gb-is-my-strength-pre-image-purge.bundle --branches --tags
+          cd ..
+          git bundle verify recovery/gb-is-my-strength-pre-image-purge.bundle > recovery/BUNDLE_VERIFY.txt 2>&1
+          sha256sum recovery/gb-is-my-strength-pre-image-purge.bundle > recovery/SHA256.txt
+          stat -c '%s' recovery/gb-is-my-strength-pre-image-purge.bundle > recovery/BYTES.txt
+          printf '%s\n' \
+            'Recovery bundle created before historical image rewrite.' \
+            'Contains owner-managed refs/heads and refs/tags only.' \
+            'Use only for rollback/recovery; GitHub internal refs/pull are not owner-writable and are not bundled.' \
+            > recovery/README.txt
+          cat recovery/SHA256.txt
+          cat recovery/BYTES.txt
+
+      - name: Upload recovery bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pre-image-purge-git-recovery-${{ github.run_id }}
+          path: recovery
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 30
