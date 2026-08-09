@@ -10,6 +10,7 @@ on:
       - "src/lib/relations/**"
       - "src/runtime/atlas-runtime.js"
       - "src/runtime/relationship-panel.css"
+      - "src/runtime/article-quiz.js"
       - "data/route-profiles/**"
       - "data/public-content-baseline.json"
       - "data/links-graph.json"
@@ -21,6 +22,7 @@ on:
       - "scripts/article-native-contract-audit.js"
       - "scripts/article-native-effective-contract-audit.js"
       - "scripts/article-mdx-pilot-audit.js"
+      - "scripts/article-quiz-native-parity-test.mjs"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/html-surface-contract-audit.js"
@@ -51,6 +53,7 @@ on:
       - "src/lib/relations/**"
       - "src/runtime/atlas-runtime.js"
       - "src/runtime/relationship-panel.css"
+      - "src/runtime/article-quiz.js"
       - "data/route-profiles/**"
       - "data/public-content-baseline.json"
       - "data/links-graph.json"
@@ -62,6 +65,7 @@ on:
       - "scripts/article-native-contract-audit.js"
       - "scripts/article-native-effective-contract-audit.js"
       - "scripts/article-mdx-pilot-audit.js"
+      - "scripts/article-quiz-native-parity-test.mjs"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/html-surface-contract-audit.js"
@@ -130,6 +134,13 @@ jobs:
           set -o pipefail
           node scripts/html-surface-contract-test.js 2>&1 \
             | tee reports/native-source-contract-html-test.log
+
+      - name: Validate native article quiz semantic parity
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/article-quiz-native-parity-test.mjs 2>&1 \
+            | tee reports/native-source-contract-quiz.log
 
       - name: Install dependencies
         run: npm ci

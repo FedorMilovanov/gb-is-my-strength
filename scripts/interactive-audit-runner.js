@@ -14,6 +14,7 @@ const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-l
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
+const NATIVE_QUIZ_PARITY_URL = '/articles/kod-da-vinchi/';
 
 function contentType(filePath) {
   return {
@@ -113,9 +114,88 @@ function runStandaloneReaderLayoutGuard(baseUrl) {
   return runNodeScript(STANDALONE_READER_LAYOUT_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+async function runNativeQuizParityGuard(baseUrl) {
+  const { chromium } = require('playwright');
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1100, height: 800 }, deviceScaleFactor: 1 });
+    const response = await page.goto(`${baseUrl}${NATIVE_QUIZ_PARITY_URL}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    });
+    if (!response || !response.ok()) {
+      throw new Error(`native quiz witness route failed: ${response ? response.status() : 'no response'}`);
+    }
+
+    await page.locator('#quizLaunch').waitFor({ state: 'visible', timeout: 10000 });
+    const contract = await page.evaluate(() => {
+      const quiz = window.SITE_CONFIG?.quiz;
+      const questions = Array.isArray(quiz?.questions) ? quiz.questions : [];
+      const scores = Array.isArray(quiz?.scores) ? quiz.scores : [];
+      return {
+        correct: questions.map((question) => Number(question.correct)),
+        expectedTitle: String(scores[0]?.title || ''),
+        expectedBadge: String(scores[0]?.badge || ''),
+        expectedShort: String(questions[0]?.explanation?.short || ''),
+        expectedFull: String(questions[0]?.explanation?.full || ''),
+      };
+    });
+
+    if (!contract.correct.length || !contract.correct.every(Number.isInteger)) {
+      throw new Error('native quiz witness requires a current question pool with explicit correct indexes');
+    }
+    if (!contract.expectedTitle || !contract.expectedBadge || !contract.expectedShort || !contract.expectedFull) {
+      throw new Error('native quiz witness requires current min-tier, badge and structured explanation authority');
+    }
+
+    await page.locator('#quizLaunch').click();
+    for (let index = 0; index < contract.correct.length; index += 1) {
+      const option = page.locator('.quiz-option').nth(contract.correct[index]);
+      await option.click({ timeout: 5000 });
+      await page.locator('.quiz-feedback').waitFor({ state: 'visible', timeout: 5000 });
+
+      if (index === 0) {
+        const explanation = await page.evaluate(() => ({
+          short: (document.querySelector('.quiz-explanation--short.quiz-explanation-short')?.textContent || '').trim(),
+          full: (document.querySelector('.quiz-explanation--full.quiz-explanation-full')?.textContent || '').trim(),
+        }));
+        if (explanation.short !== contract.expectedShort || explanation.full !== contract.expectedFull) {
+          throw new Error(`native quiz explanation/presentation parity drift: ${JSON.stringify(explanation)}`);
+        }
+      }
+
+      await page.locator('.quiz-next').click({ timeout: 5000 });
+      if (index + 1 < contract.correct.length) {
+        await page.locator('.quiz-option').first().waitFor({ state: 'visible', timeout: 5000 });
+      }
+    }
+
+    await page.waitForFunction(
+      ({ expectedTitle, expectedBadge }) => {
+        const title = (document.querySelector('#quizQuestion')?.textContent || '').trim();
+        const badge = (document.querySelector('.quiz-result-badge.quiz-score-badge')?.textContent || '').trim();
+        return title === expectedTitle && badge === expectedBadge;
+      },
+      { expectedTitle: contract.expectedTitle, expectedBadge: contract.expectedBadge },
+      { timeout: 5000 },
+    );
+
+    console.log(`✅ native article quiz browser parity passed (${NATIVE_QUIZ_PARITY_URL})`);
+    await page.close();
+    return 0;
+  } catch (error) {
+    console.error(`❌ native article quiz browser parity failed: ${error.message}`);
+    return 1;
+  } finally {
+    await browser.close();
+  }
+}
+
 async function runInteractiveContracts(baseUrl) {
   const auditCode = await runAudit(baseUrl);
   if (auditCode !== 0) return auditCode;
+  const quizCode = await runNativeQuizParityGuard(baseUrl);
+  if (quizCode !== 0) return quizCode;
   const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
   if (tooltipCode !== 0) return tooltipCode;
   return runStandaloneReaderLayoutGuard(baseUrl);
