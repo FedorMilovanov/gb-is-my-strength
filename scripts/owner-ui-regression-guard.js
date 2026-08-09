@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 
 /*
- * owner-ui-regression-guard.js — owner-facing UI contract for root production.
+ * owner-ui-regression-guard.js — owner-facing retained UI contract.
  *
- * This is not an SEO/content parity test. It protects the visible premium
- * legacy experience while Astro is not yet visually approved for production.
+ * This is not an SEO/content parity test. It protects the owner-approved
+ * premium reference experience independently of retained-reference storage.
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
+const { buildAuditProSourceCorpus } = require('./lib/audit-pro-source-corpus');
 const ROOT = path.join(__dirname, '..');
 const problems = [];
 function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
@@ -27,34 +29,62 @@ function mustNotContain(rel, marker, label = marker) {
   else bad(`${rel}: forbidden owner UI regression marker present: ${label}`);
 }
 
+const publicSurface = buildPublicSurfaceRegistry();
+for (const error of publicSurface.errors || []) bad(`public surface registry: ${error}`);
+const routeCorpus = buildAuditProSourceCorpus({
+  root: ROOT,
+  entries: publicSurface.entries || [],
+  allHtmlFiles: [],
+});
+const sourceByRoute = new Map(routeCorpus.sourcePages.map((record) => [record.route, record.file]));
+function readRoute(route) {
+  const file = sourceByRoute.get(route);
+  if (!file) {
+    bad(`${route}: missing storage-aware retained UI source`);
+    return '';
+  }
+  return fs.readFileSync(file, 'utf8');
+}
+function mustRouteContain(route, marker, label = marker) {
+  const html = readRoute(route);
+  if (html.includes(marker)) ok(`${route}: ${label}`);
+  else bad(`${route}: missing owner UI marker: ${label}`);
+}
+function mustRouteNotContain(route, marker, label = marker) {
+  const html = readRoute(route);
+  if (!html.includes(marker)) ok(`${route}: no ${label}`);
+  else bad(`${route}: forbidden owner UI regression marker present: ${label}`);
+}
+
 // Home: owner rejected the extra entry strip and homepage TTS prompt.
-mustContain('index.html', 'home-v20', 'legacy premium home shell');
-mustContain('index.html', 'h-hero-title', 'legacy home hero');
-mustNotContain('index.html', 'h-home-entry-strip', 'rejected “Основные входы” strip');
+mustRouteContain('/', 'home-v20', 'legacy premium home shell');
+mustRouteContain('/', 'h-hero-title', 'legacy home hero');
+mustRouteNotContain('/', 'h-home-entry-strip', 'rejected “Основные входы” strip');
 const siteJs = read('js/site.js');
 if (/path===['"]\/['"]/.test(siteJs) && /home-v20/.test(siteJs) && /gbx-tts/.test(siteJs)) ok('js/site.js: TTS has homepage guard');
 else bad('js/site.js: TTS homepage guard missing or not obvious');
 
-// Production root must remain legacy/premium until Astro visual parity is approved.
-for (const [rel, markers] of Object.entries({
-  'articles/index.html': ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card'],
-  'biografii/index.html': ['home-v20', 'h-hero-title', 'h-article-card'],
-  'nagornaya/seriya/index.html': ['nagornaya-page nagornaya-series-page', 'home-v20', 'h-hero-title', 'h-article-card'],
-  'articles/dzhon-gill-chast-1-chelovek/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
-  'articles/dzhon-gill-chast-2-uchenyi/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
-  'articles/dzhon-gill-chast-3-nasledie/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
-  'articles/dzhon-gill-chast-4-ekzeget/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
+// Retained premium references preserve owner-approved UI markers even after
+// current production authority transfers to Astro.
+for (const [route, markers] of Object.entries({
+  '/articles/': ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card'],
+  '/biografii/': ['home-v20', 'h-hero-title', 'h-article-card'],
+  '/nagornaya/seriya/': ['nagornaya-page nagornaya-series-page', 'home-v20', 'h-hero-title', 'h-article-card'],
+  '/articles/dzhon-gill-chast-1-chelovek/': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
+  '/articles/dzhon-gill-chast-2-uchenyi/': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
+  '/articles/dzhon-gill-chast-3-nasledie/': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
+  '/articles/dzhon-gill-chast-4-ekzeget/': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
 })) {
-  for (const marker of markers) mustContain(rel, marker);
-  mustNotContain(rel, 'astro-page', 'generic Astro page shell');
-  mustNotContain(rel, 'astro-card-grid', 'generic Astro card grid');
+  for (const marker of markers) mustRouteContain(route, marker);
+  mustRouteNotContain(route, 'astro-page', 'generic Astro page shell');
+  mustRouteNotContain(route, 'astro-card-grid', 'generic Astro card grid');
 }
 
 // Maps: unfinished maps must not be presented as finished interactive maps.
-mustContain('karty/index.html', 'Путь Авраама', 'Avraam remains on map shelf');
-mustContain('karty/index.html', 'Премиальная витрина карт', 'premium map shelf hero');
-mustContain('karty/index.html', 'Остальные карты временно не на витрине', 'unfinished map shelf warning');
-mustContain('karty/index.html', '0</b><span>черновиков на витрине', 'no unfinished demos on map shelf');
+mustRouteContain('/karty/', 'Путь Авраама', 'Avraam remains on map shelf');
+mustRouteContain('/karty/', 'Премиальная витрина карт', 'premium map shelf hero');
+mustRouteContain('/karty/', 'Остальные карты временно не на витрине', 'unfinished map shelf warning');
+mustRouteContain('/karty/', '0</b><span>черновиков на витрине', 'no unfinished demos on map shelf');
 
 // karty/ishod/ is a LIVE map (shared map-engine.js + route.json), promoted in
 // 8ff89285 (astro-ishod-pilot-audit already treats it as live, not holding).
@@ -62,16 +92,17 @@ mustContain('karty/index.html', '0</b><span>черновиков на витри
 // Sinai → Kadesh-Barnea → Plains of Moab), 11 waypoints / 6 stages, Hebrew
 // title, 0 page errors. Assert the live-map contract instead of the old
 // holding-page marker so this guard does not false-positive on a real map.
-mustContain('karty/ishod/index.html', '../_engine/map-engine.js', 'ishod loads shared live map engine');
-mustNotContain('karty/ishod/index.html', 'Визуальный аудит карт', 'ishod is a live map, not a holding page');
+mustRouteContain('/karty/ishod/', '../_engine/map-engine.js', 'ishod loads shared live map engine');
+mustRouteNotContain('/karty/ishod/', 'Визуальный аудит карт', 'ishod is a live map, not a holding page');
 for (const slug of ['pavel','shoftim','melachim','shvatim','yeshua','maccabim','early-church','revelation']) {
-  mustContain(`karty/${slug}/index.html`, 'Визуальный аудит карт', `${slug} holding page`);
-  mustNotContain(`karty/${slug}/index.html`, 'id="mapRoot"', `${slug} unfinished live MapEngine root`);
+  const route = `/karty/${slug}/`;
+  mustRouteContain(route, 'Визуальный аудит карт', `${slug} holding page`);
+  mustRouteNotContain(route, 'id="mapRoot"', `${slug} unfinished live MapEngine root`);
 }
 
 // Russian Baptists: owner called out incomplete/ugly series presentation.
-mustContain('baptisty-rossii/index.html', 'data-gbs2-series="russian-baptism"', 'Russian Baptists GBS2 series shell');
-mustContain('baptisty-rossii/index.html', '10 частей · живая исследовательская серия', 'Russian Baptists complete series count');
+mustRouteContain('/baptisty-rossii/', 'data-gbs2-series="russian-baptism"', 'Russian Baptists GBS2 series shell');
+mustRouteContain('/baptisty-rossii/', '10 частей · живая исследовательская серия', 'Russian Baptists complete series count');
 mustContain('css/site.css', 'Russian Baptists series landing', 'Russian Baptists premium landing CSS guard');
 mustContain('css/site.css', 'grid-template-columns:repeat(3,minmax(0,1fr))', 'Russian Baptists desktop compact card grid');
 

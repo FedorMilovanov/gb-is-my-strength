@@ -52,8 +52,8 @@
     "migrationReferenceOnly": 23,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 31,
-    "dependencyUnknownBlockers": 1,
+    "dependencies": 30,
+    "dependencyUnknownBlockers": 0,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -277,14 +277,6 @@
       "classification": "production-required",
       "quarantineImpact": "none-fixture-policy-or-comment-only",
       "evidenceToken": "legacyPath",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/owner-ui-regression-guard.js",
-      "access": "fixture-or-contract",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "nagornaya/seriya/index.html",
       "owner": "legacy-reference-quarantine"
     },
     {
