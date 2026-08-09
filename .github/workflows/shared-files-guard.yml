@@ -29,10 +29,25 @@ jobs:
           node-version: '22.23.1'
           cache: "npm"
 
+      - name: Resolve live PR diff authority
+        id: pr-authority
+        if: github.event_name == 'pull_request'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_PAYLOAD_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node --check scripts/shared-diff-authority.mjs
+          node scripts/shared-diff-authority.mjs
+
       - name: Lane collision guard contract
         run: |
+          node --check scripts/shared-diff-authority.mjs
+          node --check scripts/shared-diff-authority-contract-test.mjs
           node --check scripts/lane-collision-guard.mjs
           node --check scripts/lane-collision-guard-contract-test.mjs
+          node scripts/shared-diff-authority-contract-test.mjs
           node scripts/lane-collision-guard-contract-test.mjs
 
       - name: Guard active lane collisions
@@ -41,6 +56,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          EFFECTIVE_BASE_SHA: ${{ steps.pr-authority.outputs.effective_base }}
+          EFFECTIVE_HEAD_SHA: ${{ steps.pr-authority.outputs.effective_head }}
         run: node scripts/lane-collision-guard.mjs
 
       - name: Asset revision drift (read-only)
@@ -208,14 +225,25 @@ jobs:
       - name: Guard actual shared/system diff
         shell: bash
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_EFFECTIVE_BASE_SHA: ${{ steps.pr-authority.outputs.effective_base }}
+          PR_EFFECTIVE_HEAD_SHA: ${{ steps.pr-authority.outputs.effective_head }}
+          PUSH_BASE_SHA: ${{ github.event.before }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
-            BASE_SHA="$(git rev-parse "$HEAD_SHA^")"
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            BASE_SHA="$PR_EFFECTIVE_BASE_SHA"
+            HEAD_SHA="$PR_EFFECTIVE_HEAD_SHA"
+            test -n "$BASE_SHA"
+            test -n "$HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            HEAD_SHA="$PUSH_HEAD_SHA"
+            if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+              BASE_SHA="$(git rev-parse "$HEAD_SHA^")"
+            fi
           fi
           extra=()
           if [[ "$EVENT_NAME" == "push" && "$BRANCH_NAME" != "main" ]]; then
@@ -239,6 +267,7 @@ jobs:
           path: |
             reports/repository-control-plane-audit.json
             reports/repository-control-plane-audit.md
+            reports/shared-pr-diff-authority.json
             reports/font-assets-contract.log
             reports/font-assets-alias-contract.log
             reports/font-assets-verification.log
