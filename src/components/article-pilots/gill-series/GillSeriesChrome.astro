@@ -1,5 +1,6 @@
 ---
 import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
+import SiteSectionsMenu from '../_shared/SiteSectionsMenu.astro';
 import GillSeriesRail from './GillSeriesRail.astro';
 import GillSeriesMobileBar from './GillSeriesMobileBar.astro';
 import GillMobileOverlayActivationBoundary from './GillMobileOverlayActivationBoundary.astro';
@@ -32,18 +33,7 @@ const page = config.pages[pageId];
 </style>
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 
-<!-- Site-sections menu opened by the rail hamburger. Its native controller is
-     owned by floating-cluster-controller.js; reader actions are owned by the
-     dedicated ReaderActionsRuntime below. -->
-<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <span class="gbs-menu-label" aria-hidden="true">Разделы сайта</span>
-  <a href="../../#publikacii" data-close-nav><span>Публикации</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../#razbor" data-close-nav><span>Разбор заблуждений</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../biografii/" data-close-nav><span>Биографии</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../articles/" data-close-nav><span>Все статьи</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../about/" data-close-nav><span>О проекте</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-</div>
+<SiteSectionsMenu />
 
 <div class="gbs2-world" data-gill-v16={pageId} data-series-theme={config.theme}>
   <GillSeriesRail pageId={pageId} config={config} />
