@@ -82,7 +82,7 @@ function buildQuiz(placeholder, config) {
     panel.appendChild(progress);
     if (result.badge) {
       const badge = document.createElement('span');
-      badge.className = 'quiz-result-badge';
+      badge.className = 'quiz-result-badge quiz-score-badge';
       badge.setAttribute('aria-hidden', 'true');
       badge.textContent = String(result.badge);
       panel.appendChild(badge);
@@ -130,13 +130,13 @@ function buildQuiz(placeholder, config) {
         const explanation = normalizeQuizExplanation(question.explanation);
         if (explanation.short) {
           const shortExplanation = document.createElement('p');
-          shortExplanation.className = 'quiz-explanation quiz-explanation--short';
+          shortExplanation.className = 'quiz-explanation quiz-explanation--short quiz-explanation-short';
           shortExplanation.textContent = explanation.short;
           feedback.appendChild(shortExplanation);
         }
         if (explanation.full) {
           const fullExplanation = document.createElement('p');
-          fullExplanation.className = 'quiz-explanation quiz-explanation--full';
+          fullExplanation.className = 'quiz-explanation quiz-explanation--full quiz-explanation-full';
           fullExplanation.textContent = explanation.full;
           feedback.appendChild(fullExplanation);
         }
