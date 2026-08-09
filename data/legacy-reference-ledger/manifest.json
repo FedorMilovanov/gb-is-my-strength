@@ -34,7 +34,8 @@
       "scripts/lib/audit-pro-source-corpus.js",
       "scripts/lib/legacy-source-authority.js",
       "scripts/lib/route-source-contract.js",
-      "scripts/nagornaya-visual-parity-audit.js"
+      "scripts/nagornaya-visual-parity-audit.js",
+      "scripts/visual-parity-contract.js"
     ],
     "nonBlockingFixtureDependencies": [
       "scripts/audit-pro-source-corpus-test.js",
@@ -338,8 +339,8 @@
       "path": "scripts/visual-parity-contract.js",
       "access": "reader",
       "classification": "migration-reference-only",
-      "quarantineImpact": "must-update-before-move",
-      "evidenceToken": "nagornaya/seriya/index.html",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "resolveReferenceForRoute",
       "owner": "legacy-reference-quarantine"
     },
     {
