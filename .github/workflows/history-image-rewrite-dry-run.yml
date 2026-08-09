@@ -1,0 +1,198 @@
+name: Historical Image Rewrite Dry Run
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/history-image-rewrite-dry-run.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  rewrite-dry-run:
+    name: Prove historical-image rewrite without push
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Checkout control-plane trigger
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install pinned git-filter-repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --no-input 'git-filter-repo==2.47.0'
+          git filter-repo --version
+
+      - name: Clone exact remote mirror and compute deletion set
+        shell: bash
+        env:
+          REPO_URL: https://github.com/${{ github.repository }}.git
+        run: |
+          set -euo pipefail
+          git clone --mirror "$REPO_URL" rewrite.git
+          cd rewrite.git
+          git config --unset-all remote.origin.pushurl || true
+
+          mkdir -p ../reports
+          git for-each-ref --format='%(refname)' refs/heads refs/tags | sort > ../reports/refs-before.txt
+          git rev-list --all --count > ../reports/commit-count-before.txt
+          git rev-parse 'refs/heads/main^{tree}' > ../reports/main-tree-before.txt
+          git rev-parse refs/heads/main > ../reports/main-commit-before.txt
+          git count-objects -vH > ../reports/count-objects-before.txt
+          du -sb . | awk '{print $1}' > ../reports/repo-bytes-before.txt
+
+          git rev-list --objects --all > ../reports/reachable-before.txt
+          git cat-file --batch-check='%(objectname) %(objecttype) %(objectsize) %(rest)' \
+            < ../reports/reachable-before.txt > ../reports/object-metadata-before.txt
+          git ls-tree -r --long refs/heads/main > ../reports/main-tip-tree.txt
+
+          python3 - <<'PY'
+          from pathlib import Path
+          IMAGE_EXTS = {
+              '.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif',
+              '.bmp', '.tif', '.tiff', '.heic', '.heif', '.ico'
+          }
+          current_oids = set()
+          with open('../reports/main-tip-tree.txt', encoding='utf-8', errors='replace') as f:
+              for line in f:
+                  left = line.split('\t', 1)[0].split()
+                  if len(left) >= 3:
+                      current_oids.add(left[2])
+
+          remove = []
+          with open('../reports/object-metadata-before.txt', encoding='utf-8', errors='replace') as f:
+              for line in f:
+                  parts = line.rstrip('\n').split(' ', 3)
+                  if len(parts) < 3 or parts[1] != 'blob':
+                      continue
+                  oid, _, size_s = parts[:3]
+                  path = parts[3] if len(parts) == 4 else ''
+                  ext = Path(path).suffix.lower()
+                  if ext in IMAGE_EXTS and oid not in current_oids:
+                      remove.append((oid, int(size_s), path, ext))
+
+          unique = {}
+          for row in remove:
+              unique[row[0]] = row
+          rows = sorted(unique.values(), key=lambda r: r[1], reverse=True)
+          Path('../reports/remove-oids.txt').write_text('\n'.join(r[0] for r in rows) + '\n', encoding='ascii')
+          Path('../reports/remove-summary.txt').write_text(
+              f'count={len(rows)}\nbytes={sum(r[1] for r in rows)}\n', encoding='utf-8'
+          )
+          if len(rows) != 510:
+              raise SystemExit(f'Expected frozen deletion set of 510 historical-only image blobs, got {len(rows)}')
+          if sum(r[1] for r in rows) != 522386373:
+              raise SystemExit('Historical-only image byte total drifted; refuse dry-run until re-audited')
+          PY
+
+      - name: Rewrite mirror only
+        shell: bash
+        run: |
+          set -euo pipefail
+          REMOVE_FILE="$(realpath reports/remove-oids.txt)"
+          cd rewrite.git
+          git filter-repo --force --blob-callback "
+          global REMOVE_OIDS
+          try:
+              REMOVE_OIDS
+          except NameError:
+              REMOVE_OIDS = set(open(r'$REMOVE_FILE', 'rb').read().splitlines())
+          if blob.original_id in REMOVE_OIDS:
+              blob.skip()
+          "
+
+      - name: Prove current main content and ref topology are preserved
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd rewrite.git
+          git fsck --full
+          git for-each-ref --format='%(refname)' refs/heads refs/tags | sort > ../reports/refs-after.txt
+          diff -u ../reports/refs-before.txt ../reports/refs-after.txt
+
+          git rev-parse 'refs/heads/main^{tree}' > ../reports/main-tree-after.txt
+          test "$(cat ../reports/main-tree-before.txt)" = "$(cat ../reports/main-tree-after.txt)"
+
+          git rev-parse refs/heads/main > ../reports/main-commit-after.txt
+          git rev-list --all --count > ../reports/commit-count-after.txt
+
+          git rev-list --objects --all > ../reports/reachable-after.txt
+          while read -r oid; do
+            if grep -q "^${oid}\(?: \|$\)" ../reports/reachable-after.txt; then
+              echo "Removed image blob remains reachable: $oid" >&2
+              exit 1
+            fi
+          done < ../reports/remove-oids.txt
+
+          git gc --prune=now
+          git count-objects -vH > ../reports/count-objects-after.txt
+          du -sb . | awk '{print $1}' > ../reports/repo-bytes-after.txt
+
+      - name: Write dry-run report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def one(path):
+              return Path(path).read_text().strip()
+          remove = dict(line.split('=', 1) for line in Path('reports/remove-summary.txt').read_text().splitlines())
+          before = int(one('reports/repo-bytes-before.txt'))
+          after = int(one('reports/repo-bytes-after.txt'))
+          report = {
+              'source_main_commit': one('reports/main-commit-before.txt'),
+              'rewritten_main_commit': one('reports/main-commit-after.txt'),
+              'main_tree_before': one('reports/main-tree-before.txt'),
+              'main_tree_after': one('reports/main-tree-after.txt'),
+              'main_tree_identical': one('reports/main-tree-before.txt') == one('reports/main-tree-after.txt'),
+              'removed_historical_image_blobs': int(remove['count']),
+              'removed_historical_image_bytes_uncompressed': int(remove['bytes']),
+              'all_head_and_tag_refnames_preserved': Path('reports/refs-before.txt').read_text() == Path('reports/refs-after.txt').read_text(),
+              'commit_count_before': int(one('reports/commit-count-before.txt')),
+              'commit_count_after': int(one('reports/commit-count-after.txt')),
+              'mirror_bytes_before_gc': before,
+              'mirror_bytes_after_gc': after,
+              'mirror_mib_before_gc': round(before/1024/1024, 2),
+              'mirror_mib_after_gc': round(after/1024/1024, 2),
+              'mirror_size_reduction_mib': round((before-after)/1024/1024, 2),
+              'mirror_size_reduction_percent': round((before-after)*100/before, 2) if before else 0,
+              'git_filter_repo_version': '2.47.0',
+              'pushed': False,
+          }
+          if not report['main_tree_identical'] or not report['all_head_and_tag_refnames_preserved']:
+              raise SystemExit('Dry-run preservation invariant failed')
+          Path('reports/rewrite-dry-run.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+          lines = [
+              '# Historical image rewrite dry-run', '',
+              f"- Source main: `{report['source_main_commit']}`",
+              f"- Rewritten main (local mirror only): `{report['rewritten_main_commit']}`",
+              f"- Main tree identical: **{report['main_tree_identical']}** (`{report['main_tree_before']}`)",
+              f"- Head/tag ref names preserved: **{report['all_head_and_tag_refnames_preserved']}**",
+              f"- Removed historical-only image blobs: **{report['removed_historical_image_blobs']}**",
+              f"- Removed uncompressed image bytes: **{report['removed_historical_image_bytes_uncompressed']/1024/1024:.1f} MiB**",
+              f"- Mirror size before: **{report['mirror_mib_before_gc']:.1f} MiB**",
+              f"- Mirror size after rewrite+GC: **{report['mirror_mib_after_gc']:.1f} MiB**",
+              f"- Reduction: **{report['mirror_size_reduction_mib']:.1f} MiB ({report['mirror_size_reduction_percent']:.1f}%)**",
+              f"- Commit count: **{report['commit_count_before']} → {report['commit_count_after']}**",
+              '- Remote push performed: **NO**',
+          ]
+          Path('reports/rewrite-dry-run.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          print('\n'.join(lines))
+          PY
+          cat reports/rewrite-dry-run.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload dry-run evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: history-image-rewrite-dry-run-${{ github.run_id }}
+          path: reports
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 30
