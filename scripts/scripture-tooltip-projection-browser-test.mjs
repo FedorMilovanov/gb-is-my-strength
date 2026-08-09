@@ -21,12 +21,34 @@ const STALE_REFERENCE = '__stale_scripture_projection_probe__';
 const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
 const TOOLTIP_OWNER = 'article-inline-tooltip';
 const TOOLTIP_VERSION = 20;
+const LOCAL_TEST_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
+const LOCAL_CSP_ICON_URLS = new Set([
+  'https://gospod-bog.ru/favicon.ico',
+  'https://gospod-bog.ru/apple-touch-icon.png',
+  'https://gospod-bog.ru/favicon-48.png',
+  'https://gospod-bog.ru/favicon-120.png',
+  'https://gospod-bog.ru/icons/icon-192.png',
+]);
 
 const normalizeRoute = (value) => {
   let route = String(value || '/').split('#', 1)[0] || '/';
   if (!route.startsWith('/')) route = `/${route}`;
   if (!route.includes('.') && !route.endsWith('/')) route += '/';
   return route;
+};
+
+const isExpectedLocalIconCspDiagnostic = (text) => {
+  let base;
+  try {
+    base = new URL(BASE);
+  } catch {
+    return false;
+  }
+  if (!LOCAL_TEST_HOSTS.has(base.hostname)) return false;
+  const match = String(text || '').match(
+    /^Loading the image '([^']+)' violates the following Content Security Policy directive: "img-src 'self'[^\"]*"\. The action has been blocked\.$/,
+  );
+  return Boolean(match && LOCAL_CSP_ICON_URLS.has(match[1]));
 };
 
 const sanitizerSecret = '__held_public_index_secret__';
@@ -137,7 +159,9 @@ const pageErrors = [];
 const consoleErrors = [];
 page.on('pageerror', (error) => pageErrors.push(String(error?.message || error)));
 page.on('console', (message) => {
-  if (message.type() === 'error') consoleErrors.push(message.text());
+  if (message.type() !== 'error') return;
+  const text = message.text();
+  if (!isExpectedLocalIconCspDiagnostic(text)) consoleErrors.push(text);
 });
 
 try {
