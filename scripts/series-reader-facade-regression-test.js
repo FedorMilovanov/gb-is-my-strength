@@ -10,7 +10,9 @@ const ROOT = path.resolve(__dirname, '..');
 const FACADE = path.join(ROOT, 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro');
 const HEART_SERIES_DATA = path.join(ROOT, 'src/components/article-pilots/_shared/heartSeriesData.ts');
 const MOBILE_BAR = path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
+const LEARNING_SHEET = path.join(ROOT, 'src/components/article-pilots/gill-series/GillLearningSheet.astro');
 const SERIES_CONFIG = path.join(ROOT, 'src/components/article-pilots/_shared/series/seriesConfig.ts');
+const BAPTIST_SERIES_CONFIG = path.join(ROOT, 'src/components/article-pilots/_shared/series/baptistFlatSeriesConfig.ts');
 const DIST = path.join(ROOT, 'dist');
 const IMPLEMENTATION_IMPORT = "import GillSeriesChrome from '../../gill-series/GillSeriesChrome.astro';";
 const DIRECT_IMPORT_RE = /import\s+[A-Za-z_$][\w$]*\s+from\s+['"][^'"]*GillSeriesChrome\.astro['"]/;
@@ -41,10 +43,23 @@ assert.match(heartProgress[0], /partMin:\s*item\.minutes/, 'heartProgress must u
 assert.doesNotMatch(heartProgress[0], /HEART_SERIES_ITEMS\[idx\]\.minutes/, 'heartProgress must not dereference an unchecked index');
 
 const mobileBar = fs.readFileSync(MOBILE_BAR, 'utf8');
+const learningSheet = fs.readFileSync(LEARNING_SHEET, 'utf8');
 const seriesConfig = fs.readFileSync(SERIES_CONFIG, 'utf8');
+const baptistSeriesConfig = fs.readFileSync(BAPTIST_SERIES_CONFIG, 'utf8');
 assert.match(seriesConfig, /railBackHref:\s*string;/, 'SeriesConfig must keep railBackHref as required route authority');
 assert.match(mobileBar, /data-home-href=\{config\.railBackHref\}/, 'shared mobile Back must derive its fallback from config.railBackHref');
 assert.doesNotMatch(mobileBar, /data-home-href=["']\.\.\/\.\.\/biografii\//, 'shared mobile Back must not hardcode Gill biographies');
+assert.match(baptistSeriesConfig, /quiz:\s*\[\]/, 'Baptist no-quiz series must declare the empty quiz authority explicitly');
+assert.match(
+  learningSheet,
+  /\{hasQuiz\s*&&\s*<button[^>]*id="tabQuiz"[^>]*aria-controls="panelQuiz"/,
+  'Quiz tab must remain conditional on hasQuiz',
+);
+assert.match(
+  learningSheet,
+  /\{hasQuiz\s*&&\s*\(\s*<section[^>]*id="panelQuiz"[^>]*aria-labelledby="tabQuiz"/,
+  'Quiz panel must be gated by the same hasQuiz condition as its labelling tab',
+);
 
 const sourceFiles = walk(path.join(ROOT, 'src')).filter((file) => /\.(?:astro|ts|tsx|js|jsx|mjs|cjs)$/.test(file));
 const illegal = [];
@@ -64,4 +79,4 @@ if (fs.existsSync(DIST)) {
   assert.equal(report.result, 'PASS', `rendered series fragment contract failed: ${report.errors.join('; ')}`);
 }
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; heart progress fail-closed; mobile Back config-owned; fragment audit registered`);
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; fragment audit registered`);
