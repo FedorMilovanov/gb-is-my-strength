@@ -9,6 +9,10 @@
  * labels. It loads before every reader consumer, marks explicit policy on the
  * rendered subtree and never owns speech engines, controls or visual state.
  *
+ * ScriptureDataProjection exposes only the current route's centrally governed
+ * Scripture records to the existing article tooltip runtime. It does not own
+ * tooltip interaction/geometry and does not read retained route-local payloads.
+ *
  * Print pagination has two owners with a strict lifecycle boundary:
  * semantic classification is prepared by GBPrintPagination v1; physical A4
  * geometry runs only after the document enters print media / beforeprint.
@@ -27,12 +31,14 @@
  * exposure, roving keyboard state, focus return and popup semantics across the
  * existing Hermenevtika and Gill mobile controls.
  */
+import ScriptureDataProjection from './ScriptureDataProjection.astro';
 import { assetUrl } from '../../lib/asset-version';
 import '../../runtime/article-interactions.css';
 import '../../runtime/reader-tts.css';
 
 const voskEngineSrc = assetUrl('js/vosk-tts-engine.js');
 ---
+<ScriptureDataProjection />
 <script is:inline defer src={voskEngineSrc}></script>
 <script>
   import '../../runtime/favorite-store.js';
