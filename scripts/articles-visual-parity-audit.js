@@ -100,10 +100,22 @@ for (const [content, marker, label] of [
   [library, 'class="h-article-thumb"', 'ArticlesLibrarySection preserves premium thumbnail shell'],
   [library, 'src={item.image}', 'ArticlesLibrarySection projects canonical cover path'],
   [library, 'h-article-list--grid', 'ArticlesLibrarySection preserves premium grid classes'],
+  [library, 'author?: string;', 'ArticlesLibrarySection consumes structured author authority'],
+  [library, 'translator?: string;', 'ArticlesLibrarySection keeps translator authority distinct'],
+  [library, "kind: 'author-editor' | 'editor' | 'author' | 'translator' | 'site'", 'ArticlesLibrarySection declares bounded attribution states'],
+  [library, 'author === editor && !translator', 'ArticlesLibrarySection recognizes owner-approved author-editor identity'],
+  [library, 'Автор-редактор: ${author}', 'ArticlesLibrarySection emits owner-approved original-material label'],
+  [library, 'Автор: Автор, не редактор', 'ArticlesLibrarySection build-time fixture protects author-only attribution'],
+  [library, 'Ред.: Фёдор Милованов', 'ArticlesLibrarySection build-time fixture preserves translation/editor catalog label'],
+  [library, 'data-catalog-role={catalogAttribution(item).kind}', 'ArticlesLibrarySection exposes rendered attribution role for browser evidence'],
   [refutations, 'id="razbor"', 'ArticlesRefutationsSection marker: refutations section'],
   [refutations, 'историческая подмена', 'ArticlesRefutationsSection marker: kod-da-vinchi copy'],
   [endBlock, 'Soli Deo Gloria', 'ArticlesArticleEndBlock marker: SDG'],
 ]) must(content, marker, label);
+
+mustNot(library, "item.editor ? `Редактор: ${item.editor}` : 'Господь Бог — Сила Моя'", 'retired editor-only attribution fallback');
+mustNot(library, 'editor = author', 'catalog must never synthesize editor from author');
+mustNot(library, 'editor: author', 'catalog must never copy author into editor authority');
 
 for (const content of [page, chrome, main, footer, library, refutations, hero, endBlock]) {
   for (const marker of [
@@ -147,7 +159,7 @@ else bad('derived catalog projection has no published article/series items');
 
 const dist = exists('dist/articles/index.html') ? read('dist/articles/index.html') : '';
 if (dist) {
-  for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block']) {
+  for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=']) {
     must(dist, marker, `dist /articles/ marker: ${marker}`);
   }
   mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
@@ -158,4 +170,4 @@ if (dist) {
 
 console.log('\nARTICLES VISUAL PARITY AUDIT');
 if (problems.length) { console.log(`❌ ${problems.length} problem(s).`); process.exit(1); }
-ok('/articles/ catalog is native Astro, authority-derived, media-complete and visual-parity guarded');
+ok('/articles/ catalog is native Astro, authority-derived, role-aware, media-complete and visual-parity guarded');
