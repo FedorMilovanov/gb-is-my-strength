@@ -263,21 +263,149 @@ async function closeSearch(page) {
   await waitSearch(page, false);
 }
 
-async function waitQuery(page, query, expectedTitle = '') {
-  await page.waitForFunction(({ query: expectedQuery, expectedTitle: titleNeedle }) => {
+function queryStateSettled(state, query, expectedTitle = '') {
+  if (!state || state.inputValue !== query || state.loading) return false;
+  const titleNeedle = expectedTitle.toLocaleLowerCase('ru-RU');
+  if (state.empty) {
+    return !titleNeedle
+      && state.optionCount === 0
+      && state.selectedIds.length === 0
+      && !state.activeDescendant;
+  }
+  if (state.optionCount < 1) return false;
+  if (titleNeedle && !state.titles.some((title) => title.includes(titleNeedle))) return false;
+  if (state.selectedIds.length !== 1) return false;
+  if (!state.activeDescendant || state.activeDescendant !== state.selectedIds[0]) return false;
+  return state.optionIds.includes(state.activeDescendant);
+}
+
+function queryStateInvalidated(state, query) {
+  return Boolean(
+    state
+      && state.inputValue === query
+      && state.optionCount === 0
+      && state.selectedIds.length === 0
+      && !state.activeDescendant,
+  );
+}
+
+function assertQueryStateContract() {
+  const settled = {
+    inputValue: 'Нагорная проповедь',
+    loading: false,
+    empty: false,
+    optionCount: 2,
+    optionIds: ['cp-option-0', 'cp-option-1'],
+    titles: ['нагорная проповедь — серия', 'другая статья'],
+    selectedIds: ['cp-option-0'],
+    activeDescendant: 'cp-option-0',
+  };
+  assert.equal(queryStateSettled(settled, 'Нагорная проповедь', 'Нагорная проповедь'), true);
+  assert.equal(queryStateSettled({ ...settled, loading: true }, 'Нагорная проповедь', 'Нагорная проповедь'), false);
+  assert.equal(queryStateSettled({ ...settled, inputValue: 'Джон Гилл' }, 'Нагорная проповедь', 'Нагорная проповедь'), false);
+  assert.equal(queryStateSettled({ ...settled, titles: ['старый результат'] }, 'Нагорная проповедь', 'Нагорная проповедь'), false);
+  assert.equal(queryStateSettled({ ...settled, selectedIds: [] }, 'Нагорная проповедь', 'Нагорная проповедь'), false);
+  assert.equal(queryStateSettled({ ...settled, activeDescendant: 'cp-option-1' }, 'Нагорная проповедь', 'Нагорная проповедь'), false);
+  assert.equal(queryStateInvalidated(settled, 'Нагорная проповедь'), false, 'stale rendered results must not satisfy invalidation');
+  const invalidated = {
+    ...settled,
+    optionCount: 0,
+    optionIds: [],
+    titles: [],
+    selectedIds: [],
+    activeDescendant: '',
+  };
+  assert.equal(queryStateInvalidated(invalidated, 'Нагорная проповедь'), true, 'query mutation must expose the canonical cleared interactive state');
+  assert.equal(queryStateInvalidated({ ...invalidated, loading: true }, 'Нагорная проповедь'), true, 'loading may legitimately begin after stale interactive state was invalidated');
+}
+
+assertQueryStateContract();
+
+async function readQueryState(page) {
+  return page.evaluate(() => {
     const input = document.querySelector('.cp-input');
-    if (input?.value !== expectedQuery || document.querySelector('.cp-loading')) return false;
-    const headings = [...document.querySelectorAll('.cp-group-hd > span:first-child')]
-      .map((node) => node.textContent?.trim() || '');
-    const staleHeadings = new Set(['Рекомендуемое', 'Новое', 'Недавние запросы', 'Популярные исследования']);
-    const processed = headings.some((heading) => heading && !staleHeadings.has(heading));
-    const empty = Boolean(document.querySelector('.cp-empty'));
-    const titles = [...document.querySelectorAll('.cp-item-title')]
-      .map((node) => (node.textContent || '').toLocaleLowerCase('ru-RU'));
-    const matched = !titleNeedle || titles.some((title) => title.includes(titleNeedle.toLocaleLowerCase('ru-RU')));
-    const selected = document.querySelectorAll('.cp-item[aria-selected="true"], .cp-item.is-active').length;
-    return (processed || empty) && matched && (empty || selected === 1);
-  }, { query, expectedTitle }, { timeout: 15000 });
+    const options = [...document.querySelectorAll('.cp-item[role="option"]')];
+    const selected = options.filter((option) => option.getAttribute('aria-selected') === 'true' || option.classList.contains('is-active'));
+    return {
+      inputValue: input?.value || '',
+      loading: Boolean(document.querySelector('.cp-loading')),
+      empty: Boolean(document.querySelector('.cp-empty')),
+      optionCount: options.length,
+      optionIds: options.map((option) => option.id || ''),
+      titles: options.map((option) => (option.querySelector('.cp-item-title')?.textContent || '').toLocaleLowerCase('ru-RU')),
+      groupHeadings: [...document.querySelectorAll('.cp-group-hd > span:first-child')].map((node) => node.textContent?.trim() || ''),
+      selectedIds: selected.map((option) => option.id || ''),
+      activeDescendant: input?.getAttribute('aria-activedescendant') || '',
+      status: document.querySelector('.cp-status')?.textContent?.trim() || '',
+    };
+  });
+}
+
+async function armQueryInvalidationCapture(page) {
+  await page.evaluate(() => {
+    const input = document.querySelector('.cp-input');
+    if (!input) throw new Error('.cp-input is missing');
+
+    const previous = window.__homeSearchInvalidationCapture;
+    if (previous?.listener) input.removeEventListener('input', previous.listener);
+
+    const capture = { count: 0, last: null, listener: null };
+    capture.listener = () => {
+      const options = [...document.querySelectorAll('.cp-item[role="option"]')];
+      const selected = options.filter((option) => option.getAttribute('aria-selected') === 'true' || option.classList.contains('is-active'));
+      capture.count += 1;
+      capture.last = {
+        inputValue: input.value || '',
+        loading: Boolean(document.querySelector('.cp-loading')),
+        empty: Boolean(document.querySelector('.cp-empty')),
+        optionCount: options.length,
+        optionIds: options.map((option) => option.id || ''),
+        titles: options.map((option) => (option.querySelector('.cp-item-title')?.textContent || '').toLocaleLowerCase('ru-RU')),
+        selectedIds: selected.map((option) => option.id || ''),
+        activeDescendant: input.getAttribute('aria-activedescendant') || '',
+      };
+    };
+    window.__homeSearchInvalidationCapture = capture;
+    input.addEventListener('input', capture.listener);
+  });
+}
+
+async function finishQueryInvalidationCapture(page) {
+  return page.evaluate(() => {
+    const input = document.querySelector('.cp-input');
+    const capture = window.__homeSearchInvalidationCapture;
+    if (input && capture?.listener) input.removeEventListener('input', capture.listener);
+    const result = capture
+      ? { eventCount: capture.count, state: capture.last }
+      : { eventCount: 0, state: null };
+    delete window.__homeSearchInvalidationCapture;
+    return result;
+  });
+}
+
+async function waitQuery(page, query, expectedTitle = '') {
+  const deadline = Date.now() + 15000;
+  let state = await readQueryState(page);
+  while (Date.now() < deadline) {
+    if (queryStateSettled(state, query, expectedTitle)) return state;
+    await page.waitForTimeout(40);
+    state = await readQueryState(page);
+  }
+  throw new Error(`Search query did not settle: ${JSON.stringify({ query, expectedTitle, state })}`);
+}
+
+async function fillQueryAndWait(page, input, query, expectedTitle = '') {
+  await armQueryInvalidationCapture(page);
+  let capture;
+  try {
+    await input.fill(query);
+  } finally {
+    capture = await finishQueryInvalidationCapture(page);
+  }
+  if (capture.eventCount < 1 || !queryStateInvalidated(capture.state, query)) {
+    throw new Error(`Search query mutation did not synchronously invalidate stale results: ${JSON.stringify({ query, expectedTitle, capture })}`);
+  }
+  return waitQuery(page, query, expectedTitle);
 }
 
 async function searchAudit(page) {
@@ -304,8 +432,7 @@ async function searchAudit(page) {
     { name: 'trimmed-query', value: '  Джон Гилл  ', needle: 'Джон Гилл', expect: /Джон\s+Гилл/i },
   ];
   for (const query of queries) {
-    await input.fill(query.value);
-    await waitQuery(page, query.value, query.needle);
+    await fillQueryAndWait(page, input, query.value, query.needle);
     const results = await page.locator('.cp-item').evaluateAll((items) => items.map((item) => ({
       title: item.querySelector('.cp-item-title')?.textContent?.trim() || '',
       snippet: item.querySelector('.cp-item-snippet')?.textContent?.trim() || '',
@@ -316,19 +443,23 @@ async function searchAudit(page) {
   }
 
   const noResultQuery = 'zzzz-no-such-page-493821';
-  await input.fill(noResultQuery);
-  await page.waitForFunction((expected) => {
-    const input = document.querySelector('.cp-input');
-    const empty = document.querySelector('.cp-empty');
-    return input?.value === expected && Boolean(empty) && !document.querySelector('.cp-loading');
-  }, noResultQuery, { timeout: 15000 });
+  await fillQueryAndWait(page, input, noResultQuery);
   const noResultCount = await page.locator('.cp-item').count();
   const noResultText = await page.locator('.cp-empty').textContent().catch(() => '');
   record(`${ENGINE}:search-no-results`, noResultCount === 0 && Boolean(noResultText?.trim()), { count: noResultCount, text: noResultText });
   if (ENGINE === 'chromium') await page.screenshot({ path: path.join(OUT, 'search-no-results-desktop.png') });
 
-  await input.fill('Н');
-  await input.type('агорная проповедь', { delay: 5 });
+  await armQueryInvalidationCapture(page);
+  let rapidCapture;
+  try {
+    await input.fill('Н');
+    await input.type('агорная проповедь', { delay: 5 });
+  } finally {
+    rapidCapture = await finishQueryInvalidationCapture(page);
+  }
+  if (rapidCapture.eventCount < 2 || !queryStateInvalidated(rapidCapture.state, 'Нагорная проповедь')) {
+    throw new Error(`Rapid search mutation did not synchronously invalidate stale results: ${JSON.stringify({ query: 'Нагорная проповедь', capture: rapidCapture })}`);
+  }
   await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');
   record(`${ENGINE}:search-rapid-input`, await page.locator('.cp-item').count() > 0);
 
@@ -346,10 +477,8 @@ async function searchAudit(page) {
   // canonical-title query. Reusing the already-rendered query let WebKit
   // observe stale DOM during the 180 ms debounce window and made the audit
   // race the real search lifecycle instead of testing arrow navigation.
-  await input.fill('Джон Гилл');
-  await waitQuery(page, 'Джон Гилл', 'Джон Гилл');
-  await input.fill('Нагорная проповедь');
-  await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');
+  await fillQueryAndWait(page, input, 'Джон Гилл', 'Джон Гилл');
+  await fillQueryAndWait(page, input, 'Нагорная проповедь', 'Нагорная проповедь');
   const beforeArrow = await page.locator('.cp-item[aria-selected="true"], .cp-item.is-active').count();
   await page.keyboard.press('ArrowDown');
   const selectedCount = await page.locator('.cp-item[aria-selected="true"], .cp-item.is-active').count();
