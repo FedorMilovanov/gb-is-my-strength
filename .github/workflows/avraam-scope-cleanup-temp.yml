@@ -1,0 +1,50 @@
+name: TEMP Avraam scope cleanup
+
+on:
+  push:
+    branches:
+      - fix/avraam-tall-el-hammam-retraction-parity-20260809
+    paths:
+      - '.github/workflows/avraam-scope-cleanup-temp.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/avraam-tall-el-hammam-retraction-parity-20260809
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.1'
+      - name: Revert unrelated Avraam prose drift and self-delete
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/components/karty/avraam/AvraamMap.astro')
+          s = p.read_text()
+          replacements = [
+              ('Claude Mariottini, «Ur and Haran: Abraham’s Background» — путь >400 миль до Сихема, вопрос о месте призвания.',
+               'Claude Mariottini, «Ur and Haran: Abraham’s Background» — путь &gt;400 миль до Сихема, вопрос о месте призвания.'),
+              ('раскопки Л. Вулли в Телль эль-Мукаяре (1922–1934, Британский музей / Penn Museum)',
+               'раскопки Л. Вулли в Телль эль-Мукайяре (1922–1934, Британский музей / Penn Museum)'),
+          ]
+          for old, new in replacements:
+              if s.count(old) != 1:
+                  raise SystemExit(f'expected exactly one match for {old!r}, got {s.count(old)}')
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+          node scripts/avraam-map-audit.js
+          rm .github/workflows/avraam-scope-cleanup-temp.yml
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/components/karty/avraam/AvraamMap.astro .github/workflows/avraam-scope-cleanup-temp.yml
+          git commit -m 'chore(avraam): remove unrelated prose drift'
+          git push origin HEAD:fix/avraam-tall-el-hammam-retraction-parity-20260809
