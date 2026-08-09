@@ -156,11 +156,11 @@ async function runNativeQuizParityGuard(baseUrl) {
 
       if (index === 0) {
         const explanation = await page.evaluate(() => ({
-          short: (document.querySelector('.quiz-explanation--short')?.textContent || '').trim(),
-          full: (document.querySelector('.quiz-explanation--full')?.textContent || '').trim(),
+          short: (document.querySelector('.quiz-explanation--short.quiz-explanation-short')?.textContent || '').trim(),
+          full: (document.querySelector('.quiz-explanation--full.quiz-explanation-full')?.textContent || '').trim(),
         }));
         if (explanation.short !== contract.expectedShort || explanation.full !== contract.expectedFull) {
-          throw new Error(`native quiz explanation parity drift: ${JSON.stringify(explanation)}`);
+          throw new Error(`native quiz explanation/presentation parity drift: ${JSON.stringify(explanation)}`);
         }
       }
 
@@ -173,7 +173,7 @@ async function runNativeQuizParityGuard(baseUrl) {
     await page.waitForFunction(
       ({ expectedTitle, expectedBadge }) => {
         const title = (document.querySelector('#quizQuestion')?.textContent || '').trim();
-        const badge = (document.querySelector('.quiz-result-badge')?.textContent || '').trim();
+        const badge = (document.querySelector('.quiz-result-badge.quiz-score-badge')?.textContent || '').trim();
         return title === expectedTitle && badge === expectedBadge;
       },
       { expectedTitle: contract.expectedTitle, expectedBadge: contract.expectedBadge },
