@@ -9,14 +9,14 @@
     "routeSourceContract": "scripts/lib/route-source-contract.js"
   },
   "stats": {
-    "manifestItems": 74,
-    "indexedRoutes": 73,
-    "scannedSourceFiles": 431,
-    "references": 980,
-    "occurrences": 2345,
+    "manifestItems": 75,
+    "indexedRoutes": 74,
+    "scannedSourceFiles": 445,
+    "references": 1010,
+    "occurrences": 2428,
     "canonicalTextRecords": 148,
-    "referencesWithoutCanonicalText": 832,
-    "chapterRanges": 17,
+    "referencesWithoutCanonicalText": 862,
+    "chapterRanges": 21,
     "manifestOccurrences": 32
   },
   "references": [
@@ -1665,6 +1665,90 @@
       ]
     },
     {
+      "id": "bytie:10:19",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "10:19",
+      "kind": "verse",
+      "label": "Бытие 10:19",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "что археология может сказать — и чего не может Бытие помещает Содом в систему городов Иорданской равнины и долины Сиддим, рядом с Гоморрой, Адмой, Севоимом и Цоаром (Быт 10:19; 13:10–12; 14; 19). Но текст не даёт современной координаты, которую можно без остатка перенести на карту. Поэтому археологическая работа начинается не с вопроса «какая сенсация док…",
+          "anchor": "sec-archaeology",
+          "raw": "Быт 10:19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionArchaeology.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:11",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "11",
+      "kind": "chapter",
+      "label": "Бытие 11",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ze=\"16\" font-family=\"serif\">Руфь → Овид → Иессей → Давид Сплошные линии — родственные связи Быт 11; 19. Пунктир — позднейшая каноническая линия моавитянки Руфи. Лот — не изолированный персонаж Быт 19. Его линия входит в историю Моава и Аммона, а книга Руфь",
+          "anchor": null,
+          "raw": "Быт 11",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotFamilyDiagram.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:11–19",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "11–19",
+      "kind": "chapter-range",
+      "label": "Бытие 11–19",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "История Лота начинается задолго до Содома и не заканчивается у его ворот. Схема помогает видеть последовательность Быт 11–19 и не превращать один эпизод в полную биографию.",
+          "anchor": "lot-journey-caption",
+          "raw": "Быт 11–19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "bytie:11–25",
       "bookId": "bytie",
       "testament": "OT",
@@ -1748,6 +1832,38 @@
       "canonicalSource": null,
       "occurrences": [
         {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "lot-sources-title\" \"section-title\">Источники и рекомендуемая проверка Библейский корпус о Лоте: Быт 11:27–32; 12:4–5; 13–14; 18–19; Втор 2:9, 19; 23:3–6; Руф 1–4; Иез 16:49–50; Лк 17:28–32; 2 Пет 2:6–9; Иуд 7; Матф 1:5. Короткие русские цитаты Писания в статье даны по Синодальному переводу; смысловые пересказы",
+          "anchor": "lot-sources-title",
+          "raw": "Быт 11:27–32",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "скому Содому. Кто такой Лот — до Содома Впервые Лот появляется не в истории катастрофы, а в родословии Фарры. Быт 11:27–32 называет его сыном Арана и внуком Фарры. Аран умирает ещё при жизни своего отца, в Уре Халдейском. Затем Фарра выводит из Ура Аврама, Сару и Лота; семья доходит до Харрана и остаётся там. Уже после призвания Аврам",
+          "anchor": "sec-who-is-lot",
+          "raw": "Быт 11:27–32",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
           "url": "/karty/avraam/",
           "title": "Путь Авраама — интерактивная карта",
           "context": "активной карты для доступности и поиска и честно разделяет три уровня: библейский текст, общепринятую историческую географию и спорные локализации. Этап I. Ур → Харран (Бытие 11:27–32) Фарра выводит род из «Ура Халдейского» в Харран на реке Балих — узловой город на караванных дорогах Плодородного полумесяца и, как и Ур, крупный центр культа бога луны. Мес…",
@@ -1761,6 +1877,90 @@
             "карты"
           ],
           "sourceOwner": "src/components/karty/avraam/AvraamMap.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:11:31",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "11:31",
+      "kind": "verse",
+      "label": "Бытие 11:31",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "> Пещера Быт 11:31 Быт 11:31–12:5 Быт 12–13 Быт 13:10–12 Быт 14; 19 <text x=\"805\" y=\"",
+          "anchor": null,
+          "raw": "Быт 11:31",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:11:31–12",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "11:31–12",
+      "kind": "verse-range",
+      "label": "Бытие 11:31–12",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Пещера Быт 11:31 Быт 11:31–12:5 Быт 12–13 Быт 13:10–12 Быт 14; 19 Быт 19:20–23 <text x=\"950\" y=\"",
+          "anchor": null,
+          "raw": "Быт 11:31–12",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:12–13",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "12–13",
+      "kind": "chapter-range",
+      "label": "Бытие 12–13",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "\" font-family=\"sans-serif\" fill=\"#9e9585\" font-size=\"13\"> Быт 11:31 Быт 11:31–12:5 Быт 12–13 Быт 13:10–12 Быт 14; 19 Быт 19:20–23 Быт 19:30 <path d=\"M6",
+          "anchor": null,
+          "raw": "Быт 12–13",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
           "sourceKind": "astro-source"
         }
       ]
@@ -1857,6 +2057,34 @@
       ]
     },
     {
+      "id": "bytie:12:4–5",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "12:4–5",
+      "kind": "verse-range",
+      "label": "Бытие 12:4–5",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "о отца, в Уре Халдейском. Затем Фарра выводит из Ура Аврама, Сару и Лота; семья доходит до Харрана и остаётся там. Уже после призвания Аврама Лот продолжает путь вместе с ним: Быт 12:4–5 специально отмечает его среди тех, кто идёт в Ханаан. Это важный стартовый факт. Лот входит в повествование как часть семьи человека, которому Бог даёт обетование, а не к…",
+          "anchor": "sec-who-is-lot",
+          "raw": "Быт 12:4–5",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "bytie:12:10–13",
       "bookId": "bytie",
       "testament": "OT",
@@ -1895,6 +2123,86 @@
       "canonicalSource": null,
       "occurrences": [
         {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "раам и Лот: не только контраст, но и родственная верность Аврама и Лота легко поставить в простую таблицу: один выбирает обетование, другой — видимое благополучие. В Быт 13 такой контраст действительно существует. Но отношения двух людей не сводятся к литературному соревнованию. Аврам первым предлагает мир при конфликте пастухов, отдаёт Лоту право выбора…",
+          "anchor": "sec-abraham-lot",
+          "raw": "Быт 13",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "роны одновременно. Почему 2 Петра меняет тон разговора о Лоте Самая частая ошибка в популярном разборе — судить о Лоте только по Быт 13 и 19, а затем сделать вывод о его духовном состоянии, который сам Новый Завет не делает. Во 2 Пет 2:6–9 Содом и Гоморра служат примером суда, но рядом с ними стоит история избавления. Апостол называет Лота праведным",
+          "anchor": "sec-canonical-verdict",
+          "raw": "Быт 13",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Бытие 13: выбор долины — и то, чего текст не говорит После возвращения из Египта Аврам и Лот оказываются настолько богаты скотом и имуществом, что земля не вмещает оба хозяйства рядом. Между пастухами начинается сп",
+          "anchor": "sec-choice",
+          "raw": "Бытие 13",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Лот — двойку»: спасение в повествовании оказывается действием милости Бога посреди реальной человеческой неоднозначности. Но милость не делает выборы бессмысленными. Быт 13 показывает, что направление жизни имеет значение; Быт 14 — что близость к конфликтному миру может втянуть в его бедствие; Быт 19 — что укоренение в развращённой среде создаёт страшные…",
+          "anchor": "sec-main-theology",
+          "raw": "Быт 13",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "рамом большой путь, становится владельцем значительных стад и хозяйства и живёт внутри патриархальной семьи, которая уже пережила выход из Месопотамии, голод и Египет. Когда в Быт 13 между пастухами Аврама и Лота возникает конфликт из-за тесноты земли, перед нами не бедный зависимый родственник, а самостоятельный глава большого хозяйства. Гл",
+          "anchor": "sec-who-is-lot",
+          "raw": "Быт 13",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
           "url": "/karty/avraam/",
           "title": "Путь Авраама — интерактивная карта",
           "context": "т, что с высот у Бет-Эля/Гая виден именно северный «круг Иордана» (~40 км), но не южная котловина за Лисаном (~60 км, закрыта рельефом); критики (ABR, У. Рост) отвечают, что текст Быт 13 географически наиболее «размыт» из всех упоминаний Содома. На карте — слой «Спор о Содоме». Цоар: византийская Зоара (Гор эс-Сафи) на Мадабской мозаичной карте VI в.; ряд…",
@@ -1929,6 +2237,50 @@
       ]
     },
     {
+      "id": "bytie:13–19",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "13–19",
+      "kind": "chapter-range",
+      "label": "Бытие 13–19",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "\"category\" hidden>Экзегеза Бытие 13–19 Экзегеза · Бытие 13–19 Лот: праведник у ворот Содома 9 августа 2026 <span \"true\" \"article-byline__",
+          "anchor": "content",
+          "raw": "Бытие 13–19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/pages/articles/lot-i-sodom/index.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "span> 28 Экзегеза Бытие 13–19 Экзегеза · Бытие 13–19 Лот: праведник у ворот Содома <time datetime=\"2026-08-09T",
+          "anchor": "content",
+          "raw": "Бытие 13–19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/pages/articles/lot-i-sodom/index.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "bytie:13:10",
       "bookId": "bytie",
       "testament": "OT",
@@ -1938,6 +2290,22 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ществом, что земля не вмещает оба хозяйства рядом. Между пастухами начинается спор. Аврам предлагает мирное решение: родственники разделятся, а Лот первым выберет направление. Быт 13:10 делает акцент на том, что Лот поднимает глаза и видит Иорданскую окрестность — хорошо орошаемую, подобную саду Господню и земле Египетской. Рассказчик сразу добавляет врем…",
+          "anchor": "sec-choice",
+          "raw": "Быт 13:10",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
         {
           "url": "/karty/avraam/",
           "title": "Путь Авраама — интерактивная карта",
@@ -1957,6 +2325,90 @@
       ]
     },
     {
+      "id": "bytie:13:10–12",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "13:10–12",
+      "kind": "verse-range",
+      "label": "Бытие 13:10–12",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "t-size=\"13\"> Быт 11:31 Быт 11:31–12:5 Быт 12–13 Быт 13:10–12 Быт 14; 19 Быт 19:20–23 Быт 19:30 <path d=\"M610 305 C650 342 700 342 742 305\" fill=\"none\" str",
+          "anchor": null,
+          "raw": "Быт 13:10–12",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:13:12",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "13:12",
+      "kind": "verse",
+      "label": "Бытие 13:12",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ственно опасное соседство. Дальше Бытие показывает не мгновенный прыжок, а последовательность. Сначала Лот живёт среди городов равнины и раскидывает шатры до Содома (Быт 13:12). В следующей главе он уже описан как живущий в Содоме (Быт 14:12). А в Быт 19:1 Лот сидит у ворот города. Для самого рассказа этого достаточно, чтобы показать уже не далёкое соседс…",
+          "anchor": null,
+          "raw": "Быт 13:12",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:13:13",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "13:13",
+      "kind": "verse",
+      "label": "Бытие 13:13",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "о бы чтением мыслей персонажа. Но повествователь ставит рядом два факта, которые читатель уже не может игнорировать: Лот выбирает всю Иорданскую равнину и двигается к востоку, а Быт 13:13 прямо характеризует жителей Содома как злых и весьма грешных пред Господом. Географически привлекательное решение имеет нравственно опасное соседство. Дальше Бытие показ…",
+          "anchor": "sec-choice",
+          "raw": "Быт 13:13",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "bytie:14",
       "bookId": "bytie",
       "testament": "OT",
@@ -1966,6 +2418,102 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "1 Быт 11:31–12:5 Быт 12–13 Быт 13:10–12 Быт 14; 19 Быт 19:20–23 Быт 19:30 <path d=\"M610 305 C650 342 700 342 742 305\" fill=\"none\" stroke=\"#9c8148\" stroke-width=\"2\" stroke-dash",
+          "anchor": null,
+          "raw": "Быт 14",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "305\" fill=\"none\" stroke=\"#9c8148\" stroke-width=\"2\" stroke-dasharray=\"8 7\" /> Быт 14: плен → спасение Аврамом → к Быт 19 Лот снова в Содоме Схема отражает только точки, прямо названные повествова",
+          "anchor": null,
+          "raw": "Быт 14",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "вием милости Бога посреди реальной человеческой неоднозначности. Но милость не делает выборы бессмысленными. Быт 13 показывает, что направление жизни имеет значение; Быт 14 — что близость к конфликтному миру может втянуть в его бедствие; Быт 19 — что укоренение в развращённой среде создаёт страшные нравственные ситуации; слова Иисуса о жене Лота — что нел…",
+          "anchor": "sec-main-theology",
+          "raw": "Быт 14",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "т разделения с Аврамом сразу к ангелам в Содоме. Из-за этого теряется важная глава: ещё до огня Быт 19 Лот уже один раз оказывается спасён из бедствия, связанного с городом. В Быт 14 война восточных царей против коалиции городов долины заканчивается поражением Содома и Гоморры. Победители забирают имущество и продовольствие, а вместе с пленными уводят Лот…",
+          "anchor": "sec-war",
+          "raw": "Быт 14",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ует захватчиков, наносит им поражение ночью и продолжает погоню к северу. Итог сформулирован широко: возвращены имущество, Лот и его имущество, женщины и народ. Таким образом, Быт 14 — не отвлечённая вставка о древней войне. Для линии Лота это первый эпизод избавления: родственник, поселившийся в опасной зоне, попадает под последствия чужого конфликта, а…",
+          "anchor": "sec-war",
+          "raw": "Быт 14",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ы каждого шага не раскрыты. Нельзя превращать эту траекторию в вымышленный внутренний монолог о том, как Лот «каждый день сознательно продавал совесть». Бытие 14: первое избавление Лота Историю Лота часто перескакивают от разделения с Аврамом сразу к ангелам в Содоме. Из-за этого теряется важная глава: ещё до огня Быт 19 Лот уже один раз оказывается спасё…",
+          "anchor": "sec-war",
+          "raw": "Бытие 14",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
         {
           "url": "/karty/avraam/",
           "title": "Путь Авраама — интерактивная карта",
@@ -1980,6 +2528,34 @@
             "карты"
           ],
           "sourceOwner": "src/components/karty/avraam/AvraamMap.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:14:12",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "14:12",
+      "kind": "verse",
+      "label": "Бытие 14:12",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "новенный прыжок, а последовательность. Сначала Лот живёт среди городов равнины и раскидывает шатры до Содома (Быт 13:12). В следующей главе он уже описан как живущий в Содоме (Быт 14:12). А в Быт 19:1 Лот сидит у ворот города. Для самого рассказа этого достаточно, чтобы показать уже не далёкое соседство с Содомом, а публичное присутствие Лота внутри город…",
+          "anchor": null,
+          "raw": "Быт 14:12",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
           "sourceKind": "astro-source"
         }
       ]
@@ -2115,6 +2691,34 @@
       ]
     },
     {
+      "id": "bytie:18",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "18",
+      "kind": "chapter",
+      "label": "Бытие 18",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "я к литературному соревнованию. Аврам первым предлагает мир при конфликте пастухов, отдаёт Лоту право выбора направления, затем идёт на военный риск ради его освобождения. А в Быт 18, когда судьба Содома становится темой Божьего суда, ходатайство Авраама о праведных в городе образует ближайший контекст будущего избавления Лота. Быт 19:29 уже после катастр…",
+          "anchor": "sec-abraham-lot",
+          "raw": "Быт 18",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "bytie:18–19",
       "bookId": "bytie",
       "testament": "OT",
@@ -2124,6 +2728,22 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ьство Быт 19. Gordon J. Wenham. Genesis 16–50 , Word Biblical Commentary 2. Полезен для литературной структуры Быт 18–19, связи Авраама и Лота и осторожного чтения нравственно трудных сцен. Victor P. Hamilton. The Book of Genesis, Chapters 18–50 , NICOT. Проверка синтак",
+          "anchor": null,
+          "raw": "Быт 18–19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
         {
           "url": "/karty/avraam/",
           "title": "Путь Авраама — интерактивная карта",
@@ -2153,6 +2773,390 @@
       "canonicalSource": null,
       "occurrences": [
         {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "troke-width=\"2\" stroke-dasharray=\"8 7\" /> Быт 14: плен → спасение Аврамом → к Быт 19 Лот снова в Содоме Схема отражает только точки, прямо названные повествованием; она не восстанавливает неизвес",
+          "anchor": null,
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "чески исправляет все последствия прежней жизни и все повреждения семьи. Спасение из Содома не равно мгновенному исцелению семьи. Быт 19 заканчивается намеренно неудобно: Божья милость реальна, но последствия катастрофы, страха и человеческого греха не исчезают одним шагом за городскую черту. Моав и Бен-Амми: происхожд",
+          "anchor": null,
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Здесь появляется ещё одна важная граница. После спасения текст не рассказывает, почему Лот продолжил или возобновил жизнь в Содоме. Он просто вновь встречается нам там в Быт 19. Поэтому популярная фраза «Лот получил предупреждение и демонстративно вернулся к греху» сильнее источника. Предупреждающий характер события очевиден для читателя, но внутреннее об…",
+          "anchor": null,
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "m\"> Грех Содома нельзя свести к одному лозунгу: Быт 19 показывает коллективное сексуализированное насилие и презрение к чужаку, Иез 16 добавляет гордость, сытость и равнодушие к бедным, а Иуд 7 подчёркивает половую распущенность. <li \"summary-card__i",
+          "anchor": null,
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "in ‘Abata — византийский комплекс, мозаичные даты, связь с Цоарой и карта Мадабы. Использовать как источник позднеантичной традиции, а не как прямое доказательство Быт 19. Gordon J. Wenham. Genesis 16–50 , Word Biblical Commentary 2. Полезен для литературной структуры Быт 18–19, связи Авраама и Лота и осторожного чтения",
+          "anchor": null,
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Victor P. Hamilton. The Book of Genesis, Chapters 18–50 , NICOT. Проверка синтаксиса и повествовательных деталей Быт 19 без превращения комментария в первичный источник. Kenneth A. Mathews. Genesis 11:27–50:26 , New American Commentary. Полезен для общей патриархальной",
+          "anchor": null,
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "— родственные связи Быт 11; 19. Пунктир — позднейшая каноническая линия моавитянки Руфи. Лот — не изолированный персонаж Быт 19. Его линия входит в историю Моава и Аммона, а книга Руфь позднее не позволяет свести «моавскую линию» к простой формуле проклятого происхождения: Руфь, моавитянка, входит в род Давида.",
+          "anchor": "lot-family-caption",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotFamilyDiagram.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Бытие показывает опасную траекторию выбора: сначала Лот выбирает хорошо орошаемую Иорданскую равнину, затем живёт у Содома, а в Быт 19 уже сидит у городских ворот. Авраам спасает Ло",
+          "anchor": "lot-summary-title",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "i \"summary-card__item\"> Авраам спасает Лота ещё до Быт 19: в войне царей Лот попадает в плен, а Аврам организует преследование и возвращает его вместе с людьми и имуществом. <span \"summary-card__num\" aria-h",
+          "anchor": "lot-summary-title",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ки Библейский текст Содом связан с городами равнины, Цоаром и катастрофой Быт 19; Лот проходит собственную повествовательную дугу. Получить из текста современную GPS-координату конкретного археологического холма. Археология",
+          "anchor": "sec-archaeology",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionArchaeology.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "орию красивым спасением Если остановить рассказ на выходе из Содома, история Лота получится слишком гладкой: праведник спасён из нечестивого города, суд завершён. Но Быт 19 сознательно идёт дальше. Лот покидает Цоар, которого сам недавно просил как убежище, и поселяется в горной пещере с двумя дочерьми. Там следует тяжёлый семейный эпизод: дочери, боясь о…",
+          "anchor": "sec-cave",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "нщина из народа, чьё происхождение книга Бытия описала без малейшей идеализации. Что остаётся от Лота в дальнейшей Библии Сам Лот после Быт 19 исчезает из повествовательной сцены. Мы не получаем рассказа о его старости, покаянии после пещеры или последних годах. Зато его имя продолжает жить в трёх разных функциях. Во-первых, Моав и Аммон называются потомка",
+          "anchor": "sec-lot-legacy",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "p> Но милость не делает выборы бессмысленными. Быт 13 показывает, что направление жизни имеет значение; Быт 14 — что близость к конфликтному миру может втянуть в его бедствие; Быт 19 — что укоренение в развращённой среде создаёт страшные нравственные ситуации; слова Иисуса о жене Лота — что нельзя оглядываться к миру, от которого Бог зовёт уйти. Благодать…",
+          "anchor": "sec-main-theology",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ом интернете как «наука уже доказала Содом». 5. Не превращать Моава и Аммона в учение о «плохой крови» Происхождение двух народов в Быт 19 намеренно неприятно, но дальнейшая Библия не строит на нём биологический фатализм. Во Втор 2 потомки Лота получают свою землю; книга Руфь вводит моавитянку в род Давида. Грех имеет последствия, но человек не станови",
+          "anchor": "sec-not-blood-curse",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "вления видна не потому, что герой идеален, а потому, что он действительно нуждается в избавлении. 3. Не сокращать Содом до одного греха Быт 19, Иез 16 и Иуд 7 работают вместе. Сексуализированное насилие толпы нельзя растворить в общей теме «негостеприимства». Но и социальную жестокость, гордость, сытость и пренебрежение бедным нельзя вычеркнуть ради одной",
+          "anchor": "sec-not-one-sin",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "22). Матф 1:5 сохраняет Руфь и в родословии Иисуса Христа. Для статьи о Лоте это не декоративный «добрый финал». Это каноническая коррекция любой попытки прочитать Быт 19 как учение о безнадёжно испорченном происхождении. Начало моавской линии связано с тяжёлой семейной сценой, но история Божьего действия не запирает потомков внутри этого начала. В библей…",
+          "anchor": "sec-ruth",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Бытие 19: ночь в Содоме без смягчения и без сенсационализма Быт 19 начинается почти буднично: два ангела приходят в Содом вечером, Лот сидит у городских ворот, замечает гостей, встаёт навстречу и настойчиво приглашает их переночевать в доме. Он готовит пищу, и гости едят. Эта сцена",
+          "anchor": "sec-sodom-night",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Бытие 19: ночь в Содоме без смягчения и без сенсационализма Быт 19 начинается почти буднично: два ангела приходят в Содом вечером, Лот сидит у городских ворот, замечает гостей, встаёт навстречу и настойчиво приглаш",
+          "anchor": "sec-sodom-night",
+          "raw": "Бытие 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "дают через более сильное утверждение: будто город был уничтожен около среднего бронзового века воздушным взрывом, сопоставимым с Тунгусским событием, и именно это подтверждает Быт 19. Граница доказательств: статья о воздушном взрыве отозвана В 2021 году Scientific Reports о",
+          "anchor": "sec-tall-el-hammam",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionArchaeology.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "r\">Бытие 14: первое избавление Лота Историю Лота часто перескакивают от разделения с Аврамом сразу к ангелам в Содоме. Из-за этого теряется важная глава: ещё до огня Быт 19 Лот уже один раз оказывается спасён из бедствия, связанного с городом. В Быт 14 война восточных царей против коалиции городов долины заканчивается поражением Содома и Гоморры. Победите…",
+          "anchor": "sec-war",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "о превратить в объект. Иуд 7, в свою очередь, говорит о блуде Содома и соседних городов и о том, что они «ходили за иною плотию». Точная связь этой формулы со сценой Быт 19 остаётся предметом экзегетического обсуждения, поэтому не стоит превращать краткую фразу Иуды в отдельную теорию, которой сам текст не объясняет. Канонически аккуратнее удерживать свид…",
+          "anchor": "sec-why-sodom",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "о предстоящем уничтожении города и велят вывести близких. В чём состоял грех Содома? Ответ «только в негостеприимстве» слишком слаб для Быт 19. Ответ «только в одном виде сексуального греха» тоже сужает весь канонический материал. Сам рассказ Бытия показывает общество, в котором прибывших чужаков хотят подвергнуть коллективному сексуальному насилию, а чело",
+          "anchor": "sec-why-sodom",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ость, пресыщенность, беспечное благополучие и отказ поддерживать бедного и нищего; затем говорит о надменности и мерзостных делах. Это не альтернативная версия, которая отменяет Быт 19, а другой пророческий ракурс: насильственное общество не возникает из одной ночи. Самодовольство, избыток, отсутствие сострадания и гордость образуют среду, где слабого лег…",
+          "anchor": "sec-why-sodom",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "кацию места как святилища Лота. Для истории рецепции это сильное свидетельство: к поздней античности существовала устойчивая локальная память, связывавшая район Цоары и пещеру с Быт 19. Но это свидетельство VI–VII веков нашей эры, а не табличка бронзового века с именем Лота. Оно документирует традицию памяти , а не превращается само по себе в прямое доказ…",
+          "anchor": "sec-zoar-tradition",
+          "raw": "Быт 19",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionArchaeology.astro",
+          "sourceKind": "astro-source"
+        },
+        {
           "url": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
           "title": "Ангелы под мраком: Иуд. 6–7, 2 Петра 2 и Бытие 6 | Господь Бог — Сила Моя",
           "context": "акта; сексуальный компонент ангельского преступления с высокой вероятностью следует из сопоставления со ст. 7 и из совокупного древнего фона. ^5 ## Что означает «иная плоть» В Быт. 19 жители Содома стремятся овладеть посетителями Лота. Внутри сцены они выглядят мужчинами, но читатель знает, что это ангельские посланники. Поэтому σαρκὸς ἑτέρας естественно…",
@@ -2163,6 +3167,34 @@
           ],
           "sourceOwner": "src/content/articles/angely-pod-mrakom-iuda-6-7-2-petra-2.mdx",
           "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:19:1",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "19:1",
+      "kind": "verse",
+      "label": "Бытие 19:1",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "а последовательность. Сначала Лот живёт среди городов равнины и раскидывает шатры до Содома (Быт 13:12). В следующей главе он уже описан как живущий в Содоме (Быт 14:12). А в Быт 19:1 Лот сидит у ворот города. Для самого рассказа этого достаточно, чтобы показать уже не далёкое соседство с Содомом, а публичное присутствие Лота внутри городской жизни. Но из…",
+          "anchor": null,
+          "raw": "Быт 19:1",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
         }
       ]
     },
@@ -2197,6 +3229,222 @@
             "Чау"
           ],
           "sourceOwner": "src/components/article-pilots/hermenevtika/HermenevtikaBody.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:19:16",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "19:16",
+      "kind": "verse",
+      "label": "Бытие 19:16",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "h2> После предупреждения Лот пытается убедить родственников, но его слова воспринимаются как шутка. На рассвете ангелы торопят его выйти с женой и двумя дочерьми. И здесь Быт 19:16 оставляет одну из самых сильных деталей рассказа: Лот медлит . Причина медления не объяснена. Мы не знаем, удерживает ли его имущество, родственные связи, потрясение, неверие в…",
+          "anchor": "sec-hesitation",
+          "raw": "Быт 19:16",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:19:20–23",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "19:20–23",
+      "kind": "verse-range",
+      "label": "Бытие 19:20–23",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "–12:5 Быт 12–13 Быт 13:10–12 Быт 14; 19 Быт 19:20–23 Быт 19:30 <text x=\"676\" y=\"360\" text-anchor",
+          "anchor": null,
+          "raw": "Быт 19:20–23",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "p> После выхода Лот боится бежать в горы и просит разрешить ему укрыться в маленьком городе — Цоаре. Его просьба принимается, и уничтожение откладывается до его прибытия туда (Быт 19:20–23). Это ещё один эпизод, где Лот не выглядит бесстрашным героем: он спорит из страха и просит более близкое убежище. Но рассказ снова показывает, что ему предоставляется…",
+          "anchor": "sec-zoar",
+          "raw": "Быт 19:20–23",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:19:26",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "19:26",
+      "kind": "verse",
+      "label": "Бытие 19:26",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "\">Жена Лота: что значит «вспоминайте жену Лотову» Уходящим запрещено оглядываться и останавливаться на равнине. Жена Лота смотрит назад и становится соляным столпом (Быт 19:26). Само Бытие не объясняет её внутренний мотив: тоска ли это по дому, недоверие, любопытство или сознательное нарушение приказа. Поэтому психологические реконструкции должны оставать…",
+          "anchor": "sec-lots-wife",
+          "raw": "Быт 19:26",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "в требует не возвращаться к обречённому порядку жизни. Поэтому современные фотографии соляных колонн у Мёртвого моря не могут служить археологическим доказательством Быт 19:26. Природный соляной рельеф региона реален, но сопоставить конкретную колонну с конкретным человеком бронзового века невозможно. Для статьи важнее не легенда экскурсионного маршрута,…",
+          "anchor": "sec-lots-wife",
+          "raw": "Быт 19:26",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:19:29",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "19:29",
+      "kind": "verse",
+      "label": "Бытие 19:29",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ения. А в Быт 18, когда судьба Содома становится темой Божьего суда, ходатайство Авраама о праведных в городе образует ближайший контекст будущего избавления Лота. Быт 19:29 уже после катастрофы связывает эти линии прямо: Бог вспоминает об Аврааме и выводит Лота из среды разрушения. Это не означает, что Лот спасён просто за чужие заслуги: 2 Пет отдельно д…",
+          "anchor": "sec-abraham-lot",
+          "raw": "Быт 19:29",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionChoiceAndRescue.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:19:30",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "19:30",
+      "kind": "verse",
+      "label": "Бытие 19:30",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "13 Быт 13:10–12 Быт 14; 19 Быт 19:20–23 Быт 19:30 <text x=\"676\" y=\"360\" text-anchor=\"middle\" fill=\"#c6b888\" font-size=\"14\" font-",
+          "anchor": null,
+          "raw": "Быт 19:30",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotJourneyDiagram.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "з снова показывает, что ему предоставляется путь спасения. Позже Лот всё же оставляет Цоар и живёт с дочерьми в горной пещере, потому что боится оставаться в городе (Быт 19:30). Бытие не сообщает о новом приказе Бога уйти из Цоара; это уже собственное решение Лота. Тем самым глава заканчивается не восстановлением прежнего благополучия, а сжатием мира геро…",
+          "anchor": "sec-zoar",
+          "raw": "Быт 19:30",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "bytie:19:37",
+      "bookId": "bytie",
+      "testament": "OT",
+      "key": "19:37",
+      "kind": "verse",
+      "label": "Бытие 19:37",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "за городскую черту. Моав и Бен-Амми: происхождение народов без идеи «наследственной вины» От старшей дочери рождается Моав, названный в Быт 19:37 отцом моавитян; от младшей — Бен-Амми, названный отцом аммонитян. Сам рассказ связывает имена с обстоятельствами рождения и тем самым даёт происхождению двух соседних Израилю народов резкую семейную предысторию. Но",
+          "anchor": "sec-moab-ammon",
+          "raw": "Быт 19:37",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
           "sourceKind": "astro-source"
         }
       ]
@@ -3398,6 +4646,78 @@
       ]
     },
     {
+      "id": "vtorozakonie:2",
+      "bookId": "vtorozakonie",
+      "testament": "OT",
+      "key": "2",
+      "kind": "chapter",
+      "label": "Второзаконие 2",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Но из этого нельзя вывести, что каждый будущий моавитянин или аммонитянин лично виновен в поступке своих прародителей. Особенно важно прочитать дальше Пятикнижия. Во Втор 2 Израилю запрещено начинать захватническую войну против Моава, потому что Бог дал Ар потомкам Лота; похожая граница проведена и по отношению к аммонитянам: их земля названа данным Богом…",
+          "anchor": "sec-moab-ammon",
+          "raw": "Втор 2",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ать Моава и Аммона в учение о «плохой крови» Происхождение двух народов в Быт 19 намеренно неприятно, но дальнейшая Библия не строит на нём биологический фатализм. Во Втор 2 потомки Лота получают свою землю; книга Руфь вводит моавитянку в род Давида. Грех имеет последствия, но человек не становится безнадёжным из-за происхождения. Что в истории Лота главно",
+          "anchor": "sec-not-blood-curse",
+          "raw": "Втор 2",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "vtorozakonie:2:9",
+      "bookId": "vtorozakonie",
+      "testament": "OT",
+      "key": "2:9",
+      "kind": "verse",
+      "label": "Второзаконие 2:9",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "tle\">Источники и рекомендуемая проверка Библейский корпус о Лоте: Быт 11:27–32; 12:4–5; 13–14; 18–19; Втор 2:9, 19; 23:3–6; Руф 1–4; Иез 16:49–50; Лк 17:28–32; 2 Пет 2:6–9; Иуд 7; Матф 1:5. Короткие русские цитаты Писания в статье даны по Синодальному переводу; смысловые пересказы не выдаются за дословную цитат",
+          "anchor": "lot-sources-title",
+          "raw": "Втор 2:9",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "vtorozakonie:4:9",
       "bookId": "vtorozakonie",
       "testament": "OT",
@@ -3952,6 +5272,34 @@
           ],
           "sourceOwner": "src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx",
           "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
+      "id": "vtorozakonie:23",
+      "bookId": "vtorozakonie",
+      "testament": "OT",
+      "key": "23",
+      "kind": "chapter",
+      "label": "Второзаконие 23",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "тые народы, существующие только как отрицательный фон для Израиля. Их дальнейшая история конфликтна, но сам текст признаёт за ними землю и родственную линию. Позднее Втор 23 связывает ограничения в отношении Моава и Аммона уже не с самим фактом их рождения, а с конкретным историческим поведением по отношению к Израилю: отказом встретить его хлебом и водой…",
+          "anchor": "sec-moab-ammon",
+          "raw": "Втор 23",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
+          "sourceKind": "astro-source"
         }
       ]
     },
@@ -4555,6 +5903,62 @@
             "Чау"
           ],
           "sourceOwner": "src/components/article-pilots/hermenevtika/HermenevtikaBody.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "ruf:1–4",
+      "bookId": "ruf",
+      "testament": "OT",
+      "key": "1–4",
+      "kind": "chapter-range",
+      "label": "Руфь 1–4",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ая проверка Библейский корпус о Лоте: Быт 11:27–32; 12:4–5; 13–14; 18–19; Втор 2:9, 19; 23:3–6; Руф 1–4; Иез 16:49–50; Лк 17:28–32; 2 Пет 2:6–9; Иуд 7; Матф 1:5. Короткие русские цитаты Писания в статье даны по Синодальному переводу; смысловые пересказы не выдаются за дословную цитату и не смешиваются с формул",
+          "anchor": "lot-sources-title",
+          "raw": "Руф 1–4",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "ruf:4:13–22",
+      "bookId": "ruf",
+      "testament": "OT",
+      "key": "4:13–22",
+      "kind": "verse-range",
+      "label": "Руфь 4:13–22",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ость Ноемини и исповедание Бога Израиля становятся частью истории искупления. Она выходит замуж за Вооза, рождает Овида; Овид становится отцом Иессея, а Иессей — отцом Давида (Руф 4:13–22). Матф 1:5 сохраняет Руфь и в родословии Иисуса Христа. Для статьи о Лоте это не декоративный «добрый финал». Это каноническая коррекция любой попытки прочитать Быт 19 к…",
+          "anchor": "sec-ruth",
+          "raw": "Руф 4:13–22",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionAftermath.astro",
           "sourceKind": "astro-source"
         }
       ]
@@ -12953,6 +14357,94 @@
             "сердце"
           ],
           "sourceOwner": "src/components/article-pilots/skrytye-idoly/SkrytyeIdolyBody.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "iizikil:16",
+      "bookId": "iizikil",
+      "testament": "OT",
+      "key": "16",
+      "kind": "chapter",
+      "label": "Иезекииль 16",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "n> Грех Содома нельзя свести к одному лозунгу: Быт 19 показывает коллективное сексуализированное насилие и презрение к чужаку, Иез 16 добавляет гордость, сытость и равнодушие к бедным, а Иуд 7 подчёркивает половую распущенность. </s",
+          "anchor": null,
+          "raw": "Иез 16",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "идна не потому, что герой идеален, а потому, что он действительно нуждается в избавлении. 3. Не сокращать Содом до одного греха Быт 19, Иез 16 и Иуд 7 работают вместе. Сексуализированное насилие толпы нельзя растворить в общей теме «негостеприимства». Но и социальную жестокость, гордость, сытость и пренебрежение бедным нельзя вычеркнуть ради одной полемиче",
+          "anchor": "sec-not-one-sin",
+          "raw": "Иез 16",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "iizikil:16:49–50",
+      "bookId": "iizikil",
+      "testament": "OT",
+      "key": "16:49–50",
+      "kind": "verse-range",
+      "label": "Иезекииль 16:49–50",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ка Библейский корпус о Лоте: Быт 11:27–32; 12:4–5; 13–14; 18–19; Втор 2:9, 19; 23:3–6; Руф 1–4; Иез 16:49–50; Лк 17:28–32; 2 Пет 2:6–9; Иуд 7; Матф 1:5. Короткие русские цитаты Писания в статье даны по Синодальному переводу; смысловые пересказы не выдаются за дословную цитату и не смешиваются с формулировками други",
+          "anchor": "lot-sources-title",
+          "raw": "Иез 16:49–50",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "толпой и жертвами, готовы раздавить вместе с ними. Здесь соединены похоть, насилие, власть группы, презрение к чужому и агрессия против нравственного сопротивления. Иез 16:49–50 расширяет портрет. Пророк, обличая Иерусалим через сравнение с Содомом, называет гордость, пресыщенность, беспечное благополучие и отказ поддерживать бедного и нищего; затем говор…",
+          "anchor": "sec-why-sodom",
+          "raw": "Иез 16:49–50",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
           "sourceKind": "astro-source"
         }
       ]
@@ -23470,6 +24962,50 @@
           ],
           "sourceOwner": "src/content/articles/blagovestie-mertvym-1-petra-4-5-6.mdx",
           "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
+      "id": "luki:17:28–32",
+      "bookId": "luki",
+      "testament": "NT",
+      "key": "17:28–32",
+      "kind": "verse-range",
+      "label": "Луки 17:28–32",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "\"sources-list\"> Библейский корпус о Лоте: Быт 11:27–32; 12:4–5; 13–14; 18–19; Втор 2:9, 19; 23:3–6; Руф 1–4; Иез 16:49–50; Лк 17:28–32; 2 Пет 2:6–9; Иуд 7; Матф 1:5. Короткие русские цитаты Писания в статье даны по Синодальному переводу; смысловые пересказы не выдаются за дословную цитату и не смешиваются с формулировками других переводов.",
+          "anchor": "lot-sources-title",
+          "raw": "Лк 17:28–32",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "во или сознательное нарушение приказа. Поэтому психологические реконструкции должны оставаться именно реконструкциями. Но позднейший канонический смысл очень ясен. В Лк 17:28–32 Иисус вспоминает дни Лота, когда обычная жизнь продолжалась — люди ели, пили, покупали, продавали, строили, — пока внезапно не пришёл суд. В этом контексте звучит короткое предупр…",
+          "anchor": "sec-lots-wife",
+          "raw": "Лк 17:28–32",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
         }
       ]
     },
@@ -45851,6 +47387,94 @@
       ]
     },
     {
+      "id": "2petra:2:6–9",
+      "bookId": "2petra",
+      "testament": "NT",
+      "key": "2:6–9",
+      "kind": "verse-range",
+      "label": "2 Петра 2:6–9",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Новый Завет не разрешает объявить Лота неверующим. 2 Пет 2:6–9 называет его праведным и описывает его внутреннее мучение от беззаконной жизни окружающих.",
+          "anchor": null,
+          "raw": "2 Пет 2:6–9",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "s-list\"> Библейский корпус о Лоте: Быт 11:27–32; 12:4–5; 13–14; 18–19; Втор 2:9, 19; 23:3–6; Руф 1–4; Иез 16:49–50; Лк 17:28–32; 2 Пет 2:6–9; Иуд 7; Матф 1:5. Короткие русские цитаты Писания в статье даны по Синодальному переводу; смысловые пересказы не выдаются за дословную цитату и не смешиваются с формулировками других переводов.",
+          "anchor": "lot-sources-title",
+          "raw": "2 Пет 2:6–9",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "/h2> Самая частая ошибка в популярном разборе — судить о Лоте только по Быт 13 и 19, а затем сделать вывод о его духовном состоянии, который сам Новый Завет не делает. Во 2 Пет 2:6–9 Содом и Гоморра служат примером суда, но рядом с ними стоит история избавления. Апостол называет Лота праведным, говорит, что он был измучен обращением людей вокруг него, и е…",
+          "anchor": "sec-canonical-verdict",
+          "raw": "2 Пет 2:6–9",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "2petra:2:7–8",
+      "bookId": "2petra",
+      "testament": "NT",
+      "key": "2:7–8",
+      "kind": "verse-range",
+      "label": "2 Петра 2:7–8",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "а «тайным неверующим» вопреки 2 Петра Если начать с заранее готовой схемы, компромиссы Лота легко превратить в доказательство его полного духовного отступничества. Но 2 Пет 2:7–8 не оставляет такой вывод без коррекции: апостол сознательно использует слова «праведный» и «праведная душа». Это не канонизация каждого решения Лота. Это запрет на другую крайнос…",
+          "anchor": "sec-not-fake-believer",
+          "raw": "2 Пет 2:7–8",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "2petra:3:9",
       "bookId": "2petra",
       "testament": "NT",
@@ -47317,6 +48941,70 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "ельзя свести к одному лозунгу: Быт 19 показывает коллективное сексуализированное насилие и презрение к чужаку, Иез 16 добавляет гордость, сытость и равнодушие к бедным, а Иуд 7 подчёркивает половую распущенность. Новый Заве",
+          "anchor": null,
+          "raw": "Иуд 7",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionOrientation.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "Библейский корпус о Лоте: Быт 11:27–32; 12:4–5; 13–14; 18–19; Втор 2:9, 19; 23:3–6; Руф 1–4; Иез 16:49–50; Лк 17:28–32; 2 Пет 2:6–9; Иуд 7; Матф 1:5. Короткие русские цитаты Писания в статье даны по Синодальному переводу; смысловые пересказы не выдаются за дословную цитату и не смешиваются с формулировками других переводов. <li da",
+          "anchor": "lot-sources-title",
+          "raw": "Иуд 7",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSources.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "отому, что герой идеален, а потому, что он действительно нуждается в избавлении. 3. Не сокращать Содом до одного греха Быт 19, Иез 16 и Иуд 7 работают вместе. Сексуализированное насилие толпы нельзя растворить в общей теме «негостеприимства». Но и социальную жестокость, гордость, сытость и пренебрежение бедным нельзя вычеркнуть ради одной полемической тем",
+          "anchor": "sec-not-one-sin",
+          "raw": "Иуд 7",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionReading.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/lot-i-sodom/",
+          "title": "Лот: праведник у ворот Содома",
+          "context": "насильственное общество не возникает из одной ночи. Самодовольство, избыток, отсутствие сострадания и гордость образуют среду, где слабого легко превратить в объект. Иуд 7, в свою очередь, говорит о блуде Содома и соседних городов и о том, что они «ходили за иною плотию». Точная связь этой формулы со сценой Быт 19 остаётся предметом экзегетического обсужд…",
+          "anchor": "sec-why-sodom",
+          "raw": "Иуд 7",
+          "topics": [
+            "археология Библии",
+            "Бытие 19",
+            "Лот",
+            "Содом",
+            "Экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/lot/LotSectionSodom.astro",
+          "sourceKind": "astro-source"
+        },
         {
           "url": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
           "title": "Ангелы под мраком: Иуд. 6–7, 2 Петра 2 и Бытие 6 | Господь Бог — Сила Моя",
