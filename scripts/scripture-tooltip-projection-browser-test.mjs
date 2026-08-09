@@ -2,11 +2,15 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { chromium } from 'playwright';
-import { createBibleResolver } from '../src/lib/bible-reference-core.mjs';
+import {
+  BIBLE_PUBLICATION_STATES,
+  createBibleResolver,
+  isBibleRecordPublicationEligible,
+} from '../src/lib/bible-reference-core.mjs';
 
 const BASE = process.env.BASE || 'http://127.0.0.1:4179';
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
-const REFERENCE = '2 Тимофею 2:14–15';
+const HELD_REFERENCE = '2 Тимофею 2:14–15';
 const MISSING_REFERENCE = '__scripture_projection_missing__';
 const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
 const TOOLTIP_OWNER = 'article-inline-tooltip';
@@ -25,7 +29,7 @@ const scriptureIndex = JSON.parse(
 const EXPECTED_PROJECTION = {};
 for (const reference of scriptureIndex.references || []) {
   const text = String(reference.canonicalText || '').trim();
-  if (!text) continue;
+  if (!text || !isBibleRecordPublicationEligible(reference.canonicalSource || {})) continue;
   const routeOccurrences = (reference.occurrences || []).filter(
     (occurrence) => normalizeRoute(occurrence.url) === ROUTE,
   );
@@ -37,14 +41,37 @@ for (const reference of scriptureIndex.references || []) {
   const label = String(reference.label || '').trim();
   if (label) EXPECTED_PROJECTION[label] = text;
 }
-assert(Object.keys(EXPECTED_PROJECTION).length > 0, 'Hermenevtika must have centrally resolved route-scoped Scripture records');
+
+const heldIndexReference = (scriptureIndex.references || []).find((reference) =>
+  String(reference.label || '').trim() === HELD_REFERENCE
+  || (reference.occurrences || []).some((occurrence) =>
+    normalizeRoute(occurrence.url) === ROUTE && String(occurrence.raw || '').trim() === HELD_REFERENCE),
+);
+assert(heldIndexReference?.canonicalText, `occurrence index must retain reference-only canonical data for ${HELD_REFERENCE}`);
+assert.equal(
+  heldIndexReference.canonicalSource?.publicationState,
+  BIBLE_PUBLICATION_STATES.BLOCKED,
+  'current Cassian source must remain Product-publication blocked',
+);
+assert.equal(
+  isBibleRecordPublicationEligible(heldIndexReference.canonicalSource || {}),
+  false,
+  'held Cassian canonicalSource must not become publication eligible',
+);
+assert.equal(
+  Object.hasOwn(EXPECTED_PROJECTION, HELD_REFERENCE),
+  false,
+  'held Cassian reference must be excluded from the public route projection',
+);
 
 const resolver = createBibleResolver();
-const { record } = resolver.resolve(REFERENCE);
-assert(record?.text, `Central Bible corpus must resolve ${REFERENCE}`);
-const EXPECTED_TEXT = record.text;
-assert.equal(EXPECTED_PROJECTION[REFERENCE], EXPECTED_TEXT,
-  'occurrence index canonical text must agree with the independent central resolver');
+const { record: heldRecord } = resolver.resolve(HELD_REFERENCE);
+assert(heldRecord?.text, `central Bible corpus must still resolve reference-only ${HELD_REFERENCE}`);
+assert.equal(heldRecord.publicationState, BIBLE_PUBLICATION_STATES.BLOCKED,
+  'central Cassian record must normalize to BLOCKED when no Product approval exists');
+assert.equal(isBibleRecordPublicationEligible(heldRecord), false,
+  'central Cassian record must fail the public eligibility contract');
+const HELD_TEXT = heldRecord.text;
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
@@ -77,21 +104,28 @@ try {
   assert.deepEqual(
     projectionSnapshot.scriptureData,
     Object.fromEntries(Object.entries(EXPECTED_PROJECTION).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
-    'browser Scripture payload must equal the canonical current-route projection exactly',
+    'browser Scripture payload must equal the publication-eligible current-route projection exactly',
   );
+  assert.equal(Object.hasOwn(projectionSnapshot.scriptureData, HELD_REFERENCE), false,
+    'held Cassian reference must not exist in public SCRIPTURE_DATA');
+  assert.equal(Object.values(projectionSnapshot.scriptureData).includes(HELD_TEXT), false,
+    'held Cassian verbatim text must not leak through another projection key');
 
-  // The old retained route-local payload must not be required for the native handoff.
+  // The old retained route-local payload must not be required, and a held known
+  // reference must remain reference-only after it is removed.
   await page.evaluate(() => document.querySelector('#bibleRefs')?.remove());
 
-  const trigger = page.locator(`.bref[data-ref="${REFERENCE}"]`).first();
-  assert.equal(await trigger.count(), 1, `real route must expose ${REFERENCE}`);
-  await trigger.focus();
-  const tip = page.locator('.btip.is-open').last();
-  await tip.waitFor({ state: 'visible' });
-  assert.equal((await tip.locator('.btip__reference').textContent())?.trim(), REFERENCE);
-  const actualText = (await tip.locator('.btip__text').textContent())?.trim();
-  assert.equal(actualText, EXPECTED_TEXT, 'tooltip must render central canonical Scripture text');
-  assert.notEqual(actualText, GENERIC_FALLBACK, 'known central reference must not degrade to the generic fallback');
+  const heldTrigger = page.locator(`.bref[data-ref="${HELD_REFERENCE}"]`).first();
+  assert.equal(await heldTrigger.count(), 1, `real route must expose reference label ${HELD_REFERENCE}`);
+  await heldTrigger.focus();
+  const heldTip = page.locator('.btip.is-open').last();
+  await heldTip.waitFor({ state: 'visible' });
+  assert.equal((await heldTip.locator('.btip__reference').textContent())?.trim(), HELD_REFERENCE);
+  const heldTooltipText = (await heldTip.locator('.btip__text').textContent())?.trim();
+  assert.equal(heldTooltipText, GENERIC_FALLBACK,
+    'known but publication-blocked Scripture must use the existing generic fallback');
+  assert.notEqual(heldTooltipText, HELD_TEXT,
+    'publication-blocked Cassian verbatim text must not reach the reader tooltip');
   await page.keyboard.press('Escape');
 
   await page.evaluate((missingReference) => {
@@ -115,7 +149,7 @@ try {
 
   assert.deepEqual(pageErrors, [], `unexpected page errors: ${pageErrors.join(' | ')}`);
   assert.deepEqual(consoleErrors, [], `unexpected console errors: ${consoleErrors.join(' | ')}`);
-  console.log(`Scripture tooltip projection browser contract passed for ${REFERENCE}`);
+  console.log(`Scripture rights-safe projection browser contract passed for held ${HELD_REFERENCE}`);
 } finally {
   await browser.close();
 }
