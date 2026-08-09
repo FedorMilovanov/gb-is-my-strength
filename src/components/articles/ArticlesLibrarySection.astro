@@ -110,8 +110,9 @@ const items = manifestItems
   .filter((item) => item.type === 'article' && routeIsPublished(item.url))
   .sort(byEditorialOrder);
 ---
+<!-- Exhaustive human navigation is baseline-visible without JavaScript. Decorative reveal animation must never gate catalog reachability. -->
 <section
-  class="h-section h-reveal"
+  class="h-section"
   id="publikacii"
   aria-labelledby="hLibraryLabel"
   data-catalog-source="search-manifest+page-ownership"

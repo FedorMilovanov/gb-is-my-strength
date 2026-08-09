@@ -1,0 +1,62 @@
+---
+import LotPageHead from '@/components/article-pilots/lot/LotPageHead.astro';
+import LotPageChrome from '@/components/article-pilots/lot/LotPageChrome.astro';
+import LotArticleBody from '@/components/article-pilots/lot/LotArticleBody.astro';
+import StandaloneArticleFooter from '@/components/article-pilots/_shared/StandaloneArticleFooter.astro';
+---
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <LotPageHead />
+  </head>
+  <body class="gbs-paper lot-page">
+    <a class="skip-link" href="#content">Перейти к содержанию</a>
+    <LotPageChrome />
+
+    <main class="article-main article-main--hrail" id="content" data-hm-reader data-reader-root data-reader-rail-main>
+      <nav aria-label="Хлебные крошки" class="breadcrumb">
+        <ol class="breadcrumb__list">
+          <li class="breadcrumb__item"><a class="breadcrumb__link" href="../../">Главная</a></li>
+          <li class="breadcrumb__item"><a class="breadcrumb__link" href="../../articles/">Статьи</a></li>
+          <li class="breadcrumb__item" aria-current="page"><span class="breadcrumb__current">Лот</span></li>
+        </ol>
+      </nav>
+
+      <span data-pagefind-meta="image" hidden>/images/articles/lot/og-lot-i-sodom.webp</span>
+      <span data-pagefind-meta="image_alt" hidden>Две дороги расходятся в каменистой пустыне у солёного озера на рассвете — художественный образ выбора Лота.</span>
+      <span data-pagefind-meta="author" hidden>Фёдор Милованов</span>
+      <span data-pagefind-meta="readTime" hidden>28</span>
+      <span data-pagefind-meta="category" hidden>Экзегеза</span>
+      <span data-pagefind-meta="scripture" hidden>Бытие 13–19</span>
+
+      <article class="article-body" data-pagefind-body>
+        <header class="article-header">
+          <p class="msjline">Экзегеза · Бытие 13–19</p>
+          <h1>Лот: праведник у ворот Содома</h1>
+          <p class="article-byline">
+            <time datetime="2026-08-09T00:00:00+03:00">9 августа 2026</time>
+            <span aria-hidden="true" class="article-byline__sep">·</span>
+            <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
+            <span aria-hidden="true" class="article-byline__sep">·</span>
+            <span>⏱ 28 мин</span>
+          </p>
+        </header>
+
+        <LotArticleBody />
+
+        <aside class="author-card" aria-label="Об авторе-редакторе">
+          <div class="author-card-label">Автор-редактор</div>
+          <div class="author-card-name">Фёдор Милованов</div>
+          <p>Редактор проекта «Господь Бог — Сила Моя». Материал подготовлен как самостоятельный экзегетический разбор с явным разделением текста Писания, интерпретации, археологии и поздней традиции.</p>
+        </aside>
+      </article>
+
+      <footer>
+        <a href="../../">← Господь Бог — Сила Моя</a>
+        <span>© 2026</span>
+      </footer>
+    </main>
+
+    <StandaloneArticleFooter />
+  </body>
+</html>
