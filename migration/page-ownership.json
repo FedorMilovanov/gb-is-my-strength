@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-08-02",
+  "updated": "2026-08-09",
   "description": "Build-time strangler ownership manifest. Production GitHub Pages serves Astro/strangler dist. owner=astro means output is generated from src/pages and must not be overwritten by legacy copy. status=production-dist means the route is allowed in production after its route and release gates pass.",
   "routes": {
     "/": {"owner":"astro","source":"src/pages/index.astro","risk":2,"status":"production-dist"},
@@ -19,6 +19,7 @@
     "/articles/kak-hranit-serdce/": {"owner":"astro","source":"src/pages/articles/kak-hranit-serdce/index.astro","risk":2,"status":"production-dist"},
     "/articles/kak-menyaetsya-serdce/": {"owner":"astro","source":"src/pages/articles/kak-menyaetsya-serdce/index.astro","risk":2,"status":"production-dist"},
     "/articles/kod-da-vinchi/": {"owner":"astro","source":"src/pages/articles/kod-da-vinchi/index.astro","risk":2,"status":"production-dist"},
+    "/articles/lot-i-sodom/": {"owner":"astro","source":"src/pages/articles/lot-i-sodom/index.astro","risk":2,"status":"production-dist"},
     "/articles/krajne-li-isporcheno-serdce/": {"owner":"astro","source":"src/pages/articles/krajne-li-isporcheno-serdce/index.astro","risk":2,"status":"production-dist"},
     "/articles/myslennaya-zhizn-serdca/": {"owner":"astro","source":"src/pages/articles/myslennaya-zhizn-serdca/index.astro","risk":2,"status":"production-dist"},
     "/articles/novoe-serdce/": {"owner":"astro","source":"src/pages/articles/novoe-serdce/index.astro","risk":2,"status":"production-dist"},
