@@ -55,9 +55,9 @@ for (const reference of (scriptureIndex.references || []) as ScriptureReference[
 
 <script is:inline define:vars={{ scriptureData }}>
   (() => {
-    const existing = window.SCRIPTURE_DATA && typeof window.SCRIPTURE_DATA === 'object'
-      ? window.SCRIPTURE_DATA
-      : {};
-    window.SCRIPTURE_DATA = Object.freeze({ ...existing, ...scriptureData });
+    // This component is the canonical reader-facing Scripture data projection.
+    // Never merge an earlier global payload back across the rights boundary:
+    // ungoverned/held text must be replaced by the current eligible projection.
+    window.SCRIPTURE_DATA = Object.freeze({ ...scriptureData });
   })();
 </script>
