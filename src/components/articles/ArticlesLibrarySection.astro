@@ -32,6 +32,8 @@ type CatalogAttribution = {
   label: string;
 };
 
+const OWNER_NAME = 'Фёдор Милованов';
+
 function cleanRole(value?: string) {
   return String(value || '').trim();
 }
@@ -46,6 +48,14 @@ function catalogAttribution(item: CatalogItem): CatalogAttribution {
     return { kind: 'author-editor', label: `Автор-редактор: ${author}` };
   }
 
+  // Owner-sensitive fail-closed boundary: never render forbidden "Автор: Фёдор".
+  if (author === OWNER_NAME && !editor) {
+    throw new Error(`Articles catalog attribution missing editor authority for ${item.url}`);
+  }
+  if (translator === OWNER_NAME && !editor) {
+    throw new Error(`Articles catalog translation missing editor authority for ${item.url}`);
+  }
+
   // Translation/editorial material keeps the owner-approved catalog label.
   // A translator role is never promoted into editor authority by this consumer.
   if (editor) return { kind: 'editor', label: `Ред.: ${editor}` };
@@ -57,13 +67,25 @@ function catalogAttribution(item: CatalogItem): CatalogAttribution {
 // Build-time role contract: fail before rendering if catalog attribution drifts.
 for (const [fixture, expectedKind, expectedLabel] of [
   [{ url: '/fixture/author/', author: 'Автор, не редактор' }, 'author', 'Автор: Автор, не редактор'],
-  [{ url: '/fixture/original/', author: 'Фёдор Милованов', editor: 'Фёдор Милованов' }, 'author-editor', 'Автор-редактор: Фёдор Милованов'],
-  [{ url: '/fixture/translation/', author: 'Абнер Чау', translator: 'Фёдор Милованов', editor: 'Фёдор Милованов' }, 'editor', 'Ред.: Фёдор Милованов'],
+  [{ url: '/fixture/original/', author: OWNER_NAME, editor: OWNER_NAME }, 'author-editor', 'Автор-редактор: Фёдор Милованов'],
+  [{ url: '/fixture/translation/', author: 'Абнер Чау', translator: OWNER_NAME, editor: OWNER_NAME }, 'editor', 'Ред.: Фёдор Милованов'],
 ] as const) {
   const actual = catalogAttribution(fixture);
   if (actual.kind !== expectedKind || actual.label !== expectedLabel) {
     throw new Error(`Articles catalog attribution contract failed for ${fixture.url}: ${actual.kind} / ${actual.label}`);
   }
+}
+for (const forbiddenFixture of [
+  { url: '/fixture/forbidden-owner-author/', author: OWNER_NAME },
+  { url: '/fixture/forbidden-owner-translator/', translator: OWNER_NAME },
+] as const) {
+  let rejected = false;
+  try {
+    catalogAttribution(forbiddenFixture);
+  } catch {
+    rejected = true;
+  }
+  if (!rejected) throw new Error(`Articles catalog accepted owner-sensitive incomplete attribution for ${forbiddenFixture.url}`);
 }
 
 const manifestItems = searchManifest.items as CatalogItem[];
