@@ -120,6 +120,9 @@ const HAMMAM_ROUTE_RETRACTION_MARKERS = [
 ];
 const HAMMAM_NATIVE_RETRACTION_MARKER = 'официально отозвана журналом Scientific Reports 24.04.2025';
 const HAMMAM_OLD_POSITIVE_PHRASE = 'со следами мощного разрушительного события';
+const HAMMAM_VARIANT_STALE_NOTE = 'Гипотеза строится на видимости долины с Бет-Эля и разрушении города.';
+const HAMMAM_VARIANT_RETRACTION_MARKER = 'отозвана 24.04.2025';
+const HAMMAM_VARIANT_NO_POSITIVE_EVIDENCE = 'не являются установленным положительным доказательством';
 
 function hasCanonicalHammamRetraction(routeData) {
   const hammam = routeData.places?.find(place => place.id === 'hammam');
@@ -128,6 +131,19 @@ function hasCanonicalHammamRetraction(routeData) {
   const dispute = String(hammam.dispute || '');
   return HAMMAM_ROUTE_RETRACTION_MARKERS.some(marker => arch.includes(marker))
     && HAMMAM_ROUTE_RETRACTION_MARKERS.some(marker => dispute.includes(marker));
+}
+
+function hammamVariantRow(container) {
+  return container?.hammam?.find(row => row?.title === 'Талл эль-Хаммам как северный Содом') || null;
+}
+
+function hasHammamVariantRetraction(container) {
+  const row = hammamVariantRow(container);
+  if (!row) return false;
+  const text = `${String(row.note || '')} ${String(row.sources || '')}`;
+  return text.includes(HAMMAM_VARIANT_RETRACTION_MARKER)
+    && text.includes(HAMMAM_VARIANT_NO_POSITIVE_EVIDENCE)
+    && !text.includes(HAMMAM_VARIANT_STALE_NOTE);
 }
 
 function sodomStaticStage(source) {
@@ -177,6 +193,15 @@ function runPositiveContractMutations() {
     hammam.dispute = String(hammam.dispute || '').replace(/(?:официально ретрагирована|отозвана) Scientific Reports 24\.04\.2025/g, 'airburst claim retained');
   }
   assert('mutation: removing Tall el-Hammam route retraction is rejected', !hasCanonicalHammamRetraction(mutatedHammamRoute));
+
+  assert('route Tall el-Hammam scientific candidate exposes retraction boundary', hasHammamVariantRetraction(route.scientific_variants));
+  const mutatedHammamVariants = JSON.parse(JSON.stringify(route.scientific_variants));
+  const mutatedHammamVariant = hammamVariantRow(mutatedHammamVariants);
+  if (mutatedHammamVariant) {
+    mutatedHammamVariant.note = HAMMAM_VARIANT_STALE_NOTE;
+    mutatedHammamVariant.sources = String(mutatedHammamVariant.sources || '').replace(HAMMAM_VARIANT_RETRACTION_MARKER, 'airburst claim retained');
+  }
+  assert('mutation: stale route Tall el-Hammam scientific candidate is rejected', !hasHammamVariantRetraction(mutatedHammamVariants));
 
   assert('native Tall el-Hammam fallback exposes 2025 retraction boundary', hasNativeHammamRetraction(astro));
   const mutatedHammamAstro = astro
@@ -234,6 +259,14 @@ if (SCIENCE_VARIANTS) {
   const variantRows = Object.values(SCIENCE_VARIANTS).flat();
   assert('scientific variants count = 47', variantRows.length === 47, String(variantRows.length));
   assert('scientific variant statuses are canonical', variantRows.every(v => statuses.has(v.status)));
+  assert('inline Tall el-Hammam scientific candidate exposes retraction boundary', hasHammamVariantRetraction(SCIENCE_VARIANTS));
+  const mutatedInlineVariants = JSON.parse(JSON.stringify(SCIENCE_VARIANTS));
+  const mutatedInlineHammam = hammamVariantRow(mutatedInlineVariants);
+  if (mutatedInlineHammam) {
+    mutatedInlineHammam.note = HAMMAM_VARIANT_STALE_NOTE;
+    mutatedInlineHammam.sources = String(mutatedInlineHammam.sources || '').replace(HAMMAM_VARIANT_RETRACTION_MARKER, 'airburst claim retained');
+  }
+  assert('mutation: stale inline Tall el-Hammam scientific candidate is rejected', !hasHammamVariantRetraction(mutatedInlineVariants));
 }
 
 assert('HTML exposes routeWaypoints layer', allCode.includes('id="routeWaypoints"') && allCode.includes("id:'waypoints'"));
