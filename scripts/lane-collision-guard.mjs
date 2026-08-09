@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listRangeFiles } from './shared-diff-authority.mjs';
 
 const DERIVED_PROJECTION_PATTERNS = Object.freeze([
   /^data\/legacy-reference-ledger\/(?:manifest\.json|references-\d+\.json)$/,
@@ -184,22 +185,22 @@ export async function runCli(env = process.env) {
   const token = env.GITHUB_TOKEN;
   const apiUrl = (env.GITHUB_API_URL || 'https://api.github.com').replace(/\/$/, '');
   const baseRef = env.PR_BASE_REF || (eventPr && eventPr.base && eventPr.base.ref);
+  const effectiveBaseSha = String(env.EFFECTIVE_BASE_SHA || '').trim();
+  const effectiveHeadSha = String(env.EFFECTIVE_HEAD_SHA || '').trim();
 
   if (!repo || !repo.includes('/')) throw new Error('GITHUB_REPOSITORY owner/name is required');
   if (!token) throw new Error('GITHUB_TOKEN is required for pull-request collision checks');
   if (!baseRef) throw new Error('PR base ref is required');
+  if (!effectiveBaseSha || !effectiveHeadSha) {
+    throw new Error('EFFECTIVE_BASE_SHA and EFFECTIVE_HEAD_SHA are required; refusing independently based PR-file ownership');
+  }
 
   const [owner, name] = repo.split('/');
   const encodedOwner = encodeURIComponent(owner);
   const encodedName = encodeURIComponent(name);
   const baseQuery = encodeURIComponent(baseRef);
 
-  const currentFilesRaw = await pagedGithubArray({
-    apiUrl,
-    token,
-    route: `/repos/${encodedOwner}/${encodedName}/pulls/${prNumber}/files`,
-  });
-  const currentFiles = currentFilesRaw.map((entry) => entry.filename);
+  const currentFiles = listRangeFiles(effectiveBaseSha, effectiveHeadSha);
 
   const openPulls = await pagedGithubArray({
     apiUrl,
@@ -234,7 +235,10 @@ export async function runCli(env = process.env) {
     candidates: candidateModels,
   });
 
-  console.log(`Lane collision guard: PR #${prNumber}; ${currentFiles.length} changed file(s); ${openPulls.length - 1} other open PR(s) on '${baseRef}'.`);
+  console.log(
+    `Lane collision guard: PR #${prNumber}; effective range ${effectiveBaseSha}..${effectiveHeadSha}; `
+    + `${currentFiles.length} changed file(s); ${openPulls.length - 1} other open PR(s) on '${baseRef}'.`,
+  );
 
   for (const warning of result.warnings) {
     console.warn(`WARNING: PR #${warning.number} shares derived projection file(s):`);
