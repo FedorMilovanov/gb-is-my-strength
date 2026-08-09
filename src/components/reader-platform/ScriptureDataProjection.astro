@@ -1,0 +1,51 @@
+---
+import scriptureIndex from '../../../data/scripture-search-index.json';
+
+type ScriptureOccurrence = {
+  url?: string | null;
+  raw?: string | null;
+};
+
+type ScriptureReference = {
+  label?: string | null;
+  canonicalText?: string | null;
+  occurrences?: ScriptureOccurrence[];
+};
+
+const normalizeRoute = (value: string) => {
+  let route = String(value || '/').split('#', 1)[0] || '/';
+  if (!route.startsWith('/')) route = `/${route}`;
+  if (!route.includes('.') && !route.endsWith('/')) route += '/';
+  return route;
+};
+
+const route = normalizeRoute(Astro.url.pathname);
+const scriptureData: Record<string, string> = {};
+
+for (const reference of (scriptureIndex.references || []) as ScriptureReference[]) {
+  const text = String(reference.canonicalText || '').trim();
+  if (!text) continue;
+
+  const routeOccurrences = (reference.occurrences || []).filter(
+    (occurrence) => normalizeRoute(String(occurrence.url || '')) === route,
+  );
+  if (routeOccurrences.length === 0) continue;
+
+  for (const occurrence of routeOccurrences) {
+    const raw = String(occurrence.raw || '').trim();
+    if (raw) scriptureData[raw] = text;
+  }
+
+  const label = String(reference.label || '').trim();
+  if (label) scriptureData[label] = text;
+}
+---
+
+<script is:inline define:vars={{ scriptureData }}>
+  (() => {
+    const existing = window.SCRIPTURE_DATA && typeof window.SCRIPTURE_DATA === 'object'
+      ? window.SCRIPTURE_DATA
+      : {};
+    window.SCRIPTURE_DATA = Object.freeze({ ...existing, ...scriptureData });
+  })();
+</script>
