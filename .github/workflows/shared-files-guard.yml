@@ -102,6 +102,21 @@ jobs:
           node --check scripts/gill-claim-surface-audit.js
           node scripts/gill-claim-surface-audit.js --json
 
+      - name: Baptist roadmap publication authority
+        run: |
+          node --check scripts/baptisty-roadmap-audit.js
+          node scripts/baptisty-roadmap-audit.js
+
+      - name: Retained readable reference authority
+        run: |
+          node --check scripts/readable-audit.js
+          node scripts/readable-audit.js
+
+      - name: Owner UI retained reference authority
+        run: |
+          node --check scripts/owner-ui-regression-guard.js
+          node scripts/owner-ui-regression-guard.js
+
       - name: Strangler parity authority and Baptists built-app measurement
         run: |
           node --check scripts/lib/visual-parity-authority.cjs
