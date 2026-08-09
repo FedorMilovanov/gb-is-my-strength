@@ -8,6 +8,7 @@ import {
   DEFAULT_REPOSITORY_ROOT,
   createBibleResolver,
   isBibleRecordPublicationEligible,
+  mergeBiblePublicationMeta,
   normalizeBibleRecord
 } from '../src/lib/bible-reference-core.mjs';
 
@@ -193,6 +194,15 @@ function runPublicationEligibilityFixtures(resolver) {
   }, '1:5');
   if (!inheritedHold.holds.includes('RIGHTS_HOLD')) fail('publication fixture: record-level empty holds must not clear inherited RIGHTS_HOLD');
   if (isBibleRecordPublicationEligible(inheritedHold)) fail('publication fixture: inherited translation/book hold must remain blocking');
+
+  const mergedMeta = mergeBiblePublicationMeta({
+    rightsState: BIBLE_RIGHTS_STATES.ELIGIBLE,
+    publicationState: BIBLE_PUBLICATION_STATES.APPROVED,
+    holds: ['RIGHTS_HOLD'],
+  }, {
+    holds: [],
+  });
+  if (!mergedMeta.holds.includes('RIGHTS_HOLD')) fail('publication fixture: file _meta holds=[] must not clear translation-policy RIGHTS_HOLD');
 
   const cassian = resolver.resolve('2 Тимофею 2:14–15').record;
   if (!cassian?.text) fail('publication fixture: current Cassian negative witness must resolve internally');
