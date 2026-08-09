@@ -11,6 +11,7 @@ const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const AUDIT = path.join(__dirname, 'interactive-audit.js');
 const HERMENEVTIKA_REGRESSION_GUARD = path.join(__dirname, 'hermenevtika-regression-guard.mjs');
 const SCRIPTURE_TOOLTIP_PROJECTION_GUARD = path.join(__dirname, 'scripture-tooltip-projection-browser-test.mjs');
+const LOT_PUBLICATION_BROWSER_GUARD = path.join(__dirname, 'lot-publication-browser-contract.mjs');
 const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
@@ -115,6 +116,13 @@ function runScriptureTooltipProjectionGuard(baseUrl) {
   return runNodeScript(SCRIPTURE_TOOLTIP_PROJECTION_GUARD, [], { BASE: baseUrl });
 }
 
+function runLotPublicationBrowserGuard(baseUrl) {
+  if (!fs.existsSync(LOT_PUBLICATION_BROWSER_GUARD)) {
+    throw new Error(`Lot publication browser guard is missing at ${LOT_PUBLICATION_BROWSER_GUARD}`);
+  }
+  return runNodeScript(LOT_PUBLICATION_BROWSER_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
 function runStandaloneReaderLayoutGuard(baseUrl) {
   if (!fs.existsSync(STANDALONE_READER_LAYOUT_GUARD)) {
     throw new Error(`Standalone reader layout guard is missing at ${STANDALONE_READER_LAYOUT_GUARD}`);
@@ -208,6 +216,8 @@ async function runInteractiveContracts(baseUrl) {
   if (tooltipCode !== 0) return tooltipCode;
   const scriptureCode = await runScriptureTooltipProjectionGuard(baseUrl);
   if (scriptureCode !== 0) return scriptureCode;
+  const lotPublicationCode = await runLotPublicationBrowserGuard(baseUrl);
+  if (lotPublicationCode !== 0) return lotPublicationCode;
   return runStandaloneReaderLayoutGuard(baseUrl);
 }
 
