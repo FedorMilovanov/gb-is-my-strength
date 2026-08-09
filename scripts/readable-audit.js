@@ -7,7 +7,10 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
+const { buildAuditProSourceCorpus, routeToRootHtml } = require('./lib/audit-pro-source-corpus');
 const REPO_ROOT = path.resolve(__dirname, '..');
+const QUARANTINE_ROOT = path.join(REPO_ROOT, 'migration', 'legacy-reference');
 function argValue(name, fallback) {
   const idx = process.argv.indexOf(name);
   return idx >= 0 ? (process.argv[idx + 1] || fallback) : fallback;
@@ -18,6 +21,7 @@ function walk(dir, out = []) {
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
     if (ent.name.startsWith('.') || ['node_modules','_app','dist','out','build','coverage','reports'].includes(ent.name)) continue;
     const p = path.join(dir, ent.name);
+    if (ROOT === REPO_ROOT && path.resolve(p) === QUARANTINE_ROOT) continue;
     if (ent.isDirectory()) walk(p, out);
     else out.push(p);
   }
@@ -25,7 +29,38 @@ function walk(dir, out = []) {
 }
 function rel(p) { return path.relative(ROOT, p).replace(/\\/g, '/'); }
 function fail(kind, file, detail) { issues.push({ kind, file, detail }); }
-const htmlFiles = walk(ROOT).filter(f => f.endsWith('.html'));
+const discoveredHtmlFiles = walk(ROOT).filter(f => f.endsWith('.html'));
+let htmlFiles = discoveredHtmlFiles;
+let sourceByRoute = new Map();
+
+if (ROOT === REPO_ROOT) {
+  const publicSurface = buildPublicSurfaceRegistry();
+  for (const error of publicSurface.errors || []) fail('public-surface-registry-error', 'route-authority', error);
+  const corpus = buildAuditProSourceCorpus({
+    root: ROOT,
+    entries: publicSurface.entries || [],
+    allHtmlFiles: discoveredHtmlFiles,
+  });
+  sourceByRoute = new Map(corpus.sourcePages.map((record) => [record.route, record.file]));
+  htmlFiles = [...new Set([
+    ...discoveredHtmlFiles,
+    ...corpus.sourcePages.map((record) => record.file),
+  ])].sort();
+}
+
+function routeSourceFile(route) {
+  if (ROOT !== REPO_ROOT) return routeToRootHtml(ROOT, route);
+  const file = sourceByRoute.get(route);
+  if (!file) {
+    fail('route-readable-source-missing', route, 'No storage-aware retained source is available for this readable contract');
+    return null;
+  }
+  return file;
+}
+function readRoute(route) {
+  const file = routeSourceFile(route);
+  return file ? fs.readFileSync(file, 'utf8') : '';
+}
 
 // R1. Raw image paths must not be visible reader text. Pagefind hidden metadata is allowed.
 for (const f of htmlFiles) {
@@ -56,7 +91,7 @@ for (const f of htmlFiles) {
 }
 
 // R2. Decorative summary numbers must be hidden from assistive/readable layers.
-// They should be empty spans with data-num for CSS-generated visual content.
+// They should be empty spans with a positive two-digit data-num for CSS-generated visual content.
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8');
   const re = /<span\b(?=[^>]*class=["'][^"']*\bsummary-card__num\b)[^>]*>([\s\S]*?)<\/span>/gi;
@@ -66,33 +101,33 @@ for (const f of htmlFiles) {
     const body = (m[1] || '').trim();
     const line = html.slice(0, m.index).split(/\n/).length;
     if (!/aria-hidden=["']true["']/i.test(tag)) fail('summary-card-number-not-aria-hidden', rel(f), `line ${line}`);
-    if (!/data-num=["']0[1-9]["']/i.test(tag)) fail('summary-card-number-missing-data-num', rel(f), `line ${line}`);
+    if (!/data-num=["'](?:0[1-9]|[1-9][0-9])["']/i.test(tag)) fail('summary-card-number-missing-data-num', rel(f), `line ${line}`);
     if (body) fail('summary-card-number-readable-text', rel(f), `line ${line}: ${body.slice(0, 20)}`);
   }
 }
 
-// R3. Home H1 brand must be readable with spaces around dash.
+// R3. Home H1 brand must be readable with spaces around dash in both the
+// retained reference projection and the current native Home projection.
 {
-  const f = path.join(ROOT, 'index.html');
-  const html = fs.readFileSync(f, 'utf8');
-  if (/Господь Бог—Сила Моя/.test(html)) fail('home-h1-brand-missing-dash-spaces', 'index.html', 'Господь Бог—Сила Моя');
-  if (!/(?:h-title-dash[^>]*>\s+—\s+<\/span>|h-title-static[^>]*>Господь Бог<\/span>\s+<span class="h-title-dash"[^>]*>—<\/span>\s+<span class="h-title-accent">Сила Моя<\/span>)/.test(html)) fail('home-h1-dash-span-not-spaced', 'index.html', 'H1 should read Господь Бог — Сила Моя');
+  const html = readRoute('/');
+  if (/Господь Бог—Сила Моя/.test(html)) fail('home-h1-brand-missing-dash-spaces', '/', 'Господь Бог—Сила Моя');
+  const retainedTitle = /h-title-static[^>]*>Господь Бог<\/span>\s+<span class="h-title-dash"[^>]*>—<\/span>\s+<span class="h-title-accent">Сила Моя<\/span>/;
+  const nativeTitle = /h-home-title__static[^>]*>Господь Бог<\/span>\s+<span[^>]*h-home-title__dash[^>]*>—<\/span>\s+<span[^>]*h-home-title__accent[^>]*>Сила Моя<\/span>/;
+  if (!retainedTitle.test(html) && !nativeTitle.test(html)) fail('home-h1-dash-span-not-spaced', '/', 'H1 should read Господь Бог — Сила Моя');
 }
 
 // R4. Over-claiming badge in Da Vinci article.
 {
-  const f = path.join(ROOT, 'articles/kod-da-vinchi/index.html');
-  const html = fs.readFileSync(f, 'utf8');
-  if (/Проверено историками/.test(html)) fail('overclaim-badge-checked-by-historians', rel(f), 'Use source-grounded wording instead');
+  const html = readRoute('/articles/kod-da-vinchi/');
+  if (/Проверено историками/.test(html)) fail('overclaim-badge-checked-by-historians', '/articles/kod-da-vinchi/', 'Use source-grounded wording instead');
 }
 
 // R5. Internal enum labels should not leak into Nagornaya sources reader layer.
 {
-  const f = path.join(ROOT, 'nagornaya/istochniki/index.html');
-  const html = fs.readFileSync(f, 'utf8');
+  const html = readRoute('/nagornaya/istochniki/');
   const bad = [...html.matchAll(/>(Book|Confession|ChicagoDoc|Warning|Father|Academic)</g)].map(m => m[1]);
-  if (bad.length) fail('source-enum-label-leak', rel(f), [...new Set(bad)].join(', '));
-  if (/<span class="mx-1 text-stone-300">·<\/span>/.test(html)) fail('bibliography-dot-glue-risk', rel(f), 'Use spaced separator, e.g. —');
+  if (bad.length) fail('source-enum-label-leak', '/nagornaya/istochniki/', [...new Set(bad)].join(', '));
+  if (/<span class="mx-1 text-stone-300">·<\/span>/.test(html)) fail('bibliography-dot-glue-risk', '/nagornaya/istochniki/', 'Use spaced separator, e.g. —');
 }
 
 // R6. Obvious punctuation spacing glitches in public HTML text.
@@ -113,23 +148,23 @@ for (const f of htmlFiles) {
   });
 }
 
-
-// R7. Home positioning/readable hero contract.
+// R7. Home positioning/readable hero contract. The current native Home
+// intentionally uses “Богословская библиотека” as a small brand descriptor;
+// older library-only navigation/search positioning remains forbidden.
 {
-  const f = path.join(ROOT, 'index.html');
-  const html = fs.readFileSync(f, 'utf8');
-  if (/Богословская библиотека|Библиотека материалов|О библиотеке|Поиск по библиотеке/.test(html)) {
-    fail('home-outdated-library-positioning', 'index.html', 'Use precise site/materials wording, not old library-only wording');
+  const html = readRoute('/');
+  if (/Библиотека материалов|О библиотеке|Поиск по библиотеке/.test(html)) {
+    fail('home-outdated-library-positioning', '/', 'Use precise site/materials wording, not old library-only wording');
   }
   if (!/<div\b[^>]*class=["'][^"']*\bh-sacred-block\b[^"']*["'][^>]*aria-hidden=["']true["'][^>]*>/i.test(html)) {
-    fail('home-sacred-block-not-aria-hidden', 'index.html', 'Decorative Hebrew hero layer should be aria-hidden with separate readable verse');
+    fail('home-sacred-block-not-aria-hidden', '/', 'Decorative Hebrew hero layer should be aria-hidden with separate readable verse');
   }
   if (!/Девиз проекта\s+—\s+Аввакум 3:19/.test(html)) {
-    fail('home-sacred-readable-summary-missing', 'index.html', 'Missing readable Habakkuk 3:19 summary');
+    fail('home-sacred-readable-summary-missing', '/', 'Missing readable Habakkuk 3:19 summary');
   }
   const sacredMatch = html.match(/<div\b[^>]*class=["'][^"']*\bh-sacred-block\b[\s\S]*?<\/div>\s*<p class=["']sr-only["']/i);
   if (sacredMatch && /tabindex=["']0["']/.test(sacredMatch[0])) {
-    fail('home-sacred-hidden-focusable', 'index.html', 'aria-hidden decorative Hebrew layer must not contain tabindex=0 elements');
+    fail('home-sacred-hidden-focusable', '/', 'aria-hidden decorative Hebrew layer must not contain tabindex=0 elements');
   }
   const siteCss = fs.readFileSync(path.join(ROOT, 'css/site.css'), 'utf8');
   if (!/--f-hebrew-display:[^;]*Noto Serif Hebrew/.test(siteCss)) {
