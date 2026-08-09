@@ -177,7 +177,17 @@ async function auditSeries(page, engine, origin, entry, viewport) {
       target: Boolean(button.getAttribute('aria-controls') && document.getElementById(button.getAttribute('aria-controls'))),
     })));
     check(engine, viewport, route, 'book article chevrons expose controlled regions', articleRelations.length > 0 && articleRelations.every((row) => row.controls && row.target), articleRelations.slice(0, 8));
-    const chev = page.locator('.gbat-art-chev').first();
+
+    if (after !== 'true') {
+      await partButton.click();
+      await page.waitForTimeout(90);
+    }
+    const reopened = await partButton.getAttribute('aria-expanded');
+    check(engine, viewport, route, 'book article chevron parent part is expanded before pointer activation', reopened === 'true', { after, reopened });
+
+    const part = partButton.locator('xpath=..');
+    const chev = part.locator('.gbat-art-chev').first();
+    await chev.waitFor({ state: 'visible' });
     const artBefore = await chev.getAttribute('aria-expanded');
     await chev.click();
     await page.waitForTimeout(90);
