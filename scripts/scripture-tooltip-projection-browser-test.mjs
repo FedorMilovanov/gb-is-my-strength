@@ -68,10 +68,12 @@ try {
   const projectionSnapshot = await page.evaluate(() => ({
     ownerVersion: window.GBArticleTooltips?.version || null,
     ownerName: window.GBArticleTooltips?.owner || null,
+    frozen: Object.isFrozen(window.SCRIPTURE_DATA),
     scriptureData: Object.fromEntries(Object.entries(window.SCRIPTURE_DATA || {}).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
   }));
   assert.equal(projectionSnapshot.ownerVersion, TOOLTIP_VERSION, 'canonical article tooltip owner version must remain v20');
   assert.equal(projectionSnapshot.ownerName, TOOLTIP_OWNER, 'canonical article tooltip owner must remain unchanged');
+  assert.equal(projectionSnapshot.frozen, true, 'route-scoped Scripture projection must remain immutable after handoff');
   assert.deepEqual(
     projectionSnapshot.scriptureData,
     Object.fromEntries(Object.entries(EXPECTED_PROJECTION).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
