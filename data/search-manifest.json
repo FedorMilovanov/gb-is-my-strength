@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-02T05:00:00Z",
+  "generatedAt": "2026-08-08T21:00:00Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -1464,6 +1464,28 @@
       "publishedTime": "2026-07-29T00:00:00+03:00",
       "modifiedTime": "2026-07-29T00:00:00+03:00",
       "readTime": 42
+    },
+    {
+      "id": "lot-i-sodom",
+      "type": "article",
+      "url": "/articles/lot-i-sodom/",
+      "title": "Лот: праведник у ворот Содома",
+      "description": "Бытие 13–19 без упрощений: выбор Лота, Содом, суд и милость, 2 Петра 2, жена Лота, Моав и Аммон, Руфь и границы археологических доказательств.",
+      "section": "Экзегеза",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/lot/og-lot-i-sodom.webp",
+      "tags": [
+        "Лот",
+        "Содом",
+        "Бытие 19",
+        "археология Библии"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-08-09T00:00:00+03:00",
+      "modifiedTime": "2026-08-09T00:00:00+03:00",
+      "readTime": 28
     }
   ]
 }
