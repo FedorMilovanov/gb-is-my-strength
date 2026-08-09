@@ -9,7 +9,9 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { resolveReferenceForRoute } = require('../migration/legacy-reference-path');
 const ROOT = path.join(__dirname, '..');
 const problems = [];
 function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
@@ -20,6 +22,60 @@ function must(haystack, needle, label) { haystack.includes(needle) ? ok(label ||
 function mustNot(haystack, needle, label) { !haystack.includes(needle) ? ok(`no ${label || needle}`) : bad(`forbidden present: ${label || needle}`); }
 function mustExist(rel, label) { exists(rel) ? ok(label || rel) : bad(`missing file: ${label || rel}`); }
 function mustNotExist(rel, label) { !exists(rel) ? ok(`absent: ${label || rel}`) : bad(`forbidden file/dir present: ${label || rel}`); }
+function resolveLegacyReference(route, logicalPath, options = {}) {
+  const resolver = options.resolveReferenceForRoute || resolveReferenceForRoute;
+  const reference = resolver(route, { root: options.root || ROOT });
+  if (reference.logicalPath !== logicalPath) {
+    throw new Error(`${route}: legacy reference identity drift: expected ${logicalPath}, got ${reference.logicalPath}`);
+  }
+  return reference;
+}
+function readLegacyReference(route, logicalPath, options = {}) {
+  const reference = resolveLegacyReference(route, logicalPath, options);
+  return fs.readFileSync(reference.absolutePath, 'utf8');
+}
+function assertReferenceStorageContract() {
+  const route = '/nagornaya/chast-1/';
+  const logicalPath = 'nagornaya/chast-1/index.html';
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'nagornaya-visual-reference-'));
+  try {
+    const quarantinePath = path.join(root, 'migration', 'legacy-reference', logicalPath);
+    fs.mkdirSync(path.dirname(quarantinePath), { recursive: true });
+    fs.writeFileSync(quarantinePath, 'quarantine-only-reference', 'utf8');
+
+    const quarantineOnly = readLegacyReference(route, logicalPath, { root });
+    if (quarantineOnly !== 'quarantine-only-reference') {
+      throw new Error('Nagornaya visual reference contract: quarantine-only bytes were not resolved');
+    }
+
+    let identityFailure = null;
+    try {
+      readLegacyReference(route, 'nagornaya/chast-2/index.html', { root });
+    } catch (error) {
+      identityFailure = error;
+    }
+    if (!identityFailure || !/identity drift/.test(String(identityFailure.message))) {
+      throw new Error('Nagornaya visual reference contract: logical identity mismatch did not fail closed');
+    }
+
+    const activePath = path.join(root, logicalPath);
+    fs.mkdirSync(path.dirname(activePath), { recursive: true });
+    fs.writeFileSync(activePath, 'active-duplicate-reference', 'utf8');
+    let ambiguityFailure = null;
+    try {
+      readLegacyReference(route, logicalPath, { root });
+    } catch (error) {
+      ambiguityFailure = error;
+    }
+    if (!ambiguityFailure || !/ambiguous/.test(String(ambiguityFailure.message))) {
+      throw new Error('Nagornaya visual reference contract: active+quarantine ambiguity did not fail closed');
+    }
+
+    ok('Nagornaya visual reference storage contract: quarantine-only + identity + ambiguity');
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
 
 const routes = [
   { slug: 'index', route: '/nagornaya/', legacy: 'nagornaya/index.html', page: 'src/pages/nagornaya/index.astro', dir: 'src/components/nagornaya/index', prefix: 'NagornayaIndex', main: 'NagornayaIndexMain' },
@@ -33,15 +89,17 @@ const routes = [
   { slug: 'nakhodki', route: '/nagornaya/nakhodki/', legacy: 'nagornaya/nakhodki/index.html', page: 'src/pages/nagornaya/nakhodki/index.astro', dir: 'src/components/nagornaya/nakhodki', prefix: 'NagornayaNakhodki', main: 'NagornayaNakhodkiMainShell' },
 ];
 
+assertReferenceStorageContract();
 mustNotExist('src/components/nagornaya/NagornayaPageMain.astro', 'old shared raw-fragment NagornayaPageMain retired');
-for (const rel of ['nagornaya/chast-5/index.html']) {
-  const html = read(rel);
-  for (const marker of ['<<<<<<<', '=======', '>>>>>>>']) mustNot(html, marker, `${rel}: no unresolved merge marker ${marker}`);
+const mergeMarkerRoute = routes.find(({ slug }) => slug === 'chast-5');
+const mergeMarkerHtml = readLegacyReference(mergeMarkerRoute.route, mergeMarkerRoute.legacy);
+for (const marker of ['<<<<<<<', '=======', '>>>>>>>']) {
+  mustNot(mergeMarkerHtml, marker, `${mergeMarkerRoute.legacy}: no unresolved merge marker ${marker}`);
 }
 
 for (const r of routes) {
   console.log(`\n${r.route}`);
-  const legacy = read(r.legacy);
+  const legacy = readLegacyReference(r.route, r.legacy);
   for (const marker of ['nagornaya-page', 'main-content']) must(legacy, marker, `legacy marker: ${marker}`);
 
   mustExist(r.page, `${r.slug}: page exists`);
