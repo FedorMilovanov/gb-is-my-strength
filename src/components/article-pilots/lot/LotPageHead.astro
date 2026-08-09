@@ -195,4 +195,6 @@ const jsonLd = {
 
 <script is:inline define:vars={{ siteConfig }}>
   window.SITE_CONFIG = siteConfig;
+  // Keep the canonical reading-time literal visible to the existing PageHead discovery parser.
+  window.SITE_CONFIG.page = Object.assign({}, window.SITE_CONFIG.page, { readingTime: 28 });
 </script>
