@@ -2,6 +2,7 @@
 'use strict';
 
 const assert = require('assert/strict');
+const { spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -21,6 +22,17 @@ const { legacyReferenceStorageExists } = require('./lib/route-source-contract.js
 
 const ROOT = path.resolve(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, MANIFEST_REL), 'utf8'));
+
+function runRepoScript(relativePath, args = []) {
+  const result = spawnSync(process.execPath, [path.join(ROOT, relativePath), ...args], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  return {
+    ...result,
+    output: `${result.stdout || ''}\n${result.stderr || ''}`,
+  };
+}
 
 assert.equal(manifest.policy?.explicitReferenceApi, 'migration/legacy-reference-path.js');
 assert.equal(manifest.policy?.explicitReferenceApiContract, 'scripts/legacy-reference-path-contract-test.js');
@@ -197,6 +209,80 @@ try {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
 
+// End-to-end post-zero dry-run: the canonical inventory/source/readiness chain
+// must survive one real ledger-owned reference existing only in quarantine,
+// while duplicate and missing physical storage remain fail-closed. Restore the
+// checkout byte-for-byte regardless of assertion outcome so later Shared steps
+// never inherit the mutation.
+const inventoryProbe = resolveReferenceForRoute('/articles/kod-da-vinchi/');
+const activeProbePath = path.join(ROOT, inventoryProbe.logicalPath);
+const quarantineProbePath = path.join(ROOT, REFERENCE_STORAGE_ROOT_REL, inventoryProbe.logicalPath);
+const originalActive = fs.existsSync(activeProbePath) ? fs.readFileSync(activeProbePath) : null;
+const originalQuarantine = fs.existsSync(quarantineProbePath) ? fs.readFileSync(quarantineProbePath) : null;
+assert.notEqual(
+  Boolean(originalActive),
+  Boolean(originalQuarantine),
+  'inventory storage dry-run requires exactly one canonical physical copy before mutation'
+);
+const originalBytes = originalActive || originalQuarantine;
+
+try {
+  fs.rmSync(activeProbePath, { force: true });
+  fs.rmSync(quarantineProbePath, { force: true });
+  fs.mkdirSync(path.dirname(quarantineProbePath), { recursive: true });
+  fs.writeFileSync(quarantineProbePath, originalBytes);
+
+  const quarantineInventory = runRepoScript('scripts/legacy-reference-inventory-audit.mjs');
+  assert.equal(
+    quarantineInventory.status,
+    0,
+    `inventory must pass with a quarantine-only retained reference:\n${quarantineInventory.output}`
+  );
+  const quarantineSource = runRepoScript('scripts/audit-pro-source-corpus-test.js');
+  assert.equal(
+    quarantineSource.status,
+    0,
+    `source corpus contract must pass with a quarantine-only retained reference:\n${quarantineSource.output}`
+  );
+  const quarantineReadiness = runRepoScript('scripts/legacy-shadow-retirement-readiness.mjs');
+  assert.equal(
+    quarantineReadiness.status,
+    0,
+    `retirement readiness must pass with a quarantine-only retained reference:\n${quarantineReadiness.output}`
+  );
+
+  fs.mkdirSync(path.dirname(activeProbePath), { recursive: true });
+  fs.writeFileSync(activeProbePath, originalBytes);
+  const ambiguousInventory = runRepoScript('scripts/legacy-reference-inventory-audit.mjs');
+  assert.notEqual(ambiguousInventory.status, 0, 'inventory must reject active + quarantine ambiguity');
+  assert.match(
+    ambiguousInventory.output,
+    /storage is ambiguous/,
+    'inventory ambiguity failure must come from canonical storage authority'
+  );
+
+  fs.rmSync(activeProbePath, { force: true });
+  fs.rmSync(quarantineProbePath, { force: true });
+  const missingInventory = runRepoScript('scripts/legacy-reference-inventory-audit.mjs');
+  assert.notEqual(missingInventory.status, 0, 'inventory must reject missing active + quarantine storage');
+  assert.match(
+    missingInventory.output,
+    /missing from both active and quarantine storage/,
+    'inventory missing-storage failure must come from canonical storage authority'
+  );
+} finally {
+  fs.rmSync(activeProbePath, { force: true });
+  fs.rmSync(quarantineProbePath, { force: true });
+  if (originalActive) {
+    fs.mkdirSync(path.dirname(activeProbePath), { recursive: true });
+    fs.writeFileSync(activeProbePath, originalActive);
+  }
+  if (originalQuarantine) {
+    fs.mkdirSync(path.dirname(quarantineProbePath), { recursive: true });
+    fs.writeFileSync(quarantineProbePath, originalQuarantine);
+  }
+}
+
 const rejected = [
   () => resolveReferenceForRoute('https://gospod-bog.ru/karty/ishod/'),
   () => resolveReferenceForRoute('///karty/ishod///'),
@@ -210,4 +296,4 @@ const rejected = [
 ];
 for (const attempt of rejected) assert.throws(attempt);
 
-console.log(`✅ Explicit legacy reference-path contract: ${routes.length} routes; quarantine fallback + wrapper discovery + ambiguity fail-closed; ${rejected.length} adversarial resolutions rejected`);
+console.log(`✅ Explicit legacy reference-path contract: ${routes.length} routes; quarantine fallback + inventory/source/readiness dry-run + ambiguity fail-closed; ${rejected.length} adversarial resolutions rejected`);
