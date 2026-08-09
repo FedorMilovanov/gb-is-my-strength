@@ -15,6 +15,7 @@ const { sanitizePublicScriptureIndex } = require('./public-scripture-index.js');
 const BASE = process.env.BASE || 'http://127.0.0.1:4179';
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const HELD_REFERENCE = '2 Тимофею 2:14–15';
+const HELD_CORPUS_PATH = '/data/bible/kassian/2timofeyu.json';
 const MISSING_REFERENCE = '__scripture_projection_missing__';
 const STALE_REFERENCE = '__stale_scripture_projection_probe__';
 const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
@@ -140,6 +141,12 @@ page.on('console', (message) => {
 });
 
 try {
+  const rawCorpusResponse = await page.request.get(`${BASE}${HELD_CORPUS_PATH}`);
+  assert.equal(rawCorpusResponse.ok(), false,
+    'internal Bible corpus must not be publicly fetchable from production-like dist');
+  assert.equal(rawCorpusResponse.status(), 404,
+    `internal Bible corpus path must be absent from public dist: ${HELD_CORPUS_PATH}`);
+
   const publicIndexResponse = await page.request.get(`${BASE}/data/scripture-search-index.json`);
   assert.equal(publicIndexResponse.ok(), true, 'public Scripture Search index must remain fetchable at the existing URL');
   const publicIndexText = await publicIndexResponse.text();
