@@ -1,11 +1,33 @@
-const VERSION = 1;
+const VERSION = 2;
 
-function resultFor(config, score, total) {
+export function selectQuizResult(config, score, total) {
   const entries = Array.isArray(config?.scores) ? config.scores : [];
-  return entries.find((entry) => score >= Number(entry.min) && score <= Number(entry.max)) || {
+  const selected = entries.find((entry) => {
+    const min = Number(entry?.min);
+    if (!Number.isFinite(min) || score < min) return false;
+
+    const rawMax = entry?.max;
+    if (rawMax === undefined || rawMax === null || rawMax === '') return true;
+
+    const max = Number(rawMax);
+    return Number.isFinite(max) && score <= max;
+  });
+
+  return selected || {
     title: `${score} из ${total}`,
     desc: score === total ? 'Все ответы верны.' : 'Вернитесь к отмеченным разделам и попробуйте ещё раз.',
   };
+}
+
+export function normalizeQuizExplanation(explanationData) {
+  if (typeof explanationData === 'string') {
+    return { short: explanationData.trim(), full: '' };
+  }
+
+  const short = String(explanationData?.short || '').trim();
+  const rawFull = String(explanationData?.full || '').trim();
+  const full = rawFull && rawFull !== short ? rawFull : '';
+  return { short, full };
 }
 
 function buildQuiz(placeholder, config) {
@@ -36,7 +58,7 @@ function buildQuiz(placeholder, config) {
   }
 
   function renderResult() {
-    const result = resultFor(config, score, questions.length);
+    const result = selectQuizResult(config, score, questions.length);
     panel.replaceChildren();
     const progress = document.createElement('p');
     progress.className = 'quiz-progress';
@@ -56,7 +78,16 @@ function buildQuiz(placeholder, config) {
       score = 0;
       renderQuestion();
     });
-    panel.append(progress, title, description, again);
+
+    panel.appendChild(progress);
+    if (result.badge) {
+      const badge = document.createElement('span');
+      badge.className = 'quiz-result-badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = String(result.badge);
+      panel.appendChild(badge);
+    }
+    panel.append(title, description, again);
     emitRendered();
   }
 
@@ -94,12 +125,22 @@ function buildQuiz(placeholder, config) {
         feedback.className = `quiz-feedback ${correct ? 'is-correct' : 'is-incorrect'}`;
         const feedbackTitle = document.createElement('strong');
         feedbackTitle.textContent = correct ? 'Верно' : 'Неверно';
-        const explanation = document.createElement('p');
-        const explanationData = question.explanation;
-        explanation.textContent = typeof explanationData === 'string'
-          ? explanationData
-          : String(explanationData?.short || explanationData?.full || '');
-        feedback.append(feedbackTitle, explanation);
+        feedback.appendChild(feedbackTitle);
+
+        const explanation = normalizeQuizExplanation(question.explanation);
+        if (explanation.short) {
+          const shortExplanation = document.createElement('p');
+          shortExplanation.className = 'quiz-explanation quiz-explanation--short';
+          shortExplanation.textContent = explanation.short;
+          feedback.appendChild(shortExplanation);
+        }
+        if (explanation.full) {
+          const fullExplanation = document.createElement('p');
+          fullExplanation.className = 'quiz-explanation quiz-explanation--full';
+          fullExplanation.textContent = explanation.full;
+          feedback.appendChild(fullExplanation);
+        }
+
         if (question.sourceRef?.href) {
           const source = document.createElement('a');
           source.href = String(question.sourceRef.href);
