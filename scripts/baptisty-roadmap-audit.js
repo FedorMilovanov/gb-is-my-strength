@@ -11,6 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 const ROOT = path.join(__dirname, '..');
 const problems = [];
 function fail(msg) { problems.push(msg); console.log('❌ ' + msg); }
@@ -21,8 +22,16 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 
 const series = readJson('data/series.json')['russian-baptism'];
 const roadmap = readJson('data/baptisty-rossii-expansion-roadmap.json');
+const surfaceRegistry = buildPublicSurfaceRegistry();
+for (const error of surfaceRegistry.errors) fail(`public surface registry: ${error}`);
+const productionRoutes = new Set(
+  surfaceRegistry.entries
+    .filter((entry) => entry.status === 'production-dist')
+    .map((entry) => entry.route),
+);
 
 if (!series) fail('series.json missing russian-baptism');
+if (!series?.baseUrl) fail('series.json russian-baptism baseUrl missing');
 if (roadmap.series !== 'russian-baptism') fail('roadmap series key mismatch');
 if (!roadmap.globalTargets || roadmap.globalTargets.minimumWordsPerArticle < 2500) fail('minimumWordsPerArticle must be >= 2500');
 if (roadmap.globalTargets.remoteImagesAllowed !== false) fail('remoteImagesAllowed must stay false — no production hotlinking');
@@ -55,7 +64,8 @@ for (const part of series.parts || []) {
   for (const f of p.sourceFiles || []) {
     if (!exists(`baptisty-rossii/research/${f}`)) fail(`${part.slug}: source file missing: ${f}`);
   }
-  if (!exists(`baptisty-rossii/${part.slug}/index.html`)) fail(`${part.slug}: public article missing`);
+  const route = `${String(series.baseUrl || '').replace(/\/?$/, '/')}${part.slug}/`;
+  if (!productionRoutes.has(route)) fail(`${part.slug}: public article missing from production route authority (${route})`);
 }
 
 if (!exists('baptisty-rossii/research/31-editorial-expansion-roadmap-2026-06-19.md')) fail('human editorial roadmap missing');
