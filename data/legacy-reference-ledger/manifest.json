@@ -53,7 +53,7 @@
     "productionRequired": 0,
     "unknownBlockers": 30,
     "dependencies": 33,
-    "dependencyUnknownBlockers": 4,
+    "dependencyUnknownBlockers": 3,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -82,9 +82,9 @@
     {
       "path": "scripts/audit-pro.js",
       "access": "reader",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "nagornaya/${slug}/index.html",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "buildAuditProSourceCorpus",
       "owner": "legacy-reference-quarantine"
     },
     {
