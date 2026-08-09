@@ -3,18 +3,32 @@
 const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
+const {
+  loadRouteProfile,
+  resolveDeclaredLegacyReference,
+} = require('./lib/legacy-source-authority');
+
 const ROOT = path.resolve(__dirname, '..');
 
 function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
 }
 
+function readLegacyRoute(route) {
+  const { profile } = loadRouteProfile(route);
+  assert.ok(profile, `${route}: route profile missing`);
+  assert.equal(profile.legacyStatus, 'reference-only', `${route}: legacy witness must remain reference-only`);
+  const reference = resolveDeclaredLegacyReference(profile, { route });
+  assert.ok(reference?.absolutePath, `${route}: declared legacy reference missing`);
+  return fs.readFileSync(reference.absolutePath, 'utf8');
+}
+
 const registry = JSON.parse(read('data/nagornaya/source-registry.json'));
 const nativeSource = read('src/components/nagornaya/istochniki/NagornayaIstochnikiMainShell.astro');
-const legacySource = read('nagornaya/istochniki/index.html');
-const part4Files = [
-  'src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro',
-  'nagornaya/chast-4/index.html',
+const legacySource = readLegacyRoute('/nagornaya/istochniki/');
+const part4Sources = [
+  ['src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro', read('src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro')],
+  ['/nagornaya/chast-4/ retained reference', readLegacyRoute('/nagornaya/chast-4/')],
 ];
 
 const sourceById = new Map(registry.sources.map((source) => [source.id, source]));
@@ -64,14 +78,14 @@ assert.match(legacySource, /href="https:\/\/tms\.edu\/wp-content\/uploads\/2021\
 assert.doesNotMatch(legacySource, /tmsj7h\.pdf[^<]{0,300}Jesus Seminar|Jesus Seminar[\s\S]{0,300}tmsj7h\.pdf/,
   'legacy source: Jesus Seminar must never resolve to tmsj7h.pdf');
 
-for (const [rel, text] of [
+for (const [label, text] of [
   ['native source', nativeSource],
   ['legacy source', legacySource],
 ]) {
-  assert.doesNotMatch(text, /Все ссылки верифицированы по первоисточникам/, `${rel}: universal verification claim returned`);
-  assert.match(text, /Ключевые библиографические данные и доступные первичные объекты проверены на дату обновления/, `${rel}: bounded verification wording missing`);
+  assert.doesNotMatch(text, /Все ссылки верифицированы по первоисточникам/, `${label}: universal verification claim returned`);
+  assert.match(text, /Ключевые библиографические данные и доступные первичные объекты проверены на дату обновления/, `${label}: bounded verification wording missing`);
   assert.match(text, /Статья в TMSJ представляет аргумент названного автора[^.]+не автоматически официальную позицию TMS/,
-    `${rel}: author/institution source-role note missing`);
+    `${label}: author/institution source-role note missing`);
 }
 
 const banned = [
@@ -87,10 +101,9 @@ const required = [
   'Грин проводит строгую границу',
   'В рамках этой серии мы принимаем концепцию',
 ];
-for (const rel of part4Files) {
-  const text = read(rel);
-  for (const phrase of banned) assert.ok(!text.includes(phrase), `${rel}: institutional overreach returned: ${phrase}`);
-  for (const phrase of required) assert.ok(text.includes(phrase), `${rel}: calibrated attribution missing: ${phrase}`);
+for (const [label, text] of part4Sources) {
+  for (const phrase of banned) assert.ok(!text.includes(phrase), `${label}: institutional overreach returned: ${phrase}`);
+  for (const phrase of required) assert.ok(text.includes(phrase), `${label}: calibrated attribution missing: ${phrase}`);
 }
 
-console.log('✅ Nagornaya source integrity contract passed (registry-native + legacy + Part IV attribution)');
+console.log('✅ Nagornaya source integrity contract passed (registry-native + resolver-backed retained source + Part IV attribution)');

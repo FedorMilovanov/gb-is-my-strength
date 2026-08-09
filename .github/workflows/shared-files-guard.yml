@@ -164,6 +164,11 @@ jobs:
       - name: Highlights runtime regressions
         run: node scripts/highlights-runtime-regression-test.js
 
+      - name: Nagornaya bar asset retained fixture regressions
+        run: |
+          node --check scripts/nagornaya-bar-asset-contract-test.js
+          node scripts/nagornaya-bar-asset-contract-test.js
+
       - name: Nagornaya pastoral safety regressions
         run: node scripts/nagornaya-pastoral-safety-regression-test.js
 
