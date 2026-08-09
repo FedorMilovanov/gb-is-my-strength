@@ -52,8 +52,8 @@
     "migrationReferenceOnly": 23,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 33,
-    "dependencyUnknownBlockers": 4,
+    "dependencies": 32,
+    "dependencyUnknownBlockers": 2,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -82,17 +82,9 @@
     {
       "path": "scripts/audit-pro.js",
       "access": "reader",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "nagornaya/${slug}/index.html",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/baptisty-roadmap-audit.js",
-      "access": "reader",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "baptisty-rossii/${part.slug}/index.html",
+      "classification": "migration-reference-only",
+      "quarantineImpact": "none-fixture-policy-or-comment-only",
+      "evidenceToken": "buildAuditProSourceCorpus",
       "owner": "legacy-reference-quarantine"
     },
     {
