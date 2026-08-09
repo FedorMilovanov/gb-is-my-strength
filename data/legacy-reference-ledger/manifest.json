@@ -52,8 +52,8 @@
     "migrationReferenceOnly": 23,
     "productionRequired": 0,
     "unknownBlockers": 30,
-    "dependencies": 32,
-    "dependencyUnknownBlockers": 2,
+    "dependencies": 31,
+    "dependencyUnknownBlockers": 1,
     "obsoleteWriters": 0
   },
   "referenceShards": [
@@ -285,14 +285,6 @@
       "classification": "unknown-blocker",
       "quarantineImpact": "owner-decision-required",
       "evidenceToken": "nagornaya/seriya/index.html",
-      "owner": "legacy-reference-quarantine"
-    },
-    {
-      "path": "scripts/readable-audit.js",
-      "access": "reader",
-      "classification": "unknown-blocker",
-      "quarantineImpact": "owner-decision-required",
-      "evidenceToken": "articles/kod-da-vinchi/index.html",
       "owner": "legacy-reference-quarantine"
     },
     {
