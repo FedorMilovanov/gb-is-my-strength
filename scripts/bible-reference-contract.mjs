@@ -132,6 +132,9 @@ function inspectLegacyAuthority(files) {
     if (forbiddenTokens.some((token) => source.includes(token))) {
       fail(`${rel(file)}: forbidden consumer of removed legacy verse authority ${LEGACY_VERSES_RELATIVE}`);
     }
+    if (markupExtensions.has(extension) && /<script\b[^>]*\bid=["']bibleRefs["'][^>]*>/iu.test(source)) {
+      fail(`${rel(file)}: forbidden retained public #bibleRefs Scripture payload; route text must flow only through the rights-gated canonical projection`);
+    }
     if (markupExtensions.has(extension) && /(?:class\s*=\s*["'][^"']*\bgbx-verse\b|\bdata-verse\s*=)/iu.test(source)) {
       fail(`${rel(file)}: forbidden public legacy verse trigger; use canonical .bref/.btip projection`);
     }
