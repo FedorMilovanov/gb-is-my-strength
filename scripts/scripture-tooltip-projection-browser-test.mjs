@@ -12,6 +12,7 @@ const BASE = process.env.BASE || 'http://127.0.0.1:4179';
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const HELD_REFERENCE = '2 Тимофею 2:14–15';
 const MISSING_REFERENCE = '__scripture_projection_missing__';
+const STALE_REFERENCE = '__stale_scripture_projection_probe__';
 const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
 const TOOLTIP_OWNER = 'article-inline-tooltip';
 const TOOLTIP_VERSION = 20;
@@ -83,6 +84,15 @@ page.on('console', (message) => {
 });
 
 try {
+  // Adversarial predecessor payload: the canonical projection must replace it,
+  // not merge it, or a held value could bypass the publication-rights filter.
+  await page.addInitScript(({ heldReference, heldText, staleReference }) => {
+    window.SCRIPTURE_DATA = {
+      [heldReference]: heldText,
+      [staleReference]: 'stale ungoverned payload',
+    };
+  }, { heldReference: HELD_REFERENCE, heldText: HELD_TEXT, staleReference: STALE_REFERENCE });
+
   await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(({ owner, version }) => {
     const data = document.documentElement.dataset;
@@ -108,6 +118,8 @@ try {
   );
   assert.equal(Object.hasOwn(projectionSnapshot.scriptureData, HELD_REFERENCE), false,
     'held Cassian reference must not exist in public SCRIPTURE_DATA');
+  assert.equal(Object.hasOwn(projectionSnapshot.scriptureData, STALE_REFERENCE), false,
+    'canonical projection must discard stale pre-existing global Scripture payloads');
   assert.equal(Object.values(projectionSnapshot.scriptureData).includes(HELD_TEXT), false,
     'held Cassian verbatim text must not leak through another projection key');
 
