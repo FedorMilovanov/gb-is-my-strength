@@ -29,6 +29,7 @@ on:
       - "scripts/dist-publication-audit.js"
       - "scripts/human-reachability-audit.js"
       - "scripts/series-reader-fragment-audit.js"
+      - "scripts/readable-audit.js"
       - "scripts/extract-url-contract.js"
       - "scripts/compare-url-contract.js"
       - "scripts/sw-dist-readiness-audit.js"
@@ -70,6 +71,11 @@ jobs:
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
+
+      - name: Readable publication contract on candidate dist
+        run: |
+          node --check scripts/readable-audit.js
+          node scripts/readable-audit.js --root dist
 
       - name: Verify frozen editorial projections
         shell: bash
