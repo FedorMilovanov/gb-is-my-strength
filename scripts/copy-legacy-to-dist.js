@@ -22,6 +22,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { serializePublicScriptureIndex } = require('./public-scripture-index.js');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -29,6 +30,7 @@ const OWNERSHIP = path.join(ROOT, 'migration/page-ownership.json');
 const OMIT_BUILD_ONLY = process.argv.includes('--omit-build-only') || process.argv.includes('--production-like');
 const DRY_RUN = process.argv.includes('--dry-run');
 const WRITE_MANIFEST = !process.argv.includes('--no-manifest');
+const PUBLIC_SCRIPTURE_INDEX = 'data/scripture-search-index.json';
 
 const PUBLIC_ROOT_FILES = [
   '.nojekyll',
@@ -147,13 +149,28 @@ function shouldSkipLegacyFile(srcAbs, astroRoutes) {
 function ensureDir(file) {
   if (!DRY_RUN) fs.mkdirSync(path.dirname(file), { recursive: true });
 }
+function transformedPublicBytes(src) {
+  if (rel(src) !== PUBLIC_SCRIPTURE_INDEX) return null;
+  const input = JSON.parse(fs.readFileSync(src, 'utf8'));
+  return Buffer.from(serializePublicScriptureIndex(input), 'utf8');
+}
 function copyFile(src, dest, stats) {
-  const size = fs.statSync(src).size;
+  const transformed = transformedPublicBytes(src);
+  const size = transformed ? transformed.length : fs.statSync(src).size;
   ensureDir(dest);
-  if (!DRY_RUN) fs.copyFileSync(src, dest);
+  if (!DRY_RUN) {
+    if (transformed) fs.writeFileSync(dest, transformed);
+    else fs.copyFileSync(src, dest);
+  }
   stats.files += 1;
   stats.bytes += size;
-  stats.copied.push({ source: rel(src), destination: relDist(dest), bytes: size, route: routeForFile(src) });
+  stats.copied.push({
+    source: rel(src),
+    destination: relDist(dest),
+    bytes: size,
+    route: routeForFile(src),
+    ...(transformed ? { transform: 'public-scripture-search-index-v1' } : {}),
+  });
 }
 
 function removeAstroGeneratedSitemaps(stats) {
