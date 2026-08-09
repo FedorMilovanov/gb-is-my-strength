@@ -18,11 +18,52 @@ interface CatalogItem {
   title?: string;
   description?: string;
   section?: string;
+  author?: string;
   editor?: string;
+  translator?: string;
   readTime?: number;
   image?: string;
   priority?: number;
   modifiedTime?: string;
+}
+
+type CatalogAttribution = {
+  kind: 'author-editor' | 'editor' | 'author' | 'translator' | 'site';
+  label: string;
+};
+
+function cleanRole(value?: string) {
+  return String(value || '').trim();
+}
+
+function catalogAttribution(item: CatalogItem): CatalogAttribution {
+  const author = cleanRole(item.author);
+  const editor = cleanRole(item.editor);
+  const translator = cleanRole(item.translator);
+
+  // Original A/B material: the owner-approved public role is Автор-редактор.
+  if (author && editor && author === editor && !translator) {
+    return { kind: 'author-editor', label: `Автор-редактор: ${author}` };
+  }
+
+  // Translation/editorial material keeps the owner-approved catalog label.
+  // A translator role is never promoted into editor authority by this consumer.
+  if (editor) return { kind: 'editor', label: `Ред.: ${editor}` };
+  if (author) return { kind: 'author', label: `Автор: ${author}` };
+  if (translator) return { kind: 'translator', label: `Перевод: ${translator}` };
+  return { kind: 'site', label: 'Господь Бог — Сила Моя' };
+}
+
+// Build-time role contract: fail before rendering if catalog attribution drifts.
+for (const [fixture, expectedKind, expectedLabel] of [
+  [{ url: '/fixture/author/', author: 'Автор, не редактор' }, 'author', 'Автор: Автор, не редактор'],
+  [{ url: '/fixture/original/', author: 'Фёдор Милованов', editor: 'Фёдор Милованов' }, 'author-editor', 'Автор-редактор: Фёдор Милованов'],
+  [{ url: '/fixture/translation/', author: 'Абнер Чау', translator: 'Фёдор Милованов', editor: 'Фёдор Милованов' }, 'editor', 'Ред.: Фёдор Милованов'],
+] as const) {
+  const actual = catalogAttribution(fixture);
+  if (actual.kind !== expectedKind || actual.label !== expectedLabel) {
+    throw new Error(`Articles catalog attribution contract failed for ${fixture.url}: ${actual.kind} / ${actual.label}`);
+  }
 }
 
 const manifestItems = searchManifest.items as CatalogItem[];
@@ -115,7 +156,7 @@ const items = manifestItems
             <div class="h-article-body">
               <h2 class="h-article-title">{item.title || item.id || item.url}</h2>
               <div class="h-article-meta">
-                <span class="h-meta-author">{item.editor ? `Редактор: ${item.editor}` : 'Господь Бог — Сила Моя'}</span>
+                <span class="h-meta-author" data-catalog-role={catalogAttribution(item).kind}>{catalogAttribution(item).label}</span>
                 {Number.isFinite(item.readTime) && (
                   <>
                     <span class="h-meta-sep" aria-hidden="true">·</span>
