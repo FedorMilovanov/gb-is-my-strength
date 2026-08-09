@@ -28,15 +28,18 @@ jobs:
           python3 -m pip install --disable-pip-version-check --no-input 'git-filter-repo==2.47.0'
           git filter-repo --version
 
-      - name: Clone exact remote mirror and compute deletion set
+      - name: Clone only owner-managed refs and compute frozen deletion set
         shell: bash
         env:
           REPO_URL: https://github.com/${{ github.repository }}.git
         run: |
           set -euo pipefail
-          git clone --mirror "$REPO_URL" rewrite.git
+          git init --bare rewrite.git
           cd rewrite.git
-          git config --unset-all remote.origin.pushurl || true
+          git remote add origin "$REPO_URL"
+          git fetch --force --prune --no-recurse-submodules origin \
+            '+refs/heads/*:refs/heads/*' \
+            '+refs/tags/*:refs/tags/*'
 
           mkdir -p ../reports
           git for-each-ref --format='%(refname)' refs/heads refs/tags | sort > ../reports/refs-before.txt
@@ -76,21 +79,21 @@ jobs:
                   if ext in IMAGE_EXTS and oid not in current_oids:
                       remove.append((oid, int(size_s), path, ext))
 
-          unique = {}
-          for row in remove:
-              unique[row[0]] = row
+          unique = {row[0]: row for row in remove}
           rows = sorted(unique.values(), key=lambda r: r[1], reverse=True)
+          total = sum(r[1] for r in rows)
           Path('../reports/remove-oids.txt').write_text('\n'.join(r[0] for r in rows) + '\n', encoding='ascii')
-          Path('../reports/remove-summary.txt').write_text(
-              f'count={len(rows)}\nbytes={sum(r[1] for r in rows)}\n', encoding='utf-8'
-          )
+          Path('../reports/remove-summary.txt').write_text(f'count={len(rows)}\nbytes={total}\n', encoding='utf-8')
+
           if len(rows) != 510:
-              raise SystemExit(f'Expected frozen deletion set of 510 historical-only image blobs, got {len(rows)}')
-          if sum(r[1] for r in rows) != 522386373:
-              raise SystemExit('Historical-only image byte total drifted; refuse dry-run until re-audited')
+              raise SystemExit(f'Expected frozen deletion set of 510 managed-ref historical-only image blobs, got {len(rows)}')
+          if total != 522386373:
+              raise SystemExit(f'Expected frozen deletion bytes 522386373, got {total}')
           PY
 
-      - name: Rewrite mirror only
+          git remote remove origin
+
+      - name: Rewrite local bare repository only
         shell: bash
         run: |
           set -euo pipefail
@@ -106,12 +109,13 @@ jobs:
               blob.skip()
           "
 
-      - name: Prove current main content and ref topology are preserved
+      - name: Prove current main content and managed ref topology are preserved
         shell: bash
         run: |
           set -euo pipefail
           cd rewrite.git
           git fsck --full
+
           git for-each-ref --format='%(refname)' refs/heads refs/tags | sort > ../reports/refs-after.txt
           diff -u ../reports/refs-before.txt ../reports/refs-after.txt
 
@@ -122,8 +126,9 @@ jobs:
           git rev-list --all --count > ../reports/commit-count-after.txt
 
           git rev-list --objects --all > ../reports/reachable-after.txt
+          cut -d' ' -f1 ../reports/reachable-after.txt | sort -u > ../reports/reachable-oids-after.txt
           while read -r oid; do
-            if grep -q "^${oid}\(?: \|$\)" ../reports/reachable-after.txt; then
+            if grep -Fxq "$oid" ../reports/reachable-oids-after.txt; then
               echo "Removed image blob remains reachable: $oid" >&2
               exit 1
             fi
@@ -143,10 +148,12 @@ jobs:
 
           def one(path):
               return Path(path).read_text().strip()
+
           remove = dict(line.split('=', 1) for line in Path('reports/remove-summary.txt').read_text().splitlines())
           before = int(one('reports/repo-bytes-before.txt'))
           after = int(one('reports/repo-bytes-after.txt'))
           report = {
+              'scope': 'owner-managed refs/heads + refs/tags only',
               'source_main_commit': one('reports/main-commit-before.txt'),
               'rewritten_main_commit': one('reports/main-commit-after.txt'),
               'main_tree_before': one('reports/main-tree-before.txt'),
@@ -154,7 +161,7 @@ jobs:
               'main_tree_identical': one('reports/main-tree-before.txt') == one('reports/main-tree-after.txt'),
               'removed_historical_image_blobs': int(remove['count']),
               'removed_historical_image_bytes_uncompressed': int(remove['bytes']),
-              'all_head_and_tag_refnames_preserved': Path('reports/refs-before.txt').read_text() == Path('reports/refs-after.txt').read_text(),
+              'all_managed_head_and_tag_refnames_preserved': Path('reports/refs-before.txt').read_text() == Path('reports/refs-after.txt').read_text(),
               'commit_count_before': int(one('reports/commit-count-before.txt')),
               'commit_count_after': int(one('reports/commit-count-after.txt')),
               'mirror_bytes_before_gc': before,
@@ -165,22 +172,26 @@ jobs:
               'mirror_size_reduction_percent': round((before-after)*100/before, 2) if before else 0,
               'git_filter_repo_version': '2.47.0',
               'pushed': False,
+              'github_internal_pull_refs_rewritten': False,
           }
-          if not report['main_tree_identical'] or not report['all_head_and_tag_refnames_preserved']:
+          if not report['main_tree_identical'] or not report['all_managed_head_and_tag_refnames_preserved']:
               raise SystemExit('Dry-run preservation invariant failed')
+
           Path('reports/rewrite-dry-run.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
           lines = [
               '# Historical image rewrite dry-run', '',
+              f"- Scope: **{report['scope']}**",
               f"- Source main: `{report['source_main_commit']}`",
-              f"- Rewritten main (local mirror only): `{report['rewritten_main_commit']}`",
+              f"- Rewritten main (local bare repo only): `{report['rewritten_main_commit']}`",
               f"- Main tree identical: **{report['main_tree_identical']}** (`{report['main_tree_before']}`)",
-              f"- Head/tag ref names preserved: **{report['all_head_and_tag_refnames_preserved']}**",
+              f"- Managed head/tag ref names preserved: **{report['all_managed_head_and_tag_refnames_preserved']}**",
               f"- Removed historical-only image blobs: **{report['removed_historical_image_blobs']}**",
               f"- Removed uncompressed image bytes: **{report['removed_historical_image_bytes_uncompressed']/1024/1024:.1f} MiB**",
               f"- Mirror size before: **{report['mirror_mib_before_gc']:.1f} MiB**",
               f"- Mirror size after rewrite+GC: **{report['mirror_mib_after_gc']:.1f} MiB**",
               f"- Reduction: **{report['mirror_size_reduction_mib']:.1f} MiB ({report['mirror_size_reduction_percent']:.1f}%)**",
               f"- Commit count: **{report['commit_count_before']} → {report['commit_count_after']}**",
+              '- GitHub internal refs/pull/* rewritten: **NO (read-only server refs)**',
               '- Remote push performed: **NO**',
           ]
           Path('reports/rewrite-dry-run.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
