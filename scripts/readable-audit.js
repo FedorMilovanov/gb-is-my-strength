@@ -91,7 +91,7 @@ for (const f of htmlFiles) {
 }
 
 // R2. Decorative summary numbers must be hidden from assistive/readable layers.
-// They should be empty spans with data-num for CSS-generated visual content.
+// They should be empty spans with a positive two-digit data-num for CSS-generated visual content.
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8');
   const re = /<span\b(?=[^>]*class=["'][^"']*\bsummary-card__num\b)[^>]*>([\s\S]*?)<\/span>/gi;
@@ -101,16 +101,19 @@ for (const f of htmlFiles) {
     const body = (m[1] || '').trim();
     const line = html.slice(0, m.index).split(/\n/).length;
     if (!/aria-hidden=["']true["']/i.test(tag)) fail('summary-card-number-not-aria-hidden', rel(f), `line ${line}`);
-    if (!/data-num=["']0[1-9]["']/i.test(tag)) fail('summary-card-number-missing-data-num', rel(f), `line ${line}`);
+    if (!/data-num=["'](?:0[1-9]|[1-9][0-9])["']/i.test(tag)) fail('summary-card-number-missing-data-num', rel(f), `line ${line}`);
     if (body) fail('summary-card-number-readable-text', rel(f), `line ${line}: ${body.slice(0, 20)}`);
   }
 }
 
-// R3. Home H1 brand must be readable with spaces around dash.
+// R3. Home H1 brand must be readable with spaces around dash in both the
+// retained reference projection and the current native Home projection.
 {
   const html = readRoute('/');
   if (/Господь Бог—Сила Моя/.test(html)) fail('home-h1-brand-missing-dash-spaces', '/', 'Господь Бог—Сила Моя');
-  if (!/(?:h-title-dash[^>]*>\s+—\s+<\/span>|h-title-static[^>]*>Господь Бог<\/span>\s+<span class="h-title-dash"[^>]*>—<\/span>\s+<span class="h-title-accent">Сила Моя<\/span>)/.test(html)) fail('home-h1-dash-span-not-spaced', '/', 'H1 should read Господь Бог — Сила Моя');
+  const retainedTitle = /h-title-static[^>]*>Господь Бог<\/span>\s+<span class="h-title-dash"[^>]*>—<\/span>\s+<span class="h-title-accent">Сила Моя<\/span>/;
+  const nativeTitle = /h-home-title__static[^>]*>Господь Бог<\/span>\s+<span[^>]*h-home-title__dash[^>]*>—<\/span>\s+<span[^>]*h-home-title__accent[^>]*>Сила Моя<\/span>/;
+  if (!retainedTitle.test(html) && !nativeTitle.test(html)) fail('home-h1-dash-span-not-spaced', '/', 'H1 should read Господь Бог — Сила Моя');
 }
 
 // R4. Over-claiming badge in Da Vinci article.
@@ -145,10 +148,12 @@ for (const f of htmlFiles) {
   });
 }
 
-// R7. Home positioning/readable hero contract.
+// R7. Home positioning/readable hero contract. The current native Home
+// intentionally uses “Богословская библиотека” as a small brand descriptor;
+// older library-only navigation/search positioning remains forbidden.
 {
   const html = readRoute('/');
-  if (/Богословская библиотека|Библиотека материалов|О библиотеке|Поиск по библиотеке/.test(html)) {
+  if (/Библиотека материалов|О библиотеке|Поиск по библиотеке/.test(html)) {
     fail('home-outdated-library-positioning', '/', 'Use precise site/materials wording, not old library-only wording');
   }
   if (!/<div\b[^>]*class=["'][^"']*\bh-sacred-block\b[^"']*["'][^>]*aria-hidden=["']true["'][^>]*>/i.test(html)) {
