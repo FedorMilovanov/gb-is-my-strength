@@ -178,15 +178,25 @@ async function auditSeries(page, engine, origin, entry, viewport) {
     })));
     check(engine, viewport, route, 'book article chevrons expose controlled regions', articleRelations.length > 0 && articleRelations.every((row) => row.controls && row.target), articleRelations.slice(0, 8));
 
-    if (after !== 'true') {
-      await partButton.click();
+    const chevronParent = await page.evaluate(() => {
+      for (const button of document.querySelectorAll('.gbat-hd')) {
+        const controls = button.getAttribute('aria-controls');
+        const region = controls ? document.getElementById(controls) : null;
+        if (region?.querySelector('.gbat-art-chev')) return { controls, expanded: button.getAttribute('aria-expanded') };
+      }
+      return null;
+    });
+    check(engine, viewport, route, 'book chevron belongs to a declared part region', Boolean(chevronParent?.controls), chevronParent);
+
+    const chevronPartButton = page.locator(`.gbat-hd[aria-controls="${chevronParent.controls}"]`);
+    if ((await chevronPartButton.getAttribute('aria-expanded')) !== 'true') {
+      await chevronPartButton.click();
       await page.waitForTimeout(90);
     }
-    const reopened = await partButton.getAttribute('aria-expanded');
-    check(engine, viewport, route, 'book article chevron parent part is expanded before pointer activation', reopened === 'true', { after, reopened });
+    const reopened = await chevronPartButton.getAttribute('aria-expanded');
+    check(engine, viewport, route, 'book article chevron parent part is expanded before pointer activation', reopened === 'true', { before: chevronParent.expanded, reopened });
 
-    const part = partButton.locator('xpath=..');
-    const chev = part.locator('.gbat-art-chev').first();
+    const chev = page.locator(`[id="${chevronParent.controls}"] .gbat-art-chev`).first();
     await chev.waitFor({ state: 'visible' });
     const artBefore = await chev.getAttribute('aria-expanded');
     await chev.click();
