@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
 import {
   BIBLE_PUBLICATION_STATES,
   createBibleResolver,
   isBibleRecordPublicationEligible,
 } from '../src/lib/bible-reference-core.mjs';
+
+const require = createRequire(import.meta.url);
+const { sanitizePublicScriptureIndex } = require('./public-scripture-index.js');
 
 const BASE = process.env.BASE || 'http://127.0.0.1:4179';
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
@@ -23,6 +27,53 @@ const normalizeRoute = (value) => {
   if (!route.includes('.') && !route.endsWith('/')) route += '/';
   return route;
 };
+
+const sanitizerSecret = '__held_public_index_secret__';
+const sanitizerFixture = sanitizePublicScriptureIndex({
+  schemaVersion: 1,
+  stats: { internal: true },
+  references: [{
+    id: 'fixture-1',
+    label: 'Fixture 1:1',
+    canonicalText: sanitizerSecret,
+    canonicalSource: { rights: 'held' },
+    internalOnly: true,
+    occurrences: [{
+      url: '/articles/fixture/',
+      anchor: 'fixture-anchor',
+      context: 'fixture context',
+      title: 'fixture title',
+      topics: ['fixture-topic'],
+      raw: sanitizerSecret,
+      internalOnly: true,
+    }],
+  }],
+});
+assert.deepEqual(sanitizerFixture, {
+  schemaVersion: 1,
+  references: [{
+    id: 'fixture-1',
+    label: 'Fixture 1:1',
+    occurrences: [{
+      url: '/articles/fixture/',
+      anchor: 'fixture-anchor',
+      context: 'fixture context',
+      title: 'fixture title',
+      topics: ['fixture-topic'],
+    }],
+  }],
+}, 'public Scripture sanitizer must preserve only Search navigation/display identity');
+const sanitizerFixtureJson = JSON.stringify(sanitizerFixture);
+assert.equal(sanitizerFixtureJson.includes(sanitizerSecret), false,
+  'public Scripture sanitizer must strip held/internal text bytes');
+assert.equal(sanitizerFixtureJson.includes('canonicalText'), false,
+  'public Scripture sanitizer must strip canonicalText');
+assert.equal(sanitizerFixtureJson.includes('canonicalSource'), false,
+  'public Scripture sanitizer must strip canonicalSource');
+assert.throws(() => sanitizePublicScriptureIndex({ schemaVersion: 2, references: [] }),
+  /schemaVersion/, 'public Scripture sanitizer must fail closed on unsupported schema');
+assert.throws(() => sanitizePublicScriptureIndex({ schemaVersion: 1, references: [{ id: 'x', label: 'X', occurrences: 'bad' }] }),
+  /occurrences/, 'public Scripture sanitizer must fail closed on malformed references');
 
 const scriptureIndex = JSON.parse(
   fs.readFileSync(new URL('../data/scripture-search-index.json', import.meta.url), 'utf8'),
@@ -74,6 +125,11 @@ assert.equal(isBibleRecordPublicationEligible(heldRecord), false,
   'central Cassian record must fail the public eligibility contract');
 const HELD_TEXT = heldRecord.text;
 
+const expectedPublicHeldReference = sanitizePublicScriptureIndex({
+  schemaVersion: scriptureIndex.schemaVersion,
+  references: [heldIndexReference],
+}).references[0];
+
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
 const pageErrors = [];
@@ -84,6 +140,30 @@ page.on('console', (message) => {
 });
 
 try {
+  const publicIndexResponse = await page.request.get(`${BASE}/data/scripture-search-index.json`);
+  assert.equal(publicIndexResponse.ok(), true, 'public Scripture Search index must remain fetchable at the existing URL');
+  const publicIndexText = await publicIndexResponse.text();
+  assert.equal(publicIndexText.includes('canonicalText'), false,
+    'published Scripture Search index must not expose canonicalText');
+  assert.equal(publicIndexText.includes('canonicalSource'), false,
+    'published Scripture Search index must not expose canonicalSource');
+  assert.equal(publicIndexText.includes(HELD_TEXT), false,
+    'published Scripture Search index must not expose held Cassian verbatim bytes');
+  const publicIndex = JSON.parse(publicIndexText);
+  assert.equal(publicIndex.schemaVersion, 1, 'public Scripture Search index must preserve schemaVersion=1');
+  assert(Array.isArray(publicIndex.references), 'public Scripture Search index must preserve references[]');
+  const publicHeldReference = publicIndex.references.find((reference) => reference.id === heldIndexReference.id);
+  assert.deepEqual(publicHeldReference, expectedPublicHeldReference,
+    'sanitized public index must preserve exact held-reference label and occurrence navigation/display identity');
+
+  const rawRouteResponse = await page.request.get(`${BASE}${ROUTE}`);
+  assert.equal(rawRouteResponse.ok(), true, 'Hermenevtika source HTML must remain fetchable');
+  const rawRouteHtml = await rawRouteResponse.text();
+  assert.equal(/<script\b[^>]*\bid=["']bibleRefs["'][^>]*>/iu.test(rawRouteHtml), false,
+    'published Hermenevtika HTML must not contain retained #bibleRefs Scripture payload');
+  assert.equal(rawRouteHtml.includes(HELD_TEXT), false,
+    'published Hermenevtika HTML must not contain held Cassian verbatim bytes');
+
   // Adversarial predecessor payload: the canonical projection must replace it,
   // not merge it, or a held value could bypass the publication-rights filter.
   await page.addInitScript(({ heldReference, heldText, staleReference }) => {
@@ -123,10 +203,6 @@ try {
   assert.equal(Object.values(projectionSnapshot.scriptureData).includes(HELD_TEXT), false,
     'held Cassian verbatim text must not leak through another projection key');
 
-  // The old retained route-local payload must not be required, and a held known
-  // reference must remain reference-only after it is removed.
-  await page.evaluate(() => document.querySelector('#bibleRefs')?.remove());
-
   const heldTrigger = page.locator(`.bref[data-ref="${HELD_REFERENCE}"]`).first();
   assert.equal(await heldTrigger.count(), 1, `real route must expose reference label ${HELD_REFERENCE}`);
   await heldTrigger.focus();
@@ -161,7 +237,7 @@ try {
 
   assert.deepEqual(pageErrors, [], `unexpected page errors: ${pageErrors.join(' | ')}`);
   assert.deepEqual(consoleErrors, [], `unexpected console errors: ${consoleErrors.join(' | ')}`);
-  console.log(`Scripture rights-safe projection browser contract passed for held ${HELD_REFERENCE}`);
+  console.log(`Scripture rights-safe projection/browser/public-index contract passed for held ${HELD_REFERENCE}`);
 } finally {
   await browser.close();
 }
