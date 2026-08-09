@@ -35,6 +35,7 @@ assert.deepEqual(
     'scripts/lib/legacy-source-authority.js',
     'scripts/lib/route-source-contract.js',
     'scripts/nagornaya-visual-parity-audit.js',
+    'scripts/visual-parity-contract.js',
   ].sort(),
   'explicit reference API users must match the migrated physical-reference readers'
 );

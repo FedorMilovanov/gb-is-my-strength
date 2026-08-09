@@ -14,9 +14,14 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  listReferenceRoutes,
+  resolveReferenceForRoute,
+} = require('../migration/legacy-reference-path.js');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
+const REFERENCE_ROUTES = new Set(listReferenceRoutes());
 const problems = [];
 
 function relToFile(root, rel) { return path.join(root, rel); }
@@ -24,6 +29,11 @@ function read(file) { return fs.existsSync(file) ? fs.readFileSync(file, 'utf8')
 function bad(msg) { problems.push(msg); console.log('❌ ' + msg); }
 function ok(msg) { console.log('✅ ' + msg); }
 function routeLabel(rel) { return rel.replace(/\/index\.html$/, '/').replace(/^index\.html$/, '/'); }
+function legacyFileFor(rel) {
+  const route = routeLabel(rel);
+  if (!REFERENCE_ROUTES.has(route)) return relToFile(ROOT, rel);
+  return resolveReferenceForRoute(route, { root: ROOT }).absolutePath;
+}
 
 const CONTRACTS = [
   {
@@ -80,7 +90,7 @@ if (!fs.existsSync(DIST)) {
 } else {
   for (const contract of CONTRACTS) {
     const route = routeLabel(contract.rel);
-    const legacy = read(relToFile(ROOT, contract.rel));
+    const legacy = read(legacyFileFor(contract.rel));
     const dist = read(relToFile(DIST, contract.rel));
     if (!legacy) { bad(`${route}: legacy source missing (${contract.rel})`); continue; }
     if (!dist) { bad(`${route}: dist output missing (${contract.rel})`); continue; }
