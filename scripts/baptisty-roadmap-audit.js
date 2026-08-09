@@ -11,6 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 const ROOT = path.join(__dirname, '..');
 const problems = [];
 function fail(msg) { problems.push(msg); console.log('❌ ' + msg); }
@@ -21,6 +22,9 @@ function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 
 const series = readJson('data/series.json')['russian-baptism'];
 const roadmap = readJson('data/baptisty-rossii-expansion-roadmap.json');
+const publicSurface = buildPublicSurfaceRegistry();
+for (const error of publicSurface.errors || []) fail(`public surface registry: ${error}`);
+const publicByRoute = new Map((publicSurface.entries || []).map((entry) => [entry.route, entry]));
 
 if (!series) fail('series.json missing russian-baptism');
 if (roadmap.series !== 'russian-baptism') fail('roadmap series key mismatch');
@@ -55,7 +59,13 @@ for (const part of series.parts || []) {
   for (const f of p.sourceFiles || []) {
     if (!exists(`baptisty-rossii/research/${f}`)) fail(`${part.slug}: source file missing: ${f}`);
   }
-  if (!exists(`baptisty-rossii/${part.slug}/index.html`)) fail(`${part.slug}: public article missing`);
+  const route = `/baptisty-rossii/${part.slug}/`;
+  const published = publicByRoute.get(route);
+  if (!published) fail(`${part.slug}: public article missing from publication authority (${route})`);
+  else {
+    if (published.status !== 'production-dist') fail(`${part.slug}: publication authority status must be production-dist, got ${published.status || '<missing>'}`);
+    if (published.routeRole !== 'reading') fail(`${part.slug}: publication authority routeRole must be reading, got ${published.routeRole || '<missing>'}`);
+  }
 }
 
 if (!exists('baptisty-rossii/research/31-editorial-expansion-roadmap-2026-06-19.md')) fail('human editorial roadmap missing');
