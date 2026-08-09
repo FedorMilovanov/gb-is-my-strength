@@ -6,6 +6,7 @@ const path = require('path');
 const {
   legacyIsAuthoritative,
   loadRouteProfile,
+  resolveDeclaredLegacyReference,
 } = require('./lib/legacy-source-authority');
 
 const ROOT = path.join(__dirname, '..');
@@ -50,6 +51,58 @@ function mustExist(label, rel) { exists(rel) ? ok(`${label}: ${rel}`) : bad(`${l
 function mustNotExist(label, rel) { !exists(rel) ? ok(`${label}: ${rel} absent`) : bad(`${label}: ${rel} must be absent`); }
 function mustContain(label, text, needle) { String(text).includes(needle) ? ok(`${label}: contains ${needle}`) : bad(`${label}: missing ${needle}`); }
 function mustNotContain(label, text, needle) { !String(text).includes(needle) ? ok(`${label}: no ${needle}`) : bad(`${label}: forbidden ${needle}`); }
+function readResolvedLegacy(profile, options = {}) {
+  const reference = resolveDeclaredLegacyReference(profile, {
+    route: ROUTE,
+    mustExist: options.mustExist !== false,
+    resolveReferenceForRoute: options.resolveReferenceForRoute,
+  });
+  if (!reference) throw new Error(`${ROUTE}: declared legacy reference unexpectedly resolved as absent`);
+  const readFile = typeof options.readFile === 'function'
+    ? options.readFile
+    : (file) => fs.readFileSync(file, 'utf8');
+  return { reference, html: readFile(reference.absolutePath) };
+}
+function assertReferenceStorageContract() {
+  const storagePath = `migration/legacy-reference/${LEGACY_REL}`;
+  const absolutePath = `/synthetic-repo/${storagePath}`;
+  const profile = { route: ROUTE, legacyStatus: 'reference-only', legacyPath: LEGACY_REL };
+  let observedReadPath = '';
+  const resolver = (route) => ({
+    route,
+    logicalPath: LEGACY_REL,
+    repositoryPath: storagePath,
+    absolutePath,
+    exists: true,
+  });
+  const resolved = readResolvedLegacy(profile, {
+    resolveReferenceForRoute: resolver,
+    readFile(file) {
+      observedReadPath = file;
+      return '<body>resolver-backed-reference</body>';
+    },
+  });
+  if (resolved.reference.repositoryPath !== storagePath || observedReadPath !== absolutePath) {
+    throw new Error('Gill context reference contract: consumer did not read the resolver-selected physical storage path');
+  }
+  if (resolved.html !== '<body>resolver-backed-reference</body>') {
+    throw new Error('Gill context reference contract: resolver-backed bytes were not consumed');
+  }
+
+  let identityFailure = null;
+  try {
+    readResolvedLegacy(
+      { ...profile, legacyPath: 'articles/wrong-context/index.html' },
+      { resolveReferenceForRoute: resolver, readFile: () => '' }
+    );
+  } catch (error) {
+    identityFailure = error;
+  }
+  if (!identityFailure || !/identity mismatch/.test(String(identityFailure.message))) {
+    throw new Error('Gill context reference contract: profile/ledger identity mismatch did not fail closed');
+  }
+  ok('Gill context reference storage contract: resolved physical path + identity fail-closed');
+}
 function stripTags(html) {
   return String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -126,13 +179,15 @@ function expandChromeHelpers(html, roman) {
 }
 
 console.log('GILL CONTEXT STRICT-NATIVE AUDIT');
-mustExist('legacy route', LEGACY_REL);
+assertReferenceStorageContract();
 mustExist('Astro route', PAGE_REL);
 for (const [label, rel] of Object.entries(REQUIRED)) mustExist(label, rel);
 mustNotExist('legacy context directory retired', `${BASE_REL}/_legacy`);
 for (const comp of SECTION_COMPONENTS) mustExist(`section component ${comp}`, `${BASE_REL}/${comp}`);
 
 const { file: profileFile, profile } = loadRouteProfile(ROUTE);
+let legacyReference = null;
+let legacyHtml = '';
 if (!profileFile || !profile) {
   bad(`route profile missing for ${ROUTE}`);
 } else {
@@ -142,6 +197,14 @@ if (!profileFile || !profile) {
   profile.renderSource === PAGE_REL ? ok('route profile render source matches native entry') : bad(`route profile render source mismatch: ${profile.renderSource}`);
   profile.legacyPath === LEGACY_REL ? ok('route profile legacy reference matches') : bad(`route profile legacy path mismatch: ${profile.legacyPath}`);
   profile.migrationMode === 'strict-native' ? ok('route profile is strict-native') : bad(`route profile migration mode is ${profile.migrationMode}`);
+  try {
+    const resolved = readResolvedLegacy(profile);
+    legacyReference = resolved.reference;
+    legacyHtml = resolved.html;
+    ok(`legacy reference storage: ${legacyReference.repositoryPath}`);
+  } catch (error) {
+    bad(`legacy reference resolution failed: ${error.message}`);
+  }
 }
 
 if (!problems.length) {
@@ -154,7 +217,7 @@ if (!problems.length) {
   const header = read(REQUIRED.header);
   const body = read(REQUIRED.body);
   const post = read(REQUIRED.post);
-  const legacy = read(LEGACY_REL);
+  const legacy = legacyHtml;
   const legacyBody = bodyInner(legacy);
   let distHtml = '';
   if (exists(DIST_REL)) {
