@@ -127,6 +127,8 @@ export function normalizeBibleRecord(value, bookMeta = {}, key = '') {
 
   const text = String(record.text || '').trim();
   const completeness = record.completeness === 'excerpt' ? 'excerpt' : 'full';
+  const inheritedHolds = Array.isArray(bookMeta.holds) ? bookMeta.holds : [];
+  const recordHolds = Array.isArray(record.holds) ? record.holds : [];
 
   return {
     key: normalizeVerseKey(key),
@@ -139,7 +141,7 @@ export function normalizeBibleRecord(value, bookMeta = {}, key = '') {
     rights: String(record.rights || bookMeta.rights || '').trim(),
     rightsState: normalizeRightsState(record.rightsState || bookMeta.rightsState),
     publicationState: normalizePublicationState(record.publicationState || bookMeta.publicationState),
-    holds: normalizeHolds(record.holds ?? bookMeta.holds),
+    holds: normalizeHolds([...inheritedHolds, ...recordHolds]),
   };
 }
 
