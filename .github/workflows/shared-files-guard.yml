@@ -107,6 +107,11 @@ jobs:
           node --check scripts/baptisty-roadmap-audit.js
           node scripts/baptisty-roadmap-audit.js
 
+      - name: Owner UI retained reference authority
+        run: |
+          node --check scripts/owner-ui-regression-guard.js
+          node scripts/owner-ui-regression-guard.js
+
       - name: Strangler parity authority and Baptists built-app measurement
         run: |
           node --check scripts/lib/visual-parity-authority.cjs
