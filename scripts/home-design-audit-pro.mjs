@@ -283,7 +283,6 @@ function queryStateInvalidated(state, query) {
   return Boolean(
     state
       && state.inputValue === query
-      && !state.loading
       && state.optionCount === 0
       && state.selectedIds.length === 0
       && !state.activeDescendant,
@@ -308,14 +307,16 @@ function assertQueryStateContract() {
   assert.equal(queryStateSettled({ ...settled, selectedIds: [] }, 'Нагорная проповедь', 'Нагорная проповедь'), false);
   assert.equal(queryStateSettled({ ...settled, activeDescendant: 'cp-option-1' }, 'Нагорная проповедь', 'Нагорная проповедь'), false);
   assert.equal(queryStateInvalidated(settled, 'Нагорная проповедь'), false, 'stale rendered results must not satisfy invalidation');
-  assert.equal(queryStateInvalidated({
+  const invalidated = {
     ...settled,
     optionCount: 0,
     optionIds: [],
     titles: [],
     selectedIds: [],
     activeDescendant: '',
-  }, 'Нагорная проповедь'), true, 'query mutation must expose the canonical cleared interactive state');
+  };
+  assert.equal(queryStateInvalidated(invalidated, 'Нагорная проповедь'), true, 'query mutation must expose the canonical cleared interactive state');
+  assert.equal(queryStateInvalidated({ ...invalidated, loading: true }, 'Нагорная проповедь'), true, 'loading may legitimately begin after stale interactive state was invalidated');
 }
 
 assertQueryStateContract();
@@ -340,6 +341,48 @@ async function readQueryState(page) {
   });
 }
 
+async function armQueryInvalidationCapture(page) {
+  await page.evaluate(() => {
+    const input = document.querySelector('.cp-input');
+    if (!input) throw new Error('.cp-input is missing');
+
+    const previous = window.__homeSearchInvalidationCapture;
+    if (previous?.listener) input.removeEventListener('input', previous.listener);
+
+    const capture = { count: 0, last: null, listener: null };
+    capture.listener = () => {
+      const options = [...document.querySelectorAll('.cp-item[role="option"]')];
+      const selected = options.filter((option) => option.getAttribute('aria-selected') === 'true' || option.classList.contains('is-active'));
+      capture.count += 1;
+      capture.last = {
+        inputValue: input.value || '',
+        loading: Boolean(document.querySelector('.cp-loading')),
+        empty: Boolean(document.querySelector('.cp-empty')),
+        optionCount: options.length,
+        optionIds: options.map((option) => option.id || ''),
+        titles: options.map((option) => (option.querySelector('.cp-item-title')?.textContent || '').toLocaleLowerCase('ru-RU')),
+        selectedIds: selected.map((option) => option.id || ''),
+        activeDescendant: input.getAttribute('aria-activedescendant') || '',
+      };
+    };
+    window.__homeSearchInvalidationCapture = capture;
+    input.addEventListener('input', capture.listener);
+  });
+}
+
+async function finishQueryInvalidationCapture(page) {
+  return page.evaluate(() => {
+    const input = document.querySelector('.cp-input');
+    const capture = window.__homeSearchInvalidationCapture;
+    if (input && capture?.listener) input.removeEventListener('input', capture.listener);
+    const result = capture
+      ? { eventCount: capture.count, state: capture.last }
+      : { eventCount: 0, state: null };
+    delete window.__homeSearchInvalidationCapture;
+    return result;
+  });
+}
+
 async function waitQuery(page, query, expectedTitle = '') {
   const deadline = Date.now() + 15000;
   let state = await readQueryState(page);
@@ -352,10 +395,15 @@ async function waitQuery(page, query, expectedTitle = '') {
 }
 
 async function fillQueryAndWait(page, input, query, expectedTitle = '') {
-  await input.fill(query);
-  const invalidated = await readQueryState(page);
-  if (!queryStateInvalidated(invalidated, query)) {
-    throw new Error(`Search query mutation did not invalidate stale results: ${JSON.stringify({ query, expectedTitle, state: invalidated })}`);
+  await armQueryInvalidationCapture(page);
+  let capture;
+  try {
+    await input.fill(query);
+  } finally {
+    capture = await finishQueryInvalidationCapture(page);
+  }
+  if (capture.eventCount < 1 || !queryStateInvalidated(capture.state, query)) {
+    throw new Error(`Search query mutation did not synchronously invalidate stale results: ${JSON.stringify({ query, expectedTitle, capture })}`);
   }
   return waitQuery(page, query, expectedTitle);
 }
@@ -395,26 +443,22 @@ async function searchAudit(page) {
   }
 
   const noResultQuery = 'zzzz-no-such-page-493821';
-  await input.fill(noResultQuery);
-  const noResultInvalidated = await readQueryState(page);
-  if (!queryStateInvalidated(noResultInvalidated, noResultQuery)) {
-    throw new Error(`Search no-result mutation did not invalidate stale results: ${JSON.stringify({ query: noResultQuery, state: noResultInvalidated })}`);
-  }
-  await page.waitForFunction((expected) => {
-    const input = document.querySelector('.cp-input');
-    const empty = document.querySelector('.cp-empty');
-    return input?.value === expected && Boolean(empty) && !document.querySelector('.cp-loading');
-  }, noResultQuery, { timeout: 15000 });
+  await fillQueryAndWait(page, input, noResultQuery);
   const noResultCount = await page.locator('.cp-item').count();
   const noResultText = await page.locator('.cp-empty').textContent().catch(() => '');
   record(`${ENGINE}:search-no-results`, noResultCount === 0 && Boolean(noResultText?.trim()), { count: noResultCount, text: noResultText });
   if (ENGINE === 'chromium') await page.screenshot({ path: path.join(OUT, 'search-no-results-desktop.png') });
 
-  await input.fill('Н');
-  await input.type('агорная проповедь', { delay: 5 });
-  const rapidInvalidated = await readQueryState(page);
-  if (!queryStateInvalidated(rapidInvalidated, 'Нагорная проповедь')) {
-    throw new Error(`Rapid search mutation did not invalidate stale results: ${JSON.stringify({ query: 'Нагорная проповедь', state: rapidInvalidated })}`);
+  await armQueryInvalidationCapture(page);
+  let rapidCapture;
+  try {
+    await input.fill('Н');
+    await input.type('агорная проповедь', { delay: 5 });
+  } finally {
+    rapidCapture = await finishQueryInvalidationCapture(page);
+  }
+  if (rapidCapture.eventCount < 2 || !queryStateInvalidated(rapidCapture.state, 'Нагорная проповедь')) {
+    throw new Error(`Rapid search mutation did not synchronously invalidate stale results: ${JSON.stringify({ query: 'Нагорная проповедь', capture: rapidCapture })}`);
   }
   await waitQuery(page, 'Нагорная проповедь', 'Нагорная проповедь');
   record(`${ENGINE}:search-rapid-input`, await page.locator('.cp-item').count() > 0);
