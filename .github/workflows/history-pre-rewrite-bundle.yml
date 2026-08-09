@@ -35,34 +35,71 @@ jobs:
             '+refs/tags/*:refs/tags/*'
           git remote remove origin
 
-      - name: Create and verify immutable recovery bundle
+      - name: Create verify and split immutable recovery bundle
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p recovery
+          mkdir -p recovery parts meta
           cd source.git
-          git for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags | sort > ../recovery/REFS.txt
-          git rev-parse refs/heads/main > ../recovery/MAIN_COMMIT.txt
-          git rev-parse 'refs/heads/main^{tree}' > ../recovery/MAIN_TREE.txt
+          git for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags | sort > ../meta/REFS.txt
+          git rev-parse refs/heads/main > ../meta/MAIN_COMMIT.txt
+          git rev-parse 'refs/heads/main^{tree}' > ../meta/MAIN_TREE.txt
           git bundle create ../recovery/gb-is-my-strength-pre-image-purge.bundle --branches --tags
           cd ..
-          git bundle verify recovery/gb-is-my-strength-pre-image-purge.bundle > recovery/BUNDLE_VERIFY.txt 2>&1
-          sha256sum recovery/gb-is-my-strength-pre-image-purge.bundle > recovery/SHA256.txt
-          stat -c '%s' recovery/gb-is-my-strength-pre-image-purge.bundle > recovery/BYTES.txt
-          printf '%s\n' \
-            'Recovery bundle created before historical image rewrite.' \
-            'Contains owner-managed refs/heads and refs/tags only.' \
-            'Use only for rollback/recovery; GitHub internal refs/pull are not owner-writable and are not bundled.' \
-            > recovery/README.txt
-          cat recovery/SHA256.txt
-          cat recovery/BYTES.txt
 
-      - name: Upload recovery bundle
+          git bundle verify recovery/gb-is-my-strength-pre-image-purge.bundle > meta/BUNDLE_VERIFY.txt 2>&1
+          sha256sum recovery/gb-is-my-strength-pre-image-purge.bundle > meta/BUNDLE_SHA256.txt
+          stat -c '%s' recovery/gb-is-my-strength-pre-image-purge.bundle > meta/BUNDLE_BYTES.txt
+
+          split -b 250M -d -a 2 recovery/gb-is-my-strength-pre-image-purge.bundle parts/gb-is-my-strength-pre-image-purge.bundle.part-
+          test -f parts/gb-is-my-strength-pre-image-purge.bundle.part-00
+          test -f parts/gb-is-my-strength-pre-image-purge.bundle.part-01
+          test -f parts/gb-is-my-strength-pre-image-purge.bundle.part-02
+          test ! -e parts/gb-is-my-strength-pre-image-purge.bundle.part-03
+
+          sha256sum parts/* > meta/PARTS_SHA256.txt
+          stat -c '%n %s' parts/* > meta/PARTS_BYTES.txt
+          cat parts/gb-is-my-strength-pre-image-purge.bundle.part-* > recovery/reassembled.bundle
+          test "$(sha256sum recovery/reassembled.bundle | awk '{print $1}')" = "$(awk '{print $1}' meta/BUNDLE_SHA256.txt)"
+          git bundle verify recovery/reassembled.bundle > meta/REASSEMBLED_VERIFY.txt 2>&1
+          rm recovery/reassembled.bundle
+
+          printf '%s\n' \
+            'Pre-rewrite Git recovery bundle split into three binary parts.' \
+            'Contains owner-managed refs/heads and refs/tags only.' \
+            'Reassemble in lexical order part-00 + part-01 + part-02, then verify against BUNDLE_SHA256.txt.' \
+            'GitHub internal refs/pull are read-only and are not bundled.' \
+            > meta/README.txt
+
+          cat meta/BUNDLE_SHA256.txt
+          cat meta/BUNDLE_BYTES.txt
+          cat meta/PARTS_BYTES.txt
+
+      - name: Upload recovery part 00 and metadata
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: pre-image-purge-git-recovery-${{ github.run_id }}
-          path: recovery
+          name: pre-image-purge-recovery-part-00-${{ github.run_id }}
+          path: |
+            parts/gb-is-my-strength-pre-image-purge.bundle.part-00
+            meta
           if-no-files-found: error
-          include-hidden-files: true
+          compression-level: 0
+          retention-days: 30
+
+      - name: Upload recovery part 01
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pre-image-purge-recovery-part-01-${{ github.run_id }}
+          path: parts/gb-is-my-strength-pre-image-purge.bundle.part-01
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: Upload recovery part 02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pre-image-purge-recovery-part-02-${{ github.run_id }}
+          path: parts/gb-is-my-strength-pre-image-purge.bundle.part-02
+          if-no-files-found: error
           compression-level: 0
           retention-days: 30
