@@ -28,6 +28,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  loadRouteProfile,
+  resolveDeclaredLegacyReference,
+} = require('./lib/legacy-source-authority');
 
 const ROOT = path.join(__dirname, '..');
 const REGISTRY = path.join(ROOT, 'data/gill-verified-claims.json');
@@ -72,6 +76,115 @@ function walk(dir, exts, out = []) {
   return out;
 }
 
+function legacyRoute(slug) {
+  return `/articles/${slug}/`;
+}
+
+function legacyLogicalPath(slug) {
+  return `articles/${slug}/index.html`;
+}
+
+function resolveLegacySurface(slug, options = {}) {
+  const route = legacyRoute(slug);
+  const logicalPath = legacyLogicalPath(slug);
+  const profileLoader = options.loadRouteProfile || loadRouteProfile;
+  const loaded = profileLoader(route) || {};
+  const profile = loaded.profile;
+
+  if (!profile) throw new Error(`${route}: route profile missing`);
+  if (profile.route !== route) {
+    throw new Error(`${route}: route profile identity mismatch: got ${profile.route || 'missing'}`);
+  }
+  if (profile.legacyPath !== logicalPath) {
+    throw new Error(`${route}: legacy profile identity mismatch: expected ${logicalPath}, got ${profile.legacyPath || 'missing'}`);
+  }
+
+  const reference = resolveDeclaredLegacyReference(profile, {
+    route,
+    mustExist: true,
+    resolveReferenceForRoute: options.resolveReferenceForRoute,
+  });
+  if (!reference) throw new Error(`${route}: declared legacy reference unexpectedly absent`);
+  if (reference.logicalPath !== logicalPath) {
+    throw new Error(`${route}: legacy reference identity mismatch: expected ${logicalPath}, got ${reference.logicalPath}`);
+  }
+
+  return {
+    file: logicalPath,
+    physicalPath: reference.absolutePath,
+    storagePath: reference.repositoryPath,
+    surface: 'legacy-html',
+    authority: 'reference',
+  };
+}
+
+function readSurface(entry, options = {}) {
+  const absolutePath = entry.physicalPath || path.join(ROOT, entry.file);
+  const reader = options.readFile || ((file) => fs.readFileSync(file, 'utf8'));
+  return reader(absolutePath);
+}
+
+function assertLegacyStorageContract() {
+  const slug = GILL_SLUGS[0];
+  const route = legacyRoute(slug);
+  const logicalPath = legacyLogicalPath(slug);
+  const storagePath = `migration/legacy-reference/${logicalPath}`;
+  const absolutePath = `/synthetic-repo/${storagePath}`;
+  const profile = { route, legacyStatus: 'reference-only', legacyPath: logicalPath };
+  let observedReadPath = '';
+
+  const entry = resolveLegacySurface(slug, {
+    loadRouteProfile: () => ({ file: '/synthetic/profile.json', profile }),
+    resolveReferenceForRoute: (requestedRoute) => ({
+      route: requestedRoute,
+      logicalPath,
+      repositoryPath: storagePath,
+      absolutePath,
+      exists: true,
+    }),
+  });
+  const bytes = readSurface(entry, {
+    readFile(file) {
+      observedReadPath = file;
+      return 'resolver-backed-reference';
+    },
+  });
+  if (entry.storagePath !== storagePath || observedReadPath !== absolutePath || bytes !== 'resolver-backed-reference') {
+    throw new Error('Gill claim surface storage contract: resolver-selected physical storage was not consumed');
+  }
+
+  let identityFailure = null;
+  try {
+    resolveLegacySurface(slug, {
+      loadRouteProfile: () => ({ file: '/synthetic/profile.json', profile }),
+      resolveReferenceForRoute: (requestedRoute) => ({
+        route: requestedRoute,
+        logicalPath: 'articles/wrong-gill/index.html',
+        repositoryPath: 'migration/legacy-reference/articles/wrong-gill/index.html',
+        absolutePath: '/synthetic-repo/migration/legacy-reference/articles/wrong-gill/index.html',
+        exists: true,
+      }),
+    });
+  } catch (error) {
+    identityFailure = error;
+  }
+  if (!identityFailure || !/identity mismatch/.test(String(identityFailure.message))) {
+    throw new Error('Gill claim surface storage contract: profile/ledger identity mismatch did not fail closed');
+  }
+
+  let missingProfileFailure = null;
+  try {
+    resolveLegacySurface(slug, { loadRouteProfile: () => ({ file: null, profile: null }) });
+  } catch (error) {
+    missingProfileFailure = error;
+  }
+  if (!missingProfileFailure || !/profile missing/.test(String(missingProfileFailure.message))) {
+    throw new Error('Gill claim surface storage contract: missing route profile did not fail closed');
+  }
+
+  ok('Gill legacy storage contract: resolved physical read + identity/missing-profile fail-closed');
+}
+
 /**
  * Шесть поверхностей серии. Каждая помечена уровнем авторитета:
  * production — источник того, что реально видит читатель;
@@ -102,11 +215,13 @@ function collectSurfaces() {
     }
   }
 
-  // 4. Legacy HTML зеркала.
+  // 4. Legacy HTML зеркала — логическая идентичность берётся из route profile,
+  // а физическое хранение только через центральный reference resolver.
   for (const slug of GILL_SLUGS) {
-    const f = `articles/${slug}/index.html`;
-    if (fs.existsSync(path.join(ROOT, f))) {
-      surfaces.push({ file: f, surface: 'legacy-html', authority: 'reference' });
+    try {
+      surfaces.push(resolveLegacySurface(slug));
+    } catch (error) {
+      bad(`${legacyRoute(slug)}: legacy reference resolution failed — ${error.message}`);
     }
   }
 
@@ -146,6 +261,7 @@ function main() {
     console.log('GILL CLAIM SURFACE AUDIT — правило шести поверхностей\n');
   }
 
+  assertLegacyStorageContract();
   const registry = JSON.parse(fs.readFileSync(REGISTRY, 'utf8'));
   const surfaces = collectSurfaces();
 
@@ -166,10 +282,24 @@ function main() {
     else bad(`поверхность не найдена: ${req} — набор проверки неполон`);
   }
 
+  const legacySurfaces = surfaces.filter((entry) => entry.surface === 'legacy-html');
+  const legacyFiles = new Set(legacySurfaces.map((entry) => entry.file));
+  const expectedLegacyFiles = GILL_SLUGS.map(legacyLogicalPath);
+  if (
+    legacySurfaces.length === GILL_SLUGS.length
+    && legacyFiles.size === GILL_SLUGS.length
+    && expectedLegacyFiles.every((file) => legacyFiles.has(file))
+  ) {
+    ok(`legacy Gill reference coverage complete: ${GILL_SLUGS.length}/${GILL_SLUGS.length}`);
+  } else {
+    bad(`legacy Gill reference coverage incomplete: expected ${GILL_SLUGS.length} unique routes, got ${legacySurfaces.length} surface(s) / ${legacyFiles.size} unique path(s)`);
+  }
+
   const cache = new Map();
-  function readCached(rel) {
-    if (!cache.has(rel)) cache.set(rel, fs.readFileSync(path.join(ROOT, rel), 'utf8'));
-    return cache.get(rel);
+  function readCached(entry) {
+    const key = `${entry.surface}:${entry.file}`;
+    if (!cache.has(key)) cache.set(key, readSurface(entry));
+    return cache.get(key);
   }
 
   for (const claim of registry.claims) {
@@ -179,7 +309,7 @@ function main() {
     for (const rule of forbidden) {
       const re = new RegExp(rule.pattern, 'gi');
       for (const entry of surfaces) {
-        const content = readCached(entry.file);
+        const content = readCached(entry);
         if (!isGillRelevant(entry, content)) continue;
         re.lastIndex = 0;
         const m = re.exec(content);
@@ -209,7 +339,7 @@ function main() {
       const { trigger, anyOf, why } = claim.requiredNear;
       for (const entry of surfaces) {
         if (entry.authority !== 'production') continue;
-        const content = readCached(entry.file);
+        const content = readCached(entry);
         if (!content.includes(trigger)) continue;
         const has = anyOf.some((token) => content.includes(token));
         if (has) {

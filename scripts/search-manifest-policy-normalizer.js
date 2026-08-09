@@ -11,7 +11,9 @@ const DERIVED_MANIFEST_FIELDS = Object.freeze([
   'title',
   'description',
   'section',
+  'author',
   'editor',
+  'translator',
   'image',
   'tags',
   'publishedTime',
@@ -90,6 +92,92 @@ function metaValues(html, keyAttr, key) {
 
 function firstMeta(html, keyAttr, key) {
   return metaValues(html, keyAttr, key)[0] || '';
+}
+
+function jsonLdDocuments(html) {
+  const documents = [];
+  const scriptPattern = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+  let match;
+  while ((match = scriptPattern.exec(String(html || '')))) {
+    const openTag = `<script${match[1]}>`;
+    if (attr(openTag, 'type').toLowerCase() !== 'application/ld+json') continue;
+    const raw = match[2].trim();
+    if (!raw) continue;
+    documents.push(JSON.parse(raw));
+  }
+  return documents;
+}
+
+function jsonLdTopLevelNodes(document) {
+  if (Array.isArray(document)) {
+    return document.filter((value) => value && typeof value === 'object');
+  }
+  if (!document || typeof document !== 'object') return [];
+  if (Array.isArray(document['@graph'])) {
+    return document['@graph'].filter((value) => value && typeof value === 'object');
+  }
+  return [document];
+}
+
+function jsonLdTypeIncludes(node, expected) {
+  const types = Array.isArray(node?.['@type']) ? node['@type'] : [node?.['@type']];
+  return types.some((value) => String(value || '').toLowerCase() === String(expected).toLowerCase());
+}
+
+function jsonLdArticleNode(documents) {
+  const nodes = documents.flatMap(jsonLdTopLevelNodes);
+  return nodes.find((node) => jsonLdTypeIncludes(node, 'ScholarlyArticle'))
+    || nodes.find((node) => jsonLdTypeIncludes(node, 'Article'))
+    || null;
+}
+
+function collectJsonLdNamesById(value, namesById = new Map()) {
+  if (Array.isArray(value)) {
+    for (const item of value) collectJsonLdNamesById(item, namesById);
+    return namesById;
+  }
+  if (!value || typeof value !== 'object') return namesById;
+  const id = typeof value['@id'] === 'string' ? value['@id'].trim() : '';
+  const name = typeof value.name === 'string' ? value.name.trim() : '';
+  if (id && name && !namesById.has(id)) namesById.set(id, name);
+  for (const child of Object.values(value)) collectJsonLdNamesById(child, namesById);
+  return namesById;
+}
+
+function structuredRoleValue(value, namesById) {
+  const candidates = Array.isArray(value) ? value : [value];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+    if (!candidate || typeof candidate !== 'object') continue;
+    if (typeof candidate.name === 'string' && candidate.name.trim()) return candidate.name.trim();
+    const id = typeof candidate['@id'] === 'string' ? candidate['@id'].trim() : '';
+    if (id && namesById.has(id)) return namesById.get(id);
+  }
+  return '';
+}
+
+function deriveNewRowRoles(html) {
+  const documents = jsonLdDocuments(html);
+  const article = jsonLdArticleNode(documents);
+  if (!article) return {};
+  const namesById = collectJsonLdNamesById(documents);
+  const structuredAuthor = structuredRoleValue(article.author, namesById);
+  const structuredTranslator = structuredRoleValue(article.translator, namesById);
+  const structuredEditor = structuredRoleValue(article.editor, namesById);
+  const roles = {};
+
+  if (structuredAuthor) {
+    roles.author = firstMeta(html, 'property', 'article:author')
+      || firstMeta(html, 'name', 'author')
+      || structuredAuthor;
+  }
+  if (structuredTranslator) {
+    roles.translator = firstMeta(html, 'name', 'translator') || structuredTranslator;
+  }
+  if (structuredEditor) {
+    roles.editor = firstMeta(html, 'name', 'editor') || structuredEditor;
+  }
+  return roles;
 }
 
 function titleText(html) {
@@ -272,7 +360,7 @@ function buildManifestItem(route, policy, html, fallbackReadTime = null) {
     || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
   const description = firstMeta(html, 'name', 'description')
     || firstMeta(html, 'property', 'og:description');
-  const editor = firstMeta(html, 'name', 'author') || 'Фёдор Милованов';
+  const roles = deriveNewRowRoles(html);
   const section = firstMeta(html, 'property', 'article:section') || policy.librarySection;
   const image = normalizeImage(firstMeta(html, 'property', 'og:image'));
   const tags = [...new Set(metaValues(html, 'property', 'article:tag'))];
@@ -299,7 +387,7 @@ function buildManifestItem(route, policy, html, fallbackReadTime = null) {
     title,
     description,
     section,
-    editor,
+    ...roles,
     image,
     tags,
     featured: false,
@@ -538,6 +626,7 @@ module.exports = {
   seriesPolicySeeds,
   applyPolicySeeds,
   deriveManifestFields,
+  deriveNewRowRoles,
   buildManifestItem,
   migrationCandidates,
   manifestRowsByRoute,

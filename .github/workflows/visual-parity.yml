@@ -102,6 +102,9 @@ jobs:
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
+      - name: Verify production visual parity contract
+        run: npm run visual:parity:production
+
       - name: Verify home progressive enhancement
         run: node scripts/home-progressive-enhancement-browser-test.js
 
