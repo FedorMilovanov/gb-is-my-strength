@@ -13,7 +13,7 @@
     "indexedRoutes": 73,
     "scannedSourceFiles": 430,
     "references": 980,
-    "occurrences": 2355,
+    "occurrences": 2345,
     "canonicalTextRecords": 148,
     "referencesWithoutCanonicalText": 832,
     "chapterRanges": 17,
@@ -867,20 +867,6 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
-        {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "text-transform:uppercase;letter-spacing:.05em;\">Серия Бытие 6, Енох, Иуда и Пётр Автор-редактор: Фёдор Милованов · <span c",
-          "anchor": "hPublicationsLabel",
-          "raw": "Бытие 6",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
         {
           "url": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
           "title": "Ангелы под мраком: Иуд. 6–7, 2 Петра 2 и Бытие 6 | Господь Бог — Сила Моя",
@@ -10785,20 +10771,6 @@
           "sourceKind": "astro-source"
         },
         {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "дактор: Фёдор Милованов · hardTextsPartsLabel Иеремия 17 · Римлянам 7–8 Экзегеза Цикл экзегетических разборов о природе падшего и возрождённого сердца. Иеремия 17:9–10, Римлянам 7 и Римлянам",
-          "anchor": null,
-          "raw": "Иеремия 17",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
-        {
           "url": "/articles/chto-bibliya-nazyvaet-serdcem/",
           "title": "Библейская кардиология: что Библия называет сердцем",
           "context": "тины, а Бог, который его создал, видит и способен переменить. И потому этот библейский портрет — вход во всю серию. Если сердце — весь внутренний человек перед Богом, тогда Иеремия 17 показывает глубину его обмана; обетование Иезекииля — новое сердце; Римлянам 6 — свободу от господства греха; Римлянам 7 — войну обновлённого человека с остаточным грехом; Р…",
@@ -12068,20 +12040,6 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
-        {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "Римлянам 7–8 Экзегеза Цикл экзегетических разборов о природе падшего и возрождённого сердца. Иеремия 17:9–10, Римлянам 7 и Римлянам 8 — три ключевых текста, через которые Писание раскрывает тайну внутреннего человека. <div style=\"margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-",
-          "anchor": null,
-          "raw": "Иеремия 17:9–10",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
         {
           "url": "/articles/krajne-li-isporcheno-serdce/",
           "title": "Крайне ли испорчено сердце верующего?",
@@ -15746,20 +15704,6 @@
             "навигация"
           ],
           "sourceOwner": "src/components/home/HomeSections/Publications.astro",
-          "sourceKind": "astro-source"
-        },
-        {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "al\"> nagornayaPartsLabel 120+ источников 2026 Полная серия по Матфея 5–7 и Луки 6:17–49: содержание, методология записи, адресат, богодухновенность, Закон и Евангелие — как единое исследование. <div style=\"margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-siz",
-          "anchor": null,
-          "raw": "Матфея 5–7",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
           "sourceKind": "astro-source"
         },
         {
@@ -22370,20 +22314,6 @@
             "навигация"
           ],
           "sourceOwner": "src/components/home/HomeSections/Publications.astro",
-          "sourceKind": "astro-source"
-        },
-        {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "aPartsLabel 120+ источников 2026 Полная серия по Матфея 5–7 и Луки 6:17–49: содержание, методология записи, адресат, богодухновенность, Закон и Евангелие — как единое исследование. <div style=\"margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-wei",
-          "anchor": null,
-          "raw": "Луки 6:17–49",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
           "sourceKind": "astro-source"
         },
         {
@@ -29205,34 +29135,6 @@
           "sourceKind": "astro-source"
         },
         {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "верующий или неверующий?\" decoding=\"async\" loading=\"lazy\" width=\"160\" height=\"108\"> Римлянам 7: верующий, неверующий или человек под законом? Редактор: Фёдор Милованов · <span \"h-",
-          "anchor": null,
-          "raw": "Римлянам 7",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
-        {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "an> Экзегеза Цикл экзегетических разборов о природе падшего и возрождённого сердца. Иеремия 17:9–10, Римлянам 7 и Римлянам 8 — три ключевых текста, через которые Писание раскрывает тайну внутреннего человека. <div style=\"margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;c",
-          "anchor": null,
-          "raw": "Римлянам 7",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
-        {
           "url": "/articles/chto-bibliya-nazyvaet-serdcem/",
           "title": "Библейская кардиология: что Библия называет сердцем",
           "context": ". Если сердце — весь внутренний человек перед Богом, тогда Иеремия 17 показывает глубину его обмана; обетование Иезекииля — новое сердце; Римлянам 6 — свободу от господства греха; Римлянам 7 — войну обновлённого человека с остаточным грехом; Римлянам 8 — жизнь и утешение Духа. А в конце — Христос, несущий немощных, и слава, где сердце станет чистым навсег…",
@@ -30365,20 +30267,6 @@
       "canonicalSource": null,
       "occurrences": [
         {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "Милованов · hardTextsPartsLabel Иеремия 17 · Римлянам 7–8 Экзегеза Цикл экзегетических разборов о природе падшего и возрождённого сердца. Иеремия 17:9–10, Римлянам 7 и Римлянам 8 — три ключев",
-          "anchor": null,
-          "raw": "Римлянам 7–8",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
-        {
           "url": "/articles/krajne-li-isporcheno-serdce/",
           "title": "Крайне ли испорчено сердце верующего?",
           "context": "е» и «ещё не» в применении спасения. Есть русский перевод (электронное издание). Римлянам 7–8 На русском языке Оуэн Дж.</spa",
@@ -30647,20 +30535,6 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
-        {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "n> Авторская статья Экзегеза Кто такой человек из Римлянам 7:14–25? Разбор ключевых экзегетических подходов и почему конфликт «внутреннего человека» и «плоти» так важен для понимания освящения. <",
-          "anchor": null,
-          "raw": "Римлянам 7:14–25",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
         {
           "url": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
           "title": "Римлянам 7: верующий, неверующий или человек под законом?",
@@ -31333,20 +31207,6 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
-        {
-          "url": "/articles/",
-          "title": "Статьи — Господь Бог — Сила Моя",
-          "context": "s=\"h-meta-tag\">Экзегеза Цикл экзегетических разборов о природе падшего и возрождённого сердца. Иеремия 17:9–10, Римлянам 7 и Римлянам 8 — три ключевых текста, через которые Писание раскрывает тайну внутреннего человека. <div style=\"margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#7c2d2d;",
-          "anchor": null,
-          "raw": "Римлянам 8",
-          "topics": [
-            "каталог",
-            "Каталоги",
-            "статьи"
-          ],
-          "sourceOwner": "src/components/articles/ArticlesPublicationsSection.astro",
-          "sourceKind": "astro-source"
-        },
         {
           "url": "/articles/chto-bibliya-nazyvaet-serdcem/",
           "title": "Библейская кардиология: что Библия называет сердцем",

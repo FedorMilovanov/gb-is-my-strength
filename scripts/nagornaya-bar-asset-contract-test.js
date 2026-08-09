@@ -6,6 +6,10 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const {
+  loadRouteProfile,
+  resolveDeclaredLegacyReference,
+} = require('./lib/legacy-source-authority');
 
 const ROOT = path.resolve(__dirname, '..');
 const ASSET = 'js/nagornaya-bar-extras.js';
@@ -21,19 +25,27 @@ function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
 }
 
-function assertAssetContract(rel) {
-  const source = read(rel);
+function readLegacyRoute(route) {
+  const { profile } = loadRouteProfile(route);
+  assert(profile, `${route}: route profile missing`);
+  assert.strictEqual(profile.legacyStatus, 'reference-only', `${route}: legacy witness must remain reference-only`);
+  const reference = resolveDeclaredLegacyReference(profile, { route });
+  assert(reference?.absolutePath, `${route}: declared legacy reference missing`);
+  return fs.readFileSync(reference.absolutePath, 'utf8');
+}
+
+function assertAssetContract(label, source = read(label)) {
   const escaped = ASSET.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const refs = [...source.matchAll(new RegExp(`(?:\\.\\.\\/)*${escaped}\\?v=([a-f0-9]{8})`, 'g'))];
-  assert.strictEqual(refs.length, 1, `${rel}: expected exactly one canonical ${ASSET} reference`);
-  assert.strictEqual(refs[0][1], expectedHash, `${rel}: stale ${ASSET} revision`);
-  assert(!source.includes(`${ASSET}?v=1`), `${rel}: legacy v=1 must never return`);
+  assert.strictEqual(refs.length, 1, `${label}: expected exactly one canonical ${ASSET} reference`);
+  assert.strictEqual(refs[0][1], expectedHash, `${label}: stale ${ASSET} revision`);
+  assert(!source.includes(`${ASSET}?v=1`), `${label}: legacy v=1 must never return`);
 
   const mobile = source.indexOf('nagornaya-mobile-toc.js');
   const bar = source.indexOf('nagornaya-bar-extras.js');
   const floating = source.indexOf('floating-cluster-controller.js');
   assert(mobile >= 0 && bar > mobile && floating > bar,
-    `${rel}: required order is mobile-toc -> bar-extras -> floating-cluster`);
+    `${label}: required order is mobile-toc -> bar-extras -> floating-cluster`);
 }
 
 function assertCompactFooterContract(rel) {
@@ -84,9 +96,10 @@ assert.match(compact, /\.gb-ember-expand[\s\S]*?transform:\s*none\s*!important/,
 assertAssetContract(RUNTIME_COMPONENT);
 for (let part = 1; part <= 5; part += 1) {
   const footer = `src/components/nagornaya/chast-${part}/NagornayaChast${part}PageFooter.astro`;
+  const route = `/nagornaya/chast-${part}/`;
   assertRuntimeFooterContract(footer);
   assertCompactFooterContract(footer);
-  assertAssetContract(`nagornaya/chast-${part}/index.html`);
+  assertAssetContract(`${route} retained reference`, readLegacyRoute(route));
 }
 
 const adversarial = path.join(ROOT, 'src', '__nagornaya_bar_revision_adversarial.astro');
@@ -110,4 +123,4 @@ const clean = spawnSync(process.execPath, [path.join(ROOT, 'scripts/cache-bust.j
 });
 assert.strictEqual(clean.status, 0, `clean cache-bust failed:\n${clean.stdout}\n${clean.stderr}`);
 
-console.log(`✅ Nagornaya bar asset contract: shared Astro runtime owner, 5 native mounts, 5 legacy sources, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/table containment, Part III matrix/summary stacking, priority and speed-sheet contracts, adversarial v=1 rejected`);
+console.log(`✅ Nagornaya bar asset contract: shared Astro runtime owner, 5 native mounts, 5 resolver-backed retained references, revision ${expectedHash}, shared glossary, <=359px heading/subtitle/table containment, Part III matrix/summary stacking, priority and speed-sheet contracts, adversarial v=1 rejected`);

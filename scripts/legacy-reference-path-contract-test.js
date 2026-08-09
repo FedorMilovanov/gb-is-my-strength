@@ -34,6 +34,8 @@ assert.deepEqual(
     'scripts/lib/audit-pro-source-corpus.js',
     'scripts/lib/legacy-source-authority.js',
     'scripts/lib/route-source-contract.js',
+    'scripts/nagornaya-visual-parity-audit.js',
+    'scripts/visual-parity-contract.js',
   ].sort(),
   'explicit reference API users must match the migrated physical-reference readers'
 );
@@ -84,6 +86,22 @@ assert.deepEqual(
     evidenceToken: 'resolveLogicalReferenceStorage',
   },
   'route source contract must be an explicit nonblocking resolver-backed policy reader'
+);
+const nagornayaVisualDependency = (manifest.dependencies || []).find((row) => row.path === 'scripts/nagornaya-visual-parity-audit.js');
+assert.deepEqual(
+  nagornayaVisualDependency && {
+    access: nagornayaVisualDependency.access,
+    classification: nagornayaVisualDependency.classification,
+    quarantineImpact: nagornayaVisualDependency.quarantineImpact,
+    evidenceToken: nagornayaVisualDependency.evidenceToken,
+  },
+  {
+    access: 'policy-reader',
+    classification: 'migration-reference-only',
+    quarantineImpact: 'none-fixture-policy-or-comment-only',
+    evidenceToken: 'resolveReferenceForRoute',
+  },
+  'Nagornaya visual audit must be an explicit nonblocking resolver-backed policy reader'
 );
 
 const routes = listReferenceRoutes();
