@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 2;
+  const VERSION = 3;
   const BOUND_ATTR = 'data-reader-controls-a11y-bound';
   const slots = new Set();
   const surfaceRelations = new Map();
@@ -271,6 +271,59 @@
     ].forEach(bindSurfaceRelation);
   }
 
+  function bindNativeSiteSectionsMenu() {
+    const trigger = document.getElementById('hMobileMenuBtn');
+    const target = document.getElementById('hMobileNav');
+    const backdrop = document.getElementById('hMobileBackdrop');
+    if (!(trigger instanceof HTMLElement) || !(target instanceof HTMLElement)) return;
+
+    // Gill/series retains the existing site.js owner. This fallback exists only
+    // for strict-native standalone readers, which intentionally do not load the
+    // legacy site.js bundle.
+    if (document.querySelector('.gbs-world, [data-gbs2-series]')) return;
+    if (typeof window.closeMobileNav === 'function') return;
+    if (trigger.dataset.readerSiteMenuBound === 'native') return;
+    trigger.dataset.readerSiteMenuBound = 'native';
+
+    const lockSource = 'reader-site-sections-menu';
+    let open = surfaceIsOpen(target);
+
+    function sync(next, { restoreFocus = false } = {}) {
+      const wasOpen = open;
+      open = Boolean(next);
+      target.classList.toggle('open', open);
+      setAttr(target, 'aria-hidden', open ? null : 'true');
+      trigger.classList.toggle('is-open', open);
+      setAttr(trigger, 'aria-expanded', open ? 'true' : 'false');
+      setAttr(trigger, 'aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+      if (backdrop instanceof HTMLElement) backdrop.classList.toggle('open', open);
+
+      if (open && !wasOpen) window.SiteUtils?.lockScroll?.(lockSource);
+      if (!open && wasOpen) window.SiteUtils?.unlockScroll?.(lockSource);
+      if (!open && restoreFocus) {
+        try { trigger.focus({ preventScroll: true }); } catch (_) { try { trigger.focus(); } catch (_) {} }
+      }
+    }
+
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      sync(!open);
+    });
+    backdrop?.addEventListener('click', () => sync(false, { restoreFocus: true }));
+    target.addEventListener('click', (event) => {
+      const closeLink = event.target instanceof Element ? event.target.closest('[data-close-nav]') : null;
+      if (closeLink) sync(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (open && (event.key === 'Escape' || event.key === 'Esc')) {
+        event.preventDefault();
+        sync(false, { restoreFocus: true });
+      }
+    });
+
+    sync(false);
+  }
+
   function syncPlayPopupSemantics() {
     document.querySelectorAll('[data-fc-action="play"]').forEach((button) => {
       const controls = button.getAttribute('aria-controls');
@@ -284,6 +337,7 @@
   function refresh() {
     bindSlots();
     bindSurfaceRelations();
+    bindNativeSiteSectionsMenu();
     slots.forEach((slot) => slot.sync());
     surfaceRelations.forEach((relation, target) => {
       if (!target.isConnected) {

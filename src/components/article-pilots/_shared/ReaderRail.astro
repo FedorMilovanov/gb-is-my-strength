@@ -5,6 +5,8 @@
  * HermenevtikaRail: TOC и триггер настроек приходят пропсами, палитра/механика —
  * те же. Герменевтика рендерит его через тонкую обёртку (байт-в-байт).
  */
+import SiteSectionsMenu from './SiteSectionsMenu.astro';
+
 export interface ReaderRailTocItem { href: string; label: string; level: number; }
 interface Props {
   eyebrow: string;
@@ -18,6 +20,7 @@ interface Props {
 }
 const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Оглавление статьи' } = Astro.props;
 ---
+<SiteSectionsMenu />
 <aside class="hrail" aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
   <!-- Верх рейла: только назад — Поиск/PLAY/Сохранить уехали в угловой
        кластер справа сверху, как у Гилла (owner: "должно быть как в Гилле,
@@ -39,7 +42,7 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
   </div>
   <div class="hrail-scroll">
     <ul class="hrail-toc" id="hrailToc">
-      <span class="hrail-track" aria-hidden="true"><i></i></span>
+      <li class="hrail-track-slot" role="presentation" aria-hidden="true" style="display:contents"><span class="hrail-track"><i></i></span></li>
       {toc.map((item) => (
         <li class:list={{ 'hrail-sub': item.level === 3 }}>
           <a href={item.href}>{item.level !== 3 && <span class="hrail-dot" aria-hidden="true"></span>}{item.label}</a>
@@ -48,7 +51,7 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
     </ul>
   </div>
   <div class="hrail-bottom">
-    <button class="hrail-bottom-btn" type="button" data-fc-action="search" aria-label="Поиск и разделы сайта">
+    <button class="hrail-bottom-btn" id="hMobileMenuBtn" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="hMobileNav" data-tip="Меню сайта">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
     </button>
     <!-- Настройки чтения. 'hm' → id=hrailSettingsBtn, шлём CustomEvent
@@ -223,7 +226,7 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
     const toc = document.getElementById('hrailToc');
     const countEl = document.getElementById('hrailCount');
     if(!toc) return;
-    const rows = Array.from(toc.querySelectorAll('li'));
+    const rows = Array.from(toc.querySelectorAll(':scope > li:not(.hrail-track-slot)'));
     const links = rows.map((li) => li.querySelector('a'));
     const track = toc.querySelector('.hrail-track') as HTMLElement | null;
     const trackFill = track ? track.querySelector('i') as HTMLElement | null : null;

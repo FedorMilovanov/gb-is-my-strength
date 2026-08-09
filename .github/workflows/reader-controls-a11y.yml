@@ -1,3 +1,4 @@
+# Exact-head reassertion after Gill semantic track-contract calibration.
 name: Reader Controls Accessibility
 
 on:
@@ -5,14 +6,26 @@ on:
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-controls-a11y.js"
+      - "src/components/article-pilots/_shared/ReaderRail.astro"
+      - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
+      - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
+      - "src/components/article-pilots/gill-series/GillSeriesRail.astro"
+      - "src/components/article-pilots/gill-series/GillPartTocOverlay.astro"
       - "scripts/reader-controls-a11y-browser-contract.mjs"
+      - "scripts/reader-controls-residual-browser-contract.mjs"
       - ".github/workflows/reader-controls-a11y.yml"
   push:
     branches: [main]
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-controls-a11y.js"
+      - "src/components/article-pilots/_shared/ReaderRail.astro"
+      - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
+      - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
+      - "src/components/article-pilots/gill-series/GillSeriesRail.astro"
+      - "src/components/article-pilots/gill-series/GillPartTocOverlay.astro"
       - "scripts/reader-controls-a11y-browser-contract.mjs"
+      - "scripts/reader-controls-residual-browser-contract.mjs"
       - ".github/workflows/reader-controls-a11y.yml"
 
 permissions:
@@ -24,9 +37,9 @@ concurrency:
 
 jobs:
   browser-contract:
-    name: Chromium reader controls accessibility contract
+    name: Chromium + WebKit reader controls accessibility contract
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout exact tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,15 +58,16 @@ jobs:
           node-version: "22.23.1"
           cache: npm
 
-      - name: Install exact dependencies and Chromium
+      - name: Install exact dependencies and browsers
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
 
       - name: Syntax and source boundary
         run: |
           node --check src/runtime/reader-controls-a11y.js
           node --check scripts/reader-controls-a11y-browser-contract.mjs
+          node --check scripts/reader-controls-residual-browser-contract.mjs
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
 
@@ -63,10 +77,11 @@ jobs:
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-a11y-build.log
 
-      - name: Run permanent browser contract
+      - name: Run permanent browser contracts
         run: |
           set -o pipefail
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-a11y-browser-contract.mjs 2>&1 | tee reports/reader-controls-a11y-browser-contract.log
+          GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/reader-controls-residual-browser-contract.log
 
       - name: Upload exact evidence
         if: always()
@@ -79,5 +94,8 @@ jobs:
             reports/reader-controls-a11y-browser-contract.json
             reports/reader-controls-a11y-browser-contract.md
             reports/reader-controls-a11y-*.png
+            reports/reader-controls-residual-browser-contract.log
+            reports/reader-controls-residual-browser-contract.json
+            reports/reader-controls-residual-browser-contract.md
           if-no-files-found: warn
           retention-days: 14

@@ -167,7 +167,7 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
             As a .gbs2-tocscroll sibling it was offset by the ul inset → dots floated
             7.5px right of the line (audit §8 dot-alignment caught this). */}
         <ul class="gbs2-toc" id="gbs2Toc" data-gbs2-cur-grp={String(currentGrp)}>
-          <span aria-hidden="true" class="gbs2-track"><i></i></span>
+          <li class="gbs2-track-slot" role="presentation" aria-hidden="true" style="display:contents"><span class="gbs2-track"><i></i></span></li>
           {partTocRows.map((item) => (
             <li
               class:list={{ 'gbs2-sub': item.level === 3, 'gbs2-collapsed': item.level === 3 && item.grp !== currentGrp }}

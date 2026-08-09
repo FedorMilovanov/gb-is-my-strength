@@ -55,9 +55,10 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
         const arts = isChapter ? chapterArticles(config, item.id) : [];
         const secs = config.pages[item.id]?.partToc || [];
         const isLabel = item.mark.kind === 'label';
+        const partRegionId = `gbat-part-region-${item.id}`;
         return (
           <div class={['gbat-part', isCurrent && 'cur open', isLabel && 'gbat-part--label'].filter(Boolean).join(' ')}>
-            <button class="gbat-hd" type="button" aria-expanded={isCurrent ? 'true' : 'false'}>
+            <button class="gbat-hd" type="button" aria-expanded={isCurrent ? 'true' : 'false'} aria-controls={partRegionId}>
               {isLabel
                 ? <span class="gbat-num gbat-num--label"><i>{item.mark.value}</i></span>
                 : <span class="gbat-num">{item.mark.value}</span>}
@@ -68,7 +69,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
               <span class="gbat-min">{item.readingTime}</span>
               <span class="gbat-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg></span>
             </button>
-            <div class="gbat-subs"><div><div class="gbat-pad">
+            <div class="gbat-subs" id={partRegionId}><div><div class="gbat-pad">
               <span class="gbat-rail" aria-hidden="true"></span>
               {!isCurrent && !isChapter && <a class="gbat-sub gbat-go" href={item.href}><span class="gbat-dot"></span><span>Перейти к части</span></a>}
               {/* Трёхуровневая книга (референс GBS 2026-07-15 §2.2): глава →
@@ -77,6 +78,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
               {arts.map((art) => {
                 const isHere = art.id === pageId;
                 const artSecs = config.pages[art.id]?.partToc || [];
+                const artRegionId = `gbat-art-region-${art.id}`;
                 return (
                   <div class={['gbat-art', isHere && 'open'].filter(Boolean).join(' ')}>
                     <div class="gbat-artrow">
@@ -86,12 +88,12 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
                         <span class="gbat-satmin">{art.readingTime}</span>
                       </a>
                       {artSecs.length > 0 && (
-                        <button class="gbat-art-chev" type="button" aria-expanded={isHere ? 'true' : 'false'} aria-label={`Оглавление: ${art.title}`}>
+                        <button class="gbat-art-chev" type="button" aria-expanded={isHere ? 'true' : 'false'} aria-controls={artRegionId} aria-label={`Оглавление: ${art.title}`}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                         </button>
                       )}
                     </div>
-                    <div class="gbat-artsecs"><div>
+                    <div class="gbat-artsecs" id={artRegionId}><div>
                       {artSecs.map((row) => (
                         <a class={['gbat-sub', 'h3', isHere && row.current && 'active'].filter(Boolean).join(' ')}
                            href={isHere ? row.href : art.href + row.href}>
