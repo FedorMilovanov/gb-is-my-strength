@@ -1,0 +1,30 @@
+---
+import { LOT_FIGURES, type LotFigureName } from './lotFigures';
+
+interface Props {
+  name: LotFigureName;
+}
+
+const { name } = Astro.props;
+const meta = LOT_FIGURES[name];
+const base = `/images/articles/lot/${name}`;
+---
+
+<figure class="article-img reveal" data-lot-figure={name}>
+  <picture>
+    <source
+      srcset={`${base}-600w.webp 600w, ${base}-900w.webp 900w, ${base}-1200w.webp 1200w`}
+      sizes="(max-width: 640px) 92vw, 760px"
+      type="image/webp"
+    />
+    <img
+      src={`${base}-1200w.webp`}
+      alt={meta.alt}
+      width="1200"
+      height="675"
+      loading="lazy"
+      decoding="async"
+    />
+  </picture>
+  <figcaption>{meta.caption}</figcaption>
+</figure>
