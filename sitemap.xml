@@ -547,4 +547,16 @@
       <image:title>Диотрефы нашего времени: власть, подотчётность и верность</image:title>
     </image:image>
   </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/articles/lot-i-sodom/</loc>
+    <lastmod>2026-08-08T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
+      <image:title>Лот: праведник у ворот Содома</image:title>
+    </image:image>
+  </url>
 </urlset>
