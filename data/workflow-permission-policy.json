@@ -191,6 +191,30 @@
           ]
         }
       }
+    },
+    ".github/workflows/scripture-occurrence-index-contract.yml": {
+      "jobs": {
+        "scripture-occurrence-autofix": {
+          "permissions": {
+            "contents": "write"
+          },
+          "purpose": "Regenerate the deterministic Scripture occurrence index for an explicitly labelled same-repository pull request using the canonical source-owned generator",
+          "allowedEvents": [
+            "pull_request"
+          ],
+          "repositoryBoundary": "same-repository pull request only",
+          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "mutationTargets": [
+            "data/scripture-search-index.json on the pull-request source branch"
+          ],
+          "requiresConcurrency": true,
+          "requiredMarkers": [
+            "contains(github.event.pull_request.labels.*.name, 'autofix')",
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            "ref: ${{ github.event.pull_request.head.ref }}"
+          ]
+        }
+      }
     }
   }
 }
