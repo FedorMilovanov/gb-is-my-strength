@@ -35,6 +35,17 @@ function normalizeHolds(value) {
   return [...new Set(value.map((item) => String(item || '').trim().toUpperCase()).filter(Boolean))].sort();
 }
 
+export function mergeBiblePublicationMeta(base = {}, override = {}) {
+  return {
+    ...base,
+    ...override,
+    holds: normalizeHolds([
+      ...(Array.isArray(base.holds) ? base.holds : []),
+      ...(Array.isArray(override.holds) ? override.holds : []),
+    ]),
+  };
+}
+
 export function isBibleRecordPublicationEligible(record = {}) {
   if (record.publicationState !== BIBLE_PUBLICATION_STATES.APPROVED) return false;
   if (record.rightsState !== BIBLE_RIGHTS_STATES.ELIGIBLE) return false;
@@ -156,7 +167,7 @@ export function loadBibleCorpus(registry, root = DEFAULT_REPOSITORY_ROOT) {
     const json = JSON.parse(fs.readFileSync(file, 'utf8'));
     const translationId = String(book.translation || registry.defaultTranslationByTestament?.[book.testament] || '').trim();
     const translationPolicy = registry.translations?.[translationId] || {};
-    const meta = { ...translationPolicy, ...(json._meta || {}) };
+    const meta = mergeBiblePublicationMeta(translationPolicy, json._meta || {});
     if (!meta.translation && translationPolicy.label) meta.translation = translationPolicy.label;
     const entries = [];
 
