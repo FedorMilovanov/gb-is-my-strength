@@ -61,6 +61,7 @@ const ENGINES = [
   ['chromium', chromium],
   ['webkit', webkit],
 ];
+const RAW_HEIGHT_BY_WIDTH = new Map([[600, 338], [900, 507], [1200, 675]]);
 
 fs.mkdirSync(OUT, { recursive: true });
 const results = [];
@@ -77,15 +78,37 @@ function ignoredConsole(text) {
 }
 
 async function structuralSnapshot(page) {
-  return page.evaluate(({ figures, toc, canonical, og, ogAlt }) => {
+  return page.evaluate(async ({ figures, toc, canonical, og, ogAlt }) => {
     const root = document.documentElement;
     const article = document.querySelector('article.article-body[data-pagefind-body]');
-    const figureRows = [...document.querySelectorAll('[data-lot-figure]')].map((figure) => {
+
+    async function rawResourceSize(src) {
+      if (!src) return { width: 0, height: 0, error: 'missing currentSrc' };
+      return new Promise((resolve) => {
+        const probe = new Image();
+        let settled = false;
+        const finish = (payload) => {
+          if (settled) return;
+          settled = true;
+          resolve(payload);
+        };
+        probe.onload = () => finish({ width: Number(probe.naturalWidth || 0), height: Number(probe.naturalHeight || 0), error: '' });
+        probe.onerror = () => finish({ width: 0, height: 0, error: `failed to load ${src}` });
+        probe.src = src;
+        if (probe.complete && probe.naturalWidth) {
+          finish({ width: Number(probe.naturalWidth), height: Number(probe.naturalHeight), error: '' });
+        }
+      });
+    }
+
+    const figureRows = await Promise.all([...document.querySelectorAll('[data-lot-figure]')].map(async (figure) => {
       const name = figure.getAttribute('data-lot-figure') || '';
       const img = figure.querySelector('img');
       const source = figure.querySelector('source[type="image/webp"]');
       const caption = (figure.querySelector('figcaption')?.textContent || '').replace(/\s+/g, ' ').trim();
       const rect = figure.getBoundingClientRect();
+      const currentSrc = img?.currentSrc || '';
+      const rawSize = await rawResourceSize(currentSrc);
       return {
         name,
         alt: (img?.getAttribute('alt') || '').trim(),
@@ -93,13 +116,16 @@ async function structuralSnapshot(page) {
         src: img?.getAttribute('src') || '',
         srcset: source?.getAttribute('srcset') || '',
         sizes: source?.getAttribute('sizes') || '',
-        currentSrc: img?.currentSrc || '',
+        currentSrc,
         complete: Boolean(img?.complete),
-        naturalWidth: Number(img?.naturalWidth || 0),
-        naturalHeight: Number(img?.naturalHeight || 0),
+        slotNaturalWidth: Number(img?.naturalWidth || 0),
+        slotNaturalHeight: Number(img?.naturalHeight || 0),
+        rawNaturalWidth: rawSize.width,
+        rawNaturalHeight: rawSize.height,
+        rawError: rawSize.error,
         rect: { left: rect.left, right: rect.right, width: rect.width },
       };
-    });
+    }));
 
     const svgRows = [
       ['family', 'lot-family-title', 'lot-family-desc'],
@@ -190,17 +216,28 @@ function validateStructure(snapshot) {
   if (snapshot.figures.length !== FIGURES.length) problems.push(`figure count=${snapshot.figures.length}`);
   const names = snapshot.figures.map((row) => row.name);
   if (JSON.stringify(names) !== JSON.stringify(FIGURES)) problems.push(`figure order/names=${JSON.stringify(names)}`);
+
   for (const row of snapshot.figures) {
     const base = `/images/articles/lot/${row.name}`;
     const allowedCurrent = [`${base}-600w.webp`, `${base}-900w.webp`, `${base}-1200w.webp`];
-    if (!row.complete || ![600, 900, 1200].includes(row.naturalWidth) || row.naturalHeight <= 0) problems.push(`${row.name}: load=${row.complete}/${row.naturalWidth}x${row.naturalHeight}`);
-    if (!allowedCurrent.some((suffix) => row.currentSrc.endsWith(suffix))) problems.push(`${row.name}: currentSrc=${row.currentSrc}`);
+    const selected = row.currentSrc.match(/-(600|900|1200)w\.webp(?:[?#].*)?$/);
+    const expectedRawWidth = Number(selected?.[1] || 0);
+    const expectedRawHeight = RAW_HEIGHT_BY_WIDTH.get(expectedRawWidth) || 0;
+
+    if (!row.complete || row.slotNaturalWidth <= 0 || row.slotNaturalHeight <= 0) {
+      problems.push(`${row.name}: responsive image did not decode (${row.slotNaturalWidth}x${row.slotNaturalHeight})`);
+    }
+    if (!allowedCurrent.some((suffix) => row.currentSrc.includes(suffix))) problems.push(`${row.name}: currentSrc=${row.currentSrc}`);
+    if (!selected || row.rawError || row.rawNaturalWidth !== expectedRawWidth || row.rawNaturalHeight !== expectedRawHeight) {
+      problems.push(`${row.name}: selected raw asset=${row.rawNaturalWidth}x${row.rawNaturalHeight}, expected=${expectedRawWidth}x${expectedRawHeight}${row.rawError ? ` (${row.rawError})` : ''}`);
+    }
     for (const width of [600, 900, 1200]) if (!row.srcset.includes(`${base}-${width}w.webp ${width}w`)) problems.push(`${row.name}: srcset missing ${width}`);
     if (row.sizes !== '(max-width: 640px) 92vw, 760px') problems.push(`${row.name}: sizes=${row.sizes}`);
     if (!row.alt || !/иллюстрац|образ/i.test(row.alt)) problems.push(`${row.name}: weak alt`);
     if (!row.caption || !/иллюстрац/i.test(row.caption)) problems.push(`${row.name}: weak caption`);
-    if (row.rect.left < -1 || row.rect.right > snapshot.viewport.clientWidth + 1) problems.push(`${row.name}: horizontal clipping ${row.rect.left}/${row.rect.right}`);
+    if (row.rect.width <= 0 || row.rect.left < -1 || row.rect.right > snapshot.viewport.clientWidth + 1) problems.push(`${row.name}: horizontal clipping ${row.rect.left}/${row.rect.right}/${row.rect.width}`);
   }
+
   if (snapshot.svgs.length !== 2 || snapshot.svgs.some((row) => row.role !== 'img' || !row.title || !row.desc || row.width <= 0 || row.left < -1 || row.right > snapshot.viewport.clientWidth + 1)) problems.push(`semantic SVG=${JSON.stringify(snapshot.svgs)}`);
   const tableLabels = snapshot.tables.map((row) => row.label).sort();
   const expectedTables = ['Моав и Аммон в линии Лота и Пятикнижии', 'Три уровня доказательств при обсуждении Содома и Лота'].sort();
