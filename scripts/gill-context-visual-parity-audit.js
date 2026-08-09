@@ -50,7 +50,7 @@ function exists(rel) { return fs.existsSync(abs(rel)); }
 function mustExist(label, rel) { exists(rel) ? ok(`${label}: ${rel}`) : bad(`${label} missing: ${rel}`); }
 function mustNotExist(label, rel) { !exists(rel) ? ok(`${label}: ${rel} absent`) : bad(`${label}: ${rel} must be absent`); }
 function mustContain(label, text, needle) { String(text).includes(needle) ? ok(`${label}: contains ${needle}`) : bad(`${label}: missing ${needle}`); }
-function mustNotContain(label, text, needle) { !String(text).includes(needle) ? ok(`no ${label}: ${needle}`) : bad(`${label}: forbidden ${needle}`); }
+function mustNotContain(label, text, needle) { !String(text).includes(needle) ? ok(`${label}: no ${needle}`) : bad(`${label}: forbidden ${needle}`); }
 function readResolvedLegacy(profile, options = {}) {
   const reference = resolveDeclaredLegacyReference(profile, {
     route: ROUTE,
