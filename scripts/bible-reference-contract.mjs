@@ -3,8 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  BIBLE_PUBLICATION_STATES,
+  BIBLE_RIGHTS_STATES,
   DEFAULT_REPOSITORY_ROOT,
   createBibleResolver,
+  isBibleRecordPublicationEligible,
   normalizeBibleRecord
 } from '../src/lib/bible-reference-core.mjs';
 
@@ -84,6 +87,12 @@ function inspectCorpus(resolver) {
       if (entry.completeness === 'excerpt' && !entry.note) fail(`${entry.file} ${entry.key}: excerpt requires explanatory note`);
       if (entry.translation && meta.translation && entry.translation !== meta.translation) fail(`${entry.file} ${entry.key}: record translation differs from book metadata`);
       if (!book.testament) fail(`${entry.file}: registry book ${bookId} lacks testament`);
+      if (isBibleRecordPublicationEligible(entry)) {
+        if (!entry.source || !entry.sourceUrl || !entry.rights || !entry.translation) {
+          fail(`${entry.file} ${entry.key}: publication-eligible record lacks exact provenance`);
+        }
+        if (entry.holds.length) fail(`${entry.file} ${entry.key}: publication-eligible record must not carry holds`);
+      }
     }
   }
 }
@@ -129,6 +138,57 @@ function inspectLegacyAuthority(files) {
   }
 }
 
+function runPublicationEligibilityFixtures(resolver) {
+  const unknown = normalizeBibleRecord({
+    text: 'fixture',
+    translation: 'Fixture',
+    source: 'Fixture source',
+    sourceUrl: 'https://example.test/source',
+    rights: 'Fixture rights',
+  }, {}, '1:1');
+  if (unknown.publicationState !== BIBLE_PUBLICATION_STATES.BLOCKED) fail('publication fixture: absent state must default to BLOCKED');
+  if (unknown.rightsState !== BIBLE_RIGHTS_STATES.UNKNOWN) fail('publication fixture: absent rights state must default to RIGHTS_UNKNOWN');
+  if (isBibleRecordPublicationEligible(unknown)) fail('publication fixture: provenance text alone must never imply eligibility');
+
+  const blockedWithRights = normalizeBibleRecord({
+    text: 'fixture',
+    translation: 'Fixture',
+    source: 'Fixture source',
+    sourceUrl: 'https://example.test/source',
+    rights: 'Public Domain',
+    rightsState: BIBLE_RIGHTS_STATES.ELIGIBLE,
+    publicationState: BIBLE_PUBLICATION_STATES.BLOCKED,
+  }, {}, '1:2');
+  if (isBibleRecordPublicationEligible(blockedWithRights)) fail('publication fixture: rights eligibility without Product approval must remain blocked');
+
+  const approved = normalizeBibleRecord({
+    text: 'fixture',
+    translation: 'Fixture',
+    source: 'Exact acquired fixture source',
+    sourceUrl: 'https://example.test/source',
+    rights: 'Public Domain',
+    rightsState: BIBLE_RIGHTS_STATES.ELIGIBLE,
+    publicationState: BIBLE_PUBLICATION_STATES.APPROVED,
+    holds: [],
+  }, {}, '1:3');
+  if (!isBibleRecordPublicationEligible(approved)) fail('publication fixture: explicit approved exact provenance must be eligible');
+
+  const held = normalizeBibleRecord({
+    ...approved,
+    publicationState: BIBLE_PUBLICATION_STATES.APPROVED,
+    rightsState: BIBLE_RIGHTS_STATES.ELIGIBLE,
+    holds: ['PUBLICATION_HOLD'],
+  }, {}, '1:4');
+  if (isBibleRecordPublicationEligible(held)) fail('publication fixture: any hold must fail closed');
+
+  const cassian = resolver.resolve('2 Тимофею 2:14–15').record;
+  if (!cassian?.text) fail('publication fixture: current Cassian negative witness must resolve internally');
+  else {
+    if (cassian.publicationState !== BIBLE_PUBLICATION_STATES.BLOCKED) fail('publication fixture: current Cassian witness must remain BLOCKED without Product approval');
+    if (isBibleRecordPublicationEligible(cassian)) fail('publication fixture: current Cassian witness must remain reference-only');
+  }
+}
+
 function runFixtures(resolver) {
   const parsed = resolver.parse('Бытие 1:26–28');
   if (!parsed.ok || parsed.bookId !== 'bytie' || parsed.key !== '1:26–28') fail('parser fixture failed for Бытие 1:26–28');
@@ -143,6 +203,8 @@ function runFixtures(resolver) {
     const fixture = resolver.parse(reference);
     if (!fixture.ok || fixture.bookId !== expectedBook) fail(`registry/parser fixture failed for ${reference}`);
   }
+
+  runPublicationEligibilityFixtures(resolver);
 }
 
 let resolver;
