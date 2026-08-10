@@ -1,7 +1,9 @@
 name: TEMP Site Menu Exact-Head Refresh
 
 on:
-  pull_request:
+  push:
+    branches:
+      - 'agent/system-site-menu-owner-20260810'
     paths:
       - '.github/workflows/temp-site-menu-refresh.yml'
 
@@ -9,25 +11,25 @@ permissions:
   contents: write
 
 concurrency:
-  group: temp-site-menu-refresh-${{ github.event.pull_request.number }}
+  group: temp-site-menu-refresh-site-menu-system
   cancel-in-progress: false
 
 jobs:
   refresh-same-branch:
-    if: github.event.pull_request.number == 1558 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/system-site-menu-owner-20260810'
+    if: github.ref == 'refs/heads/agent/system-site-menu-owner-20260810'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout exact PR head with bounded writer credential
+      - name: Checkout exact pushed head with bounded writer credential
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: true
 
       - name: Merge current main only when branch head is still exact
         env:
-          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_SHA: ${{ github.sha }}
           BRANCH: agent/system-site-menu-owner-20260810
         run: |
           set -euo pipefail
