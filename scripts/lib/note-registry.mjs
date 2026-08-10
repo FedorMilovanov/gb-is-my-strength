@@ -169,6 +169,12 @@ function numericLabel(markerText) {
   return match ? Number.parseInt(match[0], 10) : null;
 }
 
+function accessibleMarkerLabel(marker, ordinal) {
+  const authored = String(marker.attrs['aria-label'] || '').trim();
+  if (authored && !/^Показать сноску(?:\s+\d+)?$/iu.test(authored)) return authored;
+  return `Показать сноску ${ordinal}`;
+}
+
 function setAttributes(openTag, additions) {
   let next = openTag;
   for (const [name, rawValue] of Object.entries(additions)) {
@@ -230,7 +236,7 @@ function buildEndnotes(route, notes) {
       + `<a class="gb-note-endnotes__back" href="#${note.refId}" aria-label="Вернуться к отметке ${note.ordinal}">↩</a>`
       + '</li>'
   )).join('\n');
-  return `${GENERATED_START}\n<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable data-pagefind-body aria-labelledby="${headingId}">\n  <h2 id="${headingId}">Примечания</h2>\n  <ol>\n${items}\n  </ol>\n</section>\n${GENERATED_END}`;
+  return `${GENERATED_START}\n<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable data-pagefind-body data-print-policy="include" aria-labelledby="${headingId}">\n  <h2 id="${headingId}">Примечания</h2>\n  <ol>\n${items}\n  </ol>\n</section>\n${GENERATED_END}`;
 }
 
 function injectStylesheet(html, cssHref) {
@@ -289,6 +295,7 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
     const refId = marker.attrs.id || `note-ref-${id}`;
     const tipId = tip.attrs.id || `note-tip-${id}`;
     const endnoteId = `note-end-${id}`;
+    const markerLabel = accessibleMarkerLabel(marker, ordinal);
     notes.push({
       id,
       route: normalizeRoute(route),
@@ -321,6 +328,7 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
         id: refId,
         'data-note-id': id,
         'data-note-ordinal': ordinal,
+        'aria-label': markerLabel,
         'aria-describedby': endnoteId,
         'aria-controls': tipId,
       }),
