@@ -80,3 +80,10 @@ const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-
 
   <slot name="overlays" />
 </div>
+
+<style is:global>
+  /* Server/pre-hydration contract: a rail announced as hidden must have no
+     rendered geometry or sequential-focus surface. Runtime removes this rule
+     naturally by setting aria-hidden="false" when the canonical rail opens. */
+  .mobile-chrome .mobile-speedrail[aria-hidden="true"] { display: none !important; }
+</style>
