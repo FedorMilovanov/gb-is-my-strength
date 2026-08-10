@@ -1,5 +1,5 @@
 /**
- * layout.ts — dagre layout + golden path + AM positioning + focus lineage.
+ * layout.ts — dagre layout + golden path + coherent chronology-aware world coordinates.
  */
 
 import type { Node, Edge } from '@xyflow/react';
@@ -8,12 +8,17 @@ import dagre from '@dagrejs/dagre';
 import type { Person, LayoutOptions, PersonNodeData } from './types';
 import { getLineStyle, NODE_W, NODE_H } from './theme';
 
-const Y_SPAN = 4200;
+/**
+ * Minimum height retained for the chronology axis. The actual world may be taller
+ * when Dagre needs more vertical room for the full genealogy.
+ */
+const MIN_WORLD_HEIGHT = 4200;
 
 interface LayoutResult {
   nodes: Node<PersonNodeData>[];
   edges: Edge[];
   goldenPath: Set<string>;
+  worldHeight: number;
 }
 
 export function traceGoldenPath(persons: Person[]): Set<string> {
@@ -93,9 +98,8 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
     if (am < amMin) amMin = am;
     if (am > amMax) amMax = am;
   }
-  const amRange = Math.max(1, amMax - amMin);
-  const yForAM = (am: number | undefined): number | undefined =>
-    am != null ? ((am - amMin) / amRange) * Y_SPAN : undefined;
+  const hasChronology = Number.isFinite(amMin) && Number.isFinite(amMax);
+  const amRange = hasChronology ? Math.max(1, amMax - amMin) : 1;
 
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
@@ -116,13 +120,42 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
 
   dagre.layout(g);
 
+  /*
+   * World-coordinate contract
+   * -------------------------
+   * Dagre owns the topology for every person. Its natural Y extent defines the
+   * size of the shared world. Both known chronology and topology-only persons
+   * are then projected into that SAME normalized 0..1 vertical coordinate:
+   *
+   *   known birthAM -> normalized AM position
+   *   no birthAM    -> normalized Dagre position
+   *
+   * The old layout mixed absolute 0..4200 AM pixels with unbounded Dagre pixels,
+   * creating a sparse envelope whose midpoint could contain no people. This
+   * projection keeps chronology meaningful without allowing either source to
+   * create a second incompatible Y space.
+   */
+  const dagreYs = filtered.map(p => g.node(p.id).y as number);
+  const dagreMin = dagreYs.length ? Math.min(...dagreYs) : 0;
+  const dagreMax = dagreYs.length ? Math.max(...dagreYs) : NODE_H;
+  const dagreRange = Math.max(1, dagreMax - dagreMin);
+  const worldHeight = Math.max(MIN_WORLD_HEIGHT, Math.ceil(dagreRange + NODE_H));
+  const usableWorldHeight = Math.max(1, worldHeight - NODE_H);
+
+  const topologyT = (dagreY: number): number => (dagreY - dagreMin) / dagreRange;
+  const chronologyT = (am: number | undefined): number | undefined =>
+    hasChronology && am != null ? (am - amMin) / amRange : undefined;
+
   const nodes: Node<PersonNodeData>[] = filtered.map(p => {
     const pos = g.node(p.id);
-    const yAM = yForAM(p.chronology?.mt?.birthAM);
+    const verticalT = chronologyT(p.chronology?.mt?.birthAM) ?? topologyT(pos.y);
     return {
       id: p.id,
       type: 'default',
-      position: { x: pos.x - NODE_W / 2, y: yAM ?? (pos.y - NODE_H / 2) },
+      position: {
+        x: pos.x - NODE_W / 2,
+        y: Math.max(0, Math.min(1, verticalT)) * usableWorldHeight,
+      },
       data: {
         name: p.name.ru,
         hebrew: p.name.he,
@@ -176,7 +209,7 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
     }
   }
 
-  return { nodes, edges, goldenPath };
+  return { nodes, edges, goldenPath, worldHeight };
 }
 
 function resolveParent(p: Person, ids: Set<string>): string | null {
