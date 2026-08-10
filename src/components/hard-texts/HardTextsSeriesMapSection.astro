@@ -3,8 +3,19 @@
  * HardTextsSeriesMapSection.astro — four-chapter book map + series CTA.
  *
  * The map follows the active book-shaped series config rather than the retired
- * three-part pilot model.
+ * three-part pilot model. The book-start CTA is derived from data/series.json,
+ * so "Начать книгу" cannot silently skip the canonical first published item.
  */
+import seriesData from '../../../data/series.json';
+
+const hardTextsSeries = seriesData['hard-texts'];
+const firstPublished = hardTextsSeries.parts.find((part) => part.status === 'published');
+if (!firstPublished) throw new Error('hard-texts: no published book-start item in data/series.json');
+
+const baseUrl = hardTextsSeries.baseUrl || '/articles/';
+const startHref = `${baseUrl}${firstPublished.slug}/`;
+const startLabel = firstPublished.n === 0 ? 'Пролог' : `Часть ${firstPublished.n}`;
+const startCover = `../images/og-${firstPublished.slug}-600w.webp`;
 ---
 <section class="h-section h-reveal gbs2-scope" style="padding-top:0;" aria-label="Карта книги о человеческом сердце">
   <section aria-label="Карта книги по главам" class="gbs2-timeline">
@@ -19,11 +30,11 @@
   </section>
 
   <nav aria-label="Начать чтение книги" class="gbs2-next" style="margin-top:clamp(20px,3vw,32px);">
-    <a class="gbs2-next-card" href="../articles/krajne-li-isporcheno-serdce/">
-      <span class="gbs2-next-cover" style="background-image:url('../images/og-krajne-isporcheno-600w.webp')"></span>
-      <span><span class="gbs2-next-eyebrow">Начать книгу · Глава I · Статья 1 · ~41 мин</span>
-      <span class="gbs2-next-title">Крайне ли испорчено сердце верующего?</span>
-      <span class="gbs2-next-desc">Иеремия 17: исторический фон, два образа доверия и диагноз, который нельзя выносить за скобки Евангелия.</span></span>
+    <a class="gbs2-next-card" href={startHref}>
+      <span class="gbs2-next-cover" style={`background-image:url('${startCover}')`}></span>
+      <span><span class="gbs2-next-eyebrow">Начать книгу · {startLabel} · ~{firstPublished.readingTime} мин</span>
+      <span class="gbs2-next-title">{firstPublished.title}</span>
+      <span class="gbs2-next-desc">Начните с первого опубликованного материала книги и продолжайте по каноническому порядку серии.</span></span>
     </a>
   </nav>
 </section>
