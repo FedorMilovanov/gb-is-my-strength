@@ -10,6 +10,7 @@ on:
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'scripts/hermenevtika-mobile-chrome-visual-contract.mjs'
       - 'scripts/genealogy-browser-contract.mjs'
       - 'scripts/a13-mobile-webkit-a11y-browser-test.mjs'
       - 'data/a13-mobile-webkit-a11y-scene-matrix.json'
@@ -22,6 +23,7 @@ on:
       - 'src/components/rodosloviye/**'
       - 'src/components/article-pilots/**'
       - 'src/components/reader-platform/**'
+      - 'src/components/ui/floating-cluster/**'
       - 'src/layouts/**'
       - 'src/runtime/**'
       - 'src/styles/**'
@@ -39,6 +41,7 @@ on:
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'scripts/hermenevtika-mobile-chrome-visual-contract.mjs'
       - 'scripts/genealogy-browser-contract.mjs'
       - 'scripts/a13-mobile-webkit-a11y-browser-test.mjs'
       - 'data/a13-mobile-webkit-a11y-scene-matrix.json'
@@ -51,6 +54,7 @@ on:
       - 'src/components/rodosloviye/**'
       - 'src/components/article-pilots/**'
       - 'src/components/reader-platform/**'
+      - 'src/components/ui/floating-cluster/**'
       - 'src/layouts/**'
       - 'src/runtime/**'
       - 'src/styles/**'
@@ -132,7 +136,7 @@ jobs:
   interactive-audit:
     needs: home-browser-contract
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - name: Checkout exact source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -155,7 +159,7 @@ jobs:
 
           run=false
           reason=unrelated-change
-          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/genealogy-browser-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|data/genealogy/|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/pages/rodosloviye/|src/components/home/|src/components/genealogy/|src/components/rodosloviye/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/hermenevtika-mobile-chrome-visual-contract\.mjs|scripts/genealogy-browser-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|data/genealogy/|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/pages/rodosloviye/|src/components/home/|src/components/genealogy/|src/components/rodosloviye/|src/components/article-pilots/|src/components/reader-platform/|src/components/ui/floating-cluster/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
@@ -207,6 +211,12 @@ jobs:
       - name: Build Pagefind index into dist
         if: steps.audit-scope.outputs.run == 'true'
         run: npm run pagefind:build:dist
+
+      - name: Run Hermenevtika mobile chrome visual contract
+        if: steps.audit-scope.outputs.run == 'true'
+        env:
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/hermenevtika-mobile-chrome-visual-contract.mjs
 
       - name: Start production-like dist server
         if: steps.audit-scope.outputs.run == 'true'
@@ -266,6 +276,10 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: runtime-interactive-audit-${{ github.run_id }}-${{ github.run_attempt }}
-          path: reports/interactive-audit
+          path: |
+            reports/interactive-audit
+            reports/hermenevtika-mobile-chrome-visual-contract.json
+            reports/hermenevtika-mobile-chrome-visual-contract.md
+            reports/hermenevtika-mobile-chrome-*.png
           if-no-files-found: error
           retention-days: 14
