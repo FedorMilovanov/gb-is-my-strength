@@ -9,7 +9,7 @@
  * Highlights differences, shared names, and the Jeconiah curse problem.
  */
 
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, type SyntheticEvent } from 'react';
 import type { Person } from './types';
 import { getLineStyle, ROLE_LABELS } from './theme';
 
@@ -35,6 +35,10 @@ function traceLine(persons: Person[], fromId: string, toId: string): Person[] {
 }
 
 function SplitViewComponent({ persons, onClose }: SplitViewProps) {
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
   const { matthewLine, lukeLine, sharedNames } = useMemo(() => {
     // Matthew: Jesus → Joseph → Jacob → ... → Solomon → David → ... → Abraham
     const mt = traceLine(persons, 'jesus', 'david')
@@ -51,6 +55,37 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
 
     return { matthewLine: mt, lukeLine: lk, sharedNames: shared };
   }, [persons]);
+
+  useEffect(() => {
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    closeButtonRef.current?.focus({ preventScroll: true });
+
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, []);
+
+  const requestClose = useCallback(() => {
+    const dialog = dialogRef.current;
+    if (dialog?.open) dialog.close();
+
+    const opener = restoreFocusRef.current;
+    if (opener?.isConnected) opener.focus({ preventScroll: true });
+    onClose();
+  }, [onClose]);
+
+  const handleCancel = useCallback((event: SyntheticEvent<HTMLDialogElement>) => {
+    // Keep dismissal in the same lifecycle as the explicit close button so
+    // Escape and pointer activation both restore the exact opener.
+    event.preventDefault();
+    requestClose();
+  }, [requestClose]);
 
   const renderEntry = (p: Person) => {
     const ls = getLineStyle(p.lineage);
@@ -93,13 +128,19 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
   };
 
   return (
-    <div
-      role="complementary"
-      aria-label="Сравнение родословий Матфея и Луки"
+    <dialog
+      ref={dialogRef}
+      className="genealogy-split-dialog"
+      aria-labelledby="genealogy-split-title"
+      aria-describedby="genealogy-split-description"
+      onCancel={handleCancel}
       style={{
-        position: 'absolute', inset: 0, zIndex: 60,
+        position: 'fixed', inset: 0, zIndex: 60,
+        width: '100vw', height: '100dvh', maxWidth: 'none', maxHeight: 'none',
+        margin: 0, padding: 0, border: 0,
         background: 'rgba(5,4,2,0.95)', backdropFilter: 'blur(20px)',
         display: 'flex', flexDirection: 'column',
+        color: '#c8b89a',
         fontFamily: '"Lora", Georgia, serif',
         animation: 'genealogy-fade-in .2s ease-out',
         overflow: 'hidden',
@@ -111,15 +152,17 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
         padding: '14px 20px', borderBottom: '1px solid rgba(212,168,87,0.12)',
       }}>
         <div>
-          <div style={{ color: '#d4a857', fontSize: '16px', fontWeight: 700 }}>
+          <div id="genealogy-split-title" style={{ color: '#d4a857', fontSize: '16px', fontWeight: 700 }}>
             Две родословные Христа
           </div>
-          <div style={{ color: 'rgba(200,184,154,0.4)', fontSize: '11px', marginTop: '2px' }}>
+          <div id="genealogy-split-description" style={{ color: 'rgba(200,184,154,0.4)', fontSize: '11px', marginTop: '2px' }}>
             Матфей (царственная линия через Соломона) vs Лука (кровная линия через Нафана)
           </div>
         </div>
         <button
-          onClick={onClose}
+          ref={closeButtonRef}
+          autoFocus
+          onClick={requestClose}
           aria-label="Закрыть сравнение"
           style={{
             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)',
@@ -133,7 +176,12 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
       {/* Two columns */}
       <div style={{ display: 'flex', gap: '0', flex: 1, overflow: 'hidden' }}>
         {/* Matthew column */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '14px', borderRight: '1px solid rgba(212,168,87,0.08)' }}>
+        <div
+          role="region"
+          aria-label="Родословие по Матфею"
+          tabIndex={0}
+          style={{ flex: 1, overflowY: 'auto', padding: '14px', borderRight: '1px solid rgba(212,168,87,0.08)' }}
+        >
           <div style={{ color: '#c8923d', fontSize: '13px', fontWeight: 700, marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid rgba(200,146,61,0.2)' }}>
             📜 Матфей 1:1–17
           </div>
@@ -144,7 +192,12 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
         </div>
 
         {/* Luke column */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '14px' }}>
+        <div
+          role="region"
+          aria-label="Родословие по Луке"
+          tabIndex={0}
+          style={{ flex: 1, overflowY: 'auto', padding: '14px' }}
+        >
           <div style={{ color: '#b8965a', fontSize: '13px', fontWeight: 700, marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid rgba(184,150,90,0.2)' }}>
             📜 Лука 3:23–38
           </div>
@@ -166,12 +219,16 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
       </div>
 
       <style>{`
+        .genealogy-split-dialog::backdrop {
+          background: rgba(5, 4, 2, 0.7);
+          backdrop-filter: blur(4px);
+        }
         @keyframes genealogy-fade-in {
           from { opacity: 0; }
           to { opacity: 1; }
         }
       `}</style>
-    </div>
+    </dialog>
   );
 }
 
