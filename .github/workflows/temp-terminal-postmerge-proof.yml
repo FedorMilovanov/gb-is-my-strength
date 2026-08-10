@@ -72,6 +72,11 @@ jobs:
           node scripts/cache-bust.js
           git diff --check
 
+      - name: Remove verifier from final-tree validation surface
+        run: |
+          git rm .github/workflows/temp-terminal-postmerge-proof.yml
+          git diff --check
+
       - name: Permanent source and control-plane gates
         run: |
           node scripts/check-workflows.js
@@ -96,12 +101,25 @@ jobs:
           node scripts/reader-linear-text-projection-browser-test.mjs
           node scripts/atlas-focus-state-browser-test.mjs
 
-      - name: Self-delete and commit only after full PASS
+      - name: Commit final tree only after full PASS
         env:
           TRIGGER_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          git rm .github/workflows/temp-terminal-postmerge-proof.yml
+          printf '%s\n' \
+            .github/workflows/temp-terminal-postmerge-proof.yml \
+            src/lib/asset-version.js \
+            src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
+            src/components/article-pilots/gill-series/GillSeriesChrome.astro \
+            src/components/article-pilots/hermenevtika/HermenevtikaBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBookLanding.astro \
+            src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro \
+            src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
+            src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
+            | sort > /tmp/allowed-final-worktree.txt
+          git diff --name-only | sort > /tmp/actual-final-worktree.txt
+          diff -u /tmp/allowed-final-worktree.txt /tmp/actual-final-worktree.txt
           git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
