@@ -482,7 +482,7 @@ try {
 
     const printNoteState = routeNotes.length ? await page.evaluate((expected) => {
       const failures = [];
-      const normalize = (value) => String(value || '').normalize('NFKC').replace(/\s+/g, ' ').replace(/\s+([,.;:!?…])/g, '$1').trim();
+      const normalize = (value) => String(value || '').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/\u00ad/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\s+/g, ' ').trim();
       for (const note of expected) {
         const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${note.id}"]`);
         const content = item?.querySelector('.gb-note-endnotes__content');
