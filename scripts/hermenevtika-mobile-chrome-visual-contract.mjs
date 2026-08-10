@@ -101,6 +101,7 @@ async function snapshot(page) {
     const bottom = document.querySelector('.hmbar');
     const rail = document.querySelector('.hrail');
     const fab = document.getElementById('gb-hl-fab');
+    const fabStyle = fab ? getComputedStyle(fab) : null;
     const share = document.getElementById('hmShareBtn');
     return {
       viewport: { width: innerWidth, height: innerHeight },
@@ -115,6 +116,8 @@ async function snapshot(page) {
         hostClass: Boolean(fab?.classList.contains('hmbar-btn')),
         parentIsBottom: fab?.parentElement === bottom,
         nextIsShare: fab?.nextElementSibling === share,
+        animationName: fabStyle?.animationName || null,
+        transform: fabStyle?.transform || null,
       },
       share: { exists: Boolean(share), visible: visible(share), rect: rectOf(share) },
     };
@@ -137,6 +140,8 @@ async function assertHighlightsGeometry(page, engine, viewport, route) {
     && state.fab.hostClass
     && state.fab.parentIsBottom
     && state.fab.nextIsShare
+    && state.fab.animationName === 'none'
+    && state.fab.transform === 'none'
     && state.share.visible
     && fab && share && bar
     && approx(fab.width, share.width)
@@ -144,7 +149,7 @@ async function assertHighlightsGeometry(page, engine, viewport, route) {
     && approx(fab.cy, share.cy)
     && fab.top >= bar.top - 1
     && fab.bottom <= bar.bottom + 1;
-  check(engine, viewport, route, 'saved-quotes control inherits exact bottom-bar geometry', geometryOk, state);
+  check(engine, viewport, route, 'saved-quotes control inherits exact static bottom-bar geometry', geometryOk, state);
 }
 
 async function exerciseHighlights(page, engine, viewport, route) {
@@ -247,6 +252,7 @@ fs.writeFileSync(path.join(REPORTS, 'hermenevtika-mobile-chrome-visual-contract.
   `- Browsers: Chromium + WebKit`,
   `- Breakpoints: ${VIEWPORTS.map((row) => row.width).join(', ')}`,
   `- Saved quote seeded: yes`,
+  `- Docked saved-quote animation: must compute to none`,
   `- Checks: ${report.passed}/${checks.length} PASS`,
   `- Failures: ${report.failed}`,
 ].join('\n') + '\n');
