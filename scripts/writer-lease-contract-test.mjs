@@ -9,7 +9,7 @@ import {
 
 const A = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const B = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-const C = 'ccccccccccccccccccccccccccccccccccccc';
+const C = 'c'.repeat(40);
 const ownerA = 'agent-session-aaaaaaaa';
 const ownerB = 'agent-session-bbbbbbbb';
 const branch = 'lane/system-writer-lease-20260810';
