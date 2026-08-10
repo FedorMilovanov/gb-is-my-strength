@@ -76,26 +76,46 @@ async function waitForIntro(page) {
     const introEl = document.querySelector('.me-intro');
     const map = introEl?.parentElement;
     if (!(introEl instanceof HTMLElement) || !(map instanceof HTMLElement)) throw new Error('Intro/map owner missing');
-    const siblings = [...map.children].filter((node) => node !== introEl);
+    const focusSelector = 'a[href],button,input,select,textarea,[tabindex]';
+    const underlayFocusables = [...map.querySelectorAll(focusSelector)]
+      .filter((node) => !node.closest('.me-intro'))
+      .map((node) => {
+        const style = getComputedStyle(node);
+        const rendered = node.getClientRects().length > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+        const disabled = 'disabled' in node && Boolean(node.disabled);
+        return {
+          tag: node.tagName,
+          id: node.id || '',
+          className: node.className?.baseVal || node.className || '',
+          tabIndex: node.tabIndex,
+          rendered,
+          disabled,
+          inertAncestor: Boolean(node.closest('[inert]')),
+        };
+      });
+    const sequentialUnderlay = underlayFocusables.filter((node) => node.rendered && !node.disabled && node.tabIndex >= 0);
     return {
       activeClass: document.activeElement?.className || '',
       owned: Boolean(introEl.getAttribute('data-overlay-owner')),
       open: introEl.getAttribute('data-overlay-open'),
-      inertSiblingCount: siblings.filter((node) => node.hasAttribute('inert') || node.inert === true).length,
-      siblingCount: siblings.length,
+      underlayFocusables,
+      sequentialUnderlay,
     };
   });
 
   assert.ok(String(state.activeClass).includes('me-intro__btn'), 'Intro primary action does not own initial focus');
-  assert.ok(state.siblingCount > 0, 'Map Intro has no underlay siblings; fixture invalid');
-  assert.equal(state.inertSiblingCount, state.siblingCount, 'Intro does not inert the complete map underlay');
+  assert.ok(state.sequentialUnderlay.length > 0, 'Map Intro has no rendered focusable underlay controls; fixture invalid');
+  assert.ok(
+    state.sequentialUnderlay.every((node) => node.inertAncestor),
+    `Intro leaves rendered sequential underlay controls outside inert ownership: ${JSON.stringify(state.sequentialUnderlay.filter((node) => !node.inertAncestor))}`,
+  );
   return state;
 }
 
 async function assertTabTrappedInIntro(page, browserName, viewportLabel) {
   const trace = [];
-  for (let index = 0; index < 12; index += 1) {
-    await page.keyboard.press(index % 3 === 2 ? 'Shift+Tab' : 'Tab');
+  for (let index = 0; index < 24; index += 1) {
+    await page.keyboard.press(index % 4 === 3 ? 'Shift+Tab' : 'Tab');
     trace.push(await page.evaluate(() => ({
       tag: document.activeElement?.tagName || '',
       className: document.activeElement?.className || '',
@@ -170,7 +190,7 @@ async function main() {
   }
 
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     conclusion: 'success',
     sha: process.env.SOURCE_SHA || '',
     route: ROUTE,
@@ -187,7 +207,7 @@ async function main() {
 main().catch((error) => {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({
-    schemaVersion: 1,
+    schemaVersion: 2,
     conclusion: 'failure',
     sha: process.env.SOURCE_SHA || '',
     error: String(error?.stack || error),
