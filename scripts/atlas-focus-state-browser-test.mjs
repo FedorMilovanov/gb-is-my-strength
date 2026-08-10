@@ -58,6 +58,7 @@ async function activeState(page) {
       id: active?.id || '',
       className: active?.className?.baseVal || active?.className || '',
       nodeId: active?.dataset?.nodeId || '',
+      insideSidebar: Boolean(active?.closest?.('#atlasSidebar')),
       insideHidden: Boolean(active?.closest?.('[hidden],[inert],[aria-hidden="true"]')),
       rendered: active instanceof Element ? active.getClientRects().length > 0 : false,
     };
@@ -157,7 +158,7 @@ async function runCase(browserName, browserType, baseUrl, width) {
       const trigger = page.locator('#atlasFilterTrigger');
       await trigger.click();
       await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
-      result.steps.drawerOpen = await assertSafeFocus(page, `${browserName}/${width}/drawer-open`, (state) => state.id === 'atlasFilterClose');
+      result.steps.drawerOpen = await assertSafeFocus(page, `${browserName}/${width}/drawer-open`, (state) => state.insideSidebar);
       const drawerState = await page.evaluate(() => ({
         inert: document.getElementById('atlasSidebar')?.hasAttribute('inert'),
         aria: document.getElementById('atlasSidebar')?.getAttribute('aria-hidden'),

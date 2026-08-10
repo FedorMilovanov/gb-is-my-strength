@@ -268,7 +268,15 @@
       filterTrigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
       if (compact) {
         setSurfaceInert(sidebar, !shouldOpen, shouldOpen ? false : true);
-        if (shouldOpen && options.focusOnOpen !== false) safeFocus(filterClose || sidebar.querySelector('button,input,a[href]'));
+        if (shouldOpen && options.focusOnOpen !== false) {
+          var drawerFallback = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
+          if (!safeFocus(filterClose) && !safeFocus(drawerFallback) && typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(function () {
+              if (!sidebar.classList.contains('is-open') || !drawerMedia.matches) return;
+              if (!safeFocus(filterClose)) safeFocus(drawerFallback);
+            });
+          }
+        }
         if (!shouldOpen && (options.restoreFocus === true || activeWasInside)) safeFocus(filterTrigger);
       } else {
         setSurfaceInert(sidebar, false, null);
