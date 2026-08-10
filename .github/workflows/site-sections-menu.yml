@@ -1,36 +1,34 @@
 name: Site Sections Menu Contract
 
 on:
-  push:
-    branches:
-      - 'agent/system-site-menu-owner-20260810'
-    paths:
-      - '.github/workflows/site-sections-menu.yml'
+  pull_request:
+    types: [reopened]
 
 permissions:
   contents: write
 
 concurrency:
-  group: site-menu-exact-head-refresh
+  group: site-menu-exact-head-refresh-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   refresh-same-branch:
-    if: github.ref == 'refs/heads/agent/system-site-menu-owner-20260810'
+    if: github.event.pull_request.number == 1558 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/system-site-menu-owner-20260810'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout exact pushed head
+      - name: Checkout exact PR head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: true
 
       - name: Merge current main and restore permanent workflow before commit
         env:
-          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
           BRANCH: agent/system-site-menu-owner-20260810
+          PERMANENT_WORKFLOW_SHA: 1cb61e252e30142be37eb156835ba07446cab57a
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
@@ -49,7 +47,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git merge --no-ff --no-commit origin/main
-          git checkout HEAD^ -- .github/workflows/site-sections-menu.yml
+          git checkout "$PERMANENT_WORKFLOW_SHA" -- .github/workflows/site-sections-menu.yml
           git commit -m 'chore(site-menu): refresh same branch onto current main'
 
           git merge-base --is-ancestor origin/main HEAD
