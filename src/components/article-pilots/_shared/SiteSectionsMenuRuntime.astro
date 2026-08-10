@@ -11,7 +11,7 @@
   (() => {
     'use strict';
 
-    const VERSION = 1;
+    const VERSION = 2;
     const OWNER_ID = 'site-sections-menu';
     const API_KEY = 'GBSiteSectionsMenu';
     const CONTROLLER_KEY = '__gbSiteSectionsMenuController';
@@ -50,7 +50,20 @@
       if (!overlayApi || typeof overlayApi.register !== 'function') return null;
 
       let controller;
+      let nativeHideTimer = 0;
       const syncVisual = (open) => {
+        window.clearTimeout(nativeHideTimer);
+        nativeHideTimer = 0;
+
+        // Native hidden is the fail-safe owner. It makes the closed surface
+        // non-rendering even when stylesheet delivery/cascade fails. Remove it
+        // before opening; on close restore it after the visual exit window so
+        // the existing opacity/transform transition is preserved.
+        if (open) {
+          panel.hidden = false;
+          if (backdrop) backdrop.hidden = false;
+        }
+
         panel.classList.toggle('open', open);
         panel.toggleAttribute('inert', !open);
         if ('inert' in panel) panel.inert = !open;
@@ -63,6 +76,15 @@
         trigger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
         trigger.setAttribute('data-gb-site-menu-owner', 'canonical-runtime');
         backdrop?.classList.toggle('open', open);
+
+        if (!open) {
+          nativeHideTimer = window.setTimeout(() => {
+            if (panel.classList.contains('open')) return;
+            panel.hidden = true;
+            if (backdrop) backdrop.hidden = true;
+            nativeHideTimer = 0;
+          }, 260);
+        }
       };
 
       const layer = overlayApi.register(OWNER_ID, {
@@ -135,6 +157,8 @@
         toggle: () => layer.isOpen() ? close('api-toggle') : open('api-toggle'),
         isOpen: () => layer.isOpen(),
         destroy: () => {
+          window.clearTimeout(nativeHideTimer);
+          nativeHideTimer = 0;
           trigger.removeEventListener('click', onTrigger);
           panel.removeEventListener('click', onPanelClick);
           backdrop?.removeEventListener('click', onBackdrop);
