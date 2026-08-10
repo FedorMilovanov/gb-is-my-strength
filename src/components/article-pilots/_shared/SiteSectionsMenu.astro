@@ -19,9 +19,22 @@ const links = [
 ] as const;
 ---
 <!-- Canonical static projection of the site-sections menu. Runtime lifecycle is
-     owned by SiteSectionsMenuRuntime -> OverlayRuntime across every shell. -->
-<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true" inert data-gb-site-menu-runtime="canonical">
+     owned by SiteSectionsMenuRuntime -> OverlayRuntime across every shell.
+     The rich reader treatment is owned here as well, so standalone and series
+     readers cannot silently depend on Gill-only CSS for a usable menu. -->
+<div
+  id="hMobileBackdrop"
+  class:list={['h-mobile-backdrop', variant === 'rich' && 'gb-site-menu-backdrop--rich']}
+  aria-hidden="true"
+></div>
+<div
+  class:list={['h-mobile-nav', variant === 'rich' && 'gb-site-menu--rich']}
+  id="hMobileNav"
+  aria-hidden="true"
+  inert
+  data-gb-site-menu-runtime="canonical"
+  data-gb-site-menu-variant={variant}
+>
   {variant === 'rich' && <span class="gbs-menu-label" aria-hidden="true">Разделы сайта</span>}
   {links.map((link) => (
     <a href={link.href} data-close-nav aria-current={current === link.id ? 'page' : undefined}>
@@ -46,3 +59,183 @@ const links = [
 </noscript>
 
 <SiteSectionsMenuRuntime />
+
+<style is:global>
+  /* Rich menu is a shared reader primitive. Before this ownership boundary,
+     the same markup was styled only under body:has([data-gill-v16]), leaving
+     standalone ReaderRail routes with an unpositioned panel and 300px SVGs.
+     Keep the card independent of the historical Gill implementation name. */
+  #hMobileNav.gb-site-menu--rich {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    position: fixed;
+    z-index: var(--z-panel, 19000);
+    margin: 0;
+    box-sizing: border-box;
+    transition:
+      opacity .2s ease,
+      transform .24s cubic-bezier(.22, 1, .36, 1),
+      visibility 0s linear .24s;
+  }
+  #hMobileNav.gb-site-menu--rich.open {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transition:
+      opacity .2s ease,
+      transform .24s cubic-bezier(.22, 1, .36, 1),
+      visibility 0s linear 0s;
+  }
+  #hMobileNav.gb-site-menu--rich .gbs-menu-label {
+    display: block;
+    padding: 6px 12px 9px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 18%, var(--color-border, #e5e2dc));
+    font-family: var(--gb-font-sans, "Source Sans 3", system-ui, sans-serif);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #6a6a6a);
+  }
+  #hMobileNav.gb-site-menu--rich a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border-left: 2px solid transparent;
+    font-family: var(--gb-font-serif, Georgia, serif);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-text, #1a1a1a);
+    text-decoration: none;
+    transition: background .16s ease, color .16s ease, border-color .16s ease, padding-left .16s ease;
+  }
+  #hMobileNav.gb-site-menu--rich a + a {
+    border-top: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 60%, transparent);
+  }
+  #hMobileNav.gb-site-menu--rich .gbs-menu-chevron {
+    display: block;
+    width: 13px;
+    height: 13px;
+    max-width: 13px;
+    max-height: 13px;
+    flex: 0 0 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+    transform: translateX(-3px);
+    transition: opacity .18s ease, transform .22s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #hMobileNav.gb-site-menu--rich a:hover {
+      background: color-mix(in srgb, var(--color-accent-gold, #b8936a) 10%, transparent);
+      color: var(--color-accent, #7a2e2e);
+      border-left-color: var(--color-accent, #7a2e2e);
+      padding-left: 16px;
+    }
+    #hMobileNav.gb-site-menu--rich a:hover .gbs-menu-chevron {
+      opacity: .75;
+      transform: translateX(0);
+    }
+    html.dark #hMobileNav.gb-site-menu--rich a:hover {
+      background: color-mix(in srgb, var(--gb-accent-gold-bright, #f0c896) 15%, transparent);
+      color: var(--gb-accent-gold-bright, #f0c896);
+      border-left-color: var(--gb-accent-gold-bright, #f0c896);
+    }
+  }
+  html.dark #hMobileNav.gb-site-menu--rich a + a {
+    border-top-color: rgba(255,255,255,.06);
+  }
+
+  @media (min-width: 64em) {
+    #hMobileNav.gb-site-menu--rich {
+      top: auto;
+      bottom: 78px;
+      left: 26px;
+      right: auto;
+      width: 230px;
+      max-width: calc(100vw - 52px);
+      padding: 8px;
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--color-surface, #fff) 96%, transparent);
+      border: 1.5px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 30%, var(--color-border, #e5e2dc));
+      box-shadow: 0 20px 50px -20px rgba(20,12,6,.35), 0 8px 26px -14px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.5);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      transform: translateY(10px) scale(.97);
+      transform-origin: bottom left;
+    }
+    #hMobileNav.gb-site-menu--rich.open { transform: none; }
+    html.dark #hMobileNav.gb-site-menu--rich {
+      background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent-gold, #b8936a) 22%, rgba(255,255,255,.08));
+      box-shadow: 0 20px 50px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    #hMobileNav.gb-site-menu--rich::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 28px;
+      width: 13px;
+      height: 13px;
+      background: color-mix(in srgb, var(--color-surface, #fff) 96%, transparent);
+      border-right: 1.5px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 30%, var(--color-border, #e5e2dc));
+      border-bottom: 1.5px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 30%, var(--color-border, #e5e2dc));
+      transform: rotate(45deg);
+      border-radius: 0 0 3px 0;
+    }
+    html.dark #hMobileNav.gb-site-menu--rich::after {
+      background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent-gold, #b8936a) 22%, rgba(255,255,255,.08));
+    }
+  }
+
+  @media (max-width: 63.999em) {
+    #hMobileNav.gb-site-menu--rich {
+      top: max(12px, env(safe-area-inset-top, 0px));
+      left: max(12px, env(safe-area-inset-left, 0px));
+      right: max(12px, env(safe-area-inset-right, 0px));
+      width: auto;
+      max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+      overflow: auto;
+      padding: 10px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--color-surface, #fff) 97%, transparent);
+      border: 1px solid var(--color-border, #e5e2dc);
+      box-shadow: 0 24px 70px -26px rgba(0,0,0,.42);
+      transform: translateY(-8px) scale(.985);
+      transform-origin: top center;
+    }
+    #hMobileNav.gb-site-menu--rich.open { transform: none; }
+    html.dark #hMobileNav.gb-site-menu--rich {
+      background: color-mix(in srgb, var(--color-surface, #161a21) 96%, transparent);
+      border-color: rgba(255,255,255,.1);
+    }
+    .gb-site-menu-backdrop--rich {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: calc(var(--z-panel, 19000) - 1);
+      background: rgba(20,14,9,.34);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+    }
+    .gb-site-menu-backdrop--rich.open { display: block; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #hMobileNav.gb-site-menu--rich,
+    #hMobileNav.gb-site-menu--rich .gbs-menu-chevron {
+      transition: none !important;
+    }
+  }
+</style>
