@@ -37,51 +37,49 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           python - <<'PY'
           from pathlib import Path
+          import re
 
           runtime = Path('src/runtime/atlas-runtime.js')
           s = runtime.read_text()
-          old = '''    function syncDrawerForViewport() {
-              var activeWasSidebar = sidebar.contains(document.activeElement);
-              syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
-            }
-          '''
-          new = '''    function syncDrawerForViewport() {
-              var activeWasSidebar = sidebar.contains(document.activeElement);
-              var enteringDrawer = drawerMedia.matches;
-              syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
-              if (activeWasSidebar && !enteringDrawer) {
-                var desktopSidebarTarget = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
-                if (!safeFocus(desktopSidebarTarget)) focusActiveView(activeFocus);
-              }
-            }
-          '''
-          if s.count(old) != 1:
-              raise SystemExit(f'runtime breakpoint target count={s.count(old)}; expected 1')
-          runtime.write_text(s.replace(old, new))
+          pattern = re.compile(r"    function syncDrawerForViewport\(\) \{\n\s+var activeWasSidebar = sidebar\.contains\(document\.activeElement\);\n\s+syncSidebarSurface\(false, \{ restoreFocus: activeWasSidebar \}\);\n\s+\}")
+          replacement = (
+              "    function syncDrawerForViewport() {\n"
+              "      var activeWasSidebar = sidebar.contains(document.activeElement);\n"
+              "      var enteringDrawer = drawerMedia.matches;\n"
+              "      syncSidebarSurface(false, { restoreFocus: activeWasSidebar });\n"
+              "      if (activeWasSidebar && !enteringDrawer) {\n"
+              "        var desktopSidebarTarget = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');\n"
+              "        if (!safeFocus(desktopSidebarTarget)) focusActiveView(activeFocus);\n"
+              "      }\n"
+              "    }"
+          )
+          s, count = pattern.subn(replacement, s, count=1)
+          if count != 1:
+              raise SystemExit(f'runtime breakpoint structural target count={count}; expected 1')
+          runtime.write_text(s)
 
           test = Path('scripts/atlas-focus-state-browser-test.mjs')
           t = test.read_text()
-          anchor = '''    const historyNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
-          '''
-          insertion = '''    if (width === 980) {
-              const trigger = page.locator('#atlasFilterTrigger');
-              await trigger.click();
-              await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
-              await page.locator('#atlasFilterClose').focus();
-              await page.setViewportSize({ width: 981, height: HEIGHT });
-              await page.waitForTimeout(180);
-              result.steps.openDrawerToDesktop = await assertSafeFocus(page, `${browserName}/${width}/open-drawer-to-desktop`, (state) =>
-                String(state.className).includes('atlas-theme'));
-              result.steps.openDrawerToDesktopSurfaces = await assertClosedSurfaceState(page, false);
-              await page.setViewportSize({ width: 980, height: HEIGHT });
-              await page.waitForTimeout(180);
-              result.steps.desktopSidebarToDrawer = await assertSafeFocus(page, `${browserName}/${width}/desktop-sidebar-to-drawer`, (state) =>
-                state.id === 'atlasFilterTrigger');
-              result.steps.desktopSidebarToDrawerSurfaces = await assertClosedSurfaceState(page, true);
-            }
-
-            const historyNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
-          '''
+          anchor = "    const historyNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex=\"0\"]').first();\n"
+          insertion = (
+              "    if (width === 980) {\n"
+              "      const trigger = page.locator('#atlasFilterTrigger');\n"
+              "      await trigger.click();\n"
+              "      await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));\n"
+              "      await page.locator('#atlasFilterClose').focus();\n"
+              "      await page.setViewportSize({ width: 981, height: HEIGHT });\n"
+              "      await page.waitForTimeout(180);\n"
+              "      result.steps.openDrawerToDesktop = await assertSafeFocus(page, `${browserName}/${width}/open-drawer-to-desktop`, (state) =>\n"
+              "        String(state.className).includes('atlas-theme'));\n"
+              "      result.steps.openDrawerToDesktopSurfaces = await assertClosedSurfaceState(page, false);\n"
+              "      await page.setViewportSize({ width: 980, height: HEIGHT });\n"
+              "      await page.waitForTimeout(180);\n"
+              "      result.steps.desktopSidebarToDrawer = await assertSafeFocus(page, `${browserName}/${width}/desktop-sidebar-to-drawer`, (state) =>\n"
+              "        state.id === 'atlasFilterTrigger');\n"
+              "      result.steps.desktopSidebarToDrawerSurfaces = await assertClosedSurfaceState(page, true);\n"
+              "    }\n\n"
+              + anchor
+          )
           if t.count(anchor) != 1:
               raise SystemExit(f'witness breakpoint anchor count={t.count(anchor)}; expected 1')
           test.write_text(t.replace(anchor, insertion))
