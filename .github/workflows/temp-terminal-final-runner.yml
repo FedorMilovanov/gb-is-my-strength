@@ -76,6 +76,7 @@ jobs:
             src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
             src/components/article-pilots/gill-series/GillSeriesChrome.astro \
             src/components/article-pilots/hermenevtika/HermenevtikaBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBody.astro \
             src/components/baptisty-rossii/BaptistyRossiiBookLanding.astro \
             src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro \
             src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
