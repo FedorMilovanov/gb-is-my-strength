@@ -1,3 +1,4 @@
+# Trigger: writer existed on branch before this synchronize event.
 name: TEMP Frozen Cache Revision Writer
 
 on:
