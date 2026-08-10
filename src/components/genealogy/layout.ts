@@ -9,10 +9,10 @@ import type { Person, LayoutOptions, PersonNodeData } from './types';
 import { getLineStyle, NODE_W, NODE_H } from './theme';
 
 /**
- * Minimum height retained for the chronology axis. The actual world may be taller
- * when Dagre needs more vertical room for the full genealogy.
+ * Canonical vertical world extent for both the genealogy graph and chronology
+ * axis. Every vertical source is normalized into this same bounded space.
  */
-const MIN_WORLD_HEIGHT = 4200;
+export const GENEALOGY_WORLD_HEIGHT = 4200;
 
 interface LayoutResult {
   nodes: Node<PersonNodeData>[];
@@ -123,24 +123,22 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
   /*
    * World-coordinate contract
    * -------------------------
-   * Dagre owns the topology for every person. Its natural Y extent defines the
-   * size of the shared world. Both known chronology and topology-only persons
-   * are then projected into that SAME normalized 0..1 vertical coordinate:
+   * Dagre owns topology for every person; chronology owns historical ordering
+   * when a birth-AM value exists. Neither source is allowed to contribute raw
+   * pixels. Both are normalized into one bounded 0..1 vertical coordinate and
+   * then projected into the single GENEALOGY_WORLD_HEIGHT used by the graph and
+   * the chronology axis:
    *
-   *   known birthAM -> normalized AM position
-   *   no birthAM    -> normalized Dagre position
+   *   known birthAM -> normalized AM position -> bounded world Y
+   *   no birthAM    -> normalized Dagre rank  -> bounded world Y
    *
-   * The old layout mixed absolute 0..4200 AM pixels with unbounded Dagre pixels,
-   * creating a sparse envelope whose midpoint could contain no people. This
-   * projection keeps chronology meaningful without allowing either source to
-   * create a second incompatible Y space.
+   * This eliminates the old 0..4200 AM / unbounded Dagre split-world envelope.
    */
   const dagreYs = filtered.map(p => g.node(p.id).y as number);
   const dagreMin = dagreYs.length ? Math.min(...dagreYs) : 0;
   const dagreMax = dagreYs.length ? Math.max(...dagreYs) : NODE_H;
   const dagreRange = Math.max(1, dagreMax - dagreMin);
-  const worldHeight = Math.max(MIN_WORLD_HEIGHT, Math.ceil(dagreRange + NODE_H));
-  const usableWorldHeight = Math.max(1, worldHeight - NODE_H);
+  const usableWorldHeight = Math.max(1, GENEALOGY_WORLD_HEIGHT - NODE_H);
 
   const topologyT = (dagreY: number): number => (dagreY - dagreMin) / dagreRange;
   const chronologyT = (am: number | undefined): number | undefined =>
@@ -209,7 +207,7 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
     }
   }
 
-  return { nodes, edges, goldenPath, worldHeight };
+  return { nodes, edges, goldenPath, worldHeight: GENEALOGY_WORLD_HEIGHT };
 }
 
 function resolveParent(p: Person, ids: Set<string>): string | null {
