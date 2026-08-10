@@ -43,6 +43,7 @@ const library = read('src/components/articles/ArticlesLibrarySection.astro');
 const refutations = read('src/components/articles/ArticlesRefutationsSection.astro');
 const hero = read('src/components/articles/ArticlesHeroSection.astro');
 const endBlock = read('src/components/articles/ArticlesArticleEndBlock.astro');
+const siteSectionsMenu = read('src/components/article-pilots/_shared/SiteSectionsMenu.astro');
 const searchManifest = readJson('data/search-manifest.json');
 const pageOwnership = readJson('migration/page-ownership.json');
 
@@ -58,6 +59,7 @@ for (const [rel, label] of [
   ['src/components/articles/ArticlesLibrarySection.astro', 'ArticlesLibrarySection.astro'],
   ['src/components/articles/ArticlesRefutationsSection.astro', 'ArticlesRefutationsSection.astro'],
   ['src/components/articles/ArticlesArticleEndBlock.astro', 'ArticlesArticleEndBlock.astro'],
+  ['src/components/article-pilots/_shared/SiteSectionsMenu.astro', 'canonical SiteSectionsMenu.astro'],
 ]) mustExist(rel, label);
 
 mustNotExist('src/components/articles/ArticlesPublicationsSection.astro', 'retired hand-authored ArticlesPublicationsSection');
@@ -74,7 +76,13 @@ must(chrome, 'CollectionPage', 'ArticlesPageChrome preserves JSON-LD CollectionP
 must(chrome, 'SITE_CONFIG', 'ArticlesPageChrome preserves SITE_CONFIG');
 must(chrome, 'h-navbar', 'ArticlesPageChrome preserves top navigation');
 must(main, '<main id="main-content">', 'ArticlesMain preserves semantic main wrapper');
-must(main, 'h-mobile-nav', 'ArticlesMain preserves mobile nav');
+must(main, "import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';", 'ArticlesMain imports canonical shared site menu');
+must(main, '<SiteSectionsMenu variant="plain" current="articles" />', 'ArticlesMain mounts canonical mobile/site nav projection');
+must(siteSectionsMenu, "class:list={['h-mobile-nav'", 'canonical shared menu preserves h-mobile-nav visual class');
+must(siteSectionsMenu, 'id="hMobileNav"', 'canonical shared menu preserves hMobileNav surface identity');
+must(siteSectionsMenu, 'data-gb-site-menu-runtime="canonical"', 'canonical shared menu declares single runtime ownership');
+must(siteSectionsMenu, '<SiteSectionsMenuRuntime />', 'canonical shared menu mounts lifecycle runtime');
+must(siteSectionsMenu, 'data-gb-site-menu-nojs', 'canonical shared menu preserves no-JS navigation fallback');
 must(main, 'home-v20', 'ArticlesMain preserves premium home-v20 wrapper');
 for (const comp of ['ArticlesHeroSection','ArticlesLibrarySection','ArticlesRefutationsSection','ArticlesArticleEndBlock']) {
   must(main, comp, `ArticlesMain uses ${comp}`);
@@ -159,7 +167,7 @@ else bad('derived catalog projection has no published article/series items');
 
 const dist = exists('dist/articles/index.html') ? read('dist/articles/index.html') : '';
 if (dist) {
-  for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=']) {
+  for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'h-mobile-nav', 'data-gb-site-menu-runtime="canonical"']) {
     must(dist, marker, `dist /articles/ marker: ${marker}`);
   }
   mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
