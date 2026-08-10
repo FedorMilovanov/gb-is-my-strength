@@ -30,7 +30,12 @@
  *     themetoggle... DO NOT invent calc formulas"), так что позиционирование
  *     менять не нужно — уже "как у Гилла".
  *
- * На мобильных (≤899px): нижняя центрированная горизонтальная пилюля
+ * Breakpoint ownership:
+ *   - generic article floater may use its <=899px fallback pill;
+ *   - hermeneutics has a dedicated HermenevtikaMobileBar through 1199px, so
+ *     this desktop floater MUST be non-rendering below 1200px. The historical
+ *     max-width:1199 rule was lost from floating-cluster.css while the route
+ *     contract/comment still assumed it existed, creating duplicate chrome.
  */
 
 import PlayEmber from './PlayEmber.astro';
@@ -144,3 +149,25 @@ const {
        anchor. -->
 </div>
 
+<style is:global>
+  /* Hermenevtika owns mobile/tablet chrome with .hmtop + .hmbar through
+     1199px. Keep the desktop FloatingCluster out of that ownership window.
+     Double class beats the generic .gb-floater display without !important and
+     without touching the owner-sensitive position/top/right formulas. */
+  @media (max-width: 1199px) {
+    .gb-floater.gb-floater--hermeneutics { display: none; }
+  }
+
+  /* Highlights/"Мои цитаты" docks itself into Hermenevtika's bottom action
+     row by adding .hmbar-btn. highlights-runtime.css intentionally strips the
+     standalone 44px FAB box with a stronger ID selector, but width:auto/height:auto
+     then defeats .hmbar-btn's canonical 36x36 geometry. Reassert only the host
+     bar's existing size here with higher specificity; no new visual language. */
+  #gb-hl-fab.gb-hl-fab--docked.hmbar-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    flex: 0 0 36px;
+    padding: 0;
+  }
+</style>
