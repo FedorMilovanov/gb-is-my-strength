@@ -10,7 +10,7 @@ const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'atlas-focus-state');
 const ROUTE = '/map/';
 const BROWSERS = { chromium, webkit };
-const WIDTHS = [390, 680, 681, 1440];
+const WIDTHS = [390, 680, 681, 980, 981, 1440];
 const HEIGHT = 900;
 
 function contentType(file) {
@@ -144,7 +144,7 @@ async function runCase(browserName, browserType, baseUrl, width) {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error?.stack || error)));
-  const compact = width <= 680;
+  const compact = width <= 980;
   const result = { browser: browserName, width, compact, steps: {} };
 
   try {
@@ -197,13 +197,43 @@ async function runCase(browserName, browserType, baseUrl, width) {
       result.steps.detailEscape = await assertSafeFocus(page, `${browserName}/${width}/detail-escape`, (state) => String(state.className).includes('atlas-node'));
     }
 
-    await page.locator('[data-atlas-view="list"]').click();
-    await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
-    const listFocus = page.locator('[data-list-focus]:visible').first();
-    await listFocus.focus();
-    await listFocus.click();
-    await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
-    result.steps.listToGraph = await assertSafeFocus(page, `${browserName}/${width}/list-to-graph`, (state) => String(state.className).includes('atlas-node'));
+    const listButton = page.locator('[data-atlas-view="list"]');
+    if (compact) {
+      assert.equal(await listButton.isVisible(), false, `${browserName}/${width}: drawer layout must hide desktop List switch`);
+      const graphState = await page.evaluate(() => ({
+        graphHidden: document.getElementById('atlasGraphView')?.hidden,
+        listHidden: document.getElementById('atlasListView')?.hidden,
+      }));
+      assert.equal(graphState.graphHidden, false, `${browserName}/${width}: drawer layout must retain Graph view`);
+      assert.equal(graphState.listHidden, true, `${browserName}/${width}: drawer layout must keep List view hidden`);
+      result.steps.listAvailability = { visible: false, graphState };
+    } else {
+      await listButton.waitFor({ state: 'visible' });
+      await listButton.click();
+      await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
+      const listFocus = page.locator('[data-list-focus]:visible').first();
+      await listFocus.focus();
+      await listFocus.click();
+      await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
+      result.steps.listToGraph = await assertSafeFocus(page, `${browserName}/${width}/list-to-graph`, (state) => String(state.className).includes('atlas-node'));
+    }
+
+    if (width === 980) {
+      const trigger = page.locator('#atlasFilterTrigger');
+      await trigger.click();
+      await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
+      await page.locator('#atlasFilterClose').focus();
+      await page.setViewportSize({ width: 981, height: HEIGHT });
+      await page.waitForTimeout(180);
+      result.steps.openDrawerToDesktop = await assertSafeFocus(page, `${browserName}/${width}/open-drawer-to-desktop`, (state) =>
+        String(state.className).includes('atlas-theme'));
+      result.steps.openDrawerToDesktopSurfaces = await assertClosedSurfaceState(page, false);
+      await page.setViewportSize({ width: 980, height: HEIGHT });
+      await page.waitForTimeout(180);
+      result.steps.desktopSidebarToDrawer = await assertSafeFocus(page, `${browserName}/${width}/desktop-sidebar-to-drawer`, (state) =>
+        state.id === 'atlasFilterTrigger');
+      result.steps.desktopSidebarToDrawerSurfaces = await assertClosedSurfaceState(page, true);
+    }
 
     const historyNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
     await historyNode.focus();
@@ -214,14 +244,16 @@ async function runCase(browserName, browserType, baseUrl, width) {
     await page.waitForTimeout(120);
     result.steps.history = await assertSafeFocus(page, `${browserName}/${width}/history`);
 
-    if (width === 680 || width === 681) {
+    if (width === 680 || width === 681 || width === 980 || width === 981) {
       result.steps.resizeResetSetup = await resetThroughVisibleUi(page, compact, `${browserName}/${width}/resize-reset-setup`);
       const resizeNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
       await resizeNode.focus();
-      await page.setViewportSize({ width: width === 680 ? 681 : 680, height: HEIGHT });
+      const resizeTarget = width === 680 ? 681 : width === 681 ? 680 : width === 980 ? 981 : 980;
+      await page.setViewportSize({ width: resizeTarget, height: HEIGHT });
       await page.waitForTimeout(180);
       result.steps.resize = await assertSafeFocus(page, `${browserName}/${width}/resize`, (state) =>
         String(state.className).includes('atlas-node') || state.id === 'atlasFilterTrigger');
+      result.steps.resizeSurfaces = await assertClosedSurfaceState(page, resizeTarget <= 980);
     }
 
     assert.deepEqual(errors, [], `${browserName}/${width}: uncaught page errors`);
