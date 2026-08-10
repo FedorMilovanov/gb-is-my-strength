@@ -127,21 +127,26 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
       const semanticHidden = visibleNodeIds ? !visibleNodeIds.has(n.id) : false;
       return {
         ...n,
-        // Keep every semantic node mounted with stable dimensions. Semantic
-        // zoom changes presentation only, so ReactFlow's ResizeObserver does
-        // not enter a geometry-feedback loop while the viewport is fitting.
+        // Keep every ReactFlow wrapper mounted and measured. Semantic zoom is
+        // presentation-only inside the stable node box, avoiding geometry
+        // churn during fit while preserving all 143 semantic DOM nodes.
         hidden: false,
-        style: {
-          ...(n.style ?? {}),
-          visibility: semanticHidden ? 'hidden' : 'visible',
-          pointerEvents: semanticHidden ? 'none' : 'auto',
-        },
         data: {
           ...d,
           highlighted: isHighlighted,
           dimmed: isDimmed,
           focused: focusLineageIds ? isInFocus : false,
-          label: <PersonCardContent data={{ ...d, highlighted: isHighlighted, dimmed: isDimmed, focused: focusLineageIds ? isInFocus : false }} />,
+          label: (
+            <div
+              aria-hidden={semanticHidden || undefined}
+              style={{
+                visibility: semanticHidden ? 'hidden' : 'visible',
+                pointerEvents: semanticHidden ? 'none' : 'auto',
+              }}
+            >
+              <PersonCardContent data={{ ...d, highlighted: isHighlighted, dimmed: isDimmed, focused: focusLineageIds ? isInFocus : false }} />
+            </div>
+          ),
         },
       };
     });
