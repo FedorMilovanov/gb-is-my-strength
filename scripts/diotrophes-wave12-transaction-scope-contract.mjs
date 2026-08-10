@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
 
-const PRE_WAVE12 = '2273b8c930eebf383d429b917d3636bc28a80bae';
-const RELEASE_BOUNDARY = '8f17085dc8411cffbcb5a4dcd2f8fc5db9c30a97';
+const PRE_WAVE12 = '289cea9b1f8fb4284aac0c712e23e83fb25b00f0';
+const RELEASE_BOUNDARY = 'fbd305a54ded904931275eb9510647994c32b5ea';
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
 const SEARCH_ID = 'diotrefy-nashego-vremeni';
 const PATHS = {
