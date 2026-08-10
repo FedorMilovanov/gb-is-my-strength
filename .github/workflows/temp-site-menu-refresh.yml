@@ -1,0 +1,59 @@
+name: TEMP Site Menu Exact-Head Refresh
+
+on:
+  push:
+    branches:
+      - 'agent/system-site-menu-owner-20260810'
+    paths:
+      - '.github/workflows/temp-site-menu-refresh.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-site-menu-refresh-site-menu-system
+  cancel-in-progress: false
+
+jobs:
+  refresh-same-branch:
+    if: github.ref == 'refs/heads/agent/system-site-menu-owner-20260810'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact pushed head with bounded writer credential
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge current main only when branch head is still exact
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          BRANCH: agent/system-site-menu-owner-20260810
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git fetch --no-tags origin main
+          REMOTE_HEAD="$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)"
+          test "$REMOTE_HEAD" = "$EXPECTED_SHA"
+
+          BASE="$(git merge-base HEAD origin/main)"
+          git diff --name-only "$BASE"..HEAD | sort -u > /tmp/lane.txt
+          git diff --name-only "$BASE"..origin/main | sort -u > /tmp/main.txt
+          if comm -12 /tmp/lane.txt /tmp/main.txt | grep -q .; then
+            echo 'Refusing refresh: lane/main path overlap detected' >&2
+            comm -12 /tmp/lane.txt /tmp/main.txt >&2
+            exit 1
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git merge --no-ff --no-commit origin/main
+          git rm .github/workflows/temp-site-menu-refresh.yml
+          git commit -m 'chore(site-menu): refresh same branch onto current main'
+
+          git merge-base --is-ancestor origin/main HEAD
+          ! git diff --name-only origin/main...HEAD | grep -Fx '.github/workflows/temp-site-menu-refresh.yml'
+          test "$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)" = "$EXPECTED_SHA"
+          git push origin HEAD:"refs/heads/$BRANCH" --force-with-lease="refs/heads/$BRANCH:$EXPECTED_SHA"
