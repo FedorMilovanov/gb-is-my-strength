@@ -65,10 +65,14 @@ async function inspectNoJs(browserType, browserName, baseUrl, route) {
       const article = document.querySelector('article[data-pagefind-body]');
       if (!(article instanceof HTMLElement)) throw new Error('article[data-pagefind-body] missing');
       const popups = [...article.querySelectorAll('.gtip,.tooltip,.btip')];
+      const projectedMeta = [...document.head.querySelectorAll('meta[data-reader-meta-projected="true"]')].map((meta) => ({
+        spec: meta.getAttribute('data-pagefind-meta') || '',
+        content: meta.getAttribute('content') || '',
+      }));
       return {
         text: String(article.textContent || '').replace(/\s+/g, ' ').trim(),
         articleMetaCount: article.querySelectorAll('[data-pagefind-meta]').length,
-        projectedMetaCount: document.head.querySelectorAll('meta[data-reader-meta-projected="true"][data-pagefind-meta]').length,
+        projectedMeta,
         popupCount: popups.length,
         popupStates: popups.map((popup) => ({
           ignored: popup.hasAttribute('data-pagefind-ignore'),
@@ -79,7 +83,9 @@ async function inspectNoJs(browserType, browserName, baseUrl, route) {
       };
     });
     assert.equal(state.articleMetaCount, 0, `${browserName} ${route}: Pagefind metadata still pollutes article text tree`);
-    assert.ok(state.projectedMetaCount >= 3, `${browserName} ${route}: projected head metadata missing`);
+    assert.ok(state.projectedMeta.length >= 3, `${browserName} ${route}: projected head metadata missing: ${JSON.stringify(state.projectedMeta)}`);
+    assert.ok(state.projectedMeta.every((meta) => /\[content\]$/.test(meta.spec) && meta.content.length > 0), `${browserName} ${route}: projected metadata does not capture the content attribute: ${JSON.stringify(state.projectedMeta)}`);
+    if (route.includes('krajne-li-isporcheno')) assert.ok(state.projectedMeta.length >= 5, `${browserName}: Krajne must preserve all five projected metadata fields: ${JSON.stringify(state.projectedMeta)}`);
     assert.ok(state.popupCount > 0, `${browserName} ${route}: representative popup family missing`);
     assert.ok(state.popupStates.every((popup) => popup.ignored && popup.kind && popup.startBoundary && popup.endBoundary), `${browserName} ${route}: popup payload lacks semantic projection ownership`);
     assert.ok(!state.text.startsWith('/images/'), `${browserName} ${route}: article text still begins with raw local image path`);
