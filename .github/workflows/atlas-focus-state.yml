@@ -1,57 +1,68 @@
-name: TEMP Frozen Cache Revision Base Writer
+# Permanent browser proof for V07-ATLAS-FOCUS-STATE.
+name: Atlas Focus State Contract
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
     paths:
-      - '.github/workflows/atlas-focus-state.yml'
       - 'src/runtime/atlas-runtime.js'
+      - 'src/components/map/**'
       - 'scripts/atlas-focus-state-browser-test.mjs'
-      - 'src/lib/asset-version.js'
-      - 'src/components/article-pilots/**'
-      - 'src/components/baptisty-rossii/**'
-      - 'src/components/nagornaya/**'
+      - '.github/workflows/atlas-focus-state.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches: [main]
+    paths:
+      - 'src/runtime/atlas-runtime.js'
+      - 'src/components/map/**'
+      - 'scripts/atlas-focus-state-browser-test.mjs'
+      - '.github/workflows/atlas-focus-state.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: temp-frozen-cache-writer-${{ github.event.pull_request.number }}
+  group: atlas-focus-state-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  write:
-    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'terminal/frozen-final-20260810'
+  browser-contract:
+    name: Chromium WebKit Atlas focus lifecycle
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 35
     steps:
-      - name: Checkout exact PR head
+      - name: Checkout exact tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: true
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
           fetch-depth: 0
-      - name: Prove exact head
+      - name: Prove commit identity
         env:
-          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-      - name: Materialize canonical generated revisions
-        run: |
-          set -euo pipefail
-          node scripts/cache-bust.js --write
-          node scripts/cache-bust.js
-          git show 8757bec60730c714d1b96dcf0a3bc7741c937212:.github/workflows/atlas-focus-state.yml > .github/workflows/atlas-focus-state.yml
-          git diff --check
-      - name: Publish generated refs and restore permanent workflow
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium and WebKit
+        run: timeout 12m npx playwright install --with-deps chromium webkit
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+      - name: Run Atlas focus-state contract
         env:
-          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'chore(cache): materialize frozen glossary revisions'
-          git fetch --no-tags origin "+refs/heads/$HEAD_REF:refs/remotes/origin/$HEAD_REF"
-          test "$(git rev-parse refs/remotes/origin/$HEAD_REF)" = "$EXPECTED_SHA"
-          git push --force-with-lease="refs/heads/$HEAD_REF:$EXPECTED_SHA" origin HEAD:"refs/heads/$HEAD_REF"
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/atlas-focus-state-browser-test.mjs
+      - name: Upload Atlas focus evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: atlas-focus-state-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/atlas-focus-state
+          if-no-files-found: error
+          retention-days: 14
