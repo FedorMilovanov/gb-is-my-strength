@@ -5,12 +5,16 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/temp-delete-accidental-ref.yml'
+  pull_request:
+    types: [opened]
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   delete-ref:
+    if: github.event_name == 'push' || github.event.pull_request.head.ref == 'agent/reader-linear-text-pollution-20260810'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
