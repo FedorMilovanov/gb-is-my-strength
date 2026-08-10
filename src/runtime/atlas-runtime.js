@@ -161,6 +161,7 @@
     var detail = document.getElementById('atlasDetail');
     var detailEmpty = document.getElementById('atlasDetailEmpty');
     var detailContent = document.getElementById('atlasDetailContent');
+    var detailClose = document.getElementById('atlasDetailClose');
     var graphView = document.getElementById('atlasGraphView');
     var listView = document.getElementById('atlasListView');
     var searchInput = document.getElementById('atlasSearchInput');
@@ -168,6 +169,7 @@
     var zoomCopy = document.getElementById('atlasZoomCopy');
     var sidebar = document.getElementById('atlasSidebar');
     var filterTrigger = document.getElementById('atlasFilterTrigger');
+    var filterClose = document.getElementById('atlasFilterClose');
     var resetButton = document.getElementById('atlasReset');
     var compactMedia = window.matchMedia('(max-width: 680px)');
     var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -191,6 +193,86 @@
 
     function initialView() {
       return { x: 0, y: 0, w: profile.w, h: profile.h };
+    }
+
+    function focusable(element) {
+      if (!element || typeof element.focus !== 'function' || element.isConnected === false) return false;
+      if (element.closest && element.closest('[inert],[hidden],[aria-hidden="true"]')) return false;
+      if ('disabled' in element && element.disabled) return false;
+      return element.getClientRects().length > 0;
+    }
+
+    function safeFocus(element) {
+      if (!focusable(element)) return false;
+      try { element.focus({ preventScroll: true }); return document.activeElement === element; }
+      catch (_) { try { element.focus(); return document.activeElement === element; } catch (_) { return false; } }
+    }
+
+    function setSurfaceInert(element, inert, ariaHidden) {
+      if (!element) return;
+      if ('inert' in element) element.inert = Boolean(inert);
+      if (inert) element.setAttribute('inert', '');
+      else element.removeAttribute('inert');
+      if (ariaHidden === true) element.setAttribute('aria-hidden', 'true');
+      else if (ariaHidden === false) element.setAttribute('aria-hidden', 'false');
+      else element.removeAttribute('aria-hidden');
+    }
+
+    function focusGraphOwner(preferredId) {
+      if (graphView.hidden) return false;
+      var preferred = preferredId && nodeElements.get(preferredId);
+      if (preferred && !preferred.classList.contains('is-filtered-out')) {
+        nodeElements.forEach(function (element) { element.tabIndex = element === preferred ? 0 : -1; });
+        if (safeFocus(preferred)) return true;
+      }
+      var current = Array.from(nodeElements.values()).find(function (element) {
+        return element.tabIndex === 0 && !element.classList.contains('is-filtered-out');
+      });
+      if (!current) current = Array.from(nodeElements.values()).find(function (element) { return !element.classList.contains('is-filtered-out'); });
+      if (current) {
+        nodeElements.forEach(function (element) { element.tabIndex = element === current ? 0 : -1; });
+        if (safeFocus(current)) return true;
+      }
+      return safeFocus(svg);
+    }
+
+    function focusListOwner() {
+      if (listView.hidden) return false;
+      var rows = Array.from(listView.querySelectorAll('[data-list-node]')).filter(function (row) {
+        return !row.hidden && !(row.closest('[hidden]'));
+      });
+      for (var index = 0; index < rows.length; index += 1) {
+        var target = rows[index].querySelector('a[href],button');
+        if (safeFocus(target)) return true;
+      }
+      return false;
+    }
+
+    function focusActiveView(preferredId) {
+      return activeView === 'list' ? focusListOwner() : focusGraphOwner(preferredId);
+    }
+
+    function syncDetailSurface(open) {
+      detail.classList.toggle('is-open', Boolean(open));
+      app.classList.toggle('has-detail', Boolean(open));
+      setSurfaceInert(detail, !open, open ? false : true);
+    }
+
+    function syncSidebarSurface(open, options) {
+      options = options || {};
+      var compact = compactMedia.matches;
+      var activeWasInside = sidebar.contains(document.activeElement);
+      var shouldOpen = compact && Boolean(open);
+      sidebar.classList.toggle('is-open', shouldOpen);
+      filterTrigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      if (compact) {
+        setSurfaceInert(sidebar, !shouldOpen, shouldOpen ? false : true);
+        if (shouldOpen && options.focusOnOpen !== false) safeFocus(filterClose || sidebar.querySelector('button,input,a[href]'));
+        if (!shouldOpen && (options.restoreFocus === true || activeWasInside)) safeFocus(filterTrigger);
+      } else {
+        setSurfaceInert(sidebar, false, null);
+      }
+      return shouldOpen;
     }
 
     function createSvg(tag, attrs) {
@@ -452,8 +534,7 @@
         relations.appendChild(list);
         detailContent.appendChild(relations);
       }
-      app.classList.add('has-detail');
-      detail.classList.add('is-open');
+      syncDetailSurface(true);
     }
 
     function clampAxis(value, min, max) {
@@ -512,6 +593,7 @@
     }
 
     function focusNode(id, moveCamera, pushHistory) {
+      var detailOwnedFocus = detail.contains(document.activeElement);
       var node = nodeById.get(id);
       var position = nodePositions.get(id);
       if (!node || !position || !isNodeVisible(node) || !matchesSearch(node)) return;
@@ -529,6 +611,7 @@
         entry.el.classList.toggle('is-dim', !connected);
       });
       renderDetail(id);
+      if (detailOwnedFocus) safeFocus(detail.querySelector('.atlas-detail__primary') || detailClose);
       if (moveCamera) {
         var targetWidth = Math.min(view.w, profile.id === 'compact' ? 270 : 690);
         setViewBox({
@@ -540,16 +623,19 @@
       updateUrl({ focus: id }, pushHistory ? 'push' : 'replace');
     }
 
-    function clearFocus(updateHistory) {
+    function clearFocus(updateHistory, options) {
+      options = options || {};
+      var previousFocus = activeFocus;
+      var activeWasInsideDetail = detail.contains(document.activeElement);
       activeFocus = null;
       nodeElements.forEach(function (element) { element.classList.remove('is-focus', 'is-neighbor', 'is-dim'); });
       edgeElements.forEach(function (entry) { entry.el.classList.remove('is-focus', 'is-dim'); });
-      detail.classList.remove('is-open');
-      app.classList.remove('has-detail');
+      syncDetailSurface(false);
       detailEmpty.hidden = false;
       detailContent.hidden = true;
       if (updateHistory !== false) updateUrl({ focus: null }, 'replace');
       applyFilters();
+      if (options.restoreFocus === true || activeWasInsideDetail) focusGraphOwner(previousFocus);
     }
 
     function isNodeVisible(node) {
@@ -582,11 +668,13 @@
         row.hidden = !isNodeVisible(node) || !matchesSearch(node);
       });
       if (activeFocus && (!isNodeVisible(nodeById.get(activeFocus)) || !matchesSearch(nodeById.get(activeFocus)))) clearFocus(false);
+      var activeGraphNode = document.activeElement && document.activeElement.closest ? document.activeElement.closest('.atlas-node') : null;
       var tabbable = Array.from(nodeElements.entries()).find(function (entry) { return !entry[1].classList.contains('is-filtered-out'); });
       if (!activeFocus && tabbable) {
         nodeElements.forEach(function (element) { element.tabIndex = -1; });
         tabbable[1].tabIndex = 0;
       }
+      if (activeGraphNode && activeGraphNode.classList.contains('is-filtered-out')) focusGraphOwner(null);
     }
 
     function setGroup(group, pushHistory) {
@@ -598,7 +686,7 @@
       });
       clearFocus(false);
       applyFilters();
-      closeFilters();
+      closeFilters({ restoreFocus: sidebar.contains(document.activeElement) });
       updateUrl({
         group: activeGroup === 'all' ? null : activeGroup,
         focus: null,
@@ -606,6 +694,8 @@
     }
 
     function setView(mode, pushHistory) {
+      var activeWasInGraph = graphView.contains(document.activeElement);
+      var activeWasInList = listView.contains(document.activeElement);
       activeView = mode === 'list' ? 'list' : 'graph';
       app.dataset.view = activeView;
       graphView.hidden = activeView !== 'graph';
@@ -613,6 +703,8 @@
       document.querySelectorAll('[data-atlas-view]').forEach(function (button) {
         button.setAttribute('aria-pressed', button.dataset.atlasView === activeView ? 'true' : 'false');
       });
+      if (activeView === 'graph' && activeWasInList) focusGraphOwner(activeFocus);
+      if (activeView === 'list' && activeWasInGraph) focusListOwner();
       if (pushHistory !== false) updateUrl({ view: activeView === 'graph' ? null : activeView }, pushHistory ? 'push' : 'replace');
     }
 
@@ -672,9 +764,8 @@
       searchCursor = -1;
     }
 
-    function closeFilters() {
-      sidebar.classList.remove('is-open');
-      filterTrigger.setAttribute('aria-expanded', 'false');
+    function closeFilters(options) {
+      syncSidebarSurface(false, options || {});
     }
 
     function nearestNode(currentId, key) {
@@ -706,7 +797,7 @@
       }
       if (event.key === 'Escape') {
         event.preventDefault();
-        clearFocus();
+        clearFocus(true, { restoreFocus: true });
         return;
       }
       if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
@@ -721,6 +812,8 @@
     }
 
     function restoreUrlState() {
+      var activeBefore = document.activeElement;
+      var activeWasInsideAtlas = app.contains(activeBefore);
       var params = new URL(location.href).searchParams;
       activeGroup = params.get('group') && groupById.has(params.get('group')) ? params.get('group') : 'all';
       setGroup(activeGroup, false);
@@ -728,19 +821,29 @@
       var focus = params.get('focus');
       if (focus && nodeById.has(focus)) focusNode(focus, true, false);
       else clearFocus(false);
+      if (activeWasInsideAtlas && (!activeBefore.isConnected || (activeBefore.closest && activeBefore.closest('[inert],[hidden],[aria-hidden="true"]')))) {
+        focusActiveView(activeFocus);
+      }
     }
 
     function relayoutForViewport() {
       var nextProfile = compactMedia.matches ? COMPACT_WORLD : DESKTOP_WORLD;
       if (nextProfile.id === profile.id) return;
       var focused = activeFocus;
+      var activeBefore = document.activeElement;
+      var activeNode = activeBefore && activeBefore.closest ? activeBefore.closest('.atlas-node') : null;
+      var activeNodeId = activeNode && activeNode.dataset ? activeNode.dataset.nodeId : null;
+      var activeWasGraph = graphView.contains(activeBefore);
+      var activeWasSidebar = sidebar.contains(activeBefore);
       profile = nextProfile;
       view = initialView();
       layoutGraph();
       renderGraph();
       setViewBox(initialView(), false);
+      syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
       if (focused && isNodeVisible(nodeById.get(focused)) && matchesSearch(nodeById.get(focused))) focusNode(focused, true, false);
       else applyFilters();
+      if (activeWasGraph) focusGraphOwner(activeNodeId || focused);
     }
 
     layoutGraph();
@@ -828,7 +931,7 @@
     document.getElementById('atlasZoomIn').addEventListener('click', function () { zoomAt(1.35, null, null, true); });
     document.getElementById('atlasZoomOut').addEventListener('click', function () { zoomAt(.74, null, null, true); });
     document.getElementById('atlasCenter').addEventListener('click', function () { clearFocus(); setViewBox(initialView(), true); });
-    document.getElementById('atlasDetailClose').addEventListener('click', function () { clearFocus(); });
+    detailClose.addEventListener('click', function () { clearFocus(true, { restoreFocus: true }); });
     document.querySelectorAll('[data-atlas-view]').forEach(function (button) {
       button.addEventListener('click', function () { setView(button.dataset.atlasView, true); });
     });
@@ -843,7 +946,12 @@
       });
     });
     document.querySelectorAll('[data-list-focus]').forEach(function (button) {
-      button.addEventListener('click', function () { setView('graph', true); focusNode(button.dataset.listFocus, true, true); });
+      button.addEventListener('click', function () {
+        var targetId = button.dataset.listFocus;
+        setView('graph', true);
+        focusNode(targetId, true, true);
+        focusGraphOwner(targetId);
+      });
     });
 
     searchInput.addEventListener('input', function () { runSearch(searchInput.value); });
@@ -868,10 +976,9 @@
 
     filterTrigger.addEventListener('click', function () {
       var open = !sidebar.classList.contains('is-open');
-      sidebar.classList.toggle('is-open', open);
-      filterTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      syncSidebarSurface(open, { focusOnOpen: true, restoreFocus: !open });
     });
-    document.getElementById('atlasFilterClose').addEventListener('click', closeFilters);
+    filterClose.addEventListener('click', function () { closeFilters({ restoreFocus: true }); });
     resetButton.addEventListener('click', function () {
       searchInput.value = '';
       searchQuery = '';
@@ -892,7 +999,13 @@
     });
 
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') { clearFocus(); closeFilters(); closeSearchResults(); }
+      if (event.key === 'Escape') {
+        var restoreDetail = detail.classList.contains('is-open');
+        var restoreDrawer = sidebar.contains(document.activeElement);
+        clearFocus(true, { restoreFocus: restoreDetail });
+        closeFilters({ restoreFocus: restoreDrawer });
+        closeSearchResults();
+      }
       if ((event.key === '+' || event.key === '=') && document.activeElement !== searchInput) zoomAt(1.25, null, null, true);
       if (event.key === '-' && document.activeElement !== searchInput) zoomAt(.8, null, null, true);
       if (event.key === '0' && document.activeElement !== searchInput) setViewBox(initialView(), true);
