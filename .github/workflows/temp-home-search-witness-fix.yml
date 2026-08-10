@@ -1,0 +1,56 @@
+name: TEMP Home Search Witness Fix
+
+on:
+  push:
+    branches:
+      - fix/home-search-scripture-settlement-20260811
+    paths:
+      - '.github/workflows/temp-home-search-witness-fix.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-home-search-witness-fix
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Apply bounded witness repair
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/home-design-audit-pro.mjs')
+          s = p.read_text()
+          old = "{ name: 'scripture-reference', value: 'Иер 17:9', needle: 'Иер 17:9', expect: /Иер\\s*17:9|сердц/i },"
+          new = "{ name: 'scripture-reference', value: 'Иер 17:9', needle: '', expect: /Иер\\s*17:9|сердц/i },"
+          if s.count(old) != 1:
+              raise SystemExit(f'bounded target count={s.count(old)}; expected 1')
+          p.write_text(s.replace(old, new))
+          PY
+          git diff --check
+          git diff -- scripts/home-design-audit-pro.mjs
+      - name: Self-delete staging workflow and commit final one-file diff
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/temp-home-search-witness-fix.yml
+          test "$(git diff --name-only HEAD^ -- scripts/home-design-audit-pro.mjs | wc -l)" -le 1 || true
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/home-design-audit-pro.mjs
+          git commit -m 'test(search): settle scripture query on semantic results'
+          git fetch --no-tags origin '+refs/heads/fix/home-search-scripture-settlement-20260811:refs/remotes/origin/fix/home-search-scripture-settlement-20260811'
+          test "$(git rev-parse refs/remotes/origin/fix/home-search-scripture-settlement-20260811)" = "$TRIGGER_SHA"
+          git push --force-with-lease="refs/heads/fix/home-search-scripture-settlement-20260811:$TRIGGER_SHA" origin HEAD:refs/heads/fix/home-search-scripture-settlement-20260811
