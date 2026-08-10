@@ -34,6 +34,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
           printf '%s\n' \
+            .github/workflows/temp-terminal-driver.yml \
             .github/workflows/temp-terminal-final-runner.yml \
             .github/workflows/temp-terminal-postmerge-proof.yml \
             src/lib/asset-version.js \
@@ -111,8 +112,10 @@ jobs:
           node --check scripts/reader-linear-text-projection-browser-test.mjs
           node scripts/cache-bust.js --write
           node scripts/cache-bust.js
+          git rm .github/workflows/temp-terminal-driver.yml
           git diff --check
           printf '%s\n' \
+            .github/workflows/temp-terminal-driver.yml \
             src/runtime/atlas-runtime.js \
             scripts/atlas-focus-state-browser-test.mjs \
             src/lib/asset-version.js \
@@ -160,10 +163,6 @@ jobs:
         run: |
           set -euo pipefail
           git diff --check
-          if git diff --quiet; then
-            echo 'Tested Product tree already materialized.'
-            exit 0
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
