@@ -2,7 +2,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
-const PRE_WAVE12 = '2273b8c930eebf383d429b917d3636bc28a80bae';
+const PRE_WAVE12 = '289cea9b1f8fb4284aac0c712e23e83fb25b00f0';
+const HISTORICAL_VALIDATOR = 'aaf0ba7ff95afcd1c6f1488de9798c2a48b4386b';
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
 const paths = {
   manifest: 'data/diotrophes-wave12-release-manifest.json',
@@ -36,6 +37,24 @@ const json = (file) => {
   try { return JSON.parse(text(file)); }
   catch (error) { errors.push(`${file}: invalid JSON: ${error.message}`); return {}; }
 };
+
+let immutableProductBaseSha = '';
+try {
+  const historicalSource = execFileSync(
+    'git',
+    ['show', `${HISTORICAL_VALIDATOR}:scripts/diotrophes-wave12-release-contract.mjs`],
+    { encoding: 'utf8' }
+  );
+  const matches = [...historicalSource.matchAll(/^const PRE_WAVE12 = '([0-9a-f]{40})';$/gm)];
+  if (matches.length !== 1) {
+    errors.push(`historical validator must expose exactly one immutable PRE_WAVE12 identity; got ${matches.length}`);
+  } else {
+    immutableProductBaseSha = matches[0][1];
+  }
+} catch (error) {
+  errors.push(`cannot derive immutable Product base from historical validator ${HISTORICAL_VALIDATOR}: ${error.stderr?.toString().trim() || error.message}`);
+}
+
 const gitShow = (file) => {
   try {
     return execFileSync('git', ['show', `${PRE_WAVE12}:${file}`], { encoding: 'utf8' });
@@ -83,6 +102,10 @@ requireValue(
   !deepEqual({ a: 1 }, { a: 2 }),
   'canonical comparator must detect value drift'
 );
+requireValue(
+  immutableProductBaseSha && immutableProductBaseSha !== PRE_WAVE12,
+  'immutable pre-rewrite provenance must remain distinct from rewritten executable PRE_WAVE12 identity'
+);
 
 for (const [name, file] of Object.entries(paths)) requireValue(existsSync(file), `${name} missing: ${file}`);
 
@@ -100,7 +123,7 @@ requireValue(release.authorityId === 'PRODUCT-OSK-WAVE12-PUBLICATION-2026-08-02'
 requireValue(release.route === ROUTE, 'route drift');
 requireValue(release.status === 'PUBLIC_ROUTE_RELEASED_SOURCE_BOUNDARIES_PRESERVED', 'release status drift');
 requireValue(release.researchSnapshot === 'f50b21ad6af5dd7aaa53c5be381929b353b26d58', 'Research snapshot drift');
-requireValue(release.productBaseSha === PRE_WAVE12, 'pre-Wave12 Product base drift');
+requireValue(release.productBaseSha === immutableProductBaseSha, 'pre-Wave12 Product base drift');
 requireValue(release.predecessorAuthorityIds?.includes('PRODUCT-OSK-WAVE10-DRAFT-2026-08-01'), 'Wave 10 predecessor missing');
 requireValue(release.predecessorAuthorityIds?.includes('PRODUCT-OSK-WAVE11-FAITHFUL-WITNESS-2026-08-01'), 'Wave 11 predecessor missing');
 for (const [key, expected] of Object.entries({ coreCases:21, faithfulPathways:15, faithfulResponses:20, authoritySources:181, readerLinks:73, newDirectQuotesApproved:0 })) {

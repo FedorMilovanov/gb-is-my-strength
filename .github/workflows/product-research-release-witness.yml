@@ -2,6 +2,11 @@ name: Product to Research release witness
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/product-research-release-witness.yml'
+      - 'scripts/diotrophes-wave12-*.mjs'
   push:
     branches: [main]
     paths:
@@ -58,8 +63,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
-      DIOTROPHES_WAVE12_RELEASE_BOUNDARY: 8f17085dc8411cffbcb5a4dcd2f8fc5db9c30a97
-      DIOTROPHES_WAVE12_HISTORICAL_VALIDATOR: b90103f1bf4020873c89454a36b6cd367c6348a6
+      DIOTROPHES_WAVE12_PRE_WAVE12: 289cea9b1f8fb4284aac0c712e23e83fb25b00f0
+      DIOTROPHES_WAVE12_RELEASE_BOUNDARY: fbd305a54ded904931275eb9510647994c32b5ea
+      DIOTROPHES_WAVE12_HISTORICAL_VALIDATOR: aaf0ba7ff95afcd1c6f1488de9798c2a48b4386b
     steps:
       - name: Checkout exact complete Product history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -84,11 +90,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY" HEAD
+          node scripts/diotrophes-wave12-history-anchor-contract.mjs
           boundary_dir="${RUNNER_TEMP}/diotrophes-wave12-release-boundary"
           historical_validator="${RUNNER_TEMP}/diotrophes-wave12-historical-validator.mjs"
           rm -rf "$boundary_dir" "$historical_validator"
           git show "${DIOTROPHES_WAVE12_HISTORICAL_VALIDATOR}:scripts/diotrophes-wave12-release-contract.mjs" > "$historical_validator"
+          node scripts/diotrophes-wave12-history-anchor-contract.mjs \
+            --rebind-historical-validator "$historical_validator"
           git worktree add --detach "$boundary_dir" "$DIOTROPHES_WAVE12_RELEASE_BOUNDARY"
           cleanup_boundary() { git worktree remove --force "$boundary_dir" >/dev/null 2>&1 || true; }
           trap cleanup_boundary EXIT
